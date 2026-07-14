@@ -1,0 +1,362 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ═══════════════════════════════════════════
+// AUTH.JS REQUIRED MODELS
+// ═══════════════════════════════════════════
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  mobile        String?
+  role          UserRole  @default(CLIENT)
+  employeeId    String?   @unique // e.g. EMP-101, only for employees
+  designation   String?
+  profilePhoto  String?   // Supabase Storage URL
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Auth.js relations
+  accounts Account[]
+  sessions Session[]
+
+  // Business relations
+  serviceRequests  ServiceRequest[]
+  sentMessages     ProjectMessage[]   @relation("MessageSender")
+  uploadedDocs     Document[]
+  // Employee relations
+  managedProjects  Project[]          @relation("ProjectManager")
+  fieldProjects    Project[]          @relation("FieldEmployee")
+  reportProjects   Project[]          @relation("ReportEmployee")
+  inspections      Inspection[]
+  reports          Report[]
+  createdTemplates Template[]
+  auditLogs        AuditLog[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ═══════════════════════════════════════════
+// ENUMS
+// ═══════════════════════════════════════════
+
+enum UserRole {
+  CLIENT
+  OWNER
+  MANAGER
+  FIELD_EMPLOYEE
+  REPORT_EMPLOYEE
+}
+
+enum RequestStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum ProjectStatus {
+  PENDING_REVIEW
+  APPROVED
+  ASSIGNED
+  INSPECTION_IN_PROGRESS
+  INSPECTION_COMPLETED
+  REPORT_DRAFTING
+  MANAGER_REVIEW
+  COMPLETED
+  ARCHIVED
+}
+
+enum InspectionStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum ReportStatus {
+  DRAFTING
+  SUBMITTED_FOR_REVIEW
+  REVISION_REQUESTED
+  APPROVED
+}
+
+enum TemplateCategory {
+  STANDARD_INDIVIDUAL
+  STANDARD_RESIDENTIAL
+  STANDARD_COMMERCIAL
+  ORG_SBI
+  ORG_PNB
+  ORG_LIC_HOUSING
+  ORG_UNION_BANK
+  ORG_OTHER
+}
+
+enum RetrievalStatus {
+  ARCHIVED
+  RETRIEVAL_REQUESTED
+  RETRIEVED
+}
+
+// ═══════════════════════════════════════════
+// SERVICE REQUEST & PROJECT
+// ═══════════════════════════════════════════
+
+model ServiceRequest {
+  id              String        @id @default(cuid())
+  clientId        String
+  propertyDetails String        @db.Text
+  propertyType    String
+  purpose         String
+  propertyAddress String        @db.Text
+  contactName     String
+  contactPhone    String
+  contactEmail    String
+  additionalNotes String?       @db.Text
+  status          RequestStatus @default(SUBMITTED)
+  reviewNotes     String?       @db.Text
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  client    User       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  documents Document[] @relation("RequestDocuments")
+  project   Project?
+
+  @@map("service_requests")
+}
+
+model Project {
+  id               String        @id @default(cuid())
+  projectCode      String        @unique // SMA-YYYY-NNN
+  serviceRequestId String        @unique
+  status           ProjectStatus @default(PENDING_REVIEW)
+  assignedManagerId  String?
+  fieldEmployeeId    String?
+  reportEmployeeId   String?
+  startDate        DateTime?
+  completionDate   DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  serviceRequest ServiceRequest  @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+  manager        User?           @relation("ProjectManager", fields: [assignedManagerId], references: [id])
+  fieldEmployee  User?           @relation("FieldEmployee", fields: [fieldEmployeeId], references: [id])
+  reportEmployee User?           @relation("ReportEmployee", fields: [reportEmployeeId], references: [id])
+  messages       ProjectMessage[]
+  documents      Document[]      @relation("ProjectDocuments")
+  inspection     Inspection?
+  report         Report?
+  archivedRecord ArchivedRecord?
+
+  @@map("projects")
+}
+
+model ProjectMessage {
+  id        String   @id @default(cuid())
+  projectId String
+  senderId  String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sender  User    @relation("MessageSender", fields: [senderId], references: [id])
+
+  @@map("project_messages")
+}
+
+model Document {
+  id               String   @id @default(cuid())
+  name             String
+  url              String
+  type             String   // MIME type
+  size             Int      // bytes
+  uploadedById     String
+  serviceRequestId String?
+  projectId        String?
+  inspectionId     String?
+  createdAt        DateTime @default(now())
+
+  uploadedBy     User            @relation(fields: [uploadedById], references: [id])
+  serviceRequest ServiceRequest? @relation("RequestDocuments", fields: [serviceRequestId], references: [id])
+  project        Project?        @relation("ProjectDocuments", fields: [projectId], references: [id])
+  inspection     Inspection?     @relation(fields: [inspectionId], references: [id])
+
+  @@map("documents")
+}
+
+// ═══════════════════════════════════════════
+// INSPECTION & REPORT
+// ═══════════════════════════════════════════
+
+model Inspection {
+  id           String           @id @default(cuid())
+  projectId    String           @unique
+  employeeId   String
+  measurements Json?            // Structured measurement data
+  notes        String?          @db.Text
+  images       String[]         // Array of R2 URLs
+  status       InspectionStatus @default(PENDING)
+  scheduledDate DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  employee  User       @relation(fields: [employeeId], references: [id])
+  documents Document[]
+
+  @@map("inspections")
+}
+
+model Report {
+  id          String       @id @default(cuid())
+  projectId   String       @unique
+  templateId  String?
+  employeeId  String
+  data        Json?        // Structured report data
+  status      ReportStatus @default(DRAFTING)
+  fileUrl     String?      // Generated DOCX/PDF URL on R2
+  createdAt   DateTime     @default(now())
+  submittedAt DateTime?
+  approvedAt  DateTime?
+  updatedAt   DateTime     @updatedAt
+
+  project  Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  template Template? @relation(fields: [templateId], references: [id])
+  employee User      @relation(fields: [employeeId], references: [id])
+
+  @@map("reports")
+}
+
+model Template {
+  id               String           @id @default(cuid())
+  name             String
+  category         TemplateCategory
+  organizationName String?          // For ORG_OTHER
+  fields           Json             // Template field definitions
+  fileUrl          String?          // DOCX template file on R2
+  isActive         Boolean          @default(true)
+  createdById      String
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  createdBy User     @relation(fields: [createdById], references: [id])
+  reports   Report[]
+
+  @@map("templates")
+}
+
+// ═══════════════════════════════════════════
+// ARCHIVAL & AUDIT
+// ═══════════════════════════════════════════
+
+model ArchivedRecord {
+  id                     String          @id @default(cuid())
+  projectId              String          @unique
+  archiveDate            DateTime        @default(now())
+  archiveReference       String          @unique // ARC-YYYY-NNN
+  retrievalStatus        RetrievalStatus @default(ARCHIVED)
+  offlineStorageLocation String?
+  notes                  String?         @db.Text
+
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@map("archived_records")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String   // LOGIN, LOGOUT, PROJECT_CREATED, STATUS_CHANGED, etc.
+  entityType String?  // User, Project, Report, etc.
+  entityId   String?
+  metadata   Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
+
+// ═══════════════════════════════════════════
+// PUBLIC ENQUIRIES (No Login Required)
+// ═══════════════════════════════════════════
+
+model Enquiry {
+  id               String        @id @default(cuid())
+  name             String
+  email            String
+  phone            String?
+  subject          String
+  message          String
+  senderType       SenderType    @default(INDIVIDUAL)
+  organisationName String?
+  status           EnquiryStatus @default(UNREAD)
+  createdAt        DateTime      @default(now())
+
+  @@map("enquiries")
+}
+
+enum EnquiryStatus {
+  UNREAD
+  READ
+  REPLIED
+}
+
+enum SenderType {
+  INDIVIDUAL
+  ORGANISATION
+}
