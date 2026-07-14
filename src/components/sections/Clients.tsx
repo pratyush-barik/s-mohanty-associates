@@ -3,18 +3,31 @@
 import SectionWrapper from '@/components/ui/SectionWrapper';
 
 const featuredClients = [
-  { name: 'State Bank of India', abbr: 'SBI' },
-  { name: 'Punjab National Bank', abbr: 'PNB' },
-  { name: 'LIC Housing Finance', abbr: 'LICHF' },
-  { name: 'Union Bank of India', abbr: 'UBI' },
-  { name: 'Bank of Baroda', abbr: 'BOB' },
-  { name: 'Indian Overseas Bank', abbr: 'IOB' },
+  { name: 'State Bank of India', image: '/images/clients/state-bank-of-india.png' },
+  { name: 'Punjab National Bank', image: '/images/clients/punjab-national-bank.png' },
+  { name: 'LIC Housing Finance', image: '/images/clients/lic-housing-finance.png' },
+  { name: 'Union Bank of India', image: '/images/clients/union-bank-of-india.png' },
+  { name: 'Bank of Baroda', image: '/images/clients/bank-of-baroda.png' },
+  { name: 'Indian Overseas Bank', image: '/images/clients/indian-overseas-bank.png' },
 ];
 
 const carouselClients = [
-  'SBI', 'PNB', 'LIC Housing', 'Union Bank', 'Bank of Baroda', 'IOB',
-  'Canara Bank', 'HDFC Bank', 'Axis Bank', 'UCO Bank', 'Central Bank', 'Bank of India',
-  'Indian Bank', 'IDBI Bank', 'Allahabad Bank', 'Syndicate Bank',
+  { name: 'State Bank of India', image: '/images/clients/state-bank-of-india.png' },
+  { name: 'Punjab National Bank', image: '/images/clients/punjab-national-bank.png' },
+  { name: 'LIC Housing Finance', image: '/images/clients/lic-housing-finance.png' },
+  { name: 'Union Bank of India', image: '/images/clients/union-bank-of-india.png' },
+  { name: 'Bank of Baroda', image: '/images/clients/bank-of-baroda.png' },
+  { name: 'Indian Overseas Bank', image: '/images/clients/indian-overseas-bank.png' },
+  { name: 'Canara Bank', image: '/images/clients/canara-bank.png' },
+  { name: 'HDFC Bank', image: '/images/clients/hdfc-bank.png' },
+  { name: 'Axis Bank', image: '/images/clients/axis-bank.png' },
+  { name: 'UCO Bank', image: '/images/clients/uco-bank.png' },
+  { name: 'Central Bank', image: '/images/clients/central-bank.png' },
+  { name: 'Bank of India', image: '/images/clients/bank-of-india.png' },
+  { name: 'Indian Bank', image: '/images/clients/indian-bank.png' },
+  { name: 'IDBI Bank', image: '/images/clients/idbi-bank.png' },
+  { name: 'Allahabad Bank', image: '/images/clients/allahabad-bank.png' },
+  { name: 'Syndicate Bank', image: '/images/clients/syndicate-bank.png' },
 ];
 
 export default function Clients() {
@@ -43,15 +56,23 @@ export default function Clients() {
                 className="group card flex flex-col items-center justify-center py-6 px-4 text-center h-[140px]"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                {/* Placeholder Logo */}
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#1e3a5f]/10 to-[#b8860b]/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
-                  <span className="text-[#1e3a5f] font-bold text-base" style={{ fontFamily: 'var(--font-heading)' }}>
-                    {client.abbr}
+                {/* Fallback to text if image is the transparent 1x1 placeholder */}
+                <div className="w-full h-16 relative flex items-center justify-center mb-3">
+                  <img
+                    src={client.image}
+                    alt={client.name}
+                    className="max-w-full max-h-full object-contain filter grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                      (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                    }}
+                  />
+                  {/* Fallback text if image fails to load or is empty */}
+                  <span className="hidden absolute inset-0 flex items-center justify-center text-[#0f2038] font-bold">
+                    {client.name.split(' ').map(n => n[0]).join('')}
                   </span>
                 </div>
-                <p className="text-xs text-[#6c757d] font-medium leading-tight">
-                  {client.name}
-                </p>
+                <h3 className="text-xs font-semibold text-[#0f2038]">{client.name}</h3>
               </div>
             ))}
           </div>
@@ -65,15 +86,24 @@ export default function Clients() {
             <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
 
             {/* Scrolling Track */}
-            <div className="carousel-track flex gap-8 w-max">
+            <div className="carousel-track flex gap-8 w-max items-center">
               {/* Duplicate items for infinite loop */}
               {[...carouselClients, ...carouselClients].map((client, index) => (
                 <div
-                  key={`${client}-${index}`}
-                  className="flex-shrink-0 px-6 py-3 rounded-xl bg-[#f8f9fa] border border-[#e9ecef] hover:border-[#b8860b]/30 hover:bg-[#b8860b]/5 transition-all duration-300 cursor-default"
+                  key={`${client.name}-${index}`}
+                  className="flex-shrink-0 px-6 py-3 rounded-xl bg-[#f8f9fa] border border-[#e9ecef] hover:border-[#b8860b]/30 hover:bg-[#b8860b]/5 transition-all duration-300 cursor-default flex items-center justify-center h-16 w-32"
                 >
-                  <span className="text-sm font-semibold text-[#495057] whitespace-nowrap">
-                    {client}
+                  <img
+                    src={client.image}
+                    alt={client.name}
+                    className="max-w-full max-h-full object-contain filter grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-500"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                      (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                    }}
+                  />
+                  <span className="hidden text-sm font-semibold text-[#495057] whitespace-nowrap">
+                    {client.name.split(' ').map(n => n[0]).join('')}
                   </span>
                 </div>
               ))}
