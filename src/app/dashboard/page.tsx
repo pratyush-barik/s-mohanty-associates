@@ -43,7 +43,7 @@ export default async function DashboardPage() {
     }),
   ]);
 
-  const activeProjects = projects.filter((p) => p.status !== 'ARCHIVED' && p.status !== 'COMPLETED');
+  const activeProjects = projects.filter((p: any) => p.status !== 'ARCHIVED' && p.status !== 'COMPLETED');
 
   return (
     <div className="space-y-8">
