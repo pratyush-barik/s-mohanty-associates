@@ -104,7 +104,7 @@ export default async function DashboardPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {requests.map((req) => (
+            {requests.map((req: any) => (
               <div key={req.id} className="flex items-center justify-between p-4 rounded-xl bg-[#f8f9fa] border border-[#e9ecef] hover:border-[#b8860b]/30 transition-colors">
                 <div>
                   <p className="text-sm font-medium text-[#0f2038]">{req.propertyType} — {req.purpose}</p>
@@ -137,7 +137,7 @@ export default async function DashboardPage() {
           </div>
 
           <div className="space-y-3">
-            {activeProjects.map((project) => (
+            {activeProjects.map((project: any) => (
               <Link
                 key={project.id}
                 href={`/dashboard/projects/${project.id}`}
