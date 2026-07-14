@@ -7,6 +7,7 @@ import Credentials from 'next-auth/providers/credentials';
  * The full auth config (with Prisma) is in auth.ts.
  */
 export default {
+  secret: process.env.AUTH_SECRET || 'fallback_secret_for_build_only_1234567890',
   providers: [
     Credentials({
       name: 'credentials',
