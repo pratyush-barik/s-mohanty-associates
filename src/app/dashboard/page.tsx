@@ -79,7 +79,7 @@ export default async function DashboardPage() {
         <div className="card p-5">
           <p className="text-xs font-medium text-[#6c757d] uppercase tracking-wider mb-1">Completed</p>
           <p className="text-3xl font-bold text-green-600" style={{ fontFamily: 'var(--font-heading)' }}>
-            {projects.filter((p) => p.status === 'COMPLETED').length}
+            {projects.filter((p: any) => p.status === 'COMPLETED').length}
           </p>
         </div>
       </div>
