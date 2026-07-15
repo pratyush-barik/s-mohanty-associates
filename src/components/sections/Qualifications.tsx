@@ -9,7 +9,7 @@ const qualifications = [
       {
         title: 'Registered Valuer',
         subtitle: 'Ministry of Corporate Affairs, Govt. of India',
-        detail: 'Registration No. IBBI/RV/06/2019/XXXX',
+        detail: 'Registration No. IBBI/RV/02/2019/10594',
         icon: '🏛️',
       },
       {
@@ -26,13 +26,13 @@ const qualifications = [
       {
         title: 'Chartered Engineer',
         subtitle: 'Institution of Engineers (India)',
-        detail: 'Membership No. C-XXXXX',
+        detail: 'Membership No. M-1560969',
         icon: '⚙️',
       },
       {
         title: 'Fellow Member — IOV',
         subtitle: 'Institution of Valuers, India',
-        detail: 'Life Fellow Membership',
+        detail: 'Membership No. F-26377',
         icon: '🏅',
       },
     ],

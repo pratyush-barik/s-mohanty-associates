@@ -81,10 +81,10 @@ export default function CEOProfile() {
                 <div className="flex flex-wrap gap-2 mb-5">
                   <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium">B.Sc. (Engg.) Civil</span>
                   <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium">M.Tech (IIT Kharagpur)</span>
-                  <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium">Chartered Engineer</span>
+                  <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium" title="Membership No. M-1560969">Chartered Engineer (M-1560969)</span>
                   <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium">Fellow - IE(I)</span>
-                  <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium">Fellow - IOV</span>
-                  <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium">Registered Valuer (IBBI)</span>
+                  <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium" title="Membership No. F-26377">Fellow - IOV (F-26377)</span>
+                  <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium" title="Registration No. IBBI/RV/02/2019/10594">Registered Valuer (IBBI/RV/02/2019/10594)</span>
                 </div>
                 <p className="text-white/60 leading-relaxed mb-4">
                   A distinguished professional with over 30 years of experience in property valuation, structural design,
