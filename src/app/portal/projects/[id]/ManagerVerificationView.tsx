@@ -115,14 +115,24 @@ export default function ManagerVerificationView({ projectId, projectCode, report
       {/* The DOM element that will be captured as a PDF */}
       <div 
         ref={reportRef} 
-        className="bg-white p-8 border border-[#e9ecef] shadow-sm mx-auto" 
-        style={{ maxWidth: '800px', minHeight: '1056px' }}
+        className="bg-white mx-auto relative overflow-hidden" 
+        style={{ 
+          maxWidth: '800px', 
+          minHeight: '1056px',
+          backgroundImage: "url('/images/letterhead.png')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          paddingTop: '180px',    // Space for the green header
+          paddingBottom: '120px', // Space for the footer
+          paddingLeft: '64px',
+          paddingRight: '64px'
+        }}
       >
-        {/* PDF Header */}
-        <div className="text-center mb-10 border-b border-[#e9ecef] pb-6">
-          <h1 className="text-2xl font-bold text-[#0f2038] tracking-wider mb-2">S MOHANTY ASSOCIATES</h1>
-          <p className="text-sm text-[#6c757d]">Property Valuation & Technical Consulting</p>
-          <div className="mt-6 flex justify-between text-xs text-[#343a40]">
+        {/* PDF Header (Data only, since graphic header is in background) */}
+        <div className="text-center mb-10 border-b border-[#e9ecef]/50 pb-6 relative z-10">
+          <h1 className="text-2xl font-bold text-[#0f2038] tracking-wider mb-2">VALUATION REPORT</h1>
+          <div className="mt-4 flex justify-between text-xs text-[#343a40]">
             <p><strong>Project Code:</strong> {projectCode}</p>
             <p><strong>Date:</strong> {new Date().toLocaleDateString('en-IN')}</p>
           </div>
