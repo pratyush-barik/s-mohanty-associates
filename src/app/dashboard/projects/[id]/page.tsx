@@ -135,6 +135,25 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Left Column — Property & Team */}
         <div className="lg:col-span-1 space-y-6">
+          {/* Download Final Report */}
+          {project.status === 'COMPLETED' && project.report?.fileUrl && (
+            <div className="card p-6 bg-[#f8f9fa] border-[#b8860b]/30 shadow-md">
+              <h2 className="text-sm font-semibold text-[#0f2038] uppercase tracking-wider mb-2">Final Valuation Report</h2>
+              <p className="text-xs text-[#6c757d] mb-4">Your property valuation report is ready to download.</p>
+              <a 
+                href={project.report.fileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-primary w-full text-center py-2.5 text-sm flex items-center justify-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download PDF
+              </a>
+            </div>
+          )}
+
           {/* Property Details */}
           <div className="card p-6">
             <h2 className="text-sm font-semibold text-[#0f2038] uppercase tracking-wider mb-4">Property Details</h2>

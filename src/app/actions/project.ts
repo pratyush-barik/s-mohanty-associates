@@ -144,3 +144,160 @@ export async function updateInspectionStatus(
     return { error: 'Failed to update inspection.' };
   }
 }
+
+/**
+ * Save report draft fields (JSON data)
+ */
+export async function saveReportDraft(projectId: string, fields: any) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: 'Unauthorized' };
+
+  try {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: { report: true }
+    });
+
+    if (!project) return { error: 'Project not found.' };
+
+    const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+    if (!user) return { error: 'Unauthorized' };
+
+    if (user.role === 'REPORT_EMPLOYEE' && project.reportEmployeeId !== session.user.id) {
+      return { error: 'You are not assigned to this report.' };
+    }
+
+    if (project.report) {
+      // Update existing
+      await prisma.report.update({
+        where: { id: project.report.id },
+        data: { fields, status: 'DRAFTING' }
+      });
+    } else {
+      // Create new report record
+      await prisma.report.create({
+        data: {
+          projectId,
+          employeeId: project.reportEmployeeId || session.user.id,
+          status: 'DRAFTING',
+          fields
+        }
+      });
+      // Ensure project status is updated
+      if (project.status !== 'MANAGER_REVIEW') {
+        await prisma.project.update({
+          where: { id: projectId },
+          data: { status: 'REPORT_DRAFTING' }
+        });
+      }
+    }
+
+    revalidatePath(`/portal/reports/${projectId}`);
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to save draft:', error);
+    return { error: 'Failed to save report draft.' };
+  }
+}
+
+/**
+ * Submit report for manager verification
+ */
+export async function submitReportForVerification(projectId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: 'Unauthorized' };
+
+  try {
+    const report = await prisma.report.findFirst({
+      where: { projectId }
+    });
+
+    if (!report) return { error: 'Report data not found.' };
+
+    await prisma.report.update({
+      where: { id: report.id },
+      data: { 
+        status: 'SUBMITTED_FOR_REVIEW',
+        submittedAt: new Date()
+      }
+    });
+
+    await prisma.project.update({
+      where: { id: projectId },
+      data: { status: 'MANAGER_REVIEW' }
+    });
+
+    revalidatePath(`/portal/reports/${projectId}`);
+    revalidatePath('/portal/reports');
+    revalidatePath(`/portal/projects/${projectId}`);
+    revalidatePath('/portal/projects');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to submit report:', error);
+    return { error: 'Failed to submit report for verification.' };
+  }
+}
+
+/**
+ * Manager: Send report back for rework
+ */
+export async function sendReportForRework(projectId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: 'Unauthorized' };
+
+  try {
+    const report = await prisma.report.findFirst({ where: { projectId } });
+    if (!report) return { error: 'Report data not found.' };
+
+    await prisma.report.update({
+      where: { id: report.id },
+      data: { status: 'REVISION_REQUESTED' }
+    });
+
+    await prisma.project.update({
+      where: { id: projectId },
+      data: { status: 'REPORT_DRAFTING' }
+    });
+
+    revalidatePath(`/portal/projects/${projectId}`);
+    revalidatePath('/portal/reports');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to send for rework:', error);
+    return { error: 'Failed to send for rework.' };
+  }
+}
+
+/**
+ * Manager: Finalize report with PDF URL
+ */
+export async function finalizeReport(projectId: string, pdfUrl: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: 'Unauthorized' };
+
+  try {
+    const report = await prisma.report.findFirst({ where: { projectId } });
+    if (!report) return { error: 'Report data not found.' };
+
+    await prisma.report.update({
+      where: { id: report.id },
+      data: { 
+        status: 'APPROVED',
+        fileUrl: pdfUrl,
+        approvedAt: new Date()
+      }
+    });
+
+    await prisma.project.update({
+      where: { id: projectId },
+      data: { status: 'COMPLETED' }
+    });
+
+    revalidatePath(`/portal/projects/${projectId}`);
+    revalidatePath(`/dashboard/projects/${projectId}`);
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to finalize report:', error);
+    return { error: 'Failed to finalize report.' };
+  }
+}

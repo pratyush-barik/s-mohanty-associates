@@ -79,7 +79,19 @@ export default async function InspectionDetailsPage({ params }: { params: { proj
               <div>
                 <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1">Property</p>
                 <p className="text-sm font-medium text-[#0f2038]">{serviceRequest.propertyType} — {serviceRequest.purpose}</p>
-                <p className="text-sm text-[#6c757d] mt-1">{serviceRequest.propertyAddress}</p>
+                <p className="text-sm text-[#6c757d] mt-1 mb-3">{serviceRequest.propertyAddress}</p>
+                <a 
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(serviceRequest.propertyAddress)}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#1e3a5f] bg-[#1e3a5f]/5 hover:bg-[#1e3a5f]/10 px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  Open in Google Maps
+                </a>
               </div>
               <hr className="border-[#e9ecef]" />
               <div>
