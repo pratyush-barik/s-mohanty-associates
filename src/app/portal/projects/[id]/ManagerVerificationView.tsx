@@ -119,7 +119,7 @@ export default function ManagerVerificationView({ projectId, projectCode, report
         style={{ 
           maxWidth: '800px', 
           minHeight: '1056px',
-          backgroundImage: "url('/images/letterhead.png')",
+          backgroundImage: "url('/templates/letterhead.png')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
