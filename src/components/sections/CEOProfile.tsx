@@ -1,21 +1,22 @@
 'use client';
 
+import Image from 'next/image';
 import SectionWrapper from '@/components/ui/SectionWrapper';
 
 const achievements = [
-  { label: 'Years of Practice', value: '28+' },
-  { label: 'Valuations Completed', value: '2500+' },
-  { label: 'Bank Empanelments', value: '15+' },
-  { label: 'Court Appearances', value: '200+' },
+  { label: 'Years of Experience', value: '30+' },
+  { label: 'Properties Valued', value: '10,000+' },
+  { label: 'Buildings Designed', value: '500+' },
+  { label: 'Bank Empanelments', value: '20+' },
 ];
 
 const expertise = [
-  'Property & Real Estate Valuation',
-  'Land Acquisition & Compensation',
-  'Plant & Machinery Assessment',
-  'Insurance Claim Valuations',
-  'Court-Directed Valuations',
-  'SARFAESI Act Compliance',
+  'Property Valuation (Land & Building)',
+  'Structural Design & Consultancy',
+  'Structural Safety Audits & NDT',
+  'Techno-Economic Feasibility Studies',
+  'Project Management & Supervision',
+  'Soil Investigation & Geotechnical Studies',
 ];
 
 export default function CEOProfile() {
@@ -39,15 +40,16 @@ export default function CEOProfile() {
             <div className="relative group">
               {/* Image Container */}
               <div className="relative overflow-hidden rounded-2xl aspect-[3/4] max-w-[360px] mx-auto">
-                {/* Placeholder profile */}
-                <div className="absolute inset-0 bg-gradient-to-br from-[#1e3a5f] via-[#162d4a] to-[#0f2038] flex flex-col items-center justify-center">
-                  <div className="w-28 h-28 rounded-full bg-white/10 flex items-center justify-center mb-4 border-2 border-white/10">
-                    <svg className="w-16 h-16 text-white/30" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                    </svg>
-                  </div>
-                  <p className="text-white/40 text-sm">Founder Photo</p>
-                </div>
+                {/* Founder Photo */}
+                <Image
+                  src="/images/founder.jpeg"
+                  alt="Mr. Satyajit Mohanty - Founder & Managing Director"
+                  fill
+                  className="object-cover"
+                  style={{ objectPosition: '47% center' }}
+                  sizes="(max-width: 1024px) 100vw, 360px"
+                  priority
+                />
 
                 {/* Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628] via-transparent to-transparent opacity-60" />
@@ -60,9 +62,9 @@ export default function CEOProfile() {
               <div className="absolute bottom-6 left-6 right-6">
                 <div className="glass rounded-xl p-4 text-center">
                   <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'var(--font-heading)' }}>
-                    S. Mohanty
+                    Satyajit Mohanty
                   </h3>
-                  <p className="text-[#ffcb47] text-sm font-medium">Founder & Chief Valuer</p>
+                  <p className="text-[#ffcb47] text-sm font-medium">Founder & Managing Director</p>
                 </div>
               </div>
             </div>
@@ -74,24 +76,27 @@ export default function CEOProfile() {
               {/* Bio */}
               <div>
                 <h3 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: 'var(--font-heading)' }}>
-                  Mr. Sanjay Mohanty
+                  Mr. Satyajit Mohanty
                 </h3>
                 <div className="flex flex-wrap gap-2 mb-5">
-                  <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium">B.E. (Civil)</span>
-                  <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium">M.Tech</span>
+                  <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium">B.Sc. (Engg.) Civil</span>
+                  <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium">M.Tech (IIT Kharagpur)</span>
                   <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium">Chartered Engineer</span>
-                  <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium">Registered Valuer</span>
+                  <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium">Fellow - IE(I)</span>
+                  <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium">Fellow - IOV</span>
+                  <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium">Registered Valuer (IBBI)</span>
                 </div>
                 <p className="text-white/60 leading-relaxed mb-4">
-                  A visionary leader with nearly three decades of experience in property valuation and engineering consultancy. 
-                  Mr. Mohanty founded S Mohanty Associates in 1995 with a mission to deliver the most accurate, 
-                  ethical, and comprehensive valuation services in India.
+                  A distinguished professional with over 30 years of experience in property valuation, structural design,
+                  project management, and techno-economic feasibility studies. Mr. Mohanty founded S Mohanty &amp; Associates
+                  in 1996 and has since valued over 10,000 properties across residential, commercial, industrial, and
+                  agricultural categories for major banks, corporate houses, and government departments.
                 </p>
                 <p className="text-white/60 leading-relaxed">
-                  His expertise spans residential, commercial, industrial, and agricultural property valuations, 
-                  with extensive experience in court-directed valuations and expert witness testimony. He has been 
-                  instrumental in establishing the firm&apos;s reputation as a trusted partner for India&apos;s leading banks 
-                  and financial institutions.
+                  A Registered Valuer under the Companies Act, 2013 (IBBI) and the Wealth Tax Act, 1957, he holds
+                  fellowships with the Institution of Engineers (India) and the Institution of Valuers (India). He is
+                  empanelled with leading nationalized and private banks including SBI, PNB, UCO Bank, Union Bank of India,
+                  Bank of Baroda, Indian Bank, Canara Bank, and Bank of India.
                 </p>
               </div>
 
