@@ -46,7 +46,6 @@ export default function CEOProfile() {
                   alt="Mr. Satyajit Mohanty - Founder & Managing Director"
                   fill
                   className="object-cover"
-                  style={{ objectPosition: '47% center' }}
                   sizes="(max-width: 1024px) 100vw, 360px"
                   quality={100}
                   unoptimized={true}
