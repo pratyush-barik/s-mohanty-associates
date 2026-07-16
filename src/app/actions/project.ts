@@ -171,7 +171,7 @@ export async function saveReportDraft(projectId: string, fields: any) {
       // Update existing
       await prisma.report.update({
         where: { id: project.report.id },
-        data: { fields, status: 'DRAFTING' }
+        data: { data: fields, status: 'DRAFTING' }
       });
     } else {
       // Create new report record
@@ -180,10 +180,9 @@ export async function saveReportDraft(projectId: string, fields: any) {
           projectId,
           employeeId: project.reportEmployeeId || session.user.id,
           status: 'DRAFTING',
-          fields
+          data: fields
         }
       });
-      // Ensure project status is updated
       if (project.status !== 'MANAGER_REVIEW') {
         await prisma.project.update({
           where: { id: projectId },
