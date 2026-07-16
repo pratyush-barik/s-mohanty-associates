@@ -37,9 +37,9 @@ export default function CEOProfile() {
         <div className="grid lg:grid-cols-5 gap-10 lg:gap-16 items-start max-w-6xl mx-auto">
           {/* Profile Image */}
           <SectionWrapper animation="fadeRight" delay={0.1} className="lg:col-span-2">
-            <div className="relative group">
+            <div className="relative group max-w-[360px] mx-auto">
               {/* Image Container */}
-              <div className="relative overflow-hidden rounded-2xl aspect-[3/4] max-w-[360px] mx-auto">
+              <div className="relative overflow-hidden rounded-2xl aspect-[3/4] w-full">
                 {/* Founder Photo */}
                 <Image
                   src="/images/founder.jpeg"
