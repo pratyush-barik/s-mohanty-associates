@@ -91,12 +91,12 @@ export default function Clients() {
               {[...carouselClients, ...carouselClients].map((client, index) => (
                 <div
                   key={`${client.name}-${index}`}
-                  className="flex-shrink-0 rounded-xl bg-[#f8f9fa] border border-[#e9ecef] hover:border-[#b8860b]/30 hover:bg-[#b8860b]/5 transition-all duration-300 cursor-default overflow-hidden h-16 w-32"
+                  className="flex-shrink-0 rounded-xl bg-[#f8f9fa] border border-[#e9ecef] hover:border-[#b8860b]/30 hover:bg-[#b8860b]/5 transition-all duration-300 cursor-default overflow-hidden h-16 w-32 flex items-center justify-center p-2"
                 >
                   <img
                     src={client.image}
                     alt={client.name}
-                    className="w-full h-full object-contain p-2 transition-transform duration-500 hover:scale-110"
+                    className="max-w-full max-h-full object-contain transition-transform duration-500 hover:scale-110"
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = 'none';
                       (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
