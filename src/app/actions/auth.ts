@@ -1,6 +1,6 @@
 'use server';
 
-import { signIn } from '@/auth';
+import { signIn, auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { SignupFormSchema, LoginFormSchema, type SignupFormState, type LoginFormState } from '@/lib/definitions';
 import bcrypt from 'bcryptjs';
@@ -76,6 +76,10 @@ export async function login(state: LoginFormState, formData: FormData): Promise<
       password: validatedFields.data.password,
       redirect: false,
     });
+    const session = await auth();
+    if (session?.user?.role && session.user.role !== 'CLIENT') {
+      redirect('/portal/dashboard');
+    }
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
