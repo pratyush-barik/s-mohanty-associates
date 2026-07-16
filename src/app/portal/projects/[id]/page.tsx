@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { redirect, notFound } from 'next/navigation';
 import AssignTeamForm from './AssignTeamForm';
 import Link from 'next/link';
-import ManagerVerificationView from './ManagerVerificationView';
+import ReportBuilder from '../reports/[projectId]/ReportBuilder';
 
 export default async function ProjectDetailsPage({ params }: { params: { id: string } }) {
   const session = await auth();
@@ -65,11 +65,10 @@ export default async function ProjectDetailsPage({ params }: { params: { id: str
       {/* Manager Verification (Shows only when submitted by Report Agent) */}
       {(project.status === 'MANAGER_REVIEW' || project.status === 'COMPLETED') && project.report && (
         <div className="mb-8">
-          <ManagerVerificationView
+          <ReportBuilder
             projectId={project.id}
-            projectCode={project.projectCode}
-            reportFields={project.report.fields}
-            serviceRequest={project.serviceRequest}
+            initialFields={project.report.fields}
+            status={project.status}
           />
         </div>
       )}

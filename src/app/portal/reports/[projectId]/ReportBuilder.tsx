@@ -359,6 +359,16 @@ export default function ReportBuilder({ projectId, initialFields, status, prefil
     }
   };
 
+  const handlePreviewPDF = async () => {
+    setMessage({ type: 'success', text: 'Generating PDF preview...' });
+    const pdfBlob = await handleGeneratePDF();
+    if (pdfBlob) {
+      const url = URL.createObjectURL(pdfBlob);
+      window.open(url, '_blank');
+    }
+    setMessage(null);
+  };
+
   const handleSubmit = async () => {
     if (!confirm('Submit this report for manager verification? You cannot edit it until the manager returns it.')) return;
 
@@ -368,38 +378,46 @@ export default function ReportBuilder({ projectId, initialFields, status, prefil
     // Save first
     await saveReportDraft(projectId, fields);
 
-    // Generate PDF
-    setMessage({ type: 'success', text: 'Generating PDF report...' });
-    const pdfBlob = await handleGeneratePDF();
+    // Submit for verification (no PDF generation yet)
+    const result = await submitReportForVerification(projectId);
+    setMessage(result.error ? { type: 'error', text: result.error } : { type: 'success', text: 'Report submitted for verification! Manager will review it.' });
+    setLoading(false);
+  };
 
+  const handleFinalize = async () => {
+    if (!confirm('Finalize and save this report? This will generate the official PDF.')) return;
+    setLoading(true);
+    setMessage({ type: 'success', text: 'Generating final PDF...' });
+    const pdfBlob = await handleGeneratePDF();
     if (pdfBlob) {
-      // Upload PDF to Supabase storage
       const pdfFileName = `${projectId}-report-${Date.now()}.pdf`;
       const pdfPath = `reports/pdfs/${pdfFileName}`;
       const { error: uploadError } = await supabaseBrowser.storage
         .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
         .upload(pdfPath, pdfBlob, { contentType: 'application/pdf' });
-
       if (!uploadError) {
         const { data: urlData } = supabaseBrowser.storage
           .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
           .getPublicUrl(pdfPath);
-
-        // Save the PDF URL to the report
-        await saveReportDraft(projectId, { ...fields, generatedPdfUrl: urlData.publicUrl });
+        
+        const { finalizeReport } = await import('@/app/actions/project');
+        const res = await finalizeReport(projectId, urlData.publicUrl);
+        if (res.error) setMessage({ type: 'error', text: res.error });
+        else setMessage({ type: 'success', text: 'Project Finalized Successfully! PDF is now available to the client.' });
+      } else {
+        setMessage({ type: 'error', text: 'Failed to upload PDF.' });
       }
-
-      // Also trigger a browser download
-      const url = URL.createObjectURL(pdfBlob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Valuation_Report_${fields.ownerName.replace(/\s+/g, '_') || projectId}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
     }
+    setLoading(false);
+  };
 
-    const result = await submitReportForVerification(projectId);
-    setMessage(result.error ? { type: 'error', text: result.error } : { type: 'success', text: 'Report submitted for verification! PDF downloaded.' });
+  const handleRework = async () => {
+    if (!confirm('Send back to the agent for rework?')) return;
+    setLoading(true);
+    const { sendReportForRework } = await import('@/app/actions/project');
+    const res = await sendReportForRework(projectId);
+    if (res.error) setMessage({ type: 'error', text: res.error });
+    else setMessage({ type: 'success', text: 'Report sent for rework.' });
     setLoading(false);
   };
 
@@ -856,25 +874,53 @@ export default function ReportBuilder({ projectId, initialFields, status, prefil
       </Section>
 
       {/* ── Action Buttons ── */}
-      {!isReadOnly && (
-        <div className="flex flex-wrap gap-4 pt-2">
-          <button
-            onClick={handleSaveDraft}
-            disabled={loading}
-            className="px-6 py-3 rounded-xl border-2 border-[#b8860b] text-[#b8860b] font-semibold text-sm hover:bg-[#b8860b]/5 transition-all disabled:opacity-50"
-          >
-            {loading ? '⏳ Saving...' : '💾 Save Draft'}
-          </button>
+      <div className="flex flex-wrap gap-4 pt-2">
+        {!isReadOnly && (
+          <>
+            <button
+              onClick={handleSaveDraft}
+              disabled={loading}
+              className="px-6 py-3 rounded-xl border-2 border-[#b8860b] text-[#b8860b] font-semibold text-sm hover:bg-[#b8860b]/5 transition-all disabled:opacity-50"
+            >
+              {loading ? '⏳ Saving...' : '💾 Save Draft'}
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold text-sm hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+            >
+              {loading ? '⏳ Submitting...' : '📤 Submit to Manager'}
+            </button>
+          </>
+        )}
 
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="px-6 py-3 rounded-xl bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold text-sm hover:from-green-700 hover:to-green-800 shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
-          >
-            {loading ? '⏳ Generating PDF & Submitting...' : '📤 Generate PDF & Submit to Manager'}
-          </button>
-        </div>
-      )}
+        <button
+          onClick={handlePreviewPDF}
+          disabled={loading}
+          className="px-6 py-3 rounded-xl border-2 border-gray-400 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-all disabled:opacity-50"
+        >
+          📄 Preview PDF
+        </button>
+
+        {status === 'MANAGER_REVIEW' && isReadOnly && (
+          <>
+            <button
+              onClick={handleRework}
+              disabled={loading}
+              className="px-6 py-3 rounded-xl border-2 border-red-500 text-red-600 font-semibold text-sm hover:bg-red-50 transition-all disabled:opacity-50"
+            >
+              ❌ Send for Rework
+            </button>
+            <button
+              onClick={handleFinalize}
+              disabled={loading}
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold text-sm hover:from-green-700 hover:to-green-800 shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+            >
+              ✅ Finalize & Download PDF
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 }
