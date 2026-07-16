@@ -39,12 +39,17 @@ export default function CEOProfile() {
           <SectionWrapper animation="fadeRight" delay={0.1} className="lg:col-span-2">
             <div className="relative group max-w-[360px] mx-auto">
               {/* Image Container */}
-              <div className="relative overflow-hidden rounded-2xl w-full">
+              <div className="relative overflow-hidden rounded-2xl aspect-[3/4] w-full">
                 {/* Founder Photo */}
-                <img
+                <Image
                   src="/images/founder.jpeg"
                   alt="Mr. Satyajit Mohanty - Founder & Managing Director"
-                  className="w-full h-auto object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 360px"
+                  quality={100}
+                  unoptimized={true}
+                  priority
                 />
 
                 {/* Overlay */}
