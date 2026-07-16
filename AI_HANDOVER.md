@@ -60,18 +60,19 @@ The core business logic is **100% complete**.
 1. **Intake Flow**: Client requests a valuation. A `Project` is created with `PENDING_REVIEW` status.
 2. **Assignment Flow**: Manager accepts the project and assigns a `FIELD_EMPLOYEE` and `REPORT_EMPLOYEE` via the `/portal/projects/[id]` dashboard.
 3. **Inspection Flow**: Field agent sees assignment, views client details, gets Google Maps directions, and completes the inspection. Status updates to `INSPECTION_COMPLETED`.
-4. **Drafting Flow**: Report agent fills out a dynamic React form (`ReportBuilder.tsx`), uploading images directly to Supabase. Status updates to `MANAGER_REVIEW`.
+4. **Drafting Flow (Updated)**: Report agent fills out a dynamic, comprehensive **11-section React form** (`ReportBuilder.tsx`). This form matches the real-world Individual Client Bank Report template (including property details, floor-wise depreciation calculations, and an auto-generated Valuation Certificate with amounts automatically converted to words via `numberToWords.ts`). Agents can upload property images directly to Supabase. Status updates to `MANAGER_REVIEW`.
 5. **Finalization Flow**: Manager reviews the drafted report. They can "Send for Rework" or "Finalize".
-6. **PDF Generation (Crucial detail)**: To avoid serverless function timeouts and hosting costs, PDF generation is done entirely on the **Client-Side** using `html2pdf.js` in `ManagerVerificationView.tsx`. The DOM element is captured, styled over a background template (`/public/templates/letterhead.png`), converted to a PDF blob, and uploaded to Supabase.
+6. **PDF Generation (Updated)**: PDF generation is now fully implemented on the **Client-Side** directly within the Report Builder using `html2canvas` and `jspdf`. Upon clicking "Generate PDF & Submit", it captures the 11-section HTML layout, paginates it into an A4 PDF blob, downloads it locally, and uploads it to Supabase storage.
 7. **Delivery**: Client downloads the PDF from their dashboard.
 
 ## 5. Pending Work (What is next)
 
 If you are picking up work on this project, here are the outstanding items:
 
-1. **Bank-Specific Templates**: Currently, the system uses a "Standard Valuation" form. The user will provide data layouts for specific banks (SBI, PNB, etc.). You will need to create new React components for these specific forms and adjust the PDF generation CSS to match their layouts.
-2. **Email Automation**: Connect Gmail API or Nodemailer to send automated notifications (e.g., "Your request was received", "Your PDF is ready for download").
-3. **Local Archiving Script**: Create a separate Node.js script intended to run locally on the user's office PC to automatically download and archive PDFs older than 3 months from Supabase to their local hard drive to save cloud storage costs.
+1. **Organizational/Corporate Templates**: The "Standard Individual" (Bank Reports) template is now completed. The user will provide data layouts for specific organizational/corporate clients (SBI, PNB, etc.). You will need to create conditional logic or separate React components for these specific forms and adjust the PDF generation to match their layouts.
+2. **Manager Flow Verification**: Verify that the Manager dashboard can correctly read the JSON data from the new 11-section `ReportBuilder` during the `MANAGER_REVIEW` phase, and ensure they can successfully access the generated PDF URL from Supabase.
+3. **Email Automation**: Connect Gmail API or Nodemailer to send automated notifications (e.g., "Your request was received", "Your PDF is ready for download").
+4. **Local Archiving Script**: Create a separate Node.js script intended to run locally on the user's office PC to automatically download and archive PDFs older than 3 months from Supabase to their local hard drive to save cloud storage costs.
 
 > [!TIP]
 > When modifying the UI, prioritize modern, premium aesthetics (glassmorphism, clean typography, subtle animations) without relying on Tailwind components like Shadcn unless explicitly requested. Use raw Tailwind classes.
