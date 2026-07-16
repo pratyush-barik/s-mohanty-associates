@@ -99,7 +99,7 @@ export default async function ReportEditorPage({ params }: { params: { projectId
         <div className="lg:col-span-2">
           <ReportBuilder 
             projectId={project.id} 
-            initialFields={report?.fields || null} 
+            initialFields={report?.data || null} 
             status={project.status}
             prefill={{
               contactName: serviceRequest.contactName,
