@@ -48,6 +48,8 @@ export default function CEOProfile() {
                   className="object-cover"
                   style={{ objectPosition: '47% center' }}
                   sizes="(max-width: 1024px) 100vw, 360px"
+                  quality={100}
+                  unoptimized={true}
                   priority
                 />
 
