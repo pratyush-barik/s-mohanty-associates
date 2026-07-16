@@ -101,6 +101,13 @@ export default async function ReportEditorPage({ params }: { params: { projectId
             projectId={project.id} 
             initialFields={report?.fields || null} 
             status={project.status}
+            prefill={{
+              contactName: serviceRequest.contactName,
+              contactPhone: serviceRequest.contactPhone,
+              contactEmail: serviceRequest.contactEmail,
+              propertyAddress: serviceRequest.propertyAddress,
+              propertyType: serviceRequest.propertyType,
+            }}
           />
         </div>
       </div>
