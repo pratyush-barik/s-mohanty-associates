@@ -43,3 +43,6 @@ next-env.d.ts
 # Dummy scripts
 create-dummy-users.js
 seed.js
+
+# Ignore sample reports folder
+individual clients (Bank Reports)/
