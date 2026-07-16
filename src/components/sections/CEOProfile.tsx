@@ -39,25 +39,17 @@ export default function CEOProfile() {
           <SectionWrapper animation="fadeRight" delay={0.1} className="lg:col-span-2">
             <div className="relative group max-w-[360px] mx-auto">
               {/* Image Container */}
-              <div className="relative overflow-hidden rounded-2xl aspect-[3/4] w-full">
+              <div className="relative overflow-hidden rounded-2xl w-full">
                 {/* Founder Photo */}
-                <Image
+                <img
                   src="/images/founder.jpeg"
                   alt="Mr. Satyajit Mohanty - Founder & Managing Director"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 360px"
-                  quality={100}
-                  unoptimized={true}
-                  priority
+                  className="w-full h-auto object-cover"
                 />
 
                 {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628] via-transparent to-transparent opacity-60" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628] via-transparent to-transparent opacity-60 pointer-events-none" />
               </div>
-
-              {/* Decorative Frame */}
-              <div className="absolute -top-3 -right-3 w-full h-full rounded-2xl border-2 border-[#b8860b]/20 pointer-events-none" />
 
               {/* Name Badge */}
               <div className="absolute bottom-6 left-6 right-6">
