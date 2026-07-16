@@ -65,7 +65,7 @@ export default {
       if (portalRoutes) {
         if (!isLoggedIn) return false;
         const employeeRoles = ['OWNER', 'MANAGER', 'FIELD_EMPLOYEE', 'REPORT_EMPLOYEE'];
-        if (!employeeRoles.includes(userRole)) {
+        if (!userRole || !employeeRoles.includes(userRole)) {
           return Response.redirect(new URL('/dashboard', nextUrl));
         }
         return true;
