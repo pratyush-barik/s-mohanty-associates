@@ -426,11 +426,9 @@ export default function ReportBuilder({ projectId, initialFields, status, prefil
 
     return `
       <div style="font-family:Arial,sans-serif;color:#111;line-height:1.5;">
-        <!-- Header -->
-        <div style="text-align:center;border-bottom:2px solid #b8860b;padding-bottom:12px;margin-bottom:15px;">
-          <h2 style="margin:0;font-size:20px;color:#0a1628;">S. MOHANTY &amp; ASSOCIATES</h2>
-          <p style="margin:2px 0;font-size:10px;color:#555;">Valuers &amp; Engineers | IBBI Reg: IBBI/RV/02/2019/10594</p>
-          <p style="margin:2px 0;font-size:10px;color:#555;">Plot No. 516/1798, Patia, Bhubaneswar - 751024 | Ph: +91-9437025804</p>
+        <!-- Header Image (Letterhead) -->
+        <div style="text-align:center;margin-bottom:20px;">
+          <img src="/templates/letterhead.png" style="width:100%;max-height:180px;object-fit:contain;" alt="Letterhead" crossOrigin="anonymous" />
         </div>
 
         <p style="${titleStyle}">VALUATION REPORT</p>
