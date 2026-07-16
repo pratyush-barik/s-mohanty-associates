@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { redirect, notFound } from 'next/navigation';
 import AssignTeamForm from './AssignTeamForm';
 import Link from 'next/link';
-import ReportBuilder from '../reports/[projectId]/ReportBuilder';
+import ReportBuilder from '../../reports/[projectId]/ReportBuilder';
 
 export default async function ProjectDetailsPage({ params }: { params: { id: string } }) {
   const session = await auth();
@@ -67,7 +67,7 @@ export default async function ProjectDetailsPage({ params }: { params: { id: str
         <div className="mb-8">
           <ReportBuilder
             projectId={project.id}
-            initialFields={project.report.fields}
+            initialFields={project.report.data}
             status={project.status}
           />
         </div>
