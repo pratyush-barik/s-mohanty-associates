@@ -27,20 +27,20 @@ export default {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as any).role;
+        token.role = user.role;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
-        (session.user as any).role = token.role;
+        session.user.role = token.role as string;
       }
       return session;
     },
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const userRole = (auth?.user as any)?.role;
+      const userRole = auth?.user?.role;
       const { pathname } = nextUrl;
 
       const authRoutes = ['/auth/login', '/auth/register', '/auth/forgot-password'];
