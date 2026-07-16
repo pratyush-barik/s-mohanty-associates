@@ -61,7 +61,7 @@ export default function Clients() {
                   <img
                     src={client.image}
                     alt={client.name}
-                    className="max-w-full max-h-full object-contain filter grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
+                    className="max-w-full max-h-full object-contain transition-transform duration-500 group-hover:scale-105"
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = 'none';
                       (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
@@ -96,7 +96,7 @@ export default function Clients() {
                   <img
                     src={client.image}
                     alt={client.name}
-                    className="w-full h-full object-cover filter grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-500"
+                    className="w-full h-full object-contain p-2 transition-transform duration-500 hover:scale-110"
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = 'none';
                       (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
