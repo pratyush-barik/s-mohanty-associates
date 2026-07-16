@@ -22,7 +22,7 @@ export default async function ReportEditorPage({ params }: { params: { projectId
     include: {
       serviceRequest: true,
       report: true,
-      fieldEmployee: { select: { name: true, email: true, phone: true } },
+      fieldEmployee: { select: { name: true, email: true, mobile: true } },
     }
   });
 
@@ -45,11 +45,10 @@ export default async function ReportEditorPage({ params }: { params: { projectId
               ← Back to Reports
             </Link>
             <span className="text-[#dee2e6]">|</span>
-            <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold ${
-              project.status === 'MANAGER_REVIEW' ? 'bg-orange-50 text-orange-700 border border-orange-200' : 
-              project.status === 'COMPLETED' ? 'bg-green-50 text-green-700 border border-green-200' :
-              'bg-blue-50 text-blue-700 border border-blue-200'
-            }`}>
+            <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold ${project.status === 'MANAGER_REVIEW' ? 'bg-orange-50 text-orange-700 border border-orange-200' :
+                project.status === 'COMPLETED' ? 'bg-green-50 text-green-700 border border-green-200' :
+                  'bg-blue-50 text-blue-700 border border-blue-200'
+              }`}>
               {project.status.replace('_', ' ')}
             </span>
           </div>
@@ -85,7 +84,7 @@ export default async function ReportEditorPage({ params }: { params: { projectId
                 {fieldEmployee ? (
                   <>
                     <p className="text-sm font-medium text-[#0f2038]">{fieldEmployee.name}</p>
-                    <a href={`tel:${fieldEmployee.phone}`} className="text-sm text-[#b8860b] hover:underline block">{fieldEmployee.phone}</a>
+                    <a href={`tel:${fieldEmployee.mobile}`} className="text-sm text-[#b8860b] hover:underline block">{fieldEmployee.mobile}</a>
                   </>
                 ) : (
                   <p className="text-sm text-[#6c757d]">Not assigned</p>
@@ -97,9 +96,9 @@ export default async function ReportEditorPage({ params }: { params: { projectId
 
         {/* Right Column: Report Builder */}
         <div className="lg:col-span-2">
-          <ReportBuilder 
-            projectId={project.id} 
-            initialFields={report?.data || null} 
+          <ReportBuilder
+            projectId={project.id}
+            initialFields={report?.data || null}
             status={project.status}
             prefill={{
               contactName: serviceRequest.contactName,
