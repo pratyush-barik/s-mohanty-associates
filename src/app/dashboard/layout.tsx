@@ -2,6 +2,7 @@ import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { signOut } from '@/auth';
+import ActiveLink from '@/components/ui/ActiveLink';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -32,15 +33,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
           {/* Nav Links */}
           <div className="flex items-center gap-6">
-            <Link href="/dashboard" className="text-sm text-[#495057] hover:text-[#0f2038] font-medium transition-colors">
+            <ActiveLink href="/dashboard" className="text-sm text-[#495057] hover:text-[#0f2038] font-medium transition-colors" activeClassName="!text-[#b8860b] font-bold">
               Dashboard
-            </Link>
-            <Link href="/dashboard/requests" className="text-sm text-[#495057] hover:text-[#0f2038] font-medium transition-colors">
+            </ActiveLink>
+            <ActiveLink href="/dashboard/requests" className="text-sm text-[#495057] hover:text-[#0f2038] font-medium transition-colors" activeClassName="!text-[#b8860b] font-bold">
               My Requests
-            </Link>
-            <Link href="/dashboard/projects" className="text-sm text-[#495057] hover:text-[#0f2038] font-medium transition-colors">
+            </ActiveLink>
+            <ActiveLink href="/dashboard/projects" className="text-sm text-[#495057] hover:text-[#0f2038] font-medium transition-colors" activeClassName="!text-[#b8860b] font-bold">
               My Projects
-            </Link>
+            </ActiveLink>
           </div>
 
           {/* User Menu */}

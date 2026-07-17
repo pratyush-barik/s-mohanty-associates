@@ -46,13 +46,15 @@ Requires the following `.env` variables:
 
 We use two distinct portals to separate concerns:
 1. **Client Portal (`/dashboard`)**: For standard users to request valuations, chat, and download final PDFs.
-   - Login: `/auth/client-login`
+   - Login: `/auth/client-login` (previously `/auth/login`)
 2. **Employee Portal (`/portal`)**: For staff (Owners, Managers, Field Agents, Report Analysts).
    - Login: `/auth/employee-login`
    - **Role-Based Dashboards:** Upon login, employees are automatically redirected to their specific role dashboard (`/portal/owner`, `/portal/manager`, `/portal/field-agent`, or `/portal/report-agent`). The old generic unified dashboard has been removed.
    - **Common Profile:** All employees share a common `/portal/profile` page where they can view locked personal details and edit their profile photo.
+   - **Dashboard Paths:** Report Analysts view their assigned project list at `/portal/my-projects`, while individual reports are built/edited at `/portal/reports/[projectId]`.
 
 > [!NOTE]
+> Client and Employee sidebars/headers now dynamically highlight their active sections (e.g. bold highlights, active states) using the `<ActiveLink />` client helper component.
 > Server actions (`src/app/actions`) heavily enforce role-based access control (RBAC). Always verify `session.user.role` before performing database mutations.
 
 ## 4. Completed Workflows (What is done)
@@ -62,13 +64,16 @@ The core business logic is **100% complete**.
 1. **Intake Flow**: Client requests a valuation. A `Project` is created with `PENDING_REVIEW` status.
 2. **Assignment Flow**: Manager accepts the project and assigns a `FIELD_EMPLOYEE` and `REPORT_EMPLOYEE` via the `/portal/projects/[id]` dashboard.
 3. **Inspection Flow**: Field agent sees assignment, views client details, gets Google Maps directions, and completes the inspection. Status updates to `INSPECTION_COMPLETED`.
-4. **Drafting Flow (Updated)**: Report agent goes to "My Projects" to see pending work (complete with client contact/property details). They fill out a dynamic **11-section React form** (`ReportBuilder.tsx`). This matches the real-world Individual Client Bank Report template (property details, floor-wise depreciation calculations, Valuation Certificate auto-generated with `numberToWords`). 
-   - *Crucial Update:* Agents do NOT generate the PDF. They only save drafts and submit the JSON data to the `Report` table. Status updates to `MANAGER_REVIEW`.
-5. **Manager Preview & Finalization Flow (Updated)**: 
-   - Manager reviews the drafted report via a read-only view of `ReportBuilder.tsx`.
+4. **Drafting Flow (Updated)**: Report agent goes to "My Projects" (`/portal/my-projects`) to see pending work (complete with client contact/property details). They fill out a dynamic **10-section React form** (`ReportBuilder.tsx`). This matches the real-world Individual Client Bank Report template (property details, floor-wise depreciation calculations, Valuation Certificate auto-generated with `numberToWords`, and a property photo upload section).
+   - *Crucial Update:* Temporary property images uploaded during drafting are saved in `temp-photos/${projectId}/` inside the `valuation-documents` bucket.
+   - Agents do NOT generate the PDF. They only save drafts and submit the JSON data to the `Report` table. Status updates to `MANAGER_REVIEW`.
+5. **Manager Preview, Editing & Finalization Flow (Updated)**: 
+   - Manager reviews the drafted report via `ReportBuilder.tsx` on `/portal/projects/[id]`. The Manager can edit text fields and add/remove/replace photographs as needed.
    - Manager can preview the PDF natively in the browser without generating files.
    - Manager can "Send for Rework" (reverts status) or "Finalize & Generate PDF".
-6. **PDF Generation (Updated)**: PDF generation is fully implemented on the **Client-Side** (using `html2canvas` and `jspdf`), but specifically triggered during the **Manager Finalization** step to save server resources on the Vercel free tier. It captures the 11-section HTML layout, paginates it, downloads it locally for the manager, and uploads the final blob to Supabase storage.
+6. **PDF Generation & Cleanup (Updated)**: PDF generation is fully implemented on the **Client-Side** (using `html2canvas` and `jspdf`), triggered during the **Manager Finalization** step to save server resources. 
+   - It captures the HTML layout (including a dedicated Photographs page at the end), paginates it, downloads it locally for the manager, and uploads the final PDF blob to the `reports/pdfs/` folder in the `valuation-documents` bucket.
+   - **Automated Cleanup:** Upon finalization, the code automatically deletes all temporary property images inside the `temp-photos/${projectId}/` folder from Supabase Storage, and clears the `propertyImages` array inside the database's JSON report data, preventing any wasted storage space.
 7. **Delivery**: Client downloads the PDF from their dashboard.
 
 ## 5. Pending Work (What is next)

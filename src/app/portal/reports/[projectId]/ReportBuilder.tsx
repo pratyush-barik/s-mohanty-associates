@@ -81,6 +81,9 @@ interface ReportFields {
   demarcation: string;
   possession: string;
   remarks: string;
+
+  // Section 11 – Photos
+  propertyImages: string[];
 }
 
 const DEFAULT_FIELDS: ReportFields = {
@@ -139,6 +142,8 @@ const DEFAULT_FIELDS: ReportFields = {
   demarcation: 'Clear',
   possession: 'With Owner',
   remarks: '',
+
+  propertyImages: [],
 };
 
 const CIVIC_AMENITIES_OPTIONS = [
@@ -193,6 +198,7 @@ interface ReportBuilderProps {
   projectId: string;
   initialFields: any;
   status: string;
+  userRole?: string;
   prefill?: {
     ownerName?: string;
     ownerAddress?: string;
@@ -204,13 +210,14 @@ interface ReportBuilderProps {
   };
 }
 
-export default function ReportBuilder({ projectId, initialFields, status, prefill }: ReportBuilderProps) {
+export default function ReportBuilder({ projectId, initialFields, status, userRole = 'REPORT_EMPLOYEE', prefill }: ReportBuilderProps) {
   // Merge defaults → initialFields → prefill
   const merged = {
     ...DEFAULT_FIELDS,
     ...(initialFields || {}),
     ownerName: initialFields?.ownerName || prefill?.contactName || DEFAULT_FIELDS.ownerName,
     ownerAddress: initialFields?.ownerAddress || prefill?.propertyAddress || DEFAULT_FIELDS.ownerAddress,
+    propertyImages: initialFields?.propertyImages || DEFAULT_FIELDS.propertyImages,
   };
 
   // Ensure floors is always an array
@@ -221,11 +228,12 @@ export default function ReportBuilder({ projectId, initialFields, status, prefil
   const [fields, setFields] = useState<ReportFields>(merged);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const [activeSection, setActiveSection] = useState(0);
   const reportRef = useRef<HTMLDivElement>(null);
 
-  const isReadOnly = status === 'MANAGER_REVIEW' || status === 'COMPLETED';
+  const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
 
   const handleChange = useCallback((field: keyof ReportFields, value: any) => {
     setFields(prev => ({ ...prev, [field]: value }));
@@ -272,6 +280,30 @@ export default function ReportBuilder({ projectId, initialFields, status, prefil
   const distressValue = Math.round(totalPropertyValue * 0.8);
 
   // ── Image upload ──
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileList = e.target.files;
+    if (!fileList || fileList.length === 0) return;
+    setUploading(true);
+    setMessage(null);
+
+    const newUrls = [...(fields.propertyImages || [])];
+    for (let i = 0; i < fileList.length; i++) {
+      const file = fileList[i];
+      const ext = file.name.split('.').pop();
+      const fileName = `${projectId}-${Math.random().toString(36).substring(2)}.${ext}`;
+      const filePath = `temp-photos/${projectId}/${fileName}`;
+      const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(filePath, file);
+      if (error) { setMessage({ type: 'error', text: `Failed to upload ${file.name}` }); continue; }
+      const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
+      newUrls.push(data.publicUrl);
+    }
+    handleChange('propertyImages', newUrls);
+    setUploading(false);
+  };
+
+  const removeImage = (index: number) => {
+    handleChange('propertyImages', fields.propertyImages.filter((_, i) => i !== index));
+  };
 
 
   // ── Save / Submit ──
@@ -360,6 +392,10 @@ export default function ReportBuilder({ projectId, initialFields, status, prefil
     if (!confirm('Finalize and save this report? This will generate the official PDF.')) return;
     setLoading(true);
     setMessage({ type: 'success', text: 'Generating final PDF...' });
+    
+    // Save Manager's draft first
+    await saveReportDraft(projectId, fields);
+
     const pdfBlob = await handleGeneratePDF();
     if (pdfBlob) {
       const pdfFileName = `${projectId}-report-${Date.now()}.pdf`;
@@ -372,10 +408,33 @@ export default function ReportBuilder({ projectId, initialFields, status, prefil
           .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
           .getPublicUrl(pdfPath);
         
+        // Cleanup all temporary photographs from Supabase
+        try {
+          const { data: files } = await supabaseBrowser.storage
+            .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+            .list(`temp-photos/${projectId}`);
+          
+          if (files && files.length > 0) {
+            const paths = files.map(f => `temp-photos/${projectId}/${f.name}`);
+            await supabaseBrowser.storage
+              .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+              .remove(paths);
+          }
+        } catch (err) {
+          console.error('Failed to cleanup temporary photographs:', err);
+        }
+
+        // Clear images in DB by saving one final draft
+        const finalFields = { ...fields, propertyImages: [] };
+        await saveReportDraft(projectId, finalFields);
+
         const { finalizeReport } = await import('@/app/actions/project');
         const res = await finalizeReport(projectId, urlData.publicUrl);
         if (res.error) setMessage({ type: 'error', text: res.error });
-        else setMessage({ type: 'success', text: 'Project Finalized Successfully! PDF is now available to the client.' });
+        else {
+          setFields(finalFields);
+          setMessage({ type: 'success', text: 'Project Finalized Successfully! PDF is now available to the client.' });
+        }
       } else {
         setMessage({ type: 'error', text: 'Failed to upload PDF.' });
       }
@@ -508,6 +567,21 @@ export default function ReportBuilder({ projectId, initialFields, status, prefil
           <p>Registered Valuer — IBBI/RV/02/2019/10594</p>
           <p>S. Mohanty & Associates, Bhubaneswar</p>
         </div>
+
+        <!-- Property Photographs Page -->
+        \${fields.propertyImages && fields.propertyImages.length > 0 ? \`
+          <div style="page-break-before:always;margin-top:20px;">
+            <p style="\${titleStyle}">PROPERTY PHOTOGRAPHS</p>
+            <div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:15px;margin-top:20px;">
+              \${fields.propertyImages.map((url, idx) => \`
+                <div style="border:1px solid #ddd;padding:5px;border-radius:4px;text-align:center;">
+                  <img src="\${url}" style="width:100%;height:220px;object-fit:cover;border-radius:2px;" />
+                  <p style="font-size:10px;margin-top:5px;color:#666;">Photograph #\${idx + 1}</p>
+                </div>
+              \`).join('')}
+            </div>
+          </div>
+        \` : ''}
       </div>
     `;
   }
@@ -823,6 +897,31 @@ export default function ReportBuilder({ projectId, initialFields, status, prefil
       </Section>
 
 
+
+      {/* ── Section 10: Property Photographs ── */}
+      {(!isReadOnly || (fields.propertyImages && fields.propertyImages.length > 0)) && (
+        <Section title="Property Photographs" number={10} defaultOpen={false}>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            {fields.propertyImages?.map((url: string, idx: number) => (
+              <div key={idx} className="relative group rounded-xl overflow-hidden border border-[#e9ecef] aspect-square">
+                <img src={url} alt={`Property ${idx + 1}`} className="w-full h-full object-cover" />
+                {!isReadOnly && (
+                  <button
+                    onClick={() => removeImage(idx)}
+                    className="absolute top-2 right-2 bg-red-500 text-white w-6 h-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-xs"
+                  >×</button>
+                )}
+              </div>
+            ))}
+          </div>
+          {!isReadOnly && (
+            <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+              {uploading ? 'Uploading...' : '📷 Add Property Images'}
+              <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} disabled={uploading} />
+            </label>
+          )}
+        </Section>
+      )}
 
       {/* ── Action Buttons ── */}
       <div className="flex flex-wrap gap-4 pt-2">

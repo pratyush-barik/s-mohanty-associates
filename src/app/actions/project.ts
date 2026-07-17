@@ -227,7 +227,7 @@ export async function submitReportForVerification(projectId: string) {
     });
 
     revalidatePath(`/portal/reports/${projectId}`);
-    revalidatePath('/portal/reports');
+    revalidatePath('/portal/my-projects');
     revalidatePath(`/portal/projects/${projectId}`);
     revalidatePath('/portal/projects');
     return { success: true };
@@ -259,7 +259,7 @@ export async function sendReportForRework(projectId: string) {
     });
 
     revalidatePath(`/portal/projects/${projectId}`);
-    revalidatePath('/portal/reports');
+    revalidatePath('/portal/my-projects');
     return { success: true };
   } catch (error) {
     console.error('Failed to send for rework:', error);

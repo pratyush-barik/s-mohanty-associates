@@ -30,7 +30,7 @@ export default async function ReportEditorPage({ params }: { params: { projectId
 
   // Report agents can only see their own assignments
   if (currentUser.role === 'REPORT_EMPLOYEE' && project.reportEmployeeId !== session.user.id) {
-    redirect('/portal/reports');
+    redirect('/portal/my-projects');
   }
 
   const { serviceRequest, fieldEmployee, report } = project;
@@ -41,8 +41,8 @@ export default async function ReportEditorPage({ params }: { params: { projectId
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <Link href="/portal/reports" className="text-[#6c757d] hover:text-[#0f2038]">
-              ← Back to Reports
+            <Link href="/portal/my-projects" className="text-[#6c757d] hover:text-[#0f2038]">
+              ← Back to Projects
             </Link>
             <span className="text-[#dee2e6]">|</span>
             <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold ${project.status === 'MANAGER_REVIEW' ? 'bg-orange-50 text-orange-700 border border-orange-200' :
@@ -100,6 +100,7 @@ export default async function ReportEditorPage({ params }: { params: { projectId
             projectId={project.id}
             initialFields={report?.data || null}
             status={project.status}
+            userRole={currentUser.role}
             prefill={{
               contactName: serviceRequest.contactName,
               contactPhone: serviceRequest.contactPhone,

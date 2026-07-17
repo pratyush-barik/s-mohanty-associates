@@ -2,6 +2,7 @@ import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { signOut } from '@/auth';
+import ActiveLink from '@/components/ui/ActiveLink';
 
 const employeeRoles = ['OWNER', 'MANAGER', 'FIELD_EMPLOYEE', 'REPORT_EMPLOYEE'];
 
@@ -50,7 +51,7 @@ export default async function PortalLayout({ children }: { children: React.React
   }
   if (userRole === 'REPORT_EMPLOYEE') {
     navItems.push(
-      { label: 'My Projects', href: '/portal/reports', icon: '📝' },
+      { label: 'My Projects', href: '/portal/my-projects', icon: '📝' },
     );
   }
 
@@ -93,14 +94,15 @@ export default async function PortalLayout({ children }: { children: React.React
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => (
-            <Link
+            <ActiveLink
               key={item.href}
               href={item.href}
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all"
+              activeClassName="!bg-white/15 !text-[#ffcb47] font-bold"
             >
               <span className="text-base">{item.icon}</span>
               {item.label}
-            </Link>
+            </ActiveLink>
           ))}
         </nav>
 

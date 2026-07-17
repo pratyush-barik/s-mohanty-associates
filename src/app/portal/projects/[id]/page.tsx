@@ -69,6 +69,7 @@ export default async function ProjectDetailsPage({ params }: { params: { id: str
             projectId={project.id}
             initialFields={project.report.data}
             status={project.status}
+            userRole={currentUser.role}
           />
         </div>
       )}

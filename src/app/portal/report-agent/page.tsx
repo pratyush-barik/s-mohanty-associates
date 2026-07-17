@@ -92,7 +92,7 @@ export default async function ReportAgentDashboard() {
         <div className="card p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-[#0f2038]" style={{ fontFamily: 'var(--font-heading)' }}>My Reports</h2>
-            <Link href="/portal/reports" className="text-sm text-[#b8860b] hover:underline font-medium">View All →</Link>
+            <Link href="/portal/my-projects" className="text-sm text-[#b8860b] hover:underline font-medium">View All →</Link>
           </div>
           <div className="space-y-3">
             {assignedProjects.map((project) => (
