@@ -59,6 +59,7 @@ export async function signup(state: SignupFormState, formData: FormData): Promis
 }
 
 export async function login(state: LoginFormState, formData: FormData): Promise<LoginFormState> {
+  const portal = formData.get('portal');
   const validatedFields = LoginFormSchema.safeParse({
     email: formData.get('email'),
     password: formData.get('password'),
@@ -70,19 +71,36 @@ export async function login(state: LoginFormState, formData: FormData): Promise<
     };
   }
 
+  // Strict Segregation Check BEFORE signIn
+  const existingUser = await prisma.user.findUnique({
+    where: { email: validatedFields.data.email },
+    select: { role: true },
+  });
+
+  if (existingUser) {
+    if (portal === 'CLIENT' && existingUser.role !== 'CLIENT') {
+      return { message: 'Employee accounts cannot log in through the client portal.' };
+    }
+    if (portal === 'EMPLOYEE' && existingUser.role === 'CLIENT') {
+      return { message: 'Client accounts cannot access the employee portal.' };
+    }
+  }
+
   try {
     await signIn('credentials', {
       email: validatedFields.data.email,
       password: validatedFields.data.password,
       redirect: false,
     });
+    
     const session = await auth();
-    if (session?.user?.role && session.user.role !== 'CLIENT') {
+    if (session?.user?.role) {
       const role = session.user.role;
       if (role === 'OWNER') redirect('/portal/owner');
       if (role === 'MANAGER') redirect('/portal/manager');
       if (role === 'FIELD_EMPLOYEE') redirect('/portal/field-agent');
       if (role === 'REPORT_EMPLOYEE') redirect('/portal/report-agent');
+      if (role === 'CLIENT') redirect('/dashboard');
     }
   } catch (error) {
     if (error instanceof AuthError) {

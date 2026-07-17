@@ -31,6 +31,7 @@ export default function LoginPage() {
       )}
 
       <form action={action} className="space-y-4">
+        <input type="hidden" name="portal" value="CLIENT" />
         {/* Email */}
         <div>
           <label htmlFor="login-email" className="block text-sm font-medium text-white/70 mb-1.5">
