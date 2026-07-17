@@ -78,7 +78,11 @@ export async function login(state: LoginFormState, formData: FormData): Promise<
     });
     const session = await auth();
     if (session?.user?.role && session.user.role !== 'CLIENT') {
-      redirect('/portal/dashboard');
+      const role = session.user.role;
+      if (role === 'OWNER') redirect('/portal/owner');
+      if (role === 'MANAGER') redirect('/portal/manager');
+      if (role === 'FIELD_EMPLOYEE') redirect('/portal/field-agent');
+      if (role === 'REPORT_EMPLOYEE') redirect('/portal/report-agent');
     }
   } catch (error) {
     if (error instanceof AuthError) {

@@ -19,8 +19,14 @@ export default async function PortalLayout({ children }: { children: React.React
   const userRole = (session.user as any).role;
   if (!employeeRoles.includes(userRole)) redirect('/dashboard');
 
+  let dashboardHref = '/portal';
+  if (userRole === 'OWNER') dashboardHref = '/portal/owner';
+  else if (userRole === 'MANAGER') dashboardHref = '/portal/manager';
+  else if (userRole === 'FIELD_EMPLOYEE') dashboardHref = '/portal/field-agent';
+  else if (userRole === 'REPORT_EMPLOYEE') dashboardHref = '/portal/report-agent';
+
   const navItems = [
-    { label: 'Dashboard', href: '/portal/dashboard', icon: '📊' },
+    { label: 'Dashboard', href: dashboardHref, icon: '📊' },
     { label: 'Profile', href: '/portal/profile', icon: '👤' },
   ];
 
