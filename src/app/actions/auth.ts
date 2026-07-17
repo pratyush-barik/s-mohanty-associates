@@ -74,16 +74,27 @@ export async function login(state: LoginFormState, formData: FormData): Promise<
   // Strict Segregation Check BEFORE signIn
   const existingUser = await prisma.user.findUnique({
     where: { email: validatedFields.data.email },
-    select: { role: true },
   });
 
-  if (existingUser) {
-    if (portal === 'CLIENT' && existingUser.role !== 'CLIENT') {
-      return { message: 'Employee accounts cannot log in through the client portal.' };
+  if (!existingUser) {
+    if (portal === 'CLIENT') {
+      return { message: 'Client does not exist. Please register.' };
     }
-    if (portal === 'EMPLOYEE' && existingUser.role === 'CLIENT') {
-      return { message: 'Client accounts cannot access the employee portal.' };
-    }
+    return { message: 'Invalid email or password.' };
+  }
+
+  const passwordMatch = await bcrypt.compare(validatedFields.data.password, existingUser.password);
+  
+  if (!passwordMatch) {
+    return { message: 'Incorrect password.' };
+  }
+
+  if (portal === 'CLIENT' && existingUser.role !== 'CLIENT') {
+    return { message: 'Client does not exist. Please register.' };
+  }
+  
+  if (portal === 'EMPLOYEE' && existingUser.role === 'CLIENT') {
+    return { message: 'Employee account does not exist.' };
   }
 
   try {
