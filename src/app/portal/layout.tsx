@@ -50,7 +50,7 @@ export default async function PortalLayout({ children }: { children: React.React
   }
   if (userRole === 'REPORT_EMPLOYEE') {
     navItems.push(
-      { label: 'My Reports', href: '/portal/reports', icon: '📝' },
+      { label: 'My Projects', href: '/portal/reports', icon: '📝' },
     );
   }
 

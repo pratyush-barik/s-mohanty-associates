@@ -38,7 +38,7 @@ export default async function ReportAgentDashboard() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-[#0f2038]" style={{ fontFamily: 'var(--font-heading)' }}>
-          My Assigned Reports
+          My Projects
         </h1>
         <p className="text-sm text-[#6c757d] mt-1">
           Draft and submit valuation reports for verification.
