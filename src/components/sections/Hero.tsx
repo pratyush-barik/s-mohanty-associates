@@ -91,19 +91,6 @@ export default function Hero() {
 
       {/* Content */}
       <div className="relative z-10 container mx-auto max-w-[1280px] px-6 text-center pt-32 md:pt-40">
-        {/* Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-[#b8860b]/30 bg-[#b8860b]/10 mb-8"
-        >
-          <span className="w-2 h-2 rounded-full bg-[#ffcb47] animate-pulse" />
-          <span className="text-[#ffcb47] text-sm font-medium tracking-wide">
-            Government Registered Valuers & Chartered Engineers
-          </span>
-        </motion.div>
-
         {/* Title */}
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
