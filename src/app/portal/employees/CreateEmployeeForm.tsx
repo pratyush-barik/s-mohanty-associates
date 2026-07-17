@@ -60,31 +60,17 @@ export default function CreateEmployeeForm() {
           )}
 
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="emp-name" className="block text-xs font-medium text-[#343a40] mb-1.5">
-                  Full Name *
-                </label>
-                <input
-                  id="emp-name"
-                  name="name"
-                  required
-                  className="w-full px-3 py-2.5 rounded-xl border border-[#dee2e6] bg-white text-sm text-[#212529] focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all"
-                  placeholder="Employee name"
-                />
-              </div>
-              <div>
-                <label htmlFor="emp-id" className="block text-xs font-medium text-[#343a40] mb-1.5">
-                  Employee ID *
-                </label>
-                <input
-                  id="emp-id"
-                  name="employeeId"
-                  required
-                  className="w-full px-3 py-2.5 rounded-xl border border-[#dee2e6] bg-white text-sm text-[#212529] font-mono focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all"
-                  placeholder="e.g. EMP-101"
-                />
-              </div>
+            <div>
+              <label htmlFor="emp-name" className="block text-xs font-medium text-[#343a40] mb-1.5">
+                Full Name *
+              </label>
+              <input
+                id="emp-name"
+                name="name"
+                required
+                className="w-full px-3 py-2.5 rounded-xl border border-[#dee2e6] bg-white text-sm text-[#212529] focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all"
+                placeholder="Employee name"
+              />
             </div>
 
             <div className="grid sm:grid-cols-2 gap-4">

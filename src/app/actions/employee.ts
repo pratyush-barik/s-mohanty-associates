@@ -101,11 +101,10 @@ export async function createEmployee(formData: FormData) {
   const mobile = formData.get('mobile') as string;
   const role = formData.get('role') as string;
   const designation = formData.get('designation') as string;
-  const employeeId = formData.get('employeeId') as string;
   const tempPassword = formData.get('password') as string;
 
   // Validate required fields
-  if (!name || !email || !role || !employeeId || !tempPassword) {
+  if (!name || !email || !role || !tempPassword) {
     return { error: 'All required fields must be filled.' };
   }
 
@@ -115,16 +114,32 @@ export async function createEmployee(formData: FormData) {
     return { error: 'An account with this email already exists.' };
   }
 
-  // Check for duplicate employeeId
-  const existingEmpId = await prisma.user.findUnique({ where: { employeeId } });
-  if (existingEmpId) {
-    return { error: 'This Employee ID is already in use.' };
-  }
-
   // Validate role
   const validRoles = ['MANAGER', 'FIELD_EMPLOYEE', 'REPORT_EMPLOYEE'];
   if (!validRoles.includes(role)) {
     return { error: 'Invalid role selected.' };
+  }
+
+  // Auto-generate employeeId (e.g., 1000M, 1001R, 1002F)
+  let suffix = '';
+  if (role === 'MANAGER') suffix = 'M';
+  else if (role === 'FIELD_EMPLOYEE') suffix = 'F';
+  else if (role === 'REPORT_EMPLOYEE') suffix = 'R';
+  else if (role === 'OWNER') suffix = 'O';
+
+  const employeeCount = await prisma.user.count({
+    where: {
+      role: { in: ['MANAGER', 'FIELD_EMPLOYEE', 'REPORT_EMPLOYEE'] }
+    }
+  });
+
+  let nextNum = 1000 + employeeCount;
+  let generatedEmployeeId = `${nextNum}${suffix}`;
+  let exists = await prisma.user.findUnique({ where: { employeeId: generatedEmployeeId } });
+  while (exists) {
+    nextNum++;
+    generatedEmployeeId = `${nextNum}${suffix}`;
+    exists = await prisma.user.findUnique({ where: { employeeId: generatedEmployeeId } });
   }
 
   // Hash password and create user
@@ -138,12 +153,12 @@ export async function createEmployee(formData: FormData) {
       password: hashedPassword,
       role: role as any,
       designation: designation || null,
-      employeeId,
+      employeeId: generatedEmployeeId,
       isActive: true,
     },
   });
 
   revalidatePath('/portal/employees');
 
-  return { success: true, message: `Employee ${name} (${employeeId}) created successfully.` };
+  return { success: true, message: `Employee ${name} (${generatedEmployeeId}) created successfully.` };
 }

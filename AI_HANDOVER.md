@@ -52,6 +52,13 @@ We use two distinct portals to separate concerns:
    - **Role-Based Dashboards:** Upon login, employees are automatically redirected to their specific role dashboard (`/portal/owner`, `/portal/manager`, `/portal/field-agent`, or `/portal/report-agent`). The old generic unified dashboard has been removed.
    - **Common Profile:** All employees share a common `/portal/profile` page where they can view locked personal details and edit their profile photo.
    - **Dashboard Paths:** Report Analysts view their assigned project list at `/portal/my-projects`, while individual reports are built/edited at `/portal/reports/[projectId]`.
+   - **Auto-Generated ID Format:** All client and employee registrations automatically generate a sequential unique ID saved in the `employeeId` column:
+     - **Owner:** `0000O` (static)
+     - **Clients:** `C` followed by a sequential number starting from 1000 (e.g. `C1000`, `C1001`, ...)
+     - **Employees:** Shared counter starting from 1000 with a role-based suffix:
+       - Manager: `1000M`, `1003M`, ...
+       - Field Agent: `1002F`, ...
+       - Report Agent: `1001R`, ...
 
 > [!NOTE]
 > Client and Employee sidebars/headers now dynamically highlight their active sections (e.g. bold highlights, active states) using the `<ActiveLink />` client helper component.

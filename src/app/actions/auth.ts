@@ -38,6 +38,19 @@ export async function signup(state: SignupFormState, formData: FormData): Promis
   // Hash password
   const hashedPassword = await bcrypt.hash(password, 10);
 
+  // Generate unique Client ID (e.g. C1000)
+  const clientCount = await prisma.user.count({
+    where: { role: 'CLIENT' }
+  });
+  let nextNum = 1000 + clientCount;
+  let clientId = `C${nextNum}`;
+  let exists = await prisma.user.findUnique({ where: { employeeId: clientId } });
+  while (exists) {
+    nextNum++;
+    clientId = `C${nextNum}`;
+    exists = await prisma.user.findUnique({ where: { employeeId: clientId } });
+  }
+
   // Create user
   const user = await prisma.user.create({
     data: {
@@ -46,6 +59,7 @@ export async function signup(state: SignupFormState, formData: FormData): Promis
       mobile,
       password: hashedPassword,
       role: 'CLIENT',
+      employeeId: clientId,
     },
   });
 
