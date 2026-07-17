@@ -108,7 +108,7 @@ export default async function PortalLayout({ children }: { children: React.React
         <div className="px-3 py-4 border-t border-white/10">
           <form action={async () => {
             'use server';
-            await signOut({ redirectTo: '/' });
+            await signOut({ redirectTo: 'https://smohantyassociates.vercel.app/auth/employee-login' });
           }}>
             <button
               type="submit"
