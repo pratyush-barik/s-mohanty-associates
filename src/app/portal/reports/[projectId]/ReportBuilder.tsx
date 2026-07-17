@@ -81,9 +81,6 @@ interface ReportFields {
   demarcation: string;
   possession: string;
   remarks: string;
-
-  // Section 11 – Photos
-  propertyImages: string[];
 }
 
 const DEFAULT_FIELDS: ReportFields = {
@@ -139,11 +136,9 @@ const DEFAULT_FIELDS: ReportFields = {
 
   guidelineValue: '',
 
-  demarcation: '',
-  possession: 'Self / Owner',
+  demarcation: 'Clear',
+  possession: 'With Owner',
   remarks: '',
-
-  propertyImages: [],
 };
 
 const CIVIC_AMENITIES_OPTIONS = [
@@ -226,7 +221,7 @@ export default function ReportBuilder({ projectId, initialFields, status, prefil
   const [fields, setFields] = useState<ReportFields>(merged);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [uploading, setUploading] = useState(false);
+
   const [activeSection, setActiveSection] = useState(0);
   const reportRef = useRef<HTMLDivElement>(null);
 
@@ -277,30 +272,7 @@ export default function ReportBuilder({ projectId, initialFields, status, prefil
   const distressValue = Math.round(totalPropertyValue * 0.8);
 
   // ── Image upload ──
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const fileList = e.target.files;
-    if (!fileList || fileList.length === 0) return;
-    setUploading(true);
-    setMessage(null);
 
-    const newUrls = [...(fields.propertyImages || [])];
-    for (let i = 0; i < fileList.length; i++) {
-      const file = fileList[i];
-      const ext = file.name.split('.').pop();
-      const fileName = `${projectId}-${Math.random().toString(36).substring(2)}.${ext}`;
-      const filePath = `reports/${fileName}`;
-      const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(filePath, file);
-      if (error) { setMessage({ type: 'error', text: `Failed to upload ${file.name}` }); continue; }
-      const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
-      newUrls.push(data.publicUrl);
-    }
-    handleChange('propertyImages', newUrls);
-    setUploading(false);
-  };
-
-  const removeImage = (index: number) => {
-    handleChange('propertyImages', fields.propertyImages.filter((_, i) => i !== index));
-  };
 
   // ── Save / Submit ──
   const handleSaveDraft = async () => {
@@ -850,28 +822,7 @@ export default function ReportBuilder({ projectId, initialFields, status, prefil
         </div>
       </Section>
 
-      {/* ── Section 11: Property Photographs ── */}
-      <Section title="Property Photographs" number={10} defaultOpen={false}>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-          {fields.propertyImages?.map((url: string, idx: number) => (
-            <div key={idx} className="relative group rounded-xl overflow-hidden border border-[#e9ecef] aspect-square">
-              <img src={url} alt={`Property ${idx + 1}`} className="w-full h-full object-cover" />
-              {!isReadOnly && (
-                <button
-                  onClick={() => removeImage(idx)}
-                  className="absolute top-2 right-2 bg-red-500 text-white w-6 h-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-xs"
-                >×</button>
-              )}
-            </div>
-          ))}
-        </div>
-        {!isReadOnly && (
-          <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-            {uploading ? 'Uploading...' : '📷 Add Property Images'}
-            <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} disabled={uploading} />
-          </label>
-        )}
-      </Section>
+
 
       {/* ── Action Buttons ── */}
       <div className="flex flex-wrap gap-4 pt-2">
