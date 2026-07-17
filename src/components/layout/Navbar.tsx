@@ -68,13 +68,7 @@ export default function Navbar({ user }: NavbarProps) {
   const isEmployee = user && ['OWNER', 'MANAGER', 'FIELD_EMPLOYEE', 'REPORT_EMPLOYEE'].includes(user.role);
 
   const renderCTA = () => {
-    if (isEmployee) {
-      return (
-        <Link href="/portal/dashboard" className="btn btn-primary text-sm px-5 py-2.5">
-          Employee Portal
-        </Link>
-      );
-    }
+
 
     if (user && hasActiveProjects) {
       return (
