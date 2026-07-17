@@ -126,10 +126,10 @@ export default function Navbar({ user }: NavbarProps) {
       );
     }
 
-    if (user && isEmployee) {
+    if (isEmployee) {
       return (
-        <Link href="/portal" className="btn btn-primary text-sm px-5 py-2.5">
-          Employee Dashboard
+        <Link href="/auth/client-login" className="btn btn-primary text-sm px-5 py-2.5">
+          Request a Service
         </Link>
       );
     }
@@ -316,7 +316,7 @@ export default function Navbar({ user }: NavbarProps) {
 
                 {/* Mobile Auth Links */}
                 <div className="mt-4 pt-4 border-t border-white/10 space-y-2">
-                  {user ? (
+                  {user && !isEmployee ? (
                     <>
                       <Link
                         href="/dashboard"
@@ -346,7 +346,7 @@ export default function Navbar({ user }: NavbarProps) {
                     </Link>
                   )}
                   <Link
-                    href={user ? '/dashboard/request' : '/auth/client-login'}
+                    href={user && !isEmployee ? '/dashboard/request' : '/auth/client-login'}
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="btn btn-primary w-full text-sm mt-2"
                   >
