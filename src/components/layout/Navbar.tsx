@@ -126,6 +126,14 @@ export default function Navbar({ user }: NavbarProps) {
       );
     }
 
+    if (user && isEmployee) {
+      return (
+        <Link href="/portal" className="btn btn-primary text-sm px-5 py-2.5">
+          Employee Dashboard
+        </Link>
+      );
+    }
+
     if (user) {
       return (
         <Link href="/dashboard/request" className="btn btn-primary text-sm px-5 py-2.5">
