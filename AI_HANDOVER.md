@@ -46,7 +46,7 @@ Requires the following `.env` variables:
 
 We use two distinct portals to separate concerns:
 1. **Client Portal (`/dashboard`)**: For standard users to request valuations, chat, and download final PDFs.
-   - Login: `/auth/login`
+   - Login: `/auth/client-login`
 2. **Employee Portal (`/portal`)**: For staff (Owners, Managers, Field Agents, Report Analysts).
    - Login: `/auth/employee-login`
    - **Role-Based Dashboards:** Upon login, employees are automatically redirected to their specific role dashboard (`/portal/owner`, `/portal/manager`, `/portal/field-agent`, or `/portal/report-agent`). The old generic unified dashboard has been removed.

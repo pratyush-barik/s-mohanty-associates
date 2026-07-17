@@ -144,7 +144,7 @@ export default function Navbar({ user }: NavbarProps) {
 
     // Anonymous user
     return (
-      <Link href="/auth/login" className="btn btn-primary text-sm px-5 py-2.5">
+      <Link href="/auth/client-login" className="btn btn-primary text-sm px-5 py-2.5">
         Request a Service
       </Link>
     );
@@ -338,7 +338,7 @@ export default function Navbar({ user }: NavbarProps) {
                     </>
                   ) : (
                     <Link
-                      href="/auth/login"
+                      href="/auth/client-login"
                       onClick={() => setIsMobileMenuOpen(false)}
                       className="block px-4 py-3 rounded-xl text-base font-medium text-white/70 hover:text-white hover:bg-white/5 transition-all"
                     >
@@ -346,7 +346,7 @@ export default function Navbar({ user }: NavbarProps) {
                     </Link>
                   )}
                   <Link
-                    href={user ? '/dashboard/request' : '/auth/login'}
+                    href={user ? '/dashboard/request' : '/auth/client-login'}
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="btn btn-primary w-full text-sm mt-2"
                   >

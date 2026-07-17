@@ -20,8 +20,8 @@ export default {
     }),
   ],
   pages: {
-    signIn: '/auth/login',
-    error: '/auth/login',
+    signIn: '/auth/client-login',
+    error: '/auth/client-login',
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -43,14 +43,14 @@ export default {
       const userRole = auth?.user?.role;
       const { pathname } = nextUrl;
 
-      const authRoutes = ['/auth/login', '/auth/register', '/auth/forgot-password'];
+      const authRoutes = ['/auth/client-login', '/auth/register', '/auth/forgot-password'];
       const dashboardRoutes = pathname.startsWith('/dashboard');
       const portalRoutes = pathname.startsWith('/portal');
 
       // Redirect logged-in users away from auth pages
       if (authRoutes.some((route) => pathname.startsWith(route))) {
         if (isLoggedIn) {
-          const dest = userRole === 'CLIENT' ? '/dashboard' : '/portal/dashboard';
+          const dest = userRole === 'CLIENT' ? '/dashboard' : '/portal';
           return Response.redirect(new URL(dest, nextUrl));
         }
         return true;

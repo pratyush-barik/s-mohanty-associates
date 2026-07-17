@@ -5,7 +5,7 @@ import { signOut } from '@/auth';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
-  if (!session?.user) redirect('/auth/login');
+  if (!session?.user) redirect('/auth/client-login');
   
   const userRole = (session.user as any).role;
   if (userRole !== 'CLIENT') redirect('/portal');

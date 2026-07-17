@@ -14,7 +14,7 @@ const roleLabels: Record<string, string> = {
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
-  if (!session?.user) redirect('/auth/login');
+  if (!session?.user) redirect('/auth/employee-login');
 
   const userRole = (session.user as any).role;
   if (!employeeRoles.includes(userRole)) redirect('/dashboard');
@@ -60,7 +60,7 @@ export default async function PortalLayout({ children }: { children: React.React
       <aside className="w-64 bg-[#0a1628] text-white flex flex-col flex-shrink-0 sticky top-0 h-screen">
         {/* Logo */}
         <div className="px-6 py-5 border-b border-white/10">
-          <Link href="/" className="flex items-center gap-3">
+          <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#b8860b] to-[#c9952c] flex items-center justify-center font-bold text-white">
               S
             </div>
@@ -72,7 +72,7 @@ export default async function PortalLayout({ children }: { children: React.React
                 Employee Portal
               </div>
             </div>
-          </Link>
+          </div>
         </div>
 
         {/* User Info */}

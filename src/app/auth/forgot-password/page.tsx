@@ -32,7 +32,7 @@ export default function ForgotPasswordPage() {
           If an account exists with <span className="text-white/80 font-medium">{email}</span>,
           we&apos;ve sent password reset instructions.
         </p>
-        <Link href="/auth/login" className="btn btn-primary text-sm px-6 py-2.5">
+        <Link href="/auth/client-login" className="btn btn-primary text-sm px-6 py-2.5">
           Back to Login
         </Link>
       </div>
@@ -88,7 +88,7 @@ export default function ForgotPasswordPage() {
 
       <p className="mt-6 text-center text-sm text-white/40">
         Remember your password?{' '}
-        <Link href="/auth/login" className="text-[#ffcb47] hover:text-[#ffcb47]/80 font-medium transition-colors">
+        <Link href="/auth/client-login" className="text-[#ffcb47] hover:text-[#ffcb47]/80 font-medium transition-colors">
           Log In
         </Link>
       </p>

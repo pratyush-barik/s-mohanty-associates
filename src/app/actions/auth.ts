@@ -83,6 +83,10 @@ export async function login(state: LoginFormState, formData: FormData): Promise<
     return { message: 'Invalid email or password.' };
   }
 
+  if (!existingUser.password) {
+    return { message: 'Incorrect password.' };
+  }
+
   const passwordMatch = await bcrypt.compare(validatedFields.data.password, existingUser.password);
   
   if (!passwordMatch) {

@@ -28,7 +28,7 @@ export default function RegisterPage() {
       {state?.success && (
         <div className="mb-4 p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-300 text-sm">
           {state.message}{' '}
-          <Link href="/auth/login" className="underline font-medium">
+          <Link href="/auth/client-login" className="underline font-medium">
             Log in here
           </Link>
         </div>
@@ -134,7 +134,7 @@ export default function RegisterPage() {
       {/* Login Link */}
       <p className="mt-6 text-center text-sm text-white/40">
         Already have an account?{' '}
-        <Link href="/auth/login" className="text-[#ffcb47] hover:text-[#ffcb47]/80 font-medium transition-colors">
+        <Link href="/auth/client-login" className="text-[#ffcb47] hover:text-[#ffcb47]/80 font-medium transition-colors">
           Log In
         </Link>
       </p>

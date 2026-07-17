@@ -39,6 +39,10 @@ export default function ManagerVerificationView({ projectId, projectCode, report
       const html2pdf = (await import('html2pdf.js')).default;
       
       const element = reportRef.current;
+      if (!element) {
+        throw new Error('Report container element not found.');
+      }
+
       const opt = {
         margin:       0.5,
         filename:     `${projectCode}-Valuation-Report.pdf`,
@@ -48,7 +52,7 @@ export default function ManagerVerificationView({ projectId, projectCode, report
       };
 
       // Generate PDF blob
-      const pdfBlob = await html2pdf().from(element).set(opt).output('blob');
+      const pdfBlob = await (html2pdf as any)().from(element).set(opt).output('blob');
 
       // 2. Upload to Supabase Storage
       const fileName = `${projectId}/${projectCode}-Valuation-Report.pdf`;

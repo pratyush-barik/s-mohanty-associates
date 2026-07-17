@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 
 export default async function PortalIndexPage() {
   const session = await auth();
-  if (!session?.user) redirect('/auth/login');
+  if (!session?.user) redirect('/auth/employee-login');
 
   const role = (session.user as any).role;
   if (role === 'OWNER') redirect('/portal/owner');
