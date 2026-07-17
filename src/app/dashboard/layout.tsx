@@ -54,7 +54,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
             </div>
             <form action={async () => {
               'use server';
-              await signOut({ redirectTo: 'https://smohantyassociates.vercel.app/' });
+              const redirectUrl = process.env.NODE_ENV === 'production' 
+                ? 'https://smohantyassociates.com/' 
+                : '/';
+              await signOut({ redirectTo: redirectUrl });
             }}>
               <button
                 type="submit"
