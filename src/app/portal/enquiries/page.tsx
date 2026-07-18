@@ -22,9 +22,9 @@ export default async function EnquiriesPage() {
 
   const stats = {
     total: enquiries.length,
-    unread: enquiries.filter((e) => e.status === 'UNREAD').length,
-    read: enquiries.filter((e) => e.status === 'READ').length,
-    replied: enquiries.filter((e) => e.status === 'REPLIED').length,
+    new: enquiries.filter((e) => e.status === 'NEW').length,
+    waiting: enquiries.filter((e) => e.status === 'WAITING_FOR_CLIENT').length,
+    inProgress: enquiries.filter((e) => e.status === 'IN_PROGRESS').length,
   };
 
   return (
@@ -47,21 +47,21 @@ export default async function EnquiriesPage() {
           </p>
         </div>
         <div className="card p-4">
-          <p className="text-xs font-medium text-[#6c757d] uppercase tracking-wider mb-1">Unread</p>
+          <p className="text-xs font-medium text-[#6c757d] uppercase tracking-wider mb-1">New</p>
           <p className="text-2xl font-bold text-red-500" style={{ fontFamily: 'var(--font-heading)' }}>
-            {stats.unread}
+            {stats.new}
           </p>
         </div>
         <div className="card p-4">
-          <p className="text-xs font-medium text-[#6c757d] uppercase tracking-wider mb-1">Read</p>
-          <p className="text-2xl font-bold text-[#b8860b]" style={{ fontFamily: 'var(--font-heading)' }}>
-            {stats.read}
+          <p className="text-xs font-medium text-[#6c757d] uppercase tracking-wider mb-1">Waiting on Client</p>
+          <p className="text-2xl font-bold text-orange-500" style={{ fontFamily: 'var(--font-heading)' }}>
+            {stats.waiting}
           </p>
         </div>
         <div className="card p-4">
-          <p className="text-xs font-medium text-[#6c757d] uppercase tracking-wider mb-1">Replied</p>
-          <p className="text-2xl font-bold text-green-600" style={{ fontFamily: 'var(--font-heading)' }}>
-            {stats.replied}
+          <p className="text-xs font-medium text-[#6c757d] uppercase tracking-wider mb-1">In Progress</p>
+          <p className="text-2xl font-bold text-blue-600" style={{ fontFamily: 'var(--font-heading)' }}>
+            {stats.inProgress}
           </p>
         </div>
       </div>
@@ -69,11 +69,12 @@ export default async function EnquiriesPage() {
       <EnquiryList
         enquiries={enquiries.map((e) => ({
           id: e.id,
+          ticketNumber: e.ticketNumber,
+          source: e.source,
           name: e.name,
           email: e.email,
           phone: e.phone,
           subject: e.subject,
-          message: e.message,
           senderType: e.senderType,
           organisationName: e.organisationName,
           status: e.status,

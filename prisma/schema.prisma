@@ -342,11 +342,13 @@ model AuditLog {
 }
 
 // ═══════════════════════════════════════════
-// PUBLIC ENQUIRIES (No Login Required)
+// PUBLIC ENQUIRIES & EMAIL INTEGRATION
 // ═══════════════════════════════════════════
 
 model Enquiry {
   id               String        @id @default(cuid())
+  ticketNumber     String?       @unique // e.g. SMA-154
+  source           EnquirySource @default(WEBSITE)
   name             String
   email            String
   phone            String?
@@ -354,16 +356,42 @@ model Enquiry {
   message          String
   senderType       SenderType    @default(INDIVIDUAL)
   organisationName String?
-  status           EnquiryStatus @default(UNREAD)
+  status           EnquiryStatus @default(NEW)
   createdAt        DateTime      @default(now())
+
+  messages         EnquiryMessage[]
 
   @@map("enquiries")
 }
 
+model EnquiryMessage {
+  id         String     @id @default(cuid())
+  enquiryId  String
+  sender     SenderRole
+  body       String     @db.Text
+  createdAt  DateTime   @default(now())
+
+  enquiry    Enquiry    @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+
+  @@map("enquiry_messages")
+}
+
+enum EnquirySource {
+  WEBSITE
+  EMAIL
+}
+
+enum SenderRole {
+  CLIENT
+  MANAGER
+  SYSTEM
+}
+
 enum EnquiryStatus {
-  UNREAD
-  READ
-  REPLIED
+  NEW
+  WAITING_FOR_CLIENT
+  IN_PROGRESS
+  CLOSED
 }
 
 enum SenderType {
