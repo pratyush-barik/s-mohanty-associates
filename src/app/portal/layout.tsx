@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { signOut } from '@/auth';
 import ActiveLink from '@/components/ui/ActiveLink';
+import { prisma } from '@/lib/prisma';
 
 const employeeRoles = ['OWNER', 'MANAGER', 'FIELD_EMPLOYEE', 'REPORT_EMPLOYEE'];
 
@@ -26,7 +27,16 @@ export default async function PortalLayout({ children }: { children: React.React
   else if (userRole === 'FIELD_EMPLOYEE') dashboardHref = '/portal/field-agent';
   else if (userRole === 'REPORT_EMPLOYEE') dashboardHref = '/portal/report-agent';
 
-  const navItems = [
+  let pendingTransfersCount = 0;
+  if (userRole === 'OWNER' || userRole === 'MANAGER') {
+    pendingTransfersCount = await prisma.project.count({
+      where: {
+        pendingManagerId: session.user?.id || '',
+      },
+    });
+  }
+
+  const navItems: Array<{ label: string; href: string; icon: string; badge?: number }> = [
     { label: 'Dashboard', href: dashboardHref, icon: '📊' },
     { label: 'Profile', href: '/portal/profile', icon: '👤' },
   ];
@@ -36,6 +46,7 @@ export default async function PortalLayout({ children }: { children: React.React
     navItems.push(
       { label: 'Public Enquiries', href: '/portal/enquiries', icon: '💬' },
       { label: 'Service Requests', href: '/portal/requests', icon: '📨' },
+      { label: 'Incoming Transfers', href: '/portal/transfers', icon: '🔄', badge: pendingTransfersCount > 0 ? pendingTransfersCount : undefined },
       { label: 'Projects', href: '/portal/projects', icon: '📁' },
     );
   }
@@ -100,10 +111,24 @@ export default async function PortalLayout({ children }: { children: React.React
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all overflow-hidden"
               activeClassName="!bg-white/15 !text-[#ffcb47] font-bold"
             >
-              <span className="text-base flex-shrink-0">{item.icon}</span>
-              <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-                {item.label}
+              <span className="text-base flex-shrink-0 relative">
+                {item.icon}
+                {item.badge !== undefined && (
+                  <span className="absolute -top-1 -right-1 flex h-2 w-2 group-hover:hidden">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ffcb47] opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ffcb47]"></span>
+                  </span>
+                )}
               </span>
+              
+              <div className="flex-1 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300 overflow-hidden">
+                <span className="whitespace-nowrap">{item.label}</span>
+                {item.badge !== undefined && (
+                  <span className="bg-[#ffcb47] text-[#0a1628] text-[9px] font-bold px-1.5 py-0.5 rounded-full ml-2 flex-shrink-0">
+                    {item.badge}
+                  </span>
+                )}
+              </div>
             </ActiveLink>
           ))}
         </nav>
