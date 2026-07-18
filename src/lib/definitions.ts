@@ -19,6 +19,7 @@ export const SignupFormSchema = z.object({
     .regex(/[0-9]/, { message: 'Password must contain at least one number.' })
     .trim(),
   organisationName: z.string().optional(),
+  otp: z.string().length(6, { message: 'OTP must be exactly 6 digits.' }),
 });
 
 export const LoginFormSchema = z.object({
@@ -52,6 +53,7 @@ export type SignupFormState =
         mobile?: string[];
         password?: string[];
         organisationName?: string[];
+        otp?: string[];
       };
       message?: string;
       success?: boolean;
@@ -66,6 +68,8 @@ export type LoginFormState =
       };
       message?: string;
       success?: boolean;
+      require2FA?: boolean;
+      email?: string;
     }
   | undefined;
 

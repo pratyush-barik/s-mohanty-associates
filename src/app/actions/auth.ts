@@ -16,6 +16,7 @@ export async function signup(state: SignupFormState, formData: FormData): Promis
     mobile: formData.get('mobile'),
     password: formData.get('password'),
     organisationName: formData.get('organisationName'),
+    otp: formData.get('otp'),
   });
 
   if (!validatedFields.success) {
@@ -24,7 +25,25 @@ export async function signup(state: SignupFormState, formData: FormData): Promis
     };
   }
 
-  const { clientType, name, email, mobile, password, organisationName } = validatedFields.data;
+  const { clientType, name, email, mobile, password, organisationName, otp } = validatedFields.data;
+
+  // 1. Verify email validation code
+  const otpRecord = await prisma.otp.findFirst({
+    where: {
+      email,
+      code: otp,
+      expiresAt: { gte: new Date() },
+    },
+  });
+
+  if (!otpRecord) {
+    return {
+      message: 'Invalid or expired email verification code. Please click Verify to receive a code.',
+    };
+  }
+
+  // Delete verification OTP
+  await prisma.otp.deleteMany({ where: { email } });
 
   if (clientType === 'ORGANISATION' && !organisationName) {
     return {
@@ -102,27 +121,80 @@ export async function signup(state: SignupFormState, formData: FormData): Promis
   return { success: true, message: 'Account created successfully! Please log in.' };
 }
 
+export async function requestRegistrationOtp(email: string) {
+  if (!email) return { error: 'Email address is required.' };
+
+  try {
+    // 1. Verify email does not already exist
+    const [existingClient, existingEmployee] = await Promise.all([
+      prisma.client.findUnique({ where: { email } }),
+      prisma.employee.findUnique({ where: { email } }),
+    ]);
+
+    if (existingClient || existingEmployee) {
+      return { error: 'An account with this email already exists. Please log in.' };
+    }
+
+    // 2. Generate 6-digit OTP code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 mins validity
+
+    // 3. Store OTP in DB (clearing any old ones for this email first)
+    await prisma.otp.deleteMany({ where: { email } });
+    await prisma.otp.create({
+      data: {
+        email,
+        code,
+        expiresAt,
+      },
+    });
+
+    // 4. Send email
+    const { sendMail } = await import('@/lib/mail');
+    const mailResult = await sendMail({
+      to: email,
+      subject: 'Verify Your Email - S Mohanty Associates',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #f1f3f5; border-radius: 8px;">
+          <h2 style="color: #0f2038;">S Mohanty Associates</h2>
+          <p>Thank you for starting your registration. Please use the following One-Time Password (OTP) to verify your email address. This code is valid for 5 minutes.</p>
+          <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; font-size: 24px; font-weight: bold; letter-spacing: 5px; text-align: center; color: #b8860b; border: 1px solid #e9ecef; margin: 20px 0;">
+            ${code}
+          </div>
+          <p style="color: #6c757d; font-size: 12px; margin-top: 20px;">If you did not request this verification, you can safely ignore this email.</p>
+        </div>
+      `,
+    });
+
+    if (mailResult.error) {
+      return { error: 'Failed to send verification email. Please try again.' };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to request registration OTP:', error);
+    return { error: 'An error occurred while generating the OTP.' };
+  }
+}
+
 export async function login(state: LoginFormState, formData: FormData): Promise<LoginFormState> {
   const portal = formData.get('portal');
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
   const otp = formData.get('otp') as string;
 
-  if (!email) {
-    return { message: 'Email address is required.' };
+  if (!email || !password) {
+    return { message: 'Email and password are required.' };
   }
 
-  // 1. If password login, validate inputs
-  if (!otp) {
-    const validatedFields = LoginFormSchema.safeParse({ email, password });
-    if (!validatedFields.success) {
-      return {
-        errors: validatedFields.error.flatten().fieldErrors,
-      };
-    }
+  const validatedFields = LoginFormSchema.safeParse({ email, password });
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+    };
   }
 
-  // Strict Segregation Check BEFORE signIn
+  // Strict Segregation & Password Verification BEFORE signIn
   if (portal === 'CLIENT') {
     const existingClient = await prisma.client.findUnique({
       where: { email },
@@ -132,11 +204,9 @@ export async function login(state: LoginFormState, formData: FormData): Promise<
       return { message: 'Client does not exist. Please register.' };
     }
 
-    if (!otp) {
-      const passwordMatch = await bcrypt.compare(password, existingClient.password);
-      if (!passwordMatch) {
-        return { message: 'Incorrect password.' };
-      }
+    const passwordMatch = await bcrypt.compare(password, existingClient.password);
+    if (!passwordMatch) {
+      return { message: 'Incorrect password.' };
     }
   } else {
     const existingEmployee = await prisma.employee.findUnique({
@@ -151,19 +221,26 @@ export async function login(state: LoginFormState, formData: FormData): Promise<
       return { message: 'This employee account is inactive.' };
     }
 
-    if (!otp) {
-      const passwordMatch = await bcrypt.compare(password, existingEmployee.password);
-      if (!passwordMatch) {
-        return { message: 'Incorrect password.' };
-      }
+    const passwordMatch = await bcrypt.compare(password, existingEmployee.password);
+    if (!passwordMatch) {
+      return { message: 'Incorrect password.' };
     }
+  }
+
+  // 2. If password matched but no OTP code provided yet, generate and send OTP for 2FA
+  if (!otp) {
+    const otpResult = await requestOtp(email, portal as 'CLIENT' | 'EMPLOYEE');
+    if (otpResult.error) {
+      return { message: otpResult.error };
+    }
+    return { success: true, require2FA: true, email };
   }
 
   try {
     await signIn('credentials', {
       email,
-      password: password || '',
-      otp: otp || '',
+      password,
+      otp,
       portal: portal as string,
       redirect: false,
     });

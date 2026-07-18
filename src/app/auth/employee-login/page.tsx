@@ -1,82 +1,189 @@
 'use client';
 
-import { useActionState } from 'react';
-import { login } from '@/app/actions/auth';
+import { useActionState, useState, useEffect } from 'react';
+import { login, requestOtp } from '@/app/actions/auth';
 import Link from 'next/link';
 
 export default function EmployeeLoginPage() {
   const [state, action, pending] = useActionState(login, undefined);
+  
+  // 2FA state management
+  const [require2FA, setRequire2FA] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [timer, setTimer] = useState(0);
+  const [resending, setResending] = useState(false);
+  const [resendError, setResendError] = useState<string | null>(null);
+  const [resendSuccess, setResendSuccess] = useState<string | null>(null);
+
+  // Sync state transitions when server action responds
+  useEffect(() => {
+    if (state?.require2FA) {
+      setRequire2FA(true);
+      if (state.email) {
+        setEmail(state.email);
+      }
+      setTimer(90); // 90 seconds limit for 2FA OTP
+    }
+  }, [state]);
+
+  // Countdown timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [timer]);
+
+  const handleResendOtp = async () => {
+    setResending(true);
+    setResendError(null);
+    setResendSuccess(null);
+    
+    const result = await requestOtp(email, 'EMPLOYEE');
+    if (result.error) {
+      setResendError(result.error);
+    } else {
+      setResendSuccess('A new 2FA code has been sent to your work email.');
+      setTimer(90); // Restart 90s countdown
+    }
+    setResending(false);
+  };
 
   return (
-    <div className="glass rounded-2xl p-8 border border-[#b8860b]/30">
+    <div className="glass rounded-2xl p-8 border border-[#b8860b]/30 max-w-md w-full mx-auto">
       <div className="flex justify-center mb-4">
         <span className="px-3 py-1 bg-[#b8860b]/20 text-[#ffcb47] text-[10px] font-bold uppercase tracking-widest rounded-full border border-[#b8860b]/30">
           Staff Portal
         </span>
       </div>
+      
       <h1
         className="text-2xl font-bold text-white text-center mb-2"
         style={{ fontFamily: 'var(--font-heading)' }}
       >
-        Employee Login
+        {require2FA ? 'Two-Factor Authentication' : 'Employee Login'}
       </h1>
+      
       <p className="text-white/50 text-sm text-center mb-6">
-        Enter your credentials to access the internal system
+        {require2FA 
+          ? `Enter the 6-digit security code sent to ${email}`
+          : 'Enter your credentials to access the internal system'
+        }
       </p>
 
-      {state?.message && (
+      {state?.message && !state.require2FA && (
         <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm">
           {state.message}
         </div>
       )}
 
+      {resendError && (
+        <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm">
+          {resendError}
+        </div>
+      )}
+
+      {resendSuccess && (
+        <div className="mb-4 p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-300 text-sm">
+          {resendSuccess}
+        </div>
+      )}
+
       <form action={action} className="space-y-4">
         <input type="hidden" name="portal" value="EMPLOYEE" />
-        {/* Email */}
-        <div>
-          <label htmlFor="login-email" className="block text-sm font-medium text-white/70 mb-1.5">
-            Work Email Address
-          </label>
-          <input
-            id="login-email"
-            name="email"
-            type="email"
-            required
-            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
-            placeholder="employee@smohantyassociates.com"
-          />
-          {state?.errors?.email && (
-             <p className="mt-1 text-xs text-red-400">{state.errors.email[0]}</p>
-          )}
-        </div>
+        
+        {/* Pass fields hidden if in 2FA mode to satisfy NextAuth credentials submission */}
+        {require2FA ? (
+          <>
+            <input type="hidden" name="email" value={email} />
+            <input type="hidden" name="password" value={password} />
+            
+            {/* OTP Verification Input with 90s Timer limits */}
+            <div className="space-y-2 bg-white/5 p-4 rounded-2xl border border-white/10">
+              <div className="flex justify-between items-center">
+                <label htmlFor="login-otp" className="block text-sm font-medium text-white/70">
+                  Security Code (6 digits)
+                </label>
+                {timer > 0 ? (
+                  <span className="text-xs text-[#ffcb47] font-mono">
+                    Resend in {timer}s
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    disabled={resending}
+                    className="text-xs text-[#ffcb47] font-semibold hover:underline disabled:opacity-50"
+                  >
+                    {resending ? 'Resending...' : 'Resend OTP'}
+                  </button>
+                )}
+              </div>
+              
+              <input
+                id="login-otp"
+                name="otp"
+                type="text"
+                required
+                maxLength={6}
+                pattern="\d{6}"
+                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-center font-mono tracking-widest text-sm placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
+                placeholder="000000"
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Email Address */}
+            <div>
+              <label htmlFor="login-email" className="block text-sm font-medium text-white/70 mb-1.5">
+                Work Email Address
+              </label>
+              <input
+                id="login-email"
+                name="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
+                placeholder="employee@smohantyassociates.com"
+              />
+            </div>
 
-        {/* Password */}
-        <div>
-          <label htmlFor="login-password" className="block text-sm font-medium text-white/70 mb-1.5">
-            Password
-          </label>
-          <input
-            id="login-password"
-            name="password"
-            type="password"
-            required
-            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
-            placeholder="Enter your password"
-          />
-          {state?.errors?.password && (
-            <p className="mt-1 text-xs text-red-400">{state.errors.password[0]}</p>
-          )}
-        </div>
+            {/* Password */}
+            <div>
+              <label htmlFor="login-password" className="block text-sm font-medium text-white/70 mb-1.5">
+                Password
+              </label>
+              <input
+                id="login-password"
+                name="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
+                placeholder="Enter your password"
+              />
+            </div>
 
-        {/* Forgot Password */}
-        <div className="flex justify-end">
-          <Link
-            href="/auth/forgot-password"
-            className="text-xs text-[#ffcb47]/70 hover:text-[#ffcb47] transition-colors"
-          >
-            Forgot Password?
-          </Link>
-        </div>
+            <div className="flex justify-end">
+              <Link
+                href="/auth/forgot-password"
+                className="text-xs text-[#ffcb47]/70 hover:text-[#ffcb47] transition-colors"
+              >
+                Forgot Password?
+              </Link>
+            </div>
+          </>
+        )}
 
         {/* Submit */}
         <button
@@ -90,10 +197,10 @@ export default function EmployeeLoginPage() {
                 <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
                 <path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" fill="currentColor" className="opacity-75" />
               </svg>
-              Logging In...
+              {require2FA ? 'Verifying Code...' : 'Logging In...'}
             </span>
           ) : (
-            'Log In to Portal'
+            require2FA ? 'Confirm & Log In' : 'Log In'
           )}
         </button>
       </form>
