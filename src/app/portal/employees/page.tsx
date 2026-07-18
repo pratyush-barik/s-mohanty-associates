@@ -17,10 +17,11 @@ export default async function ManageEmployeesPage() {
     redirect('/portal');
   }
 
-  // Managers can only see/manage FIELD_EMPLOYEE and REPORT_EMPLOYEE roles
+  // Managers can only see/manage FIELD_EMPLOYEE and REPORT_EMPLOYEE roles.
+  // Owners can manage MANAGERS, FIELD_EMPLOYEES, and REPORT_EMPLOYEES, but do not see themselves (OWNER).
   const where = currentUser.role === 'MANAGER'
     ? { role: { in: ['FIELD_EMPLOYEE', 'REPORT_EMPLOYEE'] as any } }
-    : undefined;
+    : { role: { in: ['MANAGER', 'FIELD_EMPLOYEE', 'REPORT_EMPLOYEE'] as any } };
 
   const employees = await prisma.employee.findMany({
     where,
