@@ -3,7 +3,11 @@
 import { useState, type FormEvent } from 'react';
 import { createEmployee } from '@/app/actions/employee';
 
-export default function CreateEmployeeForm() {
+interface CreateEmployeeFormProps {
+  currentUserRole: string;
+}
+
+export default function CreateEmployeeForm({ currentUserRole }: CreateEmployeeFormProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -35,10 +39,15 @@ export default function CreateEmployeeForm() {
         className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-[#f8f9fa] transition-colors"
       >
         <div className="flex items-center gap-3">
-          <span className="text-xl">➕</span>
+          <span className="text-xl">👥</span>
           <div>
             <p className="text-sm font-bold text-[#0f2038]">Create New Employee</p>
-            <p className="text-xs text-[#6c757d]">Add a manager, field agent, or report staff member</p>
+            <p className="text-xs text-[#6c757d]">
+              {currentUserRole === 'OWNER' 
+                ? 'Add a manager, field agent, or report staff member' 
+                : 'Add a field agent or report staff member'
+              }
+            </p>
           </div>
         </div>
         <svg className={`w-5 h-5 text-[#adb5bd] transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -113,7 +122,7 @@ export default function CreateEmployeeForm() {
                   className="w-full px-3 py-2.5 rounded-xl border border-[#dee2e6] bg-white text-sm text-[#212529] focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all"
                 >
                   <option value="">Select role</option>
-                  <option value="MANAGER">Manager</option>
+                  {currentUserRole === 'OWNER' && <option value="MANAGER">Manager</option>}
                   <option value="FIELD_EMPLOYEE">Field Inspector</option>
                   <option value="REPORT_EMPLOYEE">Report Analyst</option>
                 </select>
