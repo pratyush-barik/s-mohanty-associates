@@ -58,14 +58,14 @@ export default async function PortalLayout({ children }: { children: React.React
   return (
     <div className="min-h-screen flex bg-[#f8f9fa]">
       {/* Sidebar */}
-      <aside className="w-64 bg-[#0a1628] text-white flex flex-col flex-shrink-0 sticky top-0 h-screen">
+      <aside className="w-20 hover:w-64 bg-[#0a1628] text-white flex flex-col flex-shrink-0 sticky top-0 h-screen transition-all duration-300 ease-in-out group overflow-hidden z-45 shadow-xl">
         {/* Logo */}
-        <div className="px-6 py-5 border-b border-white/10">
+        <div className="px-5 py-5 border-b border-white/10">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#b8860b] to-[#c9952c] flex items-center justify-center font-bold text-white">
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#b8860b] to-[#c9952c] flex flex-shrink-0 items-center justify-center font-bold text-white">
               S
             </div>
-            <div>
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 overflow-hidden whitespace-nowrap">
               <div className="font-bold text-base leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>
                 S Mohanty
               </div>
@@ -77,12 +77,12 @@ export default async function PortalLayout({ children }: { children: React.React
         </div>
 
         {/* User Info */}
-        <div className="px-6 py-4 border-b border-white/10">
+        <div className="px-5 py-4 border-b border-white/10">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#1e3a5f] to-[#2d4f6f] flex items-center justify-center text-white font-bold">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#1e3a5f] to-[#2d4f6f] flex flex-shrink-0 items-center justify-center text-white font-bold">
               {session.user.name?.charAt(0).toUpperCase()}
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 overflow-hidden whitespace-nowrap">
               <p className="text-sm font-medium truncate">{session.user.name}</p>
               <p className="text-[10px] text-[#ffcb47] font-medium uppercase tracking-wider">
                 {roleLabels[userRole] || userRole}
@@ -97,11 +97,13 @@ export default async function PortalLayout({ children }: { children: React.React
             <ActiveLink
               key={item.href}
               href={item.href}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all overflow-hidden"
               activeClassName="!bg-white/15 !text-[#ffcb47] font-bold"
             >
-              <span className="text-base">{item.icon}</span>
-              {item.label}
+              <span className="text-base flex-shrink-0">{item.icon}</span>
+              <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+                {item.label}
+              </span>
             </ActiveLink>
           ))}
         </nav>
@@ -117,10 +119,12 @@ export default async function PortalLayout({ children }: { children: React.React
           }}>
             <button
               type="submit"
-              className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-white/50 hover:text-red-400 hover:bg-red-500/10 transition-all"
+              className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-white/50 hover:text-red-400 hover:bg-red-500/10 transition-all overflow-hidden"
             >
-              <span className="text-base">🚪</span>
-              Logout
+              <span className="text-base flex-shrink-0">🚪</span>
+              <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+                Logout
+              </span>
             </button>
           </form>
         </div>

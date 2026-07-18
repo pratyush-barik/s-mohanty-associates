@@ -10,10 +10,12 @@ import { AuthError } from 'next-auth';
 export async function signup(state: SignupFormState, formData: FormData): Promise<SignupFormState> {
   // Validate form fields
   const validatedFields = SignupFormSchema.safeParse({
+    clientType: formData.get('clientType'),
     name: formData.get('name'),
     email: formData.get('email'),
     mobile: formData.get('mobile'),
     password: formData.get('password'),
+    organisationName: formData.get('organisationName'),
   });
 
   if (!validatedFields.success) {
@@ -22,7 +24,13 @@ export async function signup(state: SignupFormState, formData: FormData): Promis
     };
   }
 
-  const { name, email, mobile, password } = validatedFields.data;
+  const { clientType, name, email, mobile, password, organisationName } = validatedFields.data;
+
+  if (clientType === 'ORGANISATION' && !organisationName) {
+    return {
+      message: 'Organisation name is required for Organisation accounts.',
+    };
+  }
 
   // Check if user already exists
   const [existingClient, existingEmployee] = await Promise.all([
@@ -50,21 +58,40 @@ export async function signup(state: SignupFormState, formData: FormData): Promis
     exists = await prisma.client.findUnique({ where: { clientId } });
   }
 
-  // Create client
-  const user = await prisma.client.create({
-    data: {
-      email,
-      password: hashedPassword,
-      clientType: 'INDIVIDUAL',
-      clientId,
-      individual: {
-        create: {
-          name,
-          mobile: mobile || null,
+  // Create client with appropriate profile
+  let user;
+  if (clientType === 'INDIVIDUAL') {
+    user = await prisma.client.create({
+      data: {
+        email,
+        password: hashedPassword,
+        clientType: 'INDIVIDUAL',
+        clientId,
+        individual: {
+          create: {
+            name,
+            mobile: mobile || null,
+          },
         },
       },
-    },
-  });
+    });
+  } else {
+    user = await prisma.client.create({
+      data: {
+        email,
+        password: hashedPassword,
+        clientType: 'ORGANISATION',
+        clientId,
+        organisation: {
+          create: {
+            organisationName: organisationName!,
+            contactName: name,
+            mobile: mobile || null,
+          },
+        },
+      },
+    });
+  }
 
   if (!user) {
     return {
@@ -77,34 +104,43 @@ export async function signup(state: SignupFormState, formData: FormData): Promis
 
 export async function login(state: LoginFormState, formData: FormData): Promise<LoginFormState> {
   const portal = formData.get('portal');
-  const validatedFields = LoginFormSchema.safeParse({
-    email: formData.get('email'),
-    password: formData.get('password'),
-  });
+  const email = formData.get('email') as string;
+  const password = formData.get('password') as string;
+  const otp = formData.get('otp') as string;
 
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-    };
+  if (!email) {
+    return { message: 'Email address is required.' };
+  }
+
+  // 1. If password login, validate inputs
+  if (!otp) {
+    const validatedFields = LoginFormSchema.safeParse({ email, password });
+    if (!validatedFields.success) {
+      return {
+        errors: validatedFields.error.flatten().fieldErrors,
+      };
+    }
   }
 
   // Strict Segregation Check BEFORE signIn
   if (portal === 'CLIENT') {
     const existingClient = await prisma.client.findUnique({
-      where: { email: validatedFields.data.email },
+      where: { email },
     });
 
     if (!existingClient) {
       return { message: 'Client does not exist. Please register.' };
     }
 
-    const passwordMatch = await bcrypt.compare(validatedFields.data.password, existingClient.password);
-    if (!passwordMatch) {
-      return { message: 'Incorrect password.' };
+    if (!otp) {
+      const passwordMatch = await bcrypt.compare(password, existingClient.password);
+      if (!passwordMatch) {
+        return { message: 'Incorrect password.' };
+      }
     }
   } else {
     const existingEmployee = await prisma.employee.findUnique({
-      where: { email: validatedFields.data.email },
+      where: { email },
     });
 
     if (!existingEmployee) {
@@ -115,16 +151,19 @@ export async function login(state: LoginFormState, formData: FormData): Promise<
       return { message: 'This employee account is inactive.' };
     }
 
-    const passwordMatch = await bcrypt.compare(validatedFields.data.password, existingEmployee.password);
-    if (!passwordMatch) {
-      return { message: 'Incorrect password.' };
+    if (!otp) {
+      const passwordMatch = await bcrypt.compare(password, existingEmployee.password);
+      if (!passwordMatch) {
+        return { message: 'Incorrect password.' };
+      }
     }
   }
 
   try {
     await signIn('credentials', {
-      email: validatedFields.data.email,
-      password: validatedFields.data.password,
+      email,
+      password: password || '',
+      otp: otp || '',
       portal: portal as string,
       redirect: false,
     });
@@ -155,4 +194,172 @@ export async function login(state: LoginFormState, formData: FormData): Promise<
 
 export async function logout() {
   // signOut handled client-side via next-auth
+}
+
+export async function updateClientProfile(formData: FormData) {
+  const { revalidatePath } = await import('next/cache');
+  const session = await auth();
+  if (!session?.user?.id || (session.user as any).role !== 'CLIENT') {
+    return { error: 'Unauthorized' };
+  }
+
+  const clientType = formData.get('clientType') as 'INDIVIDUAL' | 'ORGANISATION';
+  const name = formData.get('name') as string;
+  const mobile = formData.get('mobile') as string;
+  const email = formData.get('email') as string;
+  const organisationName = formData.get('organisationName') as string;
+
+  if (!email || !name || !clientType) {
+    return { error: 'Required fields must be completed.' };
+  }
+
+  try {
+    // 1. Check duplicate email (excluding self)
+    const [dupClient, dupEmployee] = await Promise.all([
+      prisma.client.findFirst({
+        where: { email, NOT: { id: session.user.id } },
+      }),
+      prisma.employee.findFirst({
+        where: { email },
+      }),
+    ]);
+
+    if (dupClient || dupEmployee) {
+      return { error: 'This email is already in use by another account.' };
+    }
+
+    // 2. Fetch current client data
+    const currentClient = await prisma.client.findUnique({
+      where: { id: session.user.id },
+      include: { individual: true, organisation: true },
+    });
+
+    if (!currentClient) {
+      return { error: 'Client profile not found.' };
+    }
+
+    // 3. Perform type-specific transaction updates
+    await prisma.$transaction(async (tx) => {
+      // Update core client attributes
+      await tx.client.update({
+        where: { id: session.user.id },
+        data: {
+          email,
+          clientType,
+        },
+      });
+
+      // Handle type transition or updates
+      if (clientType === 'INDIVIDUAL') {
+        // Delete organisation profile if it existed
+        if (currentClient.organisation) {
+          await tx.organisationProfile.delete({ where: { clientId: session.user.id } });
+        }
+
+        // Upsert individual profile
+        await tx.individualProfile.upsert({
+          where: { clientId: session.user.id },
+          update: {
+            name,
+            mobile: mobile || null,
+          },
+          create: {
+            clientId: session.user.id,
+            name,
+            mobile: mobile || null,
+          },
+        });
+      } else {
+        // Delete individual profile if it existed
+        if (currentClient.individual) {
+          await tx.individualProfile.delete({ where: { clientId: session.user.id } });
+        }
+
+        // Upsert organisation profile
+        await tx.organisationProfile.upsert({
+          where: { clientId: session.user.id },
+          update: {
+            organisationName,
+            contactName: name,
+            mobile: mobile || null,
+          },
+          create: {
+            clientId: session.user.id,
+            organisationName,
+            contactName: name,
+            mobile: mobile || null,
+          },
+        });
+      }
+    });
+
+    revalidatePath('/dashboard/profile');
+    revalidatePath('/dashboard');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to update client profile:', error);
+    return { error: 'An error occurred while updating your profile.' };
+  }
+}
+
+export async function requestOtp(email: string, portal: 'CLIENT' | 'EMPLOYEE') {
+  if (!email) return { error: 'Email address is required.' };
+
+  try {
+    // 1. Verify that user exists in their respective portal
+    if (portal === 'CLIENT') {
+      const client = await prisma.client.findUnique({ where: { email } });
+      if (!client) {
+        return { error: 'No client account found with this email. Please register.' };
+      }
+    } else {
+      const employee = await prisma.employee.findUnique({ where: { email } });
+      if (!employee) {
+        return { error: 'No employee account found with this email.' };
+      }
+      if (!employee.isActive) {
+        return { error: 'This employee account is inactive.' };
+      }
+    }
+
+    // 2. Generate 6-digit OTP code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 mins validity
+
+    // 3. Store OTP in DB (clearing any old ones for this email first)
+    await prisma.otp.deleteMany({ where: { email } });
+    await prisma.otp.create({
+      data: {
+        email,
+        code,
+        expiresAt,
+      },
+    });
+
+    // 4. Send email
+    const { sendMail } = await import('@/lib/mail');
+    const mailResult = await sendMail({
+      to: email,
+      subject: 'Your S Mohanty Associates Login OTP',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #f1f3f5; border-radius: 8px;">
+          <h2 style="color: #0f2038;">S Mohanty Associates</h2>
+          <p>Please use the following One-Time Password (OTP) to log in to your account. This code is valid for 5 minutes.</p>
+          <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; font-size: 24px; font-weight: bold; letter-spacing: 5px; text-align: center; color: #b8860b; border: 1px solid #e9ecef; margin: 20px 0;">
+            ${code}
+          </div>
+          <p style="color: #6c757d; font-size: 12px; margin-top: 20px;">If you did not request this login code, you can safely ignore this email.</p>
+        </div>
+      `,
+    });
+
+    if (mailResult.error) {
+      return { error: 'Failed to send OTP email. Please try again.' };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to request OTP:', error);
+    return { error: 'An error occurred while generating the OTP.' };
+  }
 }

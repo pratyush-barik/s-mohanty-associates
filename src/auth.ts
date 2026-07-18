@@ -21,16 +21,33 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
+        otp: { label: 'OTP', type: 'text' },
         portal: { label: 'Portal', type: 'text' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        if (!credentials?.email) {
           return null;
         }
 
         const email = credentials.email as string;
         const password = credentials.password as string;
+        const otp = credentials.otp as string;
         const portal = (credentials.portal as string || '').toUpperCase();
+
+        // 1. Verify OTP if provided
+        if (otp) {
+          const otpRecord = await prisma.otp.findFirst({
+            where: {
+              email,
+              code: otp,
+              expiresAt: { gte: new Date() },
+            },
+          });
+          if (!otpRecord) return null;
+          
+          // Clear OTPs on success
+          await prisma.otp.deleteMany({ where: { email } });
+        }
 
         if (portal === 'CLIENT') {
           const client = await prisma.client.findUnique({
@@ -38,12 +55,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             include: { individual: true, organisation: true },
           });
 
-          if (!client || !client.password) {
+          if (!client) {
             return null;
           }
 
-          const isValid = await bcrypt.compare(password, client.password);
-          if (!isValid) return null;
+          // Verify password if OTP wasn't used
+          if (!otp) {
+            if (!client.password) return null;
+            const isValid = await bcrypt.compare(password, client.password);
+            if (!isValid) return null;
+          }
 
           const name = client.clientType === 'INDIVIDUAL'
             ? client.individual?.name
@@ -60,12 +81,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             where: { email },
           });
 
-          if (!employee || !employee.password || !employee.isActive) {
+          if (!employee || !employee.isActive) {
             return null;
           }
 
-          const isValid = await bcrypt.compare(password, employee.password);
-          if (!isValid) return null;
+          // Verify password if OTP wasn't used
+          if (!otp) {
+            if (!employee.password) return null;
+            const isValid = await bcrypt.compare(password, employee.password);
+            if (!isValid) return null;
+          }
 
           return {
             id: employee.id,

@@ -42,6 +42,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <ActiveLink href="/dashboard/projects" className="text-sm text-[#495057] hover:text-[#0f2038] font-medium transition-colors" activeClassName="!text-[#b8860b] font-bold">
               My Projects
             </ActiveLink>
+            <ActiveLink href="/dashboard/profile" className="text-sm text-[#495057] hover:text-[#0f2038] font-medium transition-colors" activeClassName="!text-[#b8860b] font-bold">
+              Profile
+            </ActiveLink>
           </div>
 
           {/* User Menu */}

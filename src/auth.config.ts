@@ -70,7 +70,12 @@ export default {
 
       // Protect dashboard routes
       if (dashboardRoutes) {
-        return isLoggedIn;
+        if (!isLoggedIn) return false;
+        if (userRole !== 'CLIENT') {
+          // Send employees to portal dashboard matching their role
+          return Response.redirect(new URL('/portal', nextUrl));
+        }
+        return true;
       }
 
       // Protect portal routes (employee roles only)

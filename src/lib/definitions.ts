@@ -1,6 +1,7 @@
 import * as z from 'zod';
 
 export const SignupFormSchema = z.object({
+  clientType: z.enum(['INDIVIDUAL', 'ORGANISATION']).default('INDIVIDUAL'),
   name: z
     .string()
     .min(2, { message: 'Name must be at least 2 characters long.' })
@@ -17,6 +18,7 @@ export const SignupFormSchema = z.object({
     .regex(/[a-zA-Z]/, { message: 'Password must contain at least one letter.' })
     .regex(/[0-9]/, { message: 'Password must contain at least one number.' })
     .trim(),
+  organisationName: z.string().optional(),
 });
 
 export const LoginFormSchema = z.object({
@@ -44,10 +46,12 @@ export const ServiceRequestSchema = z.object({
 export type SignupFormState =
   | {
       errors?: {
+        clientType?: string[];
         name?: string[];
         email?: string[];
         mobile?: string[];
         password?: string[];
+        organisationName?: string[];
       };
       message?: string;
       success?: boolean;

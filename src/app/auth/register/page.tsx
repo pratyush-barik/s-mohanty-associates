@@ -1,11 +1,12 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 import { signup } from '@/app/actions/auth';
 import Link from 'next/link';
 
 export default function RegisterPage() {
   const [state, action, pending] = useActionState(signup, undefined);
+  const [clientType, setClientType] = useState<'INDIVIDUAL' | 'ORGANISATION'>('INDIVIDUAL');
 
   return (
     <div className="glass rounded-2xl p-8 border border-white/10">
@@ -34,11 +35,53 @@ export default function RegisterPage() {
         </div>
       )}
 
+      <div className="flex bg-white/5 p-1 rounded-xl mb-6">
+        <button
+          type="button"
+          onClick={() => setClientType('INDIVIDUAL')}
+          className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-colors ${
+            clientType === 'INDIVIDUAL' ? 'bg-[#b8860b] text-white' : 'text-white/60 hover:text-white'
+          }`}
+        >
+          Individual
+        </button>
+        <button
+          type="button"
+          onClick={() => setClientType('ORGANISATION')}
+          className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-colors ${
+            clientType === 'ORGANISATION' ? 'bg-[#b8860b] text-white' : 'text-white/60 hover:text-white'
+          }`}
+        >
+          Organisation
+        </button>
+      </div>
+
       <form action={action} className="space-y-4">
+        <input type="hidden" name="clientType" value={clientType} />
+
+        {clientType === 'ORGANISATION' && (
+          <div className="animate-fade-in">
+            <label htmlFor="register-organisationName" className="block text-sm font-medium text-white/70 mb-1.5">
+              Organisation Name
+            </label>
+            <input
+              id="register-organisationName"
+              name="organisationName"
+              type="text"
+              required
+              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
+              placeholder="e.g. State Bank of India, LIC Housing, etc."
+            />
+            {state?.errors?.organisationName && (
+              <p className="mt-1 text-xs text-red-400">{state.errors.organisationName[0]}</p>
+            )}
+          </div>
+        )}
+
         {/* Full Name */}
         <div>
           <label htmlFor="register-name" className="block text-sm font-medium text-white/70 mb-1.5">
-            Full Name
+            {clientType === 'ORGANISATION' ? 'Contact Person Name' : 'Full Name'}
           </label>
           <input
             id="register-name"
@@ -46,7 +89,7 @@ export default function RegisterPage() {
             type="text"
             required
             className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
-            placeholder="Enter your full name"
+            placeholder="Enter full name"
           />
           {state?.errors?.name && (
             <p className="mt-1 text-xs text-red-400">{state.errors.name[0]}</p>
