@@ -280,32 +280,18 @@ export async function updateClientProfile(formData: FormData) {
     return { error: 'Unauthorized' };
   }
 
-  const clientType = formData.get('clientType') as 'INDIVIDUAL' | 'ORGANISATION';
   const name = formData.get('name') as string;
   const mobile = formData.get('mobile') as string;
   const email = formData.get('email') as string;
   const organisationName = formData.get('organisationName') as string;
+  const otp = formData.get('otp') as string;
 
-  if (!email || !name || !clientType) {
+  if (!email || !name) {
     return { error: 'Required fields must be completed.' };
   }
 
   try {
-    // 1. Check duplicate email (excluding self)
-    const [dupClient, dupEmployee] = await Promise.all([
-      prisma.client.findFirst({
-        where: { email, NOT: { id: session.user.id } },
-      }),
-      prisma.employee.findFirst({
-        where: { email },
-      }),
-    ]);
-
-    if (dupClient || dupEmployee) {
-      return { error: 'This email is already in use by another account.' };
-    }
-
-    // 2. Fetch current client data
+    // 1. Fetch current client data to get connected email and profile type
     const currentClient = await prisma.client.findUnique({
       where: { id: session.user.id },
       include: { individual: true, organisation: true },
@@ -315,53 +301,100 @@ export async function updateClientProfile(formData: FormData) {
       return { error: 'Client profile not found.' };
     }
 
-    // 3. Perform type-specific transaction updates
+    const connectedEmail = currentClient.email;
+    const clientType = currentClient.clientType; // Lock clientType from DB directly
+
+    // 2. Check if OTP is provided. If not, generate and send OTP to the currently connected email
+    if (!otp) {
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 mins validity
+
+      await prisma.otp.deleteMany({ where: { email: connectedEmail } });
+      await prisma.otp.create({
+        data: {
+          email: connectedEmail,
+          code,
+          expiresAt,
+        },
+      });
+
+      const { sendMail } = await import('@/lib/mail');
+      const mailResult = await sendMail({
+        to: connectedEmail,
+        subject: 'Confirm Profile Changes - S Mohanty Associates',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #f1f3f5; border-radius: 8px;">
+            <h2 style="color: #0f2038;">S Mohanty Associates</h2>
+            <p>You have requested to update your profile details. Please enter the following One-Time Password (OTP) to confirm and apply these changes. This code is valid for 5 minutes.</p>
+            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; font-size: 24px; font-weight: bold; letter-spacing: 5px; text-align: center; color: #b8860b; border: 1px solid #e9ecef; margin: 20px 0;">
+              ${code}
+            </div>
+            <p style="color: #6c757d; font-size: 12px; margin-top: 20px;">If you did not request this update, please ignore this message.</p>
+          </div>
+        `,
+      });
+
+      if (mailResult.error) {
+        return { error: 'Failed to send verification code. Please try again.' };
+      }
+
+      return { success: true, requireVerification: true, email: connectedEmail };
+    }
+
+    // 3. OTP is provided. Verify it against database
+    const otpRecord = await prisma.otp.findFirst({
+      where: {
+        email: connectedEmail,
+        code: otp,
+        expiresAt: { gte: new Date() },
+      },
+    });
+
+    if (!otpRecord) {
+      return { error: 'Invalid or expired verification code.' };
+    }
+
+    // Clear verification OTP
+    await prisma.otp.deleteMany({ where: { email: connectedEmail } });
+
+    // 4. Check duplicate email if they are trying to change it
+    if (email !== connectedEmail) {
+      const [dupClient, dupEmployee] = await Promise.all([
+        prisma.client.findFirst({
+          where: { email, NOT: { id: session.user.id } },
+        }),
+        prisma.employee.findFirst({
+          where: { email },
+        }),
+      ]);
+
+      if (dupClient || dupEmployee) {
+        return { error: 'This email is already in use by another account.' };
+      }
+    }
+
+    // 5. Update database records
     await prisma.$transaction(async (tx) => {
-      // Update core client attributes
+      // Update core client email
       await tx.client.update({
         where: { id: session.user.id },
         data: {
           email,
-          clientType,
         },
       });
 
-      // Handle type transition or updates
       if (clientType === 'INDIVIDUAL') {
-        // Delete organisation profile if it existed
-        if (currentClient.organisation) {
-          await tx.organisationProfile.delete({ where: { clientId: session.user.id } });
-        }
-
-        // Upsert individual profile
-        await tx.individualProfile.upsert({
+        await tx.individualProfile.update({
           where: { clientId: session.user.id },
-          update: {
-            name,
-            mobile: mobile || null,
-          },
-          create: {
-            clientId: session.user.id,
+          data: {
             name,
             mobile: mobile || null,
           },
         });
       } else {
-        // Delete individual profile if it existed
-        if (currentClient.individual) {
-          await tx.individualProfile.delete({ where: { clientId: session.user.id } });
-        }
-
-        // Upsert organisation profile
-        await tx.organisationProfile.upsert({
+        await tx.organisationProfile.update({
           where: { clientId: session.user.id },
-          update: {
-            organisationName,
-            contactName: name,
-            mobile: mobile || null,
-          },
-          create: {
-            clientId: session.user.id,
+          data: {
             organisationName,
             contactName: name,
             mobile: mobile || null,
