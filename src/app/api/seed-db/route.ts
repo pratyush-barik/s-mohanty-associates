@@ -3,6 +3,13 @@ import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 
 export async function GET() {
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json(
+      { success: false, error: 'Database seeding is disabled in production.' },
+      { status: 403 }
+    );
+  }
+
   try {
     // 1. Clear any existing data
     await prisma.auditLog.deleteMany();
