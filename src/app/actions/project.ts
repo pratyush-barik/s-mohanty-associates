@@ -8,7 +8,7 @@ import { revalidatePath } from 'next/cache';
  * Assign a Field Employee and Report Employee to a Project.
  * Only Managers and Owners can perform this action.
  */
-export async function assignProjectStaff(
+export async function updateProjectTeam(
   projectId: string,
   fieldEmployeeId: string | null,
   reportEmployeeId: string | null
@@ -18,19 +18,16 @@ export async function assignProjectStaff(
     return { error: 'You must be logged in.' };
   }
 
-  // Verify caller is Owner or Manager
   const caller = await prisma.employee.findUnique({
     where: { id: session.user.id },
     select: { role: true },
   });
 
   if (!caller || !['OWNER', 'MANAGER'].includes(caller.role)) {
-    return { error: 'You do not have permission to assign staff.' };
+    return { error: 'You do not have permission to manage team assignments.' };
   }
 
   try {
-    // Determine the new status
-    // If we are assigning staff, it moves to ASSIGNED (if it was PENDING_REVIEW or APPROVED)
     const currentProject = await prisma.project.findUnique({
       where: { id: projectId },
       select: { status: true },
@@ -40,22 +37,15 @@ export async function assignProjectStaff(
       return { error: 'Project not found.' };
     }
 
-    let newStatus = currentProject.status;
-    if (currentProject.status === 'PENDING_REVIEW' || currentProject.status === 'APPROVED') {
-      newStatus = 'ASSIGNED';
-    }
-
     await prisma.project.update({
       where: { id: projectId },
       data: {
         fieldEmployeeId,
         reportEmployeeId,
-        assignedManagerId: session.user.id, // The manager who assigned them takes ownership
-        status: newStatus,
       },
     });
 
-    // If a field employee was assigned, ensure an Inspection record exists
+    // Handle Inspection record
     if (fieldEmployeeId) {
       const existingInspection = await prisma.inspection.findUnique({
         where: { projectId },
@@ -70,20 +60,41 @@ export async function assignProjectStaff(
           },
         });
       } else {
-        // Update the assigned employee if it changed
         await prisma.inspection.update({
           where: { projectId },
           data: { employeeId: fieldEmployeeId },
         });
       }
+    } else {
+      await prisma.inspection.deleteMany({
+        where: { projectId },
+      });
+    }
+
+    // Handle Report record
+    if (reportEmployeeId) {
+      const existingReport = await prisma.report.findUnique({
+        where: { projectId },
+      });
+
+      if (existingReport) {
+        await prisma.report.update({
+          where: { projectId },
+          data: { employeeId: reportEmployeeId },
+        });
+      }
+    } else {
+      await prisma.report.deleteMany({
+        where: { projectId },
+      });
     }
 
     revalidatePath(`/portal/projects/${projectId}`);
     revalidatePath('/portal/projects');
     return { success: true };
   } catch (error) {
-    console.error('Failed to assign staff:', error);
-    return { error: 'Failed to assign staff to the project.' };
+    console.error('Failed to update project team:', error);
+    return { error: 'Failed to update project team.' };
   }
 }
 
@@ -298,5 +309,255 @@ export async function finalizeReport(projectId: string, pdfUrl: string) {
   } catch (error) {
     console.error('Failed to finalize report:', error);
     return { error: 'Failed to finalize report.' };
+  }
+}
+
+/**
+ * Owner/Manager: Accept a pending service request and create a Project.
+ */
+export async function acceptServiceRequest(
+  requestId: string,
+  overrideManagerId?: string | null
+) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: 'Unauthorized' };
+
+  const caller = await prisma.employee.findUnique({
+    where: { id: session.user.id },
+    select: { role: true, id: true },
+  });
+
+  if (!caller || !['OWNER', 'MANAGER'].includes(caller.role)) {
+    return { error: 'Only owners and managers can approve service requests.' };
+  }
+
+  try {
+    const request = await prisma.serviceRequest.findUnique({
+      where: { id: requestId },
+    });
+
+    if (!request) return { error: 'Service request not found.' };
+    if (request.status !== 'SUBMITTED') return { error: 'Request is already processed.' };
+
+    // Update ServiceRequest status
+    await prisma.serviceRequest.update({
+      where: { id: requestId },
+      data: { status: 'APPROVED' },
+    });
+
+    // Generate sequential projectCode (SMA-YYYY-NNN)
+    const year = new Date().getFullYear();
+    const projectCount = await prisma.project.count({
+      where: { projectCode: { startsWith: `SMA-${year}-` } }
+    });
+    const nextNum = String(projectCount + 1).padStart(3, '0');
+    const projectCode = `SMA-${year}-${nextNum}`;
+
+    // Determine Manager Assignment rules
+    let assignedManagerId: string | null = null;
+    let projectStatus: 'PENDING_REVIEW' | 'APPROVED' | 'ASSIGNED' = 'APPROVED';
+
+    if (caller.role === 'MANAGER') {
+      // Managers approve -> directly assigned to them
+      assignedManagerId = caller.id;
+      projectStatus = 'ASSIGNED';
+    } else if (caller.role === 'OWNER') {
+      // Owner approves -> can optionally override/assign themselves or leave blank
+      if (overrideManagerId) {
+        assignedManagerId = overrideManagerId;
+        projectStatus = 'ASSIGNED';
+      }
+    }
+
+    const project = await prisma.project.create({
+      data: {
+        projectCode,
+        serviceRequestId: requestId,
+        status: projectStatus as any,
+        assignedManagerId,
+      },
+    });
+
+    revalidatePath('/portal/requests');
+    revalidatePath('/portal/projects');
+    return { success: true, projectCode: project.projectCode };
+  } catch (error) {
+    console.error('Failed to accept request:', error);
+    return { error: 'Failed to accept service request.' };
+  }
+}
+
+/**
+ * Owner/Manager: Reject a pending service request.
+ */
+export async function rejectServiceRequest(requestId: string, reviewNotes?: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: 'Unauthorized' };
+
+  const caller = await prisma.employee.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+
+  if (!caller || !['OWNER', 'MANAGER'].includes(caller.role)) {
+    return { error: 'Only owners and managers can reject service requests.' };
+  }
+
+  try {
+    await prisma.serviceRequest.update({
+      where: { id: requestId },
+      data: {
+        status: 'REJECTED',
+        reviewNotes: reviewNotes || null,
+      },
+    });
+
+    revalidatePath('/portal/requests');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to reject request:', error);
+    return { error: 'Failed to reject service request.' };
+  }
+}
+
+/**
+ * Owner: Assign a Manager to oversee an approved project.
+ */
+export async function assignProjectManager(projectId: string, managerId: string | null) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: 'Unauthorized' };
+
+  const caller = await prisma.employee.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+
+  if (!caller || caller.role !== 'OWNER') {
+    return { error: 'Only the Owner can assign project managers.' };
+  }
+
+  try {
+    const project = await prisma.project.findUnique({ where: { id: projectId } });
+    if (!project) return { error: 'Project not found.' };
+
+    await prisma.project.update({
+      where: { id: projectId },
+      data: {
+        assignedManagerId: managerId,
+        status: managerId ? 'ASSIGNED' : 'APPROVED',
+      },
+    });
+
+    revalidatePath('/portal/requests');
+    revalidatePath('/portal/projects');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to assign manager:', error);
+    return { error: 'Failed to assign manager.' };
+  }
+}
+
+/**
+ * Manager/Owner: Initiate transfer of a project to another manager.
+ */
+export async function initiateManagerTransfer(projectId: string, targetManagerId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: 'Unauthorized' };
+
+  const caller = await prisma.employee.findUnique({
+    where: { id: session.user.id },
+    select: { role: true, id: true },
+  });
+
+  if (!caller || !['OWNER', 'MANAGER'].includes(caller.role)) {
+    return { error: 'Only owners and managers can transfer projects.' };
+  }
+
+  try {
+    const project = await prisma.project.findUnique({ where: { id: projectId } });
+    if (!project) return { error: 'Project not found.' };
+
+    if (caller.role === 'MANAGER' && project.assignedManagerId !== caller.id) {
+      return { error: 'You are not authorized to transfer this project.' };
+    }
+
+    await prisma.project.update({
+      where: { id: projectId },
+      data: {
+        pendingManagerId: targetManagerId,
+      },
+    });
+
+    revalidatePath(`/portal/projects/${projectId}`);
+    revalidatePath('/portal/projects');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to initiate transfer:', error);
+    return { error: 'Failed to initiate project transfer.' };
+  }
+}
+
+/**
+ * Target Manager: Accept a pending project transfer.
+ */
+export async function acceptManagerTransfer(projectId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: 'Unauthorized' };
+
+  try {
+    const project = await prisma.project.findUnique({ where: { id: projectId } });
+    if (!project) return { error: 'Project not found.' };
+
+    if (project.pendingManagerId !== session.user.id) {
+      return { error: 'You are not the designated recipient for this project transfer.' };
+    }
+
+    await prisma.project.update({
+      where: { id: projectId },
+      data: {
+        assignedManagerId: project.pendingManagerId,
+        pendingManagerId: null,
+      },
+    });
+
+    revalidatePath(`/portal/projects/${projectId}`);
+    revalidatePath('/portal/projects');
+    revalidatePath('/portal/dashboard');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to accept transfer:', error);
+    return { error: 'Failed to accept project transfer.' };
+  }
+}
+
+/**
+ * Target Manager: Decline a pending project transfer.
+ */
+export async function declineManagerTransfer(projectId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: 'Unauthorized' };
+
+  try {
+    const project = await prisma.project.findUnique({ where: { id: projectId } });
+    if (!project) return { error: 'Project not found.' };
+
+    if (project.pendingManagerId !== session.user.id) {
+      return { error: 'You are not authorized to perform this action.' };
+    }
+
+    await prisma.project.update({
+      where: { id: projectId },
+      data: {
+        pendingManagerId: null,
+      },
+    });
+
+    revalidatePath(`/portal/projects/${projectId}`);
+    revalidatePath('/portal/projects');
+    revalidatePath('/portal/dashboard');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to decline transfer:', error);
+    return { error: 'Failed to decline project transfer.' };
   }
 }

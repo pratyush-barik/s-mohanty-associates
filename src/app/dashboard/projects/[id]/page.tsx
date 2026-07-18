@@ -103,30 +103,76 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
       {/* Status Timeline */}
       <div className="card p-6">
-        <h2 className="text-sm font-semibold text-[#0f2038] uppercase tracking-wider mb-4">Project Progress</h2>
-        <div className="flex items-center gap-0 overflow-x-auto pb-2">
-          {statusSteps.map((step, i) => {
-            const isCompleted = i <= currentStepIndex;
-            const isCurrent = i === currentStepIndex;
+        <h2 className="text-sm font-semibold text-[#0f2038] uppercase tracking-wider mb-5">Project Progress Timeline</h2>
+        
+        {/* Horizontal Timeline */}
+        <div className="flex items-start gap-0 overflow-x-auto pb-4">
+          {[
+            {
+              label: 'Manager Assigned',
+              isCompleted: !!project.assignedManagerId,
+              detail: project.manager?.name ? `Overseer: ${project.manager.name}` : 'Awaiting overseer',
+            },
+            {
+              label: 'Field Agent Assigned',
+              isCompleted: !!project.fieldEmployeeId,
+              detail: project.fieldEmployee?.name ? `Inspector: ${project.fieldEmployee.name}` : 'Awaiting inspector',
+            },
+            {
+              label: 'Field Agent Deployed',
+              isCompleted: ['INSPECTION_IN_PROGRESS', 'INSPECTION_COMPLETED', 'REPORT_DRAFTING', 'MANAGER_REVIEW', 'COMPLETED'].includes(project.status),
+              detail: ['INSPECTION_IN_PROGRESS', 'INSPECTION_COMPLETED', 'REPORT_DRAFTING', 'MANAGER_REVIEW', 'COMPLETED'].includes(project.status) ? 'Agent on site' : 'Pending trip',
+            },
+            {
+              label: 'Field Work Completed',
+              isCompleted: ['INSPECTION_COMPLETED', 'REPORT_DRAFTING', 'MANAGER_REVIEW', 'COMPLETED'].includes(project.status),
+              detail: ['INSPECTION_COMPLETED', 'REPORT_DRAFTING', 'MANAGER_REVIEW', 'COMPLETED'].includes(project.status) ? 'Data gathered' : 'Awaiting site survey',
+            },
+            {
+              label: 'Report Agent Assigned',
+              isCompleted: !!project.reportEmployeeId,
+              detail: project.reportEmployee?.name ? `Analyst: ${project.reportEmployee.name}` : 'Awaiting analyst',
+            },
+            {
+              label: 'Sent for Verification',
+              isCompleted: ['MANAGER_REVIEW', 'COMPLETED'].includes(project.status) || project.report?.status === 'SUBMITTED_FOR_REVIEW',
+              detail: ['MANAGER_REVIEW', 'COMPLETED'].includes(project.status) ? 'Verification review' : 'Drafting report',
+            },
+            {
+              label: 'Report Completed',
+              isCompleted: project.status === 'COMPLETED',
+              detail: project.status === 'COMPLETED' ? 'Final report ready' : 'Awaiting approval',
+            },
+          ].map((step, i, arr) => {
             return (
-              <div key={step.key} className="flex items-center flex-shrink-0">
-                <div className="flex flex-col items-center">
+              <div key={step.label} className="flex items-start flex-shrink-0">
+                <div className="flex flex-col items-center min-w-[120px] px-2 text-center">
+                  {/* Step Bubble */}
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                    isCompleted
-                      ? 'bg-gradient-to-br from-[#b8860b] to-[#c9952c] text-white'
+                    step.isCompleted
+                      ? 'bg-gradient-to-br from-[#b8860b] to-[#c9952c] text-white shadow-sm'
                       : 'bg-[#e9ecef] text-[#adb5bd]'
-                  } ${isCurrent ? 'ring-4 ring-[#b8860b]/20' : ''}`}>
-                    {isCompleted ? '✓' : i + 1}
+                  }`}>
+                    {step.isCompleted ? '✓' : i + 1}
                   </div>
-                  <span className={`text-[10px] mt-1.5 text-center max-w-[70px] leading-tight ${
-                    isCompleted ? 'text-[#0f2038] font-medium' : 'text-[#adb5bd]'
+                  
+                  {/* Label */}
+                  <span className={`text-[11px] font-semibold mt-2 leading-tight ${
+                    step.isCompleted ? 'text-[#0f2038]' : 'text-[#adb5bd]'
                   }`}>
                     {step.label}
                   </span>
+                  
+                  {/* Detail text */}
+                  <span className="text-[9px] text-[#8e98a2] mt-0.5 max-w-[100px] leading-tight break-words">
+                    {step.detail}
+                  </span>
                 </div>
-                {i < statusSteps.length - 1 && (
-                  <div className={`w-8 h-0.5 mx-1 mt-[-14px] ${
-                    i < currentStepIndex ? 'bg-[#b8860b]' : 'bg-[#e9ecef]'
+                
+                {/* Connecting Line */}
+                {i < arr.length - 1 && (
+                  <div className={`w-12 h-0.5 mt-4 flex-shrink-0 ${
+                    arr[i + 1].isCompleted ? 'bg-[#b8860b]' : 'bg-[#e9ecef]'
                   }`} />
                 )}
               </div>

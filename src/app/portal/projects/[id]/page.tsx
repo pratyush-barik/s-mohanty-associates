@@ -24,7 +24,7 @@ export default async function ProjectDetailsPage({ params }: { params: { id: str
       serviceRequest: true,
       fieldEmployee: { select: { id: true, name: true, employeeId: true } },
       reportEmployee: { select: { id: true, name: true, employeeId: true } },
-      manager: { select: { name: true } },
+      manager: { select: { id: true, name: true } },
       report: true,
     },
   });
@@ -39,6 +39,11 @@ export default async function ProjectDetailsPage({ params }: { params: { id: str
 
   const reportEmployees = await prisma.employee.findMany({
     where: { role: 'REPORT_EMPLOYEE', isActive: true },
+    select: { id: true, name: true, employeeId: true },
+  });
+
+  const managers = await prisma.employee.findMany({
+    where: { role: { in: ['MANAGER', 'OWNER'] }, isActive: true },
     select: { id: true, name: true, employeeId: true },
   });
 
@@ -79,8 +84,12 @@ export default async function ProjectDetailsPage({ params }: { params: { id: str
         projectId={project.id}
         currentFieldId={project.fieldEmployeeId}
         currentReportId={project.reportEmployeeId}
+        currentManagerId={project.assignedManagerId}
+        pendingManagerId={project.pendingManagerId}
         fieldEmployees={fieldEmployees}
         reportEmployees={reportEmployees}
+        managers={managers}
+        userRole={currentUser.role}
       />
 
       {/* Request Details (Read Only Overview) */}

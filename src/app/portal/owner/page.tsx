@@ -1,6 +1,7 @@
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
+import PendingTransfersList from '../manager/PendingTransfersList';
 
 const roleLabels: Record<string, string> = {
   OWNER: 'Owner', MANAGER: 'Manager', FIELD_EMPLOYEE: 'Field Inspector', REPORT_EMPLOYEE: 'Report Analyst',
@@ -34,17 +35,22 @@ export default async function OwnerDashboard() {
 
   if (!user) return null;
 
-  const pendingRequests = await prisma.serviceRequest.findMany({
-    where: { status: { in: ['SUBMITTED', 'UNDER_REVIEW'] } },
-    include: { client: { include: { individual: true, organisation: true } } },
-    orderBy: { createdAt: 'desc' },
-    take: 5,
-  });
-
-  const allProjects = await prisma.project.findMany({
-    include: { serviceRequest: { select: { propertyType: true, contactName: true } } },
-    orderBy: { createdAt: 'desc' },
-  });
+  const [pendingRequests, allProjects, pendingTransfers] = await Promise.all([
+    prisma.serviceRequest.findMany({
+      where: { status: { in: ['SUBMITTED', 'UNDER_REVIEW'] } },
+      include: { client: { include: { individual: true, organisation: true } } },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+    }),
+    prisma.project.findMany({
+      include: { serviceRequest: { select: { propertyType: true, contactName: true } } },
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.project.findMany({
+      where: { pendingManagerId: session.user.id },
+      include: { serviceRequest: { select: { propertyType: true, contactName: true } } },
+    }),
+  ]);
   
   const assignedProjects = allProjects.slice(0, 5);
   const stats = {
@@ -55,6 +61,8 @@ export default async function OwnerDashboard() {
 
   return (
     <div className="space-y-8">
+      <PendingTransfersList transfers={pendingTransfers} />
+
       <div className="card p-6">
         <div className="flex items-center gap-6">
           <div className="w-20 h-20 rounded-2xl flex-shrink-0 overflow-hidden bg-gradient-to-br from-[#1e3a5f] to-[#162d4a] flex items-center justify-center">
