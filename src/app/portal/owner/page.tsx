@@ -27,7 +27,7 @@ export default async function OwnerDashboard() {
   const session = await auth();
   if (!session?.user?.id || (session.user as any).role !== 'OWNER') return null;
 
-  const user = await prisma.user.findUnique({
+  const user = await prisma.employee.findUnique({
     where: { id: session.user.id },
     select: { name: true, email: true, employeeId: true, designation: true, profilePhoto: true, role: true },
   });
@@ -36,7 +36,7 @@ export default async function OwnerDashboard() {
 
   const pendingRequests = await prisma.serviceRequest.findMany({
     where: { status: { in: ['SUBMITTED', 'UNDER_REVIEW'] } },
-    include: { client: { select: { name: true, email: true } } },
+    include: { client: { include: { individual: true, organisation: true } } },
     orderBy: { createdAt: 'desc' },
     take: 5,
   });
@@ -105,7 +105,7 @@ export default async function OwnerDashboard() {
               <div key={req.id} className="flex items-center justify-between p-4 rounded-xl bg-[#f8f9fa] border border-[#e9ecef]">
                 <div>
                   <p className="text-sm font-medium text-[#0f2038]">{req.propertyType} — {req.purpose}</p>
-                  <p className="text-xs text-[#6c757d] mt-0.5">From: {req.client.name} • {new Date(req.createdAt).toLocaleDateString('en-IN')}</p>
+                  <p className="text-xs text-[#6c757d] mt-0.5">From: {req.client.clientType === 'INDIVIDUAL' ? req.client.individual?.name : req.client.organisation?.organisationName} • {new Date(req.createdAt).toLocaleDateString('en-IN')}</p>
                 </div>
                 <span className={`px-3 py-1 rounded-full text-xs font-medium border ${statusColors[req.status]}`}>{formatStatus(req.status)}</span>
               </div>

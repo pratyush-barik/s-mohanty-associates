@@ -9,7 +9,7 @@ export default async function ProjectDetailsPage({ params }: { params: { id: str
   const session = await auth();
   if (!session?.user?.id) return null;
 
-  const currentUser = await prisma.user.findUnique({
+  const currentUser = await prisma.employee.findUnique({
     where: { id: session.user.id },
     select: { role: true },
   });
@@ -32,12 +32,12 @@ export default async function ProjectDetailsPage({ params }: { params: { id: str
   if (!project) return notFound();
 
   // Fetch available employees for assignment
-  const fieldEmployees = await prisma.user.findMany({
+  const fieldEmployees = await prisma.employee.findMany({
     where: { role: 'FIELD_EMPLOYEE', isActive: true },
     select: { id: true, name: true, employeeId: true },
   });
 
-  const reportEmployees = await prisma.user.findMany({
+  const reportEmployees = await prisma.employee.findMany({
     where: { role: 'REPORT_EMPLOYEE', isActive: true },
     select: { id: true, name: true, employeeId: true },
   });

@@ -25,11 +25,12 @@ export async function signup(state: SignupFormState, formData: FormData): Promis
   const { name, email, mobile, password } = validatedFields.data;
 
   // Check if user already exists
-  const existingUser = await prisma.user.findUnique({
-    where: { email },
-  });
+  const [existingClient, existingEmployee] = await Promise.all([
+    prisma.client.findUnique({ where: { email } }),
+    prisma.employee.findUnique({ where: { email } }),
+  ]);
 
-  if (existingUser) {
+  if (existingClient || existingEmployee) {
     return {
       message: 'An account with this email already exists. Please log in.',
     };
@@ -39,27 +40,29 @@ export async function signup(state: SignupFormState, formData: FormData): Promis
   const hashedPassword = await bcrypt.hash(password, 10);
 
   // Generate unique Client ID (e.g. C1000)
-  const clientCount = await prisma.user.count({
-    where: { role: 'CLIENT' }
-  });
+  const clientCount = await prisma.client.count();
   let nextNum = 1000 + clientCount;
   let clientId = `C${nextNum}`;
-  let exists = await prisma.user.findUnique({ where: { employeeId: clientId } });
+  let exists = await prisma.client.findUnique({ where: { clientId } });
   while (exists) {
     nextNum++;
     clientId = `C${nextNum}`;
-    exists = await prisma.user.findUnique({ where: { employeeId: clientId } });
+    exists = await prisma.client.findUnique({ where: { clientId } });
   }
 
-  // Create user
-  const user = await prisma.user.create({
+  // Create client
+  const user = await prisma.client.create({
     data: {
-      name,
       email,
-      mobile,
       password: hashedPassword,
-      role: 'CLIENT',
-      employeeId: clientId,
+      clientType: 'INDIVIDUAL',
+      clientId,
+      individual: {
+        create: {
+          name,
+          mobile: mobile || null,
+        },
+      },
     },
   });
 
@@ -86,39 +89,43 @@ export async function login(state: LoginFormState, formData: FormData): Promise<
   }
 
   // Strict Segregation Check BEFORE signIn
-  const existingUser = await prisma.user.findUnique({
-    where: { email: validatedFields.data.email },
-  });
+  if (portal === 'CLIENT') {
+    const existingClient = await prisma.client.findUnique({
+      where: { email: validatedFields.data.email },
+    });
 
-  if (!existingUser) {
-    if (portal === 'CLIENT') {
+    if (!existingClient) {
       return { message: 'Client does not exist. Please register.' };
     }
-    return { message: 'Invalid email or password.' };
-  }
 
-  if (!existingUser.password) {
-    return { message: 'Incorrect password.' };
-  }
+    const passwordMatch = await bcrypt.compare(validatedFields.data.password, existingClient.password);
+    if (!passwordMatch) {
+      return { message: 'Incorrect password.' };
+    }
+  } else {
+    const existingEmployee = await prisma.employee.findUnique({
+      where: { email: validatedFields.data.email },
+    });
 
-  const passwordMatch = await bcrypt.compare(validatedFields.data.password, existingUser.password);
-  
-  if (!passwordMatch) {
-    return { message: 'Incorrect password.' };
-  }
+    if (!existingEmployee) {
+      return { message: 'Employee account does not exist.' };
+    }
 
-  if (portal === 'CLIENT' && existingUser.role !== 'CLIENT') {
-    return { message: 'Client does not exist. Please register.' };
-  }
-  
-  if (portal === 'EMPLOYEE' && existingUser.role === 'CLIENT') {
-    return { message: 'Employee account does not exist.' };
+    if (!existingEmployee.isActive) {
+      return { message: 'This employee account is inactive.' };
+    }
+
+    const passwordMatch = await bcrypt.compare(validatedFields.data.password, existingEmployee.password);
+    if (!passwordMatch) {
+      return { message: 'Incorrect password.' };
+    }
   }
 
   try {
     await signIn('credentials', {
       email: validatedFields.data.email,
       password: validatedFields.data.password,
+      portal: portal as string,
       redirect: false,
     });
     

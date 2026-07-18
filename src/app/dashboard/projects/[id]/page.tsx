@@ -44,7 +44,10 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
       fieldEmployee: { select: { id: true, name: true, email: true, profilePhoto: true, designation: true } },
       reportEmployee: { select: { id: true, name: true, email: true, profilePhoto: true, designation: true } },
       messages: {
-        include: { sender: { select: { id: true, name: true, role: true, profilePhoto: true } } },
+        include: {
+          client: { include: { individual: true, organisation: true } },
+          employee: true,
+        },
         orderBy: { createdAt: 'asc' },
       },
       report: { select: { id: true, status: true, fileUrl: true } },
@@ -219,17 +222,36 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         <div className="lg:col-span-2">
           <ProjectChat
             projectId={project.id}
-            messages={project.messages.map((m) => ({
-              id: m.id,
-              content: m.content,
-              createdAt: m.createdAt.toISOString(),
-              sender: {
-                id: m.sender.id,
-                name: m.sender.name,
-                role: m.sender.role,
-                profilePhoto: m.sender.profilePhoto,
-              },
-            }))}
+            messages={project.messages.map((m) => {
+              const isClientMsg = !!m.clientId;
+              const senderId = isClientMsg ? m.clientId! : m.employeeId!;
+              let name = '';
+              let role = '';
+              let profilePhoto = null;
+
+              if (isClientMsg && m.client) {
+                name = m.client.clientType === 'INDIVIDUAL'
+                  ? m.client.individual?.name || 'Client'
+                  : m.client.organisation?.organisationName || 'Client';
+                role = 'CLIENT';
+              } else if (!isClientMsg && m.employee) {
+                name = m.employee.name;
+                role = m.employee.role;
+                profilePhoto = m.employee.profilePhoto;
+              }
+
+              return {
+                id: m.id,
+                content: m.content,
+                createdAt: m.createdAt.toISOString(),
+                sender: {
+                  id: senderId,
+                  name,
+                  role,
+                  profilePhoto,
+                },
+              };
+            })}
             currentUserId={session.user.id}
           />
         </div>

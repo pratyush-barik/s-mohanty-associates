@@ -60,7 +60,7 @@ export async function updateEnquiryStatus(enquiryId: string, status: 'READ' | 'R
   }
 
   // Verify role
-  const user = await prisma.user.findUnique({
+  const user = await prisma.employee.findUnique({
     where: { id: session.user.id },
     select: { role: true },
   });

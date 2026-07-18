@@ -13,7 +13,7 @@ export default async function ProfilePage() {
   const session = await auth();
   if (!session?.user?.id) return null;
 
-  const user = await prisma.user.findUnique({
+  const user = await prisma.employee.findUnique({
     where: { id: session.user.id },
     select: {
       name: true,

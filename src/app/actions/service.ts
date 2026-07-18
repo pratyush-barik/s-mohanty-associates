@@ -85,11 +85,14 @@ export async function sendProjectMessage(projectId: string, content: string) {
     return { error: 'You do not have access to this project.' };
   }
 
+  const isClientUser = userRole === 'CLIENT';
+
   await prisma.projectMessage.create({
     data: {
       projectId,
-      senderId: session.user.id,
       content: content.trim(),
+      clientId: isClientUser ? session.user.id : null,
+      employeeId: !isClientUser ? session.user.id : null,
     },
   });
 

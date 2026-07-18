@@ -33,12 +33,12 @@ export async function uploadProfilePhoto(formData: FormData) {
   }
 
   // Get employee info
-  const user = await prisma.user.findUnique({
+  const user = await prisma.employee.findUnique({
     where: { id: session.user.id },
     select: { employeeId: true, id: true },
   });
 
-  if (!user) return { error: 'User not found.' };
+  if (!user) return { error: 'Employee not found.' };
 
   // Determine file path: use employeeId if available, otherwise user id
   const identifier = user.employeeId || user.id;
@@ -65,7 +65,7 @@ export async function uploadProfilePhoto(formData: FormData) {
   // Get public URL and update database
   const publicUrl = getPublicUrl(STORAGE_BUCKETS.EMPLOYEE_PROFILES, filePath);
 
-  await prisma.user.update({
+  await prisma.employee.update({
     where: { id: session.user.id },
     data: { profilePhoto: publicUrl },
   });
@@ -87,7 +87,7 @@ export async function createEmployee(formData: FormData) {
   }
 
   // Only Owner can create employees
-  const currentUser = await prisma.user.findUnique({
+  const currentUser = await prisma.employee.findUnique({
     where: { id: session.user.id },
     select: { role: true },
   });
@@ -109,8 +109,11 @@ export async function createEmployee(formData: FormData) {
   }
 
   // Check for duplicate email
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) {
+  const [existingClient, existingEmployee] = await Promise.all([
+    prisma.client.findUnique({ where: { email } }),
+    prisma.employee.findUnique({ where: { email } }),
+  ]);
+  if (existingClient || existingEmployee) {
     return { error: 'An account with this email already exists.' };
   }
 
@@ -127,7 +130,7 @@ export async function createEmployee(formData: FormData) {
   else if (role === 'REPORT_EMPLOYEE') suffix = 'R';
   else if (role === 'OWNER') suffix = 'O';
 
-  const employeeCount = await prisma.user.count({
+  const employeeCount = await prisma.employee.count({
     where: {
       role: { in: ['MANAGER', 'FIELD_EMPLOYEE', 'REPORT_EMPLOYEE'] }
     }
@@ -135,17 +138,17 @@ export async function createEmployee(formData: FormData) {
 
   let nextNum = 1000 + employeeCount;
   let generatedEmployeeId = `${nextNum}${suffix}`;
-  let exists = await prisma.user.findUnique({ where: { employeeId: generatedEmployeeId } });
+  let exists = await prisma.employee.findUnique({ where: { employeeId: generatedEmployeeId } });
   while (exists) {
     nextNum++;
     generatedEmployeeId = `${nextNum}${suffix}`;
-    exists = await prisma.user.findUnique({ where: { employeeId: generatedEmployeeId } });
+    exists = await prisma.employee.findUnique({ where: { employeeId: generatedEmployeeId } });
   }
 
   // Hash password and create user
   const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
-  await prisma.user.create({
+  await prisma.employee.create({
     data: {
       name,
       email,

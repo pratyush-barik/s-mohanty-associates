@@ -14,15 +14,14 @@ export default async function ManageEmployeesPage() {
   const session = await auth();
   if (!session?.user?.id) return null;
 
-  const currentUser = await prisma.user.findUnique({
+  const currentUser = await prisma.employee.findUnique({
     where: { id: session.user.id },
     select: { role: true },
   });
 
   if (currentUser?.role !== 'OWNER') redirect('/portal/dashboard');
 
-  const employees = await prisma.user.findMany({
-    where: { role: { not: 'CLIENT' } },
+  const employees = await prisma.employee.findMany({
     select: {
       id: true,
       name: true,

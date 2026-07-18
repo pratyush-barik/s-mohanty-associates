@@ -19,7 +19,7 @@ export async function assignProjectStaff(
   }
 
   // Verify caller is Owner or Manager
-  const caller = await prisma.user.findUnique({
+  const caller = await prisma.employee.findUnique({
     where: { id: session.user.id },
     select: { role: true },
   });
@@ -107,7 +107,7 @@ export async function updateInspectionStatus(
     if (!inspection) return { error: 'Inspection not found.' };
 
     // Verify ownership or manager
-    const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+    const user = await prisma.employee.findUnique({ where: { id: session.user.id } });
     if (!user) return { error: 'Unauthorized' };
 
     if (user.role === 'FIELD_EMPLOYEE' && inspection.employeeId !== session.user.id) {
@@ -160,7 +160,7 @@ export async function saveReportDraft(projectId: string, fields: any) {
 
     if (!project) return { error: 'Project not found.' };
 
-    const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+    const user = await prisma.employee.findUnique({ where: { id: session.user.id } });
     if (!user) return { error: 'Unauthorized' };
 
     if (user.role === 'REPORT_EMPLOYEE' && project.reportEmployeeId !== session.user.id) {

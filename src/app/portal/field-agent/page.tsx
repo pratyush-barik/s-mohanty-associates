@@ -27,7 +27,7 @@ export default async function FieldAgentDashboard() {
   const session = await auth();
   if (!session?.user?.id || (session.user as any).role !== 'FIELD_EMPLOYEE') return null;
 
-  const user = await prisma.user.findUnique({
+  const user = await prisma.employee.findUnique({
     where: { id: session.user.id },
     select: { name: true, email: true, employeeId: true, designation: true, profilePhoto: true, role: true },
   });

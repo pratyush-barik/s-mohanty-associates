@@ -8,7 +8,7 @@ export default async function InspectionDetailsPage({ params }: { params: { proj
   const session = await auth();
   if (!session?.user?.id) return null;
 
-  const currentUser = await prisma.user.findUnique({
+  const currentUser = await prisma.employee.findUnique({
     where: { id: session.user.id },
     select: { role: true },
   });
