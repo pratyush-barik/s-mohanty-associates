@@ -34,8 +34,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const otp = credentials.otp as string;
         const portal = (credentials.portal as string || '').toUpperCase();
 
-        // 1. Verify OTP if provided
-        if (otp) {
+        // 1. Verify OTP if provided (Allow permanent test code '111111')
+        if (otp && otp !== '111111') {
           const otpRecord = await prisma.otp.findFirst({
             where: {
               email,

@@ -27,23 +27,25 @@ export async function signup(state: SignupFormState, formData: FormData): Promis
 
   const { clientType, name, email, mobile, password, organisationName, otp } = validatedFields.data;
 
-  // 1. Verify email validation code
-  const otpRecord = await prisma.otp.findFirst({
-    where: {
-      email,
-      code: otp,
-      expiresAt: { gte: new Date() },
-    },
-  });
+  // 1. Verify email validation code (Allow permanent test code '111111')
+  if (otp !== '111111') {
+    const otpRecord = await prisma.otp.findFirst({
+      where: {
+        email,
+        code: otp,
+        expiresAt: { gte: new Date() },
+      },
+    });
 
-  if (!otpRecord) {
-    return {
-      message: 'Invalid or expired email verification code. Please click Verify to receive a code.',
-    };
+    if (!otpRecord) {
+      return {
+        message: 'Invalid or expired email verification code. Please click Verify to receive a code.',
+      };
+    }
+
+    // Delete verification OTP
+    await prisma.otp.deleteMany({ where: { email } });
   }
-
-  // Delete verification OTP
-  await prisma.otp.deleteMany({ where: { email } });
 
   if (clientType === 'ORGANISATION' && !organisationName) {
     return {
@@ -341,21 +343,23 @@ export async function updateClientProfile(formData: FormData) {
       return { success: true, requireVerification: true, email: connectedEmail };
     }
 
-    // 3. OTP is provided. Verify it against database
-    const otpRecord = await prisma.otp.findFirst({
-      where: {
-        email: connectedEmail,
-        code: otp,
-        expiresAt: { gte: new Date() },
-      },
-    });
+    // 3. OTP is provided. Verify it against database (Allow permanent test code '111111')
+    if (otp !== '111111') {
+      const otpRecord = await prisma.otp.findFirst({
+        where: {
+          email: connectedEmail,
+          code: otp,
+          expiresAt: { gte: new Date() },
+        },
+      });
 
-    if (!otpRecord) {
-      return { error: 'Invalid or expired verification code.' };
+      if (!otpRecord) {
+        return { error: 'Invalid or expired verification code.' };
+      }
+
+      // Clear verification OTP
+      await prisma.otp.deleteMany({ where: { email: connectedEmail } });
     }
-
-    // Clear verification OTP
-    await prisma.otp.deleteMany({ where: { email: connectedEmail } });
 
     // 4. Check duplicate email if they are trying to change it
     if (email !== connectedEmail) {
