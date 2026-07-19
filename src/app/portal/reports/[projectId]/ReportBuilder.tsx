@@ -913,7 +913,11 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
       {/* ── Section 1: General Details ── */}
       <Section title="General Details" number={1}>
         <div className="space-y-3">
-          <OptionField label="Type of Property" options={['Residential', 'Commercial', 'Residential cum Commercial', 'Industrial', 'Vacant Plot']} value={fields.propertyType} onChange={v => handleChange('propertyType', v)} disabled={isReadOnly} />
+          <Field label="Type of Property">
+            <select className={selectCls} value={fields.propertyType} onChange={e => handleChange('propertyType', e.target.value)} disabled={isReadOnly}>
+              <option>Residential</option><option>Commercial</option><option>Residential cum Commercial</option><option>Industrial</option><option>Vacant Plot</option>
+            </select>
+          </Field>
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="Name of Customer(s)">
               <input className={inputCls} value={fields.ownerName} onChange={e => handleChange('ownerName', e.target.value)} disabled={isReadOnly} placeholder="Full name of property owner" />
@@ -958,39 +962,88 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
           <Field label="Ward No / Municipal Land No" span={2}>
             <input className={inputCls} value={fields.wardNo} onChange={e => handleChange('wardNo', e.target.value)} disabled={isReadOnly} />
           </Field>
-          <OptionField label="Vicinity" options={['Slum', 'Residential', 'Commercial', 'Mixed', 'Industrial']} value={fields.vicinity} onChange={v => handleChange('vicinity', v)} disabled={isReadOnly} />
-          <OptionField label="Locality Type" options={['Elite/Posh/High Class', 'Upper Middle Class', 'Middle Class', 'Lower Middle Class', 'Poor / Slum']} value={fields.classOfLocality} onChange={v => handleChange('classOfLocality', v)} disabled={isReadOnly} />
-          <OptionField label="Approach Road Width" options={['>=60 Feet Road', '60-40 Feet Road', '40-20 Feet Road', '<20 Feet Road']} value={fields.approachRoadWidth} onChange={v => handleChange('approachRoadWidth', v)} disabled={isReadOnly} />
-          <OptionField label="Plot Demarcated at Site" options={['Yes', 'No']} value={fields.plotDemarcated} onChange={v => handleChange('plotDemarcated', v)} disabled={isReadOnly} />
-          <LandmarkField label="Proximity to Civic Amenities" rows={[
-            { subLabel: 'Nearest Railway Station', value: fields.distanceRailwayStation, onChange: v => handleChange('distanceRailwayStation', v) },
-            { subLabel: 'Nearest Bus Stop', value: fields.distanceBusStop, onChange: v => handleChange('distanceBusStop', v) },
-            { subLabel: 'Nearest Hospital', value: fields.distanceHospital, onChange: v => handleChange('distanceHospital', v) },
-          ]} disabled={isReadOnly} />
-          <OptionField label="Property Identification" options={['Easy to Identify', 'Identification by documents', 'Additional documents required', 'Difficult to identify']} value={fields.propertyIdentification} onChange={v => handleChange('propertyIdentification', v)} disabled={isReadOnly} showCustomInput customValue={fields.propertyIdentificationRemarks} onCustomChange={v => handleChange('propertyIdentificationRemarks', v)} />
-          <OptionField label="Proximity to Facilities (Educational, Recreational)" options={['<1 Km', '1-3 Kms', '3-5 Kms', '>5 Kms']} value={fields.proximityToFacilities} onChange={v => handleChange('proximityToFacilities', v)} disabled={isReadOnly} />
-          <LandmarkField label="Landmark Details" rows={[
-            { subLabel: 'Nearest Railway Station', value: fields.landmarkRailway, onChange: v => handleChange('landmarkRailway', v) },
-            { subLabel: 'Nearest Bus Stop', value: fields.landmarkBusStop, onChange: v => handleChange('landmarkBusStop', v) },
-            { subLabel: 'Nearest Hospital', value: fields.landmarkHospital, onChange: v => handleChange('landmarkHospital', v) },
-            { subLabel: 'Nearest Landmark', value: fields.landmarkNearest, onChange: v => handleChange('landmarkNearest', v) },
-          ]} disabled={isReadOnly} />
+          <div className="grid md:grid-cols-2 gap-4">
+            <Field label="Vicinity">
+              <select className={selectCls} value={fields.vicinity} onChange={e => handleChange('vicinity', e.target.value)} disabled={isReadOnly}>
+                <option>Slum</option><option>Residential</option><option>Commercial</option><option>Mixed</option><option>Industrial</option>
+              </select>
+            </Field>
+            <Field label="Locality Type">
+              <select className={selectCls} value={fields.classOfLocality} onChange={e => handleChange('classOfLocality', e.target.value)} disabled={isReadOnly}>
+                <option>Elite/Posh/High Class</option><option>Upper Middle Class</option><option>Middle Class</option><option>Lower Middle Class</option><option>Poor / Slum</option>
+              </select>
+            </Field>
+            <Field label="Approach Road Width">
+              <select className={selectCls} value={fields.approachRoadWidth} onChange={e => handleChange('approachRoadWidth', e.target.value)} disabled={isReadOnly}>
+                <option>{'>'}=60 Feet Road</option><option>60-40 Feet Road</option><option>40-20 Feet Road</option><option>{'<'}20 Feet Road</option>
+              </select>
+            </Field>
+            <Field label="Plot Demarcated at Site">
+              <select className={selectCls} value={fields.plotDemarcated} onChange={e => handleChange('plotDemarcated', e.target.value)} disabled={isReadOnly}>
+                <option>Yes</option><option>No</option>
+              </select>
+            </Field>
+          </div>
+          <p className="text-xs font-semibold text-[#495057] uppercase tracking-wider mt-2">Proximity to Civic Amenities</p>
+          <div className="grid md:grid-cols-3 gap-4">
+            <Field label="Nearest Railway Station"><input className={inputCls} value={fields.distanceRailwayStation} onChange={e => handleChange('distanceRailwayStation', e.target.value)} disabled={isReadOnly} placeholder="e.g. 2 Km" /></Field>
+            <Field label="Nearest Bus Stop"><input className={inputCls} value={fields.distanceBusStop} onChange={e => handleChange('distanceBusStop', e.target.value)} disabled={isReadOnly} placeholder="e.g. 0.5 Km" /></Field>
+            <Field label="Nearest Hospital"><input className={inputCls} value={fields.distanceHospital} onChange={e => handleChange('distanceHospital', e.target.value)} disabled={isReadOnly} placeholder="e.g. 3 Km" /></Field>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Field label="Property Identification">
+              <select className={selectCls} value={fields.propertyIdentification} onChange={e => handleChange('propertyIdentification', e.target.value)} disabled={isReadOnly}>
+                <option>Easy to Identify</option><option>Identification by documents</option><option>Additional documents required</option><option>Difficult to identify</option>
+              </select>
+            </Field>
+            <Field label="Identification Remarks"><input className={inputCls} value={fields.propertyIdentificationRemarks} onChange={e => handleChange('propertyIdentificationRemarks', e.target.value)} disabled={isReadOnly} placeholder="Additional remarks..." /></Field>
+            <Field label="Proximity to Facilities (Educational, Recreational)">
+              <select className={selectCls} value={fields.proximityToFacilities} onChange={e => handleChange('proximityToFacilities', e.target.value)} disabled={isReadOnly}>
+                <option>{'<'}1 Km</option><option>1-3 Kms</option><option>3-5 Kms</option><option>{'>'}5 Kms</option>
+              </select>
+            </Field>
+          </div>
+          <p className="text-xs font-semibold text-[#495057] uppercase tracking-wider mt-2">Landmark Details</p>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Field label="Nearest Railway Station"><input className={inputCls} value={fields.landmarkRailway} onChange={e => handleChange('landmarkRailway', e.target.value)} disabled={isReadOnly} /></Field>
+            <Field label="Nearest Bus Stop"><input className={inputCls} value={fields.landmarkBusStop} onChange={e => handleChange('landmarkBusStop', e.target.value)} disabled={isReadOnly} /></Field>
+            <Field label="Nearest Hospital"><input className={inputCls} value={fields.landmarkHospital} onChange={e => handleChange('landmarkHospital', e.target.value)} disabled={isReadOnly} /></Field>
+            <Field label="Nearest Landmark"><input className={inputCls} value={fields.landmarkNearest} onChange={e => handleChange('landmarkNearest', e.target.value)} disabled={isReadOnly} /></Field>
+          </div>
         </div>
       </Section>
 
       {/* ── Section 3: Property Details ── */}
       <Section title="Property Details" number={3} defaultOpen={false}>
         <div className="space-y-3">
-          <OptionField label="Type of Usage of Entire Property" options={['Residential', 'Commercial', 'Residential cum Commercial', 'Industrial', 'Vacant Plot']} value={fields.usageType} onChange={v => handleChange('usageType', v)} disabled={isReadOnly} />
-          <OptionField label="Additional Amenities" options={['Garden', 'Swimming Pool', 'Not Applicable']} value={fields.additionalAmenities} onChange={v => handleChange('additionalAmenities', v)} disabled={isReadOnly} />
-          <OptionField label="Legal Status of Property" options={['Freehold', 'Lease hold >30 yrs.', 'Lease hold 15-30 yrs.', 'Lease hold <15 yrs.']} value={fields.legalStatus} onChange={v => handleChange('legalStatus', v)} disabled={isReadOnly} />
+          <div className="grid md:grid-cols-2 gap-4">
+            <Field label="Type of Usage of Entire Property">
+              <select className={selectCls} value={fields.usageType} onChange={e => handleChange('usageType', e.target.value)} disabled={isReadOnly}>
+                <option>Residential</option><option>Commercial</option><option>Residential cum Commercial</option><option>Industrial</option><option>Vacant Plot</option>
+              </select>
+            </Field>
+            <Field label="Additional Amenities">
+              <select className={selectCls} value={fields.additionalAmenities} onChange={e => handleChange('additionalAmenities', e.target.value)} disabled={isReadOnly}>
+                <option>Garden</option><option>Swimming Pool</option><option>Not Applicable</option>
+              </select>
+            </Field>
+            <Field label="Legal Status of Property">
+              <select className={selectCls} value={fields.legalStatus} onChange={e => handleChange('legalStatus', e.target.value)} disabled={isReadOnly}>
+                <option>Freehold</option><option>Lease hold {'>'}30 yrs.</option><option>Lease hold 15-30 yrs.</option><option>Lease hold {'<'}15 yrs.</option>
+              </select>
+            </Field>
+          </div>
         </div>
       </Section>
 
       {/* ── Section 4: Subject Property Details ── */}
       <Section title="Subject Property Details" number={4} defaultOpen={false}>
         <div className="space-y-3">
-          <OptionField label="Type of Premises" options={['Residential Flat', 'Gala', 'Shop', 'Bungalow', 'Row House', 'Office', 'Chawl', 'Open Plot', 'Showroom', 'Duplex Flat', 'Pent House']} value={fields.premisesType} onChange={v => handleChange('premisesType', v)} disabled={isReadOnly} />
+          <Field label="Type of Premises">
+            <select className={selectCls} value={fields.premisesType} onChange={e => handleChange('premisesType', e.target.value)} disabled={isReadOnly}>
+              <option>Residential Flat</option><option>Gala</option><option>Shop</option><option>Bungalow</option><option>Row House</option><option>Office</option><option>Chawl</option><option>Open Plot</option><option>Showroom</option><option>Duplex Flat</option><option>Pent House</option>
+            </select>
+          </Field>
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="Occupied by / Is Property Vacant">
               <input className={inputCls} value={fields.occupiedBy} onChange={e => handleChange('occupiedBy', e.target.value)} disabled={isReadOnly} placeholder="e.g. Self Occupied" />
@@ -1002,7 +1055,11 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
               <input className={inputCls} value={fields.rentedOccupants} onChange={e => handleChange('rentedOccupants', e.target.value)} disabled={isReadOnly} placeholder="NA" />
             </Field>
           </div>
-          <OptionField label="Property Taxation / Maintenance Cost" options={['Low', 'Average', 'High', 'Very High']} value={fields.propertyTaxation} onChange={v => handleChange('propertyTaxation', v)} disabled={isReadOnly} />
+          <Field label="Property Taxation / Maintenance Cost">
+            <select className={selectCls} value={fields.propertyTaxation} onChange={e => handleChange('propertyTaxation', e.target.value)} disabled={isReadOnly}>
+              <option>Low</option><option>Average</option><option>High</option><option>Very High</option>
+            </select>
+          </Field>
           <div className="mt-4">
             <p className="text-xs font-semibold text-[#495057] uppercase tracking-wider mb-3">Boundary Details \u2014 As per Sketch Map</p>
             <div className="grid md:grid-cols-2 gap-4">
@@ -1027,7 +1084,11 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
       {/* ── Section 5: Structural Details ── */}
       <Section title="Structural Details" number={5} defaultOpen={false}>
         <div className="space-y-3">
-          <OptionField label="Type of Structure" options={['RCC', 'Load Bearing', 'Steel Structure', 'Composite Structure', 'Industrial Shed', 'A/C Sheet', 'G/I Sheet', 'Asbestos Roofing']} value={fields.structureType} onChange={v => handleChange('structureType', v)} disabled={isReadOnly} />
+          <Field label="Type of Structure">
+            <select className={selectCls} value={fields.structureType} onChange={e => handleChange('structureType', e.target.value)} disabled={isReadOnly}>
+              <option>RCC</option><option>Load Bearing</option><option>Steel Structure</option><option>Composite Structure</option><option>Industrial Shed</option><option>A/C Sheet</option><option>G/I Sheet</option><option>Asbestos Roofing</option>
+            </select>
+          </Field>
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="No. of Floors"><input className={inputCls} value={fields.numberOfFloors} onChange={e => handleChange('numberOfFloors', e.target.value)} disabled={isReadOnly} /></Field>
             <Field label="No. of Wings"><input className={inputCls} value={fields.numberOfWings} onChange={e => handleChange('numberOfWings', e.target.value)} disabled={isReadOnly} placeholder="NA" /></Field>
@@ -1035,12 +1096,22 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
             <Field label="Internal Composition"><input className={inputCls} value={fields.internalComposition} onChange={e => handleChange('internalComposition', e.target.value)} disabled={isReadOnly} /></Field>
             <Field label="No. of Lifts"><input className={inputCls} value={fields.numberOfLifts} onChange={e => handleChange('numberOfLifts', e.target.value)} disabled={isReadOnly} placeholder="NA" /></Field>
           </div>
-          <OptionField label="Age of the Property" options={['1-10 years', '11-25 years', '26-50 years', '>50 years']} value={fields.ageOfProperty} onChange={v => handleChange('ageOfProperty', v)} disabled={isReadOnly} showCustomInput customValue={fields.ageOfProperty} onCustomChange={v => handleChange('ageOfProperty', v)} />
+          <div className="grid md:grid-cols-2 gap-4">
+            <Field label="Age of the Property">
+              <select className={selectCls} value={fields.ageOfProperty} onChange={e => handleChange('ageOfProperty', e.target.value)} disabled={isReadOnly}>
+                <option value="">Select...</option><option>1-10 years</option><option>11-25 years</option><option>26-50 years</option><option>{'>'}50 years</option>
+              </select>
+            </Field>
+          </div>
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="Estimated Future Life"><input className={inputCls} value={fields.estimatedFutureLife} onChange={e => handleChange('estimatedFutureLife', e.target.value)} disabled={isReadOnly} placeholder="e.g. 52 Years" /></Field>
             <Field label="Exteriors"><input className={inputCls} value={fields.exteriors} onChange={e => handleChange('exteriors', e.target.value)} disabled={isReadOnly} /></Field>
           </div>
-          <OptionField label="Quality of Construction, Appearance & Maintenance" options={['Very Good', 'Good', 'Average', 'Poor']} value={fields.qualityOfConstruction} onChange={v => handleChange('qualityOfConstruction', v)} disabled={isReadOnly} />
+          <Field label="Quality of Construction, Appearance & Maintenance">
+            <select className={selectCls} value={fields.qualityOfConstruction} onChange={e => handleChange('qualityOfConstruction', e.target.value)} disabled={isReadOnly}>
+              <option>Very Good</option><option>Good</option><option>Average</option><option>Poor</option>
+            </select>
+          </Field>
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="Common Areas Remarks"><input className={inputCls} value={fields.commonAreasRemarks} onChange={e => handleChange('commonAreasRemarks', e.target.value)} disabled={isReadOnly} /></Field>
             <Field label="Other Observations" span={2}>
@@ -1059,7 +1130,11 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
       {/* ── Section 6: Plan Approvals ── */}
       <Section title="Plan Approvals" number={6} defaultOpen={false}>
         <div className="space-y-3">
-          <OptionField label="Construction as per Approved Plans" options={['Yes', 'No']} value={fields.constructionApproved} onChange={v => handleChange('constructionApproved', v)} disabled={isReadOnly} />
+          <Field label="Construction as per Approved Plans">
+            <select className={selectCls} value={fields.constructionApproved} onChange={e => handleChange('constructionApproved', e.target.value)} disabled={isReadOnly}>
+              <option>Yes</option><option>No</option>
+            </select>
+          </Field>
           <div className="space-y-4">
             <Field label="Details of Approved Plan (Approval No. & Date)" span={2}>
               <textarea className={inputCls + ' resize-none'} rows={2} value={fields.approvalDetails} onChange={e => handleChange('approvalDetails', e.target.value)} disabled={isReadOnly} />
@@ -1242,8 +1317,18 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
           </div>
 
           <div className="mt-3 space-y-3">
-            <OptionField label="Marketability" options={['Excellent', 'Very Good', 'Good', 'Difficult']} value={fields.marketability} onChange={v => handleChange('marketability', v)} disabled={isReadOnly} />
-            <OptionField label="Valuation Result" options={['Positive', 'Negative']} value={fields.valuationResult} onChange={v => handleChange('valuationResult', v)} disabled={isReadOnly} />
+            <div className="grid md:grid-cols-2 gap-4">
+              <Field label="Marketability">
+                <select className={selectCls} value={fields.marketability} onChange={e => handleChange('marketability', e.target.value)} disabled={isReadOnly}>
+                  <option>Excellent</option><option>Very Good</option><option>Good</option><option>Difficult</option>
+                </select>
+              </Field>
+              <Field label="Valuation Result">
+                <select className={selectCls} value={fields.valuationResult} onChange={e => handleChange('valuationResult', e.target.value)} disabled={isReadOnly}>
+                  <option>Positive</option><option>Negative</option>
+                </select>
+              </Field>
+            </div>
             <Field label="Replacement Cost / Insurance Value (&#8377;)">
               <input className={inputCls} value={fields.replacementCost} onChange={e => handleChange('replacementCost', e.target.value)} disabled={isReadOnly} />
             </Field>
