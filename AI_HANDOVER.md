@@ -82,7 +82,7 @@ The core business logic is **100% complete**.
    - It captures the HTML layout (including a dedicated Photographs page at the end), paginates it, downloads it locally for the manager, and uploads the final PDF blob to the `reports/pdfs/` folder in the `valuation-documents` bucket.
    - **Automated Cleanup:** Upon finalization, the code automatically deletes all temporary property images inside the `temp-photos/${projectId}/` folder from Supabase Storage, and clears the `propertyImages` array inside the database's JSON report data, preventing any wasted storage space.
 7. **Preview & Precision Adjustments (Updated)**: 
-   - Report Agents and Managers can natively preview the PDF before finalization using the "Preview PDF" button.
+   - Report Agents and Managers can natively preview the PDF in a new tab ("Preview PDF") or directly download it locally ("Download PDF") before finalization.
    - Calculation engine updated to retain exact float values for accurate `Realizable Value` and `Distress Sale Value`.
    - Managers and Report Agents can dynamically adjust the Realizable Value percentage (default 90%) and Distress Sale Value percentage (default 80%) via explicit input boxes.
 8. **Delivery**: Client downloads the PDF from their dashboard.
