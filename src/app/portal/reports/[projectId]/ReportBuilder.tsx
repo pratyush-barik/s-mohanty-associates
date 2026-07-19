@@ -1358,21 +1358,88 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
       {/* ── Section 14: Location Map ── */}
       <Section title="Location Map" number={14} defaultOpen={false}>
         <div className="space-y-4">
-          {fields.locationMapImage ? (
-            <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] max-w-lg">
-              <img src={fields.locationMapImage} alt="Location Map" className="w-full object-contain" />
-              {!isReadOnly && (
-                <button onClick={() => handleChange('locationMapImage', '')} className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">Remove</button>
-              )}
-            </div>
-          ) : (
-            !isReadOnly && (
-              <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-                {uploading ? 'Uploading...' : '\uD83D\uDCCD Upload Location Map (Google Maps Screenshot)'}
-                <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'locationMapImage')} disabled={uploading} />
-              </label>
-            )
-          )}
+          {/* Live Google Maps Embed — auto-reads from property address */}
+          {(() => {
+            const mapQuery = fields.latitude && fields.longitude
+              ? `${fields.latitude},${fields.longitude}`
+              : fields.ownerAddress || '';
+            const encodedQuery = encodeURIComponent(mapQuery);
+            const hasQuery = mapQuery.trim().length > 0;
+            const googleMapsUrl = fields.latitude && fields.longitude
+              ? `https://www.google.com/maps?q=${fields.latitude},${fields.longitude}&z=15&t=k`
+              : `https://www.google.com/maps/search/${encodedQuery}`;
+            return (
+              <div className="space-y-3">
+                {hasQuery ? (
+                  <div className="rounded-xl overflow-hidden border border-[#c8d6e5] shadow-sm">
+                    <div className="bg-[#d5e8f5] px-4 py-2 flex items-center justify-between">
+                      <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider">
+                        Live Map Preview — Auto-loaded from Property Address
+                      </span>
+                      <a
+                        href={googleMapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-semibold text-[#b8860b] hover:underline"
+                      >
+                        Open in Google Maps &#x2197;
+                      </a>
+                    </div>
+                    <iframe
+                      src={`https://maps.google.com/maps?q=${encodedQuery}&t=k&z=16&output=embed`}
+                      width="100%"
+                      height="400"
+                      style={{ border: 0 }}
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      title="Property Location Map"
+                    />
+                    {fields.latitude && fields.longitude && (
+                      <div className="bg-[#0a1628] text-[#f0c040] px-4 py-2 text-sm font-bold text-center">
+                        Latitude: {fields.latitude}, Longitude: {fields.longitude}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="p-6 rounded-xl bg-[#f8f9fa] border border-[#dee2e6] text-center text-sm text-[#6c757d]">
+                    <p className="font-semibold mb-1">No address found.</p>
+                    <p>Fill in the <strong>Property Address</strong> in Section 1 (General Details) or enter Lat/Long below to auto-load the map.</p>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* Screenshot upload for PDF (iframe can't be captured by html2canvas) */}
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-[#495057] uppercase tracking-wider">
+              Screenshot for PDF Report
+            </p>
+            <p className="text-xs text-[#6c757d]">
+              The live map above is for reference. To include a map in the PDF, open Google Maps via the link above, take a satellite screenshot with the pin visible, and upload it below.
+            </p>
+            {fields.locationMapImage ? (
+              <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] max-w-lg">
+                <img src={fields.locationMapImage} alt="Location Map Screenshot" className="w-full object-contain" />
+                {!isReadOnly && (
+                  <button onClick={() => handleChange('locationMapImage', '')} className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">Remove</button>
+                )}
+                <div className="absolute bottom-0 left-0 right-0 bg-green-600/90 text-white text-center text-xs py-1 font-semibold">
+                  &#x2705; Screenshot uploaded — will appear in PDF
+                </div>
+              </div>
+            ) : (
+              !isReadOnly && (
+                <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+                  {uploading ? 'Uploading...' : '\uD83D\uDCCD Upload Map Screenshot for PDF'}
+                  <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'locationMapImage')} disabled={uploading} />
+                </label>
+              )
+            )}
+          </div>
+
+          {/* Lat/Long inputs */}
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="Latitude">
               <input className={inputCls} value={fields.latitude} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 19.976652" />
