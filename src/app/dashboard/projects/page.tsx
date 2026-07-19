@@ -38,7 +38,7 @@ export default async function ProjectsPage() {
     include: {
       serviceRequest: true,
       manager: { select: { name: true, email: true, profilePhoto: true } },
-      fieldEmployee: { select: { name: true, email: true, profilePhoto: true } },
+      fieldEmployees: { select: { name: true, email: true, profilePhoto: true } },
     },
     orderBy: { createdAt: 'desc' },
   });
@@ -107,10 +107,10 @@ export default async function ProjectsPage() {
                       <p className="text-sm font-medium text-[#0f2038]">{project.manager.name}</p>
                     </div>
                   )}
-                  {project.fieldEmployee && (
+                  {project.fieldEmployees && project.fieldEmployees.length > 0 && (
                     <div className="text-right">
                       <p className="text-xs text-[#adb5bd]">Field Agent</p>
-                      <p className="text-sm font-medium text-[#0f2038]">{project.fieldEmployee.name}</p>
+                      <p className="text-sm font-medium text-[#0f2038]">{project.fieldEmployees.map(e => e.name).join(', ')}</p>
                     </div>
                   )}
                   <svg className="w-5 h-5 text-[#adb5bd] group-hover:text-[#b8860b] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">

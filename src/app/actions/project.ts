@@ -373,7 +373,7 @@ export async function cancelReportSubmission(projectId: string) {
 
     await prisma.report.update({
       where: { id: report.id },
-      data: { status: 'DRAFT' }
+      data: { status: 'DRAFTING' }
     });
 
     await prisma.project.update({

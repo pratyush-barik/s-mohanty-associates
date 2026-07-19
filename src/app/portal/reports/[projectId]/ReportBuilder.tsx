@@ -500,6 +500,16 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     setLoading(false);
   };
 
+  const handleCancelSubmission = async () => {
+    if (!confirm('Cancel this submission and return to drafting?')) return;
+    setLoading(true);
+    const { cancelReportSubmission } = await import('@/app/actions/project');
+    const res = await cancelReportSubmission(projectId);
+    if (res.error) setMessage({ type: 'error', text: res.error });
+    else setMessage({ type: 'success', text: 'Submission cancelled. You can now edit the report.' });
+    setLoading(false);
+  };
+
   // ── PDF HTML Template ──
   // ── PDF HTML Template (Page-by-Page) ──
   function generatePDFPages(): string[] {

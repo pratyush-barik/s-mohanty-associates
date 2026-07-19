@@ -36,7 +36,7 @@ export default async function DashboardPage() {
       include: {
         serviceRequest: true,
         manager: { select: { name: true, email: true, profilePhoto: true } },
-        fieldEmployee: { select: { name: true, email: true, profilePhoto: true } },
+        fieldEmployees: { select: { name: true, email: true, profilePhoto: true } },
       },
       orderBy: { createdAt: 'desc' },
       take: 5,

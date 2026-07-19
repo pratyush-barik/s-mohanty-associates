@@ -13,14 +13,14 @@ export default async function PortalProjectsPage() {
   });
 
   if (!currentUser || !['OWNER', 'MANAGER'].includes(currentUser.role)) {
-    redirect('/portal/dashboard');
+    redirect('/portal');
   }
 
   // Fetch all projects (we could paginate this later)
   const projects = await prisma.project.findMany({
     include: {
       serviceRequest: { select: { propertyType: true, contactName: true } },
-      fieldEmployee: { select: { name: true } },
+      fieldEmployees: { select: { name: true } },
       reportEmployee: { select: { name: true } },
     },
     orderBy: { createdAt: 'desc' },
@@ -69,7 +69,7 @@ export default async function PortalProjectsPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-[#6c757d]">
-                    {project.fieldEmployee?.name || 'Unassigned'}
+                    {project.fieldEmployees.map(e => e.name).join(', ') || 'Unassigned'}
                   </td>
                   <td className="px-6 py-4">
                     <Link

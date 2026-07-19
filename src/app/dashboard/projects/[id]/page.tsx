@@ -239,15 +239,16 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                   photo={project.manager.profilePhoto}
                 />
               )}
-              {project.fieldEmployee && (
+              {project.fieldEmployees && project.fieldEmployees.map(emp => (
                 <TeamMemberCard
-                  name={project.fieldEmployee.name}
-                  email={project.fieldEmployee.email}
+                  key={emp.id}
+                  name={emp.name}
+                  email={emp.email}
                   role="Field Inspector"
-                  designation={project.fieldEmployee.designation}
-                  photo={project.fieldEmployee.profilePhoto}
+                  designation={emp.designation}
+                  photo={emp.profilePhoto}
                 />
-              )}
+              ))}
               {project.reportEmployee && (
                 <TeamMemberCard
                   name={project.reportEmployee.name}
@@ -257,7 +258,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                   photo={project.reportEmployee.profilePhoto}
                 />
               )}
-              {!project.manager && !project.fieldEmployee && !project.reportEmployee && (
+              {!project.manager && project.fieldEmployees.length === 0 && !project.reportEmployee && (
                 <p className="text-sm text-[#adb5bd]">Team assignment pending.</p>
               )}
             </div>

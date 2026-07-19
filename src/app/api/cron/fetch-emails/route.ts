@@ -40,7 +40,7 @@ export async function GET(request: Request) {
     
     try {
       // Search for Unread emails
-      const messages = await client.search({ seen: false });
+      const messages = (await client.search({ seen: false })) || [];
       
       let processedCount = 0;
 
