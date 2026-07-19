@@ -31,15 +31,37 @@ export default async function ProjectDetailsPage({ params }: { params: { id: str
 
   if (!project) return notFound();
 
-  // Fetch available employees for assignment
+  // Fetch available employees for assignment (with active project count)
   const fieldEmployees = await prisma.employee.findMany({
     where: { role: 'FIELD_EMPLOYEE', isActive: true },
-    select: { id: true, name: true, employeeId: true },
+    select: {
+      id: true,
+      name: true,
+      employeeId: true,
+      _count: {
+        select: {
+          fieldProjects: {
+            where: { status: { notIn: ['COMPLETED', 'ARCHIVED'] } },
+          },
+        },
+      },
+    },
   });
 
   const reportEmployees = await prisma.employee.findMany({
     where: { role: 'REPORT_EMPLOYEE', isActive: true },
-    select: { id: true, name: true, employeeId: true },
+    select: {
+      id: true,
+      name: true,
+      employeeId: true,
+      _count: {
+        select: {
+          reportProjects: {
+            where: { status: { notIn: ['COMPLETED', 'ARCHIVED'] } },
+          },
+        },
+      },
+    },
   });
 
   const managers = await prisma.employee.findMany({
