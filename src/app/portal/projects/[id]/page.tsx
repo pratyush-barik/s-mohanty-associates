@@ -5,7 +5,7 @@ import AssignTeamForm from './AssignTeamForm';
 import Link from 'next/link';
 import ReportBuilder from '../../reports/[projectId]/ReportBuilder';
 
-export default async function ProjectDetailsPage({ params }: { params: { id: string } }) {
+export default async function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth();
     if (!session?.user?.id) return null;
@@ -19,8 +19,10 @@ export default async function ProjectDetailsPage({ params }: { params: { id: str
       redirect('/portal/dashboard');
     }
 
+    const resolvedParams = await params;
+
     const project = await prisma.project.findUnique({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
       include: {
         serviceRequest: true,
         fieldEmployee: { select: { id: true, name: true, employeeId: true } },
