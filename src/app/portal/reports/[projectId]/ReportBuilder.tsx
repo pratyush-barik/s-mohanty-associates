@@ -46,8 +46,11 @@ interface ReportFields {
   developmentStatus: string;
   classOfLocality: string;
   civicAmenities: string[];
+  civicAmenitiesOther: string;
   distanceMainRoad: string;
+  distanceMainRoadUnit: string;
   distanceRailway: string;
+  distanceRailwayUnit: string;
   nearbyLandmarks: string;
 
   // Section 4 – Building Description
@@ -113,8 +116,11 @@ const DEFAULT_FIELDS: ReportFields = {
   classOfLocality: 'Middle Class',
   civicAmenities: [],
   distanceMainRoad: '',
+  distanceMainRoadUnit: 'Meters',
   distanceRailway: '',
+  distanceRailwayUnit: 'Km',
   nearbyLandmarks: '',
+  civicAmenitiesOther: '',
 
   structureType: 'RCC Framed',
   numberOfFloors: '1',
@@ -239,6 +245,28 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     setFields(prev => ({ ...prev, [field]: value }));
   }, []);
 
+  const getDecimalParts = (val: string) => {
+    const parts = (val || '').split('.');
+    return {
+      whole: parts[0] || '',
+      fraction: parts[1] || '',
+    };
+  };
+
+  const handleDecimalChange = (fieldName: keyof ReportFields, part: 'whole' | 'fraction', value: string) => {
+    const parts = (fields[fieldName] as string || '').split('.');
+    let whole = parts[0] || '0';
+    let fraction = parts[1] || '00';
+    
+    if (part === 'whole') {
+      whole = value || '0';
+    } else {
+      fraction = value || '00';
+    }
+    
+    handleChange(fieldName, `${whole}.${fraction}`);
+  };
+
   // ── Floor row helpers ──
   const addFloor = () => {
     const newId = String(Date.now());
@@ -305,7 +333,6 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     handleChange('propertyImages', fields.propertyImages.filter((_, i) => i !== index));
   };
 
-
   // ── Save / Submit ──
   const handleSaveDraft = async () => {
     setLoading(true);
@@ -315,45 +342,58 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     setLoading(false);
   };
 
-  const handleGeneratePDF = async (): Promise<Blob | null> => {
+  const handleGeneratePDF = async () => {
     try {
       const { default: html2canvas } = await import('html2canvas');
       const { default: jsPDF } = await import('jspdf');
 
-      // Create a hidden container with the report content for PDF
-      const pdfContainer = document.createElement('div');
-      pdfContainer.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;background:white;padding:40px;font-family:Arial,sans-serif;color:#111;';
-      pdfContainer.innerHTML = generatePDFHTML();
-      document.body.appendChild(pdfContainer);
+      const loadImage = (src: string): Promise<HTMLImageElement> => {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => resolve(img);
+          img.onerror = (e) => reject(e);
+          img.src = src;
+        });
+      };
 
-      const canvas = await html2canvas(pdfContainer, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        width: 794,
-        windowWidth: 794,
-      });
-
-      document.body.removeChild(pdfContainer);
-
-      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const letterheadImg = await loadImage('/templates/letterhead.png');
+      const pages = generatePDFPages();
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = pageWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-      let heightLeft = imgHeight;
-      let position = 0;
+      for (let i = 0; i < pages.length; i++) {
+        if (i > 0) {
+          pdf.addPage();
+        }
 
-      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+        // 1. Draw the background letterhead
+        pdf.addImage(letterheadImg, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
 
-      while (heightLeft > 0) {
-        position = position - pageHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+        // 2. Render the transparent page container
+        const pageContainer = document.createElement('div');
+        pageContainer.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;height:1123px;background:transparent;padding:170px 55px 90px 55px;box-sizing:border-box;font-family:Arial,sans-serif;color:#111;overflow:hidden;';
+        pageContainer.innerHTML = pages[i];
+        document.body.appendChild(pageContainer);
+
+        const canvas = await html2canvas(pageContainer, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          backgroundColor: null, // Transparent!
+          width: 794,
+          height: 1123,
+          windowWidth: 794,
+          windowHeight: 1123,
+        });
+
+        document.body.removeChild(pageContainer);
+
+        const pageImg = canvas.toDataURL('image/png'); // Use PNG for transparency!
+        
+        // 3. Draw the transparent page canvas on top of the letterhead background
+        pdf.addImage(pageImg, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
       }
 
       return pdf.output('blob');
@@ -453,11 +493,13 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
   };
 
   // ── PDF HTML Template ──
-  function generatePDFHTML(): string {
-    const titleStyle = 'font-size:16px;font-weight:bold;text-align:center;margin:10px 0;text-decoration:underline;';
-    const thStyle = 'border:1px solid #333;padding:6px 10px;background:#e8e0d4;font-weight:bold;text-align:left;font-size:11px;';
-    const tdStyle = 'border:1px solid #333;padding:6px 10px;font-size:11px;';
-    const headingStyle = 'font-size:13px;font-weight:bold;background:#d4c5a9;padding:6px 10px;border:1px solid #333;text-align:center;';
+  // ── PDF HTML Template (Page-by-Page) ──
+  function generatePDFPages(): string[] {
+    const tableStyle = 'width:100%;border-collapse:collapse;margin-bottom:15px;';
+    const titleStyle = 'font-size:14px;font-weight:bold;text-align:center;margin:10px 0;text-decoration:underline;color:#0f2038;';
+    const thStyle = 'border:1px solid #333;padding:5px 8px;background:#e8e0d4;font-weight:bold;text-align:left;font-size:10px;color:#111;';
+    const tdStyle = 'border:1px solid #333;padding:5px 8px;font-size:10px;color:#222;';
+    const headingStyle = 'font-size:11px;font-weight:bold;background:#d4c5a9;padding:5px 8px;border:1px solid #333;text-align:center;color:#0f2038;';
 
     const floorRowsHTML = floorValuations.map(f => `
       <tr>
@@ -473,44 +515,46 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
       </tr>
     `).join('');
 
-    return `
-      <div style="font-family:Arial,sans-serif;color:#111;line-height:1.5;">
-        <!-- Header Image (Letterhead) -->
-        <div style="text-align:center;margin-bottom:20px;">
-          <img src="/templates/letterhead.png" style="width:100%;max-height:180px;object-fit:contain;" alt="Letterhead" crossOrigin="anonymous" />
-        </div>
-
-        <p style="${titleStyle}">VALUATION REPORT</p>
+    const page1 = `
+      <div style="font-family:Arial,sans-serif;color:#111;line-height:1.4;">
+        <p style="${titleStyle} margin-top:0;">VALUATION REPORT</p>
 
         <!-- Part 1: Details Table -->
-        <table style="width:100%;border-collapse:collapse;margin-bottom:15px;">
+        <table style="${tableStyle}">
           <tr><td style="${headingStyle}" colspan="4">PART 1 — BASIC DETAILS</td></tr>
-          <tr><td style="${thStyle}" width="25%">Owner / Applicant</td><td style="${tdStyle}" colspan="3">${fields.ownerName}</td></tr>
-          <tr><td style="${thStyle}">Owner Address</td><td style="${tdStyle}" colspan="3">${fields.ownerAddress}</td></tr>
-          <tr><td style="${thStyle}">Bank / FI</td><td style="${tdStyle}">${fields.bankName}</td><td style="${thStyle}">Branch</td><td style="${tdStyle}">${fields.branchName}</td></tr>
-          <tr><td style="${thStyle}">Purpose</td><td style="${tdStyle}">${fields.purpose}</td><td style="${thStyle}">Date of Inspection</td><td style="${tdStyle}">${fields.dateOfInspection}</td></tr>
-          <tr><td style="${thStyle}">Date of Valuation</td><td style="${tdStyle}" colspan="3">${fields.dateOfValuation}</td></tr>
+          <tr><td style="${thStyle}" width="25%">Owner / Applicant</td><td style="${tdStyle}" colspan="3">${fields.ownerName || 'N/A'}</td></tr>
+          <tr><td style="${thStyle}">Owner Address</td><td style="${tdStyle}" colspan="3">${fields.ownerAddress || 'N/A'}</td></tr>
+          <tr><td style="${thStyle}">Bank / FI</td><td style="${tdStyle}">${fields.bankName || 'N/A'}</td><td style="${thStyle}">Branch</td><td style="${tdStyle}">${fields.branchName || 'N/A'}</td></tr>
+          <tr><td style="${thStyle}">Purpose</td><td style="${tdStyle}">${fields.purpose || 'N/A'}</td><td style="${thStyle}">Date of Inspection</td><td style="${tdStyle}">${fields.dateOfInspection || 'N/A'}</td></tr>
+          <tr><td style="${thStyle}">Date of Valuation</td><td style="${tdStyle}" colspan="3">${fields.dateOfValuation || 'N/A'}</td></tr>
 
           <tr><td style="${headingStyle}" colspan="4">PROPERTY DESCRIPTION (As per Deed)</td></tr>
-          <tr><td style="${thStyle}">Khata No.</td><td style="${tdStyle}">${fields.khataNo}</td><td style="${thStyle}">Plot No.</td><td style="${tdStyle}">${fields.plotNo}</td></tr>
-          <tr><td style="${thStyle}">Mouza / Area</td><td style="${tdStyle}">${fields.mouza}</td><td style="${thStyle}">Tahasil</td><td style="${tdStyle}">${fields.tahasil}</td></tr>
-          <tr><td style="${thStyle}">District</td><td style="${tdStyle}">${fields.district}</td><td style="${thStyle}">State</td><td style="${tdStyle}">${fields.state}</td></tr>
-          <tr><td style="${thStyle}">Land Area</td><td style="${tdStyle}" colspan="3">${fields.landArea} ${fields.landAreaUnit}</td></tr>
-          <tr><td style="${thStyle}">Boundary — North</td><td style="${tdStyle}">${fields.boundaryNorth}</td><td style="${thStyle}">South</td><td style="${tdStyle}">${fields.boundarySouth}</td></tr>
-          <tr><td style="${thStyle}">Boundary — East</td><td style="${tdStyle}">${fields.boundaryEast}</td><td style="${thStyle}">West</td><td style="${tdStyle}">${fields.boundaryWest}</td></tr>
+          <tr><td style="${thStyle}">Khata No.</td><td style="${tdStyle}">${fields.khataNo || 'N/A'}</td><td style="${thStyle}">Plot No.</td><td style="${tdStyle}">${fields.plotNo || 'N/A'}</td></tr>
+          <tr><td style="${thStyle}">Mouza / Area</td><td style="${tdStyle}">${fields.mouza || 'N/A'}</td><td style="${thStyle}">Tahasil</td><td style="${tdStyle}">${fields.tahasil || 'N/A'}</td></tr>
+          <tr><td style="${thStyle}">District</td><td style="${tdStyle}">${fields.district || 'N/A'}</td><td style="${thStyle}">State</td><td style="${tdStyle}">${fields.state || 'N/A'}</td></tr>
+          <tr><td style="${thStyle}">Land Area</td><td style="${tdStyle}" colspan="3">${fields.landArea || '0.00'} ${fields.landAreaUnit}</td></tr>
+          <tr><td style="${thStyle}">Boundary — North</td><td style="${tdStyle}">${fields.boundaryNorth || 'N/A'}</td><td style="${thStyle}">South</td><td style="${tdStyle}">${fields.boundarySouth || 'N/A'}</td></tr>
+          <tr><td style="${thStyle}">Boundary — East</td><td style="${tdStyle}">${fields.boundaryEast || 'N/A'}</td><td style="${thStyle}">West</td><td style="${tdStyle}">${fields.boundaryWest || 'N/A'}</td></tr>
 
           <tr><td style="${headingStyle}" colspan="4">LOCALITY DESCRIPTION</td></tr>
-          <tr><td style="${thStyle}">Locality Type</td><td style="${tdStyle}">${fields.localityType}</td><td style="${thStyle}">Development Status</td><td style="${tdStyle}">${fields.developmentStatus}</td></tr>
-          <tr><td style="${thStyle}">Class of Locality</td><td style="${tdStyle}">${fields.classOfLocality}</td><td style="${thStyle}">Distance from Main Road</td><td style="${tdStyle}">${fields.distanceMainRoad}</td></tr>
-          <tr><td style="${thStyle}">Civic Amenities</td><td style="${tdStyle}" colspan="3">${fields.civicAmenities?.join(', ') || 'N/A'}</td></tr>
+          <tr><td style="${thStyle}">Locality Type</td><td style="${tdStyle}">${fields.localityType || 'N/A'}</td><td style="${thStyle}">Development Status</td><td style="${tdStyle}">${fields.developmentStatus || 'N/A'}</td></tr>
+          <tr><td style="${thStyle}">Class of Locality</td><td style="${tdStyle}">${fields.classOfLocality || 'N/A'}</td><td style="${thStyle}">Distance from Main Road</td><td style="${tdStyle}">${fields.distanceMainRoad || '0.00'} ${fields.distanceMainRoadUnit || 'Meters'}</td></tr>
+          <tr><td style="${thStyle}">Distance from Railway / Airport</td><td style="${tdStyle}">${fields.distanceRailway || '0.00'} ${fields.distanceRailwayUnit || 'Km'}</td><td style="${thStyle}">Nearby Landmarks</td><td style="${tdStyle}">${fields.nearbyLandmarks || 'N/A'}</td></tr>
+          <tr><td style="${thStyle}">Civic Amenities</td><td style="${tdStyle}" colspan="3">${(fields.civicAmenities || []).filter(a => a !== 'Other').concat(fields.civicAmenities?.includes('Other') && fields.civicAmenitiesOther ? [fields.civicAmenitiesOther] : []).join(', ') || 'N/A'}</td></tr>
+        </table>
+      </div>
+    `;
 
+    const page2 = `
+      <div style="font-family:Arial,sans-serif;color:#111;line-height:1.4;">
+        <table style="${tableStyle}">
           <tr><td style="${headingStyle}" colspan="4">BUILDING DESCRIPTION</td></tr>
-          <tr><td style="${thStyle}">Structure Type</td><td style="${tdStyle}">${fields.structureType}</td><td style="${thStyle}">No. of Floors</td><td style="${tdStyle}">${fields.numberOfFloors}</td></tr>
-          <tr><td style="${thStyle}">Foundation</td><td style="${tdStyle}">${fields.foundation}</td><td style="${thStyle}">Superstructure</td><td style="${tdStyle}">${fields.superstructure}</td></tr>
-          <tr><td style="${thStyle}">Roof</td><td style="${tdStyle}">${fields.roofType}</td><td style="${thStyle}">Flooring</td><td style="${tdStyle}">${fields.flooringType}</td></tr>
-          <tr><td style="${thStyle}">Doors & Windows</td><td style="${tdStyle}">${fields.doorsWindows}</td><td style="${thStyle}">Plastering</td><td style="${tdStyle}">${fields.plastering}</td></tr>
-          <tr><td style="${thStyle}">Sanitary</td><td style="${tdStyle}">${fields.sanitary}</td><td style="${thStyle}">Electrification</td><td style="${tdStyle}">${fields.electrification}</td></tr>
-          <tr><td style="${thStyle}">Quality</td><td style="${tdStyle}">${fields.qualityOfConstruction}</td><td style="${thStyle}">Maintenance</td><td style="${tdStyle}">${fields.maintenanceCondition}</td></tr>
+          <tr><td style="${thStyle}" width="25%">Structure Type</td><td style="${tdStyle}">${fields.structureType || 'N/A'}</td><td style="${thStyle}">No. of Floors</td><td style="${tdStyle}">${fields.numberOfFloors || 'N/A'}</td></tr>
+          <tr><td style="${thStyle}">Foundation</td><td style="${tdStyle}">${fields.foundation || 'N/A'}</td><td style="${thStyle}">Superstructure</td><td style="${tdStyle}">${fields.superstructure || 'N/A'}</td></tr>
+          <tr><td style="${thStyle}">Roof</td><td style="${tdStyle}">${fields.roofType || 'N/A'}</td><td style="${thStyle}">Flooring</td><td style="${tdStyle}">${fields.flooringType || 'N/A'}</td></tr>
+          <tr><td style="${thStyle}">Doors & Windows</td><td style="${tdStyle}">${fields.doorsWindows || 'N/A'}</td><td style="${thStyle}">Plastering</td><td style="${tdStyle}">${fields.plastering || 'N/A'}</td></tr>
+          <tr><td style="${thStyle}">Sanitary</td><td style="${tdStyle}">${fields.sanitary || 'N/A'}</td><td style="${thStyle}">Electrification</td><td style="${tdStyle}">${fields.electrification || 'N/A'}</td></tr>
+          <tr><td style="${thStyle}">Quality</td><td style="${tdStyle}">${fields.qualityOfConstruction || 'N/A'}</td><td style="${thStyle}">Maintenance</td><td style="${tdStyle}">${fields.maintenanceCondition || 'N/A'}</td></tr>
         </table>
 
         <!-- Floor-wise Depreciation Table -->
@@ -545,45 +589,62 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
           <tr><td style="${thStyle}">Distress / Forced Sale Value (80%)</td><td style="${tdStyle} text-align:right;">₹ ${formatIndianCurrency(distressValue)}</td></tr>
           ${fields.guidelineValue ? `<tr><td style="${thStyle}">Government / Guideline Value</td><td style="${tdStyle} text-align:right;">₹ ${formatIndianCurrency(fields.guidelineValue)}</td></tr>` : ''}
         </table>
+      </div>
+    `;
+
+    const page3 = `
+      <div style="font-family:Arial,sans-serif;color:#111;line-height:1.5;">
+        <table style="${tableStyle}">
+          <tr><td style="${headingStyle}" colspan="2">REMARKS, DEMARCATION & POSSESSION</td></tr>
+          <tr><td style="${thStyle}" width="25%">Demarcation</td><td style="${tdStyle}">${fields.demarcation || 'N/A'}</td></tr>
+          <tr><td style="${thStyle}">Possession</td><td style="${tdStyle}">${fields.possession || 'N/A'}</td></tr>
+          <tr><td style="${thStyle}">Remarks / Observations</td><td style="${tdStyle}">${fields.remarks || 'N/A'}</td></tr>
+        </table>
 
         <!-- Certificate -->
         <p style="${titleStyle}">VALUATION CERTIFICATE</p>
-        <div style="border:1px solid #333;padding:15px;font-size:11px;line-height:1.8;margin-bottom:15px;">
-          <p>This is to certify that the undersigned has personally inspected the property belonging to 
+        <div style="border:1px solid #333;padding:12px;font-size:10px;line-height:1.6;margin-bottom:15px;background:#fdfcf8;">
+          <p style="margin-top:0;">This is to certify that the undersigned has personally inspected the property belonging to 
           <strong>${fields.ownerName}</strong> situated at <strong>${fields.ownerAddress}</strong> on 
           <strong>${fields.dateOfInspection}</strong> and after careful examination and consideration of all relevant factors,
           the Fair Market Value of the said property is assessed as under:</p>
-          <br/>
-          <p><strong>Fair Market Value: ₹ ${formatIndianCurrency(totalPropertyValue)} (${rupeesInWords(totalPropertyValue)})</strong></p>
-          <p><strong>Realizable Value: ₹ ${formatIndianCurrency(realizableValue)} (${rupeesInWords(realizableValue)})</strong></p>
-          <p><strong>Distress Sale Value: ₹ ${formatIndianCurrency(distressValue)} (${rupeesInWords(distressValue)})</strong></p>
+          <p style="margin-bottom:4px;"><strong>Fair Market Value: ₹ ${formatIndianCurrency(totalPropertyValue)} (${rupeesInWords(totalPropertyValue)})</strong></p>
+          <p style="margin-bottom:4px;"><strong>Realizable Value: ₹ ${formatIndianCurrency(realizableValue)} (${rupeesInWords(realizableValue)})</strong></p>
+          <p style="margin-bottom:0;"><strong>Distress Sale Value: ₹ ${formatIndianCurrency(distressValue)} (${rupeesInWords(distressValue)})</strong></p>
         </div>
 
         <!-- Signature -->
-        <div style="margin-top:40px;text-align:right;font-size:11px;">
+        <div style="margin-top:30px;text-align:right;font-size:10px;line-height:1.4;">
           <p>_______________________________</p>
-          <p style="font-weight:bold;">Satyajit Mohanty</p>
-          <p>B.Sc.(Engg.), M.Tech (IIT Kharagpur)</p>
-          <p>Registered Valuer — IBBI/RV/02/2019/10594</p>
-          <p>S. Mohanty & Associates, Bhubaneswar</p>
+          <p style="font-weight:bold;margin:2px 0 0 0;color:#0f2038;">Satyajit Mohanty</p>
+          <p style="margin:2px 0 0 0;">B.Sc.(Engg.), M.Tech (IIT Kharagpur)</p>
+          <p style="margin:2px 0 0 0;">Registered Valuer — IBBI/RV/02/2019/10594</p>
+          <p style="margin:2px 0 0 0;color:#666;">S. Mohanty & Associates, Bhubaneswar</p>
         </div>
-
-        <!-- Property Photographs Page -->
-        \${fields.propertyImages && fields.propertyImages.length > 0 ? \`
-          <div style="page-break-before:always;margin-top:20px;">
-            <p style="\${titleStyle}">PROPERTY PHOTOGRAPHS</p>
-            <div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:15px;margin-top:20px;">
-              \${fields.propertyImages.map((url, idx) => \`
-                <div style="border:1px solid #ddd;padding:5px;border-radius:4px;text-align:center;">
-                  <img src="\${url}" style="width:100%;height:220px;object-fit:cover;border-radius:2px;" />
-                  <p style="font-size:10px;margin-top:5px;color:#666;">Photograph #\${idx + 1}</p>
-                </div>
-              \`).join('')}
-            </div>
-          </div>
-        \` : ''}
       </div>
     `;
+
+    const generatedPages = [page1, page2, page3];
+
+    // Property Photographs Page (Optional Page 4)
+    if (fields.propertyImages && fields.propertyImages.length > 0) {
+      const page4 = `
+        <div style="font-family:Arial,sans-serif;color:#111;line-height:1.4;">
+          <p style="${titleStyle} margin-top:0;">PROPERTY PHOTOGRAPHS</p>
+          <div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:15px;margin-top:20px;">
+            ${fields.propertyImages.map((url, idx) => `
+              <div style="border:1px solid #ddd;padding:5px;border-radius:4px;text-align:center;background:#fff;">
+                <img src="${url}" style="width:100%;height:200px;object-fit:cover;border-radius:2px;" crossOrigin="anonymous" />
+                <p style="font-size:9px;margin:5px 0 0 0;color:#666;font-weight:bold;">Photograph #${idx + 1}</p>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      generatedPages.push(page4);
+    }
+
+    return generatedPages;
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -643,9 +704,11 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
             </select>
           </Field>
           <Field label="Land Area">
-            <div className="flex gap-2">
-              <input className={inputCls + ' flex-1'} value={fields.landArea} onChange={e => handleChange('landArea', e.target.value)} disabled={isReadOnly} placeholder="e.g. 1500" />
-              <select className={selectCls + ' w-24'} value={fields.landAreaUnit} onChange={e => handleChange('landAreaUnit', e.target.value)} disabled={isReadOnly}>
+            <div className="flex gap-2 items-center">
+              <input type="number" className={inputCls + ' text-right w-28'} value={getDecimalParts(fields.landArea).whole} onChange={e => handleDecimalChange('landArea', 'whole', e.target.value)} disabled={isReadOnly} placeholder="0" />
+              <span className="font-bold text-lg text-gray-500">.</span>
+              <input type="number" className={inputCls + ' w-20'} value={getDecimalParts(fields.landArea).fraction} onChange={e => handleDecimalChange('landArea', 'fraction', e.target.value)} disabled={isReadOnly} placeholder="00" />
+              <select className={selectCls + ' w-28'} value={fields.landAreaUnit} onChange={e => handleChange('landAreaUnit', e.target.value)} disabled={isReadOnly}>
                 <option>Sqft</option><option>Decimal</option><option>Acre</option><option>Sqm</option>
               </select>
             </div>
@@ -680,13 +743,31 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
               <option>Upper Class</option><option>Middle Class</option><option>Lower Middle Class</option><option>Lower Class</option>
             </select>
           </Field>
-          <Field label="Distance from Main Road"><input className={inputCls} value={fields.distanceMainRoad} onChange={e => handleChange('distanceMainRoad', e.target.value)} disabled={isReadOnly} placeholder="e.g. 50 meters" /></Field>
-          <Field label="Distance from Railway Stn / Airport"><input className={inputCls} value={fields.distanceRailway} onChange={e => handleChange('distanceRailway', e.target.value)} disabled={isReadOnly} placeholder="e.g. 5 km" /></Field>
+          <Field label="Distance from Main Road">
+            <div className="flex gap-2 items-center">
+              <input type="number" className={inputCls + ' text-right w-24'} value={getDecimalParts(fields.distanceMainRoad).whole} onChange={e => handleDecimalChange('distanceMainRoad', 'whole', e.target.value)} disabled={isReadOnly} placeholder="0" />
+              <span className="font-bold text-lg text-gray-500">.</span>
+              <input type="number" className={inputCls + ' w-20'} value={getDecimalParts(fields.distanceMainRoad).fraction} onChange={e => handleDecimalChange('distanceMainRoad', 'fraction', e.target.value)} disabled={isReadOnly} placeholder="00" />
+              <select className={selectCls + ' w-28'} value={fields.distanceMainRoadUnit} onChange={e => handleChange('distanceMainRoadUnit', e.target.value)} disabled={isReadOnly}>
+                <option>Meters</option><option>Km</option><option>Feet</option>
+              </select>
+            </div>
+          </Field>
+          <Field label="Distance from Railway Stn / Airport">
+            <div className="flex gap-2 items-center">
+              <input type="number" className={inputCls + ' text-right w-24'} value={getDecimalParts(fields.distanceRailway).whole} onChange={e => handleDecimalChange('distanceRailway', 'whole', e.target.value)} disabled={isReadOnly} placeholder="0" />
+              <span className="font-bold text-lg text-gray-500">.</span>
+              <input type="number" className={inputCls + ' w-20'} value={getDecimalParts(fields.distanceRailway).fraction} onChange={e => handleDecimalChange('distanceRailway', 'fraction', e.target.value)} disabled={isReadOnly} placeholder="00" />
+              <select className={selectCls + ' w-28'} value={fields.distanceRailwayUnit} onChange={e => handleChange('distanceRailwayUnit', e.target.value)} disabled={isReadOnly}>
+                <option>Km</option><option>Miles</option>
+              </select>
+            </div>
+          </Field>
           <Field label="Nearby Landmarks"><input className={inputCls} value={fields.nearbyLandmarks} onChange={e => handleChange('nearbyLandmarks', e.target.value)} disabled={isReadOnly} /></Field>
         </div>
         <div className="mt-4">
           <p className="text-xs font-semibold text-[#495057] uppercase tracking-wider mb-3">Civic Amenities</p>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3 mb-3">
             {CIVIC_AMENITIES_OPTIONS.map(opt => (
               <label key={opt} className="flex items-center gap-2 text-sm text-[#495057] cursor-pointer">
                 <input
@@ -702,7 +783,30 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
                 {opt}
               </label>
             ))}
+            <label className="flex items-center gap-2 text-sm text-[#495057] cursor-pointer">
+              <input
+                type="checkbox"
+                checked={fields.civicAmenities?.includes('Other')}
+                onChange={e => {
+                  const arr = fields.civicAmenities || [];
+                  handleChange('civicAmenities', e.target.checked ? [...arr, 'Other'] : arr.filter(a => a !== 'Other'));
+                }}
+                disabled={isReadOnly}
+                className="rounded border-[#dee2e6] text-[#b8860b] focus:ring-[#b8860b]"
+              />
+              Other
+            </label>
           </div>
+          {fields.civicAmenities?.includes('Other') && (
+            <input
+              type="text"
+              placeholder="Specify other amenities (comma separated)..."
+              className={inputCls}
+              value={fields.civicAmenitiesOther || ''}
+              onChange={e => handleChange('civicAmenitiesOther', e.target.value)}
+              disabled={isReadOnly}
+            />
+          )}
         </div>
       </Section>
 
@@ -714,7 +818,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
               <option>RCC Framed</option><option>Load Bearing</option><option>Mixed (RCC + Load Bearing)</option><option>Steel Structure</option>
             </select>
           </Field>
-          <Field label="Number of Floors"><input className={inputCls} value={fields.numberOfFloors} onChange={e => handleChange('numberOfFloors', e.target.value)} disabled={isReadOnly} /></Field>
+          <Field label="Number of Floors"><input type="number" className={inputCls} value={fields.numberOfFloors} onChange={e => handleChange('numberOfFloors', e.target.value)} disabled={isReadOnly} /></Field>
           <Field label="Foundation"><input className={inputCls} value={fields.foundation} onChange={e => handleChange('foundation', e.target.value)} disabled={isReadOnly} /></Field>
           <Field label="Superstructure"><input className={inputCls} value={fields.superstructure} onChange={e => handleChange('superstructure', e.target.value)} disabled={isReadOnly} /></Field>
           <Field label="Roof Type"><input className={inputCls} value={fields.roofType} onChange={e => handleChange('roofType', e.target.value)} disabled={isReadOnly} /></Field>
@@ -760,19 +864,19 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
                     <input className={inputCls + ' !py-1.5 text-xs'} value={f.name} onChange={e => updateFloor(f.id, 'name', e.target.value)} disabled={isReadOnly} />
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                    <input className={inputCls + ' !py-1.5 text-xs text-right'} value={f.area} onChange={e => updateFloor(f.id, 'area', e.target.value)} disabled={isReadOnly} placeholder="0" />
+                    <input type="number" step="any" className={inputCls + ' !py-1.5 text-xs text-right'} value={f.area} onChange={e => updateFloor(f.id, 'area', e.target.value)} disabled={isReadOnly} placeholder="0" />
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                    <input className={inputCls + ' !py-1.5 text-xs text-right'} value={f.rate} onChange={e => updateFloor(f.id, 'rate', e.target.value)} disabled={isReadOnly} placeholder="0" />
+                    <input type="number" step="any" className={inputCls + ' !py-1.5 text-xs text-right'} value={f.rate} onChange={e => updateFloor(f.id, 'rate', e.target.value)} disabled={isReadOnly} placeholder="0" />
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef] text-right text-xs font-medium text-[#0f2038]">
                     ₹{formatIndianCurrency(f.estimated)}
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                    <input className={inputCls + ' !py-1.5 text-xs text-center'} value={f.lifeYears} onChange={e => updateFloor(f.id, 'lifeYears', e.target.value)} disabled={isReadOnly} />
+                    <input type="number" className={inputCls + ' !py-1.5 text-xs text-center'} value={f.lifeYears} onChange={e => updateFloor(f.id, 'lifeYears', e.target.value)} disabled={isReadOnly} />
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                    <input className={inputCls + ' !py-1.5 text-xs text-center'} value={f.ageYears} onChange={e => updateFloor(f.id, 'ageYears', e.target.value)} disabled={isReadOnly} />
+                    <input type="number" className={inputCls + ' !py-1.5 text-xs text-center'} value={f.ageYears} onChange={e => updateFloor(f.id, 'ageYears', e.target.value)} disabled={isReadOnly} />
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef] text-center text-xs font-medium text-[#b8860b]">
                     {f.depPct}%
