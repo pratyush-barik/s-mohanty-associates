@@ -31,38 +31,40 @@ export default async function ProjectDetailsPage({ params }: { params: { id: str
 
   if (!project) return notFound();
 
-  // Fetch available employees for assignment (with active project count)
-  const fieldEmployees = await prisma.employee.findMany({
+  // Fetch available employees for assignment (fail-proof method mapping counts manually)
+  const fieldEmployeesData = await prisma.employee.findMany({
     where: { role: 'FIELD_EMPLOYEE', isActive: true },
-    select: {
-      id: true,
-      name: true,
-      employeeId: true,
-      _count: {
-        select: {
-          fieldProjects: {
-            where: { status: { notIn: ['COMPLETED', 'ARCHIVED'] } },
-          },
-        },
+    include: {
+      fieldProjects: {
+        where: { status: { notIn: ['COMPLETED', 'ARCHIVED'] } },
+        select: { id: true },
       },
     },
   });
 
-  const reportEmployees = await prisma.employee.findMany({
+  const fieldEmployees = fieldEmployeesData.map((emp) => ({
+    id: emp.id,
+    name: emp.name,
+    employeeId: emp.employeeId,
+    _count: { fieldProjects: emp.fieldProjects.length },
+  }));
+
+  const reportEmployeesData = await prisma.employee.findMany({
     where: { role: 'REPORT_EMPLOYEE', isActive: true },
-    select: {
-      id: true,
-      name: true,
-      employeeId: true,
-      _count: {
-        select: {
-          reportProjects: {
-            where: { status: { notIn: ['COMPLETED', 'ARCHIVED'] } },
-          },
-        },
+    include: {
+      reportProjects: {
+        where: { status: { notIn: ['COMPLETED', 'ARCHIVED'] } },
+        select: { id: true },
       },
     },
   });
+
+  const reportEmployees = reportEmployeesData.map((emp) => ({
+    id: emp.id,
+    name: emp.name,
+    employeeId: emp.employeeId,
+    _count: { reportProjects: emp.reportProjects.length },
+  }));
 
   const managers = await prisma.employee.findMany({
     where: { role: { in: ['MANAGER', 'OWNER'] }, isActive: true },

@@ -47,6 +47,7 @@ export default function AssignTeamForm({
   // Modal State
   const [activeModal, setActiveModal] = useState<'FIELD' | 'REPORT' | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [modalError, setModalError] = useState<string | null>(null);
 
   const handleAssign = async () => {
     setLoading(true);
@@ -226,19 +227,27 @@ export default function AssignTeamForm({
                 Select {activeModal === 'FIELD' ? 'Field Agent' : 'Report Staff'}
               </h2>
               <button 
-                onClick={() => { setActiveModal(null); setSearchQuery(''); }}
+                onClick={() => { setActiveModal(null); setSearchQuery(''); setModalError(null); }}
                 className="text-[#6c757d] hover:text-[#0f2038] text-2xl leading-none"
               >
                 &times;
               </button>
             </div>
             
-            <div className="p-4 border-b border-[#e9ecef]">
+            <div className="p-4 border-b border-[#e9ecef] space-y-3">
+              {modalError && (
+                <div className="p-3 bg-red-50 text-red-700 text-sm border border-red-200 rounded-xl">
+                  {modalError}
+                </div>
+              )}
               <input
                 type="text"
                 placeholder="Search by name or ID number..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setModalError(null);
+                }}
                 className="input-field w-full"
                 autoFocus
               />
@@ -268,12 +277,13 @@ export default function AssignTeamForm({
                     key={emp.id}
                     onClick={() => {
                       if (isBusy) {
-                        alert("That employee is already assigned to another active project.");
+                        setModalError('This employee is already assigned to another case, please deploy another.');
                         return;
                       }
                       activeModal === 'FIELD' ? setFieldId(emp.id) : setReportId(emp.id);
                       setActiveModal(null);
                       setSearchQuery('');
+                      setModalError(null);
                     }}
                     className={`w-full text-left px-4 py-3 rounded-xl border transition-colors flex items-center justify-between ${
                       isBusy 
