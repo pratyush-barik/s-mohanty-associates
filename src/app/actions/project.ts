@@ -10,7 +10,7 @@ import { revalidatePath } from 'next/cache';
  */
 export async function updateProjectTeam(
   projectId: string,
-  fieldEmployeeId: string | null,
+  fieldEmployeeIds: string[],
   reportEmployeeId: string | null
 ) {
   const session = await auth();
@@ -30,7 +30,7 @@ export async function updateProjectTeam(
   try {
     const currentProject = await prisma.project.findUnique({
       where: { id: projectId },
-      select: { status: true },
+      select: { status: true, reportEmployeeId: true },
     });
 
     if (!currentProject) {
@@ -40,13 +40,17 @@ export async function updateProjectTeam(
     await prisma.project.update({
       where: { id: projectId },
       data: {
-        fieldEmployeeId,
+        fieldEmployees: {
+          set: fieldEmployeeIds.map((id) => ({ id })),
+        },
         reportEmployeeId,
       },
     });
 
-    // Handle Inspection record
-    if (fieldEmployeeId) {
+    // Handle Inspection record (using the first field agent as the primary inspector for the sheet)
+    const primaryFieldEmployeeId = fieldEmployeeIds[0] || null;
+
+    if (primaryFieldEmployeeId) {
       const existingInspection = await prisma.inspection.findUnique({
         where: { projectId },
       });
@@ -55,14 +59,14 @@ export async function updateProjectTeam(
         await prisma.inspection.create({
           data: {
             projectId,
-            employeeId: fieldEmployeeId,
+            employeeId: primaryFieldEmployeeId,
             status: 'PENDING',
           },
         });
       } else {
         await prisma.inspection.update({
           where: { projectId },
-          data: { employeeId: fieldEmployeeId },
+          data: { employeeId: primaryFieldEmployeeId },
         });
       }
     } else {
@@ -559,5 +563,45 @@ export async function declineManagerTransfer(projectId: string) {
   } catch (error) {
     console.error('Failed to decline transfer:', error);
     return { error: 'Failed to decline project transfer.' };
+  }
+}
+
+/**
+ * Owner/Manager: Cancel a pending project transfer.
+ */
+export async function cancelManagerTransfer(projectId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: 'Unauthorized' };
+
+  const caller = await prisma.employee.findUnique({
+    where: { id: session.user.id },
+    select: { role: true, id: true },
+  });
+
+  if (!caller || !['OWNER', 'MANAGER'].includes(caller.role)) {
+    return { error: 'Only owners and managers can cancel project transfers.' };
+  }
+
+  try {
+    const project = await prisma.project.findUnique({ where: { id: projectId } });
+    if (!project) return { error: 'Project not found.' };
+
+    if (caller.role === 'MANAGER' && project.assignedManagerId !== caller.id) {
+      return { error: 'You are not authorized to cancel this transfer.' };
+    }
+
+    await prisma.project.update({
+      where: { id: projectId },
+      data: {
+        pendingManagerId: null,
+      },
+    });
+
+    revalidatePath(`/portal/projects/${projectId}`);
+    revalidatePath('/portal/projects');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to cancel transfer:', error);
+    return { error: 'Failed to cancel project transfer.' };
   }
 }

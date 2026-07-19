@@ -77,7 +77,7 @@ model Employee {
   // Relations
   managedProjects Project[]        @relation("ProjectManager")
   pendingProjects Project[]        @relation("PendingProjectManager")
-  fieldProjects   Project[]        @relation("FieldEmployee")
+  fieldProjects   Project[]        @relation("ProjectFieldEmployees")
   reportProjects  Project[]        @relation("ReportEmployee")
   inspections     Inspection[]
   reports         Report[]
@@ -188,7 +188,6 @@ model Project {
   status           ProjectStatus @default(PENDING_REVIEW)
   assignedManagerId  String?
   pendingManagerId   String?
-  fieldEmployeeId    String?
   reportEmployeeId   String?
   startDate        DateTime?
   completionDate   DateTime?
@@ -198,7 +197,7 @@ model Project {
   serviceRequest ServiceRequest  @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
   manager        Employee?       @relation("ProjectManager", fields: [assignedManagerId], references: [id])
   pendingManager Employee?       @relation("PendingProjectManager", fields: [pendingManagerId], references: [id])
-  fieldEmployee  Employee?       @relation("FieldEmployee", fields: [fieldEmployeeId], references: [id])
+  fieldEmployees Employee[]      @relation("ProjectFieldEmployees")
   reportEmployee Employee?       @relation("ReportEmployee", fields: [reportEmployeeId], references: [id])
   messages       ProjectMessage[]
   documents      Document[]      @relation("ProjectDocuments")

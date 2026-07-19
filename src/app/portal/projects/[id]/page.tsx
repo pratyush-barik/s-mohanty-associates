@@ -25,7 +25,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
       where: { id: resolvedParams.id },
       include: {
         serviceRequest: true,
-        fieldEmployee: { select: { id: true, name: true, employeeId: true } },
+        fieldEmployees: { select: { id: true, name: true, employeeId: true } },
         reportEmployee: { select: { id: true, name: true, employeeId: true } },
         manager: { select: { id: true, name: true } },
         report: true,
@@ -115,7 +115,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
         {/* Assignment UI */}
         <AssignTeamForm
           projectId={project.id}
-          currentFieldId={project.fieldEmployeeId}
+          currentFieldIds={project.fieldEmployees.map((e) => e.id)}
           currentReportId={project.reportEmployeeId}
           currentManagerId={project.assignedManagerId}
           pendingManagerId={project.pendingManagerId}
