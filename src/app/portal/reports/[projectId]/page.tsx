@@ -62,73 +62,56 @@ export default async function ReportEditorPage({ params }: { params: Promise<{ p
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Left Column: Property & Field Details */}
-          <div className="lg:col-span-1 space-y-6">
-            <div className="card p-6 bg-[#f8f9fa]">
-              <h3 className="text-lg font-bold text-[#0f2038] mb-4" style={{ fontFamily: 'var(--font-heading)' }}>
-                Project Information
-              </h3>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1">Client Contact</p>
-                  <p className="text-sm font-medium text-[#0f2038]">{serviceRequest.contactName}</p>
-                  <a href={`tel:${serviceRequest.contactPhone}`} className="text-sm text-[#b8860b] hover:underline block">{serviceRequest.contactPhone}</a>
-                  <a href={`mailto:${serviceRequest.contactEmail}`} className="text-sm text-[#b8860b] hover:underline block">{serviceRequest.contactEmail}</a>
-                </div>
-                <hr className="border-[#e9ecef]" />
-                <div>
-                  <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1">Property</p>
-                  <p className="text-sm font-medium text-[#0f2038]">{serviceRequest.propertyType} — {serviceRequest.purpose}</p>
-                  <p className="text-sm text-[#6c757d] mt-1">{serviceRequest.propertyAddress}</p>
-                </div>
-                <hr className="border-[#e9ecef]" />
-                <div>
-                  <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1">Field Agent details</p>
-                  {project.fieldEmployees.length > 0 ? (
-                    <div className="space-y-2">
-                      {project.fieldEmployees.map((emp) => (
-                        <div key={emp.email} className="mb-2">
-                          <p className="text-sm font-medium text-[#0f2038]">{emp.name}</p>
-                          {emp.mobile && <a href={`tel:${emp.mobile}`} className="text-sm text-[#b8860b] hover:underline block">{emp.mobile}</a>}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-[#6c757d]">Not assigned</p>
-                  )}
-                </div>
-                {project.inspection?.notes && (
-                  <>
-                    <hr className="border-[#e9ecef]" />
-                    <div>
-                      <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1">Field Inspection Notes</p>
-                      <p className="text-xs text-[#212529] bg-white p-3 rounded-xl border border-[#dee2e6] whitespace-pre-wrap font-medium">
-                        {project.inspection.notes}
-                      </p>
-                    </div>
-                  </>
-                )}
+        {/* Project Information Horizontal Bar */}
+        <div className="card p-6 bg-[#f8f9fa] border border-[#e9ecef] grid md:grid-cols-3 gap-6">
+          <div>
+            <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1.5">Client & Property</p>
+            <p className="text-sm font-bold text-[#0f2038]">{serviceRequest.contactName}</p>
+            <p className="text-xs text-[#6c757d]">{serviceRequest.propertyType} — {serviceRequest.purpose}</p>
+            <p className="text-xs text-[#6c757d] mt-1">{serviceRequest.propertyAddress}</p>
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1.5">Field Agent details</p>
+            {project.fieldEmployees.length > 0 ? (
+              <div className="space-y-1">
+                {project.fieldEmployees.map((emp) => (
+                  <div key={emp.email} className="text-xs">
+                    <span className="font-semibold text-[#0f2038]">{emp.name}</span>
+                    {emp.mobile && <span className="text-[#6c757d]"> ({emp.mobile})</span>}
+                  </div>
+                ))}
               </div>
-            </div>
+            ) : (
+              <p className="text-xs text-[#6c757d]">No inspectors assigned</p>
+            )}
           </div>
+          <div>
+            <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1.5">Field Inspection Notes</p>
+            {project.inspection?.notes ? (
+              <p className="text-xs text-[#212529] bg-white p-2.5 rounded-lg border border-[#dee2e6] max-h-24 overflow-y-auto whitespace-pre-wrap font-medium">
+                {project.inspection.notes}
+              </p>
+            ) : (
+              <p className="text-xs text-[#6c757d] italic">No site notes recorded.</p>
+            )}
+          </div>
+        </div>
 
-          {/* Right Column: Report Builder */}
-          <div className="lg:col-span-2">
-            <ReportBuilder
-              projectId={project.id}
-              initialFields={report?.data || null}
-              status={project.status}
-              userRole={currentUser.role}
-              prefill={{
-                contactName: serviceRequest.contactName,
-                contactPhone: serviceRequest.contactPhone,
-                contactEmail: serviceRequest.contactEmail,
-                propertyAddress: serviceRequest.propertyAddress,
-                propertyType: serviceRequest.propertyType,
-              }}
-            />
-          </div>
+        {/* Report Builder (Full Width) */}
+        <div className="w-full">
+          <ReportBuilder
+            projectId={project.id}
+            initialFields={report?.data || null}
+            status={project.status}
+            userRole={currentUser.role}
+            prefill={{
+              contactName: serviceRequest.contactName,
+              contactPhone: serviceRequest.contactPhone,
+              contactEmail: serviceRequest.contactEmail,
+              propertyAddress: serviceRequest.propertyAddress,
+              propertyType: serviceRequest.propertyType,
+            }}
+          />
         </div>
       </div>
     );

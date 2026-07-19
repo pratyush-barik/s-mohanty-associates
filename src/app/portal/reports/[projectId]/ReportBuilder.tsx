@@ -52,6 +52,7 @@ interface ReportFields {
   distanceRailway: string;
   distanceRailwayUnit: string;
   nearbyLandmarks: string;
+  floorAreaUnit: string;
 
   // Section 4 – Building Description
   structureType: string;
@@ -121,6 +122,7 @@ const DEFAULT_FIELDS: ReportFields = {
   distanceRailwayUnit: 'Km',
   nearbyLandmarks: '',
   civicAmenitiesOther: '',
+  floorAreaUnit: '',
 
   structureType: 'RCC Framed',
   numberOfFloors: '1',
@@ -235,6 +237,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const [activeSection, setActiveSection] = useState(0);
   const reportRef = useRef<HTMLDivElement>(null);
@@ -312,16 +315,20 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     const fileList = e.target.files;
     if (!fileList || fileList.length === 0) return;
     setUploading(true);
-    setMessage(null);
+    setUploadError(null);
 
     const newUrls = [...(fields.propertyImages || [])];
     for (let i = 0; i < fileList.length; i++) {
       const file = fileList[i];
+      if (file.size > 5 * 1024 * 1024) {
+        setUploadError(`Failed to upload ${file.name}: File exceeds 5MB size limit.`);
+        continue;
+      }
       const ext = file.name.split('.').pop();
       const fileName = `${projectId}-${Math.random().toString(36).substring(2)}.${ext}`;
       const filePath = `temp-photos/${projectId}/${fileName}`;
       const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(filePath, file);
-      if (error) { setMessage({ type: 'error', text: `Failed to upload ${file.name}` }); continue; }
+      if (error) { setUploadError(`Failed to upload ${file.name}: ${error.message}`); continue; }
       const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
       newUrls.push(data.publicUrl);
     }
@@ -842,13 +849,27 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
 
       {/* ── Section 5: Floor-wise Area & Section 7: Depreciation (Combined) ── */}
       <Section title="Floor-wise Area & Building Valuation" number={5}>
+        <div className="flex justify-between items-center mb-4">
+          <h4 className="text-sm font-semibold text-[#0f2038]">Building Valuation Details</h4>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-[#6c757d] font-bold uppercase tracking-wide">Floor Unit:</span>
+            <select
+              className={selectCls + ' !py-1 !text-xs w-28'}
+              value={fields.floorAreaUnit || fields.landAreaUnit || 'Sqft'}
+              onChange={e => handleChange('floorAreaUnit', e.target.value)}
+              disabled={isReadOnly}
+            >
+              <option>Sqft</option><option>Decimal</option><option>Acre</option><option>Sqm</option>
+            </select>
+          </div>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="bg-[#0a1628] text-white">
                 <th className="px-3 py-2.5 text-left font-semibold text-xs">Floor</th>
-                <th className="px-3 py-2.5 text-right font-semibold text-xs">Area (Sqft)</th>
-                <th className="px-3 py-2.5 text-right font-semibold text-xs">Rate (₹/Sqft)</th>
+                <th className="px-3 py-2.5 text-right font-semibold text-xs">Area (${fields.floorAreaUnit || fields.landAreaUnit || 'Sqft'})</th>
+                <th className="px-3 py-2.5 text-right font-semibold text-xs">Rate (₹/${fields.floorAreaUnit || fields.landAreaUnit || 'Sqft'})</th>
                 <th className="px-3 py-2.5 text-right font-semibold text-xs">Estimated (₹)</th>
                 <th className="px-3 py-2.5 text-center font-semibold text-xs">Life (Yr)</th>
                 <th className="px-3 py-2.5 text-center font-semibold text-xs">Age (Yr)</th>
@@ -861,25 +882,32 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
               {floorValuations.map((f, idx) => (
                 <tr key={f.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-[#f8f9fa]'}>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                    <input className={inputCls + ' !py-1.5 text-xs'} value={f.name} onChange={e => updateFloor(f.id, 'name', e.target.value)} disabled={isReadOnly} />
+                    <input className={inputCls + ' !py-1.5 text-xs'} value={f.name || ''} onChange={e => updateFloor(f.id, 'name', e.target.value)} disabled={isReadOnly} />
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                    <input type="number" step="any" className={inputCls + ' !py-1.5 text-xs text-right'} value={f.area} onChange={e => updateFloor(f.id, 'area', e.target.value)} disabled={isReadOnly} placeholder="0" />
+                    <input type="number" step="any" className={inputCls + ' !py-1.5 text-xs text-right'} value={f.area || ''} onChange={e => updateFloor(f.id, 'area', e.target.value)} disabled={isReadOnly} placeholder="0" />
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                    <input type="number" step="any" className={inputCls + ' !py-1.5 text-xs text-right'} value={f.rate} onChange={e => updateFloor(f.id, 'rate', e.target.value)} disabled={isReadOnly} placeholder="0" />
+                    <input type="number" step="any" className={inputCls + ' !py-1.5 text-xs text-right'} value={f.rate || ''} onChange={e => updateFloor(f.id, 'rate', e.target.value)} disabled={isReadOnly} placeholder="0" />
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef] text-right text-xs font-medium text-[#0f2038]">
                     ₹{formatIndianCurrency(f.estimated)}
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                    <input type="number" className={inputCls + ' !py-1.5 text-xs text-center'} value={f.lifeYears} onChange={e => updateFloor(f.id, 'lifeYears', e.target.value)} disabled={isReadOnly} />
+                    <input type="number" className={inputCls + ' !py-1.5 text-xs text-center'} value={f.lifeYears || ''} onChange={e => updateFloor(f.id, 'lifeYears', e.target.value)} disabled={isReadOnly} />
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                    <input type="number" className={inputCls + ' !py-1.5 text-xs text-center'} value={f.ageYears} onChange={e => updateFloor(f.id, 'ageYears', e.target.value)} disabled={isReadOnly} />
+                    <input type="number" className={inputCls + ' !py-1.5 text-xs text-center'} value={f.ageYears || ''} onChange={e => updateFloor(f.id, 'ageYears', e.target.value)} disabled={isReadOnly} />
                   </td>
-                  <td className="px-2 py-1.5 border-b border-[#e9ecef] text-center text-xs font-medium text-[#b8860b]">
-                    {f.depPct}%
+                  <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                    <input 
+                      type="number" 
+                      className={inputCls + ' !py-1.5 text-xs text-center font-bold text-[#b8860b]'} 
+                      value={f.depreciationPct !== undefined && f.depreciationPct !== null ? f.depreciationPct : ''} 
+                      onChange={e => updateFloor(f.id, 'depreciationPct', e.target.value)} 
+                      disabled={isReadOnly}
+                      placeholder={`${computeDepreciation(parseNum(f.lifeYears), parseNum(f.ageYears))}`}
+                    />
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef] text-right text-xs font-bold text-[#0f2038]">
                     ₹{formatIndianCurrency(f.netValue)}
@@ -894,7 +922,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
               {/* Totals */}
               <tr className="bg-[#f0ead6] font-bold">
                 <td className="px-3 py-2.5 text-xs">TOTAL</td>
-                <td className="px-3 py-2.5 text-right text-xs">{formatIndianCurrency(totalPlinthArea)} Sqft</td>
+                <td className="px-3 py-2.5 text-right text-xs">{formatIndianCurrency(totalPlinthArea)} {fields.floorAreaUnit || fields.landAreaUnit || 'Sqft'}</td>
                 <td className="px-3 py-2.5" colSpan={5}></td>
                 <td className="px-3 py-2.5 text-right text-xs text-[#0f2038]">₹{formatIndianCurrency(totalBuildingValue)}</td>
                 {!isReadOnly && <td></td>}
@@ -1019,10 +1047,20 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
             ))}
           </div>
           {!isReadOnly && (
-            <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-              {uploading ? 'Uploading...' : '📷 Add Property Images'}
-              <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} disabled={uploading} />
-            </label>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+                  {uploading ? 'Uploading...' : '📷 Add Property Images'}
+                  <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} disabled={uploading} />
+                </label>
+                <span className="text-xs text-[#6c757d]">Max size: 5MB per photograph</span>
+              </div>
+              {uploadError && (
+                <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold">
+                  ⚠️ {uploadError}
+                </div>
+              )}
+            </div>
           )}
         </Section>
       )}
