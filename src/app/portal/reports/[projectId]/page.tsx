@@ -25,7 +25,8 @@ export default async function ReportEditorPage({ params }: { params: Promise<{ p
       include: {
         serviceRequest: true,
         report: true,
-        fieldEmployees: { select: { name: true, email: true, mobile: true } },
+        fieldEmployees: { select: { name: true, email: true, mobile: true, employeeId: true } },
+        manager: { select: { name: true, employeeId: true, mobile: true } },
         inspection: { select: { notes: true } },
       }
     });
@@ -71,13 +72,13 @@ export default async function ReportEditorPage({ params }: { params: Promise<{ p
             <p className="text-xs text-[#6c757d] mt-1">{serviceRequest.propertyAddress}</p>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1.5">Field Agent details</p>
+            <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1.5">Field Agent Details</p>
             {project.fieldEmployees.length > 0 ? (
               <div className="space-y-1">
                 {project.fieldEmployees.map((emp) => (
                   <div key={emp.email} className="text-xs">
-                    <span className="font-semibold text-[#0f2038]">{emp.name}</span>
-                    {emp.mobile && <span className="text-[#6c757d]"> ({emp.mobile})</span>}
+                    <p className="font-semibold text-[#0f2038]">{emp.name}</p>
+                    <p className="text-gray-500">Agent ID: {emp.employeeId || 'N/A'}</p>
                   </div>
                 ))}
               </div>
@@ -86,16 +87,28 @@ export default async function ReportEditorPage({ params }: { params: Promise<{ p
             )}
           </div>
           <div>
-            <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1.5">Field Inspection Notes</p>
-            {project.inspection?.notes ? (
-              <p className="text-xs text-[#212529] bg-white p-2.5 rounded-lg border border-[#dee2e6] max-h-24 overflow-y-auto whitespace-pre-wrap font-medium">
-                {project.inspection.notes}
-              </p>
+            <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1.5">Assigned Manager</p>
+            {project.manager ? (
+              <div className="text-xs space-y-0.5">
+                <p className="font-semibold text-[#0f2038]">{project.manager.name}</p>
+                <p className="text-gray-500">Manager ID: {project.manager.employeeId || 'N/A'}</p>
+                {project.manager.mobile && <p className="text-gray-500">Phone: {project.manager.mobile}</p>}
+              </div>
             ) : (
-              <p className="text-xs text-[#6c757d] italic">No site notes recorded.</p>
+              <p className="text-xs text-[#6c757d] italic">No manager assigned</p>
             )}
           </div>
         </div>
+
+        {/* Site Inspection Notes (Full Width if present) */}
+        {project.inspection?.notes && (
+          <div className="card p-6 bg-amber-50/30 border border-amber-100">
+            <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1.5">Field Inspection Notes</p>
+            <p className="text-xs text-[#212529] whitespace-pre-wrap font-medium">
+              {project.inspection.notes}
+            </p>
+          </div>
+        )}
 
         {/* Report Builder (Full Width) */}
         <div className="w-full">

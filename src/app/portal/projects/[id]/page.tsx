@@ -27,7 +27,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
         serviceRequest: true,
         fieldEmployees: { select: { id: true, name: true, employeeId: true } },
         reportEmployee: { select: { id: true, name: true, employeeId: true } },
-        manager: { select: { id: true, name: true } },
+        manager: { select: { id: true, name: true, employeeId: true, mobile: true } },
         report: true,
       },
     });
@@ -125,10 +125,10 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
           userRole={currentUser.role}
         />
 
-        {/* Request Details (Read Only Overview) */}
+        {/* Request & Assignment Details */}
         <div className="card p-6">
           <h3 className="text-lg font-bold text-[#0f2038] mb-4" style={{ fontFamily: 'var(--font-heading)' }}>
-            Request Details
+            Request & Assignment Details
           </h3>
           <div className="grid sm:grid-cols-2 gap-6">
             <div>
@@ -141,6 +141,38 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
               <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1">Property</p>
               <p className="text-sm font-medium text-[#0f2038]">{project.serviceRequest?.propertyType || 'N/A'} — {project.serviceRequest?.purpose || 'N/A'}</p>
               <p className="text-sm text-[#6c757d]">{project.serviceRequest?.propertyAddress || 'N/A'}</p>
+            </div>
+          </div>
+          
+          <hr className="my-6 border-[#e9ecef]" />
+          
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between py-1 border-b border-[#f1f3f5]">
+              <span className="text-xs font-bold text-[#6c757d] uppercase tracking-wider">Assigned Manager</span>
+              {project.manager ? (
+                <div className="text-right">
+                  <p className="text-sm font-semibold text-[#0f2038]">{project.manager.name}</p>
+                  <p className="text-xs text-gray-500">Manager ID: {project.manager.employeeId || 'N/A'} | Phone: {project.manager.mobile || 'N/A'}</p>
+                </div>
+              ) : (
+                <span className="text-xs text-gray-400 font-semibold italic">Not Assigned</span>
+              )}
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between py-1 border-b border-[#f1f3f5]">
+              <span className="text-xs font-bold text-[#6c757d] uppercase tracking-wider">Field Agents (Inspectors)</span>
+              {project.fieldEmployees.length > 0 ? (
+                <div className="text-right space-y-1">
+                  {project.fieldEmployees.map(emp => (
+                    <div key={emp.id} className="text-xs">
+                      <span className="font-semibold text-[#0f2038]">{emp.name}</span>
+                      <span className="text-gray-500"> (Agent ID: {emp.employeeId || 'N/A'})</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <span className="text-xs text-gray-400 font-semibold italic">Not Assigned</span>
+              )}
             </div>
           </div>
         </div>

@@ -243,6 +243,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
   const reportRef = useRef<HTMLDivElement>(null);
 
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
+  const isManagerOrOwner = userRole === 'MANAGER' || userRole === 'OWNER';
 
   const handleChange = useCallback((field: keyof ReportFields, value: any) => {
     setFields(prev => ({ ...prev, [field]: value }));
@@ -260,13 +261,13 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     const parts = (fields[fieldName] as string || '').split('.');
     let whole = parts[0] || '0';
     let fraction = parts[1] || '00';
-    
+
     if (part === 'whole') {
       whole = value || '0';
     } else {
       fraction = value || '00';
     }
-    
+
     handleChange(fieldName, `${whole}.${fraction}`);
   };
 
@@ -398,7 +399,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
         document.body.removeChild(pageContainer);
 
         const pageImg = canvas.toDataURL('image/png'); // Use PNG for transparency!
-        
+
         // 3. Draw the transparent page canvas on top of the letterhead background
         pdf.addImage(pageImg, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
       }
@@ -439,7 +440,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     if (!confirm('Finalize and save this report? This will generate the official PDF.')) return;
     setLoading(true);
     setMessage({ type: 'success', text: 'Generating final PDF...' });
-    
+
     // Save Manager's draft first
     await saveReportDraft(projectId, fields);
 
@@ -454,13 +455,13 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
         const { data: urlData } = supabaseBrowser.storage
           .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
           .getPublicUrl(pdfPath);
-        
+
         // Cleanup all temporary photographs from Supabase
         try {
           const { data: files } = await supabaseBrowser.storage
             .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
             .list(`temp-photos/${projectId}`);
-          
+
           if (files && files.length > 0) {
             const paths = files.map(f => `temp-photos/${projectId}/${f.name}`);
             await supabaseBrowser.storage
@@ -900,11 +901,11 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
                     <input type="number" className={inputCls + ' !py-1.5 text-xs text-center'} value={f.ageYears || ''} onChange={e => updateFloor(f.id, 'ageYears', e.target.value)} disabled={isReadOnly} />
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                    <input 
-                      type="number" 
-                      className={inputCls + ' !py-1.5 text-xs text-center font-bold text-[#b8860b]'} 
-                      value={f.depreciationPct !== undefined && f.depreciationPct !== null ? f.depreciationPct : ''} 
-                      onChange={e => updateFloor(f.id, 'depreciationPct', e.target.value)} 
+                    <input
+                      type="number"
+                      className={inputCls + ' !py-1.5 text-xs text-center font-bold text-[#b8860b]'}
+                      value={f.depreciationPct !== undefined && f.depreciationPct !== null ? f.depreciationPct : ''}
+                      onChange={e => updateFloor(f.id, 'depreciationPct', e.target.value)}
                       disabled={isReadOnly}
                       placeholder={`${computeDepreciation(parseNum(f.lifeYears), parseNum(f.ageYears))}`}
                     />
@@ -944,7 +945,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
             <input className={inputCls} value={fields.landArea} disabled={true} />
           </Field>
           <Field label={`Rate per ${fields.landAreaUnit} (₹)`}>
-            <input type="number" step="any" className={inputCls} value={fields.landRatePerUnit} onChange={e => handleChange('landRatePerUnit', e.target.value)} disabled={isReadOnly} placeholder="e.g. 3000" />
+            <input className={inputCls} value={fields.landRatePerUnit} onChange={e => handleChange('landRatePerUnit', e.target.value)} disabled={isReadOnly} placeholder="e.g. 3000" />
           </Field>
           <Field label="Total Land Value (₹)">
             <div className="px-3 py-2.5 rounded-lg bg-[#f0ead6] border border-[#d4c5a9] text-sm font-bold text-[#0f2038]">
@@ -983,7 +984,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
 
           <div className="mt-3">
             <Field label="Govt. / Guideline Value (₹) — Manual">
-              <input type="number" step="any" className={inputCls} value={fields.guidelineValue} onChange={e => handleChange('guidelineValue', e.target.value)} disabled={isReadOnly} placeholder="As per Govt. record (optional)" />
+              <input className={inputCls} value={fields.guidelineValue} onChange={e => handleChange('guidelineValue', e.target.value)} disabled={isReadOnly} placeholder="As per Govt. record (optional)" />
             </Field>
           </div>
         </div>
@@ -1066,7 +1067,27 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
       )}
 
       {/* ── Action Buttons ── */}
-      <div className="flex flex-wrap gap-4 pt-2">
+      <div className="flex flex-wrap gap-4 pt-2 items-center">
+        {/* If completed, show verified banner on agent side / completed banner */}
+        {status === 'COMPLETED' && (
+          <div className="w-full p-4 rounded-xl bg-green-50 border border-green-200 text-green-800 font-bold flex items-center gap-2">
+            <span>✅</span> Verified and Completed (Pushed to storage for client download)
+          </div>
+        )}
+
+        {status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE' && (
+          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 font-semibold mb-2">
+            <span>⏳ Currently Under Manager Review.</span>
+            <button
+              onClick={handleCancelSubmission}
+              disabled={loading}
+              className="px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg text-xs font-bold transition-colors"
+            >
+              ↩️ Cancel Submission (Pull back to Draft)
+            </button>
+          </div>
+        )}
+
         {!isReadOnly && (
           <>
             <button
@@ -1094,7 +1115,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
           📄 Preview PDF
         </button>
 
-        {status === 'MANAGER_REVIEW' && isReadOnly && (
+        {status === 'MANAGER_REVIEW' && isManagerOrOwner && (
           <>
             <button
               onClick={handleRework}

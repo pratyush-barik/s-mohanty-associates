@@ -361,6 +361,38 @@ export async function sendReportForRework(projectId: string) {
 }
 
 /**
+ * Agent: Cancel submitted report, bringing it back to DRAFT / REPORT_DRAFTING
+ */
+export async function cancelReportSubmission(projectId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: 'Unauthorized' };
+
+  try {
+    const report = await prisma.report.findFirst({ where: { projectId } });
+    if (!report) return { error: 'Report data not found.' };
+
+    await prisma.report.update({
+      where: { id: report.id },
+      data: { status: 'DRAFT' }
+    });
+
+    await prisma.project.update({
+      where: { id: projectId },
+      data: { status: 'REPORT_DRAFTING' }
+    });
+
+    revalidatePath(`/portal/reports/${projectId}`);
+    revalidatePath('/portal/my-projects');
+    revalidatePath(`/portal/projects/${projectId}`);
+    revalidatePath('/portal/projects');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to cancel submission:', error);
+    return { error: 'Failed to cancel submission.' };
+  }
+}
+
+/**
  * Manager: Finalize report with PDF URL
  */
 export async function finalizeReport(projectId: string, pdfUrl: string) {
