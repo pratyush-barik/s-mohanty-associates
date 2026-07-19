@@ -4,7 +4,7 @@ import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import InspectionClient from './InspectionClient';
 
-export default async function InspectionDetailsPage({ params }: { params: { projectId: string } }) {
+export default async function InspectionDetailsPage({ params }: { params: Promise<{ projectId: string }> }) {
   const session = await auth();
   if (!session?.user?.id) return null;
 
@@ -17,8 +17,10 @@ export default async function InspectionDetailsPage({ params }: { params: { proj
     redirect('/portal/dashboard');
   }
 
+  const { projectId } = await params;
+
   const inspection = await prisma.inspection.findUnique({
-    where: { projectId: params.projectId },
+    where: { projectId },
     include: {
       project: {
         include: {
@@ -111,6 +113,7 @@ export default async function InspectionDetailsPage({ params }: { params: { proj
             projectId={inspection.projectId}
             initialStatus={inspection.status}
             initialNotes={inspection.notes}
+            initialMeasurements={inspection.measurements}
           />
         </div>
       </div>

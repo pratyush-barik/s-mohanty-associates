@@ -161,6 +161,84 @@ export async function updateInspectionStatus(
 }
 
 /**
+ * Update the milestone of an inspection and log the timestamp.
+ */
+export async function updateInspectionMilestone(
+  projectId: string,
+  milestone: 'startedAt' | 'reachedSiteAt' | 'inspectedAt' | 'completedAt',
+  notes?: string
+) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: 'Unauthorized' };
+
+  try {
+    const inspection = await prisma.inspection.findUnique({
+      where: { projectId },
+      include: { project: true }
+    });
+
+    if (!inspection) return { error: 'Inspection not found.' };
+
+    // Verify ownership or manager
+    const user = await prisma.employee.findUnique({ where: { id: session.user.id } });
+    if (!user) return { error: 'Unauthorized' };
+
+    if (user.role === 'FIELD_EMPLOYEE' && inspection.employeeId !== session.user.id) {
+      return { error: 'You are not assigned to this inspection.' };
+    }
+
+    // Update status based on milestone
+    let status = inspection.status;
+    let completedAt = inspection.completedAt;
+
+    if (milestone === 'startedAt') {
+      status = 'IN_PROGRESS';
+    } else if (milestone === 'completedAt') {
+      status = 'COMPLETED';
+      completedAt = new Date();
+    }
+
+    // Parse existing measurements/milestones safely
+    const currentMeasurements = (inspection.measurements as any) || {};
+    const currentMilestones = currentMeasurements.milestones || {};
+    
+    currentMilestones[milestone] = new Date().toISOString();
+    currentMeasurements.milestones = currentMilestones;
+
+    await prisma.inspection.update({
+      where: { projectId },
+      data: { 
+        status,
+        completedAt,
+        measurements: currentMeasurements,
+        ...(notes !== undefined && { notes })
+      }
+    });
+
+    // If completed or started, update project status
+    if (milestone === 'completedAt' && inspection.project.status === 'INSPECTION_IN_PROGRESS') {
+      await prisma.project.update({
+        where: { id: projectId },
+        data: { status: 'INSPECTION_COMPLETED' }
+      });
+    } else if (milestone === 'startedAt' && inspection.project.status === 'ASSIGNED') {
+      await prisma.project.update({
+        where: { id: projectId },
+        data: { status: 'INSPECTION_IN_PROGRESS' }
+      });
+    }
+
+    revalidatePath(`/portal/inspections/${projectId}`);
+    revalidatePath('/portal/inspections');
+    revalidatePath(`/portal/projects/${projectId}`);
+    return { success: true, measurements: currentMeasurements };
+  } catch (error) {
+    console.error('Failed to update inspection milestone:', error);
+    return { error: 'Failed to update inspection milestone.' };
+  }
+}
+
+/**
  * Save report draft fields (JSON data)
  */
 export async function saveReportDraft(projectId: string, fields: any) {
