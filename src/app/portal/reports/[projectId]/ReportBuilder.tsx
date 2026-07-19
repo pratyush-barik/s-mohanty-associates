@@ -437,7 +437,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
   };
 
   const handleFinalize = async () => {
-    if (!confirm('Finalize and save this report? This will generate the official PDF.')) return;
+    if (!confirm('Finalize this report and share it with the client? This will generate the official PDF and delete temporary draft images.')) return;
     setLoading(true);
     setMessage({ type: 'success', text: 'Generating final PDF...' });
 
@@ -1107,13 +1107,15 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
             >
               {loading ? '⏳ Saving...' : '💾 Save Draft'}
             </button>
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
-              className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold text-sm hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
-            >
-              {loading ? '⏳ Submitting...' : '📤 Submit to Manager'}
-            </button>
+            {userRole === 'REPORT_EMPLOYEE' && (
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold text-sm hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+              >
+                {loading ? '⏳ Submitting...' : '📤 Submit to Manager'}
+              </button>
+            )}
           </>
         )}
 
@@ -1122,7 +1124,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
           disabled={loading}
           className="px-6 py-3 rounded-xl border-2 border-gray-400 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-all disabled:opacity-50"
         >
-          📄 Preview PDF
+          📥 Download PDF
         </button>
 
         {status === 'MANAGER_REVIEW' && isManagerOrOwner && (
@@ -1139,7 +1141,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
               disabled={loading}
               className="px-6 py-3 rounded-xl bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold text-sm hover:from-green-700 hover:to-green-800 shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
             >
-              ✅ Finalize & Download PDF
+              ✅ Finalize & Share to Client
             </button>
           </>
         )}

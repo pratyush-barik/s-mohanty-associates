@@ -339,9 +339,9 @@ export default function AssignTeamForm({
             <button
               onClick={handleTransfer}
               disabled={transferLoading || !targetManagerId}
-              className="btn bg-rose-600 hover:bg-rose-700 text-white text-sm px-6 py-2.5 disabled:opacity-50 whitespace-nowrap"
+              className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-xl shadow-md hover:shadow-lg transition-all disabled:opacity-50 whitespace-nowrap"
             >
-              {transferLoading ? 'Initiating...' : 'Request Transfer'}
+              {transferLoading ? 'Initiating...' : 'Transfer Oversight Manager'}
             </button>
           </div>
         </div>

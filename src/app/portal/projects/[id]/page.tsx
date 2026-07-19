@@ -25,8 +25,8 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
       where: { id: resolvedParams.id },
       include: {
         serviceRequest: true,
-        fieldEmployees: { select: { id: true, name: true, employeeId: true } },
-        reportEmployee: { select: { id: true, name: true, employeeId: true } },
+        fieldEmployees: { select: { id: true, name: true, employeeId: true, mobile: true } },
+        reportEmployee: { select: { id: true, name: true, employeeId: true, mobile: true } },
         manager: { select: { id: true, name: true, employeeId: true, mobile: true } },
         report: true,
       },
@@ -166,9 +166,21 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                   {project.fieldEmployees.map(emp => (
                     <div key={emp.id} className="text-xs">
                       <span className="font-semibold text-[#0f2038]">{emp.name}</span>
-                      <span className="text-gray-500"> (Agent ID: {emp.employeeId || 'N/A'})</span>
+                      <span className="text-gray-500"> (Agent ID: {emp.employeeId || 'N/A'} | Phone: {emp.mobile || 'N/A'})</span>
                     </div>
                   ))}
+                </div>
+              ) : (
+                <span className="text-xs text-gray-400 font-semibold italic">Not Assigned</span>
+              )}
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between py-1 border-b border-[#f1f3f5]">
+              <span className="text-xs font-bold text-[#6c757d] uppercase tracking-wider">Assigned Report Agent</span>
+              {project.reportEmployee ? (
+                <div className="text-right">
+                  <p className="text-sm font-semibold text-[#0f2038]">{project.reportEmployee.name}</p>
+                  <p className="text-xs text-gray-500">Agent ID: {project.reportEmployee.employeeId || 'N/A'} | Phone: {project.reportEmployee.mobile || 'N/A'}</p>
                 </div>
               ) : (
                 <span className="text-xs text-gray-400 font-semibold italic">Not Assigned</span>
