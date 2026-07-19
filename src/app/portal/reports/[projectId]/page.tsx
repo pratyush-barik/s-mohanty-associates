@@ -4,7 +4,7 @@ import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import ReportBuilder from './ReportBuilder';
 
-export default async function ReportEditorPage({ params }: { params: { projectId: string } }) {
+export default async function ReportEditorPage({ params }: { params: Promise<{ projectId: string }> }) {
   const session = await auth();
   if (!session?.user?.id) return null;
 
@@ -17,12 +17,15 @@ export default async function ReportEditorPage({ params }: { params: { projectId
     redirect('/portal/dashboard');
   }
 
+  const resolvedParams = await params;
+
   const project = await prisma.project.findUnique({
-    where: { id: params.projectId },
+    where: { id: resolvedParams.projectId },
     include: {
       serviceRequest: true,
       report: true,
-      fieldEmployee: { select: { name: true, email: true, mobile: true } },
+      fieldEmployees: { select: { name: true, email: true, mobile: true } },
+      inspection: { select: { notes: true } },
     }
   });
 
@@ -33,7 +36,7 @@ export default async function ReportEditorPage({ params }: { params: { projectId
     redirect('/portal/my-projects');
   }
 
-  const { serviceRequest, fieldEmployee, report } = project;
+  const { serviceRequest, report } = project;
 
   return (
     <div className="space-y-6">
@@ -81,15 +84,30 @@ export default async function ReportEditorPage({ params }: { params: { projectId
               <hr className="border-[#e9ecef]" />
               <div>
                 <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1">Field Agent details</p>
-                {fieldEmployee ? (
-                  <>
-                    <p className="text-sm font-medium text-[#0f2038]">{fieldEmployee.name}</p>
-                    <a href={`tel:${fieldEmployee.mobile}`} className="text-sm text-[#b8860b] hover:underline block">{fieldEmployee.mobile}</a>
-                  </>
+                {project.fieldEmployees.length > 0 ? (
+                  <div className="space-y-2">
+                    {project.fieldEmployees.map((emp) => (
+                      <div key={emp.email} className="mb-2">
+                        <p className="text-sm font-medium text-[#0f2038]">{emp.name}</p>
+                        {emp.mobile && <a href={`tel:${emp.mobile}`} className="text-sm text-[#b8860b] hover:underline block">{emp.mobile}</a>}
+                      </div>
+                    ))}
+                  </div>
                 ) : (
                   <p className="text-sm text-[#6c757d]">Not assigned</p>
                 )}
               </div>
+              {project.inspection?.notes && (
+                <>
+                  <hr className="border-[#e9ecef]" />
+                  <div>
+                    <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1">Field Inspection Notes</p>
+                    <p className="text-xs text-[#212529] bg-white p-3 rounded-xl border border-[#dee2e6] whitespace-pre-wrap font-medium">
+                      {project.inspection.notes}
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

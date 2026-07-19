@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { updateInspectionMilestone } from '@/app/actions/project';
+import { updateInspectionStatus, updateInspectionMilestone } from '@/app/actions/project';
 
 interface InspectionClientProps {
   projectId: string;
@@ -34,6 +34,20 @@ export default function InspectionClient({
   };
 
   const [milestones, setMilestones] = useState<Record<string, string>>(getInitialMilestones());
+  const [saveNotesLoading, setSaveNotesLoading] = useState(false);
+
+  const handleSaveNotes = async () => {
+    setSaveNotesLoading(true);
+    setMessage(null);
+    const result = await updateInspectionStatus(projectId, status, notes);
+    if (result.error) {
+      setMessage({ type: 'error', text: result.error });
+    } else {
+      setMessage({ type: 'success', text: 'Field notes saved successfully!' });
+      setTimeout(() => setMessage(null), 3000);
+    }
+    setSaveNotesLoading(false);
+  };
 
   const handleMilestoneClick = async (
     key: 'startedAt' | 'reachedSiteAt' | 'inspectedAt' | 'completedAt'
@@ -139,7 +153,7 @@ export default function InspectionClient({
       <div className="relative border-l border-gray-200 ml-4 pl-6 space-y-6">
         {steps.map((step, idx) => {
           const isDone = !!milestones[step.key];
-          const canTrigger = idx === 0 || (!!milestones[steps[idx - 1].key] && !isDone);
+          const canTrigger = !isDone && (idx === 0 || !!milestones[steps[idx - 1].key]);
           
           return (
             <div key={step.key} className="relative">
@@ -188,17 +202,24 @@ export default function InspectionClient({
       <hr className="border-gray-200" />
 
       {/* Field Notes Area */}
-      <div>
-        <label className="block text-sm font-medium text-[#343a40] mb-1.5">
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-[#343a40]">
           Field Notes
         </label>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={3}
-          placeholder="Type notes here. Note: saving a milestone automatically saves these notes."
-          className="w-full px-4 py-3 rounded-xl border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all resize-none"
+          placeholder="Type notes here..."
+          className="w-full px-4 py-3 rounded-xl border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all resize-none mb-2"
         />
+        <button
+          onClick={handleSaveNotes}
+          disabled={saveNotesLoading}
+          className="px-4 py-2 border border-[#b8860b]/60 rounded-xl text-xs font-bold text-[#b8860b] hover:bg-[#b8860b]/10 transition-colors disabled:opacity-50"
+        >
+          {saveNotesLoading ? 'Saving Notes...' : 'Save Field Notes'}
+        </button>
       </div>
 
       <p className="text-[10px] text-[#6c757d] leading-relaxed">
