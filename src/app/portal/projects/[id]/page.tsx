@@ -4,6 +4,7 @@ import { redirect, notFound } from 'next/navigation';
 import AssignTeamForm from './AssignTeamForm';
 import Link from 'next/link';
 import ReportBuilder from '../../reports/[projectId]/ReportBuilder';
+import ReportDraftSection from './ReportDraftSection';
 
 export default async function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   try {
@@ -177,21 +178,16 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
           userRole={currentUser.role}
         />
 
-        {/* 3) THEN VIEW REPORT */}
+        {/* 3) THEN VIEW REPORT — Collapsible Dropdown */}
         {(project.status === 'MANAGER_REVIEW' || project.status === 'COMPLETED') && project.report && (
-          <div className="mt-8 border-t pt-8 border-[#dee2e6]">
-            <div className="mb-4">
-              <span className="px-2.5 py-1 rounded bg-[#0f2038]/5 border border-[#0f2038]/10 text-xs font-bold text-[#0f2038] uppercase">
-                📋 Report Draft sent by Report Agent
-              </span>
-            </div>
+          <ReportDraftSection>
             <ReportBuilder
               projectId={project.id}
               initialFields={project.report.data}
               status={project.status}
               userRole={currentUser.role}
             />
-          </div>
+          </ReportDraftSection>
         )}
       </div>
     );

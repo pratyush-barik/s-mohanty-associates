@@ -303,26 +303,26 @@ export default function AssignTeamForm({
         </button>
       </div>
 
-      {/* Floating Bottom-Right Red Button */}
+      {/* 4) Transfer — Static inline red button (NOT floating) */}
       {showManagerTransfer && (
-        <div className="fixed bottom-6 right-6 z-40">
+        <div className="mt-6 pt-4 border-t border-[#e9ecef]">
           <button
             onClick={() => setShowDrawer(true)}
-            className="flex items-center gap-2.5 px-6 py-3.5 rounded-full bg-red-600 hover:bg-red-700 text-white font-bold text-sm shadow-2xl hover:scale-105 active:scale-95 transition-all border border-red-500/20"
+            className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all border border-red-500/20"
           >
-            <span className="animate-pulse">🔄</span> Transfer Oversight Manager
+            🔄 Transfer Oversight Manager
           </button>
         </div>
       )}
 
-      {/* Floating Slide-up Bottom Drawer (Modern Service App Design) */}
+      {/* Centered Modal for Oversight Transfer */}
       {showDrawer && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300">
           {/* Click outside to close */}
           <div className="absolute inset-0" onClick={() => setShowDrawer(false)} />
           
-          {/* Drawer Panel */}
-          <div className="relative bg-white w-full max-w-xl rounded-t-[2.5rem] shadow-2xl p-8 pb-10 transform translate-y-0 transition-transform duration-300 ease-out border-t border-red-100 z-10 animate-slide-up">
+          {/* Modal Panel */}
+          <div className="relative bg-white w-full max-w-xl mx-4 rounded-2xl shadow-2xl p-8 border border-red-100 z-10">
             {/* Grab/Pull tab */}
             <div className="mx-auto w-16 h-1.5 bg-gray-200 rounded-full mb-6 cursor-pointer" onClick={() => setShowDrawer(false)} />
             
