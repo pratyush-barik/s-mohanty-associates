@@ -39,6 +39,7 @@ export default function AssignTeamForm({
   const [fieldIds, setFieldIds] = useState<string[]>(currentFieldIds || []);
   const [reportId, setReportId] = useState(currentReportId || '');
   const [targetManagerId, setTargetManagerId] = useState('');
+  const [showDrawer, setShowDrawer] = useState(false);
   
   const [loading, setLoading] = useState(false);
   const [transferLoading, setTransferLoading] = useState(false);
@@ -299,50 +300,94 @@ export default function AssignTeamForm({
           disabled={loading || !hasChanges()}
           className="btn btn-primary text-sm px-6 py-2.5 disabled:opacity-50"
         >
-          {loading ? 'Saving...' : 'Save Assignments'}
         </button>
       </div>
 
+      {/* Floating Bottom-Right Red Button */}
       {showManagerTransfer && (
-        <div className="card p-6 border border-gray-200">
-          <h3 className="text-lg font-bold text-[#0f2038] mb-1" style={{ fontFamily: 'var(--font-heading)' }}>
-            Transfer Oversight Manager
-          </h3>
-          <p className="text-xs text-[#6c757d] mb-4">
-            Current Overseer:{' '}
-            <strong className="text-[#0f2038]">
-              {currentManager ? `${currentManager.name} (${currentManager.employeeId})` : 'Unassigned'}
-            </strong>
-          </p>
+        <div className="fixed bottom-6 right-6 z-40">
+          <button
+            onClick={() => setShowDrawer(true)}
+            className="flex items-center gap-2.5 px-6 py-3.5 rounded-full bg-red-600 hover:bg-red-700 text-white font-bold text-sm shadow-2xl hover:scale-105 active:scale-95 transition-all border border-red-500/20"
+          >
+            <span className="animate-pulse">🔄</span> Transfer Oversight Manager
+          </button>
+        </div>
+      )}
 
-          <div className="flex flex-col sm:flex-row items-end gap-4">
-            <div className="flex-1 w-full">
-              <label className="block text-sm font-medium text-[#343a40] mb-1.5">
-                Select Target Manager to Transfer To
-              </label>
-              <select
-                value={targetManagerId}
-                onChange={(e) => setTargetManagerId(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b]"
+      {/* Floating Slide-up Bottom Drawer (Modern Service App Design) */}
+      {showDrawer && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300">
+          {/* Click outside to close */}
+          <div className="absolute inset-0" onClick={() => setShowDrawer(false)} />
+          
+          {/* Drawer Panel */}
+          <div className="relative bg-white w-full max-w-xl rounded-t-[2.5rem] shadow-2xl p-8 pb-10 transform translate-y-0 transition-transform duration-300 ease-out border-t border-red-100 z-10 animate-slide-up">
+            {/* Grab/Pull tab */}
+            <div className="mx-auto w-16 h-1.5 bg-gray-200 rounded-full mb-6 cursor-pointer" onClick={() => setShowDrawer(false)} />
+            
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h3 className="text-xl font-extrabold text-[#0f2038] tracking-tight">
+                  Transfer Oversight Manager
+                </h3>
+                <p className="text-xs text-[#6c757d] mt-1">Reassign this project's manager oversight to another manager.</p>
+              </div>
+              <button
+                onClick={() => setShowDrawer(false)}
+                className="text-gray-400 hover:text-gray-600 text-2xl font-bold leading-none p-1 transition-colors"
               >
-                <option value="">-- Select Manager --</option>
-                {managers
-                  .filter((m) => m.id !== currentManagerId)
-                  .map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name} {m.employeeId ? `(${m.employeeId})` : ''}
-                    </option>
-                  ))}
-              </select>
+                &times;
+              </button>
             </div>
 
-            <button
-              onClick={handleTransfer}
-              disabled={transferLoading || !targetManagerId}
-              className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-xl shadow-md hover:shadow-lg transition-all disabled:opacity-50 whitespace-nowrap"
-            >
-              {transferLoading ? 'Initiating...' : 'Transfer Oversight Manager'}
-            </button>
+            <div className="space-y-5">
+              <div className="p-4.5 rounded-2xl bg-gray-50 border border-gray-100">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Current Overseer</span>
+                <p className="text-sm font-bold text-[#0f2038]">
+                  {currentManager ? `${currentManager.name} (${currentManager.employeeId})` : 'Unassigned'}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-[#343a40] uppercase tracking-wider">
+                  Select Target Manager to Transfer To
+                </label>
+                <select
+                  value={targetManagerId}
+                  onChange={(e) => setTargetManagerId(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all"
+                >
+                  <option value="">-- Select Manager --</option>
+                  {managers
+                    .filter((m) => m.id !== currentManagerId)
+                    .map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name} {m.employeeId ? `(${m.employeeId})` : ''}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              <div className="flex gap-4 pt-3">
+                <button
+                  onClick={() => setShowDrawer(false)}
+                  className="flex-1 py-3 border-2 border-gray-200 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    await handleTransfer();
+                    setShowDrawer(false);
+                  }}
+                  disabled={transferLoading || !targetManagerId}
+                  className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+                >
+                  {transferLoading ? 'Transferring...' : 'Confirm Transfer'}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

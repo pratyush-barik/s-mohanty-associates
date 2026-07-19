@@ -100,32 +100,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
           </div>
         </div>
 
-        {/* Manager Verification (Shows only when submitted by Report Agent) */}
-        {(project.status === 'MANAGER_REVIEW' || project.status === 'COMPLETED') && project.report && (
-          <div className="mb-8">
-            <ReportBuilder
-              projectId={project.id}
-              initialFields={project.report.data}
-              status={project.status}
-              userRole={currentUser.role}
-            />
-          </div>
-        )}
-
-        {/* Assignment UI */}
-        <AssignTeamForm
-          projectId={project.id}
-          currentFieldIds={project.fieldEmployees.map((e) => e.id)}
-          currentReportId={project.reportEmployeeId}
-          currentManagerId={project.assignedManagerId}
-          pendingManagerId={project.pendingManagerId}
-          fieldEmployees={fieldEmployees}
-          reportEmployees={reportEmployees}
-          managers={managers}
-          userRole={currentUser.role}
-        />
-
-        {/* Request & Assignment Details */}
+        {/* 1) REQUEST AND ASSIGNMENT DETAILS */}
         <div className="card p-6">
           <h3 className="text-lg font-bold text-[#0f2038] mb-4" style={{ fontFamily: 'var(--font-heading)' }}>
             Request & Assignment Details
@@ -188,6 +163,36 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
             </div>
           </div>
         </div>
+
+        {/* 2) manage team */}
+        <AssignTeamForm
+          projectId={project.id}
+          currentFieldIds={project.fieldEmployees.map((e) => e.id)}
+          currentReportId={project.reportEmployeeId}
+          currentManagerId={project.assignedManagerId}
+          pendingManagerId={project.pendingManagerId}
+          fieldEmployees={fieldEmployees}
+          reportEmployees={reportEmployees}
+          managers={managers}
+          userRole={currentUser.role}
+        />
+
+        {/* 3) THEN VIEW REPORT */}
+        {(project.status === 'MANAGER_REVIEW' || project.status === 'COMPLETED') && project.report && (
+          <div className="mt-8 border-t pt-8 border-[#dee2e6]">
+            <div className="mb-4">
+              <span className="px-2.5 py-1 rounded bg-[#0f2038]/5 border border-[#0f2038]/10 text-xs font-bold text-[#0f2038] uppercase">
+                📋 Report Draft sent by Report Agent
+              </span>
+            </div>
+            <ReportBuilder
+              projectId={project.id}
+              initialFields={project.report.data}
+              status={project.status}
+              userRole={currentUser.role}
+            />
+          </div>
+        )}
       </div>
     );
   } catch (error: any) {
