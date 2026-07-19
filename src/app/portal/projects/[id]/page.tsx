@@ -34,7 +34,10 @@ export default async function ProjectDetailsPage({ params }: { params: { id: str
   // Fetch available employees for assignment (fail-proof method mapping counts manually)
   const fieldEmployeesData = await prisma.employee.findMany({
     where: { role: 'FIELD_EMPLOYEE', isActive: true },
-    include: {
+    select: {
+      id: true,
+      name: true,
+      employeeId: true,
       fieldProjects: {
         where: { status: { notIn: ['COMPLETED', 'ARCHIVED'] } },
         select: { id: true },
@@ -51,7 +54,10 @@ export default async function ProjectDetailsPage({ params }: { params: { id: str
 
   const reportEmployeesData = await prisma.employee.findMany({
     where: { role: 'REPORT_EMPLOYEE', isActive: true },
-    include: {
+    select: {
+      id: true,
+      name: true,
+      employeeId: true,
       reportProjects: {
         where: { status: { notIn: ['COMPLETED', 'ARCHIVED'] } },
         select: { id: true },
