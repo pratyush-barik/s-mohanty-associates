@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
@@ -18,33 +19,135 @@ interface FloorRow {
 }
 
 interface ReportFields {
-  // Section 1 – Basic Details
+  // Section 1 – General Details
+  propertyType: string;
   ownerName: string;
   ownerAddress: string;
+  landmark: string;
+  loanApplicationNo: string;
+  documentHolderName: string;
+  legalAddress: string;
+  dateOfInspection: string;
+  dateOfValuation: string;
+  refNo: string;
   bankName: string;
   branchName: string;
   purpose: string;
-  dateOfInspection: string;
-  dateOfValuation: string;
 
-  // Section 2 – Property Description (As per Deed)
+  // Section 2 – Surrounding Locality Details
+  wardNo: string;
+  vicinity: string;
+  classOfLocality: string;
+  approachRoadWidth: string;
+  plotDemarcated: string;
+  distanceRailwayStation: string;
+  distanceBusStop: string;
+  distanceHospital: string;
+  propertyIdentification: string;
+  propertyIdentificationRemarks: string;
+  proximityToFacilities: string;
+  landmarkRailway: string;
+  landmarkBusStop: string;
+  landmarkHospital: string;
+  landmarkNearest: string;
+
+  // Section 3 – Property Details
+  usageType: string;
+  additionalAmenities: string;
+  legalStatus: string;
+
+  // Section 4 – Subject Property Details
+  premisesType: string;
+  occupiedBy: string;
+  isPropertyRented: string;
+  rentedOccupants: string;
+  propertyTaxation: string;
+  boundaryNorth: string;
+  boundarySouth: string;
+  boundaryEast: string;
+  boundaryWest: string;
+  buildingBoundaryNorth: string;
+  buildingBoundarySouth: string;
+  buildingBoundaryEast: string;
+  buildingBoundaryWest: string;
+
+  // Section 5 – Structural Details
+  structureType: string;
+  numberOfFloors: string;
+  numberOfWings: string;
+  unitsPerFloor: string;
+  internalComposition: string;
+  numberOfLifts: string;
+  ageOfProperty: string;
+  estimatedFutureLife: string;
+  exteriors: string;
+  qualityOfConstruction: string;
+  maintenanceCondition: string;
+  commonAreasRemarks: string;
+  otherObservations: string;
+  flooringType: string;
+  roofType: string;
+  qualityOfFixtures: string;
+  foundation: string;
+  superstructure: string;
+  doorsWindows: string;
+  plastering: string;
+  sanitary: string;
+  electrification: string;
+
+  // Section 6 – Plan Approvals
+  constructionApproved: string;
+  approvalDetails: string;
+  constructionPermission: string;
+  violationsObserved: string;
+  conformsToByelaws: string;
+  documentsVerified: string;
+
+  // Section 7 – Floor-wise
+  floors: FloorRow[];
+  floorAreaUnit: string;
+
+  // Section 8 – Land Valuation
+  landArea: string;
+  landAreaUnit: string;
+  landRatePerUnit: string;
+  govtLandRate: string;
+  recommendedRateBasis: string;
+  buaAsPerApprovals: string;
+
+  // Valuation extras
+  marketability: string;
+  valuationResult: string;
+  replacementCost: string;
+  deviations: string;
+
+  // Abstract
+  realizablePct: string;
+  distressPct: string;
+  guidelineValue: string;
+
+  // Remarks & Declaration
+  demarcation: string;
+  possession: string;
+  remarks: string;
+  representativeName: string;
+
+  // Photos & Maps
+  propertyImages: string[];
+  sketchMapImage: string;
+  locationMapImage: string;
+  latitude: string;
+  longitude: string;
+
+  // Legacy backward-compat fields
+  localityType: string;
   khataNo: string;
   plotNo: string;
   mouza: string;
   tahasil: string;
   district: string;
   state: string;
-  landArea: string;
-  landAreaUnit: string;
-  boundaryNorth: string;
-  boundarySouth: string;
-  boundaryEast: string;
-  boundaryWest: string;
-
-  // Section 3 – Locality
-  localityType: string;
   developmentStatus: string;
-  classOfLocality: string;
   civicAmenities: string[];
   civicAmenitiesOther: string;
   distanceMainRoad: string;
@@ -52,119 +155,133 @@ interface ReportFields {
   distanceRailway: string;
   distanceRailwayUnit: string;
   nearbyLandmarks: string;
-  floorAreaUnit: string;
-
-  // Section 4 – Building Description
-  structureType: string;
-  numberOfFloors: string;
-  foundation: string;
-  superstructure: string;
-  roofType: string;
-  flooringType: string;
-  doorsWindows: string;
-  plastering: string;
-  sanitary: string;
-  electrification: string;
-  qualityOfConstruction: string;
-  maintenanceCondition: string;
-  buildingBoundaryNorth: string;
-  buildingBoundarySouth: string;
-  buildingBoundaryEast: string;
-  buildingBoundaryWest: string;
-
-  // Section 5 – Floor-wise Area
-  floors: FloorRow[];
-
-  // Section 6 – Land Valuation
-  landRatePerUnit: string;
-
-  // Section 8 – Abstract / Manual Override
-  guidelineValue: string;
-
-  // Section 9 – Remarks
-  demarcation: string;
-  possession: string;
-  remarks: string;
-
-  // Section 11 – Photos
-  propertyImages: string[];
-
-  // Section 8 - Percentages
-  realizablePct: string;
-  distressPct: string;
 }
 
 const DEFAULT_FIELDS: ReportFields = {
+  propertyType: 'Residential',
   ownerName: '',
   ownerAddress: '',
+  landmark: '',
+  loanApplicationNo: '',
+  documentHolderName: '',
+  legalAddress: '',
+  dateOfInspection: new Date().toISOString().split('T')[0],
+  dateOfValuation: new Date().toISOString().split('T')[0],
+  refNo: '',
   bankName: '',
   branchName: '',
   purpose: 'Home Loan',
-  dateOfInspection: new Date().toISOString().split('T')[0],
-  dateOfValuation: new Date().toISOString().split('T')[0],
 
+  wardNo: '',
+  vicinity: 'Residential',
+  classOfLocality: 'Middle Class',
+  approachRoadWidth: '40-20 Feet Road',
+  plotDemarcated: 'Yes',
+  distanceRailwayStation: '',
+  distanceBusStop: '',
+  distanceHospital: '',
+  propertyIdentification: 'Easy to Identify',
+  propertyIdentificationRemarks: '',
+  proximityToFacilities: '1-3 Kms',
+  landmarkRailway: '',
+  landmarkBusStop: '',
+  landmarkHospital: '',
+  landmarkNearest: '',
+
+  usageType: 'Residential',
+  additionalAmenities: 'Not Applicable',
+  legalStatus: 'Freehold',
+
+  premisesType: 'Row House',
+  occupiedBy: 'Self Occupied',
+  isPropertyRented: 'NA',
+  rentedOccupants: 'NA',
+  propertyTaxation: 'Average',
+  boundaryNorth: '',
+  boundarySouth: '',
+  boundaryEast: '',
+  boundaryWest: '',
+  buildingBoundaryNorth: '',
+  buildingBoundarySouth: '',
+  buildingBoundaryEast: '',
+  buildingBoundaryWest: '',
+
+  structureType: 'RCC',
+  numberOfFloors: '1',
+  numberOfWings: 'NA',
+  unitsPerFloor: 'NA',
+  internalComposition: 'Good',
+  numberOfLifts: 'NA',
+  ageOfProperty: '',
+  estimatedFutureLife: '',
+  exteriors: 'Beam & Column Structure',
+  qualityOfConstruction: 'Good',
+  maintenanceCondition: 'Good',
+  commonAreasRemarks: 'Normal',
+  otherObservations: '',
+  flooringType: 'Tile Flooring',
+  roofType: 'RCC Roofing',
+  qualityOfFixtures: 'Good Quality Fittings',
+  foundation: 'RCC',
+  superstructure: 'Brick Masonry',
+  doorsWindows: 'Wooden/UPVC',
+  plastering: 'Cement Plastering',
+  sanitary: 'Standard',
+  electrification: 'Concealed',
+
+  constructionApproved: 'Yes',
+  approvalDetails: '',
+  constructionPermission: '',
+  violationsObserved: 'Low',
+  conformsToByelaws: 'NA',
+  documentsVerified: '',
+
+  floors: [{ id: '1', name: 'Ground Floor', area: '', rate: '', yearBuilt: '', lifeYears: '60', ageYears: '', depreciationPct: '' }],
+  floorAreaUnit: 'Sqft',
+
+  landArea: '',
+  landAreaUnit: 'Sqft',
+  landRatePerUnit: '',
+  govtLandRate: '',
+  recommendedRateBasis: '',
+  buaAsPerApprovals: '',
+
+  marketability: 'Good',
+  valuationResult: 'Positive',
+  replacementCost: '',
+  deviations: 'NA',
+
+  realizablePct: '90',
+  distressPct: '80',
+  guidelineValue: '',
+
+  demarcation: 'Clear',
+  possession: 'With Owner',
+  remarks: '',
+  representativeName: '',
+
+  propertyImages: [],
+  sketchMapImage: '',
+  locationMapImage: '',
+  latitude: '',
+  longitude: '',
+
+  localityType: 'Residential',
   khataNo: '',
   plotNo: '',
   mouza: '',
   tahasil: '',
   district: '',
   state: 'Odisha',
-  landArea: '',
-  landAreaUnit: 'Sqft',
-  boundaryNorth: '',
-  boundarySouth: '',
-  boundaryEast: '',
-  boundaryWest: '',
-
-  localityType: 'Residential',
   developmentStatus: 'Developed',
-  classOfLocality: 'Middle Class',
   civicAmenities: [],
+  civicAmenitiesOther: '',
   distanceMainRoad: '',
   distanceMainRoadUnit: 'Meters',
   distanceRailway: '',
   distanceRailwayUnit: 'Km',
   nearbyLandmarks: '',
-  civicAmenitiesOther: '',
-  floorAreaUnit: '',
-
-  structureType: 'RCC Framed',
-  numberOfFloors: '1',
-  foundation: 'RCC',
-  superstructure: 'Brick Masonry',
-  roofType: 'RCC Slab',
-  flooringType: 'Mosaic/Tiles',
-  doorsWindows: 'Wooden/UPVC',
-  plastering: 'Cement Plastering',
-  sanitary: 'Standard',
-  electrification: 'Concealed',
-  qualityOfConstruction: 'Good',
-  maintenanceCondition: 'Good',
-  buildingBoundaryNorth: '',
-  buildingBoundarySouth: '',
-  buildingBoundaryEast: '',
-  buildingBoundaryWest: '',
-
-  floors: [{ id: '1', name: 'Ground Floor', area: '', rate: '', yearBuilt: '', lifeYears: '60', ageYears: '', depreciationPct: '' }],
-
-  landRatePerUnit: '',
-
-  guidelineValue: '',
-
-  demarcation: 'Clear',
-  possession: 'With Owner',
-  remarks: '',
-
-  propertyImages: [],
-
-  realizablePct: '90',
-  distressPct: '80',
 };
-
-const CIVIC_AMENITIES_OPTIONS = [
-  'Water Supply', 'Electricity', 'Drainage', 'Sewerage', 'Approach Road',
-  'Street Lighting', 'School Nearby', 'Hospital Nearby', 'Market Nearby', 'Public Transport',
-];
 
 // ─── Helpers ───────────────────────────────────────────────────────
 const parseNum = (v: string): number => parseFloat(v?.replace(/,/g, '') || '0') || 0;
@@ -174,7 +291,7 @@ function computeDepreciation(lifeYears: number, ageYears: number): number {
   return Math.min(Math.round((ageYears / lifeYears) * 100), 90);
 }
 
-// ─── Section Wrapper ────────────────────────────────────────────────
+// ─── UI Components ─────────────────────────────────────────────────
 function Section({ title, number, children, defaultOpen = true }: { title: string; number: number; children: React.ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
@@ -208,6 +325,92 @@ function Field({ label, children, span = 1 }: { label: string; children: React.R
 const inputCls = "w-full px-3 py-2.5 rounded-lg border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] disabled:bg-[#f1f3f5] disabled:text-[#6c757d]";
 const selectCls = inputCls;
 
+/** 3-Column Option Field matching sample report format:
+ * Col1 = Label | Col2 = All Options (clickable) | Col3 = Selected Value */
+function OptionField({ label, options, value, onChange, disabled, customValue, onCustomChange, showCustomInput = false }: {
+  label: string; options: string[]; value: string; onChange: (v: string) => void; disabled?: boolean;
+  customValue?: string; onCustomChange?: (v: string) => void; showCustomInput?: boolean;
+}) {
+  return (
+    <div className="border border-[#c8d6e5] rounded-lg overflow-hidden">
+      <div className="flex min-h-[40px]">
+        {/* Col 1: Label */}
+        <div className="w-44 md:w-52 shrink-0 bg-[#d5e8f5] px-3 py-2 text-[10px] font-bold text-[#1a3a5c] uppercase tracking-wider border-r border-[#c8d6e5] flex items-start pt-2.5">
+          {label}
+        </div>
+        {/* Col 2: Options List */}
+        <div className="w-48 md:w-56 shrink-0 border-r border-[#c8d6e5]">
+          {options.map(opt => (
+            <div
+              key={opt}
+              onClick={() => !disabled && onChange(opt)}
+              className={`px-3 py-1.5 text-xs border-b border-[#c8d6e5] last:border-b-0 transition-colors
+                ${value === opt ? 'bg-[#a8cce0] font-bold text-[#0f2038]' : 'bg-[#e8f0f8] text-[#333]'}
+                ${disabled ? 'cursor-default opacity-70' : 'cursor-pointer hover:bg-[#c5ddf0]'}`}
+            >
+              {opt}
+            </div>
+          ))}
+        </div>
+        {/* Col 3: Selected Value */}
+        <div className="flex-1 flex items-center px-4 py-2 bg-white min-w-0">
+          {showCustomInput ? (
+            <div className="w-full space-y-1.5">
+              <span className="text-sm font-semibold text-[#0f2038] block">{value || '\u2014'}</span>
+              <input
+                className="w-full px-2 py-1.5 rounded border border-[#dee2e6] bg-white text-[#212529] text-xs focus:outline-none focus:ring-1 focus:ring-[#b8860b]/30 disabled:bg-[#f1f3f5]"
+                value={customValue || ''}
+                onChange={e => onCustomChange?.(e.target.value)}
+                disabled={disabled}
+                placeholder="Additional remarks..."
+              />
+            </div>
+          ) : (
+            <span className="text-sm font-semibold text-[#0f2038]">{value || '\u2014'}</span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Landmark/Distance field: Label | Sub-labels | Input values */
+function LandmarkField({ label, rows, disabled }: {
+  label: string;
+  rows: { subLabel: string; value: string; onChange: (v: string) => void }[];
+  disabled?: boolean;
+}) {
+  return (
+    <div className="border border-[#c8d6e5] rounded-lg overflow-hidden">
+      <div className="flex min-h-[40px]">
+        <div className="w-44 md:w-52 shrink-0 bg-[#d5e8f5] px-3 py-2 text-[10px] font-bold text-[#1a3a5c] uppercase tracking-wider border-r border-[#c8d6e5] flex items-start pt-2.5">
+          {label}
+        </div>
+        <div className="w-48 md:w-56 shrink-0 border-r border-[#c8d6e5]">
+          {rows.map((r, i) => (
+            <div key={i} className="px-3 py-1.5 text-xs border-b border-[#c8d6e5] last:border-b-0 bg-[#e8f0f8] font-semibold text-[#333]">
+              {r.subLabel}
+            </div>
+          ))}
+        </div>
+        <div className="flex-1 min-w-0">
+          {rows.map((r, i) => (
+            <div key={i} className="border-b border-[#c8d6e5] last:border-b-0">
+              <input
+                className="w-full px-3 py-1.5 text-xs bg-white text-[#212529] focus:outline-none focus:bg-[#fffbf0] disabled:bg-[#f1f3f5] disabled:text-[#6c757d]"
+                value={r.value}
+                onChange={e => r.onChange(e.target.value)}
+                disabled={disabled}
+                placeholder="Enter details..."
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ────────────────────────────────────────────────
 interface ReportBuilderProps {
   projectId: string;
@@ -226,7 +429,6 @@ interface ReportBuilderProps {
 }
 
 export default function ReportBuilder({ projectId, initialFields, status, userRole = 'REPORT_EMPLOYEE', prefill }: ReportBuilderProps) {
-  // Merge defaults → initialFields → prefill
   const merged = {
     ...DEFAULT_FIELDS,
     ...(initialFields || {}),
@@ -234,8 +436,6 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     ownerAddress: initialFields?.ownerAddress || prefill?.propertyAddress || DEFAULT_FIELDS.ownerAddress,
     propertyImages: initialFields?.propertyImages || DEFAULT_FIELDS.propertyImages,
   };
-
-  // Ensure floors is always an array
   if (!Array.isArray(merged.floors) || merged.floors.length === 0) {
     merged.floors = DEFAULT_FIELDS.floors;
   }
@@ -245,9 +445,8 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-
-  const [activeSection, setActiveSection] = useState(0);
   const reportRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
   const isManagerOrOwner = userRole === 'MANAGER' || userRole === 'OWNER';
@@ -256,49 +455,23 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     setFields(prev => ({ ...prev, [field]: value }));
   }, []);
 
-  const getDecimalParts = (val: string) => {
-    const parts = (val || '').split('.');
-    return {
-      whole: parts[0] || '',
-      fraction: parts[1] || '',
-    };
-  };
-
-  const handleDecimalChange = (fieldName: keyof ReportFields, part: 'whole' | 'fraction', value: string) => {
-    const parts = (fields[fieldName] as string || '').split('.');
-    let whole = parts[0] || '0';
-    let fraction = parts[1] || '00';
-
-    if (part === 'whole') {
-      whole = value || '0';
-    } else {
-      fraction = value || '00';
-    }
-
-    handleChange(fieldName, `${whole}.${fraction}`);
-  };
-
-  // ── Floor row helpers ──
+  // ── Floor helpers ──
   const addFloor = () => {
-    const newId = String(Date.now());
     handleChange('floors', [...fields.floors, {
-      id: newId, name: `Floor ${fields.floors.length}`, area: '', rate: '',
+      id: String(Date.now()), name: `Floor ${fields.floors.length}`, area: '', rate: '',
       yearBuilt: '', lifeYears: '60', ageYears: '', depreciationPct: '',
     }]);
   };
-
   const removeFloor = (id: string) => {
     if (fields.floors.length <= 1) return;
     handleChange('floors', fields.floors.filter(f => f.id !== id));
   };
-
   const updateFloor = (id: string, key: keyof FloorRow, value: string) => {
     handleChange('floors', fields.floors.map(f => f.id === id ? { ...f, [key]: value } : f));
   };
 
   // ── Computed values ──
   const totalPlinthArea = fields.floors.reduce((sum, f) => sum + parseNum(f.area), 0);
-
   const landValue = parseNum(fields.landArea) * parseNum(fields.landRatePerUnit);
 
   const floorValuations = fields.floors.map(f => {
@@ -310,7 +483,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     const depPct = f.depreciationPct ? parseNum(f.depreciationPct) : computeDepreciation(life, age);
     const depAmount = estimated * depPct / 100;
     const netValue = estimated - depAmount;
-    return { ...f, estimated, depPct, depAmount, netValue };
+    return { ...f, area, rate, estimated, depPct, depAmount, netValue };
   });
 
   const totalBuildingValue = floorValuations.reduce((sum, f) => sum + f.netValue, 0);
@@ -318,29 +491,40 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
   const realizableValue = totalPropertyValue * (parseNum(fields.realizablePct || '90') / 100);
   const distressValue = totalPropertyValue * (parseNum(fields.distressPct || '80') / 100);
 
-  // ── Image upload ──
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // ── File upload (photos + maps) ──
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'propertyImages' | 'sketchMapImage' | 'locationMapImage') => {
     const fileList = e.target.files;
     if (!fileList || fileList.length === 0) return;
     setUploading(true);
     setUploadError(null);
 
-    const newUrls = [...(fields.propertyImages || [])];
-    for (let i = 0; i < fileList.length; i++) {
-      const file = fileList[i];
-      if (file.size > 5 * 1024 * 1024) {
-        setUploadError(`Failed to upload ${file.name}: File exceeds 5MB size limit.`);
-        continue;
+    if (fieldName === 'propertyImages') {
+      const newUrls = [...(fields.propertyImages || [])];
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
+        if (file.size > 5 * 1024 * 1024) { setUploadError(`${file.name}: exceeds 5MB.`); continue; }
+        const ext = file.name.split('.').pop();
+        const fileName = `${projectId}-${Math.random().toString(36).substring(2)}.${ext}`;
+        const filePath = `temp-photos/${projectId}/${fileName}`;
+        const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(filePath, file);
+        if (error) { setUploadError(`Failed: ${error.message}`); continue; }
+        const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
+        newUrls.push(data.publicUrl);
       }
+      handleChange('propertyImages', newUrls);
+    } else {
+      const file = fileList[0];
+      if (file.size > 5 * 1024 * 1024) { setUploadError(`${file.name}: exceeds 5MB.`); setUploading(false); return; }
       const ext = file.name.split('.').pop();
-      const fileName = `${projectId}-${Math.random().toString(36).substring(2)}.${ext}`;
+      const fileName = `${projectId}-${fieldName}-${Date.now()}.${ext}`;
       const filePath = `temp-photos/${projectId}/${fileName}`;
       const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(filePath, file);
-      if (error) { setUploadError(`Failed to upload ${file.name}: ${error.message}`); continue; }
-      const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
-      newUrls.push(data.publicUrl);
+      if (error) { setUploadError(`Failed: ${error.message}`); }
+      else {
+        const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
+        handleChange(fieldName, data.publicUrl);
+      }
     }
-    handleChange('propertyImages', newUrls);
     setUploading(false);
   };
 
@@ -348,12 +532,24 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     handleChange('propertyImages', fields.propertyImages.filter((_, i) => i !== index));
   };
 
-  // ── Save / Submit ──
+  // ── Save / Submit / Finalize ──
   const handleSaveDraft = async () => {
-    setLoading(true);
-    setMessage(null);
+    setLoading(true); setMessage(null);
     const result = await saveReportDraft(projectId, fields);
     setMessage(result.error ? { type: 'error', text: result.error } : { type: 'success', text: 'Draft saved successfully!' });
+    setLoading(false);
+  };
+
+  const handleSubmit = async () => {
+    if (!confirm('Submit this report for manager verification? You cannot edit it until the manager returns it.')) return;
+    setLoading(true); setMessage(null);
+    await saveReportDraft(projectId, fields);
+    const result = await submitReportForVerification(projectId);
+    if (result.error) setMessage({ type: 'error', text: result.error });
+    else {
+      setMessage({ type: 'success', text: 'Report submitted for verification!' });
+      router.refresh();
+    }
     setLoading(false);
   };
 
@@ -361,17 +557,10 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     try {
       const { default: html2canvas } = await import('html2canvas');
       const { default: jsPDF } = await import('jspdf');
-
-      const loadImage = (src: string): Promise<HTMLImageElement> => {
-        return new Promise((resolve, reject) => {
-          const img = new Image();
-          img.crossOrigin = 'anonymous';
-          img.onload = () => resolve(img);
-          img.onerror = (e) => reject(e);
-          img.src = src;
-        });
-      };
-
+      const loadImage = (src: string): Promise<HTMLImageElement> => new Promise((resolve, reject) => {
+        const img = new Image(); img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img); img.onerror = (e) => reject(e); img.src = src;
+      });
       const letterheadImg = await loadImage('/templates/letterhead.png');
       const pages = generatePDFPages();
       const pdf = new jsPDF('p', 'mm', 'a4');
@@ -379,133 +568,70 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
       const pageHeight = pdf.internal.pageSize.getHeight();
 
       for (let i = 0; i < pages.length; i++) {
-        if (i > 0) {
-          pdf.addPage();
-        }
-
-        // 1. Draw the background letterhead
+        if (i > 0) pdf.addPage();
         pdf.addImage(letterheadImg, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
-
-        // 2. Render the transparent page container
         const pageContainer = document.createElement('div');
         pageContainer.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;height:1123px;background:transparent;padding:170px 55px 90px 55px;box-sizing:border-box;font-family:Arial,sans-serif;color:#111;overflow:hidden;';
         pageContainer.innerHTML = pages[i];
         document.body.appendChild(pageContainer);
-
         const canvas = await html2canvas(pageContainer, {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          backgroundColor: null, // Transparent!
-          width: 794,
-          height: 1123,
-          windowWidth: 794,
-          windowHeight: 1123,
+          scale: 2, useCORS: true, logging: false, backgroundColor: null,
+          width: 794, height: 1123, windowWidth: 794, windowHeight: 1123,
         });
-
         document.body.removeChild(pageContainer);
-
-        const pageImg = canvas.toDataURL('image/png'); // Use PNG for transparency!
-
-        // 3. Draw the transparent page canvas on top of the letterhead background
-        pdf.addImage(pageImg, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
       }
-
       return pdf.output('blob');
-    } catch (err) {
-      console.error('PDF generation failed:', err);
-      return null;
-    }
+    } catch (err) { console.error('PDF generation failed:', err); return null; }
   };
 
   const handlePreviewPDF = async () => {
     setMessage({ type: 'success', text: 'Generating PDF preview...' });
-    const pdfBlob = await handleGeneratePDF();
-    if (pdfBlob) {
-      const url = URL.createObjectURL(pdfBlob);
-      window.open(url, '_blank');
-    }
+    const blob = await handleGeneratePDF();
+    if (blob) { const url = URL.createObjectURL(blob); window.open(url, '_blank'); }
     setMessage(null);
   };
 
   const handleDownloadPDF = async () => {
     setMessage({ type: 'success', text: 'Generating PDF for download...' });
-    const pdfBlob = await handleGeneratePDF();
-    if (pdfBlob) {
-      const url = URL.createObjectURL(pdfBlob);
+    const blob = await handleGeneratePDF();
+    if (blob) {
+      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `${fields.ownerName ? fields.ownerName.replace(/\s+/g, '_') : 'Valuation'}_Report_${projectId}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
     }
     setMessage(null);
-  };
-
-  const handleSubmit = async () => {
-    if (!confirm('Submit this report for manager verification? You cannot edit it until the manager returns it.')) return;
-
-    setLoading(true);
-    setMessage(null);
-
-    // Save first
-    await saveReportDraft(projectId, fields);
-
-    // Submit for verification (no PDF generation yet)
-    const result = await submitReportForVerification(projectId);
-    setMessage(result.error ? { type: 'error', text: result.error } : { type: 'success', text: 'Report submitted for verification! Manager will review it.' });
-    setLoading(false);
   };
 
   const handleFinalize = async () => {
     if (!confirm('Finalize this report and share it with the client? This will generate the official PDF and delete temporary draft images.')) return;
     setLoading(true);
     setMessage({ type: 'success', text: 'Generating final PDF...' });
-
-    // Save Manager's draft first
     await saveReportDraft(projectId, fields);
-
     const pdfBlob = await handleGeneratePDF();
     if (pdfBlob) {
       const pdfFileName = `${projectId}-report-${Date.now()}.pdf`;
       const pdfPath = `reports/pdfs/${pdfFileName}`;
-      const { error: uploadError } = await supabaseBrowser.storage
+      const { error: uploadErr } = await supabaseBrowser.storage
         .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
         .upload(pdfPath, pdfBlob, { contentType: 'application/pdf' });
-      if (!uploadError) {
-        const { data: urlData } = supabaseBrowser.storage
-          .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
-          .getPublicUrl(pdfPath);
-
-        // Cleanup all temporary photographs from Supabase
+      if (!uploadErr) {
+        const { data: urlData } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(pdfPath);
         try {
-          const { data: files } = await supabaseBrowser.storage
-            .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
-            .list(`temp-photos/${projectId}`);
-
+          const { data: files } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).list(`temp-photos/${projectId}`);
           if (files && files.length > 0) {
             const paths = files.map(f => `temp-photos/${projectId}/${f.name}`);
-            await supabaseBrowser.storage
-              .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
-              .remove(paths);
+            await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).remove(paths);
           }
-        } catch (err) {
-          console.error('Failed to cleanup temporary photographs:', err);
-        }
-
-        // Clear images in DB by saving one final draft
+        } catch (err) { console.error('Failed to cleanup temp photos:', err); }
         const finalFields = { ...fields, propertyImages: [] };
         await saveReportDraft(projectId, finalFields);
-
         const { finalizeReport } = await import('@/app/actions/project');
         const res = await finalizeReport(projectId, urlData.publicUrl);
         if (res.error) setMessage({ type: 'error', text: res.error });
-        else {
-          setFields(finalFields);
-          setMessage({ type: 'success', text: 'Project Finalized Successfully! PDF is now available to the client.' });
-        }
+        else { setFields(finalFields); setMessage({ type: 'success', text: 'Project Finalized Successfully! PDF is now available to the client.' }); }
       } else {
         setMessage({ type: 'error', text: 'Failed to upload PDF.' });
       }
@@ -519,7 +645,10 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     const { sendReportForRework } = await import('@/app/actions/project');
     const res = await sendReportForRework(projectId);
     if (res.error) setMessage({ type: 'error', text: res.error });
-    else setMessage({ type: 'success', text: 'Report sent for rework.' });
+    else {
+      setMessage({ type: 'success', text: 'Report sent for rework.' });
+      router.refresh();
+    }
     setLoading(false);
   };
 
@@ -529,160 +658,241 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     const { cancelReportSubmission } = await import('@/app/actions/project');
     const res = await cancelReportSubmission(projectId);
     if (res.error) setMessage({ type: 'error', text: res.error });
-    else setMessage({ type: 'success', text: 'Submission cancelled. You can now edit the report.' });
+    else {
+      setMessage({ type: 'success', text: 'Submission cancelled. You can now edit the report.' });
+      router.refresh();
+    }
     setLoading(false);
   };
 
-  // ── PDF HTML Template ──
-  // ── PDF HTML Template (Page-by-Page) ──
+  // ── PDF HTML Template (3-Column Format) ──
   function generatePDFPages(): string[] {
-    const tableStyle = 'width:100%;border-collapse:collapse;margin-bottom:15px;';
-    const titleStyle = 'font-size:14px;font-weight:bold;text-align:center;margin:10px 0;text-decoration:underline;color:#0f2038;';
-    const thStyle = 'border:1px solid #333;padding:5px 8px;background:#e8e0d4;font-weight:bold;text-align:left;font-size:10px;color:#111;';
-    const tdStyle = 'border:1px solid #333;padding:5px 8px;font-size:10px;color:#222;';
-    const headingStyle = 'font-size:11px;font-weight:bold;background:#d4c5a9;padding:5px 8px;border:1px solid #333;text-align:center;color:#0f2038;';
+    const ts = 'width:100%;border-collapse:collapse;margin-bottom:10px;';
+    const lbl = 'border:1px solid #555;padding:3px 5px;font-size:8.5px;font-weight:bold;background:#d5e8f5;text-align:left;color:#1a3a5c;';
+    const optS = 'border:1px solid #555;padding:0;font-size:8px;vertical-align:top;';
+    const valS = 'border:1px solid #555;padding:3px 5px;font-size:8.5px;vertical-align:middle;';
+    const hd = 'font-size:9px;font-weight:bold;background:#b0c4de;padding:4px 5px;border:1px solid #555;text-align:center;color:#0f2038;';
+    const simpleRow = (label: string, val: string) =>
+      `<tr><td style="${lbl}" width="30%">${label}</td><td style="${valS}" colspan="2">${val || 'N/A'}</td></tr>`;
+    const optionRow = (label: string, opts: string[], val: string) =>
+      `<tr><td style="${lbl}" width="30%">${label}</td><td style="${optS}" width="32%">${opts.map(o => `<div style="border-bottom:1px solid #bbb;padding:2px 4px;${o === val ? 'font-weight:bold;background:#c5ddf0;' : ''}">${o}</div>`).join('')}</td><td style="${valS}"><b>${val}</b></td></tr>`;
 
-    const floorRowsHTML = floorValuations.map(f => `
-      <tr>
-        <td style="${tdStyle}">${f.name}</td>
-        <td style="${tdStyle} text-align:right;">${formatIndianCurrency(f.area)}</td>
-        <td style="${tdStyle} text-align:right;">₹${formatIndianCurrency(f.rate)}</td>
-        <td style="${tdStyle} text-align:right;">₹${formatIndianCurrency(f.estimated)}</td>
-        <td style="${tdStyle} text-align:center;">${f.lifeYears}</td>
-        <td style="${tdStyle} text-align:center;">${f.ageYears}</td>
-        <td style="${tdStyle} text-align:center;">${f.depPct}%</td>
-        <td style="${tdStyle} text-align:right;">₹${formatIndianCurrency(f.depAmount)}</td>
-        <td style="${tdStyle} text-align:right;">₹${formatIndianCurrency(f.netValue)}</td>
-      </tr>
-    `).join('');
+    const page1 = `<div style="font-family:Arial,sans-serif;color:#111;line-height:1.25;">
+      <p style="font-size:11px;font-weight:bold;text-align:center;margin:2px 0 8px;text-decoration:underline;">STANDARD VALUATION REPORT</p>
+      <table style="${ts}">
+        <tr><td style="${hd}" colspan="3">GENERAL DETAILS</td></tr>
+        ${optionRow('Type of Property', ['Residential', 'Commercial', 'Residential cum Commercial', 'Industrial', 'Vacant Plot'], fields.propertyType)}
+        ${simpleRow('Name of Customer(s)', `<b>${fields.ownerName}</b>`)}
+        ${simpleRow('Property Address with Pin Code', fields.ownerAddress)}
+        ${simpleRow('Landmark', fields.landmark || fields.nearbyLandmarks)}
+        ${simpleRow('Loan Application Number', fields.loanApplicationNo)}
+        ${simpleRow('Name of Document Holder', fields.documentHolderName || fields.ownerName)}
+        ${simpleRow('Legal Address of Property', fields.legalAddress || fields.ownerAddress)}
+        ${simpleRow('Date of Inspection', fields.dateOfInspection)}
+      </table>
+      <table style="${ts}">
+        <tr><td style="${hd}" colspan="3">SURROUNDING LOCALITY DETAILS</td></tr>
+        ${simpleRow('Ward No / Municipal Land', fields.wardNo)}
+        ${optionRow('Vicinity', ['Slum', 'Residential', 'Commercial', 'Mixed', 'Industrial'], fields.vicinity)}
+        ${optionRow('Locality Type', ['Elite/Posh/High Class', 'Upper Middle Class', 'Middle Class', 'Lower Middle Class', 'Poor / Slum'], fields.classOfLocality)}
+        ${optionRow('Approach Road Width', ['>=60 Feet Road', '60-40 Feet Road', '40-20 Feet Road', '<20 Feet Road'], fields.approachRoadWidth)}
+        ${optionRow('Plot Demarcated at Site', ['Yes', 'No'], fields.plotDemarcated)}
+      </table>
+    </div>`;
 
-    const page1 = `
-      <div style="font-family:Arial,sans-serif;color:#111;line-height:1.4;">
-        <p style="${titleStyle} margin-top:0;">VALUATION REPORT</p>
+    const page2 = `<div style="font-family:Arial,sans-serif;color:#111;line-height:1.25;">
+      <table style="${ts}">
+        <tr><td style="${hd}" colspan="3">SURROUNDING LOCALITY DETAILS (Contd.)</td></tr>
+        <tr><td style="${lbl}" width="30%">Proximity to Civic Amenities</td><td style="${optS}" width="32%">
+          <div style="border-bottom:1px solid #bbb;padding:2px 4px;">Nearest Railway Station</div>
+          <div style="border-bottom:1px solid #bbb;padding:2px 4px;">Nearest Bus Stop</div>
+          <div style="padding:2px 4px;">Nearest Hospital</div>
+        </td><td style="${valS}">
+          1. ${fields.landmarkRailway || fields.distanceRailwayStation || 'N/A'}<br/>
+          2. ${fields.landmarkBusStop || fields.distanceBusStop || 'N/A'}<br/>
+          3. ${fields.landmarkHospital || fields.distanceHospital || 'N/A'}
+        </td></tr>
+        ${optionRow('Property Identification', ['Easy to Identify', 'Identification by documents', 'Additional documents required', 'Difficult to identify'], fields.propertyIdentification)}
+        ${optionRow('Proximity to Facilities', ['<1 Km', '1-3 Kms', '3-5 Kms', '>5 Kms'], fields.proximityToFacilities)}
+        <tr><td style="${lbl}">Landmark Details</td><td style="${optS}">
+          <div style="border-bottom:1px solid #bbb;padding:2px 4px;">Nearest Railway Station</div>
+          <div style="border-bottom:1px solid #bbb;padding:2px 4px;">Nearest Bus Stop</div>
+          <div style="border-bottom:1px solid #bbb;padding:2px 4px;">Nearest Hospital</div>
+          <div style="padding:2px 4px;">Nearest Landmark</div>
+        </td><td style="${valS}">
+          1. ${fields.landmarkRailway || 'N/A'}<br/>
+          2. ${fields.landmarkBusStop || 'N/A'}<br/>
+          3. ${fields.landmarkHospital || 'N/A'}<br/>
+          4. ${fields.landmarkNearest || fields.landmark || 'N/A'}
+        </td></tr>
+      </table>
+      <table style="${ts}">
+        <tr><td style="${hd}" colspan="3">PROPERTY DETAILS</td></tr>
+        ${simpleRow('Type of Usage', `<b>${fields.usageType}</b>`)}
+        ${simpleRow('Additional Amenities', `<b>${fields.additionalAmenities}</b>`)}
+        ${optionRow('Legal Status of Property', ['Freehold', 'Lease hold >30 yrs.', 'Lease hold 15-30 yrs.', 'Lease hold <15 yrs.'], fields.legalStatus)}
+      </table>
+      <table style="${ts}">
+        <tr><td style="${hd}" colspan="3">SUBJECT PROPERTY DETAILS</td></tr>
+        ${simpleRow('Type of Premises', `<b>${fields.premisesType}</b>`)}
+        ${simpleRow('Occupied by / Vacant', fields.occupiedBy)}
+        ${simpleRow('Is Property Rented', fields.isPropertyRented)}
+        ${simpleRow('If Rented, List of Occupants', fields.rentedOccupants)}
+        ${optionRow('Property Taxation / Maintenance', ['Low', 'Average', 'High', 'Very High'], fields.propertyTaxation)}
+        ${simpleRow('Boundary (As per Sketch Map)', `N: ${fields.boundaryNorth || '-'} &nbsp;|&nbsp; E: ${fields.boundaryEast || '-'} &nbsp;|&nbsp; S: ${fields.boundarySouth || '-'} &nbsp;|&nbsp; W: ${fields.boundaryWest || '-'}`)}
+        ${simpleRow('Boundary (At Site)', `N: ${fields.buildingBoundaryNorth || '-'} &nbsp;|&nbsp; E: ${fields.buildingBoundaryEast || '-'} &nbsp;|&nbsp; S: ${fields.buildingBoundarySouth || '-'} &nbsp;|&nbsp; W: ${fields.buildingBoundaryWest || '-'}`)}
+      </table>
+    </div>`;
 
-        <!-- Part 1: Details Table -->
-        <table style="${tableStyle}">
-          <tr><td style="${headingStyle}" colspan="4">PART 1 — BASIC DETAILS</td></tr>
-          <tr><td style="${thStyle}" width="25%">Owner / Applicant</td><td style="${tdStyle}" colspan="3">${fields.ownerName || 'N/A'}</td></tr>
-          <tr><td style="${thStyle}">Owner Address</td><td style="${tdStyle}" colspan="3">${fields.ownerAddress || 'N/A'}</td></tr>
-          <tr><td style="${thStyle}">Bank / FI</td><td style="${tdStyle}">${fields.bankName || 'N/A'}</td><td style="${thStyle}">Branch</td><td style="${tdStyle}">${fields.branchName || 'N/A'}</td></tr>
-          <tr><td style="${thStyle}">Purpose</td><td style="${tdStyle}">${fields.purpose || 'N/A'}</td><td style="${thStyle}">Date of Inspection</td><td style="${tdStyle}">${fields.dateOfInspection || 'N/A'}</td></tr>
-          <tr><td style="${thStyle}">Date of Valuation</td><td style="${tdStyle}" colspan="3">${fields.dateOfValuation || 'N/A'}</td></tr>
+    const page3 = `<div style="font-family:Arial,sans-serif;color:#111;line-height:1.25;">
+      <table style="${ts}">
+        <tr><td style="${hd}" colspan="3">STRUCTURAL DETAILS</td></tr>
+        ${optionRow('Type of Structure', ['RCC', 'Load Bearing', 'Steel Structure', 'Composite Structure', 'Industrial Shed', 'A/C Sheet', 'G/I Sheet', 'Asbestos Roofing'], fields.structureType)}
+        ${simpleRow('No. of Floors', fields.numberOfFloors)}
+        ${simpleRow('No. of Wings', fields.numberOfWings)}
+        ${simpleRow('No. of Units on Each Floor', fields.unitsPerFloor)}
+        ${simpleRow('Internal Composition', fields.internalComposition)}
+        ${simpleRow('No. of Lifts', fields.numberOfLifts)}
+        ${optionRow('Age of Property', ['1-10 years', '11-25 years', '26-50 years', '>50 years'], fields.ageOfProperty)}
+        ${simpleRow('Estimated Future Life', fields.estimatedFutureLife)}
+        ${simpleRow('Exteriors', fields.exteriors)}
+        ${optionRow('Quality of Construction', ['Very Good', 'Good', 'Average', 'Poor'], fields.qualityOfConstruction)}
+        ${simpleRow('Common Areas Remarks', fields.commonAreasRemarks)}
+        ${simpleRow('Other Observations', fields.otherObservations)}
+        ${simpleRow('Flooring & Finishing', fields.flooringType)}
+        ${simpleRow('Roofing & Terracing', fields.roofType)}
+        ${simpleRow('Quality of Fixtures', fields.qualityOfFixtures)}
+      </table>
+      <table style="${ts}">
+        <tr><td style="${hd}" colspan="3">PLAN APPROVALS</td></tr>
+        ${optionRow('Construction as per Approved Plans', ['Yes', 'No'], fields.constructionApproved)}
+        ${simpleRow('Details of Approved Plan', fields.approvalDetails)}
+        ${simpleRow('Construction Permission No. & Date', fields.constructionPermission || 'Not mentioned')}
+        ${simpleRow('Violations / Risk of Demolition', fields.violationsObserved)}
+        ${simpleRow('Conforms to Local Byelaws', fields.conformsToByelaws)}
+        ${simpleRow('Other Documents Verified', fields.documentsVerified)}
+      </table>
+    </div>`;
 
-          <tr><td style="${headingStyle}" colspan="4">PROPERTY DESCRIPTION (As per Deed)</td></tr>
-          <tr><td style="${thStyle}">Khata No.</td><td style="${tdStyle}">${fields.khataNo || 'N/A'}</td><td style="${thStyle}">Plot No.</td><td style="${tdStyle}">${fields.plotNo || 'N/A'}</td></tr>
-          <tr><td style="${thStyle}">Mouza / Area</td><td style="${tdStyle}">${fields.mouza || 'N/A'}</td><td style="${thStyle}">Tahasil</td><td style="${tdStyle}">${fields.tahasil || 'N/A'}</td></tr>
-          <tr><td style="${thStyle}">District</td><td style="${tdStyle}">${fields.district || 'N/A'}</td><td style="${thStyle}">State</td><td style="${tdStyle}">${fields.state || 'N/A'}</td></tr>
-          <tr><td style="${thStyle}">Land Area</td><td style="${tdStyle}" colspan="3">${fields.landArea || '0.00'} ${fields.landAreaUnit}</td></tr>
-          <tr><td style="${thStyle}">Boundary — North</td><td style="${tdStyle}">${fields.boundaryNorth || 'N/A'}</td><td style="${thStyle}">South</td><td style="${tdStyle}">${fields.boundarySouth || 'N/A'}</td></tr>
-          <tr><td style="${thStyle}">Boundary — East</td><td style="${tdStyle}">${fields.boundaryEast || 'N/A'}</td><td style="${thStyle}">West</td><td style="${tdStyle}">${fields.boundaryWest || 'N/A'}</td></tr>
+    const floorRowsHTML = floorValuations.map(f => `<tr>
+      <td style="${valS}">${f.name}</td>
+      <td style="${valS} text-align:right;">${formatIndianCurrency(f.area)}</td>
+      <td style="${valS} text-align:right;">\u20B9${formatIndianCurrency(f.rate)}</td>
+      <td style="${valS} text-align:right;">\u20B9${formatIndianCurrency(f.estimated)}</td>
+      <td style="${valS} text-align:center;">${f.lifeYears}</td>
+      <td style="${valS} text-align:center;">${f.ageYears}</td>
+      <td style="${valS} text-align:center;">${f.depPct}%</td>
+      <td style="${valS} text-align:right;">\u20B9${formatIndianCurrency(f.netValue)}</td>
+    </tr>`).join('');
 
-          <tr><td style="${headingStyle}" colspan="4">LOCALITY DESCRIPTION</td></tr>
-          <tr><td style="${thStyle}">Locality Type</td><td style="${tdStyle}">${fields.localityType || 'N/A'}</td><td style="${thStyle}">Development Status</td><td style="${tdStyle}">${fields.developmentStatus || 'N/A'}</td></tr>
-          <tr><td style="${thStyle}">Class of Locality</td><td style="${tdStyle}">${fields.classOfLocality || 'N/A'}</td><td style="${thStyle}">Distance from Main Road</td><td style="${tdStyle}">${fields.distanceMainRoad || '0.00'} ${fields.distanceMainRoadUnit || 'Meters'}</td></tr>
-          <tr><td style="${thStyle}">Distance from Railway / Airport</td><td style="${tdStyle}">${fields.distanceRailway || '0.00'} ${fields.distanceRailwayUnit || 'Km'}</td><td style="${thStyle}">Nearby Landmarks</td><td style="${tdStyle}">${fields.nearbyLandmarks || 'N/A'}</td></tr>
-          <tr><td style="${thStyle}">Civic Amenities</td><td style="${tdStyle}" colspan="3">${(fields.civicAmenities || []).filter(a => a !== 'Other').concat(fields.civicAmenities?.includes('Other') && fields.civicAmenitiesOther ? [fields.civicAmenitiesOther] : []).join(', ') || 'N/A'}</td></tr>
-        </table>
+    const page4 = `<div style="font-family:Arial,sans-serif;color:#111;line-height:1.25;">
+      <table style="${ts}">
+        <tr><td style="${hd}" colspan="3">VALUATION \u2014 Land and Building</td></tr>
+        ${simpleRow('Land Area', `${fields.landArea || '0'} ${fields.landAreaUnit}`)}
+        ${simpleRow('Current Govt. Approved Rates for Land', `Rs.${fields.govtLandRate || fields.guidelineValue || 'N/A'}/- Per ${fields.landAreaUnit}`)}
+        ${simpleRow('Recommended Rate & Basis', `Rs.${fields.landRatePerUnit || 'N/A'}/- Per ${fields.landAreaUnit} ${fields.recommendedRateBasis ? '(' + fields.recommendedRateBasis + ')' : ''}`)}
+        ${simpleRow('Land Value', `${fields.landArea || '0'} ${fields.landAreaUnit} X Rs.${fields.landRatePerUnit || '0'}/- = <b>Rs.${formatIndianCurrency(landValue)}/-</b>`)}
+        ${simpleRow('Actual BUA of Premises', `${formatIndianCurrency(totalPlinthArea)} ${fields.floorAreaUnit || 'Sqft'}`)}
+        ${fields.buaAsPerApprovals ? simpleRow('BUA as per Approvals', fields.buaAsPerApprovals) : ''}
+      </table>
+      <p style="font-size:9px;font-weight:bold;text-decoration:underline;margin:6px 0 4px;text-align:center;">VALUATION OF BUILDING (After Depreciation)</p>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:8px;font-size:8px;">
+        <tr style="background:#b0c4de;font-weight:bold;">
+          <th style="border:1px solid #555;padding:3px;">Floor</th>
+          <th style="border:1px solid #555;padding:3px;text-align:right;">Area</th>
+          <th style="border:1px solid #555;padding:3px;text-align:right;">Rate (\u20B9/Sqft)</th>
+          <th style="border:1px solid #555;padding:3px;text-align:right;">Estimated (\u20B9)</th>
+          <th style="border:1px solid #555;padding:3px;text-align:center;">Life</th>
+          <th style="border:1px solid #555;padding:3px;text-align:center;">Age</th>
+          <th style="border:1px solid #555;padding:3px;text-align:center;">Dep%</th>
+          <th style="border:1px solid #555;padding:3px;text-align:right;">Net Value (\u20B9)</th>
+        </tr>
+        ${floorRowsHTML}
+        <tr style="font-weight:bold;background:#e8dcc8;">
+          <td style="${valS}" colspan="7">Total Building Value</td>
+          <td style="${valS} text-align:right;">\u20B9${formatIndianCurrency(totalBuildingValue)}</td>
+        </tr>
+      </table>
+      <table style="${ts}">
+        ${simpleRow('Market Value (Land + Building)', `<b>Rs.${formatIndianCurrency(totalPropertyValue)}/- (${rupeesInWords(totalPropertyValue)})</b>`)}
+        ${simpleRow(`Realizable Value (${fields.realizablePct || '90'}%)`, `Rs.${formatIndianCurrency(realizableValue)}/-`)}
+        ${simpleRow(`Forced Sale Value (${fields.distressPct || '80'}%)`, `<b>Rs.${formatIndianCurrency(distressValue)}/-</b> (${rupeesInWords(distressValue)})`)}
+        ${optionRow('Marketability', ['Excellent', 'Very Good', 'Good', 'Difficult'], fields.marketability)}
+        ${optionRow('Valuation Result', ['Positive', 'Negative'], fields.valuationResult)}
+        ${simpleRow('Replacement Cost / Insurance Value', fields.replacementCost ? `Rs.${formatIndianCurrency(fields.replacementCost)}/-` : 'N/A')}
+        ${simpleRow('Deviations in Property', fields.deviations)}
+      </table>
+    </div>`;
+
+    const page5 = `<div style="font-family:Arial,sans-serif;color:#111;line-height:1.4;">
+      <table style="${ts}">
+        <tr><td style="${hd}" colspan="2">REMARKS, DEMARCATION & POSSESSION</td></tr>
+        <tr><td style="${lbl}" width="25%">Demarcation</td><td style="${valS}">${fields.demarcation || 'N/A'}</td></tr>
+        <tr><td style="${lbl}">Possession</td><td style="${valS}">${fields.possession || 'N/A'}</td></tr>
+        <tr><td style="${lbl}">Remarks / Observations</td><td style="${valS}">${fields.remarks || 'N/A'}</td></tr>
+      </table>
+      <div style="margin-top:10px;font-size:9px;line-height:1.5;">
+        <p style="font-weight:bold;text-decoration:underline;margin-bottom:4px;">Declaration:</p>
+        <p style="margin-bottom:3px;">I hereby declare that:</p>
+        <p style="margin-bottom:3px;">- I have deputed my representative <b>${fields.representativeName ? 'Mr. ' + fields.representativeName : '______'}</b> to inspect the property on <b>${fields.dateOfInspection || '______'}</b>.</p>
+        <p style="margin-bottom:3px;">- I have no direct or indirect interest in the property valued.</p>
+        <p style="margin-bottom:3px;">- The information furnished is true and correct to the best of my knowledge and belief.</p>
       </div>
-    `;
-
-    const page2 = `
-      <div style="font-family:Arial,sans-serif;color:#111;line-height:1.4;">
-        <table style="${tableStyle}">
-          <tr><td style="${headingStyle}" colspan="4">BUILDING DESCRIPTION</td></tr>
-          <tr><td style="${thStyle}" width="25%">Structure Type</td><td style="${tdStyle}">${fields.structureType || 'N/A'}</td><td style="${thStyle}">No. of Floors</td><td style="${tdStyle}">${fields.numberOfFloors || 'N/A'}</td></tr>
-          <tr><td style="${thStyle}">Foundation</td><td style="${tdStyle}">${fields.foundation || 'N/A'}</td><td style="${thStyle}">Superstructure</td><td style="${tdStyle}">${fields.superstructure || 'N/A'}</td></tr>
-          <tr><td style="${thStyle}">Roof</td><td style="${tdStyle}">${fields.roofType || 'N/A'}</td><td style="${thStyle}">Flooring</td><td style="${tdStyle}">${fields.flooringType || 'N/A'}</td></tr>
-          <tr><td style="${thStyle}">Doors & Windows</td><td style="${tdStyle}">${fields.doorsWindows || 'N/A'}</td><td style="${thStyle}">Plastering</td><td style="${tdStyle}">${fields.plastering || 'N/A'}</td></tr>
-          <tr><td style="${thStyle}">Sanitary</td><td style="${tdStyle}">${fields.sanitary || 'N/A'}</td><td style="${thStyle}">Electrification</td><td style="${tdStyle}">${fields.electrification || 'N/A'}</td></tr>
-          <tr><td style="${thStyle}">Quality</td><td style="${tdStyle}">${fields.qualityOfConstruction || 'N/A'}</td><td style="${thStyle}">Maintenance</td><td style="${tdStyle}">${fields.maintenanceCondition || 'N/A'}</td></tr>
-        </table>
-
-        <!-- Floor-wise Depreciation Table -->
-        <p style="${titleStyle}">VALUATION OF BUILDING (After Depreciation)</p>
-        <table style="width:100%;border-collapse:collapse;margin-bottom:15px;">
-          <tr>
-            <th style="${thStyle}">Floor</th>
-            <th style="${thStyle} text-align:right;">Area (Sqft)</th>
-            <th style="${thStyle} text-align:right;">Rate (₹/Sqft)</th>
-            <th style="${thStyle} text-align:right;">Estimated (₹)</th>
-            <th style="${thStyle} text-align:center;">Life (Yr)</th>
-            <th style="${thStyle} text-align:center;">Age (Yr)</th>
-            <th style="${thStyle} text-align:center;">Dep %</th>
-            <th style="${thStyle} text-align:right;">Dep Amt (₹)</th>
-            <th style="${thStyle} text-align:right;">Net Value (₹)</th>
-          </tr>
-          ${floorRowsHTML}
-          <tr style="font-weight:bold;background:#f0ead6;">
-            <td style="${tdStyle}" colspan="8">Total Building Value</td>
-            <td style="${tdStyle} text-align:right;">₹${formatIndianCurrency(totalBuildingValue)}</td>
-          </tr>
-        </table>
-
-        <!-- Abstract -->
-        <p style="${titleStyle}">ABSTRACT OF VALUATION</p>
-        <table style="width:100%;border-collapse:collapse;margin-bottom:15px;">
-          <tr><td style="${thStyle}" width="60%">A. Value of Land</td><td style="${tdStyle} text-align:right;">₹ ${formatIndianCurrency(landValue)}</td></tr>
-          <tr><td style="${thStyle}">B. Value of Building (After Depreciation)</td><td style="${tdStyle} text-align:right;">₹ ${formatIndianCurrency(totalBuildingValue)}</td></tr>
-          <tr style="font-weight:bold;background:#f0ead6;"><td style="${tdStyle}">TOTAL FAIR MARKET VALUE (A + B)</td><td style="${tdStyle} text-align:right;">₹ ${formatIndianCurrency(totalPropertyValue)}</td></tr>
-          <tr><td style="${thStyle}">In Words</td><td style="${tdStyle}">${rupeesInWords(totalPropertyValue)}</td></tr>
-          <tr><td style="${thStyle}">Realizable Value (${fields.realizablePct || '90'}%)</td><td style="${tdStyle} text-align:right;">₹ ${formatIndianCurrency(realizableValue)}</td></tr>
-          <tr><td style="${thStyle}">Distress / Forced Sale Value (${fields.distressPct || '80'}%)</td><td style="${tdStyle} text-align:right;">₹ ${formatIndianCurrency(distressValue)}</td></tr>
-          ${fields.guidelineValue ? `<tr><td style="${thStyle}">Government / Guideline Value</td><td style="${tdStyle} text-align:right;">₹ ${formatIndianCurrency(fields.guidelineValue)}</td></tr>` : ''}
-        </table>
+      <p style="font-size:10px;font-weight:bold;text-align:center;margin:15px 0 8px;text-decoration:underline;">VALUATION CERTIFICATE</p>
+      <div style="border:1px solid #555;padding:10px;font-size:9px;line-height:1.5;background:#fdfcf8;">
+        <p style="margin-top:0;">This is to certify that the undersigned has personally inspected the property belonging to
+        <b>${fields.ownerName}</b> situated at <b>${fields.ownerAddress}</b> on
+        <b>${fields.dateOfInspection}</b> and after careful examination and consideration of all relevant factors,
+        the Fair Market Value of the said property is assessed as under:</p>
+        <p><b>Fair Market Value: \u20B9 ${formatIndianCurrency(totalPropertyValue)} (${rupeesInWords(totalPropertyValue)})</b></p>
+        <p><b>Realizable Value (${fields.realizablePct || '90'}%): \u20B9 ${formatIndianCurrency(realizableValue)} (${rupeesInWords(realizableValue)})</b></p>
+        <p style="margin-bottom:0;"><b>Distress Sale Value (${fields.distressPct || '80'}%): \u20B9 ${formatIndianCurrency(distressValue)} (${rupeesInWords(distressValue)})</b></p>
       </div>
-    `;
-
-    const page3 = `
-      <div style="font-family:Arial,sans-serif;color:#111;line-height:1.5;">
-        <table style="${tableStyle}">
-          <tr><td style="${headingStyle}" colspan="2">REMARKS, DEMARCATION & POSSESSION</td></tr>
-          <tr><td style="${thStyle}" width="25%">Demarcation</td><td style="${tdStyle}">${fields.demarcation || 'N/A'}</td></tr>
-          <tr><td style="${thStyle}">Possession</td><td style="${tdStyle}">${fields.possession || 'N/A'}</td></tr>
-          <tr><td style="${thStyle}">Remarks / Observations</td><td style="${tdStyle}">${fields.remarks || 'N/A'}</td></tr>
-        </table>
-
-        <!-- Certificate -->
-        <p style="${titleStyle}">VALUATION CERTIFICATE</p>
-        <div style="border:1px solid #333;padding:12px;font-size:10px;line-height:1.6;margin-bottom:15px;background:#fdfcf8;">
-          <p style="margin-top:0;">This is to certify that the undersigned has personally inspected the property belonging to 
-          <strong>${fields.ownerName}</strong> situated at <strong>${fields.ownerAddress}</strong> on 
-          <strong>${fields.dateOfInspection}</strong> and after careful examination and consideration of all relevant factors,
-          the Fair Market Value of the said property is assessed as under:</p>
-          <p style="margin-bottom:4px;"><strong>Fair Market Value: ₹ ${formatIndianCurrency(totalPropertyValue)} (${rupeesInWords(totalPropertyValue)})</strong></p>
-          <p style="margin-bottom:4px;"><strong>Realizable Value (${fields.realizablePct || '90'}%): ₹ ${formatIndianCurrency(realizableValue)} (${rupeesInWords(realizableValue)})</strong></p>
-          <p style="margin-bottom:0;"><strong>Distress Sale Value (${fields.distressPct || '80'}%): ₹ ${formatIndianCurrency(distressValue)} (${rupeesInWords(distressValue)})</strong></p>
-        </div>
-
-        <!-- Signature -->
-        <div style="margin-top:30px;text-align:right;font-size:10px;line-height:1.4;">
-          <p>_______________________________</p>
-          <p style="font-weight:bold;margin:2px 0 0 0;color:#0f2038;">Satyajit Mohanty</p>
-          <p style="margin:2px 0 0 0;">B.Sc.(Engg.), M.Tech (IIT Kharagpur)</p>
-          <p style="margin:2px 0 0 0;">Registered Valuer — IBBI/RV/02/2019/10594</p>
-          <p style="margin:2px 0 0 0;color:#666;">S. Mohanty & Associates, Bhubaneswar</p>
-        </div>
+      <div style="margin-top:25px;text-align:right;font-size:9px;line-height:1.4;">
+        <p>_______________________________</p>
+        <p style="font-weight:bold;margin:2px 0;color:#0f2038;">Satyajit Mohanty</p>
+        <p style="margin:2px 0;">B.Sc.(Engg.), M.Tech (IIT Kharagpur)</p>
+        <p style="margin:2px 0;">Registered Valuer \u2014 IBBI/RV/02/2019/10594</p>
+        <p style="margin:2px 0;color:#666;">S. Mohanty & Associates, Bhubaneswar</p>
       </div>
-    `;
+    </div>`;
 
-    const generatedPages = [page1, page2, page3];
+    const generatedPages = [page1, page2, page3, page4, page5];
 
-    // Property Photographs Page (Optional Page 4)
+    // Property Photographs Page
     if (fields.propertyImages && fields.propertyImages.length > 0) {
-      const page4 = `
-        <div style="font-family:Arial,sans-serif;color:#111;line-height:1.4;">
-          <p style="${titleStyle} margin-top:0;">PROPERTY PHOTOGRAPHS</p>
-          <div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:15px;margin-top:20px;">
-            ${fields.propertyImages.map((url, idx) => `
-              <div style="border:1px solid #ddd;padding:5px;border-radius:4px;text-align:center;background:#fff;">
-                <img src="${url}" style="width:100%;height:200px;object-fit:cover;border-radius:2px;" crossOrigin="anonymous" />
-                <p style="font-size:9px;margin:5px 0 0 0;color:#666;font-weight:bold;">Photograph #${idx + 1}</p>
-              </div>
-            `).join('')}
-          </div>
+      generatedPages.push(`<div style="font-family:Arial,sans-serif;color:#111;">
+        <p style="font-size:11px;font-weight:bold;text-align:center;text-decoration:underline;margin-bottom:12px;">PROPERTY PHOTOGRAPHS</p>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
+          ${fields.propertyImages.map((url, idx) => `
+            <div style="border:1px solid #ddd;padding:4px;border-radius:3px;text-align:center;background:#fff;">
+              <img src="${url}" style="width:100%;height:190px;object-fit:cover;border-radius:2px;" crossOrigin="anonymous" />
+              <p style="font-size:8px;margin:4px 0 0;font-weight:bold;">Photograph #${idx + 1}</p>
+            </div>
+          `).join('')}
         </div>
-      `;
-      generatedPages.push(page4);
+      </div>`);
+    }
+
+    // Sketch Map Page
+    if (fields.sketchMapImage) {
+      generatedPages.push(`<div style="font-family:Arial,sans-serif;color:#111;">
+        <p style="font-size:11px;font-weight:bold;text-align:center;text-decoration:underline;margin-bottom:12px;">SKETCH MAP</p>
+        <div style="text-align:center;">
+          <img src="${fields.sketchMapImage}" style="max-width:100%;max-height:700px;border:1px solid #ddd;" crossOrigin="anonymous" />
+        </div>
+      </div>`);
+    }
+
+    // Location Map Page
+    if (fields.locationMapImage) {
+      generatedPages.push(`<div style="font-family:Arial,sans-serif;color:#111;">
+        <p style="font-size:11px;font-weight:bold;text-align:center;text-decoration:underline;margin-bottom:12px;">LOCATION MAP</p>
+        <div style="text-align:center;">
+          <img src="${fields.locationMapImage}" style="max-width:100%;max-height:650px;border:1px solid #ddd;" crossOrigin="anonymous" />
+        </div>
+        ${fields.latitude || fields.longitude ? `<p style="text-align:center;font-size:9px;margin-top:8px;color:#b8860b;font-weight:bold;">Lat: ${fields.latitude || 'N/A'}, Long: ${fields.longitude || 'N/A'}</p>` : ''}
+      </div>`);
     }
 
     return generatedPages;
@@ -700,189 +910,178 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
         </div>
       )}
 
-      {/* ── Section 1: Basic Details ── */}
-      <Section title="Basic Details" number={1}>
-        <div className="grid md:grid-cols-2 gap-4">
-          <Field label="Owner / Applicant Name">
-            <input className={inputCls} value={fields.ownerName} onChange={e => handleChange('ownerName', e.target.value)} disabled={isReadOnly} placeholder="Full name of property owner" />
-          </Field>
-          <Field label="Owner Address">
-            <input className={inputCls} value={fields.ownerAddress} onChange={e => handleChange('ownerAddress', e.target.value)} disabled={isReadOnly} placeholder="Full address" />
-          </Field>
-          <Field label="Bank / Financial Institution">
-            <input className={inputCls} value={fields.bankName} onChange={e => handleChange('bankName', e.target.value)} disabled={isReadOnly} placeholder="e.g. State Bank of India" />
-          </Field>
-          <Field label="Branch Name">
-            <input className={inputCls} value={fields.branchName} onChange={e => handleChange('branchName', e.target.value)} disabled={isReadOnly} placeholder="Branch" />
-          </Field>
-          <Field label="Purpose of Valuation">
-            <select className={selectCls} value={fields.purpose} onChange={e => handleChange('purpose', e.target.value)} disabled={isReadOnly}>
-              <option>Home Loan</option><option>Mortgage Loan</option><option>Balance Transfer</option>
-              <option>Top Up Loan</option><option>Capital Gain</option><option>Wealth Tax</option>
-              <option>Balance Sheet</option><option>Insurance</option><option>Other</option>
-            </select>
-          </Field>
-          <Field label="Date of Inspection">
-            <input type="date" className={inputCls} value={fields.dateOfInspection} onChange={e => handleChange('dateOfInspection', e.target.value)} disabled={isReadOnly} />
-          </Field>
-          <Field label="Date of Valuation">
-            <input type="date" className={inputCls} value={fields.dateOfValuation} onChange={e => handleChange('dateOfValuation', e.target.value)} disabled={isReadOnly} />
-          </Field>
-        </div>
-      </Section>
-
-      {/* ── Section 2: Property Description ── */}
-      <Section title="Property Description (As per Deed)" number={2} defaultOpen={false}>
-        <div className="grid md:grid-cols-2 gap-4">
-          <Field label="Khata No."><input className={inputCls} value={fields.khataNo} onChange={e => handleChange('khataNo', e.target.value)} disabled={isReadOnly} /></Field>
-          <Field label="Plot No."><input className={inputCls} value={fields.plotNo} onChange={e => handleChange('plotNo', e.target.value)} disabled={isReadOnly} /></Field>
-          <Field label="Mouza / Area"><input className={inputCls} value={fields.mouza} onChange={e => handleChange('mouza', e.target.value)} disabled={isReadOnly} /></Field>
-          <Field label="Tahasil"><input className={inputCls} value={fields.tahasil} onChange={e => handleChange('tahasil', e.target.value)} disabled={isReadOnly} /></Field>
-          <Field label="District"><input className={inputCls} value={fields.district} onChange={e => handleChange('district', e.target.value)} disabled={isReadOnly} /></Field>
-          <Field label="State">
-            <select className={selectCls} value={fields.state} onChange={e => handleChange('state', e.target.value)} disabled={isReadOnly}>
-              <option>Odisha</option><option>West Bengal</option><option>Jharkhand</option><option>Chhattisgarh</option><option>Other</option>
-            </select>
-          </Field>
-          <Field label="Land Area">
-            <div className="flex gap-2 items-center">
-              <input type="number" min="0" className={inputCls + ' text-right w-28'} value={getDecimalParts(fields.landArea).whole} onChange={e => handleDecimalChange('landArea', 'whole', e.target.value)} disabled={isReadOnly} placeholder="0" />
-              <span className="font-bold text-lg text-gray-500">.</span>
-              <input type="number" min="0" className={inputCls + ' w-20'} value={getDecimalParts(fields.landArea).fraction} onChange={e => handleDecimalChange('landArea', 'fraction', e.target.value)} disabled={isReadOnly} placeholder="00" />
-              <select className={selectCls + ' w-28'} value={fields.landAreaUnit} onChange={e => handleChange('landAreaUnit', e.target.value)} disabled={isReadOnly}>
-                <option>Sqft</option><option>Decimal</option><option>Acre</option><option>Sqm</option>
-              </select>
-            </div>
-          </Field>
-        </div>
-        <div className="mt-4">
-          <p className="text-xs font-semibold text-[#495057] uppercase tracking-wider mb-3">Boundaries</p>
+      {/* ── Section 1: General Details ── */}
+      <Section title="General Details" number={1}>
+        <div className="space-y-3">
+          <OptionField label="Type of Property" options={['Residential', 'Commercial', 'Residential cum Commercial', 'Industrial', 'Vacant Plot']} value={fields.propertyType} onChange={v => handleChange('propertyType', v)} disabled={isReadOnly} />
           <div className="grid md:grid-cols-2 gap-4">
-            <Field label="North"><input className={inputCls} value={fields.boundaryNorth} onChange={e => handleChange('boundaryNorth', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="South"><input className={inputCls} value={fields.boundarySouth} onChange={e => handleChange('boundarySouth', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="East"><input className={inputCls} value={fields.boundaryEast} onChange={e => handleChange('boundaryEast', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="West"><input className={inputCls} value={fields.boundaryWest} onChange={e => handleChange('boundaryWest', e.target.value)} disabled={isReadOnly} /></Field>
+            <Field label="Name of Customer(s)">
+              <input className={inputCls} value={fields.ownerName} onChange={e => handleChange('ownerName', e.target.value)} disabled={isReadOnly} placeholder="Full name of property owner" />
+            </Field>
+            <Field label="Property Address with Pin Code">
+              <input className={inputCls} value={fields.ownerAddress} onChange={e => handleChange('ownerAddress', e.target.value)} disabled={isReadOnly} placeholder="Full property address with pin code" />
+            </Field>
+            <Field label="Landmark">
+              <input className={inputCls} value={fields.landmark} onChange={e => handleChange('landmark', e.target.value)} disabled={isReadOnly} placeholder="e.g. Near Kantapada UP School" />
+            </Field>
+            <Field label="Loan Application Number">
+              <input className={inputCls} value={fields.loanApplicationNo} onChange={e => handleChange('loanApplicationNo', e.target.value)} disabled={isReadOnly} />
+            </Field>
+            <Field label="Name of Document Holder">
+              <input className={inputCls} value={fields.documentHolderName} onChange={e => handleChange('documentHolderName', e.target.value)} disabled={isReadOnly} />
+            </Field>
+            <Field label="Legal Address of Property" span={2}>
+              <input className={inputCls} value={fields.legalAddress} onChange={e => handleChange('legalAddress', e.target.value)} disabled={isReadOnly} placeholder="Hissa/Survey/Khasra No, Khata No, Plot No, Mouza, Tahasil, District" />
+            </Field>
+            <Field label="Date of Inspection">
+              <input type="date" className={inputCls} value={fields.dateOfInspection} onChange={e => handleChange('dateOfInspection', e.target.value)} disabled={isReadOnly} />
+            </Field>
+            <Field label="Date of Valuation Report">
+              <input type="date" className={inputCls} value={fields.dateOfValuation} onChange={e => handleChange('dateOfValuation', e.target.value)} disabled={isReadOnly} />
+            </Field>
+            <Field label="Bank / Financial Institution">
+              <input className={inputCls} value={fields.bankName} onChange={e => handleChange('bankName', e.target.value)} disabled={isReadOnly} placeholder="e.g. HDFC Bank" />
+            </Field>
+            <Field label="Branch Name">
+              <input className={inputCls} value={fields.branchName} onChange={e => handleChange('branchName', e.target.value)} disabled={isReadOnly} />
+            </Field>
+            <Field label="Ref No.">
+              <input className={inputCls} value={fields.refNo} onChange={e => handleChange('refNo', e.target.value)} disabled={isReadOnly} placeholder="e.g. SMA/07-26/22" />
+            </Field>
           </div>
         </div>
       </Section>
 
-      {/* ── Section 3: Locality Description ── */}
-      <Section title="Locality Description" number={3} defaultOpen={false}>
-        <div className="grid md:grid-cols-2 gap-4">
-          <Field label="Locality Type">
-            <select className={selectCls} value={fields.localityType} onChange={e => handleChange('localityType', e.target.value)} disabled={isReadOnly}>
-              <option>Residential</option><option>Commercial</option><option>Industrial</option><option>Mixed</option><option>Agricultural</option>
-            </select>
+      {/* ── Section 2: Surrounding Locality Details ── */}
+      <Section title="Surrounding Locality Details" number={2} defaultOpen={false}>
+        <div className="space-y-3">
+          <Field label="Ward No / Municipal Land No" span={2}>
+            <input className={inputCls} value={fields.wardNo} onChange={e => handleChange('wardNo', e.target.value)} disabled={isReadOnly} />
           </Field>
-          <Field label="Development Status">
-            <select className={selectCls} value={fields.developmentStatus} onChange={e => handleChange('developmentStatus', e.target.value)} disabled={isReadOnly}>
-              <option>Developed</option><option>Developing</option><option>Under-developed</option>
-            </select>
-          </Field>
-          <Field label="Class of Locality">
-            <select className={selectCls} value={fields.classOfLocality} onChange={e => handleChange('classOfLocality', e.target.value)} disabled={isReadOnly}>
-              <option>Upper Class</option><option>Middle Class</option><option>Lower Middle Class</option><option>Lower Class</option>
-            </select>
-          </Field>
-          <Field label="Distance from Main Road">
-            <div className="flex gap-2 items-center">
-              <input type="number" min="0" className={inputCls + ' text-right w-24'} value={getDecimalParts(fields.distanceMainRoad).whole} onChange={e => handleDecimalChange('distanceMainRoad', 'whole', e.target.value)} disabled={isReadOnly} placeholder="0" />
-              <span className="font-bold text-lg text-gray-500">.</span>
-              <input type="number" min="0" className={inputCls + ' w-20'} value={getDecimalParts(fields.distanceMainRoad).fraction} onChange={e => handleDecimalChange('distanceMainRoad', 'fraction', e.target.value)} disabled={isReadOnly} placeholder="00" />
-              <select className={selectCls + ' w-28'} value={fields.distanceMainRoadUnit} onChange={e => handleChange('distanceMainRoadUnit', e.target.value)} disabled={isReadOnly}>
-                <option>Meters</option><option>Km</option><option>Feet</option>
-              </select>
-            </div>
-          </Field>
-          <Field label="Distance from Railway Stn / Airport">
-            <div className="flex gap-2 items-center">
-              <input type="number" min="0" className={inputCls + ' text-right w-24'} value={getDecimalParts(fields.distanceRailway).whole} onChange={e => handleDecimalChange('distanceRailway', 'whole', e.target.value)} disabled={isReadOnly} placeholder="0" />
-              <span className="font-bold text-lg text-gray-500">.</span>
-              <input type="number" min="0" className={inputCls + ' w-20'} value={getDecimalParts(fields.distanceRailway).fraction} onChange={e => handleDecimalChange('distanceRailway', 'fraction', e.target.value)} disabled={isReadOnly} placeholder="00" />
-              <select className={selectCls + ' w-28'} value={fields.distanceRailwayUnit} onChange={e => handleChange('distanceRailwayUnit', e.target.value)} disabled={isReadOnly}>
-                <option>Km</option><option>Miles</option>
-              </select>
-            </div>
-          </Field>
-          <Field label="Nearby Landmarks"><input className={inputCls} value={fields.nearbyLandmarks} onChange={e => handleChange('nearbyLandmarks', e.target.value)} disabled={isReadOnly} /></Field>
+          <OptionField label="Vicinity" options={['Slum', 'Residential', 'Commercial', 'Mixed', 'Industrial']} value={fields.vicinity} onChange={v => handleChange('vicinity', v)} disabled={isReadOnly} />
+          <OptionField label="Locality Type" options={['Elite/Posh/High Class', 'Upper Middle Class', 'Middle Class', 'Lower Middle Class', 'Poor / Slum']} value={fields.classOfLocality} onChange={v => handleChange('classOfLocality', v)} disabled={isReadOnly} />
+          <OptionField label="Approach Road Width" options={['>=60 Feet Road', '60-40 Feet Road', '40-20 Feet Road', '<20 Feet Road']} value={fields.approachRoadWidth} onChange={v => handleChange('approachRoadWidth', v)} disabled={isReadOnly} />
+          <OptionField label="Plot Demarcated at Site" options={['Yes', 'No']} value={fields.plotDemarcated} onChange={v => handleChange('plotDemarcated', v)} disabled={isReadOnly} />
+          <LandmarkField label="Proximity to Civic Amenities" rows={[
+            { subLabel: 'Nearest Railway Station', value: fields.distanceRailwayStation, onChange: v => handleChange('distanceRailwayStation', v) },
+            { subLabel: 'Nearest Bus Stop', value: fields.distanceBusStop, onChange: v => handleChange('distanceBusStop', v) },
+            { subLabel: 'Nearest Hospital', value: fields.distanceHospital, onChange: v => handleChange('distanceHospital', v) },
+          ]} disabled={isReadOnly} />
+          <OptionField label="Property Identification" options={['Easy to Identify', 'Identification by documents', 'Additional documents required', 'Difficult to identify']} value={fields.propertyIdentification} onChange={v => handleChange('propertyIdentification', v)} disabled={isReadOnly} showCustomInput customValue={fields.propertyIdentificationRemarks} onCustomChange={v => handleChange('propertyIdentificationRemarks', v)} />
+          <OptionField label="Proximity to Facilities (Educational, Recreational)" options={['<1 Km', '1-3 Kms', '3-5 Kms', '>5 Kms']} value={fields.proximityToFacilities} onChange={v => handleChange('proximityToFacilities', v)} disabled={isReadOnly} />
+          <LandmarkField label="Landmark Details" rows={[
+            { subLabel: 'Nearest Railway Station', value: fields.landmarkRailway, onChange: v => handleChange('landmarkRailway', v) },
+            { subLabel: 'Nearest Bus Stop', value: fields.landmarkBusStop, onChange: v => handleChange('landmarkBusStop', v) },
+            { subLabel: 'Nearest Hospital', value: fields.landmarkHospital, onChange: v => handleChange('landmarkHospital', v) },
+            { subLabel: 'Nearest Landmark', value: fields.landmarkNearest, onChange: v => handleChange('landmarkNearest', v) },
+          ]} disabled={isReadOnly} />
         </div>
-        <div className="mt-4">
-          <p className="text-xs font-semibold text-[#495057] uppercase tracking-wider mb-3">Civic Amenities</p>
-          <div className="flex flex-wrap gap-3 mb-3">
-            {CIVIC_AMENITIES_OPTIONS.map(opt => (
-              <label key={opt} className="flex items-center gap-2 text-sm text-[#495057] cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={fields.civicAmenities?.includes(opt)}
-                  onChange={e => {
-                    const arr = fields.civicAmenities || [];
-                    handleChange('civicAmenities', e.target.checked ? [...arr, opt] : arr.filter(a => a !== opt));
-                  }}
-                  disabled={isReadOnly}
-                  className="rounded border-[#dee2e6] text-[#b8860b] focus:ring-[#b8860b]"
-                />
-                {opt}
-              </label>
-            ))}
-            <label className="flex items-center gap-2 text-sm text-[#495057] cursor-pointer">
-              <input
-                type="checkbox"
-                checked={fields.civicAmenities?.includes('Other')}
-                onChange={e => {
-                  const arr = fields.civicAmenities || [];
-                  handleChange('civicAmenities', e.target.checked ? [...arr, 'Other'] : arr.filter(a => a !== 'Other'));
-                }}
-                disabled={isReadOnly}
-                className="rounded border-[#dee2e6] text-[#b8860b] focus:ring-[#b8860b]"
-              />
-              Other
-            </label>
+      </Section>
+
+      {/* ── Section 3: Property Details ── */}
+      <Section title="Property Details" number={3} defaultOpen={false}>
+        <div className="space-y-3">
+          <OptionField label="Type of Usage of Entire Property" options={['Residential', 'Commercial', 'Residential cum Commercial', 'Industrial', 'Vacant Plot']} value={fields.usageType} onChange={v => handleChange('usageType', v)} disabled={isReadOnly} />
+          <OptionField label="Additional Amenities" options={['Garden', 'Swimming Pool', 'Not Applicable']} value={fields.additionalAmenities} onChange={v => handleChange('additionalAmenities', v)} disabled={isReadOnly} />
+          <OptionField label="Legal Status of Property" options={['Freehold', 'Lease hold >30 yrs.', 'Lease hold 15-30 yrs.', 'Lease hold <15 yrs.']} value={fields.legalStatus} onChange={v => handleChange('legalStatus', v)} disabled={isReadOnly} />
+        </div>
+      </Section>
+
+      {/* ── Section 4: Subject Property Details ── */}
+      <Section title="Subject Property Details" number={4} defaultOpen={false}>
+        <div className="space-y-3">
+          <OptionField label="Type of Premises" options={['Residential Flat', 'Gala', 'Shop', 'Bungalow', 'Row House', 'Office', 'Chawl', 'Open Plot', 'Showroom', 'Duplex Flat', 'Pent House']} value={fields.premisesType} onChange={v => handleChange('premisesType', v)} disabled={isReadOnly} />
+          <div className="grid md:grid-cols-2 gap-4">
+            <Field label="Occupied by / Is Property Vacant">
+              <input className={inputCls} value={fields.occupiedBy} onChange={e => handleChange('occupiedBy', e.target.value)} disabled={isReadOnly} placeholder="e.g. Self Occupied" />
+            </Field>
+            <Field label="Is Property Rented">
+              <input className={inputCls} value={fields.isPropertyRented} onChange={e => handleChange('isPropertyRented', e.target.value)} disabled={isReadOnly} placeholder="NA" />
+            </Field>
+            <Field label="If Rented, List of Occupants" span={2}>
+              <input className={inputCls} value={fields.rentedOccupants} onChange={e => handleChange('rentedOccupants', e.target.value)} disabled={isReadOnly} placeholder="NA" />
+            </Field>
           </div>
-          {fields.civicAmenities?.includes('Other') && (
-            <input
-              type="text"
-              placeholder="Specify other amenities (comma separated)..."
-              className={inputCls}
-              value={fields.civicAmenitiesOther || ''}
-              onChange={e => handleChange('civicAmenitiesOther', e.target.value)}
-              disabled={isReadOnly}
-            />
-          )}
+          <OptionField label="Property Taxation / Maintenance Cost" options={['Low', 'Average', 'High', 'Very High']} value={fields.propertyTaxation} onChange={v => handleChange('propertyTaxation', v)} disabled={isReadOnly} />
+          <div className="mt-4">
+            <p className="text-xs font-semibold text-[#495057] uppercase tracking-wider mb-3">Boundary Details \u2014 As per Sketch Map</p>
+            <div className="grid md:grid-cols-2 gap-4">
+              <Field label="North"><input className={inputCls} value={fields.boundaryNorth} onChange={e => handleChange('boundaryNorth', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="East"><input className={inputCls} value={fields.boundaryEast} onChange={e => handleChange('boundaryEast', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="South"><input className={inputCls} value={fields.boundarySouth} onChange={e => handleChange('boundarySouth', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="West"><input className={inputCls} value={fields.boundaryWest} onChange={e => handleChange('boundaryWest', e.target.value)} disabled={isReadOnly} /></Field>
+            </div>
+          </div>
+          <div className="mt-4">
+            <p className="text-xs font-semibold text-[#495057] uppercase tracking-wider mb-3">Boundary Details \u2014 At Site</p>
+            <div className="grid md:grid-cols-2 gap-4">
+              <Field label="North"><input className={inputCls} value={fields.buildingBoundaryNorth} onChange={e => handleChange('buildingBoundaryNorth', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="East"><input className={inputCls} value={fields.buildingBoundaryEast} onChange={e => handleChange('buildingBoundaryEast', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="South"><input className={inputCls} value={fields.buildingBoundarySouth} onChange={e => handleChange('buildingBoundarySouth', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="West"><input className={inputCls} value={fields.buildingBoundaryWest} onChange={e => handleChange('buildingBoundaryWest', e.target.value)} disabled={isReadOnly} /></Field>
+            </div>
+          </div>
         </div>
       </Section>
 
-      {/* ── Section 4: Building Description ── */}
-      <Section title="Building Description" number={4} defaultOpen={false}>
-        <div className="grid md:grid-cols-2 gap-4">
-          <Field label="Structure Type">
-            <select className={selectCls} value={fields.structureType} onChange={e => handleChange('structureType', e.target.value)} disabled={isReadOnly}>
-              <option>RCC Framed</option><option>Load Bearing</option><option>Mixed (RCC + Load Bearing)</option><option>Steel Structure</option>
-            </select>
-          </Field>
-          <Field label="Number of Floors"><input type="number" min="0" className={inputCls} value={fields.numberOfFloors} onChange={e => handleChange('numberOfFloors', e.target.value)} disabled={isReadOnly} /></Field>
-          <Field label="Foundation"><input className={inputCls} value={fields.foundation} onChange={e => handleChange('foundation', e.target.value)} disabled={isReadOnly} /></Field>
-          <Field label="Superstructure"><input className={inputCls} value={fields.superstructure} onChange={e => handleChange('superstructure', e.target.value)} disabled={isReadOnly} /></Field>
-          <Field label="Roof Type"><input className={inputCls} value={fields.roofType} onChange={e => handleChange('roofType', e.target.value)} disabled={isReadOnly} /></Field>
-          <Field label="Flooring"><input className={inputCls} value={fields.flooringType} onChange={e => handleChange('flooringType', e.target.value)} disabled={isReadOnly} /></Field>
-          <Field label="Doors & Windows"><input className={inputCls} value={fields.doorsWindows} onChange={e => handleChange('doorsWindows', e.target.value)} disabled={isReadOnly} /></Field>
-          <Field label="Plastering"><input className={inputCls} value={fields.plastering} onChange={e => handleChange('plastering', e.target.value)} disabled={isReadOnly} /></Field>
-          <Field label="Sanitary"><input className={inputCls} value={fields.sanitary} onChange={e => handleChange('sanitary', e.target.value)} disabled={isReadOnly} /></Field>
-          <Field label="Electrification"><input className={inputCls} value={fields.electrification} onChange={e => handleChange('electrification', e.target.value)} disabled={isReadOnly} /></Field>
-          <Field label="Quality of Construction">
-            <select className={selectCls} value={fields.qualityOfConstruction} onChange={e => handleChange('qualityOfConstruction', e.target.value)} disabled={isReadOnly}>
-              <option>Excellent</option><option>Good</option><option>Average</option><option>Poor</option>
-            </select>
-          </Field>
-          <Field label="Maintenance Condition">
-            <select className={selectCls} value={fields.maintenanceCondition} onChange={e => handleChange('maintenanceCondition', e.target.value)} disabled={isReadOnly}>
-              <option>Excellent</option><option>Good</option><option>Average</option><option>Poor</option>
-            </select>
-          </Field>
+      {/* ── Section 5: Structural Details ── */}
+      <Section title="Structural Details" number={5} defaultOpen={false}>
+        <div className="space-y-3">
+          <OptionField label="Type of Structure" options={['RCC', 'Load Bearing', 'Steel Structure', 'Composite Structure', 'Industrial Shed', 'A/C Sheet', 'G/I Sheet', 'Asbestos Roofing']} value={fields.structureType} onChange={v => handleChange('structureType', v)} disabled={isReadOnly} />
+          <div className="grid md:grid-cols-2 gap-4">
+            <Field label="No. of Floors"><input className={inputCls} value={fields.numberOfFloors} onChange={e => handleChange('numberOfFloors', e.target.value)} disabled={isReadOnly} /></Field>
+            <Field label="No. of Wings"><input className={inputCls} value={fields.numberOfWings} onChange={e => handleChange('numberOfWings', e.target.value)} disabled={isReadOnly} placeholder="NA" /></Field>
+            <Field label="No. of Units on Each Floor"><input className={inputCls} value={fields.unitsPerFloor} onChange={e => handleChange('unitsPerFloor', e.target.value)} disabled={isReadOnly} placeholder="NA" /></Field>
+            <Field label="Internal Composition"><input className={inputCls} value={fields.internalComposition} onChange={e => handleChange('internalComposition', e.target.value)} disabled={isReadOnly} /></Field>
+            <Field label="No. of Lifts"><input className={inputCls} value={fields.numberOfLifts} onChange={e => handleChange('numberOfLifts', e.target.value)} disabled={isReadOnly} placeholder="NA" /></Field>
+          </div>
+          <OptionField label="Age of the Property" options={['1-10 years', '11-25 years', '26-50 years', '>50 years']} value={fields.ageOfProperty} onChange={v => handleChange('ageOfProperty', v)} disabled={isReadOnly} showCustomInput customValue={fields.ageOfProperty} onCustomChange={v => handleChange('ageOfProperty', v)} />
+          <div className="grid md:grid-cols-2 gap-4">
+            <Field label="Estimated Future Life"><input className={inputCls} value={fields.estimatedFutureLife} onChange={e => handleChange('estimatedFutureLife', e.target.value)} disabled={isReadOnly} placeholder="e.g. 52 Years" /></Field>
+            <Field label="Exteriors"><input className={inputCls} value={fields.exteriors} onChange={e => handleChange('exteriors', e.target.value)} disabled={isReadOnly} /></Field>
+          </div>
+          <OptionField label="Quality of Construction, Appearance & Maintenance" options={['Very Good', 'Good', 'Average', 'Poor']} value={fields.qualityOfConstruction} onChange={v => handleChange('qualityOfConstruction', v)} disabled={isReadOnly} />
+          <div className="grid md:grid-cols-2 gap-4">
+            <Field label="Common Areas Remarks"><input className={inputCls} value={fields.commonAreasRemarks} onChange={e => handleChange('commonAreasRemarks', e.target.value)} disabled={isReadOnly} /></Field>
+            <Field label="Other Observations" span={2}>
+              <textarea className={inputCls + ' resize-none'} rows={2} value={fields.otherObservations} onChange={e => handleChange('otherObservations', e.target.value)} disabled={isReadOnly} placeholder="e.g. No appearance of cracks or major defects observed" />
+            </Field>
+          </div>
+          <p className="text-xs font-semibold text-[#495057] uppercase tracking-wider mt-4">Interiors</p>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Field label="Flooring & Finishing"><input className={inputCls} value={fields.flooringType} onChange={e => handleChange('flooringType', e.target.value)} disabled={isReadOnly} /></Field>
+            <Field label="Roofing & Terracing"><input className={inputCls} value={fields.roofType} onChange={e => handleChange('roofType', e.target.value)} disabled={isReadOnly} /></Field>
+            <Field label="Quality of Fixtures & Fittings"><input className={inputCls} value={fields.qualityOfFixtures} onChange={e => handleChange('qualityOfFixtures', e.target.value)} disabled={isReadOnly} /></Field>
+          </div>
         </div>
       </Section>
 
-      {/* ── Section 5: Floor-wise Area & Section 7: Depreciation (Combined) ── */}
-      <Section title="Floor-wise Area & Building Valuation" number={5}>
+      {/* ── Section 6: Plan Approvals ── */}
+      <Section title="Plan Approvals" number={6} defaultOpen={false}>
+        <div className="space-y-3">
+          <OptionField label="Construction as per Approved Plans" options={['Yes', 'No']} value={fields.constructionApproved} onChange={v => handleChange('constructionApproved', v)} disabled={isReadOnly} />
+          <div className="space-y-4">
+            <Field label="Details of Approved Plan (Approval No. & Date)" span={2}>
+              <textarea className={inputCls + ' resize-none'} rows={2} value={fields.approvalDetails} onChange={e => handleChange('approvalDetails', e.target.value)} disabled={isReadOnly} />
+            </Field>
+            <Field label="Construction Permission No. & Date">
+              <input className={inputCls} value={fields.constructionPermission} onChange={e => handleChange('constructionPermission', e.target.value)} disabled={isReadOnly} placeholder="Not mentioned" />
+            </Field>
+            <Field label="Violations Observed / Risk of Demolition">
+              <input className={inputCls} value={fields.violationsObserved} onChange={e => handleChange('violationsObserved', e.target.value)} disabled={isReadOnly} />
+            </Field>
+            <Field label="If Plans Not Available, Does Structure Conform to Local Byelaws">
+              <input className={inputCls} value={fields.conformsToByelaws} onChange={e => handleChange('conformsToByelaws', e.target.value)} disabled={isReadOnly} placeholder="NA (Plan available)" />
+            </Field>
+            <Field label="Other Documents Verified" span={2}>
+              <textarea className={inputCls + ' resize-none'} rows={2} value={fields.documentsVerified} onChange={e => handleChange('documentsVerified', e.target.value)} disabled={isReadOnly} placeholder="e.g. Xerox copy of Sale deed, ROR, Sketch map & approved plan verified" />
+            </Field>
+          </div>
+        </div>
+      </Section>
+
+      {/* ── Section 7: Floor-wise Area & Building Valuation ── */}
+      <Section title="Floor-wise Area & Building Valuation" number={7}>
         <div className="flex justify-between items-center mb-4">
           <h4 className="text-sm font-semibold text-[#0f2038]">Building Valuation Details</h4>
           <div className="flex items-center gap-2">
@@ -902,13 +1101,13 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
             <thead>
               <tr className="bg-[#0a1628] text-white">
                 <th className="px-3 py-2.5 text-left font-semibold text-xs">Floor</th>
-                <th className="px-3 py-2.5 text-right font-semibold text-xs">Area (${fields.floorAreaUnit || fields.landAreaUnit || 'Sqft'})</th>
-                <th className="px-3 py-2.5 text-right font-semibold text-xs">Rate (₹/${fields.floorAreaUnit || fields.landAreaUnit || 'Sqft'})</th>
-                <th className="px-3 py-2.5 text-right font-semibold text-xs">Estimated (₹)</th>
+                <th className="px-3 py-2.5 text-right font-semibold text-xs">Area ({fields.floorAreaUnit || fields.landAreaUnit || 'Sqft'})</th>
+                <th className="px-3 py-2.5 text-right font-semibold text-xs">Rate (&#8377;/{fields.floorAreaUnit || fields.landAreaUnit || 'Sqft'})</th>
+                <th className="px-3 py-2.5 text-right font-semibold text-xs">Estimated (&#8377;)</th>
                 <th className="px-3 py-2.5 text-center font-semibold text-xs">Life (Yr)</th>
                 <th className="px-3 py-2.5 text-center font-semibold text-xs">Age (Yr)</th>
                 <th className="px-3 py-2.5 text-center font-semibold text-xs">Dep %</th>
-                <th className="px-3 py-2.5 text-right font-semibold text-xs">Net Value (₹)</th>
+                <th className="px-3 py-2.5 text-right font-semibold text-xs">Net Value (&#8377;)</th>
                 {!isReadOnly && <th className="px-3 py-2.5 w-10"></th>}
               </tr>
             </thead>
@@ -925,7 +1124,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
                     <input type="number" min="0" step="any" className={inputCls + ' !py-1.5 text-xs text-right'} value={f.rate || ''} onChange={e => updateFloor(f.id, 'rate', e.target.value)} disabled={isReadOnly} placeholder="0" />
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef] text-right text-xs font-medium text-[#0f2038]">
-                    ₹{formatIndianCurrency(f.estimated)}
+                    &#8377;{formatIndianCurrency(f.estimated)}
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                     <input type="number" min="0" className={inputCls + ' !py-1.5 text-xs text-center'} value={f.lifeYears || ''} onChange={e => updateFloor(f.id, 'lifeYears', e.target.value)} disabled={isReadOnly} />
@@ -935,8 +1134,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                     <input
-                      type="number"
-                      min="0"
+                      type="number" min="0"
                       className={inputCls + ' !py-1.5 text-xs text-center font-bold text-[#b8860b]'}
                       value={f.depreciationPct !== undefined && f.depreciationPct !== null ? f.depreciationPct : ''}
                       onChange={e => updateFloor(f.id, 'depreciationPct', e.target.value)}
@@ -945,21 +1143,20 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
                     />
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef] text-right text-xs font-bold text-[#0f2038]">
-                    ₹{formatIndianCurrency(f.netValue)}
+                    &#8377;{formatIndianCurrency(f.netValue)}
                   </td>
                   {!isReadOnly && (
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                      <button onClick={() => removeFloor(f.id)} className="text-red-400 hover:text-red-600 text-lg" title="Remove floor">×</button>
+                      <button onClick={() => removeFloor(f.id)} className="text-red-400 hover:text-red-600 text-lg" title="Remove floor">&times;</button>
                     </td>
                   )}
                 </tr>
               ))}
-              {/* Totals */}
               <tr className="bg-[#f0ead6] font-bold">
                 <td className="px-3 py-2.5 text-xs">TOTAL</td>
                 <td className="px-3 py-2.5 text-right text-xs">{formatIndianCurrency(totalPlinthArea)} {fields.floorAreaUnit || fields.landAreaUnit || 'Sqft'}</td>
                 <td className="px-3 py-2.5" colSpan={5}></td>
-                <td className="px-3 py-2.5 text-right text-xs text-[#0f2038]">₹{formatIndianCurrency(totalBuildingValue)}</td>
+                <td className="px-3 py-2.5 text-right text-xs text-[#0f2038]">&#8377;{formatIndianCurrency(totalBuildingValue)}</td>
                 {!isReadOnly && <td></td>}
               </tr>
             </tbody>
@@ -972,25 +1169,39 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
         )}
       </Section>
 
-      {/* ── Section 6: Land Valuation ── */}
-      <Section title="Valuation of Land" number={6} defaultOpen={false}>
-        <div className="grid md:grid-cols-3 gap-4">
-          <Field label={`Land Area (${fields.landAreaUnit})`}>
-            <input className={inputCls} value={fields.landArea} disabled={true} />
-          </Field>
-          <Field label={`Rate per ${fields.landAreaUnit} (₹)`}>
-            <input type="number" min="0" step="any" className={inputCls} value={fields.landRatePerUnit} onChange={e => handleChange('landRatePerUnit', e.target.value)} disabled={isReadOnly} placeholder="e.g. 3000" />
-          </Field>
-          <Field label="Total Land Value (₹)">
-            <div className="px-3 py-2.5 rounded-lg bg-[#f0ead6] border border-[#d4c5a9] text-sm font-bold text-[#0f2038]">
-              ₹ {formatIndianCurrency(landValue)}
-            </div>
+      {/* ── Section 8: Valuation of Land ── */}
+      <Section title="Valuation of Land" number={8} defaultOpen={false}>
+        <div className="space-y-4">
+          <div className="grid md:grid-cols-2 gap-4">
+            <Field label="Land Area">
+              <input className={inputCls} value={fields.landArea} onChange={e => handleChange('landArea', e.target.value)} disabled={isReadOnly} placeholder="e.g. 13068" />
+            </Field>
+            <Field label="Land Area Unit">
+              <select className={selectCls} value={fields.landAreaUnit} onChange={e => handleChange('landAreaUnit', e.target.value)} disabled={isReadOnly}>
+                <option>Sqft</option><option>Decimal</option><option>Acre</option><option>Sqm</option>
+              </select>
+            </Field>
+            <Field label="Current Govt. Approved Rate (&#8377;)">
+              <input className={inputCls} value={fields.govtLandRate} onChange={e => handleChange('govtLandRate', e.target.value)} disabled={isReadOnly} placeholder="e.g. 23" />
+            </Field>
+            <Field label={`Recommended Rate per ${fields.landAreaUnit} (&#8377;)`}>
+              <input type="number" min="0" step="any" className={inputCls} value={fields.landRatePerUnit} onChange={e => handleChange('landRatePerUnit', e.target.value)} disabled={isReadOnly} placeholder="e.g. 450" />
+            </Field>
+            <Field label="Basis for Recommendation" span={2}>
+              <input className={inputCls} value={fields.recommendedRateBasis} onChange={e => handleChange('recommendedRateBasis', e.target.value)} disabled={isReadOnly} placeholder="e.g. As per local feedback and market survey" />
+            </Field>
+          </div>
+          <div className="px-4 py-3 rounded-lg bg-[#f0ead6] border border-[#d4c5a9] text-sm font-bold text-[#0f2038]">
+            Total Land Value: &#8377; {formatIndianCurrency(landValue)}
+          </div>
+          <Field label="BUA as per Approvals">
+            <input className={inputCls} value={fields.buaAsPerApprovals} onChange={e => handleChange('buaAsPerApprovals', e.target.value)} disabled={isReadOnly} placeholder="e.g. 2 X 1600sqft = 3200sqft" />
           </Field>
         </div>
       </Section>
 
-      {/* ── Section 8: Abstract of Valuation ── */}
-      <Section title="Abstract of Valuation" number={7}>
+      {/* ── Section 9: Abstract of Valuation ── */}
+      <Section title="Abstract of Valuation" number={9}>
         <div className="space-y-3 max-w-xl">
           {[
             { label: 'A. Value of Land', value: landValue },
@@ -998,12 +1209,12 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
           ].map(item => (
             <div key={item.label} className="flex items-center justify-between py-2 border-b border-[#e9ecef]">
               <span className="text-sm text-[#495057]">{item.label}</span>
-              <span className="text-sm font-semibold text-[#0f2038]">₹ {formatIndianCurrency(item.value)}</span>
+              <span className="text-sm font-semibold text-[#0f2038]">&#8377; {formatIndianCurrency(item.value)}</span>
             </div>
           ))}
           <div className="flex items-center justify-between py-3 bg-gradient-to-r from-[#f0ead6] to-[#f8f4eb] px-4 rounded-lg border border-[#d4c5a9]">
             <span className="text-sm font-bold text-[#0f2038]">TOTAL FAIR MARKET VALUE (A + B)</span>
-            <span className="text-lg font-bold text-[#b8860b]">₹ {formatIndianCurrency(totalPropertyValue)}</span>
+            <span className="text-lg font-bold text-[#b8860b]">&#8377; {formatIndianCurrency(totalPropertyValue)}</span>
           </div>
           <p className="text-xs text-[#6c757d] italic pl-1">{rupeesInWords(totalPropertyValue)}</p>
 
@@ -1012,50 +1223,42 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
               <span className="text-sm text-[#495057]">Realizable Value</span>
               <div className="flex items-center gap-1">
                 <span className="text-sm text-[#495057]">(</span>
-                <input
-                  type="number"
-                  min="0"
-                  className={inputCls + ' !py-1 !px-2 text-xs w-16 text-center'}
-                  value={fields.realizablePct}
-                  onChange={e => handleChange('realizablePct', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="90"
-                />
+                <input type="number" min="0" className={inputCls + ' !py-1 !px-2 text-xs w-16 text-center'} value={fields.realizablePct} onChange={e => handleChange('realizablePct', e.target.value)} disabled={isReadOnly} placeholder="90" />
                 <span className="text-sm text-[#495057]">%)</span>
               </div>
             </div>
-            <span className="text-sm font-semibold text-green-700">₹ {formatIndianCurrency(realizableValue)}</span>
+            <span className="text-sm font-semibold text-green-700">&#8377; {formatIndianCurrency(realizableValue)}</span>
           </div>
           <div className="flex items-center justify-between py-2 border-b border-[#e9ecef]">
             <div className="flex items-center gap-2">
               <span className="text-sm text-[#495057]">Distress / Forced Sale Value</span>
               <div className="flex items-center gap-1">
                 <span className="text-sm text-[#495057]">(</span>
-                <input
-                  type="number"
-                  min="0"
-                  className={inputCls + ' !py-1 !px-2 text-xs w-16 text-center'}
-                  value={fields.distressPct}
-                  onChange={e => handleChange('distressPct', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="80"
-                />
+                <input type="number" min="0" className={inputCls + ' !py-1 !px-2 text-xs w-16 text-center'} value={fields.distressPct} onChange={e => handleChange('distressPct', e.target.value)} disabled={isReadOnly} placeholder="80" />
                 <span className="text-sm text-[#495057]">%)</span>
               </div>
             </div>
-            <span className="text-sm font-semibold text-orange-700">₹ {formatIndianCurrency(distressValue)}</span>
+            <span className="text-sm font-semibold text-orange-700">&#8377; {formatIndianCurrency(distressValue)}</span>
           </div>
 
-          <div className="mt-3">
-            <Field label="Govt. / Guideline Value (₹) — Manual">
+          <div className="mt-3 space-y-3">
+            <OptionField label="Marketability" options={['Excellent', 'Very Good', 'Good', 'Difficult']} value={fields.marketability} onChange={v => handleChange('marketability', v)} disabled={isReadOnly} />
+            <OptionField label="Valuation Result" options={['Positive', 'Negative']} value={fields.valuationResult} onChange={v => handleChange('valuationResult', v)} disabled={isReadOnly} />
+            <Field label="Replacement Cost / Insurance Value (&#8377;)">
+              <input className={inputCls} value={fields.replacementCost} onChange={e => handleChange('replacementCost', e.target.value)} disabled={isReadOnly} />
+            </Field>
+            <Field label="Deviations in Property">
+              <input className={inputCls} value={fields.deviations} onChange={e => handleChange('deviations', e.target.value)} disabled={isReadOnly} placeholder="NA" />
+            </Field>
+            <Field label="Govt. / Guideline Value (&#8377;)">
               <input className={inputCls} value={fields.guidelineValue} onChange={e => handleChange('guidelineValue', e.target.value)} disabled={isReadOnly} placeholder="As per Govt. record (optional)" />
             </Field>
           </div>
         </div>
       </Section>
 
-      {/* ── Section 9: Remarks ── */}
-      <Section title="Demarcation, Possession & Remarks" number={8} defaultOpen={false}>
+      {/* ── Section 10: Remarks & Declaration ── */}
+      <Section title="Remarks & Declaration" number={10} defaultOpen={false}>
         <div className="space-y-4">
           <Field label="Demarcation" span={2}>
             <textarea className={inputCls + ' resize-none'} rows={2} value={fields.demarcation} onChange={e => handleChange('demarcation', e.target.value)} disabled={isReadOnly} placeholder="Demarcation details..." />
@@ -1064,13 +1267,16 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
             <input className={inputCls} value={fields.possession} onChange={e => handleChange('possession', e.target.value)} disabled={isReadOnly} />
           </Field>
           <Field label="Remarks / Observations" span={2}>
-            <textarea className={inputCls + ' resize-none'} rows={3} value={fields.remarks} onChange={e => handleChange('remarks', e.target.value)} disabled={isReadOnly} placeholder="Any additional observations..." />
+            <textarea className={inputCls + ' resize-none'} rows={4} value={fields.remarks} onChange={e => handleChange('remarks', e.target.value)} disabled={isReadOnly} placeholder="Detailed remarks about the property..." />
+          </Field>
+          <Field label="Name of Representative who Inspected">
+            <input className={inputCls} value={fields.representativeName} onChange={e => handleChange('representativeName', e.target.value)} disabled={isReadOnly} placeholder="e.g. Dinesh Das" />
           </Field>
         </div>
       </Section>
 
-      {/* ── Section 10: Valuation Certificate (Auto Preview) ── */}
-      <Section title="Valuation Certificate (Auto-generated)" number={9} defaultOpen={false}>
+      {/* ── Section 11: Valuation Certificate (Auto-generated) ── */}
+      <Section title="Valuation Certificate (Auto-generated)" number={11} defaultOpen={false}>
         <div className="bg-[#fdfcf8] border border-[#d4c5a9] rounded-xl p-6 text-sm leading-relaxed text-[#333]">
           <p className="text-center font-bold text-base mb-4 underline">VALUATION CERTIFICATE</p>
           <p className="mb-3">
@@ -1081,23 +1287,21 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
             of all relevant factors, the Fair Market Value of the said property is assessed as under:
           </p>
           <div className="space-y-2 my-4 pl-4 border-l-4 border-[#b8860b]">
-            <p><strong>Fair Market Value:</strong> ₹ {formatIndianCurrency(totalPropertyValue)} ({rupeesInWords(totalPropertyValue)})</p>
-            <p><strong>Realizable Value ({fields.realizablePct || '90'}%):</strong> ₹ {formatIndianCurrency(realizableValue)} ({rupeesInWords(realizableValue)})</p>
-            <p><strong>Distress Sale Value ({fields.distressPct || '80'}%):</strong> ₹ {formatIndianCurrency(distressValue)} ({rupeesInWords(distressValue)})</p>
+            <p><strong>Fair Market Value:</strong> &#8377; {formatIndianCurrency(totalPropertyValue)} ({rupeesInWords(totalPropertyValue)})</p>
+            <p><strong>Realizable Value ({fields.realizablePct || '90'}%):</strong> &#8377; {formatIndianCurrency(realizableValue)} ({rupeesInWords(realizableValue)})</p>
+            <p><strong>Distress Sale Value ({fields.distressPct || '80'}%):</strong> &#8377; {formatIndianCurrency(distressValue)} ({rupeesInWords(distressValue)})</p>
           </div>
           <div className="text-right mt-8">
             <p className="font-bold">Satyajit Mohanty</p>
             <p className="text-xs text-[#6c757d]">B.Sc.(Engg.), M.Tech (IIT Kharagpur)</p>
-            <p className="text-xs text-[#6c757d]">Registered Valuer — IBBI/RV/02/2019/10594</p>
+            <p className="text-xs text-[#6c757d]">Registered Valuer &mdash; IBBI/RV/02/2019/10594</p>
           </div>
         </div>
       </Section>
 
-
-
-      {/* ── Section 10: Property Photographs ── */}
+      {/* ── Section 12: Property Photographs ── */}
       {(!isReadOnly || (fields.propertyImages && fields.propertyImages.length > 0)) && (
-        <Section title="Property Photographs" number={10} defaultOpen={false}>
+        <Section title="Property Photographs" number={12} defaultOpen={false}>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             {fields.propertyImages?.map((url: string, idx: number) => (
               <div key={idx} className="relative group rounded-xl overflow-hidden border border-[#e9ecef] aspect-square">
@@ -1106,7 +1310,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
                   <button
                     onClick={() => removeImage(idx)}
                     className="absolute top-2 right-2 bg-red-500 text-white w-6 h-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-xs"
-                  >×</button>
+                  >&times;</button>
                 )}
               </div>
             ))}
@@ -1115,14 +1319,14 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-                  {uploading ? 'Uploading...' : '📷 Add Property Images'}
-                  <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} disabled={uploading} />
+                  {uploading ? 'Uploading...' : '\uD83D\uDCF7 Add Property Images'}
+                  <input type="file" accept="image/*" multiple className="hidden" onChange={e => handleFileUpload(e, 'propertyImages')} disabled={uploading} />
                 </label>
                 <span className="text-xs text-[#6c757d]">Max size: 5MB per photograph</span>
               </div>
               {uploadError && (
                 <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold">
-                  ⚠️ {uploadError}
+                  &#x26A0;&#xFE0F; {uploadError}
                 </div>
               )}
             </div>
@@ -1130,24 +1334,73 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
         </Section>
       )}
 
+      {/* ── Section 13: Sketch Map ── */}
+      <Section title="Sketch Map" number={13} defaultOpen={false}>
+        {fields.sketchMapImage ? (
+          <div className="space-y-3">
+            <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] max-w-lg">
+              <img src={fields.sketchMapImage} alt="Sketch Map" className="w-full object-contain" />
+              {!isReadOnly && (
+                <button onClick={() => handleChange('sketchMapImage', '')} className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">Remove</button>
+              )}
+            </div>
+          </div>
+        ) : (
+          !isReadOnly && (
+            <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+              {uploading ? 'Uploading...' : '\uD83D\uDDFA\uFE0F Upload Sketch Map'}
+              <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'sketchMapImage')} disabled={uploading} />
+            </label>
+          )
+        )}
+      </Section>
+
+      {/* ── Section 14: Location Map ── */}
+      <Section title="Location Map" number={14} defaultOpen={false}>
+        <div className="space-y-4">
+          {fields.locationMapImage ? (
+            <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] max-w-lg">
+              <img src={fields.locationMapImage} alt="Location Map" className="w-full object-contain" />
+              {!isReadOnly && (
+                <button onClick={() => handleChange('locationMapImage', '')} className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">Remove</button>
+              )}
+            </div>
+          ) : (
+            !isReadOnly && (
+              <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+                {uploading ? 'Uploading...' : '\uD83D\uDCCD Upload Location Map (Google Maps Screenshot)'}
+                <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'locationMapImage')} disabled={uploading} />
+              </label>
+            )
+          )}
+          <div className="grid md:grid-cols-2 gap-4">
+            <Field label="Latitude">
+              <input className={inputCls} value={fields.latitude} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 19.976652" />
+            </Field>
+            <Field label="Longitude">
+              <input className={inputCls} value={fields.longitude} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 86.240795" />
+            </Field>
+          </div>
+        </div>
+      </Section>
+
       {/* ── Action Buttons ── */}
       <div className="flex flex-wrap gap-4 pt-2 items-center">
-        {/* If completed, show verified banner on agent side / completed banner */}
         {status === 'COMPLETED' && (
           <div className="w-full p-4 rounded-xl bg-green-50 border border-green-200 text-green-800 font-bold flex items-center gap-2">
-            <span>✅</span> Verified and Completed (Pushed to storage for client download)
+            <span>&#x2705;</span> Verified and Completed (Pushed to storage for client download)
           </div>
         )}
 
         {status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE' && (
           <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 font-semibold mb-2">
-            <span>⏳ Currently Under Manager Review.</span>
+            <span>&#x23F3; Currently Under Manager Review.</span>
             <button
               onClick={handleCancelSubmission}
               disabled={loading}
               className="px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg text-xs font-bold transition-colors"
             >
-              ↩️ Cancel Submission (Pull back to Draft)
+              &#x21A9;&#xFE0F; Cancel Submission (Pull back to Draft)
             </button>
           </div>
         )}
@@ -1159,7 +1412,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
               disabled={loading}
               className="px-6 py-3 rounded-xl border-2 border-[#b8860b] text-[#b8860b] font-semibold text-sm hover:bg-[#b8860b]/5 transition-all disabled:opacity-50"
             >
-              {loading ? '⏳ Saving...' : '💾 Save Draft'}
+              {loading ? '\u23F3 Saving...' : '\uD83D\uDCBE Save Draft'}
             </button>
             {userRole === 'REPORT_EMPLOYEE' && (
               <button
@@ -1167,7 +1420,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
                 disabled={loading}
                 className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold text-sm hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
               >
-                {loading ? '⏳ Submitting...' : '📤 Submit to Manager'}
+                {loading ? '\u23F3 Submitting...' : '\uD83D\uDCE4 Submit to Manager'}
               </button>
             )}
           </>
@@ -1178,7 +1431,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
           disabled={loading}
           className="px-6 py-3 rounded-xl border-2 border-gray-400 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-all disabled:opacity-50"
         >
-          👁️ Preview PDF
+          &#x1F441;&#xFE0F; Preview PDF
         </button>
 
         <button
@@ -1186,7 +1439,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
           disabled={loading}
           className="px-6 py-3 rounded-xl border-2 border-gray-400 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-all disabled:opacity-50"
         >
-          📥 Download PDF
+          &#x1F4E5; Download PDF
         </button>
 
         {status === 'MANAGER_REVIEW' && isManagerOrOwner && (
@@ -1196,14 +1449,14 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
               disabled={loading}
               className="px-6 py-3 rounded-xl border-2 border-red-500 text-red-600 font-semibold text-sm hover:bg-red-50 transition-all disabled:opacity-50"
             >
-              ❌ Send for Rework
+              &#x274C; Send for Rework
             </button>
             <button
               onClick={handleFinalize}
               disabled={loading}
               className="px-6 py-3 rounded-xl bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold text-sm hover:from-green-700 hover:to-green-800 shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
             >
-              ✅ Finalize & Share to Client
+              &#x2705; Finalize & Share to Client
             </button>
           </>
         )}
