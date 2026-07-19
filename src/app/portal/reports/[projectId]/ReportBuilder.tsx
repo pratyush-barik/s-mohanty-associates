@@ -88,6 +88,10 @@ interface ReportFields {
 
   // Section 11 – Photos
   propertyImages: string[];
+
+  // Section 8 - Percentages
+  realizablePct: string;
+  distressPct: string;
 }
 
 const DEFAULT_FIELDS: ReportFields = {
@@ -152,6 +156,9 @@ const DEFAULT_FIELDS: ReportFields = {
   remarks: '',
 
   propertyImages: [],
+
+  realizablePct: '90',
+  distressPct: '80',
 };
 
 const CIVIC_AMENITIES_OPTIONS = [
@@ -301,15 +308,15 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     const life = parseNum(f.lifeYears);
     const age = parseNum(f.ageYears);
     const depPct = f.depreciationPct ? parseNum(f.depreciationPct) : computeDepreciation(life, age);
-    const depAmount = Math.round(estimated * depPct / 100);
+    const depAmount = estimated * depPct / 100;
     const netValue = estimated - depAmount;
     return { ...f, estimated, depPct, depAmount, netValue };
   });
 
   const totalBuildingValue = floorValuations.reduce((sum, f) => sum + f.netValue, 0);
   const totalPropertyValue = landValue + totalBuildingValue;
-  const realizableValue = Math.round(totalPropertyValue * 0.9);
-  const distressValue = Math.round(totalPropertyValue * 0.8);
+  const realizableValue = totalPropertyValue * (parseNum(fields.realizablePct || '90') / 100);
+  const distressValue = totalPropertyValue * (parseNum(fields.distressPct || '80') / 100);
 
   // ── Image upload ──
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -603,8 +610,8 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
           <tr><td style="${thStyle}">B. Value of Building (After Depreciation)</td><td style="${tdStyle} text-align:right;">₹ ${formatIndianCurrency(totalBuildingValue)}</td></tr>
           <tr style="font-weight:bold;background:#f0ead6;"><td style="${tdStyle}">TOTAL FAIR MARKET VALUE (A + B)</td><td style="${tdStyle} text-align:right;">₹ ${formatIndianCurrency(totalPropertyValue)}</td></tr>
           <tr><td style="${thStyle}">In Words</td><td style="${tdStyle}">${rupeesInWords(totalPropertyValue)}</td></tr>
-          <tr><td style="${thStyle}">Realizable Value (90%)</td><td style="${tdStyle} text-align:right;">₹ ${formatIndianCurrency(realizableValue)}</td></tr>
-          <tr><td style="${thStyle}">Distress / Forced Sale Value (80%)</td><td style="${tdStyle} text-align:right;">₹ ${formatIndianCurrency(distressValue)}</td></tr>
+          <tr><td style="${thStyle}">Realizable Value (${fields.realizablePct || '90'}%)</td><td style="${tdStyle} text-align:right;">₹ ${formatIndianCurrency(realizableValue)}</td></tr>
+          <tr><td style="${thStyle}">Distress / Forced Sale Value (${fields.distressPct || '80'}%)</td><td style="${tdStyle} text-align:right;">₹ ${formatIndianCurrency(distressValue)}</td></tr>
           ${fields.guidelineValue ? `<tr><td style="${thStyle}">Government / Guideline Value</td><td style="${tdStyle} text-align:right;">₹ ${formatIndianCurrency(fields.guidelineValue)}</td></tr>` : ''}
         </table>
       </div>
@@ -627,8 +634,8 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
           <strong>${fields.dateOfInspection}</strong> and after careful examination and consideration of all relevant factors,
           the Fair Market Value of the said property is assessed as under:</p>
           <p style="margin-bottom:4px;"><strong>Fair Market Value: ₹ ${formatIndianCurrency(totalPropertyValue)} (${rupeesInWords(totalPropertyValue)})</strong></p>
-          <p style="margin-bottom:4px;"><strong>Realizable Value: ₹ ${formatIndianCurrency(realizableValue)} (${rupeesInWords(realizableValue)})</strong></p>
-          <p style="margin-bottom:0;"><strong>Distress Sale Value: ₹ ${formatIndianCurrency(distressValue)} (${rupeesInWords(distressValue)})</strong></p>
+          <p style="margin-bottom:4px;"><strong>Realizable Value (${fields.realizablePct || '90'}%): ₹ ${formatIndianCurrency(realizableValue)} (${rupeesInWords(realizableValue)})</strong></p>
+          <p style="margin-bottom:0;"><strong>Distress Sale Value (${fields.distressPct || '80'}%): ₹ ${formatIndianCurrency(distressValue)} (${rupeesInWords(distressValue)})</strong></p>
         </div>
 
         <!-- Signature -->
@@ -723,9 +730,9 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
           </Field>
           <Field label="Land Area">
             <div className="flex gap-2 items-center">
-              <input type="number" className={inputCls + ' text-right w-28'} value={getDecimalParts(fields.landArea).whole} onChange={e => handleDecimalChange('landArea', 'whole', e.target.value)} disabled={isReadOnly} placeholder="0" />
+              <input type="number" min="0" className={inputCls + ' text-right w-28'} value={getDecimalParts(fields.landArea).whole} onChange={e => handleDecimalChange('landArea', 'whole', e.target.value)} disabled={isReadOnly} placeholder="0" />
               <span className="font-bold text-lg text-gray-500">.</span>
-              <input type="number" className={inputCls + ' w-20'} value={getDecimalParts(fields.landArea).fraction} onChange={e => handleDecimalChange('landArea', 'fraction', e.target.value)} disabled={isReadOnly} placeholder="00" />
+              <input type="number" min="0" className={inputCls + ' w-20'} value={getDecimalParts(fields.landArea).fraction} onChange={e => handleDecimalChange('landArea', 'fraction', e.target.value)} disabled={isReadOnly} placeholder="00" />
               <select className={selectCls + ' w-28'} value={fields.landAreaUnit} onChange={e => handleChange('landAreaUnit', e.target.value)} disabled={isReadOnly}>
                 <option>Sqft</option><option>Decimal</option><option>Acre</option><option>Sqm</option>
               </select>
@@ -763,9 +770,9 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
           </Field>
           <Field label="Distance from Main Road">
             <div className="flex gap-2 items-center">
-              <input type="number" className={inputCls + ' text-right w-24'} value={getDecimalParts(fields.distanceMainRoad).whole} onChange={e => handleDecimalChange('distanceMainRoad', 'whole', e.target.value)} disabled={isReadOnly} placeholder="0" />
+              <input type="number" min="0" className={inputCls + ' text-right w-24'} value={getDecimalParts(fields.distanceMainRoad).whole} onChange={e => handleDecimalChange('distanceMainRoad', 'whole', e.target.value)} disabled={isReadOnly} placeholder="0" />
               <span className="font-bold text-lg text-gray-500">.</span>
-              <input type="number" className={inputCls + ' w-20'} value={getDecimalParts(fields.distanceMainRoad).fraction} onChange={e => handleDecimalChange('distanceMainRoad', 'fraction', e.target.value)} disabled={isReadOnly} placeholder="00" />
+              <input type="number" min="0" className={inputCls + ' w-20'} value={getDecimalParts(fields.distanceMainRoad).fraction} onChange={e => handleDecimalChange('distanceMainRoad', 'fraction', e.target.value)} disabled={isReadOnly} placeholder="00" />
               <select className={selectCls + ' w-28'} value={fields.distanceMainRoadUnit} onChange={e => handleChange('distanceMainRoadUnit', e.target.value)} disabled={isReadOnly}>
                 <option>Meters</option><option>Km</option><option>Feet</option>
               </select>
@@ -773,9 +780,9 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
           </Field>
           <Field label="Distance from Railway Stn / Airport">
             <div className="flex gap-2 items-center">
-              <input type="number" className={inputCls + ' text-right w-24'} value={getDecimalParts(fields.distanceRailway).whole} onChange={e => handleDecimalChange('distanceRailway', 'whole', e.target.value)} disabled={isReadOnly} placeholder="0" />
+              <input type="number" min="0" className={inputCls + ' text-right w-24'} value={getDecimalParts(fields.distanceRailway).whole} onChange={e => handleDecimalChange('distanceRailway', 'whole', e.target.value)} disabled={isReadOnly} placeholder="0" />
               <span className="font-bold text-lg text-gray-500">.</span>
-              <input type="number" className={inputCls + ' w-20'} value={getDecimalParts(fields.distanceRailway).fraction} onChange={e => handleDecimalChange('distanceRailway', 'fraction', e.target.value)} disabled={isReadOnly} placeholder="00" />
+              <input type="number" min="0" className={inputCls + ' w-20'} value={getDecimalParts(fields.distanceRailway).fraction} onChange={e => handleDecimalChange('distanceRailway', 'fraction', e.target.value)} disabled={isReadOnly} placeholder="00" />
               <select className={selectCls + ' w-28'} value={fields.distanceRailwayUnit} onChange={e => handleChange('distanceRailwayUnit', e.target.value)} disabled={isReadOnly}>
                 <option>Km</option><option>Miles</option>
               </select>
@@ -836,7 +843,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
               <option>RCC Framed</option><option>Load Bearing</option><option>Mixed (RCC + Load Bearing)</option><option>Steel Structure</option>
             </select>
           </Field>
-          <Field label="Number of Floors"><input type="number" className={inputCls} value={fields.numberOfFloors} onChange={e => handleChange('numberOfFloors', e.target.value)} disabled={isReadOnly} /></Field>
+          <Field label="Number of Floors"><input type="number" min="0" className={inputCls} value={fields.numberOfFloors} onChange={e => handleChange('numberOfFloors', e.target.value)} disabled={isReadOnly} /></Field>
           <Field label="Foundation"><input className={inputCls} value={fields.foundation} onChange={e => handleChange('foundation', e.target.value)} disabled={isReadOnly} /></Field>
           <Field label="Superstructure"><input className={inputCls} value={fields.superstructure} onChange={e => handleChange('superstructure', e.target.value)} disabled={isReadOnly} /></Field>
           <Field label="Roof Type"><input className={inputCls} value={fields.roofType} onChange={e => handleChange('roofType', e.target.value)} disabled={isReadOnly} /></Field>
@@ -896,23 +903,24 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
                     <input className={inputCls + ' !py-1.5 text-xs'} value={f.name || ''} onChange={e => updateFloor(f.id, 'name', e.target.value)} disabled={isReadOnly} />
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                    <input type="number" step="any" className={inputCls + ' !py-1.5 text-xs text-right'} value={f.area || ''} onChange={e => updateFloor(f.id, 'area', e.target.value)} disabled={isReadOnly} placeholder="0" />
+                    <input type="number" min="0" step="any" className={inputCls + ' !py-1.5 text-xs text-right'} value={f.area || ''} onChange={e => updateFloor(f.id, 'area', e.target.value)} disabled={isReadOnly} placeholder="0" />
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                    <input type="number" step="any" className={inputCls + ' !py-1.5 text-xs text-right'} value={f.rate || ''} onChange={e => updateFloor(f.id, 'rate', e.target.value)} disabled={isReadOnly} placeholder="0" />
+                    <input type="number" min="0" step="any" className={inputCls + ' !py-1.5 text-xs text-right'} value={f.rate || ''} onChange={e => updateFloor(f.id, 'rate', e.target.value)} disabled={isReadOnly} placeholder="0" />
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef] text-right text-xs font-medium text-[#0f2038]">
                     ₹{formatIndianCurrency(f.estimated)}
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                    <input type="number" className={inputCls + ' !py-1.5 text-xs text-center'} value={f.lifeYears || ''} onChange={e => updateFloor(f.id, 'lifeYears', e.target.value)} disabled={isReadOnly} />
+                    <input type="number" min="0" className={inputCls + ' !py-1.5 text-xs text-center'} value={f.lifeYears || ''} onChange={e => updateFloor(f.id, 'lifeYears', e.target.value)} disabled={isReadOnly} />
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                    <input type="number" className={inputCls + ' !py-1.5 text-xs text-center'} value={f.ageYears || ''} onChange={e => updateFloor(f.id, 'ageYears', e.target.value)} disabled={isReadOnly} />
+                    <input type="number" min="0" className={inputCls + ' !py-1.5 text-xs text-center'} value={f.ageYears || ''} onChange={e => updateFloor(f.id, 'ageYears', e.target.value)} disabled={isReadOnly} />
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                     <input
                       type="number"
+                      min="0"
                       className={inputCls + ' !py-1.5 text-xs text-center font-bold text-[#b8860b]'}
                       value={f.depreciationPct !== undefined && f.depreciationPct !== null ? f.depreciationPct : ''}
                       onChange={e => updateFloor(f.id, 'depreciationPct', e.target.value)}
@@ -955,7 +963,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
             <input className={inputCls} value={fields.landArea} disabled={true} />
           </Field>
           <Field label={`Rate per ${fields.landAreaUnit} (₹)`}>
-            <input className={inputCls} value={fields.landRatePerUnit} onChange={e => handleChange('landRatePerUnit', e.target.value)} disabled={isReadOnly} placeholder="e.g. 3000" />
+            <input type="number" min="0" step="any" className={inputCls} value={fields.landRatePerUnit} onChange={e => handleChange('landRatePerUnit', e.target.value)} disabled={isReadOnly} placeholder="e.g. 3000" />
           </Field>
           <Field label="Total Land Value (₹)">
             <div className="px-3 py-2.5 rounded-lg bg-[#f0ead6] border border-[#d4c5a9] text-sm font-bold text-[#0f2038]">
@@ -984,11 +992,41 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
           <p className="text-xs text-[#6c757d] italic pl-1">{rupeesInWords(totalPropertyValue)}</p>
 
           <div className="flex items-center justify-between py-2 border-b border-[#e9ecef]">
-            <span className="text-sm text-[#495057]">Realizable Value (90%)</span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-[#495057]">Realizable Value</span>
+              <div className="flex items-center gap-1">
+                <span className="text-sm text-[#495057]">(</span>
+                <input
+                  type="number"
+                  min="0"
+                  className={inputCls + ' !py-1 !px-2 text-xs w-16 text-center'}
+                  value={fields.realizablePct}
+                  onChange={e => handleChange('realizablePct', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="90"
+                />
+                <span className="text-sm text-[#495057]">%)</span>
+              </div>
+            </div>
             <span className="text-sm font-semibold text-green-700">₹ {formatIndianCurrency(realizableValue)}</span>
           </div>
           <div className="flex items-center justify-between py-2 border-b border-[#e9ecef]">
-            <span className="text-sm text-[#495057]">Distress / Forced Sale Value (80%)</span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-[#495057]">Distress / Forced Sale Value</span>
+              <div className="flex items-center gap-1">
+                <span className="text-sm text-[#495057]">(</span>
+                <input
+                  type="number"
+                  min="0"
+                  className={inputCls + ' !py-1 !px-2 text-xs w-16 text-center'}
+                  value={fields.distressPct}
+                  onChange={e => handleChange('distressPct', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="80"
+                />
+                <span className="text-sm text-[#495057]">%)</span>
+              </div>
+            </div>
             <span className="text-sm font-semibold text-orange-700">₹ {formatIndianCurrency(distressValue)}</span>
           </div>
 
@@ -1028,8 +1066,8 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
           </p>
           <div className="space-y-2 my-4 pl-4 border-l-4 border-[#b8860b]">
             <p><strong>Fair Market Value:</strong> ₹ {formatIndianCurrency(totalPropertyValue)} ({rupeesInWords(totalPropertyValue)})</p>
-            <p><strong>Realizable Value:</strong> ₹ {formatIndianCurrency(realizableValue)} ({rupeesInWords(realizableValue)})</p>
-            <p><strong>Distress Sale Value:</strong> ₹ {formatIndianCurrency(distressValue)} ({rupeesInWords(distressValue)})</p>
+            <p><strong>Realizable Value ({fields.realizablePct || '90'}%):</strong> ₹ {formatIndianCurrency(realizableValue)} ({rupeesInWords(realizableValue)})</p>
+            <p><strong>Distress Sale Value ({fields.distressPct || '80'}%):</strong> ₹ {formatIndianCurrency(distressValue)} ({rupeesInWords(distressValue)})</p>
           </div>
           <div className="text-right mt-8">
             <p className="font-bold">Satyajit Mohanty</p>
@@ -1124,7 +1162,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
           disabled={loading}
           className="px-6 py-3 rounded-xl border-2 border-gray-400 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-all disabled:opacity-50"
         >
-          📥 Download PDF
+          👁️ Preview PDF
         </button>
 
         {status === 'MANAGER_REVIEW' && isManagerOrOwner && (
