@@ -5,6 +5,7 @@ import AssignTeamForm from './AssignTeamForm';
 import Link from 'next/link';
 import ReportBuilder from '../../reports/[projectId]/ReportBuilder';
 import ReportDraftSection from './ReportDraftSection';
+import TransferOversightButton from './TransferOversightButton';
 
 export default async function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   try {
@@ -188,6 +189,15 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
               userRole={currentUser.role}
             />
           </ReportDraftSection>
+        )}
+
+        {/* 4) TRANSFER — After report section */}
+        {['OWNER', 'MANAGER'].includes(currentUser.role) && (
+          <TransferOversightButton
+            projectId={project.id}
+            currentManagerId={project.assignedManagerId}
+            managers={managers}
+          />
         )}
       </div>
     );
