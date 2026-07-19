@@ -944,7 +944,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
             <input className={inputCls} value={fields.landArea} disabled={true} />
           </Field>
           <Field label={`Rate per ${fields.landAreaUnit} (₹)`}>
-            <input className={inputCls} value={fields.landRatePerUnit} onChange={e => handleChange('landRatePerUnit', e.target.value)} disabled={isReadOnly} placeholder="e.g. 3000" />
+            <input type="number" step="any" className={inputCls} value={fields.landRatePerUnit} onChange={e => handleChange('landRatePerUnit', e.target.value)} disabled={isReadOnly} placeholder="e.g. 3000" />
           </Field>
           <Field label="Total Land Value (₹)">
             <div className="px-3 py-2.5 rounded-lg bg-[#f0ead6] border border-[#d4c5a9] text-sm font-bold text-[#0f2038]">
@@ -983,7 +983,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
 
           <div className="mt-3">
             <Field label="Govt. / Guideline Value (₹) — Manual">
-              <input className={inputCls} value={fields.guidelineValue} onChange={e => handleChange('guidelineValue', e.target.value)} disabled={isReadOnly} placeholder="As per Govt. record (optional)" />
+              <input type="number" step="any" className={inputCls} value={fields.guidelineValue} onChange={e => handleChange('guidelineValue', e.target.value)} disabled={isReadOnly} placeholder="As per Govt. record (optional)" />
             </Field>
           </div>
         </div>

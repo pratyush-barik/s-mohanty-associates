@@ -57,7 +57,15 @@ export function numberToWords(num: number | string): string {
 export function rupeesInWords(amount: number | string): string {
   const n = typeof amount === 'string' ? parseFloat(amount.replace(/,/g, '')) : amount;
   if (isNaN(n) || n === 0) return 'Rupees Zero Only';
-  return `Rupees ${numberToWords(n)} Only`;
+
+  const integerPart = Math.floor(n);
+  const paisePart = Math.round((n - integerPart) * 100);
+
+  let word = `Rupees ${numberToWords(integerPart)}`;
+  if (paisePart > 0) {
+    word += ` and ${twoDigits(paisePart)} Paise`;
+  }
+  return `${word} Only`;
 }
 
 /**
@@ -67,14 +75,21 @@ export function formatIndianCurrency(num: number | string): string {
   const n = typeof num === 'string' ? parseFloat(num.replace(/,/g, '')) : num;
   if (isNaN(n)) return '0';
   
-  const str = Math.floor(n).toString();
-  if (str.length <= 3) return str;
+  const parts = n.toFixed(2).split('.');
+  const integerPart = parts[0];
+  const decimalPart = parts[1];
+
+  let str = integerPart;
+  if (str.length <= 3) {
+    const formattedInt = str;
+    return decimalPart === '00' ? formattedInt : `${formattedInt}.${decimalPart}`;
+  }
 
   let lastThree = str.substring(str.length - 3);
   const remaining = str.substring(0, str.length - 3);
   if (remaining.length > 0) {
     lastThree = ',' + lastThree;
   }
-  const formatted = remaining.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + lastThree;
-  return formatted;
+  const formattedInt = remaining.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + lastThree;
+  return decimalPart === '00' ? formattedInt : `${formattedInt}.${decimalPart}`;
 }
