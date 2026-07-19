@@ -19,7 +19,11 @@ export default async function FieldAgentDashboard() {
   // Fetch projects assigned to this field employee, or all if Owner/Manager
   const whereClause = ['OWNER', 'MANAGER'].includes(currentUser.role) 
     ? {} 
-    : { fieldEmployeeId: session.user.id };
+    : {
+        fieldEmployees: {
+          some: { id: session.user.id },
+        },
+      };
 
   const inspections = await prisma.inspection.findMany({
     where: { project: whereClause },

@@ -35,7 +35,11 @@ export default async function FieldAgentDashboard() {
   if (!user) return null;
 
   const fieldProjects = await prisma.project.findMany({
-    where: { fieldEmployeeId: session.user.id },
+    where: {
+      fieldEmployees: {
+        some: { id: session.user.id },
+      },
+    },
     include: { serviceRequest: { select: { propertyType: true, contactName: true } } },
     orderBy: { createdAt: 'desc' },
   });

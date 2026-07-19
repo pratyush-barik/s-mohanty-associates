@@ -280,13 +280,12 @@ export async function terminateEmployee(id: string) {
       data: { isActive: false },
     });
 
-    // 2. Unassign from active/pending projects
     const activeProjects = await prisma.project.findMany({
       where: {
         OR: [
           { assignedManagerId: id },
           { pendingManagerId: id },
-          { fieldEmployeeId: id },
+          { fieldEmployees: { some: { id } } },
           { reportEmployeeId: id },
         ],
         status: { not: 'COMPLETED' },
@@ -299,7 +298,9 @@ export async function terminateEmployee(id: string) {
         data: {
           assignedManagerId: project.assignedManagerId === id ? null : undefined,
           pendingManagerId: project.pendingManagerId === id ? null : undefined,
-          fieldEmployeeId: project.fieldEmployeeId === id ? null : undefined,
+          fieldEmployees: {
+            disconnect: { id },
+          },
           reportEmployeeId: project.reportEmployeeId === id ? null : undefined,
         },
       });

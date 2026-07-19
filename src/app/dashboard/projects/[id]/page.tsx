@@ -41,7 +41,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     include: {
       serviceRequest: true,
       manager: { select: { id: true, name: true, email: true, profilePhoto: true, designation: true } },
-      fieldEmployee: { select: { id: true, name: true, email: true, profilePhoto: true, designation: true } },
+      fieldEmployees: { select: { id: true, name: true, email: true, profilePhoto: true, designation: true } },
       reportEmployee: { select: { id: true, name: true, email: true, profilePhoto: true, designation: true } },
       messages: {
         include: {
@@ -115,8 +115,8 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             },
             {
               label: 'Field Agent Assigned',
-              isCompleted: !!project.fieldEmployeeId,
-              detail: project.fieldEmployee?.name ? `Inspector: ${project.fieldEmployee.name}` : 'Awaiting inspector',
+              isCompleted: project.fieldEmployees.length > 0,
+              detail: project.fieldEmployees.length > 0 ? `Inspector: ${project.fieldEmployees.map(e => e.name).join(', ')}` : 'Awaiting inspector',
             },
             {
               label: 'Field Agent Deployed',

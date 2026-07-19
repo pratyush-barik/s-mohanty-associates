@@ -67,7 +67,7 @@ export async function sendProjectMessage(projectId: string, content: string) {
   // Verify user has access to this project
   const project = await prisma.project.findUnique({
     where: { id: projectId },
-    include: { serviceRequest: true },
+    include: { serviceRequest: true, fieldEmployees: { select: { id: true } } },
   });
 
   if (!project) {
@@ -78,7 +78,7 @@ export async function sendProjectMessage(projectId: string, content: string) {
   const isClient = project.serviceRequest.clientId === session.user.id;
   const isAssigned =
     project.assignedManagerId === session.user.id ||
-    project.fieldEmployeeId === session.user.id ||
+    project.fieldEmployees.some((e) => e.id === session.user.id) ||
     project.reportEmployeeId === session.user.id;
 
   if (!isClient && !isAssigned && userRole !== 'OWNER') {
