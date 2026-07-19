@@ -428,6 +428,22 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     setMessage(null);
   };
 
+  const handleDownloadPDF = async () => {
+    setMessage({ type: 'success', text: 'Generating PDF for download...' });
+    const pdfBlob = await handleGeneratePDF();
+    if (pdfBlob) {
+      const url = URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${fields.ownerName ? fields.ownerName.replace(/\s+/g, '_') : 'Valuation'}_Report_${projectId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+    setMessage(null);
+  };
+
   const handleSubmit = async () => {
     if (!confirm('Submit this report for manager verification? You cannot edit it until the manager returns it.')) return;
 
@@ -1163,6 +1179,14 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
           className="px-6 py-3 rounded-xl border-2 border-gray-400 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-all disabled:opacity-50"
         >
           👁️ Preview PDF
+        </button>
+
+        <button
+          onClick={handleDownloadPDF}
+          disabled={loading}
+          className="px-6 py-3 rounded-xl border-2 border-gray-400 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-all disabled:opacity-50"
+        >
+          📥 Download PDF
         </button>
 
         {status === 'MANAGER_REVIEW' && isManagerOrOwner && (
