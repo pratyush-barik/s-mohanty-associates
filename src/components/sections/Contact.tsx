@@ -204,17 +204,28 @@ export default function Contact() {
                       <p className="text-sm text-[#495057] mb-6 max-w-sm mx-auto">
                         For organisations, please submit your requirements directly via email. We will process your request and follow up immediately.
                       </p>
-                      <a
-                        href="https://mail.google.com/mail/?view=cm&fs=1&to=smohantyassociates@gmail.com&su=New%20Case%3A%20Organisational%20Valuation%20Request&body=Organisation%3A%0AName%3A%0AEmail%3A%0APhone%3A%0ALocation%20%2F%20Address%3A%0ASubject%20%2F%20Property%20Type%3A%0AMessage%20%2F%20Details%3A%0A"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn btn-primary inline-flex items-center gap-2 px-8 py-3 w-full sm:w-auto justify-center shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
-                      >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                        Email via Gmail
-                      </a>
+                      <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <a
+                          href="mailto:smohantyassociates@gmail.com?subject=New%20Case%3A%20Organisational%20Valuation%20Request&body=Organisation%3A%0AName%3A%0AEmail%3A%0APhone%3A%0ALocation%20%2F%20Address%3A%0ASubject%20%2F%20Property%20Type%3A%0AMessage%20%2F%20Details%3A%0A"
+                          className="btn btn-primary inline-flex items-center gap-2 px-8 py-3 w-full sm:w-auto justify-center shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
+                        >
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                          Email App (Outlook/Mail)
+                        </a>
+                        <a
+                          href="https://mail.google.com/mail/?view=cm&fs=1&to=smohantyassociates@gmail.com&su=New%20Case%3A%20Organisational%20Valuation%20Request&body=Organisation%3A%0AName%3A%0AEmail%3A%0APhone%3A%0ALocation%20%2F%20Address%3A%0ASubject%20%2F%20Property%20Type%3A%0AMessage%20%2F%20Details%3A%0A"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn bg-white text-[#0f2038] border border-[#dee2e6] inline-flex items-center gap-2 px-8 py-3 w-full sm:w-auto justify-center shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
+                        >
+                          <svg className="w-5 h-5 text-[#EA4335]" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.728L12 16.636l-6.545-4.908v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z" />
+                          </svg>
+                          Gmail Web
+                        </a>
+                      </div>
                     </div>
                   ) : (
                     <div className="sm:col-span-2 space-y-5 mt-5">
