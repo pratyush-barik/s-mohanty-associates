@@ -112,8 +112,12 @@ export default function Footer() {
                 </div>
               </div>
               <div className="flex gap-3">
-                <span className="text-[#ffcb47] text-sm">✉️</span>
-                <p className="text-white/50 text-sm">smohantyassociates@gmail.com</p>
+                <span className="text-[#ffcb47] text-sm mt-1">✉️</span>
+                <div className="text-white/50 text-sm space-y-3">
+                  <p><span className="text-white/80 font-medium">General:</span><br /><a href="mailto:info@smohantyassociates.com" className="hover:text-white transition-colors">info@smohantyassociates.com</a></p>
+                  <p><span className="text-white/80 font-medium">Tech Support:</span><br /><a href="mailto:admin@smohantyassociates.com" className="hover:text-white transition-colors">admin@smohantyassociates.com</a></p>
+                  <p><span className="text-white/80 font-medium">Management:</span><br /><a href="mailto:manager@smohantyassociates.com" className="hover:text-white transition-colors">manager@smohantyassociates.com</a></p>
+                </div>
               </div>
             </div>
           </div>

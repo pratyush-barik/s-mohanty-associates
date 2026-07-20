@@ -155,6 +155,7 @@ interface ReportFields {
   distanceRailway: string;
   distanceRailwayUnit: string;
   nearbyLandmarks: string;
+  reworkNotes?: string;
 }
 
 const DEFAULT_FIELDS: ReportFields = {
@@ -445,6 +446,11 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  
+  // Rework Modal State
+  const [showReworkModal, setShowReworkModal] = useState(false);
+  const [reworkComment, setReworkComment] = useState('');
+
   const reportRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -639,14 +645,22 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     setLoading(false);
   };
 
-  const handleRework = async () => {
-    if (!confirm('Send back to the agent for rework?')) return;
+  const handleReworkClick = () => {
+    setShowReworkModal(true);
+  };
+
+  const submitRework = async () => {
+    if (!reworkComment.trim()) {
+      setMessage({ type: 'error', text: 'Please provide a comment for rework.' });
+      return;
+    }
     setLoading(true);
     const { sendReportForRework } = await import('@/app/actions/project');
-    const res = await sendReportForRework(projectId);
+    const res = await sendReportForRework(projectId, reworkComment);
     if (res.error) setMessage({ type: 'error', text: res.error });
     else {
       setMessage({ type: 'success', text: 'Report sent for rework.' });
+      setShowReworkModal(false);
       router.refresh();
     }
     setLoading(false);
@@ -907,6 +921,19 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
       {message && (
         <div className={`p-4 rounded-xl text-sm font-medium ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
           {message.text}
+        </div>
+      )}
+
+      {/* Rework Banner */}
+      {fields.reworkNotes && status === 'REPORT_DRAFTING' && (
+        <div className="card p-5 border-2 border-red-200 bg-red-50 shadow-md">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-xl">⚠️</span>
+            <h2 className="text-sm font-bold text-red-800 uppercase tracking-wider">Manager Rework Requested</h2>
+          </div>
+          <p className="text-sm text-red-700 bg-white/60 p-4 rounded-lg border border-red-100 whitespace-pre-wrap">
+            {fields.reworkNotes}
+          </p>
         </div>
       )}
 
@@ -1597,7 +1624,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
         {status === 'MANAGER_REVIEW' && isManagerOrOwner && (
           <>
             <button
-              onClick={handleRework}
+              onClick={handleReworkClick}
               disabled={loading}
               className="px-6 py-3 rounded-xl border-2 border-red-500 text-red-600 font-semibold text-sm hover:bg-red-50 transition-all disabled:opacity-50"
             >
@@ -1613,6 +1640,45 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
           </>
         )}
       </div>
+
+      {/* Rework Modal */}
+      {showReworkModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-[#e9ecef] bg-[#f8f9fa]">
+              <h2 className="text-xl font-bold text-[#0f2038]" style={{ fontFamily: 'var(--font-heading)' }}>
+                Send for Rework
+              </h2>
+              <p className="text-xs text-[#6c757d] mt-1">Please provide specific feedback for the report agent.</p>
+            </div>
+            <div className="p-6">
+              <textarea
+                value={reworkComment}
+                onChange={(e) => setReworkComment(e.target.value)}
+                placeholder="List the changes required..."
+                className="w-full min-h-[150px] p-4 text-sm rounded-xl border border-[#dee2e6] bg-[#f8f9fa] focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500 resize-y"
+                autoFocus
+              />
+            </div>
+            <div className="p-4 border-t border-[#e9ecef] bg-[#f8f9fa] flex justify-end gap-3">
+              <button
+                onClick={() => { setShowReworkModal(false); setReworkComment(''); }}
+                className="px-5 py-2.5 rounded-xl border border-[#dee2e6] text-sm font-semibold text-[#495057] hover:bg-white transition-colors"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitRework}
+                disabled={loading || !reworkComment.trim()}
+                className="px-5 py-2.5 rounded-xl bg-red-600 text-white text-sm font-bold hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {loading ? 'Sending...' : 'Confirm Rework'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

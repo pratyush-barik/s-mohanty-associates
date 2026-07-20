@@ -59,6 +59,7 @@ export async function submitEnquiry(formData: FormData) {
 
     // Send auto-reply
     await sendMail({
+      from: 'info@smohantyassociates.com',
       to: email,
       subject: `We've received your enquiry [Ticket #${ticketNumber}]`,
       html: `
@@ -156,6 +157,7 @@ export async function replyToEnquiry(enquiryId: string, body: string) {
 
     // Send email to client
     await sendMail({
+      from: 'manager@smohantyassociates.com',
       to: enquiry.email,
       subject: `Re: ${enquiry.subject} [Ticket #${enquiry.ticketNumber}]`,
       html: `

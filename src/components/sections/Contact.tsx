@@ -113,13 +113,22 @@ export default function Contact() {
                 </div>
                 <div>
                   <h4 className="text-base font-bold text-[#0f2038] mb-1" style={{ fontFamily: 'var(--font-heading)' }}>
-                    Email
+                    Email Support
                   </h4>
-                  <p className="text-sm text-[#6c757d]">
-                    <a href="mailto:smohantyassociates@gmail.com" className="hover:text-[#b8860b] transition-colors">
-                      smohantyassociates@gmail.com
-                    </a>
-                  </p>
+                  <ul className="text-sm text-[#6c757d] space-y-2 mt-2">
+                    <li>
+                      <span className="font-semibold block text-[#343a40]">General Queries:</span>
+                      <a href="mailto:info@smohantyassociates.com" className="hover:text-[#b8860b] transition-colors">info@smohantyassociates.com</a>
+                    </li>
+                    <li>
+                      <span className="font-semibold block text-[#343a40]">Technical Support:</span>
+                      <a href="mailto:admin@smohantyassociates.com" className="hover:text-[#b8860b] transition-colors">admin@smohantyassociates.com</a>
+                    </li>
+                    <li>
+                      <span className="font-semibold block text-[#343a40]">Details / Management:</span>
+                      <a href="mailto:manager@smohantyassociates.com" className="hover:text-[#b8860b] transition-colors">manager@smohantyassociates.com</a>
+                    </li>
+                  </ul>
                 </div>
               </div>
             </div>

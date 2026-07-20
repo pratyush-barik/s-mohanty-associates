@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import ProjectChat from './ProjectChat';
+import ClientReworkForm from './ClientReworkForm';
 
 const statusColors: Record<string, string> = {
   PENDING_REVIEW: 'bg-blue-50 text-blue-700 border-blue-200',
@@ -201,6 +202,11 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 Download PDF
               </a>
             </div>
+          )}
+
+          {/* Request Rework */}
+          {project.status === 'COMPLETED' && (
+            <ClientReworkForm projectId={project.id} />
           )}
 
           {/* Property Details */}

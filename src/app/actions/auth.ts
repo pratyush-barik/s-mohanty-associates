@@ -154,6 +154,7 @@ export async function requestRegistrationOtp(email: string) {
     // 4. Send email
     const { sendMail } = await import('@/lib/mail');
     const mailResult = await sendMail({
+      from: 'otp@smohantyassociates.com',
       to: email,
       subject: 'Verify Your Email - S Mohanty Associates',
       html: `
@@ -322,6 +323,7 @@ export async function updateClientProfile(formData: FormData) {
 
       const { sendMail } = await import('@/lib/mail');
       const mailResult = await sendMail({
+        from: 'otp@smohantyassociates.com',
         to: connectedEmail,
         subject: 'Confirm Profile Changes - S Mohanty Associates',
         html: `
@@ -453,6 +455,7 @@ export async function requestOtp(email: string, portal: 'CLIENT' | 'EMPLOYEE') {
     // 4. Send email
     const { sendMail } = await import('@/lib/mail');
     const mailResult = await sendMail({
+      from: 'otp@smohantyassociates.com',
       to: email,
       subject: 'Your S Mohanty Associates Login OTP',
       html: `

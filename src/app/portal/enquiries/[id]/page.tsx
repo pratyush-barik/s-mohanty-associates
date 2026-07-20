@@ -4,7 +4,8 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import ChatInterface from './ChatInterface';
 
-export default async function EnquiryDetailPage({ params }: { params: { id: string } }) {
+export default async function EnquiryDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const session = await auth();
   if (!session?.user?.id) return null;
 
@@ -18,7 +19,7 @@ export default async function EnquiryDetailPage({ params }: { params: { id: stri
   }
 
   const enquiry = await prisma.enquiry.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       messages: {
         orderBy: { createdAt: 'asc' },

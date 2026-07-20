@@ -3,6 +3,11 @@ import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
+function formatStatus(status: string) {
+  if (status === 'ASSIGNED') return 'MANAGER ASSIGNED';
+  return status.replace(/_/g, ' ');
+}
+
 export default async function PortalProjectsPage() {
   const session = await auth();
   if (!session?.user?.id) return null;
@@ -16,8 +21,13 @@ export default async function PortalProjectsPage() {
     redirect('/portal');
   }
 
-  // Fetch all projects (we could paginate this later)
+  // MANAGER sees only their own projects; OWNER sees all
+  const whereClause = currentUser.role === 'MANAGER'
+    ? { assignedManagerId: session.user.id }
+    : {};
+
   const projects = await prisma.project.findMany({
+    where: whereClause,
     include: {
       serviceRequest: { select: { propertyType: true, contactName: true } },
       fieldEmployees: { select: { name: true } },
@@ -30,10 +40,12 @@ export default async function PortalProjectsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-[#0f2038]" style={{ fontFamily: 'var(--font-heading)' }}>
-          All Projects
+          {currentUser.role === 'MANAGER' ? 'My Projects' : 'All Projects'}
         </h1>
         <p className="text-sm text-[#6c757d] mt-1">
-          Manage all active and completed valuation projects.
+          {currentUser.role === 'MANAGER'
+            ? 'Projects assigned to you for oversight.'
+            : 'Manage all active and completed valuation projects.'}
         </p>
       </div>
 
@@ -50,6 +62,7 @@ export default async function PortalProjectsPage() {
                 <th className="px-6 py-3 font-medium text-[#6c757d]">Client</th>
                 <th className="px-6 py-3 font-medium text-[#6c757d]">Status</th>
                 <th className="px-6 py-3 font-medium text-[#6c757d]">Field Agent</th>
+                <th className="px-6 py-3 font-medium text-[#6c757d]">Report Agent</th>
                 <th className="px-6 py-3 font-medium text-[#6c757d]">Actions</th>
               </tr>
             </thead>
@@ -65,11 +78,14 @@ export default async function PortalProjectsPage() {
                   </td>
                   <td className="px-6 py-4">
                     <span className="px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs font-semibold">
-                      {project.status.replace(/_/g, ' ')}
+                      {formatStatus(project.status)}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-[#6c757d]">
-                    {project.fieldEmployees.map(e => e.name).join(', ') || 'Unassigned'}
+                    {project.fieldEmployees.map(e => e.name).join(', ') || <span className="italic text-gray-400">Unassigned</span>}
+                  </td>
+                  <td className="px-6 py-4 text-[#6c757d]">
+                    {project.reportEmployee?.name || <span className="italic text-gray-400">Unassigned</span>}
                   </td>
                   <td className="px-6 py-4">
                     <Link

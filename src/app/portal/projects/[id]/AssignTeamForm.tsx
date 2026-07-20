@@ -347,40 +347,32 @@ export default function AssignTeamForm({
                   const activeCount = activeModal.includes('FIELD') 
                     ? (emp._count?.fieldProjects || 0) 
                     : (emp._count?.reportProjects || 0);
-                  
-                  const isBusy = activeCount > 0;
 
                   return (
                     <div
                       key={emp.id}
                       onClick={() => {
-                        if (isBusy) {
-                          setModalError('This employee is already assigned to another case, please deploy another.');
-                          return;
-                        }
                         handleSelectEmployee(emp.id);
                       }}
-                      className={`w-full text-left px-4 py-3 rounded-xl border transition-colors flex items-center justify-between ${
-                        isBusy 
-                          ? 'border-red-200 bg-red-50/50 cursor-not-allowed opacity-75' 
-                          : 'border-[#dee2e6] hover:border-green-400 hover:bg-green-50 cursor-pointer'
-                      }`}
+                      className="w-full text-left px-4 py-3 rounded-xl border border-[#dee2e6] hover:border-[#b8860b] hover:bg-[#b8860b]/5 cursor-pointer transition-colors flex items-center justify-between"
                     >
                       <div>
-                        <p className={`text-sm font-bold ${isBusy ? 'text-red-700' : 'text-[#0f2038]'}`}>
+                        <p className="text-sm font-bold text-[#0f2038]">
                           {emp.name}
+                          {activeCount > 0 && (
+                            <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200">
+                              {activeCount} project{activeCount > 1 ? 's' : ''}
+                            </span>
+                          )}
                         </p>
                         <p className="text-xs text-[#6c757d]">ID: {emp.employeeId}</p>
                       </div>
                       <div className="text-right">
                         <span className={`px-2 py-1 rounded text-[10px] font-bold ${
-                          isBusy ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+                          activeCount > 0 ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
                         }`}>
-                          {isBusy ? 'BUSY' : 'CLEAR'}
+                          {activeCount > 0 ? `${activeCount} ASSIGNED` : 'AVAILABLE'}
                         </span>
-                        {isBusy && (
-                          <p className="text-[10px] text-red-600 mt-1">{activeCount} active project{activeCount > 1 ? 's' : ''}</p>
-                        )}
                       </div>
                     </div>
                   );

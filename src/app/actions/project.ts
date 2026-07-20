@@ -333,7 +333,7 @@ export async function submitReportForVerification(projectId: string) {
 /**
  * Manager: Send report back for rework
  */
-export async function sendReportForRework(projectId: string) {
+export async function sendReportForRework(projectId: string, reworkComment?: string) {
   const session = await auth();
   if (!session?.user?.id) return { error: 'Unauthorized' };
 
@@ -341,9 +341,17 @@ export async function sendReportForRework(projectId: string) {
     const report = await prisma.report.findFirst({ where: { projectId } });
     if (!report) return { error: 'Report data not found.' };
 
+    const updatedData = {
+      ...(report.data as object || {}),
+      reworkNotes: reworkComment || undefined,
+    };
+
     await prisma.report.update({
       where: { id: report.id },
-      data: { status: 'REVISION_REQUESTED' }
+      data: { 
+        status: 'REVISION_REQUESTED',
+        data: updatedData
+      }
     });
 
     await prisma.project.update({
@@ -357,6 +365,50 @@ export async function sendReportForRework(projectId: string) {
   } catch (error) {
     console.error('Failed to send for rework:', error);
     return { error: 'Failed to send for rework.' };
+  }
+}
+
+/**
+ * Client: Request changes on a completed report
+ */
+export async function requestClientRework(projectId: string, message: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: 'Unauthorized' };
+
+  try {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: { serviceRequest: true }
+    });
+
+    if (!project || project.serviceRequest.clientId !== session.user.id) {
+      return { error: 'Project not found or unauthorized.' };
+    }
+
+    if (project.status !== 'COMPLETED') {
+      return { error: 'Can only request changes on a completed project.' };
+    }
+
+    // Set project status back to MANAGER_REVIEW so manager can review the client's request
+    await prisma.project.update({
+      where: { id: projectId },
+      data: { status: 'MANAGER_REVIEW' }
+    });
+
+    // Save the client's request as a project message
+    await prisma.projectMessage.create({
+      data: {
+        projectId,
+        clientId: session.user.id,
+        content: `**Rework Request:** ${message}`,
+      }
+    });
+
+    revalidatePath(`/dashboard/projects/${projectId}`);
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to submit rework request:', error);
+    return { error: 'Failed to submit rework request.' };
   }
 }
 
@@ -403,6 +455,11 @@ export async function finalizeReport(projectId: string, pdfUrl: string) {
     const report = await prisma.report.findFirst({ where: { projectId } });
     if (!report) return { error: 'Report data not found.' };
 
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: { serviceRequest: true }
+    });
+
     await prisma.report.update({
       where: { id: report.id },
       data: { 
@@ -416,6 +473,24 @@ export async function finalizeReport(projectId: string, pdfUrl: string) {
       where: { id: projectId },
       data: { status: 'COMPLETED' }
     });
+
+    if (project?.serviceRequest?.contactEmail) {
+      const { sendMail } = await import('@/lib/mail');
+      await sendMail({
+        from: 'report@smohantyassociates.com',
+        to: project.serviceRequest.contactEmail,
+        subject: `Your Valuation Report is Ready [${project.projectCode}]`,
+        html: `
+          <div style="font-family: sans-serif; color: #333;">
+            <h2>Report Completed</h2>
+            <p>Dear ${project.serviceRequest.contactName},</p>
+            <p>Your property valuation report for <strong>${project.projectCode}</strong> has been successfully finalized.</p>
+            <p>Please log in to your client dashboard to download the official PDF copy of your report.</p>
+            <p>Thank you for choosing S. Mohanty Associates.</p>
+          </div>
+        `
+      });
+    }
 
     revalidatePath(`/portal/projects/${projectId}`);
     revalidatePath(`/dashboard/projects/${projectId}`);
@@ -551,7 +626,10 @@ export async function assignProjectManager(projectId: string, managerId: string 
   }
 
   try {
-    const project = await prisma.project.findUnique({ where: { id: projectId } });
+    const project = await prisma.project.findUnique({ 
+      where: { id: projectId },
+      include: { serviceRequest: true }
+    });
     if (!project) return { error: 'Project not found.' };
 
     await prisma.project.update({
@@ -561,6 +639,23 @@ export async function assignProjectManager(projectId: string, managerId: string 
         status: managerId ? 'ASSIGNED' : 'APPROVED',
       },
     });
+
+    if (managerId && project.serviceRequest?.contactEmail) {
+      const { sendMail } = await import('@/lib/mail');
+      await sendMail({
+        from: 'status@smohantyassociates.com',
+        to: project.serviceRequest.contactEmail,
+        subject: `Project Update: Manager Assigned [${project.projectCode}]`,
+        html: `
+          <div style="font-family: sans-serif; color: #333;">
+            <h2>Project Status Update</h2>
+            <p>Dear ${project.serviceRequest.contactName},</p>
+            <p>A manager has been assigned to your project (<strong>${project.projectCode}</strong>) and they will be reviewing your property details shortly.</p>
+            <p>You can track the full progress of your valuation in your client dashboard.</p>
+          </div>
+        `
+      });
+    }
 
     revalidatePath('/portal/requests');
     revalidatePath('/portal/projects');

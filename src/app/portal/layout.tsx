@@ -48,6 +48,10 @@ export default async function PortalLayout({ children }: { children: React.React
       { label: 'Service Requests', href: '/portal/requests', icon: '📨' },
       { label: 'Incoming Transfers', href: '/portal/transfers', icon: '🔄', badge: pendingTransfersCount > 0 ? pendingTransfersCount : undefined },
       { label: 'Projects', href: '/portal/projects', icon: '📁' },
+    );
+  }
+  if (userRole === 'OWNER') {
+    navItems.push(
       { label: 'Manage Employees', href: '/portal/employees', icon: '👥' },
     );
   }

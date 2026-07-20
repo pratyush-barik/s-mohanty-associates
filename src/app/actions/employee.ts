@@ -91,16 +91,11 @@ export async function createEmployee(formData: FormData) {
     select: { role: true },
   });
 
-  if (currentUser?.role !== 'OWNER' && currentUser?.role !== 'MANAGER') {
-    return { error: 'Unauthorized.' };
+  if (currentUser?.role !== 'OWNER') {
+    return { error: 'Only the Owner can create employee accounts.' };
   }
 
   const role = formData.get('role') as string;
-
-  // Managers can only create FIELD_EMPLOYEE or REPORT_EMPLOYEE
-  if (currentUser.role === 'MANAGER' && role !== 'FIELD_EMPLOYEE' && role !== 'REPORT_EMPLOYEE') {
-    return { error: 'Managers can only create Field Agent or Report Staff accounts.' };
-  }
 
   const name = formData.get('name') as string;
   const email = formData.get('email') as string;
@@ -166,9 +161,38 @@ export async function createEmployee(formData: FormData) {
     },
   });
 
+  // Send welcome email with login credentials
+  try {
+    const { sendMail } = await import('@/lib/mail');
+    const loginUrl = process.env.NODE_ENV === 'production'
+      ? 'https://smohantyassociates.com/auth/employee-login'
+      : 'http://localhost:3000/auth/employee-login';
+    await sendMail({
+      to: email,
+      subject: 'Welcome to S Mohanty Associates — Your Login Credentials',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #f1f3f5; border-radius: 8px;">
+          <h2 style="color: #0f2038;">Welcome to S Mohanty Associates!</h2>
+          <p>Dear <strong>${name}</strong>,</p>
+          <p>Your employee account has been created. Below are your login credentials:</p>
+          <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e9ecef; margin: 20px 0;">
+            <p style="margin: 5px 0;"><strong>Employee ID:</strong> ${generatedEmployeeId}</p>
+            <p style="margin: 5px 0;"><strong>Email:</strong> ${email}</p>
+            <p style="margin: 5px 0;"><strong>Temporary Password:</strong> ${tempPassword}</p>
+            <p style="margin: 5px 0;"><strong>Role:</strong> ${role.replace('_', ' ')}</p>
+          </div>
+          <p><a href="${loginUrl}" style="display: inline-block; background-color: #b8860b; color: white; padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">Login Now</a></p>
+          <p style="color: #6c757d; font-size: 12px; margin-top: 20px;">Please change your password after your first login. If you did not expect this email, please contact your administrator.</p>
+        </div>
+      `,
+    });
+  } catch (mailErr) {
+    console.error('Failed to send welcome email:', mailErr);
+  }
+
   revalidatePath('/portal/employees');
 
-  return { success: true, message: `Employee ${name} (${generatedEmployeeId}) created successfully.` };
+  return { success: true, message: `Employee ${name} (${generatedEmployeeId}) created successfully. Welcome email sent.` };
 }
 
 export async function updateEmployee(formData: FormData) {
@@ -182,8 +206,8 @@ export async function updateEmployee(formData: FormData) {
     select: { role: true },
   });
 
-  if (currentUser?.role !== 'OWNER' && currentUser?.role !== 'MANAGER') {
-    return { error: 'Unauthorized.' };
+  if (currentUser?.role !== 'OWNER') {
+    return { error: 'Only the Owner can edit employee accounts.' };
   }
 
   const id = formData.get('id') as string;
@@ -204,16 +228,6 @@ export async function updateEmployee(formData: FormData) {
 
   if (!targetEmployee) {
     return { error: 'Employee not found.' };
-  }
-
-  // Managers cannot edit other Managers or Owner
-  if (currentUser.role === 'MANAGER') {
-    if (targetEmployee.role === 'OWNER' || targetEmployee.role === 'MANAGER') {
-      return { error: 'Managers cannot edit details of other Managers or the Owner.' };
-    }
-    if (role !== 'FIELD_EMPLOYEE' && role !== 'REPORT_EMPLOYEE') {
-      return { error: 'Managers can only assign Field Agent or Report Staff roles.' };
-    }
   }
 
   // Check email duplicate
@@ -255,8 +269,8 @@ export async function terminateEmployee(id: string) {
     select: { role: true },
   });
 
-  if (currentUser?.role !== 'OWNER' && currentUser?.role !== 'MANAGER') {
-    return { error: 'Unauthorized.' };
+  if (currentUser?.role !== 'OWNER') {
+    return { error: 'Only the Owner can terminate employee accounts.' };
   }
 
   // Fetch target employee
@@ -266,11 +280,6 @@ export async function terminateEmployee(id: string) {
 
   if (!targetEmployee) {
     return { error: 'Employee not found.' };
-  }
-
-  // Managers cannot terminate other Managers or Owner
-  if (currentUser.role === 'MANAGER' && (targetEmployee.role === 'OWNER' || targetEmployee.role === 'MANAGER')) {
-    return { error: 'Managers cannot terminate other Managers or the Owner.' };
   }
 
   try {
