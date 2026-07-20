@@ -1,6 +1,7 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { signOut } from '@/auth';
 import ActiveLink from '@/components/ui/ActiveLink';
 import { prisma } from '@/lib/prisma';
@@ -71,18 +72,28 @@ export default async function PortalLayout({ children }: { children: React.React
       {/* Sidebar */}
       <aside className="w-20 hover:w-64 bg-[#0a1628] text-white flex flex-col flex-shrink-0 sticky top-0 h-screen transition-all duration-300 ease-in-out group overflow-hidden z-45 shadow-xl">
         {/* Logo */}
-        <div className="px-5 py-5 border-b border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#b8860b] to-[#c9952c] flex flex-shrink-0 items-center justify-center font-bold text-white">
-              S
+        <div className="px-4 py-5 border-b border-white/10">
+          <div className="flex items-center gap-2 overflow-hidden">
+            {/* Collapsed: show small square icon version */}
+            <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center group-hover:hidden">
+              <Image
+                src="/smohantyassociate_logo.svg"
+                alt="S Mohanty Associates"
+                width={28}
+                height={28}
+                className="w-7 h-7 object-contain brightness-0 invert"
+              />
             </div>
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 overflow-hidden whitespace-nowrap">
-              <div className="font-bold text-base leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>
-                S Mohanty
-              </div>
-              <div className="text-[9px] uppercase tracking-[0.2em] text-[#ffcb47] font-medium">
-                Employee Portal
-              </div>
+            {/* Expanded: show full logo */}
+            <div className="hidden group-hover:block opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+              <Image
+                src="/smohantyassociate_logo.svg"
+                alt="S Mohanty Associates"
+                width={160}
+                height={40}
+                className="h-9 w-auto object-contain brightness-0 invert"
+              />
+              <div className="text-[9px] uppercase tracking-[0.2em] text-[#ffcb47] font-medium mt-0.5">Employee Portal</div>
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { signOut } from '@/auth';
 import ActiveLink from '@/components/ui/ActiveLink';
 
@@ -17,18 +18,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <nav className="bg-white border-b border-[#e9ecef] sticky top-0 z-50">
         <div className="max-w-[1280px] mx-auto px-6 flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#b8860b] to-[#c9952c] flex items-center justify-center font-bold text-white">
-              S
-            </div>
-            <div>
-              <div className="font-bold text-base text-[#0f2038] leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>
-                S Mohanty
-              </div>
-              <div className="text-[9px] uppercase tracking-[0.2em] text-[#b8860b] font-medium">
-                Associates
-              </div>
-            </div>
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/smohantyassociate_logo.svg"
+              alt="S Mohanty Associates"
+              width={180}
+              height={45}
+              priority
+              className="h-10 w-auto object-contain"
+            />
           </Link>
 
           {/* Nav Links */}
