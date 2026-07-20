@@ -85,7 +85,12 @@ export default async function OwnerDashboard() {
             </div>
             <p className="text-xs text-[#adb5bd] mt-1.5">{user.email}</p>
           </div>
-          <Link href="/portal/profile" className="text-sm text-[#b8860b] hover:underline font-medium">Edit Profile →</Link>
+          <div className="flex flex-col items-end gap-2 text-right">
+            <Link href="/portal/owner/manual-case" className="btn btn-primary text-sm px-4 py-2">
+              + Create Manual Case
+            </Link>
+            <Link href="/portal/profile" className="text-sm text-[#b8860b] hover:underline font-medium">Edit Profile →</Link>
+          </div>
         </div>
       </div>
 
@@ -115,7 +120,7 @@ export default async function OwnerDashboard() {
               <div key={req.id} className="flex items-center justify-between p-4 rounded-xl bg-[#f8f9fa] border border-[#e9ecef]">
                 <div>
                   <p className="text-sm font-medium text-[#0f2038]">{req.propertyType} — {req.purpose}</p>
-                  <p className="text-xs text-[#6c757d] mt-0.5">From: {req.client.clientType === 'INDIVIDUAL' ? req.client.individual?.name : req.client.organisation?.organisationName} • {new Date(req.createdAt).toLocaleDateString('en-IN')}</p>
+                  <p className="text-xs text-[#6c757d] mt-0.5">From: {req.client ? (req.client.clientType === 'INDIVIDUAL' ? req.client.individual?.name : req.client.organisation?.organisationName) : req.guestName || 'Guest'} • {new Date(req.createdAt).toLocaleDateString('en-IN')}</p>
                 </div>
                 <span className={`px-3 py-1 rounded-full text-xs font-medium border ${statusColors[req.status]}`}>{formatStatus(req.status)}</span>
               </div>

@@ -160,7 +160,10 @@ enum RetrievalStatus {
 
 model ServiceRequest {
   id              String        @id @default(cuid())
-  clientId        String
+  clientId        String?
+  guestName       String?
+  guestEmail      String?
+  guestPhone      String?
   propertyDetails String        @db.Text
   propertyType    String
   purpose         String
@@ -174,7 +177,7 @@ model ServiceRequest {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
-  client    Client     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client    Client?    @relation(fields: [clientId], references: [id], onDelete: Cascade)
   documents Document[] @relation("RequestDocuments")
   project   Project?
 
@@ -187,6 +190,7 @@ model Project {
   serviceRequestId String        @unique
   status           ProjectStatus @default(PENDING_REVIEW)
   clientReworkRequested Boolean @default(false)
+  isEmailOnly      Boolean       @default(false)
   assignedManagerId  String?
   pendingManagerId   String?
   reportEmployeeId   String?

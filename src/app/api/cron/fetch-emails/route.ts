@@ -83,10 +83,13 @@ export async function GET(request: Request) {
           const count = await prisma.enquiry.count();
           const newTicketNumber = `SMA-${100 + count + 1}`;
 
+          const isOrganisation = bodyText.toLowerCase().includes('organisation:');
+
           await prisma.enquiry.create({
             data: {
               ticketNumber: newTicketNumber,
               source: 'EMAIL',
+              senderType: isOrganisation ? 'ORGANISATION' : 'INDIVIDUAL',
               name: fromName,
               email: fromEmail,
               subject: subject,

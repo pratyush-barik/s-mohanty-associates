@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
+import { sendMail } from '@/lib/mail';
 
 /**
  * Assign a Field Employee and Report Employee to a Project.
@@ -465,6 +466,7 @@ export async function finalizeReport(projectId: string, pdfUrl: string) {
       where: { id: projectId },
       include: { serviceRequest: true }
     });
+    if (!project) return { error: 'Project not found.' };
 
     await prisma.report.update({
       where: { id: report.id },
@@ -483,22 +485,43 @@ export async function finalizeReport(projectId: string, pdfUrl: string) {
       }
     });
 
-    if (project?.serviceRequest?.contactEmail) {
-      const { sendMail } = await import('@/lib/mail');
-      await sendMail({
-        from: 'report@smohantyassociates.com',
-        to: project.serviceRequest.contactEmail,
-        subject: `Your Valuation Report is Ready [${project.projectCode}]`,
-        html: `
-          <div style="font-family: sans-serif; color: #333;">
-            <h2>Report Completed</h2>
-            <p>Dear ${project.serviceRequest.contactName},</p>
-            <p>Your property valuation report for <strong>${project.projectCode}</strong> has been successfully finalized.</p>
-            <p>Please log in to your client dashboard to download the official PDF copy of your report.</p>
-            <p>Thank you for choosing S. Mohanty Associates.</p>
-          </div>
-        `
-      });
+    if (project.isEmailOnly) {
+      if (project?.serviceRequest?.guestEmail) {
+        const { sendMail } = await import('@/lib/mail');
+        await sendMail({
+          from: 'report@smohantyassociates.com',
+          to: project.serviceRequest.guestEmail,
+          subject: `Your Valuation Report is Ready [${project.projectCode}]`,
+          html: `
+            <div style="font-family: sans-serif; color: #333;">
+              <h2>Report Completed</h2>
+              <p>Dear ${project.serviceRequest.guestName || 'Client'},</p>
+              <p>Your property valuation report for <strong>${project.projectCode}</strong> has been successfully finalized.</p>
+              <p>You can download the official PDF copy of your report from the secure link below:</p>
+              <p><a href="${pdfUrl}" style="display:inline-block;padding:10px 20px;background:#b8860b;color:#fff;text-decoration:none;border-radius:5px;">Download Report PDF</a></p>
+              <p>Thank you for choosing S. Mohanty Associates.</p>
+            </div>
+          `
+        });
+      }
+    } else {
+      if (project?.serviceRequest?.contactEmail) {
+        const { sendMail } = await import('@/lib/mail');
+        await sendMail({
+          from: 'report@smohantyassociates.com',
+          to: project.serviceRequest.contactEmail,
+          subject: `Your Valuation Report is Ready [${project.projectCode}]`,
+          html: `
+            <div style="font-family: sans-serif; color: #333;">
+              <h2>Report Completed</h2>
+              <p>Dear ${project.serviceRequest.contactName},</p>
+              <p>Your property valuation report for <strong>${project.projectCode}</strong> has been successfully finalized.</p>
+              <p>Please log in to your client dashboard to download the official PDF copy of your report.</p>
+              <p>Thank you for choosing S. Mohanty Associates.</p>
+            </div>
+          `
+        });
+      }
     }
 
     revalidatePath(`/portal/projects/${projectId}`);
@@ -817,5 +840,88 @@ export async function cancelManagerTransfer(projectId: string) {
   } catch (error) {
     console.error('Failed to cancel transfer:', error);
     return { error: 'Failed to cancel project transfer.' };
+  }
+}
+
+/**
+ * Owner: Create a manual case for an email-only client (guest).
+ */
+export async function createManualCase(formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: 'Unauthorized' };
+
+  const caller = await prisma.employee.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+
+  if (!caller || caller.role !== 'OWNER') {
+    return { error: 'Only owners can create manual cases.' };
+  }
+
+  const guestName = formData.get('guestName') as string;
+  const guestEmail = formData.get('guestEmail') as string;
+  const guestPhone = (formData.get('guestPhone') as string) || null;
+  const propertyType = formData.get('propertyType') as string;
+  const purpose = formData.get('purpose') as string;
+  const propertyAddress = formData.get('propertyAddress') as string;
+  const propertyDetails = formData.get('propertyDetails') as string;
+  const contactName = formData.get('contactName') as string;
+  const contactPhone = formData.get('contactPhone') as string;
+  const contactEmail = formData.get('contactEmail') as string;
+  const managerId = formData.get('managerId') as string;
+
+  try {
+    const sr = await prisma.serviceRequest.create({
+      data: {
+        guestName,
+        guestEmail,
+        guestPhone,
+        propertyType,
+        purpose,
+        propertyAddress,
+        propertyDetails,
+        contactName,
+        contactPhone,
+        contactEmail,
+        status: 'APPROVED',
+      }
+    });
+
+    const count = await prisma.project.count();
+    const projectCode = `SMA-${new Date().getFullYear()}-${String(count + 1).padStart(3, '0')}`;
+
+    const project = await prisma.project.create({
+      data: {
+        projectCode,
+        serviceRequestId: sr.id,
+        status: 'ASSIGNED',
+        isEmailOnly: true,
+        assignedManagerId: managerId,
+      }
+    });
+
+    // Send Welcome Email
+    const emailHtml = `
+      <h2>Welcome to S Mohanty Associates</h2>
+      <p>Dear ${guestName},</p>
+      <p>Your valuation request for <strong>${propertyType}</strong> has been successfully initiated.</p>
+      <p><strong>Project Code:</strong> ${projectCode}</p>
+      <p>Your case has been assigned to a manager and is now actively being processed. We will keep you updated via email at every major milestone.</p>
+      <p>Thank you for choosing S Mohanty Associates.</p>
+    `;
+
+    await sendMail({
+      to: guestEmail,
+      subject: `[Ticket #${projectCode}] Your Valuation Case has been Started`,
+      html: emailHtml,
+    });
+
+    revalidatePath('/portal/owner');
+    revalidatePath('/portal/projects');
+    return { success: true, projectId: project.id };
+  } catch (error) {
+    console.error('Failed to create manual case:', error);
+    return { error: 'Failed to create manual case.' };
   }
 }
