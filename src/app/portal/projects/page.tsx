@@ -3,7 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
-function formatStatus(status: string) {
+function formatStatus(status: string, clientReworkRequested?: boolean) {
+  if (clientReworkRequested) return 'CLIENT REWORK REQUESTED';
   if (status === 'ASSIGNED') return 'MANAGER ASSIGNED';
   return status.replace(/_/g, ' ');
 }
@@ -77,8 +78,8 @@ export default async function PortalProjectsPage() {
                     <p className="text-xs text-[#6c757d]">{project.serviceRequest.propertyType}</p>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs font-semibold">
-                      {formatStatus(project.status)}
+                    <span className={`px-2 py-1 rounded text-xs font-semibold ${project.clientReworkRequested ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'}`}>
+                      {formatStatus(project.status, project.clientReworkRequested)}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-[#6c757d]">

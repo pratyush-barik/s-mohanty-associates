@@ -31,6 +31,11 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
         reportEmployee: { select: { id: true, name: true, employeeId: true, mobile: true } },
         manager: { select: { id: true, name: true, employeeId: true, mobile: true } },
         report: true,
+        messages: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          where: { clientId: { not: null } },
+        },
       },
     });
 
@@ -92,8 +97,8 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                 ← Back
               </Link>
               <span className="text-[#dee2e6]">|</span>
-              <span className="px-2.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-200">
-                {project.status?.replace(/_/g, ' ') || 'UNKNOWN'}
+              <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold border ${project.clientReworkRequested ? 'bg-red-50 text-red-600 border-red-200' : 'bg-blue-50 text-blue-600 border-blue-200'}`}>
+                {project.clientReworkRequested ? 'CLIENT REWORK REQUESTED' : project.status?.replace(/_/g, ' ') || 'UNKNOWN'}
               </span>
             </div>
             <h1 className="text-2xl font-bold text-[#0f2038] font-mono">
@@ -101,6 +106,21 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
             </h1>
           </div>
         </div>
+
+        {/* Client Rework Banner */}
+        {project.clientReworkRequested && project.messages.length > 0 && (
+          <div className="card p-5 border border-red-200 bg-red-50 shadow-md">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-xl">⚠️</span>
+              <h2 className="text-sm font-bold text-red-800 uppercase tracking-wider">Client Rework Requested</h2>
+            </div>
+            <p className="text-xs text-red-700 mb-3 font-semibold">The client has reviewed the finalized report and requested the following changes:</p>
+            <div className="text-sm text-red-800 bg-white/70 p-4 rounded-lg border border-red-100 whitespace-pre-wrap">
+              {project.messages[0].content.replace('**Rework Request:** ', '')}
+            </div>
+            <p className="text-xs text-red-600 mt-3">Please review their request and either update the report yourself or send it back to the Report Agent.</p>
+          </div>
+        )}
 
         {/* 1) REQUEST AND ASSIGNMENT DETAILS */}
         <div className="card p-6">

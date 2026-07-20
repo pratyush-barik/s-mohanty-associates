@@ -356,7 +356,10 @@ export async function sendReportForRework(projectId: string, reworkComment?: str
 
     await prisma.project.update({
       where: { id: projectId },
-      data: { status: 'REPORT_DRAFTING' }
+      data: { 
+        status: 'REPORT_DRAFTING',
+        clientReworkRequested: false 
+      }
     });
 
     revalidatePath(`/portal/projects/${projectId}`);
@@ -392,7 +395,10 @@ export async function requestClientRework(projectId: string, message: string) {
     // Set project status back to MANAGER_REVIEW so manager can review the client's request
     await prisma.project.update({
       where: { id: projectId },
-      data: { status: 'MANAGER_REVIEW' }
+      data: { 
+        status: 'MANAGER_REVIEW',
+        clientReworkRequested: true 
+      }
     });
 
     // Save the client's request as a project message
@@ -471,7 +477,10 @@ export async function finalizeReport(projectId: string, pdfUrl: string) {
 
     await prisma.project.update({
       where: { id: projectId },
-      data: { status: 'COMPLETED' }
+      data: { 
+        status: 'COMPLETED',
+        clientReworkRequested: false
+      }
     });
 
     if (project?.serviceRequest?.contactEmail) {

@@ -69,7 +69,7 @@ We use two distinct portals to separate concerns:
 The core business logic is **100% complete**.
 
 1. **Intake Flow**: Client requests a valuation. A `Project` is created with `PENDING_REVIEW` status.
-2. **Assignment Flow**: Manager accepts the project and assigns a `FIELD_EMPLOYEE` and `REPORT_EMPLOYEE` via the `/portal/projects/[id]` dashboard.
+2. **Assignment Flow**: Manager accepts the project and assigns a `FIELD_EMPLOYEE` and `REPORT_EMPLOYEE` via the `/portal/projects/[id]` dashboard. Managers can assign agents to multiple projects simultaneously; active project counts are displayed as badges during assignment.
 3. **Inspection Flow**: Field agent sees assignment, views client details, gets Google Maps directions, and completes the inspection. Status updates to `INSPECTION_COMPLETED`.
 4. **Drafting Flow (Updated — July 2026)**: Report agent goes to "My Projects" (`/portal/my-projects`) to see pending work. They fill out a dynamic **14-section React form** in `src/app/portal/reports/[projectId]/ReportBuilder.tsx`. This form now fully matches the real-world Individual Client Bank Report template (based on the HDFC/SBI IBBI valuation sample PDF):
 
@@ -99,12 +99,14 @@ The core business logic is **100% complete**.
 
 5. **Manager Preview, Editing & Finalization Flow (Updated)**:
    - Manager reviews the drafted report via `ReportBuilder.tsx`. Can edit text fields and add/remove/replace photographs as needed.
-   - Manager can "Send for Rework" (reverts status to REPORT_DRAFTING) or "Finalize & Generate PDF".
+   - Manager can "Send for Rework" which opens a prompt to input specific rework instructions (reverts status to REPORT_DRAFTING) or "Finalize & Generate PDF".
+   - The Report Agent will see the Manager's rework comments highlighted at the top of the form when they resume drafting.
 6. **PDF Generation & Cleanup (Updated)**: PDF generation is fully implemented on the **Client-Side** (`html2canvas` + `jsPDF`), triggered during Manager Finalization.
    - Captures HTML layout, paginates it, downloads locally for manager, and uploads the final PDF blob to `reports/pdfs/` in the `valuation-documents` Supabase bucket.
    - **Automated Cleanup:** Upon finalization, all temporary property images in `temp-photos/${projectId}/` are deleted from Supabase, and the `propertyImages` array in the database JSON is cleared.
-7. **Navigation Updates (July 2026)**: Portal navigation labels updated — "My Reports" → "My Projects". Page titles updated accordingly.
-8. **Delivery**: Client downloads the PDF from their dashboard.
+7. **Client Rework Flow**: Clients can request changes to their finalized reports from their dashboard. The project status reverts to `MANAGER_REVIEW`, and the manager receives a rework comment message.
+8. **Navigation Updates (July 2026)**: Portal navigation labels updated — "My Reports" → "My Projects". Page titles updated accordingly.
+9. **Delivery**: Client downloads the PDF from their dashboard.
 
 ## 5. Pending Work (What is next)
 
@@ -145,6 +147,7 @@ Outstanding items in **priority order**:
 > When modifying the UI, prioritize modern, premium aesthetics (glassmorphism, clean typography, subtle animations) without relying on Tailwind component libraries like Shadcn. Use raw Tailwind classes.
 
 ## 7. Recent Git Commits (for reference)
+- `4ecdfa6` — feat: multi-assignment, rework flow, strict permissions, enquiry fixes
 - `4cc5f7e` — refactor: revert form UI to compact dropdowns, keep 3-column layout for PDF only
 - `250ddc4` — feat: auto-embed Google Maps in Location Map section from property address
 - `1f013d5` — Refactor ReportBuilder UI and logic to match sample PDF layout and fix pull back button state update

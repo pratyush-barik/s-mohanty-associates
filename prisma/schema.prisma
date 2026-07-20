@@ -186,6 +186,7 @@ model Project {
   projectCode      String        @unique // SMA-YYYY-NNN
   serviceRequestId String        @unique
   status           ProjectStatus @default(PENDING_REVIEW)
+  clientReworkRequested Boolean @default(false)
   assignedManagerId  String?
   pendingManagerId   String?
   reportEmployeeId   String?
