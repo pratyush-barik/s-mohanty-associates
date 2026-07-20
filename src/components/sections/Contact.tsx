@@ -128,10 +128,6 @@ export default function Contact() {
                       <span className="font-semibold block text-[#343a40]">Details / Management:</span>
                       <a href="mailto:manager@smohantyassociates.com" className="hover:text-[#b8860b] transition-colors">manager@smohantyassociates.com</a>
                     </li>
-                    <li>
-                      <span className="font-semibold block text-[#343a40]">Organisational Queries:</span>
-                      <a href="mailto:smohantyassociates@gmail.com" className="hover:text-[#b8860b] transition-colors">smohantyassociates@gmail.com</a>
-                    </li>
                   </ul>
                 </div>
               </div>
@@ -197,146 +193,130 @@ export default function Contact() {
                       <option value="ORGANISATION">Organisation</option>
                     </select>
                   </div>
-                </div>
-                {senderType === 'ORGANISATION' ? (
-                  <div className="sm:col-span-2 p-8 text-center bg-gradient-to-br from-[#1e3a5f]/5 to-[#b8860b]/5 rounded-xl border border-[#b8860b]/20">
-                      <h4 className="text-lg font-bold text-[#0f2038] mb-2" style={{ fontFamily: 'var(--font-heading)' }}>Organisational Requests</h4>
-                      <p className="text-sm text-[#495057] mb-6 max-w-sm mx-auto">
-                        For organisations, please submit your requirements directly via email. We will process your request and follow up immediately.
-                      </p>
-                      <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <a
-                          href="mailto:smohantyassociates@gmail.com?subject=New%20Case%3A%20Organisational%20Valuation%20Request&body=Organisation%3A%0AName%3A%0AEmail%3A%0APhone%3A%0ALocation%20%2F%20Address%3A%0ASubject%20%2F%20Property%20Type%3A%0AMessage%20%2F%20Details%3A%0A"
-                          className="btn btn-primary inline-flex items-center gap-2 px-8 py-3 w-full sm:w-auto justify-center shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
-                        >
-                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                          </svg>
-                          Email App (Outlook/Mail)
-                        </a>
-                        <a
-                          href="https://mail.google.com/mail/?view=cm&fs=1&to=smohantyassociates@gmail.com&su=New%20Case%3A%20Organisational%20Valuation%20Request&body=Organisation%3A%0AName%3A%0AEmail%3A%0APhone%3A%0ALocation%20%2F%20Address%3A%0ASubject%20%2F%20Property%20Type%3A%0AMessage%20%2F%20Details%3A%0A"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn bg-white text-[#0f2038] border border-[#dee2e6] inline-flex items-center gap-2 px-8 py-3 w-full sm:w-auto justify-center shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
-                        >
-                          <svg className="w-5 h-5 text-[#EA4335]" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.728L12 16.636l-6.545-4.908v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z" />
-                          </svg>
-                          Gmail Web
-                        </a>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="sm:col-span-2 space-y-5 mt-5">
-                      <div className="grid sm:grid-cols-2 gap-5">
-                        <div>
-                          <label htmlFor="contact-name" className="block text-sm font-medium text-[#343a40] mb-1.5">
-                            Full Name *
-                          </label>
-                          <input
-                            id="contact-name"
-                            type="text"
-                            required
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            className="w-full px-4 py-3 rounded-xl border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all"
-                            placeholder="John Doe"
-                          />
-                        </div>
-                        <div>
-                          <label htmlFor="contact-email" className="block text-sm font-medium text-[#343a40] mb-1.5">
-                            Email Address *
-                          </label>
-                          <input
-                            id="contact-email"
-                            type="email"
-                            required
-                            value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            className="w-full px-4 py-3 rounded-xl border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all"
-                            placeholder="john@example.com"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid sm:grid-cols-2 gap-5">
-                        <div>
-                          <label htmlFor="contact-phone" className="block text-sm font-medium text-[#343a40] mb-1.5">
-                            Phone Number
-                          </label>
-                          <input
-                            id="contact-phone"
-                            type="tel"
-                            value={formData.phone}
-                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                            className="w-full px-4 py-3 rounded-xl border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all"
-                            placeholder="+91 XXXXX XXXXX"
-                          />
-                        </div>
-                        <div>
-                          <label htmlFor="contact-subject" className="block text-sm font-medium text-[#343a40] mb-1.5">
-                            Subject *
-                          </label>
-                          <select
-                            id="contact-subject"
-                            required
-                            value={formData.subject}
-                            onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                            className="w-full px-4 py-3 rounded-xl border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all"
-                          >
-                            <option value="">Select a subject</option>
-                            <option value="property-valuation">Property Valuation</option>
-                            <option value="land-valuation">Land Valuation</option>
-                            <option value="building-valuation">Building Valuation</option>
-                            <option value="industrial-valuation">Industrial Valuation</option>
-                            <option value="bank-valuation">Bank Valuation</option>
-                            <option value="insurance-valuation">Insurance Valuation</option>
-                            <option value="government-valuation">Government Valuation</option>
-                            <option value="other">Other Inquiry</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label htmlFor="contact-message" className="block text-sm font-medium text-[#343a40] mb-1.5">
-                          Message *
-                        </label>
-                        <textarea
-                          id="contact-message"
-                          required
-                          rows={4}
-                          value={formData.message}
-                          onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                          className="w-full px-4 py-3 rounded-xl border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all resize-none"
-                          placeholder="Tell us about your valuation needs..."
-                        />
-                      </div>
-
-                      <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="btn btn-primary w-full sm:w-auto text-sm px-8 py-3 disabled:opacity-60 disabled:cursor-not-allowed"
-                      >
-                        {isSubmitting ? (
-                          <>
-                            <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
-                              <path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" fill="currentColor" className="opacity-75" />
-                            </svg>
-                            Sending...
-                          </>
-                        ) : (
-                          <>
-                            Send Message
-                            <svg className="w-4 h-4 inline-block ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                            </svg>
-                          </>
-                        )}
-                      </button>
+                  {senderType === 'ORGANISATION' && (
+                    <div>
+                      <label htmlFor="contact-org-name" className="block text-sm font-medium text-[#343a40] mb-1.5">
+                        Organisation Name *
+                      </label>
+                      <input
+                        id="contact-org-name"
+                        type="text"
+                        required
+                        value={formData.organisationName}
+                        onChange={(e) => setFormData({ ...formData, organisationName: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all"
+                        placeholder="e.g. Acme Corp"
+                      />
                     </div>
                   )}
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-5">
+                  <div>
+                    <label htmlFor="contact-name" className="block text-sm font-medium text-[#343a40] mb-1.5">
+                      Full Name *
+                    </label>
+                    <input
+                      id="contact-name"
+                      type="text"
+                      required
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all"
+                      placeholder="John Doe"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="contact-email" className="block text-sm font-medium text-[#343a40] mb-1.5">
+                      Email Address *
+                    </label>
+                    <input
+                      id="contact-email"
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all"
+                      placeholder="john@example.com"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-5">
+                  <div>
+                    <label htmlFor="contact-phone" className="block text-sm font-medium text-[#343a40] mb-1.5">
+                      Phone Number
+                    </label>
+                    <input
+                      id="contact-phone"
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all"
+                      placeholder="+91 XXXXX XXXXX"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="contact-subject" className="block text-sm font-medium text-[#343a40] mb-1.5">
+                      Subject *
+                    </label>
+                    <select
+                      id="contact-subject"
+                      required
+                      value={formData.subject}
+                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all"
+                    >
+                      <option value="">Select a subject</option>
+                      <option value="property-valuation">Property Valuation</option>
+                      <option value="land-valuation">Land Valuation</option>
+                      <option value="building-valuation">Building Valuation</option>
+                      <option value="industrial-valuation">Industrial Valuation</option>
+                      <option value="bank-valuation">Bank Valuation</option>
+                      <option value="insurance-valuation">Insurance Valuation</option>
+                      <option value="government-valuation">Government Valuation</option>
+                      <option value="other">Other Inquiry</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="contact-message" className="block text-sm font-medium text-[#343a40] mb-1.5">
+                    Message *
+                  </label>
+                  <textarea
+                    id="contact-message"
+                    required
+                    rows={4}
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all resize-none"
+                    placeholder="Tell us about your valuation needs..."
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="btn btn-primary w-full sm:w-auto text-sm px-8 py-3 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
+                        <path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" fill="currentColor" className="opacity-75" />
+                      </svg>
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      Send Message
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                      </svg>
+                    </>
+                  )}
+                </button>
               </form>
             </div>
 

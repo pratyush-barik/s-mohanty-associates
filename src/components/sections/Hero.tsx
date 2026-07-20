@@ -123,13 +123,27 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.8 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20"
         >
-          <button onClick={scrollToContact} className="btn btn-primary text-base px-8 py-3.5">
-            Request a Service
+          <a
+            href="https://mail.google.com/mail/?view=cm&fs=1&to=smohantyassociates@gmail.com&su=New%20Case%3A%20Service%20Request&body=Organisation%3A%0AName%3A%0AEmail%3A%0APhone%3A%0ALocation%20%2F%20Address%3A%0ASubject%20%2F%20Property%20Type%3A%0AMessage%20%2F%20Details%3A%0A"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-primary text-base px-6 py-3.5 flex items-center gap-2"
+          >
+            Request via Gmail
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>
-          </button>
-          <button onClick={scrollToAbout} className="btn btn-secondary text-base px-8 py-3.5">
+          </a>
+          <a
+            href="mailto:smohantyassociates@gmail.com?subject=New%20Case%3A%20Service%20Request&body=Organisation%3A%0AName%3A%0AEmail%3A%0APhone%3A%0ALocation%20%2F%20Address%3A%0ASubject%20%2F%20Property%20Type%3A%0AMessage%20%2F%20Details%3A%0A"
+            className="btn btn-primary text-base px-6 py-3.5 flex items-center gap-2"
+          >
+            Request via Mail App
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </a>
+          <button onClick={scrollToAbout} className="btn btn-secondary text-base px-6 py-3.5">
             Learn More
           </button>
         </motion.div>
