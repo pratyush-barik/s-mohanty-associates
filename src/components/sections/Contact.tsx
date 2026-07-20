@@ -205,7 +205,7 @@ export default function Contact() {
                         For organisations, please submit your requirements directly via email. We will process your request and follow up immediately.
                       </p>
                       <a
-                        href="mailto:smohantyassociates@gmail.com?subject=New%20Case%3A%20Organisational%20Valuation%20Request&body=Organisation%3A%0AName%3A%0AEmail%3A%0APhone%3A%0ALocation%20%2F%20Address%3A%0ASubject%20%2F%20Property%20Type%3A%0AMessage%20%2F%20Details%3A%0A"
+                        href="https://mail.google.com/mail/?view=cm&fs=1&to=smohantyassociates@gmail.com&su=New%20Case%3A%20Organisational%20Valuation%20Request&body=Organisation%3A%0AName%3A%0AEmail%3A%0APhone%3A%0ALocation%20%2F%20Address%3A%0ASubject%20%2F%20Property%20Type%3A%0AMessage%20%2F%20Details%3A%0A"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="btn btn-primary inline-flex items-center gap-2 px-8 py-3 w-full sm:w-auto justify-center shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
