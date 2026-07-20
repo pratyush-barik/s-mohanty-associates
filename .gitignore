@@ -78,3 +78,6 @@ next-env.d.ts
 
 # Ignore sample reports folder
 individual clients (Bank Reports)/
+
+# Sensitive employee data (do NOT push)
+cleaned_employee_data/
