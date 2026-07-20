@@ -53,7 +53,9 @@ export default async function ManagerDashboard() {
     }),
   ]);
   
-  const assignedProjects = managerProjects.slice(0, 5);
+  const assignedProjects = managerProjects
+    .filter((p) => !['COMPLETED', 'ARCHIVED'].includes(p.status))
+    .slice(0, 5);
   const stats = {
     total: managerProjects.length,
     active: managerProjects.filter((p) => !['COMPLETED', 'ARCHIVED'].includes(p.status)).length,
@@ -90,7 +92,7 @@ export default async function ManagerDashboard() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="card p-5">
-          <p className="text-xs font-medium text-[#6c757d] uppercase tracking-wider mb-1">My Managed Projects</p>
+          <p className="text-xs font-medium text-[#6c757d] uppercase tracking-wider mb-1">Total Projects</p>
           <p className="text-3xl font-bold text-[#0f2038]" style={{ fontFamily: 'var(--font-heading)' }}>{stats.total}</p>
         </div>
         <div className="card p-5">
@@ -126,7 +128,7 @@ export default async function ManagerDashboard() {
       {assignedProjects.length > 0 && (
         <div className="card p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-[#0f2038]" style={{ fontFamily: 'var(--font-heading)' }}>My Managed Projects</h2>
+            <h2 className="text-lg font-bold text-[#0f2038]" style={{ fontFamily: 'var(--font-heading)' }}>Active Projects</h2>
             <Link href="/portal/projects" className="text-sm text-[#b8860b] hover:underline font-medium">View All →</Link>
           </div>
           <div className="space-y-3">

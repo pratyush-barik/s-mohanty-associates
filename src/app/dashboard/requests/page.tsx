@@ -10,6 +10,7 @@ const statusColors: Record<string, string> = {
 };
 
 function formatStatus(status: string) {
+  if (status === 'SUBMITTED') return 'Requested';
   return status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
 }
 

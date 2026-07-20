@@ -52,7 +52,9 @@ export default async function OwnerDashboard() {
     }),
   ]);
   
-  const assignedProjects = allProjects.slice(0, 5);
+  const assignedProjects = allProjects
+    .filter((p) => !['COMPLETED', 'ARCHIVED'].includes(p.status))
+    .slice(0, 5);
   const stats = {
     total: allProjects.length,
     active: allProjects.filter((p) => !['COMPLETED', 'ARCHIVED'].includes(p.status)).length,
@@ -125,7 +127,7 @@ export default async function OwnerDashboard() {
       {assignedProjects.length > 0 && (
         <div className="card p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-[#0f2038]" style={{ fontFamily: 'var(--font-heading)' }}>Recent Projects Overview</h2>
+            <h2 className="text-lg font-bold text-[#0f2038]" style={{ fontFamily: 'var(--font-heading)' }}>Active Projects</h2>
             <Link href="/portal/projects" className="text-sm text-[#b8860b] hover:underline font-medium">View All →</Link>
           </div>
           <div className="space-y-3">

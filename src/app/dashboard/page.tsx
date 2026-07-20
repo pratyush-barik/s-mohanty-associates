@@ -18,6 +18,8 @@ const statusColors: Record<string, string> = {
 };
 
 function formatStatus(status: string) {
+  if (status === 'SUBMITTED' || status === 'PENDING_REVIEW') return 'Requested';
+  if (status === 'ASSIGNED') return 'Manager Assigned';
   return status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
 }
 
@@ -25,25 +27,18 @@ export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user?.id) return null;
 
-  const [requests, projects] = await Promise.all([
-    prisma.serviceRequest.findMany({
-      where: { clientId: session.user.id },
-      orderBy: { createdAt: 'desc' },
-      take: 5,
-    }),
-    prisma.project.findMany({
-      where: { serviceRequest: { clientId: session.user.id } },
-      include: {
-        serviceRequest: true,
-        manager: { select: { name: true, email: true, profilePhoto: true } },
-        fieldEmployees: { select: { name: true, email: true, profilePhoto: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 5,
-    }),
-  ]);
+  const projects = await prisma.project.findMany({
+    where: { serviceRequest: { clientId: session.user.id } },
+    include: {
+      serviceRequest: true,
+      manager: { select: { name: true, email: true, profilePhoto: true } },
+      fieldEmployees: { select: { name: true, email: true, profilePhoto: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
 
   const activeProjects = projects.filter((p: any) => p.status !== 'ARCHIVED' && p.status !== 'COMPLETED');
+  const requestCount = await prisma.serviceRequest.count({ where: { clientId: session.user.id } });
 
   return (
     <div className="space-y-8">
@@ -67,7 +62,7 @@ export default async function DashboardPage() {
         <div className="card p-5">
           <p className="text-xs font-medium text-[#6c757d] uppercase tracking-wider mb-1">Total Requests</p>
           <p className="text-3xl font-bold text-[#0f2038]" style={{ fontFamily: 'var(--font-heading)' }}>
-            {requests.length}
+            {requestCount}
           </p>
         </div>
         <div className="card p-5">
@@ -82,46 +77,6 @@ export default async function DashboardPage() {
             {projects.filter((p: any) => p.status === 'COMPLETED').length}
           </p>
         </div>
-      </div>
-
-      {/* Recent Requests */}
-      <div className="card p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-[#0f2038]" style={{ fontFamily: 'var(--font-heading)' }}>
-            Recent Requests
-          </h2>
-          <Link href="/dashboard/requests" className="text-sm text-[#b8860b] hover:underline font-medium">
-            View All →
-          </Link>
-        </div>
-
-        {requests.length === 0 ? (
-          <div className="text-center py-10">
-            <p className="text-[#6c757d] text-sm mb-4">You haven&apos;t submitted any service requests yet.</p>
-            <Link href="/dashboard/request" className="btn btn-primary text-sm px-6 py-2.5">
-              Submit Your First Request
-            </Link>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {requests.map((req: any) => (
-              <div key={req.id} className="flex items-center justify-between p-4 rounded-xl bg-[#f8f9fa] border border-[#e9ecef] hover:border-[#b8860b]/30 transition-colors">
-                <div>
-                  <p className="text-sm font-medium text-[#0f2038]">{req.propertyType} — {req.purpose}</p>
-                  <p className="text-xs text-[#6c757d] mt-0.5">{req.propertyAddress.substring(0, 60)}...</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium border ${statusColors[req.status]}`}>
-                    {formatStatus(req.status)}
-                  </span>
-                  <span className="text-xs text-[#adb5bd]">
-                    {new Date(req.createdAt).toLocaleDateString('en-IN')}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Active Projects */}

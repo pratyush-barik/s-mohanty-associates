@@ -20,6 +20,7 @@ const statusSteps = [
 ];
 
 function formatStatus(status: string) {
+  if (status === 'ASSIGNED') return 'Manager Assigned';
   return status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
 }
 
