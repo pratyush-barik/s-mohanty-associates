@@ -128,6 +128,10 @@ export default function Contact() {
                       <span className="font-semibold block text-[#343a40]">Details / Management:</span>
                       <a href="mailto:manager@smohantyassociates.com" className="hover:text-[#b8860b] transition-colors">manager@smohantyassociates.com</a>
                     </li>
+                    <li>
+                      <span className="font-semibold block text-[#343a40]">Organisational Queries:</span>
+                      <a href="mailto:smohantyassociates@gmail.com" className="hover:text-[#b8860b] transition-colors">smohantyassociates@gmail.com</a>
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -201,7 +205,9 @@ export default function Contact() {
                         For organisations, please submit your requirements directly via email. We will process your request and follow up immediately.
                       </p>
                       <a
-                        href="mailto:smohantyassociates@gmail.com?subject=New%20Case%3A%20Organisational%20Valuation%20Request&body=organisation%3A%0Aname%3A%0Alocation%3A%0A"
+                        href="mailto:smohantyassociates@gmail.com?subject=New%20Case%3A%20Organisational%20Valuation%20Request&body=Organisation%3A%0AName%3A%0AEmail%3A%0APhone%3A%0ALocation%20%2F%20Address%3A%0ASubject%20%2F%20Property%20Type%3A%0AMessage%20%2F%20Details%3A%0A"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="btn btn-primary inline-flex items-center gap-2 px-8 py-3 w-full sm:w-auto justify-center shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
                       >
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
