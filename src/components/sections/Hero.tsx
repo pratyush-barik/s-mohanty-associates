@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { gsap } from 'gsap';
 import AnimatedCounter from '@/components/ui/AnimatedCounter';
@@ -13,6 +13,7 @@ const stats = [
 ];
 
 export default function Hero() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const parallaxRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
 
@@ -123,27 +124,13 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.8 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20"
         >
-          <a
-            href="https://mail.google.com/mail/?view=cm&fs=1&to=smohantyassociates@gmail.com&su=New%20Case%3A%20Service%20Request&body=Organisation%3A%0AName%3A%0AEmail%3A%0APhone%3A%0ALocation%20%2F%20Address%3A%0ASubject%20%2F%20Property%20Type%3A%0AMessage%20%2F%20Details%3A%0A"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn btn-primary text-base px-6 py-3.5 flex items-center gap-2"
-          >
-            Request via Gmail
+          <button onClick={() => setIsModalOpen(true)} className="btn btn-primary text-base px-8 py-3.5 flex items-center gap-2">
+            Submit Organisational Request
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>
-          </a>
-          <a
-            href="mailto:smohantyassociates@gmail.com?subject=New%20Case%3A%20Service%20Request&body=Organisation%3A%0AName%3A%0AEmail%3A%0APhone%3A%0ALocation%20%2F%20Address%3A%0ASubject%20%2F%20Property%20Type%3A%0AMessage%20%2F%20Details%3A%0A"
-            className="btn btn-primary text-base px-6 py-3.5 flex items-center gap-2"
-          >
-            Request via Mail App
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-          </a>
-          <button onClick={scrollToAbout} className="btn btn-secondary text-base px-6 py-3.5">
+          </button>
+          <button onClick={scrollToAbout} className="btn btn-secondary text-base px-8 py-3.5">
             Learn More
           </button>
         </motion.div>
@@ -191,6 +178,71 @@ export default function Hero() {
           </div>
         </motion.div>
       </motion.div>
+
+      {/* Email Client Selection Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-2xl relative"
+          >
+            <button 
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
+            <h3 className="text-xl font-bold text-[#0f2038] mb-2" style={{ fontFamily: 'var(--font-heading)' }}>
+              Choose Email Client
+            </h3>
+            <p className="text-sm text-[#495057] mb-8">
+              Select how you would like to send your organisational request.
+            </p>
+            
+            <div className="flex flex-col gap-4">
+              <a
+                href="https://mail.google.com/mail/?view=cm&fs=1&to=smohantyassociates@gmail.com&su=New%20Case%3A%20Service%20Request&body=Organisation%3A%0AName%3A%0AEmail%3A%0APhone%3A%0ALocation%20%2F%20Address%3A%0ASubject%20%2F%20Property%20Type%3A%0AMessage%20%2F%20Details%3A%0A"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setIsModalOpen(false)}
+                className="w-full flex items-center justify-center gap-3 py-4 rounded-xl border-2 border-[#dee2e6] hover:border-[#EA4335] hover:bg-[#EA4335]/5 transition-all text-[#0f2038] font-medium"
+              >
+                <svg className="w-6 h-6 text-[#EA4335]" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.728L12 16.636l-6.545-4.908v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z" />
+                </svg>
+                Open in Gmail Web
+              </a>
+              <a
+                href="https://outlook.live.com/mail/0/deeplink/compose?to=smohantyassociates@gmail.com&subject=New%20Case%3A%20Service%20Request&body=Organisation%3A%0AName%3A%0AEmail%3A%0APhone%3A%0ALocation%20%2F%20Address%3A%0ASubject%20%2F%20Property%20Type%3A%0AMessage%20%2F%20Details%3A%0A"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setIsModalOpen(false)}
+                className="w-full flex items-center justify-center gap-3 py-4 rounded-xl border-2 border-[#dee2e6] hover:border-[#0078D4] hover:bg-[#0078D4]/5 transition-all text-[#0f2038] font-medium"
+              >
+                <svg className="w-6 h-6 text-[#0078D4]" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.18 14.7c-2.3.96-4.96.9-6.85-.43l5.5-5.5v3.42c0 .94-.52 1.8-1.35 2.21-.18.1-.38.17-.58.21l3.28 3.28v-3.19zM12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z" />
+                  <path d="M13 7h-2v5.41l4.29 4.29 1.41-1.41L13 11.59z" />
+                </svg>
+                Open in Outlook Web
+              </a>
+              <a
+                href="mailto:smohantyassociates@gmail.com?subject=New%20Case%3A%20Service%20Request&body=Organisation%3A%0AName%3A%0AEmail%3A%0APhone%3A%0ALocation%20%2F%20Address%3A%0ASubject%20%2F%20Property%20Type%3A%0AMessage%20%2F%20Details%3A%0A"
+                onClick={() => setIsModalOpen(false)}
+                className="w-full flex items-center justify-center gap-3 py-4 rounded-xl border-2 border-[#dee2e6] hover:border-[#495057] hover:bg-[#495057]/5 transition-all text-[#0f2038] font-medium"
+              >
+                <svg className="w-6 h-6 text-[#495057]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                Open in Default Mail App
+              </a>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </section>
   );
 }
