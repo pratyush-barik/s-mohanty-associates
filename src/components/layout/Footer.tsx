@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 
 const quickLinks = [
@@ -40,18 +41,14 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand Column */}
           <div className="lg:col-span-1">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#b8860b] to-[#c9952c] flex items-center justify-center font-bold text-lg text-white">
-                S
-              </div>
-              <div>
-                <div className="font-bold text-lg text-white" style={{ fontFamily: 'var(--font-heading)' }}>
-                  S Mohanty
-                </div>
-                <div className="text-[10px] uppercase tracking-[0.2em] text-[#ffcb47] font-medium">
-                  Associates
-                </div>
-              </div>
+            <div className="mb-5">
+              <Image
+                src="/smohantyassociate_logo.svg"
+                alt="S Mohanty Associates"
+                width={200}
+                height={50}
+                className="h-10 w-auto object-contain brightness-0 invert opacity-90"
+              />
             </div>
             <p className="text-white/50 text-sm leading-relaxed mb-6">
               Government Registered Valuers and Chartered Engineers providing expert property valuation services across India since 1995.

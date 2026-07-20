@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const navLinks = [
   { label: 'Home', href: '#home' },
@@ -173,26 +174,19 @@ export default function Navbar({ user }: NavbarProps) {
         <div className="container mx-auto max-w-[1280px] px-6">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-3 group">
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg transition-all duration-300 ${
-                isScrolled
-                  ? 'bg-gradient-to-br from-[#b8860b] to-[#c9952c] text-white'
-                  : 'bg-white/10 backdrop-blur text-white border border-white/20'
-              }`}>
-                S
-              </div>
-              <div>
-                <div className={`font-bold text-lg leading-tight transition-colors duration-300 ${
-                  isScrolled ? 'text-[#0f2038]' : 'text-white'
-                }`} style={{ fontFamily: 'var(--font-heading)' }}>
-                  S Mohanty
-                </div>
-                <div className={`text-[10px] uppercase tracking-[0.2em] font-medium transition-colors duration-300 ${
-                  isScrolled ? 'text-[#b8860b]' : 'text-[#ffcb47]'
-                }`}>
-                  Associates
-                </div>
-              </div>
+            <Link href="/" className="flex items-center group">
+              <Image
+                src="/smohantyassociate_logo.svg"
+                alt="S Mohanty Associates"
+                width={220}
+                height={55}
+                priority
+                className={`h-12 w-auto object-contain transition-all duration-300 ${
+                  isScrolled
+                    ? 'brightness-75'
+                    : 'brightness-0 invert'
+                }`}
+              />
             </Link>
 
             {/* Desktop Navigation */}
