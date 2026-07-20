@@ -489,7 +489,7 @@ export async function finalizeReport(projectId: string, pdfUrl: string) {
       if (project?.serviceRequest?.guestEmail) {
         const { sendMail } = await import('@/lib/mail');
         await sendMail({
-          from: 'report@smohantyassociates.com',
+          from: process.env.GMAIL_SMTP_FROM || 'smohantyassociates@gmail.com',
           to: project.serviceRequest.guestEmail,
           subject: `Your Valuation Report is Ready [${project.projectCode}]`,
           html: `
@@ -912,6 +912,7 @@ export async function createManualCase(formData: FormData) {
     `;
 
     await sendMail({
+      from: process.env.GMAIL_SMTP_FROM || 'smohantyassociates@gmail.com',
       to: guestEmail,
       subject: `[Ticket #${projectCode}] Your Valuation Case has been Started`,
       html: emailHtml,

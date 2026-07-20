@@ -1,11 +1,18 @@
 import nodemailer from 'nodemailer';
 
 export async function sendMail({ to, subject, html, from }: { to: string; subject: string; html: string; from?: string }) {
-  const host = process.env.SMTP_HOST;
-  const port = process.env.SMTP_PORT;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-  const defaultFrom = process.env.SMTP_FROM || 'no-reply@smohantyassociates.com';
+  // Determine if we should use Gmail or Standard SMTP based on sender email
+  const isGmailSender = from === process.env.GMAIL_SMTP_FROM;
+
+  const host = isGmailSender ? process.env.GMAIL_SMTP_HOST : process.env.SMTP_HOST;
+  const port = isGmailSender ? process.env.GMAIL_SMTP_PORT : process.env.SMTP_PORT;
+  const user = isGmailSender ? process.env.GMAIL_SMTP_USER : process.env.SMTP_USER;
+  const pass = isGmailSender ? process.env.GMAIL_SMTP_PASS : process.env.SMTP_PASS;
+  
+  const defaultFrom = isGmailSender 
+    ? process.env.GMAIL_SMTP_FROM 
+    : (process.env.SMTP_FROM || 'no-reply@smohantyassociates.com');
+  
   const senderEmail = from || defaultFrom;
 
   if (!host || !port || !user || !pass) {
@@ -35,7 +42,7 @@ export async function sendMail({ to, subject, html, from }: { to: string; subjec
 
     return { success: true };
   } catch (error) {
-    console.error('Failed to send mail:', error);
+    console.error(`Failed to send mail from ${senderEmail}:`, error);
     return { error: 'Failed to send mail.' };
   }
 }

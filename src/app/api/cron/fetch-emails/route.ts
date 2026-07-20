@@ -3,47 +3,26 @@ import { ImapFlow } from 'imapflow';
 import { simpleParser } from 'mailparser';
 import { prisma } from '@/lib/prisma';
 
-// This is required to force Next.js to treat this as an API route, not statically generated.
 export const dynamic = 'force-dynamic';
 
-export async function GET(request: Request) {
-  // Validate authorization (for the cron job to call securely)
-  const authHeader = request.headers.get('authorization');
-  const cronSecret = process.env.CRON_SECRET;
-  
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const host = process.env.IMAP_HOST; // e.g. imap.secureserver.net (GoDaddy)
-  const port = parseInt(process.env.IMAP_PORT || '993', 10);
-  const user = process.env.IMAP_USER;
-  const pass = process.env.IMAP_PASS;
-
-  if (!host || !user || !pass) {
-    return NextResponse.json({ error: 'IMAP configuration missing.' }, { status: 500 });
-  }
-
+async function processInbox(host: string, port: number, user: string, pass: string) {
   const client = new ImapFlow({
     host,
     port,
-    secure: port === 993,
+    secure: port === 993 || port === 465,
     auth: { user, pass },
     logger: false,
   });
 
+  let processedCount = 0;
+
   try {
     await client.connect();
-
-    // Select the INBOX and lock it for processing
     const lock = await client.getMailboxLock('INBOX');
     
     try {
-      // Search for Unread emails
       const messages = (await client.search({ seen: false })) || [];
       
-      let processedCount = 0;
-
       for (const seq of messages) {
         const messageStream = await client.download(seq);
         const parsedEmail = await simpleParser(messageStream as any);
@@ -53,12 +32,10 @@ export async function GET(request: Request) {
         const fromName = parsedEmail.from?.value[0]?.name || 'Unknown User';
         const bodyText = parsedEmail.text || '';
 
-        // Extract [Ticket #SMA-123] from the subject line
         const ticketMatch = subject.match(/\[Ticket\s+#(SMA-[A-Z0-9\-]+)\]/i);
         const ticketNumber = ticketMatch ? ticketMatch[1] : null;
 
         if (ticketNumber) {
-          // Scenario 1: Reply to existing ticket
           const existingEnquiry = await prisma.enquiry.findUnique({
             where: { ticketNumber },
           });
@@ -74,12 +51,10 @@ export async function GET(request: Request) {
 
             await prisma.enquiry.update({
               where: { id: existingEnquiry.id },
-              data: { status: 'NEW' }, // Mark as new so manager knows client replied
+              data: { status: 'NEW' },
             });
           }
         } else {
-          // Scenario 2: Direct cold email to info@
-          // Create new Ticket
           const count = await prisma.enquiry.count();
           const newTicketNumber = `SMA-${100 + count + 1}`;
 
@@ -103,25 +78,56 @@ export async function GET(request: Request) {
               },
             },
           });
-
-          // (Optional) We could send an auto-reply here using our sendMail function
-          // "We've received your enquiry [Ticket #SMA-...]"
-          // Let's omit it from the cron so it doesn't loop auto-replies to spammers.
         }
 
-        // Mark the email as seen so we don't process it again
         await client.messageFlagsAdd({ seq }, ['\\Seen']);
         processedCount++;
       }
-
-      return NextResponse.json({ success: true, processedCount });
     } finally {
       lock.release();
     }
   } catch (error: any) {
-    console.error('IMAP Error:', error);
-    return NextResponse.json({ error: error.message || 'IMAP Error' }, { status: 500 });
+    console.error(`IMAP Error for ${user}:`, error);
   } finally {
-    await client.logout();
+    try {
+      await client.logout();
+    } catch (e) {
+      // Ignore logout errors
+    }
   }
+
+  return processedCount;
+}
+
+export async function GET(request: Request) {
+  const authHeader = request.headers.get('authorization');
+  const cronSecret = process.env.CRON_SECRET;
+  
+  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const titanHost = process.env.IMAP_HOST;
+  const titanPort = parseInt(process.env.IMAP_PORT || '993', 10);
+  const titanUser = process.env.IMAP_USER;
+  const titanPass = process.env.IMAP_PASS;
+
+  const gmailHost = process.env.GMAIL_IMAP_HOST;
+  const gmailPort = parseInt(process.env.GMAIL_IMAP_PORT || '993', 10);
+  const gmailUser = process.env.GMAIL_IMAP_USER;
+  const gmailPass = process.env.GMAIL_IMAP_PASS;
+
+  let totalProcessed = 0;
+
+  // Process Titan Inbox
+  if (titanHost && titanUser && titanPass) {
+    totalProcessed += await processInbox(titanHost, titanPort, titanUser, titanPass);
+  }
+
+  // Process Gmail Inbox
+  if (gmailHost && gmailUser && gmailPass) {
+    totalProcessed += await processInbox(gmailHost, gmailPort, gmailUser, gmailPass);
+  }
+
+  return NextResponse.json({ success: true, processedCount: totalProcessed });
 }
