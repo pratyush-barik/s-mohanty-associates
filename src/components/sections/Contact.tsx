@@ -128,6 +128,10 @@ export default function Contact() {
                       <span className="font-semibold block text-[#343a40]">Details / Management:</span>
                       <a href="mailto:manager@smohantyassociates.com" className="hover:text-[#b8860b] transition-colors">manager@smohantyassociates.com</a>
                     </li>
+                    <li>
+                      <span className="font-semibold block text-[#343a40]">Organisational Queries:</span>
+                      <a href="#home" className="hover:text-[#b8860b] transition-colors" onClick={(e) => { e.preventDefault(); document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' }); }}>smohantyassociates@gmail.com</a>
+                    </li>
                   </ul>
                 </div>
               </div>
