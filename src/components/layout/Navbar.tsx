@@ -179,10 +179,10 @@ export default function Navbar({ user }: NavbarProps) {
                 <Image
                   src="/smohantyassociate_logo.svg"
                   alt="S Mohanty Associates"
-                  width={220}
-                  height={55}
+                  width={250}
+                  height={65}
                   priority
-                  className="h-10 w-auto object-contain transition-all duration-300"
+                  className="h-14 w-auto object-contain transition-all duration-300"
                 />
               </div>
             </Link>

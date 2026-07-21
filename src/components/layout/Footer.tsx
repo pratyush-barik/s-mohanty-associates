@@ -45,9 +45,9 @@ export default function Footer() {
               <Image
                 src="/smohantyassociate_logo.svg"
                 alt="S Mohanty Associates"
-                width={200}
-                height={50}
-                className="h-10 w-auto object-contain opacity-100"
+                width={250}
+                height={65}
+                className="h-14 w-auto object-contain opacity-100"
               />
             </div>
             <p className="text-white/50 text-sm leading-relaxed mb-6">
