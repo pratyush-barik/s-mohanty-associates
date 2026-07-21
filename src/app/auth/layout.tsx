@@ -24,10 +24,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <Image
               src="/smohantyassociate_logo.svg"
               alt="S Mohanty Associates"
-              width={350}
-              height={90}
+              width={1000}
+              height={250}
               priority
-              className="h-20 w-auto object-contain mx-auto"
+              className="h-32 sm:h-40 w-auto object-contain mx-auto"
             />
           </a>
         </div>
