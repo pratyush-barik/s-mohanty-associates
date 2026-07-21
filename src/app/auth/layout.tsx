@@ -20,14 +20,14 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="relative z-10 w-full max-w-md mx-auto px-6 py-12">
         {/* Logo */}
         <div className="text-center mb-8">
-          <a href="/" className="inline-block">
+          <a href="/" className="inline-block bg-white/95 px-5 py-2.5 rounded-2xl shadow-lg hover:shadow-xl transition-all">
             <Image
               src="/smohantyassociate_logo.svg"
               alt="S Mohanty Associates"
               width={250}
               height={60}
               priority
-              className="h-14 w-auto object-contain mx-auto"
+              className="h-12 w-auto object-contain mx-auto"
             />
           </a>
         </div>

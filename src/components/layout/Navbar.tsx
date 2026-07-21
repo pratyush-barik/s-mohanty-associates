@@ -175,14 +175,16 @@ export default function Navbar({ user }: NavbarProps) {
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <Link href="/" className="flex items-center group">
-              <Image
-                src="/smohantyassociate_logo.svg"
-                alt="S Mohanty Associates"
-                width={220}
-                height={55}
-                priority
-                className="h-12 w-auto object-contain transition-all duration-300"
-              />
+              <div className="bg-white/95 px-3 py-1.5 rounded-xl shadow-sm hover:shadow-md transition-all">
+                <Image
+                  src="/smohantyassociate_logo.svg"
+                  alt="S Mohanty Associates"
+                  width={220}
+                  height={55}
+                  priority
+                  className="h-10 w-auto object-contain transition-all duration-300"
+                />
+              </div>
             </Link>
 
             {/* Desktop Navigation */}
