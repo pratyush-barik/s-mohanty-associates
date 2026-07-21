@@ -114,10 +114,10 @@ export default async function FieldAgentDashboard() {
                   <p className="text-xs text-[#6c757d] mt-0.5">{project.serviceRequest.propertyType} • {project.serviceRequest.contactName}</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className={`px-3 py-1 rounded-none text-[10px] font-bold uppercase tracking-wider border ${agentStatusColor}`}>
+                  <span className={`px-3 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider border ${agentStatusColor}`}>
                     {agentStatusLabel}
                   </span>
-                  <span className={`px-3 py-1 rounded-none text-[10px] font-bold uppercase tracking-wider border ${statusColors[project.status] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+                  <span className={`px-3 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider border ${statusColors[project.status] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
                     {formatStatus(project.status)}
                   </span>
                 </div>
