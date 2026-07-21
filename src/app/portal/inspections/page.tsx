@@ -6,7 +6,7 @@ import Link from 'next/link';
 export default async function FieldAgentDashboard({
   searchParams,
 }: {
-  searchParams: { tab?: string };
+  searchParams: Promise<{ tab?: string, q?: string }>;
 }) {
   const session = await auth();
   if (!session?.user?.id) return null;
@@ -42,8 +42,9 @@ export default async function FieldAgentDashboard({
     orderBy: { createdAt: 'desc' }
   });
 
-  const tab = searchParams.tab || 'all';
-  const searchQ = searchParams.q || '';
+  const params = await searchParams;
+  const tab = params.tab || 'all';
+  const searchQ = params.q || '';
 
   const inspections = allInspections.filter((ins) => {
     // Tab filter
