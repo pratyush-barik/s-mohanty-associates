@@ -217,7 +217,7 @@ export default function Hero() {
                 Open in Gmail Web
               </a>
               <a
-                href="https://outlook.office.com/mail/deeplink/compose?mailtouri=mailto%3Asmohantyassociates%40gmail.com%3Fsubject%3DNew%20Case%3A%20Service%20Request%26body%3DOrganisation%3A%0AName%3A%0AEmail%3A%0APhone%3A%0ALocation%20%2F%20Address%3A%0ASubject%20%2F%20Property%20Type%3A%0AMessage%20%2F%20Details%3A%0A"
+                href="https://outlook.office.com/owa/?path=/mail/action/compose&to=smohantyassociates@gmail.com&subject=New%20Case%3A%20Service%20Request&body=Organisation%3A%0D%0AName%3A%0D%0AEmail%3A%0D%0APhone%3A%0D%0ALocation%20%2F%20Address%3A%0D%0ASubject%20%2F%20Property%20Type%3A%0D%0AMessage%20%2F%20Details%3A"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setIsModalOpen(false)}
