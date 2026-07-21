@@ -62,19 +62,25 @@ export default function InspectionsClient({
           <div className="flex items-center gap-1 bg-white p-1 rounded-md border border-[#e9ecef] shadow-sm w-full lg:w-auto overflow-x-auto">
             <button
               onClick={() => setTab('pending')}
-              className={px-4 py-1 rounded-sm text-[13px] font-medium transition-colors whitespace-nowrap }
+              className={`px-4 py-1 rounded-sm text-[13px] font-medium transition-colors whitespace-nowrap ${
+                tab === 'pending' ? 'bg-[#0f2038] text-white' : 'text-[#6c757d] hover:bg-gray-50'
+              }`}
             >
               Pending
             </button>
             <button
               onClick={() => setTab('completed')}
-              className={px-4 py-1 rounded-sm text-[13px] font-medium transition-colors whitespace-nowrap }
+              className={`px-4 py-1 rounded-sm text-[13px] font-medium transition-colors whitespace-nowrap ${
+                tab === 'completed' ? 'bg-[#0f2038] text-white' : 'text-[#6c757d] hover:bg-gray-50'
+              }`}
             >
               Completed
             </button>
             <button
               onClick={() => setTab('all')}
-              className={px-4 py-1 rounded-sm text-[13px] font-medium transition-colors whitespace-nowrap }
+              className={`px-4 py-1 rounded-sm text-[13px] font-medium transition-colors whitespace-nowrap ${
+                tab === 'all' ? 'bg-[#0f2038] text-white' : 'text-[#6c757d] hover:bg-gray-50'
+              }`}
             >
               All
             </button>
@@ -98,10 +104,14 @@ export default function InspectionsClient({
             <div key={inspection.id} className="card p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex-1">
                 <div className="flex flex-wrap items-center gap-2 mb-2">
-                  <span className={px-2.5 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-wider }>
+                  <span className={`px-2.5 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-wider ${agentStatusColor}`}>
                     {agentStatusLabel}
                   </span>
-                  <span className={px-2.5 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-wider }>
+                  <span className={`px-2.5 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-wider ${
+                    inspection.project.status.includes('COMPLETED') ? 'bg-blue-50 text-blue-700 border border-blue-200' : 
+                    inspection.project.status.includes('IN_PROGRESS') ? 'bg-orange-50 text-orange-700 border border-orange-200' :
+                    'bg-gray-50 text-gray-700 border border-gray-200'
+                  }`}>
                     {inspection.project.status.replace(/_/g, ' ')}
                   </span>
                 </div>
@@ -110,14 +120,14 @@ export default function InspectionsClient({
                 </h3>
                 <div className="flex items-center gap-2 text-xs text-[#6c757d]">
                   <span className="font-medium text-[#0f2038]">{inspection.project.serviceRequest.contactName}</span>
-                  <span>•</span>
+                  <span>â€¢</span>
                   <span>{inspection.project.serviceRequest.propertyType}</span>
                 </div>
               </div>
 
               <div className="flex-shrink-0 w-full md:w-auto mt-2 md:mt-0">
                 <Link
-                  href={/portal/inspections/}
+                  href={`/portal/inspections/${inspection.projectId}`}
                   className="btn btn-primary text-sm py-2 px-6 w-full md:w-auto text-center"
                 >
                   View Details
