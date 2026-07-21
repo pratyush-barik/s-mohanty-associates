@@ -47,7 +47,8 @@ export default async function FieldAgentDashboard({
 
   const inspections = allInspections.filter((ins) => {
     // Tab filter
-    const isCompleted = ins.completedFieldAgents.includes(userId) || ins.status === 'COMPLETED';
+    const finishedStatuses = ['INSPECTION_COMPLETED', 'REPORT_DRAFTING', 'MANAGER_REVIEW', 'COMPLETED', 'ARCHIVED'];
+    const isCompleted = ins.completedFieldAgents.includes(userId) || ins.status === 'COMPLETED' || finishedStatuses.includes(ins.project.status);
     let passesTab = true;
     if (tab === 'pending') passesTab = !isCompleted;
     if (tab === 'completed') passesTab = isCompleted;
@@ -125,7 +126,8 @@ export default async function FieldAgentDashboard({
           </div>
         ) : (
           inspections.map((inspection) => {
-            const isAgentCompleted = inspection.completedFieldAgents.includes(userId) || inspection.status === 'COMPLETED';
+            const finishedStatuses = ['INSPECTION_COMPLETED', 'REPORT_DRAFTING', 'MANAGER_REVIEW', 'COMPLETED', 'ARCHIVED'];
+            const isAgentCompleted = inspection.completedFieldAgents.includes(userId) || inspection.status === 'COMPLETED' || finishedStatuses.includes(inspection.project.status);
             const agentStatusLabel = isAgentCompleted ? 'INSPECTION COMPLETED' : 'PENDING INSPECTION';
             const agentStatusColor = isAgentCompleted ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200';
 

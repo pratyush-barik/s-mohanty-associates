@@ -48,10 +48,24 @@ export default async function FieldAgentDashboard() {
   });
   
   const assignedProjects = fieldProjects.slice(0, 5);
+  const finishedStatuses = ['INSPECTION_COMPLETED', 'REPORT_DRAFTING', 'MANAGER_REVIEW', 'COMPLETED', 'ARCHIVED'];
+  
+  let completedCount = 0;
+  let activeCount = 0;
+
+  fieldProjects.forEach((p) => {
+    const isAgentCompleted = p.inspection?.completedFieldAgents?.includes(session.user.id) || p.inspection?.status === 'COMPLETED' || finishedStatuses.includes(p.status);
+    if (isAgentCompleted) {
+      completedCount++;
+    } else {
+      activeCount++;
+    }
+  });
+
   const stats = {
     total: fieldProjects.length,
-    active: fieldProjects.filter((p) => ['ASSIGNED', 'INSPECTION_IN_PROGRESS'].includes(p.status)).length,
-    completed: fieldProjects.filter((p) => !['ASSIGNED', 'INSPECTION_IN_PROGRESS'].includes(p.status)).length,
+    active: activeCount,
+    completed: completedCount,
   };
 
   return (
@@ -103,7 +117,8 @@ export default async function FieldAgentDashboard() {
           </div>
           <div className="space-y-3">
             {assignedProjects.map((project) => {
-              const isAgentCompleted = project.inspection?.completedFieldAgents?.includes(session.user.id) || project.inspection?.status === 'COMPLETED';
+              const finishedStatuses = ['INSPECTION_COMPLETED', 'REPORT_DRAFTING', 'MANAGER_REVIEW', 'COMPLETED', 'ARCHIVED'];
+              const isAgentCompleted = project.inspection?.completedFieldAgents?.includes(session.user.id) || project.inspection?.status === 'COMPLETED' || finishedStatuses.includes(project.status);
               const agentStatusLabel = isAgentCompleted ? 'INSPECTION COMPLETED' : 'PENDING INSPECTION';
               const agentStatusColor = isAgentCompleted ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200';
               
