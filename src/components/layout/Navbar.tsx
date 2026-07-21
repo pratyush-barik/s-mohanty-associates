@@ -181,11 +181,7 @@ export default function Navbar({ user }: NavbarProps) {
                 width={220}
                 height={55}
                 priority
-                className={`h-12 w-auto object-contain transition-all duration-300 ${
-                  isScrolled
-                    ? 'brightness-75'
-                    : 'brightness-0 invert'
-                }`}
+                className="h-12 w-auto object-contain transition-all duration-300"
               />
             </Link>
 

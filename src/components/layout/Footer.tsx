@@ -47,7 +47,7 @@ export default function Footer() {
                 alt="S Mohanty Associates"
                 width={200}
                 height={50}
-                className="h-10 w-auto object-contain brightness-0 invert opacity-90"
+                className="h-10 w-auto object-contain opacity-90"
               />
             </div>
             <p className="text-white/50 text-sm leading-relaxed mb-6">

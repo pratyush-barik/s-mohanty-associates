@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 
 export const metadata: Metadata = {
   title: 'Authentication | S Mohanty Associates',
@@ -19,18 +20,15 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="relative z-10 w-full max-w-md mx-auto px-6 py-12">
         {/* Logo */}
         <div className="text-center mb-8">
-          <a href="/" className="inline-flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#b8860b] to-[#c9952c] flex items-center justify-center font-bold text-xl text-white">
-              S
-            </div>
-            <div className="text-left">
-              <div className="font-bold text-xl text-white" style={{ fontFamily: 'var(--font-heading)' }}>
-                S Mohanty
-              </div>
-              <div className="text-[10px] uppercase tracking-[0.2em] text-[#ffcb47] font-medium">
-                Associates
-              </div>
-            </div>
+          <a href="/" className="inline-block">
+            <Image
+              src="/smohantyassociate_logo.svg"
+              alt="S Mohanty Associates"
+              width={250}
+              height={60}
+              priority
+              className="h-14 w-auto object-contain mx-auto"
+            />
           </a>
         </div>
 
