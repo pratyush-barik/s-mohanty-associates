@@ -75,25 +75,27 @@ export default async function PortalLayout({ children }: { children: React.React
         <div className="px-4 py-5 border-b border-white/10">
           <div className="flex items-center gap-2 overflow-hidden">
             {/* Collapsed: show small square icon version */}
-            <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center group-hover:hidden">
+            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-white/95 flex items-center justify-center group-hover:hidden shadow-sm">
               <Image
                 src="/smohantyassociate_logo.svg"
                 alt="S Mohanty Associates"
                 width={28}
                 height={28}
-                className="w-7 h-7 object-contain brightness-0 invert"
+                className="w-7 h-7 object-contain"
               />
             </div>
             {/* Expanded: show full logo */}
             <div className="hidden group-hover:block opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-              <Image
-                src="/smohantyassociate_logo.svg"
-                alt="S Mohanty Associates"
-                width={160}
-                height={40}
-                className="h-9 w-auto object-contain brightness-0 invert"
-              />
-              <div className="text-[9px] uppercase tracking-[0.2em] text-[#ffcb47] font-medium mt-0.5">Employee Portal</div>
+              <div className="bg-white/95 px-3 py-1.5 rounded-xl shadow-sm inline-block">
+                <Image
+                  src="/smohantyassociate_logo.svg"
+                  alt="S Mohanty Associates"
+                  width={200}
+                  height={50}
+                  className="h-8 w-auto object-contain"
+                />
+              </div>
+              <div className="text-[9px] uppercase tracking-[0.2em] text-[#ffcb47] font-medium mt-1.5 ml-1">Employee Portal</div>
             </div>
           </div>
         </div>
