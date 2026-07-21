@@ -103,7 +103,7 @@ export default async function FieldAgentDashboard() {
           </div>
           <div className="space-y-3">
             {assignedProjects.map((project) => {
-              const isAgentCompleted = project.inspection?.completedFieldAgents?.includes(session.user.id);
+              const isAgentCompleted = project.inspection?.completedFieldAgents?.includes(session.user.id) || project.inspection?.status === 'COMPLETED';
               const agentStatusLabel = isAgentCompleted ? 'INSPECTION COMPLETED' : 'PENDING INSPECTION';
               const agentStatusColor = isAgentCompleted ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200';
               
@@ -114,10 +114,10 @@ export default async function FieldAgentDashboard() {
                   <p className="text-xs text-[#6c757d] mt-0.5">{project.serviceRequest.propertyType} • {project.serviceRequest.contactName}</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className={`px-3 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider border ${agentStatusColor}`}>
+                  <span className={`px-3 py-1 rounded-none text-[10px] font-bold uppercase tracking-wider border ${agentStatusColor}`}>
                     {agentStatusLabel}
                   </span>
-                  <span className={`px-3 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider border ${statusColors[project.status] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+                  <span className={`px-3 py-1 rounded-none text-[10px] font-bold uppercase tracking-wider border ${statusColors[project.status] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
                     {formatStatus(project.status)}
                   </span>
                 </div>

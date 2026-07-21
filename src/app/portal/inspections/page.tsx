@@ -47,7 +47,7 @@ export default async function FieldAgentDashboard({
 
   const inspections = allInspections.filter((ins) => {
     // Tab filter
-    const isCompleted = ins.completedFieldAgents.includes(userId);
+    const isCompleted = ins.completedFieldAgents.includes(userId) || ins.status === 'COMPLETED';
     let passesTab = true;
     if (tab === 'pending') passesTab = !isCompleted;
     if (tab === 'completed') passesTab = isCompleted;
@@ -125,7 +125,7 @@ export default async function FieldAgentDashboard({
           </div>
         ) : (
           inspections.map((inspection) => {
-            const isAgentCompleted = inspection.completedFieldAgents.includes(session.user.id);
+            const isAgentCompleted = inspection.completedFieldAgents.includes(userId) || inspection.status === 'COMPLETED';
             const agentStatusLabel = isAgentCompleted ? 'INSPECTION COMPLETED' : 'PENDING INSPECTION';
             const agentStatusColor = isAgentCompleted ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200';
 
@@ -133,10 +133,10 @@ export default async function FieldAgentDashboard({
             <div key={inspection.id} className="card p-6 flex flex-col h-full">
               <div className="flex flex-col gap-3 mb-4">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className={`px-3 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider ${agentStatusColor}`}>
+                  <span className={`px-3 py-1 rounded-none text-[10px] font-bold uppercase tracking-wider ${agentStatusColor}`}>
                     {agentStatusLabel}
                   </span>
-                  <span className={`px-3 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider ${
+                  <span className={`px-3 py-1 rounded-none text-[10px] font-bold uppercase tracking-wider ${
                     inspection.project.status.includes('COMPLETED') ? 'bg-blue-50 text-blue-700 border border-blue-200' : 
                     inspection.project.status.includes('IN_PROGRESS') ? 'bg-orange-50 text-orange-700 border border-orange-200' :
                     'bg-gray-50 text-gray-700 border border-gray-200'
