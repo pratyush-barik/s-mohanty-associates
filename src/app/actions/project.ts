@@ -117,7 +117,7 @@ export async function updateInspectionStatus(
   try {
     const inspection = await prisma.inspection.findUnique({
       where: { projectId },
-      include: { project: true }
+      include: { project: { include: { fieldEmployees: true } } }
     });
 
     if (!inspection) return { error: 'Inspection not found.' };
@@ -126,14 +126,22 @@ export async function updateInspectionStatus(
     const user = await prisma.employee.findUnique({ where: { id: session.user.id } });
     if (!user) return { error: 'Unauthorized' };
 
-    if (user.role === 'FIELD_EMPLOYEE' && inspection.employeeId !== session.user.id) {
+    if (user.role === 'FIELD_EMPLOYEE' && !inspection.project.fieldEmployees.some(emp => emp.id === session.user.id)) {
       return { error: 'You are not assigned to this inspection.' };
+    }
+
+    let updatedCompletedFieldAgents = inspection.completedFieldAgents || [];
+    if (status === 'COMPLETED' && !updatedCompletedFieldAgents.includes(session.user.id)) {
+      updatedCompletedFieldAgents = [...updatedCompletedFieldAgents, session.user.id];
+    } else if (status !== 'COMPLETED') {
+      updatedCompletedFieldAgents = updatedCompletedFieldAgents.filter(id => id !== session.user.id);
     }
 
     await prisma.inspection.update({
       where: { projectId },
       data: { 
         status,
+        completedFieldAgents: updatedCompletedFieldAgents,
         ...(notes && { notes })
       }
     });

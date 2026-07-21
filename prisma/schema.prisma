@@ -261,6 +261,7 @@ model Inspection {
   measurements Json?            // Structured measurement data
   notes        String?          @db.Text
   images       String[]         // Array of R2 URLs
+  completedFieldAgents String[] @default([]) // Array of employeeIds who have completed this inspection
   status       InspectionStatus @default(PENDING)
   scheduledDate DateTime?
   completedAt  DateTime?
