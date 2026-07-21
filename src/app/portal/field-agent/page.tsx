@@ -40,7 +40,10 @@ export default async function FieldAgentDashboard() {
         some: { id: session.user.id },
       },
     },
-    include: { serviceRequest: { select: { propertyType: true, contactName: true } } },
+    include: { 
+      serviceRequest: { select: { propertyType: true, contactName: true } },
+      inspection: { select: { completedFieldAgents: true } }
+    },
     orderBy: { createdAt: 'desc' },
   });
   
@@ -99,15 +102,28 @@ export default async function FieldAgentDashboard() {
             <Link href="/portal/inspections" className="text-sm text-[#b8860b] hover:underline font-medium">View All →</Link>
           </div>
           <div className="space-y-3">
-            {assignedProjects.map((project) => (
-              <div key={project.id} className="flex items-center justify-between p-4 rounded-xl bg-[#f8f9fa] border border-[#e9ecef] hover:border-[#b8860b]/30 transition-colors">
+            {assignedProjects.map((project) => {
+              const isAgentCompleted = project.inspection?.completedFieldAgents?.includes(session.user.id);
+              const agentStatusLabel = isAgentCompleted ? 'INSPECTION COMPLETED' : 'PENDING INSPECTION';
+              const agentStatusColor = isAgentCompleted ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200';
+              
+              return (
+              <div key={project.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#f8f9fa] border border-[#e9ecef] hover:border-[#b8860b]/30 transition-colors">
                 <div>
                   <p className="text-sm font-bold text-[#0f2038]">{project.projectCode}</p>
                   <p className="text-xs text-[#6c757d] mt-0.5">{project.serviceRequest.propertyType} • {project.serviceRequest.contactName}</p>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-xs font-medium border ${statusColors[project.status]}`}>{formatStatus(project.status)}</span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={`px-3 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider border ${agentStatusColor}`}>
+                    {agentStatusLabel}
+                  </span>
+                  <span className={`px-3 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider border ${statusColors[project.status] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+                    {formatStatus(project.status)}
+                  </span>
+                </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

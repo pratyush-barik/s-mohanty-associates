@@ -42,13 +42,23 @@ export default async function FieldAgentDashboard({
     orderBy: { createdAt: 'desc' }
   });
 
-  const tab = searchParams.tab || 'pending';
+  const tab = searchParams.tab || 'all';
+  const searchQ = searchParams.q || '';
 
   const inspections = allInspections.filter((ins) => {
+    // Tab filter
     const isCompleted = ins.completedFieldAgents.includes(userId);
-    if (tab === 'pending') return !isCompleted;
-    if (tab === 'completed') return isCompleted;
-    return true; // 'all'
+    let passesTab = true;
+    if (tab === 'pending') passesTab = !isCompleted;
+    if (tab === 'completed') passesTab = isCompleted;
+
+    // Search filter
+    let passesSearch = true;
+    if (searchQ) {
+      passesSearch = ins.project.projectCode.toLowerCase().includes(searchQ.toLowerCase());
+    }
+
+    return passesTab && passesSearch;
   });
 
   return (
@@ -62,31 +72,49 @@ export default async function FieldAgentDashboard({
             Manage your assigned field inspections.
           </p>
         </div>
-        <div className="flex items-center gap-2 bg-white p-1 rounded-md border border-[#e9ecef] shadow-sm">
-          <Link
-            href="/portal/inspections?tab=pending"
-            className={`px-4 py-1.5 rounded-sm text-sm font-medium transition-colors ${
-              tab === 'pending' ? 'bg-[#0f2038] text-white' : 'text-[#6c757d] hover:bg-gray-50'
-            }`}
-          >
-            Pending
-          </Link>
-          <Link
-            href="/portal/inspections?tab=completed"
-            className={`px-4 py-1.5 rounded-sm text-sm font-medium transition-colors ${
-              tab === 'completed' ? 'bg-[#0f2038] text-white' : 'text-[#6c757d] hover:bg-gray-50'
-            }`}
-          >
-            Completed
-          </Link>
-          <Link
-            href="/portal/inspections?tab=all"
-            className={`px-4 py-1.5 rounded-sm text-sm font-medium transition-colors ${
-              tab === 'all' ? 'bg-[#0f2038] text-white' : 'text-[#6c757d] hover:bg-gray-50'
-            }`}
-          >
-            All
-          </Link>
+        <div className="flex flex-col lg:flex-row items-center gap-3 w-full sm:w-auto mt-4 sm:mt-0">
+          {/* Search Form */}
+          <form method="GET" action="/portal/inspections" className="relative w-full lg:w-64">
+            <input type="hidden" name="tab" value={tab} />
+            <input 
+              type="text" 
+              name="q" 
+              defaultValue={searchQ}
+              placeholder="Search Project Code..." 
+              className="w-full pl-9 pr-4 py-1.5 bg-white border border-[#e9ecef] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 transition-shadow shadow-sm"
+            />
+            <svg className="w-4 h-4 text-[#6c757d] absolute left-3 top-[0.55rem]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </form>
+
+          {/* Tabs */}
+          <div className="flex items-center gap-1 bg-white p-1 rounded-md border border-[#e9ecef] shadow-sm w-full lg:w-auto overflow-x-auto">
+            <Link
+              href={`/portal/inspections?tab=pending${searchQ ? `&q=${searchQ}` : ''}`}
+              className={`px-4 py-1 rounded-sm text-[13px] font-medium transition-colors whitespace-nowrap ${
+                tab === 'pending' ? 'bg-[#0f2038] text-white' : 'text-[#6c757d] hover:bg-gray-50'
+              }`}
+            >
+              Pending
+            </Link>
+            <Link
+              href={`/portal/inspections?tab=completed${searchQ ? `&q=${searchQ}` : ''}`}
+              className={`px-4 py-1 rounded-sm text-[13px] font-medium transition-colors whitespace-nowrap ${
+                tab === 'completed' ? 'bg-[#0f2038] text-white' : 'text-[#6c757d] hover:bg-gray-50'
+              }`}
+            >
+              Completed
+            </Link>
+            <Link
+              href={`/portal/inspections?tab=all${searchQ ? `&q=${searchQ}` : ''}`}
+              className={`px-4 py-1 rounded-sm text-[13px] font-medium transition-colors whitespace-nowrap ${
+                tab === 'all' ? 'bg-[#0f2038] text-white' : 'text-[#6c757d] hover:bg-gray-50'
+              }`}
+            >
+              All
+            </Link>
+          </div>
         </div>
       </div>
 
