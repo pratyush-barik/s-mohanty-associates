@@ -173,7 +173,6 @@ export default function Navbar({ user }: NavbarProps) {
       >
         <div className="container mx-auto max-w-[1440px] pl-2 pr-6">
           <div className="flex items-center justify-between h-28">
-            {/* Logo */}
             <Link href="/" className="flex items-center group">
               <div className="bg-white/95 px-4 py-2 rounded-2xl shadow-sm hover:shadow-md transition-all -ml-2">
                 <Image
@@ -182,7 +181,8 @@ export default function Navbar({ user }: NavbarProps) {
                   width={800}
                   height={200}
                   priority
-                  className="h-20 sm:h-24 w-auto object-contain transition-all duration-300"
+                  unoptimized
+                  className="h-[60px] sm:h-[72px] w-auto object-contain transition-all duration-300"
                 />
               </div>
             </Link>

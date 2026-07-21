@@ -27,7 +27,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               width={1000}
               height={250}
               priority
-              className="h-32 sm:h-40 w-auto object-contain mx-auto"
+              unoptimized
+              className="h-[96px] sm:h-[120px] w-auto object-contain mx-auto"
             />
           </a>
         </div>
