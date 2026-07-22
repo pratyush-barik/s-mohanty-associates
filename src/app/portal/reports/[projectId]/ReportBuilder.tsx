@@ -702,7 +702,8 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     const optionRow = (label: string, opts: string[], val: string) => {
       const bg = '#DDEEF7'; // User requested entire row blue for option rows
       rowIdx++;
-      return `<tr style="background:${bg};"><td style="${lbl}font-weight:bold;color:#000000;" width="30%">${label}</td><td style="${optS}" width="32%">${opts.map(o => `<div style="border-bottom:1px solid #AAAAAA;padding:1px 4px;font-weight:bold;color:#000000;">${o}</div>`).join('')}</td><td style="${valS}font-weight:bold;color:#000000;">${val ? val : 'N/A'}</td></tr>`;
+      const innerTable = `<table style="width:100%;height:100%;border-collapse:collapse;">${opts.map((o, i) => `<tr><td style="border-bottom:${i === opts.length - 1 ? 'none' : '1px solid #AAAAAA'};padding:1px 4px;font-weight:bold;color:#000000;vertical-align:middle;text-align:left;">${o}</td></tr>`).join('')}</table>`;
+      return `<tr style="background:${bg};"><td style="${lbl}font-weight:bold;color:#000000;" width="30%">${label}</td><td style="${optS}" width="32%">${innerTable}</td><td style="${valS}font-weight:bold;color:#000000;">${val ? val : 'N/A'}</td></tr>`;
     };
 
     // ── Per-page header (logo left | company name center | ref+date right) ──
@@ -777,9 +778,11 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
         ${optionRow('Approach Road Width', ['>=60 Feet Road', '60-40 Feet Road', '40-20 Feet Road', '<20 Feet Road'], fields.approachRoadWidth)}
         ${optionRow('Plot Demarcated at Site', ['Yes', 'No'], fields.plotDemarcated)}
         <tr style="background:${rowBg()};"><td style="${lbl}color:#000000;" width="30%">Proximity to Civic Amenities</td><td style="${optS}" width="32%">
-          <div style="border-bottom:1px solid #AAAAAA;padding:1px 4px;">Nearest Railway Station</div>
-          <div style="border-bottom:1px solid #AAAAAA;padding:1px 4px;">Nearest Bus Stop</div>
-          <div style="padding:1px 4px;">Nearest Hospital</div>
+          <table style="width:100%;height:100%;border-collapse:collapse;">
+            <tr><td style="border-bottom:1px solid #AAAAAA;padding:1px 4px;vertical-align:middle;text-align:left;color:#000000;">Nearest Railway Station</td></tr>
+            <tr><td style="border-bottom:1px solid #AAAAAA;padding:1px 4px;vertical-align:middle;text-align:left;color:#000000;">Nearest Bus Stop</td></tr>
+            <tr><td style="padding:1px 4px;vertical-align:middle;text-align:left;color:#000000;">Nearest Hospital</td></tr>
+          </table>
         </td><td style="${valS}color:#000000;">
           1. ${fields.landmarkRailway || fields.distanceRailwayStation || 'N/A'}<br/>
           2. ${fields.landmarkBusStop || fields.distanceBusStop || 'N/A'}<br/>
@@ -788,10 +791,12 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
         ${optionRow('Property Identification', ['Easy to Identify', 'Identification by documents', 'Additional documents required', 'Difficult to identify'], fields.propertyIdentification)}
         ${optionRow('Proximity to Facilities', ['<1 Km', '1-3 Kms', '3-5 Kms', '>5 Kms'], fields.proximityToFacilities)}
         <tr style="background:${rowBg()};"><td style="${lbl}color:#000000;">Landmark Details</td><td style="${optS}">
-          <div style="border-bottom:1px solid #AAAAAA;padding:1px 4px;">Nearest Railway Station</div>
-          <div style="border-bottom:1px solid #AAAAAA;padding:1px 4px;">Nearest Bus Stop</div>
-          <div style="border-bottom:1px solid #AAAAAA;padding:1px 4px;">Nearest Hospital</div>
-          <div style="padding:1px 4px;">Nearest Landmark</div>
+          <table style="width:100%;height:100%;border-collapse:collapse;">
+            <tr><td style="border-bottom:1px solid #AAAAAA;padding:1px 4px;vertical-align:middle;text-align:left;color:#000000;">Nearest Railway Station</td></tr>
+            <tr><td style="border-bottom:1px solid #AAAAAA;padding:1px 4px;vertical-align:middle;text-align:left;color:#000000;">Nearest Bus Stop</td></tr>
+            <tr><td style="border-bottom:1px solid #AAAAAA;padding:1px 4px;vertical-align:middle;text-align:left;color:#000000;">Nearest Hospital</td></tr>
+            <tr><td style="padding:1px 4px;vertical-align:middle;text-align:left;color:#000000;">Nearest Landmark</td></tr>
+          </table>
         </td><td style="${valS}color:#000000;">
           1. ${fields.landmarkRailway || 'N/A'}<br/>
           2. ${fields.landmarkBusStop || 'N/A'}<br/>
@@ -844,16 +849,6 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
         ${simpleRow('Roofing &amp; Terracing', fields.roofType)}
         ${simpleRow('Quality of Fixtures', fields.qualityOfFixtures)}
       </table>
-      <table style="${ts}">
-        <tr><td style="${hd}" colspan="3">6. PLAN APPROVALS</td></tr>
-        ${(() => { resetRowIdx(); return ''; })()}
-        ${optionRow('Construction as per Approved Plans', ['Yes', 'No'], fields.constructionApproved)}
-        ${simpleRow('Details of Approved Plan', fields.approvalDetails)}
-        ${simpleRow('Construction Permission No. &amp; Date', fields.constructionPermission || 'Not mentioned')}
-        ${simpleRow('Violations / Risk of Demolition', fields.violationsObserved)}
-        ${simpleRow('Conforms to Local Byelaws', fields.conformsToByelaws)}
-        ${simpleRow('Other Documents Verified', fields.documentsVerified)}
-      </table>
       ${pageFooter(3, 0)}
     </div>`;
 
@@ -881,6 +876,16 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     const page4 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15; height:100%; display:flex; flex-direction:column; justify-content:space-between;">
       ${pageHeader}
       <table style="${ts}">
+        <tr><td style="${hd}" colspan="3">6. PLAN APPROVALS</td></tr>
+        ${(() => { resetRowIdx(); return ''; })()}
+        ${optionRow('Construction as per Approved Plans', ['Yes', 'No'], fields.constructionApproved)}
+        ${simpleRow('Details of Approved Plan', fields.approvalDetails)}
+        ${simpleRow('Construction Permission No. &amp; Date', fields.constructionPermission || 'Not mentioned')}
+        ${simpleRow('Violations / Risk of Demolition', fields.violationsObserved)}
+        ${simpleRow('Conforms to Local Byelaws', fields.conformsToByelaws)}
+        ${simpleRow('Other Documents Verified', fields.documentsVerified)}
+      </table>
+      <table style="${ts}">
         <tr><td style="${hd}" colspan="3">7. VALUATION \u2014 Land</td></tr>
         ${simpleRow('Land Area', `${fields.landArea || '0'} ${fields.landAreaUnit}`)}
         ${simpleRow('Current Govt. Approved Rates for Land', `Rs.${fields.govtLandRate || fields.guidelineValue || 'N/A'}/- Per ${fields.landAreaUnit}`)}
@@ -907,6 +912,15 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
           <td style="${valS};background:#FFF2CC;text-align:right;color:#1F4E78;">\u20B9${formatIndianCurrency(totalBuildingValue)}</td>
         </tr>
       </table>
+      ${pageFooter(4, 0)}
+    </div>`;
+
+    // ═══════════════════════════════════════════════════════════════════
+    // PAGE 5 — Remarks, Declaration & Valuation Certificate
+    // ═══════════════════════════════════════════════════════════════════
+    resetRowIdx();
+    const page5 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15; height:100%; display:flex; flex-direction:column; justify-content:space-between;">
+      ${pageHeader}
       <table style="${ts}">
         <tr><td style="${hd}" colspan="3">9. ABSTRACT OF VALUATION</td></tr>
         ${(() => { resetRowIdx(); return ''; })()}
@@ -919,15 +933,6 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
         ${simpleRow('Deviations in Property', fields.deviations, '#F2F2F2')}
         ${fields.guidelineValue ? simpleRow('Govt./Guideline Value', `Rs.${formatIndianCurrency(fields.guidelineValue)}/-`) : ''}
       </table>
-      ${pageFooter(4, 0)}
-    </div>`;
-
-    // ═══════════════════════════════════════════════════════════════════
-    // PAGE 5 — Remarks, Declaration & Valuation Certificate
-    // ═══════════════════════════════════════════════════════════════════
-    resetRowIdx();
-    const page5 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15; height:100%; display:flex; flex-direction:column; justify-content:space-between;">
-      ${pageHeader}
       <table style="${ts}">
         <tr><td style="${hd}" colspan="2">10. REMARKS, DEMARCATION &amp; POSSESSION</td></tr>
         <tr style="background:#F2F2F2;"><td style="${lbl}" width="25%">Demarcation</td><td style="${valS};font-family:Cambria,'Times New Roman',serif;font-size:9px;background:#F2F2F2;">${fields.demarcation || 'N/A'}</td></tr>
