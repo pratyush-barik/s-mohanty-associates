@@ -697,7 +697,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     // ── Row helpers ───────────────────────────────────────────────────────────
     const simpleRow = (label: string, val: string, bgOverride?: string) => {
       const bg = bgOverride !== undefined ? bgOverride : rowBg();
-      return `<tr style="background:${bg};"><td style="${lbl}font-weight:bold;color:#1F4E78;" width="30%">${label}</td><td style="${valS}color:#111;" colspan="2">${val || 'N/A'}</td></tr>`;
+      return `<tr style="background:${bg};"><td style="${lbl}color:#000000;" width="30%">${label}</td><td style="${valS}color:#000000;" colspan="2">${val || 'N/A'}</td></tr>`;
     };
     const optionRow = (label: string, opts: string[], val: string) => {
       const bg = '#DDEEF7'; // User requested entire row blue for option rows
@@ -776,23 +776,23 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
         ${optionRow('Locality Type', ['Elite/Posh/High Class', 'Upper Middle Class', 'Middle Class', 'Lower Middle Class', 'Poor / Slum'], fields.classOfLocality)}
         ${optionRow('Approach Road Width', ['>=60 Feet Road', '60-40 Feet Road', '40-20 Feet Road', '<20 Feet Road'], fields.approachRoadWidth)}
         ${optionRow('Plot Demarcated at Site', ['Yes', 'No'], fields.plotDemarcated)}
-        <tr style="background:${rowBg()};"><td style="${lbl}font-weight:bold;color:#1F4E78;" width="30%">Proximity to Civic Amenities</td><td style="${optS}" width="32%">
+        <tr style="background:${rowBg()};"><td style="${lbl}color:#000000;" width="30%">Proximity to Civic Amenities</td><td style="${optS}" width="32%">
           <div style="border-bottom:1px solid #AAAAAA;padding:2px 5px;">Nearest Railway Station</div>
           <div style="border-bottom:1px solid #AAAAAA;padding:2px 5px;">Nearest Bus Stop</div>
           <div style="padding:2px 5px;">Nearest Hospital</div>
-        </td><td style="${valS}color:#111;">
+        </td><td style="${valS}color:#000000;">
           1. ${fields.landmarkRailway || fields.distanceRailwayStation || 'N/A'}<br/>
           2. ${fields.landmarkBusStop || fields.distanceBusStop || 'N/A'}<br/>
           3. ${fields.landmarkHospital || fields.distanceHospital || 'N/A'}
         </td></tr>
         ${optionRow('Property Identification', ['Easy to Identify', 'Identification by documents', 'Additional documents required', 'Difficult to identify'], fields.propertyIdentification)}
         ${optionRow('Proximity to Facilities', ['<1 Km', '1-3 Kms', '3-5 Kms', '>5 Kms'], fields.proximityToFacilities)}
-        <tr style="background:${rowBg()};"><td style="${lbl}font-weight:bold;color:#1F4E78;">Landmark Details</td><td style="${optS}">
+        <tr style="background:${rowBg()};"><td style="${lbl}color:#000000;">Landmark Details</td><td style="${optS}">
           <div style="border-bottom:1px solid #AAAAAA;padding:2px 5px;">Nearest Railway Station</div>
           <div style="border-bottom:1px solid #AAAAAA;padding:2px 5px;">Nearest Bus Stop</div>
           <div style="border-bottom:1px solid #AAAAAA;padding:2px 5px;">Nearest Hospital</div>
           <div style="padding:2px 5px;">Nearest Landmark</div>
-        </td><td style="${valS}color:#111;">
+        </td><td style="${valS}color:#000000;">
           1. ${fields.landmarkRailway || 'N/A'}<br/>
           2. ${fields.landmarkBusStop || 'N/A'}<br/>
           3. ${fields.landmarkHospital || 'N/A'}<br/>
