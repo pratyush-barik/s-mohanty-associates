@@ -682,11 +682,11 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
   // ── PDF HTML Template (3-Column Format) ──
   function generatePDFPages(): string[] {
     // ── Style constants ──────────────────────────────────────────────────────
-    const ts = 'width:100%;border-collapse:collapse;margin-bottom:10px;font-family:Calibri,Arial,sans-serif;';
+    const ts = 'width:100%;border-collapse:collapse;margin-bottom:8px;font-family:Calibri,Arial,sans-serif;';
     // Base styles (background and text color applied dynamically per row type)
-    const lbl = 'border:1px solid #AAAAAA;padding:0;font-size:9px;text-align:left;vertical-align:middle;';
+    const lbl = 'border:1px solid #AAAAAA;padding:4px 5px;font-size:9px;text-align:left;vertical-align:middle;';
     const optS = 'border:1px solid #AAAAAA;padding:0;font-size:8.5px;vertical-align:top;';
-    const valS = 'border:1px solid #AAAAAA;padding:0;font-size:9px;vertical-align:middle;';
+    const valS = 'border:1px solid #AAAAAA;padding:4px 5px;font-size:9px;vertical-align:middle;';
     const hd = 'font-size:10px;font-weight:bold;background:#1F4E78;padding:3px 4px;border:1px solid #1F4E78;text-align:center;color:#FFFFFF;letter-spacing:0.5px;';
 
     // ── Alternating row colors ────────────────────────────────────────────────
@@ -695,17 +695,15 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     const rowBg = () => { const bg = rowIdx % 2 === 0 ? '#FFFFFF' : '#EEF4FB'; rowIdx++; return bg; };
 
     // ── Row helpers ───────────────────────────────────────────────────────────
-    const centerV = (content: string, align: string = 'left') => `<table style="width:100%;height:100%;border-collapse:collapse;"><tr><td style="padding:2px 4px;vertical-align:middle;text-align:${align};color:inherit;font-weight:inherit;">${content}</td></tr></table>`;
-    
     const simpleRow = (label: string, val: string, bgOverride?: string) => {
       const bg = bgOverride !== undefined ? bgOverride : rowBg();
-      return `<tr style="background:${bg};"><td style="${lbl}color:#000000;" width="30%">${centerV(label)}</td><td style="${valS}color:#000000;" colspan="2">${centerV(val || 'N/A')}</td></tr>`;
+      return `<tr style="background:${bg};"><td style="${lbl}color:#000000;" width="30%">${label}</td><td style="${valS}color:#000000;" colspan="2">${val || 'N/A'}</td></tr>`;
     };
     const optionRow = (label: string, opts: string[], val: string) => {
-      const bg = '#DDEEF7'; // User requested entire row blue for option rows
+      const bg = '#DDEEF7';
       rowIdx++;
-      const innerTable = `<table style="width:100%;height:100%;border-collapse:collapse;">${opts.map((o, i) => `<tr><td style="border-bottom:${i === opts.length - 1 ? 'none' : '1px solid #AAAAAA'};padding:1px 4px;font-weight:bold;color:#000000;vertical-align:middle;text-align:left;">${o}</td></tr>`).join('')}</table>`;
-      return `<tr style="background:${bg};"><td style="${lbl}font-weight:bold;color:#000000;" width="30%">${centerV(label)}</td><td style="${optS}" width="32%">${innerTable}</td><td style="${valS}font-weight:bold;color:#000000;">${centerV(val ? val : 'N/A')}</td></tr>`;
+      const innerTable = `<table style="width:100%;border-collapse:collapse;">${opts.map((o, i) => `<tr><td style="border-bottom:${i === opts.length - 1 ? 'none' : '1px solid #AAAAAA'};padding:2px 5px;font-weight:bold;color:#000000;vertical-align:middle;font-size:8.5px;">${o}</td></tr>`).join('')}</table>`;
+      return `<tr style="background:${bg};"><td style="${lbl}font-weight:bold;color:#000000;" width="30%">${label}</td><td style="${optS}" width="32%">${innerTable}</td><td style="${valS}font-weight:bold;color:#000000;">${val ? val : 'N/A'}</td></tr>`;
     };
 
     // ── Per-page header (logo left | company name center | ref+date right) ──
@@ -745,7 +743,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     // PAGE 1 — General Details
     // ═══════════════════════════════════════════════════════════════════
     resetRowIdx();
-    const page1 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15; height:100%; display:flex; flex-direction:column; justify-content:space-between;">
+    const page1 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15;">
       ${pageHeader}
       ${reportTitle}
       <table style="${ts}">
@@ -770,7 +768,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     // PAGE 2 — Locality + Property Details
     // ═══════════════════════════════════════════════════════════════════
     resetRowIdx();
-    const page2 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15; height:100%; display:flex; flex-direction:column; justify-content:space-between;">
+    const page2 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15;">
       ${pageHeader}
       <table style="${ts}">
         <tr><td style="${hd}" colspan="3">2. SURROUNDING LOCALITY DETAILS</td></tr>
@@ -779,33 +777,42 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
         ${optionRow('Locality Type', ['Elite/Posh/High Class', 'Upper Middle Class', 'Middle Class', 'Lower Middle Class', 'Poor / Slum'], fields.classOfLocality)}
         ${optionRow('Approach Road Width', ['>=60 Feet Road', '60-40 Feet Road', '40-20 Feet Road', '<20 Feet Road'], fields.approachRoadWidth)}
         ${optionRow('Plot Demarcated at Site', ['Yes', 'No'], fields.plotDemarcated)}
-        <tr style="background:${rowBg()};"><td style="${lbl}color:#000000;" width="30%">${centerV('Proximity to Civic Amenities')}</td><td style="${optS}" width="32%">
-          <table style="width:100%;height:100%;border-collapse:collapse;">
-            <tr><td style="border-bottom:1px solid #AAAAAA;padding:1px 4px;vertical-align:middle;text-align:left;color:#000000;">Nearest Railway Station</td></tr>
-            <tr><td style="border-bottom:1px solid #AAAAAA;padding:1px 4px;vertical-align:middle;text-align:left;color:#000000;">Nearest Bus Stop</td></tr>
-            <tr><td style="padding:1px 4px;vertical-align:middle;text-align:left;color:#000000;">Nearest Hospital</td></tr>
+        <tr style="background:${rowBg()};"><td style="${lbl}color:#000000;" width="30%">Proximity to Civic Amenities</td><td style="${optS}" width="32%">
+          <table style="width:100%;border-collapse:collapse;">
+            <tr><td style="border-bottom:1px solid #AAAAAA;padding:2px 5px;vertical-align:middle;font-size:8.5px;color:#000000;">Nearest Railway Station</td></tr>
+            <tr><td style="border-bottom:1px solid #AAAAAA;padding:2px 5px;vertical-align:middle;font-size:8.5px;color:#000000;">Nearest Bus Stop</td></tr>
+            <tr><td style="padding:2px 5px;vertical-align:middle;font-size:8.5px;color:#000000;">Nearest Hospital</td></tr>
           </table>
-        </td><td style="${valS}color:#000000;">${centerV(`
+        </td><td style="${valS}color:#000000;">
           1. ${fields.landmarkRailway || fields.distanceRailwayStation || 'N/A'}<br/>
           2. ${fields.landmarkBusStop || fields.distanceBusStop || 'N/A'}<br/>
           3. ${fields.landmarkHospital || fields.distanceHospital || 'N/A'}
-        `)}</td></tr>
+        </td></tr>
         ${optionRow('Property Identification', ['Easy to Identify', 'Identification by documents', 'Additional documents required', 'Difficult to identify'], fields.propertyIdentification)}
         ${optionRow('Proximity to Facilities', ['<1 Km', '1-3 Kms', '3-5 Kms', '>5 Kms'], fields.proximityToFacilities)}
-        <tr style="background:${rowBg()};"><td style="${lbl}color:#000000;">${centerV('Landmark Details')}</td><td style="${optS}">
-          <table style="width:100%;height:100%;border-collapse:collapse;">
-            <tr><td style="border-bottom:1px solid #AAAAAA;padding:1px 4px;vertical-align:middle;text-align:left;color:#000000;">Nearest Railway Station</td></tr>
-            <tr><td style="border-bottom:1px solid #AAAAAA;padding:1px 4px;vertical-align:middle;text-align:left;color:#000000;">Nearest Bus Stop</td></tr>
-            <tr><td style="border-bottom:1px solid #AAAAAA;padding:1px 4px;vertical-align:middle;text-align:left;color:#000000;">Nearest Hospital</td></tr>
-            <tr><td style="padding:1px 4px;vertical-align:middle;text-align:left;color:#000000;">Nearest Landmark</td></tr>
+        <tr style="background:${rowBg()};"><td style="${lbl}color:#000000;">Landmark Details</td><td style="${optS}">
+          <table style="width:100%;border-collapse:collapse;">
+            <tr><td style="border-bottom:1px solid #AAAAAA;padding:2px 5px;vertical-align:middle;font-size:8.5px;color:#000000;">Nearest Railway Station</td></tr>
+            <tr><td style="border-bottom:1px solid #AAAAAA;padding:2px 5px;vertical-align:middle;font-size:8.5px;color:#000000;">Nearest Bus Stop</td></tr>
+            <tr><td style="border-bottom:1px solid #AAAAAA;padding:2px 5px;vertical-align:middle;font-size:8.5px;color:#000000;">Nearest Hospital</td></tr>
+            <tr><td style="padding:2px 5px;vertical-align:middle;font-size:8.5px;color:#000000;">Nearest Landmark</td></tr>
           </table>
-        </td><td style="${valS}color:#000000;">${centerV(`
+        </td><td style="${valS}color:#000000;">
           1. ${fields.landmarkRailway || 'N/A'}<br/>
           2. ${fields.landmarkBusStop || 'N/A'}<br/>
           3. ${fields.landmarkHospital || 'N/A'}<br/>
           4. ${fields.landmarkNearest || fields.landmark || 'N/A'}
-        `)}</td></tr>
+        </td></tr>
       </table>
+      ${pageFooter(2, 0)}
+    </div>`;
+
+    // ═══════════════════════════════════════════════════════════════════
+    // PAGE 3 — Property Details + Subject Property + Structural
+    // ═══════════════════════════════════════════════════════════════════
+    resetRowIdx();
+    const page3 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15;">
+      ${pageHeader}
       <table style="${ts}">
         <tr><td style="${hd}" colspan="3">3. PROPERTY DETAILS</td></tr>
         ${(() => { resetRowIdx(); return ''; })()}
@@ -813,15 +820,6 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
         ${simpleRow('Additional Amenities', fields.additionalAmenities || 'N/A')}
         ${optionRow('Legal Status of Property', ['Freehold', 'Lease hold >30 yrs.', 'Lease hold 15-30 yrs.', 'Lease hold <15 yrs.'], fields.legalStatus)}
       </table>
-      ${pageFooter(2, 0)}
-    </div>`;
-
-    // ═══════════════════════════════════════════════════════════════════
-    // PAGE 3 — Subject Property + Structural + Plan Approvals
-    // ═══════════════════════════════════════════════════════════════════
-    resetRowIdx();
-    const page3 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15; height:100%; display:flex; flex-direction:column; justify-content:space-between;">
-      ${pageHeader}
       <table style="${ts}">
         <tr><td style="${hd}" colspan="3">4. SUBJECT PROPERTY DETAILS</td></tr>
         ${simpleRow('Type of Premises', `<b>${fields.premisesType || 'N/A'}</b>`)}
@@ -863,19 +861,19 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
       const bg = floorRowBgIdx % 2 === 0 ? '#FFFFFF' : '#DCE6F1';
       floorRowBgIdx++;
       return `<tr style="background:${bg};">
-        <td style="${valS};background:${bg};">${centerV(f.name, 'left')}</td>
-        <td style="${valS};background:${bg};text-align:right;">${centerV(formatIndianCurrency(f.area), 'right')}</td>
-        <td style="${valS};background:${bg};text-align:right;">${centerV('\u20B9' + formatIndianCurrency(f.rate), 'right')}</td>
-        <td style="${valS};background:${bg};text-align:right;">${centerV('\u20B9' + formatIndianCurrency(f.estimated), 'right')}</td>
-        <td style="${valS};background:${bg};text-align:center;">${centerV(f.lifeYears.toString(), 'center')}</td>
-        <td style="${valS};background:${bg};text-align:center;">${centerV(f.ageYears.toString(), 'center')}</td>
-        <td style="${valS};background:${bg};text-align:center;">${centerV(f.depPct.toString() + '%', 'center')}</td>
-        <td style="${valS};background:${bg};text-align:right;">${centerV('\u20B9' + formatIndianCurrency(f.netValue), 'right')}</td>
+        <td style="${valS};background:${bg};">${f.name}</td>
+        <td style="${valS};background:${bg};text-align:right;">${formatIndianCurrency(f.area)}</td>
+        <td style="${valS};background:${bg};text-align:right;">\u20B9${formatIndianCurrency(f.rate)}</td>
+        <td style="${valS};background:${bg};text-align:right;">\u20B9${formatIndianCurrency(f.estimated)}</td>
+        <td style="${valS};background:${bg};text-align:center;">${f.lifeYears}</td>
+        <td style="${valS};background:${bg};text-align:center;">${f.ageYears}</td>
+        <td style="${valS};background:${bg};text-align:center;">${f.depPct}%</td>
+        <td style="${valS};background:${bg};text-align:right;">\u20B9${formatIndianCurrency(f.netValue)}</td>
       </tr>`;
     }).join('');
 
     resetRowIdx();
-    const page4 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15; height:100%; display:flex; flex-direction:column; justify-content:space-between;">
+    const page4 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15;">
       ${pageHeader}
       <table style="${ts}">
         <tr><td style="${hd}" colspan="3">6. PLAN APPROVALS</td></tr>
@@ -910,8 +908,8 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
         </tr>
         ${floorRowsHTML}
         <tr style="background:#FFF2CC;font-weight:bold;">
-          <td style="${valS};background:#FFF2CC;color:#1F4E78;" colspan="7">${centerV('Total Building Value', 'left')}</td>
-          <td style="${valS};background:#FFF2CC;text-align:right;color:#1F4E78;">${centerV('\u20B9' + formatIndianCurrency(totalBuildingValue), 'right')}</td>
+          <td style="${valS};background:#FFF2CC;color:#1F4E78;" colspan="7">Total Building Value</td>
+          <td style="${valS};background:#FFF2CC;text-align:right;color:#1F4E78;">\u20B9${formatIndianCurrency(totalBuildingValue)}</td>
         </tr>
       </table>
       ${pageFooter(4, 0)}
@@ -921,7 +919,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     // PAGE 5 — Remarks, Declaration & Valuation Certificate
     // ═══════════════════════════════════════════════════════════════════
     resetRowIdx();
-    const page5 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15; height:100%; display:flex; flex-direction:column; justify-content:space-between;">
+    const page5 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15;">
       ${pageHeader}
       <table style="${ts}">
         <tr><td style="${hd}" colspan="3">9. ABSTRACT OF VALUATION</td></tr>
@@ -937,9 +935,9 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
       </table>
       <table style="${ts}">
         <tr><td style="${hd}" colspan="2">10. REMARKS, DEMARCATION &amp; POSSESSION</td></tr>
-        <tr style="background:#F2F2F2;"><td style="${lbl}" width="25%">${centerV('Demarcation')}</td><td style="${valS};font-family:Cambria,'Times New Roman',serif;font-size:9px;background:#F2F2F2;">${centerV(fields.demarcation || 'N/A')}</td></tr>
-        <tr><td style="${lbl}">${centerV('Possession')}</td><td style="${valS};font-family:Cambria,'Times New Roman',serif;font-size:9px;">${centerV(fields.possession || 'N/A')}</td></tr>
-        <tr style="background:#F2F2F2;"><td style="${lbl}">${centerV('Remarks / Observations')}</td><td style="${valS};font-family:Cambria,'Times New Roman',serif;font-size:9px;background:#F2F2F2;">${centerV(fields.remarks || 'N/A')}</td></tr>
+        <tr style="background:#F2F2F2;"><td style="${lbl}" width="25%">Demarcation</td><td style="${valS};font-family:Cambria,'Times New Roman',serif;font-size:9px;background:#F2F2F2;">${fields.demarcation || 'N/A'}</td></tr>
+        <tr><td style="${lbl}">Possession</td><td style="${valS};font-family:Cambria,'Times New Roman',serif;font-size:9px;">${fields.possession || 'N/A'}</td></tr>
+        <tr style="background:#F2F2F2;"><td style="${lbl}">Remarks / Observations</td><td style="${valS};font-family:Cambria,'Times New Roman',serif;font-size:9px;background:#F2F2F2;">${fields.remarks || 'N/A'}</td></tr>
       </table>
       <div style="margin-top:10px;font-size:9px;line-height:1.5;font-family:Cambria,'Times New Roman',serif;color:#333;">
         <p style="font-weight:bold;font-size:10px;color:#1F4E78;text-decoration:underline;margin-bottom:4px;font-family:Calibri,Arial,sans-serif;">Declaration:</p>
