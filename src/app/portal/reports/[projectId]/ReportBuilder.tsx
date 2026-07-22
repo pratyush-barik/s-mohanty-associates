@@ -742,7 +742,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     // PAGE 1 — General Details
     // ═══════════════════════════════════════════════════════════════════
     resetRowIdx();
-    const page1 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15;">
+    const page1 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15; height:100%; display:flex; flex-direction:column; justify-content:space-between;">
       ${pageHeader}
       ${reportTitle}
       <table style="${ts}">
@@ -767,7 +767,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     // PAGE 2 — Locality + Property Details
     // ═══════════════════════════════════════════════════════════════════
     resetRowIdx();
-    const page2 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15;">
+    const page2 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15; height:100%; display:flex; flex-direction:column; justify-content:space-between;">
       ${pageHeader}
       <table style="${ts}">
         <tr><td style="${hd}" colspan="3">2. SURROUNDING LOCALITY DETAILS</td></tr>
@@ -813,7 +813,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     // PAGE 3 — Subject Property + Structural + Plan Approvals
     // ═══════════════════════════════════════════════════════════════════
     resetRowIdx();
-    const page3 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15;">
+    const page3 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15; height:100%; display:flex; flex-direction:column; justify-content:space-between;">
       ${pageHeader}
       <table style="${ts}">
         <tr><td style="${hd}" colspan="3">4. SUBJECT PROPERTY DETAILS</td></tr>
@@ -878,7 +878,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     }).join('');
 
     resetRowIdx();
-    const page4 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15;">
+    const page4 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15; height:100%; display:flex; flex-direction:column; justify-content:space-between;">
       ${pageHeader}
       <table style="${ts}">
         <tr><td style="${hd}" colspan="3">7. VALUATION \u2014 Land</td></tr>
@@ -926,7 +926,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     // PAGE 5 — Remarks, Declaration & Valuation Certificate
     // ═══════════════════════════════════════════════════════════════════
     resetRowIdx();
-    const page5 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15;">
+    const page5 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15; height:100%; display:flex; flex-direction:column; justify-content:space-between;">
       ${pageHeader}
       <table style="${ts}">
         <tr><td style="${hd}" colspan="2">10. REMARKS, DEMARCATION &amp; POSSESSION</td></tr>
