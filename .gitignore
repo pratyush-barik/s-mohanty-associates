@@ -81,3 +81,6 @@ individual clients (Bank Reports)/
 
 # Ignore Prisma seed file (contains employee details)
 prisma/seed.ts
+
+# Ignore Services Offered Document
+Services Offered by S Mohanty Associates.docx
