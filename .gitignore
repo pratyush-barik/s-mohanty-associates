@@ -78,3 +78,6 @@ next-env.d.ts
 
 # Ignore sample reports folder
 individual clients (Bank Reports)/
+
+# Ignore Prisma seed file (contains employee details)
+prisma/seed.ts
