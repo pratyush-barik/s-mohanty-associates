@@ -92,6 +92,7 @@ The core business logic is **100% complete**.
    **Key Design Decisions in ReportBuilder:**
    - **Form UI:** All option-type fields use compact `<select>` dropdowns and `<input>` fields — NOT bulky 3-column boxes. Fast and space-efficient for data entry.
    - **PDF Output:** Uses a 3-column table pattern (Column 1: Label in blue | Column 2: All options listed | Column 3: Selected value in bold) to match the sample bank valuation report format.
+   - **PDF Layout & Alignment:** To counter rendering bugs in `html2canvas`, all text cells in the PDF tables use an inner `<table style="height:100%">` wrapper (`centerV`) which guarantees perfect vertical centering regardless of row stretching. The PDF is rebalanced (Section 6 moved to Page 4, Section 9 to Page 5) to completely eliminate page overflow and footer overlap.
    - **State:** `ReportFields` interface holds ~50+ fields. All saved as JSON into `Report.data` via `saveReportDraft` server action.
    - **PDF Stack:** `html2canvas` + `jsPDF`. The `generatePDFPages()` function (around line 668) builds custom HTML template strings with inline styles for each page. Letterhead loaded from `/letterhead.png`. **Tailwind classes do NOT work inside these HTML strings — use only inline styles.**
    - **Pull Back to Draft:** Report Agent can cancel their submission via `cancelReportSubmission` server action. After all status-changing operations (submit, cancel, rework, finalize), `router.refresh()` is called so the client component re-renders with the correct status from the server without a manual page reload.
@@ -113,9 +114,9 @@ The core business logic is **100% complete**.
 Outstanding items in **priority order**:
 
 ### High Priority — In Progress
-1. **Default Template End-to-End Verification**: The 14-section `ReportBuilder.tsx` is complete and on GitHub (branch: `main`). Teammate should deploy to Vercel. User needs to test:
+1. **Default Template End-to-End Verification**: The 14-section `ReportBuilder.tsx` is complete, perfectly balanced, and on GitHub (branch: `main`). The user should verify locally or deploy to Vercel and check:
    - Location Map section (Google Maps iframe auto-loads from address field)
-   - PDF download — verify all 14 sections render correctly with 3-column table format
+   - PDF download — verify all 14 sections render correctly with perfectly centered text and no footer overflow.
    - "Cancel Submission (Pull back to Draft)" button — check status refreshes correctly
    - All new `<select>` dropdowns save and restore correctly from the JSON `Report.data`
 
@@ -139,6 +140,7 @@ Outstanding items in **priority order**:
 
 > [!WARNING]
 > **ReportBuilder.tsx is large (~1600+ lines)**. When editing, be careful with the `generatePDFPages()` function (starts around line 668). Inline styles in the HTML template strings must use valid CSS values — Tailwind classes do NOT work inside these strings.
+> *Note on Alignment*: Do not rely on flexbox or native `vertical-align` inside standard `<tr>/<td>` elements for PDF generation, as `html2canvas` handles them poorly when stretched. Use the `centerV` inner-table helper for guaranteed vertical centering.
 
 > [!WARNING]
 > **Do NOT add `OptionField` or `LandmarkField` back to the form render**. These components still exist in the file (kept for potential future read-only display use) but the form uses plain `<select>` and `<input>` elements. The 3-column blue-box display is for PDF output only.
@@ -147,8 +149,8 @@ Outstanding items in **priority order**:
 > When modifying the UI, prioritize modern, premium aesthetics (glassmorphism, clean typography, subtle animations) without relying on Tailwind component libraries like Shadcn. Use raw Tailwind classes.
 
 ## 7. Recent Git Commits (for reference)
+- `e335f93` — style: apply inner table centering to all rows for robust vertical alignment
+- `75f3d33` — style: fix vertical alignment in option rows by using inner table layout and rebalance page sections to fix overflow
 - `4ecdfa6` — feat: multi-assignment, rework flow, strict permissions, enquiry fixes
 - `4cc5f7e` — refactor: revert form UI to compact dropdowns, keep 3-column layout for PDF only
 - `250ddc4` — feat: auto-embed Google Maps in Location Map section from property address
-- `1f013d5` — Refactor ReportBuilder UI and logic to match sample PDF layout and fix pull back button state update
-- `c26fa3b` — (previous: various nav and auth fixes)
