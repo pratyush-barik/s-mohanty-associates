@@ -75,14 +75,14 @@ export default async function PortalLayout({ children }: { children: React.React
         <div className="px-4 py-5 border-b border-white/10">
           <div className="flex items-center gap-2 overflow-hidden">
             {/* Collapsed: show small square icon version */}
-            <div className="flex-shrink-0 w-16 h-16 flex items-center justify-center group-hover:hidden mx-auto">
+            <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center group-hover:hidden mx-auto">
               <Image
                 src="/logo/smohantyassociate_symbol.png"
                 alt="S Mohanty Associates Symbol"
-                width={64}
-                height={64}
+                width={48}
+                height={48}
                 unoptimized
-                className="w-16 h-16 object-contain"
+                className="w-12 h-12 object-contain"
               />
             </div>
             {/* Expanded: show full logo */}
