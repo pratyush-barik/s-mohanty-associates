@@ -681,46 +681,107 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
 
   // ── PDF HTML Template (3-Column Format) ──
   function generatePDFPages(): string[] {
-    const ts = 'width:100%;border-collapse:collapse;margin-bottom:10px;';
-    const lbl = 'border:1px solid #555;padding:3px 5px;font-size:8.5px;font-weight:bold;background:#d5e8f5;text-align:left;color:#1a3a5c;';
-    const optS = 'border:1px solid #555;padding:0;font-size:8px;vertical-align:top;';
-    const valS = 'border:1px solid #555;padding:3px 5px;font-size:8.5px;vertical-align:middle;';
-    const hd = 'font-size:9px;font-weight:bold;background:#b0c4de;padding:4px 5px;border:1px solid #555;text-align:center;color:#0f2038;';
-    const simpleRow = (label: string, val: string) =>
-      `<tr><td style="${lbl}" width="30%">${label}</td><td style="${valS}" colspan="2">${val || 'N/A'}</td></tr>`;
-    const optionRow = (label: string, opts: string[], val: string) =>
-      `<tr><td style="${lbl}" width="30%">${label}</td><td style="${optS}" width="32%">${opts.map(o => `<div style="border-bottom:1px solid #bbb;padding:2px 4px;${o === val ? 'font-weight:bold;background:#c5ddf0;' : ''}">${o}</div>`).join('')}</td><td style="${valS}"><b>${val}</b></td></tr>`;
+    // ── Style constants ──────────────────────────────────────────────────────
+    const ts = 'width:100%;border-collapse:collapse;margin-bottom:10px;font-family:Calibri,Arial,sans-serif;';
+    // Label column: Light Blue bg (#DDEEF7), Dark Blue text (#1F4E78) — spec: Section Header RGB 221,235,247
+    const lbl = 'border:1px solid #AAAAAA;padding:4px 6px;font-size:9px;font-weight:bold;background:#DDEEF7;text-align:left;color:#1F4E78;vertical-align:middle;';
+    // Option column (list of choices)
+    const optS = 'border:1px solid #AAAAAA;padding:0;font-size:8.5px;vertical-align:top;';
+    // Value column
+    const valS = 'border:1px solid #AAAAAA;padding:4px 6px;font-size:9px;vertical-align:middle;color:#111;';
+    // Table section header (Dark Blue #1F4E78, White text — per spec)
+    const hd = 'font-size:10px;font-weight:bold;background:#1F4E78;padding:5px 6px;border:1px solid #1F4E78;text-align:center;color:#FFFFFF;letter-spacing:0.5px;';
 
-    const page1 = `<div style="font-family:Arial,sans-serif;color:#111;line-height:1.25;">
-      <p style="font-size:11px;font-weight:bold;text-align:center;margin:2px 0 8px;text-decoration:underline;">STANDARD VALUATION REPORT</p>
+    // ── Alternating row colors ────────────────────────────────────────────────
+    let rowIdx = 0;
+    const resetRowIdx = () => { rowIdx = 0; };
+    const rowBg = () => { const bg = rowIdx % 2 === 0 ? '#FFFFFF' : '#DCE6F1'; rowIdx++; return bg; };
+
+    // ── Row helpers ───────────────────────────────────────────────────────────
+    const simpleRow = (label: string, val: string, bgOverride?: string) => {
+      const bg = bgOverride !== undefined ? bgOverride : rowBg();
+      return `<tr style="background:${bg};"><td style="${lbl}" width="30%">${label}</td><td style="${valS};background:${bg};" colspan="2">${val || 'N/A'}</td></tr>`;
+    };
+    const optionRow = (label: string, opts: string[], val: string) => {
+      const bg = rowBg();
+      return `<tr style="background:${bg};"><td style="${lbl}" width="30%">${label}</td><td style="${optS};background:${bg};" width="32%">${opts.map(o => `<div style="border-bottom:1px solid #CCCCCC;padding:2px 5px;${o === val ? 'font-weight:bold;background:#C5DDF0;color:#1F4E78;' : ''}">${o}</div>`).join('')}</td><td style="${valS};background:${bg};">${val ? `<b>${val}</b>` : 'N/A'}</td></tr>`;
+    };
+
+    // ── Per-page header (logo left | company name center | ref+date right) ──
+    const pageHeader = `
+      <table style="width:100%;border-collapse:collapse;margin-bottom:8px;border-bottom:2px solid #1F4E78;padding-bottom:5px;">
+        <tr>
+          <td style="width:25%;vertical-align:middle;">
+            <img src="/smohantyassociate_logo.svg" alt="S Mohanty Associates" style="height:34px;width:auto;object-fit:contain;" crossOrigin="anonymous" onerror="this.style.display='none'" />
+          </td>
+          <td style="text-align:center;vertical-align:middle;">
+            <div style="font-family:Calibri,Arial,sans-serif;font-size:11px;font-weight:bold;color:#1F4E78;letter-spacing:0.5px;">S. MOHANTY &amp; ASSOCIATES</div>
+            <div style="font-family:Calibri,Arial,sans-serif;font-size:7.5px;color:#555;margin-top:1px;">Government Registered Valuers &amp; Chartered Engineers</div>
+          </td>
+          <td style="width:25%;text-align:right;vertical-align:middle;">
+            <div style="font-family:Calibri,Arial,sans-serif;font-size:8px;color:#333;line-height:1.5;">
+              ${fields.refNo ? `<div>Ref: <b>${fields.refNo}</b></div>` : ''}
+              ${fields.dateOfValuation ? `<div>Date: <b>${fields.dateOfValuation}</b></div>` : ''}
+            </div>
+          </td>
+        </tr>
+      </table>`;
+
+    // ── Per-page footer (IBBI left | Confidential center | Page X of Y right) ──
+    const pageFooter = (pageNum: number, totalPgs: number) => `
+      <table style="width:100%;border-collapse:collapse;margin-top:10px;border-top:1px solid #1F4E78;padding-top:4px;">
+        <tr>
+          <td style="font-family:Calibri,Arial,sans-serif;font-size:7.5px;color:#555;text-align:left;vertical-align:middle;">IBBI/RV/02/2019/10594</td>
+          <td style="font-family:Calibri,Arial,sans-serif;font-size:7.5px;color:#555;text-align:center;font-style:italic;vertical-align:middle;">Confidential</td>
+          <td style="font-family:Calibri,Arial,sans-serif;font-size:7.5px;color:#555;text-align:right;vertical-align:middle;">Page ${pageNum} of ${totalPgs}</td>
+        </tr>
+      </table>`;
+
+    // ── Report title block ────────────────────────────────────────────────────
+    const reportTitle = `<p style="font-family:Calibri,Arial,sans-serif;font-size:14px;font-weight:bold;text-align:center;color:#1F4E78;margin:4px 0 10px;text-transform:uppercase;text-decoration:underline;letter-spacing:1px;">Standard Valuation Report</p>`;
+
+    // ═══════════════════════════════════════════════════════════════════
+    // PAGE 1 — General Details
+    // ═══════════════════════════════════════════════════════════════════
+    resetRowIdx();
+    const page1 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15;">
+      ${pageHeader}
+      ${reportTitle}
       <table style="${ts}">
-        <tr><td style="${hd}" colspan="3">GENERAL DETAILS</td></tr>
+        <tr><td style="${hd}" colspan="3">1. GENERAL DETAILS</td></tr>
         ${optionRow('Type of Property', ['Residential', 'Commercial', 'Residential cum Commercial', 'Industrial', 'Vacant Plot'], fields.propertyType)}
-        ${simpleRow('Name of Customer(s)', `<b>${fields.ownerName}</b>`)}
+        ${simpleRow('Name of Customer(s)', `<b>${fields.ownerName || 'N/A'}</b>`)}
         ${simpleRow('Property Address with Pin Code', fields.ownerAddress)}
         ${simpleRow('Landmark', fields.landmark || fields.nearbyLandmarks)}
         ${simpleRow('Loan Application Number', fields.loanApplicationNo)}
         ${simpleRow('Name of Document Holder', fields.documentHolderName || fields.ownerName)}
         ${simpleRow('Legal Address of Property', fields.legalAddress || fields.ownerAddress)}
         ${simpleRow('Date of Inspection', fields.dateOfInspection)}
+        ${simpleRow('Date of Valuation Report', fields.dateOfValuation)}
+        ${simpleRow('Bank / Financial Institution', fields.bankName)}
+        ${simpleRow('Branch', fields.branchName)}
+        ${simpleRow('Purpose', fields.purpose)}
       </table>
+      ${pageFooter(1, 0)}
+    </div>`;
+
+    // ═══════════════════════════════════════════════════════════════════
+    // PAGE 2 — Locality + Property Details
+    // ═══════════════════════════════════════════════════════════════════
+    resetRowIdx();
+    const page2 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15;">
+      ${pageHeader}
       <table style="${ts}">
-        <tr><td style="${hd}" colspan="3">SURROUNDING LOCALITY DETAILS</td></tr>
-        ${simpleRow('Ward No / Municipal Land', fields.wardNo)}
+        <tr><td style="${hd}" colspan="3">2. SURROUNDING LOCALITY DETAILS</td></tr>
+        ${simpleRow('Ward No / Municipal Land No', fields.wardNo)}
         ${optionRow('Vicinity', ['Slum', 'Residential', 'Commercial', 'Mixed', 'Industrial'], fields.vicinity)}
         ${optionRow('Locality Type', ['Elite/Posh/High Class', 'Upper Middle Class', 'Middle Class', 'Lower Middle Class', 'Poor / Slum'], fields.classOfLocality)}
         ${optionRow('Approach Road Width', ['>=60 Feet Road', '60-40 Feet Road', '40-20 Feet Road', '<20 Feet Road'], fields.approachRoadWidth)}
         ${optionRow('Plot Demarcated at Site', ['Yes', 'No'], fields.plotDemarcated)}
-      </table>
-    </div>`;
-
-    const page2 = `<div style="font-family:Arial,sans-serif;color:#111;line-height:1.25;">
-      <table style="${ts}">
-        <tr><td style="${hd}" colspan="3">SURROUNDING LOCALITY DETAILS (Contd.)</td></tr>
-        <tr><td style="${lbl}" width="30%">Proximity to Civic Amenities</td><td style="${optS}" width="32%">
-          <div style="border-bottom:1px solid #bbb;padding:2px 4px;">Nearest Railway Station</div>
-          <div style="border-bottom:1px solid #bbb;padding:2px 4px;">Nearest Bus Stop</div>
-          <div style="padding:2px 4px;">Nearest Hospital</div>
+        <tr style="background:${rowBg()};"><td style="${lbl}" width="30%">Proximity to Civic Amenities</td><td style="${optS}" width="32%">
+          <div style="border-bottom:1px solid #CCCCCC;padding:2px 5px;">Nearest Railway Station</div>
+          <div style="border-bottom:1px solid #CCCCCC;padding:2px 5px;">Nearest Bus Stop</div>
+          <div style="padding:2px 5px;">Nearest Hospital</div>
         </td><td style="${valS}">
           1. ${fields.landmarkRailway || fields.distanceRailwayStation || 'N/A'}<br/>
           2. ${fields.landmarkBusStop || fields.distanceBusStop || 'N/A'}<br/>
@@ -728,11 +789,11 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
         </td></tr>
         ${optionRow('Property Identification', ['Easy to Identify', 'Identification by documents', 'Additional documents required', 'Difficult to identify'], fields.propertyIdentification)}
         ${optionRow('Proximity to Facilities', ['<1 Km', '1-3 Kms', '3-5 Kms', '>5 Kms'], fields.proximityToFacilities)}
-        <tr><td style="${lbl}">Landmark Details</td><td style="${optS}">
-          <div style="border-bottom:1px solid #bbb;padding:2px 4px;">Nearest Railway Station</div>
-          <div style="border-bottom:1px solid #bbb;padding:2px 4px;">Nearest Bus Stop</div>
-          <div style="border-bottom:1px solid #bbb;padding:2px 4px;">Nearest Hospital</div>
-          <div style="padding:2px 4px;">Nearest Landmark</div>
+        <tr style="background:${rowBg()};"><td style="${lbl}">Landmark Details</td><td style="${optS}">
+          <div style="border-bottom:1px solid #CCCCCC;padding:2px 5px;">Nearest Railway Station</div>
+          <div style="border-bottom:1px solid #CCCCCC;padding:2px 5px;">Nearest Bus Stop</div>
+          <div style="border-bottom:1px solid #CCCCCC;padding:2px 5px;">Nearest Hospital</div>
+          <div style="padding:2px 5px;">Nearest Landmark</div>
         </td><td style="${valS}">
           1. ${fields.landmarkRailway || 'N/A'}<br/>
           2. ${fields.landmarkBusStop || 'N/A'}<br/>
@@ -741,14 +802,24 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
         </td></tr>
       </table>
       <table style="${ts}">
-        <tr><td style="${hd}" colspan="3">PROPERTY DETAILS</td></tr>
-        ${simpleRow('Type of Usage', `<b>${fields.usageType}</b>`)}
-        ${simpleRow('Additional Amenities', `<b>${fields.additionalAmenities}</b>`)}
+        <tr><td style="${hd}" colspan="3">3. PROPERTY DETAILS</td></tr>
+        ${(() => { resetRowIdx(); return ''; })()}
+        ${simpleRow('Type of Usage', `<b>${fields.usageType || 'N/A'}</b>`)}
+        ${simpleRow('Additional Amenities', fields.additionalAmenities || 'N/A')}
         ${optionRow('Legal Status of Property', ['Freehold', 'Lease hold >30 yrs.', 'Lease hold 15-30 yrs.', 'Lease hold <15 yrs.'], fields.legalStatus)}
       </table>
+      ${pageFooter(2, 0)}
+    </div>`;
+
+    // ═══════════════════════════════════════════════════════════════════
+    // PAGE 3 — Subject Property + Structural + Plan Approvals
+    // ═══════════════════════════════════════════════════════════════════
+    resetRowIdx();
+    const page3 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15;">
+      ${pageHeader}
       <table style="${ts}">
-        <tr><td style="${hd}" colspan="3">SUBJECT PROPERTY DETAILS</td></tr>
-        ${simpleRow('Type of Premises', `<b>${fields.premisesType}</b>`)}
+        <tr><td style="${hd}" colspan="3">4. SUBJECT PROPERTY DETAILS</td></tr>
+        ${simpleRow('Type of Premises', `<b>${fields.premisesType || 'N/A'}</b>`)}
         ${simpleRow('Occupied by / Vacant', fields.occupiedBy)}
         ${simpleRow('Is Property Rented', fields.isPropertyRented)}
         ${simpleRow('If Rented, List of Occupants', fields.rentedOccupants)}
@@ -756,11 +827,9 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
         ${simpleRow('Boundary (As per Sketch Map)', `N: ${fields.boundaryNorth || '-'} &nbsp;|&nbsp; E: ${fields.boundaryEast || '-'} &nbsp;|&nbsp; S: ${fields.boundarySouth || '-'} &nbsp;|&nbsp; W: ${fields.boundaryWest || '-'}`)}
         ${simpleRow('Boundary (At Site)', `N: ${fields.buildingBoundaryNorth || '-'} &nbsp;|&nbsp; E: ${fields.buildingBoundaryEast || '-'} &nbsp;|&nbsp; S: ${fields.buildingBoundarySouth || '-'} &nbsp;|&nbsp; W: ${fields.buildingBoundaryWest || '-'}`)}
       </table>
-    </div>`;
-
-    const page3 = `<div style="font-family:Arial,sans-serif;color:#111;line-height:1.25;">
       <table style="${ts}">
-        <tr><td style="${hd}" colspan="3">STRUCTURAL DETAILS</td></tr>
+        <tr><td style="${hd}" colspan="3">5. STRUCTURAL DETAILS</td></tr>
+        ${(() => { resetRowIdx(); return ''; })()}
         ${optionRow('Type of Structure', ['RCC', 'Load Bearing', 'Steel Structure', 'Composite Structure', 'Industrial Shed', 'A/C Sheet', 'G/I Sheet', 'Asbestos Roofing'], fields.structureType)}
         ${simpleRow('No. of Floors', fields.numberOfFloors)}
         ${simpleRow('No. of Wings', fields.numberOfWings)}
@@ -771,145 +840,197 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
         ${simpleRow('Estimated Future Life', fields.estimatedFutureLife)}
         ${simpleRow('Exteriors', fields.exteriors)}
         ${optionRow('Quality of Construction', ['Very Good', 'Good', 'Average', 'Poor'], fields.qualityOfConstruction)}
-        ${simpleRow('Common Areas Remarks', fields.commonAreasRemarks)}
-        ${simpleRow('Other Observations', fields.otherObservations)}
-        ${simpleRow('Flooring & Finishing', fields.flooringType)}
-        ${simpleRow('Roofing & Terracing', fields.roofType)}
+        ${simpleRow('Common Areas Remarks', fields.commonAreasRemarks, '#F2F2F2')}
+        ${simpleRow('Other Observations', fields.otherObservations, '#F2F2F2')}
+        ${simpleRow('Flooring &amp; Finishing', fields.flooringType)}
+        ${simpleRow('Roofing &amp; Terracing', fields.roofType)}
         ${simpleRow('Quality of Fixtures', fields.qualityOfFixtures)}
       </table>
       <table style="${ts}">
-        <tr><td style="${hd}" colspan="3">PLAN APPROVALS</td></tr>
+        <tr><td style="${hd}" colspan="3">6. PLAN APPROVALS</td></tr>
+        ${(() => { resetRowIdx(); return ''; })()}
         ${optionRow('Construction as per Approved Plans', ['Yes', 'No'], fields.constructionApproved)}
         ${simpleRow('Details of Approved Plan', fields.approvalDetails)}
-        ${simpleRow('Construction Permission No. & Date', fields.constructionPermission || 'Not mentioned')}
+        ${simpleRow('Construction Permission No. &amp; Date', fields.constructionPermission || 'Not mentioned')}
         ${simpleRow('Violations / Risk of Demolition', fields.violationsObserved)}
         ${simpleRow('Conforms to Local Byelaws', fields.conformsToByelaws)}
         ${simpleRow('Other Documents Verified', fields.documentsVerified)}
       </table>
+      ${pageFooter(3, 0)}
     </div>`;
 
-    const floorRowsHTML = floorValuations.map(f => `<tr>
-      <td style="${valS}">${f.name}</td>
-      <td style="${valS} text-align:right;">${formatIndianCurrency(f.area)}</td>
-      <td style="${valS} text-align:right;">\u20B9${formatIndianCurrency(f.rate)}</td>
-      <td style="${valS} text-align:right;">\u20B9${formatIndianCurrency(f.estimated)}</td>
-      <td style="${valS} text-align:center;">${f.lifeYears}</td>
-      <td style="${valS} text-align:center;">${f.ageYears}</td>
-      <td style="${valS} text-align:center;">${f.depPct}%</td>
-      <td style="${valS} text-align:right;">\u20B9${formatIndianCurrency(f.netValue)}</td>
-    </tr>`).join('');
+    // ═══════════════════════════════════════════════════════════════════
+    // PAGE 4 — Valuation (Land + Building + Abstract)
+    // ═══════════════════════════════════════════════════════════════════
+    // Floor rows with alternating colors
+    let floorRowBgIdx = 0;
+    const floorRowsHTML = floorValuations.map(f => {
+      const bg = floorRowBgIdx % 2 === 0 ? '#FFFFFF' : '#DCE6F1';
+      floorRowBgIdx++;
+      return `<tr style="background:${bg};">
+        <td style="${valS};background:${bg};">${f.name}</td>
+        <td style="${valS};background:${bg};text-align:right;">${formatIndianCurrency(f.area)}</td>
+        <td style="${valS};background:${bg};text-align:right;">\u20B9${formatIndianCurrency(f.rate)}</td>
+        <td style="${valS};background:${bg};text-align:right;">\u20B9${formatIndianCurrency(f.estimated)}</td>
+        <td style="${valS};background:${bg};text-align:center;">${f.lifeYears}</td>
+        <td style="${valS};background:${bg};text-align:center;">${f.ageYears}</td>
+        <td style="${valS};background:${bg};text-align:center;">${f.depPct}%</td>
+        <td style="${valS};background:${bg};text-align:right;">\u20B9${formatIndianCurrency(f.netValue)}</td>
+      </tr>`;
+    }).join('');
 
-    const page4 = `<div style="font-family:Arial,sans-serif;color:#111;line-height:1.25;">
+    resetRowIdx();
+    const page4 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15;">
+      ${pageHeader}
       <table style="${ts}">
-        <tr><td style="${hd}" colspan="3">VALUATION \u2014 Land and Building</td></tr>
+        <tr><td style="${hd}" colspan="3">7. VALUATION \u2014 Land</td></tr>
         ${simpleRow('Land Area', `${fields.landArea || '0'} ${fields.landAreaUnit}`)}
         ${simpleRow('Current Govt. Approved Rates for Land', `Rs.${fields.govtLandRate || fields.guidelineValue || 'N/A'}/- Per ${fields.landAreaUnit}`)}
-        ${simpleRow('Recommended Rate & Basis', `Rs.${fields.landRatePerUnit || 'N/A'}/- Per ${fields.landAreaUnit} ${fields.recommendedRateBasis ? '(' + fields.recommendedRateBasis + ')' : ''}`)}
-        ${simpleRow('Land Value', `${fields.landArea || '0'} ${fields.landAreaUnit} X Rs.${fields.landRatePerUnit || '0'}/- = <b>Rs.${formatIndianCurrency(landValue)}/-</b>`)}
+        ${simpleRow('Recommended Rate &amp; Basis', `Rs.${fields.landRatePerUnit || 'N/A'}/- Per ${fields.landAreaUnit} ${fields.recommendedRateBasis ? '(' + fields.recommendedRateBasis + ')' : ''}`)}
+        ${simpleRow('Land Value', `${fields.landArea || '0'} ${fields.landAreaUnit} &times; Rs.${fields.landRatePerUnit || '0'}/- = <b>Rs.${formatIndianCurrency(landValue)}/-</b>`)}
         ${simpleRow('Actual BUA of Premises', `${formatIndianCurrency(totalPlinthArea)} ${fields.floorAreaUnit || 'Sqft'}`)}
         ${fields.buaAsPerApprovals ? simpleRow('BUA as per Approvals', fields.buaAsPerApprovals) : ''}
       </table>
-      <p style="font-size:9px;font-weight:bold;text-decoration:underline;margin:6px 0 4px;text-align:center;">VALUATION OF BUILDING (After Depreciation)</p>
-      <table style="width:100%;border-collapse:collapse;margin-bottom:8px;font-size:8px;">
-        <tr style="background:#b0c4de;font-weight:bold;">
-          <th style="border:1px solid #555;padding:3px;">Floor</th>
-          <th style="border:1px solid #555;padding:3px;text-align:right;">Area</th>
-          <th style="border:1px solid #555;padding:3px;text-align:right;">Rate (\u20B9/Sqft)</th>
-          <th style="border:1px solid #555;padding:3px;text-align:right;">Estimated (\u20B9)</th>
-          <th style="border:1px solid #555;padding:3px;text-align:center;">Life</th>
-          <th style="border:1px solid #555;padding:3px;text-align:center;">Age</th>
-          <th style="border:1px solid #555;padding:3px;text-align:center;">Dep%</th>
-          <th style="border:1px solid #555;padding:3px;text-align:right;">Net Value (\u20B9)</th>
+      <p style="font-size:10px;font-weight:bold;color:#1F4E78;text-decoration:underline;margin:6px 0 4px;text-align:center;font-family:Calibri,Arial,sans-serif;">8. VALUATION OF BUILDING (After Depreciation)</p>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:8px;font-size:8.5px;font-family:Calibri,Arial,sans-serif;">
+        <tr style="background:#1F4E78;">
+          <th style="border:1px solid #1F4E78;padding:4px 5px;color:#FFF;font-weight:bold;text-align:center;">Floor</th>
+          <th style="border:1px solid #1F4E78;padding:4px 5px;color:#FFF;font-weight:bold;text-align:right;">Area</th>
+          <th style="border:1px solid #1F4E78;padding:4px 5px;color:#FFF;font-weight:bold;text-align:right;">Rate (\u20B9)</th>
+          <th style="border:1px solid #1F4E78;padding:4px 5px;color:#FFF;font-weight:bold;text-align:right;">Estimated (\u20B9)</th>
+          <th style="border:1px solid #1F4E78;padding:4px 5px;color:#FFF;font-weight:bold;text-align:center;">Life</th>
+          <th style="border:1px solid #1F4E78;padding:4px 5px;color:#FFF;font-weight:bold;text-align:center;">Age</th>
+          <th style="border:1px solid #1F4E78;padding:4px 5px;color:#FFF;font-weight:bold;text-align:center;">Dep%</th>
+          <th style="border:1px solid #1F4E78;padding:4px 5px;color:#FFF;font-weight:bold;text-align:right;">Net Value (\u20B9)</th>
         </tr>
         ${floorRowsHTML}
-        <tr style="font-weight:bold;background:#e8dcc8;">
-          <td style="${valS}" colspan="7">Total Building Value</td>
-          <td style="${valS} text-align:right;">\u20B9${formatIndianCurrency(totalBuildingValue)}</td>
+        <tr style="background:#FFF2CC;font-weight:bold;">
+          <td style="${valS};background:#FFF2CC;color:#1F4E78;" colspan="7">Total Building Value</td>
+          <td style="${valS};background:#FFF2CC;text-align:right;color:#1F4E78;">\u20B9${formatIndianCurrency(totalBuildingValue)}</td>
         </tr>
       </table>
       <table style="${ts}">
-        ${simpleRow('Market Value (Land + Building)', `<b>Rs.${formatIndianCurrency(totalPropertyValue)}/- (${rupeesInWords(totalPropertyValue)})</b>`)}
-        ${simpleRow(`Realizable Value (${fields.realizablePct || '90'}%)`, `Rs.${formatIndianCurrency(realizableValue)}/-`)}
-        ${simpleRow(`Forced Sale Value (${fields.distressPct || '80'}%)`, `<b>Rs.${formatIndianCurrency(distressValue)}/-</b> (${rupeesInWords(distressValue)})`)}
+        <tr><td style="${hd}" colspan="3">9. ABSTRACT OF VALUATION</td></tr>
+        ${(() => { resetRowIdx(); return ''; })()}
+        ${simpleRow('Market Value (Land + Building)', `<b>Rs.${formatIndianCurrency(totalPropertyValue)}/- (${rupeesInWords(totalPropertyValue)})</b>`, '#E2EFDA')}
+        ${simpleRow(`Realizable Value (${fields.realizablePct || '90'}%)`, `<b>Rs.${formatIndianCurrency(realizableValue)}/-</b>`, '#E2EFDA')}
+        ${simpleRow(`Forced Sale / Distress Value (${fields.distressPct || '80'}%)`, `<b>Rs.${formatIndianCurrency(distressValue)}/- (${rupeesInWords(distressValue)})</b>`, '#FFF2CC')}
         ${optionRow('Marketability', ['Excellent', 'Very Good', 'Good', 'Difficult'], fields.marketability)}
         ${optionRow('Valuation Result', ['Positive', 'Negative'], fields.valuationResult)}
         ${simpleRow('Replacement Cost / Insurance Value', fields.replacementCost ? `Rs.${formatIndianCurrency(fields.replacementCost)}/-` : 'N/A')}
-        ${simpleRow('Deviations in Property', fields.deviations)}
+        ${simpleRow('Deviations in Property', fields.deviations, '#F2F2F2')}
+        ${fields.guidelineValue ? simpleRow('Govt./Guideline Value', `Rs.${formatIndianCurrency(fields.guidelineValue)}/-`) : ''}
       </table>
+      ${pageFooter(4, 0)}
     </div>`;
 
-    const page5 = `<div style="font-family:Arial,sans-serif;color:#111;line-height:1.4;">
+    // ═══════════════════════════════════════════════════════════════════
+    // PAGE 5 — Remarks, Declaration & Valuation Certificate
+    // ═══════════════════════════════════════════════════════════════════
+    resetRowIdx();
+    const page5 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15;">
+      ${pageHeader}
       <table style="${ts}">
-        <tr><td style="${hd}" colspan="2">REMARKS, DEMARCATION & POSSESSION</td></tr>
-        <tr><td style="${lbl}" width="25%">Demarcation</td><td style="${valS}">${fields.demarcation || 'N/A'}</td></tr>
-        <tr><td style="${lbl}">Possession</td><td style="${valS}">${fields.possession || 'N/A'}</td></tr>
-        <tr><td style="${lbl}">Remarks / Observations</td><td style="${valS}">${fields.remarks || 'N/A'}</td></tr>
+        <tr><td style="${hd}" colspan="2">10. REMARKS, DEMARCATION &amp; POSSESSION</td></tr>
+        <tr style="background:#F2F2F2;"><td style="${lbl}" width="25%">Demarcation</td><td style="${valS};font-family:Cambria,'Times New Roman',serif;font-size:9px;background:#F2F2F2;">${fields.demarcation || 'N/A'}</td></tr>
+        <tr><td style="${lbl}">Possession</td><td style="${valS};font-family:Cambria,'Times New Roman',serif;font-size:9px;">${fields.possession || 'N/A'}</td></tr>
+        <tr style="background:#F2F2F2;"><td style="${lbl}">Remarks / Observations</td><td style="${valS};font-family:Cambria,'Times New Roman',serif;font-size:9px;background:#F2F2F2;">${fields.remarks || 'N/A'}</td></tr>
       </table>
-      <div style="margin-top:10px;font-size:9px;line-height:1.5;">
-        <p style="font-weight:bold;text-decoration:underline;margin-bottom:4px;">Declaration:</p>
+      <div style="margin-top:10px;font-size:9px;line-height:1.5;font-family:Cambria,'Times New Roman',serif;color:#333;">
+        <p style="font-weight:bold;font-size:10px;color:#1F4E78;text-decoration:underline;margin-bottom:4px;font-family:Calibri,Arial,sans-serif;">Declaration:</p>
         <p style="margin-bottom:3px;">I hereby declare that:</p>
-        <p style="margin-bottom:3px;">- I have deputed my representative <b>${fields.representativeName ? 'Mr. ' + fields.representativeName : '______'}</b> to inspect the property on <b>${fields.dateOfInspection || '______'}</b>.</p>
-        <p style="margin-bottom:3px;">- I have no direct or indirect interest in the property valued.</p>
-        <p style="margin-bottom:3px;">- The information furnished is true and correct to the best of my knowledge and belief.</p>
+        <p style="margin-bottom:3px;">&bull; I have deputed my representative <b>${fields.representativeName ? 'Mr. ' + fields.representativeName : '______'}</b> to inspect the property on <b>${fields.dateOfInspection || '______'}</b>.</p>
+        <p style="margin-bottom:3px;">&bull; I have no direct or indirect interest in the property valued.</p>
+        <p style="margin-bottom:3px;">&bull; The information furnished is true and correct to the best of my knowledge and belief.</p>
       </div>
-      <p style="font-size:10px;font-weight:bold;text-align:center;margin:15px 0 8px;text-decoration:underline;">VALUATION CERTIFICATE</p>
-      <div style="border:1px solid #555;padding:10px;font-size:9px;line-height:1.5;background:#fdfcf8;">
+      <p style="font-size:11px;font-weight:bold;text-align:center;margin:14px 0 8px;text-decoration:underline;color:#1F4E78;font-family:Calibri,Arial,sans-serif;">11. VALUATION CERTIFICATE</p>
+      <div style="border:1.5px solid #1F4E78;padding:12px;font-size:9px;line-height:1.6;background:#FDFCF8;font-family:Cambria,'Times New Roman',serif;">
         <p style="margin-top:0;">This is to certify that the undersigned has personally inspected the property belonging to
         <b>${fields.ownerName}</b> situated at <b>${fields.ownerAddress}</b> on
         <b>${fields.dateOfInspection}</b> and after careful examination and consideration of all relevant factors,
         the Fair Market Value of the said property is assessed as under:</p>
-        <p><b>Fair Market Value: \u20B9 ${formatIndianCurrency(totalPropertyValue)} (${rupeesInWords(totalPropertyValue)})</b></p>
-        <p><b>Realizable Value (${fields.realizablePct || '90'}%): \u20B9 ${formatIndianCurrency(realizableValue)} (${rupeesInWords(realizableValue)})</b></p>
-        <p style="margin-bottom:0;"><b>Distress Sale Value (${fields.distressPct || '80'}%): \u20B9 ${formatIndianCurrency(distressValue)} (${rupeesInWords(distressValue)})</b></p>
+        <p style="background:#E2EFDA;padding:4px 8px;margin:4px 0;"><b>Fair Market Value: \u20B9 ${formatIndianCurrency(totalPropertyValue)} (${rupeesInWords(totalPropertyValue)})</b></p>
+        <p style="padding:4px 0;margin:2px 0;"><b>Realizable Value (${fields.realizablePct || '90'}%): \u20B9 ${formatIndianCurrency(realizableValue)} (${rupeesInWords(realizableValue)})</b></p>
+        <p style="background:#FFF2CC;padding:4px 8px;margin:4px 0;"><b>Distress Sale Value (${fields.distressPct || '80'}%): \u20B9 ${formatIndianCurrency(distressValue)} (${rupeesInWords(distressValue)})</b></p>
       </div>
-      <div style="margin-top:25px;text-align:right;font-size:9px;line-height:1.4;">
-        <p>_______________________________</p>
-        <p style="font-weight:bold;margin:2px 0;color:#0f2038;">Satyajit Mohanty</p>
-        <p style="margin:2px 0;">B.Sc.(Engg.), M.Tech (IIT Kharagpur)</p>
-        <p style="margin:2px 0;">Registered Valuer \u2014 IBBI/RV/02/2019/10594</p>
-        <p style="margin:2px 0;color:#666;">S. Mohanty & Associates, Bhubaneswar</p>
+      <div style="margin-top:28px;text-align:right;font-size:9px;line-height:1.5;font-family:Calibri,Arial,sans-serif;">
+        <p style="margin:0;">_______________________________</p>
+        <p style="font-weight:bold;margin:3px 0;color:#1F4E78;font-size:10px;">Satyajit Mohanty</p>
+        <p style="margin:2px 0;color:#333;">B.Sc.(Engg.), M.Tech (IIT Kharagpur)</p>
+        <p style="margin:2px 0;color:#333;">Registered Valuer \u2014 IBBI/RV/02/2019/10594</p>
+        <p style="margin:2px 0;color:#555;">S. Mohanty &amp; Associates, Bhubaneswar</p>
       </div>
+      ${pageFooter(5, 0)}
     </div>`;
 
     const generatedPages = [page1, page2, page3, page4, page5];
+    let pageCount = 5;
 
-    // Property Photographs Page
+    // ═══════════════════════════════════════════════════════════════════
+    // PROPERTY PHOTOGRAPHS PAGE
+    // ═══════════════════════════════════════════════════════════════════
     if (fields.propertyImages && fields.propertyImages.length > 0) {
-      generatedPages.push(`<div style="font-family:Arial,sans-serif;color:#111;">
-        <p style="font-size:11px;font-weight:bold;text-align:center;text-decoration:underline;margin-bottom:12px;">PROPERTY PHOTOGRAPHS</p>
-        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
+      pageCount++;
+      const photoPageNum = pageCount;
+      generatedPages.push(`<div style="font-family:Calibri,Arial,sans-serif;color:#111;">
+        ${pageHeader}
+        <p style="font-size:11px;font-weight:bold;text-align:center;text-decoration:underline;margin-bottom:12px;color:#1F4E78;">12. PROPERTY PHOTOGRAPHS</p>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
           ${fields.propertyImages.map((url, idx) => `
-            <div style="border:1px solid #ddd;padding:4px;border-radius:3px;text-align:center;background:#fff;">
-              <img src="${url}" style="width:100%;height:190px;object-fit:cover;border-radius:2px;" crossOrigin="anonymous" />
-              <p style="font-size:8px;margin:4px 0 0;font-weight:bold;">Photograph #${idx + 1}</p>
+            <div style="border:0.75pt solid #AAAAAA;padding:4px;text-align:center;background:#FFF;">
+              <img src="${url}" style="width:100%;height:180px;object-fit:cover;" crossOrigin="anonymous" />
+              <p style="font-size:8.5px;margin:5px 0 0;font-style:italic;color:#555;font-family:Calibri,Arial,sans-serif;">Figure ${idx + 1}: Photograph ${idx + 1}</p>
             </div>
           `).join('')}
         </div>
+        ${pageFooter(photoPageNum, 0)}
       </div>`);
     }
 
-    // Sketch Map Page
+    // ═══════════════════════════════════════════════════════════════════
+    // SKETCH MAP PAGE
+    // ═══════════════════════════════════════════════════════════════════
     if (fields.sketchMapImage) {
-      generatedPages.push(`<div style="font-family:Arial,sans-serif;color:#111;">
-        <p style="font-size:11px;font-weight:bold;text-align:center;text-decoration:underline;margin-bottom:12px;">SKETCH MAP</p>
-        <div style="text-align:center;">
-          <img src="${fields.sketchMapImage}" style="max-width:100%;max-height:700px;border:1px solid #ddd;" crossOrigin="anonymous" />
+      pageCount++;
+      const sketchPageNum = pageCount;
+      const sketchFigNum = (fields.propertyImages?.length || 0) + 1;
+      generatedPages.push(`<div style="font-family:Calibri,Arial,sans-serif;color:#111;">
+        ${pageHeader}
+        <p style="font-size:11px;font-weight:bold;text-align:center;text-decoration:underline;margin-bottom:12px;color:#1F4E78;">13. SKETCH MAP</p>
+        <div style="text-align:center;border:0.75pt solid #AAAAAA;padding:6px;">
+          <img src="${fields.sketchMapImage}" style="max-width:100%;max-height:680px;" crossOrigin="anonymous" />
+          <p style="font-size:9px;font-style:italic;color:#555;margin-top:6px;font-family:Calibri,Arial,sans-serif;">Figure ${sketchFigNum}: Revenue Sketch Map</p>
         </div>
+        <p style="font-size:8px;color:#555;text-align:center;margin-top:4px;font-style:italic;">Source: Site Visit dated ${fields.dateOfInspection || 'N/A'}</p>
+        ${pageFooter(sketchPageNum, 0)}
       </div>`);
     }
 
-    // Location Map Page
+    // ═══════════════════════════════════════════════════════════════════
+    // LOCATION MAP PAGE
+    // ═══════════════════════════════════════════════════════════════════
     if (fields.locationMapImage) {
-      generatedPages.push(`<div style="font-family:Arial,sans-serif;color:#111;">
-        <p style="font-size:11px;font-weight:bold;text-align:center;text-decoration:underline;margin-bottom:12px;">LOCATION MAP</p>
-        <div style="text-align:center;">
-          <img src="${fields.locationMapImage}" style="max-width:100%;max-height:650px;border:1px solid #ddd;" crossOrigin="anonymous" />
+      pageCount++;
+      const locPageNum = pageCount;
+      const locFigNum = (fields.propertyImages?.length || 0) + (fields.sketchMapImage ? 1 : 0) + 1;
+      generatedPages.push(`<div style="font-family:Calibri,Arial,sans-serif;color:#111;">
+        ${pageHeader}
+        <p style="font-size:11px;font-weight:bold;text-align:center;text-decoration:underline;margin-bottom:12px;color:#1F4E78;">14. LOCATION MAP</p>
+        <div style="text-align:center;border:0.75pt solid #AAAAAA;padding:6px;">
+          <img src="${fields.locationMapImage}" style="max-width:100%;max-height:630px;" crossOrigin="anonymous" />
+          <p style="font-size:9px;font-style:italic;color:#555;margin-top:6px;font-family:Calibri,Arial,sans-serif;">Figure ${locFigNum}: Location Map</p>
         </div>
-        ${fields.latitude || fields.longitude ? `<p style="text-align:center;font-size:9px;margin-top:8px;color:#b8860b;font-weight:bold;">Lat: ${fields.latitude || 'N/A'}, Long: ${fields.longitude || 'N/A'}</p>` : ''}
+        ${fields.latitude || fields.longitude ? `<p style="text-align:center;font-size:8.5px;margin-top:6px;color:#1F4E78;font-weight:bold;">Lat: ${fields.latitude || 'N/A'}, Long: ${fields.longitude || 'N/A'}</p>` : ''}
+        <p style="font-size:8px;color:#555;text-align:center;margin-top:2px;font-style:italic;">Source: Site Visit dated ${fields.dateOfInspection || 'N/A'}</p>
+        ${pageFooter(locPageNum, 0)}
       </div>`);
     }
 
-    return generatedPages;
+    // Post-process: inject correct total page count into all footers (replaces "Page N of 0")
+    const total = generatedPages.length;
+    return generatedPages.map((p, i) =>
+      p.replace(/Page \d+ of 0/g, `Page ${i + 1} of ${total}`)
+    );
   }
 
   // ═══════════════════════════════════════════════════════════
