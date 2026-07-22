@@ -75,13 +75,14 @@ export default async function PortalLayout({ children }: { children: React.React
         <div className="px-4 py-5 border-b border-white/10">
           <div className="flex items-center gap-2 overflow-hidden">
             {/* Collapsed: show small square icon version */}
-            <div className="flex-shrink-0 w-14 h-14 flex items-center justify-center group-hover:hidden mx-auto">
+            <div className="flex-shrink-0 w-16 h-16 flex items-center justify-center group-hover:hidden mx-auto">
               <Image
                 src="/logo/smohantyassociate_symbol.png"
                 alt="S Mohanty Associates Symbol"
-                width={48}
-                height={48}
-                className="w-12 h-12 object-contain"
+                width={64}
+                height={64}
+                unoptimized
+                className="w-16 h-16 object-contain"
               />
             </div>
             {/* Expanded: show full logo */}
@@ -90,9 +91,10 @@ export default async function PortalLayout({ children }: { children: React.React
                 <Image
                   src="/logo/smohantyassociate_logo.png"
                   alt="S Mohanty Associates"
-                  width={240}
-                  height={60}
-                  className="h-12 w-auto object-contain -ml-1"
+                  width={320}
+                  height={80}
+                  unoptimized
+                  className="h-16 w-auto object-contain -ml-1"
                 />
               </div>
               <div className="text-[9px] uppercase tracking-[0.2em] text-[#ffcb47] font-medium mt-1.5 ml-1">Employee Portal</div>
