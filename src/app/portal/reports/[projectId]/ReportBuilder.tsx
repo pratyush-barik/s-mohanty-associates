@@ -702,7 +702,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     const optionRow = (label: string, opts: string[], val: string) => {
       const bg = '#DDEEF7'; // User requested entire row blue for option rows
       rowIdx++;
-      return `<tr style="background:${bg};"><td style="${lbl}font-weight:bold;color:#000000;" width="30%">${label}</td><td style="${optS}" width="32%">${opts.map(o => `<div style="border-bottom:1px solid #AAAAAA;padding:3px 5px;${o === val ? 'font-weight:bold;color:#000000;' : 'color:#333333;'}">${o}</div>`).join('')}</td><td style="${valS}font-weight:bold;color:#000000;">${val ? val : 'N/A'}</td></tr>`;
+      return `<tr style="background:${bg};"><td style="${lbl}font-weight:bold;color:#000000;" width="30%">${label}</td><td style="${optS}" width="32%">${opts.map(o => `<div style="border-bottom:1px solid #AAAAAA;padding:3px 5px;font-weight:bold;color:#000000;">${o}</div>`).join('')}</td><td style="${valS}font-weight:bold;color:#000000;">${val ? val : 'N/A'}</td></tr>`;
     };
 
     // ── Per-page header (logo left | company name center | ref+date right) ──
