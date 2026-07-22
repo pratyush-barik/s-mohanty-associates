@@ -174,7 +174,7 @@ export default function Navbar({ user }: NavbarProps) {
         <div className="container mx-auto max-w-[1440px] pl-2 pr-6">
           <div className="flex items-center justify-between h-28">
             <Link href="/" className="flex items-center group">
-              <div className="bg-white/95 px-4 py-2 rounded-2xl shadow-sm hover:shadow-md transition-all -ml-2">
+              <div className="transition-all -ml-2">
                 <Image
                   src="/logo/smohantyassociate_logo.png"
                   alt="S Mohanty Associates"
