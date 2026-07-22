@@ -683,28 +683,26 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
   function generatePDFPages(): string[] {
     // ── Style constants ──────────────────────────────────────────────────────
     const ts = 'width:100%;border-collapse:collapse;margin-bottom:10px;font-family:Calibri,Arial,sans-serif;';
-    // Label column: Light Blue bg (#DDEEF7), Dark Blue text (#1F4E78) — spec: Section Header RGB 221,235,247
-    const lbl = 'border:1px solid #AAAAAA;padding:4px 6px;font-size:9px;font-weight:bold;background:#DDEEF7;text-align:left;color:#1F4E78;vertical-align:middle;';
-    // Option column (list of choices)
+    // Base styles (background and text color applied dynamically per row type)
+    const lbl = 'border:1px solid #AAAAAA;padding:4px 6px;font-size:9px;text-align:left;vertical-align:middle;';
     const optS = 'border:1px solid #AAAAAA;padding:0;font-size:8.5px;vertical-align:top;';
-    // Value column
-    const valS = 'border:1px solid #AAAAAA;padding:4px 6px;font-size:9px;vertical-align:middle;color:#111;';
-    // Table section header (Dark Blue #1F4E78, White text — per spec)
+    const valS = 'border:1px solid #AAAAAA;padding:4px 6px;font-size:9px;vertical-align:middle;';
     const hd = 'font-size:10px;font-weight:bold;background:#1F4E78;padding:5px 6px;border:1px solid #1F4E78;text-align:center;color:#FFFFFF;letter-spacing:0.5px;';
 
     // ── Alternating row colors ────────────────────────────────────────────────
     let rowIdx = 0;
     const resetRowIdx = () => { rowIdx = 0; };
-    const rowBg = () => { const bg = rowIdx % 2 === 0 ? '#FFFFFF' : '#DCE6F1'; rowIdx++; return bg; };
+    const rowBg = () => { const bg = rowIdx % 2 === 0 ? '#FFFFFF' : '#EEF4FB'; rowIdx++; return bg; };
 
     // ── Row helpers ───────────────────────────────────────────────────────────
     const simpleRow = (label: string, val: string, bgOverride?: string) => {
       const bg = bgOverride !== undefined ? bgOverride : rowBg();
-      return `<tr style="background:${bg};"><td style="${lbl}" width="30%">${label}</td><td style="${valS};background:${bg};" colspan="2">${val || 'N/A'}</td></tr>`;
+      return `<tr style="background:${bg};"><td style="${lbl}font-weight:bold;color:#1F4E78;" width="30%">${label}</td><td style="${valS}color:#111;" colspan="2">${val || 'N/A'}</td></tr>`;
     };
     const optionRow = (label: string, opts: string[], val: string) => {
-      const bg = rowBg();
-      return `<tr style="background:${bg};"><td style="${lbl}" width="30%">${label}</td><td style="${optS};background:${bg};" width="32%">${opts.map(o => `<div style="border-bottom:1px solid #CCCCCC;padding:2px 5px;${o === val ? 'font-weight:bold;background:#C5DDF0;color:#1F4E78;' : ''}">${o}</div>`).join('')}</td><td style="${valS};background:${bg};">${val ? `<b>${val}</b>` : 'N/A'}</td></tr>`;
+      const bg = '#DDEEF7'; // User requested entire row blue for option rows
+      rowIdx++;
+      return `<tr style="background:${bg};"><td style="${lbl}font-weight:bold;color:#000000;" width="30%">${label}</td><td style="${optS}" width="32%">${opts.map(o => `<div style="border-bottom:1px solid #AAAAAA;padding:3px 5px;${o === val ? 'font-weight:bold;color:#000000;' : 'color:#333333;'}">${o}</div>`).join('')}</td><td style="${valS}font-weight:bold;color:#000000;">${val ? val : 'N/A'}</td></tr>`;
     };
 
     // ── Per-page header (logo left | company name center | ref+date right) ──
@@ -778,23 +776,23 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
         ${optionRow('Locality Type', ['Elite/Posh/High Class', 'Upper Middle Class', 'Middle Class', 'Lower Middle Class', 'Poor / Slum'], fields.classOfLocality)}
         ${optionRow('Approach Road Width', ['>=60 Feet Road', '60-40 Feet Road', '40-20 Feet Road', '<20 Feet Road'], fields.approachRoadWidth)}
         ${optionRow('Plot Demarcated at Site', ['Yes', 'No'], fields.plotDemarcated)}
-        <tr style="background:${rowBg()};"><td style="${lbl}" width="30%">Proximity to Civic Amenities</td><td style="${optS}" width="32%">
-          <div style="border-bottom:1px solid #CCCCCC;padding:2px 5px;">Nearest Railway Station</div>
-          <div style="border-bottom:1px solid #CCCCCC;padding:2px 5px;">Nearest Bus Stop</div>
+        <tr style="background:${rowBg()};"><td style="${lbl}font-weight:bold;color:#1F4E78;" width="30%">Proximity to Civic Amenities</td><td style="${optS}" width="32%">
+          <div style="border-bottom:1px solid #AAAAAA;padding:2px 5px;">Nearest Railway Station</div>
+          <div style="border-bottom:1px solid #AAAAAA;padding:2px 5px;">Nearest Bus Stop</div>
           <div style="padding:2px 5px;">Nearest Hospital</div>
-        </td><td style="${valS}">
+        </td><td style="${valS}color:#111;">
           1. ${fields.landmarkRailway || fields.distanceRailwayStation || 'N/A'}<br/>
           2. ${fields.landmarkBusStop || fields.distanceBusStop || 'N/A'}<br/>
           3. ${fields.landmarkHospital || fields.distanceHospital || 'N/A'}
         </td></tr>
         ${optionRow('Property Identification', ['Easy to Identify', 'Identification by documents', 'Additional documents required', 'Difficult to identify'], fields.propertyIdentification)}
         ${optionRow('Proximity to Facilities', ['<1 Km', '1-3 Kms', '3-5 Kms', '>5 Kms'], fields.proximityToFacilities)}
-        <tr style="background:${rowBg()};"><td style="${lbl}">Landmark Details</td><td style="${optS}">
-          <div style="border-bottom:1px solid #CCCCCC;padding:2px 5px;">Nearest Railway Station</div>
-          <div style="border-bottom:1px solid #CCCCCC;padding:2px 5px;">Nearest Bus Stop</div>
-          <div style="border-bottom:1px solid #CCCCCC;padding:2px 5px;">Nearest Hospital</div>
+        <tr style="background:${rowBg()};"><td style="${lbl}font-weight:bold;color:#1F4E78;">Landmark Details</td><td style="${optS}">
+          <div style="border-bottom:1px solid #AAAAAA;padding:2px 5px;">Nearest Railway Station</div>
+          <div style="border-bottom:1px solid #AAAAAA;padding:2px 5px;">Nearest Bus Stop</div>
+          <div style="border-bottom:1px solid #AAAAAA;padding:2px 5px;">Nearest Hospital</div>
           <div style="padding:2px 5px;">Nearest Landmark</div>
-        </td><td style="${valS}">
+        </td><td style="${valS}color:#111;">
           1. ${fields.landmarkRailway || 'N/A'}<br/>
           2. ${fields.landmarkBusStop || 'N/A'}<br/>
           3. ${fields.landmarkHospital || 'N/A'}<br/>
