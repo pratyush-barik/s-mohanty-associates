@@ -22,7 +22,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="text-center mb-8">
           <a href="/" className="inline-block bg-white/95 px-5 py-2.5 rounded-2xl shadow-lg hover:shadow-xl transition-all">
             <Image
-              src="/smohantyassociate_logo.svg"
+              src="/smohantyassociate_logo.png"
               alt="S Mohanty Associates"
               width={1000}
               height={250}

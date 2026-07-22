@@ -43,7 +43,7 @@ export default function Footer() {
           <div className="lg:col-span-1">
             <div className="mb-5 inline-block bg-white/95 px-4 py-2 rounded-xl shadow-sm">
               <Image
-                src="/smohantyassociate_logo.svg"
+                src="/smohantyassociate_logo.png"
                 alt="S Mohanty Associates"
                 width={800}
                 height={200}

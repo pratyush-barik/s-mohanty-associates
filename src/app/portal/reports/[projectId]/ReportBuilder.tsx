@@ -745,7 +745,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
       <table style="width:100%;border-collapse:collapse;margin-bottom:8px;border-bottom:2px solid #1F4E78;padding-bottom:5px;">
         <tr>
           <td style="width:25%;vertical-align:middle;">
-            <img src="/smohantyassociate_logo.svg" alt="S Mohanty Associates" style="height:34px;width:auto;object-fit:contain;" crossOrigin="anonymous" onerror="this.style.display='none'" />
+            <img src="/smohantyassociate_logo.png" alt="S Mohanty Associates" style="height:34px;width:auto;object-fit:contain;" crossOrigin="anonymous" onerror="this.style.display='none'" />
           </td>
           <td style="text-align:center;vertical-align:middle;">
             <div style="font-family:Calibri,Arial,sans-serif;font-size:11px;font-weight:bold;color:#1F4E78;letter-spacing:0.5px;">S. MOHANTY &amp; ASSOCIATES</div>
