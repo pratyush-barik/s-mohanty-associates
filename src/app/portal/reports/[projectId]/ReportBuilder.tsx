@@ -547,6 +547,10 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
   };
 
   const handleSubmit = async () => {
+    if (!fields.propertyImages || fields.propertyImages.length < 2) {
+      setMessage({ type: 'error', text: 'Please upload at least 2 property photographs before submitting.' });
+      return;
+    }
     if (!confirm('Submit this report for manager verification? You cannot edit it until the manager returns it.')) return;
     setLoading(true); setMessage(null);
     await saveReportDraft(projectId, fields);
@@ -634,6 +638,10 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
   };
 
   const handleFinalize = async () => {
+    if (!fields.propertyImages || fields.propertyImages.length < 2) {
+      setMessage({ type: 'error', text: 'Please upload at least 2 property photographs before finalizing.' });
+      return;
+    }
     if (!confirm('Finalize this report and share it with the client? This will generate the official PDF and delete temporary draft images.')) return;
     setLoading(true);
     setMessage({ type: 'success', text: 'Generating final PDF...' });
@@ -1004,24 +1012,56 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     let pageCount = 5;
 
     // ═══════════════════════════════════════════════════════════════════
-    // PROPERTY PHOTOGRAPHS PAGE
+    // PROPERTY PHOTOGRAPHS PAGES (dynamic pagination — 6 images/page)
     // ═══════════════════════════════════════════════════════════════════
     if (fields.propertyImages && fields.propertyImages.length > 0) {
-      pageCount++;
-      const photoPageNum = pageCount;
-      generatedPages.push(`<div style="font-family:Calibri,Arial,sans-serif;color:#111;">
-        ${pageHeader}
-        <p style="font-size:11px;font-weight:bold;text-align:center;text-decoration:underline;margin-bottom:12px;color:#1F4E78;">12. PROPERTY PHOTOGRAPHS</p>
-        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
-          ${fields.propertyImages.map((url, idx) => `
-            <div style="border:0.75pt solid #AAAAAA;padding:4px;text-align:center;background:#FFF;">
-              <img src="${url}" style="width:100%;height:180px;object-fit:cover;" crossOrigin="anonymous" />
-              <p style="font-size:8.5px;margin:5px 0 0;font-style:italic;color:#555;font-family:Calibri,Arial,sans-serif;">Figure ${idx + 1}: Photograph ${idx + 1}</p>
-            </div>
-          `).join('')}
-        </div>
-        ${pageFooter(photoPageNum, 0)}
-      </div>`);
+      const IMGS_PER_PAGE = 6; // 2 columns × 3 rows
+      const totalImages = fields.propertyImages.length;
+      const totalPhotoPages = Math.ceil(totalImages / IMGS_PER_PAGE);
+
+      for (let pg = 0; pg < totalPhotoPages; pg++) {
+        pageCount++;
+        const photoPageNum = pageCount;
+        const startIdx = pg * IMGS_PER_PAGE;
+        const pageImages = fields.propertyImages.slice(startIdx, startIdx + IMGS_PER_PAGE);
+        const imgCount = pageImages.length;
+        // Calculate dynamic image height based on how many images are on this page
+        // Available content height ≈ 680px (after header/footer/title)
+        // Each row needs: image + caption (~18px) + gap
+        const rows = Math.ceil(imgCount / 2);
+        const availableH = 680;
+        const gapBetweenRows = rows > 1 ? Math.min(16, Math.floor((availableH - rows * 160) / (rows + 1))) : 20;
+        const imgH = Math.min(220, Math.max(140, Math.floor((availableH - (rows + 1) * gapBetweenRows - rows * 22) / rows)));
+
+        const isFirstPhotoPage = pg === 0;
+        const title = isFirstPhotoPage
+          ? `<p style="font-size:11px;font-weight:bold;text-align:center;text-decoration:underline;margin-bottom:${gapBetweenRows}px;color:#1F4E78;">12. PROPERTY PHOTOGRAPHS</p>`
+          : `<p style="font-size:9px;font-weight:bold;text-align:center;margin-bottom:${gapBetweenRows}px;color:#1F4E78;font-style:italic;">Property Photographs (Contd.)</p>`;
+
+        // Build rows of 2 images each
+        let gridHTML = '';
+        for (let r = 0; r < rows; r++) {
+          const img1 = pageImages[r * 2];
+          const img2 = pageImages[r * 2 + 1];
+          const globalIdx1 = startIdx + r * 2;
+          const globalIdx2 = startIdx + r * 2 + 1;
+          gridHTML += `<tr>`;
+          gridHTML += `<td style="width:50%;padding:${r === 0 ? 0 : gapBetweenRows}px 4px 0 0;vertical-align:top;"><div style="border:0.75pt solid #AAAAAA;padding:4px;text-align:center;background:#FFF;"><img src="${img1}" style="width:100%;height:${imgH}px;object-fit:cover;" crossOrigin="anonymous" /><p style="font-size:8px;margin:4px 0 0;font-style:italic;color:#555;">Figure ${globalIdx1 + 1}: Photograph ${globalIdx1 + 1}</p></div></td>`;
+          if (img2) {
+            gridHTML += `<td style="width:50%;padding:${r === 0 ? 0 : gapBetweenRows}px 0 0 4px;vertical-align:top;"><div style="border:0.75pt solid #AAAAAA;padding:4px;text-align:center;background:#FFF;"><img src="${img2}" style="width:100%;height:${imgH}px;object-fit:cover;" crossOrigin="anonymous" /><p style="font-size:8px;margin:4px 0 0;font-style:italic;color:#555;">Figure ${globalIdx2 + 1}: Photograph ${globalIdx2 + 1}</p></div></td>`;
+          } else {
+            gridHTML += `<td style="width:50%;padding:0;"></td>`;
+          }
+          gridHTML += `</tr>`;
+        }
+
+        generatedPages.push(`<div style="font-family:Calibri,Arial,sans-serif;color:#111;">
+          ${pageHeader}
+          ${title}
+          <table style="width:100%;border-collapse:collapse;">${gridHTML}</table>
+          ${pageFooter(photoPageNum, 0)}
+        </div>`);
+      }
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -1593,6 +1633,12 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
                   <input type="file" accept="image/*" multiple className="hidden" onChange={e => handleFileUpload(e, 'propertyImages')} disabled={uploading} />
                 </label>
                 <span className="text-xs text-[#6c757d]">Max size: 5MB per photograph</span>
+              </div>
+              <div className={`text-xs font-semibold ${
+                (fields.propertyImages?.length || 0) < 2 ? 'text-amber-600' : 'text-green-600'
+              }`}>
+                {(fields.propertyImages?.length || 0)} / 2 minimum uploaded
+                {(fields.propertyImages?.length || 0) < 2 && ' — At least 2 photographs are required to submit.'}
               </div>
               {uploadError && (
                 <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold">
