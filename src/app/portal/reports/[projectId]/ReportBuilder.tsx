@@ -1162,6 +1162,12 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
             <Field label="Legal Address of Property" span={2}>
               <input className={inputCls} value={fields.legalAddress} onChange={e => handleChange('legalAddress', e.target.value)} disabled={isReadOnly} placeholder="Hissa/Survey/Khasra No, Khata No, Plot No, Mouza, Tahasil, District" />
             </Field>
+            <Field label="Khata No"><input className={inputCls} value={fields.khataNo} onChange={e => handleChange('khataNo', e.target.value)} disabled={isReadOnly} /></Field>
+            <Field label="Plot No"><input className={inputCls} value={fields.plotNo} onChange={e => handleChange('plotNo', e.target.value)} disabled={isReadOnly} /></Field>
+            <Field label="Mouza"><input className={inputCls} value={fields.mouza} onChange={e => handleChange('mouza', e.target.value)} disabled={isReadOnly} /></Field>
+            <Field label="Tahasil"><input className={inputCls} value={fields.tahasil} onChange={e => handleChange('tahasil', e.target.value)} disabled={isReadOnly} /></Field>
+            <Field label="District"><input className={inputCls} value={fields.district} onChange={e => handleChange('district', e.target.value)} disabled={isReadOnly} /></Field>
+            <Field label="State"><input className={inputCls} value={fields.state} onChange={e => handleChange('state', e.target.value)} disabled={isReadOnly} /></Field>
             <Field label="Date of Inspection">
               <input type="date" className={inputCls} value={fields.dateOfInspection} onChange={e => handleChange('dateOfInspection', e.target.value)} disabled={isReadOnly} />
             </Field>
@@ -1188,6 +1194,14 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
             <input className={inputCls} value={fields.wardNo} onChange={e => handleChange('wardNo', e.target.value)} disabled={isReadOnly} />
           </Field>
           <div className="grid md:grid-cols-2 gap-4">
+            <Field label="Locality Type (Legacy)">
+              <input className={inputCls} value={fields.localityType} onChange={e => handleChange('localityType', e.target.value)} disabled={isReadOnly} />
+            </Field>
+            <Field label="Development Status (Legacy)">
+              <input className={inputCls} value={fields.developmentStatus} onChange={e => handleChange('developmentStatus', e.target.value)} disabled={isReadOnly} />
+            </Field>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
             <Field label="Vicinity">
               <select className={selectCls} value={fields.vicinity} onChange={e => handleChange('vicinity', e.target.value)} disabled={isReadOnly}>
                 <option>Slum</option><option>Residential</option><option>Commercial</option><option>Mixed</option><option>Industrial</option>
@@ -1211,9 +1225,9 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
           </div>
           <p className="text-xs font-semibold text-[#495057] uppercase tracking-wider mt-2">Proximity to Civic Amenities</p>
           <div className="grid md:grid-cols-3 gap-4">
-            <Field label="Nearest Railway Station"><input className={inputCls} value={fields.distanceRailwayStation} onChange={e => handleChange('distanceRailwayStation', e.target.value)} disabled={isReadOnly} placeholder="e.g. 2 Km" /></Field>
-            <Field label="Nearest Bus Stop"><input className={inputCls} value={fields.distanceBusStop} onChange={e => handleChange('distanceBusStop', e.target.value)} disabled={isReadOnly} placeholder="e.g. 0.5 Km" /></Field>
-            <Field label="Nearest Hospital"><input className={inputCls} value={fields.distanceHospital} onChange={e => handleChange('distanceHospital', e.target.value)} disabled={isReadOnly} placeholder="e.g. 3 Km" /></Field>
+            <Field label="Nearest Railway Station (in Km)"><input className={inputCls} value={fields.distanceRailwayStation} onChange={e => handleChange('distanceRailwayStation', e.target.value.replace(/\D/g, ''))} disabled={isReadOnly} placeholder="e.g. 2" /></Field>
+            <Field label="Nearest Bus Stop (in Km)"><input className={inputCls} value={fields.distanceBusStop} onChange={e => handleChange('distanceBusStop', e.target.value.replace(/\D/g, ''))} disabled={isReadOnly} placeholder="e.g. 1" /></Field>
+            <Field label="Nearest Hospital (in Km)"><input className={inputCls} value={fields.distanceHospital} onChange={e => handleChange('distanceHospital', e.target.value.replace(/\D/g, ''))} disabled={isReadOnly} placeholder="e.g. 3" /></Field>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="Property Identification">
@@ -1418,19 +1432,19 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
                     <input className={inputCls + ' !py-1.5 text-xs'} value={f.name || ''} onChange={e => updateFloor(f.id, 'name', e.target.value)} disabled={isReadOnly} />
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                    <input type="number" min="0" step="any" className={inputCls + ' !py-1.5 text-xs text-right'} value={f.area || ''} onChange={e => updateFloor(f.id, 'area', e.target.value)} disabled={isReadOnly} placeholder="0" />
+                    <input type="number" min="0" step="any" className={inputCls + ' !py-1.5 text-xs text-right'} value={f.area || ''} onChange={e => updateFloor(f.id, 'area', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="0" />
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                    <input type="number" min="0" step="any" className={inputCls + ' !py-1.5 text-xs text-right'} value={f.rate || ''} onChange={e => updateFloor(f.id, 'rate', e.target.value)} disabled={isReadOnly} placeholder="0" />
+                    <input type="number" min="0" step="any" className={inputCls + ' !py-1.5 text-xs text-right'} value={f.rate || ''} onChange={e => updateFloor(f.id, 'rate', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="0" />
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef] text-right text-xs font-medium text-[#0f2038]">
                     &#8377;{formatIndianCurrency(f.estimated)}
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                    <input type="number" min="0" className={inputCls + ' !py-1.5 text-xs text-center'} value={f.lifeYears || ''} onChange={e => updateFloor(f.id, 'lifeYears', e.target.value)} disabled={isReadOnly} />
+                    <input type="number" min="0" className={inputCls + ' !py-1.5 text-xs text-center'} value={f.lifeYears || ''} onChange={e => updateFloor(f.id, 'lifeYears', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-', '.'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} />
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                    <input type="number" min="0" className={inputCls + ' !py-1.5 text-xs text-center'} value={f.ageYears || ''} onChange={e => updateFloor(f.id, 'ageYears', e.target.value)} disabled={isReadOnly} />
+                    <input type="number" min="0" className={inputCls + ' !py-1.5 text-xs text-center'} value={f.ageYears || ''} onChange={e => updateFloor(f.id, 'ageYears', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-', '.'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} />
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                     <input
@@ -1438,6 +1452,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
                       className={inputCls + ' !py-1.5 text-xs text-center font-bold text-[#b8860b]'}
                       value={f.depreciationPct !== undefined && f.depreciationPct !== null ? f.depreciationPct : ''}
                       onChange={e => updateFloor(f.id, 'depreciationPct', e.target.value)}
+                      onKeyDown={e => ['e', 'E', '+', '-', '.'].includes(e.key) && e.preventDefault()}
                       disabled={isReadOnly}
                       placeholder={`${computeDepreciation(parseNum(f.lifeYears), parseNum(f.ageYears))}`}
                     />
@@ -1485,7 +1500,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
               <input className={inputCls} value={fields.govtLandRate} onChange={e => handleChange('govtLandRate', e.target.value)} disabled={isReadOnly} placeholder="e.g. 23" />
             </Field>
             <Field label={`Recommended Rate per ${fields.landAreaUnit} (&#8377;)`}>
-              <input type="number" min="0" step="any" className={inputCls} value={fields.landRatePerUnit} onChange={e => handleChange('landRatePerUnit', e.target.value)} disabled={isReadOnly} placeholder="e.g. 450" />
+              <input type="number" min="0" step="any" className={inputCls} value={fields.landRatePerUnit} onChange={e => handleChange('landRatePerUnit', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="e.g. 450" />
             </Field>
             <Field label="Basis for Recommendation" span={2}>
               <input className={inputCls} value={fields.recommendedRateBasis} onChange={e => handleChange('recommendedRateBasis', e.target.value)} disabled={isReadOnly} placeholder="e.g. As per local feedback and market survey" />
@@ -1523,7 +1538,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
               <span className="text-sm text-[#495057]">Realizable Value</span>
               <div className="flex items-center gap-1">
                 <span className="text-sm text-[#495057]">(</span>
-                <input type="number" min="0" className={inputCls + ' !py-1 !px-2 text-xs w-16 text-center'} value={fields.realizablePct} onChange={e => handleChange('realizablePct', e.target.value)} disabled={isReadOnly} placeholder="90" />
+                <input type="number" min="0" className={inputCls + ' !py-1 !px-2 text-xs w-16 text-center'} value={fields.realizablePct} onChange={e => handleChange('realizablePct', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-', '.'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="90" />
                 <span className="text-sm text-[#495057]">%)</span>
               </div>
             </div>
@@ -1534,7 +1549,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
               <span className="text-sm text-[#495057]">Distress / Forced Sale Value</span>
               <div className="flex items-center gap-1">
                 <span className="text-sm text-[#495057]">(</span>
-                <input type="number" min="0" className={inputCls + ' !py-1 !px-2 text-xs w-16 text-center'} value={fields.distressPct} onChange={e => handleChange('distressPct', e.target.value)} disabled={isReadOnly} placeholder="80" />
+                <input type="number" min="0" className={inputCls + ' !py-1 !px-2 text-xs w-16 text-center'} value={fields.distressPct} onChange={e => handleChange('distressPct', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-', '.'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="80" />
                 <span className="text-sm text-[#495057]">%)</span>
               </div>
             </div>
