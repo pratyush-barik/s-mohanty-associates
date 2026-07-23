@@ -174,7 +174,7 @@ export default function Navbar({ user }: NavbarProps) {
         <div className="container mx-auto max-w-[1440px] pl-2 pr-6">
           <div className="flex items-center justify-between h-28">
             <Link href="/" className="flex items-center group">
-              <div className="transition-all -ml-2">
+              <div className="transition-all -ml-2 bg-white/95 rounded-full px-4 py-1.5 shadow-sm border border-neutral-100/50">
                 <Image
                   src="/logo/smohantyassociate_logo.png"
                   alt="S Mohanty Associates"
@@ -182,7 +182,7 @@ export default function Navbar({ user }: NavbarProps) {
                   height={200}
                   priority
                   unoptimized
-                  className="h-[60px] sm:h-[72px] w-auto object-contain transition-all duration-300"
+                  className="h-[81px] sm:h-[97px] w-auto object-contain transition-all duration-300"
                 />
               </div>
             </Link>
