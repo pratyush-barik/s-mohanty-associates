@@ -86,15 +86,16 @@ export default async function OwnerDashboard() {
             <p className="text-xs text-[#adb5bd] mt-1.5">{user.email}</p>
           </div>
           <div className="flex flex-col items-end gap-2 text-right">
-            <Link href="/portal/owner/manual-case" className="btn btn-primary text-sm px-4 py-2">
-              + Create Manual Case
-            </Link>
             <Link href="/portal/profile" className="text-sm text-[#b8860b] hover:underline font-medium">Edit Profile →</Link>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <Link href="/portal/owner/manual-case" className="card p-5 bg-[#b8860b] hover:bg-[#a07509] transition-colors flex flex-col items-center justify-center text-white text-center h-full group">
+          <span className="text-2xl mb-1 group-hover:scale-110 transition-transform">+</span>
+          <span className="text-sm font-bold leading-tight">Create Manual<br/>Case</span>
+        </Link>
         <div className="card p-5">
           <p className="text-xs font-medium text-[#6c757d] uppercase tracking-wider mb-1">Total Firm Projects</p>
           <p className="text-3xl font-bold text-[#0f2038]" style={{ fontFamily: 'var(--font-heading)' }}>{stats.total}</p>

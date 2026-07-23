@@ -100,28 +100,9 @@ export default function ManualCaseForm({ managers }: { managers: Manager[] }) {
         </div>
       </div>
 
-      {/* On-Site Contact Details */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-bold text-[#0f2038] border-b pb-2">3. On-Site Contact</h3>
-        <div className="grid sm:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-[#343a40] mb-1">Contact Name *</label>
-            <input type="text" required value={formData.contactName} onChange={e => setFormData({ ...formData, contactName: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-[#dee2e6] text-sm" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[#343a40] mb-1">Contact Phone *</label>
-            <input type="tel" required value={formData.contactPhone} onChange={e => setFormData({ ...formData, contactPhone: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-[#dee2e6] text-sm" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[#343a40] mb-1">Contact Email *</label>
-            <input type="email" required value={formData.contactEmail} onChange={e => setFormData({ ...formData, contactEmail: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-[#dee2e6] text-sm" />
-          </div>
-        </div>
-      </div>
-
       {/* Assignment */}
       <div className="space-y-4">
-        <h3 className="text-lg font-bold text-[#0f2038] border-b pb-2">4. Assignment</h3>
+        <h3 className="text-lg font-bold text-[#0f2038] border-b pb-2">3. Assignment</h3>
         <div>
           <label className="block text-sm font-medium text-[#343a40] mb-1">Assign Manager *</label>
           <select required value={formData.managerId} onChange={e => setFormData({ ...formData, managerId: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-[#dee2e6] text-sm">

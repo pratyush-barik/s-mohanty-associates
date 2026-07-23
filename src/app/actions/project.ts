@@ -863,8 +863,8 @@ export async function createManualCase(formData: FormData) {
     select: { role: true },
   });
 
-  if (!caller || caller.role !== 'OWNER') {
-    return { error: 'Only owners can create manual cases.' };
+  if (!caller || !['OWNER', 'MANAGER'].includes(caller.role)) {
+    return { error: 'Only owners and managers can create manual cases.' };
   }
 
   const guestName = formData.get('guestName') as string;
@@ -874,10 +874,11 @@ export async function createManualCase(formData: FormData) {
   const purpose = formData.get('purpose') as string;
   const propertyAddress = formData.get('propertyAddress') as string;
   const propertyDetails = formData.get('propertyDetails') as string;
-  const contactName = formData.get('contactName') as string;
-  const contactPhone = formData.get('contactPhone') as string;
-  const contactEmail = formData.get('contactEmail') as string;
   const managerId = formData.get('managerId') as string;
+
+  const contactName = guestName;
+  const contactPhone = guestPhone || '';
+  const contactEmail = guestEmail;
 
   try {
     const sr = await prisma.serviceRequest.create({

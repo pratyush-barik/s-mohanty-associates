@@ -12,7 +12,7 @@ export default async function ManualCasePage() {
     select: { role: true },
   });
 
-  if (!currentUser || currentUser.role !== 'OWNER') {
+  if (!currentUser || !['OWNER', 'MANAGER'].includes(currentUser.role)) {
     redirect('/portal/dashboard');
   }
 
