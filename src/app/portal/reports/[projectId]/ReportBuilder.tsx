@@ -1225,9 +1225,9 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
           </div>
           <p className="text-xs font-semibold text-[#495057] uppercase tracking-wider mt-2">Proximity to Civic Amenities</p>
           <div className="grid md:grid-cols-3 gap-4">
-            <Field label="Nearest Railway Station (in Km)"><input className={inputCls} value={fields.distanceRailwayStation} onChange={e => handleChange('distanceRailwayStation', e.target.value.replace(/\D/g, ''))} disabled={isReadOnly} placeholder="e.g. 2" /></Field>
-            <Field label="Nearest Bus Stop (in Km)"><input className={inputCls} value={fields.distanceBusStop} onChange={e => handleChange('distanceBusStop', e.target.value.replace(/\D/g, ''))} disabled={isReadOnly} placeholder="e.g. 1" /></Field>
-            <Field label="Nearest Hospital (in Km)"><input className={inputCls} value={fields.distanceHospital} onChange={e => handleChange('distanceHospital', e.target.value.replace(/\D/g, ''))} disabled={isReadOnly} placeholder="e.g. 3" /></Field>
+            <Field label="Nearest Railway Station (in Km)"><input className={inputCls} value={fields.distanceRailwayStation} onChange={e => handleChange('distanceRailwayStation', e.target.value.replace(/[^\d.]/g, ''))} disabled={isReadOnly} placeholder="e.g. 2" /></Field>
+            <Field label="Nearest Bus Stop (in Km)"><input className={inputCls} value={fields.distanceBusStop} onChange={e => handleChange('distanceBusStop', e.target.value.replace(/[^\d.]/g, ''))} disabled={isReadOnly} placeholder="e.g. 1" /></Field>
+            <Field label="Nearest Hospital (in Km)"><input className={inputCls} value={fields.distanceHospital} onChange={e => handleChange('distanceHospital', e.target.value.replace(/[^\d.]/g, ''))} disabled={isReadOnly} placeholder="e.g. 3" /></Field>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="Property Identification">
@@ -1449,10 +1449,10 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
                     &#8377;{formatIndianCurrency(f.estimated)}
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                    <input type="number" min="0" className={inputCls + ' !py-1.5 text-xs text-center'} value={f.lifeYears || ''} onChange={e => updateFloor(f.id, 'lifeYears', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-', '.'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} />
+                    <input type="number" min="0" className={inputCls + ' !py-1.5 text-xs text-center'} value={f.lifeYears || ''} onChange={e => updateFloor(f.id, 'lifeYears', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} />
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                    <input type="number" min="0" className={inputCls + ' !py-1.5 text-xs text-center'} value={f.ageYears || ''} onChange={e => updateFloor(f.id, 'ageYears', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-', '.'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} />
+                    <input type="number" min="0" className={inputCls + ' !py-1.5 text-xs text-center'} value={f.ageYears || ''} onChange={e => updateFloor(f.id, 'ageYears', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} />
                   </td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                     <input
@@ -1460,7 +1460,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
                       className={inputCls + ' !py-1.5 text-xs text-center font-bold text-[#b8860b]'}
                       value={f.depreciationPct !== undefined && f.depreciationPct !== null ? f.depreciationPct : ''}
                       onChange={e => updateFloor(f.id, 'depreciationPct', e.target.value)}
-                      onKeyDown={e => ['e', 'E', '+', '-', '.'].includes(e.key) && e.preventDefault()}
+                      onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()}
                       disabled={isReadOnly}
                       placeholder={`${computeDepreciation(parseNum(f.lifeYears), parseNum(f.ageYears))}`}
                     />
@@ -1546,7 +1546,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
               <span className="text-sm text-[#495057]">Realizable Value</span>
               <div className="flex items-center gap-1">
                 <span className="text-sm text-[#495057]">(</span>
-                <input type="number" min="0" className={inputCls + ' !py-1 !px-2 text-xs w-16 text-center'} value={fields.realizablePct} onChange={e => handleChange('realizablePct', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-', '.'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="90" />
+                <input type="number" min="0" className={inputCls + ' !py-1 !px-2 text-xs w-16 text-center'} value={fields.realizablePct} onChange={e => handleChange('realizablePct', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="90" />
                 <span className="text-sm text-[#495057]">%)</span>
               </div>
             </div>
@@ -1557,7 +1557,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
               <span className="text-sm text-[#495057]">Distress / Forced Sale Value</span>
               <div className="flex items-center gap-1">
                 <span className="text-sm text-[#495057]">(</span>
-                <input type="number" min="0" className={inputCls + ' !py-1 !px-2 text-xs w-16 text-center'} value={fields.distressPct} onChange={e => handleChange('distressPct', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-', '.'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="80" />
+                <input type="number" min="0" className={inputCls + ' !py-1 !px-2 text-xs w-16 text-center'} value={fields.distressPct} onChange={e => handleChange('distressPct', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="80" />
                 <span className="text-sm text-[#495057]">%)</span>
               </div>
             </div>
