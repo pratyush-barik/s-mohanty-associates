@@ -5,12 +5,19 @@ import { submitServiceRequest } from '@/app/actions/service';
 import Link from 'next/link';
 
 const propertyTypes = [
-  'Residential Property',
-  'Commercial Property',
-  'Industrial Property',
-  'Agricultural Land',
-  'Vacant Land/Plot',
-  'Mixed Use Property',
+  'Mortgage & Loan Security Valuation',
+  'Banking & Financial Institution Services',
+  'SARFAESI & Recovery Valuation',
+  'Land Valuation',
+  'Building Valuation',
+  'Project & Construction Consultancy',
+  'Corporate & Fixed Asset Valuation',
+  'IBC & Insolvency Valuation Support',
+  'Development & Investment Advisory',
+  'Government & Statutory Valuation',
+  'Specialized Property Valuation',
+  'Market Research & Advisory',
+  'Customized Valuation & Advisory',
 ];
 
 const purposes = [
