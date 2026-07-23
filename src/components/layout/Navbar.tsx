@@ -165,16 +165,12 @@ export default function Navbar({ user }: NavbarProps) {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          isScrolled
-            ? 'bg-white/95 backdrop-blur-xl shadow-lg border-b border-neutral-200/50'
-            : 'bg-transparent'
-        }`}
+        className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl shadow-md border-b border-neutral-200/50 transition-all duration-500"
       >
         <div className="container mx-auto max-w-[1440px] pl-2 pr-6">
           <div className="flex items-center justify-between h-28">
             <Link href="/" className="flex items-center group">
-              <div className="transition-all -ml-6 lg:-ml-8 bg-white/95 rounded-full px-2 py-0 flex items-center overflow-hidden shadow-sm border border-neutral-100/50">
+              <div className="transition-all -ml-2">
                 <Image
                   src="/logo/smohantyassociate_logo.png"
                   alt="S Mohanty Associates"
@@ -182,7 +178,7 @@ export default function Navbar({ user }: NavbarProps) {
                   height={200}
                   priority
                   unoptimized
-                  className="h-[60px] w-[241px] sm:h-[68px] sm:w-[276px] object-fill transition-all duration-300"
+                  className="h-[66px] sm:h-[79px] w-auto object-contain transition-all duration-300"
                 />
               </div>
             </Link>
@@ -195,21 +191,15 @@ export default function Navbar({ user }: NavbarProps) {
                   onClick={() => scrollToSection(link.href)}
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 relative ${
                     activeSection === link.href.replace('#', '')
-                      ? isScrolled
-                        ? 'text-[#b8860b]'
-                        : 'text-[#ffcb47]'
-                      : isScrolled
-                        ? 'text-[#495057] hover:text-[#0f2038]'
-                        : 'text-white/80 hover:text-white'
+                      ? 'text-[#b8860b]'
+                      : 'text-[#495057] hover:text-[#0f2038]'
                   }`}
                 >
                   {link.label}
                   {activeSection === link.href.replace('#', '') && (
                     <motion.div
                       layoutId="activeNav"
-                      className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-5 h-0.5 rounded-full ${
-                        isScrolled ? 'bg-[#b8860b]' : 'bg-[#ffcb47]'
-                      }`}
+                      className="absolute bottom-0 left-1/2 -translate-x-1/2 w-5 h-0.5 rounded-full bg-[#b8860b]"
                       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                     />
                   )}
@@ -223,9 +213,7 @@ export default function Navbar({ user }: NavbarProps) {
               {user && !isEmployee && (
                 <Link
                   href="/dashboard"
-                  className={`hidden md:flex items-center gap-2 text-sm font-medium transition-colors ${
-                    isScrolled ? 'text-[#495057] hover:text-[#0f2038]' : 'text-white/70 hover:text-white'
-                  }`}
+                  className="hidden md:flex items-center gap-2 text-sm font-medium transition-colors text-[#495057] hover:text-[#0f2038]"
                 >
                   <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#1e3a5f] to-[#162d4a] flex items-center justify-center text-white text-xs font-bold">
                     {user.name.charAt(0).toUpperCase()}
@@ -247,21 +235,15 @@ export default function Navbar({ user }: NavbarProps) {
               >
                 <motion.span
                   animate={isMobileMenuOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }}
-                  className={`block w-6 h-0.5 rounded-full transition-colors ${
-                    isScrolled ? 'bg-[#0f2038]' : 'bg-white'
-                  }`}
+                  className="block w-6 h-0.5 rounded-full transition-colors bg-[#0f2038]"
                 />
                 <motion.span
                   animate={isMobileMenuOpen ? { opacity: 0 } : { opacity: 1 }}
-                  className={`block w-6 h-0.5 rounded-full transition-colors ${
-                    isScrolled ? 'bg-[#0f2038]' : 'bg-white'
-                  }`}
+                  className="block w-6 h-0.5 rounded-full transition-colors bg-[#0f2038]"
                 />
                 <motion.span
                   animate={isMobileMenuOpen ? { rotate: -45, y: -7 } : { rotate: 0, y: 0 }}
-                  className={`block w-6 h-0.5 rounded-full transition-colors ${
-                    isScrolled ? 'bg-[#0f2038]' : 'bg-white'
-                  }`}
+                  className="block w-6 h-0.5 rounded-full transition-colors bg-[#0f2038]"
                 />
               </button>
             </div>
