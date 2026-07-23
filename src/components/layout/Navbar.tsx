@@ -168,7 +168,7 @@ export default function Navbar({ user }: NavbarProps) {
         className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl shadow-md border-b border-neutral-200/50 transition-all duration-500"
       >
         <div className="container mx-auto max-w-[1440px] pl-2 pr-6">
-          <div className="flex items-center justify-between h-[107px]">
+          <div className="flex items-center justify-between h-[102px]">
             <Link href="/" className="flex items-center group">
               <div className="transition-all -ml-2">
                 <Image
