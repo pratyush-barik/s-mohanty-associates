@@ -1504,10 +1504,10 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
                 <option>Sqft</option><option>Decimal</option><option>Acre</option><option>Sqm</option>
               </select>
             </Field>
-            <Field label="Current Govt. Approved Rate (&#8377;)">
+            <Field label="Current Govt. Approved Rate (₹)">
               <input className={inputCls} value={fields.govtLandRate} onChange={e => handleChange('govtLandRate', e.target.value)} disabled={isReadOnly} placeholder="e.g. 23" />
             </Field>
-            <Field label={`Recommended Rate per ${fields.landAreaUnit} (&#8377;)`}>
+            <Field label={`Recommended Rate per ${fields.landAreaUnit} (₹)`}>
               <input type="number" min="0" step="any" className={inputCls} value={fields.landRatePerUnit} onChange={e => handleChange('landRatePerUnit', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="e.g. 450" />
             </Field>
             <Field label="Basis for Recommendation" span={2}>
