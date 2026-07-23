@@ -867,7 +867,9 @@ export async function createManualCase(formData: FormData) {
     return { error: 'Only owners and managers can create manual cases.' };
   }
 
-  const guestName = formData.get('guestName') as string;
+  const clientType = formData.get('clientType') as string;
+  const clientName = formData.get('clientName') as string;
+  const organisationName = formData.get('organisationName') as string;
   const guestEmail = formData.get('guestEmail') as string;
   const guestPhone = (formData.get('guestPhone') as string) || null;
   const propertyType = formData.get('propertyType') as string;
@@ -876,7 +878,8 @@ export async function createManualCase(formData: FormData) {
   const propertyDetails = formData.get('propertyDetails') as string;
   const managerId = formData.get('managerId') as string;
 
-  const contactName = guestName;
+  const guestName = clientType === 'ORGANISATION' && organisationName ? organisationName : clientName;
+  const contactName = clientName;
   const contactPhone = guestPhone || '';
   const contactEmail = guestEmail;
 

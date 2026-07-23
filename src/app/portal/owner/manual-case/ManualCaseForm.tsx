@@ -13,7 +13,9 @@ export default function ManualCaseForm({ managers }: { managers: Manager[] }) {
   const [error, setError] = useState('');
   
   const [formData, setFormData] = useState({
-    guestName: '',
+    clientType: 'INDIVIDUAL',
+    clientName: '',
+    organisationName: '',
     guestEmail: '',
     guestPhone: '',
     propertyType: '',
@@ -55,11 +57,33 @@ export default function ManualCaseForm({ managers }: { managers: Manager[] }) {
       {/* Guest Client Details */}
       <div className="space-y-4">
         <h3 className="text-lg font-bold text-[#0f2038] border-b pb-2">1. Client Details (Email-Only)</h3>
+        
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-[#343a40] mb-1">Organisation / Client Name *</label>
-            <input type="text" required value={formData.guestName} onChange={e => setFormData({ ...formData, guestName: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-[#dee2e6] text-sm" />
+            <label className="block text-sm font-medium text-[#343a40] mb-1">Client Type *</label>
+            <select
+              required
+              value={formData.clientType}
+              onChange={e => setFormData({ ...formData, clientType: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg border border-[#dee2e6] text-sm"
+            >
+              <option value="INDIVIDUAL">Individual</option>
+              <option value="ORGANISATION">Organisation</option>
+            </select>
           </div>
+          
+          {formData.clientType === 'ORGANISATION' && (
+            <div>
+              <label className="block text-sm font-medium text-[#343a40] mb-1">Organisation Name *</label>
+              <input type="text" required value={formData.organisationName} onChange={e => setFormData({ ...formData, organisationName: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-[#dee2e6] text-sm" placeholder="e.g. Acme Corp" />
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-[#343a40] mb-1">Client Name *</label>
+            <input type="text" required value={formData.clientName} onChange={e => setFormData({ ...formData, clientName: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-[#dee2e6] text-sm" placeholder="Contact Person Name" />
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-[#343a40] mb-1">Client Email (For PDF Delivery) *</label>
             <input type="email" required value={formData.guestEmail} onChange={e => setFormData({ ...formData, guestEmail: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-[#dee2e6] text-sm" />
@@ -70,7 +94,6 @@ export default function ManualCaseForm({ managers }: { managers: Manager[] }) {
           </div>
         </div>
       </div>
-
       {/* Property Details */}
       <div className="space-y-4">
         <h3 className="text-lg font-bold text-[#0f2038] border-b pb-2">2. Property Details</h3>
