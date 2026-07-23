@@ -1262,9 +1262,17 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
               </select>
             </Field>
             <Field label="Additional Amenities">
-              <select className={selectCls} value={fields.additionalAmenities} onChange={e => handleChange('additionalAmenities', e.target.value)} disabled={isReadOnly}>
-                <option>Garden</option><option>Swimming Pool</option><option>Not Applicable</option>
-              </select>
+              <input className={inputCls} list="amenitiesList" value={fields.additionalAmenities} onChange={e => handleChange('additionalAmenities', e.target.value)} disabled={isReadOnly} placeholder="Select or type..." />
+              <datalist id="amenitiesList">
+                <option value="Garden" />
+                <option value="Swimming Pool" />
+                <option value="Gymnasium" />
+                <option value="Club House" />
+                <option value="Children's Play Area" />
+                <option value="Community Hall" />
+                <option value="Power Backup" />
+                <option value="Not Applicable" />
+              </datalist>
             </Field>
             <Field label="Legal Status of Property">
               <select className={selectCls} value={fields.legalStatus} onChange={e => handleChange('legalStatus', e.target.value)} disabled={isReadOnly}>
