@@ -573,42 +573,24 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
       });
       const letterheadImg = await loadImage('/templates/letterhead.png');
       const pages = generatePDFPages();
-      const pdf = new jsPDF('p', 'mm', 'a4');
+      // US Letter: 8.5 × 11 inches
+      const pdf = new jsPDF('p', 'in', 'letter');
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
 
       for (let i = 0; i < pages.length; i++) {
         if (i > 0) pdf.addPage();
+        // Letterhead background (already has header + footer baked in)
         pdf.addImage(letterheadImg, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
         const pageContainer = document.createElement('div');
-        pageContainer.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;height:1123px;background:transparent;padding:170px 55px 90px 55px;box-sizing:border-box;font-family:Arial,sans-serif;color:#111;overflow:hidden;';
+        // US Letter @96dpi = 816×1056px. Margins: 0.75" L/R (72px), ~1.17" top (112px), ~1.11" bottom (107px)
+        pageContainer.style.cssText = "position:fixed;left:-9999px;top:0;width:816px;height:1056px;background:transparent;padding:112px 72px 107px 72px;box-sizing:border-box;font-family:'Times New Roman',serif;color:#000;overflow:hidden;";
         pageContainer.innerHTML = pages[i];
         document.body.appendChild(pageContainer);
 
-        // ── Fix vertical centering: measure actual cell heights and adjust padding ──
-        pageContainer.querySelectorAll('[data-vcenter]').forEach((td) => {
-          const cell = td as HTMLElement;
-          const row = cell.closest('tr') as HTMLElement;
-          if (!row) return;
-          const rowH = row.offsetHeight;
-          // Temporarily remove padding to measure pure content height
-          const origPadTop = cell.style.paddingTop;
-          const origPadBot = cell.style.paddingBottom;
-          cell.style.paddingTop = '0px';
-          cell.style.paddingBottom = '0px';
-          const contentH = cell.scrollHeight;
-          cell.style.paddingTop = origPadTop;
-          cell.style.paddingBottom = origPadBot;
-          if (rowH > contentH + 4) {
-            const pad = Math.floor((rowH - contentH) / 2);
-            cell.style.paddingTop = `${Math.max(2, pad)}px`;
-            cell.style.paddingBottom = `${Math.max(2, pad)}px`;
-          }
-        });
-
         const canvas = await html2canvas(pageContainer, {
           scale: 2, useCORS: true, logging: false, backgroundColor: null,
-          width: 794, height: 1123, windowWidth: 794, windowHeight: 1123,
+          width: 816, height: 1056, windowWidth: 816, windowHeight: 1056,
         });
         document.body.removeChild(pageContainer);
         pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
@@ -709,118 +691,91 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     setLoading(false);
   };
 
-  // ── PDF HTML Template (3-Column Format) ──
+  // ── PDF HTML Template (Reference Word Document Format) ──
   function generatePDFPages(): string[] {
-    // ── Style constants ──────────────────────────────────────────────────────
-    const ts = 'width:100%;border-collapse:collapse;margin-bottom:8px;font-family:Calibri,Arial,sans-serif;';
-    // Base styles (background and text color applied dynamically per row type)
-    const lbl = 'border:1px solid #AAAAAA;padding:4px 5px;font-size:9px;text-align:left;vertical-align:middle;';
-    const valS = 'border:1px solid #AAAAAA;padding:4px 5px;font-size:9px;vertical-align:middle;';
-    const hd = 'font-size:10px;font-weight:bold;background:#1F4E78;padding:3px 4px;border:1px solid #1F4E78;text-align:center;color:#FFFFFF;letter-spacing:0.5px;';
+    // ── Font & Style constants ──────────────────────────────────────────
+    const ff = "'Times New Roman', serif";
+    const ts = `width:100%;border-collapse:collapse;margin-bottom:10px;font-family:${ff};`;
+    const cellBorder = '1px solid #000';
+    const cellPad = '4px 6px';
 
-    // ── Alternating row colors ────────────────────────────────────────────────
-    let rowIdx = 0;
-    const resetRowIdx = () => { rowIdx = 0; };
-    const rowBg = () => { const bg = rowIdx % 2 === 0 ? '#FFFFFF' : '#EEF4FB'; rowIdx++; return bg; };
-
-    // ── Row helpers ───────────────────────────────────────────────────────────
-    const simpleRow = (label: string, val: string, bgOverride?: string) => {
-      const bg = bgOverride !== undefined ? bgOverride : rowBg();
-      return `<tr style="background:${bg};"><td style="${lbl}color:#000000;" width="30%" data-vcenter="1">${label}</td><td style="${valS}color:#000000;" colspan="2" data-vcenter="1">${val || 'N/A'}</td></tr>`;
+    // ── Row helpers ──────────────────────────────────────────────────────
+    // Inline label-value row: "Label: - Value" spanning full width
+    const simpleRow = (label: string, val: string) => {
+      return `<tr><td colspan="3" style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:top;">${label}: - <b>${val || 'N/A'}</b></td></tr>`;
     };
+
+    // Option row: 3-column — Label | Options list | Selected value (with proper vertical centering)
     const optionRow = (label: string, opts: string[], val: string) => {
-      const bg = '#DDEEF7';
-      rowIdx++;
       const n = opts.length;
-      const innerTable = `<table style="width:100%;border-collapse:collapse;">${opts.map((o, i) => `<tr><td style="border-bottom:${i === n - 1 ? 'none' : '1px solid #AAAAAA'};padding:2px 5px;font-weight:bold;color:#000000;font-size:8.5px;">${o}</td></tr>`).join('')}</table>`;
-      return `<tr style="background:${bg};">
-        <td style="border:1px solid #AAAAAA;padding:4px 5px;font-size:9px;text-align:left;font-weight:bold;color:#000000;background:${bg};" width="30%" data-vcenter="1">${label}</td>
-        <td style="border:1px solid #AAAAAA;padding:0;font-size:8.5px;background:${bg};" width="32%">${innerTable}</td>
-        <td style="border:1px solid #AAAAAA;padding:4px 5px;font-size:9px;font-weight:bold;color:#000000;background:${bg};" data-vcenter="1">${val ? val : 'N/A'}</td>
+      const innerTable = `<table style="width:100%;border-collapse:collapse;">${opts.map((o, i) => `<tr><td style="border-bottom:${i === n - 1 ? 'none' : cellBorder};padding:3px 6px;font-family:${ff};font-size:12pt;">${o}</td></tr>`).join('')}</table>`;
+      return `<tr>
+        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;" width="28%">${label}</td>
+        <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;" width="35%">${innerTable}</td>
+        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;text-align:center;" width="37%">${val || 'N/A'}</td>
       </tr>`;
     };
 
-    // ── Per-page header (logo left | company name center | ref+date right) ──
-    const pageHeader = `
-      <table style="width:100%;border-collapse:collapse;margin-bottom:8px;border-bottom:2px solid #1F4E78;padding-bottom:5px;">
-        <tr>
-          <td style="width:25%;vertical-align:middle;">
-            <img src="/logo/smohantyassociate_logo.png" alt="S Mohanty Associates" style="height:34px;width:auto;object-fit:contain;" crossOrigin="anonymous" onerror="this.style.display='none'" />
-          </td>
-          <td style="text-align:center;vertical-align:middle;">
-            <div style="font-family:Calibri,Arial,sans-serif;font-size:11px;font-weight:bold;color:#1F4E78;letter-spacing:0.5px;">S. MOHANTY &amp; ASSOCIATES</div>
-            <div style="font-family:Calibri,Arial,sans-serif;font-size:7.5px;color:#555;margin-top:1px;">Government Registered Valuers &amp; Chartered Engineers</div>
-          </td>
-          <td style="width:25%;text-align:right;vertical-align:middle;">
-            <div style="font-family:Calibri,Arial,sans-serif;font-size:8px;color:#333;line-height:1.5;">
-              ${fields.refNo ? `<div>Ref: <b>${fields.refNo}</b></div>` : ''}
-              ${fields.dateOfValuation ? `<div>Date: <b>${fields.dateOfValuation}</b></div>` : ''}
-            </div>
-          </td>
-        </tr>
-      </table>`;
+    // Section header row
+    const sectionHeader = (title: string) => {
+      return `<tr><td colspan="3" style="border:${cellBorder};padding:5px 6px;font-family:${ff};font-size:16pt;font-weight:bold;">${title}</td></tr>`;
+    };
 
-    // ── Per-page footer (IBBI left | Confidential center | Page X of Y right) ──
-    const pageFooter = (pageNum: number, totalPgs: number) => `
-      <table style="width:100%;border-collapse:collapse;margin-top:10px;border-top:1px solid #1F4E78;padding-top:4px;">
-        <tr>
-          <td style="font-family:Calibri,Arial,sans-serif;font-size:7.5px;color:#555;text-align:left;vertical-align:middle;">IBBI/RV/02/2019/10594</td>
-          <td style="font-family:Calibri,Arial,sans-serif;font-size:7.5px;color:#555;text-align:center;font-style:italic;vertical-align:middle;">Confidential</td>
-          <td style="font-family:Calibri,Arial,sans-serif;font-size:7.5px;color:#555;text-align:right;vertical-align:middle;">Page ${pageNum} of ${totalPgs}</td>
-        </tr>
-      </table>`;
+    // ── "To" block (page 1 only) ─────────────────────────────────────────
+    const toBlock = `<div style="font-family:${ff};font-size:12pt;margin-bottom:12px;line-height:1.6;">
+      <p style="margin:0;"><b>To</b></p>
+      <p style="margin:0;"><b>${fields.bankName || '________'}${fields.branchName ? ', ' + fields.branchName : ''}</b></p>
+      <p style="margin:0;">Date of valuation report: -<b>${fields.dateOfValuation || '________'}</b></p>
+      <p style="margin:0;">Ref: -<b>${fields.refNo || '________'}</b></p>
+    </div>`;
 
-    // ── Report title block ────────────────────────────────────────────────────
-    const reportTitle = `<p style="font-family:Calibri,Arial,sans-serif;font-size:14px;font-weight:bold;text-align:center;color:#1F4E78;margin:4px 0 10px;text-transform:uppercase;text-decoration:underline;letter-spacing:1px;">Standard Valuation Report</p>`;
+    // ── Report title ─────────────────────────────────────────────────────
+    const reportTitle = `<p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin:8px 0 14px;">• &nbsp;STANDARD VALUATION REPORT FORMAT</p>`;
 
     // ═══════════════════════════════════════════════════════════════════
-    // PAGE 1 — General Details
+    // PAGE 1 — To Block + General Details
     // ═══════════════════════════════════════════════════════════════════
-    resetRowIdx();
-    const page1 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15;">
-      ${pageHeader}
+    const page1 = `<div style="font-family:${ff};color:#000;line-height:1.3;">
+      ${toBlock}
       ${reportTitle}
       <table style="${ts}">
-        <tr><td style="${hd}" colspan="3">1. GENERAL DETAILS</td></tr>
-        ${optionRow('Type of Property', ['Residential', 'Commercial', 'Residential cum Commercial', 'Industrial', 'Vacant Plot'], fields.propertyType)}
-        ${simpleRow('Name of Customer(s)', `<b>${fields.ownerName || 'N/A'}</b>`)}
-        ${simpleRow('Property Address with Pin Code', fields.ownerAddress)}
-        ${simpleRow('Landmark', fields.landmark || fields.nearbyLandmarks)}
-        ${simpleRow('Loan Application Number', fields.loanApplicationNo)}
-        ${simpleRow('Name of Document Holder', fields.documentHolderName || fields.ownerName)}
-        ${simpleRow('Legal Address of Property', fields.legalAddress || fields.ownerAddress)}
+        ${sectionHeader('GENERAL DETAILS')}
+        ${optionRow('Type of property', ['Residential', 'Commercial', 'Residential cum Commercial', 'Industrial', 'Vacant Plot'], fields.propertyType)}
+        ${simpleRow('Name of the Customer(s)', `"${fields.ownerName || 'N/A'}"`)}
+        ${simpleRow('Property Address with pin code', fields.ownerAddress)}
+        ${simpleRow('Landmark', fields.landmark || '')}
+        ${simpleRow('Loan Application number', fields.loanApplicationNo)}
+        ${simpleRow('Name of Document holder', fields.documentHolderName || fields.ownerName)}
+        ${simpleRow('Legal address of property / Hissa No. / Survey no. / Khasra No.', fields.legalAddress || fields.ownerAddress)}
         ${simpleRow('Date of Inspection', fields.dateOfInspection)}
         ${simpleRow('Date of Valuation Report', fields.dateOfValuation)}
         ${simpleRow('Bank / Financial Institution', fields.bankName)}
         ${simpleRow('Branch', fields.branchName)}
         ${simpleRow('Purpose', fields.purpose)}
       </table>
-      ${pageFooter(1, 0)}
     </div>`;
 
     // ═══════════════════════════════════════════════════════════════════
     // PAGE 2 — Locality + Property Details
     // ═══════════════════════════════════════════════════════════════════
-    resetRowIdx();
-    const page2 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15;">
-      ${pageHeader}
+    const page2 = `<div style="font-family:${ff};color:#000;line-height:1.3;">
       <table style="${ts}">
-        <tr><td style="${hd}" colspan="3">2. SURROUNDING LOCALITY DETAILS</td></tr>
+        ${sectionHeader('SURROUNDING LOCALITY DETAILS')}
         ${simpleRow('Ward No / Municipal Land No', fields.wardNo)}
         ${optionRow('Vicinity', ['Slum', 'Residential', 'Commercial', 'Mixed', 'Industrial'], fields.vicinity)}
         ${optionRow('Locality Type', ['Elite/Posh/High Class', 'Upper Middle Class', 'Middle Class', 'Lower Middle Class', 'Poor / Slum'], fields.classOfLocality)}
         ${optionRow('Approach Road Width', ['>=60 Feet Road', '60-40 Feet Road', '40-20 Feet Road', '<20 Feet Road'], fields.approachRoadWidth)}
         ${optionRow('Plot Demarcated at Site', ['Yes', 'No'], fields.plotDemarcated)}
-        <tr style="background:${rowBg()};">
-          <td style="border:1px solid #AAAAAA;padding:4px 5px;font-size:9px;text-align:left;color:#000000;" width="30%" data-vcenter="1">Proximity to Civic Amenities</td>
-          <td style="border:1px solid #AAAAAA;padding:0;font-size:8.5px;color:#000000;" width="32%">
+        <tr>
+          <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;" width="28%">Proximity to Civic Amenities</td>
+          <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;" width="35%">
             <table style="width:100%;border-collapse:collapse;">
-              <tr><td style="border-bottom:1px solid #AAAAAA;padding:2px 5px;font-size:8.5px;color:#000000;">Nearest Railway Station</td></tr>
-              <tr><td style="border-bottom:1px solid #AAAAAA;padding:2px 5px;font-size:8.5px;color:#000000;">Nearest Bus Stop</td></tr>
-              <tr><td style="padding:2px 5px;font-size:8.5px;color:#000000;">Nearest Hospital</td></tr>
+              <tr><td style="border-bottom:${cellBorder};padding:3px 6px;font-family:${ff};font-size:12pt;">Nearest Railway Station</td></tr>
+              <tr><td style="border-bottom:${cellBorder};padding:3px 6px;font-family:${ff};font-size:12pt;">Nearest Bus Stop</td></tr>
+              <tr><td style="padding:3px 6px;font-family:${ff};font-size:12pt;">Nearest Hospital</td></tr>
             </table>
           </td>
-          <td style="border:1px solid #AAAAAA;padding:4px 5px;font-size:9px;color:#000000;" data-vcenter="1">
+          <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;">
             1. ${fields.landmarkRailway || fields.distanceRailwayStation || 'N/A'}<br/>
             2. ${fields.landmarkBusStop || fields.distanceBusStop || 'N/A'}<br/>
             3. ${fields.landmarkHospital || fields.distanceHospital || 'N/A'}
@@ -828,17 +783,17 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
         </tr>
         ${optionRow('Property Identification', ['Easy to Identify', 'Identification by documents', 'Additional documents required', 'Difficult to identify'], fields.propertyIdentification)}
         ${optionRow('Proximity to Facilities', ['<1 Km', '1-3 Kms', '3-5 Kms', '>5 Kms'], fields.proximityToFacilities)}
-        <tr style="background:${rowBg()};">
-          <td style="border:1px solid #AAAAAA;padding:4px 5px;font-size:9px;text-align:left;color:#000000;" data-vcenter="1">Landmark Details</td>
-          <td style="border:1px solid #AAAAAA;padding:0;font-size:8.5px;color:#000000;">
+        <tr>
+          <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;" width="28%">Landmark Details</td>
+          <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;" width="35%">
             <table style="width:100%;border-collapse:collapse;">
-              <tr><td style="border-bottom:1px solid #AAAAAA;padding:2px 5px;font-size:8.5px;color:#000000;">Nearest Railway Station</td></tr>
-              <tr><td style="border-bottom:1px solid #AAAAAA;padding:2px 5px;font-size:8.5px;color:#000000;">Nearest Bus Stop</td></tr>
-              <tr><td style="border-bottom:1px solid #AAAAAA;padding:2px 5px;font-size:8.5px;color:#000000;">Nearest Hospital</td></tr>
-              <tr><td style="padding:2px 5px;font-size:8.5px;color:#000000;">Nearest Landmark</td></tr>
+              <tr><td style="border-bottom:${cellBorder};padding:3px 6px;font-family:${ff};font-size:12pt;">Nearest Railway Station</td></tr>
+              <tr><td style="border-bottom:${cellBorder};padding:3px 6px;font-family:${ff};font-size:12pt;">Nearest Bus Stop</td></tr>
+              <tr><td style="border-bottom:${cellBorder};padding:3px 6px;font-family:${ff};font-size:12pt;">Nearest Hospital</td></tr>
+              <tr><td style="padding:3px 6px;font-family:${ff};font-size:12pt;">Nearest Landmark</td></tr>
             </table>
           </td>
-          <td style="border:1px solid #AAAAAA;padding:4px 5px;font-size:9px;color:#000000;" data-vcenter="1">
+          <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;">
             1. ${fields.landmarkRailway || 'N/A'}<br/>
             2. ${fields.landmarkBusStop || 'N/A'}<br/>
             3. ${fields.landmarkHospital || 'N/A'}<br/>
@@ -846,25 +801,21 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
           </td>
         </tr>
       </table>
-      ${pageFooter(2, 0)}
     </div>`;
 
     // ═══════════════════════════════════════════════════════════════════
     // PAGE 3 — Property Details + Subject Property + Structural
     // ═══════════════════════════════════════════════════════════════════
-    resetRowIdx();
-    const page3 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15;">
-      ${pageHeader}
+    const page3 = `<div style="font-family:${ff};color:#000;line-height:1.3;">
       <table style="${ts}">
-        <tr><td style="${hd}" colspan="3">3. PROPERTY DETAILS</td></tr>
-        ${(() => { resetRowIdx(); return ''; })()}
-        ${simpleRow('Type of Usage', `<b>${fields.usageType || 'N/A'}</b>`)}
+        ${sectionHeader('PROPERTY DETAILS')}
+        ${simpleRow('Type of Usage of Entire Property', fields.usageType)}
         ${simpleRow('Additional Amenities', fields.additionalAmenities || 'N/A')}
         ${optionRow('Legal Status of Property', ['Freehold', 'Lease hold >30 yrs.', 'Lease hold 15-30 yrs.', 'Lease hold <15 yrs.'], fields.legalStatus)}
       </table>
       <table style="${ts}">
-        <tr><td style="${hd}" colspan="3">4. SUBJECT PROPERTY DETAILS</td></tr>
-        ${simpleRow('Type of Premises', `<b>${fields.premisesType || 'N/A'}</b>`)}
+        ${sectionHeader('SUBJECT PROPERTY DETAILS')}
+        ${simpleRow('Type of Premises', fields.premisesType)}
         ${simpleRow('Occupied by / Vacant', fields.occupiedBy)}
         ${simpleRow('Is Property Rented', fields.isPropertyRented)}
         ${simpleRow('If Rented, List of Occupants', fields.rentedOccupants)}
@@ -873,8 +824,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
         ${simpleRow('Boundary (At Site)', `N: ${fields.buildingBoundaryNorth || '-'} &nbsp;|&nbsp; E: ${fields.buildingBoundaryEast || '-'} &nbsp;|&nbsp; S: ${fields.buildingBoundarySouth || '-'} &nbsp;|&nbsp; W: ${fields.buildingBoundaryWest || '-'}`)}
       </table>
       <table style="${ts}">
-        <tr><td style="${hd}" colspan="3">5. STRUCTURAL DETAILS</td></tr>
-        ${(() => { resetRowIdx(); return ''; })()}
+        ${sectionHeader('STRUCTURAL DETAILS')}
         ${optionRow('Type of Structure', ['RCC', 'Load Bearing', 'Steel Structure', 'Composite Structure', 'Industrial Shed', 'A/C Sheet', 'G/I Sheet', 'Asbestos Roofing'], fields.structureType)}
         ${simpleRow('No. of Floors', fields.numberOfFloors)}
         ${simpleRow('No. of Wings', fields.numberOfWings)}
@@ -885,41 +835,34 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
         ${simpleRow('Estimated Future Life', fields.estimatedFutureLife)}
         ${simpleRow('Exteriors', fields.exteriors)}
         ${optionRow('Quality of Construction', ['Very Good', 'Good', 'Average', 'Poor'], fields.qualityOfConstruction)}
-        ${simpleRow('Common Areas Remarks', fields.commonAreasRemarks, '#F2F2F2')}
-        ${simpleRow('Other Observations', fields.otherObservations, '#F2F2F2')}
+        ${simpleRow('Common Areas Remarks', fields.commonAreasRemarks)}
+        ${simpleRow('Other Observations', fields.otherObservations)}
         ${simpleRow('Flooring &amp; Finishing', fields.flooringType)}
         ${simpleRow('Roofing &amp; Terracing', fields.roofType)}
         ${simpleRow('Quality of Fixtures', fields.qualityOfFixtures)}
       </table>
-      ${pageFooter(3, 0)}
     </div>`;
 
     // ═══════════════════════════════════════════════════════════════════
-    // PAGE 4 — Valuation (Land + Building + Abstract)
+    // PAGE 4 — Plan Approvals + Land Valuation + Building Valuation
     // ═══════════════════════════════════════════════════════════════════
-    // Floor rows with alternating colors
-    let floorRowBgIdx = 0;
-    const floorRowsHTML = floorValuations.map(f => {
-      const bg = floorRowBgIdx % 2 === 0 ? '#FFFFFF' : '#DCE6F1';
-      floorRowBgIdx++;
+    const floorRowsHTML = floorValuations.map((f, idx) => {
+      const bg = idx % 2 === 0 ? '#FFF' : '#F5F5F5';
       return `<tr style="background:${bg};">
-        <td style="${valS};background:${bg};">${f.name}</td>
-        <td style="${valS};background:${bg};text-align:right;">${formatIndianCurrency(f.area)}</td>
-        <td style="${valS};background:${bg};text-align:right;">\u20B9${formatIndianCurrency(f.rate)}</td>
-        <td style="${valS};background:${bg};text-align:right;">\u20B9${formatIndianCurrency(f.estimated)}</td>
-        <td style="${valS};background:${bg};text-align:center;">${f.lifeYears}</td>
-        <td style="${valS};background:${bg};text-align:center;">${f.ageYears}</td>
-        <td style="${valS};background:${bg};text-align:center;">${f.depPct}%</td>
-        <td style="${valS};background:${bg};text-align:right;">\u20B9${formatIndianCurrency(f.netValue)}</td>
+        <td style="border:${cellBorder};padding:3px 6px;font-family:${ff};font-size:11pt;">${f.name}</td>
+        <td style="border:${cellBorder};padding:3px 6px;font-family:${ff};font-size:11pt;text-align:right;">${formatIndianCurrency(f.area)}</td>
+        <td style="border:${cellBorder};padding:3px 6px;font-family:${ff};font-size:11pt;text-align:right;">\u20B9${formatIndianCurrency(f.rate)}</td>
+        <td style="border:${cellBorder};padding:3px 6px;font-family:${ff};font-size:11pt;text-align:right;">\u20B9${formatIndianCurrency(f.estimated)}</td>
+        <td style="border:${cellBorder};padding:3px 6px;font-family:${ff};font-size:11pt;text-align:center;">${f.lifeYears}</td>
+        <td style="border:${cellBorder};padding:3px 6px;font-family:${ff};font-size:11pt;text-align:center;">${f.ageYears}</td>
+        <td style="border:${cellBorder};padding:3px 6px;font-family:${ff};font-size:11pt;text-align:center;">${f.depPct}%</td>
+        <td style="border:${cellBorder};padding:3px 6px;font-family:${ff};font-size:11pt;text-align:right;">\u20B9${formatIndianCurrency(f.netValue)}</td>
       </tr>`;
     }).join('');
 
-    resetRowIdx();
-    const page4 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15;">
-      ${pageHeader}
+    const page4 = `<div style="font-family:${ff};color:#000;line-height:1.3;">
       <table style="${ts}">
-        <tr><td style="${hd}" colspan="3">6. PLAN APPROVALS</td></tr>
-        ${(() => { resetRowIdx(); return ''; })()}
+        ${sectionHeader('PLAN APPROVALS')}
         ${optionRow('Construction as per Approved Plans', ['Yes', 'No'], fields.constructionApproved)}
         ${simpleRow('Details of Approved Plan', fields.approvalDetails)}
         ${simpleRow('Construction Permission No. &amp; Date', fields.constructionPermission || 'Not mentioned')}
@@ -928,84 +871,79 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
         ${simpleRow('Other Documents Verified', fields.documentsVerified)}
       </table>
       <table style="${ts}">
-        <tr><td style="${hd}" colspan="3">7. VALUATION \u2014 Land</td></tr>
+        ${sectionHeader('VALUATION \u2014 Land')}
         ${simpleRow('Land Area', `${fields.landArea || '0'} ${fields.landAreaUnit}`)}
         ${simpleRow('Current Govt. Approved Rates for Land', `Rs.${fields.govtLandRate || fields.guidelineValue || 'N/A'}/- Per ${fields.landAreaUnit}`)}
         ${simpleRow('Recommended Rate &amp; Basis', `Rs.${fields.landRatePerUnit || 'N/A'}/- Per ${fields.landAreaUnit} ${fields.recommendedRateBasis ? '(' + fields.recommendedRateBasis + ')' : ''}`)}
-        ${simpleRow('Land Value', `${fields.landArea || '0'} ${fields.landAreaUnit} &times; Rs.${fields.landRatePerUnit || '0'}/- = <b>Rs.${formatIndianCurrency(landValue)}/-</b>`)}
+        ${simpleRow('Land Value', `${fields.landArea || '0'} ${fields.landAreaUnit} \u00D7 Rs.${fields.landRatePerUnit || '0'}/- = Rs.${formatIndianCurrency(landValue)}/-`)}
         ${simpleRow('Actual BUA of Premises', `${formatIndianCurrency(totalPlinthArea)} ${fields.floorAreaUnit || 'Sqft'}`)}
         ${fields.buaAsPerApprovals ? simpleRow('BUA as per Approvals', fields.buaAsPerApprovals) : ''}
       </table>
-      <p style="font-size:10px;font-weight:bold;color:#1F4E78;text-decoration:underline;margin:6px 0 4px;text-align:center;font-family:Calibri,Arial,sans-serif;">8. VALUATION OF BUILDING (After Depreciation)</p>
-      <table style="width:100%;border-collapse:collapse;margin-bottom:8px;font-size:8.5px;font-family:Calibri,Arial,sans-serif;">
-        <tr style="background:#1F4E78;">
-          <th style="border:1px solid #1F4E78;padding:4px 5px;color:#FFF;font-weight:bold;text-align:center;">Floor</th>
-          <th style="border:1px solid #1F4E78;padding:4px 5px;color:#FFF;font-weight:bold;text-align:right;">Area</th>
-          <th style="border:1px solid #1F4E78;padding:4px 5px;color:#FFF;font-weight:bold;text-align:right;">Rate (\u20B9)</th>
-          <th style="border:1px solid #1F4E78;padding:4px 5px;color:#FFF;font-weight:bold;text-align:right;">Estimated (\u20B9)</th>
-          <th style="border:1px solid #1F4E78;padding:4px 5px;color:#FFF;font-weight:bold;text-align:center;">Life</th>
-          <th style="border:1px solid #1F4E78;padding:4px 5px;color:#FFF;font-weight:bold;text-align:center;">Age</th>
-          <th style="border:1px solid #1F4E78;padding:4px 5px;color:#FFF;font-weight:bold;text-align:center;">Dep%</th>
-          <th style="border:1px solid #1F4E78;padding:4px 5px;color:#FFF;font-weight:bold;text-align:right;">Net Value (\u20B9)</th>
+      <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin:8px 0 6px;">VALUATION OF BUILDING (After Depreciation)</p>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:10px;font-family:${ff};font-size:11pt;">
+        <tr style="background:#000;">
+          <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:center;font-family:${ff};">Floor</th>
+          <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:right;font-family:${ff};">Area</th>
+          <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:right;font-family:${ff};">Rate (\u20B9)</th>
+          <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:right;font-family:${ff};">Estimated (\u20B9)</th>
+          <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:center;font-family:${ff};">Life</th>
+          <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:center;font-family:${ff};">Age</th>
+          <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:center;font-family:${ff};">Dep%</th>
+          <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:right;font-family:${ff};">Net Value (\u20B9)</th>
         </tr>
         ${floorRowsHTML}
-        <tr style="background:#FFF2CC;font-weight:bold;">
-          <td style="${valS};background:#FFF2CC;color:#1F4E78;" colspan="7">Total Building Value</td>
-          <td style="${valS};background:#FFF2CC;text-align:right;color:#1F4E78;">\u20B9${formatIndianCurrency(totalBuildingValue)}</td>
+        <tr style="font-weight:bold;">
+          <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:11pt;" colspan="7"><b>Total Building Value</b></td>
+          <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:11pt;text-align:right;"><b>\u20B9${formatIndianCurrency(totalBuildingValue)}</b></td>
         </tr>
       </table>
-      ${pageFooter(4, 0)}
     </div>`;
 
     // ═══════════════════════════════════════════════════════════════════
-    // PAGE 5 — Remarks, Declaration & Valuation Certificate
+    // PAGE 5 — Abstract + Remarks + Declaration + Certificate
     // ═══════════════════════════════════════════════════════════════════
-    resetRowIdx();
-    const page5 = `<div style="font-family:Calibri,Arial,sans-serif;color:#111;line-height:1.15;">
-      ${pageHeader}
+    const page5 = `<div style="font-family:${ff};color:#000;line-height:1.3;">
       <table style="${ts}">
-        <tr><td style="${hd}" colspan="3">9. ABSTRACT OF VALUATION</td></tr>
-        ${(() => { resetRowIdx(); return ''; })()}
-        ${simpleRow('Market Value (Land + Building)', `<b>Rs.${formatIndianCurrency(totalPropertyValue)}/- (${rupeesInWords(totalPropertyValue)})</b>`, '#E2EFDA')}
-        ${simpleRow(`Realizable Value (${fields.realizablePct || '90'}%)`, `<b>Rs.${formatIndianCurrency(realizableValue)}/-</b>`, '#E2EFDA')}
-        ${simpleRow(`Forced Sale / Distress Value (${fields.distressPct || '80'}%)`, `<b>Rs.${formatIndianCurrency(distressValue)}/- (${rupeesInWords(distressValue)})</b>`, '#FFF2CC')}
+        ${sectionHeader('ABSTRACT OF VALUATION')}
+        ${simpleRow('Market Value (Land + Building)', `Rs.${formatIndianCurrency(totalPropertyValue)}/- (${rupeesInWords(totalPropertyValue)})`)}
+        ${simpleRow(`Realizable Value (${fields.realizablePct || '90'}%)`, `Rs.${formatIndianCurrency(realizableValue)}/-`)}
+        ${simpleRow(`Forced Sale / Distress Value (${fields.distressPct || '80'}%)`, `Rs.${formatIndianCurrency(distressValue)}/- (${rupeesInWords(distressValue)})`)}
         ${optionRow('Marketability', ['Excellent', 'Very Good', 'Good', 'Difficult'], fields.marketability)}
         ${optionRow('Valuation Result', ['Positive', 'Negative'], fields.valuationResult)}
         ${simpleRow('Replacement Cost / Insurance Value', fields.replacementCost ? `Rs.${formatIndianCurrency(fields.replacementCost)}/-` : 'N/A')}
-        ${simpleRow('Deviations in Property', fields.deviations, '#F2F2F2')}
+        ${simpleRow('Deviations in Property', fields.deviations)}
         ${fields.guidelineValue ? simpleRow('Govt./Guideline Value', `Rs.${formatIndianCurrency(fields.guidelineValue)}/-`) : ''}
       </table>
       <table style="${ts}">
-        <tr><td style="${hd}" colspan="2">10. REMARKS, DEMARCATION &amp; POSSESSION</td></tr>
-        <tr style="background:#F2F2F2;"><td style="${lbl}" width="25%">Demarcation</td><td style="${valS};font-family:Cambria,'Times New Roman',serif;font-size:9px;background:#F2F2F2;">${fields.demarcation || 'N/A'}</td></tr>
-        <tr><td style="${lbl}">Possession</td><td style="${valS};font-family:Cambria,'Times New Roman',serif;font-size:9px;">${fields.possession || 'N/A'}</td></tr>
-        <tr style="background:#F2F2F2;"><td style="${lbl}">Remarks / Observations</td><td style="${valS};font-family:Cambria,'Times New Roman',serif;font-size:9px;background:#F2F2F2;">${fields.remarks || 'N/A'}</td></tr>
+        ${sectionHeader('REMARKS, DEMARCATION & POSSESSION')}
+        ${simpleRow('Demarcation', fields.demarcation)}
+        ${simpleRow('Possession', fields.possession)}
+        ${simpleRow('Remarks / Observations', fields.remarks)}
       </table>
-      <div style="margin-top:10px;font-size:9px;line-height:1.5;font-family:Cambria,'Times New Roman',serif;color:#333;">
-        <p style="font-weight:bold;font-size:10px;color:#1F4E78;text-decoration:underline;margin-bottom:4px;font-family:Calibri,Arial,sans-serif;">Declaration:</p>
+      <div style="margin-top:10px;font-family:${ff};font-size:12pt;line-height:1.6;">
+        <p style="font-weight:bold;font-size:14pt;margin-bottom:4px;">Declaration:</p>
         <p style="margin-bottom:3px;">I hereby declare that:</p>
-        <p style="margin-bottom:3px;">&bull; I have deputed my representative <b>${fields.representativeName ? 'Mr. ' + fields.representativeName : '______'}</b> to inspect the property on <b>${fields.dateOfInspection || '______'}</b>.</p>
-        <p style="margin-bottom:3px;">&bull; I have no direct or indirect interest in the property valued.</p>
-        <p style="margin-bottom:3px;">&bull; The information furnished is true and correct to the best of my knowledge and belief.</p>
+        <p style="margin-bottom:3px;">\u2022 I have deputed my representative <b>${fields.representativeName ? 'Mr. ' + fields.representativeName : '______'}</b> to inspect the property on <b>${fields.dateOfInspection || '______'}</b>.</p>
+        <p style="margin-bottom:3px;">\u2022 I have no direct or indirect interest in the property valued.</p>
+        <p style="margin-bottom:3px;">\u2022 The information furnished is true and correct to the best of my knowledge and belief.</p>
       </div>
-      <p style="font-size:11px;font-weight:bold;text-align:center;margin:14px 0 8px;text-decoration:underline;color:#1F4E78;font-family:Calibri,Arial,sans-serif;">11. VALUATION CERTIFICATE</p>
-      <div style="border:1.5px solid #1F4E78;padding:12px;font-size:9px;line-height:1.6;background:#FDFCF8;font-family:Cambria,'Times New Roman',serif;">
+      <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin:14px 0 8px;">VALUATION CERTIFICATE</p>
+      <div style="border:1.5px solid #000;padding:12px;font-family:${ff};font-size:12pt;line-height:1.6;">
         <p style="margin-top:0;">This is to certify that the undersigned has personally inspected the property belonging to
         <b>${fields.ownerName}</b> situated at <b>${fields.ownerAddress}</b> on
         <b>${fields.dateOfInspection}</b> and after careful examination and consideration of all relevant factors,
         the Fair Market Value of the said property is assessed as under:</p>
-        <p style="background:#E2EFDA;padding:4px 8px;margin:4px 0;"><b>Fair Market Value: \u20B9 ${formatIndianCurrency(totalPropertyValue)} (${rupeesInWords(totalPropertyValue)})</b></p>
+        <p style="padding:4px 0;margin:4px 0;"><b>Fair Market Value: \u20B9 ${formatIndianCurrency(totalPropertyValue)} (${rupeesInWords(totalPropertyValue)})</b></p>
         <p style="padding:4px 0;margin:2px 0;"><b>Realizable Value (${fields.realizablePct || '90'}%): \u20B9 ${formatIndianCurrency(realizableValue)} (${rupeesInWords(realizableValue)})</b></p>
-        <p style="background:#FFF2CC;padding:4px 8px;margin:4px 0;"><b>Distress Sale Value (${fields.distressPct || '80'}%): \u20B9 ${formatIndianCurrency(distressValue)} (${rupeesInWords(distressValue)})</b></p>
+        <p style="padding:4px 0;margin:2px 0;"><b>Distress Sale Value (${fields.distressPct || '80'}%): \u20B9 ${formatIndianCurrency(distressValue)} (${rupeesInWords(distressValue)})</b></p>
       </div>
-      <div style="margin-top:28px;text-align:right;font-size:9px;line-height:1.5;font-family:Calibri,Arial,sans-serif;">
+      <div style="margin-top:28px;text-align:right;font-family:${ff};font-size:12pt;line-height:1.5;">
         <p style="margin:0;">_______________________________</p>
-        <p style="font-weight:bold;margin:3px 0;color:#1F4E78;font-size:10px;">Satyajit Mohanty</p>
-        <p style="margin:2px 0;color:#333;">B.Sc.(Engg.), M.Tech (IIT Kharagpur)</p>
-        <p style="margin:2px 0;color:#333;">Registered Valuer \u2014 IBBI/RV/02/2019/10594</p>
-        <p style="margin:2px 0;color:#555;">S. Mohanty &amp; Associates, Bhubaneswar</p>
+        <p style="font-weight:bold;margin:3px 0;font-size:14pt;">Satyajit Mohanty</p>
+        <p style="margin:2px 0;font-style:italic;font-size:12pt;">B.Sc.(Engg.), M.Tech (IIT Kharagpur)</p>
+        <p style="margin:2px 0;font-style:italic;font-size:12pt;">Registered Valuer \u2014 IBBI/RV/02/2019/10594</p>
+        <p style="margin:2px 0;font-style:italic;font-size:12pt;">S. Mohanty &amp; Associates, Bhubaneswar</p>
       </div>
-      ${pageFooter(5, 0)}
     </div>`;
 
     const generatedPages = [page1, page2, page3, page4, page5];
@@ -1015,19 +953,15 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     // PROPERTY PHOTOGRAPHS PAGES (dynamic pagination — 6 images/page)
     // ═══════════════════════════════════════════════════════════════════
     if (fields.propertyImages && fields.propertyImages.length > 0) {
-      const IMGS_PER_PAGE = 6; // 2 columns × 3 rows
+      const IMGS_PER_PAGE = 6;
       const totalImages = fields.propertyImages.length;
       const totalPhotoPages = Math.ceil(totalImages / IMGS_PER_PAGE);
 
       for (let pg = 0; pg < totalPhotoPages; pg++) {
         pageCount++;
-        const photoPageNum = pageCount;
         const startIdx = pg * IMGS_PER_PAGE;
         const pageImages = fields.propertyImages.slice(startIdx, startIdx + IMGS_PER_PAGE);
         const imgCount = pageImages.length;
-        // Calculate dynamic image height based on how many images are on this page
-        // Available content height ≈ 680px (after header/footer/title)
-        // Each row needs: image + caption (~18px) + gap
         const rows = Math.ceil(imgCount / 2);
         const availableH = 680;
         const gapBetweenRows = rows > 1 ? Math.min(16, Math.floor((availableH - rows * 160) / (rows + 1))) : 20;
@@ -1035,10 +969,9 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
 
         const isFirstPhotoPage = pg === 0;
         const title = isFirstPhotoPage
-          ? `<p style="font-size:11px;font-weight:bold;text-align:center;text-decoration:underline;margin-bottom:${gapBetweenRows}px;color:#1F4E78;">12. PROPERTY PHOTOGRAPHS</p>`
-          : `<p style="font-size:9px;font-weight:bold;text-align:center;margin-bottom:${gapBetweenRows}px;color:#1F4E78;font-style:italic;">Property Photographs (Contd.)</p>`;
+          ? `<p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin-bottom:${gapBetweenRows}px;">PROPERTY PHOTOGRAPHS</p>`
+          : `<p style="font-family:${ff};font-size:12pt;font-weight:bold;text-align:center;margin-bottom:${gapBetweenRows}px;font-style:italic;">Property Photographs (Contd.)</p>`;
 
-        // Build rows of 2 images each
         let gridHTML = '';
         for (let r = 0; r < rows; r++) {
           const img1 = pageImages[r * 2];
@@ -1046,20 +979,18 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
           const globalIdx1 = startIdx + r * 2;
           const globalIdx2 = startIdx + r * 2 + 1;
           gridHTML += `<tr>`;
-          gridHTML += `<td style="width:50%;padding:${r === 0 ? 0 : gapBetweenRows}px 4px 0 0;vertical-align:top;"><div style="border:0.75pt solid #AAAAAA;padding:4px;text-align:center;background:#FFF;"><img src="${img1}" style="width:100%;height:${imgH}px;object-fit:cover;" crossOrigin="anonymous" /><p style="font-size:8px;margin:4px 0 0;font-style:italic;color:#555;">Figure ${globalIdx1 + 1}: Photograph ${globalIdx1 + 1}</p></div></td>`;
+          gridHTML += `<td style="width:50%;padding:${r === 0 ? 0 : gapBetweenRows}px 4px 0 0;vertical-align:top;"><div style="border:1px solid #000;padding:4px;text-align:center;"><img src="${img1}" style="width:100%;height:${imgH}px;object-fit:cover;" crossOrigin="anonymous" /><p style="font-family:${ff};font-size:10pt;margin:4px 0 0;font-style:italic;">Figure ${globalIdx1 + 1}: Photograph ${globalIdx1 + 1}</p></div></td>`;
           if (img2) {
-            gridHTML += `<td style="width:50%;padding:${r === 0 ? 0 : gapBetweenRows}px 0 0 4px;vertical-align:top;"><div style="border:0.75pt solid #AAAAAA;padding:4px;text-align:center;background:#FFF;"><img src="${img2}" style="width:100%;height:${imgH}px;object-fit:cover;" crossOrigin="anonymous" /><p style="font-size:8px;margin:4px 0 0;font-style:italic;color:#555;">Figure ${globalIdx2 + 1}: Photograph ${globalIdx2 + 1}</p></div></td>`;
+            gridHTML += `<td style="width:50%;padding:${r === 0 ? 0 : gapBetweenRows}px 0 0 4px;vertical-align:top;"><div style="border:1px solid #000;padding:4px;text-align:center;"><img src="${img2}" style="width:100%;height:${imgH}px;object-fit:cover;" crossOrigin="anonymous" /><p style="font-family:${ff};font-size:10pt;margin:4px 0 0;font-style:italic;">Figure ${globalIdx2 + 1}: Photograph ${globalIdx2 + 1}</p></div></td>`;
           } else {
             gridHTML += `<td style="width:50%;padding:0;"></td>`;
           }
           gridHTML += `</tr>`;
         }
 
-        generatedPages.push(`<div style="font-family:Calibri,Arial,sans-serif;color:#111;">
-          ${pageHeader}
+        generatedPages.push(`<div style="font-family:${ff};color:#000;">
           ${title}
           <table style="width:100%;border-collapse:collapse;">${gridHTML}</table>
-          ${pageFooter(photoPageNum, 0)}
         </div>`);
       }
     }
@@ -1069,17 +1000,14 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     // ═══════════════════════════════════════════════════════════════════
     if (fields.sketchMapImage) {
       pageCount++;
-      const sketchPageNum = pageCount;
       const sketchFigNum = (fields.propertyImages?.length || 0) + 1;
-      generatedPages.push(`<div style="font-family:Calibri,Arial,sans-serif;color:#111;">
-        ${pageHeader}
-        <p style="font-size:11px;font-weight:bold;text-align:center;text-decoration:underline;margin-bottom:12px;color:#1F4E78;">13. SKETCH MAP</p>
-        <div style="text-align:center;border:0.75pt solid #AAAAAA;padding:6px;">
+      generatedPages.push(`<div style="font-family:${ff};color:#000;">
+        <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin-bottom:12px;">SKETCH MAP</p>
+        <div style="text-align:center;border:1px solid #000;padding:6px;">
           <img src="${fields.sketchMapImage}" style="max-width:100%;max-height:680px;" crossOrigin="anonymous" />
-          <p style="font-size:9px;font-style:italic;color:#555;margin-top:6px;font-family:Calibri,Arial,sans-serif;">Figure ${sketchFigNum}: Revenue Sketch Map</p>
+          <p style="font-family:${ff};font-size:12pt;font-style:italic;margin-top:6px;">Figure ${sketchFigNum}: Revenue Sketch Map</p>
         </div>
-        <p style="font-size:8px;color:#555;text-align:center;margin-top:4px;font-style:italic;">Source: Site Visit dated ${fields.dateOfInspection || 'N/A'}</p>
-        ${pageFooter(sketchPageNum, 0)}
+        <p style="font-family:${ff};font-size:12pt;font-style:italic;text-align:center;margin-top:4px;">Source: Site Visit dated ${fields.dateOfInspection || 'N/A'}</p>
       </div>`);
     }
 
@@ -1088,26 +1016,19 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     // ═══════════════════════════════════════════════════════════════════
     if (fields.locationMapImage) {
       pageCount++;
-      const locPageNum = pageCount;
       const locFigNum = (fields.propertyImages?.length || 0) + (fields.sketchMapImage ? 1 : 0) + 1;
-      generatedPages.push(`<div style="font-family:Calibri,Arial,sans-serif;color:#111;">
-        ${pageHeader}
-        <p style="font-size:11px;font-weight:bold;text-align:center;text-decoration:underline;margin-bottom:12px;color:#1F4E78;">14. LOCATION MAP</p>
-        <div style="text-align:center;border:0.75pt solid #AAAAAA;padding:6px;">
+      generatedPages.push(`<div style="font-family:${ff};color:#000;">
+        <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin-bottom:12px;">LOCATION MAP</p>
+        <div style="text-align:center;border:1px solid #000;padding:6px;">
           <img src="${fields.locationMapImage}" style="max-width:100%;max-height:630px;" crossOrigin="anonymous" />
-          <p style="font-size:9px;font-style:italic;color:#555;margin-top:6px;font-family:Calibri,Arial,sans-serif;">Figure ${locFigNum}: Location Map</p>
+          <p style="font-family:${ff};font-size:12pt;font-style:italic;margin-top:6px;">Figure ${locFigNum}: Location Map</p>
         </div>
-        ${fields.latitude || fields.longitude ? `<p style="text-align:center;font-size:8.5px;margin-top:6px;color:#1F4E78;font-weight:bold;">Lat: ${fields.latitude || 'N/A'}, Long: ${fields.longitude || 'N/A'}</p>` : ''}
-        <p style="font-size:8px;color:#555;text-align:center;margin-top:2px;font-style:italic;">Source: Site Visit dated ${fields.dateOfInspection || 'N/A'}</p>
-        ${pageFooter(locPageNum, 0)}
+        ${fields.latitude || fields.longitude ? `<p style="text-align:center;font-family:${ff};font-size:12pt;margin-top:6px;font-weight:bold;">Lat: ${fields.latitude || 'N/A'}, Long: ${fields.longitude || 'N/A'}</p>` : ''}
+        <p style="font-family:${ff};font-size:12pt;font-style:italic;text-align:center;margin-top:2px;">Source: Site Visit dated ${fields.dateOfInspection || 'N/A'}</p>
       </div>`);
     }
 
-    // Post-process: inject correct total page count into all footers (replaces "Page N of 0")
-    const total = generatedPages.length;
-    return generatedPages.map((p, i) =>
-      p.replace(/Page \d+ of 0/g, `Page ${i + 1} of ${total}`)
-    );
+    return generatedPages;
   }
 
   // ═══════════════════════════════════════════════════════════
