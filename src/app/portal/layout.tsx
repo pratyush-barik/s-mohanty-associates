@@ -74,16 +74,18 @@ export default async function PortalLayout({ children }: { children: React.React
         {/* Logo */}
         <div className="px-4 py-5 border-b border-white/10">
           <div className="flex items-center gap-2 overflow-hidden">
-            {/* Collapsed: show small square icon version */}
-            <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center group-hover:hidden mx-auto">
-              <Image
-                src="/logo/smohantyassociate_symbol.png"
-                alt="S Mohanty Associates Symbol"
-                width={48}
-                height={48}
-                unoptimized
-                className="w-12 h-12 object-contain"
-              />
+            {/* Collapsed: show just the icon */}
+            <div className="group-hover:hidden flex justify-center">
+              <div className="bg-white/95 rounded-full p-1.5 shadow-sm border border-white/20">
+                <Image
+                  src="/logo/smohantyassociate_symbol.png"
+                  alt="S Mohanty Associates Symbol"
+                  width={48}
+                  height={48}
+                  unoptimized
+                  className="w-10 h-10 object-contain"
+                />
+              </div>
             </div>
             {/* Expanded: show full logo */}
             <div className="hidden group-hover:block opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
