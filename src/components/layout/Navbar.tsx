@@ -137,7 +137,7 @@ export default function Navbar({ user }: NavbarProps) {
 
     if (user) {
       return (
-        <Link href="/dashboard/request" className="btn btn-primary text-sm px-5 py-2.5">
+        <Link href="/dashboard/request" className="btn btn-primary text-base px-5 py-2.5">
           Request a Service
         </Link>
       );
@@ -145,7 +145,7 @@ export default function Navbar({ user }: NavbarProps) {
 
     // Anonymous user
     return (
-      <Link href="/auth/client-login" className="btn btn-primary text-sm px-5 py-2.5">
+      <Link href="/auth/client-login" className="btn btn-primary text-base px-5 py-2.5">
         Request a Service
       </Link>
     );
@@ -189,7 +189,7 @@ export default function Navbar({ user }: NavbarProps) {
                 <button
                   key={link.href}
                   onClick={() => scrollToSection(link.href)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 relative ${
+                  className={`px-4 py-2 rounded-full text-base font-medium transition-all duration-300 relative ${
                     activeSection === link.href.replace('#', '')
                       ? 'text-[#b8860b]'
                       : 'text-[#495057] hover:text-[#0f2038]'
@@ -213,7 +213,7 @@ export default function Navbar({ user }: NavbarProps) {
               {user && !isEmployee && (
                 <Link
                   href="/dashboard"
-                  className="hidden md:flex items-center gap-2 text-sm font-medium transition-colors text-[#495057] hover:text-[#0f2038]"
+                  className="hidden md:flex items-center gap-2 text-base font-medium transition-colors text-[#495057] hover:text-[#0f2038]"
                 >
                   <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#1e3a5f] to-[#162d4a] flex items-center justify-center text-white text-xs font-bold">
                     {user.name.charAt(0).toUpperCase()}

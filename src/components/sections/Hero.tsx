@@ -91,7 +91,7 @@ export default function Hero() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 container mx-auto max-w-[1280px] px-6 text-center pt-32 md:pt-40">
+      <div className="relative z-10 container mx-auto max-w-[1280px] px-6 text-center pt-48 md:pt-56">
         {/* Title */}
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
