@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import SectionWrapper from '@/components/ui/SectionWrapper';
 import { submitEnquiry } from '@/app/actions/enquiry';
+import { serviceCategoryMap } from '@/lib/services';
 
 export default function Contact() {
   const [senderType, setSenderType] = useState<'INDIVIDUAL' | 'ORGANISATION'>('INDIVIDUAL');
@@ -272,13 +273,9 @@ export default function Contact() {
                       className="w-full px-4 py-3 rounded-xl border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all"
                     >
                       <option value="">Select a subject</option>
-                      <option value="property-valuation">Property Valuation</option>
-                      <option value="land-valuation">Land Valuation</option>
-                      <option value="building-valuation">Building Valuation</option>
-                      <option value="industrial-valuation">Industrial Valuation</option>
-                      <option value="bank-valuation">Bank Valuation</option>
-                      <option value="insurance-valuation">Insurance Valuation</option>
-                      <option value="government-valuation">Government Valuation</option>
+                      {Object.keys(serviceCategoryMap).map(category => (
+                        <option key={category} value={category}>{category}</option>
+                      ))}
                       <option value="other">Other Inquiry</option>
                     </select>
                   </div>
