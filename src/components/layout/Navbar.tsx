@@ -182,7 +182,7 @@ export default function Navbar({ user }: NavbarProps) {
                   height={200}
                   priority
                   unoptimized
-                  className="h-[62px] w-[268px] sm:h-[70px] sm:w-[307px] object-fill transition-all duration-300"
+                  className="h-[60px] w-[241px] sm:h-[68px] sm:w-[276px] object-fill transition-all duration-300"
                 />
               </div>
             </Link>
