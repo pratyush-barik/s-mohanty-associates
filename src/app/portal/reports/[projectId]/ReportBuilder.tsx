@@ -1225,9 +1225,9 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
           </div>
           <p className="text-xs font-semibold text-[#495057] uppercase tracking-wider mt-2">Proximity to Civic Amenities</p>
           <div className="grid md:grid-cols-3 gap-4">
-            <Field label="Nearest Railway Station (in Km)"><input className={inputCls} value={fields.distanceRailwayStation} onChange={e => handleChange('distanceRailwayStation', e.target.value.replace(/[^\d.]/g, ''))} disabled={isReadOnly} placeholder="e.g. 2" /></Field>
-            <Field label="Nearest Bus Stop (in Km)"><input className={inputCls} value={fields.distanceBusStop} onChange={e => handleChange('distanceBusStop', e.target.value.replace(/[^\d.]/g, ''))} disabled={isReadOnly} placeholder="e.g. 1" /></Field>
-            <Field label="Nearest Hospital (in Km)"><input className={inputCls} value={fields.distanceHospital} onChange={e => handleChange('distanceHospital', e.target.value.replace(/[^\d.]/g, ''))} disabled={isReadOnly} placeholder="e.g. 3" /></Field>
+            <Field label="Nearest Railway Station (in Km)"><input type="number" min="0" step="any" className={inputCls} value={fields.distanceRailwayStation} onChange={e => handleChange('distanceRailwayStation', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="e.g. 2" /></Field>
+            <Field label="Nearest Bus Stop (in Km)"><input type="number" min="0" step="any" className={inputCls} value={fields.distanceBusStop} onChange={e => handleChange('distanceBusStop', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="e.g. 1" /></Field>
+            <Field label="Nearest Hospital (in Km)"><input type="number" min="0" step="any" className={inputCls} value={fields.distanceHospital} onChange={e => handleChange('distanceHospital', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="e.g. 3" /></Field>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="Property Identification">
