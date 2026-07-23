@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createManualCase } from '@/app/actions/project';
+import { serviceCategoryMap } from '@/lib/services';
 
 type Manager = { id: string; name: string; employeeId: string };
 
@@ -18,9 +19,6 @@ export default function ManualCaseForm({ managers }: { managers: Manager[] }) {
     propertyType: '',
     purpose: '',
     propertyAddress: '',
-    contactName: '',
-    contactPhone: '',
-    contactEmail: '',
     propertyDetails: '',
     managerId: '',
   });
@@ -43,6 +41,8 @@ export default function ManualCaseForm({ managers }: { managers: Manager[] }) {
       router.push('/portal/owner');
     }
   };
+
+  const availablePurposes = formData.propertyType ? serviceCategoryMap[formData.propertyType] || [] : [];
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -76,27 +76,22 @@ export default function ManualCaseForm({ managers }: { managers: Manager[] }) {
         <h3 className="text-lg font-bold text-[#0f2038] border-b pb-2">2. Property Details</h3>
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-[#343a40] mb-1">Property Type *</label>
-            <select required value={formData.propertyType} onChange={e => setFormData({ ...formData, propertyType: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-[#dee2e6] text-sm">
+            <label className="block text-sm font-medium text-[#343a40] mb-1">Service Category *</label>
+            <select required value={formData.propertyType} onChange={e => setFormData({ ...formData, propertyType: e.target.value, purpose: '' })} className="w-full px-3 py-2 rounded-lg border border-[#dee2e6] text-sm">
               <option value="">Select Service Category</option>
-              <option value="Mortgage & Loan Security Valuation">Mortgage & Loan Security Valuation</option>
-              <option value="Banking & Financial Institution Services">Banking & Financial Institution Services</option>
-              <option value="SARFAESI & Recovery Valuation">SARFAESI & Recovery Valuation</option>
-              <option value="Land Valuation">Land Valuation</option>
-              <option value="Building Valuation">Building Valuation</option>
-              <option value="Project & Construction Consultancy">Project & Construction Consultancy</option>
-              <option value="Corporate & Fixed Asset Valuation">Corporate & Fixed Asset Valuation</option>
-              <option value="IBC & Insolvency Valuation Support">IBC & Insolvency Valuation Support</option>
-              <option value="Development & Investment Advisory">Development & Investment Advisory</option>
-              <option value="Government & Statutory Valuation">Government & Statutory Valuation</option>
-              <option value="Specialized Property Valuation">Specialized Property Valuation</option>
-              <option value="Market Research & Advisory">Market Research & Advisory</option>
-              <option value="Customized Valuation & Advisory">Customized Valuation & Advisory</option>
+              {Object.keys(serviceCategoryMap).map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#343a40] mb-1">Purpose of Valuation *</label>
-            <input type="text" required value={formData.purpose} onChange={e => setFormData({ ...formData, purpose: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-[#dee2e6] text-sm" placeholder="e.g. Bank Loan, Insurance" />
+            <label className="block text-sm font-medium text-[#343a40] mb-1">Services Offered *</label>
+            <select required value={formData.purpose} onChange={e => setFormData({ ...formData, purpose: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-[#dee2e6] text-sm" disabled={!formData.propertyType}>
+              <option value="">Select a service</option>
+              {availablePurposes.map(purpose => (
+                <option key={purpose} value={purpose}>{purpose}</option>
+              ))}
+            </select>
           </div>
           <div className="sm:col-span-2">
             <label className="block text-sm font-medium text-[#343a40] mb-1">Property Address *</label>

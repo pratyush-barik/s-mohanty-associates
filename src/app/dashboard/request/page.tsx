@@ -1,39 +1,15 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useState, useActionState } from 'react';
 import { submitServiceRequest } from '@/app/actions/service';
 import Link from 'next/link';
-
-const propertyTypes = [
-  'Mortgage & Loan Security Valuation',
-  'Banking & Financial Institution Services',
-  'SARFAESI & Recovery Valuation',
-  'Land Valuation',
-  'Building Valuation',
-  'Project & Construction Consultancy',
-  'Corporate & Fixed Asset Valuation',
-  'IBC & Insolvency Valuation Support',
-  'Development & Investment Advisory',
-  'Government & Statutory Valuation',
-  'Specialized Property Valuation',
-  'Market Research & Advisory',
-  'Customized Valuation & Advisory',
-];
-
-const purposes = [
-  'Bank Mortgage/Loan',
-  'Sale/Purchase',
-  'Insurance',
-  'Taxation/Income Tax',
-  'Court/Legal Proceedings',
-  'Government Acquisition',
-  'Investment Assessment',
-  'Stamp Duty',
-  'Other',
-];
+import { serviceCategoryMap } from '@/lib/services';
 
 export default function ServiceRequestPage() {
   const [state, action, pending] = useActionState(submitServiceRequest, undefined);
+  const [selectedCategory, setSelectedCategory] = useState('');
+
+  const availablePurposes = selectedCategory ? serviceCategoryMap[selectedCategory] || [] : [];
 
   if (state?.success) {
     return (
@@ -85,16 +61,18 @@ export default function ServiceRequestPage() {
         <div className="grid sm:grid-cols-2 gap-5">
           <div>
             <label htmlFor="sr-property-type" className="block text-sm font-medium text-[#343a40] mb-1.5">
-              Property Type *
+              Service Category *
             </label>
             <select
               id="sr-property-type"
               name="propertyType"
               required
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
               className="w-full px-4 py-3 rounded-xl border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all"
             >
-              <option value="">Select property type</option>
-              {propertyTypes.map((type) => (
+              <option value="">Select Service Category</option>
+              {Object.keys(serviceCategoryMap).map((type) => (
                 <option key={type} value={type}>{type}</option>
               ))}
             </select>
@@ -105,16 +83,17 @@ export default function ServiceRequestPage() {
 
           <div>
             <label htmlFor="sr-purpose" className="block text-sm font-medium text-[#343a40] mb-1.5">
-              Purpose of Valuation *
+              Services Offered *
             </label>
             <select
               id="sr-purpose"
               name="purpose"
               required
+              disabled={!selectedCategory}
               className="w-full px-4 py-3 rounded-xl border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all"
             >
-              <option value="">Select purpose</option>
-              {purposes.map((p) => (
+              <option value="">Select a service</option>
+              {availablePurposes.map((p) => (
                 <option key={p} value={p}>{p}</option>
               ))}
             </select>

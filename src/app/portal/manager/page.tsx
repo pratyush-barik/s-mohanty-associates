@@ -91,7 +91,7 @@ export default async function ManagerDashboard() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <Link href="/portal/owner/manual-case" className="card p-5 bg-[#b8860b] hover:bg-[#a07509] transition-colors flex flex-col items-center justify-center text-white text-center h-full group">
+        <Link href="/portal/owner/manual-case" className="p-5 rounded-2xl bg-[#b8860b] hover:bg-[#a07509] shadow-sm hover:shadow-md transition-all flex flex-col items-center justify-center text-white text-center h-full group border border-[#b8860b]">
           <span className="text-2xl mb-1 group-hover:scale-110 transition-transform">+</span>
           <span className="text-sm font-bold leading-tight">Create Manual<br/>Case</span>
         </Link>
