@@ -159,6 +159,8 @@ interface ReportFields {
   reworkNotes?: string;
   clientType?: string;
   organisationTemplate?: string;
+  serviceType?: string;
+  subjectType?: string;
 }
 
 const DEFAULT_FIELDS: ReportFields = {
@@ -289,6 +291,8 @@ const DEFAULT_FIELDS: ReportFields = {
   nearbyLandmarks: '',
   clientType: '',
   organisationTemplate: '',
+  serviceType: '',
+  subjectType: '',
 };
 
 // ─── Helpers ───────────────────────────────────────────────────────
@@ -444,6 +448,8 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     refNo: initialFields?.refNo || projectCode || DEFAULT_FIELDS.refNo,
     to: initialFields?.to || (initialFields?.bankName ? `${initialFields.bankName}${initialFields.branchName ? ', ' + initialFields.branchName : ''}` : '') || DEFAULT_FIELDS.to,
     city: initialFields?.city || DEFAULT_FIELDS.city,
+    serviceType: initialFields?.serviceType || DEFAULT_FIELDS.serviceType,
+    subjectType: initialFields?.subjectType || DEFAULT_FIELDS.subjectType,
     ownerName: initialFields?.ownerName || prefill?.contactName || DEFAULT_FIELDS.ownerName,
     ownerAddress: initialFields?.ownerAddress || prefill?.propertyAddress || DEFAULT_FIELDS.ownerAddress,
     propertyImages: initialFields?.propertyImages || DEFAULT_FIELDS.propertyImages,
@@ -466,6 +472,9 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   const router = useRouter();
 
   const [selectingOrg, setSelectingOrg] = useState(false);
+  const [wizardStep, setWizardStep] = useState<'client_type' | 'service' | 'subject'>(
+    !merged.clientType ? 'client_type' : !merged.serviceType ? 'service' : 'subject'
+  );
 
   const handleSelectClientType = (type: 'individual' | 'organisation') => {
     if (type === 'individual') {
@@ -482,6 +491,28 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       organisationTemplate: num
     }));
     setSelectingOrg(false);
+  };
+
+  const handleSelectService = (service: string) => {
+    setFields(prev => ({ ...prev, serviceType: service }));
+    setWizardStep('subject');
+  };
+
+  const handleSelectSubject = (subject: string) => {
+    setFields(prev => ({ ...prev, subjectType: subject }));
+  };
+
+  const handleResetWizard = () => {
+    if (confirm('Are you sure you want to change report parameters? (This will not clear your typed text, but will change the PDF template layout category)')) {
+      setFields(prev => ({
+        ...prev,
+        clientType: '',
+        organisationTemplate: '',
+        serviceType: '',
+        subjectType: ''
+      }));
+      setWizardStep('client_type');
+    }
   };
 
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
@@ -775,8 +806,8 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     const ts = `width:100%;border-collapse:collapse;font-family:${ff};`;
     const cellBorder = '1px solid #000';
     const cellPad = '6px 8px';
-    const lblBg = '#DBE6F0';
-    const optLblBg = '#DDE9F6';
+    const lblBg = 'rgba(219, 230, 240, 0.45)';
+    const optLblBg = 'rgba(221, 233, 246, 0.45)';
 
     // ── Row helpers ──
     // Simple inline row: full-width "Label: - Value"
@@ -1103,7 +1134,9 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   // ═══════════════════════════════════════════════════════════
   // RENDER
   // ═══════════════════════════════════════════════════════════
-  if (!fields.clientType) {
+  if (!fields.clientType || !fields.serviceType || !fields.subjectType) {
+    const activeStep = !fields.clientType ? 'client_type' : !fields.serviceType ? 'service' : 'subject';
+    
     return (
       <div className="min-h-[500px] flex items-center justify-center bg-gradient-to-br from-[#f8f9fa] to-[#e9ecef] p-8 rounded-2xl border border-neutral-200">
         <div className="max-w-2xl w-full text-center space-y-8">
@@ -1112,73 +1145,215 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
               Draft New Valuation Report
             </h2>
             <p className="text-[#6c757d] mt-2 text-base">
-              Choose the report template category for Project <span className="font-mono font-bold text-[#b8860b]">{projectCode}</span>
+              Set up the report parameters for Project <span className="font-mono font-bold text-[#b8860b]">{projectCode}</span>
             </p>
+            {/* Step Indicators */}
+            <div className="flex items-center justify-center gap-2 mt-4">
+              <span className={`w-2.5 h-2.5 rounded-full ${activeStep === 'client_type' ? 'bg-[#b8860b]' : 'bg-[#dee2e6]'}`}></span>
+              <span className={`w-8 h-[2px] ${fields.clientType ? 'bg-[#b8860b]' : 'bg-[#dee2e6]'}`}></span>
+              <span className={`w-2.5 h-2.5 rounded-full ${activeStep === 'service' ? 'bg-[#b8860b]' : 'bg-[#dee2e6]'}`}></span>
+              <span className={`w-8 h-[2px] ${fields.serviceType ? 'bg-[#b8860b]' : 'bg-[#dee2e6]'}`}></span>
+              <span className={`w-2.5 h-2.5 rounded-full ${activeStep === 'subject' ? 'bg-[#b8860b]' : 'bg-[#dee2e6]'}`}></span>
+            </div>
           </div>
 
-          {!selectingOrg ? (
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Individual Card */}
-              <button
-                type="button"
-                onClick={() => handleSelectClientType('individual')}
-                className="flex flex-col items-center p-8 bg-white rounded-2xl border-2 border-transparent hover:border-[#b8860b] shadow-lg hover:shadow-xl transition-all duration-300 group text-center w-full"
-              >
-                <div className="w-16 h-16 rounded-full bg-[#fcf8ee] flex items-center justify-center mb-5 text-[#b8860b] group-hover:scale-110 transition-transform">
-                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-[#0f2038] mb-2">Individual Client</h3>
-                <p className="text-sm text-[#6c757d]">
-                  Generate a standard valuation report formatted for individual owners and standard purposes.
-                </p>
-              </button>
+          {activeStep === 'client_type' && (
+            <>
+              {!selectingOrg ? (
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Individual Card */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleSelectClientType('individual');
+                      setWizardStep('service');
+                    }}
+                    className="flex flex-col items-center p-8 bg-white rounded-2xl border-2 border-transparent hover:border-[#b8860b] shadow-lg hover:shadow-xl transition-all duration-300 group text-center w-full"
+                  >
+                    <div className="w-16 h-16 rounded-full bg-[#fcf8ee] flex items-center justify-center mb-5 text-[#b8860b] group-hover:scale-110 transition-transform">
+                      <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-bold text-[#0f2038] mb-2">Individual Client</h3>
+                    <p className="text-sm text-[#6c757d]">
+                      Generate a standard valuation report formatted for individual owners and standard purposes.
+                    </p>
+                  </button>
 
-              {/* Organisation Card */}
-              <button
-                type="button"
-                onClick={() => handleSelectClientType('organisation')}
-                className="flex flex-col items-center p-8 bg-white rounded-2xl border-2 border-transparent hover:border-[#b8860b] shadow-lg hover:shadow-xl transition-all duration-300 group text-center w-full"
-              >
-                <div className="w-16 h-16 rounded-full bg-[#e8f0f8] flex items-center justify-center mb-5 text-[#0f2038] group-hover:scale-110 transition-transform">
-                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
+                  {/* Organisation Card */}
+                  <button
+                    type="button"
+                    onClick={() => handleSelectClientType('organisation')}
+                    className="flex flex-col items-center p-8 bg-white rounded-2xl border-2 border-transparent hover:border-[#b8860b] shadow-lg hover:shadow-xl transition-all duration-300 group text-center w-full"
+                  >
+                    <div className="w-16 h-16 rounded-full bg-[#e8f0f8] flex items-center justify-center mb-5 text-[#0f2038] group-hover:scale-110 transition-transform">
+                      <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-bold text-[#0f2038] mb-2">Organisation / Bank</h3>
+                    <p className="text-sm text-[#6c757d]">
+                      Select an institutional layout mapped to specific banking and credit organisation requirements.
+                    </p>
+                  </button>
                 </div>
-                <h3 className="text-xl font-bold text-[#0f2038] mb-2">Organisation / Bank</h3>
-                <p className="text-sm text-[#6c757d]">
-                  Select an institutional layout mapped to specific banking and credit organisation requirements.
-                </p>
-              </button>
-            </div>
-          ) : (
+              ) : (
+                <div className="bg-white p-8 rounded-2xl shadow-lg border border-[#e9ecef] space-y-6">
+                  <div className="flex items-center justify-between pb-4 border-b border-[#e9ecef]">
+                    <h3 className="text-lg font-bold text-[#0f2038]">Select Institution Template</h3>
+                    <button
+                      type="button"
+                      onClick={() => setSelectingOrg(false)}
+                      className="text-sm text-[#b8860b] hover:text-[#8a6507] font-medium"
+                    >
+                      ← Back
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+                    {Array.from({ length: 10 }).map((_, idx) => {
+                      const num = String(idx + 1);
+                      return (
+                        <button
+                          key={num}
+                          type="button"
+                          onClick={() => {
+                            handleSelectOrganisation(num);
+                            setWizardStep('service');
+                          }}
+                          className="p-4 rounded-xl border border-[#dee2e6] hover:border-[#b8860b] hover:bg-[#fffbf0] text-center font-bold text-lg text-[#0f2038] hover:text-[#b8860b] transition-all duration-200"
+                        >
+                          {num}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {activeStep === 'service' && (
             <div className="bg-white p-8 rounded-2xl shadow-lg border border-[#e9ecef] space-y-6">
               <div className="flex items-center justify-between pb-4 border-b border-[#e9ecef]">
-                <h3 className="text-lg font-bold text-[#0f2038]">Select Institution Template</h3>
+                <h3 className="text-lg font-bold text-[#0f2038]">Select Valuation Service</h3>
                 <button
                   type="button"
-                  onClick={() => setSelectingOrg(false)}
+                  onClick={() => {
+                    setFields(prev => ({ ...prev, clientType: '', organisationTemplate: '' }));
+                    setWizardStep('client_type');
+                  }}
                   className="text-sm text-[#b8860b] hover:text-[#8a6507] font-medium"
                 >
                   ← Back
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-                {Array.from({ length: 10 }).map((_, idx) => {
-                  const num = String(idx + 1);
-                  return (
-                    <button
-                      key={num}
-                      type="button"
-                      onClick={() => handleSelectOrganisation(num)}
-                      className="p-4 rounded-xl border border-[#dee2e6] hover:border-[#b8860b] hover:bg-[#fffbf0] text-center font-bold text-lg text-[#0f2038] hover:text-[#b8860b] transition-all duration-200"
-                    >
-                      {num}
-                    </button>
-                  );
-                })}
+              <div className="grid md:grid-cols-3 gap-4">
+                {/* Land Valuation */}
+                <button
+                  type="button"
+                  onClick={() => handleSelectService('land_valuation')}
+                  className="p-6 rounded-2xl border-2 border-[#b8860b] bg-[#fffbf0] text-center transition-all duration-200 group flex flex-col items-center justify-between min-h-[180px]"
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#fcf8ee] text-[#b8860b] flex items-center justify-center font-bold mb-3 text-lg">L</div>
+                  <div>
+                    <h4 className="font-bold text-[#0f2038] mb-1">Land Valuation</h4>
+                    <p className="text-[11px] text-[#6c757d]">For open land tracts, plots and fields.</p>
+                  </div>
+                  <span className="text-xs font-bold text-[#b8860b] mt-3">Selected</span>
+                </button>
+
+                {/* Building Valuation */}
+                <button
+                  type="button"
+                  onClick={() => handleSelectService('building_valuation')}
+                  className="p-6 rounded-2xl border border-[#dee2e6] hover:border-[#b8860b] hover:bg-[#fffbf0] text-center transition-all duration-200 group flex flex-col items-center justify-between min-h-[180px] opacity-75 hover:opacity-100"
+                >
+                  <div className="w-10 h-10 rounded-full bg-neutral-100 text-[#0f2038] flex items-center justify-center font-bold mb-3 text-lg">B</div>
+                  <div>
+                    <h4 className="font-bold text-[#0f2038] mb-1">Building Structure</h4>
+                    <p className="text-[11px] text-[#6c757d]">For structures and apartments only.</p>
+                  </div>
+                  <span className="text-xs font-semibold text-neutral-400 mt-3 group-hover:text-[#b8860b]">Select</span>
+                </button>
+
+                {/* Land & Building */}
+                <button
+                  type="button"
+                  onClick={() => handleSelectService('land_building')}
+                  className="p-6 rounded-2xl border border-[#dee2e6] hover:border-[#b8860b] hover:bg-[#fffbf0] text-center transition-all duration-200 group flex flex-col items-center justify-between min-h-[180px] opacity-75 hover:opacity-100"
+                >
+                  <div className="w-10 h-10 rounded-full bg-neutral-100 text-[#0f2038] flex items-center justify-center font-bold mb-3 text-lg">L&B</div>
+                  <div>
+                    <h4 className="font-bold text-[#0f2038] mb-1">Land & Building</h4>
+                    <p className="text-[11px] text-[#6c757d]">For combined sites and structures.</p>
+                  </div>
+                  <span className="text-xs font-semibold text-neutral-400 mt-3 group-hover:text-[#b8860b]">Select</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {activeStep === 'subject' && (
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-[#e9ecef] space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b border-[#e9ecef]">
+                <h3 className="text-lg font-bold text-[#0f2038]">Select Report Subject</h3>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFields(prev => ({ ...prev, serviceType: '' }));
+                    setWizardStep('service');
+                  }}
+                  className="text-sm text-[#b8860b] hover:text-[#8a6507] font-medium"
+                >
+                  ← Back
+                </button>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-4">
+                {/* Residential */}
+                <button
+                  type="button"
+                  onClick={() => handleSelectSubject('residential')}
+                  className="p-6 rounded-2xl border-2 border-[#b8860b] bg-[#fffbf0] text-center transition-all duration-200 group flex flex-col items-center justify-between min-h-[180px]"
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#fcf8ee] text-[#b8860b] flex items-center justify-center font-bold mb-3 text-lg">R</div>
+                  <div>
+                    <h4 className="font-bold text-[#0f2038] mb-1">Residential</h4>
+                    <p className="text-[11px] text-[#6c757d]">Valuation metrics tailored for home/housing.</p>
+                  </div>
+                  <span className="text-xs font-bold text-[#b8860b] mt-3">Selected</span>
+                </button>
+
+                {/* Commercial */}
+                <button
+                  type="button"
+                  onClick={() => handleSelectSubject('commercial')}
+                  className="p-6 rounded-2xl border border-[#dee2e6] hover:border-[#b8860b] hover:bg-[#fffbf0] text-center transition-all duration-200 group flex flex-col items-center justify-between min-h-[180px] opacity-75 hover:opacity-100"
+                >
+                  <div className="w-10 h-10 rounded-full bg-neutral-100 text-[#0f2038] flex items-center justify-center font-bold mb-3 text-lg">C</div>
+                  <div>
+                    <h4 className="font-bold text-[#0f2038] mb-1">Commercial</h4>
+                    <p className="text-[11px] text-[#6c757d]">For offices, commercial sites, retail spaces.</p>
+                  </div>
+                  <span className="text-xs font-semibold text-neutral-400 mt-3 group-hover:text-[#b8860b]">Select</span>
+                </button>
+
+                {/* Industrial */}
+                <button
+                  type="button"
+                  onClick={() => handleSelectSubject('industrial')}
+                  className="p-6 rounded-2xl border border-[#dee2e6] hover:border-[#b8860b] hover:bg-[#fffbf0] text-center transition-all duration-200 group flex flex-col items-center justify-between min-h-[180px] opacity-75 hover:opacity-100"
+                >
+                  <div className="w-10 h-10 rounded-full bg-neutral-100 text-[#0f2038] flex items-center justify-center font-bold mb-3 text-lg">I</div>
+                  <div>
+                    <h4 className="font-bold text-[#0f2038] mb-1">Industrial</h4>
+                    <p className="text-[11px] text-[#6c757d]">For warehouses, yards and factory sites.</p>
+                  </div>
+                  <span className="text-xs font-semibold text-neutral-400 mt-3 group-hover:text-[#b8860b]">Select</span>
+                </button>
               </div>
             </div>
           )}
@@ -1190,33 +1365,37 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   return (
     <div className="space-y-4" ref={reportRef}>
       {/* Template Info Banner */}
-      <div className="card p-4 bg-gradient-to-r from-[#f8f9fa] to-[#e9ecef] border border-[#e9ecef] flex items-center justify-between shadow-sm rounded-xl">
-        <div className="flex items-center gap-3">
-          <span className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider">Active Template</span>
-          <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm flex items-center gap-1.5">
-            {fields.clientType === 'organisation' ? (
-              <>
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
-                Organisation / Bank (Template {fields.organisationTemplate})
-              </>
-            ) : (
-              <>
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                Individual Client
-              </>
-            )}
-          </span>
+      <div className="card p-4 bg-gradient-to-r from-[#f8f9fa] to-[#e9ecef] border border-[#e9ecef] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm rounded-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <span className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider">Active Configuration</span>
+          <div className="flex flex-wrap gap-2">
+            <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm flex items-center gap-1.5">
+              {fields.clientType === 'organisation' ? (
+                <>
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                  Org (Template {fields.organisationTemplate})
+                </>
+              ) : (
+                <>
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                  Individual
+                </>
+              )}
+            </span>
+            <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm">
+              Service: {fields.serviceType === 'land_valuation' ? 'Land Valuation' : fields.serviceType === 'building_valuation' ? 'Building Structure' : 'Land & Building'}
+            </span>
+            <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm">
+              Subject: {fields.subjectType}
+            </span>
+          </div>
         </div>
         <button
           type="button"
-          onClick={() => {
-            if (confirm('Are you sure you want to change the report template category? (This will not clear your typed text, but will change the PDF layout category)')) {
-              setFields(prev => ({ ...prev, clientType: '', organisationTemplate: '' }));
-            }
-          }}
-          className="text-xs text-[#b8860b] hover:text-[#8a6507] hover:underline font-bold transition-colors"
+          onClick={handleResetWizard}
+          className="text-xs text-[#b8860b] hover:text-[#8a6507] hover:underline font-bold transition-colors shrink-0"
         >
-          Change Category
+          Change Parameters
         </button>
       </div>
 
