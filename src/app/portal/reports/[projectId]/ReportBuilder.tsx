@@ -1230,7 +1230,19 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
 
       {/* ── Section 1: General Details ── */}
       <Section title="General Details" number={1}>
-        <div className="space-y-3">
+        <div className="space-y-4">
+          <div className="grid md:grid-cols-2 gap-4 bg-amber-50/30 p-4 rounded-xl border border-amber-200/50 mb-2">
+            <Field label="To (Recipient / Bank)" span={2}>
+              <input className={inputCls} value={fields.to} onChange={e => handleChange('to', e.target.value)} disabled={isReadOnly} placeholder="e.g. HDFC BANK LTD., Bhubaneswar" />
+            </Field>
+            <Field label="Date of Valuation Report">
+              <input type="date" className={inputCls} value={fields.dateOfValuation} onChange={e => handleChange('dateOfValuation', e.target.value)} disabled={isReadOnly} />
+            </Field>
+            <Field label="Ref No. (Locked)">
+              <input className={inputCls} value={fields.refNo} disabled={true} readOnly={true} placeholder="Project ID" />
+            </Field>
+          </div>
+
           <Field label="Type of Property">
             <select className={selectCls} value={fields.propertyType} onChange={e => handleChange('propertyType', e.target.value)} disabled={isReadOnly}>
               <option>Residential</option><option>Commercial</option><option>Residential cum Commercial</option><option>Industrial</option><option>Vacant Plot</option>
@@ -1263,15 +1275,6 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
             <Field label="State"><input className={inputCls} value={fields.state} onChange={e => handleChange('state', e.target.value)} disabled={isReadOnly} /></Field>
             <Field label="Date of Inspection">
               <input type="date" className={inputCls} value={fields.dateOfInspection} onChange={e => handleChange('dateOfInspection', e.target.value)} disabled={isReadOnly} />
-            </Field>
-            <Field label="To (Recipient / Bank)">
-              <input className={inputCls} value={fields.to} onChange={e => handleChange('to', e.target.value)} disabled={isReadOnly} placeholder="e.g. HDFC BANK LTD., Bhubaneswar" />
-            </Field>
-            <Field label="Date of Valuation Report">
-              <input type="date" className={inputCls} value={fields.dateOfValuation} onChange={e => handleChange('dateOfValuation', e.target.value)} disabled={isReadOnly} />
-            </Field>
-            <Field label="Ref No. (Locked)">
-              <input className={inputCls} value={fields.refNo} disabled={true} readOnly={true} placeholder="Project ID" />
             </Field>
             <Field label="Bank / Financial Institution">
               <input className={inputCls} value={fields.bankName} onChange={e => handleChange('bankName', e.target.value)} disabled={isReadOnly} placeholder="e.g. HDFC Bank" />
