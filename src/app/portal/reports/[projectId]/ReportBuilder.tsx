@@ -23,6 +23,7 @@ interface ReportFields {
   propertyType: string;
   ownerName: string;
   ownerAddress: string;
+  city: string;
   landmark: string;
   loanApplicationNo: string;
   documentHolderName: string;
@@ -164,6 +165,7 @@ const DEFAULT_FIELDS: ReportFields = {
   propertyType: 'Residential',
   ownerName: '',
   ownerAddress: '',
+  city: '',
   landmark: '',
   loanApplicationNo: '',
   documentHolderName: '',
@@ -441,6 +443,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     ...(initialFields || {}),
     refNo: initialFields?.refNo || projectCode || DEFAULT_FIELDS.refNo,
     to: initialFields?.to || (initialFields?.bankName ? `${initialFields.bankName}${initialFields.branchName ? ', ' + initialFields.branchName : ''}` : '') || DEFAULT_FIELDS.to,
+    city: initialFields?.city || DEFAULT_FIELDS.city,
     ownerName: initialFields?.ownerName || prefill?.contactName || DEFAULT_FIELDS.ownerName,
     ownerAddress: initialFields?.ownerAddress || prefill?.propertyAddress || DEFAULT_FIELDS.ownerAddress,
     propertyImages: initialFields?.propertyImages || DEFAULT_FIELDS.propertyImages,
@@ -487,6 +490,16 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   const handleChange = useCallback((field: keyof ReportFields, value: any) => {
     setFields(prev => ({ ...prev, [field]: value }));
   }, []);
+
+  const getFullAddress = useCallback(() => {
+    const parts = [
+      fields.ownerAddress,
+      fields.city,
+      fields.district,
+      fields.state
+    ].filter(Boolean);
+    return parts.join(', ');
+  }, [fields.ownerAddress, fields.city, fields.district, fields.state]);
 
   // ── Floor helpers ──
   const addFloor = () => {
@@ -815,11 +828,10 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       ${sectionHeader('GENERAL DETAILS')}
       ${optionRow('Type of property', ['Residential', 'Commercial', 'Residential cum Commercial', 'Industrial', 'Vacant Plot'], fields.propertyType)}
       ${simpleRow('Name of the Customer(s)', `"${fields.ownerName || 'N/A'}"`)}
-      ${simpleRow('Property Address with pin code', fields.ownerAddress)}
+      ${simpleRow('Property Address', getFullAddress())}
       ${simpleRow('Landmark', fields.landmark || '')}
       ${simpleRow('Loan Application number', fields.loanApplicationNo)}
       ${simpleRow('Name of Document holder', fields.documentHolderName || fields.ownerName)}
-      ${simpleRow('Legal address of property / Hissa No. / Survey no. / Khasra No.', fields.legalAddress || fields.ownerAddress)}
       ${simpleRow('Date of Inspection', fields.dateOfInspection)}
       ${simpleRow('Date of Valuation Report', fields.dateOfValuation)}
       ${simpleRow('Bank / Financial Institution', fields.bankName)}
@@ -1000,7 +1012,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin:14px 0 8px;">VALUATION CERTIFICATE</p>
       <div style="border:1.5px solid #000;padding:12px;font-family:${ff};font-size:12pt;line-height:1.6;">
         <p style="margin-top:0;">This is to certify that the undersigned has personally inspected the property belonging to
-        <b>${fields.ownerName}</b> situated at <b>${fields.ownerAddress}</b> on
+        <b>${fields.ownerName}</b> situated at <b>${getFullAddress()}</b> on
         <b>${fields.dateOfInspection}</b> and after careful examination and consideration of all relevant factors,
         the Fair Market Value of the said property is assessed as under:</p>
         <p style="padding:4px 0;margin:4px 0;"><b>Fair Market Value: \u20B9 ${formatIndianCurrency(totalPropertyValue)} (${rupeesInWords(totalPropertyValue)})</b></p>
@@ -1252,27 +1264,95 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
             <Field label="Name of Customer(s)">
               <input className={inputCls} value={fields.ownerName} onChange={e => handleChange('ownerName', e.target.value)} disabled={isReadOnly} placeholder="Full name of property owner" />
             </Field>
-            <Field label="Property Address with Pin Code">
-              <input className={inputCls} value={fields.ownerAddress} onChange={e => handleChange('ownerAddress', e.target.value)} disabled={isReadOnly} placeholder="Full property address with pin code" />
+            <Field label="Address Line 1 (with Pin Code)" span={2}>
+              <input className={inputCls} value={fields.ownerAddress} onChange={e => handleChange('ownerAddress', e.target.value)} disabled={isReadOnly} placeholder="Plot/Building No, Street/Locality, Pin Code" />
+            </Field>
+            <Field label="City / Town">
+              <input list="cities-list" className={inputCls} value={fields.city || ''} onChange={e => handleChange('city', e.target.value)} disabled={isReadOnly} placeholder="Search or enter city..." />
+              <datalist id="cities-list">
+                <option value="Bhubaneswar" />
+                <option value="Cuttack" />
+                <option value="Rourkela" />
+                <option value="Berhampur" />
+                <option value="Sambalpur" />
+                <option value="Puri" />
+                <option value="Balasore" />
+                <option value="Bhadrak" />
+                <option value="Baripada" />
+                <option value="Jharsuguda" />
+                <option value="Balangir" />
+                <option value="Jeypore" />
+                <option value="Rayagada" />
+                <option value="Bhawanipatna" />
+                <option value="Dhenkanal" />
+                <option value="Barbil" />
+                <option value="Bargarh" />
+                <option value="Sunabeda" />
+                <option value="Jatni" />
+                <option value="Khordha" />
+              </datalist>
+            </Field>
+            <Field label="District">
+              <input list="districts-list" className={inputCls} value={fields.district || ''} onChange={e => handleChange('district', e.target.value)} disabled={isReadOnly} placeholder="Search or enter district..." />
+              <datalist id="districts-list">
+                <option value="Angul" />
+                <option value="Balangir" />
+                <option value="Balasore" />
+                <option value="Bargarh" />
+                <option value="Bhadrak" />
+                <option value="Boudh" />
+                <option value="Cuttack" />
+                <option value="Deogarh" />
+                <option value="Dhenkanal" />
+                <option value="Gajapati" />
+                <option value="Ganjam" />
+                <option value="Jagatsinghpur" />
+                <option value="Jajpur" />
+                <option value="Jharsuguda" />
+                <option value="Kalahandi" />
+                <option value="Kandhamal" />
+                <option value="Kendrapara" />
+                <option value="Keonjhar" />
+                <option value="Khordha" />
+                <option value="Koraput" />
+                <option value="Malkangiri" />
+                <option value="Mayurbhanj" />
+                <option value="Nabarangpur" />
+                <option value="Nayagarh" />
+                <option value="Nuapada" />
+                <option value="Puri" />
+                <option value="Rayagada" />
+                <option value="Sambalpur" />
+                <option value="Subarnapur" />
+                <option value="Sundargarh" />
+              </datalist>
+            </Field>
+            <Field label="State">
+              <input list="states-list" className={inputCls} value={fields.state || ''} onChange={e => handleChange('state', e.target.value)} disabled={isReadOnly} placeholder="Search or enter state..." />
+              <datalist id="states-list">
+                <option value="Odisha" />
+                <option value="Andhra Pradesh" />
+                <option value="West Bengal" />
+                <option value="Jharkhand" />
+                <option value="Chhattisgarh" />
+                <option value="Bihar" />
+                <option value="Madhya Pradesh" />
+                <option value="Maharashtra" />
+                <option value="Karnataka" />
+                <option value="Tamil Nadu" />
+                <option value="Telangana" />
+                <option value="Delhi" />
+              </datalist>
             </Field>
             <Field label="Landmark">
-              <input className={inputCls} value={fields.landmark} onChange={e => handleChange('landmark', e.target.value)} disabled={isReadOnly} placeholder="e.g. Near Kantapada UP School" />
+              <input className={inputCls} value={fields.landmark || ''} onChange={e => handleChange('landmark', e.target.value)} disabled={isReadOnly} placeholder="e.g. Near Kantapada UP School" />
             </Field>
             <Field label="Loan Application Number">
-              <input className={inputCls} value={fields.loanApplicationNo} onChange={e => handleChange('loanApplicationNo', e.target.value)} disabled={isReadOnly} />
+              <input className={inputCls} value={fields.loanApplicationNo || ''} onChange={e => handleChange('loanApplicationNo', e.target.value)} disabled={isReadOnly} />
             </Field>
             <Field label="Name of Document Holder">
-              <input className={inputCls} value={fields.documentHolderName} onChange={e => handleChange('documentHolderName', e.target.value)} disabled={isReadOnly} />
+              <input className={inputCls} value={fields.documentHolderName || ''} onChange={e => handleChange('documentHolderName', e.target.value)} disabled={isReadOnly} />
             </Field>
-            <Field label="Legal Address of Property" span={2}>
-              <input className={inputCls} value={fields.legalAddress} onChange={e => handleChange('legalAddress', e.target.value)} disabled={isReadOnly} placeholder="Hissa/Survey/Khasra No, Khata No, Plot No, Mouza, Tahasil, District" />
-            </Field>
-            <Field label="Khata No"><input className={inputCls} value={fields.khataNo} onChange={e => handleChange('khataNo', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Plot No"><input className={inputCls} value={fields.plotNo} onChange={e => handleChange('plotNo', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Mouza"><input className={inputCls} value={fields.mouza} onChange={e => handleChange('mouza', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Tahasil"><input className={inputCls} value={fields.tahasil} onChange={e => handleChange('tahasil', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="District"><input className={inputCls} value={fields.district} onChange={e => handleChange('district', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="State"><input className={inputCls} value={fields.state} onChange={e => handleChange('state', e.target.value)} disabled={isReadOnly} /></Field>
             <Field label="Date of Inspection">
               <input type="date" className={inputCls} value={fields.dateOfInspection} onChange={e => handleChange('dateOfInspection', e.target.value)} disabled={isReadOnly} />
             </Field>
@@ -1714,7 +1794,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
           <p className="mb-3">
             This is to certify that the undersigned has personally inspected the property belonging to
             <strong> {fields.ownerName || '________'}</strong> situated at
-            <strong> {fields.ownerAddress || '________'}</strong> on
+            <strong> {getFullAddress() || '________'}</strong> on
             <strong> {fields.dateOfInspection || '________'}</strong> and after careful examination and consideration
             of all relevant factors, the Fair Market Value of the said property is assessed as under:
           </p>
