@@ -423,6 +423,22 @@ function LandmarkField({ label, rows, disabled }: {
   );
 }
 
+const SERVICES_LIST = [
+  { id: 'mortgage_loan', title: 'Mortgage & Loan Security Valuation', icon: '🏦', desc: 'Home Loan, LAP, Commercial, Working Capital' },
+  { id: 'banking_services', title: 'Banking & Financial Institution Services', icon: '💼', desc: 'Primary Security, Collateral Security, Periodic Revaluation' },
+  { id: 'sarfaesi_recovery', title: 'SARFAESI & Recovery Valuation', icon: '⚖️', desc: 'Distress Value, Forced Sale Value, Auction Valuation' },
+  { id: 'land_valuation', title: 'Land Valuation', icon: '🌍', desc: 'Residential, Commercial, Industrial, Agricultural Land' },
+  { id: 'building_valuation', title: 'Building Valuation', icon: '🏢', desc: 'Apartments, Villas, Commercial Buildings, Warehouses' },
+  { id: 'project_construction', title: 'Project & Construction Consultancy', icon: '🏗️', desc: 'Inspection, Progress Certification, Fund Utilization' },
+  { id: 'corporate_assets', title: 'Corporate & Fixed Asset Valuation', icon: '🏭', desc: 'Fixed Assets, Fair Market Value, Replacement Cost' },
+  { id: 'ibc_insolvency', title: 'IBC & Insolvency Valuation Support', icon: '📉', desc: 'Fair Value, Liquidation Value, RP Assistance' },
+  { id: 'development_investment', title: 'Development & Investment Advisory', icon: '📈', desc: 'HBU Analysis, Feasibility Studies, Investment Advisory' },
+  { id: 'government_statutory', title: 'Government & Statutory Valuation', icon: '🏛️', desc: 'Acquisition, Municipal Asset, Infrastructure' },
+  { id: 'specialized_property', title: 'Specialized Property Valuation', icon: '⚡', desc: 'Petrol Pumps, Cold Storages, Rice Mills, Resorts' },
+  { id: 'market_research', title: 'Market Research & Advisory', icon: '📊', desc: 'Rental Assessment, Market Trend Analysis, Circle Rate Study' },
+  { id: 'customized_valuation', title: 'Customized Valuation & Advisory', icon: '🤝', desc: 'Tailor-made Reports, Due Diligence, Expert Opinion' },
+];
+
 // ─── Main Component ────────────────────────────────────────────────
 interface ReportBuilderProps {
   projectId: string;
@@ -841,9 +857,16 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     // ═══════════════════════════════════════════════════════════════════
     const allBlocks: string[] = [];
 
-    const titleText = fields.clientType === 'organisation'
-      ? `• &nbsp;VALUATION REPORT FOR INSTITUTION ${fields.organisationTemplate}`
-      : '• &nbsp;STANDARD VALUATION REPORT FORMAT';
+    const serviceObj = SERVICES_LIST.find(s => s.id === fields.serviceType) || { title: 'Valuation' };
+    const serviceName = serviceObj.title.toUpperCase();
+    const subjectName = fields.subjectType ? fields.subjectType.toUpperCase() : 'RESIDENTIAL';
+
+    let titleText = '• &nbsp;STANDARD VALUATION REPORT FORMAT';
+    if (fields.clientType === 'organisation') {
+      titleText = `• &nbsp;${subjectName} ${serviceName} REPORT FOR INSTITUTION ${fields.organisationTemplate}`;
+    } else {
+      titleText = `• &nbsp;${subjectName} ${serviceName} REPORT`;
+    }
 
     // ── BLOCK: "To" block + Title (always page 1 start) ──
     allBlocks.push(`<div style="font-family:${ff};font-size:12pt;margin-bottom:10px;line-height:1.6;">
@@ -1250,48 +1273,29 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
                 </button>
               </div>
 
-              <div className="grid md:grid-cols-3 gap-4">
-                {/* Land Valuation */}
-                <button
-                  type="button"
-                  onClick={() => handleSelectService('land_valuation')}
-                  className="p-6 rounded-2xl border-2 border-[#b8860b] bg-[#fffbf0] text-center transition-all duration-200 group flex flex-col items-center justify-between min-h-[180px]"
-                >
-                  <div className="w-10 h-10 rounded-full bg-[#fcf8ee] text-[#b8860b] flex items-center justify-center font-bold mb-3 text-lg">L</div>
-                  <div>
-                    <h4 className="font-bold text-[#0f2038] mb-1">Land Valuation</h4>
-                    <p className="text-[11px] text-[#6c757d]">For open land tracts, plots and fields.</p>
-                  </div>
-                  <span className="text-xs font-bold text-[#b8860b] mt-3">Selected</span>
-                </button>
-
-                {/* Building Valuation */}
-                <button
-                  type="button"
-                  onClick={() => handleSelectService('building_valuation')}
-                  className="p-6 rounded-2xl border border-[#dee2e6] hover:border-[#b8860b] hover:bg-[#fffbf0] text-center transition-all duration-200 group flex flex-col items-center justify-between min-h-[180px] opacity-75 hover:opacity-100"
-                >
-                  <div className="w-10 h-10 rounded-full bg-neutral-100 text-[#0f2038] flex items-center justify-center font-bold mb-3 text-lg">B</div>
-                  <div>
-                    <h4 className="font-bold text-[#0f2038] mb-1">Building Structure</h4>
-                    <p className="text-[11px] text-[#6c757d]">For structures and apartments only.</p>
-                  </div>
-                  <span className="text-xs font-semibold text-neutral-400 mt-3 group-hover:text-[#b8860b]">Select</span>
-                </button>
-
-                {/* Land & Building */}
-                <button
-                  type="button"
-                  onClick={() => handleSelectService('land_building')}
-                  className="p-6 rounded-2xl border border-[#dee2e6] hover:border-[#b8860b] hover:bg-[#fffbf0] text-center transition-all duration-200 group flex flex-col items-center justify-between min-h-[180px] opacity-75 hover:opacity-100"
-                >
-                  <div className="w-10 h-10 rounded-full bg-neutral-100 text-[#0f2038] flex items-center justify-center font-bold mb-3 text-lg">L&B</div>
-                  <div>
-                    <h4 className="font-bold text-[#0f2038] mb-1">Land & Building</h4>
-                    <p className="text-[11px] text-[#6c757d]">For combined sites and structures.</p>
-                  </div>
-                  <span className="text-xs font-semibold text-neutral-400 mt-3 group-hover:text-[#b8860b]">Select</span>
-                </button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[360px] overflow-y-auto p-3 border border-[#dee2e6] rounded-xl bg-neutral-50/50">
+                {SERVICES_LIST.map((srv) => {
+                  const isSelected = fields.serviceType === srv.id;
+                  return (
+                    <button
+                      key={srv.id}
+                      type="button"
+                      onClick={() => handleSelectService(srv.id)}
+                      className={`p-4 rounded-xl border text-left transition-all duration-200 flex items-start gap-3 w-full
+                        ${isSelected 
+                          ? 'border-[#b8860b] bg-[#fffbf0] shadow-sm' 
+                          : 'border-[#dee2e6] bg-white hover:border-[#b8860b] hover:bg-[#fffbf0]/40'}`}
+                    >
+                      <div className="text-2xl shrink-0 p-1.5 bg-neutral-100/50 rounded-lg">
+                        {srv.icon}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-bold text-sm text-[#0f2038] truncate">{srv.title}</h4>
+                        <p className="text-[10px] text-[#6c757d] line-clamp-2 mt-0.5">{srv.desc}</p>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
