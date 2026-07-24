@@ -424,19 +424,192 @@ function LandmarkField({ label, rows, disabled }: {
 }
 
 const SERVICES_LIST = [
-  { id: 'mortgage_loan', title: 'Mortgage & Loan Security Valuation', icon: '🏦', desc: 'Home Loan, LAP, Commercial, Working Capital' },
-  { id: 'banking_services', title: 'Banking & Financial Institution Services', icon: '💼', desc: 'Primary Security, Collateral Security, Periodic Revaluation' },
-  { id: 'sarfaesi_recovery', title: 'SARFAESI & Recovery Valuation', icon: '⚖️', desc: 'Distress Value, Forced Sale Value, Auction Valuation' },
-  { id: 'land_valuation', title: 'Land Valuation', icon: '🌍', desc: 'Residential, Commercial, Industrial, Agricultural Land' },
-  { id: 'building_valuation', title: 'Building Valuation', icon: '🏢', desc: 'Apartments, Villas, Commercial Buildings, Warehouses' },
-  { id: 'project_construction', title: 'Project & Construction Consultancy', icon: '🏗️', desc: 'Inspection, Progress Certification, Fund Utilization' },
-  { id: 'corporate_assets', title: 'Corporate & Fixed Asset Valuation', icon: '🏭', desc: 'Fixed Assets, Fair Market Value, Replacement Cost' },
-  { id: 'ibc_insolvency', title: 'IBC & Insolvency Valuation Support', icon: '📉', desc: 'Fair Value, Liquidation Value, RP Assistance' },
-  { id: 'development_investment', title: 'Development & Investment Advisory', icon: '📈', desc: 'HBU Analysis, Feasibility Studies, Investment Advisory' },
-  { id: 'government_statutory', title: 'Government & Statutory Valuation', icon: '🏛️', desc: 'Acquisition, Municipal Asset, Infrastructure' },
-  { id: 'specialized_property', title: 'Specialized Property Valuation', icon: '⚡', desc: 'Petrol Pumps, Cold Storages, Rice Mills, Resorts' },
-  { id: 'market_research', title: 'Market Research & Advisory', icon: '📊', desc: 'Rental Assessment, Market Trend Analysis, Circle Rate Study' },
-  { id: 'customized_valuation', title: 'Customized Valuation & Advisory', icon: '🤝', desc: 'Tailor-made Reports, Due Diligence, Expert Opinion' },
+  {
+    id: 'mortgage_loan',
+    title: 'Mortgage & Loan Security Valuation',
+    icon: '🏦',
+    desc: 'Home Loan, LAP, Commercial, Working Capital',
+    subjects: [
+      'Home Loan Valuation',
+      'Loan Against Property (LAP)',
+      'Commercial Property Valuation',
+      'Industrial Property Valuation',
+      'Construction Finance Valuation',
+      'Project Finance Valuation',
+      'Working Capital Security Valuation',
+      'Loan Renewal & Enhancement Valuation'
+    ]
+  },
+  {
+    id: 'banking_services',
+    title: 'Banking & Financial Institution Services',
+    icon: '💼',
+    desc: 'Primary Security, Collateral Security, Periodic Revaluation',
+    subjects: [
+      'Primary Security Valuation',
+      'Collateral Security Valuation',
+      'Periodic Revaluation',
+      'Security Monitoring',
+      'Consortium Lending Valuation'
+    ]
+  },
+  {
+    id: 'sarfaesi_recovery',
+    title: 'SARFAESI & Recovery Valuation',
+    icon: '⚖️',
+    desc: 'Distress Value, Forced Sale Value, Auction Valuation',
+    subjects: [
+      'Reserve Price Determination',
+      'Distress Value',
+      'Forced Sale Value',
+      'Realizable Value',
+      'Auction Valuation',
+      'Recovery & Enforcement Valuation'
+    ]
+  },
+  {
+    id: 'land_valuation',
+    title: 'Land Valuation',
+    icon: '🌍',
+    desc: 'Residential, Commercial, Industrial, Agricultural Land',
+    subjects: [
+      'Residential Land',
+      'Commercial Land',
+      'Industrial Land',
+      'Agricultural Land',
+      'Institutional Land',
+      'Development Land',
+      'Freehold & Leasehold Land',
+      'Government Leasehold Properties'
+    ]
+  },
+  {
+    id: 'building_valuation',
+    title: 'Building Valuation',
+    icon: '🏢',
+    desc: 'Apartments, Villas, Commercial Buildings, Warehouses',
+    subjects: [
+      'Residential Buildings',
+      'Apartments',
+      'Villas',
+      'Commercial Buildings',
+      'Office Spaces',
+      'Shopping Complexes',
+      'Warehouses',
+      'Industrial Buildings',
+      'Hotels',
+      'Hospitals',
+      'Schools',
+      'Colleges',
+      'Institutional Buildings'
+    ]
+  },
+  {
+    id: 'project_construction',
+    title: 'Project & Construction Consultancy',
+    icon: '🏗️',
+    desc: 'Inspection, Progress Certification, Fund Utilization',
+    subjects: [
+      'Construction Stage Inspection',
+      'Progress Certification',
+      'Cost-to-Complete Assessment',
+      'Construction Cost Estimation',
+      'Fund Utilization Verification',
+      'Technical Monitoring'
+    ]
+  },
+  {
+    id: 'corporate_assets',
+    title: 'Corporate & Fixed Asset Valuation',
+    icon: '🏭',
+    desc: 'Fixed Assets, Fair Market Value, Replacement Cost',
+    subjects: [
+      'Fixed Asset Valuation',
+      'Fair Market Value (FMV)',
+      'Replacement Cost'
+    ]
+  },
+  {
+    id: 'ibc_insolvency',
+    title: 'IBC & Insolvency Valuation Support',
+    icon: '📉',
+    desc: 'Fair Value, Liquidation Value, RP Assistance',
+    subjects: [
+      'Fair Value',
+      'Liquidation Value',
+      'Resolution Professional Assistance'
+    ]
+  },
+  {
+    id: 'development_investment',
+    title: 'Development & Investment Advisory',
+    icon: '📈',
+    desc: 'HBU Analysis, Feasibility Studies, Investment Advisory',
+    subjects: [
+      'Highest & Best Use (HBU) Analysis',
+      'Residual Land Valuation',
+      'Development Feasibility',
+      'Joint Development Valuation',
+      'Investment Advisory',
+      'Marketability Assessment'
+    ]
+  },
+  {
+    id: 'government_statutory',
+    title: 'Government & Statutory Valuation',
+    icon: '🏛️',
+    desc: 'Acquisition, Municipal Asset, Infrastructure',
+    subjects: [
+      'Land Acquisition',
+      'Compensation Assessment',
+      'Municipal & Government Asset Valuation',
+      'Public Infrastructure Valuation',
+      'Property Tax Assessment Support'
+    ]
+  },
+  {
+    id: 'specialized_property',
+    title: 'Specialized Property Valuation',
+    icon: '⚡',
+    desc: 'Petrol Pumps, Cold Storages, Rice Mills, Resorts',
+    subjects: [
+      'Petrol Pumps',
+      'Cold Storages',
+      'Rice Mills',
+      'Resorts',
+      'Data Centres',
+      'Renewable Energy Projects',
+      'Mixed-Use Developments',
+      'Heritage Properties'
+    ]
+  },
+  {
+    id: 'market_research',
+    title: 'Market Research & Advisory',
+    icon: '📊',
+    desc: 'Rental Assessment, Market Trend Analysis, Circle Rate Study',
+    subjects: [
+      'Comparable Market Analysis',
+      'Rental Assessment',
+      'Market Trend Analysis',
+      'Demand–Supply Analysis',
+      'Circle Rate Study',
+      'Feasibility Studies'
+    ]
+  },
+  {
+    id: 'customized_valuation',
+    title: 'Customized Valuation & Advisory',
+    icon: '🤝',
+    desc: 'Tailor-made Reports, Due Diligence, Expert Opinion',
+    subjects: [
+      'Tailor-made Valuation Reports',
+      'Investor Due Diligence',
+      'Asset Acquisition Advisory',
+      'Technical Audit Support',
+      'Independent Expert Opinion'
+    ]
+  }
 ];
 
 // ─── Main Component ────────────────────────────────────────────────
@@ -1316,49 +1489,35 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
                 </button>
               </div>
 
-              <div className="grid md:grid-cols-3 gap-4">
-                {/* Residential */}
-                <button
-                  type="button"
-                  onClick={() => handleSelectSubject('residential')}
-                  className="p-6 rounded-2xl border-2 border-[#b8860b] bg-[#fffbf0] text-center transition-all duration-200 group flex flex-col items-center justify-between min-h-[180px]"
-                >
-                  <div className="w-10 h-10 rounded-full bg-[#fcf8ee] text-[#b8860b] flex items-center justify-center font-bold mb-3 text-lg">R</div>
-                  <div>
-                    <h4 className="font-bold text-[#0f2038] mb-1">Residential</h4>
-                    <p className="text-[11px] text-[#6c757d]">Valuation metrics tailored for home/housing.</p>
+              {(() => {
+                const serviceObj = SERVICES_LIST.find(s => s.id === fields.serviceType);
+                const subjects = serviceObj?.subjects || ['Residential', 'Commercial', 'Industrial'];
+                return (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[360px] overflow-y-auto p-3 border border-[#dee2e6] rounded-xl bg-neutral-50/50">
+                    {subjects.map((sub) => {
+                      const isSelected = fields.subjectType === sub;
+                      return (
+                        <button
+                          key={sub}
+                          type="button"
+                          onClick={() => handleSelectSubject(sub)}
+                          className={`p-4 rounded-xl border text-left transition-all duration-200 flex items-center gap-3 w-full
+                            ${isSelected 
+                              ? 'border-[#b8860b] bg-[#fffbf0] shadow-sm' 
+                              : 'border-[#dee2e6] bg-white hover:border-[#b8860b] hover:bg-[#fffbf0]/40'}`}
+                        >
+                          <div className="w-8 h-8 rounded-full bg-neutral-100/80 text-[#0f2038] flex items-center justify-center font-bold text-xs shrink-0">
+                            {sub.charAt(0)}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h4 className="font-bold text-sm text-[#0f2038] truncate">{sub}</h4>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
-                  <span className="text-xs font-bold text-[#b8860b] mt-3">Selected</span>
-                </button>
-
-                {/* Commercial */}
-                <button
-                  type="button"
-                  onClick={() => handleSelectSubject('commercial')}
-                  className="p-6 rounded-2xl border border-[#dee2e6] hover:border-[#b8860b] hover:bg-[#fffbf0] text-center transition-all duration-200 group flex flex-col items-center justify-between min-h-[180px] opacity-75 hover:opacity-100"
-                >
-                  <div className="w-10 h-10 rounded-full bg-neutral-100 text-[#0f2038] flex items-center justify-center font-bold mb-3 text-lg">C</div>
-                  <div>
-                    <h4 className="font-bold text-[#0f2038] mb-1">Commercial</h4>
-                    <p className="text-[11px] text-[#6c757d]">For offices, commercial sites, retail spaces.</p>
-                  </div>
-                  <span className="text-xs font-semibold text-neutral-400 mt-3 group-hover:text-[#b8860b]">Select</span>
-                </button>
-
-                {/* Industrial */}
-                <button
-                  type="button"
-                  onClick={() => handleSelectSubject('industrial')}
-                  className="p-6 rounded-2xl border border-[#dee2e6] hover:border-[#b8860b] hover:bg-[#fffbf0] text-center transition-all duration-200 group flex flex-col items-center justify-between min-h-[180px] opacity-75 hover:opacity-100"
-                >
-                  <div className="w-10 h-10 rounded-full bg-neutral-100 text-[#0f2038] flex items-center justify-center font-bold mb-3 text-lg">I</div>
-                  <div>
-                    <h4 className="font-bold text-[#0f2038] mb-1">Industrial</h4>
-                    <p className="text-[11px] text-[#6c757d]">For warehouses, yards and factory sites.</p>
-                  </div>
-                  <span className="text-xs font-semibold text-neutral-400 mt-3 group-hover:text-[#b8860b]">Select</span>
-                </button>
-              </div>
+                );
+              })()}
             </div>
           )}
         </div>
