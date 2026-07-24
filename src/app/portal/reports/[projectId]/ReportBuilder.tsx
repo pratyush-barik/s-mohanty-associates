@@ -24,6 +24,7 @@ interface ReportFields {
   ownerName: string;
   ownerAddress: string;
   city: string;
+  pincode: string;
   landmark: string;
   loanApplicationNo: string;
   documentHolderName: string;
@@ -168,6 +169,7 @@ const DEFAULT_FIELDS: ReportFields = {
   ownerName: '',
   ownerAddress: '',
   city: '',
+  pincode: '',
   landmark: '',
   loanApplicationNo: '',
   documentHolderName: '',
@@ -637,6 +639,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     refNo: initialFields?.refNo || projectCode || DEFAULT_FIELDS.refNo,
     to: initialFields?.to || (initialFields?.bankName ? `${initialFields.bankName}${initialFields.branchName ? ', ' + initialFields.branchName : ''}` : '') || DEFAULT_FIELDS.to,
     city: initialFields?.city || DEFAULT_FIELDS.city,
+    pincode: initialFields?.pincode || DEFAULT_FIELDS.pincode,
     serviceType: initialFields?.serviceType || DEFAULT_FIELDS.serviceType,
     subjectType: initialFields?.subjectType || DEFAULT_FIELDS.subjectType,
     ownerName: initialFields?.ownerName || prefill?.contactName || DEFAULT_FIELDS.ownerName,
@@ -714,12 +717,11 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   const getFullAddress = useCallback(() => {
     const parts = [
       fields.ownerAddress,
-      fields.city,
-      fields.district,
-      fields.state
+      fields.state,
+      fields.pincode ? `PIN: ${fields.pincode}` : ''
     ].filter(Boolean);
     return parts.join(', ');
-  }, [fields.ownerAddress, fields.city, fields.district, fields.state]);
+  }, [fields.ownerAddress, fields.state, fields.pincode]);
 
   // ── Floor helpers ──
   const addFloor = () => {
@@ -1606,85 +1608,52 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
             <Field label="Name of Customer(s)">
               <input className={inputCls} value={fields.ownerName} onChange={e => handleChange('ownerName', e.target.value)} disabled={isReadOnly} placeholder="Full name of property owner" />
             </Field>
-            <Field label="Address Line 1 (with Pin Code)" span={2}>
-              <input className={inputCls} value={fields.ownerAddress} onChange={e => handleChange('ownerAddress', e.target.value)} disabled={isReadOnly} placeholder="Plot/Building No, Street/Locality, Pin Code" />
-            </Field>
-            <Field label="City / Town">
-              <input list="cities-list" className={inputCls} value={fields.city || ''} onChange={e => handleChange('city', e.target.value)} disabled={isReadOnly} placeholder="Search or enter city..." />
-              <datalist id="cities-list">
-                <option value="Bhubaneswar" />
-                <option value="Cuttack" />
-                <option value="Rourkela" />
-                <option value="Berhampur" />
-                <option value="Sambalpur" />
-                <option value="Puri" />
-                <option value="Balasore" />
-                <option value="Bhadrak" />
-                <option value="Baripada" />
-                <option value="Jharsuguda" />
-                <option value="Balangir" />
-                <option value="Jeypore" />
-                <option value="Rayagada" />
-                <option value="Bhawanipatna" />
-                <option value="Dhenkanal" />
-                <option value="Barbil" />
-                <option value="Bargarh" />
-                <option value="Sunabeda" />
-                <option value="Jatni" />
-                <option value="Khordha" />
-              </datalist>
-            </Field>
-            <Field label="District">
-              <input list="districts-list" className={inputCls} value={fields.district || ''} onChange={e => handleChange('district', e.target.value)} disabled={isReadOnly} placeholder="Search or enter district..." />
-              <datalist id="districts-list">
-                <option value="Angul" />
-                <option value="Balangir" />
-                <option value="Balasore" />
-                <option value="Bargarh" />
-                <option value="Bhadrak" />
-                <option value="Boudh" />
-                <option value="Cuttack" />
-                <option value="Deogarh" />
-                <option value="Dhenkanal" />
-                <option value="Gajapati" />
-                <option value="Ganjam" />
-                <option value="Jagatsinghpur" />
-                <option value="Jajpur" />
-                <option value="Jharsuguda" />
-                <option value="Kalahandi" />
-                <option value="Kandhamal" />
-                <option value="Kendrapara" />
-                <option value="Keonjhar" />
-                <option value="Khordha" />
-                <option value="Koraput" />
-                <option value="Malkangiri" />
-                <option value="Mayurbhanj" />
-                <option value="Nabarangpur" />
-                <option value="Nayagarh" />
-                <option value="Nuapada" />
-                <option value="Puri" />
-                <option value="Rayagada" />
-                <option value="Sambalpur" />
-                <option value="Subarnapur" />
-                <option value="Sundargarh" />
-              </datalist>
+            <Field label="Address Line 1" span={2}>
+              <input className={inputCls} value={fields.ownerAddress} onChange={e => handleChange('ownerAddress', e.target.value)} disabled={isReadOnly} placeholder="Plot/Building No, Street/Locality" />
             </Field>
             <Field label="State">
               <input list="states-list" className={inputCls} value={fields.state || ''} onChange={e => handleChange('state', e.target.value)} disabled={isReadOnly} placeholder="Search or enter state..." />
               <datalist id="states-list">
-                <option value="Odisha" />
                 <option value="Andhra Pradesh" />
-                <option value="West Bengal" />
-                <option value="Jharkhand" />
-                <option value="Chhattisgarh" />
+                <option value="Arunachal Pradesh" />
+                <option value="Assam" />
                 <option value="Bihar" />
+                <option value="Chhattisgarh" />
+                <option value="Goa" />
+                <option value="Gujarat" />
+                <option value="Haryana" />
+                <option value="Himachal Pradesh" />
+                <option value="Jharkhand" />
+                <option value="Karnataka" />
+                <option value="Kerala" />
                 <option value="Madhya Pradesh" />
                 <option value="Maharashtra" />
-                <option value="Karnataka" />
+                <option value="Manipur" />
+                <option value="Meghalaya" />
+                <option value="Mizoram" />
+                <option value="Nagaland" />
+                <option value="Odisha" />
+                <option value="Punjab" />
+                <option value="Rajasthan" />
+                <option value="Sikkim" />
                 <option value="Tamil Nadu" />
                 <option value="Telangana" />
+                <option value="Tripura" />
+                <option value="Uttar Pradesh" />
+                <option value="Uttarakhand" />
+                <option value="West Bengal" />
+                <option value="Andaman and Nicobar Islands" />
+                <option value="Chandigarh" />
+                <option value="Dadra and Nagar Haveli and Daman and Diu" />
                 <option value="Delhi" />
+                <option value="Jammu and Kashmir" />
+                <option value="Ladakh" />
+                <option value="Lakshadweep" />
+                <option value="Puducherry" />
               </datalist>
+            </Field>
+            <Field label="Pincode">
+              <input className={inputCls} value={fields.pincode || ''} onChange={e => handleChange('pincode', e.target.value)} disabled={isReadOnly} placeholder="e.g. 751001" maxLength={6} />
             </Field>
             <Field label="Landmark">
               <input className={inputCls} value={fields.landmark || ''} onChange={e => handleChange('landmark', e.target.value)} disabled={isReadOnly} placeholder="e.g. Near Kantapada UP School" />
