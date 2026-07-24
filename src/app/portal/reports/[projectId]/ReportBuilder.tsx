@@ -996,32 +996,32 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     const ff = "'Times New Roman', serif";
     const ts = `width:100%;border-collapse:collapse;font-family:${ff};`;
     const cellBorder = '1px solid #000';
-    const cellPad = '3px 8px';
+    const cellPad = '4.5px 8px';
     const lblBg = 'rgba(219, 230, 240, 0.45)';
     const optLblBg = 'rgba(221, 233, 246, 0.45)';
 
     // ── Row helpers ──
     // Simple inline row: full-width "Label: - Value"
     const simpleRow = (label: string, val: string) => {
-      return `<tr><td colspan="3" style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;line-height:1.15;">${label}: - <b>${val || 'N/A'}</b></td></tr>`;
+      return `<tr><td colspan="3" style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;line-height:1.35em;">${label}: - <b>${val || 'N/A'}</b></td></tr>`;
     };
 
     // Option row: 3 columns — Label | Options list | Selected value
     const optionRow = (label: string, opts: string[], val: string) => {
       const n = opts.length;
       const innerDivs = opts.map((o, i) =>
-        `<div style="border-bottom:${i === n - 1 ? 'none' : '1px solid #000'};padding:3px 8px;font-family:${ff};font-size:12pt;line-height:1.15;box-sizing:border-box;background:${optLblBg};">${o}</div>`
+        `<div style="border-bottom:${i === n - 1 ? 'none' : '1px solid #000'};padding:4.5px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;background:${optLblBg};">${o}</div>`
       ).join('');
       return `<tr>
-        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:1.15;" width="28%">${label}</td>
+        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:1.35em;" width="28%">${label}</td>
         <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;background:${optLblBg};" width="35%">${innerDivs}</td>
-        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;text-align:center;background:${optLblBg};line-height:1.15;" width="37%">${val || 'N/A'}</td>
+        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;text-align:center;background:${optLblBg};line-height:1.35em;" width="37%">${val || 'N/A'}</td>
       </tr>`;
     };
 
     // Section header row
     const sectionHeader = (title: string) => {
-      return `<tr><td colspan="3" style="border:${cellBorder};padding:4px 8px;font-family:${ff};font-size:16pt;font-weight:bold;background:${lblBg};vertical-align:middle;line-height:1.15;">${title}</td></tr>`;
+      return `<tr><td colspan="3" style="border:${cellBorder};padding:6px 8px;font-family:${ff};font-size:16pt;font-weight:bold;background:${lblBg};vertical-align:middle;line-height:1.35em;">${title}</td></tr>`;
     };
 
     // Wrap rows in a table
@@ -1077,33 +1077,33 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       ${optionRow('Approach Road Width', ['>=60 Feet Road', '60-40 Feet Road', '40-20 Feet Road', '<20 Feet Road'], fields.approachRoadWidth)}
       ${optionRow('Plot Demarcated at Site', ['Yes', 'No'], fields.plotDemarcated)}
       <tr>
-        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:1.15;" width="28%">Proximity to Civic Amenities</td>
+        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:1.35em;" width="28%">Proximity to Civic Amenities</td>
         <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;background:${optLblBg};" width="35%">
-          <div style="border-bottom:1px solid #000;padding:3px 8px;font-family:${ff};font-size:12pt;line-height:1.15;box-sizing:border-box;">Nearest Railway Station</div>
-          <div style="border-bottom:1px solid #000;padding:3px 8px;font-family:${ff};font-size:12pt;line-height:1.15;box-sizing:border-box;">Nearest Bus Stop</div>
-          <div style="padding:3px 8px;font-family:${ff};font-size:12pt;line-height:1.15;box-sizing:border-box;">Nearest Hospital</div>
+          <div style="border-bottom:1px solid #000;padding:4.5px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;">Nearest Railway Station</div>
+          <div style="border-bottom:1px solid #000;padding:4.5px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;">Nearest Bus Stop</div>
+          <div style="padding:4.5px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;">Nearest Hospital</div>
         </td>
         <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;background:${optLblBg};" width="37%">
-          <div style="border-bottom:1px solid #000;padding:3px 8px;font-family:${ff};font-size:12pt;line-height:1.15;box-sizing:border-box;">1. ${fields.landmarkRailway || fields.distanceRailwayStation || 'N/A'}</div>
-          <div style="border-bottom:1px solid #000;padding:3px 8px;font-family:${ff};font-size:12pt;line-height:1.15;box-sizing:border-box;">2. ${fields.landmarkBusStop || fields.distanceBusStop || 'N/A'}</div>
-          <div style="padding:3px 8px;font-family:${ff};font-size:12pt;line-height:1.15;box-sizing:border-box;">3. ${fields.landmarkHospital || fields.distanceHospital || 'N/A'}</div>
+          <div style="border-bottom:1px solid #000;padding:4.5px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;">1. ${fields.landmarkRailway || fields.distanceRailwayStation || 'N/A'}</div>
+          <div style="border-bottom:1px solid #000;padding:4.5px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;">2. ${fields.landmarkBusStop || fields.distanceBusStop || 'N/A'}</div>
+          <div style="padding:4.5px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;">3. ${fields.landmarkHospital || fields.distanceHospital || 'N/A'}</div>
         </td>
       </tr>
       ${optionRow('Property Identification', ['Easy to Identify', 'Identification by documents', 'Additional documents required', 'Difficult to identify'], fields.propertyIdentification)}
       ${optionRow('Proximity to Facilities', ['<1 Km', '1-3 Kms', '3-5 Kms', '>5 Kms'], fields.proximityToFacilities)}
       <tr>
-        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:1.15;" width="28%">Landmark Details</td>
+        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:1.35em;" width="28%">Landmark Details</td>
         <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;background:${optLblBg};" width="35%">
-          <div style="border-bottom:1px solid #000;padding:3px 8px;font-family:${ff};font-size:12pt;line-height:1.15;box-sizing:border-box;">Nearest Railway Station</div>
-          <div style="border-bottom:1px solid #000;padding:3px 8px;font-family:${ff};font-size:12pt;line-height:1.15;box-sizing:border-box;">Nearest Bus Stop</div>
-          <div style="border-bottom:1px solid #000;padding:3px 8px;font-family:${ff};font-size:12pt;line-height:1.15;box-sizing:border-box;">Nearest Hospital</div>
-          <div style="padding:3px 8px;font-family:${ff};font-size:12pt;line-height:1.15;box-sizing:border-box;">Nearest Landmark</div>
+          <div style="border-bottom:1px solid #000;padding:4.5px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;">Nearest Railway Station</div>
+          <div style="border-bottom:1px solid #000;padding:4.5px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;">Nearest Bus Stop</div>
+          <div style="border-bottom:1px solid #000;padding:4.5px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;">Nearest Hospital</div>
+          <div style="padding:4.5px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;">Nearest Landmark</div>
         </td>
         <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;background:${optLblBg};" width="37%">
-          <div style="border-bottom:1px solid #000;padding:3px 8px;font-family:${ff};font-size:12pt;line-height:1.15;box-sizing:border-box;">1. ${fields.landmarkRailway || 'N/A'}</div>
-          <div style="border-bottom:1px solid #000;padding:3px 8px;font-family:${ff};font-size:12pt;line-height:1.15;box-sizing:border-box;">2. ${fields.landmarkBusStop || 'N/A'}</div>
-          <div style="border-bottom:1px solid #000;padding:3px 8px;font-family:${ff};font-size:12pt;line-height:1.15;box-sizing:border-box;">3. ${fields.landmarkHospital || 'N/A'}</div>
-          <div style="padding:3px 8px;font-family:${ff};font-size:12pt;line-height:1.15;box-sizing:border-box;">4. ${fields.landmarkNearest || fields.landmark || 'N/A'}</div>
+          <div style="border-bottom:1px solid #000;padding:4.5px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;">1. ${fields.landmarkRailway || 'N/A'}</div>
+          <div style="border-bottom:1px solid #000;padding:4.5px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;">2. ${fields.landmarkBusStop || 'N/A'}</div>
+          <div style="border-bottom:1px solid #000;padding:4.5px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;">3. ${fields.landmarkHospital || 'N/A'}</div>
+          <div style="padding:4.5px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;">4. ${fields.landmarkNearest || fields.landmark || 'N/A'}</div>
         </td>
       </tr>
     `));
