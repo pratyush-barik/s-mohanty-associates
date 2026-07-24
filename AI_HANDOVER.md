@@ -87,16 +87,22 @@ The core business logic is **100% complete**.
    - **Section 11 – Valuation Certificate (Auto-generated):** Auto-fills from Section 1 & 9 data.
    - **Section 12 – Property Photographs:** Multi-image upload to Supabase temp storage.
    - **Section 13 – Sketch Map:** Upload sketch map image.
-   - **Section 14 – Location Map:** Live embedded Google Maps iframe (auto-reads from property address in Section 1 or lat/long coordinates). Manual screenshot upload for PDF inclusion (iframes cannot be captured by html2canvas). Lat/Long coordinate inputs.
-
-   **Key Design Decisions in ReportBuilder:**
-   - **Form UI:** All option-type fields use compact `<select>` dropdowns and `<input>` fields — NOT bulky 3-column boxes. Fast and space-efficient for data entry.
-   - **PDF Output:** Uses a 3-column table pattern (Column 1: Label in blue | Column 2: All options listed | Column 3: Selected value in bold) to match the sample bank valuation report format.
-   - **PDF Layout & Alignment:** To counter rendering bugs in `html2canvas` (which ignores CSS `vertical-align` and flexbox on table cells), the code uses a **JavaScript post-processing technique**. Before capture, it measures the rendered row height vs content height of cells marked with `data-vcenter="1"` and dynamically injects precise pixel padding to force vertical centering. The PDF pages are also balanced (e.g. Section 3 moved to Page 3) and page-level flex wrappers were removed to completely eliminate overflow and large gaps.
-   - **State:** `ReportFields` interface holds ~50+ fields. All saved as JSON into `Report.data` via `saveReportDraft` server action.
-   - **PDF Stack:** `html2canvas` + `jsPDF`. The `generatePDFPages()` function (around line 668) builds custom HTML template strings with inline styles for each page. Letterhead loaded from `/letterhead.png`. **Tailwind classes do NOT work inside these HTML strings — use only inline styles.**
-   - **Pull Back to Draft:** Report Agent can cancel their submission via `cancelReportSubmission` server action. After all status-changing operations (submit, cancel, rework, finalize), `router.refresh()` is called so the client component re-renders with the correct status from the server without a manual page reload.
-   - **`OptionField` / `LandmarkField` components** still exist in the file but are **NOT used in the form render** — they are kept only in case they are needed for future read-only display modes. Do NOT add them back to the form.
+   - **Section 14 – Location Map:** Live embedded Google Maps iframe (auto-reads from property address in Section 1 or lat/long coordinates). Manual screenshot upload for PDF inclusion (iframes cannot be captured by html2canvas).    **Key Design Decisions in ReportBuilder:**
+    - **Form UI:** All option-type fields use compact `<select>` dropdowns and `<input>` fields — NOT bulky 3-column boxes. Fast and space-efficient for data entry.
+    - **PDF Output:** Uses a 3-column table pattern (Column 1: Label in blue | Column 2: All options listed | Column 3: Selected value in bold) to match the sample bank valuation report format.
+    - **PDF Layout & Alignment:** To counter rendering bugs in `html2canvas` (which ignores CSS `vertical-align` and flexbox on table cells), the code uses a **JavaScript post-processing technique**. Before capture, it measures the rendered row height vs content height of cells marked with `data-vcenter="1"` and dynamically injects precise pixel padding to force vertical centering. The PDF pages are also balanced (e.g. Section 3 moved to Page 3) and page-level flex wrappers were removed to completely eliminate overflow and large gaps.
+    - **Cell Height & Overlap Fix (July 2026):** Halved vertical cell paddings (reduced to `4.5px 8px` on general rows, `6px 8px` on section headers, and `2.5px 6px` on building table details) and set explicit `line-height: 1.35em` relative layout constraints inside all table elements. This prevents html2canvas from interpreting unitless heights as pixel coordinates (which originally caused subsequent rows to collapse and render on top of each other) while centering the text nicely within cells.
+    - **3-Step Setup Wizard:** Implemented a configuration wizard overlay that prompts the Report Agent to select:
+      1. *Client Category*: Individual client vs. Organisation/Bank (supporting templates 1-10).
+      2. *Service*: Preloaded with the company's 13 official services.
+      3. *Subject*: Dynamically filtered based on the selected service (e.g., Residential Land under Land Valuation).
+    - **Adaptability Banner & Dynamic Titles:** Configured an active settings summary banner at the top of Section 1 of the report editor that highlights these selected parameters with a "Change Parameters" trigger to re-run the configuration wizard at any time. Report document titles in the final PDF compile dynamically based on the chosen category, service, and subject.
+    - **Semi-Transparent Table Accents:** Replaced solid `#DBE6F0` (light blue labels) and `#DDE9F6` (lighter options) backgrounds in the PDF generator with semi-transparent `rgba` equivalents (approx. 55% transparency) to match the custom background templates elegantly when printed.
+    - **Simplified Address Schema & States Datalist:** Replaced the redundant list of address fields (city, district, khasra, mouza, tahasil, etc.) with a clean structure: Address Line 1, State, and Pincode. The State field uses a searchable datalist prefilled with all 36 Indian states and Union Territories. All values serialize dynamically into PostgreSQL via Prisma client JSON mutations without schema table alterations.
+    - **State:** `ReportFields` interface holds ~50+ fields. All saved as JSON into `Report.data` via `saveReportDraft` server action.
+    - **PDF Stack:** `html2canvas` + `jsPDF`. The `generatePDFPages()` function (around line 668) builds custom HTML template strings with inline styles for each page. Letterhead loaded from `/letterhead.png`. **Tailwind classes do NOT work inside these HTML strings — use only inline styles.**
+    - **Pull Back to Draft:** Report Agent can cancel their submission via `cancelReportSubmission` server action. After all status-changing operations (submit, cancel, rework, finalize), `router.refresh()` is called so the client component re-renders with the correct status from the server without a manual page reload.
+    - **`OptionField` / `LandmarkField` components** still exist in the file but are **NOT used in the form render** — they are kept only in case they are needed for future read-only display modes. Do NOT add them back to the form.
 
 5. **Manager Preview, Editing & Finalization Flow (Updated)**:
    - Manager reviews the drafted report via `ReportBuilder.tsx`. Can edit text fields and add/remove/replace photographs as needed.
@@ -106,7 +112,10 @@ The core business logic is **100% complete**.
    - Captures HTML layout, paginates it, downloads locally for manager, and uploads the final PDF blob to `reports/pdfs/` in the `valuation-documents` Supabase bucket.
    - **Automated Cleanup:** Upon finalization, all temporary property images in `temp-photos/${projectId}/` are deleted from Supabase, and the `propertyImages` array in the database JSON is cleared.
 7. **Client Rework Flow**: Clients can request changes to their finalized reports from their dashboard. The project status reverts to `MANAGER_REVIEW`, and the manager receives a rework comment message.
-8. **Navigation Updates (July 2026)**: Portal navigation labels updated — "My Reports" → "My Projects". Page titles updated accordingly.
+8. **Navigation & Login Layout Updates (July 2026)**:
+   - Portal navigation labels updated — "My Reports" → "My Projects".
+   - My Projects listing page layout transformed from block cards into sleek, horizontal, inline rectangular list rows.
+   - Replaced Next.js `<Image>` styling calculations inside the main Navigation Bar and Employee Login page layout with native HTML `<img>` elements, resolving the issue where logos were cut off at the bottom.
 9. **Delivery**: Client downloads the PDF from their dashboard.
 
 ## 5. Pending Work (What is next)
@@ -121,7 +130,7 @@ Outstanding items in **priority order**:
    - All new `<select>` dropdowns save and restore correctly from the JSON `Report.data`
 
 ### Medium Priority — After Verification
-2. **Organizational/Corporate Templates**: The "Standard Individual" (default bank report) template is complete. Next is to build template variants for specific org clients (SBI, PNB, etc.). The user will provide sample layouts. These need conditional form logic or separate components, plus matching PDF generation. **Deferred until the default template is verified by the user.**
+2. **Organizational/Corporate Templates**: The "Standard Individual" (default bank report) template is complete. The category config wizard already supports choosing between "Individual" and "Organisation" templates 1-10. Next is to build layout adaptations for specific bank templates (SBI, PNB, etc.) once the user provides details. **Deferred until the default template is verified by the user.**
 3. **Remove the overlay / coming-soon banner** on `https://smohantyassociates.vercel.app/` (the public-facing landing page).
 
 ### Lower Priority — Future
@@ -139,8 +148,9 @@ Outstanding items in **priority order**:
 > **Location Map in PDF**: Section 14 uses a Google Maps `<iframe>` for live preview (auto-loaded from property address). `html2canvas` **cannot capture iframes**. The user must manually take a Google Maps satellite screenshot and upload it in the "Screenshot for PDF" upload within Section 14. Only the uploaded image appears in the PDF.
 
 > [!WARNING]
-> **ReportBuilder.tsx is large (~1600+ lines)**. When editing, be careful with the `generatePDFPages()` function (starts around line 668). Inline styles in the HTML template strings must use valid CSS values — Tailwind classes do NOT work inside these strings.
+> **ReportBuilder.tsx is large (~2400+ lines)**. When editing, be careful with the `generatePDFPages()` function. Inline styles in the HTML template strings must use valid CSS values — Tailwind classes do NOT work inside these strings.
 > *Note on Alignment*: Do not rely on flexbox, native `vertical-align`, or `rowspan` inside standard `<tr>/<td>` elements for PDF generation, as `html2canvas` handles them poorly when rows are stretched. Add the `data-vcenter="1"` attribute to any `<td>` that needs vertical centering; the JS logic inside `handleGeneratePDF` will dynamically calculate and apply the correct padding before capture.
+> *Note on Line Heights*: Always use explicit units (e.g. `line-height: 1.35em`) inside table cell CSS; unitless values like `1.15` are parsed incorrectly as `pixels` by the html2canvas engine, causing tables to collapse and overlap text lines.
 
 > [!WARNING]
 > **Do NOT add `OptionField` or `LandmarkField` back to the form render**. These components still exist in the file (kept for potential future read-only display use) but the form uses plain `<select>` and `<input>` elements. The 3-column blue-box display is for PDF output only.
@@ -149,6 +159,10 @@ Outstanding items in **priority order**:
 > When modifying the UI, prioritize modern, premium aesthetics (glassmorphism, clean typography, subtle animations) without relying on Tailwind component libraries like Shadcn. Use raw Tailwind classes.
 
 ## 7. Recent Git Commits (for reference)
+- `ac4b53c` — fix: Restore cell layout heights to 1.35em to avoid html2canvas unitless line-height scaling bugs that overlap rows
+- `24eb50f` — style: Reduce table cell padding by half and adjust line-height to 1.15 to ensure text is centered without overflow
+- `d922b7c` — feat: Simplify address layout by removing city/town and district, renaming Address Line 1, adding pincode input, and listing all Indian states
+- `188b2f1` — feat: setup configuration wizard banner, transparent table cells, projectCode autofill, and rectangular listings
 - `816b355` — fix: use JS post-processing to dynamically calculate and apply vertical centering padding before html2canvas capture
 - `994b91a` — fix: use rowspan for option rows to guarantee vertical centering works in html2canvas PDF (Superceded)
 - `6d373bb` — fix: proper vertical alignment via direct td padding and remove broken flex space-between layout to fix PDF gaps
