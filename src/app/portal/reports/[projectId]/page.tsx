@@ -115,6 +115,7 @@ export default async function ReportEditorPage({ params }: { params: Promise<{ p
         <div className="w-full">
           <ReportBuilder
             projectId={project.id}
+            projectCode={project.projectCode}
             initialFields={report?.data || null}
             status={project.status}
             userRole={currentUser.role}

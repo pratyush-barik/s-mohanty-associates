@@ -21,13 +21,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         {/* Logo */}
         <div className="text-center mb-8">
           <a href="/" className="inline-block transition-all hover:scale-105">
-            <Image
+            <img
               src="/logo/smohantyassociate_logo.png"
               alt="S Mohanty Associates"
-              width={1000}
-              height={250}
-              priority
-              unoptimized
               className="h-[96px] sm:h-[120px] w-auto object-contain mx-auto"
             />
           </a>

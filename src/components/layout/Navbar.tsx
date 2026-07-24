@@ -171,13 +171,9 @@ export default function Navbar({ user }: NavbarProps) {
           <div className="flex items-center justify-between h-[87px]">
             <Link href="/" className="flex items-center group">
               <div className="transition-all -ml-2">
-                <Image
+                <img
                   src="/logo/smohantyassociate_logo.png"
                   alt="S Mohanty Associates"
-                  width={800}
-                  height={200}
-                  priority
-                  unoptimized
                   className="h-[66px] sm:h-[79px] w-auto object-contain transition-all duration-300"
                 />
               </div>

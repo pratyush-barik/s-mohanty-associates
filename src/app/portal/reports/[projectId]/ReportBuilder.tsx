@@ -155,8 +155,9 @@ interface ReportFields {
   distanceMainRoadUnit: string;
   distanceRailway: string;
   distanceRailwayUnit: string;
-  nearbyLandmarks: string;
   reworkNotes?: string;
+  clientType?: string;
+  organisationTemplate?: string;
 }
 
 const DEFAULT_FIELDS: ReportFields = {
@@ -284,6 +285,8 @@ const DEFAULT_FIELDS: ReportFields = {
   distanceRailway: '',
   distanceRailwayUnit: 'Km',
   nearbyLandmarks: '',
+  clientType: '',
+  organisationTemplate: '',
 };
 
 // ─── Helpers ───────────────────────────────────────────────────────
@@ -417,6 +420,7 @@ function LandmarkField({ label, rows, disabled }: {
 // ─── Main Component ────────────────────────────────────────────────
 interface ReportBuilderProps {
   projectId: string;
+  projectCode: string;
   initialFields: any;
   status: string;
   userRole?: string;
@@ -431,11 +435,11 @@ interface ReportBuilderProps {
   };
 }
 
-export default function ReportBuilder({ projectId, initialFields, status, userRole = 'REPORT_EMPLOYEE', prefill }: ReportBuilderProps) {
+export default function ReportBuilder({ projectId, projectCode, initialFields, status, userRole = 'REPORT_EMPLOYEE', prefill }: ReportBuilderProps) {
   const merged = {
     ...DEFAULT_FIELDS,
     ...(initialFields || {}),
-    refNo: initialFields?.refNo || projectId || DEFAULT_FIELDS.refNo,
+    refNo: initialFields?.refNo || projectCode || DEFAULT_FIELDS.refNo,
     to: initialFields?.to || (initialFields?.bankName ? `${initialFields.bankName}${initialFields.branchName ? ', ' + initialFields.branchName : ''}` : '') || DEFAULT_FIELDS.to,
     ownerName: initialFields?.ownerName || prefill?.contactName || DEFAULT_FIELDS.ownerName,
     ownerAddress: initialFields?.ownerAddress || prefill?.propertyAddress || DEFAULT_FIELDS.ownerAddress,
@@ -457,6 +461,25 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
 
   const reportRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  const [selectingOrg, setSelectingOrg] = useState(false);
+
+  const handleSelectClientType = (type: 'individual' | 'organisation') => {
+    if (type === 'individual') {
+      setFields(prev => ({ ...prev, clientType: 'individual', organisationTemplate: '' }));
+    } else {
+      setSelectingOrg(true);
+    }
+  };
+
+  const handleSelectOrganisation = (num: string) => {
+    setFields(prev => ({
+      ...prev,
+      clientType: 'organisation',
+      organisationTemplate: num
+    }));
+    setSelectingOrg(false);
+  };
 
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
   const isManagerOrOwner = userRole === 'MANAGER' || userRole === 'OWNER';
@@ -774,6 +797,10 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
     // ═══════════════════════════════════════════════════════════════════
     const allBlocks: string[] = [];
 
+    const titleText = fields.clientType === 'organisation'
+      ? `• &nbsp;VALUATION REPORT FOR INSTITUTION ${fields.organisationTemplate}`
+      : '• &nbsp;STANDARD VALUATION REPORT FORMAT';
+
     // ── BLOCK: "To" block + Title (always page 1 start) ──
     allBlocks.push(`<div style="font-family:${ff};font-size:12pt;margin-bottom:10px;line-height:1.6;">
       <p style="margin:0;"><b>To</b></p>
@@ -781,7 +808,7 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
       <p style="margin:0;">Date of valuation report: -<b>${fields.dateOfValuation || '________'}</b></p>
       <p style="margin:0;">Ref: -<b>${fields.refNo || '________'}</b></p>
     </div>
-    <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin:6px 0 12px;">• &nbsp;STANDARD VALUATION REPORT FORMAT</p>`);
+    <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin:6px 0 12px;">${titleText}</p>`);
 
     // ── BLOCK: General Details ──
     allBlocks.push(wrapTable(`
@@ -1064,8 +1091,123 @@ export default function ReportBuilder({ projectId, initialFields, status, userRo
   // ═══════════════════════════════════════════════════════════
   // RENDER
   // ═══════════════════════════════════════════════════════════
+  if (!fields.clientType) {
+    return (
+      <div className="min-h-[500px] flex items-center justify-center bg-gradient-to-br from-[#f8f9fa] to-[#e9ecef] p-8 rounded-2xl border border-neutral-200">
+        <div className="max-w-2xl w-full text-center space-y-8">
+          <div>
+            <h2 className="text-3xl font-extrabold text-[#0f2038] tracking-tight">
+              Draft New Valuation Report
+            </h2>
+            <p className="text-[#6c757d] mt-2 text-base">
+              Choose the report template category for Project <span className="font-mono font-bold text-[#b8860b]">{projectCode}</span>
+            </p>
+          </div>
+
+          {!selectingOrg ? (
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Individual Card */}
+              <button
+                type="button"
+                onClick={() => handleSelectClientType('individual')}
+                className="flex flex-col items-center p-8 bg-white rounded-2xl border-2 border-transparent hover:border-[#b8860b] shadow-lg hover:shadow-xl transition-all duration-300 group text-center w-full"
+              >
+                <div className="w-16 h-16 rounded-full bg-[#fcf8ee] flex items-center justify-center mb-5 text-[#b8860b] group-hover:scale-110 transition-transform">
+                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-[#0f2038] mb-2">Individual Client</h3>
+                <p className="text-sm text-[#6c757d]">
+                  Generate a standard valuation report formatted for individual owners and standard purposes.
+                </p>
+              </button>
+
+              {/* Organisation Card */}
+              <button
+                type="button"
+                onClick={() => handleSelectClientType('organisation')}
+                className="flex flex-col items-center p-8 bg-white rounded-2xl border-2 border-transparent hover:border-[#b8860b] shadow-lg hover:shadow-xl transition-all duration-300 group text-center w-full"
+              >
+                <div className="w-16 h-16 rounded-full bg-[#e8f0f8] flex items-center justify-center mb-5 text-[#0f2038] group-hover:scale-110 transition-transform">
+                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-[#0f2038] mb-2">Organisation / Bank</h3>
+                <p className="text-sm text-[#6c757d]">
+                  Select an institutional layout mapped to specific banking and credit organisation requirements.
+                </p>
+              </button>
+            </div>
+          ) : (
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-[#e9ecef] space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b border-[#e9ecef]">
+                <h3 className="text-lg font-bold text-[#0f2038]">Select Institution Template</h3>
+                <button
+                  type="button"
+                  onClick={() => setSelectingOrg(false)}
+                  className="text-sm text-[#b8860b] hover:text-[#8a6507] font-medium"
+                >
+                  ← Back
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+                {Array.from({ length: 10 }).map((_, idx) => {
+                  const num = String(idx + 1);
+                  return (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => handleSelectOrganisation(num)}
+                      className="p-4 rounded-xl border border-[#dee2e6] hover:border-[#b8860b] hover:bg-[#fffbf0] text-center font-bold text-lg text-[#0f2038] hover:text-[#b8860b] transition-all duration-200"
+                    >
+                      {num}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4" ref={reportRef}>
+      {/* Template Info Banner */}
+      <div className="card p-4 bg-gradient-to-r from-[#f8f9fa] to-[#e9ecef] border border-[#e9ecef] flex items-center justify-between shadow-sm rounded-xl">
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider">Active Template</span>
+          <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm flex items-center gap-1.5">
+            {fields.clientType === 'organisation' ? (
+              <>
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                Organisation / Bank (Template {fields.organisationTemplate})
+              </>
+            ) : (
+              <>
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                Individual Client
+              </>
+            )}
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            if (confirm('Are you sure you want to change the report template category? (This will not clear your typed text, but will change the PDF layout category)')) {
+              setFields(prev => ({ ...prev, clientType: '', organisationTemplate: '' }));
+            }
+          }}
+          className="text-xs text-[#b8860b] hover:text-[#8a6507] hover:underline font-bold transition-colors"
+        >
+          Change Category
+        </button>
+      </div>
+
       {/* Status Message */}
       {message && (
         <div className={`p-4 rounded-xl text-sm font-medium ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
