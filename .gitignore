@@ -84,3 +84,6 @@ prisma/seed.ts
 
 # Ignore Services Offered Document
 Services Offered by S Mohanty Associates.docx
+
+# Ignore Draft Report Structure
+Draft_Report_Structure.md
