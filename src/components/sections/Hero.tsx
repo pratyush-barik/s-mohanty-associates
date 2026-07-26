@@ -205,7 +205,7 @@ export default function Hero() {
             
             <div className="flex flex-col gap-4">
               <a
-                href="https://mail.google.com/mail/?view=cm&fs=1&to=smohantyassociates@gmail.com&su=New%20Case%3A%20Service%20Request&body=Organisation%3A%0AName%3A%0AEmail%3A%0APhone%3A%0ALocation%20%2F%20Address%3A%0ASubject%20%2F%20Property%20Type%3A%0AMessage%20%2F%20Details%3A%0A"
+                href="https://mail.google.com/mail/?view=cm&fs=1&to=smohantyassociates@gmail.com&su=New%20Case%3A%20Service%20Request&body=Service%20Category%3A%0AServices%20Offered%3A%0AProperty%20Details%3A%0AProperty%20Address%3A%0AContact%20Name%3A%0APhone%20Number%3A%0AContact%20Email%3A%0AAdditional%20Notes%3A%0A"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setIsModalOpen(false)}
@@ -217,7 +217,7 @@ export default function Hero() {
                 Open in Gmail Web
               </a>
               <a
-                href="https://outlook.office.com/owa/?path=/mail/action/compose&to=smohantyassociates@gmail.com&subject=New%20Case%3A%20Service%20Request&body=Organisation%3A%0D%0AName%3A%0D%0AEmail%3A%0D%0APhone%3A%0D%0ALocation%20%2F%20Address%3A%0D%0ASubject%20%2F%20Property%20Type%3A%0D%0AMessage%20%2F%20Details%3A"
+                href="https://outlook.office.com/owa/?path=/mail/action/compose&to=smohantyassociates@gmail.com&subject=New%20Case%3A%20Service%20Request&body=Service%20Category%3A%0D%0AServices%20Offered%3A%0D%0AProperty%20Details%3A%0D%0AProperty%20Address%3A%0D%0AContact%20Name%3A%0D%0APhone%20Number%3A%0D%0AContact%20Email%3A%0D%0AAdditional%20Notes%3A"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setIsModalOpen(false)}
@@ -230,7 +230,7 @@ export default function Hero() {
                 Open in Outlook Web
               </a>
               <a
-                href="mailto:smohantyassociates@gmail.com?subject=New%20Case%3A%20Service%20Request&body=Organisation%3A%0AName%3A%0AEmail%3A%0APhone%3A%0ALocation%20%2F%20Address%3A%0ASubject%20%2F%20Property%20Type%3A%0AMessage%20%2F%20Details%3A%0A"
+                href="mailto:smohantyassociates@gmail.com?subject=New%20Case%3A%20Service%20Request&body=Service%20Category%3A%0AServices%20Offered%3A%0AProperty%20Details%3A%0AProperty%20Address%3A%0AContact%20Name%3A%0APhone%20Number%3A%0AContact%20Email%3A%0AAdditional%20Notes%3A%0A"
                 onClick={() => setIsModalOpen(false)}
                 className="w-full flex items-center justify-center gap-3 py-4 rounded-xl border-2 border-[#dee2e6] hover:border-[#495057] hover:bg-[#495057]/5 transition-all text-[#0f2038] font-medium"
               >
