@@ -82,6 +82,7 @@ interface ReportFields {
   internalComposition: string;
   numberOfLifts: string;
   ageOfProperty: string;
+  ageOfPropertyActual: string;
   estimatedFutureLife: string;
   exteriors: string;
   qualityOfConstruction: string;
@@ -137,6 +138,7 @@ interface ReportFields {
 
   // Photos & Maps
   propertyImages: string[];
+  propertyImageNames: string[];
   sketchMapImage: string;
   locationMapImage: string;
   latitude: string;
@@ -204,8 +206,8 @@ const DEFAULT_FIELDS: ReportFields = {
 
   premisesType: 'Row House',
   occupiedBy: 'Self Occupied',
-  isPropertyRented: 'NA',
-  rentedOccupants: 'NA',
+  isPropertyRented: '',
+  rentedOccupants: '',
   propertyTaxation: 'Average',
   boundaryNorth: '',
   boundarySouth: '',
@@ -218,11 +220,12 @@ const DEFAULT_FIELDS: ReportFields = {
 
   structureType: 'RCC',
   numberOfFloors: '1',
-  numberOfWings: 'NA',
-  unitsPerFloor: 'NA',
+  numberOfWings: '',
+  unitsPerFloor: '',
   internalComposition: 'Good',
-  numberOfLifts: 'NA',
+  numberOfLifts: '',
   ageOfProperty: '',
+  ageOfPropertyActual: '',
   estimatedFutureLife: '',
   exteriors: 'Beam & Column Structure',
   qualityOfConstruction: 'Good',
@@ -243,7 +246,7 @@ const DEFAULT_FIELDS: ReportFields = {
   approvalDetails: '',
   constructionPermission: '',
   violationsObserved: 'Low',
-  conformsToByelaws: 'NA',
+  conformsToByelaws: '',
   documentsVerified: '',
 
   floors: [{ id: '1', name: 'Ground Floor', area: '', rate: '', yearBuilt: '', lifeYears: '60', ageYears: '', depreciationPct: '' }],
@@ -259,7 +262,7 @@ const DEFAULT_FIELDS: ReportFields = {
   marketability: 'Good',
   valuationResult: 'Positive',
   replacementCost: '',
-  deviations: 'NA',
+  deviations: '',
 
   realizablePct: '90',
   distressPct: '80',
@@ -271,6 +274,7 @@ const DEFAULT_FIELDS: ReportFields = {
   representativeName: '',
 
   propertyImages: [],
+  propertyImageNames: [],
   sketchMapImage: '',
   locationMapImage: '',
   latitude: '',
@@ -645,6 +649,8 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     ownerName: initialFields?.ownerName || prefill?.contactName || DEFAULT_FIELDS.ownerName,
     ownerAddress: initialFields?.ownerAddress || prefill?.propertyAddress || DEFAULT_FIELDS.ownerAddress,
     propertyImages: initialFields?.propertyImages || DEFAULT_FIELDS.propertyImages,
+    propertyImageNames: initialFields?.propertyImageNames || DEFAULT_FIELDS.propertyImageNames,
+    ageOfPropertyActual: initialFields?.ageOfPropertyActual || DEFAULT_FIELDS.ageOfPropertyActual,
   };
   if (!Array.isArray(merged.floors) || merged.floors.length === 0) {
     merged.floors = DEFAULT_FIELDS.floors;
@@ -869,6 +875,9 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
 
   const removeImage = (index: number) => {
     handleChange('propertyImages', fields.propertyImages.filter((_, i) => i !== index));
+    if (fields.propertyImageNames) {
+      handleChange('propertyImageNames', fields.propertyImageNames.filter((_, i) => i !== index));
+    }
   };
 
   // ── Save / Submit / Finalize ──
@@ -1090,6 +1099,21 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       </tr>`;
     };
 
+    // Age option row: 3 columns — Label | Options list (selected range is bolded) | Actual age value
+    const ageOptionRow = (label: string, opts: string[], selectedOpt: string, actualVal: string) => {
+      const n = opts.length;
+      const innerDivs = opts.map((o, i) => {
+        const isSelected = o === selectedOpt;
+        const fontStyle = isSelected ? 'font-weight:bold;' : '';
+        return `<div style="border-bottom:${i === n - 1 ? 'none' : '1px solid #000'};padding:2.5px 8px 6.5px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;background:${optLblBg};word-break:break-word;word-wrap:break-word;overflow:visible;${fontStyle}">${o}</div>`;
+      }).join('');
+      return `<tr>
+        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:1.35em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="28%">${label}</td>
+        <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;background:${optLblBg};" width="35%">${innerDivs}</td>
+        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;text-align:center;background:${optLblBg};line-height:1.35em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="37%">${actualVal || 'N/A'}</td>
+      </tr>`;
+    };
+
     // Section header row
     const sectionHeader = (title: string) => {
       return `<tr><td colspan="3" style="border:${cellBorder};padding:4px 8px 8px 8px;font-family:${ff};font-size:16pt;font-weight:bold;background:${lblBg};vertical-align:middle;line-height:1.35em;word-break:break-word;word-wrap:break-word;overflow:visible;">${title}</td></tr>`;
@@ -1206,7 +1230,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       ${simpleRow('No. of Units on Each Floor', fields.unitsPerFloor)}
       ${simpleRow('Internal Composition', fields.internalComposition)}
       ${simpleRow('No. of Lifts', fields.numberOfLifts)}
-      ${optionRow('Age of Property', ['1-10 years', '11-25 years', '26-50 years', '>50 years'], fields.ageOfProperty)}
+      ${ageOptionRow('Age of Property', ['1-10 years', '11-25 years', '26-50 years', '>50 years'], fields.ageOfProperty, fields.ageOfPropertyActual)}
       ${simpleRow('Estimated Future Life', fields.estimatedFutureLife)}
       ${simpleRow('Exteriors', fields.exteriors)}
       ${optionRow('Quality of Construction', ['Very Good', 'Good', 'Average', 'Poor'], fields.qualityOfConstruction)}
@@ -1351,10 +1375,15 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
           const img2 = pageImages[r * 2 + 1];
           const gIdx1 = startIdx + r * 2;
           const gIdx2 = startIdx + r * 2 + 1;
+          const name1 = fields.propertyImageNames?.[gIdx1] || '';
+          const name2 = fields.propertyImageNames?.[gIdx2] || '';
+          const caption1 = name1 ? `Figure ${gIdx1 + 1}: ${name1}` : `Figure ${gIdx1 + 1}`;
+          const caption2 = name2 ? `Figure ${gIdx2 + 1}: ${name2}` : `Figure ${gIdx2 + 1}`;
+
           gridHTML += `<tr>`;
-          gridHTML += `<td style="width:50%;padding:${r === 0 ? 0 : gapBetweenRows}px 4px 0 0;vertical-align:top;"><div style="border:1px solid #000;padding:4px;text-align:center;"><img src="${img1}" style="width:100%;height:${imgH}px;object-fit:cover;" crossOrigin="anonymous" /><p style="font-family:${ff};font-size:10pt;margin:4px 0 0;font-style:italic;">Figure ${gIdx1 + 1}</p></div></td>`;
+          gridHTML += `<td style="width:50%;padding:${r === 0 ? 0 : gapBetweenRows}px 4px 0 0;vertical-align:top;"><div style="border:1px solid #000;padding:4px;text-align:center;"><img src="${img1}" style="width:100%;height:${imgH}px;object-fit:cover;" crossOrigin="anonymous" /><p style="font-family:${ff};font-size:10pt;margin:4px 0 0;font-style:italic;">${caption1}</p></div></td>`;
           if (img2) {
-            gridHTML += `<td style="width:50%;padding:${r === 0 ? 0 : gapBetweenRows}px 0 0 4px;vertical-align:top;"><div style="border:1px solid #000;padding:4px;text-align:center;"><img src="${img2}" style="width:100%;height:${imgH}px;object-fit:cover;" crossOrigin="anonymous" /><p style="font-family:${ff};font-size:10pt;margin:4px 0 0;font-style:italic;">Figure ${gIdx2 + 1}</p></div></td>`;
+            gridHTML += `<td style="width:50%;padding:${r === 0 ? 0 : gapBetweenRows}px 0 0 4px;vertical-align:top;"><div style="border:1px solid #000;padding:4px;text-align:center;"><img src="${img2}" style="width:100%;height:${imgH}px;object-fit:cover;" crossOrigin="anonymous" /><p style="font-family:${ff};font-size:10pt;margin:4px 0 0;font-style:italic;">${caption2}</p></div></td>`;
           } else {
             gridHTML += `<td style="width:50%;padding:0;"></td>`;
           }
@@ -1898,7 +1927,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
             </select>
           </Field>
           <div className="mt-4">
-            <p className="text-xs font-semibold text-[#495057] uppercase tracking-wider mb-3">Boundary Details \u2014 As per Sketch Map</p>
+            <p className="text-xs font-semibold text-[#495057] uppercase tracking-wider mb-3">Boundary Details: As per Sketch Map</p>
             <div className="grid md:grid-cols-2 gap-4">
               <Field label="North"><input className={inputCls} value={fields.boundaryNorth} onChange={e => handleChange('boundaryNorth', e.target.value)} disabled={isReadOnly} /></Field>
               <Field label="East"><input className={inputCls} value={fields.boundaryEast} onChange={e => handleChange('boundaryEast', e.target.value)} disabled={isReadOnly} /></Field>
@@ -1907,7 +1936,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
             </div>
           </div>
           <div className="mt-4">
-            <p className="text-xs font-semibold text-[#495057] uppercase tracking-wider mb-3">Boundary Details \u2014 At Site</p>
+            <p className="text-xs font-semibold text-[#495057] uppercase tracking-wider mb-3">Boundary Details: At Site</p>
             <div className="grid md:grid-cols-2 gap-4">
               <Field label="North"><input className={inputCls} value={fields.buildingBoundaryNorth} onChange={e => handleChange('buildingBoundaryNorth', e.target.value)} disabled={isReadOnly} /></Field>
               <Field label="East"><input className={inputCls} value={fields.buildingBoundaryEast} onChange={e => handleChange('buildingBoundaryEast', e.target.value)} disabled={isReadOnly} /></Field>
@@ -1934,10 +1963,13 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
             <Field label="No. of Lifts"><input className={inputCls} value={fields.numberOfLifts} onChange={e => handleChange('numberOfLifts', e.target.value)} disabled={isReadOnly} placeholder="NA" /></Field>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
-            <Field label="Age of the Property">
+            <Field label="Age of the Property (Range)">
               <select className={selectCls} value={fields.ageOfProperty} onChange={e => handleChange('ageOfProperty', e.target.value)} disabled={isReadOnly}>
                 <option value="">Select...</option><option>1-10 years</option><option>11-25 years</option><option>26-50 years</option><option>{'>'}50 years</option>
               </select>
+            </Field>
+            <Field label="Age of the Property (Actual Value)">
+              <input className={inputCls} value={fields.ageOfPropertyActual || ''} onChange={e => handleChange('ageOfPropertyActual', e.target.value)} disabled={isReadOnly} placeholder="e.g. 5 Years" />
             </Field>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
@@ -2227,14 +2259,33 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         <Section title="Property Photographs" number={12} defaultOpen={false}>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             {fields.propertyImages?.map((url: string, idx: number) => (
-              <div key={idx} className="relative group rounded-xl overflow-hidden border border-[#e9ecef] aspect-square">
-                <img src={url} alt={`Property ${idx + 1}`} className="w-full h-full object-cover" />
-                {!isReadOnly && (
-                  <button
-                    onClick={() => removeImage(idx)}
-                    className="absolute top-2 right-2 bg-red-500 text-white w-6 h-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-xs"
-                  >&times;</button>
-                )}
+              <div key={idx} className="flex flex-col border border-[#e9ecef] rounded-xl overflow-hidden bg-white shadow-sm">
+                <div className="relative group w-full h-36">
+                  <img src={url} alt={`Property ${idx + 1}`} className="w-full h-full object-cover" />
+                  {!isReadOnly && (
+                    <button
+                      onClick={() => removeImage(idx)}
+                      className="absolute top-2 right-2 bg-red-500 text-white w-6 h-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-xs shadow-md cursor-pointer"
+                    >&times;</button>
+                  )}
+                </div>
+                <div className="p-2 bg-gray-50 border-t border-[#e9ecef]">
+                  <input
+                    type="text"
+                    placeholder={`Photo ${idx + 1} Name`}
+                    value={fields.propertyImageNames?.[idx] || ''}
+                    disabled={isReadOnly}
+                    onChange={(e) => {
+                      const newNames = [...(fields.propertyImageNames || [])];
+                      while (newNames.length <= idx) {
+                        newNames.push('');
+                      }
+                      newNames[idx] = e.target.value;
+                      handleChange('propertyImageNames', newNames);
+                    }}
+                    className="w-full text-xs p-1.5 border border-[#dee2e6] rounded bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium"
+                  />
+                </div>
               </div>
             ))}
           </div>
