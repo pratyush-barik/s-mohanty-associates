@@ -301,8 +301,11 @@ const DEFAULT_FIELDS: ReportFields = {
   subjectType: '',
 };
 
-// ─── Helpers ───────────────────────────────────────────────────────
-const parseNum = (v: string): number => parseFloat(v?.replace(/,/g, '') || '0') || 0;
+const parseNum = (v: any): number => {
+  if (typeof v === 'number') return isNaN(v) ? 0 : v;
+  if (typeof v === 'string') return parseFloat(v.replace(/,/g, '') || '0') || 0;
+  return 0;
+};
 
 function computeDepreciation(lifeYears: number, ageYears: number): number {
   if (lifeYears <= 0 || ageYears < 0) return 0;
@@ -648,9 +651,10 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     subjectType: initialFields?.subjectType || DEFAULT_FIELDS.subjectType,
     ownerName: initialFields?.ownerName || prefill?.contactName || DEFAULT_FIELDS.ownerName,
     ownerAddress: initialFields?.ownerAddress || prefill?.propertyAddress || DEFAULT_FIELDS.ownerAddress,
-    propertyImages: initialFields?.propertyImages || DEFAULT_FIELDS.propertyImages,
-    propertyImageNames: initialFields?.propertyImageNames || DEFAULT_FIELDS.propertyImageNames,
-    ageOfPropertyActual: initialFields?.ageOfPropertyActual || DEFAULT_FIELDS.ageOfPropertyActual,
+    propertyImages: Array.isArray(initialFields?.propertyImages) ? initialFields.propertyImages : (typeof initialFields?.propertyImages === 'string' && initialFields.propertyImages ? [initialFields.propertyImages] : DEFAULT_FIELDS.propertyImages),
+    propertyImageNames: Array.isArray(initialFields?.propertyImageNames) ? initialFields.propertyImageNames : DEFAULT_FIELDS.propertyImageNames,
+    civicAmenities: Array.isArray(initialFields?.civicAmenities) ? initialFields.civicAmenities : DEFAULT_FIELDS.civicAmenities,
+    ageOfPropertyActual: typeof initialFields?.ageOfPropertyActual === 'string' ? initialFields.ageOfPropertyActual : DEFAULT_FIELDS.ageOfPropertyActual,
   };
   if (!Array.isArray(merged.floors) || merged.floors.length === 0) {
     merged.floors = DEFAULT_FIELDS.floors;
@@ -682,7 +686,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
 
   useEffect(() => {
     const val = initialFields?.additionalAmenities || merged.additionalAmenities || '';
-    if (val && val !== 'Not Applicable' && val !== 'N/A') {
+    if (typeof val === 'string' && val && val !== 'Not Applicable' && val !== 'N/A') {
       const selected = val.split(', ').map(s => s.trim()).filter(Boolean);
       const hasOther = selected.some(item => !PREDEFINED_AMENITIES.includes(item));
       setIsOtherChecked(hasOther);
@@ -730,7 +734,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
 
   const getSelectedAmenities = () => {
     const valStr = fields.additionalAmenities || '';
-    if (!valStr || valStr === 'Not Applicable' || valStr === 'N/A') return [];
+    if (typeof valStr !== 'string' || !valStr || valStr === 'Not Applicable' || valStr === 'N/A') return [];
     return valStr.split(', ').map(s => s.trim()).filter(Boolean);
   };
 
@@ -889,7 +893,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   };
 
   const handleSubmit = async () => {
-    if (!fields.propertyImages || fields.propertyImages.length < 2) {
+    if (!Array.isArray(fields.propertyImages) || fields.propertyImages.length < 2) {
       setMessage({ type: 'error', text: 'Please upload at least 2 property photographs before submitting.' });
       return;
     }
@@ -1000,7 +1004,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   };
 
   const handleFinalize = async () => {
-    if (!fields.propertyImages || fields.propertyImages.length < 2) {
+    if (!Array.isArray(fields.propertyImages) || fields.propertyImages.length < 2) {
       setMessage({ type: 'error', text: 'Please upload at least 2 property photographs before finalizing.' });
       return;
     }
@@ -1351,7 +1355,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     `);
 
     // ── BLOCKS: Property Photographs (6 per page) ──
-    if (fields.propertyImages && fields.propertyImages.length > 0) {
+    if (Array.isArray(fields.propertyImages) && fields.propertyImages.length > 0) {
       const IMGS_PER_PAGE = 6;
       const totalImages = fields.propertyImages.length;
       const totalPhotoPages = Math.ceil(totalImages / IMGS_PER_PAGE);
@@ -1399,7 +1403,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
 
     // ── BLOCK: Sketch Map ──
     if (fields.sketchMapImage) {
-      const sketchFigNum = (fields.propertyImages?.length || 0) + 1;
+      const sketchFigNum = (Array.isArray(fields.propertyImages) ? fields.propertyImages.length : 0) + 1;
       allBlocks.push(`<div style="font-family:${ff};color:#000;">
         <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin-bottom:12px;">SKETCH MAP</p>
         <div style="text-align:center;border:1px solid #000;padding:6px;">
@@ -1412,7 +1416,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
 
     // ── BLOCK: Location Map ──
     if (fields.locationMapImage) {
-      const locFigNum = (fields.propertyImages?.length || 0) + (fields.sketchMapImage ? 1 : 0) + 1;
+      const locFigNum = (Array.isArray(fields.propertyImages) ? fields.propertyImages.length : 0) + (fields.sketchMapImage ? 1 : 0) + 1;
       allBlocks.push(`<div style="font-family:${ff};color:#000;">
         <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin-bottom:12px;">LOCATION MAP</p>
         <div style="text-align:center;border:1px solid #000;padding:6px;">
@@ -2254,11 +2258,10 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         </div>
       </Section>
 
-      {/* ── Section 12: Property Photographs ── */}
-      {(!isReadOnly || (fields.propertyImages && fields.propertyImages.length > 0)) && (
+      {(!isReadOnly || (Array.isArray(fields.propertyImages) && fields.propertyImages.length > 0)) && (
         <Section title="Property Photographs" number={12} defaultOpen={false}>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-            {fields.propertyImages?.map((url: string, idx: number) => (
+            {Array.isArray(fields.propertyImages) && fields.propertyImages.map((url: string, idx: number) => (
               <div key={idx} className="flex flex-col border border-[#e9ecef] rounded-xl overflow-hidden bg-white shadow-sm">
                 <div className="relative group w-full h-36">
                   <img src={url} alt={`Property ${idx + 1}`} className="w-full h-full object-cover" />
@@ -2299,10 +2302,10 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
                 <span className="text-xs text-[#6c757d]">Max size: 5MB per photograph</span>
               </div>
               <div className={`text-xs font-semibold ${
-                (fields.propertyImages?.length || 0) < 2 ? 'text-amber-600' : 'text-green-600'
+                (Array.isArray(fields.propertyImages) ? fields.propertyImages.length : 0) < 2 ? 'text-amber-600' : 'text-green-600'
               }`}>
-                {(fields.propertyImages?.length || 0)} / 2 minimum uploaded
-                {(fields.propertyImages?.length || 0) < 2 && ' — At least 2 photographs are required to submit.'}
+                {Array.isArray(fields.propertyImages) ? fields.propertyImages.length : 0} / 2 minimum uploaded
+                {(Array.isArray(fields.propertyImages) ? fields.propertyImages.length : 0) < 2 && ' — At least 2 photographs are required to submit.'}
               </div>
               {uploadError && (
                 <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold">

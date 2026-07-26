@@ -71,8 +71,9 @@ export function rupeesInWords(amount: number | string): string {
 /**
  * Format a number in Indian comma style: 1,71,36,000
  */
-export function formatIndianCurrency(num: number | string): string {
-  const n = typeof num === 'string' ? parseFloat(num.replace(/,/g, '')) : num;
+export function formatIndianCurrency(num: number | string | null | undefined): string {
+  if (num === null || num === undefined) return '0';
+  const n = typeof num === 'string' ? parseFloat(num.replace(/,/g, '')) : Number(num);
   if (isNaN(n)) return '0';
   
   const parts = n.toFixed(2).split('.');
