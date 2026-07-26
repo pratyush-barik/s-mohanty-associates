@@ -930,7 +930,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
 
       // ── Measure each block in a hidden container ──
       const measurer = document.createElement('div');
-      measurer.style.cssText = `position:fixed;left:-9999px;top:0;width:${CONTENT_W}px;font-family:'Times New Roman',serif;color:#000;line-height:1.0em;visibility:hidden;`;
+      measurer.style.cssText = `position:fixed;left:-9999px;top:0;width:${CONTENT_W}px;font-family:'Times New Roman',serif;color:#000;line-height:1.2em;visibility:hidden;`;
       document.body.appendChild(measurer);
 
       const blockHeights: number[] = [];
@@ -969,7 +969,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
 
         const container = document.createElement('div');
         container.style.cssText = `position:fixed;left:-9999px;top:0;width:${PAGE_W}px;height:${PAGE_H}px;background:transparent;padding:${PAD_T}px ${PAD_LR}px ${PAD_B}px ${PAD_LR}px;box-sizing:border-box;font-family:'Times New Roman',serif;color:#000;overflow:hidden;`;
-        container.innerHTML = `<div style="line-height:1.0em;">${pages[i].join('')}</div>`;
+        container.innerHTML = `<div style="line-height:1.2em;">${pages[i].join('')}</div>`;
         document.body.appendChild(container);
 
         const canvas = await html2canvas(container, {
@@ -1112,19 +1112,19 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     // ── Row helpers ──
     // Simple inline row: full-width "Label: - Value"
     const simpleRow = (label: string, val: string) => {
-      return `<tr><td colspan="3" style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;line-height:1.0em;word-break:break-word;word-wrap:break-word;overflow:visible;">${label}: - <b>${val || 'N/A'}</b></td></tr>`;
+      return `<tr><td colspan="3" style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;">${label}: - <b>${val || 'N/A'}</b></td></tr>`;
     };
 
     // Option row: 3 columns — Label | Options list | Selected value
     const optionRow = (label: string, opts: string[], val: string) => {
       const n = opts.length;
       const innerDivs = opts.map((o, i) =>
-        `<div style="border-bottom:${i === n - 1 ? 'none' : '1px solid #000'};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.0em;box-sizing:border-box;background:${optLblBg};word-break:break-word;word-wrap:break-word;overflow:visible;">${o}</div>`
+        `<div style="border-bottom:${i === n - 1 ? 'none' : '1px solid #000'};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.2em;box-sizing:border-box;background:${optLblBg};word-break:break-word;word-wrap:break-word;overflow:visible;">${o}</div>`
       ).join('');
       return `<tr>
-        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:1.0em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="28%">${label}</td>
+        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="28%">${label}</td>
         <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;background:${optLblBg};" width="35%">${innerDivs}</td>
-        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;text-align:center;background:${optLblBg};line-height:1.0em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="37%">${val || 'N/A'}</td>
+        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;text-align:center;background:${optLblBg};line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="37%">${val || 'N/A'}</td>
       </tr>`;
     };
 
@@ -1134,18 +1134,18 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       const innerDivs = opts.map((o, i) => {
         const isSelected = o === selectedOpt;
         const fontStyle = isSelected ? 'font-weight:bold;' : '';
-        return `<div style="border-bottom:${i === n - 1 ? 'none' : '1px solid #000'};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.0em;box-sizing:border-box;background:${optLblBg};word-break:break-word;word-wrap:break-word;overflow:visible;${fontStyle}">${o}</div>`;
+        return `<div style="border-bottom:${i === n - 1 ? 'none' : '1px solid #000'};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.2em;box-sizing:border-box;background:${optLblBg};word-break:break-word;word-wrap:break-word;overflow:visible;${fontStyle}">${o}</div>`;
       }).join('');
       return `<tr>
-        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:1.0em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="28%">${label}</td>
+        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="28%">${label}</td>
         <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;background:${optLblBg};" width="35%">${innerDivs}</td>
-        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;text-align:center;background:${optLblBg};line-height:1.0em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="37%">${actualVal || 'N/A'}</td>
+        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;text-align:center;background:${optLblBg};line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="37%">${actualVal || 'N/A'}</td>
       </tr>`;
     };
 
     // Section header row
     const sectionHeader = (title: string) => {
-      return `<tr><td colspan="3" style="border:${cellBorder};padding:4px 8px 4px 8px;font-family:${ff};font-size:14pt;font-weight:bold;background:${lblBg};vertical-align:middle;line-height:1.0em;word-break:break-word;word-wrap:break-word;overflow:visible;">${title}</td></tr>`;
+      return `<tr><td colspan="3" style="border:${cellBorder};padding:4px 8px 4px 8px;font-family:${ff};font-size:14pt;font-weight:bold;background:${lblBg};vertical-align:middle;line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;">${title}</td></tr>`;
     };
 
     // Wrap rows in a table
@@ -1168,7 +1168,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     }
 
     // ── BLOCK: "To" block + Title (always page 1 start) ──
-    allBlocks.push(`<div style="font-family:${ff};font-size:12pt;margin-bottom:10px;line-height:1.0em;">
+    allBlocks.push(`<div style="font-family:${ff};font-size:12pt;margin-bottom:10px;line-height:1.2em;">
       <p style="margin:0;"><b>To</b></p>
       <p style="margin:0;"><b>${fields.to || '________'}</b></p>
       <p style="margin:0;">Date of valuation report: -<b>${fields.dateOfValuation || '________'}</b></p>
@@ -1199,33 +1199,33 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       ${optionRow('Approach Road Width', ['>=60 Feet Road', '60-40 Feet Road', '40-20 Feet Road', '<20 Feet Road'], fields.approachRoadWidth)}
       ${optionRow('Plot Demarcated at Site', ['Yes', 'No'], fields.plotDemarcated)}
       <tr>
-        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:1.0em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="28%">Proximity to Civic Amenities</td>
+        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="28%">Proximity to Civic Amenities</td>
         <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;background:${optLblBg};" width="35%">
-          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.0em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Railway Station</div>
-          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.0em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Bus Stop</div>
-          <div style="padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.0em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Hospital</div>
+          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.2em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Railway Station</div>
+          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.2em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Bus Stop</div>
+          <div style="padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.2em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Hospital</div>
         </td>
         <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;background:${optLblBg};" width="37%">
-          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.0em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">1. ${fields.landmarkRailway || fields.distanceRailwayStation || 'N/A'}</div>
-          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.0em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">2. ${fields.landmarkBusStop || fields.distanceBusStop || 'N/A'}</div>
-          <div style="padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.0em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">3. ${fields.landmarkHospital || fields.distanceHospital || 'N/A'}</div>
+          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.2em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">1. ${fields.landmarkRailway || fields.distanceRailwayStation || 'N/A'}</div>
+          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.2em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">2. ${fields.landmarkBusStop || fields.distanceBusStop || 'N/A'}</div>
+          <div style="padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.2em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">3. ${fields.landmarkHospital || fields.distanceHospital || 'N/A'}</div>
         </td>
       </tr>
       ${optionRow('Property Identification', ['Easy to Identify', 'Identification by documents', 'Additional documents required', 'Difficult to identify'], fields.propertyIdentification)}
       ${optionRow('Proximity to Facilities', ['<1 Km', '1-3 Kms', '3-5 Kms', '>5 Kms'], fields.proximityToFacilities)}
       <tr>
-        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:1.0em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="28%">Landmark Details</td>
+        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="28%">Landmark Details</td>
         <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;background:${optLblBg};" width="35%">
-          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.0em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Railway Station</div>
-          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.0em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Bus Stop</div>
-          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.0em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Hospital</div>
-          <div style="padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.0em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Landmark</div>
+          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.2em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Railway Station</div>
+          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.2em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Bus Stop</div>
+          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.2em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Hospital</div>
+          <div style="padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.2em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Landmark</div>
         </td>
         <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;background:${optLblBg};" width="37%">
-          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.0em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">1. ${fields.landmarkRailway || 'N/A'}</div>
-          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.0em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">2. ${fields.landmarkBusStop || 'N/A'}</div>
-          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.0em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">3. ${fields.landmarkHospital || 'N/A'}</div>
-          <div style="padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.0em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">4. ${fields.landmarkNearest || fields.landmark || 'N/A'}</div>
+          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.2em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">1. ${fields.landmarkRailway || 'N/A'}</div>
+          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.2em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">2. ${fields.landmarkBusStop || 'N/A'}</div>
+          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.2em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">3. ${fields.landmarkHospital || 'N/A'}</div>
+          <div style="padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:1.2em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">4. ${fields.landmarkNearest || fields.landmark || 'N/A'}</div>
         </td>
       </tr>
     `));
@@ -1296,14 +1296,14 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     const floorRowsHTML = floorValuations.map((f, idx) => {
       const bg = idx % 2 === 0 ? '#FFF' : '#F5F5F5';
       return `<tr style="background:${bg};">
-        <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;vertical-align:middle;line-height:1.0em;word-break:break-word;word-wrap:break-word;overflow:visible;">${f.name}</td>
-        <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;text-align:right;vertical-align:middle;line-height:1.0em;word-break:break-word;word-wrap:break-word;overflow:visible;">${formatIndianCurrency(f.area)}</td>
-        <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;text-align:right;vertical-align:middle;line-height:1.0em;word-break:break-word;word-wrap:break-word;overflow:visible;">\u20B9${formatIndianCurrency(f.rate)}</td>
-        <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;text-align:right;vertical-align:middle;line-height:1.0em;word-break:break-word;word-wrap:break-word;overflow:visible;">\u20B9${formatIndianCurrency(f.estimated)}</td>
-        <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;text-align:center;vertical-align:middle;line-height:1.0em;word-break:break-word;word-wrap:break-word;overflow:visible;">${f.lifeYears}</td>
-        <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;text-align:center;vertical-align:middle;line-height:1.0em;word-break:break-word;word-wrap:break-word;overflow:visible;">${f.ageYears}</td>
-        <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;text-align:center;vertical-align:middle;line-height:1.0em;word-break:break-word;word-wrap:break-word;overflow:visible;">${f.depPct}%</td>
-        <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;text-align:right;vertical-align:middle;line-height:1.0em;word-break:break-word;word-wrap:break-word;overflow:visible;">\u20B9${formatIndianCurrency(f.netValue)}</td>
+        <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;vertical-align:middle;line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;">${f.name}</td>
+        <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;text-align:right;vertical-align:middle;line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;">${formatIndianCurrency(f.area)}</td>
+        <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;text-align:right;vertical-align:middle;line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;">\u20B9${formatIndianCurrency(f.rate)}</td>
+        <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;text-align:right;vertical-align:middle;line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;">\u20B9${formatIndianCurrency(f.estimated)}</td>
+        <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;text-align:center;vertical-align:middle;line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;">${f.lifeYears}</td>
+        <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;text-align:center;vertical-align:middle;line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;">${f.ageYears}</td>
+        <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;text-align:center;vertical-align:middle;line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;">${f.depPct}%</td>
+        <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;text-align:right;vertical-align:middle;line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;">\u20B9${formatIndianCurrency(f.netValue)}</td>
       </tr>`;
     }).join('');
 
@@ -1311,19 +1311,19 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin:8px 0 6px;">VALUATION OF BUILDING (After Depreciation)</p>
       <table style="width:100%;border-collapse:collapse;margin-bottom:10px;font-family:${ff};font-size:12pt;">
         <tr style="background:#000;">
-          <th style="border:${cellBorder};padding:4px 6px 4px 6px;color:#FFF;font-weight:bold;text-align:center;font-family:${ff};vertical-align:middle;line-height:1.0em;word-break:break-word;word-wrap:break-word;overflow:visible;">Floor</th>
-          <th style="border:${cellBorder};padding:4px 6px 4px 6px;color:#FFF;font-weight:bold;text-align:right;font-family:${ff};vertical-align:middle;line-height:1.0em;word-break:break-word;word-wrap:break-word;overflow:visible;">Area</th>
-          <th style="border:${cellBorder};padding:4px 6px 4px 6px;color:#FFF;font-weight:bold;text-align:right;font-family:${ff};vertical-align:middle;line-height:1.0em;word-break:break-word;word-wrap:break-word;overflow:visible;">Rate (\u20B9)</th>
-          <th style="border:${cellBorder};padding:4px 6px 4px 6px;color:#FFF;font-weight:bold;text-align:right;font-family:${ff};vertical-align:middle;line-height:1.0em;word-break:break-word;word-wrap:break-word;overflow:visible;">Estimated (\u20B9)</th>
-          <th style="border:${cellBorder};padding:4px 6px 4px 6px;color:#FFF;font-weight:bold;text-align:center;font-family:${ff};vertical-align:middle;line-height:1.0em;word-break:break-word;word-wrap:break-word;overflow:visible;">Life</th>
-          <th style="border:${cellBorder};padding:4px 6px 4px 6px;color:#FFF;font-weight:bold;text-align:center;font-family:${ff};vertical-align:middle;line-height:1.0em;word-break:break-word;word-wrap:break-word;overflow:visible;">Age</th>
-          <th style="border:${cellBorder};padding:4px 6px 4px 6px;color:#FFF;font-weight:bold;text-align:center;font-family:${ff};vertical-align:middle;line-height:1.0em;word-break:break-word;word-wrap:break-word;overflow:visible;">Dep%</th>
-          <th style="border:${cellBorder};padding:4px 6px 4px 6px;color:#FFF;font-weight:bold;text-align:right;font-family:${ff};vertical-align:middle;line-height:1.0em;word-break:break-word;word-wrap:break-word;overflow:visible;">Net Value (\u20B9)</th>
+          <th style="border:${cellBorder};padding:4px 6px 4px 6px;color:#FFF;font-weight:bold;text-align:center;font-family:${ff};vertical-align:middle;line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;">Floor</th>
+          <th style="border:${cellBorder};padding:4px 6px 4px 6px;color:#FFF;font-weight:bold;text-align:right;font-family:${ff};vertical-align:middle;line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;">Area</th>
+          <th style="border:${cellBorder};padding:4px 6px 4px 6px;color:#FFF;font-weight:bold;text-align:right;font-family:${ff};vertical-align:middle;line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;">Rate (\u20B9)</th>
+          <th style="border:${cellBorder};padding:4px 6px 4px 6px;color:#FFF;font-weight:bold;text-align:right;font-family:${ff};vertical-align:middle;line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;">Estimated (\u20B9)</th>
+          <th style="border:${cellBorder};padding:4px 6px 4px 6px;color:#FFF;font-weight:bold;text-align:center;font-family:${ff};vertical-align:middle;line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;">Life</th>
+          <th style="border:${cellBorder};padding:4px 6px 4px 6px;color:#FFF;font-weight:bold;text-align:center;font-family:${ff};vertical-align:middle;line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;">Age</th>
+          <th style="border:${cellBorder};padding:4px 6px 4px 6px;color:#FFF;font-weight:bold;text-align:center;font-family:${ff};vertical-align:middle;line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;">Dep%</th>
+          <th style="border:${cellBorder};padding:4px 6px 4px 6px;color:#FFF;font-weight:bold;text-align:right;font-family:${ff};vertical-align:middle;line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;">Net Value (\u20B9)</th>
         </tr>
         ${floorRowsHTML}
         <tr style="font-weight:bold;">
-          <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;vertical-align:middle;line-height:1.0em;word-break:break-word;word-wrap:break-word;overflow:visible;" colspan="7"><b>Total Building Value</b></td>
-          <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;text-align:right;vertical-align:middle;line-height:1.0em;word-break:break-word;word-wrap:break-word;overflow:visible;"><b>\u20B9${formatIndianCurrency(totalBuildingValue)}</b></td>
+          <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;vertical-align:middle;line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;" colspan="7"><b>Total Building Value</b></td>
+          <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;text-align:right;vertical-align:middle;line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;"><b>\u20B9${formatIndianCurrency(totalBuildingValue)}</b></td>
         </tr>
       </table>
     `);
@@ -1350,7 +1350,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     `));
 
     // ── BLOCK: Declaration ──
-    allBlocks.push(`<div style="margin-top:10px;font-family:${ff};font-size:12pt;line-height:1.0em;">
+    allBlocks.push(`<div style="margin-top:10px;font-family:${ff};font-size:12pt;line-height:1.2em;">
       <p style="font-weight:bold;font-size:14pt;margin-bottom:4px;">Declaration:</p>
       <p style="margin-bottom:3px;">I hereby declare that:</p>
       <p style="margin-bottom:3px;">\u2022 I have deputed my representative <b>${fields.representativeName ? 'Mr. ' + fields.representativeName : '______'}</b> to inspect the property on <b>${fields.dateOfInspection || '______'}</b>.</p>
@@ -1361,7 +1361,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     // ── BLOCK: Valuation Certificate + Signature ──
     allBlocks.push(`
       <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin:14px 0 8px;">VALUATION CERTIFICATE</p>
-      <div style="border:1.5px solid #000;padding:12px;font-family:${ff};font-size:12pt;line-height:1.0em;">
+      <div style="border:1.5px solid #000;padding:12px;font-family:${ff};font-size:12pt;line-height:1.2em;">
         <p style="margin-top:0;">This is to certify that the undersigned has personally inspected the property belonging to
         <b>${fields.ownerName}</b> situated at <b>${getFullAddress()}</b> on
         <b>${fields.dateOfInspection}</b> and after careful examination and consideration of all relevant factors,
@@ -1370,7 +1370,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         <p style="padding:4px 0;margin:2px 0;"><b>Realizable Value (${fields.realizablePct || '90'}%): \u20B9 ${formatIndianCurrency(realizableValue)} (${rupeesInWords(realizableValue)})</b></p>
         <p style="padding:4px 0;margin:2px 0;"><b>Distress Sale Value (${fields.distressPct || '80'}%): \u20B9 ${formatIndianCurrency(distressValue)} (${rupeesInWords(distressValue)})</b></p>
       </div>
-      <div style="margin-top:28px;text-align:right;font-family:${ff};font-size:12pt;line-height:1.0em;">
+      <div style="margin-top:28px;text-align:right;font-family:${ff};font-size:12pt;line-height:1.2em;">
         <p style="margin:0;">_______________________________</p>
         <p style="font-weight:bold;margin:3px 0;font-size:14pt;">Satyajit Mohanty</p>
         <p style="margin:2px 0;font-style:italic;font-size:12pt;">B.Sc.(Engg.), M.Tech (IIT Kharagpur)</p>
