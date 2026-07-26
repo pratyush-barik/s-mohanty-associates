@@ -1105,26 +1105,26 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     const ff = "'Times New Roman', serif";
     const ts = `width:100%;border-collapse:collapse;font-family:${ff};`;
     const cellBorder = '1px solid #000';
-    const cellPad = '1.25px 8px 3.25px 8px';
+    const cellPad = '0.25px 6px 2.25px 6px';
     const lblBg = 'rgba(219, 230, 240, 0.45)';
     const optLblBg = 'rgba(221, 233, 246, 0.45)';
 
     // ── Row helpers ──
     // Simple inline row: full-width "Label: - Value"
     const simpleRow = (label: string, val: string) => {
-      return `<tr><td colspan="3" style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;line-height:1.35em;word-break:break-word;word-wrap:break-word;overflow:visible;">${label}: - <b>${val || 'N/A'}</b></td></tr>`;
+      return `<tr><td colspan="3" style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:11pt;vertical-align:middle;line-height:1.35em;word-break:break-word;word-wrap:break-word;overflow:visible;">${label}: - <b>${val || 'N/A'}</b></td></tr>`;
     };
 
     // Option row: 3 columns — Label | Options list | Selected value
     const optionRow = (label: string, opts: string[], val: string) => {
       const n = opts.length;
       const innerDivs = opts.map((o, i) =>
-        `<div style="border-bottom:${i === n - 1 ? 'none' : '1px solid #000'};padding:1.25px 8px 3.25px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;background:${optLblBg};word-break:break-word;word-wrap:break-word;overflow:visible;">${o}</div>`
+        `<div style="border-bottom:${i === n - 1 ? 'none' : '1px solid #000'};padding:0.25px 6px 2.25px 6px;font-family:${ff};font-size:11pt;line-height:1.35em;box-sizing:border-box;background:${optLblBg};word-break:break-word;word-wrap:break-word;overflow:visible;">${o}</div>`
       ).join('');
       return `<tr>
-        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:1.35em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="28%">${label}</td>
-        <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;background:${optLblBg};" width="35%">${innerDivs}</td>
-        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;text-align:center;background:${optLblBg};line-height:1.35em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="37%">${val || 'N/A'}</td>
+        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:11pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:1.35em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="28%">${label}</td>
+        <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:11pt;vertical-align:top;background:${optLblBg};" width="35%">${innerDivs}</td>
+        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:11pt;vertical-align:middle;font-weight:bold;text-align:center;background:${optLblBg};line-height:1.35em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="37%">${val || 'N/A'}</td>
       </tr>`;
     };
 
@@ -1134,12 +1134,12 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       const innerDivs = opts.map((o, i) => {
         const isSelected = o === selectedOpt;
         const fontStyle = isSelected ? 'font-weight:bold;' : '';
-        return `<div style="border-bottom:${i === n - 1 ? 'none' : '1px solid #000'};padding:1.25px 8px 3.25px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;background:${optLblBg};word-break:break-word;word-wrap:break-word;overflow:visible;${fontStyle}">${o}</div>`;
+        return `<div style="border-bottom:${i === n - 1 ? 'none' : '1px solid #000'};padding:0.25px 6px 2.25px 6px;font-family:${ff};font-size:11pt;line-height:1.35em;box-sizing:border-box;background:${optLblBg};word-break:break-word;word-wrap:break-word;overflow:visible;${fontStyle}">${o}</div>`;
       }).join('');
       return `<tr>
-        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:1.35em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="28%">${label}</td>
-        <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;background:${optLblBg};" width="35%">${innerDivs}</td>
-        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;text-align:center;background:${optLblBg};line-height:1.35em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="37%">${actualVal || 'N/A'}</td>
+        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:11pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:1.35em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="28%">${label}</td>
+        <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:11pt;vertical-align:top;background:${optLblBg};" width="35%">${innerDivs}</td>
+        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:11pt;vertical-align:middle;font-weight:bold;text-align:center;background:${optLblBg};line-height:1.35em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="37%">${actualVal || 'N/A'}</td>
       </tr>`;
     };
 
@@ -1168,7 +1168,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     }
 
     // ── BLOCK: "To" block + Title (always page 1 start) ──
-    allBlocks.push(`<div style="font-family:${ff};font-size:12pt;margin-bottom:10px;line-height:1.6;">
+    allBlocks.push(`<div style="font-family:${ff};font-size:11pt;margin-bottom:10px;line-height:1.6;">
       <p style="margin:0;"><b>To</b></p>
       <p style="margin:0;"><b>${fields.to || '________'}</b></p>
       <p style="margin:0;">Date of valuation report: -<b>${fields.dateOfValuation || '________'}</b></p>
@@ -1199,33 +1199,33 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       ${optionRow('Approach Road Width', ['>=60 Feet Road', '60-40 Feet Road', '40-20 Feet Road', '<20 Feet Road'], fields.approachRoadWidth)}
       ${optionRow('Plot Demarcated at Site', ['Yes', 'No'], fields.plotDemarcated)}
       <tr>
-        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:1.35em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="28%">Proximity to Civic Amenities</td>
-        <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;background:${optLblBg};" width="35%">
-          <div style="border-bottom:1px solid #000;padding:1.25px 8px 3.25px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Railway Station</div>
-          <div style="border-bottom:1px solid #000;padding:1.25px 8px 3.25px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Bus Stop</div>
-          <div style="padding:1.25px 8px 3.25px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Hospital</div>
+        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:11pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:1.35em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="28%">Proximity to Civic Amenities</td>
+        <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:11pt;vertical-align:top;background:${optLblBg};" width="35%">
+          <div style="border-bottom:1px solid #000;padding:0.25px 6px 2.25px 6px;font-family:${ff};font-size:11pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Railway Station</div>
+          <div style="border-bottom:1px solid #000;padding:0.25px 6px 2.25px 6px;font-family:${ff};font-size:11pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Bus Stop</div>
+          <div style="padding:0.25px 6px 2.25px 6px;font-family:${ff};font-size:11pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Hospital</div>
         </td>
-        <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;background:${optLblBg};" width="37%">
-          <div style="border-bottom:1px solid #000;padding:1.25px 8px 3.25px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">1. ${fields.landmarkRailway || fields.distanceRailwayStation || 'N/A'}</div>
-          <div style="border-bottom:1px solid #000;padding:1.25px 8px 3.25px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">2. ${fields.landmarkBusStop || fields.distanceBusStop || 'N/A'}</div>
-          <div style="padding:1.25px 8px 3.25px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">3. ${fields.landmarkHospital || fields.distanceHospital || 'N/A'}</div>
+        <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:11pt;vertical-align:top;background:${optLblBg};" width="37%">
+          <div style="border-bottom:1px solid #000;padding:0.25px 6px 2.25px 6px;font-family:${ff};font-size:11pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">1. ${fields.landmarkRailway || fields.distanceRailwayStation || 'N/A'}</div>
+          <div style="border-bottom:1px solid #000;padding:0.25px 6px 2.25px 6px;font-family:${ff};font-size:11pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">2. ${fields.landmarkBusStop || fields.distanceBusStop || 'N/A'}</div>
+          <div style="padding:0.25px 6px 2.25px 6px;font-family:${ff};font-size:11pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">3. ${fields.landmarkHospital || fields.distanceHospital || 'N/A'}</div>
         </td>
       </tr>
       ${optionRow('Property Identification', ['Easy to Identify', 'Identification by documents', 'Additional documents required', 'Difficult to identify'], fields.propertyIdentification)}
       ${optionRow('Proximity to Facilities', ['<1 Km', '1-3 Kms', '3-5 Kms', '>5 Kms'], fields.proximityToFacilities)}
       <tr>
-        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:1.35em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="28%">Landmark Details</td>
-        <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;background:${optLblBg};" width="35%">
-          <div style="border-bottom:1px solid #000;padding:1.25px 8px 3.25px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Railway Station</div>
-          <div style="border-bottom:1px solid #000;padding:1.25px 8px 3.25px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Bus Stop</div>
-          <div style="border-bottom:1px solid #000;padding:1.25px 8px 3.25px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Hospital</div>
-          <div style="padding:1.25px 8px 3.25px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Landmark</div>
+        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:11pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:1.35em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="28%">Landmark Details</td>
+        <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:11pt;vertical-align:top;background:${optLblBg};" width="35%">
+          <div style="border-bottom:1px solid #000;padding:0.25px 6px 2.25px 6px;font-family:${ff};font-size:11pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Railway Station</div>
+          <div style="border-bottom:1px solid #000;padding:0.25px 6px 2.25px 6px;font-family:${ff};font-size:11pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Bus Stop</div>
+          <div style="border-bottom:1px solid #000;padding:0.25px 6px 2.25px 6px;font-family:${ff};font-size:11pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Hospital</div>
+          <div style="padding:0.25px 6px 2.25px 6px;font-family:${ff};font-size:11pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Landmark</div>
         </td>
-        <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;background:${optLblBg};" width="37%">
-          <div style="border-bottom:1px solid #000;padding:1.25px 8px 3.25px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">1. ${fields.landmarkRailway || 'N/A'}</div>
-          <div style="border-bottom:1px solid #000;padding:1.25px 8px 3.25px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">2. ${fields.landmarkBusStop || 'N/A'}</div>
-          <div style="border-bottom:1px solid #000;padding:1.25px 8px 3.25px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">3. ${fields.landmarkHospital || 'N/A'}</div>
-          <div style="padding:1.25px 8px 3.25px 8px;font-family:${ff};font-size:12pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">4. ${fields.landmarkNearest || fields.landmark || 'N/A'}</div>
+        <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:11pt;vertical-align:top;background:${optLblBg};" width="37%">
+          <div style="border-bottom:1px solid #000;padding:0.25px 6px 2.25px 6px;font-family:${ff};font-size:11pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">1. ${fields.landmarkRailway || 'N/A'}</div>
+          <div style="border-bottom:1px solid #000;padding:0.25px 6px 2.25px 6px;font-family:${ff};font-size:11pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">2. ${fields.landmarkBusStop || 'N/A'}</div>
+          <div style="border-bottom:1px solid #000;padding:0.25px 6px 2.25px 6px;font-family:${ff};font-size:11pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">3. ${fields.landmarkHospital || 'N/A'}</div>
+          <div style="padding:0.25px 6px 2.25px 6px;font-family:${ff};font-size:11pt;line-height:1.35em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">4. ${fields.landmarkNearest || fields.landmark || 'N/A'}</div>
         </td>
       </tr>
     `));
@@ -1350,7 +1350,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     `));
 
     // ── BLOCK: Declaration ──
-    allBlocks.push(`<div style="margin-top:10px;font-family:${ff};font-size:12pt;line-height:1.6;">
+    allBlocks.push(`<div style="margin-top:10px;font-family:${ff};font-size:11pt;line-height:1.6;">
       <p style="font-weight:bold;font-size:14pt;margin-bottom:4px;">Declaration:</p>
       <p style="margin-bottom:3px;">I hereby declare that:</p>
       <p style="margin-bottom:3px;">\u2022 I have deputed my representative <b>${fields.representativeName ? 'Mr. ' + fields.representativeName : '______'}</b> to inspect the property on <b>${fields.dateOfInspection || '______'}</b>.</p>
@@ -1361,7 +1361,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     // ── BLOCK: Valuation Certificate + Signature ──
     allBlocks.push(`
       <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin:14px 0 8px;">VALUATION CERTIFICATE</p>
-      <div style="border:1.5px solid #000;padding:12px;font-family:${ff};font-size:12pt;line-height:1.6;">
+      <div style="border:1.5px solid #000;padding:12px;font-family:${ff};font-size:11pt;line-height:1.6;">
         <p style="margin-top:0;">This is to certify that the undersigned has personally inspected the property belonging to
         <b>${fields.ownerName}</b> situated at <b>${getFullAddress()}</b> on
         <b>${fields.dateOfInspection}</b> and after careful examination and consideration of all relevant factors,
@@ -1370,12 +1370,12 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         <p style="padding:4px 0;margin:2px 0;"><b>Realizable Value (${fields.realizablePct || '90'}%): \u20B9 ${formatIndianCurrency(realizableValue)} (${rupeesInWords(realizableValue)})</b></p>
         <p style="padding:4px 0;margin:2px 0;"><b>Distress Sale Value (${fields.distressPct || '80'}%): \u20B9 ${formatIndianCurrency(distressValue)} (${rupeesInWords(distressValue)})</b></p>
       </div>
-      <div style="margin-top:28px;text-align:right;font-family:${ff};font-size:12pt;line-height:1.5;">
+      <div style="margin-top:28px;text-align:right;font-family:${ff};font-size:11pt;line-height:1.5;">
         <p style="margin:0;">_______________________________</p>
         <p style="font-weight:bold;margin:3px 0;font-size:14pt;">Satyajit Mohanty</p>
-        <p style="margin:2px 0;font-style:italic;font-size:12pt;">B.Sc.(Engg.), M.Tech (IIT Kharagpur)</p>
-        <p style="margin:2px 0;font-style:italic;font-size:12pt;">Registered Valuer \u2014 IBBI/RV/02/2019/10594</p>
-        <p style="margin:2px 0;font-style:italic;font-size:12pt;">S. Mohanty &amp; Associates, Bhubaneswar</p>
+        <p style="margin:2px 0;font-style:italic;font-size:11pt;">B.Sc.(Engg.), M.Tech (IIT Kharagpur)</p>
+        <p style="margin:2px 0;font-style:italic;font-size:11pt;">Registered Valuer \u2014 IBBI/RV/02/2019/10594</p>
+        <p style="margin:2px 0;font-style:italic;font-size:11pt;">S. Mohanty &amp; Associates, Bhubaneswar</p>
       </div>
     `);
 
@@ -1396,7 +1396,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
 
         const title = pg === 0
           ? `<p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin-bottom:${gapBetweenRows}px;">PROPERTY PHOTOGRAPHS</p>`
-          : `<p style="font-family:${ff};font-size:12pt;font-weight:bold;text-align:center;margin-bottom:${gapBetweenRows}px;font-style:italic;">Property Photographs (Contd.)</p>`;
+          : `<p style="font-family:${ff};font-size:11pt;font-weight:bold;text-align:center;margin-bottom:${gapBetweenRows}px;font-style:italic;">Property Photographs (Contd.)</p>`;
 
         let gridHTML = '';
         for (let r = 0; r < rows; r++) {
@@ -1433,9 +1433,9 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin-bottom:12px;">SKETCH MAP</p>
         <div style="text-align:center;border:1px solid #000;padding:6px;">
           <img src="${fields.sketchMapImage}" style="max-width:100%;max-height:680px;" crossOrigin="anonymous" />
-          <p style="font-family:${ff};font-size:12pt;font-style:italic;margin-top:6px;">Figure ${sketchFigNum}: Revenue Sketch Map</p>
+          <p style="font-family:${ff};font-size:11pt;font-style:italic;margin-top:6px;">Figure ${sketchFigNum}: Revenue Sketch Map</p>
         </div>
-        <p style="font-family:${ff};font-size:12pt;font-style:italic;text-align:center;margin-top:4px;">Source: Site Visit dated ${fields.dateOfInspection || 'N/A'}</p>
+        <p style="font-family:${ff};font-size:11pt;font-style:italic;text-align:center;margin-top:4px;">Source: Site Visit dated ${fields.dateOfInspection || 'N/A'}</p>
       </div>`);
     }
 
@@ -1446,10 +1446,10 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin-bottom:12px;">LOCATION MAP</p>
         <div style="text-align:center;border:1px solid #000;padding:6px;">
           <img src="${fields.locationMapImage}" style="max-width:100%;max-height:630px;" crossOrigin="anonymous" />
-          <p style="font-family:${ff};font-size:12pt;font-style:italic;margin-top:6px;">Figure ${locFigNum}: Location Map</p>
+          <p style="font-family:${ff};font-size:11pt;font-style:italic;margin-top:6px;">Figure ${locFigNum}: Location Map</p>
         </div>
-        ${fields.latitude || fields.longitude ? `<p style="text-align:center;font-family:${ff};font-size:12pt;margin-top:6px;font-weight:bold;">Lat: ${fields.latitude || 'N/A'}, Long: ${fields.longitude || 'N/A'}</p>` : ''}
-        <p style="font-family:${ff};font-size:12pt;font-style:italic;text-align:center;margin-top:2px;">Source: Site Visit dated ${fields.dateOfInspection || 'N/A'}</p>
+        ${fields.latitude || fields.longitude ? `<p style="text-align:center;font-family:${ff};font-size:11pt;margin-top:6px;font-weight:bold;">Lat: ${fields.latitude || 'N/A'}, Long: ${fields.longitude || 'N/A'}</p>` : ''}
+        <p style="font-family:${ff};font-size:11pt;font-style:italic;text-align:center;margin-top:2px;">Source: Site Visit dated ${fields.dateOfInspection || 'N/A'}</p>
       </div>`);
     }
 
