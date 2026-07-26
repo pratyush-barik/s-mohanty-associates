@@ -282,7 +282,7 @@ const DEFAULT_FIELDS: ReportFields = {
   mouza: '',
   tahasil: '',
   district: '',
-  state: 'Odisha',
+  state: '',
   developmentStatus: 'Developed',
   civicAmenities: [],
   civicAmenitiesOther: '',
@@ -637,7 +637,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     ...DEFAULT_FIELDS,
     ...(initialFields || {}),
     refNo: initialFields?.refNo || projectCode || DEFAULT_FIELDS.refNo,
-    to: initialFields?.to || (initialFields?.bankName ? `${initialFields.bankName}${initialFields.branchName ? ', ' + initialFields.branchName : ''}` : '') || DEFAULT_FIELDS.to,
+    to: initialFields?.to || DEFAULT_FIELDS.to,
     city: initialFields?.city || DEFAULT_FIELDS.city,
     pincode: initialFields?.pincode || DEFAULT_FIELDS.pincode,
     serviceType: initialFields?.serviceType || DEFAULT_FIELDS.serviceType,
@@ -1063,8 +1063,6 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       ${simpleRow('Name of Document holder', fields.documentHolderName || fields.ownerName)}
       ${simpleRow('Date of Inspection', fields.dateOfInspection)}
       ${simpleRow('Date of Valuation Report', fields.dateOfValuation)}
-      ${simpleRow('Bank / Financial Institution', fields.bankName)}
-      ${simpleRow('Branch', fields.branchName)}
       ${simpleRow('Purpose', fields.purpose)}
     `));
 
@@ -1659,12 +1657,6 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
             </Field>
             <Field label="Date of Inspection">
               <input type="date" className={inputCls} value={fields.dateOfInspection} onChange={e => handleChange('dateOfInspection', e.target.value)} disabled={isReadOnly} />
-            </Field>
-            <Field label="Bank / Financial Institution">
-              <input className={inputCls} value={fields.bankName} onChange={e => handleChange('bankName', e.target.value)} disabled={isReadOnly} placeholder="e.g. HDFC Bank" />
-            </Field>
-            <Field label="Branch Name">
-              <input className={inputCls} value={fields.branchName} onChange={e => handleChange('branchName', e.target.value)} disabled={isReadOnly} />
             </Field>
           </div>
         </div>
