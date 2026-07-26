@@ -1073,7 +1073,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       ${sectionHeader('SURROUNDING LOCALITY DETAILS')}
       ${simpleRow('Ward No / Municipal Land No', fields.wardNo)}
       ${optionRow('Vicinity', ['Slum', 'Residential', 'Commercial', 'Mixed', 'Industrial'], fields.vicinity)}
-      ${optionRow('Locality Type', ['Elite/Posh/High Class', 'Upper Middle Class', 'Middle Class', 'Lower Middle Class', 'Poor / Slum'], fields.classOfLocality)}
+      ${optionRow('Locality Type', ['Elite/Posh/High Class', 'Upper Middle Class', 'Middle Class', 'Lower Middle Class'], fields.classOfLocality)}
       ${optionRow('Approach Road Width', ['>=60 Feet Road', '60-40 Feet Road', '40-20 Feet Road', '<20 Feet Road'], fields.approachRoadWidth)}
       ${optionRow('Plot Demarcated at Site', ['Yes', 'No'], fields.plotDemarcated)}
       <tr>
@@ -1564,13 +1564,6 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         </button>
       </div>
 
-      {/* Status Message */}
-      {message && (
-        <div className={`p-4 rounded-xl text-sm font-medium ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
-          {message.text}
-        </div>
-      )}
-
       {/* Rework Banner */}
       {fields.reworkNotes && status === 'REPORT_DRAFTING' && (
         <div className="card p-5 border-2 border-red-200 bg-red-50 shadow-md">
@@ -1684,14 +1677,6 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
             <input className={inputCls} value={fields.wardNo} onChange={e => handleChange('wardNo', e.target.value)} disabled={isReadOnly} />
           </Field>
           <div className="grid md:grid-cols-2 gap-4">
-            <Field label="Locality Type (Legacy)">
-              <input className={inputCls} value={fields.localityType} onChange={e => handleChange('localityType', e.target.value)} disabled={isReadOnly} />
-            </Field>
-            <Field label="Development Status (Legacy)">
-              <input className={inputCls} value={fields.developmentStatus} onChange={e => handleChange('developmentStatus', e.target.value)} disabled={isReadOnly} />
-            </Field>
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
             <Field label="Vicinity">
               <select className={selectCls} value={fields.vicinity} onChange={e => handleChange('vicinity', e.target.value)} disabled={isReadOnly}>
                 <option>Slum</option><option>Residential</option><option>Commercial</option><option>Mixed</option><option>Industrial</option>
@@ -1699,7 +1684,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
             </Field>
             <Field label="Locality Type">
               <select className={selectCls} value={fields.classOfLocality} onChange={e => handleChange('classOfLocality', e.target.value)} disabled={isReadOnly}>
-                <option>Elite/Posh/High Class</option><option>Upper Middle Class</option><option>Middle Class</option><option>Lower Middle Class</option><option>Poor / Slum</option>
+                <option>Elite/Posh/High Class</option><option>Upper Middle Class</option><option>Middle Class</option><option>Lower Middle Class</option>
               </select>
             </Field>
             <Field label="Approach Road Width">
@@ -2279,6 +2264,13 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
           </div>
         </div>
       </Section>
+
+      {/* Status Message */}
+      {message && (
+        <div className={`p-4 rounded-xl text-sm font-medium ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+          {message.text}
+        </div>
+      )}
 
       {/* ── Action Buttons ── */}
       <div className="flex flex-wrap gap-4 pt-2 items-center">
