@@ -915,45 +915,41 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       const pdfFonts = (await import('pdfmake/build/vfs_fonts')).default;
       pdfMake.vfs = pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : pdfFonts.vfs || pdfFonts;
 
-      // Load letterhead as base64
-      const letterheadResp = await fetch('/templates/letterhead.png');
-      const letterheadBlob = await letterheadResp.blob();
-      const letterheadBase64: string = await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.readAsDataURL(letterheadBlob);
-      });
-
-      // Load all property images as base64
-      const imageMap: Record<string, string> = {};
-      const propertyImgs = Array.isArray(fields.propertyImages) ? fields.propertyImages : [];
-      for (let i = 0; i < propertyImgs.length; i++) {
+      const toBase64 = async (url: string): Promise<string> => {
         try {
-          const resp = await fetch(propertyImgs[i]);
+          const resp = await fetch(url);
           const blob = await resp.blob();
-          const b64: string = await new Promise((resolve) => {
+          return new Promise((resolve) => {
             const reader = new FileReader();
             reader.onloadend = () => resolve(reader.result as string);
             reader.readAsDataURL(blob);
           });
-          imageMap[`propImg${i}`] = b64;
-        } catch { imageMap[`propImg${i}`] = ''; }
-      }
+        } catch {
+          return '';
+        }
+      };
+
+      const propertyImgs = Array.isArray(fields.propertyImages) ? fields.propertyImages : [];
+      
+      // Fetch all images in parallel
+      const [letterheadBase64, ...images] = await Promise.all([
+        toBase64('/templates/letterhead.png'),
+        ...propertyImgs.map(url => toBase64(url)),
+        ...(fields.sketchMapImage ? [toBase64(fields.sketchMapImage)] : []),
+        ...(fields.locationMapImage ? [toBase64(fields.locationMapImage)] : []),
+      ]);
+
+      const imageMap: Record<string, string> = {};
+      propertyImgs.forEach((_, i) => {
+        imageMap[`propImg${i}`] = images[i];
+      });
+
+      let imgIdx = propertyImgs.length;
       if (fields.sketchMapImage) {
-        try {
-          const resp = await fetch(fields.sketchMapImage);
-          const blob = await resp.blob();
-          const b64: string = await new Promise((resolve) => { const r = new FileReader(); r.onloadend = () => resolve(r.result as string); r.readAsDataURL(blob); });
-          imageMap['sketchMap'] = b64;
-        } catch { imageMap['sketchMap'] = ''; }
+        imageMap['sketchMap'] = images[imgIdx++];
       }
       if (fields.locationMapImage) {
-        try {
-          const resp = await fetch(fields.locationMapImage);
-          const blob = await resp.blob();
-          const b64: string = await new Promise((resolve) => { const r = new FileReader(); r.onloadend = () => resolve(r.result as string); r.readAsDataURL(blob); });
-          imageMap['locationMap'] = b64;
-        } catch { imageMap['locationMap'] = ''; }
+        imageMap['locationMap'] = images[imgIdx++];
       }
 
       // ── pdfmake helpers ──
