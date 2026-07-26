@@ -129,8 +129,14 @@ Outstanding items in **priority order**:
    - "Cancel Submission (Pull back to Draft)" button — check status refreshes correctly
    - All new `<select>` dropdowns save and restore correctly from the JSON `Report.data`
 
-### Medium Priority — After Verification
-2. **Organizational/Corporate Templates**: The "Standard Individual" (default bank report) template is complete. The category config wizard already supports choosing between "Individual" and "Organisation" templates 1-10. Next is to build layout adaptations for specific bank templates (SBI, PNB, etc.) once the user provides details. **Deferred until the default template is verified by the user.**
+### Medium Priority — After Verification (FUTURE WORK)
+2. **Organizational/Corporate Templates (Architecture & Rendering)**: The "Standard Individual" (default bank report) template is complete. The category config wizard supports choosing between "Individual" and "Organisation" templates 1-10. However, wizard choices currently have zero impact on the actual form or PDF output. 
+   **Future Work Implementation Plan:**
+   - *Phase 1: Named Organisation Templates*: Replace numbered templates with real named organisations (SBI, PNB, etc.) in the wizard and backend.
+   - *Phase 2: Service-Aware Form Sections*: Conditionally show/hide form sections based on the selected service type (e.g., hide Building Valuation for Land Only).
+   - *Phase 3: Organisation-Specific PDF Layouts*: Generate different PDF outputs per organisation (custom headers, disclaimers, field labels).
+   - *Phase 4: Dynamic Template Management*: Allow managers to CRUD templates from the portal.
+   **Deferred until the default template is fully verified by the user.**
 3. **Remove the overlay / coming-soon banner** on `https://smohantyassociates.vercel.app/` (the public-facing landing page).
 
 ### Lower Priority — Future
