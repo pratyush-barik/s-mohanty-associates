@@ -660,6 +660,34 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   const [showReworkModal, setShowReworkModal] = useState(false);
   const [reworkComment, setReworkComment] = useState('');
 
+  // Additional Amenities Checkbox States
+  const PREDEFINED_AMENITIES = [
+    "Garden",
+    "Swimming Pool",
+    "Gymnasium",
+    "Club House",
+    "Children's Play Area",
+    "Community Hall",
+    "Power Backup"
+  ];
+
+  const [isOtherChecked, setIsOtherChecked] = useState(false);
+  const [otherText, setOtherText] = useState('');
+
+  useEffect(() => {
+    const val = initialFields?.additionalAmenities || merged.additionalAmenities || '';
+    if (val && val !== 'Not Applicable' && val !== 'N/A') {
+      const selected = val.split(', ').map(s => s.trim()).filter(Boolean);
+      const hasOther = selected.some(item => !PREDEFINED_AMENITIES.includes(item));
+      setIsOtherChecked(hasOther);
+      const others = selected.filter(item => !PREDEFINED_AMENITIES.includes(item));
+      setOtherText(others.join(', '));
+    } else {
+      setIsOtherChecked(false);
+      setOtherText('');
+    }
+  }, [projectId]);
+
   const reportRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -692,6 +720,49 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
 
   const handleSelectSubject = (subject: string) => {
     setFields(prev => ({ ...prev, subjectType: subject }));
+  };
+
+  const getSelectedAmenities = () => {
+    const valStr = fields.additionalAmenities || '';
+    if (!valStr || valStr === 'Not Applicable' || valStr === 'N/A') return [];
+    return valStr.split(', ').map(s => s.trim()).filter(Boolean);
+  };
+
+  const handleAmenityCheckboxChange = (amenity: string, checked: boolean) => {
+    const selected = getSelectedAmenities();
+    let next = selected.filter(item => item !== 'Not Applicable');
+    if (checked) {
+      if (!next.includes(amenity)) next.push(amenity);
+    } else {
+      next = next.filter(item => item !== amenity);
+    }
+    // Append otherText if other is checked and has text
+    if (isOtherChecked && otherText.trim()) {
+      // Remove previous other values first to avoid duplication
+      next = next.filter(item => PREDEFINED_AMENITIES.includes(item));
+      next.push(otherText.trim());
+    }
+    handleChange('additionalAmenities', next.length > 0 ? next.join(', ') : 'Not Applicable');
+  };
+
+  const handleOtherCheckboxChange = (checked: boolean) => {
+    setIsOtherChecked(checked);
+    if (!checked) {
+      setOtherText('');
+      const selected = getSelectedAmenities();
+      const next = selected.filter(item => PREDEFINED_AMENITIES.includes(item));
+      handleChange('additionalAmenities', next.length > 0 ? next.join(', ') : 'Not Applicable');
+    }
+  };
+
+  const handleOtherTextChange = (text: string) => {
+    setOtherText(text);
+    const selected = getSelectedAmenities();
+    const next = selected.filter(item => PREDEFINED_AMENITIES.includes(item));
+    if (text.trim()) {
+      next.push(text.trim());
+    }
+    handleChange('additionalAmenities', next.length > 0 ? next.join(', ') : 'Not Applicable');
   };
 
   const handleResetWizard = () => {
@@ -1728,18 +1799,70 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
                 <option>Residential</option><option>Commercial</option><option>Residential cum Commercial</option><option>Industrial</option><option>Vacant Plot</option>
               </select>
             </Field>
-            <Field label="Additional Amenities">
-              <input className={inputCls} list="amenitiesList" value={fields.additionalAmenities} onChange={e => handleChange('additionalAmenities', e.target.value)} disabled={isReadOnly} placeholder="Select or type..." />
-              <datalist id="amenitiesList">
-                <option value="Garden" />
-                <option value="Swimming Pool" />
-                <option value="Gymnasium" />
-                <option value="Club House" />
-                <option value="Children's Play Area" />
-                <option value="Community Hall" />
-                <option value="Power Backup" />
-                <option value="Not Applicable" />
-              </datalist>
+            <Field label="Additional Amenities" span={2}>
+              <div className="p-4 bg-[#f8f9fa] border border-[#dee2e6] rounded-xl space-y-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {PREDEFINED_AMENITIES.map(amenity => {
+                    const isChecked = getSelectedAmenities().includes(amenity);
+                    return (
+                      <label key={amenity} className="flex items-center gap-2 text-xs font-semibold text-gray-700 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          disabled={isReadOnly}
+                          onChange={(e) => handleAmenityCheckboxChange(amenity, e.target.checked)}
+                          className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                        />
+                        {amenity}
+                      </label>
+                    );
+                  })}
+                  
+                  {/* Other Checkbox */}
+                  <label className="flex items-center gap-2 text-xs font-semibold text-gray-700 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={isOtherChecked}
+                      disabled={isReadOnly}
+                      onChange={(e) => handleOtherCheckboxChange(e.target.checked)}
+                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    />
+                    Other
+                  </label>
+
+                  {/* Not Applicable Checkbox */}
+                  <label className="flex items-center gap-2 text-xs font-semibold text-gray-700 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={getSelectedAmenities().length === 0 || getSelectedAmenities().includes('Not Applicable')}
+                      disabled={isReadOnly}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setIsOtherChecked(false);
+                          setOtherText('');
+                          handleChange('additionalAmenities', 'Not Applicable');
+                        }
+                      }}
+                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    />
+                    Not Applicable
+                  </label>
+                </div>
+
+                {/* Show other text input when "Other" is checked */}
+                {isOtherChecked && (
+                  <div className="pt-2 border-t border-[#dee2e6] mt-2">
+                    <input
+                      type="text"
+                      value={otherText}
+                      onChange={(e) => handleOtherTextChange(e.target.value)}
+                      disabled={isReadOnly}
+                      placeholder="Specify other amenities (comma separated)..."
+                      className={`${inputCls} text-xs`}
+                    />
+                  </div>
+                )}
+              </div>
             </Field>
             <Field label="Legal Status of Property">
               <select className={selectCls} value={fields.legalStatus} onChange={e => handleChange('legalStatus', e.target.value)} disabled={isReadOnly}>
