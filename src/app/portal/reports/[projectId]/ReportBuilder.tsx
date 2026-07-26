@@ -5,6 +5,12 @@ import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+
+if (typeof window !== 'undefined' && pdfMake && pdfFonts) {
+  pdfMake.vfs = pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : (pdfFonts.vfs || pdfFonts);
+}
 
 // ─── Types ─────────────────────────────────────────────────────────
 interface FloorRow {
@@ -911,11 +917,27 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
 
   const handleGeneratePDF = async () => {
     try {
-      const pdfMake = (await import('pdfmake/build/pdfmake')).default;
-      const pdfFonts = (await import('pdfmake/build/vfs_fonts')).default;
-      pdfMake.vfs = pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : pdfFonts.vfs || pdfFonts;
 
       const toBase64 = async (url: string): Promise<string> => {
+        // Try to extract from DOM image first (instant 0ms if already rendered and allowed by CORS)
+        try {
+          const domImgs = Array.from(document.querySelectorAll('img'));
+          const matchingImg = domImgs.find(img => img.src === url || img.src.includes(url) || (url.includes('object/public/SMA') && img.src.includes(url.split('object/public/SMA')[1])));
+          if (matchingImg && matchingImg.complete && matchingImg.naturalWidth > 0) {
+            const canvas = document.createElement('canvas');
+            canvas.width = matchingImg.naturalWidth;
+            canvas.height = matchingImg.naturalHeight;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(matchingImg, 0, 0);
+              return canvas.toDataURL('image/png');
+            }
+          }
+        } catch (e) {
+          console.warn('DOM canvas extraction failed, falling back to network fetch:', e);
+        }
+
+        // Fallback to network fetch
         try {
           const resp = await fetch(url);
           const blob = await resp.blob();
