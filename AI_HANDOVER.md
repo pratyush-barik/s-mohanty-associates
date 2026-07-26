@@ -115,8 +115,10 @@ The core business logic is **100% complete**.
 8. **Navigation & Login Layout Updates (July 2026)**:
    - Portal navigation labels updated — "My Reports" → "My Projects".
    - My Projects listing page layout transformed from block cards into sleek, horizontal, inline rectangular list rows.
+   - Report Agent's "My Projects" page now includes exact filtering options (search bar, Pending/Completed/All tabs) matching the Field Agent's workflow.
    - Replaced Next.js `<Image>` styling calculations inside the main Navigation Bar and Employee Login page layout with native HTML `<img>` elements, resolving the issue where logos were cut off at the bottom.
 9. **Delivery**: Client downloads the PDF from their dashboard.
+10. **Landing Page Integrations**: The "Submit Organisational Request" CTA on the public landing page now generates pre-filled emails (Gmail, Outlook, Default Mail) whose body matches the exact 8 data fields found in the client's internal "Request a Service" form (Service Category, Property Details, etc.).
 
 ## 5. Pending Work (What is next)
 
@@ -165,6 +167,8 @@ Outstanding items in **priority order**:
 > When modifying the UI, prioritize modern, premium aesthetics (glassmorphism, clean typography, subtle animations) without relying on Tailwind component libraries like Shadcn. Use raw Tailwind classes.
 
 ## 7. Recent Git Commits (for reference)
+- `824655b` — fix: update organisational email template fields to match service request form
+- `3e76b90` — feat: add search and status filter to My Projects page
 - `ac4b53c` — fix: Restore cell layout heights to 1.35em to avoid html2canvas unitless line-height scaling bugs that overlap rows
 - `24eb50f` — style: Reduce table cell padding by half and adjust line-height to 1.15 to ensure text is centered without overflow
 - `d922b7c` — feat: Simplify address layout by removing city/town and district, renaming Address Line 1, adding pincode input, and listing all Indian states
