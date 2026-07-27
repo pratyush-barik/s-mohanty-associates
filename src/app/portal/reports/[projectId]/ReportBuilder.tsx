@@ -1150,10 +1150,8 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         r.newPage();
         r.drawCenteredTitle('SKETCH MAP');
         r.advanceCursor(8);
-        const sketchFigNum = propertyImgs.length + 1;
         await r.drawImageBlock(sketchBytes, {
           maxWidth: 450, maxHeight: 500, centered: true,
-          caption: `Figure ${sketchFigNum}: Revenue Sketch Map`,
         });
       }
 
@@ -1162,10 +1160,8 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         r.newPage();
         r.drawCenteredTitle('LOCATION MAP');
         r.advanceCursor(8);
-        const locFigNum = propertyImgs.length + (fields.sketchMapImage ? 1 : 0) + 1;
         await r.drawImageBlock(locationBytes, {
           maxWidth: 450, maxHeight: 500, centered: true,
-          caption: `Figure ${locFigNum}: Location Map`,
         });
         if (fields.latitude || fields.longitude) {
           r.drawTextBlock(`Lat: ${fields.latitude || 'N/A'}, Long: ${fields.longitude || 'N/A'}`, { bold: true, align: 'center' });
@@ -1639,12 +1635,10 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
 
     // ── BLOCK: Sketch Map ──
     if (fields.sketchMapImage) {
-      const sketchFigNum = (Array.isArray(fields.propertyImages) ? fields.propertyImages.length : 0) + 1;
       allBlocks.push(`<div style="font-family:${ff};color:#000;">
         <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin-bottom:12px;">SKETCH MAP</p>
         <div style="text-align:center;border:1px solid #000;padding:6px;">
           <img src="${fields.sketchMapImage}" style="max-width:100%;max-height:680px;" crossOrigin="anonymous" />
-          <p style="font-family:${ff};font-size:12pt;font-style:italic;margin-top:6px;">Figure ${sketchFigNum}: Revenue Sketch Map</p>
         </div>
         <p style="font-family:${ff};font-size:12pt;font-style:italic;text-align:center;margin-top:4px;">Source: Site Visit dated ${fields.dateOfInspection || 'N/A'}</p>
       </div>`);
@@ -1652,12 +1646,10 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
 
     // ── BLOCK: Location Map ──
     if (fields.locationMapImage) {
-      const locFigNum = (Array.isArray(fields.propertyImages) ? fields.propertyImages.length : 0) + (fields.sketchMapImage ? 1 : 0) + 1;
       allBlocks.push(`<div style="font-family:${ff};color:#000;">
         <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin-bottom:12px;">LOCATION MAP</p>
         <div style="text-align:center;border:1px solid #000;padding:6px;">
           <img src="${fields.locationMapImage}" style="max-width:100%;max-height:630px;" crossOrigin="anonymous" />
-          <p style="font-family:${ff};font-size:12pt;font-style:italic;margin-top:6px;">Figure ${locFigNum}: Location Map</p>
         </div>
         ${fields.latitude || fields.longitude ? `<p style="text-align:center;font-family:${ff};font-size:12pt;margin-top:6px;font-weight:bold;">Lat: ${fields.latitude || 'N/A'}, Long: ${fields.longitude || 'N/A'}</p>` : ''}
         <p style="font-family:${ff};font-size:12pt;font-style:italic;text-align:center;margin-top:2px;">Source: Site Visit dated ${fields.dateOfInspection || 'N/A'}</p>
