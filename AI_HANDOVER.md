@@ -14,7 +14,7 @@
 - **ORM:** Prisma
 - **Authentication:** Auth.js (NextAuth v5) with Prisma Adapter
 - **File Storage:** Supabase Storage (for property images and generated PDFs)
-- **PDF Generation:** Client-side via `html2canvas` + `jsPDF`
+- **PDF Generation:** Client-side via `pdf-lib` (Native PDF generation engine, replacing the old `html2canvas` HTML screenshot approach)
 
 ## 2. Architecture & Data Storage
 
@@ -108,8 +108,8 @@ The core business logic is **100% complete**.
    - Manager reviews the drafted report via `ReportBuilder.tsx`. Can edit text fields and add/remove/replace photographs as needed.
    - Manager can "Send for Rework" which opens a prompt to input specific rework instructions (reverts status to REPORT_DRAFTING) or "Finalize & Generate PDF".
    - The Report Agent will see the Manager's rework comments highlighted at the top of the form when they resume drafting.
-6. **PDF Generation & Cleanup (Updated)**: PDF generation is fully implemented on the **Client-Side** (`html2canvas` + `jsPDF`), triggered during Manager Finalization.
-   - Captures HTML layout, paginates it, downloads locally for manager, and uploads the final PDF blob to `reports/pdfs/` in the `valuation-documents` Supabase bucket.
+6. **PDF Generation & Cleanup (Updated)**: PDF generation is fully implemented on the **Client-Side** natively using `pdf-lib`, triggered during Manager Finalization.
+   - It directly draws tables, text, and images onto PDF coordinates using `src/lib/pdf-report-renderer.ts`, paginates automatically, downloads locally for the manager, and uploads the final PDF blob to `reports/pdfs/` in the `valuation-documents` Supabase bucket.
    - **Automated Cleanup:** Upon finalization, all temporary property images in `temp-photos/${projectId}/` are deleted from Supabase, and the `propertyImages` array in the database JSON is cleared.
 7. **Client Rework Flow**: Clients can request changes to their finalized reports from their dashboard. The project status reverts to `MANAGER_REVIEW`, and the manager receives a rework comment message.
 8. **Navigation & Login Layout Updates (July 2026)**:
@@ -153,12 +153,13 @@ Outstanding items in **priority order**:
 > **Vercel Redirects & NextAuth**: `AUTH_URL` should NOT be set to `http://localhost:3000` in Vercel environment variables — it causes NextAuth relative paths to crash in production. Logout redirects currently use absolute production URLs (e.g., `https://smohantyassociates.vercel.app/`).
 
 > [!IMPORTANT]
-> **Location Map in PDF**: Section 14 uses a Google Maps `<iframe>` for live preview (auto-loaded from property address). `html2canvas` **cannot capture iframes**. The user must manually take a Google Maps satellite screenshot and upload it in the "Screenshot for PDF" upload within Section 14. Only the uploaded image appears in the PDF.
+> **Location Map in PDF**: Section 14 uses a Google Maps `<iframe>` for live preview (auto-loaded from property address). `pdf-lib` **cannot capture iframes**. The user must manually take a Google Maps satellite screenshot and upload it in the "Screenshot for PDF" upload within Section 14. Only the uploaded image appears in the PDF.
 
 > [!WARNING]
-> **ReportBuilder.tsx is large (~2400+ lines)**. When editing, be careful with the `generatePDFPages()` function. Inline styles in the HTML template strings must use valid CSS values — Tailwind classes do NOT work inside these strings.
-> *Note on Alignment*: Do not rely on flexbox, native `vertical-align`, or `rowspan` inside standard `<tr>/<td>` elements for PDF generation, as `html2canvas` handles them poorly when rows are stretched. Add the `data-vcenter="1"` attribute to any `<td>` that needs vertical centering; the JS logic inside `handleGeneratePDF` will dynamically calculate and apply the correct padding before capture.
-> *Note on Line Heights*: Always use explicit units (e.g. `line-height: 1.35em`) inside table cell CSS; unitless values like `1.15` are parsed incorrectly as `pixels` by the html2canvas engine, causing tables to collapse and overlap text lines.
+> **ReportBuilder.tsx and pdf-report-renderer.ts are large**. When editing the PDF output, you are working directly with `pdf-lib` coordinate math in `pdf-report-renderer.ts`.
+> *Note on Alignment*: Text wrapping and pagination are handled manually by measuring string widths (`StandardFonts.Helvetica`) and cursor tracking.
+> *Note on Currency*: `pdf-lib` using standard Helvetica cannot encode the Indian Rupee symbol (`₹`). The symbol will throw a `WinAnsi cannot encode` error. Always fallback to `Rs.` or `INR` in text drawn to the PDF!
+> *Note on Orphaned Headings*: High-level drawing methods like `drawSectionHeader` use a keep-with-next margin (e.g. 60 points) when checking for page breaks to prevent headings from appearing alone at the bottom of a page.
 
 > [!WARNING]
 > **Do NOT add `OptionField` or `LandmarkField` back to the form render**. These components still exist in the file (kept for potential future read-only display use) but the form uses plain `<select>` and `<input>` elements. The 3-column blue-box display is for PDF output only.
@@ -167,6 +168,11 @@ Outstanding items in **priority order**:
 > When modifying the UI, prioritize modern, premium aesthetics (glassmorphism, clean typography, subtle animations) without relying on Tailwind component libraries like Shadcn. Use raw Tailwind classes.
 
 ## 7. Recent Git Commits (for reference)
+- `b5bce8a` — chore: replace default favicon with smohantyassociate_symbol.png
+- `8c5eb26` — fix: prevent orphaned headings by requiring keep-with-next space
+- `a987275` — style: remove bullet point and subject name from PDF title heading
+- `a448f23` — style: apply background color to the second column in proximity and landmark tables
+- `305f7a0` — style: left align floor table headers and reduce font size of units in brackets
 - `824655b` — fix: update organisational email template fields to match service request form
 - `3e76b90` — feat: add search and status filter to My Projects page
 - `ac4b53c` — fix: Restore cell layout heights to 1.35em to avoid html2canvas unitless line-height scaling bugs that overlap rows
