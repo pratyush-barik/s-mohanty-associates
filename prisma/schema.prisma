@@ -85,6 +85,7 @@ model Employee {
   auditLogs       AuditLog[]
   projectMessages ProjectMessage[] @relation("EmployeeMessages")
   documents       Document[]       @relation("EmployeeDocuments")
+  bucketImages    BucketImage[]
 
   @@map("employees")
 }
@@ -209,6 +210,7 @@ model Project {
   inspection     Inspection?
   report         Report?
   archivedRecord ArchivedRecord?
+  bucketImages   BucketImage[]
 
   @@map("projects")
 }
@@ -273,6 +275,25 @@ model Inspection {
   documents Document[]
 
   @@map("inspections")
+}
+
+model BucketImage {
+  id         String   @id @default(cuid())
+  projectId  String
+  employeeId String
+  url        String              // Supabase Storage public URL
+  storagePath String             // Storage path for deletion
+  fileName   String              // Original file name
+  size       Int                 // File size in bytes
+  mimeType   String              // e.g. "image/jpeg"
+  caption    String?
+  createdAt  DateTime @default(now())
+
+  project  Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@index([projectId])
+  @@map("bucket_images")
 }
 
 model Report {

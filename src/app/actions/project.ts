@@ -938,3 +938,121 @@ export async function createManualCase(formData: FormData) {
     return { error: 'Failed to create manual case.' };
   }
 }
+
+// ═══════════════════════════════════════════════════════════
+// PHOTO BUCKET — Field Agent Image Collection
+// ═══════════════════════════════════════════════════════════
+
+/**
+ * Save a bucket image record after the client uploads it to Supabase Storage.
+ * Only field agents assigned to the project (or managers/owners) can save.
+ */
+export async function saveBucketImage(
+  projectId: string,
+  imageData: {
+    url: string;
+    storagePath: string;
+    fileName: string;
+    size: number;
+    mimeType: string;
+  }
+) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: 'Unauthorized' };
+
+  try {
+    const user = await prisma.employee.findUnique({ where: { id: session.user.id } });
+    if (!user) return { error: 'Unauthorized' };
+
+    // Verify the user has access to this project
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: { fieldEmployees: { select: { id: true } } },
+    });
+
+    if (!project) return { error: 'Project not found.' };
+
+    const isFieldAgent = project.fieldEmployees.some((e) => e.id === session.user.id);
+    const isManagerOrOwner = ['MANAGER', 'OWNER'].includes(user.role);
+
+    if (!isFieldAgent && !isManagerOrOwner) {
+      return { error: 'You are not authorized to upload to this bucket.' };
+    }
+
+    const bucketImage = await prisma.bucketImage.create({
+      data: {
+        projectId,
+        employeeId: session.user.id,
+        url: imageData.url,
+        storagePath: imageData.storagePath,
+        fileName: imageData.fileName,
+        size: imageData.size,
+        mimeType: imageData.mimeType,
+      },
+      include: {
+        employee: { select: { name: true, employeeId: true } },
+      },
+    });
+
+    revalidatePath(`/portal/inspections/${projectId}`);
+    return { success: true, image: bucketImage };
+  } catch (error) {
+    console.error('Failed to save bucket image:', error);
+    return { error: 'Failed to save bucket image.' };
+  }
+}
+
+/**
+ * Delete a bucket image. Only the uploader or a manager/owner can delete.
+ */
+export async function deleteBucketImage(imageId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: 'Unauthorized' };
+
+  try {
+    const user = await prisma.employee.findUnique({ where: { id: session.user.id } });
+    if (!user) return { error: 'Unauthorized' };
+
+    const image = await prisma.bucketImage.findUnique({ where: { id: imageId } });
+    if (!image) return { error: 'Image not found.' };
+
+    const isOwnerOfImage = image.employeeId === session.user.id;
+    const isManagerOrOwner = ['MANAGER', 'OWNER'].includes(user.role);
+
+    if (!isOwnerOfImage && !isManagerOrOwner) {
+      return { error: 'You can only delete your own uploads.' };
+    }
+
+    // Delete from database
+    await prisma.bucketImage.delete({ where: { id: imageId } });
+
+    revalidatePath(`/portal/inspections/${image.projectId}`);
+    return { success: true, storagePath: image.storagePath };
+  } catch (error) {
+    console.error('Failed to delete bucket image:', error);
+    return { error: 'Failed to delete bucket image.' };
+  }
+}
+
+/**
+ * Fetch all bucket images for a project. Accessible to assigned field agents, managers, owners, and report employees.
+ */
+export async function getBucketImages(projectId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: 'Unauthorized', images: [] };
+
+  try {
+    const images = await prisma.bucketImage.findMany({
+      where: { projectId },
+      include: {
+        employee: { select: { name: true, employeeId: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return { images };
+  } catch (error) {
+    console.error('Failed to fetch bucket images:', error);
+    return { error: 'Failed to fetch images.', images: [] };
+  }
+}

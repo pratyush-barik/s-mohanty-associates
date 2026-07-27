@@ -10,7 +10,7 @@ export default async function InspectionDetailsPage({ params }: { params: Promis
 
   const currentUser = await prisma.employee.findUnique({
     where: { id: session.user.id },
-    select: { role: true },
+    select: { role: true, id: true },
   });
 
   if (!currentUser || !['FIELD_EMPLOYEE', 'OWNER', 'MANAGER'].includes(currentUser.role)) {
@@ -38,6 +38,15 @@ export default async function InspectionDetailsPage({ params }: { params: Promis
   }
 
   const { serviceRequest } = inspection.project;
+
+  // Fetch bucket images for this project
+  const bucketImages = await prisma.bucketImage.findMany({
+    where: { projectId },
+    include: {
+      employee: { select: { name: true, employeeId: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
 
   return (
     <div className="space-y-6">
@@ -114,6 +123,8 @@ export default async function InspectionDetailsPage({ params }: { params: Promis
             initialStatus={inspection.status}
             initialNotes={inspection.notes}
             initialMeasurements={inspection.measurements}
+            initialBucketImages={bucketImages}
+            currentUserId={session.user.id}
           />
         </div>
       </div>

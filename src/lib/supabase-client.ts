@@ -13,3 +13,7 @@ export const STORAGE_BUCKETS = {
   EMPLOYEE_PROFILES: 'employee-profiles',
   VALUATION_DOCUMENTS: 'valuation-documents',
 } as const;
+
+export const STORAGE_PATHS = {
+  INSPECTION_PHOTOS: (projectId: string) => `inspection-photos/${projectId}`,
+} as const;
