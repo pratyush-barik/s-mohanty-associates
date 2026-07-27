@@ -1154,7 +1154,6 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
           maxWidth: 450, maxHeight: 500, centered: true,
           caption: `Figure ${sketchFigNum}: Revenue Sketch Map`,
         });
-        r.drawTextBlock(`Source: Site Visit dated ${fields.dateOfInspection || 'N/A'}`, { italic: true, align: 'center' });
       }
 
       // ── Location Map ──
@@ -1170,7 +1169,6 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         if (fields.latitude || fields.longitude) {
           r.drawTextBlock(`Lat: ${fields.latitude || 'N/A'}, Long: ${fields.longitude || 'N/A'}`, { bold: true, align: 'center' });
         }
-        r.drawTextBlock(`Source: Site Visit dated ${fields.dateOfInspection || 'N/A'}`, { italic: true, align: 'center' });
       }
 
       // ── Generate PDF blob ──
