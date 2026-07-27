@@ -250,7 +250,7 @@ const DEFAULT_FIELDS: ReportFields = {
   conformsToByelaws: '',
   documentsVerified: '',
 
-  floors: [{ id: '1', name: 'Ground Floor', area: '', rate: '', yearBuilt: '', lifeYears: '60', ageYears: '', depreciationPct: '' }],
+  floors: [{ id: '1', name: 'Ground', area: '', rate: '', yearBuilt: '', lifeYears: '60', ageYears: '', depreciationPct: '' }],
   floorAreaUnit: 'Sqft',
 
   landArea: '',

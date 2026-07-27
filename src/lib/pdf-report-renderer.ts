@@ -222,7 +222,7 @@ export class PDFReportRenderer {
   }
 
   /** Draw a single line of text at absolute coordinates */
-  private drawTextAt(text: string, x: number, topY: number, opts?: DrawTextOptions): void {
+  private drawTextAt(text: string, x: number, topY: number, opts?: DrawTextOptions & { textColor?: string }): void {
     const strText = String(text || '');
     const fontSize = opts?.fontSize || FONT_SIZE;
     const font = this.getFont(opts?.bold, opts?.italic);
@@ -244,33 +244,7 @@ export class PDFReportRenderer {
       y: pY,
       size: fontSize,
       font,
-      color: rgb(0, 0, 0),
-    });
-  }
-
-  /** Draw white text at absolute coordinates */
-  private drawWhiteTextAt(text: string, x: number, topY: number, opts?: DrawTextOptions): void {
-    const strText = String(text || '');
-    const fontSize = opts?.fontSize || FONT_SIZE;
-    const font = this.getFont(opts?.bold, opts?.italic);
-    const baselineOffset = fontSize * 0.8;
-    const pY = this.pdfY(topY) - baselineOffset;
-
-    let drawX = x;
-    if (opts?.align === 'center' && opts.maxWidth) {
-      const tw = font.widthOfTextAtSize(strText, fontSize);
-      drawX = x + (opts.maxWidth - tw) / 2;
-    } else if (opts?.align === 'right' && opts.maxWidth) {
-      const tw = font.widthOfTextAtSize(strText, fontSize);
-      drawX = x + opts.maxWidth - tw;
-    }
-
-    this.page.drawText(strText, {
-      x: drawX,
-      y: pY,
-      size: fontSize,
-      font,
-      color: rgb(1, 1, 1),
+      color: opts?.textColor ? hexToRgb(opts.textColor) : rgb(0, 0, 0),
     });
   }
 
@@ -351,6 +325,7 @@ export class PDFReportRenderer {
       bold?: boolean; italic?: boolean; fontSize?: number;
       align?: 'left' | 'center' | 'right';
       fillColor?: string; bgOpacity?: number; borderColor?: string;
+      textColor?: string;
       vAlign?: 'top' | 'middle';
     }
   ): void {
@@ -377,7 +352,7 @@ export class PDFReportRenderer {
 
     for (let i = 0; i < lines.length; i++) {
       this.drawTextAt(lines[i], x + CELL_PAD_X, textTopY + i * fontSize * LINE_HEIGHT, {
-        bold: opts?.bold, italic: opts?.italic, fontSize, align: opts?.align, maxWidth: textW,
+        bold: opts?.bold, italic: opts?.italic, fontSize, align: opts?.align, maxWidth: textW, textColor: opts?.textColor
       });
     }
   }
@@ -603,11 +578,7 @@ export class PDFReportRenderer {
     let cx = MARGIN_L;
     for (let c = 0; c < numCols; c++) {
       this.drawCell(cx, this.cursorY, colWidths[c], rowH, headers[c], {
-        bold: true, fontSize: FONT_SIZE_SMALL, fillColor: '#000000', align: 'center', vAlign: 'middle',
-      });
-      // Need to overwrite with white text for this specific cell
-      this.drawWhiteTextAt(headers[c], cx + 2, this.cursorY + CELL_PAD_Y, {
-        bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', maxWidth: colWidths[c] - 4,
+        bold: true, fontSize: FONT_SIZE_SMALL, fillColor: '#000000', textColor: '#FFFFFF', align: 'center', vAlign: 'middle',
       });
       cx += colWidths[c];
     }
