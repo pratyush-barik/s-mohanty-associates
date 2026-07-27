@@ -44,8 +44,8 @@ const FONT_SIZE_SMALL = 11;
 const FONT_SIZE_CAPTION = 10;
 const LINE_HEIGHT = 1.25; // multiplier on font size
 const BORDER_W = 0.75;
-const LBL_BG = '#EDF2F7'; // 50% lighter version of original #DBE6F0
-const OPT_BG = '#EEF4FA'; // 50% lighter version of original #DDE9F6
+const LBL_BG = '#DBE6F0';
+const OPT_BG = '#DDE9F6';
 
 export interface TextSegment {
   text: string;
@@ -196,10 +196,10 @@ export class PDFReportRenderer {
   // ─── Drawing Primitives ────────────────────────────────────────
 
   /** Draw a filled rectangle */
-  private drawRect(x: number, topY: number, w: number, h: number, fillColor?: string, borderColor?: string, borderWidth?: number): void {
+  private drawRect(x: number, topY: number, w: number, h: number, fillColor?: string, borderColor?: string, borderWidth?: number, opacity?: number): void {
     const pY = this.pdfY(topY) - h;
     if (fillColor) {
-      this.page.drawRectangle({ x, y: pY, width: w, height: h, color: hexToRgb(fillColor) });
+      this.page.drawRectangle({ x, y: pY, width: w, height: h, color: hexToRgb(fillColor), opacity: opacity ?? 1 });
     }
     if (borderColor) {
       this.page.drawRectangle({
@@ -350,7 +350,7 @@ export class PDFReportRenderer {
     opts?: {
       bold?: boolean; italic?: boolean; fontSize?: number;
       align?: 'left' | 'center' | 'right';
-      fillColor?: string; borderColor?: string;
+      fillColor?: string; bgOpacity?: number; borderColor?: string;
       vAlign?: 'top' | 'middle';
     }
   ): void {
@@ -358,7 +358,7 @@ export class PDFReportRenderer {
 
     // Fill
     if (opts?.fillColor) {
-      this.drawRect(x, topY, w, h, opts.fillColor);
+      this.drawRect(x, topY, w, h, opts.fillColor, undefined, undefined, opts.bgOpacity);
     }
 
     // Border
@@ -415,7 +415,7 @@ export class PDFReportRenderer {
     this.checkPageBreak(h);
 
     // Fill + border for full row
-    this.drawRect(MARGIN_L, this.cursorY, CONTENT_W, h, undefined, '#000000', BORDER_W);
+    this.drawRect(MARGIN_L, this.cursorY, CONTENT_W, h, '#FFFFFF', '#000000', BORDER_W, 0.5);
 
     // Draw rich text: label normal, value bold
     const textW = CONTENT_W - CELL_PAD_X * 2;
@@ -456,12 +456,11 @@ export class PDFReportRenderer {
 
     // Col 1: Label
     this.drawCell(col1X, this.cursorY, COL_W[0], rowH, label, {
-      bold: true, fontSize: FONT_SIZE, fillColor: LBL_BG, vAlign: 'middle',
+      bold: true, fontSize: FONT_SIZE, fillColor: LBL_BG, bgOpacity: 0.5, vAlign: 'middle',
     });
 
     // Col 2: Stacked options with internal dividers
-    this.drawRect(col2X, this.cursorY, COL_W[1], rowH, OPT_BG);
-    this.drawRect(col2X, this.cursorY, COL_W[1], rowH, undefined, '#000000', BORDER_W);
+    this.drawRect(col2X, this.cursorY, COL_W[1], rowH, OPT_BG, '#000000', BORDER_W, 0.5);
     for (let i = 0; i < options.length; i++) {
       const optY = this.cursorY + i * optionLineH;
       const isBold = options[i] === selectedValue;
@@ -476,7 +475,7 @@ export class PDFReportRenderer {
 
     // Col 3: Selected value
     this.drawCell(col3X, this.cursorY, COL_W[2], rowH, selectedValue || 'N/A', {
-      bold: true, fontSize: FONT_SIZE, fillColor: OPT_BG, align: 'center', vAlign: 'middle',
+      bold: true, fontSize: FONT_SIZE, fillColor: OPT_BG, bgOpacity: 0.5, align: 'center', vAlign: 'middle',
     });
 
     this.cursorY += rowH;
@@ -504,11 +503,11 @@ export class PDFReportRenderer {
 
     // Col 1: Label
     this.drawCell(col1X, this.cursorY, COL_W[0], rowH, label, {
-      bold: true, fontSize: FONT_SIZE, fillColor: LBL_BG, vAlign: 'middle',
+      bold: true, fontSize: FONT_SIZE, fillColor: LBL_BG, bgOpacity: 0.5, vAlign: 'middle',
     });
 
     // Col 2: Sub-labels
-    this.drawRect(col2X, this.cursorY, COL_W[1], rowH, undefined, '#000000', BORDER_W);
+    this.drawRect(col2X, this.cursorY, COL_W[1], rowH, undefined, '#000000', BORDER_W, 0.5);
     for (let i = 0; i < subLabels.length; i++) {
       const sY = this.cursorY + i * subLineH;
       this.drawTextAt(subLabels[i], col2X + CELL_PAD_X, sY + CELL_PAD_Y, { fontSize: FONT_SIZE });
@@ -518,8 +517,7 @@ export class PDFReportRenderer {
     }
 
     // Col 3: Values
-    this.drawRect(col3X, this.cursorY, COL_W[2], rowH, OPT_BG);
-    this.drawRect(col3X, this.cursorY, COL_W[2], rowH, undefined, '#000000', BORDER_W);
+    this.drawRect(col3X, this.cursorY, COL_W[2], rowH, OPT_BG, '#000000', BORDER_W, 0.5);
     for (let i = 0; i < values.length; i++) {
       const sY = this.cursorY + i * subLineH;
       this.drawTextAt(values[i], col3X + CELL_PAD_X, sY + CELL_PAD_Y, { fontSize: FONT_SIZE });
@@ -550,12 +548,11 @@ export class PDFReportRenderer {
 
     // Col 1
     this.drawCell(col1X, this.cursorY, COL_W[0], rowH, label, {
-      bold: true, fontSize: FONT_SIZE, fillColor: LBL_BG, vAlign: 'middle',
+      bold: true, fontSize: FONT_SIZE, fillColor: LBL_BG, bgOpacity: 0.5, vAlign: 'middle',
     });
 
     // Col 2: Options with selectedRange bolded
-    this.drawRect(col2X, this.cursorY, COL_W[1], rowH, OPT_BG);
-    this.drawRect(col2X, this.cursorY, COL_W[1], rowH, undefined, '#000000', BORDER_W);
+    this.drawRect(col2X, this.cursorY, COL_W[1], rowH, OPT_BG, '#000000', BORDER_W, 0.5);
     for (let i = 0; i < options.length; i++) {
       const optY = this.cursorY + i * optionLineH;
       this.drawTextAt(options[i], col2X + CELL_PAD_X, optY + CELL_PAD_Y, {
@@ -568,7 +565,7 @@ export class PDFReportRenderer {
 
     // Col 3
     this.drawCell(col3X, this.cursorY, COL_W[2], rowH, actualValue || 'N/A', {
-      bold: true, fontSize: FONT_SIZE, fillColor: OPT_BG, align: 'center', vAlign: 'middle',
+      bold: true, fontSize: FONT_SIZE, fillColor: OPT_BG, bgOpacity: 0.5, align: 'center', vAlign: 'middle',
     });
 
     this.cursorY += rowH;
@@ -605,7 +602,10 @@ export class PDFReportRenderer {
     // Header row (black bg, white text)
     let cx = MARGIN_L;
     for (let c = 0; c < numCols; c++) {
-      this.drawRect(cx, this.cursorY, colWidths[c], rowH, '#000000', '#000000', BORDER_W);
+      this.drawCell(cx, this.cursorY, colWidths[c], rowH, headers[c], {
+        bold: true, fontSize: FONT_SIZE_SMALL, fillColor: '#000000', align: 'center', vAlign: 'middle',
+      });
+      // Need to overwrite with white text for this specific cell
       this.drawWhiteTextAt(headers[c], cx + 2, this.cursorY + CELL_PAD_Y, {
         bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', maxWidth: colWidths[c] - 4,
       });
@@ -622,7 +622,7 @@ export class PDFReportRenderer {
       cx = MARGIN_L;
       for (let c = 0; c < numCols; c++) {
         this.drawCell(cx, this.cursorY, colWidths[c], rowH, vals[c], {
-          fontSize: FONT_SIZE_SMALL, align: aligns[c], fillColor: bgColor,
+          fontSize: FONT_SIZE_SMALL, align: aligns[c], fillColor: bgColor, bgOpacity: 0.5,
         });
         cx += colWidths[c];
       }
@@ -632,10 +632,10 @@ export class PDFReportRenderer {
     // Total row
     const totalLabelW = colWidths.slice(0, 7).reduce((a, b) => a + b, 0);
     this.drawCell(MARGIN_L, this.cursorY, totalLabelW, rowH, totalLabel, {
-      bold: true, fontSize: FONT_SIZE_SMALL,
+      bold: true, fontSize: FONT_SIZE_SMALL, fillColor: LBL_BG, bgOpacity: 0.5,
     });
     this.drawCell(MARGIN_L + totalLabelW, this.cursorY, colWidths[7], rowH, totalValue, {
-      bold: true, fontSize: FONT_SIZE_SMALL, align: 'right',
+      bold: true, fontSize: FONT_SIZE_SMALL, fillColor: OPT_BG, bgOpacity: 0.5, align: 'right',
     });
     this.cursorY += rowH;
   }
