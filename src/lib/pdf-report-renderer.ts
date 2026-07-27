@@ -153,14 +153,15 @@ export class PDFReportRenderer {
   /** Measure the width of a string at a given font size */
   private textWidth(text: string, fontSize: number, bold?: boolean, italic?: boolean): number {
     const font = this.getFont(bold, italic);
-    return font.widthOfTextAtSize(text, fontSize);
+    return font.widthOfTextAtSize(String(text ?? ''), fontSize);
   }
 
   /** Break text into lines that fit within maxWidth */
   private wrapText(text: string, maxWidth: number, fontSize: number, bold?: boolean, italic?: boolean): string[] {
-    if (!text) return [''];
+    const strText = String(text ?? '');
+    if (!strText) return [''];
     const font = this.getFont(bold, italic);
-    const words = text.split(/\s+/);
+    const words = strText.split(/\s+/);
     const lines: string[] = [];
     let currentLine = '';
 
