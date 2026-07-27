@@ -991,6 +991,13 @@ export async function saveBucketImage(
       return { error: 'You are not authorized to upload to this project\'s bucket.' };
     }
 
+    // Bucket Locking Constraint
+    if (isFieldAgent && !isProjectManager && !isOwner) {
+      if (project.status === 'MANAGER_REVIEW' || project.status === 'COMPLETED') {
+        return { error: 'The Photo Bucket is locked because the project is in review or completed.' };
+      }
+    }
+
     if (imageData.size > 10 * 1024 * 1024) {
       return { error: 'File size exceeds the 10MB limit.' };
     }
@@ -1042,7 +1049,7 @@ export async function deleteBucketImage(imageId: string) {
       where: { id: imageId },
       include: {
         project: {
-          select: { assignedManagerId: true, pendingManagerId: true }
+          select: { id: true, status: true, assignedManagerId: true, pendingManagerId: true }
         }
       }
     });
@@ -1055,6 +1062,40 @@ export async function deleteBucketImage(imageId: string) {
 
     if (!isOwnerOfImage && !isProjectManager && !isOwner) {
       return { error: 'You can only delete your own uploads unless you manage this project.' };
+    }
+
+    // Bucket Locking Constraint
+    if (!isProjectManager && !isOwner) {
+      if (image.project.status === 'MANAGER_REVIEW' || image.project.status === 'COMPLETED') {
+        return { error: 'The Photo Bucket is locked because the project is in review or completed.' };
+      }
+    }
+
+    // Drafting Lock Constraint
+    const draft = await prisma.reportDraft.findUnique({
+      where: { projectId: image.project.id }
+    });
+    if (draft) {
+      const isUsedInSketch = draft.sketchMapImage === image.url;
+      const isUsedInLocation = draft.locationMapImage === image.url;
+      let isUsedInPropertyPhotos = false;
+      
+      try {
+        if (draft.propertyImages && typeof draft.propertyImages === 'string') {
+          const parsed = JSON.parse(draft.propertyImages);
+          if (Array.isArray(parsed) && parsed.includes(image.url)) {
+            isUsedInPropertyPhotos = true;
+          }
+        } else if (Array.isArray(draft.propertyImages) && draft.propertyImages.includes(image.url)) {
+          isUsedInPropertyPhotos = true;
+        }
+      } catch (e) {
+        // Safe parse
+      }
+
+      if (isUsedInSketch || isUsedInLocation || isUsedInPropertyPhotos) {
+        return { error: 'This photo cannot be deleted because it is actively used in the Report Draft.' };
+      }
     }
 
     // Delete from database
