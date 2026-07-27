@@ -104,21 +104,31 @@ The core business logic is **100% complete**.
     - **Pull Back to Draft:** Report Agent can cancel their submission via `cancelReportSubmission` server action. After all status-changing operations (submit, cancel, rework, finalize), `router.refresh()` is called so the client component re-renders with the correct status from the server without a manual page reload.
     - **`OptionField` / `LandmarkField` components** still exist in the file but are **NOT used in the form render** — they are kept only in case they are needed for future read-only display modes. Do NOT add them back to the form.
 
-5. **Manager Preview, Editing & Finalization Flow (Updated)**:
+7. **Photo Bucket & Evidence Workflow (July 2026)**:
+   - Field Agents upload evidence (photos) via the Inspection dashboard directly into a centralized "Photo Bucket" (`bucket_images` DB table + Supabase Storage). Features a lightbox and grid UI.
+   - Report Agents access this bucket natively inside `ReportBuilder.tsx` via the `BucketPicker` modal to select photos for Property Images, Sketch Map, and Location Map.
+   - *Strict Constraints & RBAC*:
+     - Max 10MB per photo, restricted to images (JPEG/PNG/WebP), max 30 photos per project, min 1 required to mark inspection as COMPLETED.
+     - Only assigned agents and managers can upload/delete/view.
+     - **Lifecycle Locks:** Bucket is locked (read-only for agents) when the project is in `MANAGER_REVIEW` or `COMPLETED`. If a manager sends it back for rework, it unlocks.
+     - **Drafting Lock:** Prevents deletion of photos actively used in the Report Draft to avoid broken PDF images.
+   - *Auto-Cleanup*: Serverless CRON job (`/api/cron/cleanup-buckets`) runs daily to permanently delete raw images and metadata for projects that have been `COMPLETED` for > 48 hours.
+8. **Manager Preview, Editing & Finalization Flow (Updated)**:
    - Manager reviews the drafted report via `ReportBuilder.tsx`. Can edit text fields and add/remove/replace photographs as needed.
    - Manager can "Send for Rework" which opens a prompt to input specific rework instructions (reverts status to REPORT_DRAFTING) or "Finalize & Generate PDF".
    - The Report Agent will see the Manager's rework comments highlighted at the top of the form when they resume drafting.
-6. **PDF Generation & Cleanup (Updated)**: PDF generation is fully implemented on the **Client-Side** natively using `pdf-lib`, triggered during Manager Finalization.
+9. **PDF Generation & Cleanup (Updated)**: PDF generation is fully implemented on the **Client-Side** natively using `pdf-lib`, triggered during Manager Finalization.
    - It directly draws tables, text, and images onto PDF coordinates using `src/lib/pdf-report-renderer.ts`, paginates automatically, downloads locally for the manager, and uploads the final PDF blob to `reports/pdfs/` in the `valuation-documents` Supabase bucket.
    - **Automated Cleanup:** Upon finalization, all temporary property images in `temp-photos/${projectId}/` are deleted from Supabase, and the `propertyImages` array in the database JSON is cleared.
-7. **Client Rework Flow**: Clients can request changes to their finalized reports from their dashboard. The project status reverts to `MANAGER_REVIEW`, and the manager receives a rework comment message.
-8. **Navigation & Login Layout Updates (July 2026)**:
+10. **Client Rework Flow**: Clients can request changes to their finalized reports from their dashboard. The project status reverts to `MANAGER_REVIEW`, and the manager receives a rework comment message.
+11. **Client Rework Flow**: Clients can request changes to their finalized reports from their dashboard. The project status reverts to `MANAGER_REVIEW`, and the manager receives a rework comment message.
+12. **Navigation & Login Layout Updates (July 2026)**:
    - Portal navigation labels updated — "My Reports" → "My Projects".
    - My Projects listing page layout transformed from block cards into sleek, horizontal, inline rectangular list rows.
    - Report Agent's "My Projects" page now includes exact filtering options (search bar, Pending/Completed/All tabs) matching the Field Agent's workflow.
    - Replaced Next.js `<Image>` styling calculations inside the main Navigation Bar and Employee Login page layout with native HTML `<img>` elements, resolving the issue where logos were cut off at the bottom.
-9. **Delivery**: Client downloads the PDF from their dashboard.
-10. **Landing Page Integrations**: The "Submit Organisational Request" CTA on the public landing page now generates pre-filled emails (Gmail, Outlook, Default Mail) whose body matches the exact 8 data fields found in the client's internal "Request a Service" form (Service Category, Property Details, etc.).
+13. **Delivery**: Client downloads the PDF from their dashboard.
+14. **Landing Page Integrations**: The "Submit Organisational Request" CTA on the public landing page now generates pre-filled emails (Gmail, Outlook, Default Mail) whose body matches the exact 8 data fields found in the client's internal "Request a Service" form (Service Category, Property Details, etc.).
 
 ## 5. Pending Work (What is next)
 
@@ -131,21 +141,27 @@ Outstanding items in **priority order**:
    - "Cancel Submission (Pull back to Draft)" button — check status refreshes correctly
    - All new `<select>` dropdowns save and restore correctly from the JSON `Report.data`
 
-### Medium Priority — After Verification (FUTURE WORK)
-2. **Organizational/Corporate Templates (Architecture & Rendering)**: The "Standard Individual" (default bank report) template is complete. The category config wizard supports choosing between "Individual" and "Organisation" templates 1-10. However, wizard choices currently have zero impact on the actual form or PDF output. 
+### Medium Priority — Future Features (Photo Bucket)
+2. **Watermarking & Timestamping (Evidence Integrity)**:
+   - *Priority:* High (Critical for Valuation Compliance)
+   - Automatically stamp the **Date, Time, and GPS Coordinates (Latitude/Longitude)** on the image itself. Proves the field agent was actually physically present. Should be done client-side before upload or via serverless function.
+3. **Photo Categorization / Tagging**:
+   - Require Field Agents to select a category when uploading (e.g., `Front Elevation`, `Interior`, `Sketch Map`, `Location`). Allows Report Agent to easily filter the Photo Bucket.
+
+### Lower Priority — Future
+4. **Organizational/Corporate Templates (Architecture & Rendering)**: The "Standard Individual" (default bank report) template is complete. The category config wizard supports choosing between "Individual" and "Organisation" templates 1-10. However, wizard choices currently have zero impact on the actual form or PDF output. 
    **Future Work Implementation Plan:**
    - *Phase 1: Named Organisation Templates*: Replace numbered templates with real named organisations (SBI, PNB, etc.) in the wizard and backend.
    - *Phase 2: Service-Aware Form Sections*: Conditionally show/hide form sections based on the selected service type (e.g., hide Building Valuation for Land Only).
    - *Phase 3: Organisation-Specific PDF Layouts*: Generate different PDF outputs per organisation (custom headers, disclaimers, field labels).
    - *Phase 4: Dynamic Template Management*: Allow managers to CRUD templates from the portal.
    **Deferred until the default template is fully verified by the user.**
-3. **Remove the overlay / coming-soon banner** on `https://smohantyassociates.vercel.app/` (the public-facing landing page).
+5. **Remove the overlay / coming-soon banner** on `https://smohantyassociates.vercel.app/` (the public-facing landing page).
+6. **Supabase Storage Lifecycle Policy**: PDFs should auto-delete after 3–6 months to stay within 8GB limit. Implement via Supabase Edge Function, cron job, or bucket lifecycle policy. (Note: Photo Bucket auto-cleanup is already implemented natively).
+7. **Email Automation**: Automated notifications via Gmail API or Nodemailer (e.g., "Your request was received", "Your PDF is ready for download").
+8. **Local Archiving Script**: Node.js script to run on the office PC to automatically download and archive PDFs older than 3 months from Supabase to a local hard drive.
+9. **Repo Sync**: Pull latest changes from teammate's fork (`https://github.com/pratyush-barik/s-mohanty-associates/`) and merge with current `main`, using this document as the source of truth.
 
-### Lower Priority — Future
-4. **Supabase Storage Lifecycle Policy**: PDFs should auto-delete after 3–6 months to stay within 8GB limit. Implement via Supabase Edge Function, cron job, or bucket lifecycle policy.
-5. **Email Automation**: Automated notifications via Gmail API or Nodemailer (e.g., "Your request was received", "Your PDF is ready for download").
-6. **Local Archiving Script**: Node.js script to run on the office PC to automatically download and archive PDFs older than 3 months from Supabase to a local hard drive.
-7. **Repo Sync**: Pull latest changes from teammate's fork (`https://github.com/pratyush-barik/s-mohanty-associates/`) and merge with current `main`, using this document as the source of truth.
 
 ## 6. Critical Notes & Gotchas
 
@@ -168,9 +184,12 @@ Outstanding items in **priority order**:
 > When modifying the UI, prioritize modern, premium aesthetics (glassmorphism, clean typography, subtle animations) without relying on Tailwind component libraries like Shadcn. Use raw Tailwind classes.
 
 ## 7. Recent Git Commits (for reference)
+- `03e36f3` — feat: implement Photo Bucket lifecycle locks and auto-cleanup
+- `e6bcc3f` — feat: add Photo Bucket data and lifecycle constraints
+- `a5b4c1c` — fix: enforce strict RBAC for Photo Bucket actions
+- `ac4a2a5` — feat: integrate Photo Bucket into Report Agent workflow
+- `8f6c5bb` — feat: build robust Field Agent Photo Bucket UI with camera/gallery uploads
 - `b5bce8a` — chore: replace default favicon with smohantyassociate_symbol.png
-- `8c5eb26` — fix: prevent orphaned headings by requiring keep-with-next space
-- `a987275` — style: remove bullet point and subject name from PDF title heading
 - `a448f23` — style: apply background color to the second column in proximity and landmark tables
 - `305f7a0` — style: left align floor table headers and reduce font size of units in brackets
 - `824655b` — fix: update organisational email template fields to match service request form
