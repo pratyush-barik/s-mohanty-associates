@@ -1052,19 +1052,19 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       r.drawCenteredTitle('VALUATION OF BUILDING (After Depreciation)');
       r.advanceCursor(4);
       r.drawFloorTable(
-        ['Floor', 'Area', 'Rate (\u20B9)', 'Estimated (\u20B9)', 'Life', 'Age', 'Dep%', 'Net Value (\u20B9)'],
+        ['Floor', 'Area', 'Rate (Rs.)', 'Estimated (Rs.)', 'Life', 'Age', 'Dep%', 'Net Value (Rs.)'],
         floorValuations.map(f => ({
           name: f.name,
           area: formatIndianCurrency(f.area),
-          rate: `\u20B9${formatIndianCurrency(f.rate)}`,
-          estimated: `\u20B9${formatIndianCurrency(f.estimated)}`,
+          rate: `Rs.${formatIndianCurrency(f.rate)}`,
+          estimated: `Rs.${formatIndianCurrency(f.estimated)}`,
           life: String(f.lifeYears),
           age: String(f.ageYears),
           dep: `${f.depPct}%`,
-          netValue: `\u20B9${formatIndianCurrency(f.netValue)}`,
+          netValue: `Rs.${formatIndianCurrency(f.netValue)}`,
         })),
         'Total Building Value',
-        `\u20B9${formatIndianCurrency(totalBuildingValue)}`,
+        `Rs.${formatIndianCurrency(totalBuildingValue)}`,
       );
       r.advanceCursor(8);
 
@@ -1112,9 +1112,9 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
             { text: ' and after careful examination and consideration of all relevant factors, the Fair Market Value of the said property is assessed as under:' },
           ],
         },
-        { segments: [{ text: `Fair Market Value: \u20B9 ${formatIndianCurrency(totalPropertyValue)} (${rupeesInWords(totalPropertyValue)})`, bold: true }] },
-        { segments: [{ text: `Realizable Value (${fields.realizablePct || '90'}%): \u20B9 ${formatIndianCurrency(realizableValue)} (${rupeesInWords(realizableValue)})`, bold: true }] },
-        { segments: [{ text: `Distress Sale Value (${fields.distressPct || '80'}%): \u20B9 ${formatIndianCurrency(distressValue)} (${rupeesInWords(distressValue)})`, bold: true }] },
+        { segments: [{ text: `Fair Market Value: Rs. ${formatIndianCurrency(totalPropertyValue)} (${rupeesInWords(totalPropertyValue)})`, bold: true }] },
+        { segments: [{ text: `Realizable Value (${fields.realizablePct || '90'}%): Rs. ${formatIndianCurrency(realizableValue)} (${rupeesInWords(realizableValue)})`, bold: true }] },
+        { segments: [{ text: `Distress Sale Value (${fields.distressPct || '80'}%): Rs. ${formatIndianCurrency(distressValue)} (${rupeesInWords(distressValue)})`, bold: true }] },
       ]);
 
       // ── Signature ──
