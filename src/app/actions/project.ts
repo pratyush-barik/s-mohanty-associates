@@ -136,6 +136,13 @@ export async function updateInspectionStatus(
     } else if (status !== 'COMPLETED') {
       updatedCompletedFieldAgents = updatedCompletedFieldAgents.filter(id => id !== session.user.id);
     }
+    
+    if (status === 'COMPLETED') {
+      const photoCount = await prisma.bucketImage.count({ where: { projectId } });
+      if (photoCount < 1) {
+        return { error: 'You must upload at least 1 photo to the bucket before marking the inspection as COMPLETED.' };
+      }
+    }
 
     await prisma.inspection.update({
       where: { projectId },
@@ -203,6 +210,10 @@ export async function updateInspectionMilestone(
     if (milestone === 'startedAt') {
       status = 'IN_PROGRESS';
     } else if (milestone === 'completedAt') {
+      const photoCount = await prisma.bucketImage.count({ where: { projectId } });
+      if (photoCount < 1) {
+        return { error: 'You must upload at least 1 photo to the bucket before marking the inspection as COMPLETED.' };
+      }
       status = 'COMPLETED';
       completedAt = new Date();
     }
@@ -978,6 +989,19 @@ export async function saveBucketImage(
 
     if (!isFieldAgent && !isProjectManager && !isOwner) {
       return { error: 'You are not authorized to upload to this project\'s bucket.' };
+    }
+
+    if (imageData.size > 10 * 1024 * 1024) {
+      return { error: 'File size exceeds the 10MB limit.' };
+    }
+
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(imageData.mimeType)) {
+      return { error: 'Invalid file type. Only JPEG, PNG, and WebP images are allowed.' };
+    }
+
+    const currentPhotoCount = await prisma.bucketImage.count({ where: { projectId } });
+    if (currentPhotoCount >= 30) {
+      return { error: 'Maximum limit of 30 photos per project bucket reached.' };
     }
 
     const bucketImage = await prisma.bucketImage.create({
