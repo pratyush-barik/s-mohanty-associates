@@ -570,19 +570,39 @@ export class PDFReportRenderer {
     colWidths[7] = CONTENT_W - colWidths.slice(0, 7).reduce((a, b) => a + b, 0);
 
     const rowH = FONT_SIZE_SMALL * LINE_HEIGHT + CELL_PAD_Y * 2;
-    const totalH = rowH * (1 + rows.length + 1); // header + data rows + total row
+    const headerRowH = FONT_SIZE_SMALL * LINE_HEIGHT * 2 + CELL_PAD_Y * 2;
+    const totalH = headerRowH + rowH * (rows.length + 1); // header + data rows + total row
 
     this.checkPageBreak(totalH);
 
     // Header row (black bg, white text)
     let cx = MARGIN_L;
     for (let c = 0; c < numCols; c++) {
-      this.drawCell(cx, this.cursorY, colWidths[c], rowH, headers[c], {
-        bold: true, fontSize: FONT_SIZE_SMALL, fillColor: '#000000', textColor: '#FFFFFF', align: 'center', vAlign: 'middle',
-      });
+      this.drawRect(cx, this.cursorY, colWidths[c], headerRowH, '#000000', '#000000', BORDER_W);
+
+      const headerText = headers[c];
+      const match = headerText.match(/^(.*?)\s+(\(.*\))$/);
+      
+      if (match) {
+        const topText = match[1];
+        const bottomText = match[2];
+        const topY = this.cursorY + CELL_PAD_Y + 1;
+        this.drawTextAt(topText, cx + CELL_PAD_X, topY, {
+          bold: true, fontSize: FONT_SIZE_SMALL, textColor: '#FFFFFF', align: 'left', maxWidth: colWidths[c] - CELL_PAD_X * 2
+        });
+        this.drawTextAt(bottomText, cx + CELL_PAD_X, topY + FONT_SIZE_SMALL * LINE_HEIGHT, {
+          bold: true, fontSize: FONT_SIZE_SMALL - 1.5, textColor: '#FFFFFF', align: 'left', maxWidth: colWidths[c] - CELL_PAD_X * 2
+        });
+      } else {
+        const textH = FONT_SIZE_SMALL * LINE_HEIGHT;
+        const topY = this.cursorY + (headerRowH - textH) / 2;
+        this.drawTextAt(headerText, cx + CELL_PAD_X, topY, {
+          bold: true, fontSize: FONT_SIZE_SMALL, textColor: '#FFFFFF', align: 'left', maxWidth: colWidths[c] - CELL_PAD_X * 2
+        });
+      }
       cx += colWidths[c];
     }
-    this.cursorY += rowH;
+    this.cursorY += headerRowH;
 
     // Data rows
     const aligns: ('left' | 'right' | 'center')[] = ['left', 'right', 'right', 'right', 'center', 'center', 'center', 'right'];
