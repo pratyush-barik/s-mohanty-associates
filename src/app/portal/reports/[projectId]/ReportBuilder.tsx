@@ -1051,8 +1051,9 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       // ── Building Valuation Table ──
       r.drawCenteredTitle('VALUATION OF BUILDING (After Depreciation)');
       r.advanceCursor(4);
+      const unit = fields.floorAreaUnit || fields.landAreaUnit || 'Sqft';
       r.drawFloorTable(
-        ['Floor', 'Area', 'Rate (Rs.)', 'Estimated (Rs.)', 'Life', 'Age', 'Dep%', 'Net Value (Rs.)'],
+        ['Floor', `Area (${unit})`, `Rate (Rs./${unit})`, 'Estimated (Rs.)', 'Life (Yr)', 'Age (Yr)', 'Dep%', 'Net Value (Rs.)'],
         floorValuations.map(f => ({
           name: f.name,
           area: formatIndianCurrency(f.area),

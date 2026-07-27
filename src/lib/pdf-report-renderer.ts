@@ -558,9 +558,9 @@ export class PDFReportRenderer {
   ): void {
     const numCols = 8;
     const colWidths = [
-      Math.round(CONTENT_W * 0.13), // Floor
-      Math.round(CONTENT_W * 0.10), // Area
-      Math.round(CONTENT_W * 0.12), // Rate
+      Math.round(CONTENT_W * 0.12), // Floor
+      Math.round(CONTENT_W * 0.12), // Area
+      Math.round(CONTENT_W * 0.15), // Rate
       Math.round(CONTENT_W * 0.15), // Estimated
       Math.round(CONTENT_W * 0.08), // Life
       Math.round(CONTENT_W * 0.08), // Age
