@@ -482,7 +482,7 @@ export class PDFReportRenderer {
     });
 
     // Col 2: Sub-labels
-    this.drawRect(col2X, this.cursorY, COL_W[1], rowH, undefined, '#000000', BORDER_W, 0.5);
+    this.drawRect(col2X, this.cursorY, COL_W[1], rowH, OPT_BG, '#000000', BORDER_W, 0.5);
     for (let i = 0; i < subLabels.length; i++) {
       const sY = this.cursorY + i * subLineH;
       this.drawTextAt(subLabels[i], col2X + CELL_PAD_X, sY + CELL_PAD_Y, { fontSize: FONT_SIZE });
