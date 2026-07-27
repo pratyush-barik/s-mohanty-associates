@@ -44,8 +44,8 @@ const FONT_SIZE_SMALL = 11;
 const FONT_SIZE_CAPTION = 10;
 const LINE_HEIGHT = 1.25; // multiplier on font size
 const BORDER_W = 0.75;
-const LBL_BG = '#FFFFFF';
-const OPT_BG = '#FFFFFF';
+const LBL_BG = '#EDF2F7'; // 50% lighter version of original #DBE6F0
+const OPT_BG = '#EEF4FA'; // 50% lighter version of original #DDE9F6
 
 export interface TextSegment {
   text: string;
