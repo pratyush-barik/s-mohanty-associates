@@ -944,11 +944,11 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       const serviceObj = SERVICES_LIST.find(s => s.id === fields.serviceType) || { title: 'Valuation' };
       const serviceName = serviceObj.title.toUpperCase();
       const subjectName = fields.subjectType ? fields.subjectType.toUpperCase() : 'RESIDENTIAL';
-      let titleText = '\u2022 STANDARD VALUATION REPORT FORMAT';
+      let titleText = 'STANDARD VALUATION REPORT FORMAT';
       if (fields.clientType === 'organisation') {
-        titleText = `\u2022 ${subjectName} ${serviceName} REPORT FOR INSTITUTION ${fields.organisationTemplate}`;
+        titleText = `${serviceName} REPORT FOR INSTITUTION ${fields.organisationTemplate}`;
       } else {
-        titleText = `\u2022 ${subjectName} ${serviceName} REPORT`;
+        titleText = `${serviceName} REPORT`;
       }
 
       r.drawTextBlock('To', { bold: true });
