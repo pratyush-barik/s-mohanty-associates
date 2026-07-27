@@ -5,12 +5,7 @@ import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
-import pdfMake from 'pdfmake/build/pdfmake';
-import pdfFonts from 'pdfmake/build/vfs_fonts';
-
-if (typeof window !== 'undefined' && pdfMake && pdfFonts) {
-  pdfMake.vfs = pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : (pdfFonts.vfs || pdfFonts);
-}
+import { PDFReportRenderer } from '@/lib/pdf-report-renderer';
 
 // ─── Types ─────────────────────────────────────────────────────────
 interface FloorRow {
@@ -917,442 +912,268 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
 
   const handleGeneratePDF = async () => {
     try {
-
-      const toBase64 = async (url: string): Promise<string> => {
-        // Try to extract from DOM image first (instant 0ms if already rendered and allowed by CORS)
-        try {
-          const domImgs = Array.from(document.querySelectorAll('img'));
-          const matchingImg = domImgs.find(img => img.src === url || img.src.includes(url) || (url.includes('object/public/SMA') && img.src.includes(url.split('object/public/SMA')[1])));
-          if (matchingImg && matchingImg.complete && matchingImg.naturalWidth > 0) {
-            const canvas = document.createElement('canvas');
-            canvas.width = matchingImg.naturalWidth;
-            canvas.height = matchingImg.naturalHeight;
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-              ctx.drawImage(matchingImg, 0, 0);
-              return canvas.toDataURL('image/png');
-            }
-          }
-        } catch (e) {
-          console.warn('DOM canvas extraction failed, falling back to network fetch:', e);
-        }
-
-        // Fallback to network fetch
+      // ── Fetch all images as Uint8Array in parallel (no base64 overhead) ──
+      const fetchBytes = async (url: string): Promise<Uint8Array> => {
         try {
           const resp = await fetch(url);
-          const blob = await resp.blob();
-          return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.readAsDataURL(blob);
-          });
-        } catch {
-          return '';
-        }
+          const buf = await resp.arrayBuffer();
+          return new Uint8Array(buf);
+        } catch { return new Uint8Array(0); }
       };
 
       const propertyImgs = Array.isArray(fields.propertyImages) ? fields.propertyImages : [];
-      
-      // Fetch all images in parallel
-      const [letterheadBase64, ...images] = await Promise.all([
-        toBase64('/templates/letterhead.png'),
-        ...propertyImgs.map(url => toBase64(url)),
-        ...(fields.sketchMapImage ? [toBase64(fields.sketchMapImage)] : []),
-        ...(fields.locationMapImage ? [toBase64(fields.locationMapImage)] : []),
+
+      const [letterheadBytes, ...imageResults] = await Promise.all([
+        fetchBytes('/templates/letterhead.png'),
+        ...propertyImgs.map(url => fetchBytes(url)),
+        ...(fields.sketchMapImage ? [fetchBytes(fields.sketchMapImage)] : []),
+        ...(fields.locationMapImage ? [fetchBytes(fields.locationMapImage)] : []),
       ]);
 
-      const imageMap: Record<string, string> = {};
-      propertyImgs.forEach((_, i) => {
-        imageMap[`propImg${i}`] = images[i];
-      });
-
+      const propImageBytes: Uint8Array[] = imageResults.slice(0, propertyImgs.length);
       let imgIdx = propertyImgs.length;
-      if (fields.sketchMapImage) {
-        imageMap['sketchMap'] = images[imgIdx++];
-      }
-      if (fields.locationMapImage) {
-        imageMap['locationMap'] = images[imgIdx++];
-      }
+      const sketchBytes = fields.sketchMapImage ? imageResults[imgIdx++] : null;
+      const locationBytes = fields.locationMapImage ? imageResults[imgIdx++] : null;
 
-      // ── pdfmake helpers ──
-      const LBL_BG = '#DBE6F0';
-      const OPT_BG = '#DDE9F6';
+      // ── Initialize the renderer ──
+      const r = new PDFReportRenderer();
+      await r.init(letterheadBytes);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      type PdfCell = any;
-
-      const sectionHeader = (title: string): PdfCell[] => [
-        { text: title, colSpan: 3, bold: true, fontSize: 14, fillColor: LBL_BG, margin: [4, 4, 4, 4] }, {}, {}
-      ];
-
-      const simpleRow = (label: string, val: string): PdfCell[] => [
-        { text: [{ text: `${label}: - ` }, { text: val || 'N/A', bold: true }], colSpan: 3, fontSize: 12, margin: [4, 2, 4, 2] }, {}, {}
-      ];
-
-      const optionRow = (label: string, opts: string[], val: string): PdfCell[] => [
-        { text: label, bold: true, fontSize: 12, fillColor: LBL_BG, margin: [4, 2, 4, 2] },
-        {
-          table: {
-            widths: ['*'],
-            body: opts.map((o) => [{ text: o, bold: o === val, fontSize: 12, fillColor: OPT_BG, margin: [4, 1, 4, 1] }])
-          },
-          layout: { hLineWidth: () => 0.5, vLineWidth: () => 0, hLineColor: () => '#000', paddingLeft: () => 0, paddingRight: () => 0, paddingTop: () => 0, paddingBottom: () => 0 },
-          margin: [0, 0, 0, 0],
-        },
-        { text: val || 'N/A', bold: true, fontSize: 12, alignment: 'center' as const, fillColor: OPT_BG, margin: [4, 2, 4, 2] }
-      ];
-
-      const ageOptionRowFn = (label: string, opts: string[], selectedOpt: string, actualVal: string): PdfCell[] => [
-        { text: label, bold: true, fontSize: 12, fillColor: LBL_BG, margin: [4, 2, 4, 2] },
-        {
-          table: {
-            widths: ['*'],
-            body: opts.map((o) => [{ text: o, bold: o === selectedOpt, fontSize: 12, fillColor: OPT_BG, margin: [4, 1, 4, 1] }])
-          },
-          layout: { hLineWidth: () => 0.5, vLineWidth: () => 0, hLineColor: () => '#000', paddingLeft: () => 0, paddingRight: () => 0, paddingTop: () => 0, paddingBottom: () => 0 },
-          margin: [0, 0, 0, 0],
-        },
-        { text: actualVal || 'N/A', bold: true, fontSize: 12, alignment: 'center' as const, fillColor: OPT_BG, margin: [4, 2, 4, 2] }
-      ];
-
-      const proximityRow = (label: string, labels: string[], values: string[]): PdfCell[] => [
-        { text: label, bold: true, fontSize: 12, fillColor: LBL_BG, margin: [4, 2, 4, 2] },
-        {
-          table: { widths: ['*'], body: labels.map((l) => [{ text: l, fontSize: 12, margin: [4, 1, 4, 1] }]) },
-          layout: { hLineWidth: () => 0.5, vLineWidth: () => 0, hLineColor: () => '#000', paddingLeft: () => 0, paddingRight: () => 0, paddingTop: () => 0, paddingBottom: () => 0 },
-        },
-        {
-          table: { widths: ['*'], body: values.map((v) => [{ text: v, fontSize: 12, fillColor: OPT_BG, margin: [4, 1, 4, 1] }]) },
-          layout: { hLineWidth: () => 0.5, vLineWidth: () => 0, hLineColor: () => '#000', paddingLeft: () => 0, paddingRight: () => 0, paddingTop: () => 0, paddingBottom: () => 0 },
-        }
-      ];
-
-      const makeTable = (rows: PdfCell[][]) => ({
-        table: {
-          headerRows: 0,
-          widths: ['28%', '35%', '37%'],
-          body: rows,
-        },
-        layout: {
-          hLineWidth: () => 1, vLineWidth: () => 1,
-          hLineColor: () => '#000', vLineColor: () => '#000',
-          paddingLeft: () => 0, paddingRight: () => 0, paddingTop: () => 0, paddingBottom: () => 0,
-        },
-        margin: [0, 0, 0, 8] as [number, number, number, number],
-      });
-
-      // ── Build content ──
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const content: any[] = [];
-
-      // Title block
+      // ── Title block ──
       const serviceObj = SERVICES_LIST.find(s => s.id === fields.serviceType) || { title: 'Valuation' };
       const serviceName = serviceObj.title.toUpperCase();
       const subjectName = fields.subjectType ? fields.subjectType.toUpperCase() : 'RESIDENTIAL';
-      let titleText = '• STANDARD VALUATION REPORT FORMAT';
+      let titleText = '\u2022 STANDARD VALUATION REPORT FORMAT';
       if (fields.clientType === 'organisation') {
-        titleText = `• ${subjectName} ${serviceName} REPORT FOR INSTITUTION ${fields.organisationTemplate}`;
+        titleText = `\u2022 ${subjectName} ${serviceName} REPORT FOR INSTITUTION ${fields.organisationTemplate}`;
       } else {
-        titleText = `• ${subjectName} ${serviceName} REPORT`;
+        titleText = `\u2022 ${subjectName} ${serviceName} REPORT`;
       }
 
-      content.push(
-        { text: 'To', bold: true, fontSize: 12, margin: [0, 0, 0, 0] },
-        { text: fields.to || '________', bold: true, fontSize: 12, margin: [0, 0, 0, 0] },
-        { text: [{ text: 'Date of valuation report: -' }, { text: fields.dateOfValuation || '________', bold: true }], fontSize: 12, margin: [0, 0, 0, 0] },
-        { text: [{ text: 'Ref: -' }, { text: fields.refNo || '________', bold: true }], fontSize: 12, margin: [0, 0, 0, 8] },
-        { text: titleText, bold: true, fontSize: 14, alignment: 'center' as const, margin: [0, 4, 0, 10] }
+      r.drawTextBlock('To', { bold: true });
+      r.drawTextBlock(fields.to || '________', { bold: true });
+      r.drawRichTextBlock([{ text: 'Date of valuation report: -' }, { text: fields.dateOfValuation || '________', bold: true }]);
+      r.drawRichTextBlock([{ text: 'Ref: -' }, { text: fields.refNo || '________', bold: true }]);
+      r.advanceCursor(6);
+      r.drawCenteredTitle(titleText);
+      r.advanceCursor(8);
+
+      // ── General Details ──
+      r.drawSectionHeader('GENERAL DETAILS');
+      r.drawOptionRow('Type of property', ['Residential', 'Commercial', 'Residential cum Commercial', 'Industrial', 'Vacant Plot'], fields.propertyType);
+      r.drawSimpleRow('Name of the Customer(s)', `"${fields.ownerName || 'N/A'}"`);
+      r.drawSimpleRow('Property Address', getFullAddress());
+      r.drawSimpleRow('Landmark', fields.landmark || '');
+      r.drawSimpleRow('Loan Application number', fields.loanApplicationNo);
+      r.drawSimpleRow('Name of Document holder', fields.documentHolderName || fields.ownerName);
+      r.drawSimpleRow('Date of Inspection', fields.dateOfInspection);
+      r.drawSimpleRow('Date of Valuation Report', fields.dateOfValuation);
+      r.drawSimpleRow('Purpose', fields.purpose);
+      r.advanceCursor(8);
+
+      // ── Surrounding Locality Details ──
+      r.drawSectionHeader('SURROUNDING LOCALITY DETAILS');
+      r.drawSimpleRow('Ward No / Municipal Land No', fields.wardNo);
+      r.drawOptionRow('Vicinity', ['Slum', 'Residential', 'Commercial', 'Mixed', 'Industrial'], fields.vicinity);
+      r.drawOptionRow('Locality Type', ['Elite/Posh/High Class', 'Upper Middle Class', 'Middle Class', 'Lower Middle Class'], fields.classOfLocality);
+      r.drawOptionRow('Approach Road Width', ['>=60 Feet Road', '60-40 Feet Road', '40-20 Feet Road', '<20 Feet Road'], fields.approachRoadWidth);
+      r.drawOptionRow('Plot Demarcated at Site', ['Yes', 'No'], fields.plotDemarcated);
+      r.drawProximityRow('Proximity to Civic Amenities',
+        ['Nearest Railway Station', 'Nearest Bus Stop', 'Nearest Hospital'],
+        [`1. ${fields.landmarkRailway || fields.distanceRailwayStation || 'N/A'}`, `2. ${fields.landmarkBusStop || fields.distanceBusStop || 'N/A'}`, `3. ${fields.landmarkHospital || fields.distanceHospital || 'N/A'}`]
       );
+      r.drawOptionRow('Property Identification', ['Easy to Identify', 'Identification by documents', 'Additional documents required', 'Difficult to identify'], fields.propertyIdentification);
+      r.drawOptionRow('Proximity to Facilities', ['<1 Km', '1-3 Kms', '3-5 Kms', '>5 Kms'], fields.proximityToFacilities);
+      r.drawProximityRow('Landmark Details',
+        ['Nearest Railway Station', 'Nearest Bus Stop', 'Nearest Hospital', 'Nearest Landmark'],
+        [`1. ${fields.landmarkRailway || 'N/A'}`, `2. ${fields.landmarkBusStop || 'N/A'}`, `3. ${fields.landmarkHospital || 'N/A'}`, `4. ${fields.landmarkNearest || fields.landmark || 'N/A'}`]
+      );
+      r.advanceCursor(8);
 
-      // General Details
-      content.push(makeTable([
-        sectionHeader('GENERAL DETAILS'),
-        optionRow('Type of property', ['Residential', 'Commercial', 'Residential cum Commercial', 'Industrial', 'Vacant Plot'], fields.propertyType),
-        simpleRow('Name of the Customer(s)', `"${fields.ownerName || 'N/A'}"`),
-        simpleRow('Property Address', getFullAddress()),
-        simpleRow('Landmark', fields.landmark || ''),
-        simpleRow('Loan Application number', fields.loanApplicationNo),
-        simpleRow('Name of Document holder', fields.documentHolderName || fields.ownerName),
-        simpleRow('Date of Inspection', fields.dateOfInspection),
-        simpleRow('Date of Valuation Report', fields.dateOfValuation),
-        simpleRow('Purpose', fields.purpose),
-      ]));
+      // ── Property Details ──
+      r.drawSectionHeader('PROPERTY DETAILS');
+      r.drawSimpleRow('Type of Usage of Entire Property', fields.usageType);
+      r.drawSimpleRow('Additional Amenities', fields.additionalAmenities || 'N/A');
+      r.drawOptionRow('Legal Status of Property', ['Freehold', 'Lease hold >30 yrs.', 'Lease hold 15-30 yrs.', 'Lease hold <15 yrs.'], fields.legalStatus);
+      r.advanceCursor(8);
 
-      // Surrounding Locality Details
-      content.push(makeTable([
-        sectionHeader('SURROUNDING LOCALITY DETAILS'),
-        simpleRow('Ward No / Municipal Land No', fields.wardNo),
-        optionRow('Vicinity', ['Slum', 'Residential', 'Commercial', 'Mixed', 'Industrial'], fields.vicinity),
-        optionRow('Locality Type', ['Elite/Posh/High Class', 'Upper Middle Class', 'Middle Class', 'Lower Middle Class'], fields.classOfLocality),
-        optionRow('Approach Road Width', ['>=60 Feet Road', '60-40 Feet Road', '40-20 Feet Road', '<20 Feet Road'], fields.approachRoadWidth),
-        optionRow('Plot Demarcated at Site', ['Yes', 'No'], fields.plotDemarcated),
-        proximityRow('Proximity to Civic Amenities',
-          ['Nearest Railway Station', 'Nearest Bus Stop', 'Nearest Hospital'],
-          [`1. ${fields.landmarkRailway || fields.distanceRailwayStation || 'N/A'}`, `2. ${fields.landmarkBusStop || fields.distanceBusStop || 'N/A'}`, `3. ${fields.landmarkHospital || fields.distanceHospital || 'N/A'}`]
-        ),
-        optionRow('Property Identification', ['Easy to Identify', 'Identification by documents', 'Additional documents required', 'Difficult to identify'], fields.propertyIdentification),
-        optionRow('Proximity to Facilities', ['<1 Km', '1-3 Kms', '3-5 Kms', '>5 Kms'], fields.proximityToFacilities),
-        proximityRow('Landmark Details',
-          ['Nearest Railway Station', 'Nearest Bus Stop', 'Nearest Hospital', 'Nearest Landmark'],
-          [`1. ${fields.landmarkRailway || 'N/A'}`, `2. ${fields.landmarkBusStop || 'N/A'}`, `3. ${fields.landmarkHospital || 'N/A'}`, `4. ${fields.landmarkNearest || fields.landmark || 'N/A'}`]
-        ),
-      ]));
+      // ── Subject Property Details ──
+      r.drawSectionHeader('SUBJECT PROPERTY DETAILS');
+      r.drawSimpleRow('Type of Premises', fields.premisesType);
+      r.drawSimpleRow('Occupied by / Vacant', fields.occupiedBy);
+      r.drawSimpleRow('Is Property Rented', fields.isPropertyRented);
+      r.drawSimpleRow('If Rented, List of Occupants', fields.rentedOccupants);
+      r.drawOptionRow('Property Taxation / Maintenance', ['Low', 'Average', 'High', 'Very High'], fields.propertyTaxation);
+      r.drawSimpleRow('Boundary (As per Sketch Map)', `N: ${fields.boundaryNorth || '-'}  |  E: ${fields.boundaryEast || '-'}  |  S: ${fields.boundarySouth || '-'}  |  W: ${fields.boundaryWest || '-'}`);
+      r.drawSimpleRow('Boundary (At Site)', `N: ${fields.buildingBoundaryNorth || '-'}  |  E: ${fields.buildingBoundaryEast || '-'}  |  S: ${fields.buildingBoundarySouth || '-'}  |  W: ${fields.buildingBoundaryWest || '-'}`);
+      r.advanceCursor(8);
 
-      // Property Details
-      content.push(makeTable([
-        sectionHeader('PROPERTY DETAILS'),
-        simpleRow('Type of Usage of Entire Property', fields.usageType),
-        simpleRow('Additional Amenities', fields.additionalAmenities || 'N/A'),
-        optionRow('Legal Status of Property', ['Freehold', 'Lease hold >30 yrs.', 'Lease hold 15-30 yrs.', 'Lease hold <15 yrs.'], fields.legalStatus),
-      ]));
+      // ── Structural Details ──
+      r.drawSectionHeader('STRUCTURAL DETAILS');
+      r.drawOptionRow('Type of Structure', ['RCC', 'Load Bearing', 'Steel Structure', 'Composite Structure', 'Industrial Shed', 'A/C Sheet', 'G/I Sheet', 'Asbestos Roofing'], fields.structureType);
+      r.drawSimpleRow('No. of Floors', fields.numberOfFloors);
+      r.drawSimpleRow('No. of Wings', fields.numberOfWings);
+      r.drawSimpleRow('No. of Units on Each Floor', fields.unitsPerFloor);
+      r.drawSimpleRow('Internal Composition', fields.internalComposition);
+      r.drawSimpleRow('No. of Lifts', fields.numberOfLifts);
+      r.drawAgeOptionRow('Age of Property', ['1-10 years', '11-25 years', '26-50 years', '>50 years'], fields.ageOfProperty, fields.ageOfPropertyActual);
+      r.drawSimpleRow('Estimated Future Life', fields.estimatedFutureLife);
+      r.drawSimpleRow('Exteriors', fields.exteriors);
+      r.drawOptionRow('Quality of Construction', ['Very Good', 'Good', 'Average', 'Poor'], fields.qualityOfConstruction);
+      r.drawSimpleRow('Common Areas Remarks', fields.commonAreasRemarks);
+      r.drawSimpleRow('Other Observations', fields.otherObservations);
+      r.drawSimpleRow('Flooring & Finishing', fields.flooringType);
+      r.drawSimpleRow('Roofing & Terracing', fields.roofType);
+      r.drawSimpleRow('Quality of Fixtures', fields.qualityOfFixtures);
+      r.advanceCursor(8);
 
-      // Subject Property Details
-      content.push(makeTable([
-        sectionHeader('SUBJECT PROPERTY DETAILS'),
-        simpleRow('Type of Premises', fields.premisesType),
-        simpleRow('Occupied by / Vacant', fields.occupiedBy),
-        simpleRow('Is Property Rented', fields.isPropertyRented),
-        simpleRow('If Rented, List of Occupants', fields.rentedOccupants),
-        optionRow('Property Taxation / Maintenance', ['Low', 'Average', 'High', 'Very High'], fields.propertyTaxation),
-        simpleRow('Boundary (As per Sketch Map)', `N: ${fields.boundaryNorth || '-'}  |  E: ${fields.boundaryEast || '-'}  |  S: ${fields.boundarySouth || '-'}  |  W: ${fields.boundaryWest || '-'}`),
-        simpleRow('Boundary (At Site)', `N: ${fields.buildingBoundaryNorth || '-'}  |  E: ${fields.buildingBoundaryEast || '-'}  |  S: ${fields.buildingBoundarySouth || '-'}  |  W: ${fields.buildingBoundaryWest || '-'}`),
-      ]));
+      // ── Plan Approvals ──
+      r.drawSectionHeader('PLAN APPROVALS');
+      r.drawOptionRow('Construction as per Approved Plans', ['Yes', 'No'], fields.constructionApproved);
+      r.drawSimpleRow('Details of Approved Plan', fields.approvalDetails);
+      r.drawSimpleRow('Construction Permission No. & Date', fields.constructionPermission || 'Not mentioned');
+      r.drawSimpleRow('Violations / Risk of Demolition', fields.violationsObserved);
+      r.drawSimpleRow('Conforms to Local Byelaws', fields.conformsToByelaws);
+      r.drawSimpleRow('Other Documents Verified', fields.documentsVerified);
+      r.advanceCursor(8);
 
-      // Structural Details
-      content.push(makeTable([
-        sectionHeader('STRUCTURAL DETAILS'),
-        optionRow('Type of Structure', ['RCC', 'Load Bearing', 'Steel Structure', 'Composite Structure', 'Industrial Shed', 'A/C Sheet', 'G/I Sheet', 'Asbestos Roofing'], fields.structureType),
-        simpleRow('No. of Floors', fields.numberOfFloors),
-        simpleRow('No. of Wings', fields.numberOfWings),
-        simpleRow('No. of Units on Each Floor', fields.unitsPerFloor),
-        simpleRow('Internal Composition', fields.internalComposition),
-        simpleRow('No. of Lifts', fields.numberOfLifts),
-        ageOptionRowFn('Age of Property', ['1-10 years', '11-25 years', '26-50 years', '>50 years'], fields.ageOfProperty, fields.ageOfPropertyActual),
-        simpleRow('Estimated Future Life', fields.estimatedFutureLife),
-        simpleRow('Exteriors', fields.exteriors),
-        optionRow('Quality of Construction', ['Very Good', 'Good', 'Average', 'Poor'], fields.qualityOfConstruction),
-        simpleRow('Common Areas Remarks', fields.commonAreasRemarks),
-        simpleRow('Other Observations', fields.otherObservations),
-        simpleRow('Flooring & Finishing', fields.flooringType),
-        simpleRow('Roofing & Terracing', fields.roofType),
-        simpleRow('Quality of Fixtures', fields.qualityOfFixtures),
-      ]));
+      // ── Land Valuation ──
+      r.drawSectionHeader('VALUATION \u2014 Land');
+      r.drawSimpleRow('Land Area', `${fields.landArea || '0'} ${fields.landAreaUnit}`);
+      r.drawSimpleRow('Current Govt. Approved Rates for Land', `Rs.${fields.govtLandRate || fields.guidelineValue || 'N/A'}/- Per ${fields.landAreaUnit}`);
+      r.drawSimpleRow('Recommended Rate & Basis', `Rs.${fields.landRatePerUnit || 'N/A'}/- Per ${fields.landAreaUnit} ${fields.recommendedRateBasis ? '(' + fields.recommendedRateBasis + ')' : ''}`);
+      r.drawSimpleRow('Land Value', `${fields.landArea || '0'} ${fields.landAreaUnit} \u00D7 Rs.${fields.landRatePerUnit || '0'}/- = Rs.${formatIndianCurrency(landValue)}/-`);
+      r.drawSimpleRow('Actual BUA of Premises', `${formatIndianCurrency(totalPlinthArea)} ${fields.floorAreaUnit || 'Sqft'}`);
+      if (fields.buaAsPerApprovals) r.drawSimpleRow('BUA as per Approvals', fields.buaAsPerApprovals);
+      r.advanceCursor(8);
 
-      // Plan Approvals
-      content.push(makeTable([
-        sectionHeader('PLAN APPROVALS'),
-        optionRow('Construction as per Approved Plans', ['Yes', 'No'], fields.constructionApproved),
-        simpleRow('Details of Approved Plan', fields.approvalDetails),
-        simpleRow('Construction Permission No. & Date', fields.constructionPermission || 'Not mentioned'),
-        simpleRow('Violations / Risk of Demolition', fields.violationsObserved),
-        simpleRow('Conforms to Local Byelaws', fields.conformsToByelaws),
-        simpleRow('Other Documents Verified', fields.documentsVerified),
-      ]));
+      // ── Building Valuation Table ──
+      r.drawCenteredTitle('VALUATION OF BUILDING (After Depreciation)');
+      r.advanceCursor(4);
+      r.drawFloorTable(
+        ['Floor', 'Area', 'Rate (\u20B9)', 'Estimated (\u20B9)', 'Life', 'Age', 'Dep%', 'Net Value (\u20B9)'],
+        floorValuations.map(f => ({
+          name: f.name,
+          area: formatIndianCurrency(f.area),
+          rate: `\u20B9${formatIndianCurrency(f.rate)}`,
+          estimated: `\u20B9${formatIndianCurrency(f.estimated)}`,
+          life: String(f.lifeYears),
+          age: String(f.ageYears),
+          dep: `${f.depPct}%`,
+          netValue: `\u20B9${formatIndianCurrency(f.netValue)}`,
+        })),
+        'Total Building Value',
+        `\u20B9${formatIndianCurrency(totalBuildingValue)}`,
+      );
+      r.advanceCursor(8);
 
-      // Land Valuation
-      content.push(makeTable([
-        sectionHeader('VALUATION \u2014 Land'),
-        simpleRow('Land Area', `${fields.landArea || '0'} ${fields.landAreaUnit}`),
-        simpleRow('Current Govt. Approved Rates for Land', `Rs.${fields.govtLandRate || fields.guidelineValue || 'N/A'}/- Per ${fields.landAreaUnit}`),
-        simpleRow('Recommended Rate & Basis', `Rs.${fields.landRatePerUnit || 'N/A'}/- Per ${fields.landAreaUnit} ${fields.recommendedRateBasis ? '(' + fields.recommendedRateBasis + ')' : ''}`),
-        simpleRow('Land Value', `${fields.landArea || '0'} ${fields.landAreaUnit} \u00D7 Rs.${fields.landRatePerUnit || '0'}/- = Rs.${formatIndianCurrency(landValue)}/-`),
-        simpleRow('Actual BUA of Premises', `${formatIndianCurrency(totalPlinthArea)} ${fields.floorAreaUnit || 'Sqft'}`),
-        ...(fields.buaAsPerApprovals ? [simpleRow('BUA as per Approvals', fields.buaAsPerApprovals)] : []),
-      ]));
+      // ── Abstract of Valuation ──
+      r.drawSectionHeader('ABSTRACT OF VALUATION');
+      r.drawSimpleRow('Market Value (Land + Building)', `Rs.${formatIndianCurrency(totalPropertyValue)}/- (${rupeesInWords(totalPropertyValue)})`);
+      r.drawSimpleRow(`Realizable Value (${fields.realizablePct || '90'}%)`, `Rs.${formatIndianCurrency(realizableValue)}/-`);
+      r.drawSimpleRow(`Forced Sale / Distress Value (${fields.distressPct || '80'}%)`, `Rs.${formatIndianCurrency(distressValue)}/- (${rupeesInWords(distressValue)})`);
+      r.drawOptionRow('Marketability', ['Excellent', 'Very Good', 'Good', 'Difficult'], fields.marketability);
+      r.drawOptionRow('Valuation Result', ['Positive', 'Negative'], fields.valuationResult);
+      r.drawSimpleRow('Replacement Cost / Insurance Value', fields.replacementCost ? `Rs.${formatIndianCurrency(fields.replacementCost)}/-` : 'N/A');
+      r.drawSimpleRow('Deviations in Property', fields.deviations);
+      if (fields.guidelineValue) r.drawSimpleRow('Govt./Guideline Value', `Rs.${formatIndianCurrency(fields.guidelineValue)}/-`);
+      r.advanceCursor(8);
 
-      // Building Valuation Table (8 columns)
-      const floorHeaders = ['Floor', 'Area', 'Rate (\u20B9)', 'Estimated (\u20B9)', 'Life', 'Age', 'Dep%', 'Net Value (\u20B9)'];
-      const floorBody = floorValuations.map((f, idx) => [
-        { text: f.name, fontSize: 11, margin: [2, 2, 2, 2], fillColor: idx % 2 === 0 ? '#FFF' : '#F5F5F5' },
-        { text: formatIndianCurrency(f.area), fontSize: 11, alignment: 'right' as const, margin: [2, 2, 2, 2], fillColor: idx % 2 === 0 ? '#FFF' : '#F5F5F5' },
-        { text: `\u20B9${formatIndianCurrency(f.rate)}`, fontSize: 11, alignment: 'right' as const, margin: [2, 2, 2, 2], fillColor: idx % 2 === 0 ? '#FFF' : '#F5F5F5' },
-        { text: `\u20B9${formatIndianCurrency(f.estimated)}`, fontSize: 11, alignment: 'right' as const, margin: [2, 2, 2, 2], fillColor: idx % 2 === 0 ? '#FFF' : '#F5F5F5' },
-        { text: String(f.lifeYears), fontSize: 11, alignment: 'center' as const, margin: [2, 2, 2, 2], fillColor: idx % 2 === 0 ? '#FFF' : '#F5F5F5' },
-        { text: String(f.ageYears), fontSize: 11, alignment: 'center' as const, margin: [2, 2, 2, 2], fillColor: idx % 2 === 0 ? '#FFF' : '#F5F5F5' },
-        { text: `${f.depPct}%`, fontSize: 11, alignment: 'center' as const, margin: [2, 2, 2, 2], fillColor: idx % 2 === 0 ? '#FFF' : '#F5F5F5' },
-        { text: `\u20B9${formatIndianCurrency(f.netValue)}`, fontSize: 11, alignment: 'right' as const, margin: [2, 2, 2, 2], fillColor: idx % 2 === 0 ? '#FFF' : '#F5F5F5' },
+      // ── Remarks ──
+      r.drawSectionHeader('REMARKS, DEMARCATION & POSSESSION');
+      r.drawSimpleRow('Demarcation', fields.demarcation);
+      r.drawSimpleRow('Possession', fields.possession);
+      r.drawSimpleRow('Remarks / Observations', fields.remarks);
+      r.advanceCursor(8);
+
+      // ── Declaration ──
+      r.drawTextBlock('Declaration:', { bold: true, fontSize: 14 });
+      r.advanceCursor(2);
+      r.drawTextBlock('I hereby declare that:');
+      r.advanceCursor(2);
+      r.drawTextBlock(`\u2022 I have deputed my representative ${fields.representativeName ? 'Mr. ' + fields.representativeName : '______'} to inspect the property on ${fields.dateOfInspection || '______'}.`);
+      r.drawTextBlock('\u2022 I have no direct or indirect interest in the property valued.');
+      r.drawTextBlock('\u2022 The information furnished is true and correct to the best of my knowledge and belief.');
+      r.advanceCursor(10);
+
+      // ── Valuation Certificate ──
+      r.drawCenteredTitle('VALUATION CERTIFICATE');
+      r.advanceCursor(6);
+      r.drawCertificateBox([
+        {
+          segments: [
+            { text: 'This is to certify that the undersigned has personally inspected the property belonging to ' },
+            { text: fields.ownerName, bold: true },
+            { text: ' situated at ' },
+            { text: getFullAddress(), bold: true },
+            { text: ' on ' },
+            { text: fields.dateOfInspection, bold: true },
+            { text: ' and after careful examination and consideration of all relevant factors, the Fair Market Value of the said property is assessed as under:' },
+          ],
+        },
+        { segments: [{ text: `Fair Market Value: \u20B9 ${formatIndianCurrency(totalPropertyValue)} (${rupeesInWords(totalPropertyValue)})`, bold: true }] },
+        { segments: [{ text: `Realizable Value (${fields.realizablePct || '90'}%): \u20B9 ${formatIndianCurrency(realizableValue)} (${rupeesInWords(realizableValue)})`, bold: true }] },
+        { segments: [{ text: `Distress Sale Value (${fields.distressPct || '80'}%): \u20B9 ${formatIndianCurrency(distressValue)} (${rupeesInWords(distressValue)})`, bold: true }] },
       ]);
 
-      content.push(
-        { text: 'VALUATION OF BUILDING (After Depreciation)', bold: true, fontSize: 14, alignment: 'center' as const, margin: [0, 8, 0, 6] },
-        {
-          table: {
-            headerRows: 1,
-            widths: ['auto', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto', '*'],
-            body: [
-              floorHeaders.map(h => ({ text: h, bold: true, color: '#FFF', fillColor: '#000', fontSize: 11, alignment: 'center' as const, margin: [2, 3, 2, 3] })),
-              ...floorBody,
-              [
-                { text: 'Total Building Value', bold: true, colSpan: 7, fontSize: 11, margin: [2, 3, 2, 3] }, {}, {}, {}, {}, {}, {},
-                { text: `\u20B9${formatIndianCurrency(totalBuildingValue)}`, bold: true, fontSize: 11, alignment: 'right' as const, margin: [2, 3, 2, 3] },
-              ],
-            ],
-          },
-          layout: { hLineWidth: () => 1, vLineWidth: () => 1, hLineColor: () => '#000', vLineColor: () => '#000' },
-          margin: [0, 0, 0, 8] as [number, number, number, number],
-        }
-      );
+      // ── Signature ──
+      r.drawSignatureBlock([
+        { text: '_______________________________' },
+        { text: 'Satyajit Mohanty', bold: true, fontSize: 14 },
+        { text: 'B.Sc.(Engg.), M.Tech (IIT Kharagpur)', italic: true },
+        { text: 'Registered Valuer \u2014 IBBI/RV/02/2019/10594', italic: true },
+        { text: 'S. Mohanty & Associates, Bhubaneswar', italic: true },
+      ]);
 
-      // Abstract of Valuation
-      content.push(makeTable([
-        sectionHeader('ABSTRACT OF VALUATION'),
-        simpleRow('Market Value (Land + Building)', `Rs.${formatIndianCurrency(totalPropertyValue)}/- (${rupeesInWords(totalPropertyValue)})`),
-        simpleRow(`Realizable Value (${fields.realizablePct || '90'}%)`, `Rs.${formatIndianCurrency(realizableValue)}/-`),
-        simpleRow(`Forced Sale / Distress Value (${fields.distressPct || '80'}%)`, `Rs.${formatIndianCurrency(distressValue)}/- (${rupeesInWords(distressValue)})`),
-        optionRow('Marketability', ['Excellent', 'Very Good', 'Good', 'Difficult'], fields.marketability),
-        optionRow('Valuation Result', ['Positive', 'Negative'], fields.valuationResult),
-        simpleRow('Replacement Cost / Insurance Value', fields.replacementCost ? `Rs.${formatIndianCurrency(fields.replacementCost)}/-` : 'N/A'),
-        simpleRow('Deviations in Property', fields.deviations),
-        ...(fields.guidelineValue ? [simpleRow('Govt./Guideline Value', `Rs.${formatIndianCurrency(fields.guidelineValue)}/-`)] : []),
-      ]));
+      // ── Property Photographs ──
+      if (propImageBytes.length > 0) {
+        r.newPage();
+        r.drawCenteredTitle('PROPERTY PHOTOGRAPHS');
+        r.advanceCursor(8);
 
-      // Remarks
-      content.push(makeTable([
-        sectionHeader('REMARKS, DEMARCATION & POSSESSION'),
-        simpleRow('Demarcation', fields.demarcation),
-        simpleRow('Possession', fields.possession),
-        simpleRow('Remarks / Observations', fields.remarks),
-      ]));
-
-      // Declaration
-      content.push({
-        stack: [
-          { text: 'Declaration:', bold: true, fontSize: 14, margin: [0, 10, 0, 4] },
-          { text: 'I hereby declare that:', fontSize: 12, margin: [0, 0, 0, 3] },
-          { text: `\u2022 I have deputed my representative ${fields.representativeName ? 'Mr. ' + fields.representativeName : '______'} to inspect the property on ${fields.dateOfInspection || '______'}.`, fontSize: 12, margin: [0, 0, 0, 3] },
-          { text: '\u2022 I have no direct or indirect interest in the property valued.', fontSize: 12, margin: [0, 0, 0, 3] },
-          { text: '\u2022 The information furnished is true and correct to the best of my knowledge and belief.', fontSize: 12, margin: [0, 0, 0, 3] },
-        ],
-      });
-
-      // Valuation Certificate
-      content.push(
-        { text: 'VALUATION CERTIFICATE', bold: true, fontSize: 14, alignment: 'center' as const, margin: [0, 14, 0, 8] },
-        {
-          table: {
-            widths: ['*'],
-            body: [[{
-              stack: [
-                { text: [
-                  { text: 'This is to certify that the undersigned has personally inspected the property belonging to ' },
-                  { text: fields.ownerName, bold: true },
-                  { text: ' situated at ' },
-                  { text: getFullAddress(), bold: true },
-                  { text: ' on ' },
-                  { text: fields.dateOfInspection, bold: true },
-                  { text: ' and after careful examination and consideration of all relevant factors, the Fair Market Value of the said property is assessed as under:' },
-                ], fontSize: 12, margin: [0, 0, 0, 6] },
-                { text: `Fair Market Value: \u20B9 ${formatIndianCurrency(totalPropertyValue)} (${rupeesInWords(totalPropertyValue)})`, bold: true, fontSize: 12, margin: [0, 4, 0, 2] },
-                { text: `Realizable Value (${fields.realizablePct || '90'}%): \u20B9 ${formatIndianCurrency(realizableValue)} (${rupeesInWords(realizableValue)})`, bold: true, fontSize: 12, margin: [0, 2, 0, 2] },
-                { text: `Distress Sale Value (${fields.distressPct || '80'}%): \u20B9 ${formatIndianCurrency(distressValue)} (${rupeesInWords(distressValue)})`, bold: true, fontSize: 12, margin: [0, 2, 0, 0] },
-              ],
-              margin: [8, 8, 8, 8],
-            }]],
-          },
-          layout: { hLineWidth: () => 1.5, vLineWidth: () => 1.5, hLineColor: () => '#000', vLineColor: () => '#000' },
-          margin: [0, 0, 0, 0] as [number, number, number, number],
-        },
-        {
-          stack: [
-            { text: '_______________________________', alignment: 'right' as const, margin: [0, 28, 0, 0] },
-            { text: 'Satyajit Mohanty', bold: true, fontSize: 14, alignment: 'right' as const, margin: [0, 3, 0, 0] },
-            { text: 'B.Sc.(Engg.), M.Tech (IIT Kharagpur)', italics: true, fontSize: 12, alignment: 'right' as const, margin: [0, 2, 0, 0] },
-            { text: 'Registered Valuer \u2014 IBBI/RV/02/2019/10594', italics: true, fontSize: 12, alignment: 'right' as const, margin: [0, 2, 0, 0] },
-            { text: 'S. Mohanty & Associates, Bhubaneswar', italics: true, fontSize: 12, alignment: 'right' as const, margin: [0, 2, 0, 0] },
-          ],
-        }
-      );
-
-      // Property Photographs
-      if (propertyImgs.length > 0) {
-        content.push({ text: 'PROPERTY PHOTOGRAPHS', bold: true, fontSize: 14, alignment: 'center' as const, margin: [0, 10, 0, 10], pageBreak: 'before' as const });
-
-        for (let i = 0; i < propertyImgs.length; i += 2) {
+        for (let i = 0; i < propImageBytes.length; i += 2) {
           const name1 = fields.propertyImageNames?.[i] || '';
           const caption1 = name1 ? `Figure ${i + 1}: ${name1}` : `Figure ${i + 1}`;
-          const img2Exists = i + 1 < propertyImgs.length;
+          const img2 = i + 1 < propImageBytes.length ? propImageBytes[i + 1] : null;
           const name2 = fields.propertyImageNames?.[i + 1] || '';
           const caption2 = name2 ? `Figure ${i + 2}: ${name2}` : `Figure ${i + 2}`;
 
-          const row: PdfCell[] = [];
-          if (imageMap[`propImg${i}`]) {
-            row.push({
-              stack: [
-                { image: imageMap[`propImg${i}`], width: 230, height: 170, margin: [0, 0, 0, 4] },
-                { text: caption1, italics: true, fontSize: 10, alignment: 'center' as const },
-              ],
-              alignment: 'center' as const,
-              margin: [4, 4, 4, 8],
-            });
-          }
-          if (img2Exists && imageMap[`propImg${i + 1}`]) {
-            row.push({
-              stack: [
-                { image: imageMap[`propImg${i + 1}`], width: 230, height: 170, margin: [0, 0, 0, 4] },
-                { text: caption2, italics: true, fontSize: 10, alignment: 'center' as const },
-              ],
-              alignment: 'center' as const,
-              margin: [4, 4, 4, 8],
-            });
-          }
-
-          if (row.length > 0) {
-            content.push({
-              columns: row.length === 2 ? row : [...row, { text: '', width: '*' }],
-              columnGap: 8,
-            });
-          }
+          await r.drawImagePair(propImageBytes[i], caption1, img2, caption2);
+          r.advanceCursor(4);
         }
       }
 
-      // Sketch Map
-      if (fields.sketchMapImage && imageMap['sketchMap']) {
+      // ── Sketch Map ──
+      if (sketchBytes && sketchBytes.length > 0) {
+        r.newPage();
+        r.drawCenteredTitle('SKETCH MAP');
+        r.advanceCursor(8);
         const sketchFigNum = propertyImgs.length + 1;
-        content.push(
-          { text: 'SKETCH MAP', bold: true, fontSize: 14, alignment: 'center' as const, margin: [0, 10, 0, 10], pageBreak: 'before' as const },
-          { image: imageMap['sketchMap'], width: 450, alignment: 'center' as const, margin: [0, 0, 0, 6] },
-          { text: `Figure ${sketchFigNum}: Revenue Sketch Map`, italics: true, fontSize: 12, alignment: 'center' as const, margin: [0, 0, 0, 4] },
-          { text: `Source: Site Visit dated ${fields.dateOfInspection || 'N/A'}`, italics: true, fontSize: 12, alignment: 'center' as const },
-        );
-      }
-
-      // Location Map
-      if (fields.locationMapImage && imageMap['locationMap']) {
-        const locFigNum = propertyImgs.length + (fields.sketchMapImage ? 1 : 0) + 1;
-        content.push(
-          { text: 'LOCATION MAP', bold: true, fontSize: 14, alignment: 'center' as const, margin: [0, 10, 0, 10], pageBreak: 'before' as const },
-          { image: imageMap['locationMap'], width: 450, alignment: 'center' as const, margin: [0, 0, 0, 6] },
-          { text: `Figure ${locFigNum}: Location Map`, italics: true, fontSize: 12, alignment: 'center' as const, margin: [0, 0, 0, 4] },
-          ...(fields.latitude || fields.longitude ? [{ text: `Lat: ${fields.latitude || 'N/A'}, Long: ${fields.longitude || 'N/A'}`, bold: true, fontSize: 12, alignment: 'center' as const, margin: [0, 4, 0, 2] as [number, number, number, number] }] : []),
-          { text: `Source: Site Visit dated ${fields.dateOfInspection || 'N/A'}`, italics: true, fontSize: 12, alignment: 'center' as const },
-        );
-      }
-
-      // ── Build document definition ──
-      const docDefinition = {
-        pageSize: 'LETTER' as const,
-        pageMargins: [54, 84, 54, 80] as [number, number, number, number],
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-        background: (_currentPage: number, pageSize: any) => ({
-          image: letterheadBase64,
-          width: pageSize.width,
-          height: pageSize.height,
-          absolutePosition: { x: 0, y: 0 },
-        }),
-        defaultStyle: {
-          fontSize: 12,
-        },
-        content,
-      };
-
-      // Generate PDF as blob
-      return new Promise<Blob | null>((resolve) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const pdfDocGenerator = pdfMake.createPdf(docDefinition as any);
-        pdfDocGenerator.getBlob((blob: Blob) => {
-          resolve(blob);
+        await r.drawImageBlock(sketchBytes, {
+          maxWidth: 450, maxHeight: 500, centered: true,
+          caption: `Figure ${sketchFigNum}: Revenue Sketch Map`,
         });
-      });
+        r.drawTextBlock(`Source: Site Visit dated ${fields.dateOfInspection || 'N/A'}`, { italic: true, align: 'center' });
+      }
+
+      // ── Location Map ──
+      if (locationBytes && locationBytes.length > 0) {
+        r.newPage();
+        r.drawCenteredTitle('LOCATION MAP');
+        r.advanceCursor(8);
+        const locFigNum = propertyImgs.length + (fields.sketchMapImage ? 1 : 0) + 1;
+        await r.drawImageBlock(locationBytes, {
+          maxWidth: 450, maxHeight: 500, centered: true,
+          caption: `Figure ${locFigNum}: Location Map`,
+        });
+        if (fields.latitude || fields.longitude) {
+          r.drawTextBlock(`Lat: ${fields.latitude || 'N/A'}, Long: ${fields.longitude || 'N/A'}`, { bold: true, align: 'center' });
+        }
+        r.drawTextBlock(`Source: Site Visit dated ${fields.dateOfInspection || 'N/A'}`, { italic: true, align: 'center' });
+      }
+
+      // ── Generate PDF blob ──
+      return await r.toBlob();
     } catch (err) {
       console.error('PDF generation failed:', err);
       return null;
