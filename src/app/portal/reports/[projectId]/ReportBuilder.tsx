@@ -1177,7 +1177,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       return await r.toBlob();
     } catch (err) {
       console.error('PDF generation failed:', err);
-      return null;
+      throw err;
     }
   };
 
@@ -1203,13 +1203,18 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       previewWindow.document.close();
     }
 
-    const blob = await handleGeneratePDF();
-    if (blob && previewWindow) {
-      const url = URL.createObjectURL(blob);
-      previewWindow.location.href = url;
-    } else if (previewWindow) {
-      previewWindow.close();
-      setMessage({ type: 'error', text: 'Failed to generate PDF preview.' });
+    try {
+      const blob = await handleGeneratePDF();
+      if (blob && previewWindow) {
+        const url = URL.createObjectURL(blob);
+        previewWindow.location.href = url;
+      } else if (previewWindow) {
+        previewWindow.close();
+        setMessage({ type: 'error', text: 'Failed to generate PDF preview.' });
+      }
+    } catch (err: any) {
+      if (previewWindow) previewWindow.close();
+      setMessage({ type: 'error', text: 'PDF Error: ' + (err?.message || String(err)) });
     }
   };
 
