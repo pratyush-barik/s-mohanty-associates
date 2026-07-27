@@ -912,16 +912,17 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
 
   const handleGeneratePDF = async () => {
     try {
-      // ── Fetch all images as Uint8Array in parallel (no base64 overhead) ──
-      const fetchBytes = async (url: string): Promise<Uint8Array> => {
+      // ── Fetch images safely (handling missing ones correctly) ──
+      const fetchBytes = async (url: string | undefined): Promise<Uint8Array | null> => {
+        if (!url) return null;
         try {
           const resp = await fetch(url);
           const buf = await resp.arrayBuffer();
           return new Uint8Array(buf);
-        } catch { return new Uint8Array(0); }
+        } catch { return null; }
       };
 
-      const propertyImgs = Array.isArray(fields.propertyImages) ? fields.propertyImages : [];
+      const propertyImgs = Array.isArray(fields.propertyImages) ? fields.propertyImages.filter(img => typeof img === 'string' && img.length > 0) : [];
 
       const [letterheadBytes, ...imageResults] = await Promise.all([
         fetchBytes('/templates/letterhead.png'),
