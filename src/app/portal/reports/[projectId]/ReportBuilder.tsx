@@ -1215,15 +1215,19 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
 
   const handleDownloadPDF = async () => {
     setMessage({ type: 'success', text: 'Generating PDF for download...' });
-    const blob = await handleGeneratePDF();
-    if (blob) {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${fields.ownerName ? fields.ownerName.replace(/\s+/g, '_') : 'Valuation'}_Report_${projectId}.pdf`;
-      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    try {
+      const blob = await handleGeneratePDF();
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${fields.ownerName ? fields.ownerName.replace(/\s+/g, '_') : 'Valuation'}_Report_${projectId}.pdf`;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+      }
+      setMessage(null);
+    } catch (err: any) {
+      setMessage({ type: 'error', text: 'PDF Error: ' + (err?.message || String(err)) });
     }
-    setMessage(null);
   };
 
   const handleFinalize = async () => {
@@ -1234,34 +1238,39 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     if (!confirm('Finalize this report and share it with the client? This will generate the official PDF and delete temporary draft images.')) return;
     setLoading(true);
     setMessage({ type: 'success', text: 'Generating final PDF...' });
-    await saveReportDraft(projectId, fields);
-    const pdfBlob = await handleGeneratePDF();
-    if (pdfBlob) {
-      const pdfFileName = `${projectId}-report-${Date.now()}.pdf`;
-      const pdfPath = `reports/pdfs/${pdfFileName}`;
-      const { error: uploadErr } = await supabaseBrowser.storage
-        .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
-        .upload(pdfPath, pdfBlob, { contentType: 'application/pdf' });
-      if (!uploadErr) {
-        const { data: urlData } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(pdfPath);
-        try {
-          const { data: files } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).list(`temp-photos/${projectId}`);
-          if (files && files.length > 0) {
-            const paths = files.map(f => `temp-photos/${projectId}/${f.name}`);
-            await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).remove(paths);
-          }
-        } catch (err) { console.error('Failed to cleanup temp photos:', err); }
-        const finalFields = { ...fields, propertyImages: [] };
-        await saveReportDraft(projectId, finalFields);
-        const { finalizeReport } = await import('@/app/actions/project');
-        const res = await finalizeReport(projectId, urlData.publicUrl);
-        if (res.error) setMessage({ type: 'error', text: res.error });
-        else { setFields(finalFields); setMessage({ type: 'success', text: 'Project Finalized Successfully! PDF is now available to the client.' }); }
-      } else {
-        setMessage({ type: 'error', text: 'Failed to upload PDF.' });
+    try {
+      await saveReportDraft(projectId, fields);
+      const pdfBlob = await handleGeneratePDF();
+      if (pdfBlob) {
+        const pdfFileName = `${projectId}-report-${Date.now()}.pdf`;
+        const pdfPath = `reports/pdfs/${pdfFileName}`;
+        const { error: uploadErr } = await supabaseBrowser.storage
+          .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+          .upload(pdfPath, pdfBlob, { contentType: 'application/pdf' });
+        if (!uploadErr) {
+          const { data: urlData } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(pdfPath);
+          try {
+            const { data: files } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).list(`temp-photos/${projectId}`);
+            if (files && files.length > 0) {
+              const paths = files.map(f => `temp-photos/${projectId}/${f.name}`);
+              await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).remove(paths);
+            }
+          } catch (err) { console.error('Failed to cleanup temp photos:', err); }
+          const finalFields = { ...fields, propertyImages: [] };
+          await saveReportDraft(projectId, finalFields);
+          const { finalizeReport } = await import('@/app/actions/project');
+          const res = await finalizeReport(projectId, urlData.publicUrl);
+          if (res.error) setMessage({ type: 'error', text: res.error });
+          else { setFields(finalFields); setMessage({ type: 'success', text: 'Project Finalized Successfully! PDF is now available to the client.' }); }
+        } else {
+          setMessage({ type: 'error', text: 'Failed to upload PDF.' });
+        }
       }
+    } catch (err: any) {
+      setMessage({ type: 'error', text: 'PDF Error: ' + (err?.message || String(err)) });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleReworkClick = () => {

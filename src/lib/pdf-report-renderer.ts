@@ -770,13 +770,13 @@ export class PDFReportRenderer {
 
     let img: PDFImage;
     try {
-      img = await this.doc.embedPng(imageBytes);
-    } catch {
       try {
-        img = await this.doc.embedJpg(imageBytes);
+        img = await this.doc.embedPng(imageBytes);
       } catch {
-        return; // unsupported format
+        img = await this.doc.embedJpg(imageBytes);
       }
+    } catch {
+      return; // unsupported format
     }
 
     const maxW = opts?.maxWidth || CONTENT_W * 0.85;
