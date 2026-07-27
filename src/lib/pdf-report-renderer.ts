@@ -373,7 +373,8 @@ export class PDFReportRenderer {
    */
   drawSectionHeader(title: string): void {
     const h = this.cellHeight(title, CONTENT_W, { bold: true, fontSize: FONT_SIZE_HEADER });
-    this.checkPageBreak(h);
+    // Require an extra 60pt of space to prevent orphaned headings
+    this.checkPageBreak(h + 60);
     this.drawCell(MARGIN_L, this.cursorY, CONTENT_W, h, title, {
       bold: true, fontSize: FONT_SIZE_HEADER, fillColor: LBL_BG,
     });
@@ -677,7 +678,8 @@ export class PDFReportRenderer {
   drawCenteredTitle(text: string, fontSize?: number): void {
     const fs = fontSize || FONT_SIZE_HEADER;
     const lineH = fs * LINE_HEIGHT;
-    this.checkPageBreak(lineH);
+    // Require an extra 60pt of space to prevent orphaned headings
+    this.checkPageBreak(lineH + 60);
     this.drawTextAt(text, MARGIN_L, this.cursorY, {
       bold: true, fontSize: fs, align: 'center', maxWidth: CONTENT_W,
     });
