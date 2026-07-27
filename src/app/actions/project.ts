@@ -973,10 +973,11 @@ export async function saveBucketImage(
     if (!project) return { error: 'Project not found.' };
 
     const isFieldAgent = project.fieldEmployees.some((e) => e.id === session.user.id);
-    const isManagerOrOwner = ['MANAGER', 'OWNER'].includes(user.role);
+    const isProjectManager = project.assignedManagerId === session.user.id || project.pendingManagerId === session.user.id;
+    const isOwner = user.role === 'OWNER';
 
-    if (!isFieldAgent && !isManagerOrOwner) {
-      return { error: 'You are not authorized to upload to this bucket.' };
+    if (!isFieldAgent && !isProjectManager && !isOwner) {
+      return { error: 'You are not authorized to upload to this project\'s bucket.' };
     }
 
     const bucketImage = await prisma.bucketImage.create({
@@ -1003,7 +1004,7 @@ export async function saveBucketImage(
 }
 
 /**
- * Delete a bucket image. Only the uploader or a manager/owner can delete.
+ * Delete a bucket image. Only the uploader, project manager, or owner can delete.
  */
 export async function deleteBucketImage(imageId: string) {
   const session = await auth();
@@ -1013,14 +1014,23 @@ export async function deleteBucketImage(imageId: string) {
     const user = await prisma.employee.findUnique({ where: { id: session.user.id } });
     if (!user) return { error: 'Unauthorized' };
 
-    const image = await prisma.bucketImage.findUnique({ where: { id: imageId } });
+    const image = await prisma.bucketImage.findUnique({ 
+      where: { id: imageId },
+      include: {
+        project: {
+          select: { assignedManagerId: true, pendingManagerId: true }
+        }
+      }
+    });
+    
     if (!image) return { error: 'Image not found.' };
 
     const isOwnerOfImage = image.employeeId === session.user.id;
-    const isManagerOrOwner = ['MANAGER', 'OWNER'].includes(user.role);
+    const isProjectManager = image.project.assignedManagerId === session.user.id || image.project.pendingManagerId === session.user.id;
+    const isOwner = user.role === 'OWNER';
 
-    if (!isOwnerOfImage && !isManagerOrOwner) {
-      return { error: 'You can only delete your own uploads.' };
+    if (!isOwnerOfImage && !isProjectManager && !isOwner) {
+      return { error: 'You can only delete your own uploads unless you manage this project.' };
     }
 
     // Delete from database
@@ -1035,13 +1045,32 @@ export async function deleteBucketImage(imageId: string) {
 }
 
 /**
- * Fetch all bucket images for a project. Accessible to assigned field agents, managers, owners, and report employees.
+ * Fetch all bucket images for a project. Accessible to assigned field agents, assigned report agents, assigned managers, and owners.
  */
 export async function getBucketImages(projectId: string) {
   const session = await auth();
   if (!session?.user?.id) return { error: 'Unauthorized', images: [] };
 
   try {
+    const user = await prisma.employee.findUnique({ where: { id: session.user.id } });
+    if (!user) return { error: 'Unauthorized', images: [] };
+
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: { fieldEmployees: { select: { id: true } } },
+    });
+
+    if (!project) return { error: 'Project not found.', images: [] };
+
+    const isAssignedFieldAgent = project.fieldEmployees.some(e => e.id === session.user.id);
+    const isAssignedReportAgent = project.reportEmployeeId === session.user.id;
+    const isAssignedManager = project.assignedManagerId === session.user.id || project.pendingManagerId === session.user.id;
+    const isOwner = user.role === 'OWNER';
+
+    if (!isAssignedFieldAgent && !isAssignedReportAgent && !isAssignedManager && !isOwner) {
+      return { error: 'You are not authorized to view this project\'s bucket.', images: [] };
+    }
+
     const images = await prisma.bucketImage.findMany({
       where: { projectId },
       include: {
