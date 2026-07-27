@@ -188,7 +188,7 @@ export class PDFReportRenderer {
   /** Measure height for a RichText (mixed bold/regular segments) */
   private measureRichTextHeight(segments: TextSegment[], maxWidth: number, fontSize: number): number {
     // Flatten to a single string for wrapping measurement using regular font
-    const fullText = segments.map(s => s.text).join('');
+    const fullText = segments.map(s => s.text || '').join('');
     return this.measureTextHeight(fullText, maxWidth, fontSize);
   }
 
@@ -222,6 +222,7 @@ export class PDFReportRenderer {
 
   /** Draw a single line of text at absolute coordinates */
   private drawTextAt(text: string, x: number, topY: number, opts?: DrawTextOptions): void {
+    const strText = String(text || '');
     const fontSize = opts?.fontSize || FONT_SIZE;
     const font = this.getFont(opts?.bold, opts?.italic);
     // Baseline is roughly 0.8 * fontSize below the top of the text
@@ -230,14 +231,14 @@ export class PDFReportRenderer {
 
     let drawX = x;
     if (opts?.align === 'center' && opts.maxWidth) {
-      const tw = font.widthOfTextAtSize(text, fontSize);
+      const tw = font.widthOfTextAtSize(strText, fontSize);
       drawX = x + (opts.maxWidth - tw) / 2;
     } else if (opts?.align === 'right' && opts.maxWidth) {
-      const tw = font.widthOfTextAtSize(text, fontSize);
+      const tw = font.widthOfTextAtSize(strText, fontSize);
       drawX = x + opts.maxWidth - tw;
     }
 
-    this.page.drawText(text, {
+    this.page.drawText(strText, {
       x: drawX,
       y: pY,
       size: fontSize,
@@ -248,6 +249,7 @@ export class PDFReportRenderer {
 
   /** Draw white text at absolute coordinates */
   private drawWhiteTextAt(text: string, x: number, topY: number, opts?: DrawTextOptions): void {
+    const strText = String(text || '');
     const fontSize = opts?.fontSize || FONT_SIZE;
     const font = this.getFont(opts?.bold, opts?.italic);
     const baselineOffset = fontSize * 0.8;
@@ -255,14 +257,14 @@ export class PDFReportRenderer {
 
     let drawX = x;
     if (opts?.align === 'center' && opts.maxWidth) {
-      const tw = font.widthOfTextAtSize(text, fontSize);
+      const tw = font.widthOfTextAtSize(strText, fontSize);
       drawX = x + (opts.maxWidth - tw) / 2;
     } else if (opts?.align === 'right' && opts.maxWidth) {
-      const tw = font.widthOfTextAtSize(text, fontSize);
+      const tw = font.widthOfTextAtSize(strText, fontSize);
       drawX = x + opts.maxWidth - tw;
     }
 
-    this.page.drawText(text, {
+    this.page.drawText(strText, {
       x: drawX,
       y: pY,
       size: fontSize,
@@ -275,7 +277,7 @@ export class PDFReportRenderer {
   private drawWrappedTextAt(text: string, x: number, topY: number, maxWidth: number, opts?: DrawTextOptions): number {
     const fontSize = opts?.fontSize || FONT_SIZE;
     const lineH = fontSize * LINE_HEIGHT;
-    const lines = this.wrapText(text, maxWidth, fontSize, opts?.bold, opts?.italic);
+    const lines = this.wrapText(String(text || ''), maxWidth, fontSize, opts?.bold, opts?.italic);
 
     for (let i = 0; i < lines.length; i++) {
       this.drawTextAt(lines[i], x, topY + i * lineH, { ...opts, maxWidth });
@@ -292,7 +294,7 @@ export class PDFReportRenderer {
     // Build a flat list of {word, bold, italic}
     const wordList: { word: string; bold?: boolean; italic?: boolean }[] = [];
     for (const seg of segments) {
-      const words = seg.text.split(/(\s+)/); // preserve whitespace
+      const words = String(seg.text || '').split(/(\s+)/); // preserve whitespace
       for (const w of words) {
         if (w) wordList.push({ word: w, bold: seg.bold, italic: seg.italic });
       }
