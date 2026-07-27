@@ -28,6 +28,10 @@ export default async function ReportEditorPage({ params }: { params: Promise<{ p
         fieldEmployees: { select: { name: true, email: true, mobile: true, employeeId: true } },
         manager: { select: { name: true, employeeId: true, mobile: true } },
         inspection: { select: { notes: true } },
+        bucketImages: {
+          include: { employee: { select: { name: true, employeeId: true } } },
+          orderBy: { createdAt: 'desc' },
+        },
       }
     });
 
@@ -119,6 +123,7 @@ export default async function ReportEditorPage({ params }: { params: Promise<{ p
             initialFields={report?.data || null}
             status={project.status}
             userRole={currentUser.role}
+            bucketImages={project.bucketImages}
             prefill={{
               contactName: serviceRequest.contactName,
               contactPhone: serviceRequest.contactPhone,

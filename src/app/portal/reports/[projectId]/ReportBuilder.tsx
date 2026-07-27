@@ -623,12 +623,22 @@ const SERVICES_LIST = [
 ];
 
 // ─── Main Component ────────────────────────────────────────────────
+interface BucketImageItem {
+  id: string;
+  url: string;
+  fileName: string;
+  size: number;
+  createdAt: string;
+  employee: { name: string; employeeId: string };
+}
+
 interface ReportBuilderProps {
   projectId: string;
   projectCode: string;
   initialFields: any;
   status: string;
   userRole?: string;
+  bucketImages?: BucketImageItem[];
   prefill?: {
     ownerName?: string;
     ownerAddress?: string;
@@ -640,7 +650,7 @@ interface ReportBuilderProps {
   };
 }
 
-export default function ReportBuilder({ projectId, projectCode, initialFields, status, userRole = 'REPORT_EMPLOYEE', prefill }: ReportBuilderProps) {
+export default function ReportBuilder({ projectId, projectCode, initialFields, status, userRole = 'REPORT_EMPLOYEE', bucketImages = [], prefill }: ReportBuilderProps) {
   const merged = {
     ...DEFAULT_FIELDS,
     ...(initialFields || {}),
@@ -666,6 +676,50 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // Bucket Picker State
+  const [bucketPickerOpen, setBucketPickerOpen] = useState(false);
+  const [bucketPickerMode, setBucketPickerMode] = useState<'propertyImages' | 'sketchMapImage' | 'locationMapImage'>('propertyImages');
+  const [bucketSelected, setBucketSelected] = useState<Set<string>>(new Set());
+
+  const openBucketPicker = (mode: 'propertyImages' | 'sketchMapImage' | 'locationMapImage') => {
+    setBucketPickerMode(mode);
+    setBucketSelected(new Set());
+    setBucketPickerOpen(true);
+  };
+
+  const handleBucketConfirm = () => {
+    const selectedImages = bucketImages.filter(img => bucketSelected.has(img.id));
+    if (selectedImages.length === 0) { setBucketPickerOpen(false); return; }
+
+    if (bucketPickerMode === 'propertyImages') {
+      const newUrls = [...(fields.propertyImages || []), ...selectedImages.map(img => img.url)];
+      handleChange('propertyImages', newUrls);
+    } else if (bucketPickerMode === 'sketchMapImage') {
+      handleChange('sketchMapImage', selectedImages[0].url);
+    } else if (bucketPickerMode === 'locationMapImage') {
+      handleChange('locationMapImage', selectedImages[0].url);
+    }
+
+    setBucketPickerOpen(false);
+    setBucketSelected(new Set());
+    setMessage({ type: 'success', text: `${selectedImages.length} photo${selectedImages.length > 1 ? 's' : ''} added from bucket!` });
+    setTimeout(() => setMessage(null), 3000);
+  };
+
+  const toggleBucketImage = (id: string) => {
+    setBucketSelected(prev => {
+      const next = new Set(prev);
+      if (bucketPickerMode !== 'propertyImages') {
+        // Single select for maps
+        next.clear();
+        next.add(id);
+      } else {
+        if (next.has(id)) next.delete(id); else next.add(id);
+      }
+      return next;
+    });
+  };
   
   // Rework Modal State
   const [showReworkModal, setShowReworkModal] = useState(false);
@@ -2527,6 +2581,15 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
                   {uploading ? 'Uploading...' : '\uD83D\uDCF7 Add Property Images'}
                   <input type="file" accept="image/*" multiple className="hidden" onChange={e => handleFileUpload(e, 'propertyImages')} disabled={uploading} />
                 </label>
+                {bucketImages.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => openBucketPicker('propertyImages')}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-sm font-medium hover:bg-[#1e3a5f]/5 transition-colors"
+                  >
+                    📸 Pick from Bucket ({bucketImages.length})
+                  </button>
+                )}
                 <span className="text-xs text-[#6c757d]">Max size: 5MB per photograph</span>
               </div>
               <div className={`text-xs font-semibold ${
@@ -2558,10 +2621,21 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
           </div>
         ) : (
           !isReadOnly && (
-            <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-              {uploading ? 'Uploading...' : '\uD83D\uDDFA\uFE0F Upload Sketch Map'}
-              <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'sketchMapImage')} disabled={uploading} />
-            </label>
+            <div className="flex items-center gap-3 flex-wrap">
+              <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+                {uploading ? 'Uploading...' : '\uD83D\uDDFA\uFE0F Upload Sketch Map'}
+                <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'sketchMapImage')} disabled={uploading} />
+              </label>
+              {bucketImages.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => openBucketPicker('sketchMapImage')}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-sm font-medium hover:bg-[#1e3a5f]/5 transition-colors"
+                >
+                  📸 Pick from Bucket ({bucketImages.length})
+                </button>
+              )}
+            </div>
           )
         )}
       </Section>
@@ -2642,10 +2716,21 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
               </div>
             ) : (
               !isReadOnly && (
-                <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-                  {uploading ? 'Uploading...' : '\uD83D\uDCCD Upload Map Screenshot for PDF'}
-                  <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'locationMapImage')} disabled={uploading} />
-                </label>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+                    {uploading ? 'Uploading...' : '\uD83D\uDCCD Upload Map Screenshot for PDF'}
+                    <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'locationMapImage')} disabled={uploading} />
+                  </label>
+                  {bucketImages.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => openBucketPicker('locationMapImage')}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-sm font-medium hover:bg-[#1e3a5f]/5 transition-colors"
+                    >
+                      📸 Pick from Bucket ({bucketImages.length})
+                    </button>
+                  )}
+                </div>
               )
             )}
           </div>
@@ -2785,6 +2870,92 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
           </div>
         </div>
       )}
+
+      {/* Bucket Picker Modal */}
+      {bucketPickerOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-fade-in-up">
+            <div className="p-5 border-b border-[#e9ecef] bg-[#f8f9fa] flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-[#0f2038] flex items-center gap-2" style={{ fontFamily: 'var(--font-heading)' }}>
+                  📸 Pick from Photo Bucket
+                </h2>
+                <p className="text-xs text-[#6c757d] mt-1">
+                  {bucketPickerMode === 'propertyImages'
+                    ? 'Select one or more photos to add to the report'
+                    : 'Select a single photo for the map'}
+                </p>
+              </div>
+              <button
+                onClick={() => setBucketPickerOpen(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-500 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
+              {bucketImages.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {bucketImages.map((img) => {
+                    const isSelected = bucketSelected.has(img.id);
+                    return (
+                      <div
+                        key={img.id}
+                        onClick={() => toggleBucketImage(img.id)}
+                        className={`relative group bg-white rounded-xl border-2 overflow-hidden cursor-pointer transition-all ${
+                          isSelected ? 'border-[#1e3a5f] shadow-md scale-[0.98]' : 'border-transparent shadow-sm hover:shadow-md'
+                        }`}
+                      >
+                        <div className="aspect-square bg-gray-100">
+                          <img src={img.url} alt={img.fileName} className="w-full h-full object-cover" loading="lazy" />
+                        </div>
+                        <div className="p-2 border-t border-gray-100">
+                          <p className="text-[10px] font-bold text-[#0f2038] truncate">{img.employee.name}</p>
+                          <p className="text-[9px] text-[#6c757d]">
+                            {new Date(img.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        {isSelected && (
+                          <div className="absolute top-2 right-2 w-6 h-6 bg-[#1e3a5f] text-white rounded-full flex items-center justify-center shadow-sm">
+                            ✓
+                          </div>
+                        )}
+                        {!isSelected && (
+                          <div className="absolute top-2 right-2 w-6 h-6 bg-black/20 border-2 border-white/50 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="text-4xl mb-3">📷</div>
+                  <p className="text-sm font-medium text-[#6c757d]">No photos in the bucket yet.</p>
+                  <p className="text-xs text-[#adb5bd] mt-1">Field agents need to upload photos to this project first.</p>
+                </div>
+              )}
+            </div>
+
+            <div className="p-4 border-t border-[#e9ecef] bg-white flex justify-end gap-3">
+              <button
+                onClick={() => setBucketPickerOpen(false)}
+                className="px-5 py-2.5 rounded-xl border border-[#dee2e6] text-sm font-semibold text-[#495057] hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBucketConfirm}
+                disabled={bucketSelected.size === 0}
+                className="px-5 py-2.5 rounded-xl bg-[#1e3a5f] text-white text-sm font-bold hover:bg-[#0f2038] transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                Add Selected ({bucketSelected.size})
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
