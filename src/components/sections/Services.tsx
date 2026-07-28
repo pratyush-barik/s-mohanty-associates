@@ -121,7 +121,7 @@ export default function Services() {
 
       <div className="container mx-auto max-w-[1280px] px-6 relative z-10">
         {/* Section Header */}
-        <SectionWrapper animation="fadeUp" className="text-center mb-16">
+        <SectionWrapper animation="fadeUp" className="text-center mb-8">
           <span className="text-[#ffcb47] text-sm font-semibold uppercase tracking-[0.2em] mb-3 block">What We Offer</span>
           <h2 className="section-title text-white">Our <span className="gradient-text">Services</span></h2>
           <div className="section-divider" />

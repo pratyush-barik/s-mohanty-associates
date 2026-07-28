@@ -38,7 +38,7 @@ export default function Clients() {
 
       <div className="container mx-auto max-w-[1280px] px-6 relative z-10">
         {/* Section Header */}
-        <SectionWrapper animation="fadeUp" className="text-center mb-16">
+        <SectionWrapper animation="fadeUp" className="text-center mb-8">
           <span className="text-[#b8860b] text-sm font-semibold uppercase tracking-[0.2em] mb-3 block">Trusted By</span>
           <h2 className="section-title">Our <span className="gradient-text">Clients</span></h2>
           <div className="section-divider" />
@@ -48,7 +48,7 @@ export default function Clients() {
         </SectionWrapper>
 
         {/* Featured Clients Grid */}
-        <SectionWrapper animation="fadeUp" delay={0.1} className="mb-16">
+        <SectionWrapper animation="fadeUp" delay={0.1} className="mb-8">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
             {featuredClients.map((client, index) => (
               <div
