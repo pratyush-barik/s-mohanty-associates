@@ -1178,7 +1178,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       r.drawSignatureBlock([
         { text: '_______________________________' },
         { text: 'Satyajit Mohanty', bold: true, fontSize: 14 },
-        { text: 'B.Sc.(Engg.), M.Tech (IIT Kharagpur)', italic: true },
+        { text: 'B.E.(Civil), M.Tech (Structural)', italic: true },
         { text: 'Registered Valuer \u2014 IBBI/RV/02/2019/10594', italic: true },
         { text: 'S. Mohanty & Associates, Bhubaneswar', italic: true },
       ]);
@@ -1636,7 +1636,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       <div style="margin-top:28px;text-align:right;font-family:${ff};font-size:12pt;line-height:0.5em;">
         <p style="margin:0;">_______________________________</p>
         <p style="font-weight:bold;margin:3px 0;font-size:14pt;">Satyajit Mohanty</p>
-        <p style="margin:2px 0;font-style:italic;font-size:12pt;">B.Sc.(Engg.), M.Tech (IIT Kharagpur)</p>
+        <p style="margin:2px 0;font-style:italic;font-size:12pt;">B.E.(Civil), M.Tech (Structural)</p>
         <p style="margin:2px 0;font-style:italic;font-size:12pt;">Registered Valuer \u2014 IBBI/RV/02/2019/10594</p>
         <p style="margin:2px 0;font-style:italic;font-size:12pt;">S. Mohanty &amp; Associates, Bhubaneswar</p>
       </div>
@@ -2536,7 +2536,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
           </div>
           <div className="text-right mt-8">
             <p className="font-bold">Satyajit Mohanty</p>
-            <p className="text-xs text-[#6c757d]">B.Sc.(Engg.), M.Tech (IIT Kharagpur)</p>
+            <p className="text-xs text-[#6c757d]">B.E.(Civil), M.Tech (Structural)</p>
             <p className="text-xs text-[#6c757d]">Registered Valuer &mdash; IBBI/RV/02/2019/10594</p>
           </div>
         </div>

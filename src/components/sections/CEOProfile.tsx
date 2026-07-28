@@ -4,10 +4,10 @@ import Image from 'next/image';
 import SectionWrapper from '@/components/ui/SectionWrapper';
 
 const achievements = [
-  { label: 'Years of Experience', value: '30+' },
-  { label: 'Properties Valued', value: '10,000+' },
-  { label: 'Buildings Designed', value: '500+' },
-  { label: 'Bank Empanelments', value: '20+' },
+  { label: 'Years of Experience', value: '22+' },
+  { label: 'Funding Reports', value: '300+' },
+  { label: 'APF Conversions', value: '500+' },
+  { label: 'Advisory Services', value: 'Banks & NBFCs' },
 ];
 
 const expertise = [
@@ -77,25 +77,26 @@ export default function CEOProfile() {
                   Mr. Satyajit Mohanty
                 </h3>
                 <div className="flex flex-wrap gap-2 mb-5">
-                  <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium">B.Sc. (Engg.) Civil</span>
-                  <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium">M.Tech (IIT Kharagpur)</span>
+                  <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium">B.E. (Civil)</span>
+                  <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium">M.Tech (Structural)</span>
                   <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium" title="Membership No. M-1560969">Chartered Engineer (M-1560969)</span>
                   <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium">Fellow - IE(I)</span>
                   <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium" title="Membership No. F-26377">Fellow - IOV (F-26377)</span>
                   <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium" title="Registration No. IBBI/RV/02/2019/10594">Registered Valuer (IBBI/RV/02/2019/10594)</span>
                 </div>
                 <p className="text-white/60 leading-relaxed mb-4">
-                  A distinguished professional with over 30 years of experience in property valuation, structural design,
-                  project management, and techno-economic feasibility studies. Mr. Mohanty founded S Mohanty &amp; Associates
-                  in 1996 and has since valued over 10,000 properties across residential, commercial, industrial, and
-                  agricultural categories for major banks, corporate houses, and government departments.
+                  A seasoned civil engineering professional with 22+ years of diversified experience in valuation, technical due diligence, and execution of civil engineering projects. Specialized in mortgage valuation, construction funding, feasibility studies, and advisory services for banks, NBFCs, and corporate clients. Founder of S Mohanty Associates, offering comprehensive valuation and consultancy solutions for land and building assets across Odisha.
                 </p>
-                <p className="text-white/60 leading-relaxed">
-                  A Registered Valuer under the Companies Act, 2013 (IBBI) and the Wealth Tax Act, 1957, he holds
-                  fellowships with the Institution of Engineers (India) and the Institution of Valuers (India). He is
-                  empanelled with leading nationalized and private banks including SBI, PNB, UCO Bank, Union Bank of India,
-                  Bank of Baroda, Indian Bank, Canara Bank, and Bank of India.
-                </p>
+                <div className="text-white/60 leading-relaxed">
+                  <h4 className="text-white font-semibold mb-2">Key Achievements</h4>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Delivered over 300 construction funding reports</li>
+                    <li>Over 500 APF project conversions completed</li>
+                    <li>Policy contributor to Gram Panchayat valuation framework</li>
+                    <li>Trainer and mentor in technical policy compliance and fraud detection</li>
+                    <li>Long-standing contributor to real estate valuation standards and quality assurance in banking sector</li>
+                  </ul>
+                </div>
               </div>
 
               {/* Achievement Stats */}
