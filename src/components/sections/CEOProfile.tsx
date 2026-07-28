@@ -4,10 +4,10 @@ import Image from 'next/image';
 import SectionWrapper from '@/components/ui/SectionWrapper';
 
 const achievements = [
-  { label: 'Years of Experience', value: '30+' },
-  { label: 'Properties Valued', value: '10,000+' },
-  { label: 'Buildings Designed', value: '500+' },
-  { label: 'Bank Empanelments', value: '20+' },
+  { label: 'Projects Completed', value: '2,500+' },
+  { label: 'Years Experience', value: '28+' },
+  { label: 'Corporate Clients', value: '150+' },
+  { label: 'Team Members', value: '15+' },
 ];
 
 const expertise = [
@@ -92,16 +92,7 @@ export default function CEOProfile() {
                 <p className="text-white/60 leading-relaxed mb-4">
                   A seasoned civil engineering professional with more than two decades of diversified experience in valuation, technical due diligence, and execution of civil engineering projects. Specialized in mortgage valuation, construction funding, feasibility studies, and advisory services for banks, NBFCs, and corporate clients. Founder of S Mohanty Associates, offering comprehensive valuation and consultancy solutions for land and building assets across Odisha.
                 </p>
-                <div className="text-white/60 leading-relaxed">
-                  <h4 className="text-white font-semibold mb-2">Key Achievements</h4>
-                  <ul className="list-disc pl-5 space-y-1">
-                    <li>Delivered over 300 construction funding reports</li>
-                    <li>Over 500 APF project conversions completed</li>
-                    <li>Policy contributor to Gram Panchayat valuation framework</li>
-                    <li>Trainer and mentor in technical policy compliance and fraud detection</li>
-                    <li>Long-standing contributor to real estate valuation standards and quality assurance in banking sector</li>
-                  </ul>
-                </div>
+
               </div>
 
               {/* Achievement Stats */}
