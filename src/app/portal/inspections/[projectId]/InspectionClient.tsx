@@ -63,7 +63,6 @@ export default function InspectionClient({
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [previewImage, setPreviewImage] = useState<BucketImageData | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const handleSaveNotes = async () => {
@@ -187,7 +186,6 @@ export default function InspectionClient({
     setTimeout(() => setMessage(null), 3000);
 
     // Reset inputs
-    if (cameraInputRef.current) cameraInputRef.current.value = '';
     if (galleryInputRef.current) galleryInputRef.current.value = '';
   };
 
@@ -389,14 +387,6 @@ export default function InspectionClient({
 
         {/* Hidden file inputs */}
         <input
-          ref={cameraInputRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          onChange={handleImageUpload}
-          className="hidden"
-        />
-        <input
           ref={galleryInputRef}
           type="file"
           accept="image/*"
@@ -478,17 +468,6 @@ export default function InspectionClient({
                 ✕
               </button>
             </div>
-
-            <button
-              onClick={() => { cameraInputRef.current?.click(); }}
-              className="w-full flex items-center gap-4 p-4 rounded-xl border border-[#e9ecef] hover:border-[#b8860b]/40 hover:bg-[#b8860b]/5 transition-all text-left"
-            >
-              <span className="flex items-center justify-center w-11 h-11 rounded-xl bg-[#1e3a5f]/10 text-xl flex-shrink-0">📷</span>
-              <div>
-                <p className="text-sm font-bold text-[#0f2038]">Take Photo</p>
-                <p className="text-xs text-[#6c757d]">Open camera to capture a new photo</p>
-              </div>
-            </button>
 
             <button
               onClick={() => { galleryInputRef.current?.click(); }}
