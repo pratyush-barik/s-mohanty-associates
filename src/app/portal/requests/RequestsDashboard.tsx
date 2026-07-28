@@ -43,7 +43,7 @@ interface ServiceRequest {
   additionalNotes: string | null;
   status: 'SUBMITTED' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED';
   reviewNotes: string | null;
-  client: Client;
+  client: Client | null;
   project?: Project | null;
 }
 
@@ -79,6 +79,7 @@ export default function RequestsDashboard({
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const getClientName = (req: ServiceRequest) => {
+    if (!req.client) return req.contactName;
     return req.client.clientType === 'INDIVIDUAL'
       ? req.client.individual?.name || req.contactName
       : req.client.organisation?.organisationName || req.contactName;
