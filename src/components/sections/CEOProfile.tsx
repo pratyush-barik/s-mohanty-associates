@@ -29,7 +29,7 @@ export default function CEOProfile() {
           <div className="section-divider" />
         </SectionWrapper>
 
-        <div className="grid lg:grid-cols-5 gap-10 lg:gap-16 items-start max-w-6xl mx-auto">
+        <div className="grid lg:grid-cols-5 gap-10 lg:gap-16 items-center max-w-6xl mx-auto">
           {/* Profile Image */}
           <SectionWrapper animation="fadeRight" delay={0.1} className="lg:col-span-2">
             <div className="relative group max-w-[360px] mx-auto">
