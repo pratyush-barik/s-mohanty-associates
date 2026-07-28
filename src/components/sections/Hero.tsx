@@ -6,10 +6,10 @@ import { gsap } from 'gsap';
 import AnimatedCounter from '@/components/ui/AnimatedCounter';
 
 const stats = [
-  { target: 2500, suffix: '+', label: 'Projects Completed', prefix: '' },
-  { target: 28, suffix: '+', label: 'Years Experience', prefix: '' },
-  { target: 150, suffix: '+', label: 'Corporate Clients', prefix: '' },
-  { target: 15, suffix: '+', label: 'Team Members', prefix: '' },
+  { target: 1000, suffix: '+', label: 'Projects Completed', prefix: '' },
+  { target: 20, suffix: '+', label: 'Years Experience', prefix: '' },
+  { target: 100, suffix: '+', label: 'Corporate Clients', prefix: '' },
+  { target: 30, suffix: '+', label: 'Team Members', prefix: '' },
 ];
 
 export default function Hero() {

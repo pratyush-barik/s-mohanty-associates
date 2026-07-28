@@ -22,19 +22,12 @@ export default function CEOProfile() {
       <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#1e3a5f]/20 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="container mx-auto max-w-[1280px] px-6 relative z-10">
-        {/* Section Header */}
-        <SectionWrapper animation="fadeUp" className="text-center mb-8">
-          <span className="text-[#ffcb47] text-sm font-semibold uppercase tracking-[0.2em] mb-3 block">Leadership</span>
-          <h2 className="section-title text-white">Our <span className="gradient-text">Founder</span></h2>
-          <div className="section-divider" />
-        </SectionWrapper>
-
-        <div className="grid lg:grid-cols-5 gap-10 lg:gap-16 items-center max-w-6xl mx-auto">
+        <div className="grid lg:grid-cols-5 gap-10 lg:gap-16 max-w-6xl mx-auto items-stretch">
           {/* Profile Image */}
-          <SectionWrapper animation="fadeRight" delay={0.1} className="lg:col-span-2">
-            <div className="relative group max-w-[360px] mx-auto">
+          <SectionWrapper animation="fadeRight" delay={0.1} className="lg:col-span-2 relative h-full">
+            <div className="relative group w-full h-full min-h-[400px] lg:min-h-full rounded-2xl overflow-hidden">
               {/* Image Container */}
-              <div className="relative overflow-hidden rounded-2xl aspect-[3/4] w-full">
+              <div className="relative w-full h-full">
                 {/* Founder Photo */}
                 <Image
                   src="/images/founder.jpeg"
@@ -48,7 +41,7 @@ export default function CEOProfile() {
                 />
 
                 {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628] via-transparent to-transparent opacity-60 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628] via-[#0a1628]/20 to-transparent opacity-80 pointer-events-none" />
               </div>
 
               {/* Name Badge */}
@@ -66,6 +59,13 @@ export default function CEOProfile() {
           {/* Profile Content */}
           <SectionWrapper animation="fadeLeft" delay={0.2} className="lg:col-span-3">
             <div className="space-y-8">
+              {/* Section Header (Moved to right column) */}
+              <div className="text-center lg:text-left mb-10">
+                <span className="text-[#ffcb47] text-sm font-semibold uppercase tracking-[0.2em] mb-3 block">Leadership</span>
+                <h2 className="section-title text-white lg:text-left">Our <span className="gradient-text">Founder</span></h2>
+                <div className="section-divider lg:mx-0" />
+              </div>
+
               {/* Bio */}
               <div>
                 <h3 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: 'var(--font-heading)' }}>
