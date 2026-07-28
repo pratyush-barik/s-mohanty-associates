@@ -828,7 +828,7 @@ export async function acceptManagerTransfer(projectId: string) {
 
     revalidatePath(`/portal/projects/${projectId}`);
     revalidatePath('/portal/projects');
-    revalidatePath('/portal/dashboard');
+    revalidatePath('/portal');
     return { success: true };
   } catch (error) {
     console.error('Failed to accept transfer:', error);
@@ -860,7 +860,7 @@ export async function declineManagerTransfer(projectId: string) {
 
     revalidatePath(`/portal/projects/${projectId}`);
     revalidatePath('/portal/projects');
-    revalidatePath('/portal/dashboard');
+    revalidatePath('/portal');
     return { success: true };
   } catch (error) {
     console.error('Failed to decline transfer:', error);

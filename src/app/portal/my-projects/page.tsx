@@ -14,7 +14,7 @@ export default async function ReportAgentDashboard() {
   });
 
   if (!currentUser || !['REPORT_EMPLOYEE', 'OWNER', 'MANAGER'].includes(currentUser.role)) {
-    redirect('/portal/dashboard');
+    redirect('/portal');
   }
 
   // Fetch projects assigned to this report employee, or all if Owner/Manager

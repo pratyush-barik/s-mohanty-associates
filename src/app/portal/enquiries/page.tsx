@@ -13,7 +13,7 @@ export default async function EnquiriesPage() {
   });
 
   if (!currentUser || !['OWNER', 'MANAGER'].includes(currentUser.role)) {
-    redirect('/portal/dashboard');
+    redirect('/portal');
   }
 
   const enquiries = await prisma.enquiry.findMany({

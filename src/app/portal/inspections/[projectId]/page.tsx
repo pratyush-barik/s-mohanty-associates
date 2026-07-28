@@ -14,7 +14,7 @@ export default async function InspectionDetailsPage({ params }: { params: Promis
   });
 
   if (!currentUser || !['FIELD_EMPLOYEE', 'OWNER', 'MANAGER'].includes(currentUser.role)) {
-    redirect('/portal/dashboard');
+    redirect('/portal');
   }
 
   const { projectId } = await params;

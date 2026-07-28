@@ -15,7 +15,7 @@ export default async function EnquiryDetailPage({ params }: { params: Promise<{ 
   });
 
   if (!currentUser || !['OWNER', 'MANAGER'].includes(currentUser.role)) {
-    redirect('/portal/dashboard');
+    redirect('/portal');
   }
 
   const enquiry = await prisma.enquiry.findUnique({

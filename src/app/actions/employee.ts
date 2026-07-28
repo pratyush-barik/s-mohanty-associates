@@ -71,7 +71,7 @@ export async function uploadProfilePhoto(formData: FormData) {
   });
 
   revalidatePath('/portal/profile');
-  revalidatePath('/portal/dashboard');
+  revalidatePath('/portal');
 
   return { success: true, url: publicUrl };
 }

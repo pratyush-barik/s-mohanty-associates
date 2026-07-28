@@ -14,7 +14,7 @@ export default async function FieldAgentDashboard() {
   });
 
   if (!currentUser || !['FIELD_EMPLOYEE', 'OWNER', 'MANAGER'].includes(currentUser.role)) {
-    redirect('/portal/dashboard');
+    redirect('/portal');
   }
 
   // Fetch projects assigned to this field employee, or all if Owner/Manager

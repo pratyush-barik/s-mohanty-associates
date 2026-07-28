@@ -18,7 +18,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
     });
 
     if (!currentUser || !['OWNER', 'MANAGER'].includes(currentUser.role)) {
-      redirect('/portal/dashboard');
+      redirect('/portal');
     }
 
     const resolvedParams = await params;

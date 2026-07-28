@@ -13,7 +13,7 @@ export default async function ManualCasePage() {
   });
 
   if (!currentUser || !['OWNER', 'MANAGER'].includes(currentUser.role)) {
-    redirect('/portal/dashboard');
+    redirect('/portal');
   }
 
   // Fetch managers for assignment

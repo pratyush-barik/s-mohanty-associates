@@ -15,7 +15,7 @@ export default async function ReportEditorPage({ params }: { params: Promise<{ p
     });
 
     if (!currentUser || !['REPORT_EMPLOYEE', 'OWNER', 'MANAGER'].includes(currentUser.role)) {
-      redirect('/portal/dashboard');
+      redirect('/portal');
     }
 
     const resolvedParams = await params;
