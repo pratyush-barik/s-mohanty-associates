@@ -2,10 +2,32 @@ import { NextResponse } from 'next/server';
 import { ImapFlow } from 'imapflow';
 import { simpleParser } from 'mailparser';
 import { prisma } from '@/lib/prisma';
+import { supabaseAdmin, STORAGE_BUCKETS, getPublicUrl } from '@/lib/supabase';
+import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
-async function processInbox(host: string, port: number, user: string, pass: string) {
+async function uploadAttachment(buffer: Buffer, filename: string, mimeType: string) {
+  const ext = path.extname(filename) || '.bin';
+  const safeName = `${crypto.randomUUID()}${ext}`;
+  const filePath = `emails/${safeName}`;
+
+  const { error: uploadError } = await supabaseAdmin.storage
+    .from(STORAGE_BUCKETS.ENQUIRY_FILES)
+    .upload(filePath, buffer, {
+      contentType: mimeType,
+      upsert: false,
+    });
+
+  if (uploadError) {
+    console.error('Supabase upload error for attachment:', uploadError);
+    return null;
+  }
+
+  return { filePath, publicUrl: getPublicUrl(STORAGE_BUCKETS.ENQUIRY_FILES, filePath) };
+}
+
+async function processInbox(host: string, port: number, user: string, pass: string, source: 'EMAIL' | 'PORTAL_SIGNUP') {
   const client = new ImapFlow({
     host,
     port,
@@ -19,13 +41,13 @@ async function processInbox(host: string, port: number, user: string, pass: stri
   try {
     await client.connect();
     const lock = await client.getMailboxLock('INBOX');
-    
+
     try {
       const messages = (await client.search({ seen: false })) || [];
-      
+
       for (const seq of messages) {
         const messageStream = await client.download(seq);
-        const parsedEmail = await simpleParser(messageStream as any);
+        const parsedEmail = await simpleParser(messageStream);
 
         const subject = parsedEmail.subject || '';
         const fromEmail = parsedEmail.from?.value[0]?.address || 'unknown@example.com';
@@ -35,22 +57,25 @@ async function processInbox(host: string, port: number, user: string, pass: stri
         const ticketMatch = subject.match(/\[Ticket\s+#(SMA-[A-Z0-9\-]+)\]/i);
         const ticketNumber = ticketMatch ? ticketMatch[1] : null;
 
+        let enquiry = null;
+
         if (ticketNumber) {
-          const existingEnquiry = await prisma.enquiry.findUnique({
+          enquiry = await prisma.enquiry.findUnique({
             where: { ticketNumber },
+            include: { project: true, serviceRequest: true, documents: true },
           });
 
-          if (existingEnquiry) {
+          if (enquiry) {
             await prisma.enquiryMessage.create({
               data: {
-                enquiryId: existingEnquiry.id,
+                enquiryId: enquiry.id,
                 sender: 'CLIENT',
                 body: bodyText.trim(),
               },
             });
 
             await prisma.enquiry.update({
-              where: { id: existingEnquiry.id },
+              where: { id: enquiry.id },
               data: { status: 'NEW' },
             });
           }
@@ -60,10 +85,10 @@ async function processInbox(host: string, port: number, user: string, pass: stri
 
           const isOrganisation = bodyText.toLowerCase().includes('organisation:');
 
-          await prisma.enquiry.create({
+          enquiry = await prisma.enquiry.create({
             data: {
-              ticketNumber: newTicketNumber,
-              source: 'EMAIL',
+               ticketNumber: newTicketNumber,
+               source,
               senderType: isOrganisation ? 'ORGANISATION' : 'INDIVIDUAL',
               name: fromName,
               email: fromEmail,
@@ -80,18 +105,48 @@ async function processInbox(host: string, port: number, user: string, pass: stri
           });
         }
 
+        // Process attachments if we have an enquiry to link them to
+        if (enquiry && parsedEmail.attachments && parsedEmail.attachments.length > 0) {
+          const existingDocCount = await prisma.document.count({
+            where: { enquiryId: enquiry.id },
+          });
+
+          if (existingDocCount === 0) {
+            for (const attachment of parsedEmail.attachments) {
+              if (!attachment.content) continue;
+
+              const buffer = Buffer.from(attachment.content);
+              const fileName = attachment.filename || 'attachment';
+              const mimeType = attachment.contentType || 'application/octet-stream';
+
+              const upload = await uploadAttachment(buffer, fileName, mimeType);
+              if (!upload) continue;
+
+              await prisma.document.create({
+                data: {
+                  name: fileName,
+                  url: upload.publicUrl,
+                  type: mimeType,
+                  size: buffer.length,
+                  enquiryId: enquiry.id,
+                },
+              });
+            }
+          }
+        }
+
         await client.messageFlagsAdd({ seq }, ['\\Seen']);
         processedCount++;
       }
     } finally {
       lock.release();
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error(`IMAP Error for ${user}:`, error);
   } finally {
     try {
       await client.logout();
-    } catch (e) {
+    } catch {
       // Ignore logout errors
     }
   }
@@ -102,7 +157,7 @@ async function processInbox(host: string, port: number, user: string, pass: stri
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
-  
+
   if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -121,12 +176,12 @@ export async function GET(request: Request) {
 
   // Process Titan Inbox
   if (titanHost && titanUser && titanPass) {
-    totalProcessed += await processInbox(titanHost, titanPort, titanUser, titanPass);
+    totalProcessed += await processInbox(titanHost, titanPort, titanUser, titanPass, 'EMAIL');
   }
 
   // Process Gmail Inbox
   if (gmailHost && gmailUser && gmailPass) {
-    totalProcessed += await processInbox(gmailHost, gmailPort, gmailUser, gmailPass);
+    totalProcessed += await processInbox(gmailHost, gmailPort, gmailUser, gmailPass, 'EMAIL');
   }
 
   return NextResponse.json({ success: true, processedCount: totalProcessed });

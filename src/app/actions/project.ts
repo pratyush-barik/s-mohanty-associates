@@ -382,6 +382,17 @@ export async function sendReportForRework(projectId: string, reworkComment?: str
       }
     });
 
+    // Reopen the linked enquiry when the project goes back for rework
+    const enquiry = await prisma.enquiry.findUnique({
+      where: { projectId },
+    });
+    if (enquiry && enquiry.status === 'CLOSED') {
+      await prisma.enquiry.update({
+        where: { id: enquiry.id },
+        data: { status: 'NEW' },
+      });
+    }
+
     revalidatePath(`/portal/projects/${projectId}`);
     revalidatePath('/portal/my-projects');
     return { success: true };
@@ -420,6 +431,17 @@ export async function requestClientRework(projectId: string, message: string) {
         clientReworkRequested: true 
       }
     });
+
+    // Reopen the linked enquiry when client requests rework
+    const enquiry = await prisma.enquiry.findUnique({
+      where: { projectId },
+    });
+    if (enquiry && enquiry.status === 'CLOSED') {
+      await prisma.enquiry.update({
+        where: { id: enquiry.id },
+        data: { status: 'NEW' },
+      });
+    }
 
     // Save the client's request as a project message
     await prisma.projectMessage.create({
@@ -503,6 +525,17 @@ export async function finalizeReport(projectId: string, pdfUrl: string) {
         clientReworkRequested: false
       }
     });
+
+    // Close the linked enquiry when the report is finalized
+    const enquiry = await prisma.enquiry.findUnique({
+      where: { projectId },
+    });
+    if (enquiry && enquiry.status !== 'CLOSED') {
+      await prisma.enquiry.update({
+        where: { id: enquiry.id },
+        data: { status: 'CLOSED' },
+      });
+    }
 
     if (project.isEmailOnly) {
       if (project?.serviceRequest?.guestEmail) {
@@ -618,9 +651,22 @@ export async function acceptServiceRequest(
       },
     });
 
-    revalidatePath('/portal/requests');
-    revalidatePath('/portal/projects');
-    return { success: true, projectCode: project.projectCode };
+  // Link enquiry to project if the service request has one
+  if (request.enquiryId) {
+    await prisma.serviceRequest.update({
+      where: { id: requestId },
+      data: { enquiryId: request.enquiryId },
+    });
+
+    await prisma.enquiry.update({
+      where: { id: request.enquiryId },
+      data: { projectId: project.id, serviceRequestId: requestId },
+    });
+  }
+
+  revalidatePath('/portal/requests');
+  revalidatePath('/portal/projects');
+  return { success: true, projectCode: project.projectCode };
   } catch (error) {
     console.error('Failed to accept request:', error);
     return { error: 'Failed to accept service request.' };

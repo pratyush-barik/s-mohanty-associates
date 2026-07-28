@@ -178,9 +178,11 @@ model ServiceRequest {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
-  client    Client?    @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  documents Document[] @relation("RequestDocuments")
-  project   Project?
+  enquiryId      String?       @unique
+  client         Client?        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  enquiry        Enquiry?       @relation(fields: [enquiryId], references: [id])
+  documents      Document[]     @relation("RequestDocuments")
+  project        Project?
 
   @@map("service_requests")
 }
@@ -189,6 +191,7 @@ model Project {
   id               String        @id @default(cuid())
   projectCode      String        @unique // SMA-YYYY-NNN
   serviceRequestId String        @unique
+  source           EnquirySource @default(WEBSITE)
   status           ProjectStatus @default(PENDING_REVIEW)
   clientReworkRequested Boolean @default(false)
   isEmailOnly      Boolean       @default(false)
@@ -211,6 +214,7 @@ model Project {
   report         Report?
   archivedRecord ArchivedRecord?
   bucketImages   BucketImage[]
+  enquiry        Enquiry?    @relation("ProjectEnquiry")
 
   @@map("projects")
 }
@@ -240,6 +244,7 @@ model Document {
   employeeId       String?
   serviceRequestId String?
   projectId        String?
+  enquiryId        String?
   inspectionId     String?
   createdAt        DateTime @default(now())
 
@@ -247,6 +252,7 @@ model Document {
   employee       Employee?       @relation("EmployeeDocuments", fields: [employeeId], references: [id])
   serviceRequest ServiceRequest? @relation("RequestDocuments", fields: [serviceRequestId], references: [id])
   project        Project?        @relation("ProjectDocuments", fields: [projectId], references: [id])
+  enquiry        Enquiry?        @relation("EnquiryDocuments", fields: [enquiryId], references: [id])
   inspection     Inspection?     @relation(fields: [inspectionId], references: [id])
 
   @@map("documents")
@@ -375,6 +381,8 @@ model Enquiry {
   id               String        @id @default(cuid())
   ticketNumber     String?       @unique // e.g. SMA-154
   source           EnquirySource @default(WEBSITE)
+  projectId        String?       @unique
+  serviceRequestId String?       @unique
   name             String
   email            String
   phone            String?
@@ -385,7 +393,10 @@ model Enquiry {
   status           EnquiryStatus @default(NEW)
   createdAt        DateTime      @default(now())
 
-  messages         EnquiryMessage[]
+  enquiries        EnquiryMessage[]
+  documents        Document[]    @relation("EnquiryDocuments")
+  serviceRequests  ServiceRequest[]
+  project          Project?      @relation("ProjectEnquiry", fields: [projectId], references: [id])
 
   @@map("enquiries")
 }
@@ -405,6 +416,7 @@ model EnquiryMessage {
 enum EnquirySource {
   WEBSITE
   EMAIL
+  PORTAL_SIGNUP
 }
 
 enum SenderRole {

@@ -33,7 +33,7 @@ export async function submitServiceRequest(
 
   const data = validatedFields.data;
 
-  await prisma.serviceRequest.create({
+  const serviceRequest = await prisma.serviceRequest.create({
     data: {
       clientId: session.user.id,
       propertyType: data.propertyType,
@@ -45,6 +45,25 @@ export async function submitServiceRequest(
       contactEmail: data.contactEmail,
       additionalNotes: data.additionalNotes || null,
       status: 'SUBMITTED',
+    },
+  });
+
+  // Create a linked Enquiry record with PORTAL_SIGNUP source for internal tracking
+  const count = await prisma.enquiry.count();
+  const ticketNumber = `SMA-${100 + count + 1}`;
+
+  await prisma.enquiry.create({
+    data: {
+      ticketNumber,
+      source: 'PORTAL_SIGNUP',
+      serviceRequestId: serviceRequest.id,
+      name: data.contactName,
+      email: data.contactEmail,
+      phone: data.contactPhone || null,
+      subject: `${data.propertyType} — ${data.purpose}`,
+      message: data.propertyDetails,
+      senderType: 'INDIVIDUAL',
+      status: 'NEW',
     },
   });
 

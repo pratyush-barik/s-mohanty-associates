@@ -13,6 +13,7 @@ interface Enquiry {
   senderType: string;
   organisationName: string | null;
   status: string;
+  projectCode: string | null;
   createdAt: string;
 }
 
@@ -20,7 +21,13 @@ const statusColors: Record<string, string> = {
   NEW: 'bg-red-50 text-red-600 border-red-200',
   WAITING_FOR_CLIENT: 'bg-amber-50 text-amber-600 border-amber-200',
   IN_PROGRESS: 'bg-blue-50 text-blue-600 border-blue-200',
-  CLOSED: 'bg-gray-50 text-gray-600 border-gray-200',
+  CLOSED: 'bg-gray-100 text-gray-600 border-gray-200',
+};
+
+const sourceStyles: Record<string, { bg: string; text: string; icon: string }> = {
+  WEBSITE: { bg: 'bg-purple-50', text: 'text-purple-700', icon: '🌐' },
+  EMAIL: { bg: 'bg-blue-50', text: 'text-blue-700', icon: '📧' },
+  PORTAL_SIGNUP: { bg: 'bg-green-50', text: 'text-green-700', icon: '🔐' },
 };
 
 const subjectLabels: Record<string, string> = {
@@ -40,10 +47,10 @@ export default function EnquiryList({ enquiries }: { enquiries: Enquiry[] }) {
       <div className="card p-12 text-center">
         <div className="text-4xl mb-4">📭</div>
         <h2 className="text-lg font-bold text-[#0f2038] mb-2" style={{ fontFamily: 'var(--font-heading)' }}>
-          No Enquiries Yet
+          No Cases Yet
         </h2>
         <p className="text-sm text-[#6c757d]">
-          When visitors submit the Contact Us form or email directly, they will appear here.
+          Cases from the website contact form, direct emails, and portal signups will appear here.
         </p>
       </div>
     );
@@ -58,6 +65,7 @@ export default function EnquiryList({ enquiries }: { enquiries: Enquiry[] }) {
               <th className="px-6 py-3 text-xs font-semibold text-[#495057] uppercase tracking-wider">Ticket</th>
               <th className="px-6 py-3 text-xs font-semibold text-[#495057] uppercase tracking-wider">Source</th>
               <th className="px-6 py-3 text-xs font-semibold text-[#495057] uppercase tracking-wider">Client</th>
+              <th className="px-6 py-3 text-xs font-semibold text-[#495057] uppercase tracking-wider">Project</th>
               <th className="px-6 py-3 text-xs font-semibold text-[#495057] uppercase tracking-wider">Status</th>
               <th className="px-6 py-3 text-xs font-semibold text-[#495057] uppercase tracking-wider">Action</th>
             </tr>
@@ -65,6 +73,8 @@ export default function EnquiryList({ enquiries }: { enquiries: Enquiry[] }) {
           <tbody className="divide-y divide-[#e9ecef]">
             {enquiries.map((enquiry) => {
               const isNew = enquiry.status === 'NEW';
+              const sourceStyle = sourceStyles[enquiry.source] || sourceStyles.WEBSITE;
+
               return (
                 <tr key={enquiry.id} className="hover:bg-[#f8f9fa] transition-colors group">
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -73,8 +83,8 @@ export default function EnquiryList({ enquiries }: { enquiries: Enquiry[] }) {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-xs font-medium text-[#6c757d]">
-                      {enquiry.source === 'WEBSITE' ? '🌐 Website' : '📧 Email'}
+                    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold ${sourceStyle.bg} ${sourceStyle.text}`}>
+                      {sourceStyle.icon} {enquiry.source === 'EMAIL' ? 'Gmail' : enquiry.source === 'PORTAL_SIGNUP' ? 'Portal' : 'Website'}
                     </span>
                   </td>
                   <td className="px-6 py-4">
@@ -87,6 +97,15 @@ export default function EnquiryList({ enquiries }: { enquiries: Enquiry[] }) {
                         <p className="text-xs text-[#6c757d]">{enquiry.email}</p>
                       </div>
                     </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {enquiry.projectCode ? (
+                      <Link href={`/portal/projects/${enquiry.projectCode}`} className="text-xs font-mono font-bold text-[#b8860b] hover:underline">
+                        {enquiry.projectCode}
+                      </Link>
+                    ) : (
+                      <span className="text-xs text-[#adb5bd] italic">—</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${statusColors[enquiry.status] || 'bg-gray-50 text-gray-600'}`}>

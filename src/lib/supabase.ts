@@ -16,6 +16,7 @@ export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 export const STORAGE_BUCKETS = {
   EMPLOYEE_PROFILES: 'employee-profiles',
   VALUATION_DOCUMENTS: 'valuation-documents',
+  ENQUIRY_FILES: 'enquiry-files',
 } as const;
 
 /**

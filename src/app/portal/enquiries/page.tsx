@@ -18,6 +18,14 @@ export default async function EnquiriesPage() {
 
   const enquiries = await prisma.enquiry.findMany({
     orderBy: { createdAt: 'desc' },
+    include: {
+      project: {
+        select: {
+          projectCode: true,
+          status: true,
+        },
+      },
+    },
   });
 
   const stats = {
@@ -31,17 +39,17 @@ export default async function EnquiriesPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-[#0f2038]" style={{ fontFamily: 'var(--font-heading)' }}>
-          Public Enquiries
+          Cases & Enquiries
         </h1>
         <p className="text-sm text-[#6c757d] mt-1">
-          Enquiries submitted by visitors through the Contact Us form.
+          Manage all client cases — from website contacts, direct emails, and portal signups.
         </p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="card p-4">
-          <p className="text-xs font-medium text-[#6c757d] uppercase tracking-wider mb-1">Total</p>
+          <p className="text-xs font-medium text-[#6c757d] uppercase tracking-wider mb-1">Total Cases</p>
           <p className="text-2xl font-bold text-[#0f2038]" style={{ fontFamily: 'var(--font-heading)' }}>
             {stats.total}
           </p>
@@ -78,6 +86,7 @@ export default async function EnquiriesPage() {
           senderType: e.senderType,
           organisationName: e.organisationName,
           status: e.status,
+          projectCode: e.project?.projectCode ?? null,
           createdAt: e.createdAt.toISOString(),
         }))}
       />

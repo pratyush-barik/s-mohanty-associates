@@ -12,6 +12,7 @@ export const supabaseBrowser = createClient(supabaseUrl, supabaseAnonKey);
 export const STORAGE_BUCKETS = {
   EMPLOYEE_PROFILES: 'employee-profiles',
   VALUATION_DOCUMENTS: 'valuation-documents',
+  ENQUIRY_FILES: 'enquiry-files',
 } as const;
 
 export const STORAGE_PATHS = {
