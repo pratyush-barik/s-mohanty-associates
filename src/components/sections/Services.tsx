@@ -131,9 +131,13 @@ export default function Services() {
         </SectionWrapper>
 
         {/* Service Cards */}
-        <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" staggerDelay={0.08}>
+        <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6" staggerDelay={0.08}>
           {services.map((service, index) => (
-            <StaggerItem key={service.title} animation="scaleUp">
+            <StaggerItem 
+              key={service.title} 
+              animation="scaleUp"
+              className={index === 10 ? 'xl:col-start-2' : ''}
+            >
               <div
                 className={`card-dark group cursor-pointer relative overflow-hidden h-full ${service.border}`}
                 onMouseEnter={() => setHoveredIndex(index)}
