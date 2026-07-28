@@ -54,7 +54,7 @@ const qualifications = [
     items: [
       {
         title: 'M. Tech in Civil Engineering (Structural & Foundation)',
-        subtitle: 'Biju Patnaik University Of Technology, Odisha, Rourkela',
+        subtitle: 'Biju Patnaik University of Technology',
         detail: '(2022-2024)',
         icon: '🎓',
       },
@@ -65,25 +65,20 @@ const qualifications = [
         icon: '🎓',
       },
       {
-        title: 'MBA (Human Resource)',
-        subtitle: 'Punjab Technical University',
-        detail: '(2009–2011)',
-        icon: '📚',
-      },
-    ],
-  },
-  {
-    category: 'Additional Qualifications',
-    items: [
-      {
         title: 'M. Tech in Civil Engineering (Highway Engineering)',
         subtitle: 'Karnataka State Open University',
         detail: '(2012-2014)',
         icon: '🎓',
       },
       {
+        title: 'MBA (Human Resource)',
+        subtitle: 'Punjab Technical University',
+        detail: '(2009–2011)',
+        icon: '📚',
+      },
+      {
         title: 'B.E. in Civil Engineering',
-        subtitle: 'KITS, Bhubaneswar, Utkal University',
+        subtitle: 'Utkal University',
         detail: '(1998–2002)',
         icon: '🎓',
       },
