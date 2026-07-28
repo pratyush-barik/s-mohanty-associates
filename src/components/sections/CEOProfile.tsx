@@ -3,12 +3,7 @@
 import Image from 'next/image';
 import SectionWrapper from '@/components/ui/SectionWrapper';
 
-const achievements = [
-  { label: 'Projects Completed', value: '2,500+' },
-  { label: 'Years Experience', value: '28+' },
-  { label: 'Corporate Clients', value: '150+' },
-  { label: 'Team Members', value: '15+' },
-];
+
 
 const expertise = [
   'Property Valuation (Land & Building)',
@@ -95,17 +90,6 @@ export default function CEOProfile() {
 
               </div>
 
-              {/* Achievement Stats */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {achievements.map((item) => (
-                  <div key={item.label} className="card-dark text-center p-4">
-                    <div className="text-2xl font-bold gradient-text mb-1" style={{ fontFamily: 'var(--font-heading)' }}>
-                      {item.value}
-                    </div>
-                    <p className="text-xs text-white/40 font-medium">{item.label}</p>
-                  </div>
-                ))}
-              </div>
 
               {/* Expertise */}
               <div>
