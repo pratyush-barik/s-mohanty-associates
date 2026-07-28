@@ -45,7 +45,7 @@ export default async function PortalLayout({ children }: { children: React.React
   // Role-specific nav items
   if (userRole === 'OWNER' || userRole === 'MANAGER') {
     navItems.push(
-      { label: 'Cases', href: '/portal/enquiries', icon: '🗂️' },
+      { label: 'Public Enquiries', href: '/portal/enquiries', icon: '💬' },
       { label: 'Service Requests', href: '/portal/requests', icon: '📨' },
       { label: 'Incoming Transfers', href: '/portal/transfers', icon: '🔄', badge: pendingTransfersCount > 0 ? pendingTransfersCount : undefined },
       { label: 'Projects', href: '/portal/projects', icon: '📁' },

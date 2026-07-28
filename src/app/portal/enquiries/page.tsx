@@ -39,10 +39,10 @@ export default async function EnquiriesPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-[#0f2038]" style={{ fontFamily: 'var(--font-heading)' }}>
-          Cases & Enquiries
+          Public Enquiries
         </h1>
         <p className="text-sm text-[#6c757d] mt-1">
-          Manage all client cases — from website contacts, direct emails, and portal signups.
+          Enquiries submitted by visitors through the Contact Us form or via email.
         </p>
       </div>
 

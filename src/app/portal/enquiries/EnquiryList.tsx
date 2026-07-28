@@ -47,10 +47,10 @@ export default function EnquiryList({ enquiries }: { enquiries: Enquiry[] }) {
       <div className="card p-12 text-center">
         <div className="text-4xl mb-4">📭</div>
         <h2 className="text-lg font-bold text-[#0f2038] mb-2" style={{ fontFamily: 'var(--font-heading)' }}>
-          No Cases Yet
+          No Enquiries Yet
         </h2>
         <p className="text-sm text-[#6c757d]">
-          Cases from the website contact form, direct emails, and portal signups will appear here.
+          When visitors submit the Contact Us form or email directly, they will appear here.
         </p>
       </div>
     );
