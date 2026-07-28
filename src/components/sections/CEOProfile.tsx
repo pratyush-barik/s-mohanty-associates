@@ -60,10 +60,10 @@ export default function CEOProfile() {
           <SectionWrapper animation="fadeLeft" delay={0.2} className="lg:col-span-3">
             <div className="space-y-8">
               {/* Section Header (Moved to right column) */}
-              <div className="text-center lg:text-left mb-10">
+              <div className="text-center mb-10">
                 <span className="text-[#ffcb47] text-sm font-semibold uppercase tracking-[0.2em] mb-3 block">Leadership</span>
-                <h2 className="section-title text-white lg:text-left">Our <span className="gradient-text">Founder</span></h2>
-                <div className="section-divider lg:mx-0" />
+                <h2 className="section-title text-white">Our <span className="gradient-text">Founder</span></h2>
+                <div className="section-divider" />
               </div>
 
               {/* Bio */}
