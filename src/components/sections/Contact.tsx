@@ -56,7 +56,7 @@ export default function Contact() {
 
       <div className="container mx-auto max-w-[1280px] px-6 relative z-10">
         {/* Section Header */}
-        <SectionWrapper animation="fadeUp" className="text-center mb-16">
+        <SectionWrapper animation="fadeUp" className="text-center mb-8">
           <span className="text-[#b8860b] text-sm font-semibold uppercase tracking-[0.2em] mb-3 block">Get In Touch</span>
           <h2 className="section-title">Contact <span className="gradient-text">Us</span></h2>
           <div className="section-divider" />
