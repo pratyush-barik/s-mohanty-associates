@@ -4,10 +4,10 @@ import Image from 'next/image';
 import SectionWrapper from '@/components/ui/SectionWrapper';
 
 const achievements = [
-  { label: 'Projects Completed', value: '2,500+' },
-  { label: 'Years Experience', value: '28+' },
-  { label: 'Corporate Clients', value: '150+' },
-  { label: 'Team Members', value: '15+' },
+  { label: 'Years of Experience', value: '30+' },
+  { label: 'Properties Valued', value: '10,000+' },
+  { label: 'Buildings Designed', value: '500+' },
+  { label: 'Bank Empanelments', value: '20+' },
 ];
 
 const expertise = [
@@ -90,7 +90,7 @@ export default function CEOProfile() {
                   <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium">Registered Technical Person</span>
                 </div>
                 <p className="text-white/60 leading-relaxed mb-4">
-                  A seasoned civil engineering professional with more than 2 decades of diversified experience in valuation, technical due diligence, and execution of civil engineering projects. Specialized in mortgage valuation, construction funding, feasibility studies, and advisory services for banks, NBFCs, and corporate clients. Founder of S Mohanty Associates, offering comprehensive valuation and consultancy solutions for land and building assets across Odisha.
+                  A seasoned civil engineering professional with more than two decades of diversified experience in valuation, technical due diligence, and execution of civil engineering projects. Specialized in mortgage valuation, construction funding, feasibility studies, and advisory services for banks, NBFCs, and corporate clients. Founder of S Mohanty Associates, offering comprehensive valuation and consultancy solutions for land and building assets across Odisha.
                 </p>
                 <div className="text-white/60 leading-relaxed">
                   <h4 className="text-white font-semibold mb-2">Key Achievements</h4>
