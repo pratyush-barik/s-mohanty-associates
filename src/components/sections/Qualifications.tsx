@@ -105,7 +105,7 @@ export default function Qualifications() {
         {/* Qualification Groups */}
         <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 gap-8" staggerDelay={0.15}>
           {qualifications.map((group) => (
-            <StaggerItem key={group.category} animation="scaleUp">
+            <StaggerItem key={group.category} animation="scaleUp" className={group.category === 'Academic Qualifications' ? 'md:col-span-2' : ''}>
               <div className="space-y-4">
                 <h3 className="text-xl font-bold text-[#0f2038] mb-4 flex items-center gap-3" style={{ fontFamily: 'var(--font-heading)' }}>
                   <span className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#b8860b]/10 to-[#b8860b]/5 flex items-center justify-center">
@@ -114,7 +114,7 @@ export default function Qualifications() {
                   {group.category}
                 </h3>
 
-                <div className="space-y-3">
+                <div className={group.category === 'Academic Qualifications' ? 'grid grid-cols-1 md:grid-cols-2 gap-3' : 'space-y-3'}>
                   {group.items.map((item) => (
                     <div
                       key={item.title}

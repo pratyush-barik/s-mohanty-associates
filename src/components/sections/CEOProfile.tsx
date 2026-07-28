@@ -84,10 +84,10 @@ export default function CEOProfile() {
                   <span className="px-3 py-1 rounded-full bg-[#1e3a5f]/20 text-[#ffcb47] text-xs font-medium">B.E. (Civil)</span>
                 </div>
                 <div className="flex flex-wrap gap-2 mb-5">
-                  <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium" title="Membership No. M-1560969">Chartered Engineer (M-1560969)</span>
-                  <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium" title="Membership No. F-26377">Fellow - IOV (F-26377)</span>
-                  <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium" title="Membership No. F-4443">Fellow - IIV (F-4443)</span>
-                  <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium" title="Registration No. IBBI/RV/02/2019/10594">Registered Valuer (IBBI/RV/02/2019/10594)</span>
+                  <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium">Chartered Engineer</span>
+                  <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium">Fellow Member</span>
+                  <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium">Registered Valuer</span>
+                  <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium">Registered Technical Person</span>
                 </div>
                 <p className="text-white/60 leading-relaxed mb-4">
                   A seasoned civil engineering professional with more than 2 decades of diversified experience in valuation, technical due diligence, and execution of civil engineering projects. Specialized in mortgage valuation, construction funding, feasibility studies, and advisory services for banks, NBFCs, and corporate clients. Founder of S Mohanty Associates, offering comprehensive valuation and consultancy solutions for land and building assets across Odisha.
