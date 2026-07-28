@@ -22,10 +22,13 @@
 The database uses PostgreSQL. The schema is defined in `prisma/schema.prisma`.
 Key Models:
 - **`User`**: Contains all users. Differentiated by the `role` enum (`CLIENT`, `FIELD_EMPLOYEE`, `REPORT_EMPLOYEE`, `MANAGER`, `OWNER`).
-- **`Project`**: The core entity. Tracks a valuation job from start to finish. It has relations to the client, the assigned manager, field employee, and report employee. Controlled by a strict `status` enum (e.g., `PENDING_REVIEW`, `INSPECTION_IN_PROGRESS`, `MANAGER_REVIEW`, `COMPLETED`).
-- **`ServiceRequest`**: The initial intake form data submitted by the client (property details, contact info). 1-to-1 with a Project.
+- **`Project`**: The core entity. Tracks a valuation job from start to finish. It has relations to the client, the assigned manager, field employee, and report employee. Controlled by a strict `status` enum (e.g., `PENDING_REVIEW`, `INSPECTION_IN_PROGRESS`, `MANAGER_REVIEW`, `COMPLETED`). Has a `source` field (`EnquirySource` enum) tracking where the project originated.
+- **`ServiceRequest`**: The initial intake form data submitted by the client (property details, contact info). 1-to-1 with a Project. Has `enquiryId` linking to the originating enquiry (for portal signup and organised email requests).
 - **`Inspection`**: Data filled out by the Field Employee during site visits (status, location, notes).
 - **`Report`**: The actual valuation data. Contains a `data` JSON column to flexibly store dynamic report data (Market Value, Distress Value, etc.).
+- **`Enquiry`**: Public enquiries — tracking website contacts, direct emails, and portal signups. Has a `ticketNumber` (SMA-XXX format), `source` (`EnquirySource`: `WEBSITE`, `EMAIL`, `PORTAL_SIGNUP`), `status` (`EnquiryStatus`: `NEW`, `WAITING_FOR_CLIENT`, `IN_PROGRESS`, `CLOSED`), and linked `projectId`/`serviceRequestId`. Supports threaded messages (`EnquiryMessage`) and file attachments (`Document`). Auto-closes when report is finalized with no rework; reopens when sent for rework or client requests it.
+- **`EnquiryMessage`**: Threaded messages within an enquiry.
+- **`Document`**: File attachments linked to enquiries or service requests, stored in Supabase `enquiry-files` bucket. Public enquiries and service-request-sourced enquiries both have their files visible in the manager/owner ChatInterface..
 
 ### Storage (Supabase)
 We use Supabase Storage buckets for file handling.
@@ -120,15 +123,20 @@ The core business logic is **100% complete**.
 9. **PDF Generation & Cleanup (Updated)**: PDF generation is fully implemented on the **Client-Side** natively using `pdf-lib`, triggered during Manager Finalization.
    - It directly draws tables, text, and images onto PDF coordinates using `src/lib/pdf-report-renderer.ts`, paginates automatically, downloads locally for the manager, and uploads the final PDF blob to `reports/pdfs/` in the `valuation-documents` Supabase bucket.
    - **Automated Cleanup:** Upon finalization, all temporary property images in `temp-photos/${projectId}/` are deleted from Supabase, and the `propertyImages` array in the database JSON is cleared.
-10. **Client Rework Flow**: Clients can request changes to their finalized reports from their dashboard. The project status reverts to `MANAGER_REVIEW`, and the manager receives a rework comment message.
-11. **Client Rework Flow**: Clients can request changes to their finalized reports from their dashboard. The project status reverts to `MANAGER_REVIEW`, and the manager receives a rework comment message.
-12. **Navigation & Login Layout Updates (July 2026)**:
-   - Portal navigation labels updated — "My Reports" → "My Projects".
-   - My Projects listing page layout transformed from block cards into sleek, horizontal, inline rectangular list rows.
-   - Report Agent's "My Projects" page now includes exact filtering options (search bar, Pending/Completed/All tabs) matching the Field Agent's workflow.
-   - Replaced Next.js `<Image>` styling calculations inside the main Navigation Bar and Employee Login page layout with native HTML `<img>` elements, resolving the issue where logos were cut off at the bottom.
-13. **Delivery**: Client downloads the PDF from their dashboard.
-14. **Landing Page Integrations**: The "Submit Organisational Request" CTA on the public landing page now generates pre-filled emails (Gmail, Outlook, Default Mail) whose body matches the exact 8 data fields found in the client's internal "Request a Service" form (Service Category, Property Details, etc.).
+ 10. **Client Rework Flow**: Clients can request changes to their finalized reports from their dashboard. The project status reverts to `MANAGER_REVIEW`, and the manager receives a rework comment message.
+11. **Public Enquiries Ticketing System**: Website contact form submissions and direct emails are tracked as separate tickets (Enquiry model) with `ENQUIRY_FILES` Supabase bucket for attachments. The Employee Portal has a dedicated **Public Enquiries** nav item (navigates to `/portal/enquiries`) with:
+    - **Enquiry List** table: shows ticket number, source badge (🌐 Website / 📧 Email / 🔐 Portal Signup), linked project code, status, date, and search/filter controls.
+    - **Enquiry Detail** page: threaded chat interface (`ChatInterface`) with source badge, file attachment section (manager/owner can view and download all attachments in-app), and close ticket button.
+    - **Tabular views**: Filter by source type in the EnquiryList. Columns show source icons (📧 Gmail, 🌐 Website, 🔐 Portal Signup).
+    - Tickets are linked to ServiceRequests (via `serviceRequestId`) and Projects (via `projectId`) so managers can see which enquiries became active projects.
+    - Auto-close behaviour: when a report is finalized with no rework needed, the linked enquiry ticket auto-closes. New messages on closed tickets create a new ticket automatically.
+ 12. **Navigation & Login Layout Updates (July 2026)**:
+    - Portal navigation labels updated — "My Reports" → "My Projects".
+    - My Projects listing page layout transformed from block cards into sleek, horizontal, inline rectangular list rows.
+    - Report Agent's "My Projects" page now includes exact filtering options (search bar, Pending/Completed/All tabs) matching the Field Agent's workflow.
+    - Replaced Next.js `<Image>` styling calculations inside the main Navigation Bar and Employee Login page layout with native HTML `<img>` elements, resolving the issue where logos were cut off at the bottom.
+ 13. **Delivery**: Client downloads the PDF from their dashboard.
+ 14. **Landing Page Integrations**: The "Submit Organisational Request" CTA on the public landing page now generates pre-filled emails (Gmail, Outlook, Default Mail) whose body matches the exact 8 data fields found in the client's internal "Request a Service" form (Service Category, Property Details, etc.).
 
 ## 5. Pending Work (What is next)
 
@@ -206,3 +214,6 @@ Outstanding items in **priority order**:
 - `4ecdfa6` — feat: multi-assignment, rework flow, strict permissions, enquiry fixes
 - `4cc5f7e` — refactor: revert form UI to compact dropdowns, keep 3-column layout for PDF only
 - `250ddc4` — feat: auto-embed Google Maps in Location Map section from property address
+- `d37005f` — feat: ticketing system with email attachments, source tracking, and enquiry-project linking
+- `d343bf1` — fix: revert "Cases" back to "Public Enquiries" nav label (Public Enquiries ≠ Service Requests/Cases)
+- `d343c01` — fix: service request active/pending tab 404 error
