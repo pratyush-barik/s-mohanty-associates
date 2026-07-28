@@ -4,6 +4,7 @@ import { useState } from 'react';
 import SectionWrapper, { StaggerContainer, StaggerItem } from '@/components/ui/SectionWrapper';
 
 const services = [
+  // Row 1 (Longest text)
   {
     icon: '🏦',
     title: 'Mortgage & Loan Security Valuation',
@@ -12,6 +13,40 @@ const services = [
     gradient: 'from-blue-500/10 to-indigo-500/10',
     border: 'hover:border-blue-300',
   },
+  {
+    icon: '🏢',
+    title: 'Building Valuation',
+    description: 'Residential Buildings, Apartments, Villas, Commercial Buildings, Office Spaces, Shopping Complexes, Warehouses, Industrial Buildings, Hotels, Hospitals, Schools, Colleges, Institutional Buildings',
+    details: '',
+    gradient: 'from-cyan-500/10 to-teal-500/10',
+    border: 'hover:border-cyan-300',
+  },
+  {
+    icon: '🌍',
+    title: 'Land Valuation',
+    description: 'Residential Land, Commercial Land, Industrial Land, Agricultural Land, Institutional Land, Development Land, Freehold & Leasehold Land, Government Leasehold Properties',
+    details: '',
+    gradient: 'from-purple-500/10 to-violet-500/10',
+    border: 'hover:border-purple-300',
+  },
+  {
+    icon: '🏗️',
+    title: 'Project & Construction Consultancy',
+    description: 'Construction Stage Inspection, Progress Certification, Cost-to-Complete Assessment, Construction Cost Estimation, Fund Utilization Verification, Technical Monitoring',
+    details: '',
+    gradient: 'from-rose-500/10 to-pink-500/10',
+    border: 'hover:border-rose-300',
+  },
+  {
+    icon: '📈',
+    title: 'Development & Investment Advisory',
+    description: 'Highest & Best Use (HBU) Analysis, Residual Land Valuation, Development Feasibility, Joint Development Valuation, Investment Advisory, Marketability Assessment',
+    details: '',
+    gradient: 'from-emerald-500/10 to-green-500/10',
+    border: 'hover:border-emerald-400',
+  },
+
+  // Row 2 (Medium text)
   {
     icon: '💼',
     title: 'Banking & Financial Institution Services',
@@ -27,54 +62,6 @@ const services = [
     details: '',
     gradient: 'from-orange-500/10 to-amber-500/10',
     border: 'hover:border-orange-300',
-  },
-  {
-    icon: '🌍',
-    title: 'Land Valuation',
-    description: 'Residential Land, Commercial Land, Industrial Land, Agricultural Land, Institutional Land, Development Land, Freehold & Leasehold Land, Government Leasehold Properties',
-    details: '',
-    gradient: 'from-purple-500/10 to-violet-500/10',
-    border: 'hover:border-purple-300',
-  },
-  {
-    icon: '🏢',
-    title: 'Building Valuation',
-    description: 'Residential Buildings, Apartments, Villas, Commercial Buildings, Office Spaces, Shopping Complexes, Warehouses, Industrial Buildings, Hotels, Hospitals, Schools, Colleges, Institutional Buildings',
-    details: '',
-    gradient: 'from-cyan-500/10 to-teal-500/10',
-    border: 'hover:border-cyan-300',
-  },
-  {
-    icon: '🏗️',
-    title: 'Project & Construction Consultancy',
-    description: 'Construction Stage Inspection, Progress Certification, Cost-to-Complete Assessment, Construction Cost Estimation, Fund Utilization Verification, Technical Monitoring',
-    details: '',
-    gradient: 'from-rose-500/10 to-pink-500/10',
-    border: 'hover:border-rose-300',
-  },
-  {
-    icon: '🏭',
-    title: 'Corporate & Fixed Asset Valuation',
-    description: 'Fixed Asset Valuation, Fair Market Value (FMV), Replacement Cost',
-    details: '',
-    gradient: 'from-yellow-500/10 to-[#b8860b]/10',
-    border: 'hover:border-yellow-400',
-  },
-  {
-    icon: '📉',
-    title: 'IBC & Insolvency Valuation Support',
-    description: 'Fair Value, Liquidation Value, Resolution Professional Assistance',
-    details: '',
-    gradient: 'from-blue-500/10 to-cyan-500/10',
-    border: 'hover:border-blue-400',
-  },
-  {
-    icon: '📈',
-    title: 'Development & Investment Advisory',
-    description: 'Highest & Best Use (HBU) Analysis, Residual Land Valuation, Development Feasibility, Joint Development Valuation, Investment Advisory, Marketability Assessment',
-    details: '',
-    gradient: 'from-emerald-500/10 to-green-500/10',
-    border: 'hover:border-emerald-400',
   },
   {
     icon: '🏛️',
@@ -100,6 +87,8 @@ const services = [
     gradient: 'from-pink-500/10 to-rose-500/10',
     border: 'hover:border-pink-400',
   },
+
+  // Row 3 (Short text, Centered)
   {
     icon: '🤝',
     title: 'Customized Valuation & Advisory',
@@ -107,6 +96,22 @@ const services = [
     details: '',
     gradient: 'from-[#b8860b]/10 to-yellow-600/10',
     border: 'hover:border-[#b8860b]',
+  },
+  {
+    icon: '🏭',
+    title: 'Corporate & Fixed Asset Valuation',
+    description: 'Fixed Asset Valuation, Fair Market Value (FMV), Replacement Cost',
+    details: '',
+    gradient: 'from-yellow-500/10 to-[#b8860b]/10',
+    border: 'hover:border-yellow-400',
+  },
+  {
+    icon: '📉',
+    title: 'IBC & Insolvency Valuation Support',
+    description: 'Fair Value, Liquidation Value, Resolution Professional Assistance',
+    details: '',
+    gradient: 'from-blue-500/10 to-cyan-500/10',
+    border: 'hover:border-blue-400',
   }
 ];
 
