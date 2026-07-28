@@ -2628,15 +2628,6 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
                 {uploading ? 'Uploading...' : '\uD83D\uDDFA\uFE0F Upload Sketch Map'}
                 <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'sketchMapImage')} disabled={uploading} />
               </label>
-              {bucketImages.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => openBucketPicker('sketchMapImage')}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-sm font-medium hover:bg-[#1e3a5f]/5 transition-colors"
-                >
-                  📸 Pick from Bucket ({bucketImages.length})
-                </button>
-              )}
             </div>
           )
         )}
@@ -2723,15 +2714,6 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
                     {uploading ? 'Uploading...' : '\uD83D\uDCCD Upload Map Screenshot for PDF'}
                     <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'locationMapImage')} disabled={uploading} />
                   </label>
-                  {bucketImages.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => openBucketPicker('locationMapImage')}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-sm font-medium hover:bg-[#1e3a5f]/5 transition-colors"
-                    >
-                      📸 Pick from Bucket ({bucketImages.length})
-                    </button>
-                  )}
                 </div>
               )
             )}
