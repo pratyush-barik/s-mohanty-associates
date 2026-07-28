@@ -1,4 +1,4 @@
-export const serviceCategoryMap: Record<string, string[]> = {
+ï»¿export const serviceCategoryMap: Record<string, string[]> = {
   'Mortgage & Loan Security Valuation': [
     'Home Loan Valuation', 'Loan Against Property (LAP)', 'Commercial Property Valuation', 
     'Industrial Property Valuation', 'Construction Finance Valuation', 'Project Finance Valuation', 
@@ -45,10 +45,11 @@ export const serviceCategoryMap: Record<string, string[]> = {
   ],
   'Market Research & Advisory': [
     'Comparable Market Analysis', 'Rental Assessment', 'Market Trend Analysis', 
-    'Demand–Supply Analysis', 'Circle Rate Study', 'Feasibility Studies'
+    'Demand-Supply Analysis', 'Circle Rate Study', 'Feasibility Studies'
   ],
   'Customized Valuation & Advisory': [
     'Tailor-made Valuation Reports', 'Investor Due Diligence', 'Asset Acquisition Advisory', 
     'Technical Audit Support', 'Independent Expert Opinion'
   ]
 };
+
