@@ -219,6 +219,8 @@ export async function sendProjectMessage(
     });
   }
 
+  const replyTextLower = content.trim().toLowerCase();
+
   // Send email reply for Gmail or External source projects
   const shouldEmail = project.source === 'GMAIL' || project.source === 'EXTERNAL';
 
@@ -226,15 +228,17 @@ export async function sendProjectMessage(
     const contactEmail = project.serviceRequest?.contactEmail || project.serviceRequest?.guestEmail;
     if (contactEmail) {
       const projectCode = project.projectCode;
-      const attachmentLinks = attachmentDocIds.length > 0
-        ? attachmentDocIds.map(id => {
-            const doc = project.messages?.[0]?.documents?.find((d: any) => d.id === id);
-            return doc?.url || '';
-          }).filter(Boolean).join('\n')
-        : '';
+      let attachmentLinks = '';
+      if (attachmentDocIds.length > 0) {
+        const docs = await prisma.document.findMany({
+          where: { id: { in: attachmentDocIds }, projectId },
+          select: { url: true },
+        });
+        attachmentLinks = docs.map(d => d.url).filter(Boolean).join('\n');
+      }
 
       await sendMail({
-        from: 'manager@smohantyassociates.com',
+        from: 'smohantyassociate@gmail.com',
         to: contactEmail,
         subject: `Re: [${projectCode}] ${content.substring(0, 50)}${content.length > 50 ? '...' : ''}`,
         html: `

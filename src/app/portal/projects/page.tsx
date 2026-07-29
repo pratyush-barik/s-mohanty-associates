@@ -9,6 +9,18 @@ function formatStatus(status: string, clientReworkRequested?: boolean) {
   return status.replace(/_/g, ' ');
 }
 
+function formatSource(source: string) {
+  if (source === 'GMAIL') return 'Gmail';
+  if (source === 'EXTERNAL') return 'External';
+  return 'Website';
+}
+
+function sourceColor(source: string) {
+  if (source === 'GMAIL') return 'bg-blue-100 text-blue-700 border-blue-200';
+  if (source === 'EXTERNAL') return 'bg-amber-100 text-amber-700 border-amber-200';
+  return 'bg-purple-100 text-purple-700 border-purple-200';
+}
+
 export default async function PortalProjectsPage() {
   const session = await auth();
   if (!session?.user?.id) return null;
@@ -22,7 +34,6 @@ export default async function PortalProjectsPage() {
     redirect('/portal');
   }
 
-  // MANAGER sees only their own projects; OWNER sees all
   const whereClause = currentUser.role === 'MANAGER'
     ? { assignedManagerId: session.user.id }
     : {};
@@ -61,6 +72,7 @@ export default async function PortalProjectsPage() {
               <tr>
                 <th className="px-6 py-3 font-medium text-[#6c757d]">Project Code</th>
                 <th className="px-6 py-3 font-medium text-[#6c757d]">Client</th>
+                <th className="px-6 py-3 font-medium text-[#6c757d]">Source</th>
                 <th className="px-6 py-3 font-medium text-[#6c757d]">Status</th>
                 <th className="px-6 py-3 font-medium text-[#6c757d]">Field Agent</th>
                 <th className="px-6 py-3 font-medium text-[#6c757d]">Report Agent</th>
@@ -76,6 +88,11 @@ export default async function PortalProjectsPage() {
                   <td className="px-6 py-4">
                     <p className="font-medium text-[#0f2038]">{project.serviceRequest.contactName}</p>
                     <p className="text-xs text-[#6c757d]">{project.serviceRequest.propertyType}</p>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${sourceColor(project.source)}`}>
+                      {formatSource(project.source)}
+                    </span>
                   </td>
                   <td className="px-6 py-4">
                     <span className={`px-2 py-1 rounded text-xs font-semibold ${project.clientReworkRequested ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'}`}>

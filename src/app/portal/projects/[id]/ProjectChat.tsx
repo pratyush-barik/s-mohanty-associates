@@ -52,7 +52,7 @@ function getFileIcon(mimeType: string): string {
   if (mimeType.startsWith('application/zip') || mimeType.startsWith('application/x-rar')) return '🗜️';
   if (mimeType.startsWith('audio/')) return '🎵';
   if (mimeType.startsWith('video/')) return '🎬';
-  return '📎';
+  return '🔗';
 }
 
 export default function ProjectChat({
@@ -305,7 +305,7 @@ export default function ProjectChat({
             </div>
           )}
 
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-end">
             <input
               type="file"
               multiple
@@ -316,22 +316,24 @@ export default function ProjectChat({
             />
             <label
               htmlFor={`chat-file-input-${projectId}`}
-              className="px-3 py-2 border border-[#dee2e6] rounded-xl text-xs font-medium text-[#6c757d] hover:bg-[#f8f9fa] cursor-pointer transition-colors flex-shrink-0"
+              className="px-3 py-2.5 border border-[#dee2e6] rounded-xl text-xs font-medium text-[#6c757d] hover:bg-[#f8f9fa] cursor-pointer transition-colors flex-shrink-0 bg-white"
             >
-              📎
+              🔗
             </label>
-            <textarea
-              className="input-field flex-1 resize-none"
-              rows={3}
-              placeholder={isEmailReply ? 'Type your reply (this will also be emailed to the client)...' : 'Type your reply...'}
-              value={replyText}
-              onChange={(e) => setReplyText(e.target.value)}
-              onKeyDown={handleKeyDown}
-              disabled={isSending}
-            />
+            <div className="flex-1 border border-[#dee2e6] rounded-xl bg-white focus-within:border-[#b8860b] focus-within:ring-2 focus-within:ring-[#b8860b]/20 transition-colors">
+              <textarea
+                className="w-full resize-none p-3 text-sm bg-transparent focus:outline-none rounded-xl"
+                rows={2}
+                placeholder={isEmailReply ? 'Type your reply (this will also be emailed to the client)...' : 'Type your reply...'}
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                onKeyDown={handleKeyDown}
+                disabled={isSending}
+              />
+            </div>
             <div className="flex flex-col gap-2 flex-shrink-0">
               <button
-                className="btn btn-primary px-6 h-12 text-sm"
+                className="btn btn-primary px-5 h-10 text-sm"
                 onClick={handleUploadAndSend}
                 disabled={isSending || (!replyText.trim() && selectedFiles.length === 0)}
               >

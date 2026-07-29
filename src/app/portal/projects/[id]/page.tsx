@@ -8,6 +8,24 @@ import ReportBuilder from '../../reports/[projectId]/ReportBuilder';
 import ReportDraftSection from './ReportDraftSection';
 import TransferOversightButton from './TransferOversightButton';
 
+function formatStatus(status: string, clientReworkRequested?: boolean) {
+  if (clientReworkRequested) return 'CLIENT REWORK REQUESTED';
+  if (status === 'ASSIGNED') return 'MANAGER ASSIGNED';
+  return status.replace(/_/g, ' ');
+}
+
+function formatSource(source: string) {
+  if (source === 'GMAIL') return 'Gmail';
+  if (source === 'EXTERNAL') return 'External';
+  return 'Website';
+}
+
+function sourceColor(source: string) {
+  if (source === 'GMAIL') return 'bg-blue-100 text-blue-700 border-blue-200';
+  if (source === 'EXTERNAL') return 'bg-amber-100 text-amber-700 border-amber-200';
+  return 'bg-purple-100 text-purple-700 border-purple-200';
+}
+
 export default async function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth();
@@ -113,20 +131,21 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-3 mb-1">
-              <Link href="/portal/projects" className="text-[#6c757d] hover:text-[#0f2038]">
-                ← Back
-              </Link>
-              <span className="text-[#dee2e6]">|</span>
-              <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold border ${project.clientReworkRequested ? 'bg-red-50 text-red-600 border-red-200' : 'bg-blue-50 text-blue-600 border-blue-200'}`}>
-                {project.clientReworkRequested ? 'CLIENT REWORK REQUESTED' : project.status?.replace(/_/g, ' ') || 'UNKNOWN'}
-              </span>
-            </div>
-            <h1 className="text-2xl font-bold text-[#0f2038] font-mono">
-              {project.projectCode}
-            </h1>
+          <div className="flex items-center gap-3">
+            <Link href="/portal/projects" className="text-[#6c757d] hover:text-[#0f2038]">
+              ← Back
+            </Link>
+            <span className="text-[#dee2e6]">|</span>
+            <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold border ${sourceColor(project.source)}`}>
+              {formatSource(project.source)}
+            </span>
+            <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold border ${project.clientReworkRequested ? 'bg-red-50 text-red-600 border-red-200' : 'bg-blue-50 text-blue-600 border-blue-200'}`}>
+              {project.clientReworkRequested ? 'CLIENT REWORK REQUESTED' : project.status?.replace(/_/g, ' ') || 'UNKNOWN'}
+            </span>
           </div>
+          <h1 className="text-2xl font-bold text-[#0f2038] font-mono">
+            {project.projectCode}
+          </h1>
         </div>
 
         {/* Client Rework Banner */}
