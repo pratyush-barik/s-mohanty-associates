@@ -191,7 +191,7 @@ model Project {
   id               String        @id @default(cuid())
   projectCode      String        @unique // SMA-YYYY-NNN
   serviceRequestId String        @unique
-  source           EnquirySource @default(WEBSITE)
+  source           ProjectSource @default(WEBSITE)
   status           ProjectStatus @default(PENDING_REVIEW)
   clientReworkRequested Boolean @default(false)
   isEmailOnly      Boolean       @default(false)
@@ -230,6 +230,7 @@ model ProjectMessage {
   project  Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
   client   Client?   @relation("ClientMessages", fields: [clientId], references: [id])
   employee Employee? @relation("EmployeeMessages", fields: [employeeId], references: [id])
+  documents Document[]
 
   @@map("project_messages")
 }
@@ -245,6 +246,7 @@ model Document {
   serviceRequestId String?
   projectId        String?
   enquiryId        String?
+  messageId        String?
   inspectionId     String?
   createdAt        DateTime @default(now())
 
@@ -253,6 +255,7 @@ model Document {
   serviceRequest ServiceRequest? @relation("RequestDocuments", fields: [serviceRequestId], references: [id])
   project        Project?        @relation("ProjectDocuments", fields: [projectId], references: [id])
   enquiry        Enquiry?        @relation("EnquiryDocuments", fields: [enquiryId], references: [id])
+  message        ProjectMessage? @relation(fields: [messageId], references: [id])
   inspection     Inspection?     @relation(fields: [inspectionId], references: [id])
 
   @@map("documents")
@@ -417,6 +420,12 @@ enum EnquirySource {
   WEBSITE
   EMAIL
   PORTAL_SIGNUP
+}
+
+enum ProjectSource {
+  WEBSITE
+  GMAIL
+  EXTERNAL
 }
 
 enum SenderRole {

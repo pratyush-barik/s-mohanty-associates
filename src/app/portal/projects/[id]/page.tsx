@@ -2,6 +2,7 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { redirect, notFound } from 'next/navigation';
 import AssignTeamForm from './AssignTeamForm';
+import ProjectChat from './ProjectChat';
 import Link from 'next/link';
 import ReportBuilder from '../../reports/[projectId]/ReportBuilder';
 import ReportDraftSection from './ReportDraftSection';
@@ -14,7 +15,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
 
     const currentUser = await prisma.employee.findUnique({
       where: { id: session.user.id },
-      select: { role: true },
+      select: { role: true, id: true },
     });
 
     if (!currentUser || !['OWNER', 'MANAGER'].includes(currentUser.role)) {
@@ -40,6 +41,27 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
     });
 
     if (!project) return notFound();
+
+    // Fetch project messages with documents for the chat
+    const chatMessages = await prisma.projectMessage.findMany({
+      where: { projectId: project.id },
+      include: {
+        documents: {
+          select: { id: true, name: true, url: true, type: true, size: true },
+          orderBy: { createdAt: 'asc' },
+        },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    const formattedMessages = chatMessages.map((msg) => ({
+      id: msg.id,
+      content: msg.content,
+      createdAt: msg.createdAt.toISOString(),
+      employeeId: msg.employeeId,
+      clientId: msg.clientId,
+      documents: msg.documents,
+    }));
 
     // Fetch available employees for assignment (fail-proof method mapping counts manually)
     const fieldEmployeesData = await prisma.employee.findMany({
@@ -199,7 +221,33 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
           userRole={currentUser.role}
         />
 
-        {/* 3) THEN VIEW REPORT — Collapsible Dropdown */}
+        {/* 3) PROJECT CHAT — under manage section */}
+        <ProjectChat
+          projectId={project.id}
+          project={{
+            id: project.id,
+            projectCode: project.projectCode,
+            source: project.source,
+            serviceRequest: project.serviceRequest
+              ? {
+                  contactName: project.serviceRequest.contactName,
+                  contactEmail: project.serviceRequest.contactEmail || '',
+                  contactPhone: project.serviceRequest.contactPhone || '',
+                  guestName: project.serviceRequest.guestName,
+                  guestEmail: project.serviceRequest.guestEmail,
+                  guestPhone: project.serviceRequest.guestPhone,
+                }
+              : null,
+            pendingManagerId: project.pendingManagerId,
+            assignedManagerId: project.assignedManagerId,
+            status: project.status,
+          }}
+          initialMessages={formattedMessages}
+          currentUserId={currentUser.id}
+          currentUserRole={currentUser.role}
+        />
+
+        {/* 4) THEN VIEW REPORT — Collapsible Dropdown */}
         {(project.status === 'MANAGER_REVIEW' || project.status === 'COMPLETED') && project.report && (
           <ReportDraftSection>
             <ReportBuilder
@@ -211,7 +259,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
           </ReportDraftSection>
         )}
 
-        {/* 4) TRANSFER — After report section */}
+        {/* 5) TRANSFER — After report section */}
         {['OWNER', 'MANAGER'].includes(currentUser.role) && (
           <TransferOversightButton
             projectId={project.id}

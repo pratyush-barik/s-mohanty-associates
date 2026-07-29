@@ -642,12 +642,15 @@ export async function acceptServiceRequest(
       }
     }
 
+    const source = request.clientId ? 'WEBSITE' : 'GMAIL';
+
     const project = await prisma.project.create({
       data: {
         projectCode,
         serviceRequestId: requestId,
         status: projectStatus as any,
         assignedManagerId,
+        source,
       },
     });
 
@@ -967,6 +970,7 @@ export async function createManualCase(formData: FormData) {
         status: 'ASSIGNED',
         isEmailOnly: true,
         assignedManagerId: managerId,
+        source: 'EXTERNAL',
       }
     });
 
