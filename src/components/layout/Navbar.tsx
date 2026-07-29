@@ -188,7 +188,7 @@ export default function Navbar({ user }: NavbarProps) {
                   className={`px-4 py-2 rounded-full text-base font-medium transition-all duration-300 relative ${
                     activeSection === link.href.replace('#', '')
                       ? 'text-[#b8860b]'
-                      : 'text-[#495057] hover:text-[#0f2038]'
+                      : 'text-[#4a6f4a] hover:text-[#0d3d24]'
                   }`}
                 >
                   {link.label}
@@ -209,9 +209,9 @@ export default function Navbar({ user }: NavbarProps) {
               {user && !isEmployee && (
                 <Link
                   href="/dashboard"
-                  className="hidden md:flex items-center gap-2 text-base font-medium transition-colors text-[#495057] hover:text-[#0f2038]"
+                  className="hidden md:flex items-center gap-2 text-base font-medium transition-colors text-[#4a6f4a] hover:text-[#0d3d24]"
                 >
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#1e3a5f] to-[#162d4a] flex items-center justify-center text-white text-xs font-bold">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#1a5c3a] to-[#0d3d24] flex items-center justify-center text-white text-xs font-bold">
                     {user.name.charAt(0).toUpperCase()}
                   </div>
                   Dashboard
@@ -231,15 +231,15 @@ export default function Navbar({ user }: NavbarProps) {
               >
                 <motion.span
                   animate={isMobileMenuOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }}
-                  className="block w-6 h-0.5 rounded-full transition-colors bg-[#0f2038]"
+                  className="block w-6 h-0.5 rounded-full transition-colors bg-[#0d3d24]"
                 />
                 <motion.span
                   animate={isMobileMenuOpen ? { opacity: 0 } : { opacity: 1 }}
-                  className="block w-6 h-0.5 rounded-full transition-colors bg-[#0f2038]"
+                  className="block w-6 h-0.5 rounded-full transition-colors bg-[#0d3d24]"
                 />
                 <motion.span
                   animate={isMobileMenuOpen ? { rotate: -45, y: -7 } : { rotate: 0, y: 0 }}
-                  className="block w-6 h-0.5 rounded-full transition-colors bg-[#0f2038]"
+                  className="block w-6 h-0.5 rounded-full transition-colors bg-[#0d3d24]"
                 />
               </button>
             </div>
@@ -263,7 +263,7 @@ export default function Navbar({ user }: NavbarProps) {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="absolute right-0 top-0 bottom-0 w-[300px] bg-[#0a1628] p-8 pt-24"
+              className="absolute right-0 top-0 bottom-0 w-[300px] bg-[#0a1f16] p-8 pt-24"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex flex-col gap-2">

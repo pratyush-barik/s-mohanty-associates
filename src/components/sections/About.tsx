@@ -38,7 +38,7 @@ export default function About() {
     <section id="about" className="section relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#b8860b]/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#1e3a5f]/5 rounded-full blur-[100px] pointer-events-none" />
+       <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#1a5c3a]/5 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="container mx-auto max-w-[1280px] px-6 relative z-10">
         {/* Section Header */}
@@ -57,19 +57,19 @@ export default function About() {
             <div className="glass-light rounded-2xl p-8 md:p-12">
               <div className="grid md:grid-cols-2 gap-8">
                 <div>
-                  <h3 className="text-2xl font-bold text-[#0f2038] mb-4" style={{ fontFamily: 'var(--font-heading)' }}>
+                  <h3 className="text-2xl font-bold text-[#0d3d24] mb-4" style={{ fontFamily: 'var(--font-heading)' }}>
                     Our Vision
                   </h3>
-                  <p className="text-[#495057] leading-relaxed">
+                  <p className="text-[#4a6f4a] leading-relaxed">
                     To be the most trusted and technologically advanced property valuation firm in India, 
                     setting industry benchmarks for accuracy, transparency, and client satisfaction.
                   </p>
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold text-[#0f2038] mb-4" style={{ fontFamily: 'var(--font-heading)' }}>
+                  <h3 className="text-2xl font-bold text-[#0d3d24] mb-4" style={{ fontFamily: 'var(--font-heading)' }}>
                     Our Mission
                   </h3>
-                  <p className="text-[#495057] leading-relaxed">
+                  <p className="text-[#4a6f4a] leading-relaxed">
                     To deliver comprehensive, court-recognized property valuations that empower informed 
                     decision-making for financial institutions, government bodies, and private clients through 
                     expertise, innovation, and unwavering ethical standards.
@@ -82,7 +82,7 @@ export default function About() {
 
         {/* Core Values */}
         <SectionWrapper animation="fadeUp" delay={0.15} className="mb-20">
-          <h3 className="text-2xl font-bold text-center text-[#0f2038] mb-10" style={{ fontFamily: 'var(--font-heading)' }}>
+          <h3 className="text-2xl font-bold text-center text-[#0d3d24] mb-10" style={{ fontFamily: 'var(--font-heading)' }}>
             Core Values
           </h3>
           <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" staggerDelay={0.1}>
@@ -90,10 +90,10 @@ export default function About() {
               <StaggerItem key={value.title} animation="scaleUp">
                 <div className="card text-center h-full">
                   <div className="text-4xl mb-4">{value.icon}</div>
-                  <h4 className="text-lg font-bold text-[#0f2038] mb-2" style={{ fontFamily: 'var(--font-heading)' }}>
+                  <h4 className="text-lg font-bold text-[#0d3d24] mb-2" style={{ fontFamily: 'var(--font-heading)' }}>
                     {value.title}
                   </h4>
-                  <p className="text-sm text-[#6c757d] leading-relaxed">
+                  <p className="text-sm text-[#6b8f6b] leading-relaxed">
                     {value.description}
                   </p>
                 </div>
@@ -104,13 +104,13 @@ export default function About() {
 
         {/* Timeline */}
         <SectionWrapper animation="fadeUp" delay={0.2}>
-          <h3 className="text-2xl font-bold text-center text-[#0f2038] mb-12" style={{ fontFamily: 'var(--font-heading)' }}>
+          <h3 className="text-2xl font-bold text-center text-[#0d3d24] mb-12" style={{ fontFamily: 'var(--font-heading)' }}>
             Our Journey
           </h3>
           <div className="relative max-w-3xl mx-auto">
             {/* Timeline Line */}
             <div className="absolute left-[20px] md:left-1/2 md:-translate-x-[1px] top-0 bottom-0 w-[2px] bg-gradient-to-b from-[#b8860b]/20 via-[#b8860b]/40 to-[#b8860b]/20" />
-
+            
             <StaggerContainer className="space-y-10" staggerDelay={0.15}>
               {timeline.map((item, index) => (
                 <StaggerItem key={item.year} animation={index % 2 === 0 ? 'fadeRight' : 'fadeLeft'}>
@@ -119,7 +119,7 @@ export default function About() {
                   }`}>
                     {/* Timeline dot */}
                     <div className="absolute left-[14px] md:left-1/2 md:-translate-x-1/2 w-3 h-3 rounded-full bg-[#b8860b] border-4 border-white shadow-md z-10 mt-2" />
-
+                    
                     {/* Content */}
                     <div className={`ml-12 md:ml-0 md:w-[calc(50%-2rem)] ${
                       index % 2 === 0 ? 'md:pr-8 md:text-right' : 'md:pl-8'
@@ -127,10 +127,10 @@ export default function About() {
                       <span className="inline-block px-3 py-1 rounded-full bg-[#b8860b]/10 text-[#b8860b] text-sm font-bold mb-2">
                         {item.year}
                       </span>
-                      <h4 className="text-lg font-bold text-[#0f2038] mb-1" style={{ fontFamily: 'var(--font-heading)' }}>
+                      <h4 className="text-lg font-bold text-[#0d3d24] mb-1" style={{ fontFamily: 'var(--font-heading)' }}>
                         {item.title}
                       </h4>
-                      <p className="text-sm text-[#6c757d] leading-relaxed">
+                      <p className="text-sm text-[#6b8f6b] leading-relaxed">
                         {item.description}
                       </p>
                     </div>

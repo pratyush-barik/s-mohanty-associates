@@ -33,7 +33,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #060e1a 0%, #0a1628 50%, #0f2038 100%)' }}>
+    <footer className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #030f08 0%, #0a1f16 50%, #0d3d24 100%)' }}>
       {/* Top gradient border */}
       <div className="h-1 w-full bg-gradient-to-r from-transparent via-[#b8860b] to-transparent" />
 
@@ -134,7 +134,7 @@ export default function Footer() {
 
       {/* Background Decoration */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#b8860b]/3 rounded-full blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#1e3a5f]/20 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#1a5c3a]/20 rounded-full blur-[100px] pointer-events-none" />
     </footer>
   );
 }

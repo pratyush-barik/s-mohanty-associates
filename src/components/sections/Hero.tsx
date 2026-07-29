@@ -58,9 +58,9 @@ export default function Hero() {
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080">
               <defs>
                 <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style="stop-color:#0a1628"/>
-                  <stop offset="50%" style="stop-color:#162d4a"/>
-                  <stop offset="100%" style="stop-color:#1e3a5f"/>
+           <stop offset="0%" style="stop-color:#0a1f16"/>
+                   <stop offset="50%" style="stop-color:#0d3d24"/>
+                   <stop offset="100%" style="stop-color:#1a5c3a"/>
                 </linearGradient>
                 <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
                   <path d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
@@ -77,10 +77,10 @@ export default function Hero() {
       />
 
       {/* Gradient Overlay */}
-      <div
-        ref={overlayRef}
-        className="absolute inset-0 bg-gradient-to-b from-[#0a1628]/60 via-[#0a1628]/40 to-[#0a1628]/80"
-      />
+       <div
+         ref={overlayRef}
+         className="absolute inset-0 bg-gradient-to-b from-[#0a1f16]/60 via-[#0a1f16]/40 to-[#0a1f16]/80"
+       />
 
       {/* Decorative Elements */}
       <div className="absolute inset-0 pointer-events-none">
