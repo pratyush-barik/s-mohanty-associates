@@ -49,25 +49,25 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="glass rounded-2xl p-8 border border-white/10 max-w-lg w-full mx-auto">
+    <div className="bg-[#FFF9F0] rounded-2xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-emerald-100 max-w-lg w-full mx-auto">
       <h1
-        className="text-2xl font-bold text-white text-center mb-2"
+        className="text-2xl font-bold text-[#0d3d24] text-center mb-2"
         style={{ fontFamily: 'var(--font-heading)' }}
       >
         Create Account
       </h1>
-      <p className="text-white/50 text-sm text-center mb-6">
+      <p className="text-[#4a6f4a] text-sm text-center mb-6">
         Register to request valuation services
       </p>
 
       {state?.message && !state.success && (
-        <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm">
+        <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-700 text-sm">
           {state.message}
         </div>
       )}
 
       {state?.success && (
-        <div className="mb-4 p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-300 text-sm">
+        <div className="mb-4 p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-700 text-sm">
           {state.message}{' '}
           <Link href="/auth/client-login" className="underline font-medium">
             Log in here
@@ -76,23 +76,23 @@ export default function RegisterPage() {
       )}
 
       {verifyError && (
-        <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm">
+        <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-700 text-sm">
           {verifyError}
         </div>
       )}
 
       {verifySuccess && (
-        <div className="mb-4 p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-300 text-sm">
+        <div className="mb-4 p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-700 text-sm">
           {verifySuccess}
         </div>
       )}
 
-      <div className="flex bg-white/5 p-1 rounded-xl mb-6">
+      <div className="flex bg-[#f0f4f1] p-1 rounded-xl mb-6">
         <button
           type="button"
           onClick={() => setClientType('INDIVIDUAL')}
           className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-colors ${
-            clientType === 'INDIVIDUAL' ? 'bg-[#b8860b] text-white' : 'text-white/60 hover:text-white'
+            clientType === 'INDIVIDUAL' ? 'bg-[#b8860b] text-white' : 'text-[#4a6f4a] hover:text-[#0d3d24]'
           }`}
         >
           Individual
@@ -101,7 +101,7 @@ export default function RegisterPage() {
           type="button"
           onClick={() => setClientType('ORGANISATION')}
           className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-colors ${
-            clientType === 'ORGANISATION' ? 'bg-[#b8860b] text-white' : 'text-white/60 hover:text-white'
+            clientType === 'ORGANISATION' ? 'bg-[#b8860b] text-white' : 'text-[#4a6f4a] hover:text-[#0d3d24]'
           }`}
         >
           Organisation
@@ -113,7 +113,7 @@ export default function RegisterPage() {
 
         {clientType === 'ORGANISATION' && (
           <div className="animate-fade-in">
-            <label htmlFor="register-organisationName" className="block text-sm font-medium text-white/70 mb-1.5">
+            <label htmlFor="register-organisationName" className="block text-sm font-medium text-[#2d4a2d] mb-1.5">
               Organisation Name
             </label>
             <input
@@ -121,18 +121,18 @@ export default function RegisterPage() {
               name="organisationName"
               type="text"
               required
-              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
+              className="w-full px-4 py-3 rounded-xl bg-white border border-[#dcfce7] text-[#0d3d24] text-sm placeholder:text-[#6b8f6b] focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
               placeholder="e.g. State Bank of India, LIC Housing, etc."
             />
             {state?.errors?.organisationName && (
-              <p className="mt-1 text-xs text-red-400">{state.errors.organisationName[0]}</p>
+              <p className="mt-1 text-xs text-red-600">{state.errors.organisationName[0]}</p>
             )}
           </div>
         )}
 
         {/* Full Name */}
         <div>
-          <label htmlFor="register-name" className="block text-sm font-medium text-white/70 mb-1.5">
+          <label htmlFor="register-name" className="block text-sm font-medium text-[#2d4a2d] mb-1.5">
             {clientType === 'ORGANISATION' ? 'Contact Person Name' : 'Full Name'}
           </label>
           <input
@@ -140,17 +140,17 @@ export default function RegisterPage() {
             name="name"
             type="text"
             required
-            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
+            className="w-full px-4 py-3 rounded-xl bg-white border border-[#dcfce7] text-[#0d3d24] text-sm placeholder:text-[#6b8f6b] focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
             placeholder="Enter full name"
           />
           {state?.errors?.name && (
-            <p className="mt-1 text-xs text-red-400">{state.errors.name[0]}</p>
+            <p className="mt-1 text-xs text-red-600">{state.errors.name[0]}</p>
           )}
         </div>
 
         {/* Email Address with Verify Action */}
         <div>
-          <label htmlFor="register-email" className="block text-sm font-medium text-white/70 mb-1.5">
+          <label htmlFor="register-email" className="block text-sm font-medium text-[#2d4a2d] mb-1.5">
             Email Address
           </label>
           <div className="flex gap-2">
@@ -162,7 +162,7 @@ export default function RegisterPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={otpSent}
-              className="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all disabled:opacity-60"
+              className="flex-1 px-4 py-3 rounded-xl bg-white border border-[#dcfce7] text-[#0d3d24] text-sm placeholder:text-[#6b8f6b] focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all disabled:opacity-60"
               placeholder="you@example.com"
             />
             <button
@@ -175,26 +175,26 @@ export default function RegisterPage() {
             </button>
           </div>
           {state?.errors?.email && (
-            <p className="mt-1 text-xs text-red-400">{state.errors.email[0]}</p>
+            <p className="mt-1 text-xs text-red-600">{state.errors.email[0]}</p>
           )}
         </div>
 
         {/* OTP Input Fields with 90s Timer */}
         {otpSent && (
-          <div className="animate-fade-in space-y-2 bg-white/5 p-4 rounded-2xl border border-white/10">
+          <div className="animate-fade-in space-y-2 bg-white/80 p-4 rounded-2xl border border-[#dcfce7]">
             <div className="flex justify-between items-center">
-              <label htmlFor="register-otp" className="block text-sm font-medium text-white/70">
+              <label htmlFor="register-otp" className="block text-sm font-medium text-[#166534]">
                 Verification Code (6 digits)
               </label>
               {timer > 0 ? (
-                <span className="text-xs text-[#ffcb47] font-mono">
+                <span className="text-xs text-[#b8860b] font-mono">
                   Resend code in {timer}s
                 </span>
               ) : (
                 <button
                   type="button"
                   onClick={handleSendOtp}
-                  className="text-xs text-[#ffcb47] font-semibold hover:underline"
+                  className="text-xs text-[#b8860b] font-semibold hover:underline"
                 >
                   Resend OTP
                 </button>
@@ -207,18 +207,18 @@ export default function RegisterPage() {
               required
               maxLength={6}
               pattern="\d{6}"
-              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-center font-mono tracking-widest text-sm placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
+              className="w-full px-4 py-3 rounded-xl bg-white border border-[#dcfce7] text-[#0d3d24] text-center font-mono tracking-widest text-sm placeholder:text-[#6b8f6b] focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
               placeholder="000000"
             />
             {state?.errors?.otp && (
-              <p className="mt-1 text-xs text-red-400">{state.errors.otp[0]}</p>
+              <p className="mt-1 text-xs text-red-600">{state.errors.otp[0]}</p>
             )}
           </div>
         )}
 
         {/* Mobile */}
         <div>
-          <label htmlFor="register-mobile" className="block text-sm font-medium text-white/70 mb-1.5">
+          <label htmlFor="register-mobile" className="block text-sm font-medium text-[#2d4a2d] mb-1.5">
             Mobile Number
           </label>
           <input
@@ -226,17 +226,17 @@ export default function RegisterPage() {
             name="mobile"
             type="tel"
             required
-            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
+            className="w-full px-4 py-3 rounded-xl bg-white border border-[#dcfce7] text-[#0d3d24] text-sm placeholder:text-[#6b8f6b] focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
             placeholder="+91 XXXXX XXXXX"
           />
           {state?.errors?.mobile && (
-            <p className="mt-1 text-xs text-red-400">{state.errors.mobile[0]}</p>
+            <p className="mt-1 text-xs text-red-600">{state.errors.mobile[0]}</p>
           )}
         </div>
 
         {/* Password */}
         <div>
-          <label htmlFor="register-password" className="block text-sm font-medium text-white/70 mb-1.5">
+          <label htmlFor="register-password" className="block text-sm font-medium text-[#2d4a2d] mb-1.5">
             Password
           </label>
           <input
@@ -244,13 +244,13 @@ export default function RegisterPage() {
             name="password"
             type="password"
             required
-            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
+            className="w-full px-4 py-3 rounded-xl bg-white border border-[#dcfce7] text-[#0d3d24] text-sm placeholder:text-[#6b8f6b] focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
             placeholder="Minimum 8 characters"
           />
           {state?.errors?.password && (
             <div className="mt-1 space-y-0.5">
               {state.errors.password.map((err) => (
-                <p key={err} className="text-xs text-red-400">• {err}</p>
+                <p key={err} className="text-xs text-red-600">• {err}</p>
               ))}
             </div>
           )}
@@ -277,9 +277,9 @@ export default function RegisterPage() {
       </form>
 
       {/* Login Link */}
-      <p className="mt-6 text-center text-sm text-white/40">
+      <p className="mt-6 text-center text-sm text-[#166534]">
         Already have an account?{' '}
-        <Link href="/auth/client-login" className="text-[#ffcb47] hover:text-[#ffcb47]/80 font-medium transition-colors">
+        <Link href="/auth/client-login" className="text-[#b8860b] hover:text-[#9a6f08] font-medium transition-colors">
           Log In
         </Link>
       </p>
