@@ -165,9 +165,11 @@ interface ReportFields {
   organisationTemplate?: string;
   serviceType?: string;
   subjectType?: string;
+  valuationLayout?: 'land_building' | 'apartment';
 }
 
 const DEFAULT_FIELDS: ReportFields = {
+  valuationLayout: 'land_building',
   propertyType: 'Residential',
   ownerName: '',
   ownerAddress: '',
@@ -666,6 +668,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     propertyImageNames: Array.isArray(initialFields?.propertyImageNames) ? initialFields.propertyImageNames : DEFAULT_FIELDS.propertyImageNames,
     civicAmenities: Array.isArray(initialFields?.civicAmenities) ? initialFields.civicAmenities : DEFAULT_FIELDS.civicAmenities,
     ageOfPropertyActual: typeof initialFields?.ageOfPropertyActual === 'string' ? initialFields.ageOfPropertyActual : DEFAULT_FIELDS.ageOfPropertyActual,
+    valuationLayout: initialFields?.valuationLayout || (/apartment|flat/i.test(initialFields?.subjectType || '') ? 'apartment' : 'land_building'),
   };
   if (!Array.isArray(merged.floors) || merged.floors.length === 0) {
     merged.floors = DEFAULT_FIELDS.floors;
@@ -894,8 +897,8 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
 
   const totalBuildingValue = floorValuations.reduce((sum, f) => sum + f.netValue, 0);
 
-  // Detect Apartment/Flat subject type — these only have a single valuation section (no separate land)
-  const isApartmentFlat = /apartment|flat/i.test(fields.subjectType || '');
+  // UI derived states
+  const isApartmentFlat = fields.valuationLayout === 'apartment';
 
   const totalPropertyValue = isApartmentFlat ? totalBuildingValue : landValue + totalBuildingValue;
   const realizableValue = totalPropertyValue * (parseNum(fields.realizablePct || '90') / 100);
@@ -1927,8 +1930,8 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   return (
     <div className="space-y-4" ref={reportRef}>
       {/* Template Info Banner */}
-      <div className="card p-4 bg-gradient-to-r from-[#f8f9fa] to-[#e9ecef] border border-[#e9ecef] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm rounded-xl">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+      <div className="card p-4 bg-gradient-to-r from-[#f8f9fa] to-[#e9ecef] border border-[#c8d6e5] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md rounded-xl sticky top-2 z-50">
+        <div className="flex flex-col xl:flex-row xl:items-center gap-3">
           <span className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider">Active Configuration</span>
           <div className="flex flex-wrap gap-2">
             <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm flex items-center gap-1.5">
@@ -1950,6 +1953,23 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
             <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm">
               Subject: {fields.subjectType}
             </span>
+          </div>
+          
+          <div className="flex bg-white rounded-lg border border-[#dee2e6] overflow-hidden ml-0 sm:ml-4 shadow-sm">
+            <button
+              type="button"
+              onClick={() => handleChange('valuationLayout', 'land_building')}
+              className={`px-3 py-1.5 text-[10px] sm:text-xs font-bold uppercase transition-colors ${fields.valuationLayout !== 'apartment' ? 'bg-[#1e3a5f] text-white' : 'text-[#6c757d] hover:bg-gray-50'}`}
+            >
+              Land & Building
+            </button>
+            <button
+              type="button"
+              onClick={() => handleChange('valuationLayout', 'apartment')}
+              className={`px-3 py-1.5 text-[10px] sm:text-xs font-bold uppercase transition-colors ${fields.valuationLayout === 'apartment' ? 'bg-[#1e3a5f] text-white' : 'text-[#6c757d] hover:bg-gray-50'}`}
+            >
+              Flat / Apartment
+            </button>
           </div>
         </div>
         <button
