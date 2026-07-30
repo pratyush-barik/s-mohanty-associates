@@ -56,7 +56,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="bg-white rounded-2xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-emerald-100 max-w-md w-full mx-auto">
+    <div className="bg-[#FFF9F0] rounded-2xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-emerald-100 max-w-md w-full mx-auto">
       <div className="flex justify-center mb-4">
       <span className="px-3 py-1 bg-[#166534]/10 text-[#166534] text-[10px] font-bold uppercase tracking-widest rounded-full border border-[#166534]/20">
         Client Portal
