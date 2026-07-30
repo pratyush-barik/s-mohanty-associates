@@ -41,7 +41,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand Column */}
           <div className="lg:col-span-1">
-            <div className="mb-5 inline-block">
+            <div className="mb-5 inline-block bg-[#FAF9F2] rounded-full px-6 py-3">
               <Image
                 src="/logo/smohantyassociate_logo.png"
                 alt="S Mohanty Associates"
