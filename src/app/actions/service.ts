@@ -169,7 +169,6 @@ export async function sendProjectMessage(
     include: {
       serviceRequest: true,
       fieldEmployees: { select: { id: true } },
-      source: true,
       messages: { orderBy: { createdAt: 'desc' }, take: 1 },
     },
   });
