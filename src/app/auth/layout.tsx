@@ -8,14 +8,8 @@ export const metadata: Metadata = {
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden"
-      style={{
-        background: 'linear-gradient(135deg, #060e1a 0%, #0a1628 40%, #162d4a 100%)',
-      }}
-    >
-      {/* Decorative */}
-      <div className="absolute top-1/4 right-1/4 w-[400px] h-[400px] bg-[#b8860b]/5 rounded-full blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-1/4 left-1/4 w-[300px] h-[300px] bg-[#1e3a5f]/20 rounded-full blur-[100px] pointer-events-none" />
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-emerald-50">
+
       
       <div className="relative z-10 w-full max-w-md mx-auto px-6 py-12">
         {/* Logo */}

@@ -56,21 +56,21 @@ export default function EmployeeLoginPage() {
   };
 
   return (
-    <div className="glass rounded-2xl p-8 border border-[#b8860b]/30 max-w-md w-full mx-auto">
+    <div className="bg-white rounded-2xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-emerald-100 max-w-md w-full mx-auto">
       <div className="flex justify-center mb-4">
-        <span className="px-3 py-1 bg-[#b8860b]/20 text-[#ffcb47] text-[10px] font-bold uppercase tracking-widest rounded-full border border-[#b8860b]/30">
+        <span className="px-3 py-1 bg-[#166534]/10 text-[#166534] text-[10px] font-bold uppercase tracking-widest rounded-full border border-[#166534]/20">
           Staff Portal
         </span>
       </div>
       
       <h1
-        className="text-2xl font-bold text-white text-center mb-2"
+        className="text-2xl font-bold text-[#0d3d24] text-center mb-2"
         style={{ fontFamily: 'var(--font-heading)' }}
       >
         {require2FA ? 'Two-Factor Authentication' : 'Employee Login'}
       </h1>
       
-      <p className="text-white/50 text-sm text-center mb-6">
+      <p className="text-[#4a6f4a] text-sm text-center mb-6">
         {require2FA 
           ? `Enter the 6-digit security code sent to ${email}`
           : 'Enter your credentials to access the internal system'
@@ -78,19 +78,19 @@ export default function EmployeeLoginPage() {
       </p>
 
       {state?.message && !state.require2FA && (
-        <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm">
+        <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-700 text-sm">
           {state.message}
         </div>
       )}
 
       {resendError && (
-        <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm">
+        <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-700 text-sm">
           {resendError}
         </div>
       )}
 
       {resendSuccess && (
-        <div className="mb-4 p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-300 text-sm">
+        <div className="mb-4 p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-700 text-sm">
           {resendSuccess}
         </div>
       )}
@@ -105,13 +105,13 @@ export default function EmployeeLoginPage() {
             <input type="hidden" name="password" value={password} />
             
             {/* OTP Verification Input with 90s Timer limits */}
-            <div className="space-y-2 bg-white/5 p-4 rounded-2xl border border-white/10">
+            <div className="space-y-2 bg-white/80 p-4 rounded-2xl border border-[#dcfce7]">
               <div className="flex justify-between items-center">
-                <label htmlFor="login-otp" className="block text-sm font-medium text-white/70">
+                <label htmlFor="login-otp" className="block text-sm font-medium text-[#166534]">
                   Security Code (6 digits)
                 </label>
                 {timer > 0 ? (
-                  <span className="text-xs text-[#ffcb47] font-mono">
+                  <span className="text-xs text-[#b8860b] font-mono">
                     Resend in {timer}s
                   </span>
                 ) : (
@@ -119,7 +119,7 @@ export default function EmployeeLoginPage() {
                     type="button"
                     onClick={handleResendOtp}
                     disabled={resending}
-                    className="text-xs text-[#ffcb47] font-semibold hover:underline disabled:opacity-50"
+                    className="text-xs text-[#b8860b] font-semibold hover:underline disabled:opacity-50"
                   >
                     {resending ? 'Resending...' : 'Resend OTP'}
                   </button>
@@ -133,7 +133,7 @@ export default function EmployeeLoginPage() {
                 required
                 maxLength={6}
                 pattern="\d{6}"
-                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-center font-mono tracking-widest text-sm placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
+                className="w-full px-4 py-3 rounded-xl bg-white border border-[#dcfce7] text-[#0d3d24] text-center font-mono tracking-widest text-sm placeholder:text-[#6b8f6b] focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
                 placeholder="000000"
               />
             </div>
@@ -142,7 +142,7 @@ export default function EmployeeLoginPage() {
           <>
             {/* Email Address */}
             <div>
-              <label htmlFor="login-email" className="block text-sm font-medium text-white/70 mb-1.5">
+              <label htmlFor="login-email" className="block text-sm font-medium text-[#2d4a2d] mb-1.5">
                 Work Email Address
               </label>
               <input
@@ -152,14 +152,14 @@ export default function EmployeeLoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
+                className="w-full px-4 py-3 rounded-xl bg-white border border-[#dcfce7] text-[#0d3d24] text-sm placeholder:text-[#6b8f6b] focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
                 placeholder="employee@smohantyassociates.com"
               />
             </div>
 
             {/* Password */}
             <div>
-              <label htmlFor="login-password" className="block text-sm font-medium text-white/70 mb-1.5">
+              <label htmlFor="login-password" className="block text-sm font-medium text-[#2d4a2d] mb-1.5">
                 Password
               </label>
               <input
@@ -169,7 +169,7 @@ export default function EmployeeLoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
+                className="w-full px-4 py-3 rounded-xl bg-white border border-[#dcfce7] text-[#0d3d24] text-sm placeholder:text-[#6b8f6b] focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
                 placeholder="Enter your password"
               />
             </div>
@@ -177,7 +177,7 @@ export default function EmployeeLoginPage() {
             <div className="flex justify-end">
               <Link
                 href="/auth/forgot-password"
-                className="text-xs text-[#ffcb47]/70 hover:text-[#ffcb47] transition-colors"
+                className="text-xs text-[#b8860b] hover:text-[#9a6f08] transition-colors"
               >
                 Forgot Password?
               </Link>
