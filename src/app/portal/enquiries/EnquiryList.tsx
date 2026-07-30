@@ -64,8 +64,7 @@ export default function EnquiryList({ enquiries }: { enquiries: Enquiry[] }) {
             <tr className="bg-[#f8f9fa] border-b border-[#e9ecef]">
               <th className="px-6 py-3 text-xs font-semibold text-[#495057] uppercase tracking-wider">Ticket</th>
               <th className="px-6 py-3 text-xs font-semibold text-[#495057] uppercase tracking-wider">Source</th>
-              <th className="px-6 py-3 text-xs font-semibold text-[#495057] uppercase tracking-wider">Client</th>
-              <th className="px-6 py-3 text-xs font-semibold text-[#495057] uppercase tracking-wider">Project</th>
+              <th className="px-6 py-3 text-xs font-semibold text-[#495057] uppercase tracking-wider">Enquirer</th>
               <th className="px-6 py-3 text-xs font-semibold text-[#495057] uppercase tracking-wider">Status</th>
               <th className="px-6 py-3 text-xs font-semibold text-[#495057] uppercase tracking-wider">Action</th>
             </tr>
@@ -97,15 +96,6 @@ export default function EnquiryList({ enquiries }: { enquiries: Enquiry[] }) {
                         <p className="text-xs text-[#6c757d]">{enquiry.email}</p>
                       </div>
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {enquiry.projectCode ? (
-                      <Link href={`/portal/projects/${enquiry.projectCode}`} className="text-xs font-mono font-bold text-[#b8860b] hover:underline">
-                        {enquiry.projectCode}
-                      </Link>
-                    ) : (
-                      <span className="text-xs text-[#adb5bd] italic">—</span>
-                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${statusColors[enquiry.status] || 'bg-gray-50 text-gray-600'}`}>
