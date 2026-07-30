@@ -21,7 +21,7 @@ export default async function EnquiryDetailPage({ params }: { params: Promise<{ 
   const enquiry = await prisma.enquiry.findUnique({
     where: { id },
     include: {
-      messages: {
+      enquiries: {
         orderBy: { createdAt: 'asc' },
       },
       documents: {
@@ -42,13 +42,14 @@ export default async function EnquiryDetailPage({ params }: { params: Promise<{ 
           status: true,
         },
       },
-      serviceRequest: {
+      serviceRequests: {
         select: {
           id: true,
           propertyType: true,
           purpose: true,
           contactName: true,
         },
+        take: 1,
       },
     },
   });
@@ -112,7 +113,7 @@ export default async function EnquiryDetailPage({ params }: { params: Promise<{ 
                 {enquiry.project.projectCode}
               </Link>
               <p className="text-xs text-[#6c757d] mt-0.5">
-                {enquiry.project.status.replace(/_/g, ' ')} • {enquiry.serviceRequest?.propertyType} — {enquiry.serviceRequest?.purpose}
+              {enquiry.project.status.replace(/_/g, ' ')}{enquiry.serviceRequests?.[0] ? ` • ${enquiry.serviceRequests[0].propertyType} — ${enquiry.serviceRequests[0].purpose}` : ''}
               </p>
             </div>
           </div>
@@ -123,7 +124,7 @@ export default async function EnquiryDetailPage({ params }: { params: Promise<{ 
         enquiryId={enquiry.id}
         status={enquiry.status}
         source={enquiry.source}
-        messages={enquiry.messages.map((m) => ({
+        messages={enquiry.enquiries.map((m) => ({
           id: m.id,
           sender: m.sender,
           body: m.body,
