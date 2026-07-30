@@ -130,6 +130,7 @@ export default async function ReportEditorPage({ params }: { params: Promise<{ p
               contactEmail: serviceRequest.contactEmail,
               propertyAddress: serviceRequest.propertyAddress,
               propertyType: serviceRequest.propertyType,
+              purpose: serviceRequest.purpose,
             }}
           />
         </div>

@@ -646,6 +646,7 @@ interface ReportBuilderProps {
     ownerAddress?: string;
     propertyAddress?: string;
     propertyType?: string;
+    purpose?: string;
     contactName?: string;
     contactPhone?: string;
     contactEmail?: string;
@@ -653,6 +654,21 @@ interface ReportBuilderProps {
 }
 
 export default function ReportBuilder({ projectId, projectCode, initialFields, status, userRole = 'REPORT_EMPLOYEE', bucketImages = [], prefill }: ReportBuilderProps) {
+  const mappedServiceId = prefill?.propertyType
+    ? SERVICES_LIST.find(s => s.title.toLowerCase() === prefill.propertyType?.toLowerCase())?.id
+    : undefined;
+
+  const initialServiceType = initialFields?.serviceType;
+  const isValidServiceType = initialServiceType && SERVICES_LIST.some(s => s.id === initialServiceType);
+
+  const finalServiceType = isValidServiceType
+    ? initialServiceType
+    : (mappedServiceId || DEFAULT_FIELDS.serviceType);
+
+  const finalSubjectType = initialFields?.subjectType || prefill?.purpose || DEFAULT_FIELDS.subjectType;
+  const finalValuationLayout = initialFields?.valuationLayout ||
+    (/apartment|flat/i.test(finalSubjectType || '') ? 'apartment' : 'land_building');
+
   const merged = {
     ...DEFAULT_FIELDS,
     ...(initialFields || {}),
@@ -660,15 +676,15 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     to: initialFields?.to || DEFAULT_FIELDS.to,
     city: initialFields?.city || DEFAULT_FIELDS.city,
     pincode: initialFields?.pincode || DEFAULT_FIELDS.pincode,
-    serviceType: initialFields?.serviceType || DEFAULT_FIELDS.serviceType,
-    subjectType: initialFields?.subjectType || DEFAULT_FIELDS.subjectType,
+    serviceType: finalServiceType,
+    subjectType: finalSubjectType,
     ownerName: initialFields?.ownerName || prefill?.contactName || DEFAULT_FIELDS.ownerName,
     ownerAddress: initialFields?.ownerAddress || prefill?.propertyAddress || DEFAULT_FIELDS.ownerAddress,
     propertyImages: Array.isArray(initialFields?.propertyImages) ? initialFields.propertyImages : (typeof initialFields?.propertyImages === 'string' && initialFields.propertyImages ? [initialFields.propertyImages] : DEFAULT_FIELDS.propertyImages),
     propertyImageNames: Array.isArray(initialFields?.propertyImageNames) ? initialFields.propertyImageNames : DEFAULT_FIELDS.propertyImageNames,
     civicAmenities: Array.isArray(initialFields?.civicAmenities) ? initialFields.civicAmenities : DEFAULT_FIELDS.civicAmenities,
     ageOfPropertyActual: typeof initialFields?.ageOfPropertyActual === 'string' ? initialFields.ageOfPropertyActual : DEFAULT_FIELDS.ageOfPropertyActual,
-    valuationLayout: initialFields?.valuationLayout || (/apartment|flat/i.test(initialFields?.subjectType || '') ? 'apartment' : 'land_building'),
+    valuationLayout: finalValuationLayout,
   };
   if (!Array.isArray(merged.floors) || merged.floors.length === 0) {
     merged.floors = DEFAULT_FIELDS.floors;
@@ -1948,28 +1964,17 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
               )}
             </span>
             <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm">
-              Service: {fields.serviceType === 'land_valuation' ? 'Land Valuation' : fields.serviceType === 'building_valuation' ? 'Building Structure' : 'Land & Building'}
+              Service: {SERVICES_LIST.find(s => s.id === fields.serviceType)?.title || fields.serviceType}
             </span>
             <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm">
               Subject: {fields.subjectType}
             </span>
-          </div>
-          
-          <div className="flex bg-white rounded-lg border border-[#dee2e6] overflow-hidden ml-0 sm:ml-4 shadow-sm">
-            <button
-              type="button"
-              onClick={() => handleChange('valuationLayout', 'land_building')}
-              className={`px-3 py-1.5 text-[10px] sm:text-xs font-bold uppercase transition-colors ${fields.valuationLayout !== 'apartment' ? 'bg-[#1e3a5f] text-white' : 'text-[#6c757d] hover:bg-gray-50'}`}
-            >
-              Land & Building
-            </button>
-            <button
-              type="button"
-              onClick={() => handleChange('valuationLayout', 'apartment')}
-              className={`px-3 py-1.5 text-[10px] sm:text-xs font-bold uppercase transition-colors ${fields.valuationLayout === 'apartment' ? 'bg-[#1e3a5f] text-white' : 'text-[#6c757d] hover:bg-gray-50'}`}
-            >
-              Flat / Apartment
-            </button>
+            {fields.valuationLayout && (
+              <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm flex items-center gap-1.5">
+                <span className={`w-1.5 h-1.5 rounded-full ${fields.valuationLayout === 'apartment' ? 'bg-purple-500' : 'bg-green-500'}`}></span>
+                {fields.valuationLayout === 'apartment' ? 'Flat / Apartment' : 'Land & Building'}
+              </span>
+            )}
           </div>
         </div>
         <button
@@ -2343,6 +2348,41 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         </div>
       </Section>
 
+      {/* ── Valuation Layout Selection (after Section 6) ── */}
+      <div className="card p-5 bg-white border border-[#dee2e6] rounded-xl shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 my-6">
+        <div>
+          <h4 className="text-sm font-bold text-[#0f2038] uppercase tracking-wider">Valuation Format / Layout</h4>
+          <p className="text-xs text-[#6c757d] mt-1">Select the format layout for the valuation tables and PDF report.</p>
+        </div>
+        <div className="flex bg-[#f1f3f5] p-1 rounded-lg border border-[#dee2e6] shrink-0">
+          <button
+            type="button"
+            onClick={() => handleChange('valuationLayout', 'land_building')}
+            className={`px-4 py-2 rounded-md text-xs font-bold uppercase transition-all ${
+              fields.valuationLayout === 'land_building' || !fields.valuationLayout
+                ? 'bg-[#1e3a5f] text-white shadow-sm'
+                : 'text-[#6c757d] hover:text-[#0f2038]'
+            }`}
+          >
+            Land & Building
+          </button>
+          <button
+            type="button"
+            onClick={() => handleChange('valuationLayout', 'apartment')}
+            className={`px-4 py-2 rounded-md text-xs font-bold uppercase transition-all ${
+              fields.valuationLayout === 'apartment'
+                ? 'bg-[#1e3a5f] text-white shadow-sm'
+                : 'text-[#6c757d] hover:text-[#0f2038]'
+            }`}
+          >
+            Flat / Apartment
+          </button>
+        </div>
+      </div>
+
+      {/* ── Sections 7+ only visible after layout is chosen ── */}
+      {fields.valuationLayout && (<>
+
       {/* ── Section 7: Floor-wise Area & Building/Apartment Valuation ── */}
       <Section title={isApartmentFlat ? 'Apartment/Flat Valuation' : 'Floor-wise Area & Building Valuation'} number={7}>
         <div className="flex justify-between items-center mb-4">
@@ -2543,7 +2583,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       </Section>
 
       {/* ── Section 10: Remarks & Declaration ── */}
-      <Section title="Remarks & Declaration" number={10} defaultOpen={false}>
+      <Section title="Remarks & Declaration" number={isApartmentFlat ? 9 : 10} defaultOpen={false}>
         <div className="space-y-4">
           <Field label="Demarcation" span={2}>
             <textarea className={inputCls + ' resize-none'} rows={2} value={fields.demarcation} onChange={e => handleChange('demarcation', e.target.value)} disabled={isReadOnly} placeholder="Demarcation details..." />
@@ -2561,7 +2601,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       </Section>
 
       {/* ── Section 11: Valuation Certificate (Auto-generated) ── */}
-      <Section title="Valuation Certificate (Auto-generated)" number={11} defaultOpen={false}>
+      <Section title="Valuation Certificate (Auto-generated)" number={isApartmentFlat ? 10 : 11} defaultOpen={false}>
         <div className="bg-[#fdfcf8] border border-[#d4c5a9] rounded-xl p-6 text-sm leading-relaxed text-[#333]">
           <p className="text-center font-bold text-base mb-4 underline">VALUATION CERTIFICATE</p>
           <p className="mb-3">
@@ -2585,7 +2625,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       </Section>
 
       {(!isReadOnly || (Array.isArray(fields.propertyImages) && fields.propertyImages.length > 0)) && (
-        <Section title="Property Photographs" number={12} defaultOpen={false}>
+        <Section title="Property Photographs" number={isApartmentFlat ? 11 : 12} defaultOpen={false}>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             {Array.isArray(fields.propertyImages) && fields.propertyImages.map((url: string, idx: number) => (
               <div key={idx} className="flex flex-col border border-[#e9ecef] rounded-xl overflow-hidden bg-white shadow-sm">
@@ -2653,7 +2693,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       )}
 
       {/* ── Section 13: Sketch Map ── */}
-      <Section title="Sketch Map" number={13} defaultOpen={false}>
+      <Section title="Sketch Map" number={isApartmentFlat ? 12 : 13} defaultOpen={false}>
         {fields.sketchMapImage ? (
           <div className="space-y-3">
             <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] max-w-lg">
@@ -2676,7 +2716,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       </Section>
 
       {/* ── Section 14: Location Map ── */}
-      <Section title="Location Map" number={14} defaultOpen={false}>
+      <Section title="Location Map" number={isApartmentFlat ? 13 : 14} defaultOpen={false}>
         <div className="space-y-4">
           {/* Live Google Maps Embed — auto-reads from property address */}
           {(() => {
@@ -2772,6 +2812,8 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
           </div>
         </div>
       </Section>
+
+      </>)}
 
       {/* Status Message */}
       {message && (
