@@ -893,7 +893,11 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   });
 
   const totalBuildingValue = floorValuations.reduce((sum, f) => sum + f.netValue, 0);
-  const totalPropertyValue = landValue + totalBuildingValue;
+
+  // Detect Apartment/Flat subject type — these only have a single valuation section (no separate land)
+  const isApartmentFlat = /apartment|flat/i.test(fields.subjectType || '');
+
+  const totalPropertyValue = isApartmentFlat ? totalBuildingValue : landValue + totalBuildingValue;
   const realizableValue = totalPropertyValue * (parseNum(fields.realizablePct || '90') / 100);
   const distressValue = totalPropertyValue * (parseNum(fields.distressPct || '80') / 100);
 
@@ -1094,18 +1098,20 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       r.drawSimpleRow('Other Documents Verified', fields.documentsVerified);
       r.advanceCursor(8);
 
-      // ── Land Valuation ──
-      r.drawSectionHeader('VALUATION \u2014 Land');
-      r.drawSimpleRow('Land Area', `${fields.landArea || '0'} ${fields.landAreaUnit}`);
-      r.drawSimpleRow('Current Govt. Approved Rates for Land', `Rs.${fields.govtLandRate || fields.guidelineValue || 'N/A'}/- Per ${fields.landAreaUnit}`);
-      r.drawSimpleRow('Recommended Rate & Basis', `Rs.${fields.landRatePerUnit || 'N/A'}/- Per ${fields.landAreaUnit} ${fields.recommendedRateBasis ? '(' + fields.recommendedRateBasis + ')' : ''}`);
-      r.drawSimpleRow('Land Value', `${fields.landArea || '0'} ${fields.landAreaUnit} \u00D7 Rs.${fields.landRatePerUnit || '0'}/- = Rs.${formatIndianCurrency(landValue)}/-`);
-      r.drawSimpleRow('Actual BUA of Premises', `${formatIndianCurrency(totalPlinthArea)} ${fields.floorAreaUnit || 'Sqft'}`);
-      if (fields.buaAsPerApprovals) r.drawSimpleRow('BUA as per Approvals', fields.buaAsPerApprovals);
-      r.advanceCursor(8);
+      // ── Land Valuation (skip for Apartment/Flat) ──
+      if (!isApartmentFlat) {
+        r.drawSectionHeader('VALUATION \u2014 Land');
+        r.drawSimpleRow('Land Area', `${fields.landArea || '0'} ${fields.landAreaUnit}`);
+        r.drawSimpleRow('Current Govt. Approved Rates for Land', `Rs.${fields.govtLandRate || fields.guidelineValue || 'N/A'}/- Per ${fields.landAreaUnit}`);
+        r.drawSimpleRow('Recommended Rate & Basis', `Rs.${fields.landRatePerUnit || 'N/A'}/- Per ${fields.landAreaUnit} ${fields.recommendedRateBasis ? '(' + fields.recommendedRateBasis + ')' : ''}`);
+        r.drawSimpleRow('Land Value', `${fields.landArea || '0'} ${fields.landAreaUnit} \u00D7 Rs.${fields.landRatePerUnit || '0'}/- = Rs.${formatIndianCurrency(landValue)}/-`);
+        r.drawSimpleRow('Actual BUA of Premises', `${formatIndianCurrency(totalPlinthArea)} ${fields.floorAreaUnit || 'Sqft'}`);
+        if (fields.buaAsPerApprovals) r.drawSimpleRow('BUA as per Approvals', fields.buaAsPerApprovals);
+        r.advanceCursor(8);
+      }
 
-      // ── Building Valuation Table ──
-      r.drawCenteredTitle('VALUATION OF BUILDING (After Depreciation)');
+      // ── Building / Apartment Valuation Table ──
+      r.drawCenteredTitle(isApartmentFlat ? 'VALUATION OF APARTMENT/FLAT (After Depreciation)' : 'VALUATION OF BUILDING (After Depreciation)');
       r.advanceCursor(4);
       const unit = fields.floorAreaUnit || fields.landAreaUnit || 'Sqft';
       r.drawFloorTable(
@@ -1127,7 +1133,10 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
 
       // ── Abstract of Valuation ──
       r.drawSectionHeader('ABSTRACT OF VALUATION');
-      r.drawSimpleRow('Market Value (Land + Building)', `Rs.${formatIndianCurrency(totalPropertyValue)}/- (${rupeesInWords(totalPropertyValue)})`);
+      r.drawSimpleRow(
+        isApartmentFlat ? 'Market Value (Apartment/Flat)' : 'Market Value (Land + Building)',
+        `Rs.${formatIndianCurrency(totalPropertyValue)}/- (${rupeesInWords(totalPropertyValue)})`
+      );
       r.drawSimpleRow(`Realizable Value (${fields.realizablePct || '90'}%)`, `Rs.${formatIndianCurrency(realizableValue)}/-`);
       r.drawSimpleRow(`Forced Sale / Distress Value (${fields.distressPct || '80'}%)`, `Rs.${formatIndianCurrency(distressValue)}/- (${rupeesInWords(distressValue)})`);
       r.drawOptionRow('Marketability', ['Excellent', 'Very Good', 'Good', 'Difficult'], fields.marketability);
@@ -1544,16 +1553,18 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       ${simpleRow('Other Documents Verified', fields.documentsVerified)}
     `));
 
-    // ── BLOCK: Land Valuation ──
-    allBlocks.push(wrapTable(`
-      ${sectionHeader('VALUATION \u2014 Land')}
-      ${simpleRow('Land Area', `${fields.landArea || '0'} ${fields.landAreaUnit}`)}
-      ${simpleRow('Current Govt. Approved Rates for Land', `Rs.${fields.govtLandRate || fields.guidelineValue || 'N/A'}/- Per ${fields.landAreaUnit}`)}
-      ${simpleRow('Recommended Rate &amp; Basis', `Rs.${fields.landRatePerUnit || 'N/A'}/- Per ${fields.landAreaUnit} ${fields.recommendedRateBasis ? '(' + fields.recommendedRateBasis + ')' : ''}`)}
-      ${simpleRow('Land Value', `${fields.landArea || '0'} ${fields.landAreaUnit} \u00D7 Rs.${fields.landRatePerUnit || '0'}/- = Rs.${formatIndianCurrency(landValue)}/-`)}
-      ${simpleRow('Actual BUA of Premises', `${formatIndianCurrency(totalPlinthArea)} ${fields.floorAreaUnit || 'Sqft'}`)}
-      ${fields.buaAsPerApprovals ? simpleRow('BUA as per Approvals', fields.buaAsPerApprovals) : ''}
-    `));
+    // ── BLOCK: Land Valuation (skip for Apartment/Flat) ──
+    if (!isApartmentFlat) {
+      allBlocks.push(wrapTable(`
+        ${sectionHeader('VALUATION \u2014 Land')}
+        ${simpleRow('Land Area', `${fields.landArea || '0'} ${fields.landAreaUnit}`)}
+        ${simpleRow('Current Govt. Approved Rates for Land', `Rs.${fields.govtLandRate || fields.guidelineValue || 'N/A'}/- Per ${fields.landAreaUnit}`)}
+        ${simpleRow('Recommended Rate &amp; Basis', `Rs.${fields.landRatePerUnit || 'N/A'}/- Per ${fields.landAreaUnit} ${fields.recommendedRateBasis ? '(' + fields.recommendedRateBasis + ')' : ''}`)}
+        ${simpleRow('Land Value', `${fields.landArea || '0'} ${fields.landAreaUnit} \u00D7 Rs.${fields.landRatePerUnit || '0'}/- = Rs.${formatIndianCurrency(landValue)}/-`)}
+        ${simpleRow('Actual BUA of Premises', `${formatIndianCurrency(totalPlinthArea)} ${fields.floorAreaUnit || 'Sqft'}`)}
+        ${fields.buaAsPerApprovals ? simpleRow('BUA as per Approvals', fields.buaAsPerApprovals) : ''}
+      `));
+    }
 
     // ── BLOCK: Building Valuation ──
     const floorRowsHTML = floorValuations.map((f, idx) => {
@@ -1571,7 +1582,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     }).join('');
 
     allBlocks.push(`
-      <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin:8px 0 6px;">VALUATION OF BUILDING (After Depreciation)</p>
+      <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin:8px 0 6px;">${isApartmentFlat ? 'VALUATION OF APARTMENT/FLAT (After Depreciation)' : 'VALUATION OF BUILDING (After Depreciation)'}</p>
       <table style="width:100%;border-collapse:collapse;margin-bottom:10px;font-family:${ff};font-size:12pt;">
         <tr style="background:#000;">
           <th style="border:${cellBorder};padding:4px 6px 4px 6px;color:#FFF;font-weight:bold;text-align:center;font-family:${ff};vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">Floor</th>
@@ -1594,7 +1605,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     // ── BLOCK: Abstract of Valuation ──
     allBlocks.push(wrapTable(`
       ${sectionHeader('ABSTRACT OF VALUATION')}
-      ${simpleRow('Market Value (Land + Building)', `Rs.${formatIndianCurrency(totalPropertyValue)}/- (${rupeesInWords(totalPropertyValue)})`)}
+      ${simpleRow(isApartmentFlat ? 'Market Value (Apartment/Flat)' : 'Market Value (Land + Building)', `Rs.${formatIndianCurrency(totalPropertyValue)}/- (${rupeesInWords(totalPropertyValue)})`)}
       ${simpleRow(`Realizable Value (${fields.realizablePct || '90'}%)`, `Rs.${formatIndianCurrency(realizableValue)}/-`)}
       ${simpleRow(`Forced Sale / Distress Value (${fields.distressPct || '80'}%)`, `Rs.${formatIndianCurrency(distressValue)}/- (${rupeesInWords(distressValue)})`)}
       ${optionRow('Marketability', ['Excellent', 'Very Good', 'Good', 'Difficult'], fields.marketability)}
@@ -2312,10 +2323,10 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         </div>
       </Section>
 
-      {/* ── Section 7: Floor-wise Area & Building Valuation ── */}
-      <Section title="Floor-wise Area & Building Valuation" number={7}>
+      {/* ── Section 7: Floor-wise Area & Building/Apartment Valuation ── */}
+      <Section title={isApartmentFlat ? 'Apartment/Flat Valuation' : 'Floor-wise Area & Building Valuation'} number={7}>
         <div className="flex justify-between items-center mb-4">
-          <h4 className="text-sm font-semibold text-[#0f2038]">Building Valuation Details</h4>
+          <h4 className="text-sm font-semibold text-[#0f2038]">{isApartmentFlat ? 'Apartment/Flat Valuation Details' : 'Building Valuation Details'}</h4>
           <div className="flex items-center gap-2">
             <span className="text-xs text-[#6c757d] font-bold uppercase tracking-wide">Floor Unit:</span>
             <select
@@ -2402,51 +2413,62 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         )}
       </Section>
 
-      {/* ── Section 8: Valuation of Land ── */}
-      <Section title="Valuation of Land" number={8} defaultOpen={false}>
-        <div className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
-            <Field label="Land Area">
-              <input className={inputCls} value={fields.landArea} onChange={e => handleChange('landArea', e.target.value)} disabled={isReadOnly} placeholder="e.g. 13068" />
-            </Field>
-            <Field label="Land Area Unit">
-              <select className={selectCls} value={fields.landAreaUnit} onChange={e => handleChange('landAreaUnit', e.target.value)} disabled={isReadOnly}>
-                <option>Sqft</option><option>Decimal</option><option>Acre</option><option>Sqm</option>
-              </select>
-            </Field>
-            <Field label="Current Govt. Approved Rate (₹)">
-              <input className={inputCls} value={fields.govtLandRate} onChange={e => handleChange('govtLandRate', e.target.value)} disabled={isReadOnly} placeholder="e.g. 23" />
-            </Field>
-            <Field label={`Recommended Rate per ${fields.landAreaUnit} (₹)`}>
-              <input type="number" min="0" step="any" className={inputCls} value={fields.landRatePerUnit} onChange={e => handleChange('landRatePerUnit', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="e.g. 450" />
-            </Field>
-            <Field label="Basis for Recommendation" span={2}>
-              <input className={inputCls} value={fields.recommendedRateBasis} onChange={e => handleChange('recommendedRateBasis', e.target.value)} disabled={isReadOnly} placeholder="e.g. As per local feedback and market survey" />
+      {/* ── Section 8: Valuation of Land (hidden for Apartment/Flat) ── */}
+      {!isApartmentFlat && (
+        <Section title="Valuation of Land" number={8} defaultOpen={false}>
+          <div className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <Field label="Land Area">
+                <input className={inputCls} value={fields.landArea} onChange={e => handleChange('landArea', e.target.value)} disabled={isReadOnly} placeholder="e.g. 13068" />
+              </Field>
+              <Field label="Land Area Unit">
+                <select className={selectCls} value={fields.landAreaUnit} onChange={e => handleChange('landAreaUnit', e.target.value)} disabled={isReadOnly}>
+                  <option>Sqft</option><option>Decimal</option><option>Acre</option><option>Sqm</option>
+                </select>
+              </Field>
+              <Field label="Current Govt. Approved Rate (₹)">
+                <input className={inputCls} value={fields.govtLandRate} onChange={e => handleChange('govtLandRate', e.target.value)} disabled={isReadOnly} placeholder="e.g. 23" />
+              </Field>
+              <Field label={`Recommended Rate per ${fields.landAreaUnit} (₹)`}>
+                <input type="number" min="0" step="any" className={inputCls} value={fields.landRatePerUnit} onChange={e => handleChange('landRatePerUnit', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="e.g. 450" />
+              </Field>
+              <Field label="Basis for Recommendation" span={2}>
+                <input className={inputCls} value={fields.recommendedRateBasis} onChange={e => handleChange('recommendedRateBasis', e.target.value)} disabled={isReadOnly} placeholder="e.g. As per local feedback and market survey" />
+              </Field>
+            </div>
+            <div className="px-4 py-3 rounded-lg bg-[#f0ead6] border border-[#d4c5a9] text-sm font-bold text-[#0f2038]">
+              Total Land Value: &#8377; {formatIndianCurrency(landValue)}
+            </div>
+            <Field label="BUA as per Approvals">
+              <input className={inputCls} value={fields.buaAsPerApprovals} onChange={e => handleChange('buaAsPerApprovals', e.target.value)} disabled={isReadOnly} placeholder="e.g. 2 X 1600sqft = 3200sqft" />
             </Field>
           </div>
-          <div className="px-4 py-3 rounded-lg bg-[#f0ead6] border border-[#d4c5a9] text-sm font-bold text-[#0f2038]">
-            Total Land Value: &#8377; {formatIndianCurrency(landValue)}
-          </div>
-          <Field label="BUA as per Approvals">
-            <input className={inputCls} value={fields.buaAsPerApprovals} onChange={e => handleChange('buaAsPerApprovals', e.target.value)} disabled={isReadOnly} placeholder="e.g. 2 X 1600sqft = 3200sqft" />
-          </Field>
-        </div>
-      </Section>
+        </Section>
+      )}
 
       {/* ── Section 9: Abstract of Valuation ── */}
-      <Section title="Abstract of Valuation" number={9}>
+      <Section title="Abstract of Valuation" number={isApartmentFlat ? 8 : 9}>
         <div className="space-y-3 max-w-xl">
-          {[
-            { label: 'A. Value of Land', value: landValue },
-            { label: 'B. Value of Building (After Depreciation)', value: totalBuildingValue },
-          ].map(item => (
-            <div key={item.label} className="flex items-center justify-between py-2 border-b border-[#e9ecef]">
-              <span className="text-sm text-[#495057]">{item.label}</span>
-              <span className="text-sm font-semibold text-[#0f2038]">&#8377; {formatIndianCurrency(item.value)}</span>
+          {isApartmentFlat ? (
+            /* Apartment/Flat: single value row */
+            <div className="flex items-center justify-between py-2 border-b border-[#e9ecef]">
+              <span className="text-sm text-[#495057]">Value of Apartment/Flat (After Depreciation)</span>
+              <span className="text-sm font-semibold text-[#0f2038]">&#8377; {formatIndianCurrency(totalBuildingValue)}</span>
             </div>
-          ))}
+          ) : (
+            /* Land & Building: two value rows */
+            [
+              { label: 'A. Value of Land', value: landValue },
+              { label: 'B. Value of Building (After Depreciation)', value: totalBuildingValue },
+            ].map(item => (
+              <div key={item.label} className="flex items-center justify-between py-2 border-b border-[#e9ecef]">
+                <span className="text-sm text-[#495057]">{item.label}</span>
+                <span className="text-sm font-semibold text-[#0f2038]">&#8377; {formatIndianCurrency(item.value)}</span>
+              </div>
+            ))
+          )}
           <div className="flex items-center justify-between py-3 bg-gradient-to-r from-[#f0ead6] to-[#f8f4eb] px-4 rounded-lg border border-[#d4c5a9]">
-            <span className="text-sm font-bold text-[#0f2038]">TOTAL FAIR MARKET VALUE (A + B)</span>
+            <span className="text-sm font-bold text-[#0f2038]">{isApartmentFlat ? 'TOTAL FAIR MARKET VALUE' : 'TOTAL FAIR MARKET VALUE (A + B)'}</span>
             <span className="text-lg font-bold text-[#b8860b]">&#8377; {formatIndianCurrency(totalPropertyValue)}</span>
           </div>
           <p className="text-xs text-[#6c757d] italic pl-1">{rupeesInWords(totalPropertyValue)}</p>
