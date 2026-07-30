@@ -306,20 +306,20 @@ export default function RequestsDashboard({
               </div>
 
               {/* Grid details */}
-              <div className="grid sm:grid-cols-3 gap-6 text-sm">
-                <div>
+              <div className="grid sm:grid-cols-3 gap-6 text-sm overflow-hidden">
+                <div className="min-w-0">
                   <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1">Property Location</p>
-                  <p className="text-[#343a40] font-medium leading-relaxed">{req.propertyAddress}</p>
+                  <p className="text-[#343a40] font-medium leading-relaxed break-words">{req.propertyAddress}</p>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1">Contact Person</p>
-                  <p className="text-[#343a40] font-medium">{req.contactName}</p>
-                  <p className="text-xs text-[#6c757d] mt-0.5">{req.contactEmail} • {req.contactPhone}</p>
-                  <p className="text-xs text-[#9b9b9b] italic mt-0.5">Account: {getClientName(req)}</p>
+                  <p className="text-[#343a40] font-medium truncate">{req.contactName}</p>
+                  <p className="text-xs text-[#6c757d] mt-0.5 truncate">{req.contactEmail} • {req.contactPhone}</p>
+                  <p className="text-xs text-[#9b9b9b] italic mt-0.5 truncate">Account: {getClientName(req)}</p>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1">Details & khata/Plot</p>
-                  <p className="text-[#6c757d] text-xs leading-relaxed">{req.propertyDetails}</p>
+                  <p className="text-[#6c757d] text-xs leading-relaxed break-words">{req.propertyDetails}</p>
                 </div>
               </div>
 
