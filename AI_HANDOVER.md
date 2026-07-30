@@ -195,6 +195,9 @@ Outstanding items in **priority order**:
 > When modifying the UI, prioritize modern, premium aesthetics (glassmorphism, clean typography, subtle animations) without relying on Tailwind component libraries like Shadcn. Use raw Tailwind classes.
 
 ## 7. Recent Git Commits (for reference)
+- `0b598e3` — fix: correct Prisma relation names in enquiry detail page (messages→enquiries, serviceRequest→serviceRequests)
+- `263d6e6` — feat: remove create manual case button from manager dashboard
+- `880be3c` — style: rename Client to Enquirer and remove Project column in Public Enquiries table
 - `2d64a97` — feat: dynamically adjust report sections 7-9 for Apartment/Flat vs Land+Building
 - `e50c2dc` — fix: prevent text overflow in service requests grid on owner portal
 - `4bf5ce5` — fix: correct source field for manual cases and remove invalid Prisma include
