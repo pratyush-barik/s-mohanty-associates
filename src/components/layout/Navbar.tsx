@@ -76,7 +76,7 @@ export default function Navbar({ user }: NavbarProps) {
         <div className="relative">
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="btn btn-primary text-sm px-5 py-2.5 flex items-center gap-2"
+            className="btn btn-primary text-sm px-5 py-2.5 flex items-center gap-2 whitespace-nowrap"
           >
             Enquire About Service
             <svg className={`w-3.5 h-3.5 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -180,12 +180,12 @@ export default function Navbar({ user }: NavbarProps) {
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center gap-1">
+            <div className="hidden lg:flex items-center gap-0.5">
               {navLinks.map((link) => (
                 <button
                   key={link.href}
                   onClick={() => scrollToSection(link.href)}
-                  className={`px-4 py-2 rounded-full text-base font-medium transition-all duration-300 relative ${
+                  className={`px-3 py-2 rounded-full text-sm font-medium transition-all duration-300 relative whitespace-nowrap ${
                     activeSection === link.href.replace('#', '')
                       ? 'text-[#b8860b]'
                       : 'text-[#4a6f4a] hover:text-[#0d3d24]'
@@ -209,7 +209,7 @@ export default function Navbar({ user }: NavbarProps) {
               {user && !isEmployee && (
                 <Link
                   href="/dashboard"
-                  className="hidden md:flex items-center gap-2 text-base font-medium transition-colors text-[#4a6f4a] hover:text-[#0d3d24]"
+                  className="hidden md:flex items-center gap-2 text-sm font-medium transition-colors text-[#4a6f4a] hover:text-[#0d3d24] whitespace-nowrap"
                 >
                   <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#1a5c3a] to-[#0d3d24] flex items-center justify-center text-white text-xs font-bold">
                     {user.name.charAt(0).toUpperCase()}
