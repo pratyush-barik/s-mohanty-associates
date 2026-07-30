@@ -130,13 +130,16 @@ The core business logic is **100% complete**.
     - **Tabular views**: Filter by source type in the EnquiryList. Columns show source icons (📧 Gmail, 🌐 Website, 🔐 Portal Signup).
     - Tickets are linked to ServiceRequests (via `serviceRequestId`) and Projects (via `projectId`) so managers can see which enquiries became active projects.
     - Auto-close behaviour: when a report is finalized with no rework needed, the linked enquiry ticket auto-closes. New messages on closed tickets create a new ticket automatically.
- 12. **Navigation & Login Layout Updates (July 2026)**:
+ 12. **Navigation & Layout Styling Updates (July 2026)**:
+    - Auth pages (Login, Register, Forgot Password) standardized to a "Floral White" (`#FFF9F0`) theme.
+    - Footer logo container updated to a bone white pill-shape layout.
     - Portal navigation labels updated — "My Reports" → "My Projects".
     - My Projects listing page layout transformed from block cards into sleek, horizontal, inline rectangular list rows.
     - Report Agent's "My Projects" page now includes exact filtering options (search bar, Pending/Completed/All tabs) matching the Field Agent's workflow.
-    - Replaced Next.js `<Image>` styling calculations inside the main Navigation Bar and Employee Login page layout with native HTML `<img>` elements, resolving the issue where logos were cut off at the bottom.
- 13. **Delivery**: Client downloads the PDF from their dashboard.
- 14. **Landing Page Integrations**: The "Submit Organisational Request" CTA on the public landing page now generates pre-filled emails (Gmail, Outlook, Default Mail) whose body matches the exact 8 data fields found in the client's internal "Request a Service" form (Service Category, Property Details, etc.).
+    - Client Portal navigation compacted to prevent layout wrapping and height growth after login.
+ 13. **Dynamic Report Builder (Sections 7-9)**: The Report Builder dynamically adjusts Sections 7 (Building Valuation), 8 (Land Valuation), and 9 (Abstract) based on the chosen subject type. If the subject is an `Apartment` or `Flat`, the Land section is completely hidden, Section 7 is renamed to Apartment Valuation, and the Abstract displays only the single total value instead of a split Land+Building breakdown.
+ 14. **Delivery**: Client downloads the PDF from their dashboard.
+ 15. **Landing Page Integrations**: The "Submit Organisational Request" CTA on the public landing page now generates pre-filled emails (Gmail, Outlook, Default Mail) whose body matches the exact 8 data fields found in the client's internal "Request a Service" form (Service Category, Property Details, etc.).
 
 ## 5. Pending Work (What is next)
 
@@ -192,6 +195,12 @@ Outstanding items in **priority order**:
 > When modifying the UI, prioritize modern, premium aesthetics (glassmorphism, clean typography, subtle animations) without relying on Tailwind component libraries like Shadcn. Use raw Tailwind classes.
 
 ## 7. Recent Git Commits (for reference)
+- `2d64a97` — feat: dynamically adjust report sections 7-9 for Apartment/Flat vs Land+Building
+- `e50c2dc` — fix: prevent text overflow in service requests grid on owner portal
+- `4bf5ce5` — fix: correct source field for manual cases and remove invalid Prisma include
+- `20b0d90` — style: update register and forgot-password pages to match floral white light theme
+- `88f4cc9` — style: reduce height and padding of footer logo pill to match tight reference image
+- `c218195` — fix: prevent navbar height growth after login by compacting nav links
 - `03e36f3` — feat: implement Photo Bucket lifecycle locks and auto-cleanup
 - `e6bcc3f` — feat: add Photo Bucket data and lifecycle constraints
 - `a5b4c1c` — fix: enforce strict RBAC for Photo Bucket actions
