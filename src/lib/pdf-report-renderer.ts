@@ -373,8 +373,8 @@ export class PDFReportRenderer {
    */
   drawSectionHeader(title: string): void {
     const h = this.cellHeight(title, CONTENT_W, { bold: true, fontSize: FONT_SIZE_HEADER });
-    // Require an extra 60pt of space to prevent orphaned headings
-    this.checkPageBreak(h + 60);
+    // Require an extra 150pt of space to prevent orphaned headings or single rows
+    this.checkPageBreak(h + 150);
     this.drawCell(MARGIN_L, this.cursorY, CONTENT_W, h, title, {
       bold: true, fontSize: FONT_SIZE_HEADER, fillColor: LBL_BG,
     });
