@@ -188,9 +188,30 @@ export class PDFReportRenderer {
 
   /** Measure height for a RichText (mixed bold/regular segments) */
   private measureRichTextHeight(segments: TextSegment[], maxWidth: number, fontSize: number): number {
-    // Flatten to a single string for wrapping measurement using regular font
-    const fullText = segments.map(s => s.text || '').join('');
-    return this.measureTextHeight(fullText, maxWidth, fontSize);
+    const wordList: { word: string; bold?: boolean; italic?: boolean }[] = [];
+    for (const seg of segments) {
+      const words = String(seg.text || '').split(/(\s+)/);
+      for (const w of words) {
+        if (w) wordList.push({ word: w, bold: seg.bold, italic: seg.italic });
+      }
+    }
+    const lines: { word: string; bold?: boolean; italic?: boolean }[][] = [];
+    let currentLine: typeof wordList = [];
+    let currentWidth = 0;
+    for (const item of wordList) {
+      const font = this.getFont(item.bold, item.italic);
+      const ww = font.widthOfTextAtSize(item.word, fontSize);
+      if (currentWidth + ww > maxWidth && currentLine.length > 0 && !/^\s+$/.test(item.word)) {
+        lines.push(currentLine);
+        currentLine = [];
+        currentWidth = 0;
+      }
+      currentLine.push(item);
+      currentWidth += ww;
+    }
+    if (currentLine.length > 0) lines.push(currentLine);
+    if (lines.length === 0) lines.push([]);
+    return lines.length * fontSize * LINE_HEIGHT;
   }
 
   // ─── Drawing Primitives ────────────────────────────────────────
@@ -386,20 +407,22 @@ export class PDFReportRenderer {
    * Advances cursor.
    */
   drawSimpleRow(label: string, value: string): void {
-    const fullText = `${label}: - ${value || 'N/A'}`;
-    const h = this.cellHeight(fullText, CONTENT_W, { fontSize: FONT_SIZE });
+    const segments = [
+      { text: `${label}: - ` },
+      { text: value || 'N/A', bold: true },
+    ];
+    const textW = CONTENT_W - CELL_PAD_X * 2;
+    const textH = this.measureRichTextHeight(segments, textW, FONT_SIZE);
+    const h = Math.max(textH + CELL_PAD_Y * 2, FONT_SIZE * LINE_HEIGHT + CELL_PAD_Y * 2);
+
     this.checkPageBreak(h);
 
     // Fill + border for full row
     this.drawRect(MARGIN_L, this.cursorY, CONTENT_W, h, '#FFFFFF', '#000000', BORDER_W, 0.5);
 
     // Draw rich text: label normal, value bold
-    const textW = CONTENT_W - CELL_PAD_X * 2;
     this.drawRichTextAt(
-      [
-        { text: `${label}: - ` },
-        { text: value || 'N/A', bold: true },
-      ],
+      segments,
       MARGIN_L + CELL_PAD_X,
       this.cursorY + CELL_PAD_Y,
       textW,
