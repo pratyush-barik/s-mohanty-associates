@@ -1,5 +1,14 @@
 import nodemailer from 'nodemailer';
 
+export function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 export async function sendMail({ to, subject, html, from }: { to: string; subject: string; html: string; from?: string }) {
   // Determine if we should use Gmail or Standard SMTP based on sender email
   const isGmailSender = from === process.env.GMAIL_SMTP_FROM;

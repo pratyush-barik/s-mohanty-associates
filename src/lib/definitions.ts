@@ -44,6 +44,14 @@ export const ServiceRequestSchema = z.object({
   additionalNotes: z.string().optional(),
 });
 
+export const ProfileUpdateSchema = z.object({
+  name: z.string().min(2, { message: 'Name must be at least 2 characters.' }).trim(),
+  email: z.string().email({ message: 'Please enter a valid email.' }).trim(),
+  mobile: z.string().min(10, { message: 'Please enter a valid mobile number.' }).max(15).trim(),
+  organisationName: z.string().optional(),
+  otp: z.string().optional(),
+});
+
 export type SignupFormState =
   | {
       errors?: {

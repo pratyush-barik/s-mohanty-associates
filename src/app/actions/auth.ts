@@ -2,10 +2,11 @@
 
 import { signIn, auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
-import { SignupFormSchema, LoginFormSchema, type SignupFormState, type LoginFormState } from '@/lib/definitions';
+import { SignupFormSchema, LoginFormSchema, ProfileUpdateSchema, type SignupFormState, type LoginFormState } from '@/lib/definitions';
 import bcrypt from 'bcryptjs';
 import { redirect } from 'next/navigation';
 import { AuthError } from 'next-auth';
+import { escapeHtml } from '@/lib/mail';
 
 export async function signup(state: SignupFormState, formData: FormData): Promise<SignupFormState> {
   // Validate form fields
@@ -27,8 +28,9 @@ export async function signup(state: SignupFormState, formData: FormData): Promis
 
   const { clientType, name, email, mobile, password, organisationName, otp } = validatedFields.data;
 
-  // 1. Verify email validation code (Allow permanent test code '111111')
-  if (otp !== '111111') {
+  // 1. Verify email validation code (Allow permanent test code only if env var is set)
+  const ALLOWED_TEST_OTP = process.env.ALLOWED_TEST_OTP || '';
+  if (!ALLOWED_TEST_OTP || otp !== ALLOWED_TEST_OTP) {
     const otpRecord = await prisma.otp.findFirst({
       where: {
         email,
@@ -162,7 +164,7 @@ export async function requestRegistrationOtp(email: string) {
           <h2 style="color: #0f2038;">S Mohanty Associates</h2>
           <p>Thank you for starting your registration. Please use the following One-Time Password (OTP) to verify your email address. This code is valid for 5 minutes.</p>
           <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; font-size: 24px; font-weight: bold; letter-spacing: 5px; text-align: center; color: #b8860b; border: 1px solid #e9ecef; margin: 20px 0;">
-            ${code}
+            ${escapeHtml(code)}
           </div>
           <p style="color: #6c757d; font-size: 12px; margin-top: 20px;">If you did not request this verification, you can safely ignore this email.</p>
         </div>
@@ -283,11 +285,22 @@ export async function updateClientProfile(formData: FormData) {
     return { error: 'Unauthorized' };
   }
 
-  const name = formData.get('name') as string;
-  const mobile = formData.get('mobile') as string;
-  const email = formData.get('email') as string;
-  const organisationName = formData.get('organisationName') as string;
-  const otp = formData.get('otp') as string;
+  const validatedFields = ProfileUpdateSchema.safeParse({
+    name: formData.get('name'),
+    email: formData.get('email'),
+    mobile: formData.get('mobile'),
+    organisationName: formData.get('organisationName'),
+    otp: formData.get('otp'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      error: 'Invalid input. Please check your details.',
+      details: validatedFields.error.flatten().fieldErrors,
+    };
+  }
+
+  const { name, email, mobile, organisationName, otp } = validatedFields.data;
 
   if (!email || !name) {
     return { error: 'Required fields must be completed.' };
@@ -326,16 +339,16 @@ export async function updateClientProfile(formData: FormData) {
         from: 'otp@smohantyassociates.com',
         to: connectedEmail,
         subject: 'Confirm Profile Changes - S Mohanty Associates',
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #f1f3f5; border-radius: 8px;">
-            <h2 style="color: #0f2038;">S Mohanty Associates</h2>
-            <p>You have requested to update your profile details. Please enter the following One-Time Password (OTP) to confirm and apply these changes. This code is valid for 5 minutes.</p>
-            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; font-size: 24px; font-weight: bold; letter-spacing: 5px; text-align: center; color: #b8860b; border: 1px solid #e9ecef; margin: 20px 0;">
-              ${code}
-            </div>
-            <p style="color: #6c757d; font-size: 12px; margin-top: 20px;">If you did not request this update, please ignore this message.</p>
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #f1f3f5; border-radius: 8px;">
+          <h2 style="color: #0f2038;">S Mohanty Associates</h2>
+          <p>You have requested to update your profile details. Please enter the following One-Time Password (OTP) to confirm and apply these changes. This code is valid for 5 minutes.</p>
+          <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; font-size: 24px; font-weight: bold; letter-spacing: 5px; text-align: center; color: #b8860b; border: 1px solid #e9ecef; margin: 20px 0;">
+            ${escapeHtml(code)}
           </div>
-        `,
+          <p style="color: #6c757d; font-size: 12px; margin-top: 20px;">If you did not request this update, please ignore this message.</p>
+        </div>
+      `,
       });
 
       if (mailResult.error) {
@@ -345,8 +358,9 @@ export async function updateClientProfile(formData: FormData) {
       return { success: true, requireVerification: true, email: connectedEmail };
     }
 
-    // 3. OTP is provided. Verify it against database (Allow permanent test code '111111')
-    if (otp !== '111111') {
+    // 3. OTP is provided. Verify it against database (Allow permanent test code only if env var is set)
+    const ALLOWED_TEST_OTP_PROFILE = process.env.ALLOWED_TEST_OTP || '';
+    if (!ALLOWED_TEST_OTP_PROFILE || otp !== ALLOWED_TEST_OTP_PROFILE) {
       const otpRecord = await prisma.otp.findFirst({
         where: {
           email: connectedEmail,
@@ -463,7 +477,7 @@ export async function requestOtp(email: string, portal: 'CLIENT' | 'EMPLOYEE') {
           <h2 style="color: #0f2038;">S Mohanty Associates</h2>
           <p>Please use the following One-Time Password (OTP) to log in to your account. This code is valid for 5 minutes.</p>
           <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; font-size: 24px; font-weight: bold; letter-spacing: 5px; text-align: center; color: #b8860b; border: 1px solid #e9ecef; margin: 20px 0;">
-            ${code}
+            ${escapeHtml(code)}
           </div>
           <p style="color: #6c757d; font-size: 12px; margin-top: 20px;">If you did not request this login code, you can safely ignore this email.</p>
         </div>
