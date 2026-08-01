@@ -1054,7 +1054,6 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       r.drawSimpleRow('Name of Document holder', fields.documentHolderName || fields.ownerName);
       r.drawSimpleRow('Date of Inspection', fields.dateOfInspection);
       r.drawSimpleRow('Date of Valuation Report', fields.dateOfValuation);
-      r.drawSimpleRow('Purpose', fields.purpose);
       r.advanceCursor(8);
 
       // ── Surrounding Locality Details ──
@@ -1484,7 +1483,6 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       ${simpleRow('Name of Document holder', fields.documentHolderName || fields.ownerName)}
       ${simpleRow('Date of Inspection', fields.dateOfInspection)}
       ${simpleRow('Date of Valuation Report', fields.dateOfValuation)}
-      ${simpleRow('Purpose', fields.purpose)}
     `));
 
     // ── BLOCK: Surrounding Locality Details ──
