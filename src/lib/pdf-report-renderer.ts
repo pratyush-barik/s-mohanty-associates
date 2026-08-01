@@ -448,18 +448,18 @@ export class PDFReportRenderer {
     const optionTextW = COL_W[1] - CELL_PAD_X * 2;
     const labelH = this.cellHeight(label, COL_W[0], { bold: true, fontSize: FONT_SIZE });
 
-    // Calculate actual heights per option (sum of each option's wrapped height + padding)
+    // Calculate actual heights per option (text height only, no padding)
     let totalOptionsH = 0;
     const optionHeights: number[] = [];
     for (const opt of options) {
       const lines = this.wrapText(opt, optionTextW, FONT_SIZE);
-      const h = lines.length * FONT_SIZE * LINE_HEIGHT + CELL_PAD_Y * 2;
+      const h = lines.length * FONT_SIZE * LINE_HEIGHT;
       optionHeights.push(h);
       totalOptionsH += h;
     }
 
     const valueH = this.cellHeight(selectedValue || 'N/A', COL_W[2], { bold: true, fontSize: FONT_SIZE });
-    const rowH = Math.max(labelH, totalOptionsH, valueH);
+    const rowH = Math.max(labelH, totalOptionsH + CELL_PAD_Y * 2, valueH);
 
     this.checkPageBreak(rowH);
 
@@ -470,7 +470,7 @@ export class PDFReportRenderer {
 
     // Col 2: Stacked options with internal dividers (wrapped text)
     this.drawRect(col2X, this.cursorY, COL_W[1], rowH, OPT_BG, '#000000', BORDER_W, 0.5);
-    let optY = this.cursorY;
+    let optY = this.cursorY + CELL_PAD_Y;
     for (let i = 0; i < options.length; i++) {
       const optLines = this.wrapText(options[i], optionTextW, FONT_SIZE);
       const isBold = options[i] === selectedValue;
@@ -511,23 +511,23 @@ export class PDFReportRenderer {
     const valTextW = COL_W[2] - CELL_PAD_X * 2;
     const count = Math.max(subLabels.length, values.length);
 
-    // Calculate actual per-row heights
+    // Calculate actual per-row heights (text height only, no padding)
     let totalProximityH = 0;
     const rowHeights: number[] = [];
     for (let i = 0; i < count; i++) {
       const subH = i < subLabels.length
-        ? this.wrapText(subLabels[i], subTextW, FONT_SIZE).length * FONT_SIZE * LINE_HEIGHT + CELL_PAD_Y * 2
+        ? this.wrapText(subLabels[i], subTextW, FONT_SIZE).length * FONT_SIZE * LINE_HEIGHT
         : 0;
       const valH = i < values.length
-        ? this.wrapText(values[i], valTextW, FONT_SIZE).length * FONT_SIZE * LINE_HEIGHT + CELL_PAD_Y * 2
+        ? this.wrapText(values[i], valTextW, FONT_SIZE).length * FONT_SIZE * LINE_HEIGHT
         : 0;
-      const rowH = Math.max(subH, valH, FONT_SIZE * LINE_HEIGHT + CELL_PAD_Y * 2);
+      const rowH = Math.max(subH, valH, FONT_SIZE * LINE_HEIGHT);
       rowHeights.push(rowH);
       totalProximityH += rowH;
     }
 
     const labelH = this.cellHeight(label, COL_W[0], { bold: true, fontSize: FONT_SIZE });
-    const rowH = Math.max(labelH, totalProximityH);
+    const rowH = Math.max(labelH, totalProximityH + CELL_PAD_Y * 2);
 
     this.checkPageBreak(rowH);
 
@@ -536,35 +536,33 @@ export class PDFReportRenderer {
       bold: true, fontSize: FONT_SIZE, fillColor: LBL_BG, bgOpacity: 0.5, vAlign: 'middle',
     });
 
-    // Col 2: Sub-labels with wrapping and correct per-row heights
+    // Col 2: Sub-labels with wrapping
     this.drawRect(col2X, this.cursorY, COL_W[1], rowH, OPT_BG, '#000000', BORDER_W, 0.5);
-    let subY = this.cursorY;
+    let subY = this.cursorY + CELL_PAD_Y;
     for (let i = 0; i < subLabels.length; i++) {
       const lines = this.wrapText(subLabels[i], subTextW, FONT_SIZE);
-      const allocatedH = rowHeights[i];
       const textH = lines.length * FONT_SIZE * LINE_HEIGHT;
-      const textY = subY + (allocatedH - textH) / 2;
+      const textY = subY + (rowHeights[i] - textH) / 2;
       for (let j = 0; j < lines.length; j++) {
         this.drawTextAt(lines[j], col2X + CELL_PAD_X, textY + j * FONT_SIZE * LINE_HEIGHT, { fontSize: FONT_SIZE });
       }
-      subY += allocatedH;
+      subY += rowHeights[i];
       if (i < subLabels.length - 1) {
         this.drawHLine(col2X, col2X + COL_W[1], subY, '#000000', 0.5);
       }
     }
 
-    // Col 3: Values with wrapping and correct per-row heights
+    // Col 3: Values with wrapping
     this.drawRect(col3X, this.cursorY, COL_W[2], rowH, OPT_BG, '#000000', BORDER_W, 0.5);
-    let valY = this.cursorY;
+    let valY = this.cursorY + CELL_PAD_Y;
     for (let i = 0; i < values.length; i++) {
       const lines = this.wrapText(values[i], valTextW, FONT_SIZE);
-      const allocatedH = rowHeights[i];
       const textH = lines.length * FONT_SIZE * LINE_HEIGHT;
-      const textY = valY + (allocatedH - textH) / 2;
+      const textY = valY + (rowHeights[i] - textH) / 2;
       for (let j = 0; j < lines.length; j++) {
         this.drawTextAt(lines[j], col3X + CELL_PAD_X, textY + j * FONT_SIZE * LINE_HEIGHT, { fontSize: FONT_SIZE });
       }
-      valY += allocatedH;
+      valY += rowHeights[i];
       if (i < values.length - 1) {
         this.drawHLine(col3X, col3X + COL_W[2], valY, '#000000', 0.5);
       }
@@ -586,18 +584,18 @@ export class PDFReportRenderer {
     const labelH = this.cellHeight(label, COL_W[0], { bold: true, fontSize: FONT_SIZE });
     const optionTextW = COL_W[1] - CELL_PAD_X * 2;
 
-    // Calculate actual heights per option
+    // Calculate actual heights per option (text height only, no padding)
     let totalOptionsH = 0;
     const optionHeights: number[] = [];
     for (const opt of options) {
       const lines = this.wrapText(opt, optionTextW, FONT_SIZE);
-      const h = lines.length * FONT_SIZE * LINE_HEIGHT + CELL_PAD_Y * 2;
+      const h = lines.length * FONT_SIZE * LINE_HEIGHT;
       optionHeights.push(h);
       totalOptionsH += h;
     }
 
     const valueH = this.cellHeight(actualValue || 'N/A', COL_W[2], { bold: true, fontSize: FONT_SIZE });
-    const rowH = Math.max(labelH, totalOptionsH, valueH);
+    const rowH = Math.max(labelH, totalOptionsH + CELL_PAD_Y * 2, valueH);
 
     this.checkPageBreak(rowH);
 
@@ -608,7 +606,7 @@ export class PDFReportRenderer {
 
     // Col 2: Options with selectedRange bolded (wrapped, per-item heights)
     this.drawRect(col2X, this.cursorY, COL_W[1], rowH, OPT_BG, '#000000', BORDER_W, 0.5);
-    let optY = this.cursorY;
+    let optY = this.cursorY + CELL_PAD_Y;
     for (let i = 0; i < options.length; i++) {
       const optLines = this.wrapText(options[i], optionTextW, FONT_SIZE);
       const textH = optLines.length * FONT_SIZE * LINE_HEIGHT;
