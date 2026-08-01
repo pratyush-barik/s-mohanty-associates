@@ -470,12 +470,14 @@ export class PDFReportRenderer {
 
     // Col 2: Stacked options with internal dividers (wrapped text)
     this.drawRect(col2X, this.cursorY, COL_W[1], rowH, OPT_BG, '#000000', BORDER_W, 0.5);
-    let optY = this.cursorY + CELL_PAD_Y;
+    let optY = this.cursorY;
     for (let i = 0; i < options.length; i++) {
       const optLines = this.wrapText(options[i], optionTextW, FONT_SIZE);
       const isBold = options[i] === selectedValue;
+      const textH = optLines.length * FONT_SIZE * LINE_HEIGHT;
+      const textY = optY + (optionHeights[i] - textH) / 2;
       for (let j = 0; j < optLines.length; j++) {
-        this.drawTextAt(optLines[j], col2X + CELL_PAD_X, optY + j * FONT_SIZE * LINE_HEIGHT, {
+        this.drawTextAt(optLines[j], col2X + CELL_PAD_X, textY + j * FONT_SIZE * LINE_HEIGHT, {
           bold: isBold, fontSize: FONT_SIZE,
         });
       }
@@ -536,12 +538,12 @@ export class PDFReportRenderer {
 
     // Col 2: Sub-labels with wrapping and correct per-row heights
     this.drawRect(col2X, this.cursorY, COL_W[1], rowH, OPT_BG, '#000000', BORDER_W, 0.5);
-    let subY = this.cursorY + CELL_PAD_Y;
+    let subY = this.cursorY;
     for (let i = 0; i < subLabels.length; i++) {
       const lines = this.wrapText(subLabels[i], subTextW, FONT_SIZE);
       const allocatedH = rowHeights[i];
       const textH = lines.length * FONT_SIZE * LINE_HEIGHT;
-      const textY = subY + (allocatedH - CELL_PAD_Y * 2 - textH) / 2;
+      const textY = subY + (allocatedH - textH) / 2;
       for (let j = 0; j < lines.length; j++) {
         this.drawTextAt(lines[j], col2X + CELL_PAD_X, textY + j * FONT_SIZE * LINE_HEIGHT, { fontSize: FONT_SIZE });
       }
@@ -553,12 +555,12 @@ export class PDFReportRenderer {
 
     // Col 3: Values with wrapping and correct per-row heights
     this.drawRect(col3X, this.cursorY, COL_W[2], rowH, OPT_BG, '#000000', BORDER_W, 0.5);
-    let valY = this.cursorY + CELL_PAD_Y;
+    let valY = this.cursorY;
     for (let i = 0; i < values.length; i++) {
       const lines = this.wrapText(values[i], valTextW, FONT_SIZE);
       const allocatedH = rowHeights[i];
       const textH = lines.length * FONT_SIZE * LINE_HEIGHT;
-      const textY = valY + (allocatedH - CELL_PAD_Y * 2 - textH) / 2;
+      const textY = valY + (allocatedH - textH) / 2;
       for (let j = 0; j < lines.length; j++) {
         this.drawTextAt(lines[j], col3X + CELL_PAD_X, textY + j * FONT_SIZE * LINE_HEIGHT, { fontSize: FONT_SIZE });
       }
@@ -606,11 +608,13 @@ export class PDFReportRenderer {
 
     // Col 2: Options with selectedRange bolded (wrapped, per-item heights)
     this.drawRect(col2X, this.cursorY, COL_W[1], rowH, OPT_BG, '#000000', BORDER_W, 0.5);
-    let optY = this.cursorY + CELL_PAD_Y;
+    let optY = this.cursorY;
     for (let i = 0; i < options.length; i++) {
       const optLines = this.wrapText(options[i], optionTextW, FONT_SIZE);
+      const textH = optLines.length * FONT_SIZE * LINE_HEIGHT;
+      const textY = optY + (optionHeights[i] - textH) / 2;
       for (let j = 0; j < optLines.length; j++) {
-        this.drawTextAt(optLines[j], col2X + CELL_PAD_X, optY + j * FONT_SIZE * LINE_HEIGHT, {
+        this.drawTextAt(optLines[j], col2X + CELL_PAD_X, textY + j * FONT_SIZE * LINE_HEIGHT, {
           bold: options[i] === selectedRange, fontSize: FONT_SIZE,
         });
       }
