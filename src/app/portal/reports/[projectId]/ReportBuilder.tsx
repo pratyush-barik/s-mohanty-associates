@@ -1066,7 +1066,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       r.drawOptionRow('Plot Demarcated at Site', ['Yes', 'No'], fields.plotDemarcated);
       r.drawProximityRow('Proximity to Civic Amenities',
         ['Nearest Railway Station', 'Nearest Bus Stop', 'Nearest Hospital'],
-        [`1. ${fields.railwayStationName || fields.distanceRailwayStation || 'N/A'}`, `2. ${fields.busStopName || fields.distanceBusStop || 'N/A'}`, `3. ${fields.hospitalName || fields.distanceHospital || 'N/A'}`]
+        [`1. ${fields.railwayStationName || 'Railway Station'}${fields.distanceRailwayStation ? ' — ' + fields.distanceRailwayStation + ' km' : ''}`, `2. ${fields.busStopName || 'Bus Stop'}${fields.distanceBusStop ? ' — ' + fields.distanceBusStop + ' km' : ''}`, `3. ${fields.hospitalName || 'Hospital'}${fields.distanceHospital ? ' — ' + fields.distanceHospital + ' km' : ''}`]
       );
       r.drawOptionRow('Property Identification', ['Easy to Identify', 'Identification by documents', 'Additional documents required', 'Difficult to identify'], fields.propertyIdentification);
       r.drawOptionRow('Proximity to Facilities', ['<1 Km', '1-3 Kms', '3-5 Kms', '>5 Kms'], fields.proximityToFacilities);
@@ -1503,9 +1503,9 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
           <div style="padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Hospital</div>
         </td>
         <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;background:${optLblBg};" width="37%">
-          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">1. ${fields.railwayStationName || fields.distanceRailwayStation || 'N/A'}</div>
-          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">2. ${fields.busStopName || fields.distanceBusStop || 'N/A'}</div>
-          <div style="padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">3. ${fields.hospitalName || fields.distanceHospital || 'N/A'}</div>
+          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">1. ${fields.railwayStationName || 'Railway Station'}${fields.distanceRailwayStation ? ' — ' + fields.distanceRailwayStation + ' km' : ''}</div>
+          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">2. ${fields.busStopName || 'Bus Stop'}${fields.distanceBusStop ? ' — ' + fields.distanceBusStop + ' km' : ''}</div>
+          <div style="padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">3. ${fields.hospitalName || 'Hospital'}${fields.distanceHospital ? ' — ' + fields.distanceHospital + ' km' : ''}</div>
         </td>
       </tr>
       ${optionRow('Property Identification', ['Easy to Identify', 'Identification by documents', 'Additional documents required', 'Difficult to identify'], fields.propertyIdentification)}
