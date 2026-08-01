@@ -437,6 +437,7 @@ export class PDFReportRenderer {
    *   Col 1: Bold label with LBL_BG
    *   Col 2: Stacked option sub-cells with OPT_BG (selected one bolded)
    *   Col 3: Selected value, centered, bold, OPT_BG
+   *   Text wraps within cells to prevent overflow.
    * Advances cursor.
    */
   drawOptionRow(label: string, options: string[], selectedValue: string): void {
@@ -444,10 +445,16 @@ export class PDFReportRenderer {
     const col2X = MARGIN_L + COL_W[0];
     const col3X = MARGIN_L + COL_W[0] + COL_W[1];
 
-    // Calculate heights
+    // Calculate heights with wrapping
     const labelH = this.cellHeight(label, COL_W[0], { bold: true, fontSize: FONT_SIZE });
+    const optionTextW = COL_W[1] - CELL_PAD_X * 2;
     const optionLineH = FONT_SIZE * LINE_HEIGHT + CELL_PAD_Y * 2;
-    const optionsH = options.length * optionLineH;
+    let maxOptionLines = 1;
+    for (const opt of options) {
+      const lines = this.wrapText(opt, optionTextW, FONT_SIZE);
+      maxOptionLines = Math.max(maxOptionLines, lines.length);
+    }
+    const optionsH = options.length * optionLineH * maxOptionLines;
     const valueH = this.cellHeight(selectedValue || 'N/A', COL_W[2], { bold: true, fontSize: FONT_SIZE });
     const rowH = Math.max(labelH, optionsH, valueH);
 
@@ -458,21 +465,25 @@ export class PDFReportRenderer {
       bold: true, fontSize: FONT_SIZE, fillColor: LBL_BG, bgOpacity: 0.5, vAlign: 'middle',
     });
 
-    // Col 2: Stacked options with internal dividers
+    // Col 2: Stacked options with internal dividers (with wrapping)
     this.drawRect(col2X, this.cursorY, COL_W[1], rowH, OPT_BG, '#000000', BORDER_W, 0.5);
+    let optCursor = this.cursorY + CELL_PAD_Y;
     for (let i = 0; i < options.length; i++) {
-      const optY = this.cursorY + i * optionLineH;
+      const optLines = this.wrapText(options[i], optionTextW, FONT_SIZE);
       const isBold = options[i] === selectedValue;
-      this.drawTextAt(options[i], col2X + CELL_PAD_X, optY + CELL_PAD_Y, {
-        bold: isBold, fontSize: FONT_SIZE,
-      });
+      for (let j = 0; j < optLines.length; j++) {
+        this.drawTextAt(optLines[j], col2X + CELL_PAD_X, optCursor + j * FONT_SIZE * LINE_HEIGHT, {
+          bold: isBold, fontSize: FONT_SIZE,
+        });
+      }
+      optCursor += optLines.length * FONT_SIZE * LINE_HEIGHT;
       // Draw divider line between options (not after last)
       if (i < options.length - 1) {
-        this.drawHLine(col2X, col2X + COL_W[1], optY + optionLineH, '#000000', 0.5);
+        this.drawHLine(col2X, col2X + COL_W[1], optCursor, '#000000', 0.5);
       }
     }
 
-    // Col 3: Selected value
+    // Col 3: Selected value (with wrapping)
     this.drawCell(col3X, this.cursorY, COL_W[2], rowH, selectedValue || 'N/A', {
       bold: true, fontSize: FONT_SIZE, fillColor: OPT_BG, bgOpacity: 0.5, align: 'center', vAlign: 'middle',
     });
@@ -483,8 +494,8 @@ export class PDFReportRenderer {
   /**
    * Draw a 3-column proximity/landmark row:
    *   Col 1: Bold label with LBL_BG
-   *   Col 2: Stacked sub-labels
-   *   Col 3: Stacked values with OPT_BG
+   *   Col 2: Stacked sub-labels (text wraps)
+   *   Col 3: Stacked values with OPT_BG (text wraps)
    * Advances cursor.
    */
   drawProximityRow(label: string, subLabels: string[], values: string[]): void {
@@ -492,11 +503,28 @@ export class PDFReportRenderer {
     const col2X = MARGIN_L + COL_W[0];
     const col3X = MARGIN_L + COL_W[0] + COL_W[1];
 
+    const subTextW = COL_W[1] - CELL_PAD_X * 2;
+    const valTextW = COL_W[2] - CELL_PAD_X * 2;
     const subLineH = FONT_SIZE * LINE_HEIGHT + CELL_PAD_Y * 2;
     const count = Math.max(subLabels.length, values.length);
-    const stackH = count * subLineH;
-    const labelH = this.cellHeight(label, COL_W[0], { bold: true, fontSize: FONT_SIZE });
-    const rowH = Math.max(labelH, stackH);
+
+    // Calculate wrapped heights for each row
+    let maxSubLines = 1;
+    let maxValLines = 1;
+    for (let i = 0; i < count; i++) {
+      if (i < subLabels.length) {
+        const sl = this.wrapText(subLabels[i], subTextW, FONT_SIZE);
+        maxSubLines = Math.max(maxSubLines, sl.length);
+      }
+      if (i < values.length) {
+        const vl = this.wrapText(values[i], valTextW, FONT_SIZE);
+        maxValLines = Math.max(maxValLines, vl.length);
+      }
+    }
+    const rowH = Math.max(
+      this.cellHeight(label, COL_W[0], { bold: true, fontSize: FONT_SIZE }),
+      count * subLineH * Math.max(maxSubLines, maxValLines)
+    );
 
     this.checkPageBreak(rowH);
 
@@ -505,23 +533,31 @@ export class PDFReportRenderer {
       bold: true, fontSize: FONT_SIZE, fillColor: LBL_BG, bgOpacity: 0.5, vAlign: 'middle',
     });
 
-    // Col 2: Sub-labels
+    // Col 2: Sub-labels with wrapping
     this.drawRect(col2X, this.cursorY, COL_W[1], rowH, OPT_BG, '#000000', BORDER_W, 0.5);
+    let subCursor = this.cursorY + CELL_PAD_Y;
     for (let i = 0; i < subLabels.length; i++) {
-      const sY = this.cursorY + i * subLineH;
-      this.drawTextAt(subLabels[i], col2X + CELL_PAD_X, sY + CELL_PAD_Y, { fontSize: FONT_SIZE });
+      const lines = this.wrapText(subLabels[i], subTextW, FONT_SIZE);
+      for (let j = 0; j < lines.length; j++) {
+        this.drawTextAt(lines[j], col2X + CELL_PAD_X, subCursor + j * FONT_SIZE * LINE_HEIGHT, { fontSize: FONT_SIZE });
+      }
+      subCursor += lines.length * FONT_SIZE * LINE_HEIGHT;
       if (i < subLabels.length - 1) {
-        this.drawHLine(col2X, col2X + COL_W[1], sY + subLineH, '#000000', 0.5);
+        this.drawHLine(col2X, col2X + COL_W[1], subCursor, '#000000', 0.5);
       }
     }
 
-    // Col 3: Values
+    // Col 3: Values with wrapping
     this.drawRect(col3X, this.cursorY, COL_W[2], rowH, OPT_BG, '#000000', BORDER_W, 0.5);
+    let valCursor = this.cursorY + CELL_PAD_Y;
     for (let i = 0; i < values.length; i++) {
-      const sY = this.cursorY + i * subLineH;
-      this.drawTextAt(values[i], col3X + CELL_PAD_X, sY + CELL_PAD_Y, { fontSize: FONT_SIZE });
+      const lines = this.wrapText(values[i], valTextW, FONT_SIZE);
+      for (let j = 0; j < lines.length; j++) {
+        this.drawTextAt(lines[j], col3X + CELL_PAD_X, valCursor + j * FONT_SIZE * LINE_HEIGHT, { fontSize: FONT_SIZE });
+      }
+      valCursor += lines.length * FONT_SIZE * LINE_HEIGHT;
       if (i < values.length - 1) {
-        this.drawHLine(col3X, col3X + COL_W[2], sY + subLineH, '#000000', 0.5);
+        this.drawHLine(col3X, col3X + COL_W[2], valCursor, '#000000', 0.5);
       }
     }
 
@@ -531,6 +567,7 @@ export class PDFReportRenderer {
   /**
    * Draw the age option row: like optionRow but the selected *option* in col2 is bolded,
    * and col3 shows a separate actual value.
+   * Text wraps within cells to prevent overflow.
    */
   drawAgeOptionRow(label: string, options: string[], selectedRange: string, actualValue: string): void {
     const col1X = MARGIN_L;
@@ -538,31 +575,41 @@ export class PDFReportRenderer {
     const col3X = MARGIN_L + COL_W[0] + COL_W[1];
 
     const labelH = this.cellHeight(label, COL_W[0], { bold: true, fontSize: FONT_SIZE });
+    const optionTextW = COL_W[1] - CELL_PAD_X * 2;
     const optionLineH = FONT_SIZE * LINE_HEIGHT + CELL_PAD_Y * 2;
-    const optionsH = options.length * optionLineH;
+    let maxOptionLines = 1;
+    for (const opt of options) {
+      const lines = this.wrapText(opt, optionTextW, FONT_SIZE);
+      maxOptionLines = Math.max(maxOptionLines, lines.length);
+    }
+    const optionsH = options.length * optionLineH * maxOptionLines;
     const valueH = this.cellHeight(actualValue || 'N/A', COL_W[2], { bold: true, fontSize: FONT_SIZE });
     const rowH = Math.max(labelH, optionsH, valueH);
 
     this.checkPageBreak(rowH);
 
-    // Col 1
+    // Col 1: Label
     this.drawCell(col1X, this.cursorY, COL_W[0], rowH, label, {
       bold: true, fontSize: FONT_SIZE, fillColor: LBL_BG, bgOpacity: 0.5, vAlign: 'middle',
     });
 
-    // Col 2: Options with selectedRange bolded
+    // Col 2: Options with selectedRange bolded (with wrapping)
     this.drawRect(col2X, this.cursorY, COL_W[1], rowH, OPT_BG, '#000000', BORDER_W, 0.5);
+    let optCursor = this.cursorY + CELL_PAD_Y;
     for (let i = 0; i < options.length; i++) {
-      const optY = this.cursorY + i * optionLineH;
-      this.drawTextAt(options[i], col2X + CELL_PAD_X, optY + CELL_PAD_Y, {
-        bold: options[i] === selectedRange, fontSize: FONT_SIZE,
-      });
+      const optLines = this.wrapText(options[i], optionTextW, FONT_SIZE);
+      for (let j = 0; j < optLines.length; j++) {
+        this.drawTextAt(optLines[j], col2X + CELL_PAD_X, optCursor + j * FONT_SIZE * LINE_HEIGHT, {
+          bold: options[i] === selectedRange, fontSize: FONT_SIZE,
+        });
+      }
+      optCursor += optLines.length * FONT_SIZE * LINE_HEIGHT;
       if (i < options.length - 1) {
-        this.drawHLine(col2X, col2X + COL_W[1], optY + optionLineH, '#000000', 0.5);
+        this.drawHLine(col2X, col2X + COL_W[1], optCursor, '#000000', 0.5);
       }
     }
 
-    // Col 3
+    // Col 3: Actual value (with wrapping)
     this.drawCell(col3X, this.cursorY, COL_W[2], rowH, actualValue || 'N/A', {
       bold: true, fontSize: FONT_SIZE, fillColor: OPT_BG, bgOpacity: 0.5, align: 'center', vAlign: 'middle',
     });
