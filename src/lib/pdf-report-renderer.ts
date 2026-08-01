@@ -447,19 +447,20 @@ export class PDFReportRenderer {
 
     const optionTextW = COL_W[1] - CELL_PAD_X * 2;
     const labelH = this.cellHeight(label, COL_W[0], { bold: true, fontSize: FONT_SIZE });
+    const optionLineH = FONT_SIZE * LINE_HEIGHT + CELL_PAD_Y * 2;
 
-    // Calculate actual heights per option (text height only, no padding)
+    // Calculate actual heights per option (with per-item padding)
     let totalOptionsH = 0;
     const optionHeights: number[] = [];
     for (const opt of options) {
       const lines = this.wrapText(opt, optionTextW, FONT_SIZE);
-      const h = lines.length * FONT_SIZE * LINE_HEIGHT;
+      const h = Math.max(lines.length * FONT_SIZE * LINE_HEIGHT + CELL_PAD_Y * 2, optionLineH);
       optionHeights.push(h);
       totalOptionsH += h;
     }
 
     const valueH = this.cellHeight(selectedValue || 'N/A', COL_W[2], { bold: true, fontSize: FONT_SIZE });
-    const rowH = Math.max(labelH, totalOptionsH + CELL_PAD_Y * 2, valueH);
+    const rowH = Math.max(labelH, totalOptionsH, valueH);
 
     this.checkPageBreak(rowH);
 
@@ -511,23 +512,21 @@ export class PDFReportRenderer {
     const valTextW = COL_W[2] - CELL_PAD_X * 2;
     const count = Math.max(subLabels.length, values.length);
 
-    // Calculate actual per-row heights (text height only, no padding)
+    // Calculate actual per-row heights (with per-item padding)
     let totalProximityH = 0;
     const rowHeights: number[] = [];
     for (let i = 0; i < count; i++) {
-      const subH = i < subLabels.length
-        ? this.wrapText(subLabels[i], subTextW, FONT_SIZE).length * FONT_SIZE * LINE_HEIGHT
-        : 0;
-      const valH = i < values.length
-        ? this.wrapText(values[i], valTextW, FONT_SIZE).length * FONT_SIZE * LINE_HEIGHT
-        : 0;
-      const rowH = Math.max(subH, valH, FONT_SIZE * LINE_HEIGHT);
-      rowHeights.push(rowH);
-      totalProximityH += rowH;
+      const subLines = i < subLabels.length ? this.wrapText(subLabels[i], subTextW, FONT_SIZE) : [];
+      const valLines = i < values.length ? this.wrapText(values[i], valTextW, FONT_SIZE) : [];
+      const subH = subLines.length * FONT_SIZE * LINE_HEIGHT + CELL_PAD_Y * 2;
+      const valH = valLines.length * FONT_SIZE * LINE_HEIGHT + CELL_PAD_Y * 2;
+      const h = Math.max(subH, valH, FONT_SIZE * LINE_HEIGHT + CELL_PAD_Y * 2);
+      rowHeights.push(h);
+      totalProximityH += h;
     }
 
     const labelH = this.cellHeight(label, COL_W[0], { bold: true, fontSize: FONT_SIZE });
-    const rowH = Math.max(labelH, totalProximityH + CELL_PAD_Y * 2);
+    const rowH = Math.max(labelH, totalProximityH);
 
     this.checkPageBreak(rowH);
 
@@ -583,19 +582,20 @@ export class PDFReportRenderer {
 
     const labelH = this.cellHeight(label, COL_W[0], { bold: true, fontSize: FONT_SIZE });
     const optionTextW = COL_W[1] - CELL_PAD_X * 2;
+    const optionLineH = FONT_SIZE * LINE_HEIGHT + CELL_PAD_Y * 2;
 
-    // Calculate actual heights per option (text height only, no padding)
+    // Calculate actual heights per option (with per-item padding)
     let totalOptionsH = 0;
     const optionHeights: number[] = [];
     for (const opt of options) {
       const lines = this.wrapText(opt, optionTextW, FONT_SIZE);
-      const h = lines.length * FONT_SIZE * LINE_HEIGHT;
+      const h = Math.max(lines.length * FONT_SIZE * LINE_HEIGHT + CELL_PAD_Y * 2, optionLineH);
       optionHeights.push(h);
       totalOptionsH += h;
     }
 
     const valueH = this.cellHeight(actualValue || 'N/A', COL_W[2], { bold: true, fontSize: FONT_SIZE });
-    const rowH = Math.max(labelH, totalOptionsH + CELL_PAD_Y * 2, valueH);
+    const rowH = Math.max(labelH, totalOptionsH, valueH);
 
     this.checkPageBreak(rowH);
 
