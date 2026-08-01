@@ -1060,7 +1060,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       r.drawOptionRow('Plot Demarcated at Site', ['Yes', 'No'], fields.plotDemarcated);
       r.drawProximityRow('Proximity to Civic Amenities',
         ['Nearest Railway Station', 'Nearest Bus Stop', 'Nearest Hospital'],
-        [`1. ${fields.landmarkRailway || fields.distanceRailwayStation || 'N/A'}`, `2. ${fields.landmarkBusStop || fields.distanceBusStop || 'N/A'}`, `3. ${fields.landmarkHospital || fields.distanceHospital || 'N/A'}`]
+        [`1. ${fields.distanceRailwayStation || 'N/A'}`, `2. ${fields.distanceBusStop || 'N/A'}`, `3. ${fields.distanceHospital || 'N/A'}`]
       );
       r.drawOptionRow('Property Identification', ['Easy to Identify', 'Identification by documents', 'Additional documents required', 'Difficult to identify'], fields.propertyIdentification);
       r.drawOptionRow('Proximity to Facilities', ['<1 Km', '1-3 Kms', '3-5 Kms', '>5 Kms'], fields.proximityToFacilities);
@@ -1497,9 +1497,9 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
           <div style="padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Hospital</div>
         </td>
         <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;background:${optLblBg};" width="37%">
-          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">1. ${fields.landmarkRailway || fields.distanceRailwayStation || 'N/A'}</div>
-          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">2. ${fields.landmarkBusStop || fields.distanceBusStop || 'N/A'}</div>
-          <div style="padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">3. ${fields.landmarkHospital || fields.distanceHospital || 'N/A'}</div>
+          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">1. ${fields.distanceRailwayStation || 'N/A'}</div>
+          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">2. ${fields.distanceBusStop || 'N/A'}</div>
+          <div style="padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">3. ${fields.distanceHospital || 'N/A'}</div>
         </td>
       </tr>
       ${optionRow('Property Identification', ['Easy to Identify', 'Identification by documents', 'Additional documents required', 'Difficult to identify'], fields.propertyIdentification)}
@@ -2114,11 +2114,13 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
               </select>
             </Field>
           </div>
-          <p className="text-xs font-semibold text-[#495057] uppercase tracking-wider mt-2">Proximity to Civic Amenities</p>
-          <div className="grid md:grid-cols-3 gap-4">
-            <Field label="Nearest Railway Station (in Km)"><input type="number" min="0" step="any" className={inputCls} value={fields.distanceRailwayStation} onChange={e => handleChange('distanceRailwayStation', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="e.g. 2" /></Field>
-            <Field label="Nearest Bus Stop (in Km)"><input type="number" min="0" step="any" className={inputCls} value={fields.distanceBusStop} onChange={e => handleChange('distanceBusStop', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="e.g. 1" /></Field>
-            <Field label="Nearest Hospital (in Km)"><input type="number" min="0" step="any" className={inputCls} value={fields.distanceHospital} onChange={e => handleChange('distanceHospital', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="e.g. 3" /></Field>
+          <div className="p-4 bg-[#f0faf4] rounded-xl border border-[#dcfce7]">
+            <p className="text-xs font-semibold text-[#166534] uppercase tracking-wider mb-3">Proximity to Civic Amenities</p>
+            <div className="grid md:grid-cols-3 gap-4">
+              <Field label="Nearest Railway Station (in Km)"><input type="number" min="0" step="any" className={inputCls} value={fields.distanceRailwayStation} onChange={e => handleChange('distanceRailwayStation', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="e.g. 2" /></Field>
+              <Field label="Nearest Bus Stop (in Km)"><input type="number" min="0" step="any" className={inputCls} value={fields.distanceBusStop} onChange={e => handleChange('distanceBusStop', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="e.g. 1" /></Field>
+              <Field label="Nearest Hospital (in Km)"><input type="number" min="0" step="any" className={inputCls} value={fields.distanceHospital} onChange={e => handleChange('distanceHospital', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="e.g. 3" /></Field>
+            </div>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="Property Identification">
@@ -2133,12 +2135,14 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
               </select>
             </Field>
           </div>
-          <p className="text-xs font-semibold text-[#495057] uppercase tracking-wider mt-2">Landmark Details</p>
-          <div className="grid md:grid-cols-2 gap-4">
-            <Field label="Nearest Railway Station"><input className={inputCls} value={fields.landmarkRailway} onChange={e => handleChange('landmarkRailway', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Nearest Bus Stop"><input className={inputCls} value={fields.landmarkBusStop} onChange={e => handleChange('landmarkBusStop', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Nearest Hospital"><input className={inputCls} value={fields.landmarkHospital} onChange={e => handleChange('landmarkHospital', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Nearest Landmark"><input className={inputCls} value={fields.landmarkNearest} onChange={e => handleChange('landmarkNearest', e.target.value)} disabled={isReadOnly} /></Field>
+          <div className="p-4 bg-[#f0faf4] rounded-xl border border-[#dcfce7]">
+            <p className="text-xs font-semibold text-[#166534] uppercase tracking-wider mb-3">Landmark Details</p>
+            <div className="grid md:grid-cols-2 gap-4">
+              <Field label="Nearest Railway Station"><input className={inputCls} value={fields.landmarkRailway} onChange={e => handleChange('landmarkRailway', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Nearest Bus Stop"><input className={inputCls} value={fields.landmarkBusStop} onChange={e => handleChange('landmarkBusStop', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Nearest Hospital"><input className={inputCls} value={fields.landmarkHospital} onChange={e => handleChange('landmarkHospital', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Nearest Landmark"><input className={inputCls} value={fields.landmarkNearest} onChange={e => handleChange('landmarkNearest', e.target.value)} disabled={isReadOnly} /></Field>
+            </div>
           </div>
         </div>
       </Section>
@@ -2250,8 +2254,8 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
               <option>Low</option><option>Average</option><option>High</option><option>Very High</option>
             </select>
           </Field>
-          <div className="mt-4">
-            <p className="text-xs font-semibold text-[#495057] uppercase tracking-wider mb-3">Boundary Details: As per Sketch Map</p>
+          <div className="p-4 bg-[#f0faf4] rounded-xl border border-[#dcfce7]">
+            <p className="text-xs font-semibold text-[#166534] uppercase tracking-wider mb-3">Boundary Details: As per Sketch Map</p>
             <div className="grid md:grid-cols-2 gap-4">
               <Field label="North"><input className={inputCls} value={fields.boundaryNorth} onChange={e => handleChange('boundaryNorth', e.target.value)} disabled={isReadOnly} /></Field>
               <Field label="East"><input className={inputCls} value={fields.boundaryEast} onChange={e => handleChange('boundaryEast', e.target.value)} disabled={isReadOnly} /></Field>
@@ -2259,8 +2263,8 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
               <Field label="West"><input className={inputCls} value={fields.boundaryWest} onChange={e => handleChange('boundaryWest', e.target.value)} disabled={isReadOnly} /></Field>
             </div>
           </div>
-          <div className="mt-4">
-            <p className="text-xs font-semibold text-[#495057] uppercase tracking-wider mb-3">Boundary Details: At Site</p>
+          <div className="p-4 bg-[#f0faf4] rounded-xl border border-[#dcfce7]">
+            <p className="text-xs font-semibold text-[#166534] uppercase tracking-wider mb-3">Boundary Details: At Site</p>
             <div className="grid md:grid-cols-2 gap-4">
               <Field label="North"><input className={inputCls} value={fields.buildingBoundaryNorth} onChange={e => handleChange('buildingBoundaryNorth', e.target.value)} disabled={isReadOnly} /></Field>
               <Field label="East"><input className={inputCls} value={fields.buildingBoundaryEast} onChange={e => handleChange('buildingBoundaryEast', e.target.value)} disabled={isReadOnly} /></Field>
