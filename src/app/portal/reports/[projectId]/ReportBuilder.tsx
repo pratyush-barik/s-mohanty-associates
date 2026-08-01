@@ -47,6 +47,9 @@ interface ReportFields {
   distanceRailwayStation: string;
   distanceBusStop: string;
   distanceHospital: string;
+  railwayStationName: string;
+  busStopName: string;
+  hospitalName: string;
   propertyIdentification: string;
   propertyIdentificationRemarks: string;
   proximityToFacilities: string;
@@ -195,6 +198,9 @@ const DEFAULT_FIELDS: ReportFields = {
   distanceRailwayStation: '',
   distanceBusStop: '',
   distanceHospital: '',
+  railwayStationName: '',
+  busStopName: '',
+  hospitalName: '',
   propertyIdentification: 'Easy to Identify',
   propertyIdentificationRemarks: '',
   proximityToFacilities: '1-3 Kms',
@@ -1060,7 +1066,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       r.drawOptionRow('Plot Demarcated at Site', ['Yes', 'No'], fields.plotDemarcated);
       r.drawProximityRow('Proximity to Civic Amenities',
         ['Nearest Railway Station', 'Nearest Bus Stop', 'Nearest Hospital'],
-        [`1. ${fields.distanceRailwayStation || 'N/A'}`, `2. ${fields.distanceBusStop || 'N/A'}`, `3. ${fields.distanceHospital || 'N/A'}`]
+        [`1. ${fields.railwayStationName || fields.distanceRailwayStation || 'N/A'}`, `2. ${fields.busStopName || fields.distanceBusStop || 'N/A'}`, `3. ${fields.hospitalName || fields.distanceHospital || 'N/A'}`]
       );
       r.drawOptionRow('Property Identification', ['Easy to Identify', 'Identification by documents', 'Additional documents required', 'Difficult to identify'], fields.propertyIdentification);
       r.drawOptionRow('Proximity to Facilities', ['<1 Km', '1-3 Kms', '3-5 Kms', '>5 Kms'], fields.proximityToFacilities);
@@ -1497,9 +1503,9 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
           <div style="padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Hospital</div>
         </td>
         <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;background:${optLblBg};" width="37%">
-          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">1. ${fields.distanceRailwayStation || 'N/A'}</div>
-          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">2. ${fields.distanceBusStop || 'N/A'}</div>
-          <div style="padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">3. ${fields.distanceHospital || 'N/A'}</div>
+          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">1. ${fields.railwayStationName || fields.distanceRailwayStation || 'N/A'}</div>
+          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">2. ${fields.busStopName || fields.distanceBusStop || 'N/A'}</div>
+          <div style="padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">3. ${fields.hospitalName || fields.distanceHospital || 'N/A'}</div>
         </td>
       </tr>
       ${optionRow('Property Identification', ['Easy to Identify', 'Identification by documents', 'Additional documents required', 'Difficult to identify'], fields.propertyIdentification)}
@@ -2116,10 +2122,19 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
           </div>
           <div className="p-4 bg-[#f0faf4] rounded-xl border border-[#dcfce7]">
             <p className="text-xs font-semibold text-[#166534] uppercase tracking-wider mb-3">Proximity to Civic Amenities</p>
-            <div className="grid md:grid-cols-3 gap-4">
-              <Field label="Nearest Railway Station (in Km)"><input type="number" min="0" step="any" className={inputCls} value={fields.distanceRailwayStation} onChange={e => handleChange('distanceRailwayStation', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="e.g. 2" /></Field>
-              <Field label="Nearest Bus Stop (in Km)"><input type="number" min="0" step="any" className={inputCls} value={fields.distanceBusStop} onChange={e => handleChange('distanceBusStop', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="e.g. 1" /></Field>
-              <Field label="Nearest Hospital (in Km)"><input type="number" min="0" step="any" className={inputCls} value={fields.distanceHospital} onChange={e => handleChange('distanceHospital', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="e.g. 3" /></Field>
+            <div className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Nearest Railway Station Name"><input className={inputCls} value={fields.railwayStationName} onChange={e => handleChange('railwayStationName', e.target.value)} disabled={isReadOnly} placeholder="e.g. Bhubaneswar Railway Station" /></Field>
+                <Field label="Distance (in Km)"><input type="number" min="0" step="any" className={inputCls} value={fields.distanceRailwayStation} onChange={e => handleChange('distanceRailwayStation', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="e.g. 2" /></Field>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Nearest Bus Stop Name"><input className={inputCls} value={fields.busStopName} onChange={e => handleChange('busStopName', e.target.value)} disabled={isReadOnly} placeholder="e.g. Rajarani Bus Stop" /></Field>
+                <Field label="Distance (in Km)"><input type="number" min="0" step="any" className={inputCls} value={fields.distanceBusStop} onChange={e => handleChange('distanceBusStop', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="e.g. 1" /></Field>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Nearest Hospital Name"><input className={inputCls} value={fields.hospitalName} onChange={e => handleChange('hospitalName', e.target.value)} disabled={isReadOnly} placeholder="e.g. Apollo Hospital" /></Field>
+                <Field label="Distance (in Km)"><input type="number" min="0" step="any" className={inputCls} value={fields.distanceHospital} onChange={e => handleChange('distanceHospital', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="e.g. 3" /></Field>
+              </div>
             </div>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
