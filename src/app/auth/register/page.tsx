@@ -15,6 +15,7 @@ export default function RegisterPage() {
   const [otpLoading, setOtpLoading] = useState(false);
   const [verifyError, setVerifyError] = useState<string | null>(null);
   const [verifySuccess, setVerifySuccess] = useState<string | null>(null);
+  const [passwordValue, setPasswordValue] = useState('');
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -244,9 +245,67 @@ export default function RegisterPage() {
             name="password"
             type="password"
             required
+            value={passwordValue}
+            onChange={(e) => setPasswordValue(e.target.value)}
             className="w-full px-4 py-3 rounded-xl bg-white border border-[#dcfce7] text-[#0d3d24] text-sm placeholder:text-[#6b8f6b] focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
-            placeholder="Minimum 8 characters"
+            placeholder="Minimum 12 characters"
           />
+          {/* Password Strength Meter */}
+          {passwordValue && (
+            <div className="mt-2 space-y-2 animate-fade-in">
+              {/* Strength Bar */}
+              <div className="flex gap-1">
+                {[0, 1, 2, 3, 4].map((i) => {
+                  const checks = [
+                    passwordValue.length >= 12,
+                    /[a-z]/.test(passwordValue),
+                    /[A-Z]/.test(passwordValue),
+                    /[0-9]/.test(passwordValue),
+                    /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(passwordValue),
+                  ];
+                  const passed = checks.filter(Boolean).length;
+                  const colors = ['bg-red-400', 'bg-orange-400', 'bg-yellow-400', 'bg-lime-400', 'bg-green-500'];
+                  return (
+                    <div
+                      key={i}
+                      className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
+                        i < passed ? colors[passed - 1] : 'bg-gray-200'
+                      }`}
+                    />
+                  );
+                })}
+              </div>
+              <div className="text-[10px] font-medium text-right">
+                {(() => {
+                  const checks = [
+                    passwordValue.length >= 12,
+                    /[a-z]/.test(passwordValue),
+                    /[A-Z]/.test(passwordValue),
+                    /[0-9]/.test(passwordValue),
+                    /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(passwordValue),
+                  ];
+                  const passed = checks.filter(Boolean).length;
+                  const labels = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'];
+                  const labelColors = ['text-red-500', 'text-orange-500', 'text-yellow-600', 'text-lime-600', 'text-green-600'];
+                  return <span className={labelColors[passed - 1] || 'text-gray-400'}>{labels[passed - 1] || 'Too short'}</span>;
+                })()}
+              </div>
+              {/* Criteria Checklist */}
+              <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[11px]">
+                {[
+                  { label: '12+ characters', ok: passwordValue.length >= 12 },
+                  { label: 'Lowercase letter', ok: /[a-z]/.test(passwordValue) },
+                  { label: 'Uppercase letter', ok: /[A-Z]/.test(passwordValue) },
+                  { label: 'Number', ok: /[0-9]/.test(passwordValue) },
+                  { label: 'Special char (!@#$...)', ok: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(passwordValue) },
+                ].map((rule) => (
+                  <span key={rule.label} className={`flex items-center gap-1 ${rule.ok ? 'text-green-600' : 'text-gray-400'}`}>
+                    {rule.ok ? '✓' : '○'} {rule.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
           {state?.errors?.password && (
             <div className="mt-1 space-y-0.5">
               {state.errors.password.map((err) => (

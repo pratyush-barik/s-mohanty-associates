@@ -19,6 +19,9 @@ model Client {
   password        String
   clientId        String?              @unique // C1000, C1001...
   clientType      ClientType           @default(INDIVIDUAL)
+  failedLoginAttempts Int              @default(0)
+  lockedUntil     DateTime?
+  lastFailedLoginIp String?
   createdAt       DateTime             @default(now())
   updatedAt       DateTime             @updatedAt
 
@@ -71,6 +74,9 @@ model Employee {
   employeeId    String   @unique // e.g. 1000M, 1001R, 1002F
   designation   String?
   profilePhoto  String?  // Supabase Storage URL
+  failedLoginAttempts Int    @default(0)
+  lockedUntil   DateTime?
+  lastFailedLoginIp String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -454,4 +460,19 @@ model Otp {
   createdAt DateTime @default(now())
 
   @@map("otps")
+}
+
+model SecurityLog {
+  id        String   @id @default(cuid())
+  event     String   // LOGIN_SUCCESS, LOGIN_FAILED, ACCOUNT_LOCKED, RATE_LIMIT_HIT, PASSWORD_CHANGED
+  email     String
+  ipAddress String?
+  userAgent String?
+  metadata  Json?    // Additional context (portal, reason, etc.)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([event])
+  @@index([createdAt])
+  @@map("security_logs")
 }

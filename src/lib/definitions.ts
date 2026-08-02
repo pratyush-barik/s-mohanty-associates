@@ -1,5 +1,25 @@
 import * as z from 'zod';
 
+// Top 100 most common passwords — reject these outright
+const COMMON_PASSWORDS = new Set([
+  'password', '123456', '12345678', '1234', 'qwerty', '12345', 'dragon', 'pussy',
+  'baseball', 'football', 'letmein', 'monkey', '696969', 'abc123', 'mustang',
+  'michael', 'shadow', 'master', 'jennifer', '111111', '2000', 'jordan',
+  'superman', 'harley', '1234567', 'fuckme', 'hunter', 'fuckyou', 'trustno1',
+  'ranger', 'buster', 'thomas', 'tigger', 'robert', 'soccer', 'batman',
+  'test', 'pass', 'killer', 'hockey', 'george', 'charlie', 'andrew',
+  'michelle', 'love', 'sunshine', 'jessica', 'asshole', '6969', 'pepper',
+  'daniel', 'access', '123456789', '654321', 'joshua', 'maggie', 'starwars',
+  'silver', 'william', 'dallas', 'yankees', '123123', 'ashley', '666666',
+  'hello', 'amanda', 'orange', 'biteme', 'freedom', 'computer', 'sexy',
+  'thunder', 'nicole', 'ginger', 'heather', 'hammer', 'summer', 'corvette',
+  'taylor', 'fucker', 'austin', '1111', 'merlin', 'matthew', '121212',
+  'golfer', 'cheese', 'princess', 'martin', 'chelsea', 'patrick', 'richard',
+  'diamond', 'yellow', 'bigdog', 'secret', 'asdfgh', 'sparky', 'cowboy',
+  'password1', 'password123', 'qwerty123', 'iloveyou', 'welcome', 'admin',
+  'passw0rd', 'p@ssword', 'changeme', 'default', 'guest', 'login',
+]);
+
 export const SignupFormSchema = z.object({
   clientType: z.enum(['INDIVIDUAL', 'ORGANISATION']).default('INDIVIDUAL'),
   name: z
@@ -14,10 +34,15 @@ export const SignupFormSchema = z.object({
     .trim(),
   password: z
     .string()
-    .min(8, { message: 'Password must be at least 8 characters long.' })
-    .regex(/[a-zA-Z]/, { message: 'Password must contain at least one letter.' })
+    .min(12, { message: 'Password must be at least 12 characters long.' })
+    .regex(/[a-z]/, { message: 'Password must contain at least one lowercase letter.' })
+    .regex(/[A-Z]/, { message: 'Password must contain at least one uppercase letter.' })
     .regex(/[0-9]/, { message: 'Password must contain at least one number.' })
-    .trim(),
+    .regex(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, { message: 'Password must contain at least one special character (!@#$%^&* etc.).' })
+    .refine((val) => !COMMON_PASSWORDS.has(val.toLowerCase()), {
+      message: 'This password is too common. Please choose a stronger password.',
+    })
+    .transform((val) => val.trim()),
   organisationName: z.string().optional(),
   otp: z.string().length(6, { message: 'OTP must be exactly 6 digits.' }),
 });

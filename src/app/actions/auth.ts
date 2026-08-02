@@ -7,6 +7,8 @@ import bcrypt from 'bcryptjs';
 import { redirect } from 'next/navigation';
 import { AuthError } from 'next-auth';
 import { escapeHtml } from '@/lib/mail';
+import { checkIpRateLimit, checkAccountRateLimit, recordFailedAttempt, resetRateLimit } from '@/lib/rate-limit';
+import { logSecurityEvent } from '@/lib/security-log';
 
 export async function signup(state: SignupFormState, formData: FormData): Promise<SignupFormState> {
   // Validate form fields
@@ -68,7 +70,7 @@ export async function signup(state: SignupFormState, formData: FormData): Promis
   }
 
   // Hash password
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash(password, 12);
 
   // Generate unique Client ID (e.g. C1000)
   const clientCount = await prisma.client.count();
@@ -183,6 +185,10 @@ export async function requestRegistrationOtp(email: string) {
 }
 
 export async function login(state: LoginFormState, formData: FormData): Promise<LoginFormState> {
+  const { headers } = await import('next/headers');
+  const headersList = await headers();
+  const ip = headersList.get('x-forwarded-for')?.split(',')[0]?.trim() || headersList.get('x-real-ip') || 'unknown';
+
   const portal = formData.get('portal');
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
@@ -199,36 +205,83 @@ export async function login(state: LoginFormState, formData: FormData): Promise<
     };
   }
 
-  // Strict Segregation & Password Verification BEFORE signIn
+  // ── Rate Limiting (per IP) ──
+  const ipCheck = checkIpRateLimit(ip);
+  if (!ipCheck.allowed) {
+    logSecurityEvent({ event: 'RATE_LIMIT_HIT', email, ipAddress: ip, metadata: { portal, retryAfter: ipCheck.retryAfterSeconds } });
+    return { message: `Too many login attempts. Please wait ${Math.ceil(ipCheck.retryAfterSeconds / 60)} minutes before trying again.` };
+  }
+
+  const accountCheck = checkAccountRateLimit(email);
+  if (!accountCheck.allowed) {
+    logSecurityEvent({ event: 'RATE_LIMIT_HIT', email, ipAddress: ip, metadata: { portal, type: 'account', retryAfter: accountCheck.retryAfterSeconds } });
+    return { message: `Too many login attempts for this account. Please wait before trying again.` };
+  }
+
+  // Use a single generic error message to prevent account enumeration
+  const GENERIC_LOGIN_ERROR = 'Invalid email or password. Please try again.';
+  const LOCKOUT_DURATION_MS = 30 * 60 * 1000; // 30 minutes
+  const MAX_FAILED_ATTEMPTS = 5;
+
   if (portal === 'CLIENT') {
     const existingClient = await prisma.client.findUnique({
       where: { email },
     });
 
     if (!existingClient) {
-      return { message: 'Client does not exist. Please register.' };
+      recordFailedAttempt(ip, email);
+      logSecurityEvent({ event: 'LOGIN_FAILED', email, ipAddress: ip, metadata: { portal, reason: 'not_found' } });
+      return { message: GENERIC_LOGIN_ERROR };
+    }
+
+    // ── Account Lockout Check ──
+    if (existingClient.lockedUntil && existingClient.lockedUntil > new Date()) {
+      const minutesLeft = Math.ceil((existingClient.lockedUntil.getTime() - Date.now()) / 60000);
+      return { message: `Your account has been temporarily locked due to too many failed attempts. Please try again in ${minutesLeft} minutes or reset your password.` };
     }
 
     const passwordMatch = await bcrypt.compare(password, existingClient.password);
     if (!passwordMatch) {
-      return { message: 'Incorrect password.' };
+      const newCount = existingClient.failedLoginAttempts + 1;
+      const lockData: any = { failedLoginAttempts: newCount, lastFailedLoginIp: ip };
+      if (newCount >= MAX_FAILED_ATTEMPTS) {
+        lockData.lockedUntil = new Date(Date.now() + LOCKOUT_DURATION_MS);
+        logSecurityEvent({ event: 'ACCOUNT_LOCKED', email, ipAddress: ip, metadata: { portal, attempts: newCount } });
+      }
+      await prisma.client.update({ where: { id: existingClient.id }, data: lockData });
+      recordFailedAttempt(ip, email);
+      logSecurityEvent({ event: 'LOGIN_FAILED', email, ipAddress: ip, metadata: { portal, attempts: newCount } });
+      return { message: GENERIC_LOGIN_ERROR };
     }
   } else {
     const existingEmployee = await prisma.employee.findUnique({
       where: { email },
     });
 
-    if (!existingEmployee) {
-      return { message: 'Employee account does not exist.' };
+    if (!existingEmployee || !existingEmployee.isActive) {
+      recordFailedAttempt(ip, email);
+      logSecurityEvent({ event: 'LOGIN_FAILED', email, ipAddress: ip, metadata: { portal, reason: existingEmployee ? 'inactive' : 'not_found' } });
+      return { message: GENERIC_LOGIN_ERROR };
     }
 
-    if (!existingEmployee.isActive) {
-      return { message: 'This employee account is inactive.' };
+    // ── Account Lockout Check ──
+    if (existingEmployee.lockedUntil && existingEmployee.lockedUntil > new Date()) {
+      const minutesLeft = Math.ceil((existingEmployee.lockedUntil.getTime() - Date.now()) / 60000);
+      return { message: `Your account has been temporarily locked due to too many failed attempts. Please try again in ${minutesLeft} minutes or reset your password.` };
     }
 
     const passwordMatch = await bcrypt.compare(password, existingEmployee.password);
     if (!passwordMatch) {
-      return { message: 'Incorrect password.' };
+      const newCount = existingEmployee.failedLoginAttempts + 1;
+      const lockData: any = { failedLoginAttempts: newCount, lastFailedLoginIp: ip };
+      if (newCount >= MAX_FAILED_ATTEMPTS) {
+        lockData.lockedUntil = new Date(Date.now() + LOCKOUT_DURATION_MS);
+        logSecurityEvent({ event: 'ACCOUNT_LOCKED', email, ipAddress: ip, metadata: { portal, attempts: newCount } });
+      }
+      await prisma.employee.update({ where: { id: existingEmployee.id }, data: lockData });
+      recordFailedAttempt(ip, email);
+      logSecurityEvent({ event: 'LOGIN_FAILED', email, ipAddress: ip, metadata: { portal, attempts: newCount } });
+      return { message: GENERIC_LOGIN_ERROR };
     }
   }
 
@@ -249,6 +302,15 @@ export async function login(state: LoginFormState, formData: FormData): Promise<
       portal: portal as string,
       redirect: false,
     });
+
+    // ── Reset lockout on successful login ──
+    resetRateLimit(ip, email);
+    if (portal === 'CLIENT') {
+      await prisma.client.updateMany({ where: { email }, data: { failedLoginAttempts: 0, lockedUntil: null } });
+    } else {
+      await prisma.employee.updateMany({ where: { email }, data: { failedLoginAttempts: 0, lockedUntil: null } });
+    }
+    logSecurityEvent({ event: 'LOGIN_SUCCESS', email, ipAddress: ip, metadata: { portal } });
     
     const session = await auth();
     if (session?.user?.role) {
@@ -263,7 +325,7 @@ export async function login(state: LoginFormState, formData: FormData): Promise<
     if (error instanceof AuthError) {
       switch (error.type) {
         case 'CredentialsSignin':
-          return { message: 'Invalid email or password.' };
+          return { message: GENERIC_LOGIN_ERROR };
         default:
           return { message: 'Something went wrong. Please try again.' };
       }
