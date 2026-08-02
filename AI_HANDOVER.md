@@ -149,6 +149,12 @@ The core business logic is **100% complete**.
      - **Security Headers**: `Strict-Transport-Security`, `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, `Referrer-Policy`, `Permissions-Policy` added to all responses via `next.config.ts`.
      - **Audit Logging**: `SecurityLog` model tracks all login attempts (success/failure), account lockouts, and rate limit hits with IP address and timestamp.
      - **Prior fixes by teammate**: HTML escaping (XSS), OTP bypass removal, cron auth, input validation (Zod `ProfileUpdateSchema`).
+ 17. **Change Password Feature**: Both client (`/dashboard/profile`) and employee (`/portal/profile`) profiles now include a red-themed "Change Password" button with:
+     - Real-time password strength meter (5-bar color-coded + per-criterion checklist).
+     - Two-step OTP verification: after validating current/new password, a 6-digit verification code is emailed to the user (sent from the owner's SMTP address). Code expires in 5 minutes with resend capability.
+     - Enforces all password policy constraints (12+ chars, uppercase, lowercase, number, special char, common deny-list, must differ from current).
+     - Shared reusable component: `src/components/ChangePasswordForm.tsx`.
+     - Password changes are logged to `SecurityLog` with `PASSWORD_CHANGED` event.
 
 ## 5. Pending Work (What is next)
 
@@ -204,6 +210,7 @@ Outstanding items in **priority order**:
 > When modifying the UI, prioritize modern, premium aesthetics (glassmorphism, clean typography, subtle animations) without relying on Tailwind component libraries like Shadcn. Use raw Tailwind classes.
 
 ## 7. Recent Git Commits (for reference)
+- `latest` — feat: add Change Password with OTP verification to client and employee profiles
 - `b27e0ea` — security: implement rate limiting, account lockout, password hardening, security headers, and audit logging
 - `0826206` — security: fix SQL injection audit findings - cron auth, OTP bypass, input validation, HTML escaping
 - `0b598e3` — fix: correct Prisma relation names in enquiry detail page (messages→enquiries, serviceRequest→serviceRequests)

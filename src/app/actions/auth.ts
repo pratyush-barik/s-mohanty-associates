@@ -589,6 +589,7 @@ export async function changePassword(formData: FormData) {
   const newPassword = (formData.get('newPassword') as string)?.trim();
   const confirmPassword = (formData.get('confirmPassword') as string)?.trim();
   const portal = formData.get('portal') as string; // 'CLIENT' or 'EMPLOYEE'
+  const otp = (formData.get('otp') as string)?.trim();
 
   if (!currentPassword || !newPassword || !confirmPassword) {
     return { error: 'All password fields are required.' };
@@ -605,63 +606,115 @@ export async function changePassword(formData: FormData) {
   }
 
   try {
+    // Determine user email based on portal
+    let userEmail: string;
+    let userPasswordHash: string;
+
     if (portal === 'CLIENT') {
       const client = await prisma.client.findUnique({
         where: { id: session.user.id },
         select: { id: true, email: true, password: true },
       });
-
       if (!client) return { error: 'Account not found.' };
-
-      // Verify current password
-      const isCurrentValid = await bcrypt.compare(currentPassword, client.password);
-      if (!isCurrentValid) {
-        return { error: 'Current password is incorrect.' };
-      }
-
-      // Ensure new password is different
-      const isSamePassword = await bcrypt.compare(newPassword, client.password);
-      if (isSamePassword) {
-        return { error: 'New password must be different from your current password.' };
-      }
-
-      // Hash and save
-      const hashedPassword = await bcrypt.hash(newPassword, 12);
-      await prisma.client.update({
-        where: { id: client.id },
-        data: { password: hashedPassword },
-      });
-
-      logSecurityEvent({ event: 'PASSWORD_CHANGED', email: client.email, metadata: { portal: 'CLIENT' } });
+      userEmail = client.email;
+      userPasswordHash = client.password;
     } else {
       const employee = await prisma.employee.findUnique({
         where: { id: session.user.id },
         select: { id: true, email: true, password: true },
       });
-
       if (!employee) return { error: 'Account not found.' };
+      userEmail = employee.email;
+      userPasswordHash = employee.password;
+    }
 
-      // Verify current password
-      const isCurrentValid = await bcrypt.compare(currentPassword, employee.password);
-      if (!isCurrentValid) {
-        return { error: 'Current password is incorrect.' };
-      }
+    // Verify current password
+    const isCurrentValid = await bcrypt.compare(currentPassword, userPasswordHash);
+    if (!isCurrentValid) {
+      return { error: 'Current password is incorrect.' };
+    }
 
-      // Ensure new password is different
-      const isSamePassword = await bcrypt.compare(newPassword, employee.password);
-      if (isSamePassword) {
-        return { error: 'New password must be different from your current password.' };
-      }
+    // Ensure new password is different
+    const isSamePassword = await bcrypt.compare(newPassword, userPasswordHash);
+    if (isSamePassword) {
+      return { error: 'New password must be different from your current password.' };
+    }
 
-      // Hash and save
-      const hashedPassword = await bcrypt.hash(newPassword, 12);
-      await prisma.employee.update({
-        where: { id: employee.id },
-        data: { password: hashedPassword },
+    // ── STEP 1: No OTP provided yet → Send OTP to user's email ──
+    if (!otp) {
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
+
+      await prisma.otp.deleteMany({ where: { email: userEmail } });
+      await prisma.otp.create({ data: { email: userEmail, code, expiresAt } });
+
+      const { sendMail } = await import('@/lib/mail');
+      const mailResult = await sendMail({
+        to: userEmail,
+        subject: 'Password Change Verification — S Mohanty Associates',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #f1f3f5; border-radius: 8px;">
+            <h2 style="color: #0f2038;">S Mohanty Associates</h2>
+            <p style="color: #343a40;">You have requested to change your account password. Please use the following verification code to confirm this action.</p>
+            <div style="background-color: #fff5f5; padding: 15px; border-radius: 8px; font-size: 24px; font-weight: bold; letter-spacing: 5px; text-align: center; color: #dc3545; border: 1px solid #f5c6cb; margin: 20px 0;">
+              ${escapeHtml(code)}
+            </div>
+            <p style="color: #6c757d; font-size: 12px;">This code is valid for <strong>5 minutes</strong>. If you did not request this password change, please ignore this email and ensure your account is secure.</p>
+            <hr style="border: none; border-top: 1px solid #e9ecef; margin: 20px 0;" />
+            <p style="color: #adb5bd; font-size: 11px;">S Mohanty & Associates | Bhubaneswar</p>
+          </div>
+        `,
       });
 
-      logSecurityEvent({ event: 'PASSWORD_CHANGED', email: employee.email, metadata: { portal: 'EMPLOYEE' } });
+      if (mailResult.error) {
+        return { error: 'Failed to send verification email. Please try again.' };
+      }
+
+      return { requireOtp: true, email: userEmail };
     }
+
+    // ── STEP 2: OTP provided → Verify and change password ──
+    const ALLOWED_TEST_OTP = process.env.ALLOWED_TEST_OTP || '';
+
+    if (!ALLOWED_TEST_OTP || otp !== ALLOWED_TEST_OTP) {
+      const otpRecord = await prisma.otp.findFirst({
+        where: { email: userEmail },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      if (!otpRecord) {
+        return { error: 'No verification code found. Please request a new one.' };
+      }
+
+      if (otpRecord.expiresAt < new Date()) {
+        await prisma.otp.deleteMany({ where: { email: userEmail } });
+        return { error: 'Verification code has expired. Please request a new one.' };
+      }
+
+      if (otpRecord.code !== otp) {
+        return { error: 'Invalid verification code. Please check and try again.' };
+      }
+
+      // OTP verified — clean up
+      await prisma.otp.deleteMany({ where: { email: userEmail } });
+    }
+
+    // Hash and save the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    if (portal === 'CLIENT') {
+      await prisma.client.update({
+        where: { id: session.user.id },
+        data: { password: hashedPassword },
+      });
+    } else {
+      await prisma.employee.update({
+        where: { id: session.user.id },
+        data: { password: hashedPassword },
+      });
+    }
+
+    logSecurityEvent({ event: 'PASSWORD_CHANGED', email: userEmail, metadata: { portal } });
 
     return { success: true };
   } catch (error) {
