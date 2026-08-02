@@ -1,4 +1,3 @@
-'use server';
 
 /**
  * In-memory rate limiter for authentication endpoints.
