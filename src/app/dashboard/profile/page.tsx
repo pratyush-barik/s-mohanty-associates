@@ -2,6 +2,7 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import EditProfileForm from './EditProfileForm';
+import ChangePasswordForm from '@/components/ChangePasswordForm';
 
 export default async function ClientProfilePage() {
   const session = await auth();
@@ -29,6 +30,9 @@ export default async function ClientProfilePage() {
       </div>
 
       <EditProfileForm client={client as any} />
+
+      {/* Change Password Section */}
+      <ChangePasswordForm portal="CLIENT" />
     </div>
   );
 }

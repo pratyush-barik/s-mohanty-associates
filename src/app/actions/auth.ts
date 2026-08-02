@@ -556,3 +556,116 @@ export async function requestOtp(email: string, portal: 'CLIENT' | 'EMPLOYEE') {
     return { error: 'An error occurred while generating the OTP.' };
   }
 }
+
+// ═══════════════════════════════════════════
+// CHANGE PASSWORD (Client + Employee)
+// ═══════════════════════════════════════════
+
+const COMMON_PASSWORDS = new Set([
+  'password', '123456', '12345678', '1234', 'qwerty', '12345', 'abc123',
+  'password1', 'password123', 'qwerty123', 'iloveyou', 'welcome', 'admin',
+  'letmein', 'monkey', 'master', 'dragon', 'trustno1', 'baseball', 'shadow',
+  'passw0rd', 'p@ssword', 'changeme', 'default', 'guest', 'login', '111111',
+  '123123', '654321', '123456789', 'superman', 'batman', 'football', 'soccer',
+]);
+
+function validateNewPassword(password: string): string | null {
+  if (password.length < 12) return 'Password must be at least 12 characters long.';
+  if (!/[a-z]/.test(password)) return 'Password must contain at least one lowercase letter.';
+  if (!/[A-Z]/.test(password)) return 'Password must contain at least one uppercase letter.';
+  if (!/[0-9]/.test(password)) return 'Password must contain at least one number.';
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) return 'Password must contain at least one special character (!@#$%^&* etc.).';
+  if (COMMON_PASSWORDS.has(password.toLowerCase())) return 'This password is too common. Please choose a stronger password.';
+  return null;
+}
+
+export async function changePassword(formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: 'Unauthorized. Please log in again.' };
+  }
+
+  const currentPassword = (formData.get('currentPassword') as string)?.trim();
+  const newPassword = (formData.get('newPassword') as string)?.trim();
+  const confirmPassword = (formData.get('confirmPassword') as string)?.trim();
+  const portal = formData.get('portal') as string; // 'CLIENT' or 'EMPLOYEE'
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    return { error: 'All password fields are required.' };
+  }
+
+  if (newPassword !== confirmPassword) {
+    return { error: 'New password and confirmation do not match.' };
+  }
+
+  // Validate new password strength
+  const validationError = validateNewPassword(newPassword);
+  if (validationError) {
+    return { error: validationError };
+  }
+
+  try {
+    if (portal === 'CLIENT') {
+      const client = await prisma.client.findUnique({
+        where: { id: session.user.id },
+        select: { id: true, email: true, password: true },
+      });
+
+      if (!client) return { error: 'Account not found.' };
+
+      // Verify current password
+      const isCurrentValid = await bcrypt.compare(currentPassword, client.password);
+      if (!isCurrentValid) {
+        return { error: 'Current password is incorrect.' };
+      }
+
+      // Ensure new password is different
+      const isSamePassword = await bcrypt.compare(newPassword, client.password);
+      if (isSamePassword) {
+        return { error: 'New password must be different from your current password.' };
+      }
+
+      // Hash and save
+      const hashedPassword = await bcrypt.hash(newPassword, 12);
+      await prisma.client.update({
+        where: { id: client.id },
+        data: { password: hashedPassword },
+      });
+
+      logSecurityEvent({ event: 'PASSWORD_CHANGED', email: client.email, metadata: { portal: 'CLIENT' } });
+    } else {
+      const employee = await prisma.employee.findUnique({
+        where: { id: session.user.id },
+        select: { id: true, email: true, password: true },
+      });
+
+      if (!employee) return { error: 'Account not found.' };
+
+      // Verify current password
+      const isCurrentValid = await bcrypt.compare(currentPassword, employee.password);
+      if (!isCurrentValid) {
+        return { error: 'Current password is incorrect.' };
+      }
+
+      // Ensure new password is different
+      const isSamePassword = await bcrypt.compare(newPassword, employee.password);
+      if (isSamePassword) {
+        return { error: 'New password must be different from your current password.' };
+      }
+
+      // Hash and save
+      const hashedPassword = await bcrypt.hash(newPassword, 12);
+      await prisma.employee.update({
+        where: { id: employee.id },
+        data: { password: hashedPassword },
+      });
+
+      logSecurityEvent({ event: 'PASSWORD_CHANGED', email: employee.email, metadata: { portal: 'EMPLOYEE' } });
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to change password:', error);
+    return { error: 'An error occurred while changing your password. Please try again.' };
+  }
+}

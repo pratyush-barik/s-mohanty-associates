@@ -1,6 +1,7 @@
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import ProfilePhotoUpload from './ProfilePhotoUpload';
+import ChangePasswordForm from '@/components/ChangePasswordForm';
 
 const roleLabels: Record<string, string> = {
   OWNER: 'Owner',
@@ -75,6 +76,9 @@ export default async function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Change Password Section */}
+      <ChangePasswordForm portal="EMPLOYEE" />
     </div>
   );
 }
