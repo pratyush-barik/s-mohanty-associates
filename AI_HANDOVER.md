@@ -140,6 +140,15 @@ The core business logic is **100% complete**.
  13. **Dynamic Report Builder (Sections 7-9)**: The Report Builder dynamically adjusts Sections 7 (Building Valuation), 8 (Land Valuation), and 9 (Abstract) based on the chosen subject type. If the subject is an `Apartment` or `Flat`, the Land section is completely hidden, Section 7 is renamed to Apartment Valuation, and the Abstract displays only the single total value instead of a split Land+Building breakdown.
  14. **Delivery**: Client downloads the PDF from their dashboard.
  15. **Landing Page Integrations**: The "Submit Organisational Request" CTA on the public landing page now generates pre-filled emails (Gmail, Outlook, Default Mail) whose body matches the exact 8 data fields found in the client's internal "Request a Service" form (Service Category, Property Details, etc.).
+ 16. **Security Hardening (August 2026)**: Comprehensive security audit response addressing vulnerabilities identified by a penetration tester:
+     - **Generic Error Messages**: All login failures return identical `"Invalid email or password"` — no account enumeration possible.
+     - **Strong Password Policy**: 12+ characters, uppercase, lowercase, number, special character required. Top 100 common passwords blocked. Bcrypt cost factor increased to 12.
+     - **Password Strength Meter**: Real-time visual feedback on registration page with 5-bar color-coded strength indicator and per-criterion checkmarks.
+     - **Rate Limiting**: In-memory per-IP (5 attempts/15 min) and per-account (10 attempts/hour) rate limiting on login.
+     - **Account Lockout**: 5 consecutive failed login attempts locks the account for 30 minutes. Auto-resets on successful login.
+     - **Security Headers**: `Strict-Transport-Security`, `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, `Referrer-Policy`, `Permissions-Policy` added to all responses via `next.config.ts`.
+     - **Audit Logging**: `SecurityLog` model tracks all login attempts (success/failure), account lockouts, and rate limit hits with IP address and timestamp.
+     - **Prior fixes by teammate**: HTML escaping (XSS), OTP bypass removal, cron auth, input validation (Zod `ProfileUpdateSchema`).
 
 ## 5. Pending Work (What is next)
 
@@ -195,6 +204,8 @@ Outstanding items in **priority order**:
 > When modifying the UI, prioritize modern, premium aesthetics (glassmorphism, clean typography, subtle animations) without relying on Tailwind component libraries like Shadcn. Use raw Tailwind classes.
 
 ## 7. Recent Git Commits (for reference)
+- `b27e0ea` — security: implement rate limiting, account lockout, password hardening, security headers, and audit logging
+- `0826206` — security: fix SQL injection audit findings - cron auth, OTP bypass, input validation, HTML escaping
 - `0b598e3` — fix: correct Prisma relation names in enquiry detail page (messages→enquiries, serviceRequest→serviceRequests)
 - `263d6e6` — feat: remove create manual case button from manager dashboard
 - `880be3c` — style: rename Client to Enquirer and remove Project column in Public Enquiries table
