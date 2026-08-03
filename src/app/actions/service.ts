@@ -91,7 +91,10 @@ export async function uploadProjectMessageAttachment(
 
   const project = await prisma.project.findUnique({
     where: { id: projectId },
-    include: { serviceRequest: true },
+    include: {
+      serviceRequest: true,
+      fieldEmployees: { select: { id: true } },
+    },
   });
 
   if (!project) {
@@ -101,9 +104,12 @@ export async function uploadProjectMessageAttachment(
   const userRole = (session.user as any).role;
   const isAssigned =
     project.assignedManagerId === session.user.id ||
-    project.reportEmployeeId === session.user.id;
+    project.reportEmployeeId === session.user.id ||
+    project.fieldEmployees?.some((e) => e.id === session.user.id);
 
-  if (userRole !== 'OWNER' && !isAssigned) {
+  const isClientOwner = userRole === 'CLIENT' && project.serviceRequest?.clientId === session.user.id;
+
+  if (userRole !== 'OWNER' && !isAssigned && !isClientOwner) {
     return { error: 'You do not have access to this project.' };
   }
 
