@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { sendProjectMessage, uploadProjectMessageAttachment } from '@/app/actions/service';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { supabaseBrowser } from '@/lib/supabase-client';
 
 interface Message {
   id: string;
@@ -84,6 +85,28 @@ export default function ProjectChat({
   useEffect(() => {
     setMessages(initialMessages);
   }, [initialMessages]);
+
+  useEffect(() => {
+    const channel = supabaseBrowser
+      .channel('project-chat-portal')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'ProjectMessage',
+          filter: `projectId=eq.${projectId}`,
+        },
+        () => {
+          router.refresh();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabaseBrowser.removeChannel(channel);
+    };
+  }, [projectId, router]);
 
   const sourceLabel =
     project.source === 'GMAIL'

@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { sendProjectMessage, uploadProjectMessageAttachment } from '@/app/actions/service';
+import { useRouter } from 'next/navigation';
+import { supabaseBrowser } from '@/lib/supabase-client';
 
 interface Message {
   id: string;
@@ -40,6 +42,7 @@ function getFileIcon(mimeType: string): string {
 }
 
 export default function ProjectChat({ projectId, messages: initialMessages, currentUserId }: ProjectChatProps) {
+  const router = useRouter();
   const [messages, setMessages] = useState(initialMessages);
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
@@ -49,7 +52,33 @@ export default function ProjectChat({ projectId, messages: initialMessages, curr
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, initialMessages]);
+
+  useEffect(() => {
+    setMessages(initialMessages);
+  }, [initialMessages]);
+
+  useEffect(() => {
+    const channel = supabaseBrowser
+      .channel('project-chat-client')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'ProjectMessage',
+          filter: `projectId=eq.${projectId}`,
+        },
+        () => {
+          router.refresh();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabaseBrowser.removeChannel(channel);
+    };
+  }, [projectId, router]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
