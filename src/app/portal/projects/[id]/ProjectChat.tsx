@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { sendProjectMessage, uploadProjectMessageAttachment } from '@/app/actions/service';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface Message {
   id: string;
@@ -62,6 +63,7 @@ export default function ProjectChat({
   currentUserId,
   currentUserRole,
 }: ProjectChatProps) {
+  const router = useRouter();
   const [messages, setMessages] = useState(initialMessages);
   const [replyText, setReplyText] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -77,7 +79,11 @@ export default function ProjectChat({
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, initialMessages]);
+
+  useEffect(() => {
+    setMessages(initialMessages);
+  }, [initialMessages]);
 
   const sourceLabel =
     project.source === 'GMAIL'
@@ -115,6 +121,14 @@ export default function ProjectChat({
         const formData = new FormData();
         formData.append('file', file);
         const uploadResult = await uploadProjectMessageAttachment(projectId, formData);
+        
+        if (uploadResult.error) {
+          setAlert({ type: 'error', text: uploadResult.error });
+          setIsSending(false);
+          setUploading(false);
+          return;
+        }
+        
         if (uploadResult.success && uploadResult.document) {
           attachmentDocIds.push(uploadResult.document.id);
         }
@@ -129,6 +143,7 @@ export default function ProjectChat({
         setReplyText('');
         setSelectedFiles([]);
         setShowFiles(false);
+        router.refresh();
       }
     } catch (err) {
       setAlert({ type: 'error', text: 'Failed to send message.' });

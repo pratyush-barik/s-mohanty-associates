@@ -44,6 +44,7 @@ export default function ProjectChat({ projectId, messages: initialMessages, curr
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -62,6 +63,7 @@ export default function ProjectChat({ projectId, messages: initialMessages, curr
   const handleSend = async () => {
     if ((!newMessage.trim() && selectedFiles.length === 0) || sending) return;
     setSending(true);
+    setError(null);
 
     try {
       const attachmentDocIds: string[] = [];
@@ -72,6 +74,13 @@ export default function ProjectChat({ projectId, messages: initialMessages, curr
         const formData = new FormData();
         formData.append('file', file);
         const uploadResult = await uploadProjectMessageAttachment(projectId, formData);
+        
+        if (uploadResult.error) {
+          setError(uploadResult.error);
+          setSending(false);
+          return;
+        }
+
         if (uploadResult.success && uploadResult.document) {
           attachmentDocIds.push(uploadResult.document.id);
           newDocs.push(uploadResult.document);
@@ -80,7 +89,9 @@ export default function ProjectChat({ projectId, messages: initialMessages, curr
 
       const result = await sendProjectMessage(projectId, newMessage, attachmentDocIds);
 
-      if (result.success) {
+      if (result.error) {
+        setError(result.error);
+      } else if (result.success) {
         // Optimistically add the message
         setMessages((prev) => [
           ...prev,
@@ -102,6 +113,7 @@ export default function ProjectChat({ projectId, messages: initialMessages, curr
       }
     } catch (err) {
       console.error('Failed to send message:', err);
+      setError('Failed to send message due to an unexpected error.');
     }
 
     setSending(false);
@@ -217,6 +229,12 @@ export default function ProjectChat({ projectId, messages: initialMessages, curr
 
       {/* Input Area */}
       <div className="flex flex-col pt-4 border-t border-[#e9ecef]">
+        {error && (
+          <div className="mb-3 p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100">
+            {error}
+          </div>
+        )}
+
         {/* Selected Files Preview */}
         {selectedFiles.length > 0 && (
           <div className="mb-3 space-y-1">
