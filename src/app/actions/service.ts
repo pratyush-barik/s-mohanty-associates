@@ -123,11 +123,10 @@ export async function uploadProjectMessageAttachment(
     const bucket = STORAGE_BUCKETS.ENQUIRY_FILES;
 
     const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
 
     const { data, error: uploadError } = await supabaseAdmin.storage
       .from(bucket)
-      .upload(fileName, buffer, {
+      .upload(fileName, arrayBuffer, {
         contentType: file.type || 'application/octet-stream',
         upsert: false,
       });
