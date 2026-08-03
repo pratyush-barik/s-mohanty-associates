@@ -786,13 +786,14 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   const router = useRouter();
 
   const [selectingOrg, setSelectingOrg] = useState(false);
-  const [wizardStep, setWizardStep] = useState<'client_type' | 'service' | 'subject'>(
-    !merged.clientType ? 'client_type' : !merged.serviceType ? 'service' : 'subject'
+  const [wizardStep, setWizardStep] = useState<'client_type' | 'service' | 'subject' | 'completed'>(
+    !merged.clientType ? 'client_type' : 'completed'
   );
 
   const handleSelectClientType = (type: 'individual' | 'organisation') => {
     if (type === 'individual') {
       setFields(prev => ({ ...prev, clientType: 'individual', organisationTemplate: '' }));
+      setWizardStep('service');
     } else {
       setSelectingOrg(true);
     }
@@ -805,6 +806,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       organisationTemplate: num
     }));
     setSelectingOrg(false);
+    setWizardStep('service');
   };
 
   const handleSelectService = (service: string) => {
@@ -814,6 +816,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
 
   const handleSelectSubject = (subject: string) => {
     setFields(prev => ({ ...prev, subjectType: subject }));
+    setWizardStep('completed');
   };
 
   const getSelectedAmenities = () => {
@@ -1792,8 +1795,8 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   // ═══════════════════════════════════════════════════════════
   // RENDER
   // ═══════════════════════════════════════════════════════════
-  if (!fields.clientType || !fields.serviceType || !fields.subjectType) {
-    const activeStep = !fields.clientType ? 'client_type' : !fields.serviceType ? 'service' : 'subject';
+  if (wizardStep !== 'completed') {
+    const activeStep = wizardStep;
     
     return (
       <div className="min-h-[500px] flex items-center justify-center bg-gradient-to-br from-[#f8f9fa] to-[#e9ecef] p-8 rounded-2xl border border-neutral-200">
