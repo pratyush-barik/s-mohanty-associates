@@ -327,7 +327,7 @@ function computeDepreciation(lifeYears: number, ageYears: number): number {
 function Section({ title, number, children, defaultOpen = true }: { title: string; number: number; children: React.ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="card border border-[#e9ecef] overflow-hidden">
+    <div id={`section-${number}`} className="card border border-[#e9ecef] overflow-hidden scroll-mt-24">
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#0a1628] to-[#162d4a] text-white hover:from-[#0f1e35] hover:to-[#1e3a5f] transition-all"
@@ -631,6 +631,44 @@ const SERVICES_LIST = [
     ]
   }
 ];
+
+const FloatingNavigator = ({ isApartmentFlat }: { isApartmentFlat: boolean }) => {
+  const NAV_SECTIONS = [
+    { id: 'section-1', title: 'General Details' },
+    { id: 'section-2', title: 'Locality Details' },
+    { id: 'section-3', title: 'Property Details' },
+    { id: 'section-4', title: 'Subject Property' },
+    { id: 'section-5', title: 'Structural Details' },
+    { id: 'section-6', title: 'Plan Approvals' },
+    { id: 'section-7', title: 'Area Valuation' },
+    ...(isApartmentFlat ? [] : [{ id: 'section-8', title: 'Land Valuation' }]),
+    { id: 'section-9', title: 'Valuation Abstract' },
+    { id: 'section-10', title: 'Remarks' },
+    { id: 'section-11', title: 'Certificate' },
+    { id: 'section-13', title: 'Sketch Map' },
+    { id: 'section-14', title: 'Location Map' }
+  ];
+
+  const scrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  return (
+    <div className="hidden xl:flex fixed right-4 top-1/2 -translate-y-1/2 flex-col gap-1 z-50 bg-white/80 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2.5 rounded-2xl w-[150px]">
+      <div className="text-[10px] font-black text-neutral-400 mb-2 px-2 uppercase tracking-widest">Sections</div>
+      {NAV_SECTIONS.map((sec) => (
+        <button
+          key={sec.id}
+          type="button"
+          onClick={() => scrollTo(sec.id)}
+          className="text-left px-3 py-1.5 text-[11px] font-bold text-slate-600 rounded-lg hover:bg-[#b8860b] hover:text-white transition-all truncate"
+        >
+          {sec.title}
+        </button>
+      ))}
+    </div>
+  );
+};
 
 // ─── Main Component ────────────────────────────────────────────────
 interface BucketImageItem {
@@ -1995,8 +2033,10 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
 
   return (
     <div className={aiAssistEnabled ? 'flex gap-4 items-start' : 'space-y-4'} ref={reportRef}>
+    {!aiAssistEnabled && <FloatingNavigator isApartmentFlat={isApartmentFlat} />}
+    
     {/* ── Main Form Column ── */}
-    <div className={aiAssistEnabled ? 'flex-1 min-w-0 space-y-4' : undefined}>
+    <div className={aiAssistEnabled ? 'flex-1 min-w-0 space-y-4' : 'flex-1 min-w-0 space-y-4 pr-0 xl:pr-40'}>
       {/* Template Info Banner */}
       <div className="card p-4 bg-gradient-to-r from-[#f8f9fa] to-[#e9ecef] border border-[#c8d6e5] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md rounded-xl sticky top-2 z-50">
         <div className="flex flex-col xl:flex-row xl:items-center gap-3">
