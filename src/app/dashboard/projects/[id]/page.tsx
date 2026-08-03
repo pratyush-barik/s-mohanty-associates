@@ -48,6 +48,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         include: {
           client: { include: { individual: true, organisation: true } },
           employee: true,
+          documents: true,
         },
         orderBy: { createdAt: 'asc' },
       },

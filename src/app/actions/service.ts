@@ -183,7 +183,9 @@ export async function sendProjectMessage(
     project.fieldEmployees.some((e) => e.id === session.user.id) ||
     project.reportEmployeeId === session.user.id;
 
-  if (!isAssigned && userRole !== 'OWNER') {
+  const isClientOwner = userRole === 'CLIENT' && project.serviceRequest?.clientId === session.user.id;
+
+  if (!isAssigned && userRole !== 'OWNER' && !isClientOwner) {
     return { error: 'You do not have access to this project.' };
   }
 
@@ -203,7 +205,8 @@ export async function sendProjectMessage(
     data: {
       projectId,
       content: content.trim(),
-      employeeId: session.user.id,
+      employeeId: userRole === 'CLIENT' ? null : session.user.id,
+      clientId: userRole === 'CLIENT' ? session.user.id : null,
     },
   });
 
