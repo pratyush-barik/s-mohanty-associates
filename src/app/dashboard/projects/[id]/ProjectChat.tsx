@@ -88,46 +88,44 @@ export default function ProjectChat({ projectId, messages: initialMessages, curr
         ) : (
           messages.map((msg) => {
             const isOwn = msg.sender.id === currentUserId;
-            return (
-              <div key={msg.id} className={`flex gap-3 ${isOwn ? 'flex-row-reverse' : ''}`}>
-                {/* Avatar */}
-                <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold ${
-                  isOwn
-                    ? 'bg-gradient-to-br from-[#b8860b] to-[#c9952c] text-white'
-                    : 'bg-gradient-to-br from-[#1e3a5f] to-[#162d4a] text-white'
-                }`}>
-                  {msg.sender.profilePhoto ? (
-                    <img src={msg.sender.profilePhoto} alt="" className="w-full h-full rounded-full object-cover" />
-                  ) : (
-                    msg.sender.name.charAt(0).toUpperCase()
-                  )}
-                </div>
-
-                {/* Bubble */}
-                <div className={`max-w-[70%] ${isOwn ? 'text-right' : ''}`}>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className={`text-xs font-medium ${isOwn ? 'text-[#b8860b]' : 'text-[#0f2038]'}`}>
-                      {isOwn ? 'You' : msg.sender.name}
-                    </span>
-                    <span className="text-[10px] text-[#adb5bd] font-medium">
-                      {roleLabels[msg.sender.role] || msg.sender.role}
-                    </span>
-                  </div>
-                  <div className={`inline-block px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
-                    isOwn
-                      ? 'bg-gradient-to-br from-[#b8860b] to-[#c9952c] text-white rounded-br-sm'
-                      : 'bg-[#f8f9fa] text-[#0f2038] border border-[#e9ecef] rounded-bl-sm'
+              return (
+                <div key={msg.id} className={`flex gap-3 mb-4 ${isOwn ? 'flex-row-reverse' : 'flex-row'}`}>
+                  {/* Avatar */}
+                  <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold shadow-sm border mt-1 overflow-hidden ${
+                    isOwn 
+                      ? 'bg-gradient-to-br from-[#b8860b] to-[#c9952c] text-white border-[#b8860b]/20' 
+                      : 'bg-[#f8f9fa] text-[#495057] border-[#dee2e6]'
                   }`}>
-                    {msg.content}
+                    {msg.sender.profilePhoto ? (
+                      <img src={msg.sender.profilePhoto} alt="" className="w-full h-full rounded-full object-cover" />
+                    ) : (
+                      isOwn ? 'You' : msg.sender.name.charAt(0).toUpperCase()
+                    )}
                   </div>
-                  <p className="text-[10px] text-[#adb5bd] mt-1">
-                    {new Date(msg.createdAt).toLocaleString('en-IN', {
-                      day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
-                    })}
-                  </p>
+
+                  {/* Message Body */}
+                  <div className={`flex flex-col max-w-[75%] ${isOwn ? 'items-end' : 'items-start'}`}>
+                    <div className={`flex items-center gap-2 mb-1.5 px-1 ${isOwn ? 'flex-row-reverse' : 'flex-row'}`}>
+                      <span className="text-[11px] font-semibold text-[#343a40]">
+                        {isOwn ? 'You' : msg.sender.name}
+                      </span>
+                      <span className="text-[10px] font-medium text-[#adb5bd]">
+                        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+
+                    <div
+                      className={`relative px-4 py-3 text-sm shadow-sm transition-all ${
+                        isOwn
+                          ? 'bg-gradient-to-br from-[#b8860b] to-[#c9952c] text-white rounded-[20px] rounded-tr-[4px]'
+                          : 'bg-white border border-[#e9ecef] text-[#0f2038] rounded-[20px] rounded-tl-[4px]'
+                      }`}
+                    >
+                      <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            );
+              );
           })
         )}
         <div ref={messagesEndRef} />

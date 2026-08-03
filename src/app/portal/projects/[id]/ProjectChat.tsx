@@ -243,42 +243,72 @@ export default function ProjectChat({
               const isEmployee = msg.employeeId !== null;
 
               return (
-                <div key={msg.id} className={`flex ${isEmployee ? 'justify-end' : 'justify-start'}`}>
-                  <div
-                    className={`max-w-[75%] rounded-2xl p-4 ${
-                      isEmployee
-                        ? 'bg-[#0f2038] text-white rounded-br-sm shadow-md'
-                        : 'bg-white border border-[#e9ecef] text-[#343a40] rounded-bl-sm shadow-sm'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 mb-1 opacity-80">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider">
-                        {isEmployee ? 'Employee' : 'Client'}
+                <div key={msg.id} className={`flex gap-3 mb-2 ${isEmployee ? 'flex-row-reverse' : 'flex-row'}`}>
+                  {/* Avatar */}
+                  <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold shadow-sm border mt-1 ${
+                    isEmployee 
+                      ? 'bg-gradient-to-br from-[#b8860b] to-[#c9952c] text-white border-[#b8860b]/20' 
+                      : 'bg-white text-[#495057] border-[#dee2e6]'
+                  }`}>
+                    {isEmployee ? 'You' : 'CL'}
+                  </div>
+
+                  {/* Message Body */}
+                  <div className={`flex flex-col max-w-[75%] ${isEmployee ? 'items-end' : 'items-start'}`}>
+                    <div className={`flex items-center gap-2 mb-1.5 px-1 ${isEmployee ? 'flex-row-reverse' : 'flex-row'}`}>
+                      <span className="text-[11px] font-semibold text-[#343a40]">
+                        {isEmployee ? 'Staff Member' : project.serviceRequest?.contactName || 'Client'}
                       </span>
-                      <span className="text-[10px]">
+                      <span className="text-[10px] font-medium text-[#adb5bd]">
                         {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
-                    {msg.content && (
-                      <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
-                    )}
-                    {msg.documents.length > 0 && (
-                      <div className="mt-2 space-y-1">
-                        {msg.documents.map(doc => (
-                          <a
-                            key={doc.id}
-                            href={doc.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-xs text-white no-underline"
-                          >
-                            <span>{getFileIcon(doc.type)}</span>
-                            <span className="flex-1 truncate">{doc.name}</span>
-                            <span>{formatFileSize(doc.size)}</span>
-                          </a>
-                        ))}
-                      </div>
-                    )}
+
+                    <div
+                      className={`relative px-4 py-3 text-sm shadow-sm transition-all ${
+                        isEmployee
+                          ? 'bg-[#0f2038] text-white rounded-[20px] rounded-tr-[4px]'
+                          : 'bg-white border border-[#e9ecef] text-[#343a40] rounded-[20px] rounded-tl-[4px]'
+                      }`}
+                    >
+                      {msg.content && (
+                        <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                      )}
+                      
+                      {/* Attachments within bubble */}
+                      {msg.documents.length > 0 && (
+                        <div className={`mt-3 space-y-2 pt-3 border-t ${isEmployee ? 'border-white/10' : 'border-[#e9ecef]'}`}>
+                          {msg.documents.map(doc => (
+                            <a
+                              key={doc.id}
+                              href={doc.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all no-underline ${
+                                isEmployee 
+                                  ? 'bg-white/5 border-white/10 hover:bg-white/10 text-white'
+                                  : 'bg-[#f8f9fa] border-[#e9ecef] hover:bg-[#f1f3f5] text-[#495057]'
+                              }`}
+                            >
+                              <span className="text-xl">{getFileIcon(doc.type)}</span>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[11px] font-semibold truncate leading-tight">{doc.name}</p>
+                                <p className={`text-[9px] mt-0.5 ${isEmployee ? 'text-white/60' : 'text-[#868e96]'}`}>
+                                  {formatFileSize(doc.size)}
+                                </p>
+                              </div>
+                              <div className={`p-1.5 rounded-lg ${isEmployee ? 'bg-white/10' : 'bg-white border shadow-sm'}`}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                  <polyline points="7 10 12 15 17 10" />
+                                  <line x1="12" y1="15" x2="12" y2="3" />
+                                </svg>
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               );

@@ -156,23 +156,36 @@ export default function ChatInterface({
           }
 
           return (
-            <div key={msg.id} className={`flex ${isManager ? 'justify-end' : 'justify-start'}`}>
-              <div
-                className={`max-w-[75%] rounded-2xl p-4 ${
-                  isManager
-                    ? 'bg-[#0f2038] text-white rounded-br-sm shadow-md'
-                    : 'bg-white border border-[#e9ecef] text-[#343a40] rounded-bl-sm shadow-sm'
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-1 opacity-80">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider">
-                    {isManager ? 'You' : 'Client'}
+            <div key={msg.id} className={`flex gap-3 mb-2 ${isManager ? 'flex-row-reverse' : 'flex-row'}`}>
+              {/* Avatar */}
+              <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold shadow-sm border mt-1 ${
+                isManager 
+                  ? 'bg-gradient-to-br from-[#b8860b] to-[#c9952c] text-white border-[#b8860b]/20' 
+                  : 'bg-white text-[#495057] border-[#dee2e6]'
+              }`}>
+                {isManager ? 'You' : 'CL'}
+              </div>
+
+              {/* Message Body */}
+              <div className={`flex flex-col max-w-[75%] ${isManager ? 'items-end' : 'items-start'}`}>
+                <div className={`flex items-center gap-2 mb-1.5 px-1 ${isManager ? 'flex-row-reverse' : 'flex-row'}`}>
+                  <span className="text-[11px] font-semibold text-[#343a40]">
+                    {isManager ? 'Staff Member' : 'Client'}
                   </span>
-                  <span className="text-[10px]">
+                  <span className="text-[10px] font-medium text-[#adb5bd]">
                     {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
-                <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.body}</p>
+
+                <div
+                  className={`relative px-4 py-3 text-sm shadow-sm transition-all ${
+                    isManager
+                      ? 'bg-[#0f2038] text-white rounded-[20px] rounded-tr-[4px]'
+                      : 'bg-white border border-[#e9ecef] text-[#343a40] rounded-[20px] rounded-tl-[4px]'
+                  }`}
+                >
+                  <p className="whitespace-pre-wrap leading-relaxed">{msg.body}</p>
+                </div>
               </div>
             </div>
           );
