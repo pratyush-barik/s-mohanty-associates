@@ -640,6 +640,7 @@ const FloatingNavigator = ({ isApartmentFlat }: { isApartmentFlat: boolean }) =>
     { id: 'section-4', title: 'Subject Property' },
     { id: 'section-5', title: 'Structural Details' },
     { id: 'section-6', title: 'Plan Approvals' },
+    { id: 'layout-config', title: 'Layout Structure', special: true },
     { id: 'section-7', title: 'Area Valuation' },
     ...(isApartmentFlat ? [] : [{ id: 'section-8', title: 'Land Valuation' }]),
     { id: 'section-9', title: 'Valuation Abstract' },
@@ -661,7 +662,11 @@ const FloatingNavigator = ({ isApartmentFlat }: { isApartmentFlat: boolean }) =>
           key={sec.id}
           type="button"
           onClick={() => scrollTo(sec.id)}
-          className="text-left px-3 py-1.5 text-[11px] font-bold text-slate-600 rounded-lg hover:bg-[#b8860b] hover:text-white transition-all truncate"
+          className={`text-left px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all truncate ${
+            (sec as any).special
+              ? 'bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white border border-blue-100 my-1'
+              : 'text-slate-600 hover:bg-[#b8860b] hover:text-white'
+          }`}
         >
           {sec.title}
         </button>
@@ -2454,10 +2459,10 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       </Section>
 
       {/* ── Valuation Layout Selection (after Section 6) ── */}
-      <div className="card p-5 bg-white border border-[#dee2e6] rounded-xl shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 my-6">
+      <div id="layout-config" className="card p-5 bg-white border border-[#dee2e6] rounded-xl shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 my-6 scroll-mt-24">
         <div>
-          <h4 className="text-sm font-bold text-[#0f2038] uppercase tracking-wider">Valuation Format / Layout</h4>
-          <p className="text-xs text-[#6c757d] mt-1">Select the format layout for the valuation tables and PDF report.</p>
+          <h4 className="text-sm font-bold text-[#0f2038] uppercase tracking-wider">Property Layout Structure</h4>
+          <p className="text-xs text-[#6c757d] mt-1">Select the structural layout to configure the corresponding valuation sections.</p>
         </div>
         <div className="flex bg-[#f1f3f5] p-1 rounded-lg border border-[#dee2e6] shrink-0">
           <button
