@@ -159,6 +159,28 @@ function createMockProvider(): LLMProvider {
   };
 }
 
+/** Fallback Provider — Tries multiple providers in sequence */
+function createFallbackProvider(providers: LLMProvider[]): LLMProvider {
+  return {
+    name: 'fallback',
+    generate: async (req) => {
+      let lastError = new Error('No providers available');
+      for (const provider of providers) {
+        try {
+          console.log(`[AI Assist] Trying LLM provider: ${provider.name}`);
+          const res = await provider.generate(req);
+          return res;
+        } catch (err: any) {
+          console.warn(`[AI Assist] Provider ${provider.name} failed:`, err.message);
+          lastError = err;
+          // continue to next provider in the fallback chain
+        }
+      }
+      throw lastError;
+    },
+  };
+}
+
 // ─── Provider Factory ───────────────────────────────────────────
 
 let cachedProvider: LLMProvider | null = null;
@@ -166,29 +188,31 @@ let cachedProvider: LLMProvider | null = null;
 export function getLLMProvider(): LLMProvider {
   if (cachedProvider) return cachedProvider;
 
-  const providerName = process.env.LLM_PROVIDER || 'mock';
-  const apiKey = process.env.LLM_API_KEY || '';
-  const model = process.env.LLM_MODEL || '';
+  const providers: LLMProvider[] = [];
+  const primaryName = (process.env.LLM_PROVIDER || '').toLowerCase();
+  
+  // Map API keys — fallback to specific env vars if LLM_API_KEY is used for primary
+  const groqKey = process.env.GROQ_API_KEY || (primaryName === 'groq' ? process.env.LLM_API_KEY : '');
+  const togetherKey = process.env.TOGETHER_API_KEY || (primaryName === 'together' ? process.env.LLM_API_KEY : '');
+  const openRouterKey = process.env.OPENROUTER_API_KEY || (primaryName === 'openrouter' ? process.env.LLM_API_KEY : '');
 
-  if (!apiKey) {
+  // 1. Push the primary provider first
+  if (primaryName === 'groq' && groqKey) providers.push(createGroqProvider(groqKey, process.env.LLM_MODEL || 'llama-3.1-8b-instant'));
+  if (primaryName === 'together' && togetherKey) providers.push(createTogetherProvider(togetherKey, process.env.LLM_MODEL || 'meta-llama/Llama-3.1-8B-Instruct-Turbo'));
+  if (primaryName === 'openrouter' && openRouterKey) providers.push(createOpenRouterProvider(openRouterKey, process.env.LLM_MODEL || 'meta-llama/llama-3.1-8b-instruct:free'));
+
+  // 2. Push fallbacks (if they have keys and aren't already the primary)
+  if (primaryName !== 'groq' && groqKey) providers.push(createGroqProvider(groqKey, 'llama-3.1-8b-instant'));
+  if (primaryName !== 'together' && togetherKey) providers.push(createTogetherProvider(togetherKey, 'meta-llama/Llama-3.1-8B-Instruct-Turbo'));
+  if (primaryName !== 'openrouter' && openRouterKey) providers.push(createOpenRouterProvider(openRouterKey, 'meta-llama/llama-3.1-8b-instruct:free'));
+
+  if (providers.length === 0) {
     cachedProvider = createMockProvider();
     return cachedProvider;
   }
 
-  switch (providerName.toLowerCase()) {
-    case 'groq':
-      cachedProvider = createGroqProvider(apiKey, model);
-      break;
-    case 'together':
-      cachedProvider = createTogetherProvider(apiKey, model);
-      break;
-    case 'openrouter':
-      cachedProvider = createOpenRouterProvider(apiKey, model);
-      break;
-    default:
-      cachedProvider = createMockProvider();
-  }
-
+  // If only 1 provider exists, return it directly. Otherwise return fallback wrapper.
+  cachedProvider = providers.length === 1 ? providers[0] : createFallbackProvider(providers);
   return cachedProvider;
 }
 
