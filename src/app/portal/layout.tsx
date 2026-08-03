@@ -174,7 +174,7 @@ export default async function PortalLayout({ children }: { children: React.React
 
       {/* Main Content */}
       <main className="flex-1 min-w-0">
-        <div className="max-w-[1100px] mx-auto px-8 py-8">
+        <div className="max-w-[1600px] w-full mx-auto px-6 py-6 lg:px-12 lg:py-8">
           {children}
         </div>
       </main>
