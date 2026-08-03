@@ -233,6 +233,8 @@ const PREDICTION_RULES: PredictionRule[] = [
     section: 8,
     requires: ['classOfLocality'],
     predict: (fields) => {
+      // TODO (Future): Update this logic to calculate Recommended Rate dynamically 
+      // based on Govt Rate and Land Area instead of relying solely on Locality ranges.
       const locality = getVal(fields, 'classOfLocality');
       const vicinity = getVal(fields, 'vicinity');
       const range = LOCALITY_RATE_RANGES[locality];
@@ -255,6 +257,8 @@ const PREDICTION_RULES: PredictionRule[] = [
     section: 8,
     requires: ['classOfLocality'],
     predict: () => {
+      // TODO (Future): Pipe this specific field into the LLM (provider.ts) 
+      // so the AI generates a customized explanation for every property.
       return { value: 'As per local feedback, market survey, and prevailing rates in the area', confidence: 0.75, source: 'heuristic' };
     },
   },
