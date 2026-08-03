@@ -476,3 +476,19 @@ model SecurityLog {
   @@index([createdAt])
   @@map("security_logs")
 }
+
+// ═══════════════════════════════════════════
+// ML / AI PREDICTION TRACKING
+// ═══════════════════════════════════════════
+
+model ValuationPrediction {
+  id            String   @id @default(cuid())
+  projectId     String
+  predictedData Json     // ML predicted field values
+  finalData     Json?    // Valuer-approved final values
+  accepted      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  @@index([projectId])
+  @@map("valuation_predictions")
+}

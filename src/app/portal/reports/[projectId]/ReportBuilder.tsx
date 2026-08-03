@@ -6,6 +6,8 @@ import { saveReportDraft, submitReportForVerification } from '@/app/actions/proj
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
 import { PDFReportRenderer } from '@/lib/pdf-report-renderer';
+import AiAssistPanel from '@/components/AiAssistPanel';
+import type { Suggestion } from '@/lib/ai/predictor';
 
 // ─── Types ─────────────────────────────────────────────────────────
 interface FloorRow {
@@ -900,6 +902,44 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   const updateFloor = (id: string, key: keyof FloorRow, value: string) => {
     handleChange('floors', fields.floors.map(f => f.id === id ? { ...f, [key]: value } : f));
   };
+
+  // ── AI Assist handlers ──
+  const handleAiAcceptSuggestion = useCallback((fieldKey: string, value: string) => {
+    handleChange(fieldKey as keyof ReportFields, value);
+  }, [handleChange]);
+
+  const handleAiAcceptFloorSuggestion = useCallback((floorId: string, fieldName: string, value: string) => {
+    handleChange('floors', fields.floors.map(f => f.id === floorId ? { ...f, [fieldName]: value } : f));
+  }, [handleChange, fields.floors]);
+
+  const handleAiAcceptAll = useCallback((suggestions: Record<string, Suggestion>) => {
+    setFields(prev => {
+      const updated = { ...prev };
+      const floorUpdates: Record<string, Record<string, string>> = {};
+
+      for (const [key, suggestion] of Object.entries(suggestions)) {
+        const floorMatch = key.match(/^floor_(.+)_(rate|lifeYears|depreciationPct|ageYears)$/);
+        if (floorMatch) {
+          const [, floorId, fieldName] = floorMatch;
+          if (!floorUpdates[floorId]) floorUpdates[floorId] = {};
+          floorUpdates[floorId][fieldName] = suggestion.value;
+        } else {
+          (updated as any)[key] = suggestion.value;
+        }
+      }
+
+      if (Object.keys(floorUpdates).length > 0 && Array.isArray(updated.floors)) {
+        updated.floors = updated.floors.map(f => {
+          if (floorUpdates[f.id]) {
+            return { ...f, ...floorUpdates[f.id] };
+          }
+          return f;
+        });
+      }
+
+      return updated;
+    });
+  }, []);
 
   // ── Computed values ──
   const totalPlinthArea = fields.floors.reduce((sum, f) => sum + parseNum(f.area), 0);
@@ -1947,8 +1987,13 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     );
   }
 
+  // Feature flag: AI Assist panel visibility
+  const aiAssistEnabled = process.env.NEXT_PUBLIC_AI_ASSIST_ENABLED === 'true';
+
   return (
-    <div className="space-y-4" ref={reportRef}>
+    <div className={aiAssistEnabled ? 'flex gap-4 items-start' : 'space-y-4'} ref={reportRef}>
+    {/* ── Main Form Column ── */}
+    <div className={aiAssistEnabled ? 'flex-1 min-w-0 space-y-4' : undefined}>
       {/* Template Info Banner */}
       <div className="card p-4 bg-gradient-to-r from-[#f8f9fa] to-[#e9ecef] border border-[#c8d6e5] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md rounded-xl sticky top-2 z-50">
         <div className="flex flex-col xl:flex-row xl:items-center gap-3">
@@ -3085,6 +3130,31 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
           </div>
         </div>
       )}
+    </div>
+
+    {/* ── AI Assist Sidebar (hidden until NEXT_PUBLIC_AI_ASSIST_ENABLED=true) ── */}
+    {aiAssistEnabled && (
+      <>
+        <div className="hidden lg:block w-[340px] shrink-0">
+          <AiAssistPanel
+            fields={fields}
+            onAcceptSuggestion={handleAiAcceptSuggestion}
+            onAcceptFloorSuggestion={handleAiAcceptFloorSuggestion}
+            onAcceptAll={handleAiAcceptAll}
+            isReadOnly={isReadOnly}
+          />
+        </div>
+        <div className="lg:hidden">
+          <AiAssistPanel
+            fields={fields}
+            onAcceptSuggestion={handleAiAcceptSuggestion}
+            onAcceptFloorSuggestion={handleAiAcceptFloorSuggestion}
+            onAcceptAll={handleAiAcceptAll}
+            isReadOnly={isReadOnly}
+          />
+        </div>
+      </>
+    )}
     </div>
   );
 }

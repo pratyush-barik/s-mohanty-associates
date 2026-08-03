@@ -155,6 +155,15 @@ The core business logic is **100% complete**.
      - Enforces all password policy constraints (12+ chars, uppercase, lowercase, number, special char, common deny-list, must differ from current).
      - Shared reusable component: `src/components/ChangePasswordForm.tsx`.
      - Password changes are logged to `SecurityLog` with `PASSWORD_CHANGED` event.
+ 18. **ML / AI Assist Integration (August 2026)**: Full scaffolding for order-independent AI-powered valuation field predictions:
+     - **Prediction Engine** (`src/lib/ai/predictor.ts`): Dependency-graph based heuristic engine. Analyzes whichever fields are already filled (any section, any order) and predicts values for all remaining empty fields. Supports: estimated future life, quality of construction, floor rates, depreciation %, land rates, marketability, realizable/distress %, replacement cost.
+     - **LLM Provider Adapter** (`src/lib/ai/provider.ts`): Swappable backends (Groq, Together AI, OpenRouter, Mock). Change provider by setting `LLM_PROVIDER` env var. Generates optional AI narrative/analysis.
+     - **API Endpoint** (`src/app/api/valuation-assist/route.ts`): Auth-protected POST endpoint. Receives current fields state, returns predictions + optional LLM narrative.
+     - **AI Assist Panel** (`src/components/AiAssistPanel.tsx`): Persistent right-side sidebar with accept/dismiss per field, "Accept All" bulk action, confidence indicators, auto-refresh (debounced 2s). Groups suggestions by section.
+     - **ReportBuilder Integration**: Split flex layout with sidebar. Feature-flagged behind `NEXT_PUBLIC_AI_ASSIST_ENABLED` env var (currently `false`/hidden).
+     - **Schema**: `ValuationPrediction` model added for tracking predictions vs. final values (future retraining).
+     - **To activate UI**: Set `NEXT_PUBLIC_AI_ASSIST_ENABLED=true` in `.env` / Vercel env vars.
+     - **To add LLM narrative**: Set `LLM_PROVIDER=groq` and `LLM_API_KEY=<key>` in env.
 
 ## 5. Pending Work (What is next)
 
@@ -210,7 +219,8 @@ Outstanding items in **priority order**:
 > When modifying the UI, prioritize modern, premium aesthetics (glassmorphism, clean typography, subtle animations) without relying on Tailwind component libraries like Shadcn. Use raw Tailwind classes.
 
 ## 7. Recent Git Commits (for reference)
-- `latest` — feat: add Change Password with OTP verification to client and employee profiles
+- `latest` — feat: ML/AI Assist integration with predictor, LLM adapter, API route, sidebar panel (feature-flagged)
+- `previous` — feat: add Change Password with OTP verification to client and employee profiles
 - `b27e0ea` — security: implement rate limiting, account lockout, password hardening, security headers, and audit logging
 - `0826206` — security: fix SQL injection audit findings - cron auth, OTP bypass, input validation, HTML escaping
 - `0b598e3` — fix: correct Prisma relation names in enquiry detail page (messages→enquiries, serviceRequest→serviceRequests)
