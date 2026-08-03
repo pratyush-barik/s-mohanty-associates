@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { sendProjectMessage, uploadProjectMessageAttachment } from '@/app/actions/service';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabaseBrowser } from '@/lib/supabase-client';
 
@@ -10,34 +9,20 @@ interface Message {
   id: string;
   content: string;
   createdAt: string;
-  employeeId: string | null;
-  clientId: string | null;
+  sender: {
+    id: string;
+    name: string;
+    role: string;
+    profilePhoto: string | null;
+  };
   documents: { id: string; name: string; url: string; type: string; size: number }[];
-}
-
-interface Project {
-  id: string;
-  projectCode: string;
-  source: string;
-  serviceRequest: {
-    contactName: string;
-    contactEmail: string;
-    contactPhone: string;
-    guestName: string | null;
-    guestEmail: string | null;
-    guestPhone: string | null;
-  } | null;
-  pendingManagerId: string | null;
-  assignedManagerId: string | null;
-  status: string;
 }
 
 interface ProjectChatProps {
   projectId: string;
-  project: Project;
-  initialMessages: Message[];
+  messages: Message[];
   currentUserId: string;
-  currentUserRole: string;
+  project: any;
 }
 
 function formatFileSize(bytes: number): string {
@@ -57,29 +42,17 @@ function getFileIcon(mimeType: string): string {
   return '🔗';
 }
 
-export default function ProjectChat({
-  projectId,
-  project,
-  initialMessages,
-  currentUserId,
-  currentUserRole,
-}: ProjectChatProps) {
+export default function ProjectChat({ projectId, messages: initialMessages, currentUserId, project }: ProjectChatProps) {
   const router = useRouter();
   const [messages, setMessages] = useState(initialMessages);
-  const [replyText, setReplyText] = useState('');
-  const [isSending, setIsSending] = useState(false);
-  const [showFiles, setShowFiles] = useState(false);
+  const [newMessage, setNewMessage] = useState('');
+  const [sending, setSending] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const [alert, setAlert] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   useEffect(() => {
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, initialMessages]);
 
   useEffect(() => {
@@ -88,7 +61,7 @@ export default function ProjectChat({
 
   useEffect(() => {
     const channel = supabaseBrowser
-      .channel('project-chat-portal')
+      .channel('project-chat-client')
       .on(
         'postgres_changes',
         {
@@ -108,21 +81,6 @@ export default function ProjectChat({
     };
   }, [projectId, router]);
 
-  const sourceLabel =
-    project.source === 'GMAIL'
-      ? '📧 Gmail'
-      : project.source === 'EXTERNAL'
-        ? '🔧 External'
-        : '🌐 Website';
-  const sourceColor =
-    project.source === 'GMAIL'
-      ? 'bg-blue-100 text-blue-700 border-blue-200'
-      : project.source === 'EXTERNAL'
-        ? 'bg-amber-100 text-amber-700 border-amber-200'
-        : 'bg-purple-100 text-purple-700 border-purple-200';
-
-  const isEmailReply = project.source === 'GMAIL' || project.source === 'EXTERNAL';
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     setSelectedFiles(prev => [...prev, ...files]);
@@ -132,170 +90,126 @@ export default function ProjectChat({
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleUploadAndSend = async () => {
-    if (!replyText.trim() && selectedFiles.length === 0) return;
-    setIsSending(true);
-    setAlert(null);
+  const handleSend = async () => {
+    if ((!newMessage.trim() && selectedFiles.length === 0) || sending) return;
+    setSending(true);
+    setError(null);
 
     try {
       const attachmentDocIds: string[] = [];
+      const newDocs: any[] = [];
 
+      // Upload files first
       for (const file of selectedFiles) {
         const formData = new FormData();
         formData.append('file', file);
         const uploadResult = await uploadProjectMessageAttachment(projectId, formData);
         
         if (uploadResult.error) {
-          setAlert({ type: 'error', text: uploadResult.error });
-          setIsSending(false);
-          setUploading(false);
+          setError(uploadResult.error);
+          setSending(false);
           return;
         }
-        
+
         if (uploadResult.success && uploadResult.document) {
           attachmentDocIds.push(uploadResult.document.id);
+          newDocs.push(uploadResult.document);
         }
       }
 
-      const result = await sendProjectMessage(projectId, replyText, attachmentDocIds);
+      const result = await sendProjectMessage(projectId, newMessage, attachmentDocIds);
 
       if (result.error) {
-        setAlert({ type: 'error', text: result.error });
-      } else {
-        setAlert({ type: 'success', text: isEmailReply ? 'Message sent and email delivered.' : 'Message sent.' });
-        setReplyText('');
+        setError(result.error);
+      } else if (result.success) {
+        // Optimistically add the message
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `temp-${Date.now()}`,
+            content: newMessage,
+            createdAt: new Date().toISOString(),
+            sender: {
+              id: currentUserId,
+              name: 'You',
+              role: 'CLIENT',
+              profilePhoto: null,
+            },
+            documents: newDocs,
+          },
+        ]);
+        setNewMessage('');
         setSelectedFiles([]);
-        setShowFiles(false);
-        router.refresh();
       }
-    } catch (err) {
-      setAlert({ type: 'error', text: 'Failed to send message.' });
+    } catch (err: any) {
+      console.error('Failed to send message:', err);
+      setError(`Client Exception: ${err?.message || String(err)}`);
     }
 
-    setIsSending(false);
-    setUploading(false);
+    setSending(false);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleUploadAndSend();
-    }
+  const roleLabels: Record<string, string> = {
+    CLIENT: 'Client',
+    OWNER: 'Owner',
+    MANAGER: 'Manager',
+    FIELD_EMPLOYEE: 'Field Inspector',
+    REPORT_EMPLOYEE: 'Report Analyst',
   };
 
   return (
-    <div className="mt-6">
-      <h3 className="text-lg font-bold text-[#0f2038] mb-4" style={{ fontFamily: 'var(--font-heading)' }}>
-        💬 Project Chat
-      </h3>
+    <div className="card p-6 flex flex-col h-[600px]">
+      <h2 className="text-sm font-semibold text-[#0f2038] uppercase tracking-wider mb-4">
+        Communication
+      </h2>
 
-      {alert && (
-        <div className={`p-3 rounded-xl text-sm border font-medium mb-3 ${
-          alert.type === 'success' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'
-        }`}>
-          {alert.text}
-        </div>
-      )}
-
-      {isEmailReply && (
-        <div className="p-3 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 text-xs mb-3">
+      {project?.source === 'GMAIL' || project?.source === 'EXTERNAL' ? (
+        <div className="p-3 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 text-xs mb-4">
           📧 This project is email-based. Replies will be sent via email to the client in addition to being saved here.
         </div>
-      )}
+      ) : null}
 
-      {project.pendingManagerId && (
-        <div className="p-3 rounded-xl bg-amber-50 text-amber-700 border border-amber-200 text-xs mb-3">
+      {project?.pendingManagerId ? (
+        <div className="p-3 rounded-xl bg-amber-50 text-amber-700 border border-amber-200 text-xs mb-4">
           ⚠️ Oversight transfer in progress. Chat is available to both the current and incoming manager.
         </div>
-      )}
+      ) : null}
 
-      <div className="card overflow-hidden flex flex-col" style={{ height: '500px' }}>
-        {/* Header */}
-        <div className="px-4 py-3 border-b border-[#e9ecef] bg-[#f8f9fa] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${sourceColor}`}>
-              {sourceLabel}
-            </span>
-            <span className="text-xs font-mono text-[#0f2038] font-bold">
-              {project.projectCode}
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            {isEmailReply && project.serviceRequest && (
-              <span className="text-xs text-[#6c757d]">
-                {project.serviceRequest.contactEmail || 'No email'}
-              </span>
-            )}
-            {project.serviceRequest && (
-              <span className="text-[10px] text-[#6c757d]">
-                {project.serviceRequest.contactName || 'Client'}
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Files Section Toggle */}
-        <div className="px-4 py-2 border-b border-[#e9ecef] bg-white">
-          {messages.some(m => m.documents.length > 0) && (
-            <button
-              onClick={() => setShowFiles(!showFiles)}
-              className="text-xs font-medium text-[#b8860b] hover:text-[#0f2038] transition-colors"
-            >
-              {showFiles ? 'Hide' : 'Show'} Attachments ({messages.reduce((acc, m) => acc + m.documents.length, 0)})
-            </button>
-          )}
-        </div>
-
-        {/* Documents Area */}
-        {showFiles && (
-          <div className="px-4 py-3 border-b border-[#e9ecef] bg-white space-y-2">
-            <p className="text-xs font-semibold text-[#495057] uppercase tracking-wider mb-2">All Case Attachments</p>
-            {messages.flatMap(m => m.documents).map(doc => (
-              <div key={doc.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#f8f9fa] transition-colors">
-                <span className="text-lg">{getFileIcon(doc.type)}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-[#0f2038] truncate">{doc.name}</p>
-                  <p className="text-[10px] text-[#6c757d]">{formatFileSize(doc.size)}</p>
-                </div>
-                <a
-                  href={doc.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-1.5 bg-[#b8860b] hover:bg-[#a07509] text-white text-xs font-medium rounded-lg transition-colors"
-                >
-                  Download
-                </a>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[#f8f9fa]">
-          {messages.length === 0 ? (
-            <div className="text-center text-[#6c757d] text-sm py-8">
-              No messages yet. Start the conversation below.
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2">
+        {messages.length === 0 ? (
+          <div className="flex items-center justify-center h-full text-center">
+            <div>
+              <div className="text-3xl mb-3">💬</div>
+              <p className="text-sm text-[#adb5bd]">No messages yet.</p>
+              <p className="text-xs text-[#dee2e6] mt-1">
+                Start a conversation about your project.
+              </p>
             </div>
-          ) : (
-            messages.map((msg) => {
-              const isEmployee = msg.employeeId !== null;
-
+          </div>
+        ) : (
+          messages.map((msg) => {
+            const isOwn = msg.sender.id === currentUserId;
               return (
-                <div key={msg.id} className={`flex gap-3 mb-2 ${isEmployee ? 'flex-row-reverse' : 'flex-row'}`}>
+                <div key={msg.id} className={`flex gap-3 mb-4 ${isOwn ? 'flex-row-reverse' : 'flex-row'}`}>
                   {/* Avatar */}
-                  <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold shadow-sm border mt-1 ${
-                    isEmployee 
+                  <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold shadow-sm border mt-1 overflow-hidden ${
+                    isOwn 
                       ? 'bg-gradient-to-br from-[#b8860b] to-[#c9952c] text-white border-[#b8860b]/20' 
-                      : 'bg-white text-[#495057] border-[#dee2e6]'
+                      : 'bg-[#f8f9fa] text-[#495057] border-[#dee2e6]'
                   }`}>
-                    {isEmployee ? 'You' : 'CL'}
+                    {msg.sender.profilePhoto ? (
+                      <img src={msg.sender.profilePhoto} alt="" className="w-full h-full rounded-full object-cover" />
+                    ) : (
+                      isOwn ? 'You' : msg.sender.name.charAt(0).toUpperCase()
+                    )}
                   </div>
 
                   {/* Message Body */}
-                  <div className={`flex flex-col max-w-[75%] ${isEmployee ? 'items-end' : 'items-start'}`}>
-                    <div className={`flex items-center gap-2 mb-1.5 px-1 ${isEmployee ? 'flex-row-reverse' : 'flex-row'}`}>
+                  <div className={`flex flex-col max-w-[75%] ${isOwn ? 'items-end' : 'items-start'}`}>
+                    <div className={`flex items-center gap-2 mb-1.5 px-1 ${isOwn ? 'flex-row-reverse' : 'flex-row'}`}>
                       <span className="text-[11px] font-semibold text-[#343a40]">
-                        {isEmployee ? 'Staff Member' : project.serviceRequest?.contactName || 'Client'}
+                        {isOwn ? 'You' : msg.sender.name}
                       </span>
                       <span className="text-[10px] font-medium text-[#adb5bd]">
                         {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -304,9 +218,9 @@ export default function ProjectChat({
 
                     <div
                       className={`relative px-4 py-3 text-sm shadow-sm transition-all ${
-                        isEmployee
-                          ? 'bg-[#0f2038] text-white rounded-[20px] rounded-tr-[4px]'
-                          : 'bg-white border border-[#e9ecef] text-[#343a40] rounded-[20px] rounded-tl-[4px]'
+                        isOwn
+                          ? 'bg-gradient-to-br from-[#b8860b] to-[#c9952c] text-white rounded-[20px] rounded-tr-[4px]'
+                          : 'bg-white border border-[#e9ecef] text-[#0f2038] rounded-[20px] rounded-tl-[4px]'
                       }`}
                     >
                       {msg.content && (
@@ -314,8 +228,8 @@ export default function ProjectChat({
                       )}
                       
                       {/* Attachments within bubble */}
-                      {msg.documents.length > 0 && (
-                        <div className={`mt-3 space-y-2 pt-3 border-t ${isEmployee ? 'border-white/10' : 'border-[#e9ecef]'}`}>
+                      {msg.documents && msg.documents.length > 0 && (
+                        <div className={`mt-3 space-y-2 pt-3 border-t ${isOwn ? 'border-white/10' : 'border-[#e9ecef]'}`}>
                           {msg.documents.map(doc => (
                             <a
                               key={doc.id}
@@ -323,7 +237,7 @@ export default function ProjectChat({
                               target="_blank"
                               rel="noopener noreferrer"
                               className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all no-underline ${
-                                isEmployee 
+                                isOwn 
                                   ? 'bg-white/5 border-white/10 hover:bg-white/10 text-white'
                                   : 'bg-[#f8f9fa] border-[#e9ecef] hover:bg-[#f1f3f5] text-[#495057]'
                               }`}
@@ -331,11 +245,11 @@ export default function ProjectChat({
                               <span className="text-xl">{getFileIcon(doc.type)}</span>
                               <div className="flex-1 min-w-0">
                                 <p className="text-[11px] font-semibold truncate leading-tight">{doc.name}</p>
-                                <p className={`text-[9px] mt-0.5 ${isEmployee ? 'text-white/60' : 'text-[#868e96]'}`}>
+                                <p className={`text-[9px] mt-0.5 ${isOwn ? 'text-white/60' : 'text-[#868e96]'}`}>
                                   {formatFileSize(doc.size)}
                                 </p>
                               </div>
-                              <div className={`p-1.5 rounded-lg ${isEmployee ? 'bg-white/10' : 'bg-white border shadow-sm'}`}>
+                              <div className={`p-1.5 rounded-lg ${isOwn ? 'bg-white/10' : 'bg-white border shadow-sm'}`}>
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                                   <polyline points="7 10 12 15 17 10" />
@@ -350,65 +264,67 @@ export default function ProjectChat({
                   </div>
                 </div>
               );
-            })
-          )}
-          <div ref={messagesEndRef} />
-        </div>
+          })
+        )}
+        <div ref={messagesEndRef} />
+      </div>
 
-        {/* Reply Area */}
-        <div className="p-4 border-t border-[#e9ecef] bg-white">
-          {selectedFiles.length > 0 && (
-            <div className="mb-2 space-y-1">
-              {selectedFiles.map((file, idx) => (
-                <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg text-xs">
-                  <span className="font-medium text-[#0f2038]">{file.name}</span>
-                  <button
-                    onClick={() => removeSelectedFile(idx)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="flex gap-3 items-end">
-            <input
-              type="file"
-              multiple
-              accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.png,.jpg,.jpeg,.webp"
-              onChange={handleFileChange}
-              className="hidden"
-              id={`chat-file-input-${projectId}`}
-            />
-            <label
-              htmlFor={`chat-file-input-${projectId}`}
-              className="px-3 py-2.5 border border-[#dee2e6] rounded-xl text-xs font-medium text-[#6c757d] hover:bg-[#f8f9fa] cursor-pointer transition-colors flex-shrink-0 bg-white"
-            >
-              🔗
-            </label>
-            <div className="flex-1 border border-[#dee2e6] rounded-xl bg-white focus-within:border-[#b8860b] focus-within:ring-2 focus-within:ring-[#b8860b]/20 transition-colors">
-              <textarea
-                className="w-full resize-none p-3 text-sm bg-transparent focus:outline-none rounded-xl"
-                rows={2}
-                placeholder={isEmailReply ? 'Type your reply (this will also be emailed to the client)...' : 'Type your reply...'}
-                value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
-                onKeyDown={handleKeyDown}
-                disabled={isSending}
-              />
-            </div>
-            <div className="flex flex-col gap-2 flex-shrink-0">
-              <button
-                className="btn btn-primary px-5 h-10 text-sm"
-                onClick={handleUploadAndSend}
-                disabled={isSending || (!replyText.trim() && selectedFiles.length === 0)}
-              >
-                {isSending ? 'Sending...' : 'Send'}
-              </button>
-            </div>
+      {/* Input Area */}
+      <div className="flex flex-col pt-4 border-t border-[#e9ecef]">
+        {error && (
+          <div className="mb-3 p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100">
+            {error}
           </div>
+        )}
+
+        {/* Selected Files Preview */}
+        {selectedFiles.length > 0 && (
+          <div className="mb-3 space-y-1">
+            {selectedFiles.map((file, idx) => (
+              <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg text-xs">
+                <span className="font-medium text-[#0f2038]">{file.name}</span>
+                <button
+                  onClick={() => removeSelectedFile(idx)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-center gap-3">
+          <label className="shrink-0 cursor-pointer p-2.5 text-[#6c757d] hover:text-[#0f2038] hover:bg-gray-100 rounded-xl transition-colors">
+            <input type="file" multiple className="hidden" onChange={handleFileChange} />
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+            </svg>
+          </label>
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+            placeholder="Type your message..."
+            className="flex-1 px-4 py-2.5 rounded-xl border border-[#dee2e6] bg-white text-sm text-[#212529] focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all"
+          />
+          <button
+            onClick={handleSend}
+            disabled={(!newMessage.trim() && selectedFiles.length === 0) || sending}
+            className="btn btn-primary px-4 py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {sending ? (
+              <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
+                <path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" fill="currentColor" className="opacity-75" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+            )}
+          </button>
         </div>
       </div>
     </div>

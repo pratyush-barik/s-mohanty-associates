@@ -298,6 +298,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 id: m.id,
                 content: m.content,
                 createdAt: m.createdAt.toISOString(),
+                documents: m.documents || [],
                 sender: {
                   id: senderId,
                   name,

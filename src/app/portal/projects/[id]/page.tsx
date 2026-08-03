@@ -64,6 +64,8 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
     const chatMessages = await prisma.projectMessage.findMany({
       where: { projectId: project.id },
       include: {
+        client: { include: { individual: true, organisation: true } },
+        employee: true,
         documents: {
           select: { id: true, name: true, url: true, type: true, size: true },
           orderBy: { createdAt: 'asc' },
@@ -72,14 +74,37 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
       orderBy: { createdAt: 'asc' },
     });
 
-    const formattedMessages = chatMessages.map((msg) => ({
-      id: msg.id,
-      content: msg.content,
-      createdAt: msg.createdAt.toISOString(),
-      employeeId: msg.employeeId,
-      clientId: msg.clientId,
-      documents: msg.documents,
-    }));
+    const formattedMessages = chatMessages.map((msg) => {
+      const isClientMsg = !!msg.clientId;
+      const senderId = isClientMsg ? msg.clientId! : msg.employeeId!;
+      let name = '';
+      let role = '';
+      let profilePhoto = null;
+
+      if (isClientMsg && msg.client) {
+        name = msg.client.clientType === 'INDIVIDUAL'
+          ? msg.client.individual?.name || 'Client'
+          : msg.client.organisation?.organisationName || 'Client';
+        role = 'CLIENT';
+      } else if (!isClientMsg && msg.employee) {
+        name = msg.employee.name;
+        role = msg.employee.role;
+        profilePhoto = msg.employee.profilePhoto;
+      }
+
+      return {
+        id: msg.id,
+        content: msg.content,
+        createdAt: msg.createdAt.toISOString(),
+        documents: msg.documents || [],
+        sender: {
+          id: senderId,
+          name,
+          role,
+          profilePhoto,
+        },
+      };
+    });
 
     // Fetch available employees for assignment (fail-proof method mapping counts manually)
     const fieldEmployeesData = await prisma.employee.findMany({
@@ -261,9 +286,8 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
             assignedManagerId: project.assignedManagerId,
             status: project.status,
           }}
-          initialMessages={formattedMessages}
+          messages={formattedMessages}
           currentUserId={currentUser.id}
-          currentUserRole={currentUser.role}
         />
 
         {/* 4) THEN VIEW REPORT — Collapsible Dropdown */}
