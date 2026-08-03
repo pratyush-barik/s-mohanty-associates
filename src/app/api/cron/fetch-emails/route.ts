@@ -27,7 +27,7 @@ async function uploadAttachment(buffer: Buffer, filename: string, mimeType: stri
   return { filePath, publicUrl: getPublicUrl(STORAGE_BUCKETS.ENQUIRY_FILES, filePath) };
 }
 
-async function processInbox(host: string, port: number, user: string, pass: string, source: 'EMAIL' | 'PORTAL_SIGNUP') {
+async function processInbox(host: string, port: number, user: string, pass: string, source: 'EMAIL' | 'PORTAL_SIGNUP', isGmail: boolean) {
   const client = new ImapFlow({
     host,
     port,
@@ -57,81 +57,146 @@ async function processInbox(host: string, port: number, user: string, pass: stri
         const ticketMatch = subject.match(/\[Ticket\s+#(SMA-[A-Z0-9\-]+)\]/i);
         const ticketNumber = ticketMatch ? ticketMatch[1] : null;
 
-        let enquiry = null;
+        let isProjectMatch = false;
+        let isEnquiryMatch = false;
+        let matchedRecordId: string | null = null;
+        let projectMessageId: string | null = null;
 
+        // ─── 1. Check if Reply to Existing Case ───
         if (ticketNumber) {
-          enquiry = await prisma.enquiry.findUnique({
-            where: { ticketNumber },
-            include: { project: true, serviceRequest: true, documents: true },
+          // Try to find an active Project first
+          const project = await prisma.project.findUnique({
+            where: { projectCode: ticketNumber }
           });
 
-          if (enquiry) {
-            await prisma.enquiryMessage.create({
+          if (project) {
+            isProjectMatch = true;
+            matchedRecordId = project.id;
+            
+            // Log reply as ProjectMessage
+            const projectMsg = await prisma.projectMessage.create({
               data: {
-                enquiryId: enquiry.id,
-                sender: 'CLIENT',
-                body: bodyText.trim(),
-              },
+                projectId: project.id,
+                content: bodyText.trim(),
+              }
+            });
+            projectMessageId = projectMsg.id;
+
+          } else {
+            // Try Enquiry
+            const enquiry = await prisma.enquiry.findUnique({
+              where: { ticketNumber }
             });
 
-            await prisma.enquiry.update({
-              where: { id: enquiry.id },
-              data: { status: 'NEW' },
-            });
-          }
-        } else {
-          const count = await prisma.enquiry.count();
-          const newTicketNumber = `SMA-${100 + count + 1}`;
+            if (enquiry) {
+              isEnquiryMatch = true;
+              matchedRecordId = enquiry.id;
 
-          const isOrganisation = bodyText.toLowerCase().includes('organisation:');
-
-          enquiry = await prisma.enquiry.create({
-            data: {
-               ticketNumber: newTicketNumber,
-               source,
-              senderType: isOrganisation ? 'ORGANISATION' : 'INDIVIDUAL',
-              name: fromName,
-              email: fromEmail,
-              subject: subject,
-              message: bodyText.trim(),
-              status: 'NEW',
-              messages: {
-                create: {
+              await prisma.enquiryMessage.create({
+                data: {
+                  enquiryId: enquiry.id,
                   sender: 'CLIENT',
                   body: bodyText.trim(),
                 },
-              },
-            },
-          });
-        }
+              });
 
-        // Process attachments if we have an enquiry to link them to
-        if (enquiry && parsedEmail.attachments && parsedEmail.attachments.length > 0) {
-          const existingDocCount = await prisma.document.count({
-            where: { enquiryId: enquiry.id },
-          });
-
-          if (existingDocCount === 0) {
-            for (const attachment of parsedEmail.attachments) {
-              if (!attachment.content) continue;
-
-              const buffer = Buffer.from(attachment.content);
-              const fileName = attachment.filename || 'attachment';
-              const mimeType = attachment.contentType || 'application/octet-stream';
-
-              const upload = await uploadAttachment(buffer, fileName, mimeType);
-              if (!upload) continue;
-
-              await prisma.document.create({
-                data: {
-                  name: fileName,
-                  url: upload.publicUrl,
-                  type: mimeType,
-                  size: buffer.length,
-                  enquiryId: enquiry.id,
-                },
+              await prisma.enquiry.update({
+                where: { id: enquiry.id },
+                data: { status: 'NEW' },
               });
             }
+          }
+        } 
+        
+        // ─── 2. If NO Match, Create New Case ───
+        if (!isProjectMatch && !isEnquiryMatch) {
+          if (isGmail) {
+            // Direct Service Request creation for Gmail
+            const sr = await prisma.serviceRequest.create({
+              data: {
+                guestName: fromName,
+                guestEmail: fromEmail,
+                propertyType: 'Specified in Email',
+                purpose: 'Valuation Request',
+                propertyAddress: 'Address pending (from email)',
+                propertyDetails: bodyText.trim(),
+                contactName: fromName,
+                contactPhone: '',
+                contactEmail: fromEmail,
+                status: 'APPROVED' // Ready for assignment
+              }
+            });
+
+            const count = await prisma.project.count();
+            const projectCode = `SMA-${new Date().getFullYear()}-${String(count + 1).padStart(3, '0')}`;
+            
+            const project = await prisma.project.create({
+              data: {
+                projectCode,
+                serviceRequestId: sr.id,
+                source: 'GMAIL',
+                status: 'PENDING_REVIEW', // Needs manager assignment
+                isEmailOnly: true
+              }
+            });
+            
+            isProjectMatch = true;
+            matchedRecordId = project.id;
+
+          } else {
+            // Standard Enquiry creation for Titan/info
+            const count = await prisma.enquiry.count();
+            const newTicketNumber = `SMA-${100 + count + 1}`;
+            const isOrganisation = bodyText.toLowerCase().includes('organisation:');
+
+            const enquiry = await prisma.enquiry.create({
+              data: {
+                 ticketNumber: newTicketNumber,
+                 source,
+                senderType: isOrganisation ? 'ORGANISATION' : 'INDIVIDUAL',
+                name: fromName,
+                email: fromEmail,
+                subject: subject,
+                message: bodyText.trim(),
+                status: 'NEW',
+                messages: {
+                  create: {
+                    sender: 'CLIENT',
+                    body: bodyText.trim(),
+                  },
+                },
+              },
+            });
+            
+            isEnquiryMatch = true;
+            matchedRecordId = enquiry.id;
+          }
+        }
+
+        // ─── 3. Process Attachments ───
+        if (matchedRecordId && parsedEmail.attachments && parsedEmail.attachments.length > 0) {
+          for (const attachment of parsedEmail.attachments) {
+            if (!attachment.content) continue;
+
+            const buffer = Buffer.from(attachment.content);
+            const fileName = attachment.filename || 'attachment';
+            const mimeType = attachment.contentType || 'application/octet-stream';
+
+            const upload = await uploadAttachment(buffer, fileName, mimeType);
+            if (!upload) continue;
+
+            await prisma.document.create({
+              data: {
+                name: fileName,
+                url: upload.publicUrl,
+                type: mimeType,
+                size: buffer.length,
+                // Link attachment based on match type
+                ...(isProjectMatch && projectMessageId ? { messageId: projectMessageId } : {}),
+                ...(isProjectMatch && !projectMessageId ? { projectId: matchedRecordId } : {}),
+                ...(isEnquiryMatch ? { enquiryId: matchedRecordId } : {}),
+              },
+            });
           }
         }
 
@@ -174,14 +239,14 @@ export async function GET(request: Request) {
 
   let totalProcessed = 0;
 
-  // Process Titan Inbox
+  // Process Titan Inbox (Queries -> Enquiries)
   if (titanHost && titanUser && titanPass) {
-    totalProcessed += await processInbox(titanHost, titanPort, titanUser, titanPass, 'EMAIL');
+    totalProcessed += await processInbox(titanHost, titanPort, titanUser, titanPass, 'EMAIL', false);
   }
 
-  // Process Gmail Inbox
+  // Process Gmail Inbox (Requests -> ServiceRequests)
   if (gmailHost && gmailUser && gmailPass) {
-    totalProcessed += await processInbox(gmailHost, gmailPort, gmailUser, gmailPass, 'EMAIL');
+    totalProcessed += await processInbox(gmailHost, gmailPort, gmailUser, gmailPass, 'EMAIL', true);
   }
 
   return NextResponse.json({ success: true, processedCount: totalProcessed });
