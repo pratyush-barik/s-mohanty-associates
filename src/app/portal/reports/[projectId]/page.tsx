@@ -45,7 +45,7 @@ export default async function ReportEditorPage({ params }: { params: Promise<{ p
     const { serviceRequest, report } = project;
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 pr-0 xl:pr-40">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

@@ -2041,7 +2041,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     {!aiAssistEnabled && <FloatingNavigator isApartmentFlat={isApartmentFlat} />}
     
     {/* ── Main Form Column ── */}
-    <div className={aiAssistEnabled ? 'flex-1 min-w-0 space-y-4' : 'flex-1 min-w-0 space-y-4 pr-0 xl:pr-40'}>
+    <div className={aiAssistEnabled ? 'flex-1 min-w-0 space-y-4' : 'flex-1 min-w-0 space-y-4'}>
       {/* Template Info Banner */}
       <div className="card p-4 bg-gradient-to-r from-[#f8f9fa] to-[#e9ecef] border border-[#c8d6e5] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md rounded-xl sticky top-2 z-50">
         <div className="flex flex-col xl:flex-row xl:items-center gap-3">
