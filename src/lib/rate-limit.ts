@@ -16,6 +16,7 @@ interface RateLimitEntry {
 // In-memory stores (reset on cold start — acceptable for serverless)
 const ipStore = new Map<string, RateLimitEntry>();
 const accountStore = new Map<string, RateLimitEntry>();
+const enquiryStore = new Map<string, RateLimitEntry>();
 
 // Config
 const IP_MAX_ATTEMPTS = 5;
@@ -23,6 +24,9 @@ const IP_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 
 const ACCOUNT_MAX_ATTEMPTS = 10;
 const ACCOUNT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+
+const ENQUIRY_MAX_ATTEMPTS = 5;
+const ENQUIRY_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 
 // Cleanup stale entries every 10 minutes
 const CLEANUP_INTERVAL_MS = 10 * 60 * 1000;
@@ -41,6 +45,11 @@ function cleanupStaleEntries() {
   for (const [key, entry] of accountStore) {
     if (now - entry.firstAttempt > ACCOUNT_WINDOW_MS) {
       accountStore.delete(key);
+    }
+  }
+  for (const [key, entry] of enquiryStore) {
+    if (now - entry.firstAttempt > ENQUIRY_WINDOW_MS) {
+      enquiryStore.delete(key);
     }
   }
 }
@@ -77,6 +86,13 @@ function checkLimit(
  */
 export function checkIpRateLimit(ip: string): { allowed: boolean; retryAfterSeconds: number } {
   return checkLimit(ipStore, ip, IP_MAX_ATTEMPTS, IP_WINDOW_MS);
+}
+
+/**
+ * Check if a public enquiry submission is rate-limited by IP.
+ */
+export function checkEnquiryRateLimit(ip: string): { allowed: boolean; retryAfterSeconds: number } {
+  return checkLimit(enquiryStore, ip, ENQUIRY_MAX_ATTEMPTS, ENQUIRY_WINDOW_MS);
 }
 
 /**

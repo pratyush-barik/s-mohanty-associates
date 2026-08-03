@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
 import { sendMail } from '@/lib/mail';
+import { headers } from 'next/headers';
+import { checkEnquiryRateLimit } from '@/lib/rate-limit';
 
 /**
  * Submit a public enquiry from the Contact Us form.
@@ -17,6 +19,14 @@ export async function submitEnquiry(formData: FormData) {
   const message = formData.get('message') as string;
   const senderType = (formData.get('senderType') as string) || 'INDIVIDUAL';
   const organisationName = formData.get('organisationName') as string;
+
+  // Bot Protection / Spam Prevention
+  const headersList = await headers();
+  const ip = headersList.get('x-forwarded-for') || '127.0.0.1';
+  const rateLimit = checkEnquiryRateLimit(ip);
+  if (!rateLimit.allowed) {
+    return { error: 'Too many requests from this IP. Please try again in an hour.' };
+  }
 
   if (!name || !email || !subject || !message) {
     return { error: 'Please fill in all required fields.' };
