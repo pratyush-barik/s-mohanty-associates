@@ -64,7 +64,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const currentStepIndex = statusSteps.findIndex((s) => s.key === project.status);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-[#6c757d]">
         <Link href="/dashboard" className="hover:text-[#0f2038] transition-colors">Dashboard</Link>
@@ -104,8 +104,8 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
       </div>
 
       {/* Status Timeline */}
-      <div className="card p-6">
-        <h2 className="text-sm font-semibold text-[#0f2038] uppercase tracking-wider mb-5">Project Progress Timeline</h2>
+      <div className="card p-4">
+        <h2 className="text-xs font-semibold text-[#0f2038] uppercase tracking-wider mb-3">Project Progress Timeline</h2>
         
         {/* Horizontal Timeline */}
         <div className="flex items-start gap-0 overflow-x-auto pb-4">
@@ -183,9 +183,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-3 gap-4">
         {/* Left Column — Property & Team */}
-        <div className="lg:col-span-1 space-y-6">
+        <div className="lg:col-span-1 space-y-4">
           {/* Download Final Report */}
           {project.status === 'COMPLETED' && project.report?.fileUrl && (
             <div className="card p-6 bg-[#f8f9fa] border-[#b8860b]/30 shadow-md">

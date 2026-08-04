@@ -91,7 +91,7 @@ export default function Hero() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 container mx-auto max-w-[1280px] px-6 text-center pt-48 md:pt-56">
+      <div className="relative z-10 container mx-auto max-w-[1280px] px-6 text-center pt-28 md:pt-36">
         {/* Title */}
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
@@ -122,7 +122,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.8 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20"
+          className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10"
         >
           <button onClick={() => setIsModalOpen(true)} className="btn btn-primary text-base px-8 py-3.5 flex items-center gap-2">
             Submit Organisational Request
