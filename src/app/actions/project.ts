@@ -537,6 +537,11 @@ export async function finalizeReport(projectId: string, pdfUrl: string) {
       });
     }
 
+    // Append report data as one row to train_model.csv for ML training
+    // Fire-and-forget: errors logged but never block finalization
+    const { appendTrainingData } = await import('@/lib/training-data');
+    appendTrainingData(projectId, project.projectCode, report.data, new Date());
+
     if (project.isEmailOnly) {
       if (project?.serviceRequest?.guestEmail) {
         const { sendMail } = await import('@/lib/mail');
