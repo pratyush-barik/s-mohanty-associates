@@ -321,11 +321,6 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
           />
         )}
 
-        {/* 6) DANGER ZONE — End Project */}
-        {['OWNER', 'MANAGER'].includes(currentUser.role) && !['ARCHIVED', 'TERMINATED'].includes(project.status) && (
-          <EndProjectButton projectId={project.id} projectCode={project.projectCode} variant="danger-zone" reportSentToClient={project.status === 'COMPLETED'} />
-        )}
-
         {/* TERMINATED Banner */}
         {project.status === 'TERMINATED' && (
           <div className="card p-5 border-2 border-red-300 bg-red-50 shadow-md">
