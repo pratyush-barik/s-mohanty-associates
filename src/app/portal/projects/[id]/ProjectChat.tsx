@@ -61,13 +61,13 @@ export default function ProjectChat({ projectId, messages: initialMessages, curr
 
   useEffect(() => {
     const channel = supabaseBrowser
-      .channel('project-chat-client')
+      .channel(`project-chat-${projectId}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'ProjectMessage',
+          table: 'project_messages',
           filter: `projectId=eq.${projectId}`,
         },
         () => {
@@ -142,8 +142,8 @@ export default function ProjectChat({ projectId, messages: initialMessages, curr
         setSelectedFiles([]);
       }
     } catch (err: any) {
-      console.error('Failed to send message:', err);
-      setError(`Client Exception: ${err?.message || String(err)}`);
+      console.error('ProjectChat send failed:', err);
+      setError(`Error: ${err?.message || String(err)}`);
     }
 
     setSending(false);
