@@ -16,7 +16,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <div className="min-h-screen bg-[#f8f9fa]">
       {/* Top Navigation */}
       <nav className="bg-white border-b border-[#e9ecef] sticky top-0 z-50">
-        <div className="max-w-[1280px] mx-auto px-6 flex items-center justify-between h-20">
+        <div className="max-w-[1440px] mx-auto px-6 flex items-center justify-between h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <Image
@@ -89,7 +89,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </nav>
 
       {/* Content */}
-      <main className="max-w-[1280px] mx-auto px-6 py-8">
+      <main className="max-w-[1440px] mx-auto px-6 py-4">
         {children}
       </main>
     </div>
