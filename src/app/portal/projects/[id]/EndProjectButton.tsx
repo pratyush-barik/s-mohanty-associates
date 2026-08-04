@@ -19,18 +19,22 @@ interface EndProjectButtonProps {
   projectId: string;
   projectCode: string;
   variant: 'header' | 'danger-zone';
+  reportSentToClient: boolean;
 }
 
-export default function EndProjectButton({ projectId, projectCode, variant }: EndProjectButtonProps) {
+export default function EndProjectButton({ projectId, projectCode, variant, reportSentToClient }: EndProjectButtonProps) {
   const [modalOpen, setModalOpen] = useState(false);
-  const [reason, setReason] = useState('');
+  const [reason, setReason] = useState(reportSentToClient ? 'Project completed naturally' : '');
   const [notes, setNotes] = useState('');
   const [confirmText, setConfirmText] = useState('');
   const [error, setError] = useState('');
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
-  const canSubmit = reason && confirmText === projectCode;
+  // Report sent → only confirm text needed. Not sent → reason + confirm text.
+  const canSubmit = reportSentToClient
+    ? confirmText === projectCode
+    : reason && confirmText === projectCode;
 
   const handleTerminate = () => {
     if (!canSubmit) return;
@@ -108,36 +112,51 @@ export default function EndProjectButton({ projectId, projectCode, variant }: En
 
           {/* Body */}
           <div className="p-5 space-y-4">
-            {/* Reason select */}
-            <div>
-              <label className="text-[10px] font-bold text-[#6c757d] uppercase tracking-wider block mb-1.5">
-                Reason for Termination <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                className="w-full px-3 py-2.5 border border-[#dee2e6] rounded-xl text-sm text-[#0f2038] bg-white focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none transition-all"
-              >
-                <option value="">Select a reason...</option>
-                {TERMINATION_REASONS.map((r) => (
-                  <option key={r} value={r}>{r}</option>
-                ))}
-              </select>
-            </div>
+            {/* Info banner for report-sent case */}
+            {reportSentToClient && (
+              <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-start gap-3">
+                <span className="text-lg">✅</span>
+                <div>
+                  <p className="text-xs font-bold text-green-800">Report already delivered to client</p>
+                  <p className="text-[10px] text-green-600 mt-0.5">This project has completed its lifecycle. Just type the project code below to close it out.</p>
+                </div>
+              </div>
+            )}
 
-            {/* Additional notes */}
-            <div>
-              <label className="text-[10px] font-bold text-[#6c757d] uppercase tracking-wider block mb-1.5">
-                Additional Notes <span className="text-[#adb5bd]">(Optional)</span>
-              </label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                rows={3}
-                placeholder="Any additional context about why this project is being ended..."
-                className="w-full px-3 py-2.5 border border-[#dee2e6] rounded-xl text-sm text-[#0f2038] bg-white focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none transition-all resize-none"
-              />
-            </div>
+            {/* Reason select — only when report NOT sent */}
+            {!reportSentToClient && (
+              <div>
+                <label className="text-[10px] font-bold text-[#6c757d] uppercase tracking-wider block mb-1.5">
+                  Reason for Termination <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  className="w-full px-3 py-2.5 border border-[#dee2e6] rounded-xl text-sm text-[#0f2038] bg-white focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none transition-all"
+                >
+                  <option value="">Select a reason...</option>
+                  {TERMINATION_REASONS.map((r) => (
+                    <option key={r} value={r}>{r}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Additional notes — only when report NOT sent */}
+            {!reportSentToClient && (
+              <div>
+                <label className="text-[10px] font-bold text-[#6c757d] uppercase tracking-wider block mb-1.5">
+                  Additional Notes <span className="text-[#adb5bd]">(Optional)</span>
+                </label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={3}
+                  placeholder="Any additional context about why this project is being ended..."
+                  className="w-full px-3 py-2.5 border border-[#dee2e6] rounded-xl text-sm text-[#0f2038] bg-white focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none transition-all resize-none"
+                />
+              </div>
+            )}
 
             {/* Confirmation input */}
             <div className="bg-red-50 border border-red-100 rounded-xl p-4">

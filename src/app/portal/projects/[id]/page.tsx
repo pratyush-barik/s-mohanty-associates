@@ -174,8 +174,8 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
             </span>
           </div>
           <div className="flex items-center gap-3">
-            {['OWNER', 'MANAGER'].includes(currentUser.role) && !['COMPLETED', 'ARCHIVED', 'TERMINATED'].includes(project.status) && (
-              <EndProjectButton projectId={project.id} projectCode={project.projectCode} variant="header" />
+            {['OWNER', 'MANAGER'].includes(currentUser.role) && !['ARCHIVED', 'TERMINATED'].includes(project.status) && (
+              <EndProjectButton projectId={project.id} projectCode={project.projectCode} variant="header" reportSentToClient={project.status === 'COMPLETED'} />
             )}
             <h1 className="text-2xl font-bold text-[#0f2038] font-mono">
               {project.projectCode}
@@ -322,8 +322,8 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
         )}
 
         {/* 6) DANGER ZONE — End Project */}
-        {['OWNER', 'MANAGER'].includes(currentUser.role) && !['COMPLETED', 'ARCHIVED', 'TERMINATED'].includes(project.status) && (
-          <EndProjectButton projectId={project.id} projectCode={project.projectCode} variant="danger-zone" />
+        {['OWNER', 'MANAGER'].includes(currentUser.role) && !['ARCHIVED', 'TERMINATED'].includes(project.status) && (
+          <EndProjectButton projectId={project.id} projectCode={project.projectCode} variant="danger-zone" reportSentToClient={project.status === 'COMPLETED'} />
         )}
 
         {/* TERMINATED Banner */}
