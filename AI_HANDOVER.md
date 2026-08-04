@@ -156,7 +156,8 @@ The core business logic is **100% complete**.
      - Shared reusable component: `src/components/ChangePasswordForm.tsx`.
      - Password changes are logged to `SecurityLog` with `PASSWORD_CHANGED` event.
  18. **ML / AI Assist Integration (August 2026)**: Full scaffolding for order-independent AI-powered valuation field predictions:
-     - **Prediction Engine** (`src/lib/ai/predictor.ts`): Dependency-graph based heuristic engine. Analyzes whichever fields are already filled (any section, any order) and predicts values for all remaining empty fields. Supports: estimated future life, quality of construction, floor rates, depreciation %, land rates, marketability, realizable/distress %, replacement cost.
+     - **Prediction Engine** (`src/lib/ai/predictor.ts`): **Now data-driven** — loads trained statistical weights from `src/lib/ai/model_weights.json` instead of using hardcoded heuristic values. Analyzes whichever fields are already filled (any section, any order) and predicts values for all remaining empty fields. Supports: estimated future life, quality of construction, floor rates, depreciation %, land rates, marketability, realizable/distress %, replacement cost. Predictions show `source: 'ml'` when trained data is used, falling back to `source: 'heuristic'` only when no trained data exists for a given input combination.
+     - **Model Weights** (`src/lib/ai/model_weights.json`): JSON file containing grouped statistical lookup tables (medians, modes, distributions) trained from 150 rows of Odisha property valuation data. Imported at build time — no runtime API calls needed.
      - **LLM Provider Adapter** (`src/lib/ai/provider.ts`): Swappable backends (Groq, Together AI, OpenRouter, Mock). Change provider by setting `LLM_PROVIDER` env var. Generates optional AI narrative/analysis.
      - **API Endpoint** (`src/app/api/valuation-assist/route.ts`): Auth-protected POST endpoint. Receives current fields state, returns predictions + optional LLM narrative.
      - **AI Assist Panel** (`src/components/AiAssistPanel.tsx`): Persistent right-side sidebar with accept/dismiss per field, "Accept All" bulk action, confidence indicators, auto-refresh (debounced 2s). Groups suggestions by section.
@@ -173,10 +174,13 @@ The core business logic is **100% complete**.
      - Includes a live search bar by Project Code.
      - Tabs for `Pending`, `Completed`, and `All`.
      - Selecting `Completed` reveals a sub-toggle for `All / Completed / Terminated` for granular control.
- 21. **ML Training Infrastructure Setup (August 2026)**: Built the complete scaffolding for eventually training an ML model to replace the current heuristic predictor.
+ 21. **ML Training Infrastructure & Data Pipeline (August 2026)**: Built the complete scaffolding for training ML models and auto-collecting data.
      - **Directory**: `ML_integration/` (gitignored to protect data). Contains `data/raw`, `data/processed`, `models`, `notebooks`, and `scripts`.
      - **Export Script**: `ML_integration/scripts/export_data.ts` written to extract ALL 97 report fields across 10 sections from `completed_reports` in Supabase into clean CSV format, alongside `project_metadata.csv` and `predictions_vs_actual.csv`.
      - **Training Data Collector**: `src/lib/training-data.ts` auto-appends a new row to a single persistent `train_model.csv` file in Supabase Storage (`valuation-documents/ml-training/train_model.csv`) every time a project is marked as `COMPLETED`. No manual export needed for continuous data collection.
+     - **Dummy Data Generator**: `ML_integration/scripts/generate_dummy.js` produces 150 rows of realistic Odisha property valuation data with proper correlations between locality class, rates, construction quality, marketability, structure type, and age. Uses weighted distributions and location-specific rate multipliers for 10 Odisha cities.
+     - **Model Trainer**: `ML_integration/scripts/train_model.js` reads the CSV, builds grouped statistical lookup tables (medians, modes, percentiles, distributions) across 10 categories, and exports `src/lib/ai/model_weights.json`.
+     - **Retraining**: To retrain with real data, replace `ML_integration/data/raw/train_model.csv` and run `node ML_integration/scripts/train_model.js`. Commit the updated `model_weights.json`.
      - **Documentation**: Extensive `ML_integration/README.md` defining target variables (e.g., predicting `distress_pct` via XGBoost), data requirements, and the full 97-column schema.
  22. **Generic Cron Runner Framework + Terminated Project Cleanup (August 2026)**:
      - **Generic Framework** (`src/lib/cron/runner.ts`): Reusable `runCronJob(jobName, tasks[], request)` function. Every cron route just defines a list of `CronTask` objects (name + async `run()`) and calls it. The runner handles: Bearer token auth (`CRON_SECRET`), per-task error isolation (one task failure does NOT abort others), per-task timing, structured result logging, and returns a full `CronRunResult` JSON with success/skip/error counts.
@@ -184,6 +188,18 @@ The core business logic is **100% complete**.
      - **Existing cron refactored**: `cleanup-buckets` cron now also uses the generic framework.
      - **`vercel.json` updated**: All 3 crons registered — `cleanup-buckets` at midnight, `cleanup-terminated-projects` at 2 AM, `fetch-emails` every 15 min.
      - **How to add a new cron**: Create `/api/cron/<name>/route.ts`, define `CronTask[]`, call `runCronJob('name', tasks, request)`, add path + schedule to `vercel.json`.
+ 23. **Trained ML Predictor Overhaul (August 2026)**: Replaced the entire hardcoded heuristic prediction engine with a data-driven model.
+     - **Before**: All prediction values (rates, quality, marketability, etc.) were hardcoded constants in if-else chains. Confidence values were fixed.
+     - **After**: Predictions come from `model_weights.json` — grouped statistical lookups trained on 150 rows of Odisha property data. Includes:
+       - Govt land rate medians by locality class (6 groups)
+       - Market rates by locality × vicinity (18 groups)
+       - Construction quality modes by structure type × age bucket (23 groups)
+       - Marketability modes by locality × road width (17 groups)
+       - Realizable/distress % medians by marketability (4 groups each)
+       - Structure total life spans by type (8 groups)
+     - **Confidence scaling**: Confidence now scales with sample count — more training data for a group → higher confidence. Uses `trainedConfidence()` function.
+     - **Graceful fallback**: If no trained data exists for a particular combination, falls back to the original heuristic logic but with lower confidence and `source: 'heuristic'` tag.
+     - **Zero runtime cost**: Model weights are imported as a static JSON file at build time — no API calls, no model loading latency.
 
 ## 5. Pending Work (What is next)
 
@@ -239,15 +255,15 @@ Outstanding items in **priority order**:
 > When modifying the UI, prioritize modern, premium aesthetics (glassmorphism, clean typography, subtle animations) without relying on Tailwind component libraries like Shadcn. Use raw Tailwind classes.
 
 ## 7. Recent Git Commits (for reference)
-- `latest` — feat: add generic cron runner framework + terminated project cleanup job (photos + chat data, 24h interval)
+- `latest` — feat: replace hardcoded heuristic predictor with trained ML model from 150-row Odisha property dataset
+- `previous` — docs: add Training Data Collector to ML pipeline docs
+- `previous` — feat: auto-append project data to persistent train_model.csv upon completion
+- `previous` — feat: add generic cron runner framework + terminated project cleanup job (photos + chat data, 24h interval)
 - `previous` — docs: update AI_HANDOVER.md and ML_integration pipeline setup with 97 column export script
 - `previous` — feat: add search, Pending/Completed/All filter with Completed sub-toggle to manager projects page
 - `previous` — fix: resolve textarea losing focus by inlining modal JSX instead of nested function component
-- `previous` — docs: update AI_HANDOVER.md with End Project feature details and recent commits
 - `previous` — fix: replace dropdown+notes with simple 30-word message box in End Project modal
 - `previous` — style: remove Danger Zone end project card from bottom of page
-- `previous` — fix: revise End Project modal - confirm-only for delivered reports, reason+confirm for undelivered
-- `previous` — feat: add End Project button for manager/owner with confirmation modal, email notification, and security logging
 - `previous` — feat: ML/AI Assist integration with predictor, LLM adapter, API route, sidebar panel (feature-flagged)
 - `0826206` — security: fix SQL injection audit findings - cron auth, OTP bypass, input validation, HTML escaping
 - `0b598e3` — fix: correct Prisma relation names in enquiry detail page (messages→enquiries, serviceRequest→serviceRequests)
