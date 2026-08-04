@@ -4,16 +4,6 @@ import { useState, useTransition } from 'react';
 import { terminateProject } from '@/app/actions/project';
 import { useRouter } from 'next/navigation';
 
-const TERMINATION_REASONS = [
-  'Client not responding / poor coordination',
-  'Client withdrew the request',
-  'Duplicate or invalid project',
-  'Property not accessible for inspection',
-  'Legal dispute / court order',
-  'Payment issues',
-  'Project completed outside system',
-  'Other',
-];
 
 interface EndProjectButtonProps {
   projectId: string;
@@ -25,7 +15,6 @@ interface EndProjectButtonProps {
 export default function EndProjectButton({ projectId, projectCode, variant, reportSentToClient }: EndProjectButtonProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [reason, setReason] = useState(reportSentToClient ? 'Project completed naturally' : '');
-  const [notes, setNotes] = useState('');
   const [confirmText, setConfirmText] = useState('');
   const [error, setError] = useState('');
   const [isPending, startTransition] = useTransition();
@@ -41,7 +30,7 @@ export default function EndProjectButton({ projectId, projectCode, variant, repo
     setError('');
 
     startTransition(async () => {
-      const result = await terminateProject(projectId, reason, notes || undefined);
+      const result = await terminateProject(projectId, reason);
       if (result.error) {
         setError(result.error);
       } else {
@@ -123,38 +112,29 @@ export default function EndProjectButton({ projectId, projectCode, variant, repo
               </div>
             )}
 
-            {/* Reason select — only when report NOT sent */}
+            {/* Reason message box — only when report NOT sent */}
             {!reportSentToClient && (
               <div>
                 <label className="text-[10px] font-bold text-[#6c757d] uppercase tracking-wider block mb-1.5">
                   Reason for Termination <span className="text-red-500">*</span>
                 </label>
-                <select
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-[#dee2e6] rounded-xl text-sm text-[#0f2038] bg-white focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none transition-all"
-                >
-                  <option value="">Select a reason...</option>
-                  {TERMINATION_REASONS.map((r) => (
-                    <option key={r} value={r}>{r}</option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {/* Additional notes — only when report NOT sent */}
-            {!reportSentToClient && (
-              <div>
-                <label className="text-[10px] font-bold text-[#6c757d] uppercase tracking-wider block mb-1.5">
-                  Additional Notes <span className="text-[#adb5bd]">(Optional)</span>
-                </label>
                 <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
+                  value={reason}
+                  onChange={(e) => {
+                    const words = e.target.value.trim().split(/\s+/).filter(Boolean);
+                    if (words.length <= 30) {
+                      setReason(e.target.value);
+                    }
+                  }}
                   rows={3}
-                  placeholder="Any additional context about why this project is being ended..."
+                  placeholder="Briefly explain why this project is being ended..."
                   className="w-full px-3 py-2.5 border border-[#dee2e6] rounded-xl text-sm text-[#0f2038] bg-white focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none transition-all resize-none"
                 />
+                <p className={`text-[10px] mt-1 text-right ${
+                  reason.trim().split(/\s+/).filter(Boolean).length >= 28 ? 'text-red-500 font-bold' : 'text-[#adb5bd]'
+                }`}>
+                  {reason.trim() ? reason.trim().split(/\s+/).filter(Boolean).length : 0}/30 words
+                </p>
               </div>
             )}
 
@@ -184,8 +164,7 @@ export default function EndProjectButton({ projectId, projectCode, variant, repo
             <button
               onClick={() => {
                 setModalOpen(false);
-                setReason('');
-                setNotes('');
+                setReason(reportSentToClient ? 'Project completed naturally' : '');
                 setConfirmText('');
                 setError('');
               }}
