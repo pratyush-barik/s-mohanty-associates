@@ -169,6 +169,14 @@ The core business logic is **100% complete**.
      - **Validation**: Requires typing a reason (max 30 words, with a live counter) and exactly confirming the project code to prevent accidental clicks. If the report was already delivered (COMPLETED), the reason field is skipped.
      - **Backend/Actions**: Sets status to `TERMINATED`, creates a project message log, triggers an email notification to the client (best-effort), and logs a `PROJECT_TERMINATED` event in the `SecurityLog`.
      - **Filtering**: Terminated projects are excluded from active workload counts but remain visible in historical lists with a red `⛔ TERMINATED` badge and permanent banner.
+ 20. **Manager Projects Page Revamp (August 2026)**: Added advanced filtering to `/portal/projects` (client-side component `ManagerProjectsClient.tsx`).
+     - Includes a live search bar by Project Code.
+     - Tabs for `Pending`, `Completed`, and `All`.
+     - Selecting `Completed` reveals a sub-toggle for `All / Completed / Terminated` for granular control.
+ 21. **ML Training Infrastructure Setup (August 2026)**: Built the complete scaffolding for eventually training an ML model to replace the current heuristic predictor.
+     - **Directory**: `ML_integration/` (gitignored to protect data). Contains `data/raw`, `data/processed`, `models`, `notebooks`, and `scripts`.
+     - **Export Script**: `ML_integration/scripts/export_data.ts` written to extract ALL 97 report fields across 10 sections from `completed_reports` in Supabase into clean CSV format, alongside `project_metadata.csv` and `predictions_vs_actual.csv`.
+     - **Documentation**: Extensive `ML_integration/README.md` defining target variables (e.g., predicting `distress_pct` via XGBoost), data requirements, and the full 97-column schema.
 
 ## 5. Pending Work (What is next)
 
@@ -224,13 +232,14 @@ Outstanding items in **priority order**:
 > When modifying the UI, prioritize modern, premium aesthetics (glassmorphism, clean typography, subtle animations) without relying on Tailwind component libraries like Shadcn. Use raw Tailwind classes.
 
 ## 7. Recent Git Commits (for reference)
-- `latest` — fix: replace dropdown+notes with simple 30-word message box in End Project modal
+- `latest` — feat: add search, Pending/Completed/All filter with Completed sub-toggle to manager projects page
+- `previous` — fix: resolve textarea losing focus by inlining modal JSX instead of nested function component
+- `previous` — docs: update AI_HANDOVER.md with End Project feature details and recent commits
+- `previous` — fix: replace dropdown+notes with simple 30-word message box in End Project modal
 - `previous` — style: remove Danger Zone end project card from bottom of page
 - `previous` — fix: revise End Project modal - confirm-only for delivered reports, reason+confirm for undelivered
 - `previous` — feat: add End Project button for manager/owner with confirmation modal, email notification, and security logging
 - `previous` — feat: ML/AI Assist integration with predictor, LLM adapter, API route, sidebar panel (feature-flagged)
-- `previous` — feat: add Change Password with OTP verification to client and employee profiles
-- `b27e0ea` — security: implement rate limiting, account lockout, password hardening, security headers, and audit logging
 - `0826206` — security: fix SQL injection audit findings - cron auth, OTP bypass, input validation, HTML escaping
 - `0b598e3` — fix: correct Prisma relation names in enquiry detail page (messages→enquiries, serviceRequest→serviceRequests)
 - `263d6e6` — feat: remove create manual case button from manager dashboard
