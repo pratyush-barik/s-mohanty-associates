@@ -164,6 +164,11 @@ The core business logic is **100% complete**.
      - **Schema**: `ValuationPrediction` model added for tracking predictions vs. final values (future retraining).
      - **To activate UI**: Set `NEXT_PUBLIC_AI_ASSIST_ENABLED=true` in `.env` / Vercel env vars.
      - **To add LLM narrative**: Set `LLM_PROVIDER=groq` and `LLM_API_KEY=<key>` in env.
+ 19. **End Project Feature (August 2026)**: Managers/Owners can permanently terminate a project before natural completion (e.g., client unresponsive, payment issues).
+     - **UI**: Compact red header button in the Project Dashboard (the full-page danger-zone card was removed for cleanliness).
+     - **Validation**: Requires typing a reason (max 30 words, with a live counter) and exactly confirming the project code to prevent accidental clicks. If the report was already delivered (COMPLETED), the reason field is skipped.
+     - **Backend/Actions**: Sets status to `TERMINATED`, creates a project message log, triggers an email notification to the client (best-effort), and logs a `PROJECT_TERMINATED` event in the `SecurityLog`.
+     - **Filtering**: Terminated projects are excluded from active workload counts but remain visible in historical lists with a red `⛔ TERMINATED` badge and permanent banner.
 
 ## 5. Pending Work (What is next)
 
@@ -219,7 +224,11 @@ Outstanding items in **priority order**:
 > When modifying the UI, prioritize modern, premium aesthetics (glassmorphism, clean typography, subtle animations) without relying on Tailwind component libraries like Shadcn. Use raw Tailwind classes.
 
 ## 7. Recent Git Commits (for reference)
-- `latest` — feat: ML/AI Assist integration with predictor, LLM adapter, API route, sidebar panel (feature-flagged)
+- `latest` — fix: replace dropdown+notes with simple 30-word message box in End Project modal
+- `previous` — style: remove Danger Zone end project card from bottom of page
+- `previous` — fix: revise End Project modal - confirm-only for delivered reports, reason+confirm for undelivered
+- `previous` — feat: add End Project button for manager/owner with confirmation modal, email notification, and security logging
+- `previous` — feat: ML/AI Assist integration with predictor, LLM adapter, API route, sidebar panel (feature-flagged)
 - `previous` — feat: add Change Password with OTP verification to client and employee profiles
 - `b27e0ea` — security: implement rate limiting, account lockout, password hardening, security headers, and audit logging
 - `0826206` — security: fix SQL injection audit findings - cron auth, OTP bypass, input validation, HTML escaping
