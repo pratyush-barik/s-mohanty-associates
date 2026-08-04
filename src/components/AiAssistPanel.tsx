@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Suggestion } from '@/lib/ai/predictor';
+import PriceTrendsChart from '@/components/PriceTrendsChart';
 
 // ─── Types ──────────────────────────────────────────────────────
 
@@ -246,6 +247,14 @@ export default function AiAssistPanel({
 
         {/* Content */}
         <div className="flex-1 p-4 space-y-3">
+          {/* Price & Demand Trends Graph */}
+          <PriceTrendsChart
+            locality={fields.classOfLocality || fields.city || "Local Market"}
+            propertyType={fields.propertyType || "Property"}
+            currentGovtRate={parseFloat(fields.govtLandRate) || undefined}
+            recommendedRate={parseFloat(fields.landRatePerUnit) || (suggestions.landRatePerUnit ? parseFloat(suggestions.landRatePerUnit.value) : undefined)}
+          />
+
           {loading && (
             <div className="flex items-center gap-2 p-3 rounded-xl bg-indigo-50 border border-indigo-100 animate-pulse">
               <div className="w-4 h-4 rounded-full border-2 border-indigo-400 border-t-transparent animate-spin" />
