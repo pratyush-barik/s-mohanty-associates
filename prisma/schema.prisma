@@ -129,6 +129,7 @@ enum ProjectStatus {
   MANAGER_REVIEW
   COMPLETED
   ARCHIVED
+  TERMINATED
 }
 
 enum InspectionStatus {

@@ -1200,3 +1200,104 @@ export async function getBucketImages(projectId: string) {
     return { error: 'Failed to fetch images.', images: [] };
   }
 }
+
+/**
+ * Terminate / End a project.
+ * Only OWNER and MANAGER roles can perform this action.
+ * Records the reason, notifies the client via email, and logs the event.
+ */
+export async function terminateProject(
+  projectId: string,
+  reason: string,
+  notes?: string
+) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { error: 'Not authenticated.' };
+
+    const employee = await prisma.employee.findUnique({
+      where: { id: session.user.id },
+      select: { role: true, name: true },
+    });
+
+    if (!employee || !['OWNER', 'MANAGER'].includes(employee.role)) {
+      return { error: 'Permission denied. Only Owner or Manager can end a project.' };
+    }
+
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: {
+        serviceRequest: { select: { contactName: true, contactEmail: true } },
+      },
+    });
+
+    if (!project) return { error: 'Project not found.' };
+
+    if (['COMPLETED', 'ARCHIVED', 'TERMINATED'].includes(project.status)) {
+      return { error: `Project is already ${project.status.toLowerCase()}. Cannot terminate.` };
+    }
+
+    // Update project status to TERMINATED
+    await prisma.project.update({
+      where: { id: projectId },
+      data: { status: 'TERMINATED' },
+    });
+
+    // Add a project message recording the termination
+    await prisma.projectMessage.create({
+      data: {
+        projectId,
+        employeeId: session.user.id,
+        content: `**Project Terminated**\n\nReason: ${reason}${notes ? `\n\nNotes: ${notes}` : ''}`,
+      },
+    });
+
+    // Log the event in SecurityLog
+    await prisma.securityLog.create({
+      data: {
+        event: 'PROJECT_TERMINATED',
+        email: session.user.id,
+        metadata: {
+          projectId,
+          projectCode: project.projectCode,
+          reason,
+          notes: notes || null,
+          terminatedBy: employee.name,
+        },
+      },
+    });
+
+    // Notify the client via email (best-effort, don't block on failure)
+    const clientEmail = project.serviceRequest?.contactEmail;
+    const clientName = project.serviceRequest?.contactName || 'Client';
+    if (clientEmail) {
+      try {
+        await sendMail({
+          to: clientEmail,
+          subject: `Project ${project.projectCode} — Closed`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #0f2038;">Project Update — ${project.projectCode}</h2>
+              <p>Dear ${clientName},</p>
+              <p>We regret to inform you that your valuation project <strong>${project.projectCode}</strong> has been closed.</p>
+              <p><strong>Reason:</strong> ${reason}</p>
+              ${notes ? `<p><strong>Additional Notes:</strong> ${notes}</p>` : ''}
+              <p>If you have any questions or would like to initiate a new request, please contact us.</p>
+              <br/>
+              <p>Regards,<br/>S. Mohanty & Associates</p>
+            </div>
+          `,
+        });
+      } catch (emailErr) {
+        console.error('Failed to send termination email:', emailErr);
+      }
+    }
+
+    revalidatePath(`/portal/projects`);
+    revalidatePath(`/portal/projects/${project.projectCode}`);
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to terminate project:', error);
+    return { error: 'Failed to end the project. Please try again.' };
+  }
+}

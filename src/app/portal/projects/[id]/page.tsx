@@ -7,6 +7,7 @@ import Link from 'next/link';
 import ReportBuilder from '../../reports/[projectId]/ReportBuilder';
 import ReportDraftSection from './ReportDraftSection';
 import TransferOversightButton from './TransferOversightButton';
+import EndProjectButton from './EndProjectButton';
 
 function formatStatus(status: string, clientReworkRequested?: boolean) {
   if (clientReworkRequested) return 'CLIENT REWORK REQUESTED';
@@ -114,7 +115,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
         name: true,
         employeeId: true,
         fieldProjects: {
-          where: { status: { notIn: ['COMPLETED', 'ARCHIVED'] } },
+          where: { status: { notIn: ['COMPLETED', 'ARCHIVED', 'TERMINATED'] } },
           select: { id: true },
         },
       },
@@ -134,7 +135,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
         name: true,
         employeeId: true,
         reportProjects: {
-          where: { status: { notIn: ['COMPLETED', 'ARCHIVED'] } },
+          where: { status: { notIn: ['COMPLETED', 'ARCHIVED', 'TERMINATED'] } },
           select: { id: true },
         },
       },
@@ -164,13 +165,22 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
             <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold border ${sourceColor(project.source)}`}>
               {formatSource(project.source)}
             </span>
-            <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold border ${project.clientReworkRequested ? 'bg-red-50 text-red-600 border-red-200' : 'bg-blue-50 text-blue-600 border-blue-200'}`}>
-              {project.clientReworkRequested ? 'CLIENT REWORK REQUESTED' : project.status?.replace(/_/g, ' ') || 'UNKNOWN'}
+            <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold border ${
+              project.clientReworkRequested ? 'bg-red-50 text-red-600 border-red-200'
+              : project.status === 'TERMINATED' ? 'bg-red-100 text-red-700 border-red-300'
+              : 'bg-blue-50 text-blue-600 border-blue-200'
+            }`}>
+              {project.clientReworkRequested ? 'CLIENT REWORK REQUESTED' : project.status === 'TERMINATED' ? '⛔ TERMINATED' : project.status?.replace(/_/g, ' ') || 'UNKNOWN'}
             </span>
           </div>
-          <h1 className="text-2xl font-bold text-[#0f2038] font-mono">
-            {project.projectCode}
-          </h1>
+          <div className="flex items-center gap-3">
+            {['OWNER', 'MANAGER'].includes(currentUser.role) && !['COMPLETED', 'ARCHIVED', 'TERMINATED'].includes(project.status) && (
+              <EndProjectButton projectId={project.id} projectCode={project.projectCode} variant="header" />
+            )}
+            <h1 className="text-2xl font-bold text-[#0f2038] font-mono">
+              {project.projectCode}
+            </h1>
+          </div>
         </div>
 
         {/* Client Rework Banner */}
@@ -309,6 +319,24 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
             currentManagerId={project.assignedManagerId}
             managers={managers}
           />
+        )}
+
+        {/* 6) DANGER ZONE — End Project */}
+        {['OWNER', 'MANAGER'].includes(currentUser.role) && !['COMPLETED', 'ARCHIVED', 'TERMINATED'].includes(project.status) && (
+          <EndProjectButton projectId={project.id} projectCode={project.projectCode} variant="danger-zone" />
+        )}
+
+        {/* TERMINATED Banner */}
+        {project.status === 'TERMINATED' && (
+          <div className="card p-5 border-2 border-red-300 bg-red-50 shadow-md">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">⛔</span>
+              <div>
+                <h3 className="text-sm font-bold text-red-800 uppercase tracking-wider">Project Terminated</h3>
+                <p className="text-xs text-red-600 mt-0.5">This project has been permanently ended. No further actions can be taken.</p>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     );
