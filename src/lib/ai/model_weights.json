@@ -1,0 +1,787 @@
+{
+  "metadata": {
+    "trainedAt": "2026-08-04T20:07:28.001Z",
+    "rowCount": 150,
+    "version": "1.0.0"
+  },
+  "govtRateByLocality": {
+    "Upper Middle Class": {
+      "median": 295,
+      "mean": 334,
+      "p25": 237,
+      "p75": 376,
+      "count": 35
+    },
+    "High Class": {
+      "median": 454,
+      "mean": 528,
+      "p25": 339,
+      "p75": 690,
+      "count": 34
+    },
+    "Lower Middle Class": {
+      "median": 112,
+      "mean": 131,
+      "p25": 75,
+      "p75": 170,
+      "count": 22
+    },
+    "Posh": {
+      "median": 586,
+      "mean": 689,
+      "p25": 408,
+      "p75": 807,
+      "count": 16
+    },
+    "Middle Class": {
+      "median": 169,
+      "mean": 183,
+      "p25": 119,
+      "p75": 215,
+      "count": 36
+    },
+    "Elite": {
+      "median": 1129,
+      "mean": 1075,
+      "p25": 768,
+      "p75": 1264,
+      "count": 7
+    }
+  },
+  "marketRateByLocalityVicinity": {
+    "Upper Middle Class|Mix": {
+      "median": 733,
+      "mean": 789,
+      "p25": 548,
+      "p75": 762,
+      "count": 12
+    },
+    "High Class|Residential": {
+      "median": 828,
+      "mean": 919,
+      "p25": 692,
+      "p75": 1098,
+      "count": 18
+    },
+    "Upper Middle Class|Slum": {
+      "median": 410,
+      "mean": 347,
+      "p25": 182,
+      "p75": 449,
+      "count": 3
+    },
+    "Lower Middle Class|Residential": {
+      "median": 186,
+      "mean": 222,
+      "p25": 165,
+      "p75": 254,
+      "count": 13
+    },
+    "Upper Middle Class|Commercial": {
+      "median": 971,
+      "mean": 931,
+      "p25": 843,
+      "p75": 1076,
+      "count": 7
+    },
+    "Posh|Slum": {
+      "median": 675,
+      "mean": 678,
+      "p25": 659,
+      "p75": 701,
+      "count": 3
+    },
+    "Middle Class|Residential": {
+      "median": 428,
+      "mean": 432,
+      "p25": 308,
+      "p75": 527,
+      "count": 17
+    },
+    "High Class|Commercial": {
+      "median": 1211,
+      "mean": 1409,
+      "p25": 1000,
+      "p75": 1898,
+      "count": 7
+    },
+    "Elite|Residential": {
+      "median": 2374,
+      "mean": 2062,
+      "p25": 1477,
+      "p75": 2453,
+      "count": 5
+    },
+    "Middle Class|Commercial": {
+      "median": 431,
+      "mean": 454,
+      "p25": 278,
+      "p75": 556,
+      "count": 9
+    },
+    "Posh|Residential": {
+      "median": 1363,
+      "mean": 1446,
+      "p25": 1003,
+      "p75": 1537,
+      "count": 7
+    },
+    "Middle Class|Mix": {
+      "median": 349,
+      "mean": 474,
+      "p25": 318,
+      "p75": 677,
+      "count": 10
+    },
+    "High Class|Mix": {
+      "median": 1034,
+      "mean": 1060,
+      "p25": 917,
+      "p75": 1188,
+      "count": 9
+    },
+    "Lower Middle Class|Commercial": {
+      "median": 261,
+      "mean": 257,
+      "p25": 171,
+      "p75": 358,
+      "count": 6
+    },
+    "Upper Middle Class|Residential": {
+      "median": 563,
+      "mean": 636,
+      "p25": 483,
+      "p75": 733,
+      "count": 13
+    },
+    "Posh|Commercial": {
+      "median": 1368,
+      "mean": 1368,
+      "p25": 1367,
+      "p75": 1369,
+      "count": 2
+    },
+    "Posh|Mix": {
+      "median": 1764,
+      "mean": 1693,
+      "p25": 1178,
+      "p75": 2064,
+      "count": 4
+    },
+    "Lower Middle Class|Mix": {
+      "median": 196,
+      "mean": 198,
+      "p25": 171,
+      "p75": 227,
+      "count": 3
+    }
+  },
+  "floorRateByGroup": {
+    "Upper Middle Class|Asbestos Roofing": {
+      "median": 139250,
+      "mean": 139250,
+      "count": 2
+    },
+    "High Class|Load Bearing": {
+      "median": 776096,
+      "mean": 595718,
+      "count": 7
+    },
+    "Upper Middle Class|RCC": {
+      "median": 347758,
+      "mean": 433824,
+      "count": 18
+    },
+    "Lower Middle Class|Composite Structure": {
+      "median": 91847,
+      "mean": 91847,
+      "count": 2
+    },
+    "Posh|RCC": {
+      "median": 389971,
+      "mean": 594472,
+      "count": 9
+    },
+    "High Class|RCC": {
+      "median": 624887,
+      "mean": 662051,
+      "count": 15
+    },
+    "Middle Class|Load Bearing": {
+      "median": 317923,
+      "mean": 335469,
+      "count": 4
+    },
+    "Upper Middle Class|Load Bearing": {
+      "median": 365523,
+      "mean": 569520,
+      "count": 5
+    },
+    "Middle Class|Composite Structure": {
+      "median": 265361,
+      "mean": 240532,
+      "count": 3
+    },
+    "Lower Middle Class|RCC": {
+      "median": 105480,
+      "mean": 138293,
+      "count": 12
+    },
+    "Middle Class|Asbestos Roofing": {
+      "median": 204959,
+      "mean": 319317,
+      "count": 7
+    },
+    "Middle Class|RCC": {
+      "median": 188404,
+      "mean": 228155,
+      "count": 14
+    },
+    "Middle Class|Steel Structure": {
+      "median": 246797,
+      "mean": 273999,
+      "count": 5
+    },
+    "Elite|RCC": {
+      "median": 1422243,
+      "mean": 1271645,
+      "count": 5
+    },
+    "High Class|G/I Sheet": {
+      "median": 168724,
+      "mean": 168724,
+      "count": 2
+    },
+    "High Class|Steel Structure": {
+      "median": 632686,
+      "mean": 538597,
+      "count": 3
+    },
+    "Upper Middle Class|Composite Structure": {
+      "median": 845100,
+      "mean": 692479,
+      "count": 3
+    },
+    "Posh|Load Bearing": {
+      "median": 274197,
+      "mean": 501530,
+      "count": 3
+    },
+    "High Class|Asbestos Roofing": {
+      "median": 95958,
+      "mean": 95958,
+      "count": 2
+    },
+    "Lower Middle Class|Load Bearing": {
+      "median": 158689,
+      "mean": 211151,
+      "count": 3
+    }
+  },
+  "futureLifeByStructure": {
+    "Asbestos Roofing": {
+      "medianFutureLife": 11,
+      "meanFutureLife": 10,
+      "medianTotalLife": 23,
+      "medianAge": 13,
+      "count": 12
+    },
+    "Load Bearing": {
+      "medianFutureLife": 29,
+      "meanFutureLife": 27,
+      "medianTotalLife": 45,
+      "medianAge": 20,
+      "count": 24
+    },
+    "RCC": {
+      "medianFutureLife": 35,
+      "meanFutureLife": 35,
+      "medianTotalLife": 60,
+      "medianAge": 24,
+      "count": 79
+    },
+    "Composite Structure": {
+      "medianFutureLife": 32,
+      "meanFutureLife": 32,
+      "medianTotalLife": 53,
+      "medianAge": 22,
+      "count": 12
+    },
+    "Steel Structure": {
+      "medianFutureLife": 30,
+      "meanFutureLife": 29,
+      "medianTotalLife": 50,
+      "medianAge": 23,
+      "count": 10
+    },
+    "A/C Sheet": {
+      "medianFutureLife": 8,
+      "meanFutureLife": 10,
+      "medianTotalLife": 30,
+      "medianAge": 21,
+      "count": 4
+    },
+    "G/I Sheet": {
+      "medianFutureLife": 11,
+      "meanFutureLife": 12,
+      "medianTotalLife": 25,
+      "medianAge": 12,
+      "count": 6
+    },
+    "Industrial Shed": {
+      "medianFutureLife": 26,
+      "meanFutureLife": 21,
+      "medianTotalLife": 37,
+      "medianAge": 19,
+      "count": 3
+    }
+  },
+  "qualityByStructureAge": {
+    "Asbestos Roofing|15-24": {
+      "mode": "Poor",
+      "distribution": {
+        "Poor": 4,
+        "Average": 1
+      },
+      "count": 5
+    },
+    "Load Bearing|0-4": {
+      "mode": "Good",
+      "distribution": {
+        "Good": 2
+      },
+      "count": 2
+    },
+    "RCC|25-34": {
+      "mode": "Good",
+      "distribution": {
+        "Good": 7,
+        "Average": 3,
+        "Very Good": 1
+      },
+      "count": 11
+    },
+    "Composite Structure|25-34": {
+      "mode": "Good",
+      "distribution": {
+        "Very Good": 1,
+        "Good": 2,
+        "Average": 1
+      },
+      "count": 4
+    },
+    "RCC|5-14": {
+      "mode": "Good",
+      "distribution": {
+        "Good": 5,
+        "Average": 4,
+        "Very Good": 3
+      },
+      "count": 12
+    },
+    "RCC|0-4": {
+      "mode": "Very Good",
+      "distribution": {
+        "Very Good": 7,
+        "Good": 2
+      },
+      "count": 9
+    },
+    "Load Bearing|15-24": {
+      "mode": "Average",
+      "distribution": {
+        "Good": 1,
+        "Average": 3,
+        "Very Good": 2
+      },
+      "count": 6
+    },
+    "RCC|15-24": {
+      "mode": "Good",
+      "distribution": {
+        "Good": 11,
+        "Average": 5,
+        "Very Good": 5
+      },
+      "count": 21
+    },
+    "Composite Structure|15-24": {
+      "mode": "Average",
+      "distribution": {
+        "Average": 3,
+        "Good": 1
+      },
+      "count": 4
+    },
+    "Load Bearing|25-34": {
+      "mode": "Good",
+      "distribution": {
+        "Good": 3,
+        "Average": 1,
+        "Very Good": 1
+      },
+      "count": 5
+    },
+    "Load Bearing|5-14": {
+      "mode": "Good",
+      "distribution": {
+        "Good": 5,
+        "Very Good": 2,
+        "Average": 1
+      },
+      "count": 8
+    },
+    "Load Bearing|35+": {
+      "mode": "Average",
+      "distribution": {
+        "Average": 1,
+        "Poor": 1,
+        "Good": 1
+      },
+      "count": 3
+    },
+    "RCC|35+": {
+      "mode": "Average",
+      "distribution": {
+        "Poor": 5,
+        "Average": 17,
+        "Good": 4
+      },
+      "count": 26
+    },
+    "Steel Structure|25-34": {
+      "mode": "Very Good",
+      "distribution": {
+        "Very Good": 2,
+        "Good": 2
+      },
+      "count": 4
+    },
+    "Asbestos Roofing|5-14": {
+      "mode": "Average",
+      "distribution": {
+        "Average": 4,
+        "Good": 1
+      },
+      "count": 5
+    },
+    "G/I Sheet|15-24": {
+      "mode": "Poor",
+      "distribution": {
+        "Poor": 1,
+        "Average": 1
+      },
+      "count": 2
+    },
+    "Steel Structure|15-24": {
+      "mode": "Average",
+      "distribution": {
+        "Average": 1,
+        "Very Good": 1,
+        "Good": 1
+      },
+      "count": 3
+    },
+    "Asbestos Roofing|0-4": {
+      "mode": "Poor",
+      "distribution": {
+        "Poor": 2
+      },
+      "count": 2
+    },
+    "Steel Structure|5-14": {
+      "mode": "Average",
+      "distribution": {
+        "Average": 1,
+        "Good": 1
+      },
+      "count": 2
+    },
+    "Industrial Shed|15-24": {
+      "mode": "Good",
+      "distribution": {
+        "Good": 2
+      },
+      "count": 2
+    },
+    "A/C Sheet|15-24": {
+      "mode": "Average",
+      "distribution": {
+        "Average": 2
+      },
+      "count": 2
+    },
+    "G/I Sheet|5-14": {
+      "mode": "Poor",
+      "distribution": {
+        "Poor": 2,
+        "Average": 1
+      },
+      "count": 3
+    },
+    "Composite Structure|5-14": {
+      "mode": "Average",
+      "distribution": {
+        "Average": 1,
+        "Very Good": 1
+      },
+      "count": 2
+    }
+  },
+  "marketabilityByLocalityRoad": {
+    "Upper Middle Class|40-20 Feet Road": {
+      "mode": "Very Good",
+      "distribution": {
+        "Good": 8,
+        "Very Good": 15
+      },
+      "count": 23
+    },
+    "High Class|40-20 Feet Road": {
+      "mode": "Good",
+      "distribution": {
+        "Good": 9,
+        "Very Good": 7
+      },
+      "count": 16
+    },
+    "Upper Middle Class|60-40 Feet Road": {
+      "mode": "Very Good",
+      "distribution": {
+        "Very Good": 8,
+        "Good": 2
+      },
+      "count": 10
+    },
+    "Lower Middle Class|60-40 Feet Road": {
+      "mode": "Difficult",
+      "distribution": {
+        "Good": 2,
+        "Difficult": 3
+      },
+      "count": 5
+    },
+    "Posh|40-20 Feet Road": {
+      "mode": "Good",
+      "distribution": {
+        "Good": 5,
+        "Difficult": 5
+      },
+      "count": 10
+    },
+    "High Class|>=60 Feet Road": {
+      "mode": "Good",
+      "distribution": {
+        "Very Good": 3,
+        "Good": 6
+      },
+      "count": 9
+    },
+    "Middle Class|40-20 Feet Road": {
+      "mode": "Good",
+      "distribution": {
+        "Good": 12,
+        "Difficult": 5,
+        "Very Good": 3
+      },
+      "count": 20
+    },
+    "Middle Class|60-40 Feet Road": {
+      "mode": "Good",
+      "distribution": {
+        "Good": 8,
+        "Difficult": 3,
+        "Very Good": 1
+      },
+      "count": 12
+    },
+    "High Class|60-40 Feet Road": {
+      "mode": "Good",
+      "distribution": {
+        "Good": 5,
+        "Very Good": 4
+      },
+      "count": 9
+    },
+    "Lower Middle Class|40-20 Feet Road": {
+      "mode": "Difficult",
+      "distribution": {
+        "Good": 3,
+        "Difficult": 6
+      },
+      "count": 9
+    },
+    "Elite|40-20 Feet Road": {
+      "mode": "Difficult",
+      "distribution": {
+        "Difficult": 2,
+        "Good": 2
+      },
+      "count": 4
+    },
+    "Lower Middle Class|>=60 Feet Road": {
+      "mode": "Difficult",
+      "distribution": {
+        "Difficult": 4,
+        "Good": 4
+      },
+      "count": 8
+    },
+    "Elite|>=60 Feet Road": {
+      "mode": "Excellent",
+      "distribution": {
+        "Excellent": 2
+      },
+      "count": 2
+    },
+    "Posh|60-40 Feet Road": {
+      "mode": "Excellent",
+      "distribution": {
+        "Excellent": 2,
+        "Very Good": 2
+      },
+      "count": 4
+    },
+    "Upper Middle Class|>=60 Feet Road": {
+      "mode": "Good",
+      "distribution": {
+        "Good": 2
+      },
+      "count": 2
+    },
+    "Posh|>=60 Feet Road": {
+      "mode": "Excellent",
+      "distribution": {
+        "Excellent": 2
+      },
+      "count": 2
+    },
+    "Middle Class|>=60 Feet Road": {
+      "mode": "Good",
+      "distribution": {
+        "Good": 4
+      },
+      "count": 4
+    }
+  },
+  "realizableByMarketability": {
+    "Good": {
+      "median": 86,
+      "mean": 85,
+      "min": 82,
+      "max": 88,
+      "count": 72
+    },
+    "Very Good": {
+      "median": 90,
+      "mean": 90,
+      "min": 87,
+      "max": 92,
+      "count": 44
+    },
+    "Difficult": {
+      "median": 78,
+      "mean": 78,
+      "min": 75,
+      "max": 82,
+      "count": 28
+    },
+    "Excellent": {
+      "median": 94,
+      "mean": 94,
+      "min": 92,
+      "max": 95,
+      "count": 6
+    }
+  },
+  "distressByMarketability": {
+    "Good": {
+      "median": 76,
+      "mean": 75,
+      "min": 70,
+      "max": 80,
+      "count": 72
+    },
+    "Very Good": {
+      "median": 80,
+      "mean": 79,
+      "min": 75,
+      "max": 84,
+      "count": 44
+    },
+    "Difficult": {
+      "median": 68,
+      "mean": 68,
+      "min": 64,
+      "max": 74,
+      "count": 28
+    },
+    "Excellent": {
+      "median": 84,
+      "mean": 84,
+      "min": 80,
+      "max": 86,
+      "count": 6
+    }
+  },
+  "structureLifeSpans": {
+    "Asbestos Roofing": {
+      "medianTotalLife": 23,
+      "count": 12
+    },
+    "Load Bearing": {
+      "medianTotalLife": 45,
+      "count": 24
+    },
+    "RCC": {
+      "medianTotalLife": 60,
+      "count": 79
+    },
+    "Composite Structure": {
+      "medianTotalLife": 53,
+      "count": 12
+    },
+    "Steel Structure": {
+      "medianTotalLife": 50,
+      "count": 10
+    },
+    "A/C Sheet": {
+      "medianTotalLife": 30,
+      "count": 4
+    },
+    "G/I Sheet": {
+      "medianTotalLife": 25,
+      "count": 6
+    },
+    "Industrial Shed": {
+      "medianTotalLife": 37,
+      "count": 3
+    }
+  },
+  "recommendedBasisByLocality": {
+    "Upper Middle Class": {
+      "mode": "Based on comparable sales and prevailing market conditions",
+      "count": 35
+    },
+    "High Class": {
+      "mode": "As per Govt. approved rates and local market analysis",
+      "count": 34
+    },
+    "Lower Middle Class": {
+      "mode": "Based on recent transactions in the locality",
+      "count": 22
+    },
+    "Posh": {
+      "mode": "Based on recent transactions in the locality",
+      "count": 16
+    },
+    "Middle Class": {
+      "mode": "As per Govt. approved rates and local market analysis",
+      "count": 36
+    },
+    "Elite": {
+      "mode": "Based on comparable sales and prevailing market conditions",
+      "count": 7
+    }
+  }
+}
