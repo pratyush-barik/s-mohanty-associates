@@ -2034,7 +2034,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   }
 
   // Feature flag: AI Assist panel visibility
-  const aiAssistEnabled = process.env.NEXT_PUBLIC_AI_ASSIST_ENABLED !== 'false';
+  const aiAssistEnabled = process.env.NEXT_PUBLIC_AI_ASSIST_ENABLED === 'true';
 
   return (
     <div className={aiAssistEnabled ? 'flex gap-4 items-start' : 'space-y-4'} ref={reportRef}>
