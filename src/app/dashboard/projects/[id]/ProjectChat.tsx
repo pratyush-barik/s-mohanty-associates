@@ -182,11 +182,11 @@ export default function ProjectChat({ projectId, messages: initialMessages, curr
                   {/* Avatar */}
                   <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold shadow-sm border mt-1 overflow-hidden ${
                     isOwn 
-                      ? 'bg-gradient-to-br from-[#b8860b] to-[#c9952c] text-white border-[#b8860b]/20' 
+                      ? 'bg-blue-600 text-white border-blue-500' 
                       : 'bg-[#f8f9fa] text-[#495057] border-[#dee2e6]'
                   }`}>
                     {msg.sender.profilePhoto ? (
-                      <img src={msg.sender.profilePhoto} alt="" className="w-full h-full rounded-full object-cover" />
+                      <img src={msg.sender.profilePhoto} alt={msg.sender.name} className="w-full h-full object-cover" />
                     ) : (
                       isOwn ? 'You' : msg.sender.name.charAt(0).toUpperCase()
                     )}
@@ -206,7 +206,7 @@ export default function ProjectChat({ projectId, messages: initialMessages, curr
                     <div
                       className={`relative px-4 py-3 text-sm shadow-sm transition-all ${
                         isOwn
-                          ? 'bg-gradient-to-br from-[#b8860b] to-[#c9952c] text-white rounded-[20px] rounded-tr-[4px]'
+                          ? 'bg-blue-50 border border-blue-200 text-blue-950 rounded-[20px] rounded-tr-[4px]'
                           : 'bg-white border border-[#e9ecef] text-[#0f2038] rounded-[20px] rounded-tl-[4px]'
                       }`}
                     >
@@ -216,7 +216,7 @@ export default function ProjectChat({ projectId, messages: initialMessages, curr
                       
                       {/* Attachments within bubble */}
                       {msg.documents && msg.documents.length > 0 && (
-                        <div className={`mt-3 space-y-2 pt-3 border-t ${isOwn ? 'border-white/10' : 'border-[#e9ecef]'}`}>
+                        <div className={`mt-3 space-y-2 pt-3 border-t ${isOwn ? 'border-blue-200' : 'border-[#e9ecef]'}`}>
                           {msg.documents.map(doc => (
                             <a
                               key={doc.id}
@@ -225,18 +225,18 @@ export default function ProjectChat({ projectId, messages: initialMessages, curr
                               rel="noopener noreferrer"
                               className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all no-underline ${
                                 isOwn 
-                                  ? 'bg-white/5 border-white/10 hover:bg-white/10 text-white'
+                                  ? 'bg-white/80 border-blue-200 hover:bg-white text-blue-950'
                                   : 'bg-[#f8f9fa] border-[#e9ecef] hover:bg-[#f1f3f5] text-[#495057]'
                               }`}
                             >
                               <span className="text-xl">{getFileIcon(doc.type)}</span>
                               <div className="flex-1 min-w-0">
                                 <p className="text-[11px] font-semibold truncate leading-tight">{doc.name}</p>
-                                <p className={`text-[9px] mt-0.5 ${isOwn ? 'text-white/60' : 'text-[#868e96]'}`}>
+                                <p className={`text-[9px] mt-0.5 ${isOwn ? 'text-blue-700' : 'text-[#868e96]'}`}>
                                   {formatFileSize(doc.size)}
                                 </p>
                               </div>
-                              <div className={`p-1.5 rounded-lg ${isOwn ? 'bg-white/10' : 'bg-white border shadow-sm'}`}>
+                              <div className={`p-1.5 rounded-lg ${isOwn ? 'bg-blue-100 text-blue-800' : 'bg-white border shadow-sm'}`}>
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                                   <polyline points="7 10 12 15 17 10" />
