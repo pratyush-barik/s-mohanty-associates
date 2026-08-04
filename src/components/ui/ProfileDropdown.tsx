@@ -41,14 +41,12 @@ export function ProfileDropdown({ user, onLogout }: ProfileDropdownProps) {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-3 p-1.5 rounded-full hover:bg-slate-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30"
       >
-        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#1e3a5f] to-[#b8860b] p-[2px] shadow-sm">
-          <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
-            {user.image ? (
-              <img src={user.image} alt={user.name || "User"} className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-[#0f2038] font-bold text-sm">{initials}</span>
-            )}
-          </div>
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#1e3a5f] to-[#b8860b] flex items-center justify-center text-white shadow-sm overflow-hidden flex-shrink-0">
+          {user.image ? (
+            <img src={user.image} alt={user.name || "User"} className="w-full h-full object-cover" />
+          ) : (
+            <span className="font-bold text-sm text-white tracking-wide">{initials}</span>
+          )}
         </div>
         <div className="text-left hidden md:block">
           <p className="text-xs font-semibold text-[#0f2038] leading-tight">{user.name || "Client User"}</p>
