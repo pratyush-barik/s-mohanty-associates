@@ -1,87 +1,76 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { supabaseAdmin, STORAGE_BUCKETS } from '@/lib/supabase';
+import { runCronJob, CronTask } from '@/lib/cron/runner';
 
-// Prevent Next.js from caching this API route
 export const dynamic = 'force-dynamic';
 
+// Shared state between tasks
+let projectIds: string[] = [];
+
+const tasks: CronTask[] = [
+  {
+    name: 'Find COMPLETED projects older than 48h',
+    run: async () => {
+      const twoDaysAgo = new Date();
+      twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+
+      const projects = await prisma.project.findMany({
+        where: { status: 'COMPLETED', updatedAt: { lt: twoDaysAgo } },
+        select: { id: true, projectCode: true },
+      });
+
+      projectIds = projects.map(p => p.id);
+
+      if (projects.length === 0) {
+        return { status: 'skipped', message: 'No eligible projects found.', affected: 0 };
+      }
+
+      return {
+        status: 'success',
+        message: `Found ${projects.length} eligible project(s).`,
+        affected: projects.length,
+        details: { codes: projects.map(p => p.projectCode) },
+      };
+    },
+  },
+  {
+    name: 'Delete bucket images from Supabase Storage + DB',
+    run: async () => {
+      if (projectIds.length === 0) {
+        return { status: 'skipped', message: 'No eligible projects.', affected: 0 };
+      }
+
+      const images = await prisma.bucketImage.findMany({
+        where: { projectId: { in: projectIds } },
+        select: { id: true, storagePath: true },
+      });
+
+      if (images.length === 0) {
+        return { status: 'skipped', message: 'No images found.', affected: 0 };
+      }
+
+      const { error: storageError } = await supabaseAdmin.storage
+        .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+        .remove(images.map(img => img.storagePath));
+
+      if (storageError) {
+        return { status: 'error', message: storageError.message, affected: 0 };
+      }
+
+      const { count } = await prisma.bucketImage.deleteMany({
+        where: { id: { in: images.map(img => img.id) } },
+      });
+
+      return {
+        status: 'success',
+        message: `Deleted ${count} image(s) from storage + DB.`,
+        affected: count ?? 0,
+      };
+    },
+  },
+];
+
 export async function GET(request: Request) {
-  try {
-    const authHeader = request.headers.get('authorization');
-    const cronSecret = process.env.CRON_SECRET;
-
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    console.log('[CRON] Starting Bucket Cleanup...');
-
-    // 2. Find all projects that were COMPLETED more than 48 hours ago
-    const twoDaysAgo = new Date();
-    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
-
-    const oldCompletedProjects = await prisma.project.findMany({
-      where: {
-        status: 'COMPLETED',
-        updatedAt: {
-          lt: twoDaysAgo
-        }
-      },
-      select: { id: true, projectCode: true }
-    });
-
-    if (oldCompletedProjects.length === 0) {
-      console.log('[CRON] No eligible projects found for bucket cleanup.');
-      return NextResponse.json({ success: true, deletedCount: 0, message: 'No eligible projects' });
-    }
-
-    const projectIds = oldCompletedProjects.map(p => p.id);
-    console.log(`[CRON] Found ${projectIds.length} completed projects eligible for cleanup.`);
-
-    // 3. Find all images belonging to these projects
-    const imagesToDelete = await prisma.bucketImage.findMany({
-      where: {
-        projectId: { in: projectIds }
-      }
-    });
-
-    if (imagesToDelete.length === 0) {
-      console.log('[CRON] No images found inside eligible projects.');
-      return NextResponse.json({ success: true, deletedCount: 0, message: 'No images to delete' });
-    }
-
-    console.log(`[CRON] Deleting ${imagesToDelete.length} images from Supabase Storage...`);
-
-    // 4. Delete files from Supabase Storage
-    const storagePaths = imagesToDelete.map(img => img.storagePath);
-    
-    // Supabase allows bulk deletion
-    const { error: storageError } = await supabaseAdmin.storage
-      .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
-      .remove(storagePaths);
-
-    if (storageError) {
-      console.error('[CRON] Error deleting files from Supabase:', storageError);
-      return NextResponse.json({ error: 'Failed to delete from storage' }, { status: 500 });
-    }
-
-    // 5. Delete records from database
-    const { count } = await prisma.bucketImage.deleteMany({
-      where: {
-        id: { in: imagesToDelete.map(img => img.id) }
-      }
-    });
-
-    console.log(`[CRON] Successfully deleted ${count} images from the database.`);
-
-    return NextResponse.json({ 
-      success: true, 
-      deletedCount: count,
-      projectsProcessed: projectIds.length 
-    });
-
-  } catch (error) {
-    console.error('[CRON] Bucket Cleanup Failed:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-  }
+  return runCronJob('cleanup-completed-buckets', tasks, request);
 }

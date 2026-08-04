@@ -3,6 +3,14 @@
     {
       "path": "/api/cron/cleanup-buckets",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/cleanup-terminated-projects",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/fetch-emails",
+      "schedule": "*/15 * * * *"
     }
   ]
 }
