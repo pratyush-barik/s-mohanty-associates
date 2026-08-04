@@ -38,7 +38,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   if (!session?.user?.id) return null;
 
   const project = await prisma.project.findUnique({
-    where: { id },
+    where: { projectCode: id },
     include: {
       serviceRequest: true,
       manager: { select: { id: true, name: true, email: true, profilePhoto: true, designation: true } },

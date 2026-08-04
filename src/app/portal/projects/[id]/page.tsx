@@ -43,7 +43,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
     const resolvedParams = await params;
 
     const project = await prisma.project.findUnique({
-      where: { id: resolvedParams.id },
+      where: { projectCode: resolvedParams.id },
       include: {
         serviceRequest: true,
         fieldEmployees: { select: { id: true, name: true, employeeId: true, mobile: true } },

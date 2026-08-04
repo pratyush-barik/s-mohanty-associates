@@ -100,7 +100,7 @@ export default function Navbar({ user }: NavbarProps) {
                   {user.projects!.map((project) => (
                     <Link
                       key={project.id}
-                      href={`/dashboard/projects/${project.id}`}
+                      href={`/dashboard/projects/${project.projectCode}`}
                       onClick={() => setIsDropdownOpen(false)}
                       className="block px-3 py-2.5 rounded-lg text-sm font-medium text-[#0f2038] hover:bg-[#f8f9fa] transition-colors"
                     >
@@ -298,7 +298,7 @@ export default function Navbar({ user }: NavbarProps) {
                       {hasActiveProjects && user.projects!.map((project) => (
                         <Link
                           key={project.id}
-                          href={`/dashboard/projects/${project.id}`}
+                          href={`/dashboard/projects/${project.projectCode}`}
                           onClick={() => setIsMobileMenuOpen(false)}
                           className="block px-4 py-2 rounded-xl text-sm text-white/50 hover:text-[#ffcb47] hover:bg-white/5 transition-all ml-4"
                         >

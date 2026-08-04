@@ -95,7 +95,7 @@ export default async function DashboardPage() {
             {activeProjects.map((project: any) => (
               <Link
                 key={project.id}
-                href={`/dashboard/projects/${project.id}`}
+                href={`/dashboard/projects/${project.projectCode}`}
                 className="block p-4 rounded-xl bg-[#f8f9fa] border border-[#e9ecef] hover:border-[#b8860b]/30 hover:shadow-md transition-all"
               >
                 <div className="flex items-center justify-between">

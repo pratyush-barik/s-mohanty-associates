@@ -109,7 +109,7 @@ export default async function EnquiryDetailPage({ params }: { params: Promise<{ 
           <div className="flex items-center gap-3">
             <span className="text-lg">📁</span>
             <div>
-              <Link href={`/portal/projects/${enquiry.project.id}`} className="text-sm font-bold text-[#b8860b] hover:underline font-mono">
+              <Link href={`/portal/projects/${enquiry.project.projectCode}`} className="text-sm font-bold text-[#b8860b] hover:underline font-mono">
                 {enquiry.project.projectCode}
               </Link>
               <p className="text-xs text-[#6c757d] mt-0.5">

@@ -107,7 +107,7 @@ export default async function PortalProjectsPage() {
                   </td>
                   <td className="px-6 py-4">
                     <Link
-                      href={`/portal/projects/${project.id}`}
+                      href={`/portal/projects/${project.projectCode}`}
                       className="text-[#b8860b] hover:underline font-medium text-xs"
                     >
                       Manage

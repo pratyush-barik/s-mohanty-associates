@@ -148,7 +148,7 @@ export async function uploadProjectMessageAttachment(
       },
     });
 
-    revalidatePath(`/portal/projects/${projectId}`);
+    revalidatePath('/portal/projects', 'layout');
     return { success: true, document };
   } catch (err: any) {
     console.error('Exception in uploadProjectMessageAttachment:', err);
@@ -268,7 +268,7 @@ export async function sendProjectMessage(
       }
     }
 
-    revalidatePath(`/portal/projects/${projectId}`);
+    revalidatePath('/portal/projects', 'layout');
     return { success: true, messageId: message.id };
   } catch (err: any) {
     console.error('Exception in sendProjectMessage:', err);

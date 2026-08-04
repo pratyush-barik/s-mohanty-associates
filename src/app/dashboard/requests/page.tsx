@@ -83,7 +83,7 @@ export default async function RequestsPage() {
                 <div className="flex flex-col items-end gap-2">
                   {req.project && (
                     <Link
-                      href={`/dashboard/projects/${req.project.id}`}
+                      href={`/dashboard/projects/${req.project.projectCode}`}
                       className="btn btn-primary text-xs px-4 py-2"
                     >
                       View Project → {req.project.projectCode}

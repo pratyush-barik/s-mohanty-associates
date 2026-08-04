@@ -71,7 +71,7 @@ export default async function ProjectsPage() {
           {projects.map((project) => (
             <Link
               key={project.id}
-              href={`/dashboard/projects/${project.id}`}
+              href={`/dashboard/projects/${project.projectCode}`}
               className="card p-6 block hover:shadow-xl transition-all group"
             >
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">

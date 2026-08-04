@@ -242,7 +242,7 @@ export default function RequestsDashboard({
                       <span className="text-xs text-[#6c757d] font-mono">
                         Project:{' '}
                         <Link
-                          href={`/portal/projects/${req.project.id}`}
+                          href={`/portal/projects/${req.project.projectCode}`}
                           className="text-[#b8860b] hover:underline font-bold"
                         >
                           {req.project.projectCode}

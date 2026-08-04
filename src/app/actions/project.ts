@@ -94,7 +94,7 @@ export async function updateProjectTeam(
       });
     }
 
-    revalidatePath(`/portal/projects/${projectId}`);
+    revalidatePath('/portal/projects', 'layout');
     revalidatePath('/portal/projects');
     return { success: true };
   } catch (error) {
@@ -168,7 +168,7 @@ export async function updateInspectionStatus(
 
     revalidatePath(`/portal/inspections/${projectId}`);
     revalidatePath('/portal/inspections');
-    revalidatePath(`/portal/projects/${projectId}`);
+    revalidatePath('/portal/projects', 'layout');
     return { success: true };
   } catch (error) {
     console.error('Failed to update inspection:', error);
@@ -250,7 +250,7 @@ export async function updateInspectionMilestone(
 
     revalidatePath(`/portal/inspections/${projectId}`);
     revalidatePath('/portal/inspections');
-    revalidatePath(`/portal/projects/${projectId}`);
+    revalidatePath('/portal/projects', 'layout');
     return { success: true, measurements: currentMeasurements };
   } catch (error) {
     console.error('Failed to update inspection milestone:', error);
@@ -341,7 +341,7 @@ export async function submitReportForVerification(projectId: string) {
 
     revalidatePath(`/portal/reports/${projectId}`);
     revalidatePath('/portal/my-projects');
-    revalidatePath(`/portal/projects/${projectId}`);
+    revalidatePath('/portal/projects', 'layout');
     revalidatePath('/portal/projects');
     return { success: true };
   } catch (error) {
@@ -393,7 +393,7 @@ export async function sendReportForRework(projectId: string, reworkComment?: str
       });
     }
 
-    revalidatePath(`/portal/projects/${projectId}`);
+    revalidatePath('/portal/projects', 'layout');
     revalidatePath('/portal/my-projects');
     return { success: true };
   } catch (error) {
@@ -452,7 +452,7 @@ export async function requestClientRework(projectId: string, message: string) {
       }
     });
 
-    revalidatePath(`/dashboard/projects/${projectId}`);
+    revalidatePath('/dashboard/projects', 'layout');
     return { success: true };
   } catch (error) {
     console.error('Failed to submit rework request:', error);
@@ -483,7 +483,7 @@ export async function cancelReportSubmission(projectId: string) {
 
     revalidatePath(`/portal/reports/${projectId}`);
     revalidatePath('/portal/my-projects');
-    revalidatePath(`/portal/projects/${projectId}`);
+    revalidatePath('/portal/projects', 'layout');
     revalidatePath('/portal/projects');
     return { success: true };
   } catch (error) {
@@ -576,8 +576,8 @@ export async function finalizeReport(projectId: string, pdfUrl: string) {
       }
     }
 
-    revalidatePath(`/portal/projects/${projectId}`);
-    revalidatePath(`/dashboard/projects/${projectId}`);
+    revalidatePath('/portal/projects', 'layout');
+    revalidatePath('/dashboard/projects', 'layout');
     return { success: true };
   } catch (error) {
     console.error('Failed to finalize report:', error);
@@ -797,7 +797,7 @@ export async function initiateManagerTransfer(projectId: string, targetManagerId
       },
     });
 
-    revalidatePath(`/portal/projects/${projectId}`);
+    revalidatePath('/portal/projects', 'layout');
     revalidatePath('/portal/projects');
     return { success: true };
   } catch (error) {
@@ -829,7 +829,7 @@ export async function acceptManagerTransfer(projectId: string) {
       },
     });
 
-    revalidatePath(`/portal/projects/${projectId}`);
+    revalidatePath('/portal/projects', 'layout');
     revalidatePath('/portal/projects');
     revalidatePath('/portal');
     return { success: true };
@@ -861,7 +861,7 @@ export async function declineManagerTransfer(projectId: string) {
       },
     });
 
-    revalidatePath(`/portal/projects/${projectId}`);
+    revalidatePath('/portal/projects', 'layout');
     revalidatePath('/portal/projects');
     revalidatePath('/portal');
     return { success: true };
@@ -902,7 +902,7 @@ export async function cancelManagerTransfer(projectId: string) {
       },
     });
 
-    revalidatePath(`/portal/projects/${projectId}`);
+    revalidatePath('/portal/projects', 'layout');
     revalidatePath('/portal/projects');
     return { success: true };
   } catch (error) {
