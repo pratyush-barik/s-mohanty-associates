@@ -177,6 +177,12 @@ The core business logic is **100% complete**.
      - **Directory**: `ML_integration/` (gitignored to protect data). Contains `data/raw`, `data/processed`, `models`, `notebooks`, and `scripts`.
      - **Export Script**: `ML_integration/scripts/export_data.ts` written to extract ALL 97 report fields across 10 sections from `completed_reports` in Supabase into clean CSV format, alongside `project_metadata.csv` and `predictions_vs_actual.csv`.
      - **Documentation**: Extensive `ML_integration/README.md` defining target variables (e.g., predicting `distress_pct` via XGBoost), data requirements, and the full 97-column schema.
+ 22. **Generic Cron Runner Framework + Terminated Project Cleanup (August 2026)**:
+     - **Generic Framework** (`src/lib/cron/runner.ts`): Reusable `runCronJob(jobName, tasks[], request)` function. Every cron route just defines a list of `CronTask` objects (name + async `run()`) and calls it. The runner handles: Bearer token auth (`CRON_SECRET`), per-task error isolation (one task failure does NOT abort others), per-task timing, structured result logging, and returns a full `CronRunResult` JSON with success/skip/error counts.
+     - **Terminated Project Cleanup** (`/api/cron/cleanup-terminated-projects`): Fires daily at 2:00 AM. Finds all `TERMINATED` projects older than 24 hours and runs 4 sequential tasks: (1) Find eligible projects, (2) Delete photo bucket images from Supabase Storage + DB, (3) Delete employee↔client chat messages (`ProjectMessage`) + their document attachments, (4) Delete remaining project-level document DB references.
+     - **Existing cron refactored**: `cleanup-buckets` cron now also uses the generic framework.
+     - **`vercel.json` updated**: All 3 crons registered — `cleanup-buckets` at midnight, `cleanup-terminated-projects` at 2 AM, `fetch-emails` every 15 min.
+     - **How to add a new cron**: Create `/api/cron/<name>/route.ts`, define `CronTask[]`, call `runCronJob('name', tasks, request)`, add path + schedule to `vercel.json`.
 
 ## 5. Pending Work (What is next)
 
@@ -232,7 +238,9 @@ Outstanding items in **priority order**:
 > When modifying the UI, prioritize modern, premium aesthetics (glassmorphism, clean typography, subtle animations) without relying on Tailwind component libraries like Shadcn. Use raw Tailwind classes.
 
 ## 7. Recent Git Commits (for reference)
-- `latest` — feat: add search, Pending/Completed/All filter with Completed sub-toggle to manager projects page
+- `latest` — feat: add generic cron runner framework + terminated project cleanup job (photos + chat data, 24h interval)
+- `previous` — docs: update AI_HANDOVER.md and ML_integration pipeline setup with 97 column export script
+- `previous` — feat: add search, Pending/Completed/All filter with Completed sub-toggle to manager projects page
 - `previous` — fix: resolve textarea losing focus by inlining modal JSX instead of nested function component
 - `previous` — docs: update AI_HANDOVER.md with End Project feature details and recent commits
 - `previous` — fix: replace dropdown+notes with simple 30-word message box in End Project modal
