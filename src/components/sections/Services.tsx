@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import SectionWrapper, { StaggerContainer, StaggerItem } from '@/components/ui/SectionWrapper';
+import { SpotlightCard } from '@/components/ui/SpotlightCard';
 
 const services = [
   // Row 1 (Longest text)
@@ -122,7 +123,7 @@ export default function Services() {
     <section id="services" className="section section-dark relative overflow-hidden">
       {/* Decorative */}
       <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-[#b8860b]/5 rounded-full blur-[150px] pointer-events-none" />
-       <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-[#1a5c3a]/20 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-[#1a5c3a]/20 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="container mx-auto max-w-[1280px] px-6 relative z-10">
         {/* Section Header */}
@@ -143,8 +144,9 @@ export default function Services() {
               animation="scaleUp"
               className={index === 10 ? 'xl:col-start-2' : ''}
             >
-              <div
-                className={`card-dark group cursor-pointer relative overflow-hidden h-full ${service.border}`}
+              <SpotlightCard
+                spotlightColor="rgba(184, 134, 11, 0.25)"
+                className={`group cursor-pointer relative overflow-hidden h-full ${service.border} transition-all duration-300 hover:-translate-y-1`}
                 onMouseEnter={() => setHoveredIndex(index)}
                 onMouseLeave={() => setHoveredIndex(null)}
               >
@@ -171,7 +173,7 @@ export default function Services() {
                     </p>
                   </div>
                 </div>
-              </div>
+              </SpotlightCard>
             </StaggerItem>
           ))}
         </StaggerContainer>
