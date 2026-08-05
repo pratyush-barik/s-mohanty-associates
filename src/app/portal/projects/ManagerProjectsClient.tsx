@@ -194,12 +194,11 @@ export default function ManagerProjectsClient({
                 <th className="px-6 py-3 font-medium text-[#6c757d]">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#e9ecef]">
-              {filteredProjects.map((project: any) => {
-                const terminationReason = project.status === 'TERMINATED' ? getTerminationReason(project.messages) : null;
-                return (
-                  <>
-                    <tr key={project.id} className="hover:bg-[#f8f9fa] transition-colors">
+            {filteredProjects.map((project: any) => {
+              const terminationReason = project.status === 'TERMINATED' ? getTerminationReason(project.messages) : null;
+              return (
+                <tbody key={project.id} className="border-b border-[#e9ecef] hover:bg-[#f8f9fa] transition-colors">
+                  <tr>
                       <td className={`px-6 pt-4 ${terminationReason ? 'pb-1' : 'pb-4'} font-mono font-medium text-[#0f2038]`}>
                         {project.projectCode}
                       </td>
@@ -233,17 +232,16 @@ export default function ManagerProjectsClient({
                       </td>
                     </tr>
                     {terminationReason && (
-                      <tr key={`${project.id}-reason`} style={{ borderTop: 0 }}>
+                      <tr className="border-none">
                         <td colSpan={7} className="px-6 pb-4 pt-1">
                           <span className="text-[11px] font-bold text-red-600 uppercase tracking-wider mr-1.5">Reason:</span>
                           <span className="text-[11px] font-bold text-red-600">{terminationReason}</span>
                         </td>
                       </tr>
                     )}
-                  </>
-                );
-              })}
-            </tbody>
+                </tbody>
+              );
+            })}
           </table>
         )}
       </div>
