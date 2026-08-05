@@ -22,6 +22,7 @@ interface ProjectChatProps {
   projectId: string;
   messages: Message[];
   currentUserId: string;
+  currentUserRole: string;
   project: any;
 }
 
@@ -42,7 +43,7 @@ function getFileIcon(mimeType: string): string {
   return '🔗';
 }
 
-export default function ProjectChat({ projectId, messages: initialMessages, currentUserId, project }: ProjectChatProps) {
+export default function ProjectChat({ projectId, messages: initialMessages, currentUserId, currentUserRole, project }: ProjectChatProps) {
   const router = useRouter();
   const [messages, setMessages] = useState(initialMessages);
   const [newMessage, setNewMessage] = useState('');
@@ -157,6 +158,13 @@ export default function ProjectChat({ projectId, messages: initialMessages, curr
     REPORT_EMPLOYEE: 'Report Analyst',
   };
 
+  // Determine if this user can send messages
+  const isTerminated = ['TERMINATED', 'COMPLETED', 'ARCHIVED'].includes(project?.status);
+  const isAssignedManager = project?.assignedManagerId === currentUserId;
+  const isOwner = currentUserRole === 'OWNER';
+  // Owner can message any active project; assigned manager always can; blocked on ended projects
+  const canSend = !isTerminated && (isOwner || isAssignedManager);
+
   return (
     <div className="card p-6 flex flex-col h-[600px]">
       <h2 className="text-sm font-semibold text-[#0f2038] uppercase tracking-wider mb-4">
@@ -269,64 +277,77 @@ export default function ProjectChat({ projectId, messages: initialMessages, curr
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <div className="flex flex-col pt-4 border-t border-[#e9ecef]">
-        {error && (
-          <div className="mb-3 p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100">
-            {error}
-          </div>
-        )}
+      {/* Input Area — only shown when user can send */}
+      {canSend ? (
+        <div className="flex flex-col pt-4 border-t border-[#e9ecef]">
+          {error && (
+            <div className="mb-3 p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100">
+              {error}
+            </div>
+          )}
 
-        {/* Selected Files Preview */}
-        {selectedFiles.length > 0 && (
-          <div className="mb-3 space-y-1">
-            {selectedFiles.map((file, idx) => (
-              <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg text-xs">
-                <span className="font-medium text-[#0f2038]">{file.name}</span>
-                <button
-                  onClick={() => removeSelectedFile(idx)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  Remove
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+          {/* Selected Files Preview */}
+          {selectedFiles.length > 0 && (
+            <div className="mb-3 space-y-1">
+              {selectedFiles.map((file, idx) => (
+                <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg text-xs">
+                  <span className="font-medium text-[#0f2038]">{file.name}</span>
+                  <button
+                    onClick={() => removeSelectedFile(idx)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
 
-        <div className="flex items-center gap-3">
-          <label className="shrink-0 cursor-pointer p-2.5 text-[#6c757d] hover:text-[#0f2038] hover:bg-gray-100 rounded-xl transition-colors">
-            <input type="file" multiple className="hidden" onChange={handleFileChange} />
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-            </svg>
-          </label>
-          <input
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-            placeholder="Type your message..."
-            className="flex-1 px-4 py-2.5 rounded-xl border border-[#dee2e6] bg-white text-sm text-[#212529] focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all"
-          />
-          <button
-            onClick={handleSend}
-            disabled={(!newMessage.trim() && selectedFiles.length === 0) || sending}
-            className="btn btn-primary px-4 py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {sending ? (
-              <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
-                <path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" fill="currentColor" className="opacity-75" />
+          <div className="flex items-center gap-3">
+            <label className="shrink-0 cursor-pointer p-2.5 text-[#6c757d] hover:text-[#0f2038] hover:bg-gray-100 rounded-xl transition-colors">
+              <input type="file" multiple className="hidden" onChange={handleFileChange} />
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
               </svg>
-            ) : (
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
-            )}
-          </button>
+            </label>
+            <input
+              type="text"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+              placeholder="Type your message..."
+              className="flex-1 px-4 py-2.5 rounded-xl border border-[#dee2e6] bg-white text-sm text-[#212529] focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all"
+            />
+            <button
+              onClick={handleSend}
+              disabled={(!newMessage.trim() && selectedFiles.length === 0) || sending}
+              className="btn btn-primary px-4 py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {sending ? (
+                <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
+                  <path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" fill="currentColor" className="opacity-75" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="pt-4 border-t border-[#e9ecef]">
+          <div className="flex items-center justify-center gap-2 py-3 rounded-xl bg-[#f8f9fa] border border-[#e9ecef] text-xs text-[#6c757d]">
+            <svg className="w-4 h-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m0 0v2m0-2h2m-2 0H10m2-9a3 3 0 100-6 3 3 0 000 6z" />
+            </svg>
+            {isTerminated
+              ? 'This project is closed. Communication is read-only.'
+              : 'You are viewing this project in read-only mode.'}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

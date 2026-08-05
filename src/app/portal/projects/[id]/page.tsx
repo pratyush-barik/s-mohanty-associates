@@ -307,6 +307,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
           }}
           messages={formattedMessages}
           currentUserId={currentUser.id}
+          currentUserRole={currentUser.role}
         />
 
         {/* 4) THEN VIEW REPORT — Collapsible Dropdown */}
