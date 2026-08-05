@@ -197,17 +197,22 @@ export async function sendProjectMessage(
 
     const isClientOwner = userRole === 'CLIENT' && project.serviceRequest?.clientId === session.user.id;
 
-    if (!isAssigned && userRole !== 'OWNER' && !isClientOwner) {
+    // Owner can only message if they ARE the assigned manager on this project
+    // (i.e. the project has no manager, or owner took it over), or there is no manager at all.
+    // Owner must NOT be able to send to projects managed by another manager.
+    const isOwnerAllowed =
+      userRole === 'OWNER' &&
+      (!project.assignedManagerId || project.assignedManagerId === session.user.id);
+
+    if (!isAssigned && !isOwnerAllowed && !isClientOwner) {
       return { error: 'You do not have access to this project.' };
     }
 
-    // Check for pending transfer — if the project is in transfer state,
-    // only the current manager and the target manager can chat
+    // Check for pending transfer — only current manager, target manager, or owner-as-manager can chat
     if (project.pendingManagerId) {
       const isCurrentManager = project.assignedManagerId === session.user.id;
       const isTargetManager = project.pendingManagerId === session.user.id;
-      const isOwner = userRole === 'OWNER';
-      if (!isCurrentManager && !isTargetManager && !isOwner) {
+      if (!isCurrentManager && !isTargetManager && !isOwnerAllowed) {
         return { error: 'This project is pending transfer. You cannot send messages until the transfer is resolved.' };
       }
     }

@@ -1285,8 +1285,6 @@ export async function terminateProject(
               <h2 style="color: #0f2038;">Project Update — ${project.projectCode}</h2>
               <p>Dear ${clientName},</p>
               <p>We regret to inform you that your valuation project <strong>${project.projectCode}</strong> has been closed.</p>
-              <p><strong>Reason:</strong> ${reason}</p>
-              ${notes ? `<p><strong>Additional Notes:</strong> ${notes}</p>` : ''}
               <p>If you have any questions or would like to initiate a new request, please contact us.</p>
               <br/>
               <p>Regards,<br/>S. Mohanty & Associates</p>

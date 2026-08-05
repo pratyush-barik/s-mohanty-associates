@@ -18,6 +18,13 @@ function formatSource(source: string) {
   return 'Website';
 }
 
+function getTerminationReason(messages: { content: string }[] | undefined): string | null {
+  if (!messages || messages.length === 0) return null;
+  const content = messages[0].content;
+  const match = content.match(/Reason:\s*(.+)/i);
+  return match ? match[1].trim() : null;
+}
+
 function sourceColor(source: string) {
   if (source === 'GMAIL') return 'bg-blue-100 text-blue-700 border-blue-200';
   if (source === 'EXTERNAL') return 'bg-amber-100 text-amber-700 border-amber-200';
@@ -164,62 +171,75 @@ export default function AllProjectsClient({ projects }: { projects: ProjectType[
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e9ecef]">
-                {filteredProjects.map((project: any) => (
-                  <tr key={project.id} className="hover:bg-[#f8f9fa] transition-colors">
-                    <td className="px-5 py-4 font-mono font-medium text-[#0f2038]">
-                      {project.projectCode}
-                    </td>
-                    <td className="px-5 py-4">
-                      <p className="font-medium text-[#0f2038]">{project.serviceRequest?.contactName ?? '—'}</p>
-                      <p className="text-xs text-[#6c757d]">{project.serviceRequest?.propertyType ?? ''}</p>
-                    </td>
-                    <td className="px-5 py-4">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${sourceColor(project.source)}`}>
-                        {formatSource(project.source)}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4">
-                      <span className={`px-2 py-1 rounded text-xs font-semibold ${statusColor(project.status, project.clientReworkRequested)}`}>
-                        {formatStatus(project.status, project.clientReworkRequested)}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4">
-                      {project.manager ? (
-                        <span className="inline-flex items-center gap-1.5">
-                          <span className="w-6 h-6 rounded-full bg-[#0f2038] text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">
-                            {project.manager.name.charAt(0).toUpperCase()}
+                {filteredProjects.map((project: any) => {
+                  const terminationReason = project.status === 'TERMINATED' ? getTerminationReason(project.messages) : null;
+                  return (
+                    <>
+                      <tr key={project.id} className="hover:bg-[#f8f9fa] transition-colors">
+                        <td className="px-5 py-4 font-mono font-medium text-[#0f2038]">
+                          {project.projectCode}
+                        </td>
+                        <td className="px-5 py-4">
+                          <p className="font-medium text-[#0f2038]">{project.serviceRequest?.contactName ?? '—'}</p>
+                          <p className="text-xs text-[#6c757d]">{project.serviceRequest?.propertyType ?? ''}</p>
+                        </td>
+                        <td className="px-5 py-4">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${sourceColor(project.source)}`}>
+                            {formatSource(project.source)}
                           </span>
-                          <span className="text-[#0f2038] font-medium text-xs">{project.manager.name}</span>
-                        </span>
-                      ) : (
-                        <span className="italic text-gray-400 text-xs">Unassigned</span>
+                        </td>
+                        <td className="px-5 py-4">
+                          <span className={`px-2 py-1 rounded text-xs font-semibold ${statusColor(project.status, project.clientReworkRequested)}`}>
+                            {formatStatus(project.status, project.clientReworkRequested)}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4">
+                          {project.manager ? (
+                            <span className="inline-flex items-center gap-1.5">
+                              <span className="w-6 h-6 rounded-full bg-[#0f2038] text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">
+                                {project.manager.name.charAt(0).toUpperCase()}
+                              </span>
+                              <span className="text-[#0f2038] font-medium text-xs">{project.manager.name}</span>
+                            </span>
+                          ) : (
+                            <span className="italic text-gray-400 text-xs">Unassigned</span>
+                          )}
+                        </td>
+                        <td className="px-5 py-4 text-[#6c757d] text-xs">
+                          {project.fieldEmployees?.map((e: any) => e.name).join(', ') || (
+                            <span className="italic text-gray-400">Unassigned</span>
+                          )}
+                        </td>
+                        <td className="px-5 py-4 text-[#6c757d] text-xs">
+                          {project.reportEmployee?.name || <span className="italic text-gray-400">Unassigned</span>}
+                        </td>
+                        <td className="px-5 py-4 text-[#6c757d] text-xs whitespace-nowrap">
+                          {new Date(project.createdAt).toLocaleDateString('en-IN', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                          })}
+                        </td>
+                        <td className="px-5 py-4">
+                          <Link
+                            href={`/portal/projects/${project.projectCode}`}
+                            className="text-[#b8860b] hover:underline font-medium text-xs"
+                          >
+                            View
+                          </Link>
+                        </td>
+                      </tr>
+                      {terminationReason && (
+                        <tr key={`${project.id}-reason`} className="bg-red-50/60">
+                          <td colSpan={9} className="px-5 py-1.5 border-t-0">
+                            <span className="text-[11px] font-semibold text-red-500 uppercase tracking-wider mr-1.5">Reason:</span>
+                            <span className="text-[11px] text-red-700">{terminationReason}</span>
+                          </td>
+                        </tr>
                       )}
-                    </td>
-                    <td className="px-5 py-4 text-[#6c757d] text-xs">
-                      {project.fieldEmployees?.map((e: any) => e.name).join(', ') || (
-                        <span className="italic text-gray-400">Unassigned</span>
-                      )}
-                    </td>
-                    <td className="px-5 py-4 text-[#6c757d] text-xs">
-                      {project.reportEmployee?.name || <span className="italic text-gray-400">Unassigned</span>}
-                    </td>
-                    <td className="px-5 py-4 text-[#6c757d] text-xs whitespace-nowrap">
-                      {new Date(project.createdAt).toLocaleDateString('en-IN', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                      })}
-                    </td>
-                    <td className="px-5 py-4">
-                      <Link
-                        href={`/portal/projects/${project.projectCode}`}
-                        className="text-[#b8860b] hover:underline font-medium text-xs"
-                      >
-                        View
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
+                    </>
+                  );
+                })}
               </tbody>
             </table>
           </div>

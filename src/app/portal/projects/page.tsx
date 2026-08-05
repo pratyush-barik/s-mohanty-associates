@@ -26,6 +26,12 @@ export default async function PortalProjectsPage() {
       serviceRequest: { select: { propertyType: true, contactName: true } },
       fieldEmployees: { select: { name: true } },
       reportEmployee: { select: { name: true } },
+      messages: {
+        where: { content: { startsWith: '**Project Terminated**' } },
+        orderBy: { createdAt: 'desc' },
+        take: 1,
+        select: { content: true },
+      },
     },
     orderBy: { createdAt: 'desc' },
   });

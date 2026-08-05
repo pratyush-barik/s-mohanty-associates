@@ -23,9 +23,17 @@ export default async function AllProjectsPage() {
       manager: { select: { name: true } },
       fieldEmployees: { select: { name: true } },
       reportEmployee: { select: { name: true } },
+      // Fetch the termination message if terminated
+      messages: {
+        where: { content: { startsWith: '**Project Terminated**' } },
+        orderBy: { createdAt: 'desc' },
+        take: 1,
+        select: { content: true },
+      },
     },
     orderBy: { createdAt: 'desc' },
   });
 
   return <AllProjectsClient projects={projects} />;
 }
+

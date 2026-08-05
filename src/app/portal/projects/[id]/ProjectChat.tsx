@@ -162,8 +162,10 @@ export default function ProjectChat({ projectId, messages: initialMessages, curr
   const isTerminated = ['TERMINATED', 'COMPLETED', 'ARCHIVED'].includes(project?.status);
   const isAssignedManager = project?.assignedManagerId === currentUserId;
   const isOwner = currentUserRole === 'OWNER';
-  // Owner can message any active project; assigned manager always can; blocked on ended projects
-  const canSend = !isTerminated && (isOwner || isAssignedManager);
+  // Owner can only message if they are the assigned manager OR the project has no assigned manager
+  // Owner must NOT message projects managed by another manager
+  const isOwnerAllowed = isOwner && (!project?.assignedManagerId || isAssignedManager);
+  const canSend = !isTerminated && (isAssignedManager || isOwnerAllowed);
 
   return (
     <div className="card p-6 flex flex-col h-[600px]">
