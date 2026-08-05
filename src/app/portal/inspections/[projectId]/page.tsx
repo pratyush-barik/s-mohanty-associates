@@ -23,8 +23,9 @@ export default async function InspectionDetailsPage({ params }: { params: Promis
     where: { projectId },
     include: {
       project: {
-        include: {
+        select: {
           serviceRequest: true,
+          assignedManagerId: true,
         }
       }
     }
@@ -32,9 +33,12 @@ export default async function InspectionDetailsPage({ params }: { params: Promis
 
   if (!inspection) return notFound();
 
-  // Field agents can only see their own assignments
+  // Per-project authorization
   if (currentUser.role === 'FIELD_EMPLOYEE' && inspection.employeeId !== session.user.id) {
-    redirect('/portal/inspections');
+    return notFound();
+  }
+  if (currentUser.role === 'MANAGER' && inspection.project.assignedManagerId !== session.user.id) {
+    return notFound();
   }
 
   const { serviceRequest } = inspection.project;

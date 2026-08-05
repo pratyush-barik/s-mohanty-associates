@@ -61,6 +61,15 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
 
     if (!project) return notFound();
 
+    // Per-project authorization: OWNER sees all, MANAGER only sees assigned projects
+    if (currentUser.role === 'MANAGER') {
+      const isAssignedManager = project.assignedManagerId === currentUser.id;
+      const isPendingManager = project.pendingManagerId === currentUser.id;
+      if (!isAssignedManager && !isPendingManager) {
+        return notFound(); // Do NOT redirect — don't reveal whether the project exists
+      }
+    }
+
     // Fetch project messages with documents for the chat
     const chatMessages = await prisma.projectMessage.findMany({
       where: { projectId: project.id },

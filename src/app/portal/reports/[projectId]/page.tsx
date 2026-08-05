@@ -37,9 +37,14 @@ export default async function ReportEditorPage({ params }: { params: Promise<{ p
 
     if (!project) return notFound();
 
+    // Per-project authorization: MANAGER can only access their assigned projects
+    if (currentUser.role === 'MANAGER' && project.assignedManagerId !== session.user.id) {
+      return notFound();
+    }
+
     // Report agents can only see their own assignments
     if (currentUser.role === 'REPORT_EMPLOYEE' && project.reportEmployeeId !== session.user.id) {
-      redirect('/portal/my-projects');
+      return notFound();
     }
 
     const { serviceRequest, report } = project;
