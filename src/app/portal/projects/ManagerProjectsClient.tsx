@@ -51,12 +51,22 @@ export default function ManagerProjectsClient({
     // Main tab filter
     let passesTab = true;
     if (tab === 'pending') passesTab = !isCompleted;
-    if (tab === 'completed') {
-      passesTab = isCompleted;
-      // Sub-tab filter within "completed"
-      if (subTab === 'completed') passesTab = ['COMPLETED', 'ARCHIVED'].includes(project.status);
-      if (subTab === 'terminated') passesTab = project.status === 'TERMINATED';
-      // subTab === 'all' keeps all completed+archived+terminated
+    if (tab === 'completed' || tab === 'all') {
+      if (tab === 'completed') passesTab = isCompleted;
+      // When tab === 'all', passesTab stays true (show everything), then apply subTab below
+      if (tab === 'all') passesTab = true;
+
+      // Sub-tab filter: only refine within completed/terminated when subTab is not 'all'
+      if (tab === 'completed') {
+        if (subTab === 'completed') passesTab = ['COMPLETED', 'ARCHIVED'].includes(project.status);
+        if (subTab === 'terminated') passesTab = project.status === 'TERMINATED';
+        // subTab === 'all' keeps passesTab as isCompleted
+      }
+      if (tab === 'all') {
+        if (subTab === 'completed') passesTab = ['COMPLETED', 'ARCHIVED'].includes(project.status);
+        if (subTab === 'terminated') passesTab = project.status === 'TERMINATED';
+        // subTab === 'all' keeps passesTab as true (everything)
+      }
     }
 
     // Search filter
@@ -68,8 +78,10 @@ export default function ManagerProjectsClient({
     return passesTab && passesSearch;
   });
 
+  const showSubTabs = tab === 'completed' || tab === 'all';
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#0f2038]" style={{ fontFamily: 'var(--font-heading)' }}>
@@ -77,7 +89,7 @@ export default function ManagerProjectsClient({
           </h1>
           <p className="text-sm text-[#6c757d] mt-1">{subtitle}</p>
         </div>
-        <div className="flex flex-col lg:flex-row items-center gap-3 w-full sm:w-auto mt-4 sm:mt-0">
+        <div className="flex flex-col lg:flex-row items-end gap-3 w-full sm:w-auto mt-4 sm:mt-0">
           {/* Search */}
           <div className="relative w-full lg:w-64">
             <input
@@ -92,65 +104,68 @@ export default function ManagerProjectsClient({
             </svg>
           </div>
 
-          {/* Main Tabs */}
-          <div className="flex items-center gap-1 bg-white p-1 rounded-md border border-[#e9ecef] shadow-sm w-full lg:w-auto overflow-x-auto">
-            <button
-              onClick={() => setTab('pending')}
-              className={`px-4 py-1 rounded-sm text-[13px] font-medium transition-colors whitespace-nowrap ${
-                tab === 'pending' ? 'bg-[#0f2038] text-white' : 'text-[#6c757d] hover:bg-gray-50'
-              }`}
-            >
-              Pending
-            </button>
-            <button
-              onClick={() => { setTab('completed'); setSubTab('all'); }}
-              className={`px-4 py-1 rounded-sm text-[13px] font-medium transition-colors whitespace-nowrap ${
-                tab === 'completed' ? 'bg-[#0f2038] text-white' : 'text-[#6c757d] hover:bg-gray-50'
-              }`}
-            >
-              Completed
-            </button>
-            <button
-              onClick={() => setTab('all')}
-              className={`px-4 py-1 rounded-sm text-[13px] font-medium transition-colors whitespace-nowrap ${
-                tab === 'all' ? 'bg-[#0f2038] text-white' : 'text-[#6c757d] hover:bg-gray-50'
-              }`}
-            >
-              All
-            </button>
+          {/* Main Tabs + Sub-tabs stacked */}
+          <div className="flex flex-col gap-1.5 w-full lg:w-auto">
+            {/* Main Tabs */}
+            <div className="flex items-center gap-1 bg-white p-1 rounded-md border border-[#e9ecef] shadow-sm w-full lg:w-auto overflow-x-auto">
+              <button
+                onClick={() => setTab('pending')}
+                className={`px-4 py-1 rounded-sm text-[13px] font-medium transition-colors whitespace-nowrap ${
+                  tab === 'pending' ? 'bg-[#0f2038] text-white' : 'text-[#6c757d] hover:bg-gray-50'
+                }`}
+              >
+                Pending
+              </button>
+              <button
+                onClick={() => { setTab('completed'); setSubTab('all'); }}
+                className={`px-4 py-1 rounded-sm text-[13px] font-medium transition-colors whitespace-nowrap ${
+                  tab === 'completed' ? 'bg-[#0f2038] text-white' : 'text-[#6c757d] hover:bg-gray-50'
+                }`}
+              >
+                Completed
+              </button>
+              <button
+                onClick={() => { setTab('all'); setSubTab('all'); }}
+                className={`px-4 py-1 rounded-sm text-[13px] font-medium transition-colors whitespace-nowrap ${
+                  tab === 'all' ? 'bg-[#0f2038] text-white' : 'text-[#6c757d] hover:bg-gray-50'
+                }`}
+              >
+                All
+              </button>
+            </div>
+
+            {/* Sub-tabs — shown directly under main tabs when Completed or All is active */}
+            {showSubTabs && (
+              <div className="flex items-center gap-1 bg-[#f8f9fa] p-1 rounded-md border border-[#e9ecef] shadow-sm w-full lg:w-auto overflow-x-auto">
+                <button
+                  onClick={() => setSubTab('all')}
+                  className={`px-3 py-0.5 rounded-sm text-[11px] font-medium transition-colors whitespace-nowrap ${
+                    subTab === 'all' ? 'bg-[#b8860b] text-white' : 'text-[#6c757d] hover:bg-white'
+                  }`}
+                >
+                  All
+                </button>
+                <button
+                  onClick={() => setSubTab('completed')}
+                  className={`px-3 py-0.5 rounded-sm text-[11px] font-medium transition-colors whitespace-nowrap ${
+                    subTab === 'completed' ? 'bg-emerald-600 text-white' : 'text-[#6c757d] hover:bg-white'
+                  }`}
+                >
+                  Completed
+                </button>
+                <button
+                  onClick={() => setSubTab('terminated')}
+                  className={`px-3 py-0.5 rounded-sm text-[11px] font-medium transition-colors whitespace-nowrap ${
+                    subTab === 'terminated' ? 'bg-red-600 text-white' : 'text-[#6c757d] hover:bg-white'
+                  }`}
+                >
+                  Terminated
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
-
-      {/* Sub-toggle for Completed tab */}
-      {tab === 'completed' && (
-        <div className="flex items-center gap-1 bg-white p-1 rounded-md border border-[#e9ecef] shadow-sm w-fit">
-          <button
-            onClick={() => setSubTab('all')}
-            className={`px-3.5 py-1 rounded-sm text-[12px] font-medium transition-colors whitespace-nowrap ${
-              subTab === 'all' ? 'bg-[#b8860b] text-white' : 'text-[#6c757d] hover:bg-gray-50'
-            }`}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setSubTab('completed')}
-            className={`px-3.5 py-1 rounded-sm text-[12px] font-medium transition-colors whitespace-nowrap ${
-              subTab === 'completed' ? 'bg-emerald-600 text-white' : 'text-[#6c757d] hover:bg-gray-50'
-            }`}
-          >
-            Completed
-          </button>
-          <button
-            onClick={() => setSubTab('terminated')}
-            className={`px-3.5 py-1 rounded-sm text-[12px] font-medium transition-colors whitespace-nowrap ${
-              subTab === 'terminated' ? 'bg-red-600 text-white' : 'text-[#6c757d] hover:bg-gray-50'
-            }`}
-          >
-            Terminated
-          </button>
-        </div>
-      )}
 
       {/* Table */}
       <div className="card overflow-hidden">
