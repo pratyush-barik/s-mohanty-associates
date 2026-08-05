@@ -176,24 +176,24 @@ export default function AllProjectsClient({ projects }: { projects: ProjectType[
                   return (
                     <>
                       <tr key={project.id} className="hover:bg-[#f8f9fa] transition-colors">
-                        <td className="px-5 py-4 font-mono font-medium text-[#0f2038]">
+                        <td className={`px-5 pt-4 ${terminationReason ? 'pb-1' : 'pb-4'} font-mono font-medium text-[#0f2038]`}>
                           {project.projectCode}
                         </td>
-                        <td className="px-5 py-4">
+                        <td className={`px-5 pt-4 ${terminationReason ? 'pb-1' : 'pb-4'}`}>
                           <p className="font-medium text-[#0f2038]">{project.serviceRequest?.contactName ?? '—'}</p>
                           <p className="text-xs text-[#6c757d]">{project.serviceRequest?.propertyType ?? ''}</p>
                         </td>
-                        <td className="px-5 py-4">
+                        <td className={`px-5 pt-4 ${terminationReason ? 'pb-1' : 'pb-4'}`}>
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${sourceColor(project.source)}`}>
                             {formatSource(project.source)}
                           </span>
                         </td>
-                        <td className="px-5 py-4">
+                        <td className={`px-5 pt-4 ${terminationReason ? 'pb-1' : 'pb-4'}`}>
                           <span className={`px-2 py-1 rounded text-xs font-semibold ${statusColor(project.status, project.clientReworkRequested)}`}>
                             {formatStatus(project.status, project.clientReworkRequested)}
                           </span>
                         </td>
-                        <td className="px-5 py-4">
+                        <td className={`px-5 pt-4 ${terminationReason ? 'pb-1' : 'pb-4'}`}>
                           {project.manager ? (
                             <span className="inline-flex items-center gap-1.5">
                               <span className="w-6 h-6 rounded-full bg-[#0f2038] text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">
@@ -205,22 +205,22 @@ export default function AllProjectsClient({ projects }: { projects: ProjectType[
                             <span className="italic text-gray-400 text-xs">Unassigned</span>
                           )}
                         </td>
-                        <td className="px-5 py-4 text-[#6c757d] text-xs">
+                        <td className={`px-5 pt-4 ${terminationReason ? 'pb-1' : 'pb-4'} text-[#6c757d] text-xs`}>
                           {project.fieldEmployees?.map((e: any) => e.name).join(', ') || (
                             <span className="italic text-gray-400">Unassigned</span>
                           )}
                         </td>
-                        <td className="px-5 py-4 text-[#6c757d] text-xs">
+                        <td className={`px-5 pt-4 ${terminationReason ? 'pb-1' : 'pb-4'} text-[#6c757d] text-xs`}>
                           {project.reportEmployee?.name || <span className="italic text-gray-400">Unassigned</span>}
                         </td>
-                        <td className="px-5 py-4 text-[#6c757d] text-xs whitespace-nowrap">
+                        <td className={`px-5 pt-4 ${terminationReason ? 'pb-1' : 'pb-4'} text-[#6c757d] text-xs whitespace-nowrap`}>
                           {new Date(project.createdAt).toLocaleDateString('en-IN', {
                             day: '2-digit',
                             month: 'short',
                             year: 'numeric',
                           })}
                         </td>
-                        <td className="px-5 py-4">
+                        <td className={`px-5 pt-4 ${terminationReason ? 'pb-1' : 'pb-4'}`}>
                           <Link
                             href={`/portal/projects/${project.projectCode}`}
                             className="text-[#b8860b] hover:underline font-medium text-xs"
@@ -230,10 +230,10 @@ export default function AllProjectsClient({ projects }: { projects: ProjectType[
                         </td>
                       </tr>
                       {terminationReason && (
-                        <tr key={`${project.id}-reason`} className="bg-red-50/60">
-                          <td colSpan={9} className="px-5 py-1.5 border-t-0">
-                            <span className="text-[11px] font-semibold text-red-500 uppercase tracking-wider mr-1.5">Reason:</span>
-                            <span className="text-[11px] text-red-700">{terminationReason}</span>
+                        <tr key={`${project.id}-reason`} style={{ borderTop: 0 }}>
+                          <td colSpan={9} className="px-5 pb-4 pt-1">
+                            <span className="text-[11px] font-bold text-red-600 uppercase tracking-wider mr-1.5">Reason:</span>
+                            <span className="text-[11px] font-bold text-red-600">{terminationReason}</span>
                           </td>
                         </tr>
                       )}
