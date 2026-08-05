@@ -16,9 +16,7 @@ export default async function PortalProjectsPage() {
     redirect('/portal');
   }
 
-  const whereClause = currentUser.role === 'MANAGER'
-    ? { assignedManagerId: session.user.id }
-    : {};
+  const whereClause = { assignedManagerId: session.user.id };
 
   const projects = await prisma.project.findMany({
     where: whereClause,
@@ -39,12 +37,8 @@ export default async function PortalProjectsPage() {
   return (
     <ManagerProjectsClient
       projects={projects}
-      title={currentUser.role === 'MANAGER' ? 'My Projects' : 'All Projects'}
-      subtitle={
-        currentUser.role === 'MANAGER'
-          ? 'Projects assigned to you for oversight.'
-          : 'Manage all active, completed, and terminated valuation projects.'
-      }
+      title="My Projects"
+      subtitle="Projects assigned to you for oversight."
     />
   );
 }
