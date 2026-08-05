@@ -7,10 +7,6 @@
     {
       "path": "/api/cron/cleanup-terminated-projects",
       "schedule": "0 2 * * *"
-    },
-    {
-      "path": "/api/cron/fetch-emails",
-      "schedule": "*/15 * * * *"
     }
   ]
 }
