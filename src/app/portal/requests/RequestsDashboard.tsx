@@ -350,9 +350,7 @@ export default function RequestsDashboard({
             <h3 className="text-lg font-bold text-[#0f2038] mb-2" style={{ fontFamily: 'var(--font-heading)' }}>
               Reject Service Request
             </h3>
-            <p className="text-xs text-[#6c757d] mb-4">
-              Please enter the reason for rejecting this service request. The client will see this note.
-            </p>
+            <p className="text-sm text-[#6c757d] mb-4">Please provide a reason for rejecting this service request. This reason is for internal records and will <strong className="text-rose-600 font-medium">not</strong> be emailed to the client.</p>
             <textarea
               value={rejectionNotes}
               onChange={(e) => setRejectionNotes(e.target.value)}
