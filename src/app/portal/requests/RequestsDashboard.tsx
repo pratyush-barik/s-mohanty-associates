@@ -87,7 +87,10 @@ export default function RequestsDashboard({
 
   const filteredRequests = requests.filter((req) => {
     if (activeTab === 'pending') return req.status === 'SUBMITTED';
-    if (activeTab === 'approved') return req.status === 'APPROVED';
+    if (activeTab === 'approved') {
+      const isClosed = req.project && ['COMPLETED', 'ARCHIVED', 'TERMINATED'].includes(req.project.status);
+      return req.status === 'APPROVED' && !isClosed;
+    }
     return req.status === 'REJECTED';
   });
 
@@ -179,7 +182,7 @@ export default function RequestsDashboard({
               : 'border-transparent text-[#6c757d] hover:text-[#0f2038]'
           }`}
         >
-          Approved / Active ({requests.filter((r) => r.status === 'APPROVED').length})
+          Approved / Active ({requests.filter((r) => r.status === 'APPROVED' && (!r.project || !['COMPLETED', 'ARCHIVED', 'TERMINATED'].includes(r.project.status))).length})
         </button>
         <button
           onClick={() => setActiveTab('rejected')}

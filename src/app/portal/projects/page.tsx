@@ -43,7 +43,7 @@ export default async function PortalProjectsPage() {
       subtitle={
         currentUser.role === 'MANAGER'
           ? 'Projects assigned to you for oversight.'
-          : 'Manage all active and completed valuation projects.'
+          : 'Manage all active, completed, and terminated valuation projects.'
       }
     />
   );
