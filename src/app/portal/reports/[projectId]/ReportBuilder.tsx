@@ -632,6 +632,45 @@ const SERVICES_LIST = [
   }
 ];
 
+const BANK_FIS_LIST = [
+  'ADITYA BIRLA CAPITAL LTD','ADITYA BIRLA HOUSING FINANCE LTD','ANNAPURNA MICRO FINANCE LTD',
+  'ARKA FINANCE LTD','ARTHAN FINANCE','AU SMALL FINANCE BANK','AVE FINANCE LTD',
+  'AXIS BANK','AXIS FINANCE LTD','BAJAJ HOUSING FINANCE LTD','BANDHAN BANK',
+  'BANK OF BARODA-BOB','BANK OF INDIA-BOI','BANK OF MAHARASHTRA-BOM','CANARA BANK',
+  'CANFIN HOMES LTD','CHOLAMANDALAM INVESTMENT COMPANY LTD','CLIX CAPITAL LTD',
+  'DCB BANK','GIC HOUSING FINANCE','GRIHAM HOUSING FINANCE','HDB FINANCIAL SERVICES',
+  'HDFC BANK','ICICI BANK','IDBI BANK','IDFC FIRST BANK','IKF FINANCE',
+  'INDIAN BANK','INDUSIND BANK','ISFC','JANA SMALL FINANCE BANK','KOTAK MAHINDRA BANK',
+  'L&T FINANCIAL SERVICES','LIC HOUSING FINANCE LTD','MAHINDRA FINANCE LTD',
+  'MANAPPURAM HOUSING FINANCE','NAVDHAN FINANCE','NEO GROWTH','PNB HOUSING FINANCE LTD',
+  'POONAWALLA FINANCE','PROTEUM FINANCE','PUNJAB & SIND BANK','PUNJAB NATIONAL BANK',
+  'PURPLE FINANCE','SAMMUNATI FINANCE','SMFG INDIA-FULLERTON','SHRIRAM FINANCE',
+  'STATE BANK OF INDIA-SBI','SURYODAY SMALL FINANCE BANK','SWARNA FINANCE',
+  'TATA CAPITAL LTD','TATA HOUSING FINANCE LTD','UCO BANK','UJJIVAN SMALL FINANCE BANK',
+  'UNION BANK OF INDIA-UBI','UNITY SMALL FINANCE BANK','UTKARSH SMALL FINANCE BANK',
+  'VARTHANA FINANCE','VISTAAR FINANCE','YES BANK',
+];
+
+const APF_LIST = [
+  'AXIS BANK','IDBI BANK','IDFC FIRST BANK','KOTAK MAHINDRA BANK',
+  'LIC HOUSING FINANCE LTD','PNB HOUSING FINANCE LTD','STATE BANK OF INDIA',
+  'YES BANK','OTHER PSU BANKS',
+];
+
+const CF_LIST = [
+  'FOR UNSOLD STOCKS FLAT UNITS OF PROJECT',
+  'TOTAL FLAT UNITS OF PROJECT',
+  'LIC HOUSING FINANCE LTD FORMAT',
+];
+
+const INSTITUTE_CATEGORIES = [
+  { id: 'bank_fis', label: 'Bank & FIS', icon: '🏦', list: BANK_FIS_LIST },
+  { id: 'apf', label: 'Advance Processing Facility', icon: '💼', list: APF_LIST },
+  { id: 'cf', label: 'Construction Funding', icon: '🏗️', list: CF_LIST },
+  { id: 'income_tax', label: 'Income Tax Capital Gain', icon: '📊', direct: true },
+  { id: 'ibbi', label: 'IBBI - IVS', icon: '⚖️', direct: true },
+];
+
 const FloatingNavigator = ({ isApartmentFlat }: { isApartmentFlat: boolean }) => {
   const NAV_SECTIONS = [
     { id: 'section-1', title: 'General Details' },
@@ -829,37 +868,50 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   const router = useRouter();
 
   const [selectingOrg, setSelectingOrg] = useState(false);
-  const [wizardStep, setWizardStep] = useState<'client_type' | 'service' | 'subject' | 'completed'>(
+  const [wizardStep, setWizardStep] = useState<'client_type' | 'completed'>(
     !merged.clientType ? 'client_type' : 'completed'
   );
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [showBankList, setShowBankList] = useState(false);
 
   const handleSelectClientType = (type: 'individual' | 'organisation') => {
     if (type === 'individual') {
       setFields(prev => ({ ...prev, clientType: 'individual', organisationTemplate: '' }));
-      setWizardStep('service');
     } else {
       setSelectingOrg(true);
     }
+    setWizardStep('completed');
   };
 
-  const handleSelectOrganisation = (num: string) => {
+  const handleSelectOrganisation = (value: string) => {
     setFields(prev => ({
       ...prev,
       clientType: 'organisation',
-      organisationTemplate: num
+      organisationTemplate: value
     }));
     setSelectingOrg(false);
-    setWizardStep('service');
-  };
-
-  const handleSelectService = (service: string) => {
-    setFields(prev => ({ ...prev, serviceType: service }));
-    setWizardStep('subject');
-  };
-
-  const handleSelectSubject = (subject: string) => {
-    setFields(prev => ({ ...prev, subjectType: subject }));
+    setSelectedCategory(null);
+    setShowBankList(false);
     setWizardStep('completed');
+  };
+
+  const handleCategoryClick = (category: string) => {
+    if (category === 'income_tax' || category === 'ibbi') {
+      setFields(prev => ({
+        ...prev,
+        clientType: 'organisation',
+        organisationTemplate: category === 'income_tax' ? 'INCOME_TAX' : 'IBBI_IVS',
+      }));
+    } else {
+      setSelectedCategory(category);
+      setShowBankList(true);
+    }
+    setWizardStep('completed');
+  };
+
+  const handleBackFromBanks = () => {
+    setShowBankList(false);
+    setSelectedCategory(null);
   };
 
   const getSelectedAmenities = () => {
@@ -911,8 +963,6 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         ...prev,
         clientType: '',
         organisationTemplate: '',
-        serviceType: '',
-        subjectType: ''
       }));
       setWizardStep('client_type');
     }
@@ -1855,9 +1905,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
             <div className="flex items-center justify-center gap-2 mt-4">
               <span className={`w-2.5 h-2.5 rounded-full ${activeStep === 'client_type' ? 'bg-[#b8860b]' : 'bg-[#dee2e6]'}`}></span>
               <span className={`w-8 h-[2px] ${fields.clientType ? 'bg-[#b8860b]' : 'bg-[#dee2e6]'}`}></span>
-              <span className={`w-2.5 h-2.5 rounded-full ${activeStep === 'service' ? 'bg-[#b8860b]' : 'bg-[#dee2e6]'}`}></span>
-              <span className={`w-8 h-[2px] ${fields.serviceType ? 'bg-[#b8860b]' : 'bg-[#dee2e6]'}`}></span>
-              <span className={`w-2.5 h-2.5 rounded-full ${activeStep === 'subject' ? 'bg-[#b8860b]' : 'bg-[#dee2e6]'}`}></span>
+              <span className={`w-2.5 h-2.5 rounded-full ${activeStep === 'completed' ? 'bg-[#b8860b]' : 'bg-[#dee2e6]'}`}></span>
             </div>
           </div>
 
@@ -1905,133 +1953,56 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
               ) : (
                 <div className="bg-white p-8 rounded-2xl shadow-lg border border-[#e9ecef] space-y-6">
                   <div className="flex items-center justify-between pb-4 border-b border-[#e9ecef]">
-                    <h3 className="text-lg font-bold text-[#0f2038]">Select Institution Template</h3>
+                    <h3 className="text-lg font-bold text-[#0f2038]">
+                      {showBankList ? 'Select Bank / Institution' : 'Select Institution Category'}
+                    </h3>
                     <button
                       type="button"
-                      onClick={() => setSelectingOrg(false)}
+                      onClick={() => {
+                        if (showBankList) {
+                          handleBackFromBanks();
+                        } else {
+                          setSelectingOrg(false);
+                        }
+                      }}
                       className="text-sm text-[#b8860b] hover:text-[#8a6507] font-medium"
                     >
                       ← Back
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-                    {Array.from({ length: 10 }).map((_, idx) => {
-                      const num = String(idx + 1);
-                      return (
+                  {showBankList && selectedCategory ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-[420px] overflow-y-auto p-3 border border-[#dee2e6] rounded-xl bg-neutral-50/50">
+                      {INSTITUTE_CATEGORIES.find(c => c.id === selectedCategory)?.list?.map((bank) => (
                         <button
-                          key={num}
+                          key={bank}
                           type="button"
-                          onClick={() => {
-                            handleSelectOrganisation(num);
-                            setWizardStep('service');
-                          }}
-                          className="p-4 rounded-xl border border-[#dee2e6] hover:border-[#b8860b] hover:bg-[#fffbf0] text-center font-bold text-lg text-[#0f2038] hover:text-[#b8860b] transition-all duration-200"
+                          onClick={() => handleSelectOrganisation(bank)}
+                          className="p-3 rounded-lg border border-[#dee2e6] hover:border-[#b8860b] hover:bg-[#fffbf0] text-left text-xs font-medium text-[#0f2038] transition-all duration-200 truncate"
                         >
-                          {num}
+                          {bank}
                         </button>
-                      );
-                    })}
-                  </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                      {INSTITUTE_CATEGORIES.map((cat) => (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => handleCategoryClick(cat.id)}
+                          className="p-4 rounded-xl border border-[#dee2e6] hover:border-[#b8860b] hover:bg-[#fffbf0] text-center transition-all duration-200 flex flex-col items-center gap-2"
+                        >
+                          <span className="text-2xl">{cat.icon}</span>
+                          <span className="text-xs font-bold text-[#0f2038] leading-tight">{cat.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </>
           )}
-
-          {activeStep === 'service' && (
-            <div className="bg-white p-8 rounded-2xl shadow-lg border border-[#e9ecef] space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-[#e9ecef]">
-                <h3 className="text-lg font-bold text-[#0f2038]">Select Valuation Service</h3>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFields(prev => ({ ...prev, clientType: '', organisationTemplate: '' }));
-                    setWizardStep('client_type');
-                  }}
-                  className="text-sm text-[#b8860b] hover:text-[#8a6507] font-medium"
-                >
-                  ← Back
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[360px] overflow-y-auto p-3 border border-[#dee2e6] rounded-xl bg-neutral-50/50">
-                {SERVICES_LIST.map((srv) => {
-                  const isSelected = fields.serviceType === srv.id;
-                  return (
-                    <button
-                      key={srv.id}
-                      type="button"
-                      onClick={() => handleSelectService(srv.id)}
-                      className={`p-4 rounded-xl border text-left transition-all duration-200 flex items-start gap-3 w-full
-                        ${isSelected 
-                          ? 'border-[#b8860b] bg-[#fffbf0] shadow-sm' 
-                          : 'border-[#dee2e6] bg-white hover:border-[#b8860b] hover:bg-[#fffbf0]/40'}`}
-                    >
-                      <div className="text-2xl shrink-0 p-1.5 bg-neutral-100/50 rounded-lg">
-                        {srv.icon}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h4 className="font-bold text-sm text-[#0f2038] truncate">{srv.title}</h4>
-                        <p className="text-[10px] text-[#6c757d] line-clamp-2 mt-0.5">{srv.desc}</p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {activeStep === 'subject' && (
-            <div className="bg-white p-8 rounded-2xl shadow-lg border border-[#e9ecef] space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-[#e9ecef]">
-                <h3 className="text-lg font-bold text-[#0f2038]">Select Report Subject</h3>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFields(prev => ({ ...prev, serviceType: '' }));
-                    setWizardStep('service');
-                  }}
-                  className="text-sm text-[#b8860b] hover:text-[#8a6507] font-medium"
-                >
-                  ← Back
-                </button>
-              </div>
-
-              {(() => {
-                const serviceObj = SERVICES_LIST.find(s => s.id === fields.serviceType);
-                const subjects = serviceObj?.subjects || ['Residential', 'Commercial', 'Industrial'];
-                return (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[360px] overflow-y-auto p-3 border border-[#dee2e6] rounded-xl bg-neutral-50/50">
-                    {subjects.map((sub) => {
-                      const isSelected = fields.subjectType === sub;
-                      return (
-                        <button
-                          key={sub}
-                          type="button"
-                          onClick={() => handleSelectSubject(sub)}
-                          className={`p-4 rounded-xl border text-left transition-all duration-200 flex items-center gap-3 w-full
-                            ${isSelected 
-                              ? 'border-[#b8860b] bg-[#fffbf0] shadow-sm' 
-                              : 'border-[#dee2e6] bg-white hover:border-[#b8860b] hover:bg-[#fffbf0]/40'}`}
-                        >
-                          <div className="w-8 h-8 rounded-full bg-neutral-100/80 text-[#0f2038] flex items-center justify-center font-bold text-xs shrink-0">
-                            {sub.charAt(0)}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <h4 className="font-bold text-sm text-[#0f2038] truncate">{sub}</h4>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
 
   // Feature flag: AI Assist panel visibility
   const aiAssistEnabled = process.env.NEXT_PUBLIC_AI_ASSIST_ENABLED === 'true';
