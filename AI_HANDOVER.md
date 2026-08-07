@@ -259,7 +259,8 @@ Outstanding items in **priority order**:
 > When modifying the UI, prioritize modern, premium aesthetics (glassmorphism, clean typography, subtle animations) without relying on Tailwind component libraries like Shadcn. Use raw Tailwind classes.
 
 ## 7. Recent Git Commits (for reference)
-- `latest` — feat(ReportBuilder): add Annexure parsing (xlsx) and rendering in PDF/HTML preview tables
+- `latest` — fix(ReportBuilder): resolve PDF table overflow by breaking words and handling full-width rows, and fix missing address in Valuation Certificate
+- `previous` — feat(ReportBuilder): add Annexure parsing (xlsx) and rendering in PDF/HTML preview tables
 - `previous` — feat(ReportBuilder): add Annexure toggle in Section 1 and Section 15 with dynamic annexure cards and Excel upload
 - `previous` — feat(ReportBuilder): synchronize wizard steps with browser history popstate
 - `previous` — style(ReportBuilder): center selection grids and make FloatingNavigator sticky
