@@ -1968,16 +1968,16 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
 
                   {showBankList && selectedCategory ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-[420px] overflow-y-auto p-3 border border-[#dee2e6] rounded-xl bg-neutral-50/50">
-                      {INSTITUTE_CATEGORIES.find(c => c.id === selectedCategory)?.list?.map((bank) => (
-                        <button
-                          key={bank}
-                          type="button"
-                          onClick={() => handleSelectOrganisation(bank)}
-                          className="p-3 rounded-lg border border-[#dee2e6] hover:border-[#b8860b] hover:bg-[#fffbf0] text-left text-xs font-medium text-[#0f2038] transition-all duration-200 truncate"
-                        >
-                          {bank}
-                        </button>
-                      ))}
+                       {INSTITUTE_CATEGORIES.find(c => c.id === selectedCategory)?.list?.map((bank) => (
+                         <button
+                           key={bank}
+                           type="button"
+                           onClick={() => handleSelectOrganisation(bank)}
+                           className="p-4 rounded-xl border border-[#dee2e6] hover:border-[#b8860b] hover:bg-[#fffbf0] text-center transition-all duration-200 flex items-center justify-center text-sm font-medium text-[#0f2038]"
+                         >
+                           {bank}
+                         </button>
+                       ))}
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -2017,19 +2017,19 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         <div className="flex flex-col xl:flex-row xl:items-center gap-3">
           <span className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider">Active Configuration</span>
           <div className="flex flex-wrap gap-2">
-            <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm flex items-center gap-1.5">
-              {fields.clientType === 'organisation' ? (
-                <>
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                  Org (Template {fields.organisationTemplate})
-                </>
-              ) : (
-                <>
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                  Individual
-                </>
-              )}
-            </span>
+             <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm flex items-center gap-1.5">
+               {fields.clientType === 'organisation' ? (
+                 <>
+                   <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                   Organisation
+                 </>
+               ) : (
+                 <>
+                   <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                   Individual
+                 </>
+               )}
+             </span>
             <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm">
               Service: {SERVICES_LIST.find(s => s.id === fields.serviceType)?.title || fields.serviceType}
             </span>
