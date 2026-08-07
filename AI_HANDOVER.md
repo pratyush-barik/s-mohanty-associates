@@ -96,9 +96,12 @@ The core business logic is **100% complete**.
     - **PDF Layout & Alignment:** To counter rendering bugs in `html2canvas` (which ignores CSS `vertical-align` and flexbox on table cells), the code uses a **JavaScript post-processing technique**. Before capture, it measures the rendered row height vs content height of cells marked with `data-vcenter="1"` and dynamically injects precise pixel padding to force vertical centering. The PDF pages are also balanced (e.g. Section 3 moved to Page 3) and page-level flex wrappers were removed to completely eliminate overflow and large gaps.
     - **Cell Height & Overlap Fix (July 2026):** Halved vertical cell paddings (reduced to `4.5px 8px` on general rows, `6px 8px` on section headers, and `2.5px 6px` on building table details) and set explicit `line-height: 1.35em` relative layout constraints inside all table elements. This prevents html2canvas from interpreting unitless heights as pixel coordinates (which originally caused subsequent rows to collapse and render on top of each other) while centering the text nicely within cells.
     - **3-Step Setup Wizard:** Implemented a configuration wizard overlay that prompts the Report Agent to select:
-      1. *Client Category*: Individual client vs. Organisation/Bank (supporting templates 1-10).
-      2. *Service*: Preloaded with the company's 13 official services.
-      3. *Subject*: Dynamically filtered based on the selected service (e.g., Residential Land under Land Valuation).
+       1. *Client Category*: Individual client vs. Organisation/Bank (supporting templates 1-10).
+       2. *Service*: Preloaded with the company's 13 official services.
+       3. *Subject*: Dynamically filtered based on the selected service (e.g., Residential Land under Land Valuation).
+       - *Browser History popstate Sync (August 2026)*: Synchronized the Setup Wizard steps with the browser's history log (`window.history.pushState` & `popstate` listener). Using the browser's forward/back buttons or the on-screen "← Back" button now navigates backward through wizard steps rather than redirecting the user out of the page.
+       - *Centered Flex Layout for Selections*: Replaced hardcoded CSS grid columns with a flex-wrap container (`flex flex-wrap gap-3 justify-center`) and constrained item widths (`flex-1 min-w-[200px] max-w-[280px]`) so that selection cards wrap and stretch dynamically, centering themselves instead of leaving empty columns on the right when items are few.
+       - *Sticky Section Navigator Sidebar*: Changed the `FloatingNavigator` (sections list) from `fixed right-4` to a `sticky top-24 shrink-0 w-[160px] z-40` flex sibling inside the editor layout. Replaced the parent page padding with clean inline column separation, completely preventing forms from sliding under the sections panel on narrow screens.
     - **Adaptability Banner & Dynamic Titles:** Configured an active settings summary banner at the top of Section 1 of the report editor that highlights these selected parameters with a "Change Parameters" trigger to re-run the configuration wizard at any time. Report document titles in the final PDF compile dynamically based on the chosen category, service, and subject.
     - **Semi-Transparent Table Accents:** Replaced solid `#DBE6F0` (light blue labels) and `#DDE9F6` (lighter options) backgrounds in the PDF generator with semi-transparent `rgba` equivalents (approx. 55% transparency) to match the custom background templates elegantly when printed.
     - **Simplified Address Schema & States Datalist:** Replaced the redundant list of address fields (city, district, khasra, mouza, tahasil, etc.) with a clean structure: Address Line 1, State, and Pincode. The State field uses a searchable datalist prefilled with all 36 Indian states and Union Territories. All values serialize dynamically into PostgreSQL via Prisma client JSON mutations without schema table alterations.
@@ -255,7 +258,14 @@ Outstanding items in **priority order**:
 > When modifying the UI, prioritize modern, premium aesthetics (glassmorphism, clean typography, subtle animations) without relying on Tailwind component libraries like Shadcn. Use raw Tailwind classes.
 
 ## 7. Recent Git Commits (for reference)
-- `latest` — feat: replace hardcoded heuristic predictor with trained ML model from 150-row Odisha property dataset
+- `latest` — feat(ReportBuilder): synchronize wizard steps with browser history popstate
+- `previous` — style(ReportBuilder): center selection grids and make FloatingNavigator sticky
+- `previous` — style(ReportBuilder): remove double padding to fix FloatingNavigator overlap
+- `previous` — style(ReportBuilder): use flexbox layout with wrap and stretch for bank items
+- `previous` — style(ReportBuilder): use auto-fit for bank and category grids to prevent empty space
+- `previous` — style(ReportBuilder): fix bank selection layout and text overflow
+- `previous` — feat(ReportBuilder): show organisation parameters in banner
+- `previous` — feat: replace hardcoded heuristic predictor with trained ML model from 150-row Odisha property dataset
 - `previous` — docs: add Training Data Collector to ML pipeline docs
 - `previous` — feat: auto-append project data to persistent train_model.csv upon completion
 - `previous` — feat: add generic cron runner framework + terminated project cleanup job (photos + chat data, 24h interval)
