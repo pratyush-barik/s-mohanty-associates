@@ -168,6 +168,7 @@ interface ReportFields {
   reworkNotes?: string;
   clientType?: string;
   organisationTemplate?: string;
+  institutionCategory?: string;
   serviceType?: string;
   subjectType?: string;
   valuationLayout?: 'land_building' | 'apartment';
@@ -308,6 +309,7 @@ const DEFAULT_FIELDS: ReportFields = {
   nearbyLandmarks: '',
   clientType: '',
   organisationTemplate: '',
+  institutionCategory: '',
   serviceType: '',
   subjectType: '',
 };
@@ -894,14 +896,20 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   };
 
   const handleCategoryClick = (category: string) => {
+    const categoryLabel = INSTITUTE_CATEGORIES.find(c => c.id === category)?.label || category;
     if (category === 'income_tax' || category === 'ibbi') {
       setFields(prev => ({
         ...prev,
         clientType: 'organisation',
         organisationTemplate: category === 'income_tax' ? 'INCOME_TAX' : 'IBBI_IVS',
+        institutionCategory: categoryLabel,
       }));
       setWizardStep('completed');
     } else {
+      setFields(prev => ({
+        ...prev,
+        institutionCategory: categoryLabel,
+      }));
       setSelectedCategory(category);
       setShowBankList(true);
     }
@@ -961,7 +969,11 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         ...prev,
         clientType: '',
         organisationTemplate: '',
+        institutionCategory: '',
       }));
+      setSelectingOrg(false);
+      setSelectedCategory(null);
+      setShowBankList(false);
       setWizardStep('setup');
     }
   };
@@ -2021,7 +2033,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
                {fields.clientType === 'organisation' ? (
                  <>
                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                   Organisation
+                   Organisation / Bank
                  </>
                ) : (
                  <>
@@ -2029,7 +2041,19 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
                    Individual
                  </>
                )}
-             </span>
+              </span>
+              {fields.clientType === 'organisation' && fields.institutionCategory && (
+                <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-500"></span>
+                  {fields.institutionCategory}
+                </span>
+              )}
+              {fields.clientType === 'organisation' && fields.organisationTemplate && (
+                <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                  {fields.organisationTemplate}
+                </span>
+              )}
             <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm">
               Service: {SERVICES_LIST.find(s => s.id === fields.serviceType)?.title || fields.serviceType}
             </span>
