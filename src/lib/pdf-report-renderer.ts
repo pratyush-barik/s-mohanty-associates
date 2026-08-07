@@ -165,7 +165,25 @@ export class PDFReportRenderer {
     const lines: string[] = [];
     let currentLine = '';
 
-    for (const word of words) {
+    for (let word of words) {
+      if (!word) continue;
+
+      // Force break long words to prevent horizontal spillage across cell boundaries
+      if (font.widthOfTextAtSize(word, fontSize) > maxWidth) {
+        if (currentLine) {
+          lines.push(currentLine);
+          currentLine = '';
+        }
+        while (font.widthOfTextAtSize(word, fontSize) > maxWidth && word.length > 1) {
+          let fitLen = 1;
+          while (fitLen < word.length && font.widthOfTextAtSize(word.substring(0, fitLen + 1), fontSize) <= maxWidth) {
+            fitLen++;
+          }
+          lines.push(word.substring(0, fitLen));
+          word = word.substring(fitLen);
+        }
+      }
+
       const testLine = currentLine ? `${currentLine} ${word}` : word;
       const w = font.widthOfTextAtSize(testLine, fontSize);
       if (w > maxWidth && currentLine) {
@@ -953,14 +971,22 @@ export class PDFReportRenderer {
     if (headers.length === 0) return;
 
     const numCols = headers.length;
+    const isFullWidth = (arr: string[]) => arr.length > 0 && arr[0].trim() !== '' && arr.slice(1).every(c => !c || c.trim() === '');
+
     // Calculate column widths proportional to content
-    const maxColChars = headers.map((h, i) => {
-      let max = h.length;
-      for (const row of rows) {
-        if (row[i] && row[i].length > max) max = row[i].length;
-      }
-      return Math.max(max, 3);
-    });
+    const maxColChars = Array(numCols).fill(3);
+    
+    if (!isFullWidth(headers)) {
+      headers.forEach((h, i) => { if (h && h.length > maxColChars[i]) maxColChars[i] = h.length; });
+    }
+    
+    for (const row of rows) {
+      if (isFullWidth(row)) continue;
+      row.forEach((cell, i) => {
+        if (cell && cell.length > maxColChars[i]) maxColChars[i] = cell.length;
+      });
+    }
+
     const totalChars = maxColChars.reduce((a, b) => a + b, 0);
     const colWidths = maxColChars.map(c => Math.max((c / totalChars) * CONTENT_W, 30));
 
@@ -974,37 +1000,61 @@ export class PDFReportRenderer {
     const rowPadX = 3;
 
     // Draw header row
-    const headerH = Math.max(...headers.map(h => {
-      const lines = this.wrapText(h, finalWidths[headers.indexOf(h)] - rowPadX * 2, fontSize, true);
-      return lines.length * fontSize * LINE_HEIGHT + rowPadY * 2;
-    }));
+    let headerH = 0;
+    const headerIsFull = isFullWidth(headers);
+    if (headerIsFull) {
+      const lines = this.wrapText(headers[0], CONTENT_W - rowPadX * 2, fontSize, true);
+      headerH = lines.length * fontSize * LINE_HEIGHT + rowPadY * 2;
+    } else {
+      headerH = Math.max(...headers.map((h, i) => {
+        const lines = this.wrapText(h, finalWidths[i] - rowPadX * 2, fontSize, true);
+        return lines.length * fontSize * LINE_HEIGHT + rowPadY * 2;
+      }));
+    }
+
     this.checkPageBreak(headerH + 40);
 
     let x = MARGIN_L;
-    for (let c = 0; c < numCols; c++) {
-      this.drawCell(x, this.cursorY, finalWidths[c], headerH, headers[c], {
+    if (headerIsFull) {
+      this.drawCell(x, this.cursorY, CONTENT_W, headerH, headers[0], {
         bold: true, fontSize, fillColor: LBL_BG, bgOpacity: 0.6,
       });
-      x += finalWidths[c];
+    } else {
+      for (let c = 0; c < numCols; c++) {
+        this.drawCell(x, this.cursorY, finalWidths[c], headerH, headers[c], {
+          bold: true, fontSize, fillColor: LBL_BG, bgOpacity: 0.6,
+        });
+        x += finalWidths[c];
+      }
     }
     this.cursorY += headerH;
 
     // Draw data rows
     for (const row of rows) {
-      const cellHeights = row.map((cell, c) => {
-        const lines = this.wrapText(cell || '', finalWidths[c] - rowPadX * 2, fontSize);
-        return lines.length * fontSize * LINE_HEIGHT + rowPadY * 2;
-      });
-      const rowH = Math.max(...cellHeights, fontSize * LINE_HEIGHT + rowPadY * 2);
+      const rowIsFull = isFullWidth(row);
+      let rowH = 0;
+      
+      if (rowIsFull) {
+        const lines = this.wrapText(row[0], CONTENT_W - rowPadX * 2, fontSize);
+        rowH = lines.length * fontSize * LINE_HEIGHT + rowPadY * 2;
+      } else {
+        const cellHeights = row.map((cell, c) => {
+          const lines = this.wrapText(cell || '', finalWidths[c] - rowPadX * 2, fontSize);
+          return lines.length * fontSize * LINE_HEIGHT + rowPadY * 2;
+        });
+        rowH = Math.max(...cellHeights, fontSize * LINE_HEIGHT + rowPadY * 2);
+      }
 
       this.checkPageBreak(rowH);
 
       x = MARGIN_L;
-      for (let c = 0; c < numCols; c++) {
-        this.drawCell(x, this.cursorY, finalWidths[c], rowH, row[c] || '', {
-          fontSize,
-        });
-        x += finalWidths[c];
+      if (rowIsFull) {
+        this.drawCell(x, this.cursorY, CONTENT_W, rowH, row[0], { fontSize });
+      } else {
+        for (let c = 0; c < numCols; c++) {
+          this.drawCell(x, this.cursorY, finalWidths[c], rowH, row[c] || '', { fontSize });
+          x += finalWidths[c];
+        }
       }
       this.cursorY += rowH;
     }

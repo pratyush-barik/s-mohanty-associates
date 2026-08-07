@@ -1476,7 +1476,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
             { text: 'This is to certify that the undersigned has personally inspected the property belonging to ' },
             { text: fields.ownerName, bold: true },
             { text: ' situated at ' },
-            { text: getFullAddress(), bold: true },
+            { text: fields.annexureEnabled && fields.annexures.length > 0 ? `address as provided in Annexure ${(fields.annexures.find(a => a.parsedData) || fields.annexures[0]).label}` : getFullAddress(), bold: true },
             { text: ' on ' },
             { text: fields.dateOfInspection, bold: true },
             { text: ' and after careful examination and consideration of all relevant factors, the Fair Market Value of the said property is assessed as under:' },
@@ -1956,7 +1956,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin:14px 0 8px;">VALUATION CERTIFICATE</p>
       <div style="border:1.5px solid #000;padding:12px;font-family:${ff};font-size:12pt;line-height:0.5em;">
         <p style="margin-top:0;">This is to certify that the undersigned has personally inspected the property belonging to
-        <b>${fields.ownerName}</b> situated at <b>${fields.annexureEnabled && fields.annexures.length > 0 ? `address as provided in Annexure ${(fields.annexures.find(a => a.parsedData) || fields.annexures[0]).label}` : getFullAddress()}</b> on
+        <b>${fields.ownerName}</b> situated at <b>${fields.annexureEnabled && fields.annexures.length > 0 ? `address as provided in Annexure ${(fields.annexures.find(a => a.parsedData) || fields.annexures[0]).label}` : (getFullAddress() || '________')}</b> on
         <b>${fields.dateOfInspection}</b> and after careful examination and consideration of all relevant factors,
         the Fair Market Value of the said property is assessed as under:</p>
         <p style="padding:4px 0;margin:4px 0;"><b>Fair Market Value: \u20B9 ${formatIndianCurrency(totalPropertyValue)} (${rupeesInWords(totalPropertyValue)})</b></p>
@@ -2046,14 +2046,27 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     if (fields.annexureEnabled && fields.annexures.length > 0) {
       for (const annexure of fields.annexures) {
         if (annexure.parsedData && annexure.parsedData.headers.length > 0) {
-          const headerCells = annexure.parsedData.headers.map(h =>
-            `<th style="border:1px solid #000;padding:4px 6px;font-family:${ff};font-size:10pt;font-weight:bold;background:${lblBg};text-align:left;">${h}</th>`
-          ).join('');
-          const dataRows = annexure.parsedData.rows.map(row =>
-            `<tr>${row.map(cell =>
-              `<td style="border:1px solid #000;padding:3px 6px;font-family:${ff};font-size:10pt;">${cell}</td>`
-            ).join('')}</tr>`
-          ).join('');
+          const numCols = annexure.parsedData.headers.length;
+          const isFullWidth = (row: string[]) => row.length > 0 && row[0].trim() !== '' && (row.slice(1).every(c => !c || c.trim() === ''));
+          
+          let headerCells = '';
+          if (isFullWidth(annexure.parsedData.headers)) {
+            headerCells = `<th colspan="${numCols}" style="border:1px solid #000;padding:4px 6px;font-family:${ff};font-size:10pt;font-weight:bold;background:${lblBg};text-align:left;">${annexure.parsedData.headers[0]}</th>`;
+          } else {
+            headerCells = annexure.parsedData.headers.map(h =>
+              `<th style="border:1px solid #000;padding:4px 6px;font-family:${ff};font-size:10pt;font-weight:bold;background:${lblBg};text-align:left;">${h}</th>`
+            ).join('');
+          }
+
+          const dataRows = annexure.parsedData.rows.map(row => {
+            if (isFullWidth(row)) {
+              return `<tr><td colspan="${numCols}" style="border:1px solid #000;padding:3px 6px;font-family:${ff};font-size:10pt;">${row[0]}</td></tr>`;
+            } else {
+              return `<tr>${row.map(cell =>
+                `<td style="border:1px solid #000;padding:3px 6px;font-family:${ff};font-size:10pt;">${cell}</td>`
+              ).join('')}</tr>`;
+            }
+          }).join('');
           allBlocks.push(`<div style="font-family:${ff};color:#000;">
             <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin-bottom:8px;">ANNEXURE ${annexure.label}</p>
             <p style="font-family:${ff};font-size:10pt;margin-bottom:6px;">Source File: <b>${annexure.excelFileName || 'N/A'}</b></p>
@@ -2908,7 +2921,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
           <p className="mb-3">
             This is to certify that the undersigned has personally inspected the property belonging to
             <strong> {fields.ownerName || '________'}</strong> situated at
-            <strong> {getFullAddress() || '________'}</strong> on
+            <strong> {fields.annexureEnabled && fields.annexures.length > 0 ? `address as provided in Annexure ${(fields.annexures.find(a => a.parsedData) || fields.annexures[0]).label}` : (getFullAddress() || '________')}</strong> on
             <strong> {fields.dateOfInspection || '________'}</strong> and after careful examination and consideration
             of all relevant factors, the Fair Market Value of the said property is assessed as under:
           </p>
