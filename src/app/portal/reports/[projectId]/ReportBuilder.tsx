@@ -2003,6 +2003,10 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
               )}
             </>
           )}
+        </div>
+      </div>
+    );
+  }
 
   // Feature flag: AI Assist panel visibility
   const aiAssistEnabled = process.env.NEXT_PUBLIC_AI_ASSIST_ENABLED === 'true';
