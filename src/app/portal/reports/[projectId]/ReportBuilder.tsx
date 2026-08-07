@@ -874,12 +874,48 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showBankList, setShowBankList] = useState(false);
 
+  useEffect(() => {
+    if (wizardStep !== 'setup') return;
+
+    // Set initial state in history so we can detect when we pop back to the start
+    if (typeof window !== 'undefined' && window.history.state === null) {
+      window.history.replaceState({ step: 'type' }, '');
+    }
+
+    const handlePopState = (event: PopStateEvent) => {
+      const state = event.state;
+      if (!state) return;
+
+      if (state.step === 'type') {
+        setSelectingOrg(false);
+        setShowBankList(false);
+        setSelectedCategory(null);
+      } else if (state.step === 'category') {
+        setSelectingOrg(true);
+        setShowBankList(false);
+        setSelectedCategory(null);
+      } else if (state.step === 'bank') {
+        setSelectingOrg(true);
+        setShowBankList(true);
+        setSelectedCategory(state.category || null);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [wizardStep]);
+
   const handleSelectClientType = (type: 'individual' | 'organisation') => {
     if (type === 'individual') {
       setFields(prev => ({ ...prev, clientType: 'individual', organisationTemplate: '' }));
       setWizardStep('completed');
     } else {
       setSelectingOrg(true);
+      if (typeof window !== 'undefined') {
+        window.history.pushState({ step: 'category' }, '');
+      }
     }
   };
 
@@ -912,6 +948,9 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       }));
       setSelectedCategory(category);
       setShowBankList(true);
+      if (typeof window !== 'undefined') {
+        window.history.pushState({ step: 'bank', category }, '');
+      }
     }
   };
 
@@ -975,6 +1014,9 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       setSelectedCategory(null);
       setShowBankList(false);
       setWizardStep('setup');
+      if (typeof window !== 'undefined') {
+        window.history.replaceState({ step: 'type' }, '');
+      }
     }
   };
 
@@ -1966,11 +2008,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
                     <button
                       type="button"
                       onClick={() => {
-                        if (showBankList) {
-                          handleBackFromBanks();
-                        } else {
-                          setSelectingOrg(false);
-                        }
+                        window.history.back();
                       }}
                       className="text-sm text-[#b8860b] hover:text-[#8a6507] font-medium"
                     >
