@@ -8,6 +8,7 @@ import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
 import { PDFReportRenderer } from '@/lib/pdf-report-renderer';
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
+import * as XLSX from 'xlsx';
 
 // ─── Types ─────────────────────────────────────────────────────────
 interface FloorRow {
@@ -26,6 +27,10 @@ interface AnnexureItem {
   label: string;          // 'A', 'B', 'C', ...
   excelFileUrl: string;   // Uploaded Excel URL from Supabase
   excelFileName: string;  // Original filename
+  parsedData?: {          // Parsed Excel table data
+    headers: string[];
+    rows: string[][];
+  };
 }
 
 interface ReportFields {
@@ -1087,6 +1092,24 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
 
     setUploading(true);
     setUploadError(null);
+
+    // Parse Excel/CSV content before uploading
+    let parsedData: { headers: string[]; rows: string[][] } | undefined;
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData: string[][] = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
+      if (jsonData.length > 0) {
+        parsedData = {
+          headers: jsonData[0].map(h => String(h)),
+          rows: jsonData.slice(1).map(row => row.map(cell => String(cell))),
+        };
+      }
+    } catch (parseErr) {
+      console.warn('Could not parse Excel file:', parseErr);
+    }
+
     const ext = file.name.split('.').pop();
     const fileName = `annexure-${annexureId}-${Date.now()}.${ext}`;
     const filePath = `annexures/${projectId}/${fileName}`;
@@ -1102,14 +1125,14 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
         .getPublicUrl(filePath);
       handleChange('annexures', fields.annexures.map(a =>
-        a.id === annexureId ? { ...a, excelFileUrl: data.publicUrl, excelFileName: file.name } : a
+        a.id === annexureId ? { ...a, excelFileUrl: data.publicUrl, excelFileName: file.name, parsedData } : a
       ));
     }
     setUploading(false);
   };
   const removeAnnexureFile = (annexureId: string) => {
     handleChange('annexures', fields.annexures.map(a =>
-      a.id === annexureId ? { ...a, excelFileUrl: '', excelFileName: '' } : a
+      a.id === annexureId ? { ...a, excelFileUrl: '', excelFileName: '', parsedData: undefined } : a
     ));
   };
 
@@ -1298,8 +1321,15 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       r.drawSectionHeader('GENERAL DETAILS');
       r.drawOptionRow('Type of property', ['Residential', 'Commercial', 'Residential cum Commercial', 'Industrial', 'Vacant Plot'], fields.propertyType);
       r.drawSimpleRow('Name of the Customer(s)', `"${fields.ownerName || 'N/A'}"`);
-      r.drawSimpleRow('Property Address', getFullAddress());
-      r.drawSimpleRow('Landmark', fields.landmark || '');
+      // Property Address & Landmark — show annexure reference if enabled
+      if (fields.annexureEnabled && fields.annexures.length > 0) {
+        const firstAnnexure = fields.annexures.find(a => a.parsedData);
+        const annexureLabel = firstAnnexure ? firstAnnexure.label : fields.annexures[0].label;
+        r.drawSimpleRow('Property Address', `Details are provided in Annexure ${annexureLabel}`);
+      } else {
+        r.drawSimpleRow('Property Address', getFullAddress());
+        r.drawSimpleRow('Landmark', fields.landmark || '');
+      }
       r.drawSimpleRow('Loan Application number', fields.loanApplicationNo);
       r.drawSimpleRow('Name of Document holder', fields.documentHolderName || fields.ownerName);
       r.drawSimpleRow('Date of Inspection', fields.dateOfInspection);
@@ -1504,6 +1534,19 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         });
         if (fields.latitude || fields.longitude) {
           r.drawTextBlock(`Lat: ${fields.latitude || 'N/A'}, Long: ${fields.longitude || 'N/A'}`, { bold: true, align: 'center' });
+        }
+      }
+      // ── Annexure Sections ──
+      if (fields.annexureEnabled && fields.annexures.length > 0) {
+        for (const annexure of fields.annexures) {
+          if (annexure.parsedData && annexure.parsedData.headers.length > 0) {
+            r.newPage();
+            r.drawCenteredTitle(`ANNEXURE ${annexure.label}`);
+            r.advanceCursor(6);
+            r.drawSimpleRow('Source File', annexure.excelFileName || 'N/A');
+            r.advanceCursor(8);
+            r.drawDataTable(annexure.parsedData.headers, annexure.parsedData.rows);
+          }
         }
       }
 
@@ -1727,8 +1770,11 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       ${sectionHeader('GENERAL DETAILS')}
       ${optionRow('Type of property', ['Residential', 'Commercial', 'Residential cum Commercial', 'Industrial', 'Vacant Plot'], fields.propertyType)}
       ${simpleRow('Name of the Customer(s)', `"${fields.ownerName || 'N/A'}"`)}
-      ${simpleRow('Property Address', getFullAddress())}
-      ${simpleRow('Landmark', fields.landmark || '')}
+      ${fields.annexureEnabled && fields.annexures.length > 0
+        ? simpleRow('Property Address', `Details are provided in Annexure ${(fields.annexures.find(a => a.parsedData) || fields.annexures[0]).label}`)
+        : `${simpleRow('Property Address', getFullAddress())}
+           ${simpleRow('Landmark', fields.landmark || '')}`
+      }
       ${simpleRow('Loan Application number', fields.loanApplicationNo)}
       ${simpleRow('Name of Document holder', fields.documentHolderName || fields.ownerName)}
       ${simpleRow('Date of Inspection', fields.dateOfInspection)}
@@ -1910,7 +1956,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin:14px 0 8px;">VALUATION CERTIFICATE</p>
       <div style="border:1.5px solid #000;padding:12px;font-family:${ff};font-size:12pt;line-height:0.5em;">
         <p style="margin-top:0;">This is to certify that the undersigned has personally inspected the property belonging to
-        <b>${fields.ownerName}</b> situated at <b>${getFullAddress()}</b> on
+        <b>${fields.ownerName}</b> situated at <b>${fields.annexureEnabled && fields.annexures.length > 0 ? `address as provided in Annexure ${(fields.annexures.find(a => a.parsedData) || fields.annexures[0]).label}` : getFullAddress()}</b> on
         <b>${fields.dateOfInspection}</b> and after careful examination and consideration of all relevant factors,
         the Fair Market Value of the said property is assessed as under:</p>
         <p style="padding:4px 0;margin:4px 0;"><b>Fair Market Value: \u20B9 ${formatIndianCurrency(totalPropertyValue)} (${rupeesInWords(totalPropertyValue)})</b></p>
@@ -1994,6 +2040,30 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         ${fields.latitude || fields.longitude ? `<p style="text-align:center;font-family:${ff};font-size:12pt;margin-top:6px;font-weight:bold;">Lat: ${fields.latitude || 'N/A'}, Long: ${fields.longitude || 'N/A'}</p>` : ''}
         <p style="font-family:${ff};font-size:12pt;font-style:italic;text-align:center;margin-top:2px;">Source: Site Visit dated ${fields.dateOfInspection || 'N/A'}</p>
       </div>`);
+    }
+
+    // ── BLOCKS: Annexure Sections ──
+    if (fields.annexureEnabled && fields.annexures.length > 0) {
+      for (const annexure of fields.annexures) {
+        if (annexure.parsedData && annexure.parsedData.headers.length > 0) {
+          const headerCells = annexure.parsedData.headers.map(h =>
+            `<th style="border:1px solid #000;padding:4px 6px;font-family:${ff};font-size:10pt;font-weight:bold;background:${lblBg};text-align:left;">${h}</th>`
+          ).join('');
+          const dataRows = annexure.parsedData.rows.map(row =>
+            `<tr>${row.map(cell =>
+              `<td style="border:1px solid #000;padding:3px 6px;font-family:${ff};font-size:10pt;">${cell}</td>`
+            ).join('')}</tr>`
+          ).join('');
+          allBlocks.push(`<div style="font-family:${ff};color:#000;">
+            <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin-bottom:8px;">ANNEXURE ${annexure.label}</p>
+            <p style="font-family:${ff};font-size:10pt;margin-bottom:6px;">Source File: <b>${annexure.excelFileName || 'N/A'}</b></p>
+            <table style="width:100%;border-collapse:collapse;">
+              <thead><tr>${headerCells}</tr></thead>
+              <tbody>${dataRows}</tbody>
+            </table>
+          </div>`);
+        }
+      }
     }
 
     return allBlocks;

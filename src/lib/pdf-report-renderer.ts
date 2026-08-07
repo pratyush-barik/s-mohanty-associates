@@ -943,6 +943,73 @@ export class PDFReportRenderer {
     this.cursorY += pairH;
   }
 
+  // ─── Data Table (for Annexure Excel data) ───────────────────────
+
+  /**
+   * Draw a generic data table from a 2D string array (headers + rows).
+   * Auto-fits column widths proportionally. Handles page breaks.
+   */
+  drawDataTable(headers: string[], rows: string[][]): void {
+    if (headers.length === 0) return;
+
+    const numCols = headers.length;
+    // Calculate column widths proportional to content
+    const maxColChars = headers.map((h, i) => {
+      let max = h.length;
+      for (const row of rows) {
+        if (row[i] && row[i].length > max) max = row[i].length;
+      }
+      return Math.max(max, 3);
+    });
+    const totalChars = maxColChars.reduce((a, b) => a + b, 0);
+    const colWidths = maxColChars.map(c => Math.max((c / totalChars) * CONTENT_W, 30));
+
+    // Normalize widths to exactly fill CONTENT_W
+    const widthSum = colWidths.reduce((a, b) => a + b, 0);
+    const scale = CONTENT_W / widthSum;
+    const finalWidths = colWidths.map(w => w * scale);
+
+    const fontSize = Math.min(FONT_SIZE_SMALL, numCols > 6 ? 8 : numCols > 4 ? 9 : 10);
+    const rowPadY = 3;
+    const rowPadX = 3;
+
+    // Draw header row
+    const headerH = Math.max(...headers.map(h => {
+      const lines = this.wrapText(h, finalWidths[headers.indexOf(h)] - rowPadX * 2, fontSize, true);
+      return lines.length * fontSize * LINE_HEIGHT + rowPadY * 2;
+    }));
+    this.checkPageBreak(headerH + 40);
+
+    let x = MARGIN_L;
+    for (let c = 0; c < numCols; c++) {
+      this.drawCell(x, this.cursorY, finalWidths[c], headerH, headers[c], {
+        bold: true, fontSize, fillColor: LBL_BG, bgOpacity: 0.6,
+      });
+      x += finalWidths[c];
+    }
+    this.cursorY += headerH;
+
+    // Draw data rows
+    for (const row of rows) {
+      const cellHeights = row.map((cell, c) => {
+        const lines = this.wrapText(cell || '', finalWidths[c] - rowPadX * 2, fontSize);
+        return lines.length * fontSize * LINE_HEIGHT + rowPadY * 2;
+      });
+      const rowH = Math.max(...cellHeights, fontSize * LINE_HEIGHT + rowPadY * 2);
+
+      this.checkPageBreak(rowH);
+
+      x = MARGIN_L;
+      for (let c = 0; c < numCols; c++) {
+        this.drawCell(x, this.cursorY, finalWidths[c], rowH, row[c] || '', {
+          fontSize,
+        });
+        x += finalWidths[c];
+      }
+      this.cursorY += rowH;
+    }
+  }
+
   // ─── Output ────────────────────────────────────────────────────
 
   /** Generate the PDF as a Blob */
