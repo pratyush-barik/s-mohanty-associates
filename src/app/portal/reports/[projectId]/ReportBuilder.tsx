@@ -1979,7 +1979,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
                   </div>
 
                   {showBankList && selectedCategory ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-[420px] overflow-y-auto p-3 border border-[#dee2e6] rounded-xl bg-neutral-50/50">
+                    <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3 max-h-[420px] overflow-y-auto p-3 border border-[#dee2e6] rounded-xl bg-neutral-50/50">
                        {INSTITUTE_CATEGORIES.find(c => c.id === selectedCategory)?.list?.map((bank) => (
                          <button
                            key={bank}
@@ -1992,7 +1992,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
                        ))}
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-4">
                       {INSTITUTE_CATEGORIES.map((cat) => (
                         <button
                           key={cat.id}
