@@ -868,9 +868,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   const router = useRouter();
 
   const [selectingOrg, setSelectingOrg] = useState(false);
-  const [wizardStep, setWizardStep] = useState<'client_type' | 'completed'>(
-    !merged.clientType ? 'client_type' : 'completed'
-  );
+  const [wizardStep, setWizardStep] = useState<'setup' | 'completed'>('setup');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showBankList, setShowBankList] = useState(false);
 
@@ -1888,9 +1886,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   // ═══════════════════════════════════════════════════════════
   // RENDER
   // ═══════════════════════════════════════════════════════════
-  if (wizardStep !== 'completed') {
-    const activeStep = wizardStep;
-    
+  if (wizardStep === 'setup') {
     return (
       <div className="min-h-[500px] flex items-center justify-center bg-gradient-to-br from-[#f8f9fa] to-[#e9ecef] p-8 rounded-2xl border border-neutral-200">
         <div className="max-w-2xl w-full text-center space-y-8">
@@ -1903,13 +1899,13 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
             </p>
             {/* Step Indicators */}
             <div className="flex items-center justify-center gap-2 mt-4">
-              <span className={`w-2.5 h-2.5 rounded-full ${activeStep === 'client_type' ? 'bg-[#b8860b]' : 'bg-[#dee2e6]'}`}></span>
+              <span className={`w-2.5 h-2.5 rounded-full ${!fields.clientType ? 'bg-[#b8860b]' : 'bg-[#dee2e6]'}`}></span>
               <span className={`w-8 h-[2px] ${fields.clientType ? 'bg-[#b8860b]' : 'bg-[#dee2e6]'}`}></span>
-              <span className={`w-2.5 h-2.5 rounded-full ${activeStep === 'completed' ? 'bg-[#b8860b]' : 'bg-[#dee2e6]'}`}></span>
+              <span className={`w-2.5 h-2.5 rounded-full ${fields.clientType ? 'bg-[#b8860b]' : 'bg-[#dee2e6]'}`}></span>
             </div>
           </div>
 
-          {activeStep === 'client_type' && (
+          {!fields.clientType && (
             <>
               {!selectingOrg ? (
                 <div className="grid md:grid-cols-2 gap-6">
@@ -1918,7 +1914,6 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
                     type="button"
                     onClick={() => {
                       handleSelectClientType('individual');
-                      setWizardStep('service');
                     }}
                     className="flex flex-col items-center p-8 bg-white rounded-2xl border-2 border-transparent hover:border-[#b8860b] shadow-lg hover:shadow-xl transition-all duration-300 group text-center w-full"
                   >
