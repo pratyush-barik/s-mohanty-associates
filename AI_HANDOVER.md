@@ -90,7 +90,8 @@ The core business logic is **100% complete**.
    - **Section 11 – Valuation Certificate (Auto-generated):** Auto-fills from Section 1 & 9 data.
    - **Section 12 – Property Photographs:** Multi-image upload to Supabase temp storage.
    - **Section 13 – Sketch Map:** Upload sketch map image.
-   - **Section 14 – Location Map:** Live embedded Google Maps iframe (auto-reads from property address in Section 1 or lat/long coordinates). Manual screenshot upload for PDF inclusion (iframes cannot be captured by html2canvas).    **Key Design Decisions in ReportBuilder:**
+   - **Section 14 – Location Map:** Live embedded Google Maps iframe (auto-reads from property address in Section 1 or lat/long coordinates). Manual screenshot upload for PDF inclusion (iframes cannot be captured by html2canvas).
+   - **Section 15 – Annexure (August 2026):** Allows uploading Excel/CSV files containing complex tabular data (e.g., multiple addresses). Toggled via a switch in Section 1 next to the Address field. When enabled, address fields are hidden, the PDF/HTML preview replaces the address text with a reference to the Annexure (e.g. "Details are provided in Annexure A"), and the parsed Excel data is dynamically rendered as a data table at the very end of the report document. Uses `xlsx` library for client-side parsing.    **Key Design Decisions in ReportBuilder:**
     - **Form UI:** All option-type fields use compact `<select>` dropdowns and `<input>` fields — NOT bulky 3-column boxes. Fast and space-efficient for data entry.
     - **PDF Output:** Uses a 3-column table pattern (Column 1: Label in blue | Column 2: All options listed | Column 3: Selected value in bold) to match the sample bank valuation report format.
     - **PDF Layout & Alignment:** To counter rendering bugs in `html2canvas` (which ignores CSS `vertical-align` and flexbox on table cells), the code uses a **JavaScript post-processing technique**. Before capture, it measures the rendered row height vs content height of cells marked with `data-vcenter="1"` and dynamically injects precise pixel padding to force vertical centering. The PDF pages are also balanced (e.g. Section 3 moved to Page 3) and page-level flex wrappers were removed to completely eliminate overflow and large gaps.
@@ -258,7 +259,9 @@ Outstanding items in **priority order**:
 > When modifying the UI, prioritize modern, premium aesthetics (glassmorphism, clean typography, subtle animations) without relying on Tailwind component libraries like Shadcn. Use raw Tailwind classes.
 
 ## 7. Recent Git Commits (for reference)
-- `latest` — feat(ReportBuilder): synchronize wizard steps with browser history popstate
+- `latest` — feat(ReportBuilder): add Annexure parsing (xlsx) and rendering in PDF/HTML preview tables
+- `previous` — feat(ReportBuilder): add Annexure toggle in Section 1 and Section 15 with dynamic annexure cards and Excel upload
+- `previous` — feat(ReportBuilder): synchronize wizard steps with browser history popstate
 - `previous` — style(ReportBuilder): center selection grids and make FloatingNavigator sticky
 - `previous` — style(ReportBuilder): remove double padding to fix FloatingNavigator overlap
 - `previous` — style(ReportBuilder): use flexbox layout with wrap and stretch for bank items
