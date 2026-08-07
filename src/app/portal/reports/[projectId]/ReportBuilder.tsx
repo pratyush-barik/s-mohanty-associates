@@ -21,6 +21,13 @@ interface FloorRow {
   depreciationPct: string;
 }
 
+interface AnnexureItem {
+  id: string;
+  label: string;          // 'A', 'B', 'C', ...
+  excelFileUrl: string;   // Uploaded Excel URL from Supabase
+  excelFileName: string;  // Original filename
+}
+
 interface ReportFields {
   // Section 1 – General Details
   propertyType: string;
@@ -165,6 +172,7 @@ interface ReportFields {
   distanceMainRoadUnit: string;
   distanceRailway: string;
   distanceRailwayUnit: string;
+  nearbyLandmarks: string;
   reworkNotes?: string;
   clientType?: string;
   organisationTemplate?: string;
@@ -172,6 +180,10 @@ interface ReportFields {
   serviceType?: string;
   subjectType?: string;
   valuationLayout?: 'land_building' | 'apartment';
+
+  // Annexure
+  annexureEnabled: boolean;
+  annexures: AnnexureItem[];
 }
 
 const DEFAULT_FIELDS: ReportFields = {
@@ -312,6 +324,8 @@ const DEFAULT_FIELDS: ReportFields = {
   institutionCategory: '',
   serviceType: '',
   subjectType: '',
+  annexureEnabled: false,
+  annexures: [],
 };
 
 const parseNum = (v: any): number => {
@@ -673,7 +687,7 @@ const INSTITUTE_CATEGORIES = [
   { id: 'ibbi', label: 'IBBI - IVS', icon: '⚖️', direct: true },
 ];
 
-const FloatingNavigator = ({ isApartmentFlat }: { isApartmentFlat: boolean }) => {
+const FloatingNavigator = ({ isApartmentFlat, annexureEnabled }: { isApartmentFlat: boolean; annexureEnabled: boolean }) => {
   const NAV_SECTIONS = [
     { id: 'section-1', title: 'General Details' },
     { id: 'section-2', title: 'Locality Details' },
@@ -688,7 +702,8 @@ const FloatingNavigator = ({ isApartmentFlat }: { isApartmentFlat: boolean }) =>
     { id: 'section-10', title: 'Remarks' },
     { id: 'section-11', title: 'Certificate' },
     { id: 'section-13', title: 'Sketch Map' },
-    { id: 'section-14', title: 'Location Map' }
+    { id: 'section-14', title: 'Location Map' },
+    ...(annexureEnabled ? [{ id: 'section-15', title: 'Annexure' }] : []),
   ];
 
   const scrollTo = (id: string) => {
@@ -1049,6 +1064,53 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   };
   const updateFloor = (id: string, key: keyof FloorRow, value: string) => {
     handleChange('floors', fields.floors.map(f => f.id === id ? { ...f, [key]: value } : f));
+  };
+
+  // ── Annexure helpers ──
+  const addAnnexure = () => {
+    const nextIndex = fields.annexures.length;
+    const label = String.fromCharCode(65 + nextIndex); // A, B, C, ...
+    handleChange('annexures', [...fields.annexures, {
+      id: String(Date.now()),
+      label,
+      excelFileUrl: '',
+      excelFileName: '',
+    }]);
+  };
+  const removeAnnexure = (id: string) => {
+    handleChange('annexures', fields.annexures.filter(a => a.id !== id));
+  };
+  const handleAnnexureUpload = async (annexureId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) { setUploadError('File exceeds 10MB limit.'); return; }
+
+    setUploading(true);
+    setUploadError(null);
+    const ext = file.name.split('.').pop();
+    const fileName = `annexure-${annexureId}-${Date.now()}.${ext}`;
+    const filePath = `annexures/${projectId}/${fileName}`;
+
+    const { error } = await supabaseBrowser.storage
+      .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+      .upload(filePath, file);
+
+    if (error) {
+      setUploadError(`Upload failed: ${error.message}`);
+    } else {
+      const { data } = supabaseBrowser.storage
+        .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+        .getPublicUrl(filePath);
+      handleChange('annexures', fields.annexures.map(a =>
+        a.id === annexureId ? { ...a, excelFileUrl: data.publicUrl, excelFileName: file.name } : a
+      ));
+    }
+    setUploading(false);
+  };
+  const removeAnnexureFile = (annexureId: string) => {
+    handleChange('annexures', fields.annexures.map(a =>
+      a.id === annexureId ? { ...a, excelFileUrl: '', excelFileName: '' } : a
+    ));
   };
 
   // ── AI Assist handlers ──
@@ -2150,56 +2212,85 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
             <Field label="Name of Customer(s)">
               <input className={inputCls} value={fields.ownerName} onChange={e => handleChange('ownerName', e.target.value)} disabled={isReadOnly} placeholder="Full name of property owner" />
             </Field>
-            <Field label="Address Line 1" span={2}>
-              <input className={inputCls} value={fields.ownerAddress} onChange={e => handleChange('ownerAddress', e.target.value)} disabled={isReadOnly} placeholder="Plot/Building No, Street/Locality" />
-            </Field>
-            <Field label="State">
-              <input list="states-list" className={inputCls} value={fields.state || ''} onChange={e => handleChange('state', e.target.value)} disabled={isReadOnly} placeholder="Search or enter state..." />
-              <datalist id="states-list">
-                <option value="Andhra Pradesh" />
-                <option value="Arunachal Pradesh" />
-                <option value="Assam" />
-                <option value="Bihar" />
-                <option value="Chhattisgarh" />
-                <option value="Goa" />
-                <option value="Gujarat" />
-                <option value="Haryana" />
-                <option value="Himachal Pradesh" />
-                <option value="Jharkhand" />
-                <option value="Karnataka" />
-                <option value="Kerala" />
-                <option value="Madhya Pradesh" />
-                <option value="Maharashtra" />
-                <option value="Manipur" />
-                <option value="Meghalaya" />
-                <option value="Mizoram" />
-                <option value="Nagaland" />
-                <option value="Odisha" />
-                <option value="Punjab" />
-                <option value="Rajasthan" />
-                <option value="Sikkim" />
-                <option value="Tamil Nadu" />
-                <option value="Telangana" />
-                <option value="Tripura" />
-                <option value="Uttar Pradesh" />
-                <option value="Uttarakhand" />
-                <option value="West Bengal" />
-                <option value="Andaman and Nicobar Islands" />
-                <option value="Chandigarh" />
-                <option value="Dadra and Nagar Haveli and Daman and Diu" />
-                <option value="Delhi" />
-                <option value="Jammu and Kashmir" />
-                <option value="Ladakh" />
-                <option value="Lakshadweep" />
-                <option value="Puducherry" />
-              </datalist>
-            </Field>
-            <Field label="Pincode">
-              <input className={inputCls} value={fields.pincode || ''} onChange={e => handleChange('pincode', e.target.value)} disabled={isReadOnly} placeholder="e.g. 751001" maxLength={6} />
-            </Field>
-            <Field label="Landmark">
-              <input className={inputCls} value={fields.landmark || ''} onChange={e => handleChange('landmark', e.target.value)} disabled={isReadOnly} placeholder="e.g. Near Kantapada UP School" />
-            </Field>
+            {/* Address Line 1 with Annexure toggle */}
+            <div className="md:col-span-2">
+              <div className="flex items-center gap-3 mb-1.5">
+                <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider">Address Line 1</label>
+                {!isReadOnly && (
+                  <button
+                    type="button"
+                    onClick={() => handleChange('annexureEnabled', !fields.annexureEnabled)}
+                    className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${fields.annexureEnabled ? 'bg-[#b8860b]' : 'bg-[#ccc]'}`}
+                    title={fields.annexureEnabled ? 'Disable Annexure (show address fields)' : 'Enable Annexure (move address to Annexure section)'}
+                  >
+                    <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${fields.annexureEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+                  </button>
+                )}
+                <span className="text-[10px] font-medium text-[#6c757d] uppercase tracking-wide">
+                  Annexure
+                </span>
+              </div>
+              {!fields.annexureEnabled && (
+                <input className={inputCls} value={fields.ownerAddress} onChange={e => handleChange('ownerAddress', e.target.value)} disabled={isReadOnly} placeholder="Plot/Building No, Street/Locality" />
+              )}
+              {fields.annexureEnabled && (
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#fff8e1] border border-[#ffe082] text-xs text-[#7b6b2e]">
+                  <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" /></svg>
+                  <span>Address details moved to <strong>Section 15 — Annexure</strong>. Scroll down or use the navigator.</span>
+                </div>
+              )}
+            </div>
+            {!fields.annexureEnabled && (
+              <>
+                <Field label="State">
+                  <input list="states-list" className={inputCls} value={fields.state || ''} onChange={e => handleChange('state', e.target.value)} disabled={isReadOnly} placeholder="Search or enter state..." />
+                  <datalist id="states-list">
+                    <option value="Andhra Pradesh" />
+                    <option value="Arunachal Pradesh" />
+                    <option value="Assam" />
+                    <option value="Bihar" />
+                    <option value="Chhattisgarh" />
+                    <option value="Goa" />
+                    <option value="Gujarat" />
+                    <option value="Haryana" />
+                    <option value="Himachal Pradesh" />
+                    <option value="Jharkhand" />
+                    <option value="Karnataka" />
+                    <option value="Kerala" />
+                    <option value="Madhya Pradesh" />
+                    <option value="Maharashtra" />
+                    <option value="Manipur" />
+                    <option value="Meghalaya" />
+                    <option value="Mizoram" />
+                    <option value="Nagaland" />
+                    <option value="Odisha" />
+                    <option value="Punjab" />
+                    <option value="Rajasthan" />
+                    <option value="Sikkim" />
+                    <option value="Tamil Nadu" />
+                    <option value="Telangana" />
+                    <option value="Tripura" />
+                    <option value="Uttar Pradesh" />
+                    <option value="Uttarakhand" />
+                    <option value="West Bengal" />
+                    <option value="Andaman and Nicobar Islands" />
+                    <option value="Chandigarh" />
+                    <option value="Dadra and Nagar Haveli and Daman and Diu" />
+                    <option value="Delhi" />
+                    <option value="Jammu and Kashmir" />
+                    <option value="Ladakh" />
+                    <option value="Lakshadweep" />
+                    <option value="Puducherry" />
+                  </datalist>
+                </Field>
+                <Field label="Pincode">
+                  <input className={inputCls} value={fields.pincode || ''} onChange={e => handleChange('pincode', e.target.value)} disabled={isReadOnly} placeholder="e.g. 751001" maxLength={6} />
+                </Field>
+                <Field label="Landmark">
+                  <input className={inputCls} value={fields.landmark || ''} onChange={e => handleChange('landmark', e.target.value)} disabled={isReadOnly} placeholder="e.g. Near Kantapada UP School" />
+                </Field>
+              </>
+            )}
             <Field label="Loan Application Number">
               <input className={inputCls} value={fields.loanApplicationNo || ''} onChange={e => handleChange('loanApplicationNo', e.target.value)} disabled={isReadOnly} />
             </Field>
@@ -2953,6 +3044,92 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         </div>
       </Section>
 
+      {/* ── Section 15: Annexure (only when enabled) ── */}
+      {fields.annexureEnabled && (
+        <Section title="Annexure" number={isApartmentFlat ? 14 : 15} defaultOpen={true}>
+          <div className="space-y-4">
+            {/* Info banner */}
+            <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-[#0a1628]/5 to-[#b8860b]/5 border border-[#b8860b]/20">
+              <svg className="w-5 h-5 text-[#b8860b] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              <p className="text-xs text-[#495057]">
+                Upload detailed property address schedules, khasra details, or other annexure data in Excel format (.xlsx, .xls, .csv).
+              </p>
+            </div>
+
+            {/* Annexure Cards */}
+            {fields.annexures.map((annexure) => (
+              <div key={annexure.id} className="rounded-xl border border-[#dee2e6] overflow-hidden">
+                {/* Annexure header */}
+                <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-[#162d4a] to-[#1e3a5f]">
+                  <div className="flex items-center gap-2">
+                    <span className="w-7 h-7 rounded-lg bg-[#b8860b] flex items-center justify-center text-xs font-bold text-white">{annexure.label}</span>
+                    <span className="text-sm font-semibold text-white">Annexure {annexure.label}</span>
+                  </div>
+                  {!isReadOnly && (
+                    <button
+                      type="button"
+                      onClick={() => removeAnnexure(annexure.id)}
+                      className="text-red-300 hover:text-red-100 hover:bg-red-500/20 p-1 rounded-lg transition-colors"
+                      title="Remove this annexure"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  )}
+                </div>
+                {/* Annexure body */}
+                <div className="p-5 space-y-3">
+                  <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider">Excel Upload</label>
+                  {annexure.excelFileUrl ? (
+                    <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-green-50 border border-green-200">
+                      <svg className="w-8 h-8 text-green-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-green-800 truncate">{annexure.excelFileName}</p>
+                        <a href={annexure.excelFileUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-green-600 hover:underline">
+                          Download / View file &#x2197;
+                        </a>
+                      </div>
+                      {!isReadOnly && (
+                        <button
+                          type="button"
+                          onClick={() => removeAnnexureFile(annexure.id)}
+                          className="px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    !isReadOnly && (
+                      <label className="flex flex-col items-center justify-center gap-2 px-6 py-8 rounded-xl border-2 border-dashed border-[#b8860b]/30 bg-[#fffaf0] cursor-pointer hover:bg-[#fff5e0] hover:border-[#b8860b]/50 transition-all group">
+                        <svg className="w-10 h-10 text-[#b8860b]/40 group-hover:text-[#b8860b]/70 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+                        <span className="text-sm font-medium text-[#b8860b]">
+                          {uploading ? 'Uploading...' : 'Click to upload Excel file'}
+                        </span>
+                        <span className="text-[10px] text-[#999]">Supports .xlsx, .xls, .csv (max 10MB)</span>
+                        <input
+                          type="file"
+                          accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
+                          className="hidden"
+                          onChange={e => handleAnnexureUpload(annexure.id, e)}
+                          disabled={uploading}
+                        />
+                      </label>
+                    )
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {/* Add Annexure button */}
+            {!isReadOnly && (
+              <button onClick={addAnnexure} className="mt-1 text-sm text-[#b8860b] hover:text-[#96700a] font-medium flex items-center gap-1">
+                <span className="text-lg">+</span> Add Annexure
+              </button>
+            )}
+          </div>
+        </Section>
+      )}
+
       </>)}
 
       {/* Status Message */}
@@ -3210,7 +3387,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       )}
     </div>
 
-    {!aiAssistEnabled && <FloatingNavigator isApartmentFlat={isApartmentFlat} />}
+    {!aiAssistEnabled && <FloatingNavigator isApartmentFlat={isApartmentFlat} annexureEnabled={fields.annexureEnabled} />}
 
     {/* ── AI Assist Sidebar (hidden until NEXT_PUBLIC_AI_ASSIST_ENABLED=true) ── */}
     {aiAssistEnabled && (
