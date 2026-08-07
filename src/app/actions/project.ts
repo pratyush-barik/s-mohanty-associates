@@ -1242,18 +1242,13 @@ export async function terminateProject(
       return { error: `Project is already ${project.status.toLowerCase()}. Cannot terminate.` };
     }
 
-    // Update project status to TERMINATED
+    // Update project status to TERMINATED and record reasons
     await prisma.project.update({
       where: { id: projectId },
-      data: { status: 'TERMINATED' },
-    });
-
-    // Add a project message recording the termination
-    await prisma.projectMessage.create({
-      data: {
-        projectId,
-        employeeId: session.user.id,
-        content: `**Project Terminated**\n\nReason: ${reason}${notes ? `\n\nNotes: ${notes}` : ''}`,
+      data: { 
+        status: 'TERMINATED',
+        terminationReason: reason,
+        terminationNotes: notes || null
       },
     });
 

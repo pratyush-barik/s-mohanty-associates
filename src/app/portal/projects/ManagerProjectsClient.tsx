@@ -18,12 +18,8 @@ function formatSource(source: string) {
   return 'Website';
 }
 
-function getTerminationReason(messages: { content: string }[] | undefined): string | null {
-  if (!messages || messages.length === 0) return null;
-  const content = messages[0].content;
-  // Format: **Project Terminated**\n\nReason: <reason>
-  const match = content.match(/Reason:\s*(.+)/i);
-  return match ? match[1].trim() : null;
+function getTerminationReason(project: any): string | null {
+  return project.terminationReason || null;
 }
 
 function sourceColor(source: string) {
@@ -195,7 +191,7 @@ export default function ManagerProjectsClient({
               </tr>
             </thead>
             {filteredProjects.map((project: any) => {
-              const terminationReason = project.status === 'TERMINATED' ? getTerminationReason(project.messages) : null;
+              const terminationReason = project.status === 'TERMINATED' ? getTerminationReason(project) : null;
               return (
                 <tbody key={project.id} className="border-b border-[#e9ecef] hover:bg-[#f8f9fa] transition-colors">
                   <tr>
@@ -231,14 +227,16 @@ export default function ManagerProjectsClient({
                         </Link>
                       </td>
                     </tr>
-                    {terminationReason && (
-                      <tr className="border-none">
-                        <td colSpan={7} className="px-6 pb-4 pt-1">
-                          <span className="text-[11px] font-bold text-red-600 uppercase tracking-wider mr-1.5">Reason:</span>
-                          <span className="text-[11px] font-bold text-red-600">{terminationReason}</span>
-                        </td>
-                      </tr>
-                    )}
+                    {project.status === 'TERMINATED' && (
+                    <tr className="border-none">
+                      <td colSpan={7} className="px-6 pb-4">
+                        <div className="p-3 bg-red-50 border border-red-100 rounded-lg">
+                          <p className="text-xs font-bold text-red-800 uppercase tracking-wider mb-1">Termination Reason</p>
+                          <p className="text-sm text-red-700">{getTerminationReason(project) || 'No reason provided'}</p>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               );
             })}

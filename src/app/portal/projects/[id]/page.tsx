@@ -84,7 +84,19 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
       orderBy: { createdAt: 'asc' },
     });
 
-    const formattedMessages = chatMessages.map((msg) => {
+    const terminationMessage = chatMessages.find(m => m.content.startsWith('**Project Terminated**'));
+    let terminationReason = null;
+    let terminationNotes = null;
+    if (terminationMessage) {
+       const reasonMatch = terminationMessage.content.match(/Reason:\s*(.+?)(?=\n\nNotes:|$)/is);
+       if (reasonMatch) terminationReason = reasonMatch[1].trim();
+       const notesMatch = terminationMessage.content.match(/Notes:\s*(.+)/is);
+       if (notesMatch) terminationNotes = notesMatch[1].trim();
+    }
+
+    const formattedMessages = chatMessages
+      .filter(msg => !msg.content.startsWith('**Project Terminated**'))
+      .map((msg) => {
       const isClientMsg = !!msg.clientId;
       const senderId = isClientMsg ? msg.clientId! : msg.employeeId!;
       let name = '';
@@ -339,6 +351,12 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
               <div>
                 <h3 className="text-sm font-bold text-red-800 uppercase tracking-wider">Project Terminated</h3>
                 <p className="text-xs text-red-600 mt-0.5">This project has been permanently ended. No further actions can be taken.</p>
+                {terminationReason && (
+                   <p className="text-sm text-red-800 font-semibold mt-2">Reason: <span className="font-normal">{terminationReason}</span></p>
+                )}
+                {terminationNotes && (
+                   <p className="text-sm text-red-800 font-semibold mt-1">Notes: <span className="font-normal">{terminationNotes}</span></p>
+                )}
               </div>
             </div>
           </div>

@@ -207,6 +207,8 @@ model Project {
   reportEmployeeId   String?
   startDate        DateTime?
   completionDate   DateTime?
+  terminationReason String?
+  terminationNotes  String?
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 
