@@ -1901,7 +1901,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   if (wizardStep === 'setup') {
     return (
       <div className="min-h-[500px] flex items-center justify-center bg-gradient-to-br from-[#f8f9fa] to-[#e9ecef] p-8 rounded-2xl border border-neutral-200">
-        <div className="max-w-2xl w-full text-center space-y-8">
+        <div className={`${selectingOrg ? 'max-w-5xl' : 'max-w-2xl'} w-full text-center space-y-8 transition-all duration-300`}>
           <div>
             <h2 className="text-3xl font-extrabold text-[#0f2038] tracking-tight">
               Draft New Valuation Report
@@ -1985,9 +1985,9 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
                            key={bank}
                            type="button"
                            onClick={() => handleSelectOrganisation(bank)}
-                           className="p-4 rounded-xl border border-[#dee2e6] hover:border-[#b8860b] hover:bg-[#fffbf0] text-center transition-all duration-200 flex items-center justify-center text-sm font-medium text-[#0f2038]"
+                           className="p-3 min-h-[84px] rounded-xl border border-[#dee2e6] bg-white hover:border-[#b8860b] hover:bg-[#fffbf0] hover:shadow-md text-center transition-all duration-200 flex items-center justify-center text-xs sm:text-sm font-semibold text-[#0f2038] shadow-sm break-words leading-tight"
                          >
-                           {bank}
+                           <span className="w-full line-clamp-3 hyphens-auto">{bank}</span>
                          </button>
                        ))}
                     </div>
@@ -1998,10 +1998,10 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
                           key={cat.id}
                           type="button"
                           onClick={() => handleCategoryClick(cat.id)}
-                          className="p-4 rounded-xl border border-[#dee2e6] hover:border-[#b8860b] hover:bg-[#fffbf0] text-center transition-all duration-200 flex flex-col items-center gap-2"
+                          className="p-4 min-h-[100px] rounded-xl border border-[#dee2e6] bg-white hover:border-[#b8860b] hover:bg-[#fffbf0] hover:shadow-md text-center transition-all duration-200 flex flex-col items-center justify-center gap-2 shadow-sm"
                         >
-                          <span className="text-2xl">{cat.icon}</span>
-                          <span className="text-xs font-bold text-[#0f2038] leading-tight">{cat.label}</span>
+                          <span className="text-2xl transform group-hover:scale-110 transition-transform">{cat.icon}</span>
+                          <span className="text-xs font-bold text-[#0f2038] leading-tight break-words max-w-full">{cat.label}</span>
                         </button>
                       ))}
                     </div>
