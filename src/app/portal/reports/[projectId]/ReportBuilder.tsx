@@ -1979,26 +1979,26 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
                   </div>
 
                   {showBankList && selectedCategory ? (
-                    <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3 max-h-[420px] overflow-y-auto p-3 border border-[#dee2e6] rounded-xl bg-neutral-50/50">
+                    <div className="flex flex-wrap gap-3 max-h-[420px] overflow-y-auto p-3 border border-[#dee2e6] rounded-xl bg-neutral-50/50 justify-start">
                        {INSTITUTE_CATEGORIES.find(c => c.id === selectedCategory)?.list?.map((bank) => (
                          <button
                            key={bank}
                            type="button"
                            onClick={() => handleSelectOrganisation(bank)}
-                           className="p-3 min-h-[84px] rounded-xl border border-[#dee2e6] bg-white hover:border-[#b8860b] hover:bg-[#fffbf0] hover:shadow-md text-center transition-all duration-200 flex items-center justify-center text-xs sm:text-sm font-semibold text-[#0f2038] shadow-sm break-words leading-tight"
+                           className="flex-1 min-w-[200px] max-w-[280px] p-3 min-h-[84px] rounded-xl border border-[#dee2e6] bg-white hover:border-[#b8860b] hover:bg-[#fffbf0] hover:shadow-md text-center transition-all duration-200 flex items-center justify-center text-xs sm:text-sm font-semibold text-[#0f2038] shadow-sm break-words leading-tight"
                          >
                            <span className="w-full line-clamp-3 hyphens-auto">{bank}</span>
                          </button>
                        ))}
                     </div>
                   ) : (
-                    <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-4">
+                    <div className="flex flex-wrap gap-4 justify-start">
                       {INSTITUTE_CATEGORIES.map((cat) => (
                         <button
                           key={cat.id}
                           type="button"
                           onClick={() => handleCategoryClick(cat.id)}
-                          className="p-4 min-h-[100px] rounded-xl border border-[#dee2e6] bg-white hover:border-[#b8860b] hover:bg-[#fffbf0] hover:shadow-md text-center transition-all duration-200 flex flex-col items-center justify-center gap-2 shadow-sm"
+                          className="flex-1 min-w-[140px] max-w-[180px] p-4 min-h-[100px] rounded-xl border border-[#dee2e6] bg-white hover:border-[#b8860b] hover:bg-[#fffbf0] hover:shadow-md text-center transition-all duration-200 flex flex-col items-center justify-center gap-2 shadow-sm"
                         >
                           <span className="text-2xl transform group-hover:scale-110 transition-transform">{cat.icon}</span>
                           <span className="text-xs font-bold text-[#0f2038] leading-tight break-words max-w-full">{cat.label}</span>
@@ -2019,7 +2019,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   const aiAssistEnabled = process.env.NEXT_PUBLIC_AI_ASSIST_ENABLED === 'true';
 
   return (
-    <div className={aiAssistEnabled ? 'flex gap-4 items-start' : 'space-y-4'} ref={reportRef}>
+    <div className={`${aiAssistEnabled ? 'flex gap-4 items-start' : 'space-y-4'} pr-0 xl:pr-40`} ref={reportRef}>
     {!aiAssistEnabled && <FloatingNavigator isApartmentFlat={isApartmentFlat} />}
     
     {/* ── Main Form Column ── */}
