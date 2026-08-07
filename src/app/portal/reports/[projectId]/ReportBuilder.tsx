@@ -696,7 +696,7 @@ const FloatingNavigator = ({ isApartmentFlat }: { isApartmentFlat: boolean }) =>
   };
 
   return (
-    <div className="hidden xl:flex fixed right-4 top-1/2 -translate-y-1/2 flex-col gap-1 z-50 bg-white/80 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2.5 rounded-2xl w-[150px]">
+    <div className="hidden xl:flex flex-col gap-1 bg-white/80 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2.5 rounded-2xl w-[160px] sticky top-24 shrink-0 z-40">
       <div className="text-[10px] font-black text-neutral-400 mb-2 px-2 uppercase tracking-widest">Sections</div>
       {NAV_SECTIONS.map((sec) => (
         <button
@@ -1979,7 +1979,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
                   </div>
 
                   {showBankList && selectedCategory ? (
-                    <div className="flex flex-wrap gap-3 max-h-[420px] overflow-y-auto p-3 border border-[#dee2e6] rounded-xl bg-neutral-50/50 justify-start">
+                    <div className="flex flex-wrap gap-3 max-h-[420px] overflow-y-auto p-3 border border-[#dee2e6] rounded-xl bg-neutral-50/50 justify-center">
                        {INSTITUTE_CATEGORIES.find(c => c.id === selectedCategory)?.list?.map((bank) => (
                          <button
                            key={bank}
@@ -1992,7 +1992,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
                        ))}
                     </div>
                   ) : (
-                    <div className="flex flex-wrap gap-4 justify-start">
+                    <div className="flex flex-wrap gap-4 justify-center">
                       {INSTITUTE_CATEGORIES.map((cat) => (
                         <button
                           key={cat.id}
@@ -2019,11 +2019,9 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   const aiAssistEnabled = process.env.NEXT_PUBLIC_AI_ASSIST_ENABLED === 'true';
 
   return (
-    <div className={aiAssistEnabled ? 'flex gap-4 items-start' : 'space-y-4'} ref={reportRef}>
-    {!aiAssistEnabled && <FloatingNavigator isApartmentFlat={isApartmentFlat} />}
-    
-    {/* ── Main Form Column ── */}
-    <div className={aiAssistEnabled ? 'flex-1 min-w-0 space-y-4' : 'flex-1 min-w-0 space-y-4'}>
+    <div className={`flex ${aiAssistEnabled ? 'gap-4' : 'gap-6'} items-start w-full`} ref={reportRef}>
+      {/* ── Main Form Column ── */}
+      <div className="flex-1 min-w-0 space-y-4">
       {/* Template Info Banner */}
       <div className="card p-4 bg-gradient-to-r from-[#f8f9fa] to-[#e9ecef] border border-[#c8d6e5] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md rounded-xl sticky top-2 z-50">
         <div className="flex flex-col xl:flex-row xl:items-center gap-3">
@@ -3173,6 +3171,8 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         </div>
       )}
     </div>
+
+    {!aiAssistEnabled && <FloatingNavigator isApartmentFlat={isApartmentFlat} />}
 
     {/* ── AI Assist Sidebar (hidden until NEXT_PUBLIC_AI_ASSIST_ENABLED=true) ── */}
     {aiAssistEnabled && (
