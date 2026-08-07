@@ -875,10 +875,10 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   const handleSelectClientType = (type: 'individual' | 'organisation') => {
     if (type === 'individual') {
       setFields(prev => ({ ...prev, clientType: 'individual', organisationTemplate: '' }));
+      setWizardStep('completed');
     } else {
       setSelectingOrg(true);
     }
-    setWizardStep('completed');
   };
 
   const handleSelectOrganisation = (value: string) => {
@@ -900,11 +900,11 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         clientType: 'organisation',
         organisationTemplate: category === 'income_tax' ? 'INCOME_TAX' : 'IBBI_IVS',
       }));
+      setWizardStep('completed');
     } else {
       setSelectedCategory(category);
       setShowBankList(true);
     }
-    setWizardStep('completed');
   };
 
   const handleBackFromBanks = () => {
@@ -962,7 +962,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         clientType: '',
         organisationTemplate: '',
       }));
-      setWizardStep('client_type');
+      setWizardStep('setup');
     }
   };
 
