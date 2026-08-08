@@ -967,10 +967,16 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     };
   }, [wizardStep]);
 
+  const completeWizardAndSave = (updates: Partial<typeof fields>) => {
+    const updatedFields = { ...fields, ...updates };
+    setFields(updatedFields);
+    setWizardStep('completed');
+    saveReportDraft(projectId, updatedFields).catch(e => console.error("Auto-save draft failed:", e));
+  };
+
   const handleSelectClientType = (type: 'individual' | 'organisation') => {
     if (type === 'individual') {
-      setFields(prev => ({ ...prev, clientType: 'individual', organisationTemplate: '' }));
-      setWizardStep('completed');
+      completeWizardAndSave({ clientType: 'individual', organisationTemplate: '' });
     } else {
       setSelectingOrg(true);
       if (typeof window !== 'undefined') {
@@ -990,49 +996,43 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         window.history.pushState({ step: 'sub_template', bank: normalizedKey, category: selectedCategory }, '');
       }
     } else {
-      setFields(prev => ({
-        ...prev,
+      completeWizardAndSave({
         clientType: 'organisation',
         organisationTemplate: value,
         organisationSubTemplate: '',
         bankName: value,
-        to: prev.to || value,
-      }));
+        to: fields.to || value,
+      });
       setSelectingOrg(false);
       setSelectedCategory(null);
       setShowBankList(false);
-      setWizardStep('completed');
     }
   };
 
   const handleSelectSubTemplate = (subOpt: string) => {
     const fullBankName = `${selectedBank} - ${subOpt}`;
-    setFields(prev => ({
-      ...prev,
+    completeWizardAndSave({
       clientType: 'organisation',
       organisationTemplate: selectedBank || '',
       organisationSubTemplate: subOpt,
       bankName: selectedBank || '',
-      to: prev.to || fullBankName,
-    }));
+      to: fields.to || fullBankName,
+    });
     setSelectingOrg(false);
     setSelectedCategory(null);
     setShowBankList(false);
     setShowSubList(false);
     setSelectedBank(null);
-    setWizardStep('completed');
   };
 
   const handleCategoryClick = (category: string) => {
     const categoryLabel = INSTITUTE_CATEGORIES.find(c => c.id === category)?.label || category;
     if (category === 'income_tax' || category === 'ibbi') {
-      setFields(prev => ({
-        ...prev,
+      completeWizardAndSave({
         clientType: 'organisation',
         organisationTemplate: category === 'income_tax' ? 'INCOME_TAX' : 'IBBI_IVS',
         institutionCategory: categoryLabel,
-      }));
-      setWizardStep('completed');
+      });
     } else {
       setFields(prev => ({
         ...prev,
