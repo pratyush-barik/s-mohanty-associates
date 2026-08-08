@@ -890,7 +890,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   const router = useRouter();
 
   const [selectingOrg, setSelectingOrg] = useState(false);
-  const [wizardStep, setWizardStep] = useState<'setup' | 'completed'>('setup');
+  const [wizardStep, setWizardStep] = useState<'setup' | 'completed'>(initialFields?.clientType ? 'completed' : 'setup');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showBankList, setShowBankList] = useState(false);
 
