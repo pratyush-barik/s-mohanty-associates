@@ -40,8 +40,8 @@ const CELL_PAD_X = 4;
 const CELL_PAD_Y = 3;
 const FONT_SIZE = 12;
 const FONT_SIZE_HEADER = 14;
-const FONT_SIZE_SMALL = 11;
-const FONT_SIZE_CAPTION = 10;
+const FONT_SIZE_SMALL = 12;
+const FONT_SIZE_CAPTION = 12;
 const LINE_HEIGHT = 1.25; // multiplier on font size
 const BORDER_W = 0.75;
 const LBL_BG = '#DBE6F0';
@@ -995,7 +995,7 @@ export class PDFReportRenderer {
     const scale = CONTENT_W / widthSum;
     const finalWidths = colWidths.map(w => w * scale);
 
-    const fontSize = Math.min(FONT_SIZE_SMALL, numCols > 6 ? 8 : numCols > 4 ? 9 : 10);
+    const fontSize = Math.min(FONT_SIZE_SMALL, numCols > 6 ? 8 : numCols > 4 ? 9 : 12);
     const rowPadY = 3;
     const rowPadX = 3;
 
