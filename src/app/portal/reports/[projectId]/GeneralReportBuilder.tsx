@@ -8,6 +8,7 @@ import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
 import { PDFReportRenderer } from '@/lib/pdf-report-renderer';
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
+// @ts-ignore
 import * as XLSX from 'xlsx';
 
 // ─── Types ─────────────────────────────────────────────────────────
@@ -1365,14 +1366,14 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
         ...(fields.locationMapImage ? [fetchBytes(fields.locationMapImage)] : []),
       ]);
 
-      const propImageBytes: Uint8Array[] = imageResults.slice(0, propertyImgs.length);
+      const propImageBytes: Uint8Array[] = imageResults.slice(0, propertyImgs.length).filter(Boolean) as Uint8Array[];
       let imgIdx = propertyImgs.length;
       const sketchBytes = fields.sketchMapImage ? imageResults[imgIdx++] : null;
       const locationBytes = fields.locationMapImage ? imageResults[imgIdx++] : null;
 
       // ── Initialize the renderer ──
       const r = new PDFReportRenderer();
-      await r.init(letterheadBytes);
+      await r.init(letterheadBytes || undefined);
 
       // ── Title block ──
       let titleText = 'VALUATION REPORT';

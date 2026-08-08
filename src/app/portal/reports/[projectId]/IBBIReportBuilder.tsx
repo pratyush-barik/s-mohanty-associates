@@ -22,6 +22,7 @@ import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
 import { PDFReportRenderer } from '@/lib/pdf-report-renderer';
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
+// @ts-ignore
 import * as XLSX from 'xlsx';
 
 const SERVICES_LIST = [
