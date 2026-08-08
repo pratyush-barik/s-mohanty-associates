@@ -993,6 +993,8 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         clientType: 'organisation',
         organisationTemplate: value,
         organisationSubTemplate: '',
+        bankName: value,
+        to: prev.to || value,
       }));
       setSelectingOrg(false);
       setSelectedCategory(null);
@@ -1002,11 +1004,14 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   };
 
   const handleSelectSubTemplate = (subOpt: string) => {
+    const fullBankName = `${selectedBank} - ${subOpt}`;
     setFields(prev => ({
       ...prev,
       clientType: 'organisation',
       organisationTemplate: selectedBank || '',
       organisationSubTemplate: subOpt,
+      bankName: selectedBank || '',
+      to: prev.to || fullBankName,
     }));
     setSelectingOrg(false);
     setSelectedCategory(null);
@@ -1395,6 +1400,11 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       r.drawSimpleRow('Name of Document holder', fields.documentHolderName || fields.ownerName);
       r.drawSimpleRow('Date of Inspection', fields.dateOfInspection);
       r.drawSimpleRow('Date of Valuation Report', fields.dateOfValuation);
+      if (fields.clientType === 'organisation') {
+        const fullBankText = fields.organisationSubTemplate ? `${fields.bankName || fields.organisationTemplate} (${fields.organisationSubTemplate})` : (fields.bankName || fields.organisationTemplate);
+        r.drawSimpleRow('Name of Bank / Institution', fullBankText || 'N/A');
+        r.drawSimpleRow('Branch Name', fields.branchName || 'N/A');
+      }
       r.advanceCursor(8);
 
       // ── Surrounding Locality Details ──
@@ -1829,6 +1839,11 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       ${simpleRow('Name of Document holder', fields.documentHolderName || fields.ownerName)}
       ${simpleRow('Date of Inspection', fields.dateOfInspection)}
       ${simpleRow('Date of Valuation Report', fields.dateOfValuation)}
+      ${fields.clientType === 'organisation'
+        ? `${simpleRow('Name of Bank / Institution', fields.organisationSubTemplate ? `${fields.bankName || fields.organisationTemplate || 'N/A'} (${fields.organisationSubTemplate})` : (fields.bankName || fields.organisationTemplate || 'N/A'))}
+           ${simpleRow('Branch Name', fields.branchName || 'N/A')}`
+        : ''
+      }
     `));
 
     // ── BLOCK: Surrounding Locality Details ──
@@ -2346,6 +2361,12 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
             </Field>
             <Field label="Ref No. (Locked)">
               <input className={inputCls} value={fields.refNo} disabled={true} readOnly={true} placeholder="Project ID" />
+            </Field>
+            <Field label="Name of Bank / Institution">
+              <input className={inputCls} value={fields.bankName} onChange={e => handleChange('bankName', e.target.value)} disabled={isReadOnly} placeholder="e.g. State Bank of India" />
+            </Field>
+            <Field label="Branch Name">
+              <input className={inputCls} value={fields.branchName} onChange={e => handleChange('branchName', e.target.value)} disabled={isReadOnly} placeholder="e.g. Commercial Branch, Cuttack" />
             </Field>
           </div>
 
