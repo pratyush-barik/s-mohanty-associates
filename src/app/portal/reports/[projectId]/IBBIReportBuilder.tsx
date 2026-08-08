@@ -24,6 +24,12 @@ import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
 import * as XLSX from 'xlsx';
 
+const SERVICES_LIST = [
+  { id: 'mortgage_loan', title: 'Mortgage & Loan Security Valuation' },
+  { id: 'land_valuation', title: 'Land Valuation' },
+  { id: 'apartment_valuation', title: 'Apartment Valuation' },
+];
+
 // ─── Types ─────────────────────────────────────────────────────────
 interface AnnexureItem {
   id: string;
@@ -401,11 +407,169 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
   const [bucketPickerOpen, setBucketPickerOpen] = useState(false);
   const [bucketPickerMode, setBucketPickerMode] = useState<'propertyImages' | 'sketchMapImage' | 'locationMapImage'>('propertyImages');
   const [bucketSelected, setBucketSelected] = useState<Set<string>>(new Set());
-
-  const isReadOnly = status === 'SUBMITTED' && userRole === 'REPORT_EMPLOYEE';
+  const [bucketPickerAgent, setBucketPickerAgent] = useState<string | null>(null);
 
   const handleChange = useCallback((field: string, value: any) => {
     setFields(prev => ({ ...prev, [field]: value }));
+  }, []);
+
+  const openBucketPicker = (mode: 'propertyImages' | 'sketchMapImage' | 'locationMapImage') => {
+    setBucketPickerMode(mode);
+    setBucketSelected(new Set());
+    setBucketPickerAgent(null);
+    setBucketPickerOpen(true);
+  };
+
+  const handleBucketConfirm = () => {
+    const selectedImages = (bucketImages || []).filter(img => bucketSelected.has(img.id));
+    if (selectedImages.length === 0) { setBucketPickerOpen(false); return; }
+
+    if (bucketPickerMode === 'propertyImages') {
+      const newUrls = [...(fields.propertyImages || []), ...selectedImages.map(img => img.url)];
+      handleChange('propertyImages', newUrls);
+    } else if (bucketPickerMode === 'sketchMapImage') {
+      handleChange('sketchMapImage', selectedImages[0].url);
+    } else if (bucketPickerMode === 'locationMapImage') {
+      handleChange('locationMapImage', selectedImages[0].url);
+    }
+
+    setBucketPickerOpen(false);
+    setBucketSelected(new Set());
+    setMessage({ type: 'success', text: `${selectedImages.length} photo${selectedImages.length > 1 ? 's' : ''} added from bucket!` });
+    setTimeout(() => setMessage(null), 3000);
+  };
+
+  const toggleBucketImage = (id: string) => {
+    setBucketSelected(prev => {
+      const next = new Set(prev);
+      if (bucketPickerMode !== 'propertyImages') {
+        next.clear();
+        next.add(id);
+      } else {
+        if (next.has(id)) next.delete(id); else next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const reportRef = useRef<HTMLDivElement>(null);
+  const [showReworkModal, setShowReworkModal] = useState(false);
+  const [reworkComment, setReworkComment] = useState('');
+
+  const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
+  const isManagerOrOwner = userRole === 'MANAGER' || userRole === 'OWNER';
+
+  const handleResetWizard = async () => {
+    if (confirm('Are you sure you want to change report parameters? (This will not clear your typed text, but will reset the template layout)')) {
+      const updatedFields = {
+        ...fields,
+        clientType: '',
+        organisationTemplate: '',
+        institutionCategory: '',
+        organisationSubTemplate: '',
+      };
+      setFields(updatedFields);
+      setLoading(true);
+      try {
+        await saveReportDraft(projectId, updatedFields);
+        router.refresh();
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const handleCancelSubmission = async () => {
+    if (!confirm('Cancel this submission and return to drafting?')) return;
+    setLoading(true);
+    const { cancelReportSubmission } = await import('@/app/actions/project');
+    const res = await cancelReportSubmission(projectId);
+    if (res.error) setMessage({ type: 'error', text: res.error });
+    else {
+      setMessage({ type: 'success', text: 'Submission cancelled. You can now edit the report.' });
+      router.refresh();
+    }
+    setLoading(false);
+  };
+
+  const handleReworkClick = () => {
+    setShowReworkModal(true);
+  };
+
+  const submitRework = async () => {
+    if (!reworkComment.trim()) {
+      setMessage({ type: 'error', text: 'Please provide a comment for rework.' });
+      return;
+    }
+    setLoading(true);
+    const { sendReportForRework } = await import('@/app/actions/project');
+    const res = await sendReportForRework(projectId, reworkComment);
+    if (res.error) setMessage({ type: 'error', text: res.error });
+    else {
+      setMessage({ type: 'success', text: 'Report sent for rework.' });
+      setShowReworkModal(false);
+      router.refresh();
+    }
+    setLoading(false);
+  };
+
+  const handleFinalize = async () => {
+    if (!confirm('Finalize this report and share it with the client? This will generate the official PDF and delete temporary draft images.')) return;
+    setLoading(true);
+    setMessage({ type: 'success', text: 'Generating final PDF...' });
+    try {
+      await saveReportDraft(projectId, fields);
+      const pdfBlob = await handleGeneratePDF();
+      if (pdfBlob) {
+        const pdfFileName = `${projectId}-report-${Date.now()}.pdf`;
+        const pdfPath = `reports/pdfs/${pdfFileName}`;
+        const { error: uploadErr } = await supabaseBrowser.storage
+          .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+          .upload(pdfPath, pdfBlob, { contentType: 'application/pdf' });
+        if (!uploadErr) {
+          const { data: urlData } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(pdfPath);
+          try {
+            const { data: files } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).list(`temp-photos/${projectId}`);
+            if (files && files.length > 0) {
+              const paths = files.map(f => `temp-photos/${projectId}/${f.name}`);
+              await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).remove(paths);
+            }
+          } catch (err) { console.error('Failed to cleanup temp photos:', err); }
+          const finalFields = { ...fields, propertyImages: [] };
+          await saveReportDraft(projectId, finalFields);
+          const { finalizeReport } = await import('@/app/actions/project');
+          const res = await finalizeReport(projectId, urlData.publicUrl);
+          if (res.error) setMessage({ type: 'error', text: res.error });
+          else { setFields(finalFields); setMessage({ type: 'success', text: 'Project Finalized Successfully! PDF is now available to the client.' }); }
+        } else {
+          setMessage({ type: 'error', text: 'Failed to upload PDF.' });
+        }
+      }
+    } catch (err: any) {
+      setMessage({ type: 'error', text: 'PDF Error: ' + (err?.message || String(err)) });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAiAcceptSuggestion = useCallback((fieldKey: string, value: string) => {
+    handleChange(fieldKey, value);
+  }, [handleChange]);
+
+  const handleAiAcceptFloorSuggestion = useCallback((floorId: string, fieldName: string, value: string) => {
+    // No-op for IBBI signature compatibility
+  }, []);
+
+  const handleAiAcceptAll = useCallback((suggestions: Record<string, Suggestion>) => {
+    setFields(prev => {
+      const updated = { ...prev };
+      for (const [key, suggestion] of Object.entries(suggestions)) {
+        (updated as any)[key] = suggestion.value;
+      }
+      return updated;
+    });
   }, []);
 
   // ── Valuation Table Helpers ──
@@ -586,7 +750,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       const locationBytes = fields.locationMapImage ? imageResults[imgIdx++] : null;
 
       const r = new PDFReportRenderer();
-      await r.init(letterheadBytes);
+      await r.init(letterheadBytes || undefined);
 
       // ── IBBI Valuation Certificate (appears first in IBBI reports) ──
       r.drawCenteredTitle('VALUATION CERTIFICATE');
@@ -621,48 +785,48 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       // ── 1. OBJECTIVE ──
       r.drawSectionHeader('1. OBJECTIVE:');
       r.drawTextBlock('1.1 VALUATION STANDARD', { bold: true });
-      r.drawWrappedText('The Valuation has been prepared in accordance with IVS 2022 (International Valuation Standards) incorporating the General Standards and the Asset Standards.');
+      r.drawTextBlock('The Valuation has been prepared in accordance with IVS 2022 (International Valuation Standards) incorporating the General Standards and the Asset Standards.');
       r.advanceCursor(4);
       r.drawTextBlock('1.2 PURPOSE OF VALUATION', { bold: true });
-      r.drawWrappedText('To assess the fair market value / realizable value of the subject property for the purpose of liquidation / resolution process under IBC, 2016.');
+      r.drawTextBlock('To assess the fair market value / realizable value of the subject property for the purpose of liquidation / resolution process under IBC, 2016.');
       r.advanceCursor(4);
       r.drawTextBlock('1.3 CONFLICT OF INTEREST', { bold: true });
-      r.drawWrappedText('The valuer has no direct or indirect interest in the property valued, nor any personal interest or bias with respect to the parties involved.');
+      r.drawTextBlock('The valuer has no direct or indirect interest in the property valued, nor any personal interest or bias with respect to the parties involved.');
       r.advanceCursor(4);
       r.drawTextBlock('1.4 CURRENCY AND MEASUREMENT', { bold: true });
-      r.drawWrappedText('All amounts are in Indian Rupees (INR). Land is measured in Acres/Decimals/Sq. ft. as applicable.');
+      r.drawTextBlock('All amounts are in Indian Rupees (INR). Land is measured in Acres/Decimals/Sq. ft. as applicable.');
       r.advanceCursor(4);
       r.drawTextBlock('1.5 RESPONSIBILITY TO THIRD PARTIES', { bold: true });
-      r.drawWrappedText('This report is prepared only for the stated purpose and the parties named herein.');
+      r.drawTextBlock('This report is prepared only for the stated purpose and the parties named herein.');
       r.advanceCursor(4);
       r.drawTextBlock('1.6 DISCLOSURE AND PUBLICATION', { bold: true });
-      r.drawWrappedText('This valuation report or any reference thereof should not be used in any published document without the consent of the valuer.');
+      r.drawTextBlock('This valuation report or any reference thereof should not be used in any published document without the consent of the valuer.');
       r.advanceCursor(4);
       r.drawTextBlock('1.7 LIMITATIONS ON LIABILITY', { bold: true });
-      r.drawWrappedText('The valuer shall not be liable for any loss or damage arising from this report except to the extent that such loss or damage is caused by the valuer\'s negligence.');
+      r.drawTextBlock('The valuer shall not be liable for any loss or damage arising from this report except to the extent that such loss or damage is caused by the valuer\'s negligence.');
       r.advanceCursor(8);
 
       // ── 2. SCOPE OF ENQUIRIES ──
       r.drawSectionHeader('2. SCOPE OF ENQUIRIES AND INVESTIGATION:');
       r.drawTextBlock('2.1 SITE INSPECTION', { bold: true });
-      r.drawWrappedText(`Site inspection was carried out on ${fields.dateOfInspection || '________'}.`);
+      r.drawTextBlock(`Site inspection was carried out on ${fields.dateOfInspection || '________'}.`);
       r.advanceCursor(4);
       r.drawTextBlock('2.2 ENQUIRIES', { bold: true });
-      r.drawWrappedText('Enquiries were made with local people, real estate agents, and brokers to assess the prevailing market conditions.');
+      r.drawTextBlock('Enquiries were made with local people, real estate agents, and brokers to assess the prevailing market conditions.');
       r.advanceCursor(4);
       r.drawTextBlock('2.3 LEGAL PARAMETERS OF PROPERTY', { bold: true });
-      r.drawWrappedText('Documents and records relating to title, extent, and encumbrances were examined.');
+      r.drawTextBlock('Documents and records relating to title, extent, and encumbrances were examined.');
       r.advanceCursor(4);
       r.drawTextBlock('2.4 ENVIRONMENTAL ASPECTS', { bold: true });
-      r.drawWrappedText('The property was assessed for environmental conditions as observed during inspection.');
+      r.drawTextBlock('The property was assessed for environmental conditions as observed during inspection.');
       r.advanceCursor(4);
       r.drawTextBlock('2.5 INFORMATION PROVIDED', { bold: true });
-      r.drawWrappedText('Information was provided by the property owners, authorized representatives, and from public records.');
+      r.drawTextBlock('Information was provided by the property owners, authorized representatives, and from public records.');
       r.advanceCursor(8);
 
       // ── 3. BASIS OF VALUATION ──
       r.drawSectionHeader('3. BASIS OF VALUATION:');
-      r.drawWrappedText('The valuation is based on Fair Market Value as defined in IVS 104 — the estimated amount for which an asset or liability should exchange on the valuation date between a willing buyer and a willing seller in an arm\'s length transaction, after proper marketing and where the parties had each acted knowledgeably, prudently and without compulsion.');
+      r.drawTextBlock('The valuation is based on Fair Market Value as defined in IVS 104 — the estimated amount for which an asset or liability should exchange on the valuation date between a willing buyer and a willing seller in an arm\'s length transaction, after proper marketing and where the parties had each acted knowledgeably, prudently and without compulsion.');
       r.advanceCursor(8);
 
       // ── 4. BRIEF DESCRIPTION ──
@@ -759,11 +923,11 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
       // ── 13. VALUATION ──
       r.drawSectionHeader('13. VALUATION APPROACHES AND METHODOLOGY:');
-      r.drawWrappedText('Market Approach and Cost Approach have been adopted for the valuation of land and building respectively.');
+      r.drawTextBlock('Market Approach and Cost Approach have been adopted for the valuation of land and building respectively.');
       r.advanceCursor(4);
 
       if (fields.valuationRows && fields.valuationRows.length > 0) {
-        r.drawWrappedText('Detailed Plot-by-Plot Valuation:');
+        r.drawTextBlock('Detailed Plot-by-Plot Valuation:');
         r.advanceCursor(4);
         
         const headers = ['Sl No', 'Plot No', 'Khata No', 'Area', 'Rate/Unit', 'Guideline Value', 'Fair Market Value'];
@@ -784,7 +948,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       if (fields.annexureEnabled && fields.annexures.length > 0) {
         const firstAnnexure = fields.annexures.find((a: AnnexureItem) => a.parsedData);
         const annexureLabel = firstAnnexure ? firstAnnexure.label : fields.annexures[0].label;
-        r.drawWrappedText(`The detailed plot-by-plot calculations and area abstracts are provided in Annexure ${annexureLabel}.`);
+        r.drawTextBlock(`The detailed plot-by-plot calculations and area abstracts are provided in Annexure ${annexureLabel}.`);
         r.advanceCursor(6);
       }
       r.drawSimpleRow('Total Govt. Guideline / Book Value', `Rs.${formatIndianCurrency(fields.bookValueTotal || '0')}/-`);
@@ -796,7 +960,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       // ── Remarks ──
       if (fields.remarks) {
         r.drawSectionHeader('REMARKS');
-        r.drawWrappedText(fields.remarks);
+        r.drawTextBlock(fields.remarks);
         r.advanceCursor(8);
       }
 
@@ -919,10 +1083,12 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     }
   };
 
+  // Feature flag: AI Assist panel visibility
+  const aiAssistEnabled = process.env.NEXT_PUBLIC_AI_ASSIST_ENABLED === 'true';
+
   // ── Main Return ──
   return (
-    <div className="min-h-screen bg-[#f8f9fa] font-sans">
-      {/* Top Status Bar */}
+    <div className={`flex ${aiAssistEnabled ? 'gap-4' : 'gap-6'} items-start w-full`} ref={reportRef}>
       {message && (
         <div className={`fixed top-0 left-0 right-0 z-[100] px-6 py-3 text-sm font-semibold text-center shadow-lg ${message.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`}>
           {message.text}
@@ -930,23 +1096,65 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8 flex gap-8 relative">
-        {/* Main Form Area */}
-        <div className="flex-1 max-w-4xl max-h-[85vh] overflow-y-auto pr-4 pb-32 space-y-6">
-
-          {/* ── Header Banner ── */}
-          <div className="bg-gradient-to-r from-[#0f2038] to-[#1a3a5c] rounded-2xl p-8 text-white shadow-xl relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-r from-[#b8860b]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold tracking-wider">IBBI-IVS</span>
-                <span className="bg-amber-500/30 px-3 py-1 rounded-full text-xs font-bold tracking-wider text-amber-200">ORGANISATION</span>
-                <span className={`px-3 py-1 rounded-full text-xs font-bold tracking-wider ${status === 'DRAFT' ? 'bg-blue-500/30 text-blue-200' : status === 'SUBMITTED' ? 'bg-emerald-500/30 text-emerald-200' : 'bg-white/20'}`}>{status}</span>
-              </div>
-              <h1 className="text-3xl font-bold mb-1">{projectCode}</h1>
-              <p className="text-white/60 text-sm">IBBI-IVS Valuation Report Builder &mdash; Fill all IBBI statutory sections</p>
+      {/* ── Main Form Column ── */}
+      <div className="flex-1 min-w-0 space-y-4">
+        {/* Template Info Banner */}
+        <div className="card p-4 bg-gradient-to-r from-[#f8f9fa] to-[#e9ecef] border border-[#c8d6e5] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md rounded-xl sticky top-2 z-50">
+          <div className="flex flex-col xl:flex-row xl:items-center gap-3">
+            <span className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider">Active Configuration</span>
+            <div className="flex flex-wrap gap-2">
+              <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                Organisation / Bank
+              </span>
+              {fields.institutionCategory && (
+                <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-500"></span>
+                  {fields.institutionCategory}
+                </span>
+              )}
+              {fields.organisationTemplate && !['INCOME_TAX', 'IBBI_IVS'].includes(fields.organisationTemplate) && (
+                <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                  {fields.organisationTemplate}
+                  {fields.organisationSubTemplate ? ` - ${fields.organisationSubTemplate}` : ''}
+                </span>
+              )}
+              <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm">
+                Service: {SERVICES_LIST.find(s => s.id === fields.serviceType)?.title || fields.serviceType || 'Land Valuation'}
+              </span>
+              <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm">
+                Subject: {fields.subjectType || 'Residential Land'}
+              </span>
+              {fields.valuationLayout && (
+                <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm flex items-center gap-1.5">
+                  <span className={`w-1.5 h-1.5 rounded-full ${fields.valuationLayout === 'apartment' ? 'bg-purple-500' : 'bg-green-500'}`}></span>
+                  {fields.valuationLayout === 'apartment' ? 'Flat / Apartment' : 'Land & Building'}
+                </span>
+              )}
             </div>
           </div>
+          <button
+            type="button"
+            onClick={handleResetWizard}
+            className="text-xs text-[#b8860b] hover:text-[#8a6507] hover:underline font-bold transition-colors shrink-0"
+          >
+            Change Parameters
+          </button>
+        </div>
+
+        {/* Rework Banner */}
+        {fields.reworkNotes && status === 'REPORT_DRAFTING' && (
+          <div className="card p-5 border-2 border-red-200 bg-red-50 shadow-md">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-xl">⚠️</span>
+              <h2 className="text-sm font-bold text-red-800 uppercase tracking-wider">Manager Rework Requested</h2>
+            </div>
+            <p className="text-sm text-red-700 bg-white/60 p-4 rounded-lg border border-red-100 whitespace-pre-wrap">
+              {fields.reworkNotes}
+            </p>
+          </div>
+        )}
 
           {/* ── Section 1: Objective & Dates ── */}
           <Section title="Objective & Static Declarations" number={1}>
@@ -1218,17 +1426,38 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
               </Field>
             </div>
           </Section>
-
           {/* ── Section 14: Photos & Maps ── */}
           <Section title="Property Photographs, Sketch & Location Maps" number={14}>
             {/* Property Photos */}
             <div>
               <p className="text-xs font-bold text-[#495057] uppercase tracking-wider mb-2">Property Photographs</p>
-              <input type="file" accept="image/*" multiple onChange={e => handleFileUpload(e, 'propertyImages')} className="text-sm" disabled={isReadOnly || uploading} />
-              {uploading && <p className="text-xs text-amber-600 mt-1">Uploading...</p>}
-              {uploadError && <p className="text-xs text-red-600 mt-1">{uploadError}</p>}
+              {!isReadOnly && (
+                <div className="space-y-3 mb-4">
+                  <div className="flex items-center gap-3">
+                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+                      {uploading ? 'Uploading...' : '📷 Add Property Images'}
+                      <input type="file" accept="image/*" multiple className="hidden" onChange={e => handleFileUpload(e, 'propertyImages')} disabled={uploading} />
+                    </label>
+                    {bucketImages && bucketImages.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => openBucketPicker('propertyImages')}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-sm font-medium hover:bg-[#1e3a5f]/5 transition-colors"
+                      >
+                        📸 Pick from Bucket ({bucketImages.length})
+                      </button>
+                    )}
+                    <span className="text-xs text-[#6c757d]">Max size: 5MB per photograph</span>
+                  </div>
+                  {uploadError && (
+                    <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold">
+                      ⚠️ {uploadError}
+                    </div>
+                  )}
+                </div>
+              )}
               {fields.propertyImages.length > 0 && (
-                <div className="grid grid-cols-3 md:grid-cols-4 gap-2 mt-3">
+                <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
                   {fields.propertyImages.map((url: string, i: number) => (
                     <div key={i} className="relative group rounded-lg overflow-hidden border border-slate-200">
                       <img src={url} alt={`Property ${i + 1}`} className="w-full h-24 object-cover" />
@@ -1244,17 +1473,64 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
             {/* Sketch Map */}
             <div className="mt-6">
               <p className="text-xs font-bold text-[#495057] uppercase tracking-wider mb-2">Sketch Map</p>
-              <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'sketchMapImage')} className="text-sm" disabled={isReadOnly || uploading} />
-              {fields.sketchMapImage && <img src={fields.sketchMapImage} alt="Sketch Map" className="mt-2 max-h-48 rounded-lg border" />}
+              {fields.sketchMapImage ? (
+                <div className="relative group rounded-lg overflow-hidden border border-slate-200 max-w-lg">
+                  <img src={fields.sketchMapImage} alt="Sketch Map" className="w-full max-h-48 object-contain" />
+                  {!isReadOnly && (
+                    <button onClick={() => handleChange('sketchMapImage', '')} className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">Remove</button>
+                  )}
+                </div>
+              ) : (
+                !isReadOnly && (
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+                      {uploading ? 'Uploading...' : '🗺️ Upload Sketch Map'}
+                      <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'sketchMapImage')} disabled={uploading} />
+                    </label>
+                    {bucketImages && bucketImages.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => openBucketPicker('sketchMapImage')}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-sm font-medium hover:bg-[#1e3a5f]/5 transition-colors"
+                      >
+                        📸 Pick from Bucket
+                      </button>
+                    )}
+                  </div>
+                )
+              )}
             </div>
 
             {/* Location Map */}
             <div className="mt-6">
-              <p className="text-xs font-bold text-[#495057] uppercase tracking-wider mb-2">Location Map (Upload a screenshot)</p>
-              <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'locationMapImage')} className="text-sm" disabled={isReadOnly || uploading} />
-              {fields.locationMapImage && <img src={fields.locationMapImage} alt="Location Map" className="mt-2 max-h-48 rounded-lg border" />}
+              <p className="text-xs font-bold text-[#495057] uppercase tracking-wider mb-2">Location Map</p>
+              {fields.locationMapImage ? (
+                <div className="relative group rounded-lg overflow-hidden border border-slate-200 max-w-lg">
+                  <img src={fields.locationMapImage} alt="Location Map" className="w-full max-h-48 object-contain" />
+                  {!isReadOnly && (
+                    <button onClick={() => handleChange('locationMapImage', '')} className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">Remove</button>
+                  )}
+                </div>
+              ) : (
+                !isReadOnly && (
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+                      {uploading ? 'Uploading...' : '🗺️ Upload Location Map'}
+                      <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'locationMapImage')} disabled={uploading} />
+                    </label>
+                    {bucketImages && bucketImages.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => openBucketPicker('locationMapImage')}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-sm font-medium hover:bg-[#1e3a5f]/5 transition-colors"
+                      >
+                        📸 Pick from Bucket
+                      </button>
+                    )}
+                  </div>
+                )
+              )}
             </div>
-
             {/* Lat/Long */}
             <div className="grid grid-cols-2 gap-4 mt-6">
               <Field label="Latitude"><input type="text" value={fields.latitude} onChange={e => handleChange('latitude', e.target.value)} className={inputCls} placeholder="e.g. 20.2961" disabled={isReadOnly} /></Field>
@@ -1326,35 +1602,278 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
             </div>
           </Section>
 
-        </div>
-
-        {/* Floating Navigator */}
-        <FloatingNavigator annexureEnabled={fields.annexureEnabled} />
       </div>
 
-      {/* ── Floating Action Bar ── */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 p-4 flex justify-between items-center z-50 px-8 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
-        <div className="flex items-center gap-4">
-          {!isReadOnly && (
-            <button onClick={handleSaveDraft} disabled={loading} className="px-6 py-2.5 bg-white border-2 border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-all flex items-center gap-2">
+      <div className="flex flex-wrap gap-4 pt-4 items-center w-full">
+        {status === 'COMPLETED' && (
+          <div className="w-full p-4 rounded-xl bg-green-50 border border-green-200 text-green-800 font-bold flex items-center gap-2">
+            <span>✅</span> Verified and Completed (Pushed to storage for client download)
+          </div>
+        )}
+
+        {status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE' && (
+          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 font-semibold mb-2">
+            <span>⏳ Currently Under Manager Review.</span>
+            <button
+              onClick={handleCancelSubmission}
+              disabled={loading}
+              className="px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg text-xs font-bold transition-colors"
+            >
+              ↩️ Cancel Submission (Pull back to Draft)
+            </button>
+          </div>
+        )}
+
+        {!isReadOnly && (
+          <>
+            <button
+              onClick={handleSaveDraft}
+              disabled={loading}
+              className="px-6 py-3 rounded-xl border-2 border-[#b8860b] text-[#b8860b] font-semibold text-sm hover:bg-[#b8860b]/5 transition-all disabled:opacity-50 flex items-center gap-2"
+            >
               {loading ? '⏳ Saving...' : '💾 Save Draft'}
             </button>
-          )}
-          {!isReadOnly && status === 'DRAFT' && (
-            <button onClick={handleSubmit} disabled={loading} className="px-6 py-2.5 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all flex items-center gap-2">
-              📤 Submit for Review
+            {userRole === 'REPORT_EMPLOYEE' && (
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold text-sm hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all disabled:opacity-50 flex items-center gap-2"
+              >
+                {loading ? '⏳ Submitting...' : '📤 Submit to Manager'}
+              </button>
+            )}
+          </>
+        )}
+
+        <button
+          onClick={handlePreviewPDF}
+          disabled={loading}
+          className="px-6 py-3 rounded-xl border-2 border-gray-400 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center gap-2"
+        >
+          👁️ Preview PDF
+        </button>
+
+        <button
+          onClick={handleDownloadPDF}
+          disabled={loading}
+          className="px-6 py-3 rounded-xl border-2 border-gray-400 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center gap-2"
+        >
+          📥 Download PDF
+        </button>
+
+        {status === 'MANAGER_REVIEW' && isManagerOrOwner && (
+          <>
+            <button
+              onClick={handleReworkClick}
+              disabled={loading}
+              className="px-6 py-3 rounded-xl border-2 border-red-500 text-red-600 font-semibold text-sm hover:bg-red-50 transition-all disabled:opacity-50 flex items-center gap-2"
+            >
+              ❌ Send for Rework
             </button>
-          )}
-        </div>
-        <div className="flex gap-3">
-          <button onClick={handlePreviewPDF} className="px-6 py-2.5 bg-[#0f2038] text-white font-bold rounded-xl hover:bg-[#1a3a5c] shadow-lg shadow-[#0f2038]/20 transition-all flex items-center gap-2">
-            📄 Preview PDF
-          </button>
-          <button onClick={handleDownloadPDF} className="px-6 py-2.5 bg-[#b8860b] text-white font-bold rounded-xl hover:bg-[#a07209] shadow-lg shadow-[#b8860b]/20 transition-all flex items-center gap-2">
-            ⬇️ Download PDF
-          </button>
-        </div>
+            <button
+              onClick={handleFinalize}
+              disabled={loading}
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold text-sm hover:from-green-700 hover:to-green-800 shadow-lg hover:shadow-xl transition-all disabled:opacity-50 flex items-center gap-2"
+            >
+              ✅ Finalize & Share to Client
+            </button>
+          </>
+        )}
       </div>
+
+      {/* Rework Modal */}
+      {showReworkModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-[#e9ecef] bg-[#f8f9fa]">
+              <h2 className="text-xl font-bold text-[#0f2038]">
+                Send for Rework
+              </h2>
+              <p className="text-xs text-[#6c757d] mt-1">Please provide specific feedback for the report agent.</p>
+            </div>
+            <div className="p-6">
+              <textarea
+                value={reworkComment}
+                onChange={(e) => setReworkComment(e.target.value)}
+                placeholder="List the changes required..."
+                className="w-full min-h-[150px] p-4 text-sm rounded-xl border border-[#dee2e6] bg-[#f8f9fa] focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500 resize-y"
+                autoFocus
+              />
+            </div>
+            <div className="p-4 border-t border-[#e9ecef] bg-[#f8f9fa] flex justify-end gap-3">
+              <button
+                onClick={() => { setShowReworkModal(false); setReworkComment(''); }}
+                className="px-5 py-2.5 rounded-xl border border-[#dee2e6] text-sm font-semibold text-[#495057] hover:bg-white transition-colors"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitRework}
+                disabled={loading || !reworkComment.trim()}
+                className="px-5 py-2.5 rounded-xl bg-red-600 text-white text-sm font-bold hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {loading ? 'Sending...' : 'Confirm Rework'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bucket Picker Modal */}
+      {bucketPickerOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-fade-in-up">
+            <div className="p-5 border-b border-[#e9ecef] bg-[#f8f9fa] flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-[#0f2038] flex items-center gap-2">
+                  📸 Pick from Photo Bucket
+                </h2>
+                <p className="text-xs text-[#6c757d] mt-1">
+                  {bucketPickerMode === 'propertyImages'
+                    ? 'Select one or more photos to add to the report'
+                    : 'Select a single photo for the map'}
+                </p>
+              </div>
+              <button
+                onClick={() => setBucketPickerOpen(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-500 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
+              {bucketImages && bucketImages.length > 0 ? (
+                bucketPickerAgent === null ? (
+                  <div className="space-y-4">
+                    <p className="text-sm font-semibold text-[#495057] mb-2">Select a Field Agent to view their uploaded photos:</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {Array.from(new Set(bucketImages.map(img => img.employee.employeeId))).map(empId => {
+                        const agentImages = bucketImages.filter(img => img.employee.employeeId === empId);
+                        const agentName = agentImages[0].employee.name;
+                        const selectedCount = agentImages.filter(img => bucketSelected.has(img.id)).length;
+                        return (
+                          <div
+                            key={empId}
+                            onClick={() => setBucketPickerAgent(empId)}
+                            className="bg-white rounded-xl border border-[#e9ecef] p-4 flex items-center justify-between cursor-pointer hover:border-[#1e3a5f] hover:shadow-md transition-all"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-[#f8f9fa] flex items-center justify-center text-xl">
+                                👤
+                              </div>
+                              <div>
+                                <p className="font-bold text-[#0f2038]">{agentName}</p>
+                                <p className="text-xs text-[#6c757d]">{agentImages.length} photos uploaded</p>
+                              </div>
+                            </div>
+                            {selectedCount > 0 && (
+                              <span className="bg-[#1e3a5f] text-white text-[10px] font-bold px-2 py-1 rounded-full">
+                                {selectedCount} selected
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <button
+                      onClick={() => setBucketPickerAgent(null)}
+                      className="text-sm font-bold text-[#1e3a5f] hover:underline flex items-center gap-1 mb-2"
+                    >
+                      ← Back to Agents
+                    </button>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {bucketImages.filter(img => img.employee.employeeId === bucketPickerAgent).map((img) => {
+                        const isSelected = bucketSelected.has(img.id);
+                        return (
+                          <div
+                            key={img.id}
+                            onClick={() => toggleBucketImage(img.id)}
+                            className={`relative group bg-white rounded-xl border-2 overflow-hidden cursor-pointer transition-all ${
+                              isSelected ? 'border-[#1e3a5f] shadow-md scale-[0.98]' : 'border-transparent shadow-sm hover:shadow-md'
+                            }`}
+                          >
+                            <div className="aspect-square bg-gray-100">
+                              <img src={img.url} alt={img.fileName} className="w-full h-full object-cover" loading="lazy" />
+                            </div>
+                            <div className="p-2 border-t border-gray-100">
+                              <p className="text-[10px] font-bold text-[#0f2038] truncate">{img.employee.name}</p>
+                              <p className="text-[9px] text-[#6c757d]">
+                                {new Date(img.createdAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                            {isSelected && (
+                              <div className="absolute top-2 right-2 w-6 h-6 bg-[#1e3a5f] text-white rounded-full flex items-center justify-center shadow-sm">
+                                ✓
+                              </div>
+                            )}
+                            {!isSelected && (
+                              <div className="absolute top-2 right-2 w-6 h-6 bg-black/20 border-2 border-white/50 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )
+              ) : (
+                <div className="text-center py-12">
+                  <div className="text-4xl mb-3">📷</div>
+                  <p className="text-sm font-medium text-[#6c757d]">No photos in the bucket yet.</p>
+                  <p className="text-xs text-[#adb5bd] mt-1">Field agents need to upload photos to this project first.</p>
+                </div>
+              )}
+            </div>
+
+            <div className="p-4 border-t border-[#e9ecef] bg-white flex justify-end gap-3">
+              <button
+                onClick={() => setBucketPickerOpen(false)}
+                className="px-5 py-2.5 rounded-xl border border-[#dee2e6] text-sm font-semibold text-[#495057] hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBucketConfirm}
+                disabled={!bucketSelected || bucketSelected.size === 0}
+                className="px-5 py-2.5 rounded-xl bg-[#1e3a5f] text-white text-sm font-bold hover:bg-[#0f2038] transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                Add Selected ({bucketSelected ? bucketSelected.size : 0})
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Navigator */}
+      {!aiAssistEnabled && <FloatingNavigator annexureEnabled={fields.annexureEnabled} />}
+
+      {/* AI Assist Sidebar */}
+      {aiAssistEnabled && (
+        <>
+          <div className="hidden lg:block w-[340px] shrink-0">
+            <AiAssistPanel
+              fields={fields}
+              onAcceptSuggestion={handleAiAcceptSuggestion}
+              onAcceptFloorSuggestion={handleAiAcceptFloorSuggestion}
+              onAcceptAll={handleAiAcceptAll}
+              isReadOnly={isReadOnly}
+            />
+          </div>
+          <div className="lg:hidden">
+            <AiAssistPanel
+              fields={fields}
+              onAcceptSuggestion={handleAiAcceptSuggestion}
+              onAcceptFloorSuggestion={handleAiAcceptFloorSuggestion}
+              onAcceptAll={handleAiAcceptAll}
+              isReadOnly={isReadOnly}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }
