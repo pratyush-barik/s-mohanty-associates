@@ -704,12 +704,12 @@ const FloatingNavigator = ({ isApartmentFlat, annexureEnabled }: { isApartmentFl
     { id: 'layout-config', title: 'Layout Structure', special: true },
     { id: 'section-7', title: 'Area Valuation' },
     ...(isApartmentFlat ? [] : [{ id: 'section-8', title: 'Land Valuation' }]),
-    { id: 'section-9', title: 'Valuation Abstract' },
-    { id: 'section-10', title: 'Remarks' },
-    { id: 'section-11', title: 'Certificate' },
-    { id: 'section-13', title: 'Sketch Map' },
-    { id: 'section-14', title: 'Location Map' },
-    ...(annexureEnabled ? [{ id: 'section-15', title: 'Annexure' }] : []),
+    { id: `section-${isApartmentFlat ? 8 : 9}`, title: 'Valuation Abstract' },
+    { id: `section-${isApartmentFlat ? 9 : 10}`, title: 'Remarks' },
+    { id: `section-${isApartmentFlat ? 10 : 11}`, title: 'Certificate' },
+    { id: `section-${isApartmentFlat ? 12 : 13}`, title: 'Sketch Map' },
+    { id: `section-${isApartmentFlat ? 13 : 14}`, title: 'Location Map' },
+    ...(annexureEnabled ? [{ id: `section-${isApartmentFlat ? 14 : 15}`, title: 'Annexure' }] : []),
   ];
 
   const scrollTo = (id: string) => {
