@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import GeneralReportBuilder from './GeneralReportBuilder';
+import IBBIReportBuilder from './IBBIReportBuilder';
 
 export default async function ReportEditorPage({ params }: { params: Promise<{ projectId: string }> }) {
   try {
@@ -120,24 +121,43 @@ export default async function ReportEditorPage({ params }: { params: Promise<{ p
           </div>
         </div>
 
-        {/* Report Builder (Full Width) */}
+        {/* Report Builder (Full Width) — conditionally render IBBI or General */}
         <div className="w-full">
-          <GeneralReportBuilder
-            projectId={project.id}
-            projectCode={project.projectCode}
-            initialFields={report?.data || null}
-            status={project.status}
-            userRole={currentUser.role}
-            bucketImages={project.bucketImages}
-            prefill={{
-              contactName: serviceRequest.contactName,
-              contactPhone: serviceRequest.contactPhone,
-              contactEmail: serviceRequest.contactEmail,
-              propertyAddress: serviceRequest.propertyAddress,
-              propertyType: serviceRequest.propertyType,
-              purpose: serviceRequest.purpose,
-            }}
-          />
+          {(report?.data as any)?.organisationTemplate === 'IBBI_IVS' ? (
+            <IBBIReportBuilder
+              projectId={project.id}
+              projectCode={project.projectCode}
+              initialFields={report?.data || null}
+              status={project.status}
+              userRole={currentUser.role}
+              bucketImages={project.bucketImages}
+              prefill={{
+                contactName: serviceRequest.contactName,
+                contactPhone: serviceRequest.contactPhone,
+                contactEmail: serviceRequest.contactEmail,
+                propertyAddress: serviceRequest.propertyAddress,
+                propertyType: serviceRequest.propertyType,
+                purpose: serviceRequest.purpose,
+              }}
+            />
+          ) : (
+            <GeneralReportBuilder
+              projectId={project.id}
+              projectCode={project.projectCode}
+              initialFields={report?.data || null}
+              status={project.status}
+              userRole={currentUser.role}
+              bucketImages={project.bucketImages}
+              prefill={{
+                contactName: serviceRequest.contactName,
+                contactPhone: serviceRequest.contactPhone,
+                contactEmail: serviceRequest.contactEmail,
+                propertyAddress: serviceRequest.propertyAddress,
+                propertyType: serviceRequest.propertyType,
+                purpose: serviceRequest.purpose,
+              }}
+            />
+          )}
         </div>
       </div>
     );

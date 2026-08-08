@@ -4,74 +4,1355 @@
  * IBBIReportBuilder — Report Builder for IBBI-IVS Valuation Reports
  * (Organisation Client: IBBI)
  *
- * This is a placeholder component. Sections and fields will be populated
- * based on the IBBI-IVS sample valuation report master file located at:
- *   Banks/IBBI-IVS-SAMPLE VALAUTION REPORT/
+ * Mirrors the architecture of GeneralReportBuilder.tsx but with IBBI-specific
+ * sections (14 statutory sections), fields, and PDF layout.
  *
- * Architecture mirrors GeneralReportBuilder.tsx but with IBBI-specific
- * sections, fields, PDF layout, and validation rules.
+ * Key differences from GeneralReportBuilder:
+ *   - Sections 1–3 are auto-generated (IBBI statutory text)
+ *   - Valuation Certificate appears BEFORE Section 1 in the PDF
+ *   - Section 13 uses Annexure Excel uploads for plot-by-plot tables
+ *   - No wizard flow — this builder is directly for IBBI organisation clients
  */
 
-import React from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
+import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
+import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
+import { PDFReportRenderer } from '@/lib/pdf-report-renderer';
+import AiAssistPanel from '@/components/AiAssistPanel';
+import type { Suggestion } from '@/lib/ai/predictor';
+import * as XLSX from 'xlsx';
 
-// ── Placeholder Props (will be expanded with IBBI-specific fields) ──
+// ─── Types ─────────────────────────────────────────────────────────
+interface AnnexureItem {
+  id: string;
+  label: string;          // 'A', 'B', 'C', ...
+  title?: string;         // Custom title for the annexure
+  excelFileUrl: string;   // Uploaded Excel URL from Supabase
+  excelFileName: string;  // Original filename
+  parsedData?: {          // Parsed Excel table data
+    headers: string[];
+    rows: string[][];
+  };
+}
+
+export interface ValuationRow {
+  id: string;
+  plotNo: string;
+  khataNo: string;
+  area: string;
+  rate: string;
+  guidelineValue: string;
+  fairMarketValue: string;
+}
+
+interface IBBIFields {
+  // ── Common / Cover Page ──
+  ownerName: string;
+  ownerAddress: string;
+  propertyAddress: string;
+  legalAddress: string;
+  dateOfInspection: string;
+  dateOfValuation: string;
+  refNo: string;
+
+  // ── Section 4: Brief Description ──
+  applicantName: string;
+  propertyType: string;
+  currentUsage: string;
+  revenuePlotNo: string;
+  revenueKhataNo: string;
+  revenueVillage: string;
+  revenueTahasil: string;
+  revenuePS: string;
+  revenueGP: string;
+  revenueDistrict: string;
+  revenueState: string;
+  classificationArea: string;
+  conversionStatus: string;
+  boundEast: string;
+  boundWest: string;
+  boundNorth: string;
+  boundSouth: string;
+  extentOfSite: string;
+  occupancyStatus: string;
+
+  // ── Section 5: Town Planning ──
+  masterPlanProvision: string;
+  approvedPlanDate: string;
+  approvedPlanAuthority: string;
+  developmentControls: string;
+  groundCoverage: string;
+  surroundingLandUse: string;
+
+  // ── Section 6: Legal Aspects ──
+  ownershipDocuments: string;
+  ownerAsPerROR: string;
+  easementAgreement: string;
+  acquisitionNotification: string;
+  roadWideningNotification: string;
+  heritageRestriction: string;
+  transferability: string;
+  existingMortgages: string;
+  guaranteeIssued: string;
+  sarfaesiCompliant: string;
+  disputesDues: string;
+
+  // ── Section 7: Infrastructure ──
+  waterSupply: string;
+  sewerage: string;
+  stormWater: string;
+  solidWaste: string;
+  electricity: string;
+  roadConnectivity: string;
+  policeStationDist: string;
+  busStopDist: string;
+  schoolDist: string;
+  collegeDist: string;
+
+  // ── Section 8 & 9: Socio-Cultural / Environment ──
+  socialStructure: string;
+  socialInfrastructure: string;
+  ecoMaterials: string;
+  rainWaterHarvesting: string;
+  solarSystem: string;
+  environmentalPollution: string;
+
+  // ── Section 10 & 11: Marketability / Architecture ──
+  locationalAttributes: string;
+  scarcity: string;
+  demandSupply: string;
+  architecturalAspects: string;
+
+  // ── Section 12: Engineering ──
+  constructionType: string;
+  materialsUsed: string;
+  specifications: string;
+  maintenanceIssues: string;
+  ageOfBuilding: string;
+  residualLife: string;
+  extentDeterioration: string;
+  structuralSafety: string;
+  naturalDisasterProtection: string;
+  visibleDamage: string;
+
+  // ── Section 13: Valuation ──
+  bookValueTotal: string;
+  fairMarketValueTotal: string;
+  presentMarketValueTotal: string;
+  realisableValueTotal: string;
+  valuationRows: ValuationRow[];
+
+  // ── Section 14: Site Location ──
+  latitude: string;
+  longitude: string;
+
+  // ── Photos & Maps ──
+  propertyImages: string[];
+  propertyImageNames: string[];
+  sketchMapImage: string;
+  locationMapImage: string;
+
+  // ── Remarks ──
+  remarks: string;
+  representativeName: string;
+
+  // ── Annexure ──
+  annexureEnabled: boolean;
+  annexures: AnnexureItem[];
+
+  // ── Meta ──
+  clientType?: string;
+  organisationTemplate?: string;
+  [key: string]: any;
+}
+
+const DEFAULT_FIELDS: IBBIFields = {
+  ownerName: '',
+  ownerAddress: '',
+  propertyAddress: '',
+  legalAddress: '',
+  dateOfInspection: new Date().toISOString().split('T')[0],
+  dateOfValuation: new Date().toISOString().split('T')[0],
+  refNo: '',
+
+  applicantName: '',
+  propertyType: 'Defunct Industrial Unit',
+  currentUsage: 'Vacant',
+  revenuePlotNo: '',
+  revenueKhataNo: '',
+  revenueVillage: '',
+  revenueTahasil: '',
+  revenuePS: '',
+  revenueGP: '',
+  revenueDistrict: '',
+  revenueState: 'Odisha',
+  classificationArea: 'Rural Area',
+  conversionStatus: 'Agricultural',
+  boundEast: '',
+  boundWest: '',
+  boundNorth: '',
+  boundSouth: '',
+  extentOfSite: '',
+  occupancyStatus: 'Vacant',
+
+  masterPlanProvision: '',
+  approvedPlanDate: '',
+  approvedPlanAuthority: '',
+  developmentControls: '',
+  groundCoverage: '',
+  surroundingLandUse: '',
+
+  ownershipDocuments: 'ROR',
+  ownerAsPerROR: '',
+  easementAgreement: 'None',
+  acquisitionNotification: 'None',
+  roadWideningNotification: 'None',
+  heritageRestriction: 'None',
+  transferability: 'No restriction',
+  existingMortgages: 'None',
+  guaranteeIssued: 'No information',
+  sarfaesiCompliant: 'Pending Legal Opinion',
+  disputesDues: 'None observed',
+
+  waterSupply: 'Not Available',
+  sewerage: 'Not Available',
+  stormWater: 'No',
+  solidWaste: 'No',
+  electricity: 'Not Available',
+  roadConnectivity: '',
+  policeStationDist: '',
+  busStopDist: '',
+  schoolDist: '',
+  collegeDist: '',
+
+  socialStructure: 'Average',
+  socialInfrastructure: 'No',
+  ecoMaterials: 'No',
+  rainWaterHarvesting: 'No',
+  solarSystem: 'No',
+  environmentalPollution: 'None observed',
+
+  locationalAttributes: 'Average',
+  scarcity: 'No',
+  demandSupply: 'Restricted',
+  architecturalAspects: 'None',
+
+  constructionType: 'None at site',
+  materialsUsed: 'None at site',
+  specifications: 'None at site',
+  maintenanceIssues: 'None at site',
+  ageOfBuilding: '0',
+  residualLife: '0',
+  extentDeterioration: 'None',
+  structuralSafety: 'None',
+  naturalDisasterProtection: 'None',
+  visibleDamage: 'None',
+
+  bookValueTotal: '',
+  fairMarketValueTotal: '',
+  presentMarketValueTotal: '',
+  realisableValueTotal: '',
+  valuationRows: [],
+
+  latitude: '',
+  longitude: '',
+
+  propertyImages: [],
+  propertyImageNames: [],
+  sketchMapImage: '',
+  locationMapImage: '',
+
+  remarks: '',
+  representativeName: '',
+
+  annexureEnabled: false,
+  annexures: [],
+
+  clientType: 'organisation',
+  organisationTemplate: 'IBBI_IVS',
+};
+
+// ─── UI Sub-Components ─────────────────────────────────────────────
+function Section({ title, number, children, defaultOpen = true }: { title: string; number: number | string; children: React.ReactNode; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div id={`section-${number}`} className="card border border-[#e9ecef] overflow-hidden scroll-mt-24">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#0a1628] to-[#162d4a] text-white hover:from-[#0f1e35] hover:to-[#1e3a5f] transition-all"
+      >
+        <div className="flex items-center gap-3">
+          <span className="w-8 h-8 rounded-lg bg-[#b8860b] flex items-center justify-center text-sm font-bold">{number}</span>
+          <span className="font-semibold text-sm">{title}</span>
+        </div>
+        <svg className={`w-5 h-5 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {open && <div className="p-6 space-y-5">{children}</div>}
+    </div>
+  );
+}
+
+function Field({ label, children, span = 1 }: { label: string; children: React.ReactNode; span?: number }) {
+  return (
+    <div className={span === 2 ? 'md:col-span-2' : ''}>
+      <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider mb-1.5">{label}</label>
+      {children}
+    </div>
+  );
+}
+
+const inputCls = "w-full px-3 py-2.5 rounded-lg border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] disabled:bg-[#f1f3f5] disabled:text-[#6c757d]";
+const selectCls = inputCls;
+
+const FloatingNavigator = ({ annexureEnabled }: { annexureEnabled: boolean }) => {
+  const NAV_SECTIONS = [
+    { id: 'section-1', title: '1. Objective' },
+    { id: 'section-4', title: '4. Description' },
+    { id: 'section-5', title: '5. Town Planning' },
+    { id: 'section-6', title: '6. Legal Aspects' },
+    { id: 'section-7', title: '7. Infrastructure' },
+    { id: 'section-8', title: '8-9. Socio-Env' },
+    { id: 'section-10', title: '10-11. Market' },
+    { id: 'section-12', title: '12. Engineering' },
+    { id: 'section-13', title: '13. Valuation' },
+    { id: 'section-14', title: '14. Photos/Maps' },
+    ...(annexureEnabled ? [{ id: 'section-annexure', title: 'Annexures' }] : []),
+  ];
+
+  const scrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  return (
+    <div className="hidden xl:flex flex-col gap-1 bg-white/80 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2.5 rounded-2xl w-[160px] sticky top-24 shrink-0 z-40">
+      <div className="text-[10px] font-black text-neutral-400 mb-2 px-2 uppercase tracking-widest">IBBI Sections</div>
+      {NAV_SECTIONS.map((sec) => (
+        <button
+          key={sec.id}
+          type="button"
+          onClick={() => scrollTo(sec.id)}
+          className="text-left px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all truncate text-slate-600 hover:bg-[#b8860b] hover:text-white"
+        >
+          {sec.title}
+        </button>
+      ))}
+    </div>
+  );
+};
+
+// ─── Main Component ────────────────────────────────────────────────
+interface BucketImageItem {
+  id: string;
+  url: string;
+  fileName: string;
+  size: number;
+  createdAt: string;
+  employee: { name: string; employeeId: string };
+}
+
 interface IBBIReportBuilderProps {
   projectId: string;
   projectCode: string;
   initialFields: any;
   status: string;
   userRole?: string;
-  bucketImages?: any[];
+  bucketImages?: BucketImageItem[];
   prefill?: {
-    contactName: string;
-    contactPhone: string;
-    contactEmail: string;
-    propertyAddress: string;
-    propertyType: string;
-    purpose: string;
+    ownerName?: string;
+    ownerAddress?: string;
+    propertyAddress?: string;
+    propertyType?: string;
+    purpose?: string;
+    contactName?: string;
+    contactPhone?: string;
+    contactEmail?: string;
   };
 }
 
-export default function IBBIReportBuilder({
-  projectId,
-  projectCode,
-  initialFields,
-  status,
-  userRole = 'REPORT_EMPLOYEE',
-  bucketImages = [],
-  prefill,
-}: IBBIReportBuilderProps) {
+export default function IBBIReportBuilder({ projectId, projectCode, initialFields, status, userRole = 'REPORT_EMPLOYEE', bucketImages = [], prefill }: IBBIReportBuilderProps) {
+  const router = useRouter();
+
+  const merged: IBBIFields = {
+    ...DEFAULT_FIELDS,
+    ...(initialFields || {}),
+    refNo: initialFields?.refNo || projectCode || DEFAULT_FIELDS.refNo,
+    ownerName: initialFields?.ownerName || prefill?.contactName || DEFAULT_FIELDS.ownerName,
+    ownerAddress: initialFields?.ownerAddress || prefill?.propertyAddress || DEFAULT_FIELDS.ownerAddress,
+    propertyImages: Array.isArray(initialFields?.propertyImages) ? initialFields.propertyImages : DEFAULT_FIELDS.propertyImages,
+    propertyImageNames: Array.isArray(initialFields?.propertyImageNames) ? initialFields.propertyImageNames : DEFAULT_FIELDS.propertyImageNames,
+    valuationRows: Array.isArray(initialFields?.valuationRows) ? initialFields.valuationRows : DEFAULT_FIELDS.valuationRows,
+    annexures: Array.isArray(initialFields?.annexures) ? initialFields.annexures : DEFAULT_FIELDS.annexures,
+    clientType: 'organisation',
+    organisationTemplate: 'IBBI_IVS',
+  };
+
+  const [fields, setFields] = useState<IBBIFields>(merged);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // Bucket Picker State
+  const [bucketPickerOpen, setBucketPickerOpen] = useState(false);
+  const [bucketPickerMode, setBucketPickerMode] = useState<'propertyImages' | 'sketchMapImage' | 'locationMapImage'>('propertyImages');
+  const [bucketSelected, setBucketSelected] = useState<Set<string>>(new Set());
+
+  const isReadOnly = status === 'SUBMITTED' && userRole === 'REPORT_EMPLOYEE';
+
+  const handleChange = useCallback((field: string, value: any) => {
+    setFields(prev => ({ ...prev, [field]: value }));
+  }, []);
+
+  // ── Valuation Table Helpers ──
+  const addValuationRow = () => {
+    handleChange('valuationRows', [
+      ...fields.valuationRows,
+      { id: String(Date.now()), plotNo: '', khataNo: '', area: '', rate: '', guidelineValue: '', fairMarketValue: '' }
+    ]);
+  };
+  
+  const removeValuationRow = (id: string) => {
+    handleChange('valuationRows', fields.valuationRows.filter(row => row.id !== id));
+  };
+  
+  const updateValuationRow = (id: string, field: keyof ValuationRow, value: string) => {
+    handleChange('valuationRows', fields.valuationRows.map(row => 
+      row.id === id ? { ...row, [field]: value } : row
+    ));
+  };
+
+  // ── Annexure helpers ──
+  const addAnnexure = () => {
+    const nextIndex = fields.annexures.length;
+    const label = String.fromCharCode(65 + nextIndex); // A, B, C, ...
+    handleChange('annexures', [...fields.annexures, {
+      id: String(Date.now()),
+      label,
+      title: '',
+      excelFileUrl: '',
+      excelFileName: '',
+    }]);
+  };
+  const removeAnnexure = (id: string) => {
+    handleChange('annexures', fields.annexures.filter((a: AnnexureItem) => a.id !== id));
+  };
+  const updateAnnexureTitle = (id: string, title: string) => {
+    handleChange('annexures', fields.annexures.map((a: AnnexureItem) => a.id === id ? { ...a, title } : a));
+  };
+  const handleAnnexureUpload = async (annexureId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) { setUploadError('File exceeds 10MB limit.'); return; }
+
+    setUploading(true);
+    setUploadError(null);
+
+    let parsedData: { headers: string[]; rows: string[][] } | undefined;
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData: string[][] = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
+      if (jsonData.length > 0) {
+        parsedData = {
+          headers: jsonData[0].map(h => String(h)),
+          rows: jsonData.slice(1).map(row => row.map(cell => String(cell))),
+        };
+      }
+    } catch (parseErr) {
+      console.warn('Could not parse Excel file:', parseErr);
+    }
+
+    const ext = file.name.split('.').pop();
+    const fileName = `annexure-${annexureId}-${Date.now()}.${ext}`;
+    const filePath = `annexures/${projectId}/${fileName}`;
+
+    const { error } = await supabaseBrowser.storage
+      .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+      .upload(filePath, file);
+
+    if (error) {
+      setUploadError(`Upload failed: ${error.message}`);
+    } else {
+      const { data } = supabaseBrowser.storage
+        .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+        .getPublicUrl(filePath);
+      handleChange('annexures', fields.annexures.map((a: AnnexureItem) =>
+        a.id === annexureId ? { ...a, excelFileUrl: data.publicUrl, excelFileName: file.name, parsedData } : a
+      ));
+    }
+    setUploading(false);
+  };
+  const removeAnnexureFile = (annexureId: string) => {
+    handleChange('annexures', fields.annexures.map((a: AnnexureItem) =>
+      a.id === annexureId ? { ...a, excelFileUrl: '', excelFileName: '', parsedData: undefined } : a
+    ));
+  };
+
+  // ── File upload (photos + maps) ──
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'propertyImages' | 'sketchMapImage' | 'locationMapImage') => {
+    const fileList = e.target.files;
+    if (!fileList || fileList.length === 0) return;
+    setUploading(true);
+    setUploadError(null);
+
+    if (fieldName === 'propertyImages') {
+      const newUrls = [...(fields.propertyImages || [])];
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
+        if (file.size > 5 * 1024 * 1024) { setUploadError(`${file.name}: exceeds 5MB.`); continue; }
+        const ext = file.name.split('.').pop();
+        const fileName = `${projectId}-${Math.random().toString(36).substring(2)}.${ext}`;
+        const filePath = `temp-photos/${projectId}/${fileName}`;
+        const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(filePath, file);
+        if (error) { setUploadError(`Failed: ${error.message}`); continue; }
+        const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
+        newUrls.push(data.publicUrl);
+      }
+      handleChange('propertyImages', newUrls);
+    } else {
+      const file = fileList[0];
+      if (file.size > 5 * 1024 * 1024) { setUploadError(`${file.name}: exceeds 5MB.`); setUploading(false); return; }
+      const ext = file.name.split('.').pop();
+      const fileName = `${projectId}-${fieldName}-${Date.now()}.${ext}`;
+      const filePath = `temp-photos/${projectId}/${fileName}`;
+      const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(filePath, file);
+      if (error) { setUploadError(`Failed: ${error.message}`); }
+      else {
+        const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
+        handleChange(fieldName, data.publicUrl);
+      }
+    }
+    setUploading(false);
+  };
+
+  const removeImage = (index: number) => {
+    handleChange('propertyImages', fields.propertyImages.filter((_: any, i: number) => i !== index));
+    if (fields.propertyImageNames) {
+      handleChange('propertyImageNames', fields.propertyImageNames.filter((_: any, i: number) => i !== index));
+    }
+  };
+
+  // ── Save / Submit ──
+  const handleSaveDraft = async () => {
+    setLoading(true); setMessage(null);
+    const result = await saveReportDraft(projectId, fields);
+    setMessage(result.error ? { type: 'error', text: result.error } : { type: 'success', text: 'Draft saved successfully!' });
+    setLoading(false);
+  };
+
+  const handleSubmit = async () => {
+    if (!confirm('Submit this report for manager verification?')) return;
+    setLoading(true); setMessage(null);
+    await saveReportDraft(projectId, fields);
+    const result = await submitReportForVerification(projectId);
+    if (result.error) setMessage({ type: 'error', text: result.error });
+    else {
+      setMessage({ type: 'success', text: 'Report submitted for verification!' });
+      router.refresh();
+    }
+    setLoading(false);
+  };
+
+  // ── PDF Generation (IBBI Layout) ──
+  const handleGeneratePDF = async () => {
+    try {
+      const fetchBytes = async (url: string | undefined): Promise<Uint8Array | null> => {
+        if (!url) return null;
+        try {
+          const resp = await fetch(url);
+          const buf = await resp.arrayBuffer();
+          return new Uint8Array(buf);
+        } catch { return null; }
+      };
+
+      const propertyImgs = Array.isArray(fields.propertyImages) ? fields.propertyImages.filter((img: string) => typeof img === 'string' && img.length > 0) : [];
+
+      const [letterheadBytes, ...imageResults] = await Promise.all([
+        fetchBytes('/templates/letterhead.png'),
+        ...propertyImgs.map((url: string) => fetchBytes(url)),
+        ...(fields.sketchMapImage ? [fetchBytes(fields.sketchMapImage)] : []),
+        ...(fields.locationMapImage ? [fetchBytes(fields.locationMapImage)] : []),
+      ]);
+
+      const propImageBytes: Uint8Array[] = imageResults.slice(0, propertyImgs.length) as Uint8Array[];
+      let imgIdx = propertyImgs.length;
+      const sketchBytes = fields.sketchMapImage ? imageResults[imgIdx++] : null;
+      const locationBytes = fields.locationMapImage ? imageResults[imgIdx++] : null;
+
+      const r = new PDFReportRenderer();
+      await r.init(letterheadBytes);
+
+      // ── IBBI Valuation Certificate (appears first in IBBI reports) ──
+      r.drawCenteredTitle('VALUATION CERTIFICATE');
+      r.advanceCursor(6);
+      const certAddress = fields.propertyAddress || fields.ownerAddress || '________';
+      const certValue = fields.fairMarketValueTotal || fields.presentMarketValueTotal || '0';
+      r.drawCertificateBox([
+        {
+          segments: [
+            { text: 'This is to certify that we have inspected the subject property at ' },
+            { text: certAddress, bold: true },
+            { text: ' on ' },
+            { text: fields.dateOfInspection || '________', bold: true },
+            { text: ' belonging to ' },
+            { text: fields.applicantName || fields.ownerName || '________', bold: true },
+            { text: '. Based on market survey & our enquiries, the fair market value of the property is assessed at:' },
+          ],
+        },
+        { segments: [{ text: `Fair Market Value: Rs.${formatIndianCurrency(certValue)}/- (${rupeesInWords(parseFloat(certValue) || 0)})`, bold: true }] },
+        ...(fields.realisableValueTotal ? [{ segments: [{ text: `Liquidation Value: Rs.${formatIndianCurrency(fields.realisableValueTotal)}/- (${rupeesInWords(parseFloat(fields.realisableValueTotal) || 0)})`, bold: true }] }] : []),
+        ...(fields.bookValueTotal ? [{ segments: [{ text: `Govt. Guideline Value: Rs.${formatIndianCurrency(fields.bookValueTotal)}/-`, bold: true }] }] : []),
+      ]);
+
+      // ── Signature Block ──
+      r.drawSignatureBlock([
+        { text: '_______________________________' },
+        { text: 'Er. Rupesh Patnaik / Satyajit Mohanty', bold: true, fontSize: 14 },
+        { text: 'Registered Valuer, IBBI Govt. of India', italic: true },
+        { text: 'S. Mohanty & Associates, Bhubaneswar', italic: true },
+      ]);
+
+      // ── 1. OBJECTIVE ──
+      r.drawSectionHeader('1. OBJECTIVE:');
+      r.drawTextBlock('1.1 VALUATION STANDARD', { bold: true });
+      r.drawWrappedText('The Valuation has been prepared in accordance with IVS 2022 (International Valuation Standards) incorporating the General Standards and the Asset Standards.');
+      r.advanceCursor(4);
+      r.drawTextBlock('1.2 PURPOSE OF VALUATION', { bold: true });
+      r.drawWrappedText('To assess the fair market value / realizable value of the subject property for the purpose of liquidation / resolution process under IBC, 2016.');
+      r.advanceCursor(4);
+      r.drawTextBlock('1.3 CONFLICT OF INTEREST', { bold: true });
+      r.drawWrappedText('The valuer has no direct or indirect interest in the property valued, nor any personal interest or bias with respect to the parties involved.');
+      r.advanceCursor(4);
+      r.drawTextBlock('1.4 CURRENCY AND MEASUREMENT', { bold: true });
+      r.drawWrappedText('All amounts are in Indian Rupees (INR). Land is measured in Acres/Decimals/Sq. ft. as applicable.');
+      r.advanceCursor(4);
+      r.drawTextBlock('1.5 RESPONSIBILITY TO THIRD PARTIES', { bold: true });
+      r.drawWrappedText('This report is prepared only for the stated purpose and the parties named herein.');
+      r.advanceCursor(4);
+      r.drawTextBlock('1.6 DISCLOSURE AND PUBLICATION', { bold: true });
+      r.drawWrappedText('This valuation report or any reference thereof should not be used in any published document without the consent of the valuer.');
+      r.advanceCursor(4);
+      r.drawTextBlock('1.7 LIMITATIONS ON LIABILITY', { bold: true });
+      r.drawWrappedText('The valuer shall not be liable for any loss or damage arising from this report except to the extent that such loss or damage is caused by the valuer\'s negligence.');
+      r.advanceCursor(8);
+
+      // ── 2. SCOPE OF ENQUIRIES ──
+      r.drawSectionHeader('2. SCOPE OF ENQUIRIES AND INVESTIGATION:');
+      r.drawTextBlock('2.1 SITE INSPECTION', { bold: true });
+      r.drawWrappedText(`Site inspection was carried out on ${fields.dateOfInspection || '________'}.`);
+      r.advanceCursor(4);
+      r.drawTextBlock('2.2 ENQUIRIES', { bold: true });
+      r.drawWrappedText('Enquiries were made with local people, real estate agents, and brokers to assess the prevailing market conditions.');
+      r.advanceCursor(4);
+      r.drawTextBlock('2.3 LEGAL PARAMETERS OF PROPERTY', { bold: true });
+      r.drawWrappedText('Documents and records relating to title, extent, and encumbrances were examined.');
+      r.advanceCursor(4);
+      r.drawTextBlock('2.4 ENVIRONMENTAL ASPECTS', { bold: true });
+      r.drawWrappedText('The property was assessed for environmental conditions as observed during inspection.');
+      r.advanceCursor(4);
+      r.drawTextBlock('2.5 INFORMATION PROVIDED', { bold: true });
+      r.drawWrappedText('Information was provided by the property owners, authorized representatives, and from public records.');
+      r.advanceCursor(8);
+
+      // ── 3. BASIS OF VALUATION ──
+      r.drawSectionHeader('3. BASIS OF VALUATION:');
+      r.drawWrappedText('The valuation is based on Fair Market Value as defined in IVS 104 — the estimated amount for which an asset or liability should exchange on the valuation date between a willing buyer and a willing seller in an arm\'s length transaction, after proper marketing and where the parties had each acted knowledgeably, prudently and without compulsion.');
+      r.advanceCursor(8);
+
+      // ── 4. BRIEF DESCRIPTION ──
+      r.drawSectionHeader('4. BRIEF DESCRIPTION OF THE PROPERTY');
+      r.drawSimpleRow('Applicant Name / Owners', fields.applicantName || fields.ownerName);
+      r.drawSimpleRow('Type of Property', fields.propertyType);
+      r.drawSimpleRow('Current Usage', fields.currentUsage);
+      r.drawSimpleRow('Site Address', fields.propertyAddress);
+      r.drawSimpleRow('Postal Address', fields.legalAddress);
+      r.drawSimpleRow('Revenue Plot No', fields.revenuePlotNo);
+      r.drawSimpleRow('Revenue Khata No', fields.revenueKhataNo);
+      r.drawSimpleRow('Village (Mouza)', fields.revenueVillage);
+      r.drawSimpleRow('Tahasil', fields.revenueTahasil);
+      r.drawSimpleRow('Police Station', fields.revenuePS);
+      r.drawSimpleRow('District', fields.revenueDistrict);
+      r.drawSimpleRow('State', fields.revenueState);
+      r.drawSimpleRow('Classification of Area', fields.classificationArea);
+      r.drawSimpleRow('Extent of Site', fields.extentOfSite);
+      r.drawSimpleRow('Occupancy Status', fields.occupancyStatus);
+      r.drawSimpleRow('Boundary (North)', fields.boundNorth);
+      r.drawSimpleRow('Boundary (South)', fields.boundSouth);
+      r.drawSimpleRow('Boundary (East)', fields.boundEast);
+      r.drawSimpleRow('Boundary (West)', fields.boundWest);
+      r.advanceCursor(8);
+
+      // ── 5. TOWN PLANNING ──
+      r.drawSectionHeader('5. TOWN PLANNING PARAMETERS:');
+      r.drawSimpleRow('Master Plan Provision', fields.masterPlanProvision);
+      r.drawSimpleRow('Approved Plan Authority', fields.approvedPlanAuthority);
+      r.drawSimpleRow('Ground Coverage', fields.groundCoverage);
+      r.drawSimpleRow('Surrounding Land Use', fields.surroundingLandUse);
+      r.advanceCursor(8);
+
+      // ── 6. LEGAL ASPECTS ──
+      r.drawSectionHeader('6. DOCUMENT DETAILS AND LEGAL ASPECTS OF THE PROPERTY:');
+      r.drawSimpleRow('Ownership Documents', fields.ownershipDocuments);
+      r.drawSimpleRow('Owner as per ROR', fields.ownerAsPerROR);
+      r.drawSimpleRow('Easement Agreement', fields.easementAgreement);
+      r.drawSimpleRow('Acquisition Notification', fields.acquisitionNotification);
+      r.drawSimpleRow('Heritage Restriction', fields.heritageRestriction);
+      r.drawSimpleRow('Transferability', fields.transferability);
+      r.drawSimpleRow('Existing Mortgages / Charge', fields.existingMortgages);
+      r.drawSimpleRow('SARFAESI Compliant', fields.sarfaesiCompliant);
+      r.drawSimpleRow('Disputes / Dues', fields.disputesDues);
+      r.advanceCursor(8);
+
+      // ── 7. INFRASTRUCTURE ──
+      r.drawSectionHeader('7. FUNCTIONAL AND INFRASTRUCTURE ASPECTS OF THE PROPERTY:');
+      r.drawSimpleRow('Water Supply', fields.waterSupply);
+      r.drawSimpleRow('Sewerage', fields.sewerage);
+      r.drawSimpleRow('Electricity', fields.electricity);
+      r.drawSimpleRow('Road Connectivity', fields.roadConnectivity);
+      r.advanceCursor(8);
+
+      // ── 8. SOCIO-CULTURAL ──
+      r.drawSectionHeader('8. SOCIO-CULTURAL ASPECTS OF THE PROPERTY:');
+      r.drawSimpleRow('Social Structure', fields.socialStructure);
+      r.drawSimpleRow('Social Infrastructure', fields.socialInfrastructure);
+      r.advanceCursor(8);
+
+      // ── 9. ENVIRONMENTAL ──
+      r.drawSectionHeader('9. ENVIRONMENTAL FACTORS AFFECTING THE PROPERTY:');
+      r.drawSimpleRow('Eco-friendly Materials', fields.ecoMaterials);
+      r.drawSimpleRow('Rain Water Harvesting', fields.rainWaterHarvesting);
+      r.drawSimpleRow('Solar System', fields.solarSystem);
+      r.drawSimpleRow('Environmental Pollution', fields.environmentalPollution);
+      r.advanceCursor(8);
+
+      // ── 10. MARKETABILITY ──
+      r.drawSectionHeader('10. MARKETABILITY ASPECTS OF THE PROPERTY:');
+      r.drawSimpleRow('Locational Attributes', fields.locationalAttributes);
+      r.drawSimpleRow('Scarcity', fields.scarcity);
+      r.drawSimpleRow('Demand & Supply', fields.demandSupply);
+      r.advanceCursor(8);
+
+      // ── 11. ARCHITECTURAL ──
+      r.drawSectionHeader('11. ARCHITECTURAL ASPECTS:');
+      r.drawSimpleRow('Architectural Aspects', fields.architecturalAspects);
+      r.advanceCursor(8);
+
+      // ── 12. ENGINEERING ──
+      r.drawSectionHeader('12. ENGINEERING ASPECTS OF THE PROPERTY:');
+      r.drawSimpleRow('Type of Construction', fields.constructionType);
+      r.drawSimpleRow('Materials Used', fields.materialsUsed);
+      r.drawSimpleRow('Specifications', fields.specifications);
+      r.drawSimpleRow('Maintenance Issues', fields.maintenanceIssues);
+      r.drawSimpleRow('Age of Building', fields.ageOfBuilding ? `${fields.ageOfBuilding} Years` : 'N/A');
+      r.drawSimpleRow('Residual Life', fields.residualLife ? `${fields.residualLife} Years` : 'N/A');
+      r.drawSimpleRow('Extent of Deterioration', fields.extentDeterioration);
+      r.drawSimpleRow('Structural Safety', fields.structuralSafety);
+      r.drawSimpleRow('Natural Disaster Protection', fields.naturalDisasterProtection);
+      r.drawSimpleRow('Visible Damage', fields.visibleDamage);
+      r.advanceCursor(8);
+
+      // ── 13. VALUATION ──
+      r.drawSectionHeader('13. VALUATION APPROACHES AND METHODOLOGY:');
+      r.drawWrappedText('Market Approach and Cost Approach have been adopted for the valuation of land and building respectively.');
+      r.advanceCursor(4);
+
+      if (fields.valuationRows && fields.valuationRows.length > 0) {
+        r.drawWrappedText('Detailed Plot-by-Plot Valuation:');
+        r.advanceCursor(4);
+        
+        const headers = ['Sl No', 'Plot No', 'Khata No', 'Area', 'Rate/Unit', 'Guideline Value', 'Fair Market Value'];
+        const rows = fields.valuationRows.map((row: ValuationRow, i: number) => [
+          String(i + 1),
+          row.plotNo || '-',
+          row.khataNo || '-',
+          row.area || '-',
+          row.rate || '-',
+          row.guidelineValue || '-',
+          row.fairMarketValue || '-',
+        ]);
+        
+        r.drawDataTable(headers, rows);
+        r.advanceCursor(6);
+      }
+
+      if (fields.annexureEnabled && fields.annexures.length > 0) {
+        const firstAnnexure = fields.annexures.find((a: AnnexureItem) => a.parsedData);
+        const annexureLabel = firstAnnexure ? firstAnnexure.label : fields.annexures[0].label;
+        r.drawWrappedText(`The detailed plot-by-plot calculations and area abstracts are provided in Annexure ${annexureLabel}.`);
+        r.advanceCursor(6);
+      }
+      r.drawSimpleRow('Total Govt. Guideline / Book Value', `Rs.${formatIndianCurrency(fields.bookValueTotal || '0')}/-`);
+      r.drawSimpleRow('Total Fair Market Value', `Rs.${formatIndianCurrency(fields.fairMarketValueTotal || '0')}/- (${rupeesInWords(parseFloat(fields.fairMarketValueTotal) || 0)})`);
+      r.drawSimpleRow('Total Present Market Value', `Rs.${formatIndianCurrency(fields.presentMarketValueTotal || '0')}/-`);
+      r.drawSimpleRow('Realisable / Liquidation Value', `Rs.${formatIndianCurrency(fields.realisableValueTotal || '0')}/- (${rupeesInWords(parseFloat(fields.realisableValueTotal) || 0)})`);
+      r.advanceCursor(8);
+
+      // ── Remarks ──
+      if (fields.remarks) {
+        r.drawSectionHeader('REMARKS');
+        r.drawWrappedText(fields.remarks);
+        r.advanceCursor(8);
+      }
+
+      // ── Declaration ──
+      r.drawTextBlock('Declaration:', { bold: true, fontSize: 14 });
+      r.advanceCursor(2);
+      r.drawTextBlock('I hereby declare that:');
+      r.advanceCursor(2);
+      r.drawTextBlock(`\u2022 I have deputed my representative ${fields.representativeName ? 'Mr. ' + fields.representativeName : '______'} to inspect the property on ${fields.dateOfInspection || '______'}.`);
+      r.drawTextBlock('\u2022 I have no direct or indirect interest in the property valued.');
+      r.drawTextBlock('\u2022 The information furnished is true and correct to the best of my knowledge and belief.');
+      r.advanceCursor(10);
+
+      // ── Property Photographs ──
+      if (propImageBytes.length > 0) {
+        r.newPage();
+        r.drawCenteredTitle('PROPERTY PHOTOGRAPHS');
+        r.advanceCursor(8);
+
+        for (let i = 0; i < propImageBytes.length; i += 2) {
+          const name1 = fields.propertyImageNames?.[i] || '';
+          const caption1 = name1 ? `Figure ${i + 1}: ${name1}` : `Figure ${i + 1}`;
+          const img2 = i + 1 < propImageBytes.length ? propImageBytes[i + 1] : null;
+          const name2 = fields.propertyImageNames?.[i + 1] || '';
+          const caption2 = name2 ? `Figure ${i + 2}: ${name2}` : `Figure ${i + 2}`;
+
+          await r.drawImagePair(propImageBytes[i], caption1, img2, caption2);
+          r.advanceCursor(4);
+        }
+      }
+
+      // ── Sketch Map ──
+      if (sketchBytes && sketchBytes.length > 0) {
+        r.newPage();
+        r.drawCenteredTitle('SKETCH MAP');
+        r.advanceCursor(8);
+        await r.drawImageBlock(sketchBytes, { maxWidth: 450, maxHeight: 500, centered: true });
+      }
+
+      // ── Location Map ──
+      if (locationBytes && locationBytes.length > 0) {
+        r.newPage();
+        r.drawCenteredTitle('LOCATION MAP');
+        r.advanceCursor(8);
+        await r.drawImageBlock(locationBytes, { maxWidth: 450, maxHeight: 500, centered: true });
+        if (fields.latitude || fields.longitude) {
+          r.drawTextBlock(`Lat: ${fields.latitude || 'N/A'}, Long: ${fields.longitude || 'N/A'}`, { bold: true, align: 'center' });
+        }
+      }
+
+      // ── Annexure Sections ──
+      if (fields.annexureEnabled && fields.annexures.length > 0) {
+        for (const annexure of fields.annexures) {
+          if (annexure.parsedData && annexure.parsedData.headers.length > 0) {
+            r.newPage();
+            r.drawCenteredTitle(annexure.title ? `ANNEXURE ${annexure.label} - ${annexure.title.toUpperCase()}` : `ANNEXURE ${annexure.label}`);
+            r.advanceCursor(8);
+            r.drawDataTable(annexure.parsedData.headers, annexure.parsedData.rows);
+          }
+        }
+      }
+
+      return await r.toBlob();
+    } catch (err) {
+      console.error('PDF generation failed:', err);
+      throw err;
+    }
+  };
+
+  const handlePreviewPDF = async () => {
+    const previewWindow = window.open('', '_blank');
+    if (previewWindow) {
+      previewWindow.document.write(`
+        <html>
+          <head><title>Generating IBBI PDF Preview...</title></head>
+          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f8f9fa; color: #495057;">
+            <div style="text-align: center;">
+              <div style="border: 4px solid #dee2e6; border-top: 4px solid #b8860b; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px;"></div>
+              <p style="font-size: 16px; font-weight: 600; margin: 0;">Generating IBBI-IVS PDF Preview...</p>
+              <p style="font-size: 12px; color: #6c757d; margin: 8px 0 0;">Please wait while the document compiles.</p>
+            </div>
+            <style>
+              @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            </style>
+          </body>
+        </html>
+      `);
+      previewWindow.document.close();
+    }
+
+    try {
+      const blob = await handleGeneratePDF();
+      if (blob && previewWindow) {
+        const url = URL.createObjectURL(blob);
+        previewWindow.location.href = url;
+      } else if (previewWindow) {
+        previewWindow.close();
+        setMessage({ type: 'error', text: 'Failed to generate PDF preview.' });
+      }
+    } catch (err: any) {
+      if (previewWindow) previewWindow.close();
+      setMessage({ type: 'error', text: 'PDF Error: ' + (err?.message || String(err)) });
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    setMessage({ type: 'success', text: 'Generating PDF for download...' });
+    try {
+      const blob = await handleGeneratePDF();
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${fields.applicantName ? fields.applicantName.replace(/\s+/g, '_') : 'IBBI'}_Valuation_Report_${projectId}.pdf`;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+      }
+      setMessage(null);
+    } catch (err: any) {
+      setMessage({ type: 'error', text: 'PDF Error: ' + (err?.message || String(err)) });
+    }
+  };
+
+  // ── Main Return ──
   return (
-    <div className="w-full max-w-5xl mx-auto py-8 px-4">
-      {/* Header Banner */}
-      <div className="bg-gradient-to-r from-[#0f2038] to-[#1a3a5c] rounded-2xl p-6 mb-8 text-white shadow-lg">
-        <div className="flex items-center gap-3 mb-2">
-          <span className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold tracking-wider">
-            IBBI-IVS
-          </span>
-          <span className="bg-amber-500/30 px-3 py-1 rounded-full text-xs font-bold tracking-wider text-amber-200">
-            ORGANISATION CLIENT
-          </span>
+    <div className="min-h-screen bg-[#f8f9fa] font-sans">
+      {/* Top Status Bar */}
+      {message && (
+        <div className={`fixed top-0 left-0 right-0 z-[100] px-6 py-3 text-sm font-semibold text-center shadow-lg ${message.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`}>
+          {message.text}
+          <button onClick={() => setMessage(null)} className="ml-4 text-white/80 hover:text-white">&times;</button>
         </div>
-        <h1 className="text-2xl font-bold font-mono">{projectCode}</h1>
-        <p className="text-white/60 text-sm mt-1">
-          IBBI-IVS Valuation Report Builder
-        </p>
+      )}
+
+      <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8 flex gap-8 relative">
+        {/* Main Form Area */}
+        <div className="flex-1 max-w-4xl max-h-[85vh] overflow-y-auto pr-4 pb-32 space-y-6">
+
+          {/* ── Header Banner ── */}
+          <div className="bg-gradient-to-r from-[#0f2038] to-[#1a3a5c] rounded-2xl p-8 text-white shadow-xl relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-r from-[#b8860b]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold tracking-wider">IBBI-IVS</span>
+                <span className="bg-amber-500/30 px-3 py-1 rounded-full text-xs font-bold tracking-wider text-amber-200">ORGANISATION</span>
+                <span className={`px-3 py-1 rounded-full text-xs font-bold tracking-wider ${status === 'DRAFT' ? 'bg-blue-500/30 text-blue-200' : status === 'SUBMITTED' ? 'bg-emerald-500/30 text-emerald-200' : 'bg-white/20'}`}>{status}</span>
+              </div>
+              <h1 className="text-3xl font-bold mb-1">{projectCode}</h1>
+              <p className="text-white/60 text-sm">IBBI-IVS Valuation Report Builder &mdash; Fill all IBBI statutory sections</p>
+            </div>
+          </div>
+
+          {/* ── Section 1: Objective & Dates ── */}
+          <Section title="Objective & Static Declarations" number={1}>
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+              <p className="text-xs text-blue-800">Sections 1 (Objective), 2 (Scope), and 3 (Basis) are standard IBBI-IVS statutory texts. They will be <strong>auto-generated</strong> in the PDF. Just provide the dates below.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Date of Inspection">
+                <input type="date" value={fields.dateOfInspection} onChange={e => handleChange('dateOfInspection', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
+              <Field label="Date of Valuation Report">
+                <input type="date" value={fields.dateOfValuation} onChange={e => handleChange('dateOfValuation', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
+              <Field label="Reference No">
+                <input type="text" value={fields.refNo} onChange={e => handleChange('refNo', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
+              <Field label="Representative Name (for Declaration)">
+                <input type="text" value={fields.representativeName} onChange={e => handleChange('representativeName', e.target.value)} className={inputCls} placeholder="Name of inspecting representative" disabled={isReadOnly} />
+              </Field>
+            </div>
+          </Section>
+
+          {/* ── Section 4: Brief Description ── */}
+          <Section title="Brief Description of the Property" number={4}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Applicant / Owner Name(s)" span={2}>
+                <textarea value={fields.applicantName} onChange={e => handleChange('applicantName', e.target.value)} className={inputCls} rows={2} placeholder="Full list of owners" disabled={isReadOnly} />
+              </Field>
+              <Field label="Type of Property">
+                <select value={fields.propertyType} onChange={e => handleChange('propertyType', e.target.value)} className={selectCls} disabled={isReadOnly}>
+                  <option value="Defunct Industrial Unit">Defunct Industrial Unit</option>
+                  <option value="Industrial">Industrial</option>
+                  <option value="Residential">Residential</option>
+                  <option value="Commercial">Commercial</option>
+                  <option value="Agricultural Land">Agricultural Land</option>
+                  <option value="Residential cum Commercial">Residential cum Commercial</option>
+                  <option value="Vacant Plot">Vacant Plot</option>
+                </select>
+              </Field>
+              <Field label="Current Usage">
+                <select value={fields.currentUsage} onChange={e => handleChange('currentUsage', e.target.value)} className={selectCls} disabled={isReadOnly}>
+                  <option value="Vacant">Vacant</option>
+                  <option value="Self Occupied">Self Occupied</option>
+                  <option value="Rented">Rented</option>
+                  <option value="Under Construction">Under Construction</option>
+                  <option value="Industrial Use">Industrial Use</option>
+                  <option value="Agricultural">Agricultural</option>
+                </select>
+              </Field>
+              <Field label="Site Address" span={2}>
+                <textarea value={fields.propertyAddress} onChange={e => handleChange('propertyAddress', e.target.value)} className={inputCls} rows={2} placeholder="Full site address" disabled={isReadOnly} />
+              </Field>
+              <Field label="Postal Address" span={2}>
+                <textarea value={fields.legalAddress} onChange={e => handleChange('legalAddress', e.target.value)} className={inputCls} rows={2} disabled={isReadOnly} />
+              </Field>
+              <Field label="Revenue Plot No">
+                <input type="text" value={fields.revenuePlotNo} onChange={e => handleChange('revenuePlotNo', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
+              <Field label="Revenue Khata No">
+                <input type="text" value={fields.revenueKhataNo} onChange={e => handleChange('revenueKhataNo', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
+              <Field label="Village (Mouza)">
+                <input type="text" value={fields.revenueVillage} onChange={e => handleChange('revenueVillage', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
+              <Field label="Tahasil">
+                <input type="text" value={fields.revenueTahasil} onChange={e => handleChange('revenueTahasil', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
+              <Field label="Police Station (PS)">
+                <input type="text" value={fields.revenuePS} onChange={e => handleChange('revenuePS', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
+              <Field label="Gram Panchayat (GP)">
+                <input type="text" value={fields.revenueGP} onChange={e => handleChange('revenueGP', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
+              <Field label="District">
+                <input type="text" value={fields.revenueDistrict} onChange={e => handleChange('revenueDistrict', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
+              <Field label="State">
+                <input type="text" value={fields.revenueState} onChange={e => handleChange('revenueState', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
+              <Field label="Classification of Area">
+                <select value={fields.classificationArea} onChange={e => handleChange('classificationArea', e.target.value)} className={selectCls} disabled={isReadOnly}>
+                  <option value="Rural Area">Rural Area</option>
+                  <option value="Semi-Urban">Semi-Urban</option>
+                  <option value="Urban">Urban</option>
+                  <option value="Industrial Zone">Industrial Zone</option>
+                </select>
+              </Field>
+              <Field label="Extent of Site (Acres/Dec/Sqft)">
+                <input type="text" value={fields.extentOfSite} onChange={e => handleChange('extentOfSite', e.target.value)} className={inputCls} placeholder="e.g. 0.45 Acres" disabled={isReadOnly} />
+              </Field>
+              <Field label="Occupancy Status">
+                <select value={fields.occupancyStatus} onChange={e => handleChange('occupancyStatus', e.target.value)} className={selectCls} disabled={isReadOnly}>
+                  <option value="Vacant">Vacant</option>
+                  <option value="Occupied">Occupied</option>
+                  <option value="Partially Occupied">Partially Occupied</option>
+                </select>
+              </Field>
+            </div>
+            <div className="mt-4">
+              <p className="text-xs font-bold text-[#495057] uppercase tracking-wider mb-2">Boundaries</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <Field label="North"><input type="text" value={fields.boundNorth} onChange={e => handleChange('boundNorth', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                <Field label="South"><input type="text" value={fields.boundSouth} onChange={e => handleChange('boundSouth', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                <Field label="East"><input type="text" value={fields.boundEast} onChange={e => handleChange('boundEast', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                <Field label="West"><input type="text" value={fields.boundWest} onChange={e => handleChange('boundWest', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              </div>
+            </div>
+          </Section>
+
+          {/* ── Section 5: Town Planning ── */}
+          <Section title="Town Planning Parameters" number={5}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Master Plan Provision"><input type="text" value={fields.masterPlanProvision} onChange={e => handleChange('masterPlanProvision', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Approved Plan Authority"><input type="text" value={fields.approvedPlanAuthority} onChange={e => handleChange('approvedPlanAuthority', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Ground Coverage"><input type="text" value={fields.groundCoverage} onChange={e => handleChange('groundCoverage', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Surrounding Land Use"><input type="text" value={fields.surroundingLandUse} onChange={e => handleChange('surroundingLandUse', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Development Controls" span={2}><textarea value={fields.developmentControls} onChange={e => handleChange('developmentControls', e.target.value)} className={inputCls} rows={2} disabled={isReadOnly} /></Field>
+            </div>
+          </Section>
+
+          {/* ── Section 6: Legal Aspects ── */}
+          <Section title="Document Details & Legal Aspects" number={6}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Ownership Documents"><input type="text" value={fields.ownershipDocuments} onChange={e => handleChange('ownershipDocuments', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Owner as per ROR"><input type="text" value={fields.ownerAsPerROR} onChange={e => handleChange('ownerAsPerROR', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Easement Agreement"><input type="text" value={fields.easementAgreement} onChange={e => handleChange('easementAgreement', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Acquisition Notification"><input type="text" value={fields.acquisitionNotification} onChange={e => handleChange('acquisitionNotification', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Transferability"><input type="text" value={fields.transferability} onChange={e => handleChange('transferability', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Existing Mortgages / Charge"><input type="text" value={fields.existingMortgages} onChange={e => handleChange('existingMortgages', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="SARFAESI Compliant"><input type="text" value={fields.sarfaesiCompliant} onChange={e => handleChange('sarfaesiCompliant', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Disputes / Dues"><input type="text" value={fields.disputesDues} onChange={e => handleChange('disputesDues', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+            </div>
+          </Section>
+
+          {/* ── Section 7: Infrastructure ── */}
+          <Section title="Functional & Infrastructure Aspects" number={7}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Water Supply"><input type="text" value={fields.waterSupply} onChange={e => handleChange('waterSupply', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Sewerage"><input type="text" value={fields.sewerage} onChange={e => handleChange('sewerage', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Electricity"><input type="text" value={fields.electricity} onChange={e => handleChange('electricity', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Road Connectivity"><input type="text" value={fields.roadConnectivity} onChange={e => handleChange('roadConnectivity', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Distance to Police Station"><input type="text" value={fields.policeStationDist} onChange={e => handleChange('policeStationDist', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Distance to Bus Stop"><input type="text" value={fields.busStopDist} onChange={e => handleChange('busStopDist', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+            </div>
+          </Section>
+
+          {/* ── Section 8–9: Socio-Cultural & Environmental ── */}
+          <Section title="Socio-Cultural & Environmental Factors" number={8}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Social Structure"><input type="text" value={fields.socialStructure} onChange={e => handleChange('socialStructure', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Social Infrastructure"><input type="text" value={fields.socialInfrastructure} onChange={e => handleChange('socialInfrastructure', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Eco-friendly Materials"><input type="text" value={fields.ecoMaterials} onChange={e => handleChange('ecoMaterials', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Rain Water Harvesting"><input type="text" value={fields.rainWaterHarvesting} onChange={e => handleChange('rainWaterHarvesting', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Solar System"><input type="text" value={fields.solarSystem} onChange={e => handleChange('solarSystem', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Environmental Pollution"><input type="text" value={fields.environmentalPollution} onChange={e => handleChange('environmentalPollution', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+            </div>
+          </Section>
+
+          {/* ── Section 10–11: Marketability & Architecture ── */}
+          <Section title="Marketability & Architectural Aspects" number={10}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Locational Attributes"><input type="text" value={fields.locationalAttributes} onChange={e => handleChange('locationalAttributes', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Scarcity"><input type="text" value={fields.scarcity} onChange={e => handleChange('scarcity', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Demand & Supply"><input type="text" value={fields.demandSupply} onChange={e => handleChange('demandSupply', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Architectural Aspects"><input type="text" value={fields.architecturalAspects} onChange={e => handleChange('architecturalAspects', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+            </div>
+          </Section>
+
+          {/* ── Section 12: Engineering ── */}
+          <Section title="Engineering Aspects" number={12}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Type of Construction"><input type="text" value={fields.constructionType} onChange={e => handleChange('constructionType', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Materials Used"><input type="text" value={fields.materialsUsed} onChange={e => handleChange('materialsUsed', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Specifications"><input type="text" value={fields.specifications} onChange={e => handleChange('specifications', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Maintenance Issues"><input type="text" value={fields.maintenanceIssues} onChange={e => handleChange('maintenanceIssues', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Age of Building (Years)"><input type="number" value={fields.ageOfBuilding} onChange={e => handleChange('ageOfBuilding', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Residual Life (Years)"><input type="number" value={fields.residualLife} onChange={e => handleChange('residualLife', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Extent of Deterioration"><input type="text" value={fields.extentDeterioration} onChange={e => handleChange('extentDeterioration', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Structural Safety"><input type="text" value={fields.structuralSafety} onChange={e => handleChange('structuralSafety', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Natural Disaster Protection"><input type="text" value={fields.naturalDisasterProtection} onChange={e => handleChange('naturalDisasterProtection', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Visible Damage"><input type="text" value={fields.visibleDamage} onChange={e => handleChange('visibleDamage', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+            </div>
+          </Section>
+
+          {/* ── Section 13: Valuation ── */}
+          <Section title="Valuation Approaches & Methodology" number={13}>
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+              <p className="text-sm text-blue-800 font-medium">Upload detailed plot-by-plot Valuation Tables using the <strong>Annexure</strong> section below. The PDF will auto-reference them. Enter the summary totals here:</p>
+            </div>
+            
+            {/* Dynamic Valuation Rows Table */}
+            <div className="mt-6 mb-6">
+              <p className="text-xs font-bold text-[#495057] uppercase tracking-wider mb-2">Detailed Plot-by-Plot Valuation (Optional)</p>
+              <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left">
+                    <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs uppercase font-semibold">
+                      <tr>
+                        <th className="px-4 py-3">Sl No</th>
+                        <th className="px-4 py-3">Plot No</th>
+                        <th className="px-4 py-3">Khata No</th>
+                        <th className="px-4 py-3">Area</th>
+                        <th className="px-4 py-3">Rate/Unit</th>
+                        <th className="px-4 py-3">Guideline Value</th>
+                        <th className="px-4 py-3">Fair Market Value</th>
+                        {!isReadOnly && <th className="px-4 py-3 w-10"></th>}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {fields.valuationRows.length === 0 && (
+                        <tr>
+                          <td colSpan={8} className="px-4 py-6 text-center text-slate-400 italic">
+                            No manual rows added. You can use this table OR the Annexure upload below.
+                          </td>
+                        </tr>
+                      )}
+                      {fields.valuationRows.map((row, idx) => (
+                        <tr key={row.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="px-4 py-2 text-slate-500 font-medium">{idx + 1}</td>
+                          <td className="px-4 py-2">
+                            <input type="text" value={row.plotNo} onChange={e => updateValuationRow(row.id, 'plotNo', e.target.value)} className="w-full bg-transparent border-none p-1 focus:ring-1 focus:ring-amber-400 rounded" placeholder="Plot..." disabled={isReadOnly} />
+                          </td>
+                          <td className="px-4 py-2">
+                            <input type="text" value={row.khataNo} onChange={e => updateValuationRow(row.id, 'khataNo', e.target.value)} className="w-full bg-transparent border-none p-1 focus:ring-1 focus:ring-amber-400 rounded" placeholder="Khata..." disabled={isReadOnly} />
+                          </td>
+                          <td className="px-4 py-2">
+                            <input type="text" value={row.area} onChange={e => updateValuationRow(row.id, 'area', e.target.value)} className="w-full bg-transparent border-none p-1 focus:ring-1 focus:ring-amber-400 rounded" placeholder="Area..." disabled={isReadOnly} />
+                          </td>
+                          <td className="px-4 py-2">
+                            <input type="text" value={row.rate} onChange={e => updateValuationRow(row.id, 'rate', e.target.value)} className="w-full bg-transparent border-none p-1 focus:ring-1 focus:ring-amber-400 rounded" placeholder="Rate..." disabled={isReadOnly} />
+                          </td>
+                          <td className="px-4 py-2">
+                            <input type="text" value={row.guidelineValue} onChange={e => updateValuationRow(row.id, 'guidelineValue', e.target.value)} className="w-full bg-transparent border-none p-1 focus:ring-1 focus:ring-amber-400 rounded" placeholder="Value..." disabled={isReadOnly} />
+                          </td>
+                          <td className="px-4 py-2">
+                            <input type="text" value={row.fairMarketValue} onChange={e => updateValuationRow(row.id, 'fairMarketValue', e.target.value)} className="w-full bg-transparent border-none p-1 focus:ring-1 focus:ring-amber-400 rounded" placeholder="Value..." disabled={isReadOnly} />
+                          </td>
+                          {!isReadOnly && (
+                            <td className="px-4 py-2 text-center">
+                              <button onClick={() => removeValuationRow(row.id)} className="text-red-400 hover:text-red-600 transition-colors" title="Remove Row">
+                                &times;
+                              </button>
+                            </td>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {!isReadOnly && (
+                  <div className="bg-slate-50 border-t border-slate-200 p-2 text-center">
+                    <button type="button" onClick={addValuationRow} className="text-xs font-bold text-amber-700 hover:text-amber-900 transition-colors uppercase tracking-wider px-4 py-1.5 rounded hover:bg-amber-100">
+                      + Add Row
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Total Govt. Guideline / Book Value (Rs)"><input type="text" value={fields.bookValueTotal} onChange={e => handleChange('bookValueTotal', e.target.value)} className={inputCls} placeholder="e.g. 17200000" disabled={isReadOnly} /></Field>
+              <Field label="Total Fair Market Value (Rs)"><input type="text" value={fields.fairMarketValueTotal} onChange={e => handleChange('fairMarketValueTotal', e.target.value)} className={inputCls} placeholder="e.g. 18450000" disabled={isReadOnly} /></Field>
+              <Field label="Total Present Market Value (Rs)"><input type="text" value={fields.presentMarketValueTotal} onChange={e => handleChange('presentMarketValueTotal', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Realisable / Liquidation Value (Rs)"><input type="text" value={fields.realisableValueTotal} onChange={e => handleChange('realisableValueTotal', e.target.value)} className={inputCls} placeholder="e.g. 14760000" disabled={isReadOnly} /></Field>
+            </div>
+            <div className="mt-4">
+              <Field label="Remarks / Observations" span={2}>
+                <textarea value={fields.remarks} onChange={e => handleChange('remarks', e.target.value)} className={inputCls} rows={3} disabled={isReadOnly} />
+              </Field>
+            </div>
+          </Section>
+
+          {/* ── Section 14: Photos & Maps ── */}
+          <Section title="Property Photographs, Sketch & Location Maps" number={14}>
+            {/* Property Photos */}
+            <div>
+              <p className="text-xs font-bold text-[#495057] uppercase tracking-wider mb-2">Property Photographs</p>
+              <input type="file" accept="image/*" multiple onChange={e => handleFileUpload(e, 'propertyImages')} className="text-sm" disabled={isReadOnly || uploading} />
+              {uploading && <p className="text-xs text-amber-600 mt-1">Uploading...</p>}
+              {uploadError && <p className="text-xs text-red-600 mt-1">{uploadError}</p>}
+              {fields.propertyImages.length > 0 && (
+                <div className="grid grid-cols-3 md:grid-cols-4 gap-2 mt-3">
+                  {fields.propertyImages.map((url: string, i: number) => (
+                    <div key={i} className="relative group rounded-lg overflow-hidden border border-slate-200">
+                      <img src={url} alt={`Property ${i + 1}`} className="w-full h-24 object-cover" />
+                      {!isReadOnly && (
+                        <button onClick={() => removeImage(i)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">&times;</button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Sketch Map */}
+            <div className="mt-6">
+              <p className="text-xs font-bold text-[#495057] uppercase tracking-wider mb-2">Sketch Map</p>
+              <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'sketchMapImage')} className="text-sm" disabled={isReadOnly || uploading} />
+              {fields.sketchMapImage && <img src={fields.sketchMapImage} alt="Sketch Map" className="mt-2 max-h-48 rounded-lg border" />}
+            </div>
+
+            {/* Location Map */}
+            <div className="mt-6">
+              <p className="text-xs font-bold text-[#495057] uppercase tracking-wider mb-2">Location Map (Upload a screenshot)</p>
+              <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'locationMapImage')} className="text-sm" disabled={isReadOnly || uploading} />
+              {fields.locationMapImage && <img src={fields.locationMapImage} alt="Location Map" className="mt-2 max-h-48 rounded-lg border" />}
+            </div>
+
+            {/* Lat/Long */}
+            <div className="grid grid-cols-2 gap-4 mt-6">
+              <Field label="Latitude"><input type="text" value={fields.latitude} onChange={e => handleChange('latitude', e.target.value)} className={inputCls} placeholder="e.g. 20.2961" disabled={isReadOnly} /></Field>
+              <Field label="Longitude"><input type="text" value={fields.longitude} onChange={e => handleChange('longitude', e.target.value)} className={inputCls} placeholder="e.g. 85.8245" disabled={isReadOnly} /></Field>
+            </div>
+          </Section>
+
+          {/* ── Annexure Section ── */}
+          <Section title="Annexures (Excel Uploads)" number={'A'} defaultOpen={fields.annexureEnabled}>
+            <div id="section-annexure">
+              <div className="flex items-center gap-3 mb-4">
+                <label className="text-sm font-bold text-slate-700">Enable Annexures</label>
+                <button
+                  type="button"
+                  onClick={() => handleChange('annexureEnabled', !fields.annexureEnabled)}
+                  disabled={isReadOnly}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${fields.annexureEnabled ? 'bg-amber-600' : 'bg-slate-300'}`}
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${fields.annexureEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+              </div>
+
+              {fields.annexureEnabled && (
+                <div className="space-y-4">
+                  {fields.annexures.map((ann: AnnexureItem, index: number) => (
+                    <div key={ann.id} className="border border-amber-200 bg-amber-50 rounded-xl p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <span className="bg-amber-600 text-white w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm">{ann.label}</span>
+                        <input
+                          type="text"
+                          value={ann.title || ''}
+                          onChange={e => updateAnnexureTitle(ann.id, e.target.value)}
+                          placeholder="Annexure title (optional)"
+                          className="flex-1 px-3 py-2 rounded-lg border border-amber-300 bg-white text-sm"
+                          disabled={isReadOnly}
+                        />
+                        {!isReadOnly && (
+                          <button onClick={() => removeAnnexure(ann.id)} className="text-red-500 hover:text-red-700 text-sm font-bold">Remove</button>
+                        )}
+                      </div>
+                      {ann.excelFileUrl ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-emerald-700 font-semibold">📎 {ann.excelFileName}</span>
+                          {ann.parsedData && <span className="text-xs text-slate-500">({ann.parsedData.rows.length} rows)</span>}
+                          {!isReadOnly && <button onClick={() => removeAnnexureFile(ann.id)} className="text-xs text-red-500 hover:underline ml-2">Remove</button>}
+                        </div>
+                      ) : (
+                        <input
+                          type="file"
+                          accept=".xlsx,.xls,.csv"
+                          onChange={e => handleAnnexureUpload(ann.id, e)}
+                          className="text-sm"
+                          disabled={isReadOnly || uploading}
+                        />
+                      )}
+                    </div>
+                  ))}
+                  {!isReadOnly && (
+                    <button
+                      type="button"
+                      onClick={addAnnexure}
+                      className="w-full py-3 border-2 border-dashed border-amber-400 rounded-xl text-amber-700 font-bold text-sm hover:bg-amber-50 transition-colors"
+                    >
+                      + Add Annexure {String.fromCharCode(65 + fields.annexures.length)}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </Section>
+
+        </div>
+
+        {/* Floating Navigator */}
+        <FloatingNavigator annexureEnabled={fields.annexureEnabled} />
       </div>
 
-      {/* Placeholder Content */}
-      <div className="bg-amber-50 border-2 border-dashed border-amber-300 rounded-2xl p-12 text-center">
-        <div className="text-5xl mb-4">🏗️</div>
-        <h2 className="text-xl font-bold text-[#0f2038] mb-3">
-          IBBI Report Builder — Coming Soon
-        </h2>
-        <p className="text-[#6c757d] text-sm max-w-md mx-auto leading-relaxed">
-          This report builder is being constructed based on the IBBI-IVS Sample
-          Valuation Report master file. Sections and fields will be added
-          incrementally.
-        </p>
-        <div className="mt-6 text-xs text-amber-600 font-mono">
-          Project: {projectId} · Status: {status} · Role: {userRole}
+      {/* ── Floating Action Bar ── */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 p-4 flex justify-between items-center z-50 px-8 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+        <div className="flex items-center gap-4">
+          {!isReadOnly && (
+            <button onClick={handleSaveDraft} disabled={loading} className="px-6 py-2.5 bg-white border-2 border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-all flex items-center gap-2">
+              {loading ? '⏳ Saving...' : '💾 Save Draft'}
+            </button>
+          )}
+          {!isReadOnly && status === 'DRAFT' && (
+            <button onClick={handleSubmit} disabled={loading} className="px-6 py-2.5 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all flex items-center gap-2">
+              📤 Submit for Review
+            </button>
+          )}
+        </div>
+        <div className="flex gap-3">
+          <button onClick={handlePreviewPDF} className="px-6 py-2.5 bg-[#0f2038] text-white font-bold rounded-xl hover:bg-[#1a3a5c] shadow-lg shadow-[#0f2038]/20 transition-all flex items-center gap-2">
+            📄 Preview PDF
+          </button>
+          <button onClick={handleDownloadPDF} className="px-6 py-2.5 bg-[#b8860b] text-white font-bold rounded-xl hover:bg-[#a07209] shadow-lg shadow-[#b8860b]/20 transition-all flex items-center gap-2">
+            ⬇️ Download PDF
+          </button>
         </div>
       </div>
     </div>
