@@ -2310,7 +2310,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
                   {fields.institutionCategory}
                 </span>
               )}
-              {fields.clientType === 'organisation' && fields.organisationTemplate && (
+              {fields.clientType === 'organisation' && fields.organisationTemplate && !['INCOME_TAX', 'IBBI_IVS'].includes(fields.organisationTemplate) && (
                 <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
                   {fields.organisationTemplate}
