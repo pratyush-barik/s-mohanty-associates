@@ -42,6 +42,7 @@ interface ReportFields {
   city: string;
   pincode: string;
   landmark: string;
+  loanApplicationType?: string;
   loanApplicationNo: string;
   documentHolderName: string;
   legalAddress: string;
@@ -201,6 +202,7 @@ const DEFAULT_FIELDS: ReportFields = {
   city: '',
   pincode: '',
   landmark: '',
+  loanApplicationType: '',
   loanApplicationNo: '',
   documentHolderName: '',
   legalAddress: '',
@@ -1396,7 +1398,8 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         r.drawSimpleRow('Property Address', getFullAddress());
         r.drawSimpleRow('Landmark', fields.landmark || '');
       }
-      r.drawSimpleRow('Loan Application number', fields.loanApplicationNo);
+      const loanAppLabel = fields.loanApplicationType ? `${fields.loanApplicationType} Application number` : 'Loan Application number';
+      r.drawSimpleRow(loanAppLabel, fields.loanApplicationNo);
       r.drawSimpleRow('Name of Document holder', fields.documentHolderName || fields.ownerName);
       r.drawSimpleRow('Date of Inspection', fields.dateOfInspection);
       r.drawSimpleRow('Date of Valuation Report', fields.dateOfValuation);
@@ -1826,6 +1829,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin:6px 0 12px;">${titleText}</p>`);
 
     // ── BLOCK: General Details ──
+    const loanAppLabel = fields.loanApplicationType ? `${fields.loanApplicationType} Application number` : 'Loan Application number';
     allBlocks.push(wrapTable(`
       ${sectionHeader('GENERAL DETAILS')}
       ${optionRow('Type of property', ['Residential', 'Commercial', 'Residential cum Commercial', 'Industrial', 'Vacant Plot'], fields.propertyType)}
@@ -1835,7 +1839,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         : `${simpleRow('Property Address', getFullAddress())}
            ${simpleRow('Landmark', fields.landmark || '')}`
       }
-      ${simpleRow('Loan Application number', fields.loanApplicationNo)}
+      ${simpleRow(loanAppLabel, fields.loanApplicationNo)}
       ${simpleRow('Name of Document holder', fields.documentHolderName || fields.ownerName)}
       ${simpleRow('Date of Inspection', fields.dateOfInspection)}
       ${simpleRow('Date of Valuation Report', fields.dateOfValuation)}
@@ -2458,8 +2462,11 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
                 </Field>
               </>
             )}
-            <Field label="Loan Application Number">
-              <input className={inputCls} value={fields.loanApplicationNo || ''} onChange={e => handleChange('loanApplicationNo', e.target.value)} disabled={isReadOnly} />
+            <Field label="Application Type">
+              <input className={inputCls} value={fields.loanApplicationType || ''} onChange={e => handleChange('loanApplicationType', e.target.value)} disabled={isReadOnly} placeholder="e.g. Housing Loan, LAP, SME" />
+            </Field>
+            <Field label="Application Number">
+              <input className={inputCls} value={fields.loanApplicationNo || ''} onChange={e => handleChange('loanApplicationNo', e.target.value)} disabled={isReadOnly} placeholder="e.g. 123456" />
             </Field>
             <Field label="Name of Document Holder">
               <input className={inputCls} value={fields.documentHolderName || ''} onChange={e => handleChange('documentHolderName', e.target.value)} disabled={isReadOnly} />
