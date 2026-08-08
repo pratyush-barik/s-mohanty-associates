@@ -182,6 +182,7 @@ interface ReportFields {
   reworkNotes?: string;
   clientType?: string;
   organisationTemplate?: string;
+  organisationSubTemplate?: string;
   institutionCategory?: string;
   serviceType?: string;
   subjectType?: string;
@@ -327,6 +328,7 @@ const DEFAULT_FIELDS: ReportFields = {
   nearbyLandmarks: '',
   clientType: '',
   organisationTemplate: '',
+  organisationSubTemplate: '',
   institutionCategory: '',
   serviceType: '',
   subjectType: '',
@@ -693,6 +695,27 @@ const INSTITUTE_CATEGORIES = [
   { id: 'ibbi', label: 'IBBI - IVS', icon: '⚖️', direct: true },
 ];
 
+const BANK_SUB_TEMPLATES: Record<string, string[]> = {
+  'ADITYA BIRLA CAPITAL LTD': ['MLAP', 'STSL'],
+  'ADITYA BIRLA HOUSING FINANCE LTD': ['HL-LAP'],
+  'AXIS BANK': ['AGRI', 'HL-LAP', 'SBB', 'SME'],
+  'BAJAJ HOUSING FINANCE LTD': ['HL-LAP'],
+  'BANDHAN BANK': ['HL-LAP', 'SME'],
+  'DCB BANK': ['Desktop valuation format', 'HL-LAP-SME'],
+  'HDFC BANK': ['HL-LAP-BLG'],
+  'ICICI BANK': ['HL-LAP-BBG', 'NPA'],
+  'KOTAK MAHINDRA BANK': ['BUSINESS BANKING GROUP', 'HL-LAP'],
+  'LIC HOUSING FINANCE LTD': [
+    'NPA-DEFAULT CASES',
+    'PVR-1(SELF CONSTRUCTIONLA-L & B)',
+    'PVR-2(FLAT-UNDERCONSTRUCTION)',
+    'PVR-3(LAP-RENNOVATION-BOTH L&B-FLAT)',
+    'PVR-4(LAND PURCHSASE ONLY)',
+    'PVR-5 (SUBSEQUENT VALUATION REPORT)'
+  ],
+  'TATA CAPITAL LTD': ['SME-BLG'],
+};
+
 const FloatingNavigator = ({ isApartmentFlat, annexureEnabled }: { isApartmentFlat: boolean; annexureEnabled: boolean }) => {
   const NAV_SECTIONS = [
     { id: 'section-1', title: 'General Details' },
@@ -894,6 +917,8 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   const [wizardStep, setWizardStep] = useState<'setup' | 'completed'>(initialFields?.clientType ? 'completed' : 'setup');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showBankList, setShowBankList] = useState(false);
+  const [selectedBank, setSelectedBank] = useState<string | null>(null);
+  const [showSubList, setShowSubList] = useState(false);
 
   useEffect(() => {
     if (wizardStep !== 'setup') return;
@@ -910,15 +935,27 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       if (state.step === 'type') {
         setSelectingOrg(false);
         setShowBankList(false);
+        setShowSubList(false);
         setSelectedCategory(null);
+        setSelectedBank(null);
       } else if (state.step === 'category') {
         setSelectingOrg(true);
         setShowBankList(false);
+        setShowSubList(false);
         setSelectedCategory(null);
+        setSelectedBank(null);
       } else if (state.step === 'bank') {
         setSelectingOrg(true);
         setShowBankList(true);
+        setShowSubList(false);
         setSelectedCategory(state.category || null);
+        setSelectedBank(null);
+      } else if (state.step === 'sub_template') {
+        setSelectingOrg(true);
+        setShowBankList(false);
+        setShowSubList(true);
+        setSelectedCategory(state.category || null);
+        setSelectedBank(state.bank || null);
       }
     };
 
@@ -941,14 +978,41 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
   };
 
   const handleSelectOrganisation = (value: string) => {
+    // Normalize or match spelling to BANK_SUB_TEMPLATES key
+    const normalizedKey = Object.keys(BANK_SUB_TEMPLATES).find(k => k.replace(/\s+/g, ' ').trim() === value.replace(/\s+/g, ' ').trim());
+    if (normalizedKey && BANK_SUB_TEMPLATES[normalizedKey]) {
+      setSelectedBank(normalizedKey);
+      setShowBankList(false);
+      setShowSubList(true);
+      if (typeof window !== 'undefined') {
+        window.history.pushState({ step: 'sub_template', bank: normalizedKey, category: selectedCategory }, '');
+      }
+    } else {
+      setFields(prev => ({
+        ...prev,
+        clientType: 'organisation',
+        organisationTemplate: value,
+        organisationSubTemplate: '',
+      }));
+      setSelectingOrg(false);
+      setSelectedCategory(null);
+      setShowBankList(false);
+      setWizardStep('completed');
+    }
+  };
+
+  const handleSelectSubTemplate = (subOpt: string) => {
     setFields(prev => ({
       ...prev,
       clientType: 'organisation',
-      organisationTemplate: value
+      organisationTemplate: selectedBank || '',
+      organisationSubTemplate: subOpt,
     }));
     setSelectingOrg(false);
     setSelectedCategory(null);
     setShowBankList(false);
+    setShowSubList(false);
+    setSelectedBank(null);
     setWizardStep('completed');
   };
 
@@ -2133,7 +2197,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
                 <div className="bg-white p-8 rounded-2xl shadow-lg border border-[#e9ecef] space-y-6">
                   <div className="flex items-center justify-between pb-4 border-b border-[#e9ecef]">
                     <h3 className="text-lg font-bold text-[#0f2038]">
-                      {showBankList ? 'Select Bank / Institution' : 'Select Institution Category'}
+                      {showSubList ? `Select Format for ${selectedBank}` : showBankList ? 'Select Bank / Institution' : 'Select Institution Category'}
                     </h3>
                     <button
                       type="button"
@@ -2146,7 +2210,20 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
                     </button>
                   </div>
 
-                  {showBankList && selectedCategory ? (
+                  {showSubList && selectedBank ? (
+                    <div className="flex flex-wrap gap-3 max-h-[420px] overflow-y-auto p-3 border border-[#dee2e6] rounded-xl bg-neutral-50/50 justify-center">
+                      {BANK_SUB_TEMPLATES[selectedBank]?.map((subOpt) => (
+                        <button
+                          key={subOpt}
+                          type="button"
+                          onClick={() => handleSelectSubTemplate(subOpt)}
+                          className="flex-1 min-w-[200px] max-w-[280px] p-3 min-h-[84px] rounded-xl border border-[#dee2e6] bg-white hover:border-[#b8860b] hover:bg-[#fffbf0] hover:shadow-md text-center transition-all duration-200 flex items-center justify-center text-xs sm:text-sm font-semibold text-[#0f2038] shadow-sm break-words leading-tight"
+                        >
+                          <span className="w-full line-clamp-3 hyphens-auto">{subOpt}</span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : showBankList && selectedCategory ? (
                     <div className="flex flex-wrap gap-3 max-h-[420px] overflow-y-auto p-3 border border-[#dee2e6] rounded-xl bg-neutral-50/50 justify-center">
                        {INSTITUTE_CATEGORIES.find(c => c.id === selectedCategory)?.list?.map((bank) => (
                          <button
@@ -2218,6 +2295,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
                 <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
                   {fields.organisationTemplate}
+                  {fields.organisationSubTemplate ? ` - ${fields.organisationSubTemplate}` : ''}
                 </span>
               )}
             <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm">
