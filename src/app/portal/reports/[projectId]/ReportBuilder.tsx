@@ -2462,7 +2462,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
                 </Field>
               </>
             )}
-            <Field label="Application Type">
+            <Field label="Application Type (Optional)">
               <input className={inputCls} value={fields.loanApplicationType || ''} onChange={e => handleChange('loanApplicationType', e.target.value)} disabled={isReadOnly} placeholder="e.g. Housing Loan, LAP, SME" />
             </Field>
             <Field label="Application Number">
