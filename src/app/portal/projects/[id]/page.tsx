@@ -4,7 +4,7 @@ import { redirect, notFound } from 'next/navigation';
 import AssignTeamForm from './AssignTeamForm';
 import ProjectChat from './ProjectChat';
 import Link from 'next/link';
-import ReportBuilder from '../../reports/[projectId]/ReportBuilder';
+import GeneralReportBuilder from '../../reports/[projectId]/GeneralReportBuilder';
 import ReportDraftSection from './ReportDraftSection';
 import TransferOversightButton from './TransferOversightButton';
 import EndProjectButton from './EndProjectButton';
@@ -325,7 +325,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
         {/* 4) THEN VIEW REPORT — Collapsible Dropdown */}
         {(project.status === 'MANAGER_REVIEW' || project.status === 'COMPLETED') && project.report && (
           <ReportDraftSection>
-            <ReportBuilder
+            <GeneralReportBuilder
               projectId={project.id}
               initialFields={project.report.data}
               status={project.status}

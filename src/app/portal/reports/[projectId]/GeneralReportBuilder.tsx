@@ -772,7 +772,7 @@ interface BucketImageItem {
   employee: { name: string; employeeId: string };
 }
 
-interface ReportBuilderProps {
+interface GeneralReportBuilderProps {
   projectId: string;
   projectCode: string;
   initialFields: any;
@@ -791,7 +791,7 @@ interface ReportBuilderProps {
   };
 }
 
-export default function ReportBuilder({ projectId, projectCode, initialFields, status, userRole = 'REPORT_EMPLOYEE', bucketImages = [], prefill }: ReportBuilderProps) {
+export default function GeneralReportBuilder({ projectId, projectCode, initialFields, status, userRole = 'REPORT_EMPLOYEE', bucketImages = [], prefill }: GeneralReportBuilderProps) {
   const mappedServiceId = prefill?.propertyType
     ? SERVICES_LIST.find(s => s.title.toLowerCase() === prefill.propertyType?.toLowerCase())?.id
     : undefined;

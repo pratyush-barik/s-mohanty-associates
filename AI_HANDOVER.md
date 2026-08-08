@@ -74,7 +74,7 @@ The core business logic is **100% complete**.
 1. **Intake Flow**: Client requests a valuation. A `Project` is created with `PENDING_REVIEW` status.
 2. **Assignment Flow**: Manager accepts the project and assigns a `FIELD_EMPLOYEE` and `REPORT_EMPLOYEE` via the `/portal/projects/[id]` dashboard. Managers can assign agents to multiple projects simultaneously; active project counts are displayed as badges during assignment.
 3. **Inspection Flow**: Field agent sees assignment, views client details, gets Google Maps directions, and completes the inspection. Status updates to `INSPECTION_COMPLETED`.
-4. **Drafting Flow (Updated — July 2026)**: Report agent goes to "My Projects" (`/portal/my-projects`) to see pending work. They fill out a dynamic **14-section React form** in `src/app/portal/reports/[projectId]/ReportBuilder.tsx`. This form now fully matches the real-world Individual Client Bank Report template (based on the HDFC/SBI IBBI valuation sample PDF):
+4. **Drafting Flow (Updated — July 2026)**: Report agent goes to "My Projects" (`/portal/my-projects`) to see pending work. They fill out a dynamic **14-section React form** in `src/app/portal/reports/[projectId]/GeneralReportBuilder.tsx` (formerly `ReportBuilder.tsx`, renamed August 2026). This form is for **Individual / General Customers** and fully matches the real-world Individual Client Bank Report template (based on the HDFC/SBI IBBI valuation sample PDF):
 
    **Form Sections (in order):**
    - **Section 1 – General Details:** Type of Property, Customer Name, Property Address, Landmark, Loan App No., Document Holder, Legal Address, Dates (Inspection & Valuation), Bank, Branch, Ref No.
@@ -113,7 +113,7 @@ The core business logic is **100% complete**.
 
 7. **Photo Bucket & Evidence Workflow (July 2026)**:
    - Field Agents upload evidence (photos) via the Inspection dashboard directly into a centralized "Photo Bucket" (`bucket_images` DB table + Supabase Storage). Features a lightbox and grid UI.
-   - Report Agents access this bucket natively inside `ReportBuilder.tsx` via the `BucketPicker` modal to select photos for Property Images, Sketch Map, and Location Map.
+   - Report Agents access this bucket natively inside `GeneralReportBuilder.tsx` via the `BucketPicker` modal to select photos for Property Images, Sketch Map, and Location Map.
    - *Strict Constraints & RBAC*:
      - Max 10MB per photo, restricted to images (JPEG/PNG/WebP), max 30 photos per project, min 1 required to mark inspection as COMPLETED.
      - Only assigned agents and managers can upload/delete/view.
@@ -121,7 +121,7 @@ The core business logic is **100% complete**.
      - **Drafting Lock:** Prevents deletion of photos actively used in the Report Draft to avoid broken PDF images.
    - *Auto-Cleanup*: Serverless CRON job (`/api/cron/cleanup-buckets`) runs daily to permanently delete raw images and metadata for projects that have been `COMPLETED` for > 48 hours.
 8. **Manager Preview, Editing & Finalization Flow (Updated)**:
-   - Manager reviews the drafted report via `ReportBuilder.tsx`. Can edit text fields and add/remove/replace photographs as needed.
+   - Manager reviews the drafted report via `GeneralReportBuilder.tsx`. Can edit text fields and add/remove/replace photographs as needed.
    - Manager can "Send for Rework" which opens a prompt to input specific rework instructions (reverts status to REPORT_DRAFTING) or "Finalize & Generate PDF".
    - The Report Agent will see the Manager's rework comments highlighted at the top of the form when they resume drafting.
 9. **PDF Generation & Cleanup (Updated)**: PDF generation is fully implemented on the **Client-Side** natively using `pdf-lib`, triggered during Manager Finalization.
@@ -210,7 +210,7 @@ The core business logic is **100% complete**.
 Outstanding items in **priority order**:
 
 ### High Priority — In Progress
-1. **Default Template End-to-End Verification**: The 14-section `ReportBuilder.tsx` is complete, perfectly balanced, and on GitHub (branch: `main`). The user should verify locally or deploy to Vercel and check:
+1. **Default Template End-to-End Verification**: The 14-section `GeneralReportBuilder.tsx` is complete, perfectly balanced, and on GitHub (branch: `main`). The user should verify locally or deploy to Vercel and check:
    - Location Map section (Google Maps iframe auto-loads from address field)
    - PDF download — verify all 14 sections render correctly with perfectly centered text and no footer overflow.
    - "Cancel Submission (Pull back to Draft)" button — check status refreshes correctly
@@ -247,7 +247,7 @@ Outstanding items in **priority order**:
 > **Location Map in PDF**: Section 14 uses a Google Maps `<iframe>` for live preview (auto-loaded from property address). `pdf-lib` **cannot capture iframes**. The user must manually take a Google Maps satellite screenshot and upload it in the "Screenshot for PDF" upload within Section 14. Only the uploaded image appears in the PDF.
 
 > [!WARNING]
-> **ReportBuilder.tsx and pdf-report-renderer.ts are large**. When editing the PDF output, you are working directly with `pdf-lib` coordinate math in `pdf-report-renderer.ts`.
+> **GeneralReportBuilder.tsx and pdf-report-renderer.ts are large**. When editing the PDF output, you are working directly with `pdf-lib` coordinate math in `pdf-report-renderer.ts`.
 > *Note on Alignment*: Text wrapping and pagination are handled manually by measuring string widths (`StandardFonts.Helvetica`) and cursor tracking.
 > *Note on Currency*: `pdf-lib` using standard Helvetica cannot encode the Indian Rupee symbol (`₹`). The symbol will throw a `WinAnsi cannot encode` error. Always fallback to `Rs.` or `INR` in text drawn to the PDF!
 > *Note on Orphaned Headings*: High-level drawing methods like `drawSectionHeader` use a keep-with-next margin (e.g. 60 points) when checking for page breaks to prevent headings from appearing alone at the bottom of a page.

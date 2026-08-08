@@ -2,7 +2,7 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
-import ReportBuilder from './ReportBuilder';
+import GeneralReportBuilder from './GeneralReportBuilder';
 
 export default async function ReportEditorPage({ params }: { params: Promise<{ projectId: string }> }) {
   try {
@@ -122,7 +122,7 @@ export default async function ReportEditorPage({ params }: { params: Promise<{ p
 
         {/* Report Builder (Full Width) */}
         <div className="w-full">
-          <ReportBuilder
+          <GeneralReportBuilder
             projectId={project.id}
             projectCode={project.projectCode}
             initialFields={report?.data || null}
