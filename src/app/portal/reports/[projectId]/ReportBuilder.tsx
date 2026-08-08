@@ -2319,7 +2319,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
               {fields.annexureEnabled && (
                 <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#fff8e1] border border-[#ffe082] text-xs text-[#7b6b2e]">
                   <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" /></svg>
-                  <span>Address details moved to <strong>Section 15 — Annexure</strong>. Scroll down or use the navigator.</span>
+                  <span>Address details moved to <strong>Section {isApartmentFlat ? 14 : 15} — Annexure</strong>. Scroll down or use the navigator.</span>
                 </div>
               )}
             </div>
