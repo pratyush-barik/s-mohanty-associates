@@ -1603,8 +1603,6 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
             </div>
           </Section>
 
-      </div>
-
       <div className="flex flex-wrap gap-4 pt-4 items-center w-full">
         {status === 'COMPLETED' && (
           <div className="w-full p-4 rounded-xl bg-green-50 border border-green-200 text-green-800 font-bold flex items-center gap-2">
@@ -1680,6 +1678,8 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
             </button>
           </>
         )}
+      </div>
+
       </div>
 
       {/* Rework Modal */}
