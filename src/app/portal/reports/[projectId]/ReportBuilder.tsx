@@ -1398,7 +1398,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         r.drawSimpleRow('Property Address', getFullAddress());
         r.drawSimpleRow('Landmark', fields.landmark || '');
       }
-      const loanAppLabel = fields.loanApplicationType ? `${fields.loanApplicationType} Application number` : 'Loan Application number';
+      const loanAppLabel = fields.loanApplicationType ? `${fields.loanApplicationType} Application number` : 'Application number';
       r.drawSimpleRow(loanAppLabel, fields.loanApplicationNo);
       r.drawSimpleRow('Name of Document holder', fields.documentHolderName || fields.ownerName);
       r.drawSimpleRow('Date of Inspection', fields.dateOfInspection);
@@ -1829,7 +1829,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin:6px 0 12px;">${titleText}</p>`);
 
     // ── BLOCK: General Details ──
-    const loanAppLabel = fields.loanApplicationType ? `${fields.loanApplicationType} Application number` : 'Loan Application number';
+    const loanAppLabel = fields.loanApplicationType ? `${fields.loanApplicationType} Application number` : 'Application number';
     allBlocks.push(wrapTable(`
       ${sectionHeader('GENERAL DETAILS')}
       ${optionRow('Type of property', ['Residential', 'Commercial', 'Residential cum Commercial', 'Industrial', 'Vacant Plot'], fields.propertyType)}
@@ -2462,12 +2462,14 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
                 </Field>
               </>
             )}
-            <Field label="Application Type (Optional)">
-              <input className={inputCls} value={fields.loanApplicationType || ''} onChange={e => handleChange('loanApplicationType', e.target.value)} disabled={isReadOnly} placeholder="e.g. Housing Loan, LAP, SME" />
-            </Field>
-            <Field label="Application Number">
-              <input className={inputCls} value={fields.loanApplicationNo || ''} onChange={e => handleChange('loanApplicationNo', e.target.value)} disabled={isReadOnly} placeholder="e.g. 123456" />
-            </Field>
+            <div className="md:col-span-2 grid md:grid-cols-2 gap-4 bg-neutral-50/50 p-4 rounded-xl border border-neutral-200/60">
+              <Field label="Application Type (Optional)">
+                <input className={inputCls} value={fields.loanApplicationType || ''} onChange={e => handleChange('loanApplicationType', e.target.value)} disabled={isReadOnly} placeholder="e.g. Housing Loan, LAP, SME" />
+              </Field>
+              <Field label="Application Number">
+                <input className={inputCls} value={fields.loanApplicationNo || ''} onChange={e => handleChange('loanApplicationNo', e.target.value)} disabled={isReadOnly} placeholder="e.g. 123456" />
+              </Field>
+            </div>
             <Field label="Name of Document Holder">
               <input className={inputCls} value={fields.documentHolderName || ''} onChange={e => handleChange('documentHolderName', e.target.value)} disabled={isReadOnly} />
             </Field>
