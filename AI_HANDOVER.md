@@ -74,7 +74,15 @@ The core business logic is **100% complete**.
 1. **Intake Flow**: Client requests a valuation. A `Project` is created with `PENDING_REVIEW` status.
 2. **Assignment Flow**: Manager accepts the project and assigns a `FIELD_EMPLOYEE` and `REPORT_EMPLOYEE` via the `/portal/projects/[id]` dashboard. Managers can assign agents to multiple projects simultaneously; active project counts are displayed as badges during assignment.
 3. **Inspection Flow**: Field agent sees assignment, views client details, gets Google Maps directions, and completes the inspection. Status updates to `INSPECTION_COMPLETED`.
-4. **Drafting Flow (Updated — July 2026)**: Report agent goes to "My Projects" (`/portal/my-projects`) to see pending work. They fill out a dynamic **14-section React form** in `src/app/portal/reports/[projectId]/GeneralReportBuilder.tsx` (formerly `ReportBuilder.tsx`, renamed August 2026). This form is for **Individual / General Customers** and fully matches the real-world Individual Client Bank Report template (based on the HDFC/SBI IBBI valuation sample PDF):
+4. **Drafting Flow (Updated — August 2026)**: Report agent goes to "My Projects" (`/portal/my-projects`) to see pending work. The report builder is dynamically routed in `src/app/portal/reports/[projectId]/page.tsx` based on the chosen client template:
+
+   - **A. General Customer (`GeneralReportBuilder.tsx`)**: This is the default 14-section dynamic form used for standard individual clients, fully matching the real-world Individual Client Bank Report template (based on the HDFC/SBI IBBI valuation sample PDF).
+   - **B. IBBI Organisation (`IBBIReportBuilder.tsx`)**: A completely distinct report builder used when `organisationTemplate === 'IBBI_IVS'`. It contains 14 statutory IBBI sections (Objective, Description, Town Planning, Legal, Infrastructure, Socio-Env, Marketability, Engineering, Valuation, Photos/Maps). Includes:
+     - Auto-generated statutory text for Sections 1–3 in the PDF.
+     - A dynamic "Add Row" plot-by-plot valuation table in Section 13, seamlessly integrating with the Excel Annexure feature.
+     - A distinct PDF rendering layout where the Valuation Certificate appears *before* Section 1.
+
+   **Shared Design Decisions across ReportBuilders:**
 
    **Form Sections (in order):**
    - **Section 1 – General Details:** Type of Property, Customer Name, Property Address, Landmark, Loan App No., Document Holder, Legal Address, Dates (Inspection & Valuation), Bank, Branch, Ref No.
@@ -210,7 +218,11 @@ The core business logic is **100% complete**.
 Outstanding items in **priority order**:
 
 ### High Priority — In Progress
-1. **Default Template End-to-End Verification**: The 14-section `GeneralReportBuilder.tsx` is complete, perfectly balanced, and on GitHub (branch: `main`). The user should verify locally or deploy to Vercel and check:
+1. **IBBI-IVS Template End-to-End Verification**: The `IBBIReportBuilder.tsx` component is built and functionally complete (with dynamic valuation rows and annexures), but the generated PDF layout needs to be battle-tested with real data. The user should verify:
+   - That spacing, pagination, and tables in the IBBI PDF (especially the Valuation Certificate layout and the Plot-by-Plot valuation table) look perfect.
+   - Test the flow from the Setup Wizard -> changing to IBBI_IVS -> reloading -> saving -> previewing PDF.
+
+2. **Default Template End-to-End Verification**: The 14-section `GeneralReportBuilder.tsx` is complete, perfectly balanced, and on GitHub (branch: `main`). The user should verify locally or deploy to Vercel and check:
    - Location Map section (Google Maps iframe auto-loads from address field)
    - PDF download — verify all 14 sections render correctly with perfectly centered text and no footer overflow.
    - "Cancel Submission (Pull back to Draft)" button — check status refreshes correctly
@@ -224,13 +236,11 @@ Outstanding items in **priority order**:
    - Require Field Agents to select a category when uploading (e.g., `Front Elevation`, `Interior`, `Sketch Map`, `Location`). Allows Report Agent to easily filter the Photo Bucket.
 
 ### Lower Priority — Future
-4. **Organizational/Corporate Templates (Architecture & Rendering)**: The "Standard Individual" (default bank report) template is complete. The category config wizard supports choosing between "Individual" and "Organisation" templates 1-10. However, wizard choices currently have zero impact on the actual form or PDF output. 
+4. **Organizational/Corporate Templates (Architecture & Rendering)**: The "Standard Individual" (default bank report) and "IBBI-IVS" templates are now built. The category config wizard supports choosing between "Individual" and "Organisation" templates 1-10. 
    **Future Work Implementation Plan:**
    - *Phase 1: Named Organisation Templates*: Replace numbered templates with real named organisations (SBI, PNB, etc.) in the wizard and backend.
-   - *Phase 2: Service-Aware Form Sections*: Conditionally show/hide form sections based on the selected service type (e.g., hide Building Valuation for Land Only).
-   - *Phase 3: Organisation-Specific PDF Layouts*: Generate different PDF outputs per organisation (custom headers, disclaimers, field labels).
-   - *Phase 4: Dynamic Template Management*: Allow managers to CRUD templates from the portal.
-   **Deferred until the default template is fully verified by the user.**
+   - *Phase 2: Add more Report Builders*: Similar to `IBBIReportBuilder`, build dedicated components for other unique bank formats.
+   - *Phase 3: Dynamic Template Management*: Allow managers to CRUD templates from the portal.
 5. **Remove the overlay / coming-soon banner** on `https://smohantyassociates.vercel.app/` (the public-facing landing page).
 6. **Supabase Storage Lifecycle Policy**: PDFs should auto-delete after 3–6 months to stay within 8GB limit. Implement via Supabase Edge Function, cron job, or bucket lifecycle policy. (Note: Photo Bucket auto-cleanup is already implemented natively).
 7. **Email Automation**: Automated notifications via Gmail API or Nodemailer (e.g., "Your request was received", "Your PDF is ready for download").
@@ -259,7 +269,8 @@ Outstanding items in **priority order**:
 > When modifying the UI, prioritize modern, premium aesthetics (glassmorphism, clean typography, subtle animations) without relying on Tailwind component libraries like Shadcn. Use raw Tailwind classes.
 
 ## 7. Recent Git Commits (for reference)
-- `latest` — fix(ReportBuilder): resolve PDF table overflow by breaking words and handling full-width rows, and fix missing address in Valuation Certificate
+- `latest` — feat: complete IBBIReportBuilder implementation with dynamic valuation rows and PDF rendering
+- `previous` — fix(ReportBuilder): resolve PDF table overflow by breaking words and handling full-width rows, and fix missing address in Valuation Certificate
 - `previous` — feat(ReportBuilder): add Annexure parsing (xlsx) and rendering in PDF/HTML preview tables
 - `previous` — feat(ReportBuilder): add Annexure toggle in Section 1 and Section 15 with dynamic annexure cards and Excel upload
 - `previous` — feat(ReportBuilder): synchronize wizard steps with browser history popstate
