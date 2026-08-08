@@ -25,6 +25,7 @@ interface FloorRow {
 interface AnnexureItem {
   id: string;
   label: string;          // 'A', 'B', 'C', ...
+  title?: string;         // Custom title for the annexure
   excelFileUrl: string;   // Uploaded Excel URL from Supabase
   excelFileName: string;  // Original filename
   parsedData?: {          // Parsed Excel table data
@@ -1078,12 +1079,16 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     handleChange('annexures', [...fields.annexures, {
       id: String(Date.now()),
       label,
+      title: '',
       excelFileUrl: '',
       excelFileName: '',
     }]);
   };
   const removeAnnexure = (id: string) => {
     handleChange('annexures', fields.annexures.filter(a => a.id !== id));
+  };
+  const updateAnnexureTitle = (id: string, title: string) => {
+    handleChange('annexures', fields.annexures.map(a => a.id === id ? { ...a, title } : a));
   };
   const handleAnnexureUpload = async (annexureId: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -1299,15 +1304,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
       await r.init(letterheadBytes);
 
       // ── Title block ──
-      const serviceObj = SERVICES_LIST.find(s => s.id === fields.serviceType) || { title: 'Valuation' };
-      const serviceName = serviceObj.title.toUpperCase();
-      const subjectName = fields.subjectType ? fields.subjectType.toUpperCase() : 'RESIDENTIAL';
-      let titleText = 'STANDARD VALUATION REPORT FORMAT';
-      if (fields.clientType === 'organisation') {
-        titleText = `${serviceName} REPORT FOR INSTITUTION ${fields.organisationTemplate}`;
-      } else {
-        titleText = `${serviceName} REPORT`;
-      }
+      let titleText = 'VALUATION REPORT';
 
       r.drawTextBlock('To', { bold: true });
       r.drawTextBlock(fields.to || '________', { bold: true });
@@ -1541,9 +1538,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
         for (const annexure of fields.annexures) {
           if (annexure.parsedData && annexure.parsedData.headers.length > 0) {
             r.newPage();
-            r.drawCenteredTitle(`ANNEXURE ${annexure.label}`);
-            r.advanceCursor(6);
-            r.drawSimpleRow('Source File', annexure.excelFileName || 'N/A');
+            r.drawCenteredTitle(annexure.title ? `ANNEXURE ${annexure.label} - ${annexure.title.toUpperCase()}` : `ANNEXURE ${annexure.label}`);
             r.advanceCursor(8);
             r.drawDataTable(annexure.parsedData.headers, annexure.parsedData.rows);
           }
@@ -1745,16 +1740,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
     // ═══════════════════════════════════════════════════════════════════
     const allBlocks: string[] = [];
 
-    const serviceObj = SERVICES_LIST.find(s => s.id === fields.serviceType) || { title: 'Valuation' };
-    const serviceName = serviceObj.title.toUpperCase();
-    const subjectName = fields.subjectType ? fields.subjectType.toUpperCase() : 'RESIDENTIAL';
-
-    let titleText = '• &nbsp;STANDARD VALUATION REPORT FORMAT';
-    if (fields.clientType === 'organisation') {
-      titleText = `• &nbsp;${subjectName} ${serviceName} REPORT FOR INSTITUTION ${fields.organisationTemplate}`;
-    } else {
-      titleText = `• &nbsp;${subjectName} ${serviceName} REPORT`;
-    }
+    let titleText = '• &nbsp;VALUATION REPORT';
 
     // ── BLOCK: "To" block + Title (always page 1 start) ──
     allBlocks.push(`<div style="font-family:${ff};font-size:12pt;margin-bottom:10px;line-height:0.5em;">
@@ -2068,8 +2054,7 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
             }
           }).join('');
           allBlocks.push(`<div style="font-family:${ff};color:#000;">
-            <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin-bottom:8px;">ANNEXURE ${annexure.label}</p>
-            <p style="font-family:${ff};font-size:10pt;margin-bottom:6px;">Source File: <b>${annexure.excelFileName || 'N/A'}</b></p>
+            <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin-bottom:8px;">ANNEXURE ${annexure.label}${annexure.title ? ` - ${annexure.title.toUpperCase()}` : ''}</p>
             <table style="width:100%;border-collapse:collapse;">
               <thead><tr>${headerCells}</tr></thead>
               <tbody>${dataRows}</tbody>
@@ -3160,7 +3145,18 @@ export default function ReportBuilder({ projectId, projectCode, initialFields, s
                   )}
                 </div>
                 {/* Annexure body */}
-                <div className="p-5 space-y-3">
+                <div className="p-5 space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider mb-1.5">Annexure Title / Heading</label>
+                    <input
+                      type="text"
+                      value={annexure.title || ''}
+                      onChange={e => updateAnnexureTitle(annexure.id, e.target.value)}
+                      disabled={isReadOnly}
+                      placeholder="e.g. Schedule of Property Details"
+                      className={inputCls}
+                    />
+                  </div>
                   <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider">Excel Upload</label>
                   {annexure.excelFileUrl ? (
                     <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-green-50 border border-green-200">
