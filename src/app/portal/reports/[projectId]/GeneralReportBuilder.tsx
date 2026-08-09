@@ -911,6 +911,18 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     setSelectedCategory(null);
   };
 
+  const handleWizardBack = () => {
+    if (showSubList) {
+      setShowSubList(false);
+      setSelectedBank(null);
+    } else if (showBankList) {
+      setShowBankList(false);
+      setSelectedCategory(null);
+    } else if (selectingOrg) {
+      setSelectingOrg(false);
+    }
+  };
+
   const getSelectedAmenities = () => {
     const valStr = fields.additionalAmenities || '';
     if (typeof valStr !== 'string' || !valStr || valStr === 'Not Applicable' || valStr === 'N/A') return [];
@@ -2093,7 +2105,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                     <button
                       type="button"
                       onClick={() => {
-                        window.history.back();
+                        handleWizardBack();
                       }}
                       className="text-sm text-[#b8860b] hover:text-[#8a6507] font-medium"
                     >
