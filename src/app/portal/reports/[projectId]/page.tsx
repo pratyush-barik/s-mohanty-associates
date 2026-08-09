@@ -84,9 +84,9 @@ export default async function ReportEditorPage({ params, searchParams }: { param
         <div className="card p-6 bg-[#f8f9fa] border border-[#e9ecef] grid md:grid-cols-4 gap-6">
           <div>
             <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1.5">Client & Property</p>
-            <p className="text-sm font-bold text-[#0f2038]">{serviceRequest.contactName}</p>
-            <p className="text-xs text-[#6c757d]">{serviceRequest.propertyType} — {serviceRequest.purpose}</p>
-            <p className="text-xs text-[#6c757d] mt-1">{serviceRequest.propertyAddress}</p>
+            <p className="text-sm font-bold text-[#0f2038]">{serviceRequest?.contactName}</p>
+            <p className="text-xs text-[#6c757d]">{serviceRequest?.propertyType} — {serviceRequest?.purpose}</p>
+            <p className="text-xs text-[#6c757d] mt-1">{serviceRequest?.propertyAddress}</p>
           </div>
           <div>
             <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1.5">Field Agent & Phone</p>
@@ -139,12 +139,12 @@ export default async function ReportEditorPage({ params, searchParams }: { param
               userRole={currentUser.role}
               bucketImages={mappedBucketImages}
               prefill={{
-                contactName: serviceRequest.contactName,
-                contactPhone: serviceRequest.contactPhone,
-                contactEmail: serviceRequest.contactEmail,
-                propertyAddress: serviceRequest.propertyAddress,
-                propertyType: serviceRequest.propertyType,
-                purpose: serviceRequest.purpose,
+                contactName: serviceRequest?.contactName,
+                contactPhone: serviceRequest?.contactPhone,
+                contactEmail: serviceRequest?.contactEmail,
+                propertyAddress: serviceRequest?.propertyAddress,
+                propertyType: serviceRequest?.propertyType,
+                purpose: serviceRequest?.purpose,
               }}
             />
           ) : builderFromQuery === "IBBI_IVS" || (builderFromQuery === undefined && (report?.data as any)?.organisationTemplate === "IBBI_IVS") ? (
@@ -156,12 +156,12 @@ export default async function ReportEditorPage({ params, searchParams }: { param
               userRole={currentUser.role}
               bucketImages={mappedBucketImages}
               prefill={{
-                contactName: serviceRequest.contactName,
-                contactPhone: serviceRequest.contactPhone,
-                contactEmail: serviceRequest.contactEmail,
-                propertyAddress: serviceRequest.propertyAddress,
-                propertyType: serviceRequest.propertyType,
-                purpose: serviceRequest.purpose,
+                contactName: serviceRequest?.contactName,
+                contactPhone: serviceRequest?.contactPhone,
+                contactEmail: serviceRequest?.contactEmail,
+                propertyAddress: serviceRequest?.propertyAddress,
+                propertyType: serviceRequest?.propertyType,
+                purpose: serviceRequest?.purpose,
               }}
             />
           ) : (
@@ -173,12 +173,12 @@ export default async function ReportEditorPage({ params, searchParams }: { param
               userRole={currentUser.role}
               bucketImages={mappedBucketImages}
               prefill={{
-                contactName: serviceRequest.contactName,
-                contactPhone: serviceRequest.contactPhone,
-                contactEmail: serviceRequest.contactEmail,
-                propertyAddress: serviceRequest.propertyAddress,
-                propertyType: serviceRequest.propertyType,
-                purpose: serviceRequest.purpose,
+                contactName: serviceRequest?.contactName,
+                contactPhone: serviceRequest?.contactPhone,
+                contactEmail: serviceRequest?.contactEmail,
+                propertyAddress: serviceRequest?.propertyAddress,
+                propertyType: serviceRequest?.propertyType,
+                purpose: serviceRequest?.purpose,
               }}
             />
           )}

@@ -1129,7 +1129,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       } catch (err) {
         console.error(err);
       }
-      router.push(window.location.pathname);
+      window.location.reload();
     }
   };
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
