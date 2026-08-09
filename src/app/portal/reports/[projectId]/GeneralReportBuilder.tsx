@@ -956,15 +956,15 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
   const handleResetWizard = async () => {
     if (confirm("Are you sure you want to change report parameters? This will permanently clear all your typed data and reset the report.")) {
       const clearedFields = { ...DEFAULT_FIELDS, clientType: "", organisationTemplate: "", institutionCategory: "", organisationSubTemplate: "" };
-      setFields(clearedFields as any);
+      setLoading(true);
       try {
         await saveReportDraft(projectId, clearedFields);
-        bypassUnloadRef.current = true;
-        window.location.href = window.location.pathname;
+        router.replace(window.location.pathname);
+        router.refresh();
       } catch (err) {
         console.error(err);
-        bypassUnloadRef.current = true;
-        window.location.href = window.location.pathname;
+      } finally {
+        setLoading(false);
       }
     }
   };

@@ -467,15 +467,15 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
   const handleResetWizard = async () => {
     if (confirm("Are you sure you want to change report parameters? This will permanently clear all your typed data and reset the report.")) {
       const clearedFields = { ...DEFAULT_FIELDS, clientType: "", organisationTemplate: "", institutionCategory: "", organisationSubTemplate: "" };
-      setFields(clearedFields as any);
+      setLoading(true);
       try {
         await saveReportDraft(projectId, clearedFields);
-        bypassUnloadRef.current = true;
-        window.location.href = window.location.pathname;
+        router.replace(window.location.pathname);
+        router.refresh();
       } catch (err) {
         console.error(err);
-        bypassUnloadRef.current = true;
-        window.location.href = window.location.pathname;
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -828,6 +828,15 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
   // ═══════════════════════════════════════════════════════════════════
   // RENDER
   // ═══════════════════════════════════════════════════════════════════
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[500px] p-8 bg-gradient-to-br from-[#f8f9fa] to-[#e9ecef] rounded-2xl border border-neutral-200 shadow-md w-full">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#b8860b] border-t-transparent"></div>
+        <p className="mt-4 text-sm font-bold text-[#0f2038]">Loading and saving layout configuration...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex gap-6 items-start w-full" ref={reportRef}>
       {/* Main Form Column */}
