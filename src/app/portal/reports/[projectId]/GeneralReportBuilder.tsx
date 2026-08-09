@@ -1096,11 +1096,19 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
   };
 
   const handleResetWizard = () => {
-    if (confirm('Are you sure you want to change report parameters?')) {
-      if (userRole === 'MANAGER' || userRole === 'OWNER') {
-        router.push(`/portal/projects/${projectId}`);
-      } else {
-        router.push('/portal/report-agent');
+    if (confirm('Are you sure you want to change report parameters? (This will not clear your typed text, but will change the PDF template layout category)')) {
+      setFields(prev => ({
+        ...prev,
+        clientType: '',
+        organisationTemplate: '',
+        institutionCategory: '',
+      }));
+      setSelectingOrg(false);
+      setSelectedCategory(null);
+      setShowBankList(false);
+      setWizardStep('setup');
+      if (typeof window !== 'undefined') {
+        window.history.replaceState({ step: 'type' }, '');
       }
     }
   };
