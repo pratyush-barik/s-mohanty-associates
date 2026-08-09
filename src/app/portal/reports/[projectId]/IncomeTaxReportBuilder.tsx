@@ -411,7 +411,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
 
   useEffect(() => {
     const handlePopState = () => {
-      window.history.pushState(null, "", window.location.href);
+      window.history.replaceState(null, "", window.location.href);
     };
 
     window.addEventListener("popstate", handlePopState);
@@ -472,10 +472,12 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
   const isManagerOrOwner = userRole === 'MANAGER' || userRole === 'OWNER';
   const isLandOnly = !fields.propertyType.includes('BUILDING');
 
-  const handleResetWizard = () => {
-    bypassUnloadRef.current = true;
-      saveReportDraft(projectId, { ...DEFAULT_FIELDS, clientType: "", organisationTemplate: "", institutionCategory: "", organisationSubTemplate: "" }).catch(e => console.error(e));
+  const handleResetWizard = async () => {
+    if (confirm("Are you sure you want to change report parameters? This will permanently clear all your typed data and reset the report.")) {
+      bypassUnloadRef.current = true;
+      await saveReportDraft(projectId, { ...DEFAULT_FIELDS, clientType: "", organisationTemplate: "", institutionCategory: "", organisationSubTemplate: "" });
       window.location.href = window.location.pathname;
+    }
   };
   const handleChange = useCallback((field: keyof IncomeTaxFields, value: any) => {
     setFields(prev => ({ ...prev, [field]: value }));

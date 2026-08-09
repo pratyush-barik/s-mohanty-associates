@@ -386,7 +386,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
   useEffect(() => {
     const handlePopState = () => {
-      window.history.pushState(null, "", window.location.href);
+      window.history.replaceState(null, "", window.location.href);
     };
 
     window.addEventListener("popstate", handlePopState);
@@ -482,10 +482,12 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
   const isManagerOrOwner = userRole === 'MANAGER' || userRole === 'OWNER';
 
-  const handleResetWizard = () => {
-    bypassUnloadRef.current = true;
-      saveReportDraft(projectId, { ...DEFAULT_FIELDS, clientType: "", organisationTemplate: "", institutionCategory: "", organisationSubTemplate: "" }).catch(e => console.error(e));
+  const handleResetWizard = async () => {
+    if (confirm("Are you sure you want to change report parameters? This will permanently clear all your typed data and reset the report.")) {
+      bypassUnloadRef.current = true;
+      await saveReportDraft(projectId, { ...DEFAULT_FIELDS, clientType: "", organisationTemplate: "", institutionCategory: "", organisationSubTemplate: "" });
       window.location.href = window.location.pathname;
+    }
   };
   const handleCancelSubmission = async () => {
     if (!confirm('Cancel this submission and return to drafting?')) return;
