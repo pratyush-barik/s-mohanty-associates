@@ -351,11 +351,11 @@ const FloatingNavigator = ({ isLandOnly, showLandAnnexure }: { isLandOnly: boole
     { id: 'section-5', title: '5. Construction' },
     { id: 'section-6', title: '6. Valuation' },
     ...(!isLandOnly ? [{ id: 'section-7', title: '7. Tech Details' }] : []),
-    { id: 'section-8', title: `${isLandOnly ? '7' : '8'}. Calc Table` },
-    { id: 'section-9', title: `${isLandOnly ? '8' : '9'}. Abstract` },
-    { id: 'section-10', title: `${isLandOnly ? '9' : '10'}. Photos` },
-    { id: 'section-11', title: `${isLandOnly ? '10' : '11'}. Remarks` },
-    { id: 'section-12', title: `${isLandOnly ? '11' : '12'}. Certificate` },
+    { id: `section-${isLandOnly ? '7' : '8'}`, title: `${isLandOnly ? '7' : '8'}. Calc Table` },
+    { id: `section-${isLandOnly ? '8' : '9'}`, title: `${isLandOnly ? '8' : '9'}. Abstract` },
+    { id: `section-${isLandOnly ? '9' : '10'}`, title: `${isLandOnly ? '9' : '10'}. Photos` },
+    { id: `section-${isLandOnly ? '10' : '11'}`, title: `${isLandOnly ? '10' : '11'}. Remarks` },
+    { id: `section-${isLandOnly ? '11' : '12'}`, title: `${isLandOnly ? '11' : '12'}. Certificate` },
   ];
 
   const scrollTo = (id: string) => {
