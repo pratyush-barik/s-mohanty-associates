@@ -433,6 +433,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
 
   const [fields, setFields] = useState<IncomeTaxFields>(merged);
   const [loading, setLoading] = useState(false);
+  const [loadingText, setLoadingText] = useState('Loading...');
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -467,6 +468,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
   const handleResetWizard = async () => {
     if (confirm("Are you sure you want to change report parameters? This will permanently clear all your typed data and reset the report.")) {
       const clearedFields = { ...DEFAULT_FIELDS, clientType: "", organisationTemplate: "", institutionCategory: "", organisationSubTemplate: "" };
+      setLoadingText("Resetting layout parameters...");
       setLoading(true);
       try {
         const res = await saveReportDraft(projectId, clearedFields);
@@ -837,7 +839,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
     return (
       <div className="flex flex-col items-center justify-center min-h-[500px] p-8 bg-gradient-to-br from-[#f8f9fa] to-[#e9ecef] rounded-2xl border border-neutral-200 shadow-md w-full">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#b8860b] border-t-transparent"></div>
-        <p className="mt-4 text-sm font-bold text-[#0f2038]">Loading and saving layout configuration...</p>
+        <p className="mt-4 text-sm font-bold text-[#0f2038]">{loadingText}</p>
       </div>
     );
   }
