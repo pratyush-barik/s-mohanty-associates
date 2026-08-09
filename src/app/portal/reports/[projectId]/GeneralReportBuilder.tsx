@@ -790,9 +790,12 @@ interface GeneralReportBuilderProps {
     contactPhone?: string;
     contactEmail?: string;
   };
+  onWizardComplete?: () => void;
+  onNavigateToBuilder?: (target: 'ibbi' | 'income_tax') => void;
+  onResetWizard?: () => void;
 }
 
-export default function GeneralReportBuilder({ projectId, projectCode, initialFields, status, userRole = 'REPORT_EMPLOYEE', bucketImages = [], prefill }: GeneralReportBuilderProps) {
+export default function GeneralReportBuilder({ projectId, projectCode, initialFields, status, userRole = 'REPORT_EMPLOYEE', bucketImages = [], prefill, onWizardComplete, onNavigateToBuilder, onResetWizard }: GeneralReportBuilderProps) {
   const mappedServiceId = prefill?.propertyType
     ? SERVICES_LIST.find(s => s.title.toLowerCase() === prefill.propertyType?.toLowerCase())?.id
     : undefined;
@@ -1121,16 +1124,12 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     if (confirm('Are you sure you want to change report parameters? This will permanently clear all your typed data and reset the report.')) {
       const clearedFields = { ...DEFAULT_FIELDS, clientType: '', organisationTemplate: '', institutionCategory: '', organisationSubTemplate: '' };
       setFields(clearedFields as any);
-      setSelectingOrg(false);
-      setSelectedCategory(null);
-      setShowBankList(false);
-      setWizardStep('setup');
       try {
         await saveReportDraft(projectId, clearedFields);
       } catch (err) {
         console.error(err);
       }
-      window.location.href = window.location.href;
+      onResetWizard?.();
     }
   };
 

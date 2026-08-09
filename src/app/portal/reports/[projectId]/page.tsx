@@ -2,9 +2,7 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
-import GeneralReportBuilder from './GeneralReportBuilder';
-import IBBIReportBuilder from './IBBIReportBuilder';
-import IncomeTaxReportBuilder from './IncomeTaxReportBuilder';
+import ReportBuilderRouter from './ReportBuilderRouter';
 
 export default async function ReportEditorPage({ params }: { params: Promise<{ projectId: string }> }) {
   try {
