@@ -827,24 +827,26 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
       <div className="flex-1 min-w-0 space-y-4">
 
         {/* Template Info Banner */}
-        <div className="card p-4 bg-gradient-to-r from-[#f8f9fa] to-[#e9ecef] border border-[#c8d6e5] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md rounded-full sticky top-2 z-50">
-          <div className="flex flex-col xl:flex-row xl:items-center gap-3">
-            <span className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider pl-2">Active Configuration</span>
+        <div className="p-4 bg-white border border-[#dee2e6] flex flex-row items-center justify-between gap-4 shadow-md rounded-2xl sticky top-2 z-50">
+          <div className="flex items-center gap-4">
+            <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider leading-tight min-w-[90px] select-none">
+              Active<br />Configuration
+            </div>
             <div className="flex flex-wrap gap-2">
-              <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5">
+              <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
                 {fields.clientType === 'organisation' ? 'Organisation / Bank' : 'Individual'}
               </span>
               {fields.clientType === 'organisation' && (
-                <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5">
+                <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
                   <span className="w-1.5 h-1.5 rounded-full bg-cyan-500"></span>
                   {fields.institutionCategory || 'Income Tax'}
                 </span>
               )}
-              <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5">
+              <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
                 Service: {(SERVICES_LIST.find(s => s.id === fields.serviceType)?.title || fields.serviceType || 'Income Tax Valuation').replace(/_/g, ' ')}
               </span>
-              <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5">
+              <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
                 Subject: {(fields.subjectType || 'Property').replace(/_/g, ' ')}
               </span>
             </div>
@@ -852,7 +854,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           <button
             type="button"
             onClick={handleResetWizard}
-            className="text-xs text-[#b8860b] hover:text-[#8a6507] hover:underline font-bold transition-colors shrink-0 pr-2"
+            className="text-xs text-[#b8860b] hover:text-[#8a6507] hover:underline font-bold transition-colors shrink-0 pr-2 uppercase"
           >
             Change Parameters
           </button>
