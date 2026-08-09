@@ -3,9 +3,17 @@
 import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 
-const GeneralReportBuilder = dynamic(() => import('./GeneralReportBuilder'), { ssr: false });
-const IBBIReportBuilder = dynamic(() => import('./IBBIReportBuilder'), { ssr: false });
-const IncomeTaxReportBuilder = dynamic(() => import('./IncomeTaxReportBuilder'), { ssr: false });
+function BuilderLoading() {
+  return (
+    <div className="flex items-center justify-center h-64">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#b8860b]"></div>
+    </div>
+  );
+}
+
+const GeneralReportBuilder = dynamic(() => import('./GeneralReportBuilder'), { ssr: false, loading: () => <BuilderLoading /> });
+const IBBIReportBuilder = dynamic(() => import('./IBBIReportBuilder'), { ssr: false, loading: () => <BuilderLoading /> });
+const IncomeTaxReportBuilder = dynamic(() => import('./IncomeTaxReportBuilder'), { ssr: false, loading: () => <BuilderLoading /> });
 
 interface BuilderSelectorProps {
   initialFields: any;
