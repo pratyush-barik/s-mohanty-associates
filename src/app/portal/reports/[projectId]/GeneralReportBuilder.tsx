@@ -1112,20 +1112,27 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     handleChange('additionalAmenities', next.length > 0 ? next.join(', ') : 'Not Applicable');
   };
 
-  const handleResetWizard = () => {
-    if (confirm('Are you sure you want to change report parameters? (This will not clear your typed text, but will change the PDF template layout category)')) {
-      setFields(prev => ({
-        ...prev,
+  const handleResetWizard = async () => {
+    if (confirm('Are you sure you want to change report parameters? This will permanently clear all your typed data and reset the report.')) {
+      const clearedFields = {
         clientType: '',
         organisationTemplate: '',
         institutionCategory: '',
-      }));
+        organisationSubTemplate: '',
+      };
+      setFields(clearedFields as any);
       setSelectingOrg(false);
       setSelectedCategory(null);
       setShowBankList(false);
       setWizardStep('setup');
-      if (typeof window !== 'undefined') {
-        window.history.replaceState({ step: 'type' }, '');
+      setLoading(true);
+      try {
+        await saveReportDraft(projectId, clearedFields);
+        router.refresh();
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
     }
   };

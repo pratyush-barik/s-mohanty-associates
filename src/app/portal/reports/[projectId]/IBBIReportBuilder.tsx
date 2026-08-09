@@ -461,18 +461,17 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
   const isManagerOrOwner = userRole === 'MANAGER' || userRole === 'OWNER';
 
   const handleResetWizard = async () => {
-    if (confirm('Are you sure you want to change report parameters? (This will not clear your typed text, but will reset the template layout)')) {
-      const updatedFields = {
-        ...fields,
+    if (confirm('Are you sure you want to change report parameters? This will permanently clear all your typed data and reset the report.')) {
+      const clearedFields = {
         clientType: '',
         organisationTemplate: '',
         institutionCategory: '',
         organisationSubTemplate: '',
       };
-      setFields(updatedFields);
+      setFields(clearedFields as any);
       setLoading(true);
       try {
-        await saveReportDraft(projectId, updatedFields);
+        await saveReportDraft(projectId, clearedFields);
         router.refresh();
       } catch (err) {
         console.error(err);
