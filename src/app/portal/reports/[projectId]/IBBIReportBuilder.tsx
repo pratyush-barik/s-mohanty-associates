@@ -385,8 +385,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
   const router = useRouter();
 
   useEffect(() => {
-    const handlePopState = (event: PopStateEvent) => {
-      event.preventDefault();
+    const handlePopState = () => {
       window.history.pushState(null, "", window.location.href);
     };
 
@@ -487,7 +486,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
   const handleResetWizard = () => {
     bypassUnloadRef.current = true;
-    window.location.pathname = window.location.pathname;
+      window.location.href = window.location.pathname;
   };
   const handleCancelSubmission = async () => {
     if (!confirm('Cancel this submission and return to drafting?')) return;

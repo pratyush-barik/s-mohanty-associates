@@ -757,8 +757,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
   useEffect(() => {
     if (wizardStep !== 'completed') return;
 
-    const handlePopState = (event: PopStateEvent) => {
-      event.preventDefault();
+    const handlePopState = () => {
       window.history.pushState(null, "", window.location.href);
     };
 
@@ -969,7 +968,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
   const handleResetWizard = () => {
     if (confirm("Are you sure you want to change report parameters? This will permanently clear all your typed data and reset the report.")) {
       bypassUnloadRef.current = true;
-      window.location.pathname = window.location.pathname;
+      window.location.href = window.location.pathname;
     }
   };
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');

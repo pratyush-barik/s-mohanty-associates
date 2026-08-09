@@ -410,8 +410,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
   const router = useRouter();
 
   useEffect(() => {
-    const handlePopState = (event: PopStateEvent) => {
-      event.preventDefault();
+    const handlePopState = () => {
       window.history.pushState(null, "", window.location.href);
     };
 
@@ -477,7 +476,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
 
   const handleResetWizard = () => {
     bypassUnloadRef.current = true;
-    window.location.pathname = window.location.pathname;
+      window.location.href = window.location.pathname;
   };
   const handleChange = useCallback((field: keyof IncomeTaxFields, value: any) => {
     setFields(prev => ({ ...prev, [field]: value }));

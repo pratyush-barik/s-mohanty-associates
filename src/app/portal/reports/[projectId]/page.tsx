@@ -2,7 +2,6 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
-import BuilderErrorBoundary from './BuilderErrorBoundary';
 import BuilderSelector from './BuilderSelector';
 
 export default async function ReportEditorPage({ params, searchParams }: { params: Promise<{ projectId: string }>, searchParams: Promise<{ builder?: string }> }) {
@@ -128,8 +127,7 @@ export default async function ReportEditorPage({ params, searchParams }: { param
         </div>
 
         {/* Report Builder (Full Width) */}
-        <BuilderErrorBoundary>
-          <BuilderSelector
+        <BuilderSelector
               initialFields={report?.data || null}
               projectId={project.id}
               projectCode={project.projectCode}
@@ -146,7 +144,6 @@ export default async function ReportEditorPage({ params, searchParams }: { param
                 purpose: serviceRequest?.purpose,
               }}
             />
-        </BuilderErrorBoundary>
         </div>
       );
   } catch (error: any) {

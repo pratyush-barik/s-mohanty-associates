@@ -12,6 +12,7 @@ interface BuilderSelectorProps {
   status: string;
   userRole: string;
   bucketImages: any[];
+  builderQuery?: string;
   prefill: {
     contactName?: string;
     contactPhone?: string;
@@ -29,10 +30,11 @@ export default function BuilderSelector({
   status,
   userRole,
   bucketImages,
+  builderQuery,
   prefill,
 }: BuilderSelectorProps) {
   const searchParams = useSearchParams();
-  const builderFromQuery = searchParams.get('builder');
+  const builderFromQuery = builderQuery || searchParams.get('builder');
   const orgTemplate = initialFields?.organisationTemplate;
 
   if (
