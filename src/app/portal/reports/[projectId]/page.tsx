@@ -128,22 +128,25 @@ export default async function ReportEditorPage({ params, searchParams }: { param
         </div>
 
         {/* Report Builder (Full Width) */}
-        <BuilderSelector
-            initialFields={report?.data || null}
-            projectId={project.id}
-            projectCode={project.projectCode}
-            status={project.status}
-            userRole={currentUser.role}
-            bucketImages={mappedBucketImages}
-            prefill={{
-              contactName: serviceRequest?.contactName,
-              contactPhone: serviceRequest?.contactPhone,
-              contactEmail: serviceRequest?.contactEmail,
-              propertyAddress: serviceRequest?.propertyAddress,
-              propertyType: serviceRequest?.propertyType,
-              purpose: serviceRequest?.purpose,
-            }}
-          />
+        <BuilderErrorBoundary>
+          <BuilderSelector
+              initialFields={report?.data || null}
+              projectId={project.id}
+              projectCode={project.projectCode}
+              status={project.status}
+              userRole={currentUser.role}
+              bucketImages={mappedBucketImages}
+              builderQuery={builderFromQuery}
+              prefill={{
+                contactName: serviceRequest?.contactName,
+                contactPhone: serviceRequest?.contactPhone,
+                contactEmail: serviceRequest?.contactEmail,
+                propertyAddress: serviceRequest?.propertyAddress,
+                propertyType: serviceRequest?.propertyType,
+                purpose: serviceRequest?.purpose,
+              }}
+            />
+        </BuilderErrorBoundary>
         </div>
       );
   } catch (error: any) {

@@ -929,6 +929,13 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
   const reportRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
+  const [selectingOrg, setSelectingOrg] = useState(false);
+  const [wizardStep, setWizardStep] = useState<'setup' | 'completed'>(initialFields?.clientType ? 'completed' : 'setup');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [showBankList, setShowBankList] = useState(false);
+  const [selectedBank, setSelectedBank] = useState<string | null>(null);
+  const [showSubList, setShowSubList] = useState(false);
+
   useEffect(() => {
     if (wizardStep !== 'completed') return;
 
@@ -941,12 +948,6 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     return () => window.removeEventListener("popstate", handlePopState);
   }, [wizardStep]);
 
-  const [selectingOrg, setSelectingOrg] = useState(false);
-  const [wizardStep, setWizardStep] = useState<'setup' | 'completed'>(initialFields?.clientType ? 'completed' : 'setup');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [showBankList, setShowBankList] = useState(false);
-  const [selectedBank, setSelectedBank] = useState<string | null>(null);
-  const [showSubList, setShowSubList] = useState(false);
 
   useEffect(() => {
     if (wizardStep !== 'setup') return;

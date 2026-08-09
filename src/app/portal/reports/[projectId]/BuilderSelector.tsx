@@ -1,6 +1,5 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 
 function BuilderLoading() {
@@ -22,6 +21,7 @@ interface BuilderSelectorProps {
   status: string;
   userRole: string;
   bucketImages: any[];
+  builderQuery?: string | null;
   prefill: {
     contactName?: string;
     contactPhone?: string;
@@ -39,10 +39,10 @@ export default function BuilderSelector({
   status,
   userRole,
   bucketImages,
+  builderQuery,
   prefill,
 }: BuilderSelectorProps) {
-  const searchParams = useSearchParams();
-  const builderFromQuery = searchParams.get('builder');
+  const builderFromQuery = builderQuery;
   const orgTemplate = initialFields?.organisationTemplate;
 
   if (
