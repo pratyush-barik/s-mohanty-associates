@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
@@ -813,7 +813,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
 
   const merged = {
     ...DEFAULT_FIELDS,
-    ...(initialFields || {}),
+    ...(typeof initialFields === 'object' && initialFields !== null ? initialFields : {}),
     refNo: initialFields?.refNo || projectCode || DEFAULT_FIELDS.refNo,
     to: initialFields?.to || DEFAULT_FIELDS.to,
     city: initialFields?.city || DEFAULT_FIELDS.city,
@@ -917,8 +917,10 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
   }, [projectId]);
 
   useEffect(() => {
-    const handleBeforeUnload = () => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       saveReportDraft(projectId, fields).catch(e => console.error(e));
+      e.preventDefault();
+      e.returnValue = "";
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
@@ -926,6 +928,19 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
 
   const reportRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (wizardStep !== 'completed') return;
+
+    const handlePopState = (event: PopStateEvent) => {
+      event.preventDefault();
+      window.history.pushState(null, "", window.location.href);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [wizardStep]);
 
   const [selectingOrg, setSelectingOrg] = useState(false);
   const [wizardStep, setWizardStep] = useState<'setup' | 'completed'>(initialFields?.clientType ? 'completed' : 'setup');
@@ -989,7 +1004,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       try {
         await saveReportDraft(projectId, updatedFields);
         const builderParam = updatedFields.organisationTemplate === 'IBBI_IVS' ? 'IBBI_IVS' : 'INCOME_TAX';
-        router.push(`?builder=${builderParam}`);
+        window.location.href = `${window.location.pathname}?builder=${builderParam}`;
       } catch (e) {
         console.error("Auto-save draft failed:", e);
       }
@@ -1121,15 +1136,15 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
   };
 
   const handleResetWizard = async () => {
-    if (confirm('Are you sure you want to change report parameters? This will permanently clear all your typed data and reset the report.')) {
-      const clearedFields = { ...DEFAULT_FIELDS, clientType: '', organisationTemplate: '', institutionCategory: '', organisationSubTemplate: '' };
+    if (confirm("Are you sure you want to change report parameters? This will permanently clear all your typed data and reset the report.")) {
+      const clearedFields = { ...DEFAULT_FIELDS, clientType: "", organisationTemplate: "", institutionCategory: "", organisationSubTemplate: "" };
       setFields(clearedFields as any);
       try {
         await saveReportDraft(projectId, clearedFields);
       } catch (err) {
         console.error(err);
       }
-      window.location.reload();
+      router.push(pathname);
     }
   };
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import { SERVICES_LIST } from './GeneralReportBuilder';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
@@ -408,11 +408,22 @@ interface IncomeTaxReportBuilderProps {
 
 export default function IncomeTaxReportBuilder({ projectId, projectCode, initialFields, status, userRole = 'REPORT_EMPLOYEE', bucketImages = [], prefill }: IncomeTaxReportBuilderProps) {
   const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      event.preventDefault();
+      window.history.pushState(null, "", window.location.href);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
   const reportRef = useRef<HTMLDivElement>(null);
 
   const merged: IncomeTaxFields = {
     ...DEFAULT_FIELDS,
-    ...(initialFields || {}),
+    ...(typeof initialFields === 'object' && initialFields !== null ? initialFields : {}),
     refNo: initialFields?.refNo || projectCode || DEFAULT_FIELDS.refNo,
     ownerName: initialFields?.ownerName || prefill?.contactName || DEFAULT_FIELDS.ownerName,
     ownerAddress: initialFields?.ownerAddress || prefill?.propertyAddress || DEFAULT_FIELDS.ownerAddress,
@@ -443,8 +454,10 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
   const [bucketPickerAgent, setBucketPickerAgent] = useState<string | null>(null);
 
   useEffect(() => {
-    const handleBeforeUnload = () => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       saveReportDraft(projectId, fields).catch(e => console.error(e));
+      e.preventDefault();
+      e.returnValue = "";
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
@@ -459,19 +472,17 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
   const isLandOnly = !fields.propertyType.includes('BUILDING');
 
   const handleResetWizard = async () => {
-    if (confirm('Are you sure you want to change report parameters? This will permanently clear all your typed data and reset the report.')) {
-      const clearedFields = { ...DEFAULT_FIELDS, clientType: '', organisationTemplate: '', institutionCategory: '', organisationSubTemplate: '' };
+    if (confirm("Are you sure you want to change report parameters? This will permanently clear all your typed data and reset the report.")) {
+      const clearedFields = { ...DEFAULT_FIELDS, clientType: "", organisationTemplate: "", institutionCategory: "", organisationSubTemplate: "" };
       setFields(clearedFields as any);
       try {
         await saveReportDraft(projectId, clearedFields);
       } catch (err) {
         console.error(err);
       }
-      window.location.reload();
+      router.push(pathname);
     }
   };
-
-
   const handleChange = useCallback((field: keyof IncomeTaxFields, value: any) => {
     setFields(prev => ({ ...prev, [field]: value }));
   }, []);
