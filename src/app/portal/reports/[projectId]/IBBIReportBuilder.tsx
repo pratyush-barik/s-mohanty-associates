@@ -410,6 +410,14 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
   const [bucketSelected, setBucketSelected] = useState<Set<string>>(new Set());
   const [bucketPickerAgent, setBucketPickerAgent] = useState<string | null>(null);
 
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      saveReportDraft(projectId, fields).catch(e => console.error(e));
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [projectId, fields]);
+
   const handleChange = useCallback((field: string, value: any) => {
     setFields(prev => ({ ...prev, [field]: value }));
   }, []);
@@ -462,18 +470,14 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
   const handleResetWizard = async () => {
     if (confirm('Are you sure you want to change report parameters? This will permanently clear all your typed data and reset the report.')) {
-      const clearedFields = {
-        clientType: '',
-        organisationTemplate: '',
-        institutionCategory: '',
-        organisationSubTemplate: '',
-      };
+      const clearedFields = { ...DEFAULT_FIELDS, clientType: '', organisationTemplate: '', institutionCategory: '', organisationSubTemplate: '' };
       setFields(clearedFields as any);
       try {
         await saveReportDraft(projectId, clearedFields);
       } catch (err) {
         console.error(err);
       }
+      window.location.href = window.location.href;
     }
   };
 

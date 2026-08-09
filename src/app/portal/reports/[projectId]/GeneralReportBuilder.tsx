@@ -913,6 +913,14 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     }
   }, [projectId]);
 
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      saveReportDraft(projectId, fields).catch(e => console.error(e));
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [projectId, fields]);
+
   const reportRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -982,8 +990,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     try {
       await saveReportDraft(projectId, updatedFields);
       if (isSpecialTemplate) {
-        setWizardStep('completed');
-        setLoading(false);
+        window.location.href = window.location.href;
       }
     } catch (e) {
       console.error("Auto-save draft failed:", e);
@@ -1115,12 +1122,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
 
   const handleResetWizard = async () => {
     if (confirm('Are you sure you want to change report parameters? This will permanently clear all your typed data and reset the report.')) {
-      const clearedFields = {
-        clientType: '',
-        organisationTemplate: '',
-        institutionCategory: '',
-        organisationSubTemplate: '',
-      };
+      const clearedFields = { ...DEFAULT_FIELDS, clientType: '', organisationTemplate: '', institutionCategory: '', organisationSubTemplate: '' };
       setFields(clearedFields as any);
       setSelectingOrg(false);
       setSelectedCategory(null);
@@ -1131,6 +1133,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       } catch (err) {
         console.error(err);
       }
+      window.location.href = window.location.href;
     }
   };
 

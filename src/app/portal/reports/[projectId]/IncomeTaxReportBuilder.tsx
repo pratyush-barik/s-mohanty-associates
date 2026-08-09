@@ -442,6 +442,14 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
   const [bucketSelected, setBucketSelected] = useState<Set<string>>(new Set());
   const [bucketPickerAgent, setBucketPickerAgent] = useState<string | null>(null);
 
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      saveReportDraft(projectId, fields).catch(e => console.error(e));
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [projectId, fields]);
+
   // Rework Modal State
   const [showReworkModal, setShowReworkModal] = useState(false);
   const [reworkComment, setReworkComment] = useState('');
@@ -452,18 +460,14 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
 
   const handleResetWizard = async () => {
     if (confirm('Are you sure you want to change report parameters? This will permanently clear all your typed data and reset the report.')) {
-      const clearedFields = {
-        clientType: '',
-        organisationTemplate: '',
-        institutionCategory: '',
-        organisationSubTemplate: '',
-      };
+      const clearedFields = { ...DEFAULT_FIELDS, clientType: '', organisationTemplate: '', institutionCategory: '', organisationSubTemplate: '' };
       setFields(clearedFields as any);
       try {
         await saveReportDraft(projectId, clearedFields);
       } catch (err) {
         console.error(err);
       }
+      window.location.href = window.location.href;
     }
   };
 
