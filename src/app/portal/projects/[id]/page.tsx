@@ -365,6 +365,9 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
       </div>
     );
   } catch (error: any) {
+    if (error?.message === 'NEXT_REDIRECT' || error?.message === 'NEXT_NOT_FOUND' || error?.digest?.startsWith?.('NEXT_')) {
+      throw error;
+    }
     return (
       <div className="p-12 text-center flex flex-col items-center justify-center h-full">
         <div className="bg-rose-50 text-rose-800 p-8 rounded-2xl border border-rose-200">
