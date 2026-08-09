@@ -163,6 +163,10 @@ interface IncomeTaxFields {
   // ── Meta ──
   clientType: string;
   organisationTemplate: string;
+  institutionCategory?: string;
+  serviceType?: string;
+  subjectType?: string;
+  valuationLayout?: string;
   reworkNotes?: string;
   [key: string]: any;
 }
@@ -417,8 +421,12 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
     extraItems: Array.isArray(initialFields?.extraItems) ? initialFields.extraItems : DEFAULT_FIELDS.extraItems,
     valuationBullets: Array.isArray(initialFields?.valuationBullets) ? initialFields.valuationBullets : DEFAULT_FIELDS.valuationBullets,
     landAnnexureRows: Array.isArray(initialFields?.landAnnexureRows) ? initialFields.landAnnexureRows : DEFAULT_FIELDS.landAnnexureRows,
-    clientType: 'organisation',
-    organisationTemplate: 'INCOME_TAX',
+    clientType: initialFields?.clientType || 'organisation',
+    organisationTemplate: initialFields?.organisationTemplate || 'INCOME_TAX',
+    institutionCategory: initialFields?.institutionCategory || 'Income Tax Department',
+    serviceType: initialFields?.serviceType || 'Income Tax Valuation',
+    subjectType: initialFields?.subjectType || prefill?.propertyType || 'Residential Property',
+    valuationLayout: initialFields?.valuationLayout || 'land_building',
   };
 
   const [fields, setFields] = useState<IncomeTaxFields>(merged);
@@ -440,6 +448,13 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
   const isManagerOrOwner = userRole === 'MANAGER' || userRole === 'OWNER';
   const isLandOnly = !fields.propertyType.includes('BUILDING');
+
+  const handleResetWizard = () => {
+    if (confirm('Are you sure you want to change report parameters? You will be redirected to the Project Dashboard.')) {
+      router.push(`/portal/projects/${projectId}`);
+    }
+  };
+
 
   const handleChange = useCallback((field: keyof IncomeTaxFields, value: any) => {
     setFields(prev => ({ ...prev, [field]: value }));
@@ -796,29 +811,39 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
       <div className="flex-1 min-w-0 space-y-4">
 
         {/* Template Info Banner */}
-        <div className="card p-4 bg-gradient-to-r from-[#f8f9fa] to-[#e9ecef] border border-[#c8d6e5] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md rounded-xl sticky top-2 z-50">
+        <div className="card p-4 bg-gradient-to-r from-[#f8f9fa] to-[#e9ecef] border border-[#c8d6e5] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md rounded-full sticky top-2 z-50">
           <div className="flex flex-col xl:flex-row xl:items-center gap-3">
-            <span className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider">Active Configuration</span>
+            <span className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider pl-2">Active Configuration</span>
             <div className="flex flex-wrap gap-2">
-              <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm flex items-center gap-1.5">
+              <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                Income Tax Report
+                {fields.clientType === 'organisation' ? 'Organisation / Bank' : 'Individual'}
               </span>
-              <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm">
-                {fields.propertyType || 'Not Set'}
-              </span>
-              {fields.isReverseCalculation && (
-                <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm">
-                  Reverse CII Method
+              {fields.clientType === 'organisation' && (
+                <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-500"></span>
+                  {fields.institutionCategory || 'Income Tax'}
                 </span>
               )}
-              {isLandOnly && (
-                <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm">
-                  Land Only
-                </span>
-              )}
+              <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5">
+                Service: {fields.serviceType || 'Income Tax Valuation'}
+              </span>
+              <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5">
+                Subject: {fields.subjectType || 'Property'}
+              </span>
+              <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5">
+                <span className={`w-1.5 h-1.5 rounded-full ${fields.valuationLayout === 'apartment' ? 'bg-purple-500' : 'bg-green-500'}`}></span>
+                {fields.valuationLayout === 'apartment' ? 'Flat / Apartment' : 'Land & Building'}
+              </span>
             </div>
           </div>
+          <button
+            type="button"
+            onClick={handleResetWizard}
+            className="text-xs text-[#b8860b] hover:text-[#8a6507] hover:underline font-bold transition-colors shrink-0 pr-2"
+          >
+            Change Parameters
+          </button>
         </div>
 
         {/* Rework Banner */}
@@ -1475,20 +1500,20 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
         </Section>
 
         {/* ═══ ACTION BUTTONS ═══ */}
-        <div className="flex flex-wrap gap-4 pt-4 items-center w-full">
+        <div className="flex flex-wrap gap-4 pt-4 items-center w-full pb-6">
           {status === 'COMPLETED' && (
-            <div className="w-full p-4 rounded-xl bg-green-50 border border-green-200 text-green-800 font-bold flex items-center gap-2">
+            <div className="w-full p-4 rounded-full bg-green-50 border border-green-200 text-green-800 font-bold flex items-center gap-2">
               <span>✅</span> Verified and Completed (Pushed to storage for client download)
             </div>
           )}
 
           {status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE' && (
-            <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 font-semibold mb-2">
+            <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-full bg-blue-50 border border-blue-200 text-blue-800 font-semibold mb-2">
               <span>⏳ Currently Under Manager Review.</span>
               <button
                 onClick={handleCancelSubmission}
                 disabled={loading}
-                className="px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg text-xs font-bold transition-colors"
+                className="px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-full text-xs font-bold transition-colors flex items-center gap-2"
               >
                 ↩️ Cancel Submission (Pull back to Draft)
               </button>
@@ -1500,7 +1525,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               <button
                 onClick={handleSaveDraft}
                 disabled={loading}
-                className="px-6 py-3 rounded-xl border-2 border-[#b8860b] text-[#b8860b] font-semibold text-sm hover:bg-[#b8860b]/5 transition-all disabled:opacity-50 flex items-center gap-2"
+                className="px-6 py-2.5 rounded-full border-2 border-yellow-600 text-yellow-600 font-bold text-sm hover:bg-yellow-50 transition-all disabled:opacity-50 flex items-center gap-2"
               >
                 {loading ? '⏳ Saving...' : '💾 Save Draft'}
               </button>
@@ -1508,7 +1533,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                 <button
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#b8860b] to-[#8b6914] text-white font-semibold text-sm hover:from-[#a07608] hover:to-[#6d5010] shadow-lg hover:shadow-xl transition-all disabled:opacity-50 flex items-center gap-2"
+                  className="px-6 py-2.5 rounded-full bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex items-center gap-2"
                 >
                   {loading ? '⏳ Submitting...' : '📤 Submit to Manager'}
                 </button>
@@ -1519,7 +1544,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           <button
             onClick={handlePreviewPDF}
             disabled={loading}
-            className="px-6 py-3 rounded-xl border-2 border-gray-400 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center gap-2"
+            className="px-6 py-2.5 rounded-full border border-gray-400 text-gray-700 font-bold text-sm hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center gap-2"
           >
             👁️ Preview PDF
           </button>
@@ -1527,7 +1552,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           <button
             onClick={handleDownloadPDF}
             disabled={loading}
-            className="px-6 py-3 rounded-xl border-2 border-gray-400 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center gap-2"
+            className="px-6 py-2.5 rounded-full border border-gray-400 text-gray-700 font-bold text-sm hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center gap-2"
           >
             📥 Download PDF
           </button>
@@ -1537,14 +1562,14 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               <button
                 onClick={handleReworkClick}
                 disabled={loading}
-                className="px-6 py-3 rounded-xl border-2 border-red-500 text-red-600 font-semibold text-sm hover:bg-red-50 transition-all disabled:opacity-50 flex items-center gap-2"
+                className="px-6 py-2.5 rounded-full border-2 border-red-500 text-red-600 font-bold text-sm hover:bg-red-50 transition-all disabled:opacity-50 flex items-center gap-2"
               >
                 ❌ Send for Rework
               </button>
               <button
                 onClick={handleFinalize}
                 disabled={loading}
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold text-sm hover:from-green-700 hover:to-green-800 shadow-lg hover:shadow-xl transition-all disabled:opacity-50 flex items-center gap-2"
+                className="px-6 py-2.5 rounded-full bg-green-600 text-white font-bold text-sm hover:bg-green-700 shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex items-center gap-2"
               >
                 ✅ Finalize & Share to Client
               </button>
