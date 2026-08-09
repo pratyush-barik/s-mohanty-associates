@@ -756,7 +756,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     if (wizardStep !== 'completed') return;
 
     const handlePopState = () => {
-      window.history.replaceState(null, "", window.location.href);
+      window.history.go(1);
     };
 
     window.addEventListener("popstate", handlePopState);
@@ -815,15 +815,10 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     const isSpecialTemplate = ['INCOME_TAX', 'IBBI_IVS'].includes(updatedFields.organisationTemplate || '');
     
     if (isSpecialTemplate) {
-      // For special templates, save draft and navigate to dedicated builder
-      try {
-        await saveReportDraft(projectId, updatedFields);
-        const builderParam = updatedFields.organisationTemplate === 'IBBI_IVS' ? 'IBBI_IVS' : 'INCOME_TAX';
-        bypassUnloadRef.current = true;
-        window.location.href = `${window.location.pathname}?builder=${builderParam}`;
-      } catch (e) {
-        console.error("Auto-save draft failed:", e);
-      }
+      saveReportDraft(projectId, updatedFields).catch(e => console.error("Auto-save draft failed:", e));
+      const builderParam = updatedFields.organisationTemplate === 'IBBI_IVS' ? 'IBBI_IVS' : 'INCOME_TAX';
+      bypassUnloadRef.current = true;
+      window.location.href = `${window.location.pathname}?builder=${builderParam}`;
     } else {
       // For general templates, update local state and show the form
       setFields(updatedFields);
@@ -963,10 +958,10 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     handleChange('additionalAmenities', next.length > 0 ? next.join(', ') : 'Not Applicable');
   };
 
-  const handleResetWizard = async () => {
+  const handleResetWizard = () => {
     if (confirm("Are you sure you want to change report parameters? This will permanently clear all your typed data and reset the report.")) {
       bypassUnloadRef.current = true;
-      await saveReportDraft(projectId, { ...DEFAULT_FIELDS, clientType: "", organisationTemplate: "", institutionCategory: "", organisationSubTemplate: "" });
+      saveReportDraft(projectId, { ...DEFAULT_FIELDS, clientType: "", organisationTemplate: "", institutionCategory: "", organisationSubTemplate: "" }).catch(e => console.error(e));
       window.location.href = window.location.pathname;
     }
   };
