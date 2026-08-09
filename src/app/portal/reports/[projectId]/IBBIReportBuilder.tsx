@@ -460,25 +460,9 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
   const isManagerOrOwner = userRole === 'MANAGER' || userRole === 'OWNER';
 
-  const handleResetWizard = async () => {
-    if (confirm('Are you sure you want to change report parameters? (This will not clear your typed text, but will reset the template layout)')) {
-      const updatedFields = {
-        ...fields,
-        clientType: '',
-        organisationTemplate: '',
-        institutionCategory: '',
-        organisationSubTemplate: '',
-      };
-      setFields(updatedFields);
-      setLoading(true);
-      try {
-        await saveReportDraft(projectId, updatedFields);
-        router.refresh();
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
+  const handleResetWizard = () => {
+    if (confirm('Are you sure you want to change report parameters? You will be redirected to the Report Agent Dashboard.')) {
+      router.push('/portal/report-agent');
     }
   };
 
@@ -1122,10 +1106,10 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
                 </span>
               )}
               <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm">
-                Service: {SERVICES_LIST.find(s => s.id === fields.serviceType)?.title || fields.serviceType || 'Land Valuation'}
+                Service: {(SERVICES_LIST.find(s => s.id === fields.serviceType)?.title || fields.serviceType || 'Land Valuation').replace(/_/g, ' ')}
               </span>
               <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm">
-                Subject: {fields.subjectType || 'Residential Land'}
+                Subject: {(fields.subjectType || 'Residential Land').replace(/_/g, ' ')}
               </span>
               {fields.valuationLayout && (
                 <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm flex items-center gap-1.5">

@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
+import { SERVICES_LIST } from './GeneralReportBuilder';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { generateIncomeTaxPDF } from '@/lib/pdf-it-renderer';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
@@ -450,8 +451,8 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
   const isLandOnly = !fields.propertyType.includes('BUILDING');
 
   const handleResetWizard = () => {
-    if (confirm('Are you sure you want to change report parameters? You will be redirected to the Project Dashboard.')) {
-      router.push(`/portal/projects/${projectId}`);
+    if (confirm('Are you sure you want to change report parameters? You will be redirected to the Report Agent Dashboard.')) {
+      router.push('/portal/report-agent');
     }
   };
 
@@ -826,10 +827,10 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                 </span>
               )}
               <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5">
-                Service: {fields.serviceType || 'Income Tax Valuation'}
+                Service: {(SERVICES_LIST.find(s => s.id === fields.serviceType)?.title || fields.serviceType || 'Income Tax Valuation').replace(/_/g, ' ')}
               </span>
               <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5">
-                Subject: {fields.subjectType || 'Property'}
+                Subject: {(fields.subjectType || 'Property').replace(/_/g, ' ')}
               </span>
             </div>
           </div>

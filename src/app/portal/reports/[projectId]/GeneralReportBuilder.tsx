@@ -470,7 +470,7 @@ function LandmarkField({ label, rows, disabled }: {
   );
 }
 
-const SERVICES_LIST = [
+export const SERVICES_LIST = [
   {
     id: 'mortgage_loan',
     title: 'Mortgage & Loan Security Valuation',
@@ -1096,20 +1096,8 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
   };
 
   const handleResetWizard = () => {
-    if (confirm('Are you sure you want to change report parameters? (This will not clear your typed text, but will change the PDF template layout category)')) {
-      setFields(prev => ({
-        ...prev,
-        clientType: '',
-        organisationTemplate: '',
-        institutionCategory: '',
-      }));
-      setSelectingOrg(false);
-      setSelectedCategory(null);
-      setShowBankList(false);
-      setWizardStep('setup');
-      if (typeof window !== 'undefined') {
-        window.history.replaceState({ step: 'type' }, '');
-      }
+    if (confirm('Are you sure you want to change report parameters? You will be redirected to the Report Agent Dashboard.')) {
+      router.push('/portal/report-agent');
     }
   };
 
@@ -2319,10 +2307,10 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                 </span>
               )}
             <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm">
-              Service: {SERVICES_LIST.find(s => s.id === fields.serviceType)?.title || fields.serviceType}
+              Service: {(SERVICES_LIST.find(s => s.id === fields.serviceType)?.title || fields.serviceType || '').replace(/_/g, ' ')}
             </span>
             <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm">
-              Subject: {fields.subjectType}
+              Subject: {(fields.subjectType || '').replace(/_/g, ' ')}
             </span>
             {fields.valuationLayout && (
               <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm flex items-center gap-1.5">
