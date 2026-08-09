@@ -462,7 +462,6 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
       setLoading(true);
       try {
         await saveReportDraft(projectId, clearedFields);
-        router.refresh();
       } catch (err) {
         console.error(err);
       } finally {

@@ -472,7 +472,6 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       setLoading(true);
       try {
         await saveReportDraft(projectId, clearedFields);
-        router.refresh();
       } catch (err) {
         console.error(err);
       } finally {

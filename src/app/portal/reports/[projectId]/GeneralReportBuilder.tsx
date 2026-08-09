@@ -1128,7 +1128,6 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       setLoading(true);
       try {
         await saveReportDraft(projectId, clearedFields);
-        router.refresh();
       } catch (err) {
         console.error(err);
       } finally {
