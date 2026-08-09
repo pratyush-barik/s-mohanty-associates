@@ -411,8 +411,11 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
   const [bucketSelected, setBucketSelected] = useState<Set<string>>(new Set());
   const [bucketPickerAgent, setBucketPickerAgent] = useState<string | null>(null);
 
+  const bypassUnloadRef = useRef(false);
+
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (bypassUnloadRef.current) return;
       saveReportDraft(projectId, fields).catch(e => console.error(e));
       e.preventDefault();
       e.returnValue = "";
@@ -477,9 +480,11 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       setFields(clearedFields as any);
       try {
         await saveReportDraft(projectId, clearedFields);
+        bypassUnloadRef.current = true;
         window.location.href = window.location.pathname;
       } catch (err) {
         console.error(err);
+        bypassUnloadRef.current = true;
         window.location.href = window.location.pathname;
       }
     }

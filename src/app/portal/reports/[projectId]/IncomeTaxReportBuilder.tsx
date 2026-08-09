@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
-import { SERVICES_LIST } from './GeneralReportBuilder';
+import { SERVICES_LIST } from './constants';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { generateIncomeTaxPDF } from '@/lib/pdf-it-renderer';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
@@ -443,8 +443,11 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
   const [bucketSelected, setBucketSelected] = useState<Set<string>>(new Set());
   const [bucketPickerAgent, setBucketPickerAgent] = useState<string | null>(null);
 
+  const bypassUnloadRef = useRef(false);
+
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (bypassUnloadRef.current) return;
       saveReportDraft(projectId, fields).catch(e => console.error(e));
       e.preventDefault();
       e.returnValue = "";
@@ -467,9 +470,11 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
       setFields(clearedFields as any);
       try {
         await saveReportDraft(projectId, clearedFields);
+        bypassUnloadRef.current = true;
         window.location.href = window.location.pathname;
       } catch (err) {
         console.error(err);
+        bypassUnloadRef.current = true;
         window.location.href = window.location.pathname;
       }
     }
