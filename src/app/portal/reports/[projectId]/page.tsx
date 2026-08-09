@@ -128,8 +128,7 @@ export default async function ReportEditorPage({ params, searchParams }: { param
         </div>
 
         {/* Report Builder (Full Width) */}
-        <BuilderErrorBoundary>
-          <BuilderSelector
+        <BuilderSelector
             initialFields={report?.data || null}
             projectId={project.id}
             projectCode={project.projectCode}
@@ -145,9 +144,8 @@ export default async function ReportEditorPage({ params, searchParams }: { param
               purpose: serviceRequest?.purpose,
             }}
           />
-        </BuilderErrorBoundary>
-      </div>
-    );
+        </div>
+      );
   } catch (error: any) {
     return (
       <div className="p-12 text-center flex flex-col items-center justify-center h-full">

@@ -1,9 +1,11 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import GeneralReportBuilder from './GeneralReportBuilder';
-import IBBIReportBuilder from './IBBIReportBuilder';
-import IncomeTaxReportBuilder from './IncomeTaxReportBuilder';
+import dynamic from 'next/dynamic';
+
+const GeneralReportBuilder = dynamic(() => import('./GeneralReportBuilder'), { ssr: false });
+const IBBIReportBuilder = dynamic(() => import('./IBBIReportBuilder'), { ssr: false });
+const IncomeTaxReportBuilder = dynamic(() => import('./IncomeTaxReportBuilder'), { ssr: false });
 
 interface BuilderSelectorProps {
   initialFields: any;
