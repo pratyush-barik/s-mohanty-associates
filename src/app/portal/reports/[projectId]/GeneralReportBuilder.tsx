@@ -958,10 +958,10 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     handleChange('additionalAmenities', next.length > 0 ? next.join(', ') : 'Not Applicable');
   };
 
-  const handleResetWizard = () => {
+  const handleResetWizard = async () => {
     if (confirm("Are you sure you want to change report parameters? This will permanently clear all your typed data and reset the report.")) {
       bypassUnloadRef.current = true;
-      saveReportDraft(projectId, { ...DEFAULT_FIELDS, clientType: "", organisationTemplate: "", institutionCategory: "", organisationSubTemplate: "" }).catch(e => console.error(e));
+      await saveReportDraft(projectId, { ...DEFAULT_FIELDS, clientType: "", organisationTemplate: "", institutionCategory: "", organisationSubTemplate: "" });
       window.location.href = window.location.pathname;
     }
   };

@@ -472,10 +472,10 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
   const isManagerOrOwner = userRole === 'MANAGER' || userRole === 'OWNER';
   const isLandOnly = !fields.propertyType.includes('BUILDING');
 
-  const handleResetWizard = () => {
+  const handleResetWizard = async () => {
     if (confirm("Are you sure you want to change report parameters? This will permanently clear all your typed data and reset the report.")) {
       bypassUnloadRef.current = true;
-      saveReportDraft(projectId, { ...DEFAULT_FIELDS, clientType: "", organisationTemplate: "", institutionCategory: "", organisationSubTemplate: "" }).catch(e => console.error(e));
+      await saveReportDraft(projectId, { ...DEFAULT_FIELDS, clientType: "", organisationTemplate: "", institutionCategory: "", organisationSubTemplate: "" });
       window.location.href = window.location.pathname;
     }
   };
