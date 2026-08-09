@@ -451,8 +451,12 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
   const isLandOnly = !fields.propertyType.includes('BUILDING');
 
   const handleResetWizard = () => {
-    if (confirm('Are you sure you want to change report parameters? You will be redirected to the Report Agent Dashboard.')) {
-      router.push('/portal/report-agent');
+    if (confirm('Are you sure you want to change report parameters?')) {
+      if (userRole === 'MANAGER' || userRole === 'OWNER') {
+        router.push(`/portal/projects/${projectId}`);
+      } else {
+        router.push('/portal/report-agent');
+      }
     }
   };
 
