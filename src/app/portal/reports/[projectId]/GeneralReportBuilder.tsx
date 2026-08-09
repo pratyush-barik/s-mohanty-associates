@@ -968,11 +968,28 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     };
   }, [wizardStep]);
 
-  const completeWizardAndSave = (updates: Partial<typeof fields>) => {
+  const completeWizardAndSave = async (updates: Partial<typeof fields>) => {
     const updatedFields = { ...fields, ...updates };
     setFields(updatedFields);
-    setWizardStep('completed');
-    saveReportDraft(projectId, updatedFields).catch(e => console.error("Auto-save draft failed:", e));
+    
+    const isSpecialTemplate = ['INCOME_TAX', 'IBBI_IVS'].includes(updatedFields.organisationTemplate || '');
+    if (!isSpecialTemplate) {
+      setWizardStep('completed');
+    } else {
+      setLoading(true);
+    }
+
+    try {
+      await saveReportDraft(projectId, updatedFields);
+      if (isSpecialTemplate) {
+        router.refresh();
+      }
+    } catch (e) {
+      console.error("Auto-save draft failed:", e);
+      if (isSpecialTemplate) {
+        setLoading(false);
+      }
+    }
   };
 
   const handleSelectClientType = (type: 'individual' | 'organisation') => {
@@ -2154,6 +2171,15 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
   // ═══════════════════════════════════════════════════════════
   // RENDER
   // ═══════════════════════════════════════════════════════════
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[500px] p-8 bg-gradient-to-br from-[#f8f9fa] to-[#e9ecef] rounded-2xl border border-neutral-200 shadow-md">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#b8860b] border-t-transparent"></div>
+        <p className="mt-4 text-sm font-bold text-[#0f2038]">Loading and saving layout configuration...</p>
+      </div>
+    );
+  }
+
   if (wizardStep === 'setup') {
     return (
       <div className="min-h-[500px] flex items-center justify-center bg-gradient-to-br from-[#f8f9fa] to-[#e9ecef] p-8 rounded-2xl border border-neutral-200">
