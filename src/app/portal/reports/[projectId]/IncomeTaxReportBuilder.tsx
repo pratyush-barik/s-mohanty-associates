@@ -459,8 +459,6 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (bypassUnloadRef.current) return;
       saveReportDraft(projectId, fields).catch(e => console.error(e));
-      e.preventDefault();
-      e.returnValue = "";
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
@@ -476,6 +474,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
 
   const handleResetWizard = () => {
     bypassUnloadRef.current = true;
+      saveReportDraft(projectId, { ...DEFAULT_FIELDS, clientType: "", organisationTemplate: "", institutionCategory: "", organisationSubTemplate: "" }).catch(e => console.error(e));
       window.location.href = window.location.pathname;
   };
   const handleChange = useCallback((field: keyof IncomeTaxFields, value: any) => {

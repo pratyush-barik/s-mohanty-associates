@@ -737,8 +737,6 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (bypassUnloadRef.current) return;
       saveReportDraft(projectId, fields).catch(e => console.error(e));
-      e.preventDefault();
-      e.returnValue = "";
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
@@ -968,6 +966,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
   const handleResetWizard = () => {
     if (confirm("Are you sure you want to change report parameters? This will permanently clear all your typed data and reset the report.")) {
       bypassUnloadRef.current = true;
+      saveReportDraft(projectId, { ...DEFAULT_FIELDS, clientType: "", organisationTemplate: "", institutionCategory: "", organisationSubTemplate: "" }).catch(e => console.error(e));
       window.location.href = window.location.pathname;
     }
   };
