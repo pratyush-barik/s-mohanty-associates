@@ -958,7 +958,12 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       const clearedFields = { ...DEFAULT_FIELDS, clientType: "", organisationTemplate: "", institutionCategory: "", organisationSubTemplate: "" };
       setLoading(true);
       try {
-        await saveReportDraft(projectId, clearedFields);
+        const res = await saveReportDraft(projectId, clearedFields);
+        if (res && 'error' in res && res.error) {
+          alert(`Failed to save draft: ${res.error}`);
+          setLoading(false);
+          return;
+        }
         bypassUnloadRef.current = true;
         window.location.href = window.location.pathname;
       } catch (err) {
