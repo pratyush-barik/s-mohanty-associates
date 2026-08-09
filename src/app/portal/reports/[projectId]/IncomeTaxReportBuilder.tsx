@@ -470,12 +470,12 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
       setLoading(true);
       try {
         await saveReportDraft(projectId, clearedFields);
-        router.replace(window.location.pathname);
-        router.refresh();
+        bypassUnloadRef.current = true;
+        window.location.href = window.location.pathname;
       } catch (err) {
         console.error(err);
-      } finally {
-        setLoading(false);
+        bypassUnloadRef.current = true;
+        window.location.href = window.location.pathname;
       }
     }
   };
