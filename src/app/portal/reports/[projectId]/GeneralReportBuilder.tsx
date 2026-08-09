@@ -978,28 +978,25 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
 
   const completeWizardAndSave = async (updates: Partial<typeof fields>) => {
     const updatedFields = { ...fields, ...updates };
-    setFields(updatedFields);
     
     const isSpecialTemplate = ['INCOME_TAX', 'IBBI_IVS'].includes(updatedFields.organisationTemplate || '');
-    if (!isSpecialTemplate) {
-      setWizardStep('completed');
-    } else {
-      setLoading(true);
-    }
-
-    try {
-      await saveReportDraft(projectId, updatedFields);
-      if (isSpecialTemplate) {
+    
+    if (isSpecialTemplate) {
+      // For special templates, save draft and reload immediately
+      // without updating local state to avoid flashing GeneralReportBuilder
+      try {
+        await saveReportDraft(projectId, updatedFields);
         window.location.href = window.location.href;
+      } catch (e) {
+        console.error("Auto-save draft failed:", e);
       }
-    } catch (e) {
-      console.error("Auto-save draft failed:", e);
-      if (isSpecialTemplate) {
-        setLoading(false);
-      }
+    } else {
+      // For general templates, update local state and show the form
+      setFields(updatedFields);
+      setWizardStep('completed');
+      saveReportDraft(projectId, updatedFields).catch(e => console.error("Auto-save draft failed:", e));
     }
   };
-
   const handleSelectClientType = (type: 'individual' | 'organisation') => {
     if (type === 'individual') {
       completeWizardAndSave({ clientType: 'individual', organisationTemplate: '' });
