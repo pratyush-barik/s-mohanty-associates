@@ -966,25 +966,10 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     handleChange('additionalAmenities', next.length > 0 ? next.join(', ') : 'Not Applicable');
   };
 
-  const handleResetWizard = async () => {
+  const handleResetWizard = () => {
     if (confirm("Are you sure you want to change report parameters? This will permanently clear all your typed data and reset the report.")) {
-      const clearedFields = { ...DEFAULT_FIELDS, clientType: "", organisationTemplate: "", institutionCategory: "", organisationSubTemplate: "" };
-      setLoadingText("Resetting layout parameters...");
-      setLoading(true);
-      try {
-        const res = await saveReportDraft(projectId, clearedFields);
-        if (res && 'error' in res && res.error) {
-          alert(`Failed to save draft: ${res.error}`);
-          setLoading(false);
-          return;
-        }
-        bypassUnloadRef.current = true;
-        window.location.href = window.location.pathname;
-      } catch (err) {
-        console.error(err);
-        bypassUnloadRef.current = true;
-        window.location.href = window.location.pathname;
-      }
+      bypassUnloadRef.current = true;
+      window.location.pathname = window.location.pathname;
     }
   };
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');

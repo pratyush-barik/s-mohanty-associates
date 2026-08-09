@@ -1,18 +1,9 @@
 'use client';
 
-import dynamic from 'next/dynamic';
-
-function BuilderLoading() {
-  return (
-    <div className="flex items-center justify-center h-64">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#b8860b]"></div>
-    </div>
-  );
-}
-
-const GeneralReportBuilder = dynamic(() => import('./GeneralReportBuilder'), { ssr: false, loading: () => <BuilderLoading /> });
-const IBBIReportBuilder = dynamic(() => import('./IBBIReportBuilder'), { ssr: false, loading: () => <BuilderLoading /> });
-const IncomeTaxReportBuilder = dynamic(() => import('./IncomeTaxReportBuilder'), { ssr: false, loading: () => <BuilderLoading /> });
+import { useSearchParams } from 'next/navigation';
+import GeneralReportBuilder from './GeneralReportBuilder';
+import IBBIReportBuilder from './IBBIReportBuilder';
+import IncomeTaxReportBuilder from './IncomeTaxReportBuilder';
 
 interface BuilderSelectorProps {
   initialFields: any;
@@ -21,7 +12,6 @@ interface BuilderSelectorProps {
   status: string;
   userRole: string;
   bucketImages: any[];
-  builderQuery?: string | null;
   prefill: {
     contactName?: string;
     contactPhone?: string;
@@ -39,10 +29,10 @@ export default function BuilderSelector({
   status,
   userRole,
   bucketImages,
-  builderQuery,
   prefill,
 }: BuilderSelectorProps) {
-  const builderFromQuery = builderQuery;
+  const searchParams = useSearchParams();
+  const builderFromQuery = searchParams.get('builder');
   const orgTemplate = initialFields?.organisationTemplate;
 
   if (
