@@ -19,7 +19,7 @@ import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
-import { PDFReportRenderer } from '@/lib/pdf-report-renderer';
+import { PDFIBBIRenderer } from '@/lib/pdf-ibbi-renderer';
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
 // @ts-ignore
@@ -750,7 +750,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       const sketchBytes = fields.sketchMapImage ? imageResults[imgIdx++] : null;
       const locationBytes = fields.locationMapImage ? imageResults[imgIdx++] : null;
 
-      const r = new PDFReportRenderer();
+      const r = new PDFIBBIRenderer();
       await r.init(letterheadBytes || undefined);
 
       // ── IBBI Valuation Certificate (appears first in IBBI reports) ──

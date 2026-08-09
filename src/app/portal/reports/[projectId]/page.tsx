@@ -4,6 +4,7 @@ import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import GeneralReportBuilder from './GeneralReportBuilder';
 import IBBIReportBuilder from './IBBIReportBuilder';
+import IncomeTaxReportBuilder from './IncomeTaxReportBuilder';
 
 export default async function ReportEditorPage({ params }: { params: Promise<{ projectId: string }> }) {
   try {
@@ -49,6 +50,10 @@ export default async function ReportEditorPage({ params }: { params: Promise<{ p
     }
 
     const { serviceRequest, report } = project;
+    const mappedBucketImages = project.bucketImages.map(img => ({
+      ...img,
+      createdAt: img.createdAt.toISOString()
+    }));
 
     return (
       <div className="space-y-6 w-full">
@@ -121,16 +126,33 @@ export default async function ReportEditorPage({ params }: { params: Promise<{ p
           </div>
         </div>
 
-        {/* Report Builder (Full Width) — conditionally render IBBI or General */}
+        {/* Report Builder (Full Width) — conditionally render IBBI, Income Tax or General */}
         <div className="w-full">
-          {(report?.data as any)?.organisationTemplate === 'IBBI_IVS' ? (
+          {(report?.data as any)?.organisationTemplate === 'INCOME_TAX' ? (
+            <IncomeTaxReportBuilder
+              projectId={project.id}
+              projectCode={project.projectCode}
+              initialFields={report?.data || null}
+              status={project.status}
+              userRole={currentUser.role}
+              bucketImages={mappedBucketImages}
+              prefill={{
+                contactName: serviceRequest.contactName,
+                contactPhone: serviceRequest.contactPhone,
+                contactEmail: serviceRequest.contactEmail,
+                propertyAddress: serviceRequest.propertyAddress,
+                propertyType: serviceRequest.propertyType,
+                purpose: serviceRequest.purpose,
+              }}
+            />
+          ) : (report?.data as any)?.organisationTemplate === 'IBBI_IVS' ? (
             <IBBIReportBuilder
               projectId={project.id}
               projectCode={project.projectCode}
               initialFields={report?.data || null}
               status={project.status}
               userRole={currentUser.role}
-              bucketImages={project.bucketImages}
+              bucketImages={mappedBucketImages}
               prefill={{
                 contactName: serviceRequest.contactName,
                 contactPhone: serviceRequest.contactPhone,
@@ -147,7 +169,7 @@ export default async function ReportEditorPage({ params }: { params: Promise<{ p
               initialFields={report?.data || null}
               status={project.status}
               userRole={currentUser.role}
-              bucketImages={project.bucketImages}
+              bucketImages={mappedBucketImages}
               prefill={{
                 contactName: serviceRequest.contactName,
                 contactPhone: serviceRequest.contactPhone,

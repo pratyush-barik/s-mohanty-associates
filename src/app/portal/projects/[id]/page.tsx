@@ -327,6 +327,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
           <ReportDraftSection>
             <GeneralReportBuilder
               projectId={project.id}
+              projectCode={project.projectCode}
               initialFields={project.report.data}
               status={project.status}
               userRole={currentUser.role}

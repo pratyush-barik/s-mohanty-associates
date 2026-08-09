@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
-import { PDFReportRenderer } from '@/lib/pdf-report-renderer';
+import { PDFGeneralRenderer } from '@/lib/pdf-general-renderer';
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
 // @ts-ignore
@@ -1372,7 +1372,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       const locationBytes = fields.locationMapImage ? imageResults[imgIdx++] : null;
 
       // ── Initialize the renderer ──
-      const r = new PDFReportRenderer();
+      const r = new PDFGeneralRenderer();
       await r.init(letterheadBytes || undefined);
 
       // ── Title block ──

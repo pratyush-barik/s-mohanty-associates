@@ -1,11 +1,6 @@
 /**
- * PDFReportRenderer — Custom pdf-lib renderer for S. Mohanty & Associates valuation reports.
- *
- * Provides reusable drawing primitives (drawCell, drawTable, drawSection, drawWrappedText, etc.)
- * on top of pdf-lib. All coordinates use a top-down system internally converted to pdf-lib's
- * bottom-left origin.
- *
- * US Letter: 612 × 792 points (1pt = 1/72 inch)
+ * PDFIBBIRenderer — Custom pdf-lib renderer for S. Mohanty & Associates IBBI valuation reports.
+ * Uses A4 Portrait size.
  */
 
 import { PDFDocument, PDFPage, PDFFont, StandardFonts, rgb, PDFImage } from 'pdf-lib';
@@ -20,19 +15,19 @@ function hexToRgb(hex: string) {
 }
 
 // ─── Constants ──────────────────────────────────────────────────────
-const PAGE_W = 612;   // US Letter width in points
-const PAGE_H = 792;   // US Letter height in points
+const PAGE_W = 595.28;   // A4 width in points
+const PAGE_H = 841.89;   // A4 height in points
 const MARGIN_T = 84;  // Top margin (matches letterhead header)
 const MARGIN_B = 80;  // Bottom margin (matches letterhead footer)
 const MARGIN_L = 54;  // Left margin
 const MARGIN_R = 54;  // Right margin
-const CONTENT_W = PAGE_W - MARGIN_L - MARGIN_R; // 504pt usable width
+const CONTENT_W = PAGE_W - MARGIN_L - MARGIN_R; // Usable width
 
 // 3-column widths (28% / 35% / 37%)
 const COL_W = [
-  Math.round(CONTENT_W * 0.28), // 141pt — label column
-  Math.round(CONTENT_W * 0.35), // 176pt — options column
-  CONTENT_W - Math.round(CONTENT_W * 0.28) - Math.round(CONTENT_W * 0.35), // 187pt — value column
+  Math.round(CONTENT_W * 0.28), // label column
+  Math.round(CONTENT_W * 0.35), // options column
+  CONTENT_W - Math.round(CONTENT_W * 0.28) - Math.round(CONTENT_W * 0.35), // value column
 ];
 
 // Styling
@@ -61,7 +56,7 @@ interface DrawTextOptions {
   maxWidth?: number;
 }
 
-export class PDFReportRenderer {
+export class PDFIBBIRenderer {
   private doc!: PDFDocument;
   private page!: PDFPage;
   private fontRegular!: PDFFont;
@@ -301,8 +296,6 @@ export class PDFReportRenderer {
 
   /** Draw rich text segments (mixed bold/regular) on a single conceptual line, with wrapping */
   private drawRichTextAt(segments: TextSegment[], x: number, topY: number, maxWidth: number, fontSize: number): number {
-    // Simple approach: concatenate, wrap, then draw word by word with correct style
-    // For now, wrap the full text and draw each line, applying bold to the right words
     const lineH = fontSize * LINE_HEIGHT;
 
     // Build a flat list of {word, bold, italic}
@@ -1065,6 +1058,6 @@ export class PDFReportRenderer {
   /** Generate the PDF as a Blob */
   async toBlob(): Promise<Blob> {
     const bytes = await this.doc.save();
-    return new Blob([bytes], { type: 'application/pdf' });
+    return new Blob([bytes] as any, { type: 'application/pdf' });
   }
 }
