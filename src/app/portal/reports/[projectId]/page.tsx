@@ -2,9 +2,11 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
-import ReportBuilderRouter from './ReportBuilderRouter';
+import GeneralReportBuilder from './GeneralReportBuilder';
+import IBBIReportBuilder from './IBBIReportBuilder';
+import IncomeTaxReportBuilder from './IncomeTaxReportBuilder';
 
-export default async function ReportEditorPage({ params }: { params: Promise<{ projectId: string }> }) {
+export default async function ReportEditorPage({ params, searchParams }: { params: Promise<{ projectId: string }>, searchParams: Promise<{ builder?: string }> }) {
   try {
     const session = await auth();
     if (!session?.user?.id) return null;
@@ -19,6 +21,8 @@ export default async function ReportEditorPage({ params }: { params: Promise<{ p
     }
 
     const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
+  const builderFromQuery = resolvedSearchParams?.builder;
 
     const project = await prisma.project.findUnique({
       where: { id: resolvedParams.projectId },
@@ -124,9 +128,9 @@ export default async function ReportEditorPage({ params }: { params: Promise<{ p
           </div>
         </div>
 
-        {/* Report Builder (Full Width) — conditionally render IBBI, Income Tax or General */}
+        {/* Report Builder (Full Width) */}
         <div className="w-full">
-          {(report?.data as any)?.organisationTemplate === 'INCOME_TAX' ? (
+          {builderFromQuery === "INCOME_TAX" || (builderFromQuery === undefined && (report?.data as any)?.organisationTemplate === "INCOME_TAX") ? (
             <IncomeTaxReportBuilder
               projectId={project.id}
               projectCode={project.projectCode}
@@ -143,7 +147,7 @@ export default async function ReportEditorPage({ params }: { params: Promise<{ p
                 purpose: serviceRequest.purpose,
               }}
             />
-          ) : (report?.data as any)?.organisationTemplate === 'IBBI_IVS' ? (
+          ) : builderFromQuery === "IBBI_IVS" || (builderFromQuery === undefined && (report?.data as any)?.organisationTemplate === "IBBI_IVS") ? (
             <IBBIReportBuilder
               projectId={project.id}
               projectCode={project.projectCode}

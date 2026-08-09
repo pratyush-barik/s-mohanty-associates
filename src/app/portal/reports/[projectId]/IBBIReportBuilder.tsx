@@ -477,7 +477,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       } catch (err) {
         console.error(err);
       }
-      window.location.href = window.location.href;
+      router.push(window.location.pathname);
     }
   };
 

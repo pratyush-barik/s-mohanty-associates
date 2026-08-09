@@ -467,7 +467,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
       } catch (err) {
         console.error(err);
       }
-      window.location.href = window.location.href;
+      router.push(window.location.pathname);
     }
   };
 

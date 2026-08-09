@@ -985,11 +985,11 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     const isSpecialTemplate = ['INCOME_TAX', 'IBBI_IVS'].includes(updatedFields.organisationTemplate || '');
     
     if (isSpecialTemplate) {
-      // For special templates, save draft and reload immediately
-      // without updating local state to avoid flashing GeneralReportBuilder
+      // For special templates, save draft and navigate to dedicated builder
       try {
         await saveReportDraft(projectId, updatedFields);
-        window.location.href = window.location.href;
+        const builderParam = updatedFields.organisationTemplate === 'IBBI_IVS' ? 'IBBI_IVS' : 'INCOME_TAX';
+        router.push(`?builder=${builderParam}`);
       } catch (e) {
         console.error("Auto-save draft failed:", e);
       }
@@ -1129,10 +1129,9 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       } catch (err) {
         console.error(err);
       }
-      onResetWizard?.();
+      router.push(window.location.pathname);
     }
   };
-
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
   const isManagerOrOwner = userRole === 'MANAGER' || userRole === 'OWNER';
 
