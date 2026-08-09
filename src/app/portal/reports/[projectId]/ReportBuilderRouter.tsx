@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import dynamic from 'next/dynamic';
-const GeneralReportBuilder = dynamic(() => import('./GeneralReportBuilder'));
-const IBBIReportBuilder = dynamic(() => import('./IBBIReportBuilder'));
-const IncomeTaxReportBuilder = dynamic(() => import('./IncomeTaxReportBuilder'));
+import GeneralReportBuilder from './GeneralReportBuilder';
+import IBBIReportBuilder from './IBBIReportBuilder';
+import IncomeTaxReportBuilder from './IncomeTaxReportBuilder';
 import { saveReportDraft } from '@/app/actions/project';
 import type { ReportFields } from './GeneralReportBuilder';
 
