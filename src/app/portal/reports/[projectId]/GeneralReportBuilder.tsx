@@ -982,7 +982,8 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     try {
       await saveReportDraft(projectId, updatedFields);
       if (isSpecialTemplate) {
-        router.refresh();
+        setWizardStep('completed');
+        setLoading(false);
       }
     } catch (e) {
       console.error("Auto-save draft failed:", e);
