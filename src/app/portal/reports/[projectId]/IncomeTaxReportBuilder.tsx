@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
@@ -403,6 +403,7 @@ interface IncomeTaxReportBuilderProps {
 
 export default function IncomeTaxReportBuilder({ projectId, projectCode, initialFields, status, userRole = 'REPORT_EMPLOYEE', bucketImages = [], prefill }: IncomeTaxReportBuilderProps) {
   const router = useRouter();
+  const reportRef = useRef<HTMLDivElement>(null);
 
   const merged: IncomeTaxFields = {
     ...DEFAULT_FIELDS,
@@ -790,35 +791,50 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
   // RENDER
   // ═══════════════════════════════════════════════════════════════════
   return (
-    <div className="flex gap-6 items-start">
+    <div className="flex gap-6 items-start w-full" ref={reportRef}>
       {/* Main Form Column */}
       <div className="flex-1 min-w-0 space-y-4">
 
-        {/* Active Configuration Banner */}
-        <div className="sticky top-0 z-50 bg-gradient-to-r from-[#0a1628]/95 to-[#1a3a5c]/95 backdrop-blur-md rounded-xl px-5 py-3 flex items-center justify-between shadow-lg border border-white/10">
-          <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-[10px] font-black text-amber-400 uppercase tracking-widest">Income Tax Report</span>
-            <span className="text-xs font-bold text-white bg-white/10 px-2.5 py-1 rounded-lg">{fields.propertyType || 'Not Set'}</span>
-            {fields.isReverseCalculation && (
-              <span className="text-xs font-bold text-cyan-300 bg-cyan-900/40 px-2.5 py-1 rounded-lg">Reverse CII Method</span>
-            )}
-            {isLandOnly && (
-              <span className="text-xs font-bold text-green-300 bg-green-900/40 px-2.5 py-1 rounded-lg">Land Only</span>
-            )}
+        {/* Template Info Banner */}
+        <div className="card p-4 bg-gradient-to-r from-[#f8f9fa] to-[#e9ecef] border border-[#c8d6e5] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md rounded-xl sticky top-2 z-50">
+          <div className="flex flex-col xl:flex-row xl:items-center gap-3">
+            <span className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider">Active Configuration</span>
+            <div className="flex flex-wrap gap-2">
+              <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                Income Tax Report
+              </span>
+              <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm">
+                {fields.propertyType || 'Not Set'}
+              </span>
+              {fields.isReverseCalculation && (
+                <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm">
+                  Reverse CII Method
+                </span>
+              )}
+              {isLandOnly && (
+                <span className="text-xs font-bold text-[#0f2038] bg-white px-2.5 py-1 rounded-lg border border-[#dee2e6] uppercase shadow-sm">
+                  Land Only
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Rework Warning Banner */}
+        {/* Rework Banner */}
         {fields.reworkNotes && status === 'REPORT_DRAFTING' && (
-          <div className="p-4 rounded-xl border-2 border-red-300 bg-red-50 text-red-800">
-            <p className="font-bold text-sm mb-1">⚠️ Manager Rework Feedback</p>
-            <p className="text-sm whitespace-pre-wrap">{fields.reworkNotes}</p>
+          <div className="card p-5 border-2 border-red-200 bg-red-50 shadow-md">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-xl">⚠️</span>
+              <h2 className="text-sm font-bold text-red-800 uppercase tracking-wider">Manager Rework Requested</h2>
+            </div>
+            <p className="text-sm font-medium text-red-900 leading-relaxed whitespace-pre-wrap">{fields.reworkNotes}</p>
           </div>
         )}
 
         {/* Status Message */}
         {message && (
-          <div className={`p-3.5 rounded-xl text-sm font-semibold border ${message.type === 'success' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+          <div className={`p-4 rounded-xl text-sm font-medium ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
             {message.text}
           </div>
         )}
