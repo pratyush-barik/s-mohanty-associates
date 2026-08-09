@@ -467,10 +467,11 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
       setFields(clearedFields as any);
       try {
         await saveReportDraft(projectId, clearedFields);
+        window.location.href = window.location.pathname;
       } catch (err) {
         console.error(err);
+        window.location.href = window.location.pathname;
       }
-      router.push(window.location.pathname);
     }
   };
   const handleChange = useCallback((field: keyof IncomeTaxFields, value: any) => {
