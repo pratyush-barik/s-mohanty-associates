@@ -2,9 +2,8 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
-import GeneralReportBuilder from './GeneralReportBuilder';
-import IBBIReportBuilder from './IBBIReportBuilder';
-import IncomeTaxReportBuilder from './IncomeTaxReportBuilder';
+import BuilderErrorBoundary from './BuilderErrorBoundary';
+import BuilderSelector from './BuilderSelector';
 
 export default async function ReportEditorPage({ params, searchParams }: { params: Promise<{ projectId: string }>, searchParams: Promise<{ builder?: string }> }) {
   try {
@@ -129,60 +128,24 @@ export default async function ReportEditorPage({ params, searchParams }: { param
         </div>
 
         {/* Report Builder (Full Width) */}
-        <div className="w-full">
-          {builderFromQuery === "INCOME_TAX" || (builderFromQuery === undefined && (report?.data as any)?.organisationTemplate === "INCOME_TAX") ? (
-            <IncomeTaxReportBuilder
-              projectId={project.id}
-              projectCode={project.projectCode}
-              initialFields={report?.data || null}
-              status={project.status}
-              userRole={currentUser.role}
-              bucketImages={mappedBucketImages}
-              prefill={{
-                contactName: serviceRequest?.contactName,
-                contactPhone: serviceRequest?.contactPhone,
-                contactEmail: serviceRequest?.contactEmail,
-                propertyAddress: serviceRequest?.propertyAddress,
-                propertyType: serviceRequest?.propertyType,
-                purpose: serviceRequest?.purpose,
-              }}
-            />
-          ) : builderFromQuery === "IBBI_IVS" || (builderFromQuery === undefined && (report?.data as any)?.organisationTemplate === "IBBI_IVS") ? (
-            <IBBIReportBuilder
-              projectId={project.id}
-              projectCode={project.projectCode}
-              initialFields={report?.data || null}
-              status={project.status}
-              userRole={currentUser.role}
-              bucketImages={mappedBucketImages}
-              prefill={{
-                contactName: serviceRequest?.contactName,
-                contactPhone: serviceRequest?.contactPhone,
-                contactEmail: serviceRequest?.contactEmail,
-                propertyAddress: serviceRequest?.propertyAddress,
-                propertyType: serviceRequest?.propertyType,
-                purpose: serviceRequest?.purpose,
-              }}
-            />
-          ) : (
-            <GeneralReportBuilder
-              projectId={project.id}
-              projectCode={project.projectCode}
-              initialFields={report?.data || null}
-              status={project.status}
-              userRole={currentUser.role}
-              bucketImages={mappedBucketImages}
-              prefill={{
-                contactName: serviceRequest?.contactName,
-                contactPhone: serviceRequest?.contactPhone,
-                contactEmail: serviceRequest?.contactEmail,
-                propertyAddress: serviceRequest?.propertyAddress,
-                propertyType: serviceRequest?.propertyType,
-                purpose: serviceRequest?.purpose,
-              }}
-            />
-          )}
-        </div>
+        <BuilderErrorBoundary>
+          <BuilderSelector
+            initialFields={report?.data || null}
+            projectId={project.id}
+            projectCode={project.projectCode}
+            status={project.status}
+            userRole={currentUser.role}
+            bucketImages={mappedBucketImages}
+            prefill={{
+              contactName: serviceRequest?.contactName,
+              contactPhone: serviceRequest?.contactPhone,
+              contactEmail: serviceRequest?.contactEmail,
+              propertyAddress: serviceRequest?.propertyAddress,
+              propertyType: serviceRequest?.propertyType,
+              purpose: serviceRequest?.purpose,
+            }}
+          />
+        </BuilderErrorBoundary>
       </div>
     );
   } catch (error: any) {
