@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
@@ -928,7 +928,6 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
 
   const reportRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const pathname = usePathname();
 
   useEffect(() => {
     if (wizardStep !== 'completed') return;
@@ -1144,7 +1143,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       } catch (err) {
         console.error(err);
       }
-      router.push(pathname);
+      router.push(window.location.pathname);
     }
   };
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');

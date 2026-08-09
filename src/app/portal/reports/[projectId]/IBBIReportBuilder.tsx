@@ -15,7 +15,7 @@
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
@@ -383,17 +383,7 @@ interface IBBIReportBuilderProps {
 
 export default function IBBIReportBuilder({ projectId, projectCode, initialFields, status, userRole = 'REPORT_EMPLOYEE', bucketImages = [], prefill }: IBBIReportBuilderProps) {
   const router = useRouter();
-  const pathname = usePathname();
 
-  useEffect(() => {
-    const handlePopState = (event: PopStateEvent) => {
-      event.preventDefault();
-      window.history.pushState(null, "", window.location.href);
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
 
   const merged: IBBIFields = {
     ...DEFAULT_FIELDS,
@@ -490,7 +480,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       } catch (err) {
         console.error(err);
       }
-      router.push(pathname);
+      router.push(window.location.pathname);
     }
   };
   const handleCancelSubmission = async () => {
