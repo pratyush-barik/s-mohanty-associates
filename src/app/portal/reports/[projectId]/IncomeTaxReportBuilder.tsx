@@ -715,6 +715,51 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
     setLoading(false);
   };
 
+  // ── PDF Preview ──
+  const handlePreviewPDF = async () => {
+    const previewWindow = window.open('', '_blank');
+    if (previewWindow) {
+      previewWindow.document.write(`
+        <html>
+          <head><title>Generating PDF Preview...</title></head>
+          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f8f9fa; color: #495057;">
+            <div style="text-align: center;">
+              <div style="border: 4px solid #dee2e6; border-top: 4px solid #b8860b; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px;"></div>
+              <p style="font-size: 16px; font-weight: 600; margin: 0;">Generating PDF Preview...</p>
+              <p style="font-size: 12px; color: #6c757d; margin: 8px 0 0;">Please wait while the document compiles.</p>
+            </div>
+            <style>
+              @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            </style>
+          </body>
+        </html>
+      `);
+      previewWindow.document.close();
+    }
+
+    try {
+      const blob = await generateIncomeTaxPDF(
+        fields,
+        computedLandValue,
+        computedFloorRows,
+        computedBuildingValue,
+        computedExtraTotal,
+        computedTotalProperty,
+        isLandOnly
+      );
+      if (blob && previewWindow) {
+        const url = URL.createObjectURL(blob);
+        previewWindow.location.href = url;
+      } else if (previewWindow) {
+        previewWindow.close();
+        setMessage({ type: 'error', text: 'Failed to generate PDF preview.' });
+      }
+    } catch (err: any) {
+      if (previewWindow) previewWindow.close();
+      setMessage({ type: 'error', text: 'PDF Error: ' + (err?.message || String(err)) });
+    }
+  };
+
   // ── PDF Download ──
   const handleDownloadPDF = async () => {
     setMessage({ type: 'success', text: 'Generating PDF for download...' });
@@ -746,8 +791,6 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
   // ═══════════════════════════════════════════════════════════════════
   return (
     <div className="flex gap-6 items-start">
-      <FloatingNavigator isLandOnly={isLandOnly} showLandAnnexure={fields.showLandAnnexure} />
-
       {/* Main Form Column */}
       <div className="flex-1 min-w-0 space-y-4">
 
@@ -1458,6 +1501,14 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           )}
 
           <button
+            onClick={handlePreviewPDF}
+            disabled={loading}
+            className="px-6 py-3 rounded-xl border-2 border-gray-400 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center gap-2"
+          >
+            👁️ Preview PDF
+          </button>
+
+          <button
             onClick={handleDownloadPDF}
             disabled={loading}
             className="px-6 py-3 rounded-xl border-2 border-gray-400 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center gap-2"
@@ -1486,6 +1537,8 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
         </div>
 
       </div>{/* End Main Form Column */}
+
+      <FloatingNavigator isLandOnly={isLandOnly} showLandAnnexure={fields.showLandAnnexure} />
 
       {/* ═══ BUCKET PICKER MODAL ═══ */}
       {bucketPickerOpen && (
