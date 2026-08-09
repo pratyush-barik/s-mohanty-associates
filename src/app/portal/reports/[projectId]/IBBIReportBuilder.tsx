@@ -1104,34 +1104,24 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
             <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider leading-tight min-w-[90px] select-none">
               Active<br />Configuration
             </div>
-            <div className="flex flex-wrap gap-2">
-              <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                {fields.clientType === 'organisation' ? 'Organisation / Bank' : 'Individual'}
-              </span>
-              <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-                <span className="w-1.5 h-1.5 rounded-full bg-cyan-500"></span>
-                {fields.organisationTemplate === 'IBBI_IVS' ? 'IBBI - IVS' : fields.organisationTemplate || 'IBBI'}
-              </span>
-              {fields.institutionCategory && fields.institutionCategory !== 'IBBI' && fields.institutionCategory !== 'IBBI_IVS' && (
-                <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
-                  {fields.institutionCategory}
-                </span>
-              )}
-              <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-                Service: {(SERVICES_LIST.find(s => s.id === fields.serviceType)?.title || fields.serviceType || 'Land Valuation').replace(/_/g, ' ')}
-              </span>
-              <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-                Subject: {(fields.subjectType || 'Residential Land').replace(/_/g, ' ')}
-              </span>
-              {fields.valuationLayout && (
-                <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-                  <span className={`w-1.5 h-1.5 rounded-full ${fields.valuationLayout === 'apartment' ? 'bg-purple-500' : 'bg-green-500'}`}></span>
-                  {fields.valuationLayout === 'apartment' ? 'Flat / Apartment' : 'Land & Building'}
-                </span>
-              )}
-            </div>
+             <div className="flex flex-wrap gap-2">
+               <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
+                 <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                 {fields.clientType === 'organisation' ? 'Organisation / Bank' : 'Individual'}
+               </span>
+               {fields.institutionCategory && fields.institutionCategory !== 'IBBI' && fields.institutionCategory !== 'IBBI_IVS' && (
+                 <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
+                   <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                   {fields.institutionCategory}
+                 </span>
+               )}
+               <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
+                 Service: {(SERVICES_LIST.find(s => s.id === fields.serviceType)?.title || fields.serviceType || 'Land Valuation').replace(/_/g, ' ')}
+               </span>
+               <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
+                 Subject: {(fields.subjectType || 'Residential Land').replace(/_/g, ' ')}
+               </span>
+             </div>
           </div>
           <button
             type="button"
