@@ -469,13 +469,10 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
         organisationSubTemplate: '',
       };
       setFields(clearedFields as any);
-      setLoading(true);
       try {
         await saveReportDraft(projectId, clearedFields);
       } catch (err) {
         console.error(err);
-      } finally {
-        setLoading(false);
       }
     }
   };

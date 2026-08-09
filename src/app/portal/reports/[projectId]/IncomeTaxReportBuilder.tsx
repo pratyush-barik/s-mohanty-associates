@@ -459,13 +459,10 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
         organisationSubTemplate: '',
       };
       setFields(clearedFields as any);
-      setLoading(true);
       try {
         await saveReportDraft(projectId, clearedFields);
       } catch (err) {
         console.error(err);
-      } finally {
-        setLoading(false);
       }
     }
   };
