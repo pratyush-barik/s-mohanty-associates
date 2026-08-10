@@ -379,19 +379,11 @@ interface IBBIReportBuilderProps {
     contactPhone?: string;
     contactEmail?: string;
   };
+  onReset?: () => void;
 }
 
-export default function IBBIReportBuilder({ projectId, projectCode, initialFields, status, userRole = 'REPORT_EMPLOYEE', bucketImages = [], prefill }: IBBIReportBuilderProps) {
+export default function IBBIReportBuilder({ projectId, projectCode, initialFields, status, userRole = 'REPORT_EMPLOYEE', bucketImages = [], prefill, onReset }: IBBIReportBuilderProps) {
   const router = useRouter();
-
-  useEffect(() => {
-    const handlePopState = () => {
-      window.history.replaceState(null, "", window.location.href);
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
 
 
   const merged: IBBIFields = {
@@ -484,9 +476,9 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
   const handleResetWizard = async () => {
     if (confirm("Are you sure you want to change report parameters? This will permanently clear all your typed data and reset the report.")) {
-      bypassUnloadRef.current = true;
-      await saveReportDraft(projectId, { ...DEFAULT_FIELDS, clientType: "", organisationTemplate: "", institutionCategory: "", organisationSubTemplate: "" });
-      window.location.href = window.location.pathname;
+      if (onReset) {
+        onReset();
+      }
     }
   };
   const handleCancelSubmission = async () => {

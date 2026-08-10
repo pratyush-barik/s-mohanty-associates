@@ -605,7 +605,7 @@ interface GeneralReportBuilderProps {
     contactEmail?: string;
   };
   onWizardComplete?: () => void;
-  onNavigateToBuilder?: (target: 'ibbi' | 'income_tax') => void;
+  onNavigateToBuilder?: (target: 'ibbi' | 'income_tax', updatedFields: any) => void;
   onResetWizard?: () => void;
 }
 
@@ -752,73 +752,20 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
   const [selectedBank, setSelectedBank] = useState<string | null>(null);
   const [showSubList, setShowSubList] = useState(false);
 
-  useEffect(() => {
-    if (wizardStep !== 'completed') return;
-
-    const handlePopState = () => {
-      window.history.go(1);
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, [wizardStep]);
-
-
-  useEffect(() => {
-    if (wizardStep !== 'setup') return;
-
-    // Set initial state in history so we can detect when we pop back to the start
-    if (typeof window !== 'undefined' && window.history.state === null) {
-      window.history.replaceState({ step: 'type' }, '');
-    }
-
-    const handlePopState = (event: PopStateEvent) => {
-      const state = event.state;
-      if (!state) return;
-
-      if (state.step === 'type') {
-        setSelectingOrg(false);
-        setShowBankList(false);
-        setShowSubList(false);
-        setSelectedCategory(null);
-        setSelectedBank(null);
-      } else if (state.step === 'category') {
-        setSelectingOrg(true);
-        setShowBankList(false);
-        setShowSubList(false);
-        setSelectedCategory(null);
-        setSelectedBank(null);
-      } else if (state.step === 'bank') {
-        setSelectingOrg(true);
-        setShowBankList(true);
-        setShowSubList(false);
-        setSelectedCategory(state.category || null);
-        setSelectedBank(null);
-      } else if (state.step === 'sub_template') {
-        setSelectingOrg(true);
-        setShowBankList(false);
-        setShowSubList(true);
-        setSelectedCategory(state.category || null);
-        setSelectedBank(state.bank || null);
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, [wizardStep]);
-
   const completeWizardAndSave = async (updates: Partial<typeof fields>) => {
     const updatedFields = { ...fields, ...updates };
     
     const isSpecialTemplate = ['INCOME_TAX', 'IBBI_IVS'].includes(updatedFields.organisationTemplate || '');
     
     if (isSpecialTemplate) {
-      saveReportDraft(projectId, updatedFields).catch(e => console.error("Auto-save draft failed:", e));
-      const builderParam = updatedFields.organisationTemplate === 'IBBI_IVS' ? 'IBBI_IVS' : 'INCOME_TAX';
-      bypassUnloadRef.current = true;
-      window.location.href = `${window.location.pathname}?builder=${builderParam}`;
+      if (onNavigateToBuilder) {
+        onNavigateToBuilder(updatedFields.organisationTemplate === 'IBBI_IVS' ? 'ibbi' : 'income_tax', updatedFields);
+      } else {
+        saveReportDraft(projectId, updatedFields).catch(e => console.error("Auto-save draft failed:", e));
+        const builderParam = updatedFields.organisationTemplate === 'IBBI_IVS' ? 'IBBI_IVS' : 'INCOME_TAX';
+        bypassUnloadRef.current = true;
+        window.location.href = `${window.location.pathname}?builder=${builderParam}`;
+      }
     } else {
       // For general templates, update local state and show the form
       setFields(updatedFields);
@@ -831,9 +778,6 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       completeWizardAndSave({ clientType: 'individual', organisationTemplate: '' });
     } else {
       setSelectingOrg(true);
-      if (typeof window !== 'undefined') {
-        window.history.pushState({ step: 'category' }, '');
-      }
     }
   };
 
@@ -844,9 +788,6 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       setSelectedBank(normalizedKey);
       setShowBankList(false);
       setShowSubList(true);
-      if (typeof window !== 'undefined') {
-        window.history.pushState({ step: 'sub_template', bank: normalizedKey, category: selectedCategory }, '');
-      }
     } else {
       completeWizardAndSave({
         clientType: 'organisation',
@@ -892,9 +833,6 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       }));
       setSelectedCategory(category);
       setShowBankList(true);
-      if (typeof window !== 'undefined') {
-        window.history.pushState({ step: 'bank', category }, '');
-      }
     }
   };
 
@@ -960,9 +898,9 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
 
   const handleResetWizard = async () => {
     if (confirm("Are you sure you want to change report parameters? This will permanently clear all your typed data and reset the report.")) {
-      bypassUnloadRef.current = true;
-      await saveReportDraft(projectId, { ...DEFAULT_FIELDS, clientType: "", organisationTemplate: "", institutionCategory: "", organisationSubTemplate: "" });
-      window.location.href = window.location.pathname;
+      if (onResetWizard) {
+        onResetWizard();
+      }
     }
   };
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
