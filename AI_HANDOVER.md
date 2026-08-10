@@ -77,10 +77,15 @@ The core business logic is **100% complete**.
 4. **Drafting Flow (Updated — August 2026)**: Report agent goes to "My Projects" (`/portal/my-projects`) to see pending work. The report builder is dynamically routed in `src/app/portal/reports/[projectId]/page.tsx` based on the chosen client template:
 
    - **A. General Customer (`GeneralReportBuilder.tsx`)**: This is the default 14-section dynamic form used for standard individual clients, fully matching the real-world Individual Client Bank Report template (based on the HDFC/SBI IBBI valuation sample PDF).
-   - **B. IBBI Organisation (`IBBIReportBuilder.tsx`)**: A completely distinct report builder used when `organisationTemplate === 'IBBI_IVS'`. It contains 14 statutory IBBI sections (Objective, Description, Town Planning, Legal, Infrastructure, Socio-Env, Marketability, Engineering, Valuation, Photos/Maps). Includes:
-     - Auto-generated statutory text for Sections 1–3 in the PDF.
-     - A dynamic "Add Row" plot-by-plot valuation table in Section 13, seamlessly integrating with the Excel Annexure feature.
+   - **B. IBBI Organisation (`IBBIReportBuilder.tsx`)**: A completely distinct report builder used when `organisationTemplate === 'IBBI_IVS'`. It contains 15 statutory IBBI sections (Objective, Description, Town Planning, Legal, Infrastructure, Socio-Env, Marketability, Engineering, Valuation, Photos/Maps, Assumptions). Includes:
+     - Comprehensive **Cover Page** and auto-generated **Table of Contents**.
      - A distinct PDF rendering layout where the Valuation Certificate appears *before* Section 1.
+     - Auto-generated statutory text for Sections 1–3 in the PDF.
+     - Sub-sections 13.1 to 13.6 outlining Valuation Approaches & Methodology.
+     - A dynamic "Add Row" plot-by-plot valuation table in Section 13, seamlessly integrating with the Excel Annexure feature.
+     - **Section 15: Assumptions & Limitations** and a concluding paragraph.
+     - Expanded **Declaration** containing ~10 statutory clauses.
+   - **C. Income Tax / Capital Gains (`IncomeTaxReportBuilder.tsx`)**: A specialized builder for IT/Capital Gains valuations (when `organisationTemplate === 'INCOME_TAX_CAPITAL_GAINS'`), featuring custom fields for retro-valuation, indexation, and specific statutory sections under IT rules.
 
    **Shared Design Decisions across ReportBuilders:**
 
@@ -129,12 +134,12 @@ The core business logic is **100% complete**.
      - **Drafting Lock:** Prevents deletion of photos actively used in the Report Draft to avoid broken PDF images.
    - *Auto-Cleanup*: Serverless CRON job (`/api/cron/cleanup-buckets`) runs daily to permanently delete raw images and metadata for projects that have been `COMPLETED` for > 48 hours.
 8. **Manager Preview, Editing & Finalization Flow (Updated)**:
-   - Manager reviews the drafted report via `GeneralReportBuilder.tsx`. Can edit text fields and add/remove/replace photographs as needed.
+   - Manager reviews the drafted report via available report builders. Can edit text fields and add/remove/replace photographs as needed.
    - Manager can "Send for Rework" which opens a prompt to input specific rework instructions (reverts status to REPORT_DRAFTING) or "Finalize & Generate PDF".
    - The Report Agent will see the Manager's rework comments highlighted at the top of the form when they resume drafting.
 9. **PDF Generation & Cleanup (Updated)**: PDF generation is fully implemented on the **Client-Side** natively using `pdf-lib`, triggered during Manager Finalization.
-   - It directly draws tables, text, and images onto PDF coordinates using `src/lib/pdf-report-renderer.ts`, paginates automatically, downloads locally for the manager, and uploads the final PDF blob to `reports/pdfs/` in the `valuation-documents` Supabase bucket.
-   - **Automated Cleanup:** Upon finalization, all temporary property images in `temp-photos/${projectId}/` are deleted from Supabase, and the `propertyImages` array in the database JSON is cleared.
+    - It directly draws tables, text, and images onto PDF coordinates using dedicated renderers (`src/lib/pdf-general-renderer.ts`, `pdf-ibbi-renderer.ts`, `pdf-it-renderer.ts`), paginates automatically, downloads locally for the manager, and uploads the final PDF blob to `reports/pdfs/` in the `valuation-documents` Supabase bucket.
+    - **Automated Cleanup:** Upon finalization, all temporary property images in `temp-photos/${projectId}/` are deleted from Supabase, and the `propertyImages` array in the database JSON is cleared.
  10. **Client Rework Flow**: Clients can request changes to their finalized reports from their dashboard. The project status reverts to `MANAGER_REVIEW`, and the manager receives a rework comment message.
 11. **Public Enquiries Ticketing System**: Website contact form submissions and direct emails are tracked as separate tickets (Enquiry model) with `ENQUIRY_FILES` Supabase bucket for attachments. The Employee Portal has a dedicated **Public Enquiries** nav item (navigates to `/portal/enquiries`) with:
     - **Enquiry List** table: shows ticket number, source badge (🌐 Website / 📧 Email / 🔐 Portal Signup), linked project code, status, date, and search/filter controls.
