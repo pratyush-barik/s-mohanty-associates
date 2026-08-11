@@ -1072,10 +1072,26 @@ export class PDFGeneralRenderer {
     }
   }
 
+  private drawPageNumbers(): void {
+    const pages = this.doc.getPages();
+    for (let i = 1; i < pages.length; i++) {
+      const page = pages[i];
+      const text = String(i + 1);
+      const textW = this.fontRegular.widthOfTextAtSize(text, 10);
+      page.drawText(text, {
+        x: MARGIN_L + CONTENT_W / 2 - textW / 2,
+        y: MARGIN_B / 2,
+        size: 10,
+        font: this.fontRegular,
+      });
+    }
+  }
+
   // ─── Output ────────────────────────────────────────────────────
 
   /** Generate the PDF as a Blob */
   async toBlob(): Promise<Blob> {
+    this.drawPageNumbers();
     const bytes = await this.doc.save();
     return new Blob([bytes] as any, { type: 'application/pdf' });
   }

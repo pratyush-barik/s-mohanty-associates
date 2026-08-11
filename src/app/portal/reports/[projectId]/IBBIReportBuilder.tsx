@@ -824,6 +824,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.newPage();
       r.drawCenteredTitle('CONTENTS', 16);
       r.advanceCursor(12);
+      const tocPageMap: Record<string, number> = {};
       const tocItems = [
         'VALUATION CERTIFICATE',
         '1.  OBJECTIVE',
@@ -864,9 +865,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
         });
       }
       for (const item of tocItems) {
-        const isSub = item.startsWith('    ');
-        r.drawTextBlock(item, { fontSize: isSub ? 10 : 12, bold: !isSub });
-        r.advanceCursor(isSub ? 1 : 2);
+        r.drawTOCRow(item, item);
       }
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -881,6 +880,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       ]);
       r.advanceCursor(6);
       r.drawCenteredTitle('VALUATION CERTIFICATE');
+      tocPageMap['VALUATION CERTIFICATE'] = r.getPageCount();
       r.advanceCursor(6);
 
       // Certificate introductory paragraph
@@ -934,6 +934,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
       // ── 1. OBJECTIVE ──
       r.drawSectionHeader('1. OBJECTIVE:');
+      tocPageMap['1.  OBJECTIVE'] = r.getPageCount();
 
       // Introductory paragraph for Section 1 (from sample)
       const objParagraph = fields.appointedBy
@@ -943,29 +944,37 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.advanceCursor(6);
 
       r.drawTextBlock('1.1 VALUATION STANDARD', { bold: true });
+      tocPageMap['    1.1  Valuation Standard'] = r.getPageCount();
       r.drawTextBlock('The entire valuation exercise has been carried out in accordance of Standard procedures laid down as per the International Valuation Standards.');
       r.advanceCursor(4);
       r.drawTextBlock('1.2 PURPOSE OF VALUATION', { bold: true });
+      tocPageMap['    1.2  Purpose of Valuation'] = r.getPageCount();
       r.drawTextBlock(`The Valuation is required for the purpose of ${fields.purposeOfValuation || 'accessing the impartial and true Liquidation / Realisable Market value'} of the aforesaid property on the basis of market survey method as on the date of valuation.`);
       r.advanceCursor(4);
       r.drawTextBlock('1.3 CONFLICT OF INTEREST', { bold: true });
+      tocPageMap['    1.3  Conflict of Interest'] = r.getPageCount();
       r.drawTextBlock('The valuer has no direct or indirect interest in the property valued, nor any personal interest or bias with respect to the parties involved.');
       r.advanceCursor(4);
       r.drawTextBlock('1.4 CURRENCY AND MEASUREMENT', { bold: true });
+      tocPageMap['    1.4  Currency and Measurement'] = r.getPageCount();
       r.drawTextBlock('All amounts are in Indian Rupees (INR). Land is measured in Acres/Decimals/Sq. ft. as applicable.');
       r.advanceCursor(4);
       r.drawTextBlock('1.5 RESPONSIBILITY TO THIRD PARTIES', { bold: true });
+      tocPageMap['    1.5  Responsibility to Third Parties'] = r.getPageCount();
       r.drawTextBlock('This report is prepared only for the stated purpose and the parties named herein.');
       r.advanceCursor(4);
       r.drawTextBlock('1.6 DISCLOSURE AND PUBLICATION', { bold: true });
+      tocPageMap['    1.6  Disclosure and Publication'] = r.getPageCount();
       r.drawTextBlock('This valuation report or any reference thereof should not be used in any published document without the consent of the valuer.');
       r.advanceCursor(4);
       r.drawTextBlock('1.7 LIMITATIONS ON LIABILITY', { bold: true });
+      tocPageMap['    1.7  Limitations on Liability'] = r.getPageCount();
       r.drawTextBlock('The valuer shall not be liable for any loss or damage arising from this report except to the extent that such loss or damage is caused by the valuer\'s negligence.');
       r.advanceCursor(8);
 
       // ── 2. SCOPE OF ENQUIRIES ──
       r.drawSectionHeader('2. SCOPE OF ENQUIRIES AND INVESTIGATION:');
+      tocPageMap['2.  SCOPE OF ENQUIRIES AND INVESTIGATION'] = r.getPageCount();
       r.drawTextBlock('2.1 SITE INSPECTION', { bold: true });
       r.drawTextBlock(`Site inspection was carried out on ${fields.dateOfInspection || '________'}.`);
       r.advanceCursor(4);
@@ -984,6 +993,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
       // ── 3. BASIS OF VALUATION ──
       r.drawSectionHeader('3. BASIS OF VALUATION:');
+      tocPageMap['3.  BASIS OF VALUATION'] = r.getPageCount();
       r.drawTextBlock('The valuation is based on Fair Market Value as defined in IVS 104 -- the estimated amount for which an asset or liability should exchange on the valuation date between a willing buyer and a willing seller in an arm\'s length transaction, after proper marketing and where the parties had each acted knowledgeably, prudently and without compulsion.');
       r.advanceCursor(8);
 
@@ -993,6 +1003,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
       // ── 4. BRIEF DESCRIPTION ──
       r.drawSectionHeader('4. BRIEF DESCRIPTION OF THE PROPERTY');
+      tocPageMap['4.  BRIEF DESCRIPTION OF THE PROPERTY'] = r.getPageCount();
       // Introductory prose paragraph (matches sample format)
       if (fields.propertyDescription) {
         r.drawTextBlock(`The Property in consideration is ${fields.propertyDescription} conveniently located at ${fields.propertyAddress || '________'}.`);
@@ -1024,6 +1035,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
       // ── 5. TOWN PLANNING ──
       r.drawSectionHeader('5. TOWN PLANNING PARAMETERS:');
+      tocPageMap['5.  TOWN PLANNING PARAMETERS'] = r.getPageCount();
       r.drawSimpleRow('Master Plan Provision', fields.masterPlanProvision);
       r.drawSimpleRow('Approved Plan Date', fields.approvedPlanDate);
       r.drawSimpleRow('Approved Plan Authority', fields.approvedPlanAuthority);
@@ -1034,6 +1046,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
       // ── 6. LEGAL ASPECTS ──
       r.drawSectionHeader('6. DOCUMENT DETAILS AND LEGAL ASPECTS OF THE PROPERTY:');
+      tocPageMap['6.  DOCUMENT DETAILS AND LEGAL ASPECTS'] = r.getPageCount();
       r.drawSimpleRow('Ownership Documents', fields.ownershipDocuments);
       r.drawSimpleRow('Owner as per ROR', fields.ownerAsPerROR);
       r.drawSimpleRow('Easement Agreement', fields.easementAgreement);
@@ -1049,6 +1062,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
       // ── 7. INFRASTRUCTURE ──
       r.drawSectionHeader('7. FUNCTIONAL AND INFRASTRUCTURE ASPECTS OF THE PROPERTY:');
+      tocPageMap['7.  FUNCTIONAL AND INFRASTRUCTURE ASPECTS'] = r.getPageCount();
       r.drawSimpleRow('Water Supply', fields.waterSupply);
       r.drawSimpleRow('Sewerage', fields.sewerage);
       r.drawSimpleRow('Storm Water Drainage', fields.stormWater);
@@ -1063,12 +1077,14 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
       // ── 8. SOCIO-CULTURAL ──
       r.drawSectionHeader('8. SOCIO-CULTURAL ASPECTS OF THE PROPERTY:');
+      tocPageMap['8.  SOCIO-CULTURAL ASPECTS'] = r.getPageCount();
       r.drawSimpleRow('Social Structure', fields.socialStructure);
       r.drawSimpleRow('Social Infrastructure', fields.socialInfrastructure);
       r.advanceCursor(8);
 
       // ── 9. ENVIRONMENTAL ──
       r.drawSectionHeader('9. ENVIRONMENTAL FACTORS AFFECTING THE PROPERTY:');
+      tocPageMap['9.  ENVIRONMENTAL FACTORS'] = r.getPageCount();
       r.drawSimpleRow('Eco-friendly Materials', fields.ecoMaterials);
       r.drawSimpleRow('Rain Water Harvesting', fields.rainWaterHarvesting);
       r.drawSimpleRow('Solar System', fields.solarSystem);
@@ -1077,6 +1093,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
       // ── 10. MARKETABILITY ──
       r.drawSectionHeader('10. MARKETABILITY ASPECTS OF THE PROPERTY:');
+      tocPageMap['10. MARKETABILITY OF THE PROPERTY'] = r.getPageCount();
       r.drawSimpleRow('Locational Attributes', fields.locationalAttributes);
       r.drawSimpleRow('Scarcity', fields.scarcity);
       r.drawSimpleRow('Demand & Supply', fields.demandSupply);
@@ -1084,11 +1101,13 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
       // ── 11. ARCHITECTURAL ──
       r.drawSectionHeader('11. ARCHITECTURAL ASPECTS:');
+      tocPageMap['11. ARCHITECTURAL ASPECTS'] = r.getPageCount();
       r.drawSimpleRow('Architectural Aspects', fields.architecturalAspects);
       r.advanceCursor(8);
 
       // ── 12. ENGINEERING ──
       r.drawSectionHeader('12. ENGINEERING ASPECTS OF THE PROPERTY:');
+      tocPageMap['12. ENGINEERING ASPECTS'] = r.getPageCount();
       r.drawSimpleRow('Type of Construction', fields.constructionType);
       r.drawSimpleRow('Materials Used', fields.materialsUsed);
       r.drawSimpleRow('Specifications', fields.specifications);
@@ -1105,29 +1124,36 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       //  SECTION 13: VALUATION (with sub-sections 13.1-13.6)
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       r.drawSectionHeader('13. VALUATION APPROACHES & METHODOLOGY ADOPTED');
+      tocPageMap['13. VALUATION APPROACHES & METHODOLOGY'] = r.getPageCount();
       r.advanceCursor(4);
 
       r.drawTextBlock('13.1 METHODOLOGY', { bold: true });
+      tocPageMap['    13.1  Methodology'] = r.getPageCount();
       r.drawTextBlock(`${fields.valuationMethod || 'Sale Comparison Method coupled with Replacement Cost Approach'} has been adopted for the valuation of the subject property. The market approach is based on actual market transactions of comparable properties in the vicinity. The cost approach estimates the replacement cost of the improvements less depreciation.`);
       r.advanceCursor(4);
 
       r.drawTextBlock('13.2 VALUATION BASES', { bold: true });
+      tocPageMap['    13.2  Valuation Bases'] = r.getPageCount();
       r.drawTextBlock('The valuation has been carried out on the basis of Fair Market Value which is defined as the price that a property would bring in a competitive and open market under all conditions requisite to a fair sale -- the buyer and seller each acting prudently and knowledgeably, and assuming the price is not affected by undue stimulus.');
       r.advanceCursor(4);
 
       r.drawTextBlock('13.3 VALUATION CONSIDERATIONS', { bold: true });
+      tocPageMap['    13.3  Valuation Considerations'] = r.getPageCount();
       r.drawTextBlock('In arriving at the valuation, the following factors have been considered: location and accessibility, size and shape of the plot, nature of surrounding development, availability of civic amenities, demand and supply position, comparable sale instances, and applicable government rates.');
       r.advanceCursor(4);
 
       r.drawTextBlock('13.4 VALUATION ASSUMPTIONS', { bold: true });
+      tocPageMap['    13.4  Valuation Assumptions'] = r.getPageCount();
       r.drawTextBlock('The valuation assumes that the property has a clear and marketable title, that there are no hidden or unapparent conditions of the property that would affect value, that the information provided by the client is true and correct, and that the property conforms to applicable government regulations.');
       r.advanceCursor(4);
 
       r.drawTextBlock('13.5 VALUATION ANALYSIS', { bold: true });
+      tocPageMap['    13.5  Valuation Analysis'] = r.getPageCount();
       r.drawTextBlock('Based on the market survey conducted in the area and analysis of comparable sale transactions, the prevailing market rates have been assessed. The government guideline rates as published by the Registration Department have also been considered. After due consideration of all relevant factors including location, accessibility, amenities, and market conditions, the values have been arrived at as detailed below.');
       r.advanceCursor(6);
 
       r.drawTextBlock('13.6 DETAILS OF VALUATION', { bold: true });
+      tocPageMap['    13.6  Details of Valuation'] = r.getPageCount();
       r.advanceCursor(4);
 
       // Dynamic valuation rows table (if manual rows exist)
@@ -1166,6 +1192,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       //  SECTION 14: SITE LOCATION (reference)
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       r.drawSectionHeader('14. SITE LOCATION:');
+      tocPageMap['14. SITE LOCATION'] = r.getPageCount();
       if (fields.latitude || fields.longitude) {
         r.drawSimpleRow('Latitude', fields.latitude || 'N/A');
         r.drawSimpleRow('Longitude', fields.longitude || 'N/A');
@@ -1177,6 +1204,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       //  SECTION 15: ASSUMPTION & LIMITATION (matches sample)
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       r.drawSectionHeader('15. ASSUMPTION & LIMITATION.');
+      tocPageMap['15. ASSUMPTIONS & LIMITATIONS'] = r.getPageCount();
       r.advanceCursor(4);
       r.drawTextBlock('For this report we have carried out analysis and assessments of the market(s) under consideration and the demand-supply for the residential and commercial sectors in general.');
       r.advanceCursor(4);
@@ -1201,6 +1229,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       //  CONCLUSION
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       r.drawSectionHeader('CONCLUSION');
+      tocPageMap['CONCLUSION'] = r.getPageCount();
       r.advanceCursor(4);
       const fmvVal = parseFloat(fields.fairMarketValueTotal) || 0;
       const realVal = parseFloat(fields.realisableValueTotal) || 0;
@@ -1241,6 +1270,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       r.newPage();
       r.drawSectionHeader('DECLARATION AND UNDERTAKING');
+      tocPageMap['DECLARATION AND UNDERTAKING'] = r.getPageCount();
       r.advanceCursor(6);
       r.drawTextBlock(`I ${fields.representativeName ? 'Mr. ' + fields.representativeName : 'Mr. ________'} do hereby solemnly affirm and state that:`, { bold: true });
       r.advanceCursor(4);
@@ -1286,6 +1316,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       if (propImageBytes.length > 0) {
         r.newPage();
         r.drawCenteredTitle('PROPERTY PHOTOGRAPHS');
+      tocPageMap['PROPERTY PHOTOGRAPHS'] = r.getPageCount();
         r.advanceCursor(6);
 
         for (let i = 0; i < propImageBytes.length; i += 2) {
@@ -1329,6 +1360,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
           if (annexure.parsedData && annexure.parsedData.headers.length > 0) {
             r.newPage();
             r.drawCenteredTitle(annexure.title ? `ANNEXURE ${annexure.label} - ${annexure.title.toUpperCase()}` : `ANNEXURE ${annexure.label}`);
+            tocPageMap[`ANNEXURE ${annexure.label}${annexure.title ? ': ' + annexure.title.toUpperCase() : ''}`] = r.getPageCount();
             r.advanceCursor(8);
             r.drawDataTable(annexure.parsedData.headers, annexure.parsedData.rows);
           }

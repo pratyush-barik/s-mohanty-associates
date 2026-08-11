@@ -1081,10 +1081,100 @@ export class PDFIBBIRenderer {
     }
   }
 
+  // ─── TOC and Page Number Support ─────────────────────────────────
+
+  private tocPlaceholders: { pageIndex: number; x: number; y: number; id: string }[] = [];
+
+  getPageCount(): number {
+    return this.doc.getPages().length;
+  }
+
+  drawTOCRow(title: string, id: string): void {
+    const isSub = title.startsWith('    ');
+    const fontSize = 12; // Force all to size 12 as requested
+    const font = this.fontBold; // Force all to bold as requested
+    
+    // Calculate widths
+    const trimmedTitle = title.trim();
+    const indent = isSub ? 20 : 0;
+    const titleW = font.widthOfTextAtSize(trimmedTitle, fontSize);
+    const dotW = font.widthOfTextAtSize('.', fontSize);
+    
+    const startX = MARGIN_L + indent;
+    const pY = this.pdfY(this.cursorY);
+    
+    // Draw the title
+    this.page.drawText(trimmedTitle, {
+      x: startX,
+      y: pY,
+      size: fontSize,
+      font: font,
+    });
+    
+    // Draw dot leaders
+    const dotStartX = startX + titleW + 5;
+    const dotEndX = MARGIN_L + CONTENT_W - 30; // Leave space for page number
+    const spaceForDots = dotEndX - dotStartX;
+    if (spaceForDots > dotW) {
+      const numDots = Math.floor(spaceForDots / dotW);
+      this.page.drawText('.'.repeat(numDots), {
+        x: dotStartX,
+        y: pY,
+        size: fontSize,
+        font: font,
+      });
+    }
+
+    // Save placeholder for page number
+    this.tocPlaceholders.push({
+      pageIndex: this.doc.getPages().indexOf(this.page),
+      x: dotEndX + 5,
+      y: pY,
+      id: id,
+    });
+    
+    this.advanceCursor(fontSize * LINE_HEIGHT);
+  }
+
+  fillTOCPageNumbers(pageMap: Record<string, number>): void {
+    const pages = this.doc.getPages();
+    for (const p of this.tocPlaceholders) {
+      const pageNum = pageMap[p.id];
+      if (pageNum !== undefined) {
+        const page = pages[p.pageIndex];
+        const text = String(pageNum);
+        page.drawText(text, {
+          x: p.x,
+          y: p.y,
+          size: 12,
+          font: this.fontBold, // all TOC text is bold
+        });
+      }
+    }
+  }
+
+  private drawPageNumbers(): void {
+    const pages = this.doc.getPages();
+    // Start drawing from page 2 (index 1) to skip cover, or draw on all? Image 1 has page number on TOC.
+    // Let's draw on all pages except the cover page (index 0).
+    for (let i = 1; i < pages.length; i++) {
+      const page = pages[i];
+      const text = String(i + 1);
+      const textW = this.fontRegular.widthOfTextAtSize(text, 10);
+      page.drawText(text, {
+        x: MARGIN_L + CONTENT_W / 2 - textW / 2, // Centered
+        y: MARGIN_B / 2, // Bottom margin
+        size: 10,
+        font: this.fontRegular,
+      });
+    }
+  }
+
   // ─── Output ────────────────────────────────────────────────────
 
   /** Generate the PDF as a Blob */
   async toBlob(): Promise<Blob> {
+    this.drawPageNumbers();
     const bytes = await this.doc.save();
     return new Blob([bytes] as any, { type: 'application/pdf' });
   }
