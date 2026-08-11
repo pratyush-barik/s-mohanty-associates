@@ -396,14 +396,14 @@ const FloatingNavigator = ({ isLandOnly, showLandAnnexure }: { isLandOnly: boole
   };
 
   return (
-    <div className="hidden xl:flex flex-col gap-1 bg-white/80 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2.5 rounded-2xl w-[160px] sticky top-24 shrink-0 z-40">
-      <div className="text-[10px] font-black text-neutral-400 mb-2 px-2 uppercase tracking-widest">IT Sections</div>
+    <div className="hidden xl:flex flex-col gap-0 bg-white/80 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2 rounded-2xl w-[160px] sticky top-24 shrink-0 z-40">
+      <div className="text-[10px] font-black text-neutral-400 mb-1 px-2 uppercase tracking-widest">IT Sections</div>
       {NAV_SECTIONS.map((sec) => (
         <button
           key={sec.id}
           type="button"
           onClick={() => scrollTo(sec.id)}
-          className={`text-left py-1.5 text-[11px] font-bold rounded-lg transition-all truncate hover:bg-[#b8860b] hover:text-white ${
+          className={`text-left py-1 text-[11px] font-bold rounded-lg transition-all truncate hover:bg-[#b8860b] hover:text-white ${
             sec.indent
               ? 'px-2 pl-4 text-slate-400 text-[10px]'
               : 'px-3 text-slate-600'
