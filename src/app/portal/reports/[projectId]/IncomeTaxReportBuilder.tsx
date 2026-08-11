@@ -379,13 +379,16 @@ const FloatingNavigator = ({ isLandOnly, showLandAnnexure }: { isLandOnly: boole
     { id: 'subsection-rent', title: '↳ Rent (Q25–37)', indent: true },
     { id: 'subsection-sales', title: '↳ Sales (Q38–40)', indent: true },
     { id: 'subsection-construction', title: '↳ Construction (Q41–45)', indent: true },
-    { id: 'section-3', title: '3. Part II Valuation', indent: false },
-    ...(!isLandOnly ? [{ id: 'section-4', title: '4. Tech Details', indent: false }] : []),
-    { id: `section-${isLandOnly ? '4' : '5'}`, title: `${isLandOnly ? '4' : '5'}. Calc Table`, indent: false },
-    { id: `section-${isLandOnly ? '5' : '6'}`, title: `${isLandOnly ? '5' : '6'}. Abstract`, indent: false },
-    { id: `section-${isLandOnly ? '6' : '7'}`, title: `${isLandOnly ? '6' : '7'}. Photos`, indent: false },
-    { id: `section-${isLandOnly ? '7' : '8'}`, title: `${isLandOnly ? '7' : '8'}. Remarks`, indent: false },
-    { id: `section-${isLandOnly ? '8' : '9'}`, title: `${isLandOnly ? '8' : '9'}. Certificate`, indent: false },
+    { id: 'section-3', title: '3. Part II – Valuation', indent: false },
+    { id: 'subsection-valuation-disc', title: '↳ Valuation Discussion', indent: true },
+    ...(!isLandOnly ? [{ id: 'subsection-tech-details', title: '↳ Technical Details', indent: true }] : []),
+    { id: 'subsection-calc-table', title: '↳ Calc Table', indent: true },
+    { id: 'subsection-abstract', title: '↳ Abstract', indent: true },
+    { id: 'subsection-photos', title: '↳ Photos & Maps', indent: true },
+    { id: 'section-4', title: '4. Part III – Declaration', indent: false },
+    { id: 'subsection-declaration', title: '↳ Declaration', indent: true },
+    { id: 'subsection-remarks', title: '↳ Remarks', indent: true },
+    { id: 'subsection-certificate', title: '↳ Certificate', indent: true },
   ];
 
   const scrollTo = (id: string) => {
@@ -1212,9 +1215,12 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           </div>
         </Section>
 
-        {/* ═══ SECTION 3: PART II VALUATION DISCUSSION ═══ */}
+        {/* ═══ SECTION 3: PART II – VALUATION ═══ */}
+        <Section title="PART II – VALUATION" number={3}>
+          <div className="space-y-3">
 
-        <Section title="Part II: Valuation Discussion" number={3}>
+          {/* ── Sub-section: VALUATION DISCUSSION ── */}
+          <SubSection id="subsection-valuation-disc" title="Valuation Discussion">
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="Valuation Year">
               <input className={inputCls} value={fields.valuationYear} onChange={e => handleChange('valuationYear', e.target.value)} disabled={isReadOnly} placeholder="2008-2009" />
@@ -1272,11 +1278,11 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               </button>
             )}
           </div>
-        </Section>
+          </SubSection>
 
-        {/* ═══ SECTION 4: TECHNICAL DETAILS (Items 01-20) — BUILDING ONLY ═══ */}
-        {!isLandOnly && (
-          <Section title="Annexure: Technical Details (Items 01-20)" number={4} defaultOpen={false}>
+          {/* ── Sub-section: TECHNICAL DETAILS ── */}
+          {!isLandOnly && (
+          <SubSection id="subsection-tech-details" title="Annexure: Technical Details (Items 01–20)" defaultOpen={false}>
             <div className="grid md:grid-cols-2 gap-4">
               <Field label="01. No. of Floors & Height">
                 <input className={inputCls} value={fields.techFloors} onChange={e => handleChange('techFloors', e.target.value)} disabled={isReadOnly} placeholder="B+G+2 STORIED BUILDING" />
@@ -1354,11 +1360,11 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                 <input className={inputCls} value={fields.techSewageDisposal} onChange={e => handleChange('techSewageDisposal', e.target.value)} disabled={isReadOnly} />
               </Field>
             </div>
-          </Section>
-        )}
+          </SubSection>
+          )}
 
-        {/* ═══ SECTION 8: VALUATION CALCULATION TABLE ═══ */}
-        <Section title="Valuation Calculation (Table I)" number={isLandOnly ? 7 : 8}>
+          {/* ── Sub-section: CALCULATION TABLE ── */}
+          <SubSection id="subsection-calc-table" title="Valuation Calculation (Table I)">
           <div className="grid md:grid-cols-2 gap-4 mb-4">
             <Field label="Valuation Date (for table header)">
               <input className={inputCls} value={fields.valuationCalcDate} onChange={e => handleChange('valuationCalcDate', e.target.value)} disabled={isReadOnly} placeholder="01.04.2008" />
@@ -1419,10 +1425,10 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
             <p className="text-xs font-black text-amber-400 uppercase tracking-widest mb-1">Total Building Value (Auto-calculated)</p>
             <p className="text-2xl font-bold">RS.{formatIndianCurrency(computedBuildingValue)}/-</p>
           </div>
-        </Section>
+          </SubSection>
 
-        {/* ═══ SECTION 9: EXTRA ITEMS & ABSTRACT ═══ */}
-        <Section title="Extra Items & Total Abstract" number={isLandOnly ? 8 : 9}>
+          {/* ── Sub-section: EXTRA ITEMS & ABSTRACT ── */}
+          <SubSection id="subsection-abstract" title="Extra Items & Total Abstract">
           {/* Extra Items */}
           <div className="mb-6">
             <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest mb-3">Extra Items (Table J)</p>
@@ -1473,10 +1479,10 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               </div>
             </div>
           </div>
-        </Section>
+          </SubSection>
 
-        {/* ═══ SECTION 10: APPENDICES (PHOTOS & MAPS) ═══ */}
-        <Section title="Appendices: Photos & Maps" number={isLandOnly ? 9 : 10}>
+          {/* ── Sub-section: PHOTOS & MAPS ── */}
+          <SubSection id="subsection-photos" title="Appendices: Photos & Maps" defaultOpen={false}>
           {/* Property Photographs */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
@@ -1600,11 +1606,54 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
             )}
           </div>
 
-          {uploadError && <p className="text-red-600 text-xs font-semibold mt-2">{uploadError}</p>}
+          </SubSection>
+
+          </div>
         </Section>
 
-        {/* ═══ SECTION 11: REMARKS ═══ */}
-        <Section title="Remarks" number={isLandOnly ? 10 : 11} defaultOpen={false}>
+        {/* ═══ SECTION 4: PART III – DECLARATION ═══ */}
+        <Section title="PART III – DECLARATION" number={4}>
+          <div className="space-y-3">
+
+          {/* ── Sub-section: DECLARATION ── */}
+          <SubSection id="subsection-declaration" title="Declaration">
+            <div className="space-y-4">
+              <div className="p-4 bg-[#f8f9fa] rounded-xl border border-[#dee2e6]">
+                <p className="text-sm font-bold text-[#0f2038] mb-3 uppercase tracking-wide">I HEREBY DECLARE THAT —</p>
+                <div className="space-y-3">
+                  <div className="flex gap-3">
+                    <span className="font-bold text-[#b8860b] text-sm shrink-0">(A)</span>
+                    <p className="text-sm text-[#212529] leading-relaxed">THE INFORMATION FURNISHED IN PART I IS TRUE TO THE BEST OF MY KNOWLEDGE AND BELIEF.</p>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="font-bold text-[#b8860b] text-sm shrink-0">(B)</span>
+                    <p className="text-sm text-[#212529] leading-relaxed">I HAVE NO DIRECT OR INDIRECT INTEREST IN THE PROPERTY VALUED.</p>
+                  </div>
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Date">
+                  <input type="date" className={inputCls} value={fields.declarationDate ?? ''} onChange={e => handleChange('declarationDate', e.target.value)} disabled={isReadOnly} />
+                </Field>
+              </div>
+
+              <div className="mt-6 p-5 bg-white rounded-xl border border-[#e9ecef] flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 shadow-sm">
+                <div className="space-y-1.5">
+                  <p className="text-sm font-bold text-[#0f2038] tracking-wide">
+                    DATE–{fields.declarationDate ? fields.declarationDate.split('-').reverse().join('/') : 'DD/MM/YYYY'}
+                  </p>
+                  <p className="text-sm font-bold text-[#0f2038] tracking-wide">PLACE–BHUBANESWAR</p>
+                </div>
+                <div className="sm:text-right space-y-1.5">
+                  <p className="text-sm font-bold text-[#0f2038] tracking-wide">ER. SATYAJIT MOHANTY</p>
+                  <p className="text-sm font-bold text-[#0f2038] tracking-wide">SIGNATURE OF REGISTERED VALUER</p>
+                </div>
+              </div>
+            </div>
+          </SubSection>
+
+          {/* ── Sub-section: REMARKS ── */}
+          <SubSection id="subsection-remarks" title="Remarks" defaultOpen={false}>
           <label className="flex items-center gap-2 mb-3 cursor-pointer">
             <input type="checkbox" checked={fields.hasRemarks} onChange={e => handleChange('hasRemarks', e.target.checked)} disabled={isReadOnly}
               className="w-4 h-4 rounded border-[#dee2e6] text-[#b8860b] focus:ring-[#b8860b]/30" />
@@ -1616,10 +1665,10 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                 placeholder="AS CONFIRMED BY THE CUSTOMER, THE SECOND FLOOR AND THE EXTENSION..." rows={4} />
             </Field>
           )}
-        </Section>
+          </SubSection>
 
-        {/* ═══ SECTION 12: CERTIFICATE PREVIEW ═══ */}
-        <Section title="Valuation Certificate (Preview)" number={isLandOnly ? 11 : 12} defaultOpen={false}>
+          {/* ── Sub-section: CERTIFICATE ── */}
+          <SubSection id="subsection-certificate" title="Valuation Certificate (Preview)" defaultOpen={false}>
           <div className="p-5 bg-[#f8f9fa] rounded-xl border border-[#e9ecef] space-y-3">
             <p className="text-sm font-bold text-[#0f2038]">VALUATION CERTIFICATE</p>
             <p className="text-sm text-[#212529] leading-relaxed">
@@ -1631,7 +1680,11 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               ({rupeesInWords(computedTotalProperty).toUpperCase()})
             </p>
           </div>
+          </SubSection>
+
+          </div>
         </Section>
+
 
         {/* ═══ ACTION BUTTONS ═══ */}
         <div className="flex flex-wrap gap-4 pt-4 items-center w-full pb-6">
