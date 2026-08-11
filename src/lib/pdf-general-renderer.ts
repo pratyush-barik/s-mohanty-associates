@@ -217,7 +217,7 @@ export class PDFGeneralRenderer {
   private measureRichTextHeight(segments: TextSegment[], maxWidth: number, fontSize: number): number {
     const wordList: { word: string; bold?: boolean; italic?: boolean }[] = [];
     for (const seg of segments) {
-      const words = String(seg.text || '').split(/(\s+)/);
+      const words = this.sanitizeText(seg.text).split(/(\s+)/);
       for (const w of words) {
         if (w) wordList.push({ word: w, bold: seg.bold, italic: seg.italic });
       }
@@ -227,8 +227,9 @@ export class PDFGeneralRenderer {
     let currentWidth = 0;
     for (const item of wordList) {
       const font = this.getFont(item.bold, item.italic);
-      const ww = font.widthOfTextAtSize(item.word, fontSize);
-      if (currentWidth + ww > maxWidth && currentLine.length > 0 && !/^\s+$/.test(item.word)) {
+      const safeWord = this.sanitizeText(item.word);
+      const ww = font.widthOfTextAtSize(safeWord, fontSize);
+      if (currentWidth + ww > maxWidth && currentLine.length > 0 && !/^\s+$/.test(safeWord)) {
         lines.push(currentLine);
         currentLine = [];
         currentWidth = 0;
@@ -315,7 +316,7 @@ export class PDFGeneralRenderer {
     // Build a flat list of {word, bold, italic}
     const wordList: { word: string; bold?: boolean; italic?: boolean }[] = [];
     for (const seg of segments) {
-      const words = String(seg.text || '').split(/(\s+)/); // preserve whitespace
+      const words = this.sanitizeText(seg.text).split(/(\s+)/); // preserve whitespace
       for (const w of words) {
         if (w) wordList.push({ word: w, bold: seg.bold, italic: seg.italic });
       }
@@ -328,8 +329,9 @@ export class PDFGeneralRenderer {
 
     for (const item of wordList) {
       const font = this.getFont(item.bold, item.italic);
-      const ww = font.widthOfTextAtSize(item.word, fontSize);
-      if (currentWidth + ww > maxWidth && currentLine.length > 0 && !/^\s+$/.test(item.word)) {
+      const safeWord = this.sanitizeText(item.word);
+      const ww = font.widthOfTextAtSize(safeWord, fontSize);
+      if (currentWidth + ww > maxWidth && currentLine.length > 0 && !/^\s+$/.test(safeWord)) {
         lines.push(currentLine);
         currentLine = [];
         currentWidth = 0;
@@ -348,10 +350,11 @@ export class PDFGeneralRenderer {
 
       for (const item of lines[li]) {
         const font = this.getFont(item.bold, item.italic);
-        this.page.drawText(item.word, {
+        const safeWord = this.sanitizeText(item.word);
+        this.page.drawText(safeWord, {
           x: cx, y: pY, size: fontSize, font, color: rgb(0, 0, 0),
         });
-        cx += font.widthOfTextAtSize(item.word, fontSize);
+        cx += font.widthOfTextAtSize(safeWord, fontSize);
       }
     }
 
