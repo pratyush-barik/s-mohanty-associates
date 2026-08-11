@@ -224,6 +224,11 @@ The core business logic is **100% complete**.
      - **Confidence scaling**: Confidence now scales with sample count — more training data for a group → higher confidence. Uses `trainedConfidence()` function.
      - **Graceful fallback**: If no trained data exists for a particular combination, falls back to the original heuristic logic but with lower confidence and `source: 'heuristic'` tag.
      - **Zero runtime cost**: Model weights are imported as a static JSON file at build time — no API calls, no model loading latency.
+ 24. **PDF Formatting & TOC Enhancements (August 2026)**:
+     - **Dynamic Table of Contents**: The IBBI report generator now tracks page numbers dynamically during rendering. The TOC is formatted with dotted leaders (`...`) and precise right-aligned page numbers. All TOC text (including sub-sections like 1.1) is strictly bold and uniform in size.
+     - **Global Page Numbers**: Added bottom-center page numbers to all generated PDFs (IBBI, General, and IT renderers) starting from page 2.
+     - **Dynamic Image Sizing**: Improved the `drawImagePair` method across all renderers to calculate exact image aspect ratios instead of fixed heights, eliminating awkward vertical whitespace and preventing page spillage.
+     - **Image Captions**: Added explicit input fields for captions on all property photographs in the form. These captions render boldly below each image pair in the final PDF (`Figure 1 - CAPTION`).
 
 ## 5. Pending Work (What is next)
 
@@ -281,7 +286,8 @@ Outstanding items in **priority order**:
 > When modifying the UI, prioritize modern, premium aesthetics (glassmorphism, clean typography, subtle animations) without relying on Tailwind component libraries like Shadcn. Use raw Tailwind classes.
 
 ## 7. Recent Git Commits (for reference)
-- `latest` — feat: complete IBBIReportBuilder implementation with dynamic valuation rows and PDF rendering
+- `latest` — feat(PDF): add bottom page numbers, format TOC with dot leaders and dynamic page numbers matching Word template
+- `previous` — feat: complete IBBIReportBuilder implementation with dynamic valuation rows and PDF rendering
 - `previous` — fix(ReportBuilder): resolve PDF table overflow by breaking words and handling full-width rows, and fix missing address in Valuation Certificate
 - `previous` — feat(ReportBuilder): add Annexure parsing (xlsx) and rendering in PDF/HTML preview tables
 - `previous` — feat(ReportBuilder): add Annexure toggle in Section 1 and Section 15 with dynamic annexure cards and Excel upload
