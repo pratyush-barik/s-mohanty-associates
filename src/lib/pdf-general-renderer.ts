@@ -143,17 +143,31 @@ export class PDFGeneralRenderer {
     return this.fontRegular;
   }
 
+  /** Strip/replace characters that WinAnsi (Helvetica) cannot encode */
+  private sanitizeText(text: string): string {
+    return String(text ?? '')
+      .replace(/[\r\n\t]/g, ' ')          // newlines/tabs -> space
+      .replace(/\u2022/g, '-')             // bullet -> dash
+      .replace(/[\u2018\u2019]/g, "'")     // smart single quotes
+      .replace(/[\u201C\u201D]/g, '"')     // smart double quotes
+      .replace(/\u2013/g, '-')             // en-dash
+      .replace(/\u2014/g, '--')            // em-dash
+      .replace(/\u2026/g, '...')           // ellipsis
+      .replace(/\u20B9/g, 'Rs.')           // rupee sign
+      .replace(/[^\x20-\x7E]/g, '');       // strip any remaining non-ASCII
+  }
+
   // ─── Text Measurement ──────────────────────────────────────────
 
   /** Measure the width of a string at a given font size */
   private textWidth(text: string, fontSize: number, bold?: boolean, italic?: boolean): number {
     const font = this.getFont(bold, italic);
-    return font.widthOfTextAtSize(String(text ?? ''), fontSize);
+    return font.widthOfTextAtSize(this.sanitizeText(text), fontSize);
   }
 
   /** Break text into lines that fit within maxWidth */
   private wrapText(text: string, maxWidth: number, fontSize: number, bold?: boolean, italic?: boolean): string[] {
-    const strText = String(text ?? '');
+    const strText = this.sanitizeText(text);
     if (!strText) return [''];
     const font = this.getFont(bold, italic);
     const words = strText.split(/\s+/);
@@ -257,7 +271,7 @@ export class PDFGeneralRenderer {
 
   /** Draw a single line of text at absolute coordinates */
   private drawTextAt(text: string, x: number, topY: number, opts?: DrawTextOptions & { textColor?: string }): void {
-    const strText = String(text || '');
+    const strText = this.sanitizeText(text);
     const fontSize = opts?.fontSize || FONT_SIZE;
     const font = this.getFont(opts?.bold, opts?.italic);
     // Baseline is roughly 0.8 * fontSize below the top of the text
