@@ -993,26 +993,33 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
       // ── 4. BRIEF DESCRIPTION ──
       r.drawSectionHeader('4. BRIEF DESCRIPTION OF THE PROPERTY');
-      r.drawSimpleRow('Applicant Name / Owners', fields.applicantName || fields.ownerName);
-      r.drawSimpleRow('Type of Property', fields.propertyType);
-      r.drawSimpleRow('Current Usage', fields.currentUsage);
-      r.drawSimpleRow('Site Address', fields.propertyAddress);
-      r.drawSimpleRow('Postal Address', fields.legalAddress);
-      r.drawSimpleRow('Revenue Plot No', fields.revenuePlotNo);
-      r.drawSimpleRow('Revenue Khata No', fields.revenueKhataNo);
-      r.drawSimpleRow('Village (Mouza)', fields.revenueVillage);
-      r.drawSimpleRow('Tahasil', fields.revenueTahasil);
-      r.drawSimpleRow('Police Station', fields.revenuePS);
-      r.drawSimpleRow('District', fields.revenueDistrict);
-      r.drawSimpleRow('State', fields.revenueState);
-      r.drawSimpleRow('Classification of Area', fields.classificationArea);
-      r.drawSimpleRow('Conversion Status', fields.conversionStatus);
-      r.drawSimpleRow('Extent of Site', fields.extentOfSite);
-      r.drawSimpleRow('Occupancy Status', fields.occupancyStatus);
-      r.drawSimpleRow('Boundary (North)', fields.boundNorth);
-      r.drawSimpleRow('Boundary (South)', fields.boundSouth);
-      r.drawSimpleRow('Boundary (East)', fields.boundEast);
-      r.drawSimpleRow('Boundary (West)', fields.boundWest);
+      // Introductory prose paragraph (matches sample format)
+      if (fields.propertyDescription) {
+        r.drawTextBlock(`The Property in consideration is ${fields.propertyDescription} conveniently located at ${fields.propertyAddress || '________'}.`);
+        r.advanceCursor(6);
+      }
+      r.drawTextBlock('BASIC DETAILS OF THE PROPERTY', { bold: true });
+      r.advanceCursor(4);
+      r.drawSimpleRow('4.1  Applicant Name / Owners', fields.applicantName || fields.ownerName);
+      r.drawSimpleRow('4.2  Type of Property', fields.propertyType);
+      r.drawSimpleRow('     Current Usage', fields.currentUsage);
+      r.drawSimpleRow('4.3  Site Address', fields.propertyAddress);
+      r.drawSimpleRow('     Address as per Documents', fields.legalAddress);
+      r.drawSimpleRow('4.8  Revenue Plot No', fields.revenuePlotNo);
+      r.drawSimpleRow('     Khata No', fields.revenueKhataNo);
+      r.drawSimpleRow('     Village (Mouza)', fields.revenueVillage);
+      r.drawSimpleRow('     Tahasil', fields.revenueTahasil);
+      r.drawSimpleRow('     Police Station', fields.revenuePS);
+      r.drawSimpleRow('     District', fields.revenueDistrict);
+      r.drawSimpleRow('     State', fields.revenueState);
+      r.drawSimpleRow('4.10 Classification of Area', fields.classificationArea);
+      r.drawSimpleRow('4.13 Conversion Status', fields.conversionStatus);
+      r.drawSimpleRow('4.14 Boundaries (North)', fields.boundNorth);
+      r.drawSimpleRow('     Boundaries (South)', fields.boundSouth);
+      r.drawSimpleRow('     Boundaries (East)', fields.boundEast);
+      r.drawSimpleRow('     Boundaries (West)', fields.boundWest);
+      r.drawSimpleRow('4.15 Extent of Site', fields.extentOfSite);
+      r.drawSimpleRow('4.16 Occupancy Status', fields.occupancyStatus);
       r.advanceCursor(8);
 
       // ── 5. TOWN PLANNING ──
@@ -1167,49 +1174,60 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.advanceCursor(8);
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-      //  SECTION 15: ASSUMPTIONS & LIMITATIONS
+      //  SECTION 15: ASSUMPTION & LIMITATION (matches sample)
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-      r.drawSectionHeader('15. ASSUMPTIONS & LIMITATIONS:');
-      r.advanceCursor(2);
-      const assumptions = [
-        'The valuation has been carried out based on the information and documents provided by the client and available in public records. The valuer has not independently verified the accuracy of such information.',
-        'It is assumed that the title of the property is clear and marketable, free from all encumbrances, liens, and charges unless otherwise stated.',
-        'No responsibility is assumed for matters of a legal nature, including questions of title and ownership, boundary disputes, or adverse conditions which a legal survey or title search might disclose.',
-        'The valuer has not carried out any structural survey or tested any services and so cannot make any comment on the structural adequacy or condition of any of the services.',
-        'The property is assumed to comply with all applicable building regulations and zoning requirements unless stated otherwise.',
-        'This report is confidential to the party to whom it is addressed and their professional advisers. No responsibility is accepted to any third party.',
-        'The valuation is applicable as on the date of valuation and the valuer does not take any responsibility for the changes in market conditions after the date of valuation.',
-        'The valuer assumes no liability for hidden defects or environmental contamination that may affect the property value.',
-      ];
-      for (const assumption of assumptions) {
-        r.drawTextBlock(`\u2022 ${assumption}`);
-        r.advanceCursor(3);
-      }
+      r.drawSectionHeader('15. ASSUMPTION & LIMITATION.');
+      r.advanceCursor(4);
+      r.drawTextBlock('For this report we have carried out analysis and assessments of the market(s) under consideration and the demand-supply for the residential and commercial sectors in general.');
+      r.advanceCursor(4);
+      r.drawTextBlock('This report is not based on comprehensive market research of the overall market for all possible situations. We have covered specific market and situations, which are highlighted in the report. The opinions expressed in the report are subject to the limitations mentioned in this para.');
+      r.advanceCursor(4);
+      r.drawTextBlock('It should be noted that value assessments are based upon the facts and evidence available at the date of assessment. Changes in socio-economic and political conditions could result in a substantially different situation that the value assessments be periodically reviewed.');
+      r.advanceCursor(4);
+      r.drawTextBlock(`The report is only for the purpose of assessing fair market value of the property as per detail provided by the client and for the exclusive use of ${certOwner}, and should not be used by any other person or for any other purpose. Report provided is limited to opinion of value and do not constitute an audit, a due diligence and tax related services. Through this report we do not express an opinion on the financial information of the business of any party, including the owners and its affiliates and subsidiaries. The report is prepared solely for the purpose stated, and should not be used for any other purpose.`);
+      r.advanceCursor(4);
+      r.drawTextBlock('No investigation of the title of the assets has been made and owners claims to the assets are assumed to be valid. It is assumed that the property is free from all encumbrance.');
+      r.advanceCursor(4);
+      r.drawTextBlock('It is also assumed, that there is no liability of outstanding on the owners taxation or any other expense towards statutory compliance for realization.');
+      r.advanceCursor(4);
+      r.drawTextBlock('In the preparations of the report, we have relied on the following information:');
+      r.drawTextBlock('\u2022 The information provided by the owner\'s or their representative appointed / its affiliates subsidiaries during the visits.');
+      r.drawTextBlock('\u2022 Recent data on the industry segments and market projections.');
+      r.advanceCursor(4);
+      r.drawTextBlock('The value assessed is my best opinion under the current circumstances and market scenario and is not a guarantee. Real estate prices are subject to wide fluctuations and the valuation need to be reviewed at suitable regular intervals.');
       r.advanceCursor(8);
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       //  CONCLUSION
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       r.drawSectionHeader('CONCLUSION');
-      r.advanceCursor(2);
+      r.advanceCursor(4);
       const fmvVal = parseFloat(fields.fairMarketValueTotal) || 0;
       const realVal = parseFloat(fields.realisableValueTotal) || 0;
       const guideVal = parseFloat(fields.bookValueTotal) || 0;
-      r.drawTextBlock(
-        `After careful examination and detailed analysis of the property, considering all relevant factors including location, market conditions, comparable sale instances, and applicable government rates, we conclude that:`
-      );
+      r.drawTextBlock('The present market value of a property is the price which a willing buyer will pay to a willing seller considering the risks involved at the reality and authenticity of the property, including thorough investigation about its genuineness of existence and all that required. Liquidation value of the assets in present consideration, is estimated in a reasonable manner and judiciously on the basis of facts and circumstances observed by us & estimation of benefits, subject to its propriety, on above consideration. It will of course vary from professionals opinion and case to case, place to place, location to location and for different characteristics too. We assess it accordingly, based on the above considerations.');
+      r.advanceCursor(6);
+      r.drawTextBlock(`After considering various important factor discussed above, we are of the opinion that the fair market Value of ${coverDesc} as per the current date at ${certAddress}, currently owned by ${certOwner}`);
       r.advanceCursor(4);
-      r.drawTextBlock(`\u2022 The Fair Market Value of the property is assessed at Rs.${formatIndianCurrency(fields.fairMarketValueTotal || '0')}/- (${rupeesInWords(fmvVal)}).`);
+      r.drawTextBlock(`Present Market Value is INR. ${formatIndianCurrency(fields.fairMarketValueTotal || '0')}. (${rupeesInWords(fmvVal).toUpperCase()}).`, { bold: true });
       r.advanceCursor(2);
       if (fields.realisableValueTotal) {
-        r.drawTextBlock(`\u2022 The Realisable / Liquidation Value of the property is assessed at Rs.${formatIndianCurrency(fields.realisableValueTotal || '0')}/- (${rupeesInWords(realVal)}).`);
+        r.drawTextBlock(`Realisable value is INR. ${formatIndianCurrency(fields.realisableValueTotal || '0')}. (${rupeesInWords(realVal).toUpperCase()}).`, { bold: true });
         r.advanceCursor(2);
       }
       if (fields.bookValueTotal) {
-        r.drawTextBlock(`\u2022 The Government Guideline Value of the property is Rs.${formatIndianCurrency(fields.bookValueTotal || '0')}/- (${rupeesInWords(guideVal)}).`);
+        r.drawTextBlock(`Govt Guideline Value is INR. ${formatIndianCurrency(fields.bookValueTotal || '0')}. (${rupeesInWords(guideVal).toUpperCase()}).`, { bold: true });
         r.advanceCursor(2);
       }
       r.advanceCursor(8);
+
+      // Conclusion signature
+      r.drawSignatureBlock([
+        { text: `Date: ${fields.dateOfValuation || '________'}` },
+        { text: 'Signature & Seal of Valuer' },
+        { text: `Place: Bhubaneswar` },
+        { text: 'Name of the Valuer - RUPESH PATNAIK', bold: true },
+      ]);
 
       // ── Remarks ──
       if (fields.remarks) {
@@ -1219,36 +1237,47 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       }
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-      //  DECLARATION AND UNDERTAKING (expanded ~10 clauses)
+      //  DECLARATION AND UNDERTAKING (exact 16 clauses from sample)
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      r.newPage();
       r.drawSectionHeader('DECLARATION AND UNDERTAKING');
-      r.advanceCursor(4);
-      r.drawTextBlock('I / We hereby declare and undertake that:', { bold: true });
+      r.advanceCursor(6);
+      r.drawTextBlock('I Mr. Rupesh Patnaik, S/o: Mr Kali Charan Patnaik do hereby solemnly affirm and state that:', { bold: true });
       r.advanceCursor(4);
       const declarations = [
-        `I have deputed my representative ${fields.representativeName ? 'Mr. ' + fields.representativeName : '______'} to inspect the property on ${fields.dateOfInspection || '______'} and I have personally reviewed the findings.`,
-        'I have no direct or indirect interest in the property being valued and my fee is not contingent upon the value reported.',
-        'The information furnished is true and correct to the best of my knowledge and belief.',
-        'I have carried out the valuation independently and impartially without any influence from the client or any other party.',
-        'The valuation has been prepared in accordance with the International Valuation Standards (IVS) and the provisions of the Insolvency and Bankruptcy Code, 2016.',
-        'I have disclosed all material facts and information that could affect the valuation.',
-        'I am a registered valuer under Section 247 of the Companies Act, 2013 read with the Companies (Registered Valuers and Valuation) Rules, 2017, and I possess the necessary qualifications and experience to carry out this valuation.',
-        'This report has been prepared solely for the stated purpose and should not be used for any other purpose without the written consent of the valuer.',
-        'I shall not be liable for any loss or damage arising out of the use of this report by any party other than the intended recipient.',
-        'The valuation is valid as on the date of valuation and I assume no responsibility for any changes in value thereafter due to market fluctuations or any other factors.',
+        'I am citizen of India.',
+        'I will not undertake valuation of any assets in which I have a direct or indirect interest or become so interested at any time during a period of three years prior to my appointments as valuer or three years after the valuation of assets was conducted by me.',
+        `The information furnished in my valuation report dated ${fields.dateOfValuation || '________'} is true & correct to the best of my knowledge & belief & I have made an impartial & true valuation of the property.`,
+        `I have personally inspected the property on ${fields.dateOfInspection || '________'}. The work is not sub-contracted to any other valuer & carried out by myself.`,
+        'I have not been removed from service/employment earlier.',
+        'I have not been convicted of any offence & sentenced to a term of imprisonment.',
+        'I have not been declared to be unsound mind.',
+        'I have not been found guilty of misconduct in my professional capacity.',
+        'I am not an undischarged bankrupt, or have not applied to be adjudicated as a bankrupt.',
+        'I have not undischarged insolvent.',
+        'I have not been levied a penalty under section 271J of Income-Tax Act, 1961 (43 of 1961) and time limit for filing appeal before commissioner of Income Tax (Appeals) or Income-Tax Appellate Tribunal, as the case may be has expired, or such penalty has been confirmed by Income-Tax Appellate Tribunal, and five years have not elapsed after levy of such penalty.',
+        'I have not been convicted of an offence connected with any proceeding under the Income-Tax Act 1961, wealth Tax Act 1957 or Gift Tax Act 1958.',
+        'My PAN Card number as applicable is AOVPP5837R.',
+        'I have not concealed or suppressed any material information, facts and records and I have made a complete and full disclosure.',
+        'I have read the International Valuation Standards (IVS) & the report submitted to the Bank for the respective asset class is in conformity to the "Standards" enshrined for valuation in the IVS in "General Standards" & "Asset Standards" as applicable.',
+        'I abide by the Model Code of Conduct for empanelment of valuer in the Bank.',
+        'I am not registered under Section 34 AB of the Wealth Tax Act, 1957.',
+        'I am valuer registered with Insolvency & Bankruptcy Board of India (IBBI).',
+        'I am the authorized official of the firm who is competent to sign this valuation report.',
+        'Further, I hereby provide the following information.',
       ];
       for (let i = 0; i < declarations.length; i++) {
-        r.drawTextBlock(`${i + 1}. ${declarations[i]}`);
+        r.drawTextBlock(declarations[i]);
         r.advanceCursor(3);
       }
-      r.advanceCursor(10);
+      r.advanceCursor(8);
 
-      // Signature block at the end of declaration
+      // Declaration signature
       r.drawSignatureBlock([
-        { text: '_______________________________' },
-        { text: 'Er. Rupesh Patnaik / Satyajit Mohanty', bold: true, fontSize: 14 },
-        { text: 'Registered Valuer, IBBI Govt. of India', italic: true },
-        { text: 'S. Mohanty & Associates, Bhubaneswar', italic: true },
+        { text: `Date: ${fields.dateOfValuation || '________'}` },
+        { text: 'Signature & Seal of Valuer' },
+        { text: 'Place: Bhubaneswar' },
+        { text: 'Name of the Valuer - RUPESH PATNAIK', bold: true },
       ]);
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1303,6 +1332,70 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
           }
         }
       }
+
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      //  ANNEXURE I: GENERAL PRINCIPLES AND LIMITING CONDITIONS
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      r.newPage();
+      r.drawCenteredTitle('ANNEXURE I: GENERAL PRINCIPLES AND LIMITING CONDITIONS');
+      r.advanceCursor(8);
+      r.drawTextBlock('General Principles Adopted and Limiting Conditions in the Preparation of Valuations and Reports. These are the general principles and limiting conditions upon which our valuation and reports are normally prepared; they apply unless we have specifically mentioned otherwise in the body of the report.');
+      r.advanceCursor(6);
+      r.drawTextBlock('CONFIDENTIALITY', { bold: true });
+      r.drawTextBlock('Our valuation and reports are confidential to the client or to whom they are addressed for the specific purpose to which they refer. They may be disclosed to other professional advisors assisting the client in respect of that purpose, but the client shall not disclose the report to any other party. No responsibility is accepted to any other party and neither the whole, nor any part, nor reference thereto may be included in any published document, statement or circular, or published in any way, nor in any communication with third parties, without our prior written approval of the form and context in which it will appear.');
+      r.advanceCursor(4);
+      r.drawTextBlock('USE OF REPORT', { bold: true });
+      r.drawTextBlock('The opinion of value expressed in this Report shall be used for the purpose stated in this Report only. We are not responsible for any consequences arising from the Valuation being quoted out of context.');
+      r.advanceCursor(4);
+      r.drawTextBlock('SOURCE OF INFORMATION', { bold: true });
+      r.drawTextBlock('Where it is stated in the Report that information has been supplied by the sources listed, this information is believed to be reliable and no responsibility is accepted should it prove incorrect. All other information stated without being attributed directly to another party is obtained from our searches of documents or enquiries with the relevant authorities. This Report has been prepared on the basis that full disclosure of all information and facts which may affect the Valuation have been made known to ourselves and we cannot accept any liability or responsibility in any event, unless such full disclosure has been made.');
+      r.advanceCursor(4);
+      r.drawTextBlock('LEGAL TITLE', { bold: true });
+      r.drawTextBlock('Whilst we may have inspected the title of the property as recorded in the Register Document of Title, we cannot accept any responsibility for its legal validity.');
+      r.advanceCursor(4);
+      r.drawTextBlock('TOWN PLANNING AND OTHER STATUTORY REGULATIONS', { bold: true });
+      r.drawTextBlock('Whilst we may make verbal enquiries or gather information on Town Planning, we do not normally carry out requisitions with the various public authorities to confirm that the property is not adversely affected by any public schemes such as road and drainage improvements. If reassurance is required, we recommend that verification be obtained from your lawyers or other professional advisors.');
+      r.drawTextBlock('Our valuation has been prepared on the basis and any improvements thereon comply with all relevant statutory regulations. It is assumed that they have been, or will be issued with a Certificate of Fitness for Occupation by the competent authority.');
+      r.advanceCursor(4);
+      r.drawTextBlock('LEASES AND TENANCIES', { bold: true });
+      r.drawTextBlock('Enquiries as to the financial standing of actual or prospective lessees or tenants are not normally made unless specifically requested. Where properties are valued with the benefit of lettings, it is therefore assumed that the lessees or tenants are capable of meeting their obligations under the lease or tenancy and that there are no arrears of rent or undisclosed breaches of covenant.');
+      r.advanceCursor(4);
+      r.drawTextBlock('DEVELOPMENT AGREEMENTS', { bold: true });
+      r.drawTextBlock('Unless otherwise stated, no allowances are made in our valuation for any joint venture agreement, development right agreement or other similar contracts.');
+      r.advanceCursor(4);
+      r.drawTextBlock('SITE SURVEYS', { bold: true });
+      r.drawTextBlock('We have conducted boundary checks, and, we assume that the dimensions correspond with those shown in the title document, certified plan or any relevant agreement.');
+      r.advanceCursor(4);
+      r.drawTextBlock('STRUCTURAL SURVEYS', { bold: true });
+      r.drawTextBlock('We have neither carried out a building survey nor any testing of services, nor have we inspected those parts of the property which are inaccessible. We cannot express an opinion about or advice upon the condition of uninspected parts and this Report should not be taken as making any implied representation or statement about such parts.');
+      r.advanceCursor(8);
+
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      //  ANNEXURE II: GENERAL ASSUMPTIONS
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      r.newPage();
+      r.drawCenteredTitle('ANNEXURE II: GENERAL ASSUMPTIONS');
+      r.advanceCursor(8);
+      r.drawTextBlock('We assume that information provided by client or its representative for this Valuation for all relevant projects is true and accurate. It includes details of measurements of land and built up area, etc.');
+      r.advanceCursor(4);
+      r.drawTextBlock('We have not gone through the legal aspects like documents of title deed, lease deed, revenue records, court matters (if any), and documentation like joint development with other companies. We also assume for this valuation assignment that the title and development rights of all the properties lies with the Company and is clear, marketable and free of all encumbrances, restrictions, easements or charges which may have detrimental effect upon the value of the property. It is also assumed that company has paid all property related taxes.');
+      r.advanceCursor(4);
+      r.drawTextBlock('We have neither carried out any soil testing nor structural surveys nor are we experts in the field of structural survey. Therefore, we do not give any assurance that properties are free from structural defect. If any investigation identifies any structural defect in the property our report may require revision. Neither are we the experts in the town planning to factor the town planning aspects in the project. Sewers, main services and the roads giving access to the property have been provided.');
+      r.advanceCursor(4);
+      r.drawTextBlock('We assumed that all the constructed structures and proposed construction is/will be free from harmful materials and/or techniques. Our valuation is on the basis that no such materials or techniques have been used.');
+      r.advanceCursor(4);
+      r.drawTextBlock('Unless advised by the company or representative of the company, we do not normally make allowance for any liability already incurred, but not yet discharged, in respect of balance land cost, completed works, or obligations in favour of contractors, subcontractors or any other professional.');
+      r.advanceCursor(4);
+      r.drawTextBlock('Unless advised by the company or representative of the company, no allowance is made for any expense of realization or for taxation, which may arise in the event of a disposal. The property is considered as if free and clears of all mortgages or other charges that may be secured thereon.');
+      r.advanceCursor(8);
+
+      // Annexure II signature
+      r.drawSignatureBlock([
+        { text: `Date: ${fields.dateOfValuation || '________'}` },
+        { text: 'Signature & Seal of Valuer' },
+        { text: 'Place: Bhubaneswar' },
+        { text: 'Name of the Valuer - RUPESH PATNAIK', bold: true },
+      ]);
 
       return await r.toBlob();
     } catch (err) {
