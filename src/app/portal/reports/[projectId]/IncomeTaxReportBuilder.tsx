@@ -44,19 +44,21 @@ interface IncomeTaxFields {
   refNo: string;
 
   // ── General (Q01-Q11) ──
-  valuationDate: string;
-  inspectionDate: string;
-  reportDate: string;
-  identifiedBy: string;
-  ownerAddress: string;
-  ownershipType: string;
-  briefDescription: string;
+  purposeOfValuation: string;  // Q01 — locked by default
+  valuationDate: string;       // Q02A — text (historical date like 01.04.2001)
+  inspectionDate: string;      // Q02B
+  reportDate: string;          // Q02C
+  identifiedBy: string;        // Q02D
+  ownerAddress: string;        // Q03
+  ownershipType: string;       // Q04
+  briefDescription: string;    // Q05
   briefDescriptionCont: string;
-  locationDetails: string;
-  surveyPlotNo: string;
-  areaType: string;
-  classOfLocality: string;
-  civicAmenitiesDistance: string;
+  locationDetails: string;     // Q06
+  surveyPlotNo: string;        // Q07
+  areaType: string;            // Q08
+  classOfLocality: string;     // Q09
+  civicAmenitiesDistance: string; // Q10
+  meansCommunication: string;  // Q11
 
   // ── Land (Q12-Q24) ──
   landArea: string;
@@ -67,8 +69,10 @@ interface IncomeTaxFields {
   landTenure: string;
   leaseDetails: string;
   restrictiveCovenant: string;
-  easements: string;
-  developmentContribution: string;
+  easements: string;              // Q17
+  developmentContribution: string; // Q18
+  acquisitionNotification: string; // Q19
+  sitePlanAttached: string;         // Q20
   plansAttached: string;
   technicalDetails: string;
   tenancyStatus: string;
@@ -187,6 +191,7 @@ const DEFAULT_FIELDS: IncomeTaxFields = {
   propertyDescription: '',
   refNo: '',
 
+  purposeOfValuation: 'TO ASSESS OF CAPITAL GAIN FOR INCOME TAX',
   valuationDate: '',
   inspectionDate: new Date().toISOString().split('T')[0],
   reportDate: new Date().toISOString().split('T')[0],
@@ -209,8 +214,11 @@ const DEFAULT_FIELDS: IncomeTaxFields = {
   landTenure: 'IT IS FREE HOLD LAND',
   leaseDetails: 'NOT APPLICABLE',
   restrictiveCovenant: '',
-  easements: 'NO SUCH PARTICULARS ARE OBSERVED BY US',
-  developmentContribution: 'NO SUCH PARTICULARS ARE OBSERVED BY US',
+  meansCommunication: 'THE LOCALITY IS SERVED BY MEANS OF PUBLIC AND PRIVATE TRANSPORT SYSTEM.',
+  easements: 'NOT APPLICABLE',
+  developmentContribution: 'NOT APPLICABLE',
+  acquisitionNotification: 'NO SUCH PARTICULARS ARE OBSERVED BY US',
+  sitePlanAttached: 'SITE PLAN IS ATTACHED (GPS LOCATION MAP ATTACHED)',
   plansAttached: 'NOT APPLICABLE',
   technicalDetails: 'NOT APPLICABLE',
   tenancyStatus: 'NOT APPLICABLE',
@@ -459,6 +467,8 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
   // Rework Modal State
   const [showReworkModal, setShowReworkModal] = useState(false);
   const [reworkComment, setReworkComment] = useState('');
+  // Q01 Purpose field lock/unlock
+  const [purposeUnlocked, setPurposeUnlocked] = useState(false);
 
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
   const isManagerOrOwner = userRole === 'MANAGER' || userRole === 'OWNER';
@@ -907,46 +917,99 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           </div>
         </Section>
 
-        {/* ═══ SECTION 2: GENERAL QUESTIONS Q01-Q11 ═══ */}
-        <Section title="General Questions (Q01-Q11)" number={2}>
+        {/* ═══ SECTION 2: PART I – QUESTIONNAIRE GENERAL Q01-Q11 ═══ */}
+        <Section title="PART I – QUESTIONNAIRE: General (Q01–Q11)" number={2}>
           <div className="grid md:grid-cols-2 gap-4">
-            <Field label="Q02A: Valuation Date">
-              <input type="date" className={inputCls} value={fields.valuationDate} onChange={e => handleChange('valuationDate', e.target.value)} disabled={isReadOnly} />
+
+            {/* Sub-header: GENERAL */}
+            <div className="md:col-span-2 border-b border-[#dee2e6] pb-1 mb-1">
+              <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest">General</p>
+            </div>
+
+            {/* Q01 — Purpose locked with change button */}
+            <div className="md:col-span-2">
+              <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider mb-1.5">01 — Purpose for Which the Valuation is Made</label>
+              <div className="flex items-center gap-2">
+                <input
+                  className={`${inputCls} flex-1 bg-[#f8f9fa] font-semibold`}
+                  value={fields.purposeOfValuation}
+                  onChange={e => handleChange('purposeOfValuation', e.target.value)}
+                  disabled={!purposeUnlocked || isReadOnly}
+                  placeholder="TO ASSESS OF CAPITAL GAIN FOR INCOME TAX"
+                />
+                {!isReadOnly && (
+                  <button
+                    type="button"
+                    onClick={() => setPurposeUnlocked(v => !v)}
+                    className={`shrink-0 text-xs font-bold px-3 py-2 rounded-lg border transition-all ${
+                      purposeUnlocked
+                        ? 'bg-[#b8860b] text-white border-[#b8860b] hover:bg-[#8a6507]'
+                        : 'bg-white text-[#b8860b] border-[#b8860b] hover:bg-[#fffbf0]'
+                    }`}
+                  >
+                    {purposeUnlocked ? '🔓 Lock' : '✏️ Change'}
+                  </button>
+                )}
+              </div>
+              {purposeUnlocked && !isReadOnly && (
+                <p className="mt-1 text-xs text-amber-600 font-medium">Field is now editable. Lock it when done.</p>
+              )}
+            </div>
+
+            {/* Q02A-D */}
+            <Field label="02 (A) — Valuation Date">
+              <input className={inputCls} value={fields.valuationDate} onChange={e => handleChange('valuationDate', e.target.value)} disabled={isReadOnly}
+                placeholder="e.g. 01.04.2001 (VALUATION AT THAT TIME BY REVERSE CALCULATION METHOD)" />
             </Field>
-            <Field label="Q02B: Inspection Date">
+            <Field label="02 (B) — Date of Inspection">
               <input type="date" className={inputCls} value={fields.inspectionDate} onChange={e => handleChange('inspectionDate', e.target.value)} disabled={isReadOnly} />
             </Field>
-            <Field label="Q02C: Report Date">
+            <Field label="02 (C) — Date of Valuation Report">
               <input type="date" className={inputCls} value={fields.reportDate} onChange={e => handleChange('reportDate', e.target.value)} disabled={isReadOnly} />
             </Field>
-            <Field label="Q02D: Identified By Whom">
-              <input className={inputCls} value={fields.identifiedBy} onChange={e => handleChange('identifiedBy', e.target.value)} disabled={isReadOnly} placeholder="MR. NAME, MOB-XXXXXXXXXX" />
+            <Field label="02 (D) — Identified By Whom">
+              <input className={inputCls} value={fields.identifiedBy} onChange={e => handleChange('identifiedBy', e.target.value)} disabled={isReadOnly} placeholder="MR. TRILOCHAN NAYAK" />
             </Field>
-            <Field label="Q03: Owner Address" span={2}>
-              <textarea className={textareaCls} value={fields.ownerAddress} onChange={e => handleChange('ownerAddress', e.target.value)} disabled={isReadOnly} placeholder="Full owner address..." rows={2} />
+
+            {/* Q03 */}
+            <Field label="03 — Name of the Owner/Owners" span={2}>
+              <input className={inputCls} value={fields.ownerAddress} onChange={e => handleChange('ownerAddress', e.target.value)} disabled={isReadOnly}
+                placeholder="MR. TRILOCHAN NAYAK, S/O: JATINDRA NATH NAYAK" />
             </Field>
-            <Field label="Q04: Ownership Type" span={2}>
+
+            {/* Q04 */}
+            <Field label="04 — Joint/Co-Ownership & Share" span={2}>
               <select className={selectCls} value={fields.ownershipType} onChange={e => handleChange('ownershipType', e.target.value)} disabled={isReadOnly}>
                 <option value="SINGLE OWNERSHIP LAND & FREE HOLD IN NATURE">SINGLE OWNERSHIP LAND & FREE HOLD IN NATURE</option>
                 <option value="JOINT OWNERSHIP LAND & FREE HOLD IN NATURE">JOINT OWNERSHIP LAND & FREE HOLD IN NATURE</option>
+                <option value="CO-OWNERSHIP LAND & FREE HOLD IN NATURE">CO-OWNERSHIP LAND & FREE HOLD IN NATURE</option>
               </select>
             </Field>
-            <Field label="Q05: Brief Description of the Property" span={2}>
+
+            {/* Q05 */}
+            <Field label="05 — Brief Description of the Property" span={2}>
               <textarea className={textareaCls} value={fields.briefDescription} onChange={e => handleChange('briefDescription', e.target.value)} disabled={isReadOnly}
-                placeholder="Full property description including building details, road access, amenities..." rows={4} />
+                placeholder="THIS IMMOVABLE PROPERTY CONSISTS OF A LAND SITUATED BEARING KHATA NO: ..." rows={4} />
             </Field>
-            <Field label="Q05 (Continuation — if needed)" span={2}>
+            <Field label="05 (Continuation — if needed)" span={2}>
               <textarea className={textareaCls} value={fields.briefDescriptionCont} onChange={e => handleChange('briefDescriptionCont', e.target.value)} disabled={isReadOnly}
-                placeholder="Additional description (locality details, amenities, etc.)" rows={3} />
+                placeholder="THE PROPERTY IS SITUATED 500 MTRS AWAY FROM..." rows={2} />
             </Field>
-            <Field label="Q06: Location, Street, Ward No." span={2}>
+
+            {/* Q06 */}
+            <Field label="06 — Location, Street, Ward No." span={2}>
               <textarea className={textareaCls} value={fields.locationDetails} onChange={e => handleChange('locationDetails', e.target.value)} disabled={isReadOnly}
-                placeholder="Khata, plot, mouza, thana, tahasil, dist, kissam, status, area..." rows={3} />
+                placeholder="KHATA NO: XX, PLOT NO: XX&#10;MOUZA- ...&#10;THANA– ...&#10;TAHASIL– ...&#10;DIST– ...&#10;KISSAM- ..." rows={5} />
             </Field>
-            <Field label="Q07: Survey/Plot No. of Land">
-              <input className={inputCls} value={fields.surveyPlotNo} onChange={e => handleChange('surveyPlotNo', e.target.value)} disabled={isReadOnly} placeholder="KHATA NO: XX, PLOT NO: XX" />
+
+            {/* Q07 */}
+            <Field label="07 — Survey/Plot No. of Land" span={2}>
+              <textarea className={textareaCls} value={fields.surveyPlotNo} onChange={e => handleChange('surveyPlotNo', e.target.value)} disabled={isReadOnly}
+                placeholder="KHATA NO: XX, PLOT NO: XX, XX, XX..." rows={3} />
             </Field>
-            <Field label="Q08: Area Classification">
+
+            {/* Q08 */}
+            <Field label="08 — Property Area Classification">
               <select className={selectCls} value={fields.areaType} onChange={e => handleChange('areaType', e.target.value)} disabled={isReadOnly}>
                 <option value="RESIDENTIAL AREA">RESIDENTIAL AREA</option>
                 <option value="COMMERCIAL AREA">COMMERCIAL AREA</option>
@@ -954,74 +1017,126 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                 <option value="INDUSTRIAL AREA">INDUSTRIAL AREA</option>
               </select>
             </Field>
-            <Field label="Q09: Classification of Locality">
+
+            {/* Q09 */}
+            <Field label="09 — Classification of Locality">
               <select className={selectCls} value={fields.classOfLocality} onChange={e => handleChange('classOfLocality', e.target.value)} disabled={isReadOnly}>
                 <option value="HIGH">HIGH</option>
                 <option value="MIDDLE">MIDDLE</option>
                 <option value="POOR">POOR</option>
               </select>
             </Field>
-            <Field label="Q10: Civic Amenities Distance (KMS)">
-              <input className={inputCls} value={fields.civicAmenitiesDistance} onChange={e => handleChange('civicAmenitiesDistance', e.target.value)} disabled={isReadOnly} placeholder="2" />
+
+            {/* Q10 */}
+            <Field label="10 — Proximity to Civic Amenities (KMS)" span={2}>
+              <input className={inputCls} value={fields.civicAmenitiesDistance} onChange={e => handleChange('civicAmenitiesDistance', e.target.value)} disabled={isReadOnly}
+                placeholder="4-5 KMS" />
             </Field>
+
+            {/* Q11 */}
+            <Field label="11 — Means & Proximity to Surface Communication" span={2}>
+              <input className={inputCls} value={fields.meansCommunication} onChange={e => handleChange('meansCommunication', e.target.value)} disabled={isReadOnly}
+                placeholder="THE LOCALITY IS SERVED BY MEANS OF PUBLIC AND PRIVATE TRANSPORT SYSTEM." />
+            </Field>
+
           </div>
         </Section>
 
-        {/* ═══ SECTION 3: LAND QUESTIONS Q12-Q24 ═══ */}
-        <Section title="Land Questions (Q12-Q24)" number={3}>
+        {/* ═══ SECTION 3: LAND Q12-Q24 ═══ */}
+        <Section title="PART I – QUESTIONNAIRE: Land (Q12–Q24)" number={3}>
           <div className="grid md:grid-cols-2 gap-4">
-            <Field label="Q12: Land Area">
-              <div className="flex gap-2">
-                <input className={inputCls} value={fields.landArea} onChange={e => handleChange('landArea', e.target.value)} disabled={isReadOnly} placeholder="0.050" />
-                <select className="w-28 px-2 py-2 rounded-lg border border-[#dee2e6] text-sm" value={fields.landAreaUnit} onChange={e => handleChange('landAreaUnit', e.target.value)} disabled={isReadOnly}>
-                  <option value="DEC">DEC</option>
-                  <option value="ACRE">ACRE</option>
-                  <option value="SQFT">SQFT</option>
-                  <option value="SQMT">SQMT</option>
-                </select>
+
+            {/* Sub-header: LAND */}
+            <div className="md:col-span-2 border-b border-[#dee2e6] pb-1 mb-1">
+              <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest">Land</p>
+            </div>
+
+            {/* Q12 */}
+            <Field label="12 — Area, Shape, Dimensions & Physical Features" span={2}>
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <input className={inputCls} value={fields.landArea} onChange={e => handleChange('landArea', e.target.value)} disabled={isReadOnly} placeholder="AC.5.325" />
+                  <select className="w-28 px-2 py-2 rounded-lg border border-[#dee2e6] text-sm" value={fields.landAreaUnit} onChange={e => handleChange('landAreaUnit', e.target.value)} disabled={isReadOnly}>
+                    <option value="DEC">DEC</option>
+                    <option value="ACRE">ACRE</option>
+                    <option value="SQFT">SQFT</option>
+                    <option value="SQMT">SQMT</option>
+                  </select>
+                </div>
+                <input className={inputCls} value={fields.landShape} onChange={e => handleChange('landShape', e.target.value)} disabled={isReadOnly} placeholder="Shape: RECTANGULAR SHAPE" />
+                <input className={inputCls} value={fields.landLevel} onChange={e => handleChange('landLevel', e.target.value)} disabled={isReadOnly} placeholder="Physical Features: FLAT AND HIGH LEVEL LAND" />
               </div>
             </Field>
-            <Field label="Land Shape">
-              <input className={inputCls} value={fields.landShape} onChange={e => handleChange('landShape', e.target.value)} disabled={isReadOnly} placeholder="RECTANGULAR SHAPE" />
-            </Field>
-            <Field label="Land Level">
-              <input className={inputCls} value={fields.landLevel} onChange={e => handleChange('landLevel', e.target.value)} disabled={isReadOnly} placeholder="FLAT AND HIGH LEVEL LAND" />
-            </Field>
-            <Field label="Q13: Road Access">
-              <input className={inputCls} value={fields.roadAccess} onChange={e => handleChange('roadAccess', e.target.value)} disabled={isReadOnly} placeholder='THE LAND IS ABUTTING BY 20-0" WIDE CC ROAD' />
-            </Field>
-            <Field label="Q14: Freehold / Leasehold">
-              <input className={inputCls} value={fields.landTenure} onChange={e => handleChange('landTenure', e.target.value)} disabled={isReadOnly} placeholder="IT IS FREE HOLD LAND" />
-            </Field>
-            <Field label="Q15: Lease Details">
-              <input className={inputCls} value={fields.leaseDetails} onChange={e => handleChange('leaseDetails', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
-            </Field>
-            <Field label="Q16: Restrictive Covenant" span={2}>
-              <input className={inputCls} value={fields.restrictiveCovenant} onChange={e => handleChange('restrictiveCovenant', e.target.value)} disabled={isReadOnly} placeholder="AS PER PKDA CDP MAP, IT IS COMING UNDER RESIDENTIAL USE ZONE" />
-            </Field>
-            <Field label="Q17: Easements">
-              <input className={inputCls} value={fields.easements} onChange={e => handleChange('easements', e.target.value)} disabled={isReadOnly} />
-            </Field>
-            <Field label="Q18: Development Contribution">
-              <input className={inputCls} value={fields.developmentContribution} onChange={e => handleChange('developmentContribution', e.target.value)} disabled={isReadOnly} />
+
+            {/* Q13 */}
+            <Field label="13 — Roads/Streets the Land is Abutting" span={2}>
+              <input className={inputCls} value={fields.roadAccess} onChange={e => handleChange('roadAccess', e.target.value)} disabled={isReadOnly}
+                placeholder='THE LAND IS ABUTTING BY 20&apos;-0" WIDE CC ROAD or THE LAND IS A LANDLOCKED PROPERTY' />
             </Field>
 
-            {/* Improvement sub-section */}
+            {/* Q14 */}
+            <Field label="14 — Freehold or Leasehold">
+              <input className={inputCls} value={fields.landTenure} onChange={e => handleChange('landTenure', e.target.value)} disabled={isReadOnly} placeholder="IT IS FREE HOLD LAND" />
+            </Field>
+
+            {/* Q15 */}
+            <Field label="15 — Lease Details (if Leasehold)">
+              <input className={inputCls} value={fields.leaseDetails} onChange={e => handleChange('leaseDetails', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
+            </Field>
+
+            {/* Q16 */}
+            <Field label="16 — Restrictive Covenant on Land Use" span={2}>
+              <input className={inputCls} value={fields.restrictiveCovenant} onChange={e => handleChange('restrictiveCovenant', e.target.value)} disabled={isReadOnly}
+                placeholder="AS PER BDA CDP MAP, IT IS COMING UNDER AGRICULTURE USE ZONE" />
+            </Field>
+
+            {/* Q17 */}
+            <Field label="17 — Easements">
+              <input className={inputCls} value={fields.easements} onChange={e => handleChange('easements', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
+            </Field>
+
+            {/* Q18 */}
+            <Field label="18 — Development Contribution">
+              <input className={inputCls} value={fields.developmentContribution} onChange={e => handleChange('developmentContribution', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
+            </Field>
+
+            {/* Q19 */}
+            <Field label="19 — Notified for Govt. Acquisition?" span={2}>
+              <input className={inputCls} value={fields.acquisitionNotification} onChange={e => handleChange('acquisitionNotification', e.target.value)} disabled={isReadOnly}
+                placeholder="NO SUCH PARTICULARS ARE OBSERVED BY US" />
+            </Field>
+
+            {/* Q20 */}
+            <Field label="20 — Dimension Site Plan" span={2}>
+              <input className={inputCls} value={fields.sitePlanAttached} onChange={e => handleChange('sitePlanAttached', e.target.value)} disabled={isReadOnly}
+                placeholder="SITE PLAN IS ATTACHED (GPS LOCATION MAP ATTACHED)" />
+            </Field>
+
+            {/* Sub-header: IMPROVEMENT */}
             <div className="md:col-span-2 border-t border-[#dee2e6] pt-4 mt-2">
-              <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest mb-3">Improvement (Q21-Q24)</p>
+              <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest mb-1">Improvement</p>
             </div>
-            <Field label="Q21: Plans & Elevations">
-              <input className={inputCls} value={fields.plansAttached} onChange={e => handleChange('plansAttached', e.target.value)} disabled={isReadOnly} />
+
+            {/* Q21 */}
+            <Field label="21 — Plans & Elevations of all Structures">
+              <input className={inputCls} value={fields.plansAttached} onChange={e => handleChange('plansAttached', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
             </Field>
-            <Field label="Q22: Technical Details">
-              <input className={inputCls} value={fields.technicalDetails} onChange={e => handleChange('technicalDetails', e.target.value)} disabled={isReadOnly} />
+
+            {/* Q22 */}
+            <Field label="22 — Technical Details of Buildings">
+              <input className={inputCls} value={fields.technicalDetails} onChange={e => handleChange('technicalDetails', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
             </Field>
-            <Field label="Q23: Tenancy Status">
-              <input className={inputCls} value={fields.tenancyStatus} onChange={e => handleChange('tenancyStatus', e.target.value)} disabled={isReadOnly} />
+
+            {/* Q23 */}
+            <Field label="23 — Owner-Occupied / Tenanted / Both">
+              <input className={inputCls} value={fields.tenancyStatus} onChange={e => handleChange('tenancyStatus', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
             </Field>
-            <Field label="Q24: FSI">
-              <input className={inputCls} value={fields.fsi} onChange={e => handleChange('fsi', e.target.value)} disabled={isReadOnly} />
+
+            {/* Q24 */}
+            <Field label="24 — Floor Space Index (FSI)">
+              <input className={inputCls} value={fields.fsi} onChange={e => handleChange('fsi', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
             </Field>
+
           </div>
         </Section>
 
