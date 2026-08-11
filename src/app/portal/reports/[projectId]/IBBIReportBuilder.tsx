@@ -1242,7 +1242,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.newPage();
       r.drawSectionHeader('DECLARATION AND UNDERTAKING');
       r.advanceCursor(6);
-      r.drawTextBlock('I Mr. Rupesh Patnaik, S/o: Mr Kali Charan Patnaik do hereby solemnly affirm and state that:', { bold: true });
+      r.drawTextBlock(`I ${fields.representativeName ? 'Mr. ' + fields.representativeName : 'Mr. ________'} do hereby solemnly affirm and state that:`, { bold: true });
       r.advanceCursor(4);
       const declarations = [
         'I am citizen of India.',
