@@ -1188,10 +1188,10 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
             <div className="grid md:grid-cols-2 gap-4">
 
               <Field label="41 — Construction Start Year">
-                <input className={inputCls} value={fields.constructionStartYear} onChange={e => handleChange('constructionStartYear', e.target.value)} disabled={isReadOnly} placeholder="2005" />
+                <input className={inputCls} value={fields.constructionStartYear} onChange={e => handleChange('constructionStartYear', e.target.value.replace(/[^0-9-]/g, ''))} disabled={isReadOnly} placeholder="2005" />
               </Field>
               <Field label="41 — Construction End Year">
-                <input className={inputCls} value={fields.constructionEndYear} onChange={e => handleChange('constructionEndYear', e.target.value)} disabled={isReadOnly} placeholder="2008" />
+                <input className={inputCls} value={fields.constructionEndYear} onChange={e => handleChange('constructionEndYear', e.target.value.replace(/[^0-9-]/g, ''))} disabled={isReadOnly} placeholder="2008" />
               </Field>
               <Field label="42 — Construction Method">
                 <input className={inputCls} value={fields.constructionMethod} onChange={e => handleChange('constructionMethod', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
@@ -1232,10 +1232,10 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
 
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="Valuation Year">
-              <input className={inputCls} value={fields.valuationYear} onChange={e => handleChange('valuationYear', e.target.value)} disabled={isReadOnly} placeholder="2008-2009" />
+              <input className={inputCls} value={fields.valuationYear} onChange={e => handleChange('valuationYear', e.target.value.replace(/[^0-9-]/g, ''))} disabled={isReadOnly} placeholder="2008-2009" />
             </Field>
             <Field label="Completion Year">
-              <input className={inputCls} value={fields.completionYear} onChange={e => handleChange('completionYear', e.target.value)} disabled={isReadOnly} placeholder="2008" />
+              <input className={inputCls} value={fields.completionYear} onChange={e => handleChange('completionYear', e.target.value.replace(/[^0-9-]/g, ''))} disabled={isReadOnly} placeholder="2008" />
             </Field>
             <div className="md:col-span-2">
               <label className="flex items-center gap-2 mb-3 cursor-pointer">
@@ -1247,16 +1247,16 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
             {fields.isReverseCalculation && (
               <>
                 <Field label="CII Base Year">
-                  <input className={inputCls} value={fields.ciiBaseYear} onChange={e => handleChange('ciiBaseYear', e.target.value)} disabled={isReadOnly} placeholder="2001-02" />
+                  <input className={inputCls} value={fields.ciiBaseYear} onChange={e => handleChange('ciiBaseYear', e.target.value.replace(/[^0-9-]/g, ''))} disabled={isReadOnly} placeholder="2001-02" />
                 </Field>
                 <Field label="CII Base Value">
-                  <input className={inputCls} value={fields.ciiBaseValue} onChange={e => handleChange('ciiBaseValue', e.target.value)} disabled={isReadOnly} placeholder="100" />
+                  <input className={inputCls} value={fields.ciiBaseValue} onChange={e => handleChange('ciiBaseValue', e.target.value.replace(/[^0-9.]/g, ''))} disabled={isReadOnly} placeholder="100" />
                 </Field>
                 <Field label="CII Target Year">
-                  <input className={inputCls} value={fields.ciiTargetYear} onChange={e => handleChange('ciiTargetYear', e.target.value)} disabled={isReadOnly} placeholder="2008-09" />
+                  <input className={inputCls} value={fields.ciiTargetYear} onChange={e => handleChange('ciiTargetYear', e.target.value.replace(/[^0-9-]/g, ''))} disabled={isReadOnly} placeholder="2008-09" />
                 </Field>
                 <Field label="CII Target Value">
-                  <input className={inputCls} value={fields.ciiTargetValue} onChange={e => handleChange('ciiTargetValue', e.target.value)} disabled={isReadOnly} placeholder="137" />
+                  <input className={inputCls} value={fields.ciiTargetValue} onChange={e => handleChange('ciiTargetValue', e.target.value.replace(/[^0-9.]/g, ''))} disabled={isReadOnly} placeholder="137" />
                 </Field>
               </>
             )}
