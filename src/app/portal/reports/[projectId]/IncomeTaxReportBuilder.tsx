@@ -376,8 +376,9 @@ const FloatingNavigator = ({ isLandOnly, showLandAnnexure }: { isLandOnly: boole
     { id: 'subsection-general', title: '↳ General (Q01–11)', indent: true },
     { id: 'subsection-land', title: '↳ Land (Q12–20)', indent: true },
     { id: 'subsection-improvement', title: '↳ Improvement (Q21–24)', indent: true },
-    { id: 'subsection-rent', title: '↳ Rent & Sales (Q25–38)', indent: true },
-    { id: 'subsection-construction', title: '↳ Construction (Q39–45)', indent: true },
+    { id: 'subsection-rent', title: '↳ Rent (Q25–37)', indent: true },
+    { id: 'subsection-sales', title: '↳ Sales (Q38–40)', indent: true },
+    { id: 'subsection-construction', title: '↳ Construction (Q41–45)', indent: true },
     { id: 'section-3', title: '3. Part II Valuation', indent: false },
     ...(!isLandOnly ? [{ id: 'section-4', title: '4. Tech Details', indent: false }] : []),
     { id: `section-${isLandOnly ? '4' : '5'}`, title: `${isLandOnly ? '4' : '5'}. Calc Table`, indent: false },
@@ -1119,7 +1120,8 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           </SubSection>
 
           {/* ── Sub-section: RENT & SALES ── */}
-          <SubSection id="subsection-rent" title="Rent & Sales (Q25–Q38)" defaultOpen={false}>
+          {/* ── Sub-section: RENT ── */}
+          <SubSection id="subsection-rent" title="Rent (Q25–Q37)" defaultOpen={false}>
             <div className="grid md:grid-cols-2 gap-4">
 
               <Field label="25 — Tenant Details" span={2}>
@@ -1153,18 +1155,18 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               <Field label="37 — Standard Rent">
                 <input className={inputCls} value={fields.standardRent} onChange={e => handleChange('standardRent', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="38 — Sale Instances" span={2}>
-                <textarea className={textareaCls} value={fields.saleInstances} onChange={e => handleChange('saleInstances', e.target.value)} disabled={isReadOnly} rows={3}
-                  placeholder="DATA COLLECTED FROM SRO, PURI VIDE APPLICATION NO: XXXXX..." />
-              </Field>
 
             </div>
           </SubSection>
 
-          {/* ── Sub-section: COST OF CONSTRUCTION ── */}
-          <SubSection id="subsection-construction" title="Cost of Construction (Q39–Q45)" defaultOpen={false}>
+          {/* ── Sub-section: SALES ── */}
+          <SubSection id="subsection-sales" title="Sales (Q38–Q40)" defaultOpen={false}>
             <div className="grid md:grid-cols-2 gap-4">
 
+              <Field label="38 — Sale Instances" span={2}>
+                <textarea className={textareaCls} value={fields.saleInstances} onChange={e => handleChange('saleInstances', e.target.value)} disabled={isReadOnly} rows={3}
+                  placeholder="DATA COLLECTED FROM SRO, PURI VIDE APPLICATION NO: XXXXX..." />
+              </Field>
               <Field label="39 — Land Rate" span={2}>
                 <input className={inputCls} value={fields.landRate} onChange={e => handleChange('landRate', e.target.value)} disabled={isReadOnly} placeholder="RS.XX,XX,XXX/- PER ACRE" />
               </Field>
@@ -1174,6 +1176,14 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               <Field label="40 — Land Rate Basis">
                 <input className={inputCls} value={fields.landRateBasis} onChange={e => handleChange('landRateBasis', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
+
+            </div>
+          </SubSection>
+
+          {/* ── Sub-section: COST OF CONSTRUCTION ── */}
+          <SubSection id="subsection-construction" title="Cost of Construction (Q41–Q45)" defaultOpen={false}>
+            <div className="grid md:grid-cols-2 gap-4">
+
               <Field label="41 — Construction Start Year">
                 <input className={inputCls} value={fields.constructionStartYear} onChange={e => handleChange('constructionStartYear', e.target.value)} disabled={isReadOnly} placeholder="2005" />
               </Field>
