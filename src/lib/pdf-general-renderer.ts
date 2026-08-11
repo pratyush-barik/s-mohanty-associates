@@ -911,58 +911,62 @@ export class PDFGeneralRenderer {
 
   /**
    * Draw two images side by side with captions.
+   * Dynamically sizes images based on actual aspect ratio to reduce whitespace.
    */
   async drawImagePair(
     img1Bytes: Uint8Array, caption1: string,
     img2Bytes: Uint8Array | null, caption2: string,
   ): Promise<void> {
-    const imgW = (CONTENT_W - 16) / 2; // half width minus gap
-    const imgH = 170;
-    const captionH = FONT_SIZE_CAPTION * LINE_HEIGHT;
-    const pairH = imgH + captionH + 12;
+    const gap = 8;
+    const imgW = (CONTENT_W - gap) / 2;
+    const maxImgH = 220;
+    const captionH = FONT_SIZE_CAPTION * LINE_HEIGHT + 2;
+
+    let img1: PDFImage | null = null;
+    let img2: PDFImage | null = null;
+
+    if (img1Bytes && img1Bytes.length > 0) {
+      try { img1 = await this.doc.embedPng(img1Bytes); } catch {
+        try { img1 = await this.doc.embedJpg(img1Bytes); } catch { /* skip */ }
+      }
+    }
+    if (img2Bytes && img2Bytes.length > 0) {
+      try { img2 = await this.doc.embedPng(img2Bytes); } catch {
+        try { img2 = await this.doc.embedJpg(img2Bytes); } catch { /* skip */ }
+      }
+    }
+
+    const calcSize = (img: PDFImage) => {
+      let w = img.width, h = img.height;
+      if (w > imgW) { h = h * (imgW / w); w = imgW; }
+      if (h > maxImgH) { w = w * (maxImgH / h); h = maxImgH; }
+      return { w, h };
+    };
+
+    const s1 = img1 ? calcSize(img1) : { w: 0, h: 0 };
+    const s2 = img2 ? calcSize(img2) : { w: 0, h: 0 };
+    const rowImgH = Math.max(s1.h, s2.h);
+    const pairH = rowImgH + captionH + 6;
 
     this.checkPageBreak(pairH);
 
-    // Image 1
-    if (img1Bytes && img1Bytes.length > 0) {
-      let img: PDFImage;
-      try { img = await this.doc.embedPng(img1Bytes); } catch {
-        try { img = await this.doc.embedJpg(img1Bytes); } catch { return; }
-      }
-      const x1 = MARGIN_L + 4;
-      let w = img.width, h = img.height;
-      if (w > imgW) { h = h * (imgW / w); w = imgW; }
-      if (h > imgH) { w = w * (imgH / h); h = imgH; }
-      const cx = x1 + (imgW - w) / 2;
-      const pY = this.pdfY(this.cursorY) - h;
-      this.page.drawImage(img, { x: cx, y: pY, width: w, height: h });
-
-      // Caption 1
-      this.drawTextAt(caption1, x1, this.cursorY + imgH + 4, {
-        italic: true, fontSize: FONT_SIZE_CAPTION, align: 'center', maxWidth: imgW,
+    if (img1) {
+      const x1 = MARGIN_L;
+      const cx = x1 + (imgW - s1.w) / 2;
+      const pY = this.pdfY(this.cursorY + (rowImgH - s1.h)) - s1.h;
+      this.page.drawImage(img1, { x: cx, y: pY, width: s1.w, height: s1.h });
+      this.drawTextAt(caption1, x1, this.cursorY + rowImgH + 2, {
+        bold: true, fontSize: FONT_SIZE_CAPTION, align: 'center', maxWidth: imgW,
       });
     }
 
-    // Image 2
-    if (img2Bytes && img2Bytes.length > 0) {
-      let img: PDFImage;
-      try { img = await this.doc.embedPng(img2Bytes); } catch {
-        try { img = await this.doc.embedJpg(img2Bytes); } catch { 
-          this.cursorY += pairH;
-          return;
-        }
-      }
-      const x2 = MARGIN_L + imgW + 12;
-      let w = img.width, h = img.height;
-      if (w > imgW) { h = h * (imgW / w); w = imgW; }
-      if (h > imgH) { w = w * (imgH / h); h = imgH; }
-      const cx = x2 + (imgW - w) / 2;
-      const pY = this.pdfY(this.cursorY) - h;
-      this.page.drawImage(img, { x: cx, y: pY, width: w, height: h });
-
-      // Caption 2
-      this.drawTextAt(caption2, x2, this.cursorY + imgH + 4, {
-        italic: true, fontSize: FONT_SIZE_CAPTION, align: 'center', maxWidth: imgW,
+    if (img2) {
+      const x2 = MARGIN_L + imgW + gap;
+      const cx = x2 + (imgW - s2.w) / 2;
+      const pY = this.pdfY(this.cursorY + (rowImgH - s2.h)) - s2.h;
+      this.page.drawImage(img2, { x: cx, y: pY, width: s2.w, height: s2.h });
+      this.drawTextAt(caption2, x2, this.cursorY + rowImgH + 2, {
+        bold: true, fontSize: FONT_SIZE_CAPTION, align: 'center', maxWidth: imgW,
       });
     }
 

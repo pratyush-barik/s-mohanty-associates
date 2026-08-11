@@ -1286,34 +1286,36 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       if (propImageBytes.length > 0) {
         r.newPage();
         r.drawCenteredTitle('PROPERTY PHOTOGRAPHS');
-        r.advanceCursor(8);
+        r.advanceCursor(6);
 
         for (let i = 0; i < propImageBytes.length; i += 2) {
           const name1 = fields.propertyImageNames?.[i] || '';
-          const caption1 = name1 ? `Figure ${i + 1}: ${name1}` : `Figure ${i + 1}`;
+          const caption1 = name1 ? `Figure ${i + 1} - ${name1.toUpperCase()}` : `Figure ${i + 1}`;
           const img2 = i + 1 < propImageBytes.length ? propImageBytes[i + 1] : null;
           const name2 = fields.propertyImageNames?.[i + 1] || '';
-          const caption2 = name2 ? `Figure ${i + 2}: ${name2}` : `Figure ${i + 2}`;
+          const caption2 = name2 ? `Figure ${i + 2} - ${name2.toUpperCase()}` : `Figure ${i + 2}`;
 
           await r.drawImagePair(propImageBytes[i], caption1, img2, caption2);
-          r.advanceCursor(4);
+          r.advanceCursor(2);
         }
       }
 
       // ── Sketch Map ──
       if (sketchBytes && sketchBytes.length > 0) {
-        r.newPage();
+        // Use checkPageBreak instead of forced newPage — flows onto same page if room
+        r.checkPageBreak(300);
         r.drawCenteredTitle('SKETCH MAP');
-        r.advanceCursor(8);
-        await r.drawImageBlock(sketchBytes, { maxWidth: 450, maxHeight: 500, centered: true });
+        r.advanceCursor(4);
+        await r.drawImageBlock(sketchBytes, { maxWidth: 450, maxHeight: 450, centered: true });
+        r.advanceCursor(4);
       }
 
       // ── Location Map ──
       if (locationBytes && locationBytes.length > 0) {
-        r.newPage();
+        r.checkPageBreak(300);
         r.drawCenteredTitle('LOCATION MAP');
-        r.advanceCursor(8);
-        await r.drawImageBlock(locationBytes, { maxWidth: 450, maxHeight: 500, centered: true });
+        r.advanceCursor(4);
+        await r.drawImageBlock(locationBytes, { maxWidth: 450, maxHeight: 450, centered: true });
         if (fields.latitude || fields.longitude) {
           r.drawTextBlock(`Lat: ${fields.latitude || 'N/A'}, Long: ${fields.longitude || 'N/A'}`, { bold: true, align: 'center' });
         }
@@ -1847,13 +1849,26 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
                 </div>
               )}
               {fields.propertyImages.length > 0 && (
-                <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {fields.propertyImages.map((url: string, i: number) => (
                     <div key={i} className="relative group rounded-lg overflow-hidden border border-slate-200">
                       <img src={url} alt={`Property ${i + 1}`} className="w-full h-24 object-cover" />
                       {!isReadOnly && (
                         <button onClick={() => removeImage(i)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">&times;</button>
                       )}
+                      <input
+                        type="text"
+                        placeholder={`Caption for Figure ${i + 1}`}
+                        value={fields.propertyImageNames?.[i] || ''}
+                        onChange={e => {
+                          const names = [...(fields.propertyImageNames || [])];
+                          while (names.length <= i) names.push('');
+                          names[i] = e.target.value;
+                          handleChange('propertyImageNames', names);
+                        }}
+                        disabled={isReadOnly}
+                        className="w-full text-xs px-2 py-1 border-t border-slate-200 bg-slate-50 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#b8860b]/40"
+                      />
                     </div>
                   ))}
                 </div>
