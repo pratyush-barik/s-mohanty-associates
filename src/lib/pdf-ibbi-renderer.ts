@@ -431,31 +431,30 @@ export class PDFIBBIRenderer {
   }
 
   /**
-   * Draw a simple row: "Label: - **Value**" spanning all 3 columns.
+   * Draw a two-column row: label on left (with background), bold value on right.
+   * Matches the sample IBBI report table layout.
    * Advances cursor.
    */
   drawSimpleRow(label: string, value: string): void {
-    const segments = [
-      { text: `${label}: - ` },
-      { text: value || 'N/A', bold: true },
-    ];
-    const textW = CONTENT_W - CELL_PAD_X * 2;
-    const textH = this.measureRichTextHeight(segments, textW, FONT_SIZE);
-    const h = Math.max(textH + CELL_PAD_Y * 2, FONT_SIZE * LINE_HEIGHT + CELL_PAD_Y * 2);
+    const labelW = Math.round(CONTENT_W * 0.40);  // 40% for label
+    const valueW = CONTENT_W - labelW;             // 60% for value
+
+    // Measure both sides to get max height
+    const labelH = this.cellHeight(label, labelW, { bold: false });
+    const valueH = this.cellHeight(value || 'N/A', valueW, { bold: true });
+    const h = Math.max(labelH, valueH);
 
     this.checkPageBreak(h);
 
-    // Fill + border for full row
-    this.drawRect(MARGIN_L, this.cursorY, CONTENT_W, h, '#FFFFFF', '#000000', BORDER_W, 0.5);
+    // Left cell: label with background
+    this.drawCell(MARGIN_L, this.cursorY, labelW, h, label, {
+      fillColor: LBL_BG, bgOpacity: 0.5, bold: false, vAlign: 'middle',
+    });
 
-    // Draw rich text: label normal, value bold
-    this.drawRichTextAt(
-      segments,
-      MARGIN_L + CELL_PAD_X,
-      this.cursorY + CELL_PAD_Y,
-      textW,
-      FONT_SIZE
-    );
+    // Right cell: bold value on white
+    this.drawCell(MARGIN_L + labelW, this.cursorY, valueW, h, value || 'N/A', {
+      bold: true, vAlign: 'middle',
+    });
 
     this.cursorY += h;
   }

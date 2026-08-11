@@ -15,6 +15,8 @@
 - **Authentication:** Auth.js (NextAuth v5) with Prisma Adapter
 - **File Storage:** Supabase Storage (for property images and generated PDFs)
 - **PDF Generation:** Client-side via `pdf-lib` (Native PDF generation engine, replacing the old `html2canvas` HTML screenshot approach)
+  - **Renderers:** `pdf-general-renderer.ts` (General builder), `pdf-ibbi-renderer.ts` (IBBI builder), `pdf-it-renderer.ts` (IT builder). All renderers include `sanitizeText()` which strips newlines, bullets (U+2022→`-`), smart quotes, em/en-dashes, ellipsis, rupee sign (₹→`Rs.`), and any non-WinAnsi characters before passing text to `pdf-lib`'s `page.drawText()`.
+  - **Table Layout:** `drawSimpleRow()` renders as a proper **two-column table** (40% label with background / 60% bold value) matching sample IBBI reports. `drawDataTable()` handles multi-column dynamic tables.
 
 ## 2. Architecture & Data Storage
 
@@ -78,13 +80,18 @@ The core business logic is **100% complete**.
 
    - **A. General Customer (`GeneralReportBuilder.tsx`)**: This is the default 14-section dynamic form used for standard individual clients, fully matching the real-world Individual Client Bank Report template (based on the HDFC/SBI IBBI valuation sample PDF).
    - **B. IBBI Organisation (`IBBIReportBuilder.tsx`)**: A completely distinct report builder used when `organisationTemplate === 'IBBI_IVS'`. It contains 15 statutory IBBI sections (Objective, Description, Town Planning, Legal, Infrastructure, Socio-Env, Marketability, Engineering, Valuation, Photos/Maps, Assumptions). Includes:
-     - Comprehensive **Cover Page** and auto-generated **Table of Contents**.
-     - A distinct PDF rendering layout where the Valuation Certificate appears *before* Section 1.
-     - Auto-generated statutory text for Sections 1–3 in the PDF.
-     - Sub-sections 13.1 to 13.6 outlining Valuation Approaches & Methodology.
-     - A dynamic "Add Row" plot-by-plot valuation table in Section 13, seamlessly integrating with the Excel Annexure feature.
-     - **Section 15: Assumptions & Limitations** and a concluding paragraph.
-     - Expanded **Declaration** containing ~10 statutory clauses.
+      - Comprehensive **Cover Page** and auto-generated **Table of Contents**.
+      - A distinct PDF rendering layout where the Valuation Certificate appears *before* Section 1.
+      - Auto-generated statutory text for Sections 1–3 in the PDF.
+      - **Section 4** with introductory prose paragraph and sub-numbered rows (4.1, 4.2, 4.3, 4.8, 4.10, 4.13-4.16) matching the sample document.
+      - Sub-sections 13.1 to 13.6 outlining Valuation Approaches & Methodology.
+      - A dynamic "Add Row" plot-by-plot valuation table in Section 13, seamlessly integrating with the Excel Annexure feature.
+      - **Section 15: Assumption & Limitation** — exact verbatim text from sample reports (paragraph-based, not bullet list).
+      - **Conclusion** — exact sample wording including market value philosophy, dynamic property/owner reference, and bold value lines.
+      - Expanded **Declaration and Undertaking** containing **20 statutory clauses** extracted from real sample reports (citizenship, PAN card, IVS compliance, IT Act references, Model Code of Conduct, etc.).
+      - **Annexure I: General Principles and Limiting Conditions** — boilerplate page covering Confidentiality, Use of Report, Source of Information, Legal Title, Town Planning, Leases, Development Agreements, Site Surveys, Structural Surveys.
+      - **Annexure II: General Assumptions** — boilerplate page with 6 standard assumption paragraphs.
+      - Signature blocks on Conclusion, Declaration, and Annexure II pages.
    - **C. Income Tax / Capital Gains (`IncomeTaxReportBuilder.tsx`)**: A specialized builder for IT/Capital Gains valuations (when `organisationTemplate === 'INCOME_TAX_CAPITAL_GAINS'`), featuring custom fields for retro-valuation, indexation, and specific statutory sections under IT rules.
 
    **Shared Design Decisions across ReportBuilders:**
@@ -330,3 +337,7 @@ Outstanding items in **priority order**:
 - `d37005f` — feat: ticketing system with email attachments, source tracking, and enquiry-project linking
 - `d343bf1` — fix: revert "Cases" back to "Public Enquiries" nav label (Public Enquiries ≠ Service Requests/Cases)
 - `d343c01` — fix: service request active/pending tab 404 error
+- `5b8c534` — fix(IBBI-PDF): match exact sample - Declaration(20 clauses), Conclusion, Section 15, Annexure I/II boilerplate, Section 4 numbering
+- `fbb6acb` — fix(pdf): add sanitizeText to strip newlines, bullets, smart quotes and non-WinAnsi chars before drawText
+- `051d898` — fix(pdf): sanitize ALL text paths - drawRichTextAt and measureRichTextHeight missing sanitization causing WinAnsi 0x000a crash
+- `latest` — feat(pdf): convert drawSimpleRow from single-column to two-column table layout (Label | Value) matching sample IBBI reports
