@@ -1221,6 +1221,15 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
 
           {/* ── Sub-section: VALUATION DISCUSSION ── */}
           <SubSection id="subsection-valuation-disc" title="Valuation Discussion">
+          <div className="mb-6 p-5 bg-[#f8f9fa] rounded-xl border border-[#e9ecef] space-y-3 shadow-sm">
+            <p className="text-sm font-bold text-[#0f2038] uppercase tracking-wide">
+              HERE THE REGISTERED VALUER SHOULD DISCUSS IN DETAIL HIS APPROACH TO VALUATION OF THE PROPERTY AND INDICATE HOW THE VALUE HAS BEEN ARRIVED AT, SUPPORTED BY NECESSARY CALCULATION.
+            </p>
+            <p className="text-sm text-[#212529] leading-relaxed uppercase">
+              VALUATION HAS BEEN PROVIDED FOR THE YEAR <strong>{fields.valuationYear || '________'}</strong> AT THE REQUEST OF THE CUSTOMER IN ORDER TO ACCESS THE VALUE OF PROPERTY POST COMPLETION OF CONSTRUCTION IN THE YEAR <strong>{fields.completionYear || '________'}</strong>.
+            </p>
+          </div>
+
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="Valuation Year">
               <input className={inputCls} value={fields.valuationYear} onChange={e => handleChange('valuationYear', e.target.value)} disabled={isReadOnly} placeholder="2008-2009" />
