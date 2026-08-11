@@ -323,6 +323,8 @@ const inputCls = "w-full px-3 py-2.5 rounded-lg border border-[#dee2e6] bg-white
 const selectCls = inputCls;
 
 const FloatingNavigator = ({ annexureEnabled }: { annexureEnabled: boolean }) => {
+  const [activeId, setActiveId] = useState<string>('');
+
   const NAV_SECTIONS = [
     { id: 'section-1', title: '1. Objective' },
     { id: 'section-4', title: '4. Description' },
@@ -337,23 +339,50 @@ const FloatingNavigator = ({ annexureEnabled }: { annexureEnabled: boolean }) =>
     ...(annexureEnabled ? [{ id: 'section-annexure', title: 'Annexures' }] : []),
   ];
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            setActiveId(entry.target.id);
+          }
+        });
+      },
+      { rootMargin: '-10% 0px -80% 0px' }
+    );
+
+    NAV_SECTIONS.forEach(sec => {
+      const el = document.getElementById(sec.id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [annexureEnabled]);
+
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   return (
-    <div className="hidden xl:flex flex-col gap-1 bg-white/80 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2.5 rounded-2xl w-[160px] sticky top-24 shrink-0 z-40">
-      <div className="text-[10px] font-black text-neutral-400 mb-2 px-2 uppercase tracking-widest">IBBI Sections</div>
-      {NAV_SECTIONS.map((sec) => (
-        <button
-          key={sec.id}
-          type="button"
-          onClick={() => scrollTo(sec.id)}
-          className="text-left px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all truncate text-slate-600 hover:bg-[#b8860b] hover:text-white"
-        >
-          {sec.title}
-        </button>
-      ))}
+    <div className="hidden xl:flex flex-col gap-0 bg-white/80 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2 rounded-2xl w-[160px] sticky top-24 shrink-0 z-40">
+      <div className="text-[10px] font-black text-neutral-400 mb-1 px-2 uppercase tracking-widest">IBBI Sections</div>
+      {NAV_SECTIONS.map((sec) => {
+        const isActive = activeId === sec.id;
+        return (
+          <button
+            key={sec.id}
+            type="button"
+            onClick={() => scrollTo(sec.id)}
+            className={`text-left px-3 py-1 text-[11px] font-bold rounded-lg transition-all truncate ${
+              isActive
+                ? 'bg-[#b8860b] text-white shadow-md'
+                : 'text-slate-500 hover:bg-[#b8860b]/10 hover:text-[#b8860b]'
+            }`}
+          >
+            {sec.title}
+          </button>
+        );
+      })}
     </div>
   );
 };

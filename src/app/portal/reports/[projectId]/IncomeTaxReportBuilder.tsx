@@ -370,6 +370,8 @@ const selectCls = inputCls;
 const textareaCls = `${inputCls} min-h-[80px] resize-y`;
 
 const FloatingNavigator = ({ isLandOnly, showLandAnnexure }: { isLandOnly: boolean; showLandAnnexure: boolean }) => {
+  const [activeId, setActiveId] = useState<string>('');
+
   const NAV_SECTIONS = [
     { id: 'section-1', title: '1. Title & Cover', indent: false },
     { id: 'section-2', title: '2. Part I – Questionnaire', indent: false },
@@ -391,6 +393,26 @@ const FloatingNavigator = ({ isLandOnly, showLandAnnexure }: { isLandOnly: boole
     { id: 'subsection-certificate', title: '↳ Certificate', indent: true },
   ];
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            setActiveId(entry.target.id);
+          }
+        });
+      },
+      { rootMargin: '-10% 0px -80% 0px' }
+    );
+
+    NAV_SECTIONS.forEach(sec => {
+      const el = document.getElementById(sec.id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [NAV_SECTIONS]);
+
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
@@ -398,20 +420,25 @@ const FloatingNavigator = ({ isLandOnly, showLandAnnexure }: { isLandOnly: boole
   return (
     <div className="hidden xl:flex flex-col gap-0 bg-white/80 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2 rounded-2xl w-[160px] sticky top-24 shrink-0 z-40">
       <div className="text-[10px] font-black text-neutral-400 mb-1 px-2 uppercase tracking-widest">IT Sections</div>
-      {NAV_SECTIONS.map((sec) => (
-        <button
-          key={sec.id}
-          type="button"
-          onClick={() => scrollTo(sec.id)}
-          className={`text-left py-1 text-[11px] font-bold rounded-lg transition-all truncate hover:bg-[#b8860b] hover:text-white ${
-            sec.indent
-              ? 'px-2 pl-4 text-slate-400 text-[10px]'
-              : 'px-3 text-slate-600'
-          }`}
-        >
-          {sec.title}
-        </button>
-      ))}
+      {NAV_SECTIONS.map((sec) => {
+        const isActive = activeId === sec.id;
+        return (
+          <button
+            key={sec.id}
+            type="button"
+            onClick={() => scrollTo(sec.id)}
+            className={`text-left py-1 text-[11px] font-bold rounded-lg transition-all truncate ${
+              sec.indent ? 'px-2 pl-4 text-[10px]' : 'px-3'
+            } ${
+              isActive
+                ? 'bg-[#b8860b] text-white shadow-md'
+                : 'text-slate-500 hover:bg-[#b8860b]/10 hover:text-[#b8860b]'
+            }`}
+          >
+            {sec.title}
+          </button>
+        );
+      })}
     </div>
   );
 };
