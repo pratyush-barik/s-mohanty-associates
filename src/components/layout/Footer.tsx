@@ -97,8 +97,8 @@ export default function Footer() {
                 <p className="text-white/50 text-sm leading-relaxed">
                   Plot No. 858(P) & 859(P),<br />
                   Near Astha Binodini Apartment,<br />
-                  Siba Nagar, Rajarani, Tankapani Road,<br />
-                  Bhubaneswar-751018, Odisha
+                  Siba Nagar, Rajarani,<br />
+                  Tankapani Road, Bhubaneswar-751018, Odisha
                 </p>
               </div>
               <div className="flex gap-3">
