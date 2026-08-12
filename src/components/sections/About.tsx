@@ -47,7 +47,7 @@ export default function About() {
           <h2 className="section-title">About <span className="gradient-text">S Mohanty Associates</span></h2>
           <div className="section-divider" />
           <p className="section-subtitle">
-            A legacy of trust, precision, and professional excellence in property valuation spanning nearly three decades.
+            A legacy of trust, precision, and professional excellence in property valuation spanning over a decade.
           </p>
         </SectionWrapper>
 
