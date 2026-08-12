@@ -91,7 +91,7 @@ export default function Hero() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 container mx-auto max-w-[1280px] px-6 text-center pt-28 md:pt-36">
+      <div className="relative z-10 container mx-auto max-w-[1600px] px-6 text-center pt-28 md:pt-36">
         {/* Title */}
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
@@ -140,7 +140,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 1.0 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 max-w-[900px] mx-auto"
+          className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 max-w-[1100px] mx-auto"
         >
           {stats.map((stat) => (
             <AnimatedCounter

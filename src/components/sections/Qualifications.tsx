@@ -97,7 +97,7 @@ export default function Qualifications() {
     <section id="qualifications" className="section section-light relative overflow-hidden">
       <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-[#b8860b]/5 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="container mx-auto max-w-[1280px] px-6 relative z-10">
+      <div className="container mx-auto max-w-[1600px] px-6 relative z-10">
         {/* Section Header */}
         <SectionWrapper animation="fadeUp" className="text-center mb-8">
           <span className="text-[#b8860b] text-sm font-semibold uppercase tracking-[0.2em] mb-3 block">Credentials</span>
