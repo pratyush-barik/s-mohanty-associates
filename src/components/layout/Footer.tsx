@@ -96,8 +96,8 @@ export default function Footer() {
                 <span className="text-[#ffcb47] mt-0.5 text-sm">📍</span>
                 <p className="text-white/50 text-sm leading-relaxed">
                   Plot No. 858(P) & 859(P),<br />
-                  Near Astha Einodini Apartment,<br />
-                  Slba Nagar, Rajarani, Tankapani Road,<br />
+                  Near Astha Binodini Apartment,<br />
+                  Siba Nagar, Rajarani, Tankapani Road,<br />
                   Bhubaneswar-751018, Odisha
                 </p>
               </div>

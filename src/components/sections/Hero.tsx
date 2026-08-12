@@ -6,7 +6,7 @@ import { gsap } from 'gsap';
 import AnimatedCounter from '@/components/ui/AnimatedCounter';
 
 const stats = [
-  { target: 7500, suffix: '+', label: 'Valuation Assignments Completed', prefix: '' },
+  { target: 75000, suffix: '+', label: 'Valuation Assignments Completed', prefix: '' },
   { target: 10, suffix: '+', label: 'Years Experience', prefix: '' },
   { target: 100, suffix: '+', label: 'Corporate Clients', prefix: '' },
   { target: 30, suffix: '+', label: 'Team Members', prefix: '' },
