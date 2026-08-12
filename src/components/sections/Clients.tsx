@@ -12,22 +12,16 @@ const featuredClients = [
 ];
 
 const carouselClients = [
-  { name: 'State Bank of India', image: '/images/clients/state-bank-of-india.png' },
-  { name: 'Punjab National Bank', image: '/images/clients/punjab-national-bank.png' },
-  { name: 'LIC Housing Finance', image: '/images/clients/lic-housing-finance.png' },
-  { name: 'Union Bank of India', image: '/images/clients/union-bank-of-india.png' },
-  { name: 'Bank of Baroda', image: '/images/clients/bank-of-baroda.png' },
-  { name: 'Indian Overseas Bank', image: '/images/clients/indian-overseas-bank.png' },
-  { name: 'Canara Bank', image: '/images/clients/canara-bank.png' },
-  { name: 'HDFC Bank', image: '/images/clients/hdfc-bank.png' },
-  { name: 'Axis Bank', image: '/images/clients/axis-bank.png' },
   { name: 'UCO Bank', image: '/images/clients/uco-bank.png' },
-  { name: 'Central Bank', image: '/images/clients/central-bank.png' },
+  { name: 'Punjab National Bank', image: '/images/clients/punjab-national-bank.png' },
+  { name: 'Canara Bank', image: '/images/clients/canara-bank.png' },
   { name: 'Bank of India', image: '/images/clients/bank-of-india.png' },
-  { name: 'Indian Bank', image: '/images/clients/indian-bank.png' },
-  { name: 'IDBI Bank', image: '/images/clients/idbi-bank.png' },
-  { name: 'Allahabad Bank', image: '/images/clients/allahabad-bank.png' },
-  { name: 'Syndicate Bank', image: '/images/clients/syndicate-bank.png' },
+  { name: 'Bank of Maharashtra', image: '/images/clients/bank-of-maharashtra.png' },
+  { name: 'Punjab & Sindh Bank', image: '/images/clients/punjab-and-sindh-bank.png' },
+  { name: 'Union Bank of India', image: '/images/clients/union-bank-of-india.png' },
+  { name: 'Yes Bank', image: '/images/clients/yes-bank.png' },
+  { name: 'ICICI Bank', image: '/images/clients/icici-bank.png' },
+  { name: 'Tata Capital Ltd.', image: '/images/clients/tata-capital-ltd.png' },
 ];
 
 export default function Clients() {
