@@ -180,7 +180,7 @@ export default function Navbar({ user }: NavbarProps) {
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center gap-0.5">
+            <div className="hidden lg:flex items-center gap-0.5 lg:ml-auto lg:mr-8">
               {navLinks.map((link) => (
                 <button
                   key={link.href}
