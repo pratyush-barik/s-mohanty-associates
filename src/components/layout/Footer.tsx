@@ -95,11 +95,7 @@ export default function Footer() {
               <div className="flex gap-3">
                 <span className="text-[#ffcb47] mt-0.5 text-sm">📍</span>
                 <p className="text-white/50 text-sm leading-relaxed">
-                  Plot No. 858(P) & 859(P),<br />
-                  Near Astha Binodini Apartment,<br />
-                  Siba Nagar, Rajarani,<br />
-                  Tankapani Road,<br />
-                  Bhubaneswar-751018, Odisha
+                  Plot No. 858(P) & 859(P), Near Astha Binodini Apartment, Siba Nagar, Rajarani, Tankapani Road, Bhubaneswar - 751018, Odisha
                 </p>
               </div>
               <div className="flex gap-3">

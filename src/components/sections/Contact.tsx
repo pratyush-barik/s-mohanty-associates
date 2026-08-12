@@ -79,10 +79,7 @@ export default function Contact() {
                     Office Address
                   </h4>
                   <p className="text-sm text-[#6c757d] leading-relaxed">
-                    Plot No. 858(P) & 859(P),<br />
-                    Near Astha Einodini Apartment,<br />
-                    Slba Nagar, Rajarani, Tankapani Road,<br />
-                    Bhubaneswar-751018, Odisha
+                    Plot No. 858(P) & 859(P), Near Astha Binodini Apartment, Siba Nagar, Rajarani, Tankapani Road, Bhubaneswar - 751018, Odisha
                   </p>
                 </div>
               </div>
