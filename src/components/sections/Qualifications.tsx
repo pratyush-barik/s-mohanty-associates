@@ -78,7 +78,7 @@ const qualifications = [
       },
       {
         title: 'B.E. in Civil Engineering',
-        subtitle: 'Utkal University',
+        subtitle: 'Utkal University, KIIT',
         detail: '(1998–2002)',
         icon: '🎓',
       },
