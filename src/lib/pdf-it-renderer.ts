@@ -135,9 +135,37 @@ export async function generateIncomeTaxPDF(
     }
   };
 
+  const cleanText = (text: string): string => {
+    let clean = String(text ?? '');
+    
+    // Decode HTML entities
+    clean = clean
+      .replace(/&amp;/g, '&')
+      .replace(/&amp/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&lt/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&gt/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&quot/g, '"')
+      .replace(/&#039;/g, "'")
+      .replace(/&#39;/g, "'");
+
+    return clean
+      .replace(/[\r\n\t]/g, ' ')          // newlines/tabs -> space
+      .replace(/\u2022/g, '-')             // bullet -> dash
+      .replace(/[\u2018\u2019]/g, "'")     // smart single quotes
+      .replace(/[\u201C\u201D]/g, '"')     // smart double quotes
+      .replace(/\u2013/g, '-')             // en-dash
+      .replace(/\u2014/g, '--')            // em-dash
+      .replace(/\u2026/g, '...')           // ellipsis
+      .replace(/\u20B9/g, 'Rs.')           // rupee sign
+      .replace(/[^\x20-\x7E]/g, '');       // strip any remaining non-ASCII
+  };
+
   // Text helpers
   const wrapText = (text: string, maxW: number, font: any, fs: number): string[] => {
-    const strText = String(text ?? '');
+    const strText = cleanText(text);
     if (!strText) return [''];
     const words = strText.split(/\s+/);
     const lines: string[] = [];

@@ -145,7 +145,22 @@ export class PDFGeneralRenderer {
 
   /** Strip/replace characters that WinAnsi (Helvetica) cannot encode */
   private sanitizeText(text: string): string {
-    return String(text ?? '')
+    let clean = String(text ?? '');
+    
+    // Decode HTML entities
+    clean = clean
+      .replace(/&amp;/g, '&')
+      .replace(/&amp/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&lt/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&gt/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&quot/g, '"')
+      .replace(/&#039;/g, "'")
+      .replace(/&#39;/g, "'");
+
+    return clean
       .replace(/[\r\n\t]/g, ' ')          // newlines/tabs -> space
       .replace(/\u2022/g, '-')             // bullet -> dash
       .replace(/[\u2018\u2019]/g, "'")     // smart single quotes
