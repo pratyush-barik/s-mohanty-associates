@@ -21,7 +21,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <Image
-              src="/logo/smohantyassociate_logo.png"
+              src="/logo/smohantyassociate_logo.svg"
               alt="S Mohanty Associates"
               width={240}
               height={60}

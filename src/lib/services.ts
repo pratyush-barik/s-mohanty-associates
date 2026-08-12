@@ -1,4 +1,4 @@
-﻿export const serviceCategoryMap: Record<string, string[]> = {
+export const serviceCategoryMap: Record<string, string[]> = {
   'Mortgage & Loan Security Valuation': [
     'Home Loan Valuation', 'Loan Against Property (LAP)', 'Commercial Property Valuation', 
     'Industrial Property Valuation', 'Construction Finance Valuation', 'Project Finance Valuation', 

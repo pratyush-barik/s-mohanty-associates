@@ -172,7 +172,7 @@ export default function Navbar({ user }: NavbarProps) {
             <Link href="/" className="flex items-center group">
               <div className="transition-all -ml-2">
                 <img
-                  src="/logo/smohantyassociate_logo.png"
+                  src="/logo/smohantyassociate_logo.svg"
                   alt="S Mohanty Associates"
                   className="h-[66px] sm:h-[79px] w-auto object-contain transition-all duration-300"
                 />

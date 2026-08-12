@@ -92,7 +92,7 @@ export default async function PortalLayout({ children }: { children: React.React
             <div className="hidden group-hover:block opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
               <div className="inline-block bg-white/95 rounded-full px-3 py-1 shadow-sm border border-white/20">
                 <Image
-                  src="/logo/smohantyassociate_logo.png"
+                  src="/logo/smohantyassociate_logo.svg"
                   alt="S Mohanty Associates"
                   width={320}
                   height={80}

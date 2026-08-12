@@ -253,6 +253,9 @@ The core business logic is **100% complete**.
     - **Global Page Numbers**: Added bottom-center page numbers to all generated PDFs (IBBI, General, and IT renderers) starting from page 2.
     - **Dynamic Image Sizing**: Improved the `drawImagePair` method across all renderers to calculate exact image aspect ratios instead of fixed heights, eliminating awkward vertical whitespace and preventing page spillage.
     - **Image Captions**: Added explicit input fields for captions on all property photographs in the form. These captions render boldly below each image pair in the final PDF (`Figure 1 - CAPTION`).
+23. **UI & Branding Updates (August 2026)**:
+    - **Client Carousels**: Updated the fixed featured clients grid and the rotating carousel with specific lists of banks (10 banks for rotating, 6 for fixed). Created optimized placeholder logos (e.g., stacked layout for Bank of Maharashtra to fit the 2:1 card ratio without letterboxing, resized Kotak logo to exactly 256x128).
+    - **SVG Logo Migration**: Converted the main PNG logo to an embedded Base64 SVG (`smohantyassociate_logo.svg`) and replaced all `.png` references across the codebase (Navbar, Footer, layouts) to improve rendering consistency and scalability.
 
 ## 5. Pending Work (What is next)
 
@@ -313,8 +316,13 @@ Outstanding items in **priority order**:
 > When modifying the UI, prioritize modern, premium aesthetics (glassmorphism, clean typography, subtle animations) without relying on Tailwind component libraries like Shadcn. Use raw Tailwind classes.
 
 ## 7. Recent Git Commits (for reference)
-
-- `latest` — feat(PDF): add bottom page numbers, format TOC with dot leaders and dynamic page numbers matching Word template
+- `latest` — refactor(logo): convert main PNG logo to base64 embedded SVG and replace all codebase references
+- `previous` — style(Clients): replace Bank of Maharashtra logo with optimized stacked version
+- `previous` — style(Clients): update rotating carousel with 10 new banks and add placeholder logos
+- `previous` — style(Clients): resize Kotak placeholder to 256x128 matching LIC logo
+- `previous` — style(Clients): use a larger, margin-free placeholder for Kotak Mahindra Bank
+- `previous` — style(Clients): update featured banks carousel and add Kotak placeholder
+- `previous` — feat(PDF): add bottom page numbers, format TOC with dot leaders and dynamic page numbers matching Word template
 - `previous` — feat: complete IBBIReportBuilder implementation with dynamic valuation rows and PDF rendering
 - `previous` — fix(ReportBuilder): resolve PDF table overflow by breaking words and handling full-width rows, and fix missing address in Valuation Certificate
 - `previous` — feat(ReportBuilder): add Annexure parsing (xlsx) and rendering in PDF/HTML preview tables

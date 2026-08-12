@@ -16,7 +16,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="text-center mb-8">
           <a href="/" className="inline-block transition-all hover:scale-105">
             <img
-              src="/logo/smohantyassociate_logo.png"
+              src="/logo/smohantyassociate_logo.svg"
               alt="S Mohanty Associates"
               className="h-[96px] sm:h-[120px] w-auto object-contain mx-auto"
             />
