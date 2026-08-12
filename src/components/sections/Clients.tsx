@@ -4,11 +4,11 @@ import SectionWrapper from '@/components/ui/SectionWrapper';
 
 const featuredClients = [
   { name: 'State Bank of India', image: '/images/clients/state-bank-of-india.png' },
-  { name: 'Punjab National Bank', image: '/images/clients/punjab-national-bank.png' },
+  { name: 'HDFC Bank', image: '/images/clients/hdfc-bank.png' },
+  { name: 'Axis Bank', image: '/images/clients/axis-bank.png' },
+  { name: 'Kotak Mahindra Bank', image: '/images/clients/kotak-mahindra-bank.png' },
+  { name: 'IDBI Bank', image: '/images/clients/idbi-bank.png' },
   { name: 'LIC Housing Finance', image: '/images/clients/lic-housing-finance.png' },
-  { name: 'Union Bank of India', image: '/images/clients/union-bank-of-india.png' },
-  { name: 'Bank of Baroda', image: '/images/clients/bank-of-baroda.png' },
-  { name: 'Indian Overseas Bank', image: '/images/clients/indian-overseas-bank.png' },
 ];
 
 const carouselClients = [
