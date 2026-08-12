@@ -71,6 +71,12 @@ const qualifications = [
         icon: '🎓',
       },
       {
+        title: 'MBA (Finance)',
+        subtitle: 'Bijupattnaik university-BPUT',
+        detail: '(2026-2028)',
+        icon: '📚',
+      },
+      {
         title: 'MBA (Human Resource)',
         subtitle: 'Punjab Technical University',
         detail: '(2009–2011)',
