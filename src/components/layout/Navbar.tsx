@@ -180,12 +180,12 @@ export default function Navbar({ user }: NavbarProps) {
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center gap-0.5 lg:ml-auto lg:mr-8">
+            <div className="hidden lg:flex items-center gap-3">
               {navLinks.map((link) => (
                 <button
                   key={link.href}
                   onClick={() => scrollToSection(link.href)}
-                  className={`px-3 py-2 rounded-full text-sm font-medium transition-all duration-300 relative whitespace-nowrap ${
+                  className={`px-3 py-2 rounded-full text-base font-medium transition-all duration-300 relative whitespace-nowrap ${
                     activeSection === link.href.replace('#', '')
                       ? 'text-[#b8860b]'
                       : 'text-[#4a6f4a] hover:text-[#0d3d24]'
