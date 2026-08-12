@@ -31,7 +31,7 @@ export default function CEOProfile() {
                 {/* Founder Photo */}
                 <Image
                   src="/images/founder.jpeg"
-                  alt="Mr. Satyajit Mohanty - Founder & Managing Director"
+                  alt="Mr. Satyajit Mohanty - Founder & Chief Executive"
                   fill
                   className="object-cover"
                   sizes="(max-width: 1024px) 100vw, 360px"
@@ -50,7 +50,7 @@ export default function CEOProfile() {
                   <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'var(--font-heading)' }}>
                     Satyajit Mohanty
                   </h3>
-                  <p className="text-[#ffcb47] text-sm font-medium">Founder & Managing Director</p>
+                  <p className="text-[#ffcb47] text-sm font-medium">Founder & Chief Executive</p>
                 </div>
               </div>
             </div>
@@ -85,7 +85,7 @@ export default function CEOProfile() {
                   <span className="px-3 py-1 rounded-full bg-[#b8860b]/20 text-[#ffcb47] text-xs font-medium">Registered Technical Person</span>
                 </div>
                 <p className="text-white/60 leading-relaxed mb-4">
-                  A seasoned civil engineering professional with more than two decades of diversified experience in valuation, technical due diligence, and execution of civil engineering projects. Specialized in mortgage valuation, construction funding, feasibility studies, and advisory services for banks, NBFCs, and corporate clients. Founder of S Mohanty Associates, offering comprehensive valuation and consultancy solutions for land and building assets across Odisha.
+                  A seasoned Civil Engineering professional with over two decades of diverse experience in real estate valuation, technical due diligence, construction funding, project execution, feasibility studies, and infrastructure advisory. Specializing in mortgage valuation and technical consultancy for banks, NBFCs, financial institutions, and corporate clients. As the Founder of S Mohanty Associates, he leads a growing professional network delivering comprehensive and reliable land, building, and corporate valuation solutions across Pan India, with a strong focus on technical excellence, accuracy, and professional integrity.
                 </p>
 
               </div>

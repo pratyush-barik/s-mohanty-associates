@@ -26,11 +26,11 @@ const values = [
 ];
 
 const timeline = [
-  { year: '1995', title: 'Foundation', description: 'S Mohanty Associates established in Bhubaneswar, Odisha as a registered valuation firm.' },
-  { year: '2002', title: 'Banking Partnerships', description: 'Empanelment with major nationalized banks including SBI, PNB, and Union Bank of India.' },
-  { year: '2010', title: 'Regional Expansion', description: 'Expanded operations across Odisha and Eastern India with a growing team of qualified engineers.' },
-  { year: '2016', title: 'Digital Transformation', description: 'Adopted digital workflows and modern valuation methodologies for enhanced precision.' },
-  { year: '2024', title: 'Industry Leadership', description: 'Over 2500+ completed valuations with recognition as a trusted valuation partner across India.' },
+  { year: '2016', title: 'Foundation', description: 'S Mohanty Associates established in Bhubaneswar, Odisha as a registered valuation firm.' },
+  { year: '2017', title: 'Banking Partnerships', description: 'Empaneled with major private sector and nationalized banks, including: State Bank of India (SBI), HDFC Bank, ICICI Bank, Axis Bank, Punjab National Bank (PNB), UCO Bank, and Canara Bank.' },
+  { year: '2021', title: 'Regional Expansion', description: 'Expanded operations across Odisha and Eastern India with a growing team of qualified engineers.' },
+  { year: '2023', title: 'Digital Transformation', description: 'Adopted digital workflows and modern valuation methodologies for enhanced precision.' },
+  { year: '2024', title: 'Industry Leadership', description: 'Over 7500+ completed valuations with recognition as a trusted valuation partner across India.' },
 ];
 
 export default function About() {

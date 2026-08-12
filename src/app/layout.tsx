@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "S Mohanty Associates | Property Valuation Experts",
   description:
-    "Government Registered Valuers and Chartered Engineers providing expert property valuation services for banks, government bodies, insurance companies, and private clients across India since 1995.",
+    "Government Registered Valuers and Chartered Engineers providing expert property valuation services for Banks, Non-Banking Financial Corporations, Insurance Companies, and Private Clients across India since 2016.",
   keywords: [
     "property valuation",
     "land valuation",
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "S Mohanty Associates | Property Valuation Experts",
     description:
-      "Trusted property valuation expertise since 1995. Government Registered Valuers and Chartered Engineers serving India's leading banks and institutions.",
+      "Trusted property valuation expertise since 2016. Government Registered Valuers and Chartered Engineers serving India's leading banks and institutions.",
     type: "website",
     locale: "en_IN",
     siteName: "S Mohanty Associates",

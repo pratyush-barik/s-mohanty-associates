@@ -6,8 +6,8 @@ import { gsap } from 'gsap';
 import AnimatedCounter from '@/components/ui/AnimatedCounter';
 
 const stats = [
-  { target: 1000, suffix: '+', label: 'Projects Completed', prefix: '' },
-  { target: 20, suffix: '+', label: 'Years Experience', prefix: '' },
+  { target: 7500, suffix: '+', label: 'Valuation Assignments Completed', prefix: '' },
+  { target: 10, suffix: '+', label: 'Years Experience', prefix: '' },
   { target: 100, suffix: '+', label: 'Corporate Clients', prefix: '' },
   { target: 30, suffix: '+', label: 'Team Members', prefix: '' },
 ];
@@ -103,7 +103,7 @@ export default function Hero() {
           Trusted Property{' '}
           <span className="gradient-text">Valuation</span>
           <br />
-          Expertise Since 1995
+          Expertise Since 2016
         </motion.h1>
 
         {/* Subtitle */}
@@ -113,8 +113,8 @@ export default function Hero() {
           transition={{ duration: 0.7, delay: 0.6 }}
           className="text-lg md:text-xl text-white/60 max-w-[700px] mx-auto mb-10 leading-relaxed"
         >
-          Delivering precise, reliable, and court-recognized property valuations for banks,
-          government bodies, insurance companies, and private clients across India.
+          Delivering precise, reliable, and court-recognized property valuations for Banks,
+          Non-Banking Financial Corporations, Insurance Companies, and Private Clients across India.
         </motion.p>
 
         {/* CTA Buttons */}

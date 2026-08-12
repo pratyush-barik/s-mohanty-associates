@@ -51,7 +51,7 @@ export default function Footer() {
               />
             </div>
             <p className="text-white/50 text-sm leading-relaxed mb-6">
-              Government Registered Valuers and Chartered Engineers providing expert property valuation services across India since 1995.
+              Government Registered Valuers and Chartered Engineers providing expert property valuation services across India since 2016.
             </p>
           </div>
 
