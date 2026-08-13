@@ -72,7 +72,7 @@ const qualifications = [
       },
       {
         title: 'M. Tech in Civil Engineering (Highway Engineering)',
-        subtitle: 'Karnataka State Open University',
+        subtitle: 'Karnataka State University',
         detail: '(2012-2014)',
         icon: '🎓',
       },
