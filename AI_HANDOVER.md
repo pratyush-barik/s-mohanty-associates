@@ -256,6 +256,8 @@ The core business logic is **100% complete**.
 23. **UI & Branding Updates (August 2026)**:
     - **Client Carousels**: Updated the fixed featured clients grid and the rotating carousel with specific lists of banks (10 banks for rotating, 6 for fixed). Created optimized placeholder logos (e.g., stacked layout for Bank of Maharashtra to fit the 2:1 card ratio without letterboxing, resized Kotak logo to exactly 256x128).
     - **SVG Logo Migration**: Converted the main PNG logo to an embedded Base64 SVG (`smohantyassociate_logo.svg`) and replaced all `.png` references across the codebase (Navbar, Footer, layouts) to improve rendering consistency and scalability.
+    - **Layout & Typography Optimization**: Increased maximum container width to `1600px` for better ultrawide usage. Re-aligned the main navigation bar links to the center, augmented button spacing, and boosted navbar font sizes for enhanced legibility. Re-flowed the footer contact address to prevent awkward orphaned words on mobile screens.
+    - **PDF Text Rendering Fix**: Added comprehensive HTML entity decoding (`&amp;` to `&`, etc.) across all PDF renderers before string processing to prevent escaped entities appearing in final printable reports.
 
 ## 5. Pending Work (What is next)
 
