@@ -53,6 +53,12 @@ const qualifications = [
     category: 'Academic Qualifications',
     items: [
       {
+        title: 'MBA (Finance)',
+        subtitle: 'Bijupattnaik university-BPUT',
+        detail: '(2026-2028)',
+        icon: '📚',
+      },
+      {
         title: 'M. Tech in Civil Engineering (Structural & Foundation)',
         subtitle: 'Biju Patnaik University of Technology',
         detail: '(2022-2024)',
@@ -69,12 +75,6 @@ const qualifications = [
         subtitle: 'Karnataka State Open University',
         detail: '(2012-2014)',
         icon: '🎓',
-      },
-      {
-        title: 'MBA (Finance)',
-        subtitle: 'Bijupattnaik university-BPUT',
-        detail: '(2026-2028)',
-        icon: '📚',
       },
       {
         title: 'MBA (Human Resource)',
