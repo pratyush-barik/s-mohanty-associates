@@ -157,18 +157,18 @@ export default function Services() {
                   <div className="text-4xl mb-4 transform group-hover:scale-110 transition-transform duration-300">
                     {service.icon}
                   </div>
-                  <h3 className="text-lg font-bold text-white mb-3" style={{ fontFamily: 'var(--font-heading)' }}>
+                  <h3 className="text-lg font-bold text-[#0f2038] mb-3" style={{ fontFamily: 'var(--font-heading)' }}>
                     {service.title}
                   </h3>
-                  <p className="text-sm text-white/60 leading-relaxed mb-3">
+                  <p className="text-sm text-[#4a5568] leading-relaxed mb-3">
                     {service.description}
                   </p>
 
                   {/* Expanded Details on Hover */}
                   <div className={`overflow-hidden transition-all duration-500 ${
-                    hoveredIndex === index ? 'max-h-[100px] opacity-100 mt-3 pt-3 border-t border-white/10' : 'max-h-0 opacity-0'
+                    hoveredIndex === index ? 'max-h-[100px] opacity-100 mt-3 pt-3 border-t border-neutral-300' : 'max-h-0 opacity-0'
                   }`}>
-                    <p className="text-xs text-[#ffcb47]/80 leading-relaxed">
+                    <p className="text-xs text-[#b8860b] font-semibold leading-relaxed">
                       {service.details}
                     </p>
                   </div>
