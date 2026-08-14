@@ -385,3 +385,9 @@ Outstanding items in **priority order**:
 - `fbb6acb` — fix(pdf): add sanitizeText to strip newlines, bullets, smart quotes and non-WinAnsi chars before drawText
 - `051d898` — fix(pdf): sanitize ALL text paths - drawRichTextAt and measureRichTextHeight missing sanitization causing WinAnsi 0x000a crash
 - `latest` — feat(pdf): convert drawSimpleRow from single-column to two-column table layout (Label | Value) matching sample IBBI reports
+
+
+### Recent Updates
+- latest - style(Clients): remove duplicate entries for Aditya Birla Capital and IDFC First Bank
+- latest - style(Clients): add Aditya Birla Capital and IDFC First Bank to rotating carousel
+- latest - style(logo): strip fake transparency checkerboard background from PNG
