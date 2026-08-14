@@ -24,8 +24,6 @@ const carouselClients = [
   { name: 'Tata Capital Ltd.', image: '/images/clients/tata-capital-ltd.png' },
   { name: 'Aditya Birla Capital', image: '/images/clients/aditya-birla-capital.png' },
   { name: 'IDFC First Bank', image: '/images/clients/idfc-first-bank.png' },
-  { name: 'Aditya Birla Capital', image: '/images/clients/aditya-birla-capital.png' },
-  { name: 'IDFC First Bank', image: '/images/clients/idfc-first-bank.png' },
 ];
 
 export default function Clients() {
