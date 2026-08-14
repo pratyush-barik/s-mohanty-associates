@@ -8,17 +8,25 @@ const quickLinks = [
   { label: 'Home', href: '#home' },
   { label: 'About Us', href: '#about' },
   { label: 'Services', href: '#services' },
+  { label: 'Clients', href: '#clients' },
   { label: 'Qualifications', href: '#qualifications' },
   { label: 'Contact', href: '#contact' },
 ];
 
 const services = [
-  'Property Valuation',
-  'Land Valuation',
+  'Mortgage & Loan Security Valuation',
   'Building Valuation',
-  'Industrial Valuation',
-  'Bank Valuation',
-  'Insurance Valuation',
+  'Land Valuation',
+  'Project & Construction Consultancy',
+  'Development & Investment Advisory',
+  'Banking & Financial Services',
+  'SARFAESI & Recovery Valuation',
+  'Government & Statutory Valuation',
+  'Specialized Property Valuation',
+  'Market Research & Advisory',
+  'Customized Valuation & Advisory',
+  'Corporate & Fixed Asset Valuation',
+  'IBC & Insolvency Valuation Support',
 ];
 
 export default function Footer() {
