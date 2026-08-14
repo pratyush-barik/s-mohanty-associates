@@ -38,9 +38,9 @@ export default function Footer() {
       <div className="h-1 w-full bg-gradient-to-r from-transparent via-[#b8860b] to-transparent" />
 
       <div className="container mx-auto max-w-[1600px] px-6 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12">
           {/* Brand Column */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-4 xl:col-span-3">
             <div className="mb-5 inline-block bg-[#FAF9F2] rounded-full px-4 py-1.5">
               <Image
                 src="/logo/smohantyassociate_logo.png"
@@ -56,7 +56,7 @@ export default function Footer() {
           </div>
 
           {/* Quick Links */}
-          <div>
+          <div className="lg:col-span-2 xl:col-span-2">
             <h4 className="text-white font-semibold text-sm uppercase tracking-wider mb-5">Quick Links</h4>
             <ul className="space-y-3">
               {quickLinks.map((link) => (
@@ -74,9 +74,9 @@ export default function Footer() {
           </div>
 
           {/* Services */}
-          <div>
+          <div className="lg:col-span-3 xl:col-span-4">
             <h4 className="text-white font-semibold text-sm uppercase tracking-wider mb-5">Our Services</h4>
-            <ul className="space-y-3">
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
               {services.map((service) => (
                 <li key={service}>
                   <span className="text-white/50 text-sm flex items-center gap-2">
@@ -89,7 +89,7 @@ export default function Footer() {
           </div>
 
           {/* Contact Info */}
-          <div>
+          <div className="lg:col-span-3 xl:col-span-3">
             <h4 className="text-white font-semibold text-sm uppercase tracking-wider mb-5">Contact Us</h4>
             <div className="space-y-4">
               <div className="flex gap-3">
