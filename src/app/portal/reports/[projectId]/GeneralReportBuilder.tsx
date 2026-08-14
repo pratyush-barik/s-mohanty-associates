@@ -2997,7 +2997,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           {(() => {
             const mapQuery = fields.latitude && fields.longitude
               ? `${fields.latitude},${fields.longitude}`
-              : fields.ownerAddress || '';
+              : getFullAddress() || '';
             const encodedQuery = encodeURIComponent(mapQuery);
             const hasQuery = mapQuery.trim().length > 0;
             const googleMapsUrl = fields.latitude && fields.longitude
