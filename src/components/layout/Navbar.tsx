@@ -168,13 +168,13 @@ export default function Navbar({ user }: NavbarProps) {
         className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl shadow-md border-b border-neutral-200/50 transition-all duration-500"
       >
         <div className="container mx-auto max-w-[1920px] pl-2 pr-6">
-          <div className="flex items-center justify-between h-[87px]">
+          <div className="flex items-center justify-between h-[95px] md:h-[115px]">
             <Link href="/" className="flex items-center group">
               <div className="transition-all -ml-2">
                 <img
                   src="/logo/smohantyassociate_logo.png"
                   alt="S Mohanty Associates"
-                  className="h-[66px] sm:h-[79px] w-auto object-contain transition-all duration-300 scale-[1.35] origin-left"
+                  className="h-[75px] sm:h-[95px] w-auto object-contain transition-all duration-300 scale-[1.25] sm:scale-[1.35] origin-left"
                 />
               </div>
             </Link>
