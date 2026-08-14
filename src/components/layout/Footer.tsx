@@ -60,7 +60,8 @@ export default function Footer() {
                 alt="S Mohanty Associates"
                 width={800}
                 height={200}
-                className="w-full h-auto max-h-28 object-contain"
+                className="w-full h-auto object-contain"
+                priority
               />
             </div>
             <p className="text-white/50 text-sm leading-relaxed mb-6">
