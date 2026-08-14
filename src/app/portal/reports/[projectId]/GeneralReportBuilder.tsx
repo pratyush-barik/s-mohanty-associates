@@ -556,7 +556,7 @@ const FloatingNavigator = ({ isApartmentFlat, annexureEnabled }: { isApartmentFl
     { id: `section-${isApartmentFlat ? 9 : 10}`, title: 'Remarks' },
     { id: `section-${isApartmentFlat ? 10 : 11}`, title: 'Certificate' },
     { id: `section-${isApartmentFlat ? 11 : 12}`, title: 'Property Photographs' },
-    { id: `section-${isApartmentFlat ? 12 : 13}`, title: 'Sketch Map' },
+    { id: `section-${isApartmentFlat ? 12 : 13}`, title: 'Sketch Maps' },
     { id: `section-${isApartmentFlat ? 13 : 14}`, title: 'Location Map' },
     ...(annexureEnabled ? [{ id: `section-${isApartmentFlat ? 14 : 15}`, title: 'Annexure' }] : []),
   ];
@@ -2985,26 +2985,39 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
         </Section>
       )}
 
-      {/* ── Section 13: Sketch Map ── */}
-      <Section title="Sketch Map" number={isApartmentFlat ? 12 : 13} defaultOpen={false}>
-        {fields.sketchMapImage ? (
-          <div className="space-y-3">
-            <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] max-w-lg">
-              <img src={fields.sketchMapImage} alt="Sketch Map" className="w-full object-contain" />
-              {!isReadOnly && (
-                <button onClick={() => handleChange('sketchMapImage', '')} className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">Remove</button>
-              )}
-            </div>
+      {/* ── Section 13: Sketch Maps ── */}
+      <Section title="Sketch Maps" number={isApartmentFlat ? 12 : 13} defaultOpen={false}>
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-xs font-bold text-[#495057] uppercase tracking-wider">Sketch Maps</p>
+          {bucketImages.length > 0 && !isReadOnly && (
+            <button type="button" onClick={() => openBucketPicker('sketchMapImages')} className="text-xs font-bold text-blue-600 hover:text-blue-800">📸 Pick from Bucket</button>
+          )}
+        </div>
+        {!isReadOnly && (
+          <div className="mb-3">
+            <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+              {uploading ? 'Uploading...' : '🗺️ Upload Sketch Maps'}
+              <input type="file" multiple accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'sketchMapImages')} disabled={uploading} />
+            </label>
+          </div>
+        )}
+        {fields.sketchMapImages && fields.sketchMapImages.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {fields.sketchMapImages.map((url: string, idx: number) => (
+              <div key={idx} className="relative group rounded-lg overflow-hidden border border-[#e9ecef]">
+                <img src={url} alt={`Sketch Map ${idx + 1}`} className="w-full h-32 object-contain bg-[#f8f9fa]" />
+                {!isReadOnly && (
+                  <button onClick={() => removeSketchMap(idx)} className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                    Remove
+                  </button>
+                )}
+              </div>
+            ))}
           </div>
         ) : (
-          !isReadOnly && (
-            <div className="flex items-center gap-3 flex-wrap">
-              <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-                {uploading ? 'Uploading...' : '\uD83D\uDDFA\uFE0F Upload Sketch Map'}
-                <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'sketchMapImage')} disabled={uploading} />
-              </label>
-            </div>
-          )
+          <div className="text-center p-4 border border-dashed rounded-lg text-gray-500 text-sm">
+            No sketch maps added
+          </div>
         )}
       </Section>
 
