@@ -28,7 +28,7 @@ const carouselClients = [
 
 export default function Clients() {
   return (
-    <section id="clients" className="section relative overflow-hidden">
+    <section id="clients" className="section relative overflow-hidden min-h-[90vh] flex flex-col justify-center">
       {/* Background decoration */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#b8860b]/3 rounded-full blur-[150px] pointer-events-none" />
 
