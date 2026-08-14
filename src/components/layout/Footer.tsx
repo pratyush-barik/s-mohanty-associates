@@ -132,8 +132,8 @@ export default function Footer() {
             © {new Date().getFullYear()} S Mohanty Associates. All rights reserved.
           </p>
           <div className="flex gap-6">
-            <Link href="#" className="text-white/30 hover:text-white/60 text-sm transition-colors">Privacy Policy</Link>
-            <Link href="#" className="text-white/30 hover:text-white/60 text-sm transition-colors">Terms of Service</Link>
+            <Link href="/privacy" className="text-white/30 hover:text-white/60 text-sm transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="text-white/30 hover:text-white/60 text-sm transition-colors">Terms of Service</Link>
           </div>
         </div>
       </div>

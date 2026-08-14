@@ -90,14 +90,14 @@ export default async function PortalLayout({ children }: { children: React.React
             </div>
             {/* Expanded: show full logo */}
             <div className="hidden group-hover:block opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-              <div className="inline-block bg-white/95 rounded-full px-3 py-1 shadow-sm border border-white/20">
+              <div className="inline-block bg-white/95 rounded-xl px-2.5 py-1.5 shadow-sm border border-white/20">
                 <Image
                   src="/logo/smohantyassociate_logo.png"
                   alt="S Mohanty Associates"
                   width={320}
                   height={80}
                   unoptimized
-                  className="h-14 w-auto object-contain"
+                  className="h-12 w-auto object-contain"
                 />
               </div>
               <div className="text-[9px] uppercase tracking-[0.2em] text-[#ffcb47] font-medium mt-1.5 ml-1">Employee Portal</div>
