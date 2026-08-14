@@ -54,11 +54,11 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12">
           {/* Brand Column */}
           <div className="lg:col-span-4 xl:col-span-3">
-            <div className="mb-6 bg-white rounded-2xl p-4 w-full flex items-center justify-center shadow-lg overflow-hidden">
+            <div className="mb-6 bg-white rounded-2xl py-4 px-2 w-full flex items-center justify-center shadow-lg">
               <img
                 src="/logo/smohantyassociate_logo.png"
                 alt="S Mohanty Associates"
-                className="w-[115%] max-w-none h-auto object-contain"
+                className="w-full md:w-[90%] h-auto object-contain"
               />
             </div>
             <p className="text-white/50 text-sm leading-relaxed mb-6">
