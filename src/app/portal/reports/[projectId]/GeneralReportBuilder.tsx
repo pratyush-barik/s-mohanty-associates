@@ -555,7 +555,7 @@ const FloatingNavigator = ({ isApartmentFlat, annexureEnabled }: { isApartmentFl
     { id: `section-${isApartmentFlat ? 8 : 9}`, title: 'Valuation Abstract' },
     { id: `section-${isApartmentFlat ? 9 : 10}`, title: 'Remarks' },
     { id: `section-${isApartmentFlat ? 10 : 11}`, title: 'Certificate' },
-    { id: `section-${isApartmentFlat ? 11 : 12}`, title: 'Property Photographs' },
+    { id: `section-${isApartmentFlat ? 11 : 12}`, title: 'Photographs' },
     { id: `section-${isApartmentFlat ? 12 : 13}`, title: 'Sketch Maps' },
     { id: `section-${isApartmentFlat ? 13 : 14}`, title: 'Location Map' },
     ...(annexureEnabled ? [{ id: `section-${isApartmentFlat ? 14 : 15}`, title: 'Annexure' }] : []),
