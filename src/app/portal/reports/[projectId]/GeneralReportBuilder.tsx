@@ -48,6 +48,8 @@ interface ReportFields {
   loanApplicationNo: string;
   documentHolderName: string;
   legalAddress: string;
+  legalState: string;
+  legalPincode: string;
   dateOfInspection: string;
   dateOfValuation: string;
   refNo: string;
@@ -209,6 +211,8 @@ const DEFAULT_FIELDS: ReportFields = {
   loanApplicationNo: '',
   documentHolderName: '',
   legalAddress: '',
+  legalState: '',
+  legalPincode: '',
   dateOfInspection: new Date().toISOString().split('T')[0],
   dateOfValuation: new Date().toISOString().split('T')[0],
   refNo: '',
@@ -947,6 +951,15 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     return parts.join(', ');
   }, [fields.ownerAddress, fields.state, fields.pincode]);
 
+  const getLegalFullAddress = useCallback(() => {
+    const parts = [
+      fields.legalAddress,
+      fields.legalState,
+      fields.legalPincode ? `PIN: ${fields.legalPincode}` : ''
+    ].filter(Boolean);
+    return parts.join(', ');
+  }, [fields.legalAddress, fields.legalState, fields.legalPincode]);
+
   // ── Floor helpers ──
   const addFloor = () => {
     handleChange('floors', [...fields.floors, {
@@ -1226,7 +1239,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
         const annexureLabel = firstAnnexure ? firstAnnexure.label : fields.annexures[0].label;
         r.drawSimpleRow('Legal address of property', `Details are provided in Annexure ${annexureLabel}`);
       } else {
-        r.drawSimpleRow('Legal address of property ( Hissa No / Survey no / khasra No : - )', fields.legalAddress || '');
+        r.drawSimpleRow('Legal address of property ( Hissa No / Survey no / khasra No : - )', getLegalFullAddress() || '');
       }
 
       r.drawSimpleRow('Date of Inspection', fields.dateOfInspection);
@@ -2225,7 +2238,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
             {/* Technical Address Container */}
             <div className="md:col-span-2 bg-white p-4 rounded-xl border border-neutral-200 shadow-sm space-y-4">
               <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
-                <h3 className="text-sm font-bold text-[#0f2038]">Technical Address (Property Address)</h3>
+                <h3 className="text-sm font-bold text-[#0f2038]">Technical Address</h3>
                 {!isReadOnly && (
                   <div className="flex items-center gap-3">
                     <span className="text-[10px] font-bold text-[#6c757d] uppercase tracking-wide">
@@ -2248,7 +2261,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                   <Field label="Address Line 1">
                     <input className={inputCls} value={fields.ownerAddress} onChange={e => handleChange('ownerAddress', e.target.value)} disabled={isReadOnly} placeholder="Plot/Building No, Street/Locality" />
                   </Field>
-                  <div className="grid md:grid-cols-3 gap-4">
+                  <div className="grid md:grid-cols-2 gap-4">
                     <Field label="State">
                       <input list="states-list" className={inputCls} value={fields.state || ''} onChange={e => handleChange('state', e.target.value)} disabled={isReadOnly} placeholder="Search or enter state..." />
                       <datalist id="states-list">
@@ -2257,9 +2270,6 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                     </Field>
                     <Field label="Pincode">
                       <input className={inputCls} value={fields.pincode || ''} onChange={e => handleChange('pincode', e.target.value)} disabled={isReadOnly} placeholder="e.g. 751001" maxLength={6} />
-                    </Field>
-                    <Field label="Landmark">
-                      <input className={inputCls} value={fields.landmark || ''} onChange={e => handleChange('landmark', e.target.value)} disabled={isReadOnly} placeholder="e.g. Near UP School" />
                     </Field>
                   </div>
                 </>
@@ -2271,10 +2281,28 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
               )}
             </div>
 
+            <Field label="Landmark">
+              <input className={inputCls} value={fields.landmark || ''} onChange={e => handleChange('landmark', e.target.value)} disabled={isReadOnly} placeholder="e.g. Near UP School" />
+            </Field>
+            <div className="hidden md:block"></div>
+
+            <div className="md:col-span-2 grid md:grid-cols-2 gap-4 bg-neutral-50/50 p-4 rounded-xl border border-neutral-200/60">
+              <Field label="Application Type (Optional)">
+                <input className={inputCls} value={fields.loanApplicationType || ''} onChange={e => handleChange('loanApplicationType', e.target.value)} disabled={isReadOnly} placeholder="e.g. Housing Loan, LAP, SME" />
+              </Field>
+              <Field label="Application Number">
+                <input className={inputCls} value={fields.loanApplicationNo || ''} onChange={e => handleChange('loanApplicationNo', e.target.value)} disabled={isReadOnly} placeholder="e.g. 123456" />
+              </Field>
+            </div>
+            <Field label="Name of Document Holder">
+              <input className={inputCls} value={fields.documentHolderName || ''} onChange={e => handleChange('documentHolderName', e.target.value)} disabled={isReadOnly} />
+            </Field>
+            <div className="hidden md:block"></div>
+
             {/* Legal Address Container */}
             <div className="md:col-span-2 bg-white p-4 rounded-xl border border-neutral-200 shadow-sm space-y-4">
               <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
-                <h3 className="text-sm font-bold text-[#0f2038]">Legal Address (Document Address)</h3>
+                <h3 className="text-sm font-bold text-[#0f2038]">Legal Address</h3>
                 {!isReadOnly && (
                   <div className="flex items-center gap-3">
                     <span className="text-[10px] font-bold text-[#6c757d] uppercase tracking-wide">
@@ -2293,9 +2321,19 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
               </div>
               
               {!fields.legalAnnexureEnabled ? (
-                <Field label="Legal Address of Property (Hissa / Survey / Khasra No)">
-                  <textarea className={`${inputCls} min-h-[60px] resize-y`} value={fields.legalAddress || ''} onChange={e => handleChange('legalAddress', e.target.value)} disabled={isReadOnly} placeholder="Enter full legal address details..." />
-                </Field>
+                <>
+                  <Field label="Address Line 1 (Hissa / Survey / Khasra No)">
+                    <input className={inputCls} value={fields.legalAddress || ''} onChange={e => handleChange('legalAddress', e.target.value)} disabled={isReadOnly} placeholder="Plot/Building No, Street/Locality" />
+                  </Field>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <Field label="State">
+                      <input list="states-list" className={inputCls} value={fields.legalState || ''} onChange={e => handleChange('legalState', e.target.value)} disabled={isReadOnly} placeholder="Search or enter state..." />
+                    </Field>
+                    <Field label="Pincode">
+                      <input className={inputCls} value={fields.legalPincode || ''} onChange={e => handleChange('legalPincode', e.target.value)} disabled={isReadOnly} placeholder="e.g. 751001" maxLength={6} />
+                    </Field>
+                  </div>
+                </>
               ) : (
                 <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#fff8e1] border border-[#ffe082] text-xs text-[#7b6b2e]">
                   <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" /></svg>
@@ -2303,17 +2341,6 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                 </div>
               )}
             </div>
-            <div className="md:col-span-2 grid md:grid-cols-2 gap-4 bg-neutral-50/50 p-4 rounded-xl border border-neutral-200/60">
-              <Field label="Application Type (Optional)">
-                <input className={inputCls} value={fields.loanApplicationType || ''} onChange={e => handleChange('loanApplicationType', e.target.value)} disabled={isReadOnly} placeholder="e.g. Housing Loan, LAP, SME" />
-              </Field>
-              <Field label="Application Number">
-                <input className={inputCls} value={fields.loanApplicationNo || ''} onChange={e => handleChange('loanApplicationNo', e.target.value)} disabled={isReadOnly} placeholder="e.g. 123456" />
-              </Field>
-            </div>
-            <Field label="Name of Document Holder">
-              <input className={inputCls} value={fields.documentHolderName || ''} onChange={e => handleChange('documentHolderName', e.target.value)} disabled={isReadOnly} />
-            </Field>
             <Field label="Date of Inspection">
               <input type="date" className={inputCls} value={fields.dateOfInspection} onChange={e => handleChange('dateOfInspection', e.target.value)} disabled={isReadOnly} />
             </Field>
