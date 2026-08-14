@@ -193,6 +193,7 @@ interface ReportFields {
 
   // Annexure
   annexureEnabled: boolean;
+  legalAnnexureEnabled: boolean;
   annexures: AnnexureItem[];
 }
 
@@ -337,6 +338,7 @@ const DEFAULT_FIELDS: ReportFields = {
   serviceType: '',
   subjectType: '',
   annexureEnabled: false,
+  legalAnnexureEnabled: false,
   annexures: [],
 };
 
@@ -1210,14 +1212,23 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       if (fields.annexureEnabled && fields.annexures.length > 0) {
         const firstAnnexure = fields.annexures.find(a => a.parsedData);
         const annexureLabel = firstAnnexure ? firstAnnexure.label : fields.annexures[0].label;
-        r.drawSimpleRow('Property Address', `Details are provided in Annexure ${annexureLabel}`);
+        r.drawSimpleRow('Property Address with pin code', `Details are provided in Annexure ${annexureLabel}`);
       } else {
-        r.drawSimpleRow('Property Address', getFullAddress());
+        r.drawSimpleRow('Property Address with pin code', getFullAddress());
         r.drawSimpleRow('Landmark', fields.landmark || '');
       }
       const loanAppLabel = fields.loanApplicationType ? `${fields.loanApplicationType} Application number` : 'Application number';
       r.drawSimpleRow(loanAppLabel, fields.loanApplicationNo);
       r.drawSimpleRow('Name of Document holder', fields.documentHolderName || fields.ownerName);
+
+      if (fields.legalAnnexureEnabled && fields.annexures.length > 0) {
+        const firstAnnexure = fields.annexures.find(a => a.parsedData);
+        const annexureLabel = firstAnnexure ? firstAnnexure.label : fields.annexures[0].label;
+        r.drawSimpleRow('Legal address of property', `Details are provided in Annexure ${annexureLabel}`);
+      } else {
+        r.drawSimpleRow('Legal address of property ( Hissa No / Survey no / khasra No : - )', fields.legalAddress || '');
+      }
+
       r.drawSimpleRow('Date of Inspection', fields.dateOfInspection);
       r.drawSimpleRow('Date of Valuation Report', fields.dateOfValuation);
       if (fields.clientType === 'organisation') {
@@ -2211,85 +2222,87 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
             <Field label="Name of Customer(s)">
               <input className={inputCls} value={fields.ownerName} onChange={e => handleChange('ownerName', e.target.value)} disabled={isReadOnly} placeholder="Full name of property owner" />
             </Field>
-            {/* Address Line 1 with Annexure toggle */}
-            <div className="md:col-span-2">
-              <div className="flex items-center gap-3 mb-1.5">
-                <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider">Address Line 1</label>
+            {/* Technical Address Container */}
+            <div className="md:col-span-2 bg-white p-4 rounded-xl border border-neutral-200 shadow-sm space-y-4">
+              <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
+                <h3 className="text-sm font-bold text-[#0f2038]">Technical Address (Property Address)</h3>
                 {!isReadOnly && (
-                  <button
-                    type="button"
-                    onClick={() => handleChange('annexureEnabled', !fields.annexureEnabled)}
-                    className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${fields.annexureEnabled ? 'bg-[#b8860b]' : 'bg-[#ccc]'}`}
-                    title={fields.annexureEnabled ? 'Disable Annexure (show address fields)' : 'Enable Annexure (move address to Annexure section)'}
-                  >
-                    <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${fields.annexureEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-bold text-[#6c757d] uppercase tracking-wide">
+                      Use Annexure
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleChange('annexureEnabled', !fields.annexureEnabled)}
+                      className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${fields.annexureEnabled ? 'bg-[#b8860b]' : 'bg-[#ccc]'}`}
+                      title={fields.annexureEnabled ? 'Disable Annexure' : 'Enable Annexure'}
+                    >
+                      <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${fields.annexureEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+                    </button>
+                  </div>
                 )}
-                <span className="text-[10px] font-medium text-[#6c757d] uppercase tracking-wide">
-                  Annexure
-                </span>
               </div>
-              {!fields.annexureEnabled && (
-                <input className={inputCls} value={fields.ownerAddress} onChange={e => handleChange('ownerAddress', e.target.value)} disabled={isReadOnly} placeholder="Plot/Building No, Street/Locality" />
-              )}
-              {fields.annexureEnabled && (
+              
+              {!fields.annexureEnabled ? (
+                <>
+                  <Field label="Address Line 1">
+                    <input className={inputCls} value={fields.ownerAddress} onChange={e => handleChange('ownerAddress', e.target.value)} disabled={isReadOnly} placeholder="Plot/Building No, Street/Locality" />
+                  </Field>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <Field label="State">
+                      <input list="states-list" className={inputCls} value={fields.state || ''} onChange={e => handleChange('state', e.target.value)} disabled={isReadOnly} placeholder="Search or enter state..." />
+                      <datalist id="states-list">
+                        <option value="Andhra Pradesh" /><option value="Arunachal Pradesh" /><option value="Assam" /><option value="Bihar" /><option value="Chhattisgarh" /><option value="Goa" /><option value="Gujarat" /><option value="Haryana" /><option value="Himachal Pradesh" /><option value="Jharkhand" /><option value="Karnataka" /><option value="Kerala" /><option value="Madhya Pradesh" /><option value="Maharashtra" /><option value="Manipur" /><option value="Meghalaya" /><option value="Mizoram" /><option value="Nagaland" /><option value="Odisha" /><option value="Punjab" /><option value="Rajasthan" /><option value="Sikkim" /><option value="Tamil Nadu" /><option value="Telangana" /><option value="Tripura" /><option value="Uttar Pradesh" /><option value="Uttarakhand" /><option value="West Bengal" /><option value="Andaman and Nicobar Islands" /><option value="Chandigarh" /><option value="Dadra and Nagar Haveli and Daman and Diu" /><option value="Delhi" /><option value="Jammu and Kashmir" /><option value="Ladakh" /><option value="Lakshadweep" /><option value="Puducherry" />
+                      </datalist>
+                    </Field>
+                    <Field label="Pincode">
+                      <input className={inputCls} value={fields.pincode || ''} onChange={e => handleChange('pincode', e.target.value)} disabled={isReadOnly} placeholder="e.g. 751001" maxLength={6} />
+                    </Field>
+                    <Field label="Landmark">
+                      <input className={inputCls} value={fields.landmark || ''} onChange={e => handleChange('landmark', e.target.value)} disabled={isReadOnly} placeholder="e.g. Near UP School" />
+                    </Field>
+                  </div>
+                </>
+              ) : (
                 <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#fff8e1] border border-[#ffe082] text-xs text-[#7b6b2e]">
                   <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" /></svg>
-                  <span>Address details moved to <strong>Section {isApartmentFlat ? 14 : 15} — Annexure</strong>. Scroll down or use the navigator.</span>
+                  <span>Technical Address details moved to <strong>Section {isApartmentFlat ? 14 : 15} — Annexure</strong>. Scroll down or use the navigator.</span>
                 </div>
               )}
             </div>
-            {!fields.annexureEnabled && (
-              <>
-                <Field label="State">
-                  <input list="states-list" className={inputCls} value={fields.state || ''} onChange={e => handleChange('state', e.target.value)} disabled={isReadOnly} placeholder="Search or enter state..." />
-                  <datalist id="states-list">
-                    <option value="Andhra Pradesh" />
-                    <option value="Arunachal Pradesh" />
-                    <option value="Assam" />
-                    <option value="Bihar" />
-                    <option value="Chhattisgarh" />
-                    <option value="Goa" />
-                    <option value="Gujarat" />
-                    <option value="Haryana" />
-                    <option value="Himachal Pradesh" />
-                    <option value="Jharkhand" />
-                    <option value="Karnataka" />
-                    <option value="Kerala" />
-                    <option value="Madhya Pradesh" />
-                    <option value="Maharashtra" />
-                    <option value="Manipur" />
-                    <option value="Meghalaya" />
-                    <option value="Mizoram" />
-                    <option value="Nagaland" />
-                    <option value="Odisha" />
-                    <option value="Punjab" />
-                    <option value="Rajasthan" />
-                    <option value="Sikkim" />
-                    <option value="Tamil Nadu" />
-                    <option value="Telangana" />
-                    <option value="Tripura" />
-                    <option value="Uttar Pradesh" />
-                    <option value="Uttarakhand" />
-                    <option value="West Bengal" />
-                    <option value="Andaman and Nicobar Islands" />
-                    <option value="Chandigarh" />
-                    <option value="Dadra and Nagar Haveli and Daman and Diu" />
-                    <option value="Delhi" />
-                    <option value="Jammu and Kashmir" />
-                    <option value="Ladakh" />
-                    <option value="Lakshadweep" />
-                    <option value="Puducherry" />
-                  </datalist>
+
+            {/* Legal Address Container */}
+            <div className="md:col-span-2 bg-white p-4 rounded-xl border border-neutral-200 shadow-sm space-y-4">
+              <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
+                <h3 className="text-sm font-bold text-[#0f2038]">Legal Address (Document Address)</h3>
+                {!isReadOnly && (
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-bold text-[#6c757d] uppercase tracking-wide">
+                      Use Annexure
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleChange('legalAnnexureEnabled', !fields.legalAnnexureEnabled)}
+                      className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${fields.legalAnnexureEnabled ? 'bg-[#b8860b]' : 'bg-[#ccc]'}`}
+                      title={fields.legalAnnexureEnabled ? 'Disable Annexure' : 'Enable Annexure'}
+                    >
+                      <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${fields.legalAnnexureEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+                    </button>
+                  </div>
+                )}
+              </div>
+              
+              {!fields.legalAnnexureEnabled ? (
+                <Field label="Legal Address of Property (Hissa / Survey / Khasra No)">
+                  <textarea className={`${inputCls} min-h-[60px] resize-y`} value={fields.legalAddress || ''} onChange={e => handleChange('legalAddress', e.target.value)} disabled={isReadOnly} placeholder="Enter full legal address details..." />
                 </Field>
-                <Field label="Pincode">
-                  <input className={inputCls} value={fields.pincode || ''} onChange={e => handleChange('pincode', e.target.value)} disabled={isReadOnly} placeholder="e.g. 751001" maxLength={6} />
-                </Field>
-                <Field label="Landmark">
-                  <input className={inputCls} value={fields.landmark || ''} onChange={e => handleChange('landmark', e.target.value)} disabled={isReadOnly} placeholder="e.g. Near Kantapada UP School" />
-                </Field>
-              </>
-            )}
+              ) : (
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#fff8e1] border border-[#ffe082] text-xs text-[#7b6b2e]">
+                  <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" /></svg>
+                  <span>Legal Address details moved to <strong>Section {isApartmentFlat ? 14 : 15} — Annexure</strong>. Scroll down or use the navigator.</span>
+                </div>
+              )}
+            </div>
             <div className="md:col-span-2 grid md:grid-cols-2 gap-4 bg-neutral-50/50 p-4 rounded-xl border border-neutral-200/60">
               <Field label="Application Type (Optional)">
                 <input className={inputCls} value={fields.loanApplicationType || ''} onChange={e => handleChange('loanApplicationType', e.target.value)} disabled={isReadOnly} placeholder="e.g. Housing Loan, LAP, SME" />
