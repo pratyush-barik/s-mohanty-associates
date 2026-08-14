@@ -2801,7 +2801,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
 
       {/* ── Section 9: Abstract of Valuation ── */}
       <Section title="Abstract of Valuation" number={isApartmentFlat ? 8 : 9}>
-        <div className="space-y-3 max-w-xl">
+        <div className="space-y-3">
           {isApartmentFlat ? (
             /* Apartment/Flat: single value row */
             <div className="flex items-center justify-between py-2 border-b border-[#e9ecef]">
@@ -2849,8 +2849,8 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
             <span className="text-sm font-semibold text-orange-700">&#8377; {formatIndianCurrency(distressValue)}</span>
           </div>
 
-          <div className="mt-3 space-y-3">
-            <div className="grid md:grid-cols-2 gap-4">
+          <div className="mt-4">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
               <Field label="Marketability">
                 <select className={selectCls} value={fields.marketability} onChange={e => handleChange('marketability', e.target.value)} disabled={isReadOnly}>
                   <option>Excellent</option><option>Very Good</option><option>Good</option><option>Difficult</option>
@@ -2861,16 +2861,16 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                   <option>Positive</option><option>Negative</option>
                 </select>
               </Field>
+              <Field label="Replacement Cost / Insurance Value (&#8377;)">
+                <input className={inputCls} value={fields.replacementCost} onChange={e => handleChange('replacementCost', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Deviations in Property">
+                <input className={inputCls} value={fields.deviations} onChange={e => handleChange('deviations', e.target.value)} disabled={isReadOnly} placeholder="NA" />
+              </Field>
+              <Field label="Govt. / Guideline Value (&#8377;)" span={2}>
+                <input className={inputCls} value={fields.guidelineValue} onChange={e => handleChange('guidelineValue', e.target.value)} disabled={isReadOnly} placeholder="As per Govt. record (optional)" />
+              </Field>
             </div>
-            <Field label="Replacement Cost / Insurance Value (&#8377;)">
-              <input className={inputCls} value={fields.replacementCost} onChange={e => handleChange('replacementCost', e.target.value)} disabled={isReadOnly} />
-            </Field>
-            <Field label="Deviations in Property">
-              <input className={inputCls} value={fields.deviations} onChange={e => handleChange('deviations', e.target.value)} disabled={isReadOnly} placeholder="NA" />
-            </Field>
-            <Field label="Govt. / Guideline Value (&#8377;)">
-              <input className={inputCls} value={fields.guidelineValue} onChange={e => handleChange('guidelineValue', e.target.value)} disabled={isReadOnly} placeholder="As per Govt. record (optional)" />
-            </Field>
           </div>
         </div>
       </Section>
