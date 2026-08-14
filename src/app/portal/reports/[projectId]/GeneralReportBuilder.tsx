@@ -1452,7 +1452,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
         }
       }
       // ── Annexure Sections ──
-      if (fields.annexureEnabled && fields.annexures.length > 0) {
+      if ((fields.annexureEnabled || fields.legalAnnexureEnabled) && fields.annexures.length > 0) {
         for (const annexure of fields.annexures) {
           if (annexure.parsedData && annexure.parsedData.headers.length > 0) {
             r.newPage();
@@ -1953,7 +1953,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     }
 
     // ── BLOCKS: Annexure Sections ──
-    if (fields.annexureEnabled && fields.annexures.length > 0) {
+    if ((fields.annexureEnabled || fields.legalAnnexureEnabled) && fields.annexures.length > 0) {
       for (const annexure of fields.annexures) {
         if (annexure.parsedData && annexure.parsedData.headers.length > 0) {
           const numCols = annexure.parsedData.headers.length;
@@ -3089,7 +3089,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       </Section>
 
       {/* ── Section 15: Annexure (only when enabled) ── */}
-      {fields.annexureEnabled && (
+      {(fields.annexureEnabled || fields.legalAnnexureEnabled) && (
         <Section title="Annexure" number={isApartmentFlat ? 14 : 15} defaultOpen={true}>
           <div className="space-y-4">
             {/* Info banner */}
@@ -3442,7 +3442,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       )}
     </div>
 
-    {!aiAssistEnabled && <FloatingNavigator isApartmentFlat={isApartmentFlat} annexureEnabled={fields.annexureEnabled} />}
+    {!aiAssistEnabled && <FloatingNavigator isApartmentFlat={isApartmentFlat} annexureEnabled={fields.annexureEnabled || fields.legalAnnexureEnabled} />}
 
     {/* ── AI Assist Sidebar (hidden until NEXT_PUBLIC_AI_ASSIST_ENABLED=true) ── */}
     {aiAssistEnabled && (
