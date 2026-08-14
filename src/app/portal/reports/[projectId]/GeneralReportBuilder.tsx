@@ -2336,8 +2336,8 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
               )}
 
               {fields.annexureEnabled && (
-                <div className="space-y-3">
-                  {/* Annexure chip selector — shown only when multiple annexures exist */}
+                <div className="space-y-2">
+                  {/* Chip selector — only when 2+ annexures */}
                   {fields.annexures.length > 1 && (
                     <div className="space-y-1">
                       <label className="block text-[10px] font-bold text-[#6c757d] uppercase tracking-wider">Select Annexure</label>
@@ -2365,61 +2365,16 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                       </div>
                     </div>
                   )}
-
-                  {/* Inline mini-card for the selected (or only) annexure */}
+                  {/* Linked confirmation pill */}
                   {(() => {
                     const linked = fields.annexures.find(a => a.id === fields.annexureRef);
                     if (!linked) return null;
+                    const displayTitle = linked.title || `Annexure ${linked.label}`;
                     return (
-                      <div className="rounded-xl border border-[#b8860b]/30 overflow-hidden bg-[#fffaf0]">
-                        {/* Card header */}
-                        <div className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#162d4a] to-[#1e3a5f]">
-                          <span className="w-6 h-6 rounded-md bg-[#b8860b] flex items-center justify-center text-[10px] font-black text-white shrink-0">{linked.label}</span>
-                          <span className="text-xs font-semibold text-white flex-1">Annexure {linked.label}</span>
-                          <span className="text-[10px] text-white/50 italic">linked to Technical Address</span>
-                        </div>
-                        {/* Card body */}
-                        <div className="p-3 space-y-3">
-                          {/* Editable heading */}
-                          <div>
-                            <label className="block text-[10px] font-bold text-[#6c757d] uppercase tracking-wider mb-1">Heading / Title</label>
-                            <input
-                              type="text"
-                              value={linked.title || ''}
-                              onChange={e => updateAnnexureTitle(linked.id, e.target.value)}
-                              disabled={isReadOnly}
-                              placeholder="e.g. Schedule of Technical Address"
-                              className={inputCls}
-                            />
-                          </div>
-                          {/* File upload */}
-                          <div>
-                            <label className="block text-[10px] font-bold text-[#6c757d] uppercase tracking-wider mb-1">Excel / CSV File</label>
-                            {linked.excelFileUrl ? (
-                              <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-green-50 border border-green-200">
-                                <svg className="w-6 h-6 text-green-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-xs font-semibold text-green-800 truncate">{linked.excelFileName}</p>
-                                  <a href={linked.excelFileUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-green-600 hover:underline">View file &#x2197;</a>
-                                </div>
-                                {!isReadOnly && (
-                                  <button type="button" onClick={() => removeAnnexureFile(linked.id)} className="px-2 py-1 rounded text-[10px] font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-colors">Remove</button>
-                                )}
-                              </div>
-                            ) : (
-                              !isReadOnly && (
-                                <label className="flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-dashed border-[#b8860b]/30 bg-white cursor-pointer hover:bg-[#fffaf0] hover:border-[#b8860b]/60 transition-all group">
-                                  <svg className="w-7 h-7 text-[#b8860b]/40 group-hover:text-[#b8860b]/70 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
-                                  <div>
-                                    <p className="text-xs font-semibold text-[#b8860b]">{uploading ? 'Uploading…' : 'Click to upload Excel / CSV'}</p>
-                                    <p className="text-[10px] text-[#aaa]">Supports .xlsx, .xls, .csv (max 10MB)</p>
-                                  </div>
-                                  <input type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" className="hidden" onChange={e => handleAnnexureUpload(linked.id, e)} disabled={uploading} />
-                                </label>
-                              )
-                            )}
-                          </div>
-                        </div>
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#fff8e1] border border-[#ffe082] text-xs text-[#7b6b2e]">
+                        <svg className="w-3.5 h-3.5 shrink-0 text-[#b8860b]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        <span>In report: <strong>Property Address — Details are provided in {displayTitle}</strong></span>
+                        <span className="ml-auto text-[10px] text-[#b8860b]/60">Edit title &amp; file in Annexure section ↓</span>
                       </div>
                     );
                   })()}
@@ -2511,8 +2466,8 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
               )}
 
               {fields.legalAnnexureEnabled && (
-                <div className="space-y-3">
-                  {/* Annexure chip selector — shown only when multiple annexures exist */}
+                <div className="space-y-2">
+                  {/* Chip selector — only when 2+ annexures */}
                   {fields.annexures.length > 1 && (
                     <div className="space-y-1">
                       <label className="block text-[10px] font-bold text-[#6c757d] uppercase tracking-wider">Select Annexure</label>
@@ -2540,57 +2495,16 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                       </div>
                     </div>
                   )}
-
-                  {/* Inline mini-card for the selected (or only) annexure */}
+                  {/* Linked confirmation pill */}
                   {(() => {
                     const linked = fields.annexures.find(a => a.id === fields.legalAnnexureRef);
                     if (!linked) return null;
+                    const displayTitle = linked.title || `Annexure ${linked.label}`;
                     return (
-                      <div className="rounded-xl border border-[#b8860b]/30 overflow-hidden bg-[#fffaf0]">
-                        <div className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#162d4a] to-[#1e3a5f]">
-                          <span className="w-6 h-6 rounded-md bg-[#b8860b] flex items-center justify-center text-[10px] font-black text-white shrink-0">{linked.label}</span>
-                          <span className="text-xs font-semibold text-white flex-1">Annexure {linked.label}</span>
-                          <span className="text-[10px] text-white/50 italic">linked to Legal Address</span>
-                        </div>
-                        <div className="p-3 space-y-3">
-                          <div>
-                            <label className="block text-[10px] font-bold text-[#6c757d] uppercase tracking-wider mb-1">Heading / Title</label>
-                            <input
-                              type="text"
-                              value={linked.title || ''}
-                              onChange={e => updateAnnexureTitle(linked.id, e.target.value)}
-                              disabled={isReadOnly}
-                              placeholder="e.g. Schedule of Legal Address"
-                              className={inputCls}
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-[10px] font-bold text-[#6c757d] uppercase tracking-wider mb-1">Excel / CSV File</label>
-                            {linked.excelFileUrl ? (
-                              <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-green-50 border border-green-200">
-                                <svg className="w-6 h-6 text-green-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-xs font-semibold text-green-800 truncate">{linked.excelFileName}</p>
-                                  <a href={linked.excelFileUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-green-600 hover:underline">View file &#x2197;</a>
-                                </div>
-                                {!isReadOnly && (
-                                  <button type="button" onClick={() => removeAnnexureFile(linked.id)} className="px-2 py-1 rounded text-[10px] font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-colors">Remove</button>
-                                )}
-                              </div>
-                            ) : (
-                              !isReadOnly && (
-                                <label className="flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-dashed border-[#b8860b]/30 bg-white cursor-pointer hover:bg-[#fffaf0] hover:border-[#b8860b]/60 transition-all group">
-                                  <svg className="w-7 h-7 text-[#b8860b]/40 group-hover:text-[#b8860b]/70 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
-                                  <div>
-                                    <p className="text-xs font-semibold text-[#b8860b]">{uploading ? 'Uploading…' : 'Click to upload Excel / CSV'}</p>
-                                    <p className="text-[10px] text-[#aaa]">Supports .xlsx, .xls, .csv (max 10MB)</p>
-                                  </div>
-                                  <input type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" className="hidden" onChange={e => handleAnnexureUpload(linked.id, e)} disabled={uploading} />
-                                </label>
-                              )
-                            )}
-                          </div>
-                        </div>
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#fff8e1] border border-[#ffe082] text-xs text-[#7b6b2e]">
+                        <svg className="w-3.5 h-3.5 shrink-0 text-[#b8860b]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        <span>In report: <strong>Legal Address — Details are provided in {displayTitle}</strong></span>
+                        <span className="ml-auto text-[10px] text-[#b8860b]/60">Edit title &amp; file in Annexure section ↓</span>
                       </div>
                     );
                   })()}
