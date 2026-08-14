@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
+import LegalModal from '@/components/legal/LegalModal';
 
 const quickLinks = [
   { label: 'Home', href: '#home' },
@@ -31,6 +33,8 @@ const services = [
 ];
 
 export default function Footer() {
+  const [activeModal, setActiveModal] = useState<'privacy' | 'terms' | null>(null);
+
   const scrollToSection = (href: string) => {
     const id = href.replace('#', '');
     const el = document.getElementById(id);
@@ -132,8 +136,8 @@ export default function Footer() {
             © {new Date().getFullYear()} S Mohanty Associates. All rights reserved.
           </p>
           <div className="flex gap-6">
-            <Link href="/privacy" className="text-white/30 hover:text-white/60 text-sm transition-colors">Privacy Policy</Link>
-            <Link href="/terms" className="text-white/30 hover:text-white/60 text-sm transition-colors">Terms of Service</Link>
+            <button onClick={() => setActiveModal('privacy')} className="text-white/30 hover:text-white/60 text-sm transition-colors">Privacy Policy</button>
+            <button onClick={() => setActiveModal('terms')} className="text-white/30 hover:text-white/60 text-sm transition-colors">Terms of Service</button>
           </div>
         </div>
       </div>
@@ -141,6 +145,8 @@ export default function Footer() {
       {/* Background Decoration */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#b8860b]/3 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#1a5c3a]/20 rounded-full blur-[100px] pointer-events-none" />
+
+      <LegalModal type={activeModal} onClose={() => setActiveModal(null)} />
     </footer>
   );
 }
