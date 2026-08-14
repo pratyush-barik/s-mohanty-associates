@@ -16,13 +16,13 @@ const expertise = [
 
 export default function CEOProfile() {
   return (
-    <section id="ceo" className="section section-dark relative overflow-hidden">
+    <section id="ceo" className="section section-dark relative overflow-hidden min-h-[90vh] flex flex-col justify-center">
       {/* Decorative */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#b8860b]/5 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#1e3a5f]/20 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="container mx-auto max-w-[1920px] px-6 relative z-10">
-        <div className="grid lg:grid-cols-5 gap-10 lg:gap-16 max-w-7xl mx-auto items-stretch">
+        <div className="grid lg:grid-cols-5 gap-10 lg:gap-16 items-stretch">
           {/* Profile Image */}
           <SectionWrapper animation="fadeRight" delay={0.1} className="lg:col-span-2 relative h-full">
             <div className="relative group w-full h-full min-h-[400px] lg:min-h-full rounded-2xl overflow-hidden">
