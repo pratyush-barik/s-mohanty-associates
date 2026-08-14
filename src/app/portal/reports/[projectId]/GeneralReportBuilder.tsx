@@ -1240,17 +1240,15 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       r.drawOptionRow('Type of property', ['Residential', 'Commercial', 'Residential cum Commercial', 'Industrial', 'Vacant Plot'], fields.propertyType);
       r.drawSimpleRow('Name of the Customer(s)', `"${fields.ownerName || 'N/A'}"`);
       // Property Address & Landmark — show annexure reference if enabled
-      if (fields.annexureEnabled && fields.annexures.length > 0) {
+      if (fields.annexureEnabled && fields.annexures.length > 0 && !fields.annexureRefShowAlso) {
+        // Annexure only — single row pointing to the annexure
         const linkedAnn = fields.annexureRef
           ? fields.annexures.find(a => a.id === fields.annexureRef)
           : (fields.annexures.find(a => a.parsedData) || fields.annexures[0]);
         const annexureTitle = linkedAnn ? (linkedAnn.title || `Annexure ${linkedAnn.label}`) : 'Annexure';
         r.drawSimpleRow('Property Address', `Details are provided in ${annexureTitle}`);
-        if (fields.annexureRefShowAlso) {
-          r.drawSimpleRow('Property Address (also)', getFullAddress());
-          r.drawSimpleRow('Landmark', fields.landmark || '');
-        }
       } else {
+        // No annexure, or annexure + also-show-address: single plain address row
         r.drawSimpleRow('Property Address', getFullAddress());
         r.drawSimpleRow('Landmark', fields.landmark || '');
       }
@@ -1258,15 +1256,13 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       r.drawSimpleRow(loanAppLabel, fields.loanApplicationNo);
       r.drawSimpleRow('Name of Document holder', fields.documentHolderName || fields.ownerName);
 
-      if (fields.legalAnnexureEnabled && fields.annexures.length > 0) {
+      if (fields.legalAnnexureEnabled && fields.annexures.length > 0 && !fields.legalAnnexureRefShowAlso) {
+        // Annexure only — single row pointing to the annexure
         const linkedAnn = fields.legalAnnexureRef
           ? fields.annexures.find(a => a.id === fields.legalAnnexureRef)
           : (fields.annexures.find(a => a.parsedData) || fields.annexures[0]);
         const annexureTitle = linkedAnn ? (linkedAnn.title || `Annexure ${linkedAnn.label}`) : 'Annexure';
         r.drawSimpleRow('Legal address of property ( Hissa No / Survey no / khasra No : - )', `Details are provided in ${annexureTitle}`);
-        if (fields.legalAnnexureRefShowAlso) {
-          r.drawSimpleRow('Legal address (also)', getLegalFullAddress() || '');
-        }
       } else {
         r.drawSimpleRow('Legal address of property ( Hissa No / Survey no / khasra No : - )', getLegalFullAddress() || '');
       }
@@ -1709,8 +1705,14 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       ${sectionHeader('GENERAL DETAILS')}
       ${optionRow('Type of property', ['Residential', 'Commercial', 'Residential cum Commercial', 'Industrial', 'Vacant Plot'], fields.propertyType)}
       ${simpleRow('Name of the Customer(s)', `"${fields.ownerName || 'N/A'}"`)}
-      ${fields.annexureEnabled && fields.annexures.length > 0
-        ? simpleRow('Property Address', `Details are provided in Annexure ${(fields.annexures.find(a => a.parsedData) || fields.annexures[0]).label}`)
+      ${fields.annexureEnabled && fields.annexures.length > 0 && !fields.annexureRefShowAlso
+        ? (() => {
+            const linkedAnn = fields.annexureRef
+              ? fields.annexures.find(a => a.id === fields.annexureRef)
+              : (fields.annexures.find(a => a.parsedData) || fields.annexures[0]);
+            const annexureTitle = linkedAnn ? (linkedAnn.title || `Annexure ${linkedAnn.label}`) : 'Annexure';
+            return simpleRow('Property Address', `Details are provided in ${annexureTitle}`);
+          })()
         : `${simpleRow('Property Address', getFullAddress())}
            ${simpleRow('Landmark', fields.landmark || '')}`
       }
