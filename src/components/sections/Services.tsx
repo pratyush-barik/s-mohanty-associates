@@ -5,114 +5,109 @@ import SectionWrapper, { StaggerContainer, StaggerItem } from '@/components/ui/S
 import { SpotlightCard } from '@/components/ui/SpotlightCard';
 
 const services = [
-  // Row 1 (Longest text)
   {
     icon: '🏦',
     title: 'Mortgage & Loan Security Valuation',
     description: 'Home Loan Valuation, Loan Against Property (LAP), Commercial Property Valuation, Industrial Property Valuation, Construction Finance Valuation, Project Finance Valuation, Working Capital Security Valuation, Loan Renewal & Enhancement Valuation',
     details: '',
-    gradient: 'from-blue-500/10 to-indigo-500/10',
-    border: 'hover:border-blue-300',
+    iconColor: '#3b82f6', // blue
+    hoverColor: '#1e3a8a', // dark blue
   },
   {
     icon: '🏢',
     title: 'Building Valuation',
     description: 'Residential Buildings, Apartments, Villas, Commercial Buildings, Office Spaces, Shopping Complexes, Warehouses, Industrial Buildings, Hotels, Hospitals, Schools, Colleges, Institutional Buildings',
     details: '',
-    gradient: 'from-cyan-500/10 to-teal-500/10',
-    border: 'hover:border-cyan-300',
+    iconColor: '#06b6d4', // cyan
+    hoverColor: '#164e63', // dark cyan
   },
   {
     icon: '🌍',
     title: 'Land Valuation',
     description: 'Residential Land, Commercial Land, Industrial Land, Agricultural Land, Institutional Land, Development Land, Freehold & Leasehold Land, Government Leasehold Properties',
     details: '',
-    gradient: 'from-purple-500/10 to-violet-500/10',
-    border: 'hover:border-purple-300',
+    iconColor: '#a855f7', // purple
+    hoverColor: '#581c87', // dark purple
   },
   {
     icon: '🏗️',
     title: 'Project & Construction Consultancy',
     description: 'Construction Stage Inspection, Progress Certification, Cost-to-Complete Assessment, Construction Cost Estimation, Fund Utilization Verification, Technical Monitoring',
     details: '',
-    gradient: 'from-rose-500/10 to-pink-500/10',
-    border: 'hover:border-rose-300',
+    iconColor: '#f43f5e', // rose
+    hoverColor: '#881337', // dark rose
   },
   {
     icon: '📈',
     title: 'Development & Investment Advisory',
     description: 'Highest & Best Use (HBU) Analysis, Residual Land Valuation, Development Feasibility, Joint Development Valuation, Investment Advisory, Marketability Assessment',
     details: '',
-    gradient: 'from-emerald-500/10 to-green-500/10',
-    border: 'hover:border-emerald-400',
+    iconColor: '#10b981', // emerald
+    hoverColor: '#064e3b', // dark emerald
   },
-
-  // Row 2 (Medium text)
   {
     icon: '💼',
     title: 'Banking & Financial Institution Services',
     description: 'Primary Security Valuation, Collateral Security Valuation, Periodic Revaluation, Security Monitoring, Consortium Lending Valuation',
     details: '',
-    gradient: 'from-green-500/10 to-emerald-500/10',
-    border: 'hover:border-green-300',
+    iconColor: '#eab308', // yellow
+    hoverColor: '#713f12', // dark yellow
   },
   {
     icon: '⚖️',
     title: 'SARFAESI & Recovery Valuation',
     description: 'Reserve Price Determination, Distress Value, Forced Sale Value, Realizable Value, Auction Valuation, Recovery & Enforcement Valuation',
     details: '',
-    gradient: 'from-orange-500/10 to-amber-500/10',
-    border: 'hover:border-orange-300',
+    iconColor: '#f97316', // orange
+    hoverColor: '#7c2d12', // dark orange
   },
   {
     icon: '🏛️',
     title: 'Government & Statutory Valuation',
     description: 'Land Acquisition, Compensation Assessment, Municipal & Government Asset Valuation, Public Infrastructure Valuation, Property Tax Assessment Support',
     details: '',
-    gradient: 'from-orange-500/10 to-red-500/10',
-    border: 'hover:border-orange-400',
+    iconColor: '#ef4444', // red
+    hoverColor: '#7f1d1d', // dark red
   },
   {
     icon: '⚡',
     title: 'Specialized Property Valuation',
     description: 'Petrol Pumps, Cold Storages, Rice Mills, Resorts, Data Centres, Renewable Energy Projects, Mixed-Use Developments, Heritage Properties',
     details: '',
-    gradient: 'from-violet-500/10 to-fuchsia-500/10',
-    border: 'hover:border-violet-400',
+    iconColor: '#8b5cf6', // violet
+    hoverColor: '#4c1d95', // dark violet
   },
   {
     icon: '📊',
     title: 'Market Research & Advisory',
     description: 'Comparable Market Analysis, Rental Assessment, Market Trend Analysis, Demand–Supply Analysis, Circle Rate Study, Feasibility Studies',
     details: '',
-    gradient: 'from-pink-500/10 to-rose-500/10',
-    border: 'hover:border-pink-400',
+    iconColor: '#ec4899', // pink
+    hoverColor: '#831843', // dark pink
   },
-
-  // Row 3 (Short text, Centered)
   {
     icon: '🤝',
     title: 'Customized Valuation & Advisory',
     description: 'Tailor-made Valuation Reports, Investor Due Diligence, Asset Acquisition Advisory, Technical Audit Support, Independent Expert Opinion',
     details: '',
-    gradient: 'from-[#b8860b]/10 to-yellow-600/10',
-    border: 'hover:border-[#b8860b]',
+    iconColor: '#b8860b', // gold
+    hoverColor: '#0a1f16', // dark green
   },
   {
     icon: '🏭',
     title: 'Corporate & Fixed Asset Valuation',
     description: 'Fixed Asset Valuation, Fair Market Value (FMV), Replacement Cost',
     details: '',
-    gradient: 'from-yellow-500/10 to-[#b8860b]/10',
-    border: 'hover:border-yellow-400',
+    iconColor: '#facc15', // yellow
+    hoverColor: '#422006', // very dark yellow/brown
   },
   {
     icon: '📉',
     title: 'IBC & Insolvency Valuation Support',
     description: 'Fair Value, Liquidation Value, Resolution Professional Assistance',
     details: '',
-    gradient: 'from-blue-500/10 to-cyan-500/10',
-    border: 'hover:border-blue-400',
+    iconColor: '#3b82f6', // blue
+    hoverColor: '#1e3a8a', // dark blue
   }
 ];
 
@@ -145,30 +140,38 @@ export default function Services() {
               className={index === 10 ? 'xl:col-start-2' : ''}
             >
               <SpotlightCard
-                spotlightColor="rgba(184, 134, 11, 0.25)"
-                className={`group cursor-pointer relative overflow-hidden h-full ${service.border} transition-all duration-300 hover:-translate-y-1`}
+                spotlightColor="rgba(255, 255, 255, 0.1)"
+                className="group cursor-pointer relative overflow-hidden h-full rounded-2xl bg-[#e6ebe3] border-none shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
                 onMouseEnter={() => setHoveredIndex(index)}
                 onMouseLeave={() => setHoveredIndex(null)}
               >
-                {/* Gradient Background on Hover */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${service.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                {/* Solid Background color transition on hover */}
+                <div 
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out" 
+                  style={{ backgroundColor: service.hoverColor }}
+                />
 
-                <div className="relative z-10">
-                  <div className="text-4xl mb-4 transform group-hover:scale-110 transition-transform duration-300">
+                <div className="relative z-10 flex flex-col items-start text-left h-full p-2">
+                  <div 
+                    className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl mb-6 transform group-hover:scale-110 transition-transform duration-300 shadow-md"
+                    style={{ backgroundColor: service.iconColor }}
+                  >
                     {service.icon}
                   </div>
-                  <h3 className="text-lg font-bold text-[#0f2038] mb-3" style={{ fontFamily: 'var(--font-heading)' }}>
+                  
+                  <h3 className="text-lg font-bold text-[#0f2038] group-hover:text-white transition-colors duration-300 mb-3" style={{ fontFamily: 'var(--font-heading)' }}>
                     {service.title}
                   </h3>
-                  <p className="text-sm text-[#4a5568] leading-relaxed mb-3">
+                  
+                  <p className="text-sm text-[#4a5568] group-hover:text-white/90 transition-colors duration-300 leading-relaxed mb-3 flex-grow">
                     {service.description}
                   </p>
 
                   {/* Expanded Details on Hover */}
-                  <div className={`overflow-hidden transition-all duration-500 ${
-                    hoveredIndex === index ? 'max-h-[100px] opacity-100 mt-3 pt-3 border-t border-neutral-300' : 'max-h-0 opacity-0'
+                  <div className={`overflow-hidden transition-all duration-500 w-full ${
+                    hoveredIndex === index ? 'max-h-[100px] opacity-100 mt-auto pt-4 border-t border-white/20' : 'max-h-0 opacity-0'
                   }`}>
-                    <p className="text-xs text-[#b8860b] font-semibold leading-relaxed">
+                    <p className="text-xs text-white/90 font-semibold leading-relaxed">
                       {service.details}
                     </p>
                   </div>
