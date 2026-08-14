@@ -1246,7 +1246,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           ? fields.annexures.find(a => a.id === fields.annexureRef)
           : (fields.annexures.find(a => a.parsedData) || fields.annexures[0]);
         const annexureTitle = linkedAnn ? (linkedAnn.title || `Annexure ${linkedAnn.label}`) : 'Annexure';
-        r.drawSimpleRow('Property Address', `Details are provided in ${annexureTitle}`);
+        r.drawSimpleRow('Property Address', `Refer to annexure ${annexureTitle}`);
       } else {
         // No annexure, or annexure + also-show-address: single plain address row
         r.drawSimpleRow('Property Address', getFullAddress());
@@ -1262,7 +1262,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           ? fields.annexures.find(a => a.id === fields.legalAnnexureRef)
           : (fields.annexures.find(a => a.parsedData) || fields.annexures[0]);
         const annexureTitle = linkedAnn ? (linkedAnn.title || `Annexure ${linkedAnn.label}`) : 'Annexure';
-        r.drawSimpleRow('Legal address of property ( Hissa No / Survey no / khasra No : - )', `Details are provided in ${annexureTitle}`);
+        r.drawSimpleRow('Legal address of property ( Hissa No / Survey no / khasra No : - )', `Refer to annexure ${annexureTitle}`);
       } else {
         r.drawSimpleRow('Legal address of property ( Hissa No / Survey no / khasra No : - )', getLegalFullAddress() || '');
       }
@@ -1711,7 +1711,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
               ? fields.annexures.find(a => a.id === fields.annexureRef)
               : (fields.annexures.find(a => a.parsedData) || fields.annexures[0]);
             const annexureTitle = linkedAnn ? (linkedAnn.title || `Annexure ${linkedAnn.label}`) : 'Annexure';
-            return simpleRow('Property Address', `Details are provided in ${annexureTitle}`);
+            return simpleRow('Property Address', `Refer to annexure ${annexureTitle}`);
           })()
         : `${simpleRow('Property Address', getFullAddress())}
            ${simpleRow('Landmark', fields.landmark || '')}`
@@ -2375,7 +2375,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                     return (
                       <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#fff8e1] border border-[#ffe082] text-xs text-[#7b6b2e]">
                         <svg className="w-3.5 h-3.5 shrink-0 text-[#b8860b]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                        <span>In report: <strong>Property Address — Details are provided in {displayTitle}</strong></span>
+                        <span>In report: <strong>Property Address — Refer to annexure {displayTitle}</strong></span>
                         <span className="ml-auto text-[10px] text-[#b8860b]/60">Edit title &amp; file in Annexure section ↓</span>
                       </div>
                     );
@@ -2505,7 +2505,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                     return (
                       <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#fff8e1] border border-[#ffe082] text-xs text-[#7b6b2e]">
                         <svg className="w-3.5 h-3.5 shrink-0 text-[#b8860b]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                        <span>In report: <strong>Legal Address — Details are provided in {displayTitle}</strong></span>
+                        <span>In report: <strong>Legal Address — Refer to annexure {displayTitle}</strong></span>
                         <span className="ml-auto text-[10px] text-[#b8860b]/60">Edit title &amp; file in Annexure section ↓</span>
                       </div>
                     );
