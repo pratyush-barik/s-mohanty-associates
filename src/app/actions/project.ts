@@ -556,7 +556,7 @@ export async function finalizeReport(projectId: string, pdfUrl: string) {
               <p>Your property valuation report for <strong>${project.projectCode}</strong> has been successfully finalized.</p>
               <p>You can download the official PDF copy of your report from the secure link below:</p>
               <p><a href="${pdfUrl}" style="display:inline-block;padding:10px 20px;background:#b8860b;color:#fff;text-decoration:none;border-radius:5px;">Download Report PDF</a></p>
-              <p>Thank you for choosing S. Mohanty Associates.</p>
+              <p>Thank you for choosing S Mohanty Associates.</p>
             </div>
           `
         });
@@ -574,7 +574,7 @@ export async function finalizeReport(projectId: string, pdfUrl: string) {
               <p>Dear ${project.serviceRequest.contactName},</p>
               <p>Your property valuation report for <strong>${project.projectCode}</strong> has been successfully finalized.</p>
               <p>Please log in to your client dashboard to download the official PDF copy of your report.</p>
-              <p>Thank you for choosing S. Mohanty Associates.</p>
+              <p>Thank you for choosing S Mohanty Associates.</p>
             </div>
           `
         });
@@ -1282,7 +1282,7 @@ export async function terminateProject(
               <p>We regret to inform you that your valuation project <strong>${project.projectCode}</strong> has been closed.</p>
               <p>If you have any questions or would like to initiate a new request, please contact us.</p>
               <br/>
-              <p>Regards,<br/>S. Mohanty & Associates</p>
+              <p>Regards,<br/>S Mohanty & Associates</p>
             </div>
           `,
         });

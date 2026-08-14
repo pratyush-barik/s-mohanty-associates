@@ -1418,7 +1418,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
         { text: 'Satyajit Mohanty', bold: true, fontSize: 14 },
         { text: 'B.E.(Civil), M.Tech (Structural)', italic: true },
         { text: 'Registered Valuer \u2014 IBBI/RV/02/2019/10594', italic: true },
-        { text: 'S. Mohanty & Associates, Bhubaneswar', italic: true },
+        { text: 'S Mohanty & Associates, Bhubaneswar', italic: true },
       ]);
 
       // ── Property Photographs ──
@@ -1893,7 +1893,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
         <p style="font-weight:bold;margin:3px 0;font-size:14pt;">Satyajit Mohanty</p>
         <p style="margin:2px 0;font-style:italic;font-size:12pt;">B.E.(Civil), M.Tech (Structural)</p>
         <p style="margin:2px 0;font-style:italic;font-size:12pt;">Registered Valuer \u2014 IBBI/RV/02/2019/10594</p>
-        <p style="margin:2px 0;font-style:italic;font-size:12pt;">S. Mohanty &amp; Associates, Bhubaneswar</p>
+        <p style="margin:2px 0;font-style:italic;font-size:12pt;">S Mohanty &amp; Associates, Bhubaneswar</p>
       </div>
     `);
 

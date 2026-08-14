@@ -1,11 +1,11 @@
-# S. Mohanty Associates - Developer Onboarding & Project Handover
+# S Mohanty Associates - Developer Onboarding & Project Handover
 
 > [!IMPORTANT]
 > **To the collaborating Antigravity model:** Please read this entire document carefully. It contains the complete architectural context, database schema explanation, and workflow details required to understand and contribute to this codebase.
 
 ## 1. Project Overview & Goals
 
-**S. Mohanty Associates** is a web application designed to manage the entire lifecycle of property valuation reports. The platform digitizes operations that were previously manual, connecting Clients, Managers, Field Inspectors, and Report Analysts into a single unified workflow.
+**S Mohanty Associates** is a web application designed to manage the entire lifecycle of property valuation reports. The platform digitizes operations that were previously manual, connecting Clients, Managers, Field Inspectors, and Report Analysts into a single unified workflow.
 
 **Core Tech Stack:**
 

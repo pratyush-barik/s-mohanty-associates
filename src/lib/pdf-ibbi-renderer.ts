@@ -1,5 +1,5 @@
 /**
- * PDFIBBIRenderer — Custom pdf-lib renderer for S. Mohanty & Associates IBBI valuation reports.
+ * PDFIBBIRenderer — Custom pdf-lib renderer for S Mohanty & Associates IBBI valuation reports.
  * Uses A4 Portrait size.
  */
 

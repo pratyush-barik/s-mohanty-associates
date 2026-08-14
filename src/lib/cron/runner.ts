@@ -1,5 +1,5 @@
 /**
- * Generic Cron Job Framework — S. Mohanty Associates
+ * Generic Cron Job Framework — S Mohanty Associates
  * 
  * Usage:
  *   import { runCronJob, CronTask } from '@/lib/cron/runner';

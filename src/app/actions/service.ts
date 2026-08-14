@@ -266,7 +266,7 @@ export async function sendProjectMessage(
               ${attachmentLinks ? `<p><strong>Attachments:</strong><br/>${attachmentLinks}</p>` : ''}
               <hr style="border: none; border-top: 1px solid #e9ecef; margin: 20px 0;" />
               <p style="font-size: 12px; color: #6c757d;">Project Code: <strong>${projectCode}</strong></p>
-              <p style="font-size: 12px; color: #6c757d;">This is an automated reply from S. Mohanty Associates.</p>
+              <p style="font-size: 12px; color: #6c757d;">This is an automated reply from S Mohanty Associates.</p>
             </div>
           `,
         });

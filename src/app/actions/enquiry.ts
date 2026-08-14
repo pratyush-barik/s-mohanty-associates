@@ -76,7 +76,7 @@ export async function submitEnquiry(formData: FormData) {
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
           <h2 style="color: #0f2038;">Enquiry Received</h2>
           <p>Dear ${name},</p>
-          <p>Thank you for reaching out to S. Mohanty & Associates.</p>
+          <p>Thank you for reaching out to S Mohanty & Associates.</p>
           <p>We have successfully received your enquiry regarding "<strong>${subject}</strong>".</p>
           <p>A member of our team will review your request and get back to you shortly. You can reply directly to this email to add more information to your ticket.</p>
           <hr style="border: none; border-top: 1px solid #e9ecef; margin: 20px 0;" />

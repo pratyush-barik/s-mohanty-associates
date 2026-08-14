@@ -42,7 +42,7 @@ function createGroqProvider(apiKey: string, model: string): LLMProvider {
         body: JSON.stringify({
           model: model || 'llama-3.1-8b-instant',
           messages: [
-            { role: 'system', content: req.context || 'You are a property valuation expert assistant for S. Mohanty & Associates, a registered valuer firm in Bhubaneswar, India. Provide concise, professional analysis.' },
+            { role: 'system', content: req.context || 'You are a property valuation expert assistant for S Mohanty & Associates, a registered valuer firm in Bhubaneswar, India. Provide concise, professional analysis.' },
             { role: 'user', content: req.prompt },
           ],
           max_tokens: req.maxTokens || 500,
@@ -80,7 +80,7 @@ function createTogetherProvider(apiKey: string, model: string): LLMProvider {
         body: JSON.stringify({
           model: model || 'meta-llama/Llama-3.1-8B-Instruct-Turbo',
           messages: [
-            { role: 'system', content: req.context || 'You are a property valuation expert assistant for S. Mohanty & Associates, a registered valuer firm in Bhubaneswar, India. Provide concise, professional analysis.' },
+            { role: 'system', content: req.context || 'You are a property valuation expert assistant for S Mohanty & Associates, a registered valuer firm in Bhubaneswar, India. Provide concise, professional analysis.' },
             { role: 'user', content: req.prompt },
           ],
           max_tokens: req.maxTokens || 500,
@@ -120,7 +120,7 @@ function createOpenRouterProvider(apiKey: string, model: string): LLMProvider {
         body: JSON.stringify({
           model: model || 'meta-llama/llama-3.1-8b-instruct:free',
           messages: [
-            { role: 'system', content: req.context || 'You are a property valuation expert assistant for S. Mohanty & Associates, a registered valuer firm in Bhubaneswar, India. Provide concise, professional analysis.' },
+            { role: 'system', content: req.context || 'You are a property valuation expert assistant for S Mohanty & Associates, a registered valuer firm in Bhubaneswar, India. Provide concise, professional analysis.' },
             { role: 'user', content: req.prompt },
           ],
           max_tokens: req.maxTokens || 500,

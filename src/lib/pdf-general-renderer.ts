@@ -1,5 +1,5 @@
 /**
- * PDFGeneralRenderer — Custom pdf-lib renderer for S. Mohanty & Associates general valuation reports.
+ * PDFGeneralRenderer — Custom pdf-lib renderer for S Mohanty & Associates general valuation reports.
  * Uses A4 Portrait size.
  */
 
