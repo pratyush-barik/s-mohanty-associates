@@ -16,7 +16,7 @@ const expertise = [
 
 export default function CEOProfile() {
   return (
-    <section id="ceo" className="section section-dark relative overflow-hidden min-h-[90vh] flex flex-col justify-center">
+    <section id="ceo" className="section section-dark relative overflow-hidden min-h-screen flex flex-col justify-center">
       {/* Decorative */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#b8860b]/5 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#1e3a5f]/20 rounded-full blur-[100px] pointer-events-none" />
