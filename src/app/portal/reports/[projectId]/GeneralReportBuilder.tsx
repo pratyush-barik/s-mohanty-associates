@@ -163,7 +163,7 @@ interface ReportFields {
   // Photos & Maps
   propertyImages: string[];
   propertyImageNames: string[];
-  sketchMapImage: string;
+  sketchMapImages: string[];
   locationMapImage: string;
   latitude: string;
   longitude: string;
@@ -315,7 +315,7 @@ const DEFAULT_FIELDS: ReportFields = {
 
   propertyImages: [],
   propertyImageNames: [],
-  sketchMapImage: '',
+  sketchMapImages: [],
   locationMapImage: '',
   latitude: '',
   longitude: '',
@@ -555,6 +555,7 @@ const FloatingNavigator = ({ isApartmentFlat, annexureEnabled }: { isApartmentFl
     { id: `section-${isApartmentFlat ? 8 : 9}`, title: 'Valuation Abstract' },
     { id: `section-${isApartmentFlat ? 9 : 10}`, title: 'Remarks' },
     { id: `section-${isApartmentFlat ? 10 : 11}`, title: 'Certificate' },
+    { id: `section-${isApartmentFlat ? 11 : 12}`, title: 'Property Photographs' },
     { id: `section-${isApartmentFlat ? 12 : 13}`, title: 'Sketch Map' },
     { id: `section-${isApartmentFlat ? 13 : 14}`, title: 'Location Map' },
     ...(annexureEnabled ? [{ id: `section-${isApartmentFlat ? 14 : 15}`, title: 'Annexure' }] : []),
@@ -670,6 +671,9 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     ownerAddress: initialFields?.ownerAddress || prefill?.propertyAddress || DEFAULT_FIELDS.ownerAddress,
     propertyImages: Array.isArray(initialFields?.propertyImages) ? initialFields.propertyImages : (typeof initialFields?.propertyImages === 'string' && initialFields.propertyImages ? [initialFields.propertyImages] : DEFAULT_FIELDS.propertyImages),
     propertyImageNames: Array.isArray(initialFields?.propertyImageNames) ? initialFields.propertyImageNames : DEFAULT_FIELDS.propertyImageNames,
+    sketchMapImages: Array.isArray(initialFields?.sketchMapImages) 
+      ? initialFields.sketchMapImages 
+      : (typeof initialFields?.sketchMapImage === 'string' && initialFields.sketchMapImage ? [initialFields.sketchMapImage] : DEFAULT_FIELDS.sketchMapImages),
     civicAmenities: Array.isArray(initialFields?.civicAmenities) ? initialFields.civicAmenities : DEFAULT_FIELDS.civicAmenities,
     ageOfPropertyActual: typeof initialFields?.ageOfPropertyActual === 'string' ? initialFields.ageOfPropertyActual : DEFAULT_FIELDS.ageOfPropertyActual,
     valuationLayout: finalValuationLayout,
@@ -687,11 +691,11 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
 
   // Bucket Picker State
   const [bucketPickerOpen, setBucketPickerOpen] = useState(false);
-  const [bucketPickerMode, setBucketPickerMode] = useState<'propertyImages' | 'sketchMapImage' | 'locationMapImage'>('propertyImages');
+  const [bucketPickerMode, setBucketPickerMode] = useState<'propertyImages' | 'sketchMapImages' | 'locationMapImage'>('propertyImages');
   const [bucketSelected, setBucketSelected] = useState<Set<string>>(new Set());
   const [bucketPickerAgent, setBucketPickerAgent] = useState<string | null>(null);
 
-  const openBucketPicker = (mode: 'propertyImages' | 'sketchMapImage' | 'locationMapImage') => {
+  const openBucketPicker = (mode: 'propertyImages' | 'sketchMapImages' | 'locationMapImage') => {
     setBucketPickerMode(mode);
     setBucketSelected(new Set());
     setBucketPickerAgent(null);
@@ -705,8 +709,9 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     if (bucketPickerMode === 'propertyImages') {
       const newUrls = [...(fields.propertyImages || []), ...selectedImages.map(img => img.url)];
       handleChange('propertyImages', newUrls);
-    } else if (bucketPickerMode === 'sketchMapImage') {
-      handleChange('sketchMapImage', selectedImages[0].url);
+    } else if (bucketPickerMode === 'sketchMapImages') {
+      const newUrls = [...(fields.sketchMapImages || []), ...selectedImages.map(img => img.url)];
+      handleChange('sketchMapImages', newUrls);
     } else if (bucketPickerMode === 'locationMapImage') {
       handleChange('locationMapImage', selectedImages[0].url);
     }
@@ -720,8 +725,8 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
   const toggleBucketImage = (id: string) => {
     setBucketSelected(prev => {
       const next = new Set(prev);
-      if (bucketPickerMode !== 'propertyImages') {
-        // Single select for maps
+      if (bucketPickerMode !== 'propertyImages' && bucketPickerMode !== 'sketchMapImages') {
+        // Single select for location map
         next.clear();
         next.add(id);
       } else {
@@ -1108,14 +1113,14 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
   const distressValue = totalPropertyValue * (parseNum(fields.distressPct || '80') / 100);
 
   // ── File upload (photos + maps) ──
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'propertyImages' | 'sketchMapImage' | 'locationMapImage') => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'propertyImages' | 'sketchMapImages' | 'locationMapImage') => {
     const fileList = e.target.files;
     if (!fileList || fileList.length === 0) return;
     setUploading(true);
     setUploadError(null);
 
-    if (fieldName === 'propertyImages') {
-      const newUrls = [...(fields.propertyImages || [])];
+    if (fieldName === 'propertyImages' || fieldName === 'sketchMapImages') {
+      const newUrls = [...(fields[fieldName] || [])];
       for (let i = 0; i < fileList.length; i++) {
         const file = fileList[i];
         if (file.size > 5 * 1024 * 1024) { setUploadError(`${file.name}: exceeds 5MB.`); continue; }
@@ -1127,7 +1132,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
         const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
         newUrls.push(data.publicUrl);
       }
-      handleChange('propertyImages', newUrls);
+      handleChange(fieldName, newUrls);
     } else {
       const file = fileList[0];
       if (file.size > 5 * 1024 * 1024) { setUploadError(`${file.name}: exceeds 5MB.`); setUploading(false); return; }
@@ -1149,6 +1154,10 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     if (fields.propertyImageNames) {
       handleChange('propertyImageNames', fields.propertyImageNames.filter((_, i) => i !== index));
     }
+  };
+
+  const removeSketchMap = (index: number) => {
+    handleChange('sketchMapImages', (fields.sketchMapImages || []).filter((_, i) => i !== index));
   };
 
   // ── Save / Submit / Finalize ──
@@ -1193,13 +1202,14 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       const [letterheadBytes, ...imageResults] = await Promise.all([
         fetchBytes('/templates/letterhead.png'),
         ...propertyImgs.map(url => fetchBytes(url)),
-        ...(fields.sketchMapImage ? [fetchBytes(fields.sketchMapImage)] : []),
+        ...(fields.sketchMapImages && fields.sketchMapImages.length > 0 ? fields.sketchMapImages.map(u => fetchBytes(u)) : []),
         ...(fields.locationMapImage ? [fetchBytes(fields.locationMapImage)] : []),
       ]);
 
       const propImageBytes: Uint8Array[] = imageResults.slice(0, propertyImgs.length).filter(Boolean) as Uint8Array[];
       let imgIdx = propertyImgs.length;
-      const sketchBytes = fields.sketchMapImage ? imageResults[imgIdx++] : null;
+      const sketchBytesList = fields.sketchMapImages?.length ? imageResults.slice(imgIdx, imgIdx + fields.sketchMapImages.length) : null;
+      if (fields.sketchMapImages?.length) imgIdx += fields.sketchMapImages.length;
       const locationBytes = fields.locationMapImage ? imageResults[imgIdx++] : null;
 
       // ── Initialize the renderer ──
@@ -1430,13 +1440,18 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       }
 
       // ── Sketch Map ──
-      if (sketchBytes && sketchBytes.length > 0) {
-        r.newPage();
-        r.drawCenteredTitle('SKETCH MAP');
-        r.advanceCursor(8);
-        await r.drawImageBlock(sketchBytes, {
-          maxWidth: 450, maxHeight: 500, centered: true,
-        });
+      if (sketchBytesList && sketchBytesList.length > 0) {
+        for (let i = 0; i < sketchBytesList.length; i++) {
+          const sBytes = sketchBytesList[i];
+          if (sBytes) {
+            r.newPage();
+            r.drawCenteredTitle(`SKETCH MAP${sketchBytesList.length > 1 ? ` ${i + 1}` : ''}`);
+            r.advanceCursor(8);
+            await r.drawImageBlock(sBytes, {
+              maxWidth: 450, maxHeight: 500, centered: true,
+            });
+          }
+        }
       }
 
       // ── Location Map ──
@@ -1930,14 +1945,17 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     }
 
     // ── BLOCK: Sketch Map ──
-    if (fields.sketchMapImage) {
-      allBlocks.push(`<div style="font-family:${ff};color:#000;">
-        <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin-bottom:12px;">SKETCH MAP</p>
-        <div style="text-align:center;border:1px solid #000;padding:6px;">
-          <img src="${fields.sketchMapImage}" style="max-width:100%;max-height:680px;" crossOrigin="anonymous" />
-        </div>
-        <p style="font-family:${ff};font-size:12pt;font-style:italic;text-align:center;margin-top:4px;">Source: Site Visit dated ${fields.dateOfInspection || 'N/A'}</p>
-      </div>`);
+    // ── BLOCK: Sketch Map ──
+    if (fields.sketchMapImages && fields.sketchMapImages.length > 0) {
+      fields.sketchMapImages.forEach((imgUrl, idx) => {
+        allBlocks.push(`<div style="font-family:${ff};color:#000;">
+          <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin-bottom:12px;">SKETCH MAP${fields.sketchMapImages.length > 1 ? ` ${idx + 1}` : ''}</p>
+          <div style="text-align:center;border:1px solid #000;padding:6px;">
+            <img src="${imgUrl}" style="max-width:100%;max-height:680px;" crossOrigin="anonymous" />
+          </div>
+          <p style="font-family:${ff};font-size:12pt;font-style:italic;text-align:center;margin-top:4px;">Source: Site Visit dated ${fields.dateOfInspection || 'N/A'}</p>
+        </div>`);
+      });
     }
 
     // ── BLOCK: Location Map ──

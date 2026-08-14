@@ -158,7 +158,7 @@ interface IBBIFields {
   // ── Photos & Maps ──
   propertyImages: string[];
   propertyImageNames: string[];
-  sketchMapImage: string;
+  sketchMapImages: string[];
   locationMapImage: string;
 
   // ── Remarks ──
@@ -274,7 +274,7 @@ const DEFAULT_FIELDS: IBBIFields = {
 
   propertyImages: [],
   propertyImageNames: [],
-  sketchMapImage: '',
+  sketchMapImages: [],
   locationMapImage: '',
 
   remarks: '',
@@ -429,6 +429,9 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     ownerAddress: initialFields?.ownerAddress || prefill?.propertyAddress || DEFAULT_FIELDS.ownerAddress,
     propertyImages: Array.isArray(initialFields?.propertyImages) ? initialFields.propertyImages : DEFAULT_FIELDS.propertyImages,
     propertyImageNames: Array.isArray(initialFields?.propertyImageNames) ? initialFields.propertyImageNames : DEFAULT_FIELDS.propertyImageNames,
+    sketchMapImages: Array.isArray(initialFields?.sketchMapImages) 
+      ? initialFields.sketchMapImages 
+      : (typeof initialFields?.sketchMapImage === 'string' && initialFields.sketchMapImage ? [initialFields.sketchMapImage] : DEFAULT_FIELDS.sketchMapImages),
     valuationRows: Array.isArray(initialFields?.valuationRows) ? initialFields.valuationRows : DEFAULT_FIELDS.valuationRows,
     annexures: Array.isArray(initialFields?.annexures) ? initialFields.annexures : DEFAULT_FIELDS.annexures,
     clientType: 'organisation',
@@ -444,7 +447,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
   // Bucket Picker State
   const [bucketPickerOpen, setBucketPickerOpen] = useState(false);
-  const [bucketPickerMode, setBucketPickerMode] = useState<'propertyImages' | 'sketchMapImage' | 'locationMapImage'>('propertyImages');
+  const [bucketPickerMode, setBucketPickerMode] = useState<'propertyImages' | 'sketchMapImages' | 'locationMapImage'>('propertyImages');
   const [bucketSelected, setBucketSelected] = useState<Set<string>>(new Set());
   const [bucketPickerAgent, setBucketPickerAgent] = useState<string | null>(null);
 
@@ -463,7 +466,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     setFields(prev => ({ ...prev, [field]: value }));
   }, []);
 
-  const openBucketPicker = (mode: 'propertyImages' | 'sketchMapImage' | 'locationMapImage') => {
+  const openBucketPicker = (mode: 'propertyImages' | 'sketchMapImages' | 'locationMapImage') => {
     setBucketPickerMode(mode);
     setBucketSelected(new Set());
     setBucketPickerAgent(null);
@@ -477,8 +480,9 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     if (bucketPickerMode === 'propertyImages') {
       const newUrls = [...(fields.propertyImages || []), ...selectedImages.map(img => img.url)];
       handleChange('propertyImages', newUrls);
-    } else if (bucketPickerMode === 'sketchMapImage') {
-      handleChange('sketchMapImage', selectedImages[0].url);
+    } else if (bucketPickerMode === 'sketchMapImages') {
+      const newUrls = [...(fields.sketchMapImages || []), ...selectedImages.map(img => img.url)];
+      handleChange('sketchMapImages', newUrls);
     } else if (bucketPickerMode === 'locationMapImage') {
       handleChange('locationMapImage', selectedImages[0].url);
     }
@@ -694,14 +698,14 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
   };
 
   // ── File upload (photos + maps) ──
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'propertyImages' | 'sketchMapImage' | 'locationMapImage') => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'propertyImages' | 'sketchMapImages' | 'locationMapImage') => {
     const fileList = e.target.files;
     if (!fileList || fileList.length === 0) return;
     setUploading(true);
     setUploadError(null);
 
-    if (fieldName === 'propertyImages') {
-      const newUrls = [...(fields.propertyImages || [])];
+    if (fieldName === 'propertyImages' || fieldName === 'sketchMapImages') {
+      const newUrls = [...(fields[fieldName] || [])];
       for (let i = 0; i < fileList.length; i++) {
         const file = fileList[i];
         if (file.size > 5 * 1024 * 1024) { setUploadError(`${file.name}: exceeds 5MB.`); continue; }
@@ -713,7 +717,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
         const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
         newUrls.push(data.publicUrl);
       }
-      handleChange('propertyImages', newUrls);
+      handleChange(fieldName, newUrls);
     } else {
       const file = fileList[0];
       if (file.size > 5 * 1024 * 1024) { setUploadError(`${file.name}: exceeds 5MB.`); setUploading(false); return; }
@@ -728,6 +732,10 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       }
     }
     setUploading(false);
+  };
+
+  const removeSketchMap = (index: number) => {
+    handleChange('sketchMapImages', (fields.sketchMapImages || []).filter((_, i) => i !== index));
   };
 
   const removeImage = (index: number) => {
@@ -775,13 +783,14 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       const [letterheadBytes, ...imageResults] = await Promise.all([
         fetchBytes('/templates/letterhead.png'),
         ...propertyImgs.map((url: string) => fetchBytes(url)),
-        ...(fields.sketchMapImage ? [fetchBytes(fields.sketchMapImage)] : []),
+        ...(fields.sketchMapImages && fields.sketchMapImages.length > 0 ? fields.sketchMapImages.map((u: string) => fetchBytes(u)) : []),
         ...(fields.locationMapImage ? [fetchBytes(fields.locationMapImage)] : []),
       ]);
 
       const propImageBytes: Uint8Array[] = imageResults.slice(0, propertyImgs.length) as Uint8Array[];
       let imgIdx = propertyImgs.length;
-      const sketchBytes = fields.sketchMapImage ? imageResults[imgIdx++] : null;
+      const sketchBytesList = fields.sketchMapImages?.length ? imageResults.slice(imgIdx, imgIdx + fields.sketchMapImages.length) : null;
+      if (fields.sketchMapImages?.length) imgIdx += fields.sketchMapImages.length;
       const locationBytes = fields.locationMapImage ? imageResults[imgIdx++] : null;
 
       const r = new PDFIBBIRenderer();
@@ -1331,14 +1340,18 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
         }
       }
 
-      // ── Sketch Map ──
-      if (sketchBytes && sketchBytes.length > 0) {
-        // Use checkPageBreak instead of forced newPage — flows onto same page if room
-        r.checkPageBreak(300);
-        r.drawCenteredTitle('SKETCH MAP');
-        r.advanceCursor(4);
-        await r.drawImageBlock(sketchBytes, { maxWidth: 450, maxHeight: 450, centered: true });
-        r.advanceCursor(4);
+      // ── Sketch Maps ──
+      if (sketchBytesList && sketchBytesList.length > 0) {
+        for (let i = 0; i < sketchBytesList.length; i++) {
+          const sBytes = sketchBytesList[i];
+          if (sBytes) {
+            r.checkPageBreak(300);
+            r.drawCenteredTitle(`SKETCH MAP${sketchBytesList.length > 1 ? ` ${i + 1}` : ''}`);
+            r.advanceCursor(4);
+            await r.drawImageBlock(sBytes, { maxWidth: 450, maxHeight: 450, centered: true });
+            r.advanceCursor(4);
+          }
+        }
       }
 
       // ── Location Map ──
@@ -1907,34 +1920,39 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
               )}
             </div>
 
-            {/* Sketch Map */}
+            {/* Sketch Maps */}
             <div className="mt-6">
-              <p className="text-xs font-bold text-[#495057] uppercase tracking-wider mb-2">Sketch Map</p>
-              {fields.sketchMapImage ? (
-                <div className="relative group rounded-lg overflow-hidden border border-slate-200 max-w-lg">
-                  <img src={fields.sketchMapImage} alt="Sketch Map" className="w-full max-h-48 object-contain" />
-                  {!isReadOnly && (
-                    <button onClick={() => handleChange('sketchMapImage', '')} className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">Remove</button>
-                  )}
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-bold text-[#495057] uppercase tracking-wider">Sketch Maps</p>
+                {bucketImages.length > 0 && !isReadOnly && (
+                  <button type="button" onClick={() => openBucketPicker('sketchMapImages')} className="text-xs font-bold text-blue-600 hover:text-blue-800">📸 Pick from Bucket</button>
+                )}
+              </div>
+              {!isReadOnly && (
+                <div className="mb-3">
+                  <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+                    {uploading ? 'Uploading...' : '🗺️ Upload Sketch Maps'}
+                    <input type="file" multiple accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'sketchMapImages')} disabled={uploading} />
+                  </label>
+                </div>
+              )}
+              {fields.sketchMapImages && fields.sketchMapImages.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {fields.sketchMapImages.map((url, idx) => (
+                    <div key={idx} className="relative group rounded-lg overflow-hidden border border-slate-200">
+                      <img src={url} alt={`Sketch Map ${idx + 1}`} className="w-full h-32 object-contain bg-[#f8f9fa]" />
+                      {!isReadOnly && (
+                        <button onClick={() => removeSketchMap(idx)} className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  ))}
                 </div>
               ) : (
-                !isReadOnly && (
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-                      {uploading ? 'Uploading...' : '🗺️ Upload Sketch Map'}
-                      <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'sketchMapImage')} disabled={uploading} />
-                    </label>
-                    {bucketImages && bucketImages.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => openBucketPicker('sketchMapImage')}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-sm font-medium hover:bg-[#1e3a5f]/5 transition-colors"
-                      >
-                        📸 Pick from Bucket
-                      </button>
-                    )}
-                  </div>
-                )
+                <div className="text-center p-4 border border-dashed rounded-lg text-gray-500 text-sm">
+                  No sketch maps added
+                </div>
               )}
             </div>
 

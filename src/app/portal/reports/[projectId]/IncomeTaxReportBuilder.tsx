@@ -157,7 +157,7 @@ interface IncomeTaxFields {
   ciiTableImage: string;
   bdaMapImage: string;
   benchmarkImage: string;
-  sketchMapImage: string;
+  sketchMapImages: string[];
   landAnnexureRows: LandAnnexureRow[];
   showLandAnnexure: boolean;
 
@@ -296,7 +296,7 @@ const DEFAULT_FIELDS: IncomeTaxFields = {
   ciiTableImage: '',
   bdaMapImage: '',
   benchmarkImage: '',
-  sketchMapImage: '',
+  sketchMapImages: [],
   landAnnexureRows: [],
   showLandAnnexure: false,
 
@@ -484,6 +484,9 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
     ownerAddress: initialFields?.ownerAddress || prefill?.propertyAddress || DEFAULT_FIELDS.ownerAddress,
     propertyImages: Array.isArray(initialFields?.propertyImages) ? initialFields.propertyImages : DEFAULT_FIELDS.propertyImages,
     propertyImageNames: Array.isArray(initialFields?.propertyImageNames) ? initialFields.propertyImageNames : DEFAULT_FIELDS.propertyImageNames,
+    sketchMapImages: Array.isArray(initialFields?.sketchMapImages) 
+      ? initialFields.sketchMapImages 
+      : (typeof initialFields?.sketchMapImage === 'string' && initialFields.sketchMapImage ? [initialFields.sketchMapImage] : DEFAULT_FIELDS.sketchMapImages),
     floorRows: Array.isArray(initialFields?.floorRows) ? initialFields.floorRows : DEFAULT_FIELDS.floorRows,
     extraItems: Array.isArray(initialFields?.extraItems) ? initialFields.extraItems : DEFAULT_FIELDS.extraItems,
     valuationBullets: Array.isArray(initialFields?.valuationBullets) ? initialFields.valuationBullets : DEFAULT_FIELDS.valuationBullets,
@@ -505,7 +508,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
 
   // Bucket Picker State
   const [bucketPickerOpen, setBucketPickerOpen] = useState(false);
-  const [bucketPickerMode, setBucketPickerMode] = useState<'propertyImages' | 'sketchMapImage' | 'locationMapImage' | 'benchmarkImage' | 'ciiTableImage' | 'bdaMapImage'>('propertyImages');
+  const [bucketPickerMode, setBucketPickerMode] = useState<'propertyImages' | 'sketchMapImages' | 'locationMapImage' | 'benchmarkImage' | 'ciiTableImage' | 'bdaMapImage'>('propertyImages');
   const [bucketSelected, setBucketSelected] = useState<Set<string>>(new Set());
   const [bucketPickerAgent, setBucketPickerAgent] = useState<string | null>(null);
 
@@ -556,6 +559,9 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
     if (bucketPickerMode === 'propertyImages') {
       const newUrls = [...(fields.propertyImages || []), ...selectedImages.map(img => img.url)];
       handleChange('propertyImages', newUrls);
+    } else if (bucketPickerMode === 'sketchMapImages') {
+      const newUrls = [...(fields.sketchMapImages || []), ...selectedImages.map(img => img.url)];
+      handleChange('sketchMapImages', newUrls);
     } else {
       handleChange(bucketPickerMode, selectedImages[0].url);
     }
@@ -662,39 +668,34 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
   const computedTotalProperty = computedLandValue + computedBuildingValue + computedExtraTotal;
 
   // ── File upload ──
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'propertyImages' | 'sketchMapImage' | 'locationMapImage' | 'benchmarkImage' | 'ciiTableImage' | 'bdaMapImage') => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'propertyImages' | 'sketchMapImages' | 'locationMapImage' | 'benchmarkImage' | 'ciiTableImage' | 'bdaMapImage') => {
     const fileList = e.target.files;
     if (!fileList || fileList.length === 0) return;
     setUploading(true);
     setUploadError(null);
 
-    if (fieldName === 'propertyImages') {
-      const urls: string[] = [];
-      for (let i = 0; i < fileList.length; i++) {
-        const file = fileList[i];
-        if (file.size > 5 * 1024 * 1024) { setUploadError(`${file.name}: exceeds 5MB.`); continue; }
-        const ext = file.name.split('.').pop();
-        const fileName = `${projectId}-${fieldName}-${Date.now()}-${i}.${ext}`;
-        const filePath = `temp-photos/${projectId}/${fileName}`;
-        const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(filePath, file);
-        if (error) { setUploadError(`Failed: ${error.message}`); }
-        else {
-          const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
-          urls.push(data.publicUrl);
-        }
-      }
-      if (urls.length > 0) handleChange('propertyImages', [...(fields.propertyImages || []), ...urls]);
-    } else {
-      const file = fileList[0];
-      if (file.size > 5 * 1024 * 1024) { setUploadError(`${file.name}: exceeds 5MB.`); setUploading(false); return; }
+    const uploadedUrls: string[] = [];
+    for (let i = 0; i < fileList.length; i++) {
+      const file = fileList[i];
+      if (file.size > 5 * 1024 * 1024) { setUploadError(`${file.name}: exceeds 5MB.`); continue; }
       const ext = file.name.split('.').pop();
-      const fileName = `${projectId}-${fieldName}-${Date.now()}.${ext}`;
+      const fileName = `${projectId}-${fieldName}-${Date.now()}-${i}.${ext}`;
       const filePath = `temp-photos/${projectId}/${fileName}`;
       const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(filePath, file);
       if (error) { setUploadError(`Failed: ${error.message}`); }
       else {
         const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
-        handleChange(fieldName, data.publicUrl);
+        uploadedUrls.push(data.publicUrl);
+      }
+    }
+
+    if (uploadedUrls.length > 0) {
+      if (fieldName === 'propertyImages') {
+        handleChange('propertyImages', [...(fields.propertyImages || []), ...uploadedUrls]);
+      } else if (fieldName === 'sketchMapImages') {
+        handleChange('sketchMapImages', [...(fields.sketchMapImages || []), ...uploadedUrls]);
+      } else {
+        handleChange(fieldName, uploadedUrls[0]);
       }
     }
     setUploading(false);
@@ -702,6 +703,13 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
 
   const removeImage = (index: number) => {
     handleChange('propertyImages', fields.propertyImages.filter((_, i) => i !== index));
+    if (fields.propertyImageNames) {
+      handleChange('propertyImageNames', fields.propertyImageNames.filter((_, i) => i !== index));
+    }
+  };
+
+  const removeSketchMap = (index: number) => {
+    handleChange('sketchMapImages', (fields.sketchMapImages || []).filter((_, i) => i !== index));
   };
 
   // ── Save / Submit / Finalize / Rework ──
@@ -1547,6 +1555,44 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
             )}
           </div>
 
+          {/* Sketch Maps */}
+          <div className="bg-white p-4 rounded-xl border border-[#e9ecef] shadow-sm">
+            <div className="flex justify-between items-center mb-4">
+              <label className="block text-sm font-bold text-[#1a3a5c]">Sketch Maps</label>
+              <div className="flex gap-2">
+                {!isReadOnly && (
+                  <>
+                    <label className="cursor-pointer text-xs font-bold text-blue-600 hover:text-blue-800">
+                      Upload
+                      <input type="file" multiple accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'sketchMapImages')} disabled={uploading} />
+                    </label>
+                    <span className="text-gray-300">|</span>
+                    <button type="button" onClick={() => openBucketPicker('sketchMapImages')} className="text-xs font-bold text-blue-600 hover:text-blue-800">📸 Pick from Bucket</button>
+                  </>
+                )}
+              </div>
+            </div>
+            
+            {fields.sketchMapImages && fields.sketchMapImages.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {fields.sketchMapImages.map((url, idx) => (
+                  <div key={idx} className="relative group rounded-lg overflow-hidden border border-[#e9ecef]">
+                    <img src={url} alt={`Sketch Map ${idx + 1}`} className="w-full h-32 object-contain bg-[#f8f9fa]" />
+                    {!isReadOnly && (
+                      <button onClick={() => removeSketchMap(idx)} className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center p-4 border border-dashed rounded-lg text-gray-500 text-sm">
+                No sketch maps added
+              </div>
+            )}
+          </div>
+
           {/* Location Map */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
@@ -1583,18 +1629,6 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
             </div>
             {!isReadOnly && <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'benchmarkImage')} disabled={uploading} className="block w-full text-sm text-[#6c757d] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#b8860b]/10 file:text-[#b8860b] hover:file:bg-[#b8860b]/20 mb-2" />}
             {fields.benchmarkImage && <img src={fields.benchmarkImage} alt="Benchmark" className="max-h-48 rounded-lg border border-[#e9ecef]" />}
-          </div>
-
-          {/* Sketch Map */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest">Sketch Map</p>
-              {bucketImages.length > 0 && !isReadOnly && (
-                <button type="button" onClick={() => openBucketPicker('sketchMapImage')} className="text-xs font-bold text-blue-600 hover:text-blue-800">📸 Pick from Bucket</button>
-              )}
-            </div>
-            {!isReadOnly && <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'sketchMapImage')} disabled={uploading} className="block w-full text-sm text-[#6c757d] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#b8860b]/10 file:text-[#b8860b] hover:file:bg-[#b8860b]/20 mb-2" />}
-            {fields.sketchMapImage && <img src={fields.sketchMapImage} alt="Sketch Map" className="max-h-48 rounded-lg border border-[#e9ecef]" />}
           </div>
 
           {/* Land Annexure Table */}

@@ -88,7 +88,7 @@ export interface IncomeTaxFieldsForPDF {
   ciiTableImage: string;
   bdaMapImage: string;
   benchmarkImage: string;
-  sketchMapImage: string;
+  sketchMapImages: string[];
   extraItems: ExtraItem[];
 }
 
@@ -299,7 +299,7 @@ export async function generateIncomeTaxPDF(
     ...(fields.ciiTableImage ? [fields.ciiTableImage] : []),
     ...(fields.bdaMapImage ? [fields.bdaMapImage] : []),
     ...(fields.benchmarkImage ? [fields.benchmarkImage] : []),
-    ...(fields.sketchMapImage ? [fields.sketchMapImage] : []),
+    ...(fields.sketchMapImages && fields.sketchMapImages.length > 0 ? fields.sketchMapImages : []),
   ];
   const allImageBytes = await Promise.all(allImageUrls.map(u => fetchBytes(u)));
   let imgIdx = 0;
@@ -309,7 +309,8 @@ export async function generateIncomeTaxPDF(
   const ciiBytes = fields.ciiTableImage ? allImageBytes[imgIdx++] : null;
   const bdaBytes = fields.bdaMapImage ? allImageBytes[imgIdx++] : null;
   const benchmarkBytes = fields.benchmarkImage ? allImageBytes[imgIdx++] : null;
-  const sketchBytes = fields.sketchMapImage ? allImageBytes[imgIdx++] : null;
+  const sketchBytesList = fields.sketchMapImages?.length ? allImageBytes.slice(imgIdx, imgIdx + fields.sketchMapImages.length) : null;
+  if (fields.sketchMapImages?.length) imgIdx += fields.sketchMapImages.length;
 
   // ═══════════════════════════════════════════════════════
   // BLOCK 1 — INNER TITLE BLOCK
@@ -636,7 +637,14 @@ export async function generateIncomeTaxPDF(
   await embedImage(benchmarkBytes, 'BENCHMARK VALUE', CW, 600);
 
   // Sketch Map
-  await embedImage(sketchBytes, 'SKETCH MAP', CW, 600);
+  if (sketchBytesList && sketchBytesList.length > 0) {
+    for (let i = 0; i < sketchBytesList.length; i++) {
+      const sBytes = sketchBytesList[i];
+      if (sBytes) {
+        await embedImage(sBytes, `SKETCH MAP${sketchBytesList.length > 1 ? ` ${i + 1}` : ''}`, CW, 600);
+      }
+    }
+  }
 
   // Add page number to last page
   addPageNum(page, pageNum);
