@@ -1566,8 +1566,6 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                       Upload
                       <input type="file" multiple accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'sketchMapImages')} disabled={uploading} />
                     </label>
-                    <span className="text-gray-300">|</span>
-                    <button type="button" onClick={() => openBucketPicker('sketchMapImages')} className="text-xs font-bold text-blue-600 hover:text-blue-800">📸 Pick from Bucket</button>
                   </>
                 )}
               </div>

@@ -1924,9 +1924,6 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
             <div className="mt-6">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-xs font-bold text-[#495057] uppercase tracking-wider">Sketch Maps</p>
-                {bucketImages.length > 0 && !isReadOnly && (
-                  <button type="button" onClick={() => openBucketPicker('sketchMapImages')} className="text-xs font-bold text-blue-600 hover:text-blue-800">📸 Pick from Bucket</button>
-                )}
               </div>
               {!isReadOnly && (
                 <div className="mb-3">
