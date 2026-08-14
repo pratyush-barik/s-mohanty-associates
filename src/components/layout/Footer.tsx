@@ -10,6 +10,7 @@ const quickLinks = [
   { label: 'Services', href: '#services' },
   { label: 'Clients', href: '#clients' },
   { label: 'Qualifications', href: '#qualifications' },
+  { label: 'Our Founder', href: '#ceo' },
   { label: 'Contact', href: '#contact' },
 ];
 
