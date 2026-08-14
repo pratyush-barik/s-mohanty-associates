@@ -195,7 +195,11 @@ interface ReportFields {
 
   // Annexure
   annexureEnabled: boolean;
+  annexureRef: string;          // Which annexure ID the technical address refers to
+  annexureRefShowAlso: boolean; // Also show address field alongside annexure ref
   legalAnnexureEnabled: boolean;
+  legalAnnexureRef: string;          // Which annexure ID the legal address refers to
+  legalAnnexureRefShowAlso: boolean; // Also show legal address field alongside annexure ref
   annexures: AnnexureItem[];
 }
 
@@ -342,7 +346,11 @@ const DEFAULT_FIELDS: ReportFields = {
   serviceType: '',
   subjectType: '',
   annexureEnabled: false,
+  annexureRef: '',
+  annexureRefShowAlso: false,
   legalAnnexureEnabled: false,
+  legalAnnexureRef: '',
+  legalAnnexureRefShowAlso: false,
   annexures: [],
 };
 
@@ -1233,11 +1241,17 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       r.drawSimpleRow('Name of the Customer(s)', `"${fields.ownerName || 'N/A'}"`);
       // Property Address & Landmark — show annexure reference if enabled
       if (fields.annexureEnabled && fields.annexures.length > 0) {
-        const firstAnnexure = fields.annexures.find(a => a.parsedData);
-        const annexureLabel = firstAnnexure ? firstAnnexure.label : fields.annexures[0].label;
-        r.drawSimpleRow('Property Address with pin code', `Details are provided in Annexure ${annexureLabel}`);
+        const linkedAnn = fields.annexureRef
+          ? fields.annexures.find(a => a.id === fields.annexureRef)
+          : (fields.annexures.find(a => a.parsedData) || fields.annexures[0]);
+        const annexureTitle = linkedAnn ? (linkedAnn.title || `Annexure ${linkedAnn.label}`) : 'Annexure';
+        r.drawSimpleRow('Property Address', `Details are provided in ${annexureTitle}`);
+        if (fields.annexureRefShowAlso) {
+          r.drawSimpleRow('Property Address (also)', getFullAddress());
+          r.drawSimpleRow('Landmark', fields.landmark || '');
+        }
       } else {
-        r.drawSimpleRow('Property Address with pin code', getFullAddress());
+        r.drawSimpleRow('Property Address', getFullAddress());
         r.drawSimpleRow('Landmark', fields.landmark || '');
       }
       const loanAppLabel = fields.loanApplicationType ? `${fields.loanApplicationType} Application number` : 'Application number';
@@ -1245,9 +1259,14 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       r.drawSimpleRow('Name of Document holder', fields.documentHolderName || fields.ownerName);
 
       if (fields.legalAnnexureEnabled && fields.annexures.length > 0) {
-        const firstAnnexure = fields.annexures.find(a => a.parsedData);
-        const annexureLabel = firstAnnexure ? firstAnnexure.label : fields.annexures[0].label;
-        r.drawSimpleRow('Legal address of property', `Details are provided in Annexure ${annexureLabel}`);
+        const linkedAnn = fields.legalAnnexureRef
+          ? fields.annexures.find(a => a.id === fields.legalAnnexureRef)
+          : (fields.annexures.find(a => a.parsedData) || fields.annexures[0]);
+        const annexureTitle = linkedAnn ? (linkedAnn.title || `Annexure ${linkedAnn.label}`) : 'Annexure';
+        r.drawSimpleRow('Legal address of property ( Hissa No / Survey no / khasra No : - )', `Details are provided in ${annexureTitle}`);
+        if (fields.legalAnnexureRefShowAlso) {
+          r.drawSimpleRow('Legal address (also)', getLegalFullAddress() || '');
+        }
       } else {
         r.drawSimpleRow('Legal address of property ( Hissa No / Survey no / khasra No : - )', getLegalFullAddress() || '');
       }
@@ -2258,10 +2277,8 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
               <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
                 <h3 className="text-sm font-bold text-[#0f2038]">Technical Address</h3>
                 {!isReadOnly && (
-                  <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-bold text-[#6c757d] uppercase tracking-wide">
-                      Use Annexure
-                    </span>
+                  <div className="flex items-center gap-3 flex-wrap justify-end">
+                    <span className="text-[10px] font-bold text-[#6c757d] uppercase tracking-wide">Use Annexure</span>
                     <button
                       type="button"
                       onClick={() => handleChange('annexureEnabled', !fields.annexureEnabled)}
@@ -2270,11 +2287,25 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                     >
                       <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${fields.annexureEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
                     </button>
+                    {fields.annexureEnabled && (
+                      <>
+                        <span className="w-px h-4 bg-neutral-200" />
+                        <span className="text-[10px] font-bold text-[#6c757d] uppercase tracking-wide">Also show address</span>
+                        <button
+                          type="button"
+                          onClick={() => handleChange('annexureRefShowAlso', !fields.annexureRefShowAlso)}
+                          className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${fields.annexureRefShowAlso ? 'bg-emerald-500' : 'bg-[#ccc]'}`}
+                          title={fields.annexureRefShowAlso ? 'Hide address field' : 'Also show address field'}
+                        >
+                          <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${fields.annexureRefShowAlso ? 'translate-x-5' : 'translate-x-0'}`} />
+                        </button>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
-              
-              {!fields.annexureEnabled ? (
+
+              {(!fields.annexureEnabled || fields.annexureRefShowAlso) && (
                 <>
                   <Field label="Address Line 1">
                     <input className={inputCls} value={fields.ownerAddress} onChange={e => handleChange('ownerAddress', e.target.value)} disabled={isReadOnly} placeholder="Plot/Building No, Street/Locality" />
@@ -2291,10 +2322,53 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                     </Field>
                   </div>
                 </>
-              ) : (
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#fff8e1] border border-[#ffe082] text-xs text-[#7b6b2e]">
-                  <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" /></svg>
-                  <span>Technical Address details moved to <strong>Section {isApartmentFlat ? 14 : 15} — Annexure</strong>. Scroll down or use the navigator.</span>
+              )}
+
+              {fields.annexureEnabled && (
+                <div className="space-y-2">
+                  <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider">Link to Annexure</label>
+                  {fields.annexures.length > 0 ? (
+                    <>
+                      <div className="flex flex-wrap gap-2">
+                        {fields.annexures.map(ann => {
+                          const isSelected = fields.annexureRef === ann.id;
+                          const displayTitle = ann.title || `Annexure ${ann.label}`;
+                          return (
+                            <button
+                              key={ann.id}
+                              type="button"
+                              disabled={isReadOnly}
+                              onClick={() => handleChange('annexureRef', isSelected ? '' : ann.id)}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                                isSelected
+                                  ? 'bg-[#b8860b] text-white border-[#b8860b] shadow-sm'
+                                  : 'bg-white text-[#6c757d] border-[#dee2e6] hover:border-[#b8860b] hover:text-[#b8860b]'
+                              }`}
+                            >
+                              <span className={`w-4 h-4 rounded-full text-[10px] font-black flex items-center justify-center shrink-0 ${isSelected ? 'bg-white/30' : 'bg-[#f0ead6] text-[#b8860b]'}`}>{ann.label}</span>
+                              {displayTitle}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {fields.annexureRef && (() => {
+                        const linked = fields.annexures.find(a => a.id === fields.annexureRef);
+                        if (!linked) return null;
+                        const displayTitle = linked.title || `Annexure ${linked.label}`;
+                        return (
+                          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#fff8e1] border border-[#ffe082] text-xs text-[#7b6b2e]">
+                            <svg className="w-3.5 h-3.5 shrink-0 text-[#b8860b]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                            <span>In report: <strong>Property Address — Details are provided in {displayTitle}</strong></span>
+                          </div>
+                        );
+                      })()}
+                    </>
+                  ) : (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-700">
+                      <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      <span>No annexures added yet. Scroll to <strong>Section {isApartmentFlat ? 14 : 15} — Annexure</strong> to add one first.</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -2320,12 +2394,10 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
             {/* Legal Address Container */}
             <div className="md:col-span-2 bg-white p-4 rounded-xl border border-neutral-200 shadow-sm space-y-4">
               <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
-                <h3 className="text-sm font-bold text-[#0f2038]">Legal Address</h3>
+                <h3 className="text-sm font-bold text-[#0f2038]">Legal Address <span className="text-[10px] font-normal text-[#6c757d] normal-case">(Hissa / Survey / Khasra No)</span></h3>
                 {!isReadOnly && (
-                  <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-bold text-[#6c757d] uppercase tracking-wide">
-                      Use Annexure
-                    </span>
+                  <div className="flex items-center gap-3 flex-wrap justify-end">
+                    <span className="text-[10px] font-bold text-[#6c757d] uppercase tracking-wide">Use Annexure</span>
                     <button
                       type="button"
                       onClick={() => handleChange('legalAnnexureEnabled', !fields.legalAnnexureEnabled)}
@@ -2334,13 +2406,27 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                     >
                       <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${fields.legalAnnexureEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
                     </button>
+                    {fields.legalAnnexureEnabled && (
+                      <>
+                        <span className="w-px h-4 bg-neutral-200" />
+                        <span className="text-[10px] font-bold text-[#6c757d] uppercase tracking-wide">Also show address</span>
+                        <button
+                          type="button"
+                          onClick={() => handleChange('legalAnnexureRefShowAlso', !fields.legalAnnexureRefShowAlso)}
+                          className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${fields.legalAnnexureRefShowAlso ? 'bg-emerald-500' : 'bg-[#ccc]'}`}
+                          title={fields.legalAnnexureRefShowAlso ? 'Hide address field' : 'Also show address field'}
+                        >
+                          <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${fields.legalAnnexureRefShowAlso ? 'translate-x-5' : 'translate-x-0'}`} />
+                        </button>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
-              
-              {!fields.legalAnnexureEnabled ? (
+
+              {(!fields.legalAnnexureEnabled || fields.legalAnnexureRefShowAlso) && (
                 <>
-                  <Field label="Address Line 1 (Hissa / Survey / Khasra No)">
+                  <Field label="Address Line 1">
                     <input className={inputCls} value={fields.legalAddress || ''} onChange={e => handleChange('legalAddress', e.target.value)} disabled={isReadOnly} placeholder="Plot/Building No, Street/Locality" />
                   </Field>
                   <div className="grid md:grid-cols-2 gap-4">
@@ -2352,10 +2438,53 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                     </Field>
                   </div>
                 </>
-              ) : (
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#fff8e1] border border-[#ffe082] text-xs text-[#7b6b2e]">
-                  <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" /></svg>
-                  <span>Legal Address details moved to <strong>Section {isApartmentFlat ? 14 : 15} — Annexure</strong>. Scroll down or use the navigator.</span>
+              )}
+
+              {fields.legalAnnexureEnabled && (
+                <div className="space-y-2">
+                  <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider">Link to Annexure</label>
+                  {fields.annexures.length > 0 ? (
+                    <>
+                      <div className="flex flex-wrap gap-2">
+                        {fields.annexures.map(ann => {
+                          const isSelected = fields.legalAnnexureRef === ann.id;
+                          const displayTitle = ann.title || `Annexure ${ann.label}`;
+                          return (
+                            <button
+                              key={ann.id}
+                              type="button"
+                              disabled={isReadOnly}
+                              onClick={() => handleChange('legalAnnexureRef', isSelected ? '' : ann.id)}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                                isSelected
+                                  ? 'bg-[#b8860b] text-white border-[#b8860b] shadow-sm'
+                                  : 'bg-white text-[#6c757d] border-[#dee2e6] hover:border-[#b8860b] hover:text-[#b8860b]'
+                              }`}
+                            >
+                              <span className={`w-4 h-4 rounded-full text-[10px] font-black flex items-center justify-center shrink-0 ${isSelected ? 'bg-white/30' : 'bg-[#f0ead6] text-[#b8860b]'}`}>{ann.label}</span>
+                              {displayTitle}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {fields.legalAnnexureRef && (() => {
+                        const linked = fields.annexures.find(a => a.id === fields.legalAnnexureRef);
+                        if (!linked) return null;
+                        const displayTitle = linked.title || `Annexure ${linked.label}`;
+                        return (
+                          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#fff8e1] border border-[#ffe082] text-xs text-[#7b6b2e]">
+                            <svg className="w-3.5 h-3.5 shrink-0 text-[#b8860b]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                            <span>In report: <strong>Legal Address — Details are provided in {displayTitle}</strong></span>
+                          </div>
+                        );
+                      })()}
+                    </>
+                  ) : (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-700">
+                      <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      <span>No annexures added yet. Scroll to <strong>Section {isApartmentFlat ? 14 : 15} — Annexure</strong> to add one first.</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
