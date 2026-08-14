@@ -40,7 +40,7 @@ export default function About() {
       <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#b8860b]/5 rounded-full blur-[120px] pointer-events-none" />
        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#1a5c3a]/5 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="container mx-auto max-w-[1600px] px-6 relative z-10">
+      <div className="container mx-auto max-w-[1920px] px-6 relative z-10">
         {/* Section Header */}
         <SectionWrapper animation="fadeUp" className="text-center mb-8">
           <span className="text-[#b8860b] text-sm font-semibold uppercase tracking-[0.2em] mb-3 block">Who We Are</span>

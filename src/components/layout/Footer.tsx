@@ -45,7 +45,7 @@ export default function Footer() {
       {/* Top gradient border */}
       <div className="h-1 w-full bg-gradient-to-r from-transparent via-[#b8860b] to-transparent" />
 
-      <div className="container mx-auto max-w-[1600px] px-6 py-16">
+      <div className="container mx-auto max-w-[1920px] px-6 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12">
           {/* Brand Column */}
           <div className="lg:col-span-4 xl:col-span-3">

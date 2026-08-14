@@ -30,7 +30,7 @@ export default function Clients() {
       {/* Background decoration */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#b8860b]/3 rounded-full blur-[150px] pointer-events-none" />
 
-      <div className="container mx-auto max-w-[1600px] px-6 relative z-10">
+      <div className="container mx-auto max-w-[1920px] px-6 relative z-10">
         {/* Section Header */}
         <SectionWrapper animation="fadeUp" className="text-center mb-8">
           <span className="text-[#b8860b] text-sm font-semibold uppercase tracking-[0.2em] mb-3 block">Trusted By</span>
