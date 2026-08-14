@@ -44,10 +44,10 @@ const jsonLd = {
   "description": "Government Registered Valuers and Chartered Engineers providing expert property valuation services for Banks, Non-Banking Financial Corporations, Insurance Companies, and Private Clients across India since 2016.",
   "address": {
     "@type": "PostalAddress",
-    "streetAddress": "N-1/157, IRC Village",
-    "addressLocality": "Nayapalli, Bhubaneswar",
+    "streetAddress": "Plot No. 858(P) & 859(P), Near Astha Binodini Apartment, Siba Nagar, Rajarani, Tankapani Road",
+    "addressLocality": "Bhubaneswar",
     "addressRegion": "Odisha",
-    "postalCode": "751015",
+    "postalCode": "751018",
     "addressCountry": "IN"
   },
   "geo": {
