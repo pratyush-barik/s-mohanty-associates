@@ -44,16 +44,16 @@ export default function Clients() {
         </SectionWrapper>
 
         {/* Featured Clients Grid */}
-        <SectionWrapper animation="fadeUp" delay={0.1} className="mb-8">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
+        <SectionWrapper animation="fadeUp" delay={0.1} className="mb-12 md:mb-20">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-8">
             {featuredClients.map((client, index) => (
               <div
                 key={client.name}
-                className="group card flex flex-col items-center justify-center py-6 px-4 text-center h-[140px]"
+                className="group card flex flex-col items-center justify-center py-6 px-4 text-center h-[140px] md:h-[220px]"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 {/* Fallback to text if image is the transparent 1x1 placeholder */}
-                <div className="w-full h-16 relative flex items-center justify-center mb-3">
+                <div className="w-full h-16 md:h-28 relative flex items-center justify-center mb-3 md:mb-5">
                   <img
                     src={client.image}
                     alt={client.name}
@@ -76,18 +76,18 @@ export default function Clients() {
 
         {/* Infinite Carousel */}
         <SectionWrapper animation="fadeUp" delay={0.2}>
-          <div className="relative overflow-hidden py-4">
+          <div className="relative overflow-hidden py-6 md:py-10">
             {/* Gradient Masks */}
             <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
             <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
 
             {/* Scrolling Track */}
-            <div className="carousel-track flex gap-8 w-max items-center">
+            <div className="carousel-track flex gap-6 md:gap-10 w-max items-center">
               {/* Duplicate items for infinite loop */}
               {[...carouselClients, ...carouselClients].map((client, index) => (
                 <div
                   key={`${client.name}-${index}`}
-                  className="flex-shrink-0 rounded-xl bg-[#f8f9fa] border border-[#e9ecef] hover:border-[#b8860b]/30 hover:bg-[#b8860b]/5 transition-all duration-300 cursor-default overflow-hidden h-16 w-32 flex items-center justify-center"
+                  className="flex-shrink-0 rounded-xl bg-[#f8f9fa] border border-[#e9ecef] hover:border-[#b8860b]/30 hover:bg-[#b8860b]/5 transition-all duration-300 cursor-default overflow-hidden h-20 w-40 md:h-28 md:w-56 flex items-center justify-center p-4"
                 >
                   <img
                     src={client.image}
