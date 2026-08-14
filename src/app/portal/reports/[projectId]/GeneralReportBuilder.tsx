@@ -3354,6 +3354,8 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                 <p className="text-xs text-[#6c757d] mt-1">
                   {bucketPickerMode === 'propertyImages'
                     ? 'Select one or more photos to add to the report'
+                    : bucketPickerMode === 'sketchMapImages'
+                    ? 'Select one or more photos to use as Sketch Maps'
                     : 'Select a single photo for the map'}
                 </p>
               </div>

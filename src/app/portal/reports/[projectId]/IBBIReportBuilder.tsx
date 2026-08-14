@@ -496,7 +496,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
   const toggleBucketImage = (id: string) => {
     setBucketSelected(prev => {
       const next = new Set(prev);
-      if (bucketPickerMode !== 'propertyImages') {
+      if (bucketPickerMode !== 'propertyImages' && bucketPickerMode !== 'sketchMapImages') {
         next.clear();
         next.add(id);
       } else {
@@ -2187,6 +2187,8 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
                 <p className="text-xs text-[#6c757d] mt-1">
                   {bucketPickerMode === 'propertyImages'
                     ? 'Select one or more photos to add to the report'
+                    : bucketPickerMode === 'sketchMapImages'
+                    ? 'Select one or more photos to use as Sketch Maps'
                     : 'Select a single photo for the map'}
                 </p>
               </div>

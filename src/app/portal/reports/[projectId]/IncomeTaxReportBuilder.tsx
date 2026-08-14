@@ -575,7 +575,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
   const toggleBucketImage = (id: string) => {
     setBucketSelected(prev => {
       const next = new Set(prev);
-      if (bucketPickerMode !== 'propertyImages') {
+      if (bucketPickerMode !== 'propertyImages' && bucketPickerMode !== 'sketchMapImages') {
         next.clear();
         next.add(id);
       } else {
@@ -1845,8 +1845,12 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
             <div className="p-5 border-b border-[#e9ecef] bg-[#f8f9fa] flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-bold text-[#0f2038]">📸 Pick from Field Agent Bucket</h2>
-                <p className="text-xs text-[#6c757d] mt-0.5">
-                  {bucketPickerMode === 'propertyImages' ? 'Select multiple photos' : 'Select one image'}
+                <p className="text-xs text-[#6c757d] mt-1">
+                  {bucketPickerMode === 'propertyImages' 
+                    ? 'Select multiple photos' 
+                    : bucketPickerMode === 'sketchMapImages'
+                    ? 'Select one or more photos to use as Sketch Maps'
+                    : 'Select one image'}
                 </p>
               </div>
               <button onClick={() => setBucketPickerOpen(false)} className="text-[#6c757d] hover:text-[#0f2038] text-xl font-bold">✕</button>
