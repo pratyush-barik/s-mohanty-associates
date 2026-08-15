@@ -78,34 +78,37 @@ interface IncomeTaxFields {
   tenancyPortionDetails: string;   // Q23 (II)
   fsi: string;
 
-  // ── Rent & Sales (Q25-Q38) ──
+  // ── Rent & Sales (Q25-Q40) ──
   tenantName: string;           // Q25 (I)
   tenantPortion: string;        // Q25 (II)
   tenantRent: string;           // Q25 (III)
   tenantGrossAmount: string;    // Q25 (IV)
-  relatedOccupants: string;
-  fixtures: string;
-  waterElectricCharges: string;
-  pumpMaintenance: string;
-  commonElectricity: string;
-  propertyTax: string;
-  buildingInsured: string;
-  landlordTenantDispute: string;
-  standardRent: string;
-  saleInstances: string;
+  relatedOccupants: string;     // Q26
+  fixtures: string;             // Q27
+  waterElectricCharges: string; // Q28
+  tenantRepairs: string;        // Q29
+  liftMaintenance: string;      // Q30
+  pumpMaintenance: string;      // Q31
+  commonElectricity: string;    // Q32
+  propertyTax: string;          // Q33
+  buildingInsured: string;      // Q34
+  landlordTenantDispute: string;// Q35
+  standardRent: string;         // Q36
+  otherRentDetails: string;     // Q37
+  saleInstances: string;        // Q38
 
   // ── Cost of Construction (Q39-Q45) ──
   landRatePerUnit: string;      // Q39 — value per unit
   landRateUnit: string;         // Q39 — unit (DEC/ACRE/SQFT)
   landRate: string;             // Q39 — legacy/full text
   totalLandValue: string;
-  landRateBasis: string;
-  constructionStartYear: string;
-  constructionEndYear: string;
-  constructionMethod: string;
-  contractAgreements: string;
-  materialRates: string;
-  buildingApproval: string;
+  landRateBasis: string;        // Q40
+  constructionStartYear: string;// Q41 (I)
+  constructionEndYear: string;  // Q41 (II)
+  constructionMethod: string;   // Q42
+  contractAgreements: string;   // Q43
+  materialRates: string;        // Q44
+  buildingApproval: string;     // Q45
 
   // ── Part II: Valuation ──
   valuationYear: string;
@@ -236,12 +239,15 @@ const DEFAULT_FIELDS: IncomeTaxFields = {
   relatedOccupants: 'NOT APPLICABLE',
   fixtures: 'NOT APPLICABLE',
   waterElectricCharges: 'NOT APPLICABLE',
+  tenantRepairs: 'NOT APPLICABLE',
+  liftMaintenance: 'NOT APPLICABLE',
   pumpMaintenance: 'NOT APPLICABLE',
   commonElectricity: 'NOT APPLICABLE',
   propertyTax: '',
   buildingInsured: 'NOT APPLICABLE',
   landlordTenantDispute: 'NOT APPLICABLE',
   standardRent: 'NOT APPLICABLE',
+  otherRentDetails: 'NOT APPLICABLE',
   saleInstances: '',
 
   landRatePerUnit: '',
@@ -1329,23 +1335,32 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               <Field label="28 — Water & Electric Charges">
                 <input className={inputCls} value={fields.waterElectricCharges} onChange={e => handleChange('waterElectricCharges', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="29 — Pump Maintenance">
+              <Field label="29 — Repairs & Maintenance">
+                <input className={inputCls} value={fields.tenantRepairs} onChange={e => handleChange('tenantRepairs', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
+              </Field>
+              <Field label="30 — Lift Maintenance">
+                <input className={inputCls} value={fields.liftMaintenance} onChange={e => handleChange('liftMaintenance', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
+              </Field>
+              <Field label="31 — Pump Maintenance">
                 <input className={inputCls} value={fields.pumpMaintenance} onChange={e => handleChange('pumpMaintenance', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="30 — Common Electricity">
+              <Field label="32 — Common Electricity">
                 <input className={inputCls} value={fields.commonElectricity} onChange={e => handleChange('commonElectricity', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="31 — Property Tax">
+              <Field label="33 — Property Tax">
                 <input className={inputCls} value={fields.propertyTax} onChange={e => handleChange('propertyTax', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="32 — Building Insured">
+              <Field label="34 — Building Insured">
                 <input className={inputCls} value={fields.buildingInsured} onChange={e => handleChange('buildingInsured', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="33 — Landlord-Tenant Dispute">
+              <Field label="35 — Landlord-Tenant Dispute">
                 <input className={inputCls} value={fields.landlordTenantDispute} onChange={e => handleChange('landlordTenantDispute', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="34 — Standard Rent">
+              <Field label="36 — Standard Rent">
                 <input className={inputCls} value={fields.standardRent} onChange={e => handleChange('standardRent', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
+              </Field>
+              <Field label="37 — Other Rent Particulars">
+                <input className={inputCls} value={fields.otherRentDetails} onChange={e => handleChange('otherRentDetails', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
 
             </div>
@@ -1408,11 +1423,18 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           <SubSection id="subsection-construction" title="Cost of Construction (Q41–Q45)" defaultOpen={false}>
             <div className="grid md:grid-cols-2 gap-4">
 
-              <Field label="41 — Construction Start Year">
-                <input className={inputCls} value={fields.constructionStartYear} onChange={e => handleChange('constructionStartYear', e.target.value.replace(/[^0-9-]/g, ''))} disabled={isReadOnly} placeholder="2005" />
-              </Field>
-              <Field label="41 — Construction End Year">
-                <input className={inputCls} value={fields.constructionEndYear} onChange={e => handleChange('constructionEndYear', e.target.value.replace(/[^0-9-]/g, ''))} disabled={isReadOnly} placeholder="2008" />
+              {/* Q41 — split into 2 sub-entries */}
+              <Field label="41 — Year of Commencement of Construction and Year of Completion" span={2}>
+                <div className="grid md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-semibold text-[#6c757d] uppercase tracking-wider mb-1">(I) Year of Commencement of Construction</label>
+                    <input className={inputCls} value={fields.constructionStartYear} onChange={e => handleChange('constructionStartYear', e.target.value.replace(/[^0-9-]/g, ''))} disabled={isReadOnly} placeholder="2005" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold text-[#6c757d] uppercase tracking-wider mb-1">(II) Year of Completion</label>
+                    <input className={inputCls} value={fields.constructionEndYear} onChange={e => handleChange('constructionEndYear', e.target.value.replace(/[^0-9-]/g, ''))} disabled={isReadOnly} placeholder="2008" />
+                  </div>
+                </div>
               </Field>
               <Field label="42 — Construction Method">
                 <input className={inputCls} value={fields.constructionMethod} onChange={e => handleChange('constructionMethod', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />

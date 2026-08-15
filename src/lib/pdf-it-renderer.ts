@@ -63,12 +63,15 @@ export interface IncomeTaxFieldsForPDF {
   relatedOccupants: string;
   fixtures: string;
   waterElectricCharges: string;
+  tenantRepairs: string;
+  liftMaintenance: string;
   pumpMaintenance: string;
   commonElectricity: string;
   propertyTax: string;
   buildingInsured: string;
   landlordTenantDispute: string;
   standardRent: string;
+  otherRentDetails: string;
   saleInstances: string;
   landRatePerUnit: string;
   landRateUnit: string;
@@ -427,19 +430,22 @@ export async function generateIncomeTaxPDF(
   drawQRow('26', 'ARE ANY OF THE OCCUPANTS RELATED TO, OR CLOSE BUSINESS ASSOCIATES OF THE OWNER?', fields.relatedOccupants);
   drawQRow('27', 'IS SEPARATE AMOUNT BEING RECOVERED FOR THE USE OF FIXTURES LIKE FANS, GEYSERS, REFRIGERATORS, COOKING RANGES, BUILT IN WARDROBES, ETC., OR FOR SERVICE CHARGES? IF SO GIVE DETAILS.', fields.fixtures);
   drawQRow('28', 'GIVE DETAILS OF WATER AND ELECTRICITY CHARGES, IF ANY, TO BE BORNE BY THE OWNER.', fields.waterElectricCharges);
-  drawQRow('29', 'IF A PUMP INSTALLED, WHO HAS TO BEAR THE COST AND MAINTENANCE AND OPERATION,–OWNER OR TENANT.', fields.pumpMaintenance);
-  drawQRow('30', 'WHO IS TO BEAR THE COST OF ELECTRICITY CHARGES FOR LIGHTING OF COMMON SPACE LIKE ENTRANCE HALL, STAIRS, PASSAGES, COMPOUND, ETC.–OWNER OR TENANT.', fields.commonElectricity);
-  drawQRow('31', 'WHAT IS THE AMOUNT OF PROPERTY TAX? WHO IS TO BEAR IT? GIVE DETAILS WITH DOCUMENTARY PROOF.', fields.propertyTax);
-  drawQRow('32', 'IS THE BUILDING INSURED? IF SO, GIVE THE POLICY NO., AMOUNT FOR WHICH IT IS INSURED AND ANNUAL PREMIUM.', fields.buildingInsured);
-  drawQRow('33', 'IF ANY DISPUTE BETWEEN LAND LORD AND TENANT REGARDING RENT PENDING IN COURT OF LAW?', fields.landlordTenantDispute);
-  drawQRow('34', 'HAS ANY STANDARD RENT BEEN FIXED FOR THE PREMISES UNDER ANY LAW RELATING TO CONTROL OF RENT', fields.standardRent);
+  drawQRow('29', 'HAS THE TENANT TO BEAR THE WHOLE OR PART OF THE COST OF REPAIRS AND MAINTENANCE? IF SO, GIVE FULL DETAILS.', fields.tenantRepairs || 'NOT APPLICABLE');
+  drawQRow('30', 'IF A LIFT IS INSTALLED, WHO IS TO BEAR THE COST OF MAINTENANCE AND OPERATION,–OWNER OR TENANT.', fields.liftMaintenance || 'NOT APPLICABLE');
+  drawQRow('31', 'IF A PUMP INSTALLED, WHO HAS TO BEAR THE COST AND MAINTENANCE AND OPERATION,–OWNER OR TENANT.', fields.pumpMaintenance);
+  drawQRow('32', 'WHO IS TO BEAR THE COST OF ELECTRICITY CHARGES FOR LIGHTING OF COMMON SPACE LIKE ENTRANCE HALL, STAIRS, PASSAGES, COMPOUND, ETC.–OWNER OR TENANT.', fields.commonElectricity);
+  drawQRow('33', 'WHAT IS THE AMOUNT OF PROPERTY TAX? WHO IS TO BEAR IT? GIVE DETAILS WITH DOCUMENTARY PROOF.', fields.propertyTax || 'NOT APPLICABLE');
+  drawQRow('34', 'IS THE BUILDING INSURED? IF SO, GIVE THE POLICY NO., AMOUNT FOR WHICH IT IS INSURED AND ANNUAL PREMIUM.', fields.buildingInsured);
+  drawQRow('35', 'IF ANY DISPUTE BETWEEN LAND LORD AND TENANT REGARDING RENT PENDING IN COURT OF LAW?', fields.landlordTenantDispute);
+  drawQRow('36', 'HAS ANY STANDARD RENT BEEN FIXED FOR THE PREMISES UNDER ANY LAW RELATING TO CONTROL OF RENT', fields.standardRent);
+  drawQRow('37', 'ANY OTHER PARTICULARS RELATING TO RENT AND TENANCIES:', fields.otherRentDetails || 'NOT APPLICABLE');
 
   drawQHeader('SALES');
   drawQRow('38', 'GIVE INSTANCES OF SALES OF IMMOVABLE PROPERTY IN THE LOCALITY ON A SEPARATE SHEET, INDICATING THE NAME AND ADDRESS OF THE PROPERTY, REGISTRATION NO., SALE PRICE AND AREA OF LAND SOLD:', fields.saleInstances);
   advanceCursor(6);
 
   // TABLE D — COST OF CONSTRUCTION
-  // Build Q39 formatted sentence
+  // Build Q39 formatted sentence from structured rate inputs
   const q39Rate = fields.landRatePerUnit ? Number(fields.landRatePerUnit).toLocaleString('en-IN') : '';
   const q39Unit = fields.landRateUnit || 'DEC';
   const q39LandArea = fields.landArea || '';
