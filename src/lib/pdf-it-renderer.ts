@@ -56,7 +56,10 @@ export interface IncomeTaxFieldsForPDF {
   tenancyStatus: string;
   tenancyPortionDetails: string;
   fsi: string;
-  tenantDetails: string;
+  tenantName: string;
+  tenantPortion: string;
+  tenantRent: string;
+  tenantGrossAmount: string;
   relatedOccupants: string;
   fixtures: string;
   waterElectricCharges: string;
@@ -67,6 +70,8 @@ export interface IncomeTaxFieldsForPDF {
   landlordTenantDispute: string;
   standardRent: string;
   saleInstances: string;
+  landRatePerUnit: string;
+  landRateUnit: string;
   landRate: string;
   totalLandValue: string;
   landRateBasis: string;
@@ -412,7 +417,13 @@ export async function generateIncomeTaxPDF(
 
   // TABLE C — RENT
   drawQHeader('RENT:');
-  drawQRow('25', 'NAME OF TENANT/LESSEES/LICENSEES, ETC. PORTION IN THEIR OCCUPATION. MONTHLY OR ANNUAL RENT/COMPENSATION/LICENSE FEE, ETC. PAID BY EACH. GROSS AMOUNT RECEIVED FOR THE WHOLE PROPERTY:', fields.tenantDetails);
+  const q25Answer = [
+    `(I) ${fields.tenantName || 'NOT APPLICABLE'}`,
+    `(II) ${fields.tenantPortion || 'NOT APPLICABLE'}`,
+    `(III) ${fields.tenantRent || 'NOT APPLICABLE'}`,
+    `(IV) ${fields.tenantGrossAmount || 'NOT APPLICABLE'}`,
+  ].join('\n');
+  drawQRow('25', 'NAME OF TENANT/LESSEES/LICENSEES, ETC. PORTION IN THEIR OCCUPATION. MONTHLY OR ANNUAL RENT/COMPENSATION/LICENSE FEE, ETC. PAID BY EACH. GROSS AMOUNT RECEIVED FOR THE WHOLE PROPERTY:', q25Answer);
   drawQRow('26', 'ARE ANY OF THE OCCUPANTS RELATED TO, OR CLOSE BUSINESS ASSOCIATES OF THE OWNER?', fields.relatedOccupants);
   drawQRow('27', 'IS SEPARATE AMOUNT BEING RECOVERED FOR THE USE OF FIXTURES LIKE FANS, GEYSERS, REFRIGERATORS, COOKING RANGES, BUILT IN WARDROBES, ETC., OR FOR SERVICE CHARGES? IF SO GIVE DETAILS.', fields.fixtures);
   drawQRow('28', 'GIVE DETAILS OF WATER AND ELECTRICITY CHARGES, IF ANY, TO BE BORNE BY THE OWNER.', fields.waterElectricCharges);
@@ -428,16 +439,23 @@ export async function generateIncomeTaxPDF(
   advanceCursor(6);
 
   // TABLE D — COST OF CONSTRUCTION
-  drawQRow('39', 'LAND RATE ADOPTED IN THIS VALUATION:', `${fields.landRate} TOTAL LAND VALUE: RS.${formatIndianCurrency(computedLandValue)}/-`);
+  // Build Q39 formatted sentence
+  const q39Rate = fields.landRatePerUnit ? Number(fields.landRatePerUnit).toLocaleString('en-IN') : '';
+  const q39Unit = fields.landRateUnit || 'DEC';
+  const q39LandArea = fields.landArea || '';
+  const q39LandAreaUnit = fields.landAreaUnit || q39Unit;
+  const q39Total = computedLandValue ? formatIndianCurrency(computedLandValue) : (fields.totalLandValue || '');
+  const q39Text = q39Rate
+    ? `THE RATE IS ABOUT RS.${q39Rate}/-PER ${q39Unit}. HENCE TOTAL VALUE OF THE LAND AS APPEARING IN THE ROR= ${q39LandArea} ${q39LandAreaUnit} @ RS.${q39Rate}/-PER ${q39Unit} =RS.${q39Total}/-`
+    : (fields.landRate || '');
+  drawQRow('39', 'LAND RATE ADOPTED IN THIS VALUATION:', q39Text);
   drawQRow('40', 'IF SALE INSTANCES ARE NOT AVAILABLE OR NOT RELIED UPON, THE BASIS OF ARRIVING AT THE LAND RATE.', fields.landRateBasis);
   drawQHeader('COST OF CONSTRUCTION:');
   drawQRow('41', 'YEAR OF COMMENCEMENT OF CONSTRUCTION AND YEAR OF COMPLETION:', fields.constructionStartYear ? `COMMENCEMENT IN THE YEAR: ${fields.constructionStartYear}, COMPLETED IN YEAR: ${fields.constructionEndYear}` : 'NOT APPLICABLE');
   drawQRow('42', 'WHAT WAS THE METHOD OF CONSTRUCTION–BY CONTRACT / BY EMPLOYING LABOUR DIRECTLY / BOTH?', fields.constructionMethod);
   drawQRow('43', 'FOR ITEMS OF WORK DONE ON CONTRACT, PRODUCE COPIES OF AGREEMENTS.', fields.contractAgreements);
   drawQRow('44', 'FOR ITEMS OF WORK DONE BY ENGAGING LABOUR DIRECTLY, GIVE BASIC RATES OF MATERIALS AND SUPPORTED BY DOCUMENTARY PROOF:', fields.materialRates);
-  if (!isLandOnly && fields.buildingApproval) {
-    drawQRow('45', 'BUILDING APPROVAL PLAN IF ANY', fields.buildingApproval);
-  }
+  drawQRow('45', 'BUILDING APPROVAL PLAN IF ANY', fields.buildingApproval || 'NOT APPLICABLE');
   advanceCursor(12);
 
   // ═══════════════════════════════════════════════════════

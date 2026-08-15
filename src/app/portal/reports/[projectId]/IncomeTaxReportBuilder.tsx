@@ -79,7 +79,10 @@ interface IncomeTaxFields {
   fsi: string;
 
   // ── Rent & Sales (Q25-Q38) ──
-  tenantDetails: string;
+  tenantName: string;           // Q25 (I)
+  tenantPortion: string;        // Q25 (II)
+  tenantRent: string;           // Q25 (III)
+  tenantGrossAmount: string;    // Q25 (IV)
   relatedOccupants: string;
   fixtures: string;
   waterElectricCharges: string;
@@ -92,7 +95,9 @@ interface IncomeTaxFields {
   saleInstances: string;
 
   // ── Cost of Construction (Q39-Q45) ──
-  landRate: string;
+  landRatePerUnit: string;      // Q39 — value per unit
+  landRateUnit: string;         // Q39 — unit (DEC/ACRE/SQFT)
+  landRate: string;             // Q39 — legacy/full text
   totalLandValue: string;
   landRateBasis: string;
   constructionStartYear: string;
@@ -224,7 +229,10 @@ const DEFAULT_FIELDS: IncomeTaxFields = {
   tenancyPortionDetails: 'NOT APPLICABLE',
   fsi: 'NOT APPLICABLE',
 
-  tenantDetails: 'NOT APPLICABLE',
+  tenantName: 'NOT APPLICABLE',
+  tenantPortion: 'NOT APPLICABLE',
+  tenantRent: 'NOT APPLICABLE',
+  tenantGrossAmount: 'NOT APPLICABLE',
   relatedOccupants: 'NOT APPLICABLE',
   fixtures: 'NOT APPLICABLE',
   waterElectricCharges: 'NOT APPLICABLE',
@@ -236,6 +244,8 @@ const DEFAULT_FIELDS: IncomeTaxFields = {
   standardRent: 'NOT APPLICABLE',
   saleInstances: '',
 
+  landRatePerUnit: '',
+  landRateUnit: 'DEC',
   landRate: '',
   totalLandValue: '',
   landRateBasis: 'NOT APPLICABLE',
@@ -399,7 +409,9 @@ function BulletEditor({ label, lines, onChange, disabled, placeholder, span = 2 
     <div className={span === 2 ? 'md:col-span-2' : ''}>
       <div className="flex items-center justify-between mb-1.5">
         <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider">{label}</label>
-        <span className="text-[10px] text-[#adb5bd] italic">{showBullets ? 'Bullets active (2+ entries)' : 'Plain text (1 entry)'}</span>
+        {showBullets && (
+          <span className="text-[10px] text-[#b8860b] font-semibold italic">Bullets active ({safeLines.filter(l => l.trim()).length} entries)</span>
+        )}
       </div>
       <div className="space-y-1.5">
         {safeLines.map((line, idx) => (
@@ -583,6 +595,14 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
     surveyPlotNoLines: Array.isArray(initialFields?.surveyPlotNoLines)
       ? initialFields.surveyPlotNoLines
       : (typeof initialFields?.surveyPlotNo === 'string' && initialFields.surveyPlotNo ? [initialFields.surveyPlotNo] : []),
+    // Migration: Q25 — old single tenantDetails splits into 4 fields
+    tenantName: initialFields?.tenantName || (initialFields?.tenantDetails && initialFields.tenantDetails !== 'NOT APPLICABLE' ? initialFields.tenantDetails : 'NOT APPLICABLE'),
+    tenantPortion: initialFields?.tenantPortion || 'NOT APPLICABLE',
+    tenantRent: initialFields?.tenantRent || 'NOT APPLICABLE',
+    tenantGrossAmount: initialFields?.tenantGrossAmount || 'NOT APPLICABLE',
+    // Migration: Q39 — old landRate string preserved; new structured fields
+    landRatePerUnit: initialFields?.landRatePerUnit || '',
+    landRateUnit: initialFields?.landRateUnit || 'DEC',
     clientType: initialFields?.clientType || 'organisation',
     organisationTemplate: initialFields?.organisationTemplate || 'INCOME_TAX',
     institutionCategory: initialFields?.institutionCategory || 'Income Tax Department',
@@ -1279,9 +1299,26 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           <SubSection id="subsection-rent" title="Rent (Q25–Q37)" defaultOpen={false}>
             <div className="grid md:grid-cols-2 gap-4">
 
-              <Field label="25 — Tenant Details" span={2}>
-                <textarea className={textareaCls} value={fields.tenantDetails} onChange={e => handleChange('tenantDetails', e.target.value)} disabled={isReadOnly} rows={2}
-                  placeholder="NOT APPLICABLE" />
+              {/* Q25 — split into 4 sub-entries */}
+              <Field label="25 — Tenant / Lessees / Licensees Details" span={2}>
+                <div className="grid md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-semibold text-[#6c757d] uppercase tracking-wider mb-1">(I) Name of Tenant / Lessees / Licensees, etc.</label>
+                    <input className={inputCls} value={fields.tenantName} onChange={e => handleChange('tenantName', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold text-[#6c757d] uppercase tracking-wider mb-1">(II) Portion in their Occupation</label>
+                    <input className={inputCls} value={fields.tenantPortion} onChange={e => handleChange('tenantPortion', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold text-[#6c757d] uppercase tracking-wider mb-1">(III) Monthly / Annual Rent / Compensation / License Fee, etc. paid by each</label>
+                    <input className={inputCls} value={fields.tenantRent} onChange={e => handleChange('tenantRent', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold text-[#6c757d] uppercase tracking-wider mb-1">(IV) Gross Amount received for the whole property</label>
+                    <input className={inputCls} value={fields.tenantGrossAmount} onChange={e => handleChange('tenantGrossAmount', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
+                  </div>
+                </div>
               </Field>
               <Field label="26 — Related Occupants">
                 <input className={inputCls} value={fields.relatedOccupants} onChange={e => handleChange('relatedOccupants', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
@@ -1322,8 +1359,40 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                 <textarea className={textareaCls} value={fields.saleInstances} onChange={e => handleChange('saleInstances', e.target.value)} disabled={isReadOnly} rows={3}
                   placeholder="DATA COLLECTED FROM SRO, PURI VIDE APPLICATION NO: XXXXX..." />
               </Field>
-              <Field label="39 — Land Rate" span={2}>
-                <input className={inputCls} value={fields.landRate} onChange={e => handleChange('landRate', e.target.value)} disabled={isReadOnly} placeholder="RS.XX,XX,XXX/- PER ACRE" />
+              {/* Q39 — structured rate + unit */}
+              <Field label="39 — Land Rate Adopted in this Valuation" span={2}>
+                <div className="space-y-2.5">
+                  <div className="flex gap-3 items-end">
+                    <div className="flex-1">
+                      <label className="block text-[10px] font-semibold text-[#6c757d] uppercase tracking-wider mb-1">Rate per Unit (RS.)</label>
+                      <input
+                        className={inputCls}
+                        type="number"
+                        value={fields.landRatePerUnit}
+                        onChange={e => handleChange('landRatePerUnit', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="50000"
+                      />
+                    </div>
+                    <div className="w-36">
+                      <label className="block text-[10px] font-semibold text-[#6c757d] uppercase tracking-wider mb-1">Unit</label>
+                      <select className={selectCls} value={fields.landRateUnit} onChange={e => handleChange('landRateUnit', e.target.value)} disabled={isReadOnly}>
+                        <option value="DEC">DEC</option>
+                        <option value="ACRE">ACRE</option>
+                        <option value="SQ.FT.">SQ.FT.</option>
+                        <option value="SQ.MTR.">SQ.MTR.</option>
+                        <option value="GUNTHA">GUNTHA</option>
+                        <option value="CENT">CENT</option>
+                      </select>
+                    </div>
+                  </div>
+                  {fields.landRatePerUnit && (
+                    <div className="rounded-lg bg-[#fffbee] border border-[#b8860b]/30 px-3 py-2 text-xs text-[#6c4a00] font-mono leading-5">
+                      <span className="text-[10px] font-bold text-[#b8860b] uppercase tracking-wider block mb-0.5">PDF Preview</span>
+                      {`THE RATE IS ABOUT RS.${Number(fields.landRatePerUnit).toLocaleString('en-IN')}/-PER ${fields.landRateUnit}. HENCE TOTAL VALUE OF THE LAND AS APPEARING IN THE ROR= ${fields.landArea || '...'} ${fields.landAreaUnit || fields.landRateUnit} @ RS.${Number(fields.landRatePerUnit).toLocaleString('en-IN')}/-PER ${fields.landRateUnit} =RS.${fields.totalLandValue ? Number(fields.totalLandValue).toLocaleString('en-IN') + '/-' : '...'}`}
+                    </div>
+                  )}
+                </div>
               </Field>
               <Field label="Total Land Value (RS.)">
                 <input className={inputCls} value={fields.totalLandValue} onChange={e => handleChange('totalLandValue', e.target.value)} disabled={isReadOnly} placeholder="1500000" />
@@ -1354,12 +1423,10 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               <Field label="44 — Material Rates">
                 <input className={inputCls} value={fields.materialRates} onChange={e => handleChange('materialRates', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              {!isLandOnly && (
-                <Field label="45 — Building Approval Plan" span={2}>
-                  <textarea className={textareaCls} value={fields.buildingApproval} onChange={e => handleChange('buildingApproval', e.target.value)} disabled={isReadOnly}
-                    placeholder="APPROVED BY PKDA, PURI VIDE LETTER NO: XX DATED: XX..." rows={2} />
-                </Field>
-              )}
+              <Field label="45 — Building Approval Plan (if any)" span={2}>
+                <textarea className={textareaCls} value={fields.buildingApproval} onChange={e => handleChange('buildingApproval', e.target.value)} disabled={isReadOnly}
+                  placeholder="APPROVED BY PKDA, PURI VIDE LETTER NO: XX DATED: XX... / NOT APPLICABLE" rows={2} />
+              </Field>
 
             </div>
           </SubSection>
