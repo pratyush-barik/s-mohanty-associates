@@ -159,6 +159,7 @@ interface ReportFields {
   possession: string;
   remarks: string;
   representativeName: string;
+  representativeFatherName: string;
 
   // Photos & Maps
   propertyImages: string[];
@@ -316,6 +317,7 @@ const DEFAULT_FIELDS: ReportFields = {
   possession: 'With Owner',
   remarks: '',
   representativeName: '',
+  representativeFatherName: '',
 
   propertyImages: [],
   propertyImageNames: [],
@@ -1402,7 +1404,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       r.advanceCursor(2);
       r.drawTextBlock('I hereby declare that:');
       r.advanceCursor(2);
-      r.drawTextBlock(`\u2022 I have deputed my representative ${fields.representativeName ? 'Mr. ' + fields.representativeName : '______'} to inspect the property on ${fields.dateOfInspection || '______'}.`);
+      r.drawTextBlock(`\u2022 I have deputed my representative ${fields.representativeName ? 'Mr. ' + fields.representativeName : '______'}${fields.representativeFatherName ? ', S/o: ' + fields.representativeFatherName : ''} to inspect the property on ${fields.dateOfInspection || '______'}.`);
       r.drawTextBlock('\u2022 I have no direct or indirect interest in the property valued.');
       r.drawTextBlock('\u2022 The information furnished is true and correct to the best of my knowledge and belief.');
       r.advanceCursor(10);
@@ -1892,7 +1894,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     allBlocks.push(`<div style="margin-top:10px;font-family:${ff};font-size:12pt;line-height:0.5em;">
       <p style="font-weight:bold;font-size:14pt;margin-bottom:4px;">Declaration:</p>
       <p style="margin-bottom:3px;">I hereby declare that:</p>
-      <p style="margin-bottom:3px;">\u2022 I have deputed my representative <b>${fields.representativeName ? 'Mr. ' + fields.representativeName : '______'}</b> to inspect the property on <b>${fields.dateOfInspection || '______'}</b>.</p>
+      <p style="margin-bottom:3px;">\u2022 I have deputed my representative <b>${fields.representativeName ? 'Mr. ' + fields.representativeName : '______'}${fields.representativeFatherName ? ', S/o: ' + fields.representativeFatherName : ''}</b> to inspect the property on <b>${fields.dateOfInspection || '______'}</b>.</p>
       <p style="margin-bottom:3px;">\u2022 I have no direct or indirect interest in the property valued.</p>
       <p style="margin-bottom:3px;">\u2022 The information furnished is true and correct to the best of my knowledge and belief.</p>
     </div>`);
@@ -3043,6 +3045,9 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           </Field>
           <Field label="Name of Representative who Inspected">
             <input className={inputCls} value={fields.representativeName} onChange={e => handleChange('representativeName', e.target.value)} disabled={isReadOnly} placeholder="e.g. Dinesh Das" />
+          </Field>
+          <Field label="Representative's Father's Name">
+            <input className={inputCls} value={fields.representativeFatherName} onChange={e => handleChange('representativeFatherName', e.target.value)} disabled={isReadOnly} placeholder="Father's name of representative" />
           </Field>
         </div>
       </Section>

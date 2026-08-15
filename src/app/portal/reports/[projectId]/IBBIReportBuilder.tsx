@@ -164,6 +164,7 @@ interface IBBIFields {
   // ── Remarks ──
   remarks: string;
   representativeName: string;
+  representativeFatherName: string;
 
   // ── Annexure ──
   annexureEnabled: boolean;
@@ -279,6 +280,7 @@ const DEFAULT_FIELDS: IBBIFields = {
 
   remarks: '',
   representativeName: '',
+  representativeFatherName: '',
 
   annexureEnabled: false,
   annexures: [],
@@ -1281,7 +1283,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.drawSectionHeader('DECLARATION AND UNDERTAKING');
       tocPageMap['DECLARATION AND UNDERTAKING'] = r.getPageCount();
       r.advanceCursor(6);
-      r.drawTextBlock(`I ${fields.representativeName ? 'Mr. ' + fields.representativeName : 'Mr. ________'} do hereby solemnly affirm and state that:`, { bold: true });
+      r.drawTextBlock(`I ${fields.representativeName ? 'Mr. ' + fields.representativeName : 'Mr. ________'}${fields.representativeFatherName ? ', S/o: ' + fields.representativeFatherName : ''} do hereby solemnly affirm and state that:`, { bold: true });
       r.advanceCursor(4);
       const declarations = [
         'I am citizen of India.',
@@ -1592,6 +1594,9 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
               </Field>
               <Field label="Representative Name (for Declaration)">
                 <input type="text" value={fields.representativeName} onChange={e => handleChange('representativeName', e.target.value)} className={inputCls} placeholder="Name of inspecting representative" disabled={isReadOnly} />
+              </Field>
+              <Field label="Representative's Father's Name">
+                <input type="text" value={fields.representativeFatherName} onChange={e => handleChange('representativeFatherName', e.target.value)} className={inputCls} placeholder="Father's name of representative" disabled={isReadOnly} />
               </Field>
               <Field label="Case Reference No" span={2}>
                 <input type="text" value={fields.caseReferenceNo || ''} onChange={e => handleChange('caseReferenceNo', e.target.value)} className={inputCls} placeholder="e.g. C.P.(IB) No. 300/KB/2017" disabled={isReadOnly} />
