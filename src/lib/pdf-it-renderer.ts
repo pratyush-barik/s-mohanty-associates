@@ -1,4 +1,4 @@
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { PDFDocument, PDFPage, PDFImage, StandardFonts, rgb } from 'pdf-lib';
 import { formatIndianCurrency, rupeesInWords } from './numberToWords';
 
 const parseNum = (val: string | number): number => {
@@ -108,7 +108,7 @@ export async function generateIncomeTaxPDF(
 ): Promise<Blob | null> {
   const A4_W = 595.28;
   const A4_H = 841.89;
-  const ML = 54; const MR = 54; const MT = 54; const MB = 60;
+  const ML = 54; const MR = 54; const MT = 84; const MB = 80;
   const CW = A4_W - ML - MR;
   const LINE_H = 1.25;
 
@@ -117,7 +117,64 @@ export async function generateIncomeTaxPDF(
   const fontB = await doc.embedFont(StandardFonts.TimesRomanBold);
   const fontBI = await doc.embedFont(StandardFonts.TimesRomanBoldItalic);
 
+  const fetchBytes = async (url: string | undefined): Promise<Uint8Array | null> => {
+    if (!url) return null;
+    try {
+      const resp = await fetch(url);
+      const buf = await resp.arrayBuffer();
+      return new Uint8Array(buf);
+    } catch { return null; }
+  };
+
+  // Fetch letterhead & all appendix images upfront
+  const propImgs = (fields.propertyImages || []).filter(Boolean);
+  const allImageUrls = [
+    '/templates/letterhead.png',
+    ...propImgs,
+    ...(fields.locationMapImage ? [fields.locationMapImage] : []),
+    ...(fields.ciiTableImage ? [fields.ciiTableImage] : []),
+    ...(fields.bdaMapImage ? [fields.bdaMapImage] : []),
+    ...(fields.benchmarkImage ? [fields.benchmarkImage] : []),
+    ...(fields.sketchMapImages && fields.sketchMapImages.length > 0 ? fields.sketchMapImages : []),
+  ];
+  const allImageBytes = await Promise.all(allImageUrls.map(u => fetchBytes(u)));
+  const letterheadBytes = allImageBytes[0];
+  let imgIdx = 1;
+  const propImageBytes = allImageBytes.slice(imgIdx, imgIdx + propImgs.length).filter(Boolean) as Uint8Array[];
+  imgIdx += propImgs.length;
+  const locationBytes = fields.locationMapImage ? allImageBytes[imgIdx++] : null;
+  const ciiBytes = fields.ciiTableImage ? allImageBytes[imgIdx++] : null;
+  const bdaBytes = fields.bdaMapImage ? allImageBytes[imgIdx++] : null;
+  const benchmarkBytes = fields.benchmarkImage ? allImageBytes[imgIdx++] : null;
+  const sketchBytesList = fields.sketchMapImages?.length ? allImageBytes.slice(imgIdx, imgIdx + fields.sketchMapImages.length) : null;
+  if (fields.sketchMapImages?.length) imgIdx += fields.sketchMapImages.length;
+
+  let letterheadImage: PDFImage | null = null;
+  if (letterheadBytes && letterheadBytes.length > 0) {
+    try {
+      letterheadImage = await doc.embedPng(letterheadBytes);
+    } catch {
+      try {
+        letterheadImage = await doc.embedJpg(letterheadBytes);
+      } catch {
+        letterheadImage = null;
+      }
+    }
+  }
+
+  const drawBackground = (p: PDFPage) => {
+    if (letterheadImage) {
+      p.drawImage(letterheadImage, {
+        x: 0,
+        y: 0,
+        width: A4_W,
+        height: A4_H,
+      });
+    }
+  };
+
   let page = doc.addPage([A4_W, A4_H]);
+  drawBackground(page);
   let cy = MT; // cursor from top
 
   const pdfY = (topDown: number) => A4_H - topDown;
@@ -136,6 +193,7 @@ export async function generateIncomeTaxPDF(
       addPageNum(page, pageNum);
       pageNum++;
       page = doc.addPage([A4_W, A4_H]);
+      drawBackground(page);
       cy = MT;
     }
   };
@@ -220,6 +278,34 @@ export async function generateIncomeTaxPDF(
   };
 
   const advanceCursor = (pts: number) => { cy += pts; };
+
+  // Helper to format report date nicely like '22TH OCT 2025'
+  const formatReportDate = (dStr: string): string => {
+    if (!dStr) return '';
+    const trimmed = dStr.trim();
+    if (/[A-Za-z]{3}/.test(trimmed)) return trimmed.toUpperCase();
+    const parts = trimmed.split(/[-/.]/);
+    let d: Date | null = null;
+    if (parts.length === 3) {
+      if (parts[0].length === 4) {
+        d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+      } else if (parts[2].length === 4) {
+        d = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+      }
+    }
+    if (!d || isNaN(d.getTime())) d = new Date(trimmed);
+    if (isNaN(d.getTime())) return trimmed.toUpperCase();
+
+    const day = d.getDate();
+    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    const mStr = months[d.getMonth()];
+    const yStr = d.getFullYear();
+    let suffix = 'TH';
+    if (day === 1 || day === 21 || day === 31) suffix = 'ST';
+    else if (day === 2 || day === 22) suffix = 'ND';
+    else if (day === 3 || day === 23) suffix = 'RD';
+    return `${day}${suffix} ${mStr} ${yStr}`;
+  };
 
   // Render bullet lines: plain text for <=1 non-empty entry, bullet-prefixed for 2+
   const renderBulletLines = (lines: string | string[]): string => {
@@ -314,68 +400,91 @@ export async function generateIncomeTaxPDF(
     const fs = 12;
     const rowH = fs * LINE_H + 6;
     ensureSpace(rowH);
-    // Blank first col + merged header
-    drawCell(ML, cy, qColW[0], rowH, '', { fontSize: fs });
-    drawCell(ML + qColW[0], cy, qColW[1] + qColW[2], rowH, title, { bold: true, fontSize: fs, align: 'center' });
+    // Spanning full table width with merged header
+    drawCell(ML, cy, CW, rowH, title, { bold: true, fontSize: fs, align: 'center' });
     cy += rowH;
   };
-
-  // Fetch images
-  const fetchBytes = async (url: string | undefined): Promise<Uint8Array | null> => {
-    if (!url) return null;
-    try {
-      const resp = await fetch(url);
-      const buf = await resp.arrayBuffer();
-      return new Uint8Array(buf);
-    } catch { return null; }
-  };
-
-  const propImgs = (fields.propertyImages || []).filter(Boolean);
-  const allImageUrls = [
-    ...propImgs,
-    ...(fields.locationMapImage ? [fields.locationMapImage] : []),
-    ...(fields.ciiTableImage ? [fields.ciiTableImage] : []),
-    ...(fields.bdaMapImage ? [fields.bdaMapImage] : []),
-    ...(fields.benchmarkImage ? [fields.benchmarkImage] : []),
-    ...(fields.sketchMapImages && fields.sketchMapImages.length > 0 ? fields.sketchMapImages : []),
-  ];
-  const allImageBytes = await Promise.all(allImageUrls.map(u => fetchBytes(u)));
-  let imgIdx = 0;
-  const propImageBytes = allImageBytes.slice(0, propImgs.length).filter(Boolean) as Uint8Array[];
-  imgIdx = propImgs.length;
-  const locationBytes = fields.locationMapImage ? allImageBytes[imgIdx++] : null;
-  const ciiBytes = fields.ciiTableImage ? allImageBytes[imgIdx++] : null;
-  const bdaBytes = fields.bdaMapImage ? allImageBytes[imgIdx++] : null;
-  const benchmarkBytes = fields.benchmarkImage ? allImageBytes[imgIdx++] : null;
-  const sketchBytesList = fields.sketchMapImages?.length ? allImageBytes.slice(imgIdx, imgIdx + fields.sketchMapImages.length) : null;
-  if (fields.sketchMapImages?.length) imgIdx += fields.sketchMapImages.length;
 
   // ═══════════════════════════════════════════════════════
   // BLOCK 1 — INNER TITLE BLOCK
   // ═══════════════════════════════════════════════════════
-  drawText('.', { align: 'center' });
-  advanceCursor(6);
-  drawText('VALUATION REPORT', { bold: true, italic: true, align: 'center' });
-  advanceCursor(8);
-  drawText(fields.propertyType, { bold: true });
-  advanceCursor(4);
-  drawText('OF', { bold: true, align: 'center' });
-  advanceCursor(4);
-  drawText(fields.ownerName.toUpperCase(), { bold: true, align: 'center' });
-  advanceCursor(6);
-  if (fields.propertyDescription) {
-    drawText(fields.propertyDescription.toUpperCase());
+  // Top right ref & date
+  if (fields.refNo || fields.reportDate) {
+    if (fields.refNo) {
+      drawText(`REF NO–${fields.refNo.trim()}`, { bold: true, fontSize: 11, align: 'right' });
+    }
+    if (fields.reportDate) {
+      drawText(`DATE–${formatReportDate(fields.reportDate)}`, { bold: true, fontSize: 11, align: 'right' });
+    }
+    advanceCursor(10);
   }
+
+  // Centered & Underlined VALUATION REPORT
+  const titleStr = 'VALUATION REPORT';
+  const titleFs = 14;
+  const titleW = fontBI.widthOfTextAtSize(titleStr, titleFs);
+  const titleX = ML + (CW - titleW) / 2;
+  ensureSpace(titleFs * LINE_H + 12);
+  page.drawText(titleStr, {
+    x: titleX,
+    y: pdfY(cy) - titleFs * 0.8,
+    size: titleFs,
+    font: fontBI,
+    color: rgb(0, 0, 0),
+  });
+  page.drawLine({
+    start: { x: titleX, y: pdfY(cy) - titleFs * 0.8 - 2 },
+    end: { x: titleX + titleW, y: pdfY(cy) - titleFs * 0.8 - 2 },
+    thickness: 1,
+    color: rgb(0, 0, 0),
+  });
+  cy += titleFs * LINE_H + 8;
+
+  // Property Type & Owner
+  const propType = (fields.propertyType || 'RESIDENTIAL LAND & BUILDING').toUpperCase();
+  drawText(propType, { bold: true, fontSize: 12, align: 'center' });
+  advanceCursor(3);
+  drawText('OF', { bold: true, fontSize: 12, align: 'center' });
+  advanceCursor(3);
+  drawText(fields.ownerName.toUpperCase(), { bold: true, fontSize: 12, align: 'center' });
   advanceCursor(8);
-  drawText('NAME OF THE VALUER:- ER. SATYAJIT MOHANTY', { bold: true });
-  drawText('REGISTRATION NO.:- 107/2016-17 of Category-I', { bold: true });
+
+  // Property Description (BEARING KHATA NO: ...)
+  if (fields.propertyDescription) {
+    let desc = fields.propertyDescription.trim().toUpperCase();
+    if (!desc.startsWith('BEARING ') && !desc.startsWith('LAND BEARING ') && !desc.startsWith('PROPERTY BEARING ')) {
+      desc = 'BEARING ' + desc;
+    }
+    drawText(desc, { fontSize: 11, align: 'left' });
+    advanceCursor(8);
+  }
+
+  // Valuer credentials
+  drawText('NAME OF THE VALUER:- ER. SATYAJIT MOHANTY', { bold: true, fontSize: 11 });
+  advanceCursor(2);
+  drawText('REGISTRATION NO.:- 107/2016-17 of Category-I', { bold: true, fontSize: 11 });
   advanceCursor(12);
 
-  // ═══════════════════════════════════════════════════════
-  // BLOCK 2 — PART I: QUESTIONNAIRE
-  // ═══════════════════════════════════════════════════════
-  drawText('PART-I–QUESTIONNAIRE', { bold: true, fontSize: 14 });
-  advanceCursor(8);
+  // Section header: PART–I–QUESTIONNAIRE (Centered & Underlined)
+  const secStr = 'PART–I–QUESTIONNAIRE';
+  const secFs = 13;
+  const secW = fontBI.widthOfTextAtSize(secStr, secFs);
+  const secX = ML + (CW - secW) / 2;
+  ensureSpace(secFs * LINE_H + 12);
+  page.drawText(secStr, {
+    x: secX,
+    y: pdfY(cy) - secFs * 0.8,
+    size: secFs,
+    font: fontBI,
+    color: rgb(0, 0, 0),
+  });
+  page.drawLine({
+    start: { x: secX, y: pdfY(cy) - secFs * 0.8 - 2 },
+    end: { x: secX + secW, y: pdfY(cy) - secFs * 0.8 - 2 },
+    thickness: 1,
+    color: rgb(0, 0, 0),
+  });
+  cy += secFs * LINE_H + 8;
 
   // TABLE A — GENERAL
   drawQHeader('GENERAL');
@@ -383,7 +492,8 @@ export async function generateIncomeTaxPDF(
   drawQRow('02', '(A) DATE ON WHICH THE VALUATION IS MADE:', fields.valuationDate);
   drawQRow('', '(B) DATE OF INSPECTION:', fields.inspectionDate);
   drawQRow('', '(C) DATE OF VALUATION REPORT', fields.reportDate);
-  drawQRow('', '(D) IDENTIFIED BY WHOM:', fields.identifiedBy);
+  const cleanIdentified = fields.identifiedBy ? fields.identifiedBy.replace(/^\(?D\)?\s*IDENTIFIED BY WHOM:?\s*/i, '').trim() : '';
+  drawQRow('', '(D) IDENTIFIED BY WHOM:', cleanIdentified);
   drawQRow('03', 'NAME OF THE OWNER/OWNERS.', fields.ownerName.toUpperCase() + (fields.ownerAddress ? ', ' + fields.ownerAddress.toUpperCase() : ''));
   drawQRow('04', 'IF THE PROPERTY IS UNDER JOINT OWNERSHIP/CO-OWNERSHIP, SHARE OF EACH SUCH OWNER. ARE THE SHARE OF UNDIVIDED?', fields.ownershipType);
   drawQRow('05', 'BRIEF DESCRIPTION OF THE PROPERTY.', renderBulletLines(fields.briefDescriptionLines));
@@ -624,6 +734,7 @@ export async function generateIncomeTaxPDF(
     addPageNum(page, pageNum);
     pageNum++;
     page = doc.addPage([A4_W, A4_H]);
+    drawBackground(page);
     cy = MT;
     drawText(label, { bold: true });
     advanceCursor(8);
@@ -646,6 +757,7 @@ export async function generateIncomeTaxPDF(
     addPageNum(page, pageNum);
     pageNum++;
     page = doc.addPage([A4_W, A4_H]);
+    drawBackground(page);
     cy = MT;
     drawText('PROPERTY PHOTOGRAPHS', { bold: true });
     advanceCursor(8);
@@ -663,6 +775,7 @@ export async function generateIncomeTaxPDF(
           addPageNum(page, pageNum);
           pageNum++;
           page = doc.addPage([A4_W, A4_H]);
+          drawBackground(page);
           cy = MT;
         }
         const drawX = ML + (CW - drawW) / 2;
