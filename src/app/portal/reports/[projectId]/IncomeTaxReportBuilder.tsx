@@ -388,7 +388,7 @@ function BulletEditor({ label, lines, onChange, disabled, placeholder, span = 2 
   placeholder?: string;
   span?: number;
 }) {
-  const safeLines = Array.isArray(lines) && lines.length > 0 ? lines : [''];
+  const safeLines = Array.isArray(lines) ? lines : [];
 
   const updateLine = (idx: number, val: string) => {
     const next = [...safeLines];
@@ -400,7 +400,7 @@ function BulletEditor({ label, lines, onChange, disabled, placeholder, span = 2 
 
   const removeLine = (idx: number) => {
     const next = safeLines.filter((_, i) => i !== idx);
-    onChange(next.length > 0 ? next : ['']);
+    onChange(next);
   };
 
   const showBullets = safeLines.filter(l => l.trim()).length > 1;
@@ -413,40 +413,46 @@ function BulletEditor({ label, lines, onChange, disabled, placeholder, span = 2 
           <span className="text-[10px] text-[#b8860b] font-semibold italic">Bullets active ({safeLines.filter(l => l.trim()).length} entries)</span>
         )}
       </div>
-      <div className="space-y-1.5">
-        {safeLines.map((line, idx) => (
-          <div key={idx} className="flex items-start gap-2">
-            {showBullets && (
-              <span className="mt-2.5 text-[#b8860b] font-bold text-sm shrink-0">•</span>
-            )}
-            <textarea
-              className={`${textareaCls} flex-1 min-h-[52px]`}
-              value={line}
-              onChange={e => updateLine(idx, e.target.value)}
-              disabled={disabled}
-              placeholder={idx === 0 ? placeholder : 'Continue...'}
-              rows={2}
-            />
-            {!disabled && safeLines.length > 1 && (
-              <button
-                type="button"
-                onClick={() => removeLine(idx)}
-                className="mt-1.5 p-1.5 rounded-lg text-[#dc3545] hover:bg-[#dc3545]/10 transition-colors"
-                title="Remove entry"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
+      {safeLines.length > 0 ? (
+        <div className="space-y-1.5">
+          {safeLines.map((line, idx) => (
+            <div key={idx} className="flex items-start gap-2">
+              {showBullets && (
+                <span className="mt-2.5 text-[#b8860b] font-bold text-sm shrink-0">•</span>
+              )}
+              <textarea
+                className={`${textareaCls} flex-1 min-h-[52px]`}
+                value={line}
+                onChange={e => updateLine(idx, e.target.value)}
+                disabled={disabled}
+                placeholder={idx === 0 ? placeholder : 'Continue...'}
+                rows={2}
+              />
+              {!disabled && (
+                <button
+                  type="button"
+                  onClick={() => removeLine(idx)}
+                  className="mt-1.5 p-1.5 rounded-lg text-[#dc3545] hover:bg-[#dc3545]/10 transition-colors"
+                  title="Remove entry"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-xs text-gray-400 italic py-1 mb-1">
+          {disabled ? 'N/A' : 'None added (renders as NOT APPLICABLE in PDF)'}
+        </div>
+      )}
       {!disabled && (
         <button
           type="button"
           onClick={addLine}
-          className="mt-2 flex items-center gap-1.5 text-xs text-[#b8860b] hover:text-[#9a7209] font-semibold transition-colors"
+          className="mt-1.5 flex items-center gap-1.5 text-xs text-[#b8860b] hover:text-[#9a7209] font-semibold transition-colors"
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

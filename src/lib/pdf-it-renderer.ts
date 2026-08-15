@@ -307,11 +307,11 @@ export async function generateIncomeTaxPDF(
     return `${day}${suffix} ${mStr} ${yStr}`;
   };
 
-  // Render bullet lines: plain text for <=1 non-empty entry, bullet-prefixed for 2+
+  // Render bullet lines: plain text for 1 non-empty entry, bullet-prefixed for 2+, 'NOT APPLICABLE' if none entered
   const renderBulletLines = (lines: string | string[]): string => {
-    if (typeof lines === 'string') return lines; // legacy string fallback
+    if (typeof lines === 'string') return lines.trim() ? lines : 'NOT APPLICABLE';
     const filled = lines.filter(l => l && l.trim());
-    if (filled.length === 0) return '';
+    if (filled.length === 0) return 'NOT APPLICABLE';
     if (filled.length === 1) return filled[0];
     return filled.map(l => `- ${l.trim()}`).join('\n');
   };
