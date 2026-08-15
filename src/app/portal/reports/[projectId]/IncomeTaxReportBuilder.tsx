@@ -568,6 +568,9 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
   const merged: IncomeTaxFields = {
     ...DEFAULT_FIELDS,
     ...(typeof initialFields === 'object' && initialFields !== null ? initialFields : {}),
+    propertyType: initialFields?.propertyType
+      ? (PROPERTY_TYPES.includes(initialFields.propertyType.toUpperCase()) ? initialFields.propertyType.toUpperCase() : 'RESIDENTIAL LAND & BUILDING')
+      : (prefill?.propertyType && PROPERTY_TYPES.includes(prefill.propertyType.toUpperCase()) ? prefill.propertyType.toUpperCase() : DEFAULT_FIELDS.propertyType),
     refNo: initialFields?.refNo || projectCode || DEFAULT_FIELDS.refNo,
     ownerName: initialFields?.ownerName || prefill?.contactName || DEFAULT_FIELDS.ownerName,
     ownerAddress: initialFields?.ownerAddress || prefill?.propertyAddress || DEFAULT_FIELDS.ownerAddress,
