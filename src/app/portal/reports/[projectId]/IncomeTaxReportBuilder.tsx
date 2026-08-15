@@ -1329,22 +1329,22 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               <Field label="28 — Water & Electric Charges">
                 <input className={inputCls} value={fields.waterElectricCharges} onChange={e => handleChange('waterElectricCharges', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="32 — Pump Maintenance">
+              <Field label="29 — Pump Maintenance">
                 <input className={inputCls} value={fields.pumpMaintenance} onChange={e => handleChange('pumpMaintenance', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="33 — Common Electricity">
+              <Field label="30 — Common Electricity">
                 <input className={inputCls} value={fields.commonElectricity} onChange={e => handleChange('commonElectricity', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="34 — Property Tax">
+              <Field label="31 — Property Tax">
                 <input className={inputCls} value={fields.propertyTax} onChange={e => handleChange('propertyTax', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="35 — Building Insured">
+              <Field label="32 — Building Insured">
                 <input className={inputCls} value={fields.buildingInsured} onChange={e => handleChange('buildingInsured', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="36 — Landlord-Tenant Dispute">
+              <Field label="33 — Landlord-Tenant Dispute">
                 <input className={inputCls} value={fields.landlordTenantDispute} onChange={e => handleChange('landlordTenantDispute', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="37 — Standard Rent">
+              <Field label="34 — Standard Rent">
                 <input className={inputCls} value={fields.standardRent} onChange={e => handleChange('standardRent', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
 
