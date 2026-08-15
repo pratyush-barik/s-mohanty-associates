@@ -78,7 +78,7 @@ interface IncomeTaxFields {
   tenancyPortionDetails: string;   // Q23 (II)
   fsi: string;
 
-  // ── Rent & Sales (Q25-Q40) ──
+  // ── Rent & Sales (Q25-Q37) ──
   tenantName: string;           // Q25 (I)
   tenantPortion: string;        // Q25 (II)
   tenantRent: string;           // Q25 (III)
@@ -86,29 +86,26 @@ interface IncomeTaxFields {
   relatedOccupants: string;     // Q26
   fixtures: string;             // Q27
   waterElectricCharges: string; // Q28
-  tenantRepairs: string;        // Q29
-  liftMaintenance: string;      // Q30
-  pumpMaintenance: string;      // Q31
-  commonElectricity: string;    // Q32
-  propertyTax: string;          // Q33
-  buildingInsured: string;      // Q34
-  landlordTenantDispute: string;// Q35
-  standardRent: string;         // Q36
-  otherRentDetails: string;     // Q37
-  saleInstances: string;        // Q38
+  pumpMaintenance: string;      // Q29
+  commonElectricity: string;    // Q30
+  propertyTax: string;          // Q31
+  buildingInsured: string;      // Q32
+  landlordTenantDispute: string;// Q33
+  standardRent: string;         // Q34
+  saleInstances: string;        // Q35
 
-  // ── Cost of Construction (Q39-Q45) ──
-  landRatePerUnit: string;      // Q39 — value per unit
-  landRateUnit: string;         // Q39 — unit (DEC/ACRE/SQFT)
-  landRate: string;             // Q39 — legacy/full text
+  // ── Cost of Construction (Q36-Q42) ──
+  landRatePerUnit: string;      // Q36 — value per unit
+  landRateUnit: string;         // Q36 — unit (DEC/ACRE/SQFT)
+  landRate: string;             // Q36 — legacy/full text
   totalLandValue: string;
-  landRateBasis: string;        // Q40
-  constructionStartYear: string;// Q41 (I)
-  constructionEndYear: string;  // Q41 (II)
-  constructionMethod: string;   // Q42
-  contractAgreements: string;   // Q43
-  materialRates: string;        // Q44
-  buildingApproval: string;     // Q45
+  landRateBasis: string;        // Q37
+  constructionStartYear: string;// Q38 (I)
+  constructionEndYear: string;  // Q38 (II)
+  constructionMethod: string;   // Q39
+  contractAgreements: string;   // Q40
+  materialRates: string;        // Q41
+  buildingApproval: string;     // Q42
 
   // ── Part II: Valuation ──
   valuationYear: string;
@@ -239,15 +236,12 @@ const DEFAULT_FIELDS: IncomeTaxFields = {
   relatedOccupants: 'NOT APPLICABLE',
   fixtures: 'NOT APPLICABLE',
   waterElectricCharges: 'NOT APPLICABLE',
-  tenantRepairs: 'NOT APPLICABLE',
-  liftMaintenance: 'NOT APPLICABLE',
   pumpMaintenance: 'NOT APPLICABLE',
   commonElectricity: 'NOT APPLICABLE',
   propertyTax: '',
   buildingInsured: 'NOT APPLICABLE',
   landlordTenantDispute: 'NOT APPLICABLE',
   standardRent: 'NOT APPLICABLE',
-  otherRentDetails: 'NOT APPLICABLE',
   saleInstances: '',
 
   landRatePerUnit: '',
@@ -473,9 +467,9 @@ const FloatingNavigator = ({ isLandOnly, showLandAnnexure }: { isLandOnly: boole
     { id: 'subsection-general', title: '↳ General (Q01–11)', indent: true },
     { id: 'subsection-land', title: '↳ Land (Q12–20)', indent: true },
     { id: 'subsection-improvement', title: '↳ Improvement (Q21–24)', indent: true },
-    { id: 'subsection-rent', title: '↳ Rent (Q25–37)', indent: true },
-    { id: 'subsection-sales', title: '↳ Sales (Q38–40)', indent: true },
-    { id: 'subsection-construction', title: '↳ Construction (Q41–45)', indent: true },
+    { id: 'subsection-rent', title: '↳ Rent (Q25–34)', indent: true },
+    { id: 'subsection-sales', title: '↳ Sales (Q35–37)', indent: true },
+    { id: 'subsection-construction', title: '↳ Construction (Q38–42)', indent: true },
     { id: 'section-3', title: '3. Part II – Valuation', indent: false },
     { id: 'subsection-valuation-disc', title: '↳ Valuation Discussion', indent: true },
     ...(!isLandOnly ? [{ id: 'subsection-tech-details', title: '↳ Technical Details', indent: true }] : []),
@@ -1302,7 +1296,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
 
           {/* ── Sub-section: RENT & SALES ── */}
           {/* ── Sub-section: RENT ── */}
-          <SubSection id="subsection-rent" title="Rent (Q25–Q37)" defaultOpen={false}>
+          <SubSection id="subsection-rent" title="Rent (Q25–Q34)" defaultOpen={false}>
             <div className="grid md:grid-cols-2 gap-4">
 
               {/* Q25 — split into 4 sub-entries */}
@@ -1335,47 +1329,38 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               <Field label="28 — Water & Electric Charges">
                 <input className={inputCls} value={fields.waterElectricCharges} onChange={e => handleChange('waterElectricCharges', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="29 — Repairs & Maintenance">
-                <input className={inputCls} value={fields.tenantRepairs} onChange={e => handleChange('tenantRepairs', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
-              </Field>
-              <Field label="30 — Lift Maintenance">
-                <input className={inputCls} value={fields.liftMaintenance} onChange={e => handleChange('liftMaintenance', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
-              </Field>
-              <Field label="31 — Pump Maintenance">
+              <Field label="29 — Pump Maintenance">
                 <input className={inputCls} value={fields.pumpMaintenance} onChange={e => handleChange('pumpMaintenance', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="32 — Common Electricity">
+              <Field label="30 — Common Electricity">
                 <input className={inputCls} value={fields.commonElectricity} onChange={e => handleChange('commonElectricity', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="33 — Property Tax">
+              <Field label="31 — Property Tax">
                 <input className={inputCls} value={fields.propertyTax} onChange={e => handleChange('propertyTax', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="34 — Building Insured">
+              <Field label="32 — Building Insured">
                 <input className={inputCls} value={fields.buildingInsured} onChange={e => handleChange('buildingInsured', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="35 — Landlord-Tenant Dispute">
+              <Field label="33 — Landlord-Tenant Dispute">
                 <input className={inputCls} value={fields.landlordTenantDispute} onChange={e => handleChange('landlordTenantDispute', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="36 — Standard Rent">
+              <Field label="34 — Standard Rent">
                 <input className={inputCls} value={fields.standardRent} onChange={e => handleChange('standardRent', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
-              </Field>
-              <Field label="37 — Other Rent Particulars">
-                <input className={inputCls} value={fields.otherRentDetails} onChange={e => handleChange('otherRentDetails', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
 
             </div>
           </SubSection>
 
           {/* ── Sub-section: SALES ── */}
-          <SubSection id="subsection-sales" title="Sales (Q38–Q40)" defaultOpen={false}>
+          <SubSection id="subsection-sales" title="Sales (Q35–Q37)" defaultOpen={false}>
             <div className="grid md:grid-cols-2 gap-4">
 
-              <Field label="38 — Sale Instances" span={2}>
+              <Field label="35 — Sale Instances" span={2}>
                 <textarea className={textareaCls} value={fields.saleInstances} onChange={e => handleChange('saleInstances', e.target.value)} disabled={isReadOnly} rows={3}
                   placeholder="DATA COLLECTED FROM SRO, PURI VIDE APPLICATION NO: XXXXX..." />
               </Field>
-              {/* Q39 — structured rate + unit */}
-              <Field label="39 — Land Rate Adopted in this Valuation" span={2}>
+              {/* Q36 — structured rate + unit */}
+              <Field label="36 — Land Rate Adopted in this Valuation" span={2}>
                 <div className="space-y-2.5">
                   <div className="flex gap-3 items-end">
                     <div className="flex-1">
@@ -1412,7 +1397,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               <Field label="Total Land Value (RS.)">
                 <input className={inputCls} value={fields.totalLandValue} onChange={e => handleChange('totalLandValue', e.target.value)} disabled={isReadOnly} placeholder="1500000" />
               </Field>
-              <Field label="40 — Land Rate Basis">
+              <Field label="37 — Land Rate Basis">
                 <input className={inputCls} value={fields.landRateBasis} onChange={e => handleChange('landRateBasis', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
 
@@ -1420,11 +1405,11 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           </SubSection>
 
           {/* ── Sub-section: COST OF CONSTRUCTION ── */}
-          <SubSection id="subsection-construction" title="Cost of Construction (Q41–Q45)" defaultOpen={false}>
+          <SubSection id="subsection-construction" title="Cost of Construction (Q38–Q42)" defaultOpen={false}>
             <div className="grid md:grid-cols-2 gap-4">
 
-              {/* Q41 — split into 2 sub-entries */}
-              <Field label="41 — Year of Commencement of Construction and Year of Completion" span={2}>
+              {/* Q38 — split into 2 sub-entries */}
+              <Field label="38 — Year of Commencement of Construction and Year of Completion" span={2}>
                 <div className="grid md:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[10px] font-semibold text-[#6c757d] uppercase tracking-wider mb-1">(I) Year of Commencement of Construction</label>
@@ -1436,16 +1421,16 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                   </div>
                 </div>
               </Field>
-              <Field label="42 — Construction Method">
+              <Field label="39 — Construction Method">
                 <input className={inputCls} value={fields.constructionMethod} onChange={e => handleChange('constructionMethod', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="43 — Contract Agreements">
+              <Field label="40 — Contract Agreements">
                 <input className={inputCls} value={fields.contractAgreements} onChange={e => handleChange('contractAgreements', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="44 — Material Rates">
+              <Field label="41 — Material Rates">
                 <input className={inputCls} value={fields.materialRates} onChange={e => handleChange('materialRates', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="45 — Building Approval Plan (if any)" span={2}>
+              <Field label="42 — Building Approval Plan (if any)" span={2}>
                 <textarea className={textareaCls} value={fields.buildingApproval} onChange={e => handleChange('buildingApproval', e.target.value)} disabled={isReadOnly}
                   placeholder="APPROVED BY PKDA, PURI VIDE LETTER NO: XX DATED: XX... / NOT APPLICABLE" rows={2} />
               </Field>
