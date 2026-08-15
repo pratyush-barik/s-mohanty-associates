@@ -51,10 +51,9 @@ interface IncomeTaxFields {
   identifiedBy: string;        // Q02D
   ownerAddress: string;        // Q03
   ownershipType: string;       // Q04
-  briefDescription: string;    // Q05
-  briefDescriptionCont: string;
-  locationDetails: string;     // Q06
-  surveyPlotNo: string;        // Q07
+  briefDescriptionLines: string[]; // Q05 — merged into single bullet editor
+  locationDetailsLines: string[];   // Q06
+  surveyPlotNoLines: string[];      // Q07
   areaType: string;            // Q08
   classOfLocality: string;     // Q09
   civicAmenitiesDistance: string; // Q10
@@ -75,7 +74,8 @@ interface IncomeTaxFields {
   sitePlanAttached: string;         // Q20
   plansAttached: string;
   technicalDetails: string;
-  tenancyStatus: string;
+  tenancyStatus: string;          // Q23 (I)
+  tenancyPortionDetails: string;   // Q23 (II)
   fsi: string;
 
   // ── Rent & Sales (Q25-Q38) ──
@@ -198,10 +198,9 @@ const DEFAULT_FIELDS: IncomeTaxFields = {
   identifiedBy: '',
   ownerAddress: '',
   ownershipType: 'SINGLE OWNERSHIP LAND & FREE HOLD IN NATURE',
-  briefDescription: '',
-  briefDescriptionCont: '',
-  locationDetails: '',
-  surveyPlotNo: '',
+  briefDescriptionLines: [],
+  locationDetailsLines: [],
+  surveyPlotNoLines: [],
   areaType: 'RESIDENTIAL AREA',
   classOfLocality: 'MIDDLE',
   civicAmenitiesDistance: '2',
@@ -222,6 +221,7 @@ const DEFAULT_FIELDS: IncomeTaxFields = {
   plansAttached: 'NOT APPLICABLE',
   technicalDetails: 'NOT APPLICABLE',
   tenancyStatus: 'NOT APPLICABLE',
+  tenancyPortionDetails: 'NOT APPLICABLE',
   fsi: 'NOT APPLICABLE',
 
   tenantDetails: 'NOT APPLICABLE',
@@ -369,6 +369,83 @@ const inputCls = "w-full px-3 py-2.5 rounded-lg border border-[#dee2e6] bg-white
 const selectCls = inputCls;
 const textareaCls = `${inputCls} min-h-[80px] resize-y`;
 
+// ── Bullet Editor ─────────────────────────────────────────────────────
+function BulletEditor({ label, lines, onChange, disabled, placeholder, span = 2 }: {
+  label: string;
+  lines: string[];
+  onChange: (lines: string[]) => void;
+  disabled?: boolean;
+  placeholder?: string;
+  span?: number;
+}) {
+  const safeLines = Array.isArray(lines) && lines.length > 0 ? lines : [''];
+
+  const updateLine = (idx: number, val: string) => {
+    const next = [...safeLines];
+    next[idx] = val;
+    onChange(next);
+  };
+
+  const addLine = () => onChange([...safeLines, '']);
+
+  const removeLine = (idx: number) => {
+    const next = safeLines.filter((_, i) => i !== idx);
+    onChange(next.length > 0 ? next : ['']);
+  };
+
+  const showBullets = safeLines.filter(l => l.trim()).length > 1;
+
+  return (
+    <div className={span === 2 ? 'md:col-span-2' : ''}>
+      <div className="flex items-center justify-between mb-1.5">
+        <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider">{label}</label>
+        <span className="text-[10px] text-[#adb5bd] italic">{showBullets ? 'Bullets active (2+ entries)' : 'Plain text (1 entry)'}</span>
+      </div>
+      <div className="space-y-1.5">
+        {safeLines.map((line, idx) => (
+          <div key={idx} className="flex items-start gap-2">
+            {showBullets && (
+              <span className="mt-2.5 text-[#b8860b] font-bold text-sm shrink-0">•</span>
+            )}
+            <textarea
+              className={`${textareaCls} flex-1 min-h-[52px]`}
+              value={line}
+              onChange={e => updateLine(idx, e.target.value)}
+              disabled={disabled}
+              placeholder={idx === 0 ? placeholder : 'Continue...'}
+              rows={2}
+            />
+            {!disabled && safeLines.length > 1 && (
+              <button
+                type="button"
+                onClick={() => removeLine(idx)}
+                className="mt-1.5 p-1.5 rounded-lg text-[#dc3545] hover:bg-[#dc3545]/10 transition-colors"
+                title="Remove entry"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+      {!disabled && (
+        <button
+          type="button"
+          onClick={addLine}
+          className="mt-2 flex items-center gap-1.5 text-xs text-[#b8860b] hover:text-[#9a7209] font-semibold transition-colors"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          Add bullet point
+        </button>
+      )}
+    </div>
+  );
+}
+
 const FloatingNavigator = ({ isLandOnly, showLandAnnexure }: { isLandOnly: boolean; showLandAnnexure: boolean }) => {
   const [activeId, setActiveId] = useState<string>('');
 
@@ -491,6 +568,21 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
     extraItems: Array.isArray(initialFields?.extraItems) ? initialFields.extraItems : DEFAULT_FIELDS.extraItems,
     valuationBullets: Array.isArray(initialFields?.valuationBullets) ? initialFields.valuationBullets : DEFAULT_FIELDS.valuationBullets,
     landAnnexureRows: Array.isArray(initialFields?.landAnnexureRows) ? initialFields.landAnnexureRows : DEFAULT_FIELDS.landAnnexureRows,
+    // Migration: convert old string fields to string[] for bullet editors
+    briefDescriptionLines: Array.isArray(initialFields?.briefDescriptionLines)
+      ? initialFields.briefDescriptionLines
+      : (() => {
+          const parts: string[] = [];
+          if (typeof initialFields?.briefDescription === 'string' && initialFields.briefDescription) parts.push(initialFields.briefDescription);
+          if (typeof initialFields?.briefDescriptionCont === 'string' && initialFields.briefDescriptionCont) parts.push(initialFields.briefDescriptionCont);
+          return parts.length > 0 ? parts : [];
+        })(),
+    locationDetailsLines: Array.isArray(initialFields?.locationDetailsLines)
+      ? initialFields.locationDetailsLines
+      : (typeof initialFields?.locationDetails === 'string' && initialFields.locationDetails ? [initialFields.locationDetails] : []),
+    surveyPlotNoLines: Array.isArray(initialFields?.surveyPlotNoLines)
+      ? initialFields.surveyPlotNoLines
+      : (typeof initialFields?.surveyPlotNo === 'string' && initialFields.surveyPlotNo ? [initialFields.surveyPlotNo] : []),
     clientType: initialFields?.clientType || 'organisation',
     organisationTemplate: initialFields?.organisationTemplate || 'INCOME_TAX',
     institutionCategory: initialFields?.institutionCategory || 'Income Tax Department',
@@ -1043,22 +1135,27 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                   <option value="CO-OWNERSHIP LAND & FREE HOLD IN NATURE">CO-OWNERSHIP LAND & FREE HOLD IN NATURE</option>
                 </select>
               </Field>
-              <Field label="05 — Brief Description of the Property" span={2}>
-                <textarea className={textareaCls} value={fields.briefDescription} onChange={e => handleChange('briefDescription', e.target.value)} disabled={isReadOnly}
-                  placeholder="THIS IMMOVABLE PROPERTY CONSISTS OF A LAND SITUATED BEARING KHATA NO: ..." rows={4} />
-              </Field>
-              <Field label="05 (Continuation — if needed)" span={2}>
-                <textarea className={textareaCls} value={fields.briefDescriptionCont} onChange={e => handleChange('briefDescriptionCont', e.target.value)} disabled={isReadOnly}
-                  placeholder="THE PROPERTY IS SITUATED 500 MTRS AWAY FROM..." rows={2} />
-              </Field>
-              <Field label="06 — Location, Street, Ward No." span={2}>
-                <textarea className={textareaCls} value={fields.locationDetails} onChange={e => handleChange('locationDetails', e.target.value)} disabled={isReadOnly}
-                  placeholder="KHATA NO: XX, PLOT NO: XX&#10;MOUZA- ...&#10;THANA– ...&#10;TAHASIL– ...&#10;DIST– ...&#10;KISSAM- ..." rows={5} />
-              </Field>
-              <Field label="07 — Survey/Plot No. of Land" span={2}>
-                <textarea className={textareaCls} value={fields.surveyPlotNo} onChange={e => handleChange('surveyPlotNo', e.target.value)} disabled={isReadOnly}
-                  placeholder="KHATA NO: XX, PLOT NO: XX, XX, XX..." rows={3} />
-              </Field>
+              <BulletEditor
+                label="05 — Brief Description of the Property"
+                lines={fields.briefDescriptionLines}
+                onChange={lines => handleChange('briefDescriptionLines', lines)}
+                disabled={isReadOnly}
+                placeholder="THIS IMMOVABLE PROPERTY CONSISTS OF A LAND SITUATED BEARING KHATA NO: ..."
+              />
+              <BulletEditor
+                label="06 — Location, Street, Ward No."
+                lines={fields.locationDetailsLines}
+                onChange={lines => handleChange('locationDetailsLines', lines)}
+                disabled={isReadOnly}
+                placeholder="KHATA NO: XX, PLOT NO: XX&#10;MOUZA- ...&#10;THANA– ...&#10;TAHASIL– ..."
+              />
+              <BulletEditor
+                label="07 — Survey/Plot No. of Land"
+                lines={fields.surveyPlotNoLines}
+                onChange={lines => handleChange('surveyPlotNoLines', lines)}
+                disabled={isReadOnly}
+                placeholder="KHATA NO: XX, PLOT NO: XX, XX, XX..."
+              />
               <Field label="08 — Property Area Classification">
                 <select className={selectCls} value={fields.areaType} onChange={e => handleChange('areaType', e.target.value)} disabled={isReadOnly}>
                   <option value="RESIDENTIAL AREA">RESIDENTIAL AREA</option>
@@ -1147,8 +1244,28 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               <Field label="22 — Technical Details of Buildings">
                 <input className={inputCls} value={fields.technicalDetails} onChange={e => handleChange('technicalDetails', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="23 — Owner-Occupied / Tenanted / Both">
-                <input className={inputCls} value={fields.tenancyStatus} onChange={e => handleChange('tenancyStatus', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
+              <Field label="23 (I) — Owner-Occupied / Tenanted / Both?" span={2}>
+                <div className="grid md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-semibold text-[#6c757d] uppercase tracking-wider mb-1">(I) Occupancy Status</label>
+                    <select className={selectCls} value={fields.tenancyStatus} onChange={e => handleChange('tenancyStatus', e.target.value)} disabled={isReadOnly}>
+                      <option value="OWNER OCCUPIED">OWNER OCCUPIED</option>
+                      <option value="TENANTED">TENANTED</option>
+                      <option value="BOTH (OWNER-OCCUPIED AND TENANTED)">BOTH (OWNER-OCCUPIED AND TENANTED)</option>
+                      <option value="NOT APPLICABLE">NOT APPLICABLE</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold text-[#6c757d] uppercase tracking-wider mb-1">(II) If Partly Owner-Occupied — Portion & Extent</label>
+                    <input
+                      className={inputCls}
+                      value={fields.tenancyPortionDetails}
+                      onChange={e => handleChange('tenancyPortionDetails', e.target.value)}
+                      disabled={isReadOnly}
+                      placeholder="Specify portion and area under owner occupation"
+                    />
+                  </div>
+                </div>
               </Field>
               <Field label="24 — Floor Space Index (FSI)">
                 <input className={inputCls} value={fields.fsi} onChange={e => handleChange('fsi', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />

@@ -35,10 +35,9 @@ export interface IncomeTaxFieldsForPDF {
   identifiedBy: string;
   ownerAddress: string;
   ownershipType: string;
-  briefDescription: string;
-  briefDescriptionCont: string;
-  locationDetails: string;
-  surveyPlotNo: string;
+  briefDescriptionLines: string[];
+  locationDetailsLines: string[];
+  surveyPlotNoLines: string[];
   areaType: string;
   classOfLocality: string;
   civicAmenitiesDistance: string;
@@ -55,6 +54,7 @@ export interface IncomeTaxFieldsForPDF {
   plansAttached: string;
   technicalDetails: string;
   tenancyStatus: string;
+  tenancyPortionDetails: string;
   fsi: string;
   tenantDetails: string;
   relatedOccupants: string;
@@ -216,6 +216,26 @@ export async function generateIncomeTaxPDF(
 
   const advanceCursor = (pts: number) => { cy += pts; };
 
+  // Render bullet lines: plain text for <=1 non-empty entry, bullet-prefixed for 2+
+  const renderBulletLines = (lines: string | string[]): string => {
+    if (typeof lines === 'string') return lines; // legacy string fallback
+    const filled = lines.filter(l => l && l.trim());
+    if (filled.length === 0) return '';
+    if (filled.length === 1) return filled[0];
+    return filled.map(l => `- ${l.trim()}`).join('\n');
+  };
+
+  // Render multi-line answer in Q-row (supports \n line-breaks in answer text)
+  const wrapMultiLineText = (text: string, maxW: number, font: any, fs: number): string[] => {
+    const paragraphs = String(text ?? '').split('\n');
+    const result: string[] = [];
+    for (const para of paragraphs) {
+      const wrapped = wrapText(para, maxW, font, fs);
+      result.push(...wrapped);
+    }
+    return result;
+  };
+
   // Table cell primitive
   const drawCell = (x: number, topY: number, w: number, h: number, text: string, opts?: { bold?: boolean; fontSize?: number; align?: 'left' | 'center' | 'right' }) => {
     const fs = opts?.fontSize || 12;
@@ -260,7 +280,9 @@ export async function generateIncomeTaxPDF(
     const fs = 12;
     const h1 = cellHeight(qNo, qColW[0], { bold: true, fontSize: fs });
     const h2 = cellHeight(question, qColW[1], { fontSize: fs });
-    const h3 = cellHeight(answer, qColW[2], { fontSize: fs });
+    // For multi-line answers (containing \n), compute height correctly
+    const answerLines = wrapMultiLineText(answer, qColW[2] - 8, fontR, fs);
+    const h3 = Math.max(answerLines.length * fs * LINE_H + 6, fs * LINE_H + 6);
     const rowH = Math.max(h1, h2, h3);
     ensureSpace(rowH);
     let x = ML;
@@ -268,7 +290,18 @@ export async function generateIncomeTaxPDF(
     x += qColW[0];
     drawCell(x, cy, qColW[1], rowH, question, { fontSize: fs, bold: opts?.headerRow });
     x += qColW[1];
-    drawCell(x, cy, qColW[2], rowH, answer, { fontSize: fs });
+    // Draw answer cell with multi-line support
+    page.drawRectangle({ x, y: pdfY(cy) - rowH, width: qColW[2], height: rowH, borderColor: rgb(0, 0, 0), borderWidth: 0.5 });
+    const padX = 4; const padY = 3;
+    for (let i = 0; i < answerLines.length; i++) {
+      page.drawText(answerLines[i], {
+        x: x + padX,
+        y: pdfY(cy + padY + i * fs * LINE_H) - fs * 0.8,
+        size: fs,
+        font: fontR,
+        color: rgb(0, 0, 0),
+      });
+    }
     cy += rowH;
   };
 
@@ -348,12 +381,9 @@ export async function generateIncomeTaxPDF(
   drawQRow('', '(D) IDENTIFIED BY WHOM:', fields.identifiedBy);
   drawQRow('03', 'NAME OF THE OWNER/OWNERS.', fields.ownerName.toUpperCase() + (fields.ownerAddress ? ', ' + fields.ownerAddress.toUpperCase() : ''));
   drawQRow('04', 'IF THE PROPERTY IS UNDER JOINT OWNERSHIP/CO-OWNERSHIP, SHARE OF EACH SUCH OWNER. ARE THE SHARE OF UNDIVIDED?', fields.ownershipType);
-  drawQRow('05', 'BRIEF DESCRIPTION OF THE PROPERTY.', fields.briefDescription);
-  if (fields.briefDescriptionCont) {
-    drawQRow('', '', fields.briefDescriptionCont);
-  }
-  drawQRow('06', 'LOCATION, STREET, WARD NO.', fields.locationDetails);
-  drawQRow('07', 'SURVEY/PLOT NO. OF LAND:', fields.surveyPlotNo);
+  drawQRow('05', 'BRIEF DESCRIPTION OF THE PROPERTY.', renderBulletLines(fields.briefDescriptionLines));
+  drawQRow('06', 'LOCATION, STREET, WARD NO.', renderBulletLines(fields.locationDetailsLines));
+  drawQRow('07', 'SURVEY/PLOT NO. OF LAND:', renderBulletLines(fields.surveyPlotNoLines));
   drawQRow('08', 'IS THE PROPERTY SITUATED IN (RESIDENTIAL AREA / COMMERCIAL AREA / MIXED AREA / INDUSTRIAL AREA)', `THIS PROPERTY IS COMING UNDER ${fields.areaType}`);
   drawQRow('09', 'CLASSIFICATION OF LOCALITY:', `HIGH/MIDDLE/POOR: THIS PROPERTY IS SITUATED IN A ${fields.classOfLocality} CLASS LOCALITY.`);
   drawQRow('10', 'PROXIMITY TO CIVIC AMENITIES, LIKE SCHOOL, HOSPITAL, OFFICE, MARKET, CINEMA ETC.', `ALL CIVIC AMENITIES LIKE SCHOOL, COLLEGE, HOSPITAL, RAILWAY STATION, MARKET AREA, CINEMAS ARE PRESENT WITHIN ${fields.civicAmenitiesDistance} KMS.`);
@@ -376,7 +406,7 @@ export async function generateIncomeTaxPDF(
   drawQHeader('IMPROVEMENT.');
   drawQRow('21', 'ATTACH PLANS AND ELEVATIONS OF ALL STRUCTURES STANDING ON THE LAND AND LAY-OUT PLAN.', fields.plansAttached);
   drawQRow('22', 'FURNISH TECHNICAL DETAILS OF THE BUILDING ON A SEPARATE SHEET [THE ANNEXURE TO THIS FORM MAY BE USED]', fields.technicalDetails);
-  drawQRow('23', 'IS THE BUILDING OWNER-OCCUPIED / TENANTED / BOTH? IF PARTLY OWNER OCCUPIED, SPECIFY PORTION AND EXTENT OF AREA UNDER OWNER OCCUPATION.', fields.tenancyStatus);
+  drawQRow('23', 'IS THE BUILDING OWNER-OCCUPIED / TENANTED / BOTH? IF PARTLY OWNER OCCUPIED, SPECIFY PORTION AND EXTENT OF AREA UNDER OWNER OCCUPATION.', `(I) ${fields.tenancyStatus}\n(II) ${fields.tenancyPortionDetails || 'NOT APPLICABLE'}`);
   drawQRow('24', 'WHAT IS THE FLOOR SPACE INDEX PERMISSIBLE AND PERCENTAGE ACTUALLY UTILIZED?', fields.fsi);
   advanceCursor(6);
 
