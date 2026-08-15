@@ -108,7 +108,7 @@ export async function generateIncomeTaxPDF(
 ): Promise<Blob | null> {
   const A4_W = 595.28;
   const A4_H = 841.89;
-  const ML = 54; const MR = 54; const MT = 84; const MB = 80;
+  const ML = 54; const MR = 54; const MT = 102; const MB = 85;
   const CW = A4_W - ML - MR;
   const LINE_H = 1.25;
 
