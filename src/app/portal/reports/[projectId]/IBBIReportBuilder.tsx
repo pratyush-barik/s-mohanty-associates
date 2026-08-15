@@ -165,6 +165,9 @@ interface IBBIFields {
   remarks: string;
   representativeName: string;
   representativeFatherName: string;
+  valuerQualifications: string;
+  registeredOfficeAddress: string;
+  registeredOfficeTel: string;
 
   // ── Annexure ──
   annexureEnabled: boolean;
@@ -281,6 +284,9 @@ const DEFAULT_FIELDS: IBBIFields = {
   remarks: '',
   representativeName: '',
   representativeFatherName: '',
+  valuerQualifications: '',
+  registeredOfficeAddress: '',
+  registeredOfficeTel: '',
 
   annexureEnabled: false,
   annexures: [],
@@ -821,13 +827,14 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       // Prepared By block
       r.drawCenteredTitle('PREPARED BY', 12);
       r.advanceCursor(4);
-      r.drawTextBlock('Er. Rupesh Patnaik, (B.TECH, Civil) FIIV, AIV', { bold: true, align: 'center' });
-      r.drawTextBlock('Registered Valuer, IBBI Govt. of India (Regd. No.-IBBI/RV/02/2019/12513) Cat -L&B', { align: 'center' });
-      r.drawTextBlock('M.SC(Real Estate Valuation), Life, Associate & Approved Valuer from', { align: 'center' });
-      r.drawTextBlock('Institution of Valuers (New Delhi), Membership No. A-26647', { align: 'center' });
+      r.drawTextBlock(`${fields.representativeName || ''}`, { bold: true, align: 'center' });
+      if (fields.valuerQualifications) {
+        fields.valuerQualifications.split('\n').forEach((line: string) => {
+          if (line.trim()) r.drawTextBlock(line.trim(), { align: 'center' });
+        });
+      }
       r.advanceCursor(6);
-      r.drawTextBlock('REGISTERED OFFICE ADDRESS', { bold: true, align: 'center' });
-      r.drawTextBlock('AL 71 OSHB COLONY VSS NAGAR BHUBANESWAR 751007 Tel-(0674)3594365', { align: 'center' });
+      r.drawTextBlock(`REGISTERED OFFICE ADDRESS ${fields.registeredOfficeAddress || ''} ${fields.registeredOfficeTel ? 'Tel-' + fields.registeredOfficeTel : ''}`.trim(), { align: 'center' });
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       //  TABLE OF CONTENTS
@@ -920,7 +927,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.drawSimpleRow('VALUATION METHOD', (fields.valuationMethod || 'Sale Comparison Method').toUpperCase());
       r.drawSimpleRow('VALUATION DATE', fields.dateOfValuation || 'N/A');
       r.drawSimpleRow('PRESENT VALUE (in Rs)', `Rs.${formatIndianCurrency(fields.fairMarketValueTotal || fields.presentMarketValueTotal || '0')}/-`);
-      r.drawSimpleRow('VALUERS DETAILS', 'RUPESH PATNAIK\nREGD. VALUER (IBBI) U/S.247 OF THE COMPANIES ACT, 2013\nAL 71 OSHB COLONY VSS NAGAR BHUBANESWAR 751007');
+      r.drawSimpleRow('VALUERS DETAILS', `${fields.representativeName ? fields.representativeName.toUpperCase() : ''}\n${fields.valuerQualifications || ''}\n${fields.registeredOfficeAddress || ''}`);
       r.advanceCursor(8);
 
       // Certificate closing + realisable value
@@ -933,7 +940,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.drawSignatureBlock([
         { text: 'Signature & Seal of Valuer' },
         { text: `Place - Bhubaneswar`, italic: true },
-        { text: 'Name of the Valuer - Rupesh Patnaik', bold: true },
+        { text: `Name of the Valuer - ${fields.representativeName || ''}`, bold: true },
       ]);
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1266,7 +1273,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
         { text: `Date: ${fields.dateOfValuation || '________'}` },
         { text: 'Signature & Seal of Valuer' },
         { text: `Place: Bhubaneswar` },
-        { text: 'Name of the Valuer - RUPESH PATNAIK', bold: true },
+        { text: `Name of the Valuer - ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}`, bold: true },
       ]);
 
       // ── Remarks ──
@@ -1318,7 +1325,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
         { text: `Date: ${fields.dateOfValuation || '________'}` },
         { text: 'Signature & Seal of Valuer' },
         { text: 'Place: Bhubaneswar' },
-        { text: 'Name of the Valuer - RUPESH PATNAIK', bold: true },
+        { text: `Name of the Valuer - ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}`, bold: true },
       ]);
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1443,7 +1450,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
         { text: `Date: ${fields.dateOfValuation || '________'}` },
         { text: 'Signature & Seal of Valuer' },
         { text: 'Place: Bhubaneswar' },
-        { text: 'Name of the Valuer - RUPESH PATNAIK', bold: true },
+        { text: `Name of the Valuer - ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}`, bold: true },
       ]);
 
       return await r.toBlob();
@@ -1597,6 +1604,15 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
               </Field>
               <Field label="Representative's Father's Name">
                 <input type="text" value={fields.representativeFatherName} onChange={e => handleChange('representativeFatherName', e.target.value)} className={inputCls} placeholder="Father's name of representative" disabled={isReadOnly} />
+              </Field>
+              <Field label="Valuer Qualifications (Each line will appear centered under the name)" span={2}>
+                <textarea rows={3} value={fields.valuerQualifications} onChange={e => handleChange('valuerQualifications', e.target.value)} className={inputCls + ' resize-none'} placeholder="e.g.\n(B.TECH, Civil) FIIV, AIV\nRegistered Valuer, IBBI Govt. of India..." disabled={isReadOnly} />
+              </Field>
+              <Field label="Registered Office Address">
+                <input type="text" value={fields.registeredOfficeAddress} onChange={e => handleChange('registeredOfficeAddress', e.target.value)} className={inputCls} placeholder="e.g. AL 71 OSHB COLONY VSS NAGAR BHUBANESWAR 751007" disabled={isReadOnly} />
+              </Field>
+              <Field label="Registered Office Telephone">
+                <input type="text" value={fields.registeredOfficeTel} onChange={e => handleChange('registeredOfficeTel', e.target.value)} className={inputCls} placeholder="e.g. (0674)3594365" disabled={isReadOnly} />
               </Field>
               <Field label="Case Reference No" span={2}>
                 <input type="text" value={fields.caseReferenceNo || ''} onChange={e => handleChange('caseReferenceNo', e.target.value)} className={inputCls} placeholder="e.g. C.P.(IB) No. 300/KB/2017" disabled={isReadOnly} />

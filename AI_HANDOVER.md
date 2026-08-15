@@ -392,3 +392,4 @@ Outstanding items in **priority order**:
 - latest - style(Clients): add Aditya Birla Capital and IDFC First Bank to rotating carousel
 - latest - style(logo): strip fake transparency checkerboard background from PNG
 - `latest` - feat(report): add Representative's Father's Name field to both IBBI and General report builders with S/o in declaration PDF
+- `latest` - feat(report): parameterize Prepared By and Registered Office Address fields in IBBI report
