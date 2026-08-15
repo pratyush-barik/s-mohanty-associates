@@ -203,27 +203,33 @@ export async function generateIncomeTaxPDF(
     
     // Decode HTML entities
     clean = clean
-      .replace(/&amp;/g, '&')
-      .replace(/&amp/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&lt/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&gt/g, '>')
-      .replace(/&quot;/g, '"')
-      .replace(/&quot/g, '"')
-      .replace(/&#039;/g, "'")
-      .replace(/&#39;/g, "'");
+      .replace(/&amp;/gi, '&')
+      .replace(/&lt;/gi, '<')
+      .replace(/&gt;/gi, '>')
+      .replace(/&quot;/gi, '"')
+      .replace(/&#039;/gi, "'")
+      .replace(/&#39;/gi, "'")
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/&ndash;/gi, '-')
+      .replace(/&mdash;/gi, '--')
+      .replace(/&hellip;/gi, '...');
 
     return clean
-      .replace(/[\r\n\t]/g, ' ')          // newlines/tabs -> space
-      .replace(/\u2022/g, '-')             // bullet -> dash
-      .replace(/[\u2018\u2019]/g, "'")     // smart single quotes
-      .replace(/[\u201C\u201D]/g, '"')     // smart double quotes
-      .replace(/\u2013/g, '-')             // en-dash
-      .replace(/\u2014/g, '--')            // em-dash
-      .replace(/\u2026/g, '...')           // ellipsis
-      .replace(/\u20B9/g, 'Rs.')           // rupee sign
-      .replace(/[^\x20-\x7E]/g, '');       // strip any remaining non-ASCII
+      .replace(/[\r\n\t]/g, ' ')                          // newlines/tabs -> space
+      .replace(/[\u2022\u2023\u25E6\u2043\u2219\u25CF]/g, '-') // bullets -> dash
+      .replace(/[\u2018\u2019\u201A\u201B\u2032\u0060\u00B4]/g, "'") // smart single quotes / primes / feet sign -> '
+      .replace(/[\u201C\u201D\u201E\u201F\u2033]/g, '"') // smart double quotes / double primes / inch sign -> "
+      .replace(/[\u2013\u2014\u2015\u2212]/g, '-')       // en-dash, em-dash, minus -> -
+      .replace(/\u2026/g, '...')                          // ellipsis
+      .replace(/\u20B9/g, 'Rs.')                          // rupee sign
+      .replace(/\u00B0/g, ' deg')                         // degree sign
+      .replace(/\u00B2/g, ' sq')                          // squared
+      .replace(/\u00B3/g, ' cu')                          // cubed
+      .replace(/\u00BC/g, ' 1/4')                         // 1/4
+      .replace(/\u00BD/g, ' 1/2')                         // 1/2
+      .replace(/\u00BE/g, ' 3/4')                         // 3/4
+      .replace(/[\u00A0\u2000-\u200B\u202F\u205F\u3000\uFEFF]/g, ' ') // non-breaking and special spaces -> regular space
+      .replace(/[^\x20-\x7E]/g, '');                      // strip any other unsupported non-ASCII
   };
 
   // Text helpers
@@ -507,8 +513,9 @@ export async function generateIncomeTaxPDF(
 
   // TABLE B — LAND
   drawQHeader('LAND');
-  drawQRow('12', 'AREA OF THE LAND SUPPORTED BY DOCUMENTARY PROOF, SHAPE, DIMENSIONS AND PHYSICAL FEATURES, SHAPE OF THE LAND-DIMENSION OF THE PLOT-PHYSICAL FEATURES–', `${fields.landArea} ${fields.landAreaUnit}, ${fields.landShape}, ${fields.landLevel}`);
-  drawQRow('13', 'ROADS, STREETS OR LANES ON WHICH THE LAND IS ABUTTING.', fields.roadAccess);
+  drawQRow('12', 'AREA OF THE LAND SUPPORTED BY DOCUMENTARY PROOF, SHAPE, DIMENSIONS AND PHYSICAL FEATURES:', `${fields.landArea} ${fields.landAreaUnit}, ${fields.landShape}, ${fields.landLevel}`);
+  const cleanRoadAccess = fields.roadAccess ? fields.roadAccess.replace(/^13\s*ROADS,?\s*STREETS\s*OR\s*LANES\s*ON\s*WHICH\s*THE\s*LAND\s*IS\s*ABUTTING\.?\s*/i, '').trim() : '';
+  drawQRow('13', 'ROADS, STREETS OR LANES ON WHICH THE LAND IS ABUTTING.', cleanRoadAccess);
   drawQRow('14', 'IS IT FREE HOLD OR LEASE HOLD LAND?', fields.landTenure);
   drawQRow('15', 'IF LEASE HOLD, THE NAME OF LEASER/LESSEE, NATURE OF LEASE, DATES OF COMMENCEMENT AND TERMINATION OF LEASE AND TERMS OF RENEWAL OF LEASE.', fields.leaseDetails);
   drawQRow('16', 'IS THERE ANY RESTRICTIVE COVENANT IN REGARD TO USE OF LAND? IF SO, ATTACH A COPY OF THE COVENANT.', fields.restrictiveCovenant);
@@ -517,16 +524,16 @@ export async function generateIncomeTaxPDF(
   drawQRow('19', 'HAS THE WHOLE OR PART OF THE LAND BEEN NOTIFIED FOR ACQUISITION BY GOVERNMENT OR ANY STATUTORY BODY? GIVE DATE OF THE NOTIFICATION', 'NO SUCH PARTICULARS ARE OBSERVED BY US');
   drawQRow('20', 'ATTACH A DIMENSION SITE PLAN.', 'SITE PLAN IS ATTACHED (GPS LOCATION MAP ATTACHED)');
 
-  // IMPROVEMENT sub-header
-  drawQHeader('IMPROVEMENT.');
+  // TABLE C — IMPROVEMENT
+  drawQHeader('IMPROVEMENT');
   drawQRow('21', 'ATTACH PLANS AND ELEVATIONS OF ALL STRUCTURES STANDING ON THE LAND AND LAY-OUT PLAN.', fields.plansAttached);
   drawQRow('22', 'FURNISH TECHNICAL DETAILS OF THE BUILDING ON A SEPARATE SHEET [THE ANNEXURE TO THIS FORM MAY BE USED]', fields.technicalDetails);
   drawQRow('23', 'IS THE BUILDING OWNER-OCCUPIED / TENANTED / BOTH? IF PARTLY OWNER OCCUPIED, SPECIFY PORTION AND EXTENT OF AREA UNDER OWNER OCCUPATION.', `(I) ${fields.tenancyStatus}\n(II) ${fields.tenancyPortionDetails || 'NOT APPLICABLE'}`);
   drawQRow('24', 'WHAT IS THE FLOOR SPACE INDEX PERMISSIBLE AND PERCENTAGE ACTUALLY UTILIZED?', fields.fsi);
   advanceCursor(6);
 
-  // TABLE C — RENT
-  drawQHeader('RENT:');
+  // TABLE D — RENT
+  drawQHeader('RENT');
   const q25Answer = [
     `(I) ${fields.tenantName || 'NOT APPLICABLE'}`,
     `(II) ${fields.tenantPortion || 'NOT APPLICABLE'}`,
@@ -537,18 +544,19 @@ export async function generateIncomeTaxPDF(
   drawQRow('26', 'ARE ANY OF THE OCCUPANTS RELATED TO, OR CLOSE BUSINESS ASSOCIATES OF THE OWNER?', fields.relatedOccupants);
   drawQRow('27', 'IS SEPARATE AMOUNT BEING RECOVERED FOR THE USE OF FIXTURES LIKE FANS, GEYSERS, REFRIGERATORS, COOKING RANGES, BUILT IN WARDROBES, ETC., OR FOR SERVICE CHARGES? IF SO GIVE DETAILS.', fields.fixtures);
   drawQRow('28', 'GIVE DETAILS OF WATER AND ELECTRICITY CHARGES, IF ANY, TO BE BORNE BY THE OWNER.', fields.waterElectricCharges);
-  drawQRow('29', 'IF A PUMP INSTALLED, WHO HAS TO BEAR THE COST AND MAINTENANCE AND OPERATION,–OWNER OR TENANT.', fields.pumpMaintenance);
-  drawQRow('30', 'WHO IS TO BEAR THE COST OF ELECTRICITY CHARGES FOR LIGHTING OF COMMON SPACE LIKE ENTRANCE HALL, STAIRS, PASSAGES, COMPOUND, ETC.–OWNER OR TENANT.', fields.commonElectricity);
+  drawQRow('29', 'IF A PUMP IS INSTALLED, WHO HAS TO BEAR THE COST AND MAINTENANCE AND OPERATION--OWNER OR TENANT.', fields.pumpMaintenance);
+  drawQRow('30', 'WHO IS TO BEAR THE COST OF ELECTRICITY CHARGES FOR LIGHTING OF COMMON SPACE LIKE ENTRANCE HALL, STAIRS, PASSAGES, COMPOUND, ETC.--OWNER OR TENANT.', fields.commonElectricity);
   drawQRow('31', 'WHAT IS THE AMOUNT OF PROPERTY TAX? WHO IS TO BEAR IT? GIVE DETAILS WITH DOCUMENTARY PROOF.', fields.propertyTax || 'NOT APPLICABLE');
   drawQRow('32', 'IS THE BUILDING INSURED? IF SO, GIVE THE POLICY NO., AMOUNT FOR WHICH IT IS INSURED AND ANNUAL PREMIUM.', fields.buildingInsured);
   drawQRow('33', 'IF ANY DISPUTE BETWEEN LAND LORD AND TENANT REGARDING RENT PENDING IN COURT OF LAW?', fields.landlordTenantDispute);
-  drawQRow('34', 'HAS ANY STANDARD RENT BEEN FIXED FOR THE PREMISES UNDER ANY LAW RELATING TO CONTROL OF RENT', fields.standardRent);
+  drawQRow('34', 'HAS ANY STANDARD RENT BEEN FIXED FOR THE PREMISES UNDER ANY LAW RELATING TO CONTROL OF RENT?', fields.standardRent);
 
+  // TABLE E — SALES
   drawQHeader('SALES');
   drawQRow('35', 'GIVE INSTANCES OF SALES OF IMMOVABLE PROPERTY IN THE LOCALITY ON A SEPARATE SHEET, INDICATING THE NAME AND ADDRESS OF THE PROPERTY, REGISTRATION NO., SALE PRICE AND AREA OF LAND SOLD:', fields.saleInstances);
   advanceCursor(6);
 
-  // TABLE D — COST OF CONSTRUCTION
+  // TABLE F — COST OF CONSTRUCTION
   // Build Q36 formatted sentence from structured rate inputs
   const q36Rate = fields.landRatePerUnit ? Number(fields.landRatePerUnit).toLocaleString('en-IN') : '';
   const q36Unit = fields.landRateUnit || 'DEC';
@@ -560,9 +568,9 @@ export async function generateIncomeTaxPDF(
     : (fields.landRate || '');
   drawQRow('36', 'LAND RATE ADOPTED IN THIS VALUATION:', q36Text);
   drawQRow('37', 'IF SALE INSTANCES ARE NOT AVAILABLE OR NOT RELIED UPON, THE BASIS OF ARRIVING AT THE LAND RATE.', fields.landRateBasis);
-  drawQHeader('COST OF CONSTRUCTION:');
+  drawQHeader('COST OF CONSTRUCTION');
   drawQRow('38', 'YEAR OF COMMENCEMENT OF CONSTRUCTION AND YEAR OF COMPLETION:', fields.constructionStartYear ? `COMMENCEMENT IN THE YEAR: ${fields.constructionStartYear}, COMPLETED IN YEAR: ${fields.constructionEndYear}` : 'NOT APPLICABLE');
-  drawQRow('39', 'WHAT WAS THE METHOD OF CONSTRUCTION–BY CONTRACT / BY EMPLOYING LABOUR DIRECTLY / BOTH?', fields.constructionMethod);
+  drawQRow('39', 'WHAT WAS THE METHOD OF CONSTRUCTION--BY CONTRACT / BY EMPLOYING LABOUR DIRECTLY / BOTH?', fields.constructionMethod);
   drawQRow('40', 'FOR ITEMS OF WORK DONE ON CONTRACT, PRODUCE COPIES OF AGREEMENTS.', fields.contractAgreements);
   drawQRow('41', 'FOR ITEMS OF WORK DONE BY ENGAGING LABOUR DIRECTLY, GIVE BASIC RATES OF MATERIALS AND SUPPORTED BY DOCUMENTARY PROOF:', fields.materialRates);
   drawQRow('42', 'BUILDING APPROVAL PLAN IF ANY', fields.buildingApproval || 'NOT APPLICABLE');
