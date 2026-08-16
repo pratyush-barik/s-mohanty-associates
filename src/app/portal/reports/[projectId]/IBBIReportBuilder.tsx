@@ -821,8 +821,9 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       else if (fields.addressPrefixType === 'idco_plot') prefix = 'OVER IDCO PLOT, ';
       else if (fields.addressPrefixType === 'other') prefix = fields.customAddressPrefix ? fields.customAddressPrefix.trim() + ', ' : '';
       
-      const coverDesc = `${fields.propertyType || 'Property'} BELONGING TO ${fields.applicantName || fields.ownerName || '________'} ${prefix}${fields.propertyAddress || '________'}`;
-      r.drawTextBlock(`OF ${coverDesc.toUpperCase()}`, { bold: true, align: 'center', fontSize: 13 });
+      r.drawTextBlock(`OF ${fields.propertyType || 'Property'} BELONGING TO`.toUpperCase(), { bold: true, align: 'center', fontSize: 13 });
+      r.drawTextBlock(`${fields.applicantName || fields.ownerName || '________'}`.toUpperCase(), { bold: true, align: 'center', fontSize: 13 });
+      r.drawTextBlock(`${prefix}${fields.propertyAddress || '________'}`.toUpperCase(), { bold: true, align: 'center', fontSize: 13 });
       r.advanceCursor(12);
       r.drawCenteredTitle('OWNER OF THE PROPERTY', 12);
       r.advanceCursor(4);
