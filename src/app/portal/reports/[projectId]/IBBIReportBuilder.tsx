@@ -825,9 +825,9 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.drawTextBlock(`${fields.applicantName || fields.ownerName || '________'}`.toUpperCase(), { bold: true, align: 'center', fontSize: 13 });
       r.drawTextBlock(`${prefix}${fields.propertyAddress || '________'}`.toUpperCase(), { bold: true, align: 'center', fontSize: 13 });
       r.advanceCursor(12);
-      r.drawCenteredTitle('OWNER OF THE PROPERTY', 12);
+      r.drawCenteredTitle('OWNER OF THE PROPERTY', 13);
       r.advanceCursor(4);
-      r.drawTextBlock((fields.applicantName || fields.ownerName || '________').toUpperCase(), { bold: true, align: 'center', fontSize: 13, underline: true });
+      r.drawTextBlock((fields.applicantName || fields.ownerName || '________').toUpperCase(), { bold: true, align: 'center', fontSize: 11, underline: true });
       r.advanceCursor(24);
 
       // Value summary table on cover
