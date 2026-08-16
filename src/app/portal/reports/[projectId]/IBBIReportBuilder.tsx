@@ -839,7 +839,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       // Prepared By block
       r.drawCenteredTitle('PREPARED BY', 12);
       r.advanceCursor(4);
-      r.drawTextBlock(`${fields.representativeName || ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications : ''}`, { bold: true, align: 'center' });
+      r.drawTextBlock(`${fields.representativeName || ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications : ''}`, { bold: true, align: 'center', underline: true });
       if (fields.valuerAdditionalDetails) {
         fields.valuerAdditionalDetails.split('\n').forEach((line: string) => {
           if (line.trim()) r.drawTextBlock(line.trim(), { align: 'center' });
@@ -953,7 +953,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.drawSignatureBlock([
         { text: 'Signature & Seal of Valuer' },
         { text: `Place - Bhubaneswar`, italic: true },
-        { text: `Name of the Valuer - ${fields.representativeName || ''}`, bold: true },
+        { text: `Name of the Valuer - ${fields.representativeName || ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications : ''}`, bold: true },
       ]);
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1286,7 +1286,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
         { text: `Date: ${fields.dateOfValuation || '________'}` },
         { text: 'Signature & Seal of Valuer' },
         { text: `Place: Bhubaneswar` },
-        { text: `Name of the Valuer - ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}`, bold: true },
+        { text: `Name of the Valuer - ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications.toUpperCase() : ''}`, bold: true },
       ]);
 
       // ── Remarks ──
@@ -1338,7 +1338,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
         { text: `Date: ${fields.dateOfValuation || '________'}` },
         { text: 'Signature & Seal of Valuer' },
         { text: 'Place: Bhubaneswar' },
-        { text: `Name of the Valuer - ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}`, bold: true },
+        { text: `Name of the Valuer - ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications.toUpperCase() : ''}`, bold: true },
       ]);
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1463,7 +1463,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
         { text: `Date: ${fields.dateOfValuation || '________'}` },
         { text: 'Signature & Seal of Valuer' },
         { text: 'Place: Bhubaneswar' },
-        { text: `Name of the Valuer - ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}`, bold: true },
+        { text: `Name of the Valuer - ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications.toUpperCase() : ''}`, bold: true },
       ]);
 
       return await r.toBlob();
