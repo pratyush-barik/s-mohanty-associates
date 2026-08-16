@@ -917,6 +917,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       const certOwner = fields.applicantName || fields.ownerName || '________';
       const certAddress = fields.propertyAddress || fields.ownerAddress || '________';
       const certDate = fields.dateOfInspection || '________';
+      const coverDesc = fields.propertyType || 'Property';
       const appointedByText = fields.appointedBy ? `Pursuant to Letter of Appointment from ${fields.appointedBy}` : 'Pursuant to Letter of Appointment';
       const appointmentDateText = fields.appointmentDate ? ` on ${fields.appointmentDate}` : '';
       const caseRefText = fields.caseReferenceNo ? `, vide Reference ${fields.caseReferenceNo}` : '';
@@ -933,7 +934,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.drawSimpleRow('PROPERTY ADDRESS', certAddress.toUpperCase());
       r.drawSimpleRow('PURPOSE OF VALUATION', (fields.purposeOfValuation || 'ACCESS OF FAIR MARKET VALUE').toUpperCase());
       r.drawSimpleRow('CURRENT OWNER, CONTACT DETAILS', certOwner.toUpperCase());
-      r.drawSimpleRow('DESCRIPTION', (fields.propertyDescription || coverDesc).toUpperCase());
+      r.drawSimpleRow('DESCRIPTION', coverDesc.toUpperCase());
       r.drawSimpleRow('AREA', fields.extentOfSite || 'N/A');
       r.drawSimpleRow('STATUS OF PLOT', `${fields.conversionStatus || fields.currentUsage || 'N/A'} (${fields.occupancyStatus || 'N/A'})`);
       r.drawSimpleRow('VALUATION METHOD', (fields.valuationMethod || 'Sale Comparison Method').toUpperCase());
