@@ -486,7 +486,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     setFields(prev => ({ ...prev, [field]: value }));
   }, []);
 
-  const openBucketPicker = (mode: 'propertyImages' | 'sketchMapImages' | 'locationMapImage') => {
+  const openBucketPicker = (mode: 'propertyImages' | 'sketchMapImages' | 'locationMapImage' | 'coverPageImage') => {
     setBucketPickerMode(mode);
     setBucketSelected(new Set());
     setBucketPickerAgent(null);
@@ -505,6 +505,8 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       handleChange('sketchMapImages', newUrls);
     } else if (bucketPickerMode === 'locationMapImage') {
       handleChange('locationMapImage', selectedImages[0].url);
+    } else if (bucketPickerMode === 'coverPageImage') {
+      handleChange('coverPageImage', selectedImages[0].url);
     }
 
     setBucketPickerOpen(false);
@@ -1685,7 +1687,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
               )}
               <div className="col-span-1 md:col-span-2 mt-4 p-4 border border-[#e0e0e0] rounded-xl bg-gray-50">
                 <p className="text-sm font-bold text-[#1e3a5f] uppercase tracking-wider mb-2">Cover Page Photograph (Max 1)</p>
-                {!isReadOnly && (
+                {!isReadOnly && !fields.coverPageImage && (
                   <div className="flex items-center gap-3 mb-3">
                     <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
                       {uploading ? 'Uploading...' : '📷 Add Property Images'}
