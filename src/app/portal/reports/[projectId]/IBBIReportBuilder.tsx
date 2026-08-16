@@ -813,7 +813,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.drawCenteredTitle('VALUATION REPORT', 20);
       r.advanceCursor(6);
       const coverDesc = fields.propertyDescription || `${fields.propertyType || 'Property'} at ${fields.propertyAddress || '________'}`;
-      r.drawCenteredTitle(`OF ${coverDesc.toUpperCase()}`, 13);
+      r.drawTextBlock(`OF ${coverDesc.toUpperCase()}`, { bold: true, align: 'center', fontSize: 13 });
       r.advanceCursor(12);
       r.drawCenteredTitle('OWNER OF THE PROPERTY', 12);
       r.advanceCursor(4);
