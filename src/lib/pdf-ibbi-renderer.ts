@@ -54,6 +54,7 @@ interface DrawTextOptions {
   fontSize?: number;
   align?: 'left' | 'center' | 'right';
   maxWidth?: number;
+  underline?: boolean;
 }
 
 export class PDFIBBIRenderer {
@@ -310,6 +311,11 @@ export class PDFIBBIRenderer {
       font,
       color: opts?.textColor ? hexToRgb(opts.textColor) : rgb(0, 0, 0),
     });
+
+    if (opts?.underline) {
+      const tw = font.widthOfTextAtSize(strText, fontSize);
+      this.drawHLine(drawX, drawX + tw, topY + fontSize, opts?.textColor, 1);
+    }
   }
 
   /** Draw wrapped text at absolute coordinates, returns total height consumed */
