@@ -59,6 +59,8 @@ interface IBBIFields {
   ownerName: string;
   ownerAddress: string;
   propertyAddress: string;
+  addressPrefixType?: string;
+  customAddressPrefix?: string;
   legalAddress: string;
   dateOfInspection: string;
   dateOfValuation: string;
@@ -184,6 +186,8 @@ const DEFAULT_FIELDS: IBBIFields = {
   ownerName: '',
   ownerAddress: '',
   propertyAddress: '',
+  addressPrefixType: 'none',
+  customAddressPrefix: '',
   legalAddress: '',
   dateOfInspection: new Date().toISOString().split('T')[0],
   dateOfValuation: new Date().toISOString().split('T')[0],
@@ -821,7 +825,11 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       // Cover line 3: Property address (only when propertyDescription is explicitly set,
       // otherwise the fallback coverDesc already includes the address)
       if (fields.propertyDescription && fields.propertyAddress) {
-        r.drawTextBlock(fields.propertyAddress.toUpperCase(), { bold: true, align: 'center', fontSize: 12 });
+        let prefix = '';
+        if (fields.addressPrefixType === 'multiple_plots') prefix = 'OVER MULTIPLE PLOTS ';
+        else if (fields.addressPrefixType === 'idco_plot') prefix = 'OVER IDCO PLOT ';
+        else if (fields.addressPrefixType === 'other') prefix = fields.customAddressPrefix ? fields.customAddressPrefix.trim() + ' ' : '';
+        r.drawTextBlock((prefix + fields.propertyAddress).toUpperCase(), { bold: true, align: 'center', fontSize: 12 });
       }
       r.advanceCursor(12);
       r.drawCenteredTitle('OWNER OF THE PROPERTY', 12);
@@ -1676,7 +1684,20 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
                   <option value="Agricultural">Agricultural</option>
                 </select>
               </Field>
-              <Field label="Site Address" span={2}>
+              <Field label="Address Prefix (Cover Page)">
+                <div className="flex flex-col gap-2">
+                  <select value={fields.addressPrefixType || 'none'} onChange={e => handleChange('addressPrefixType', e.target.value)} className={selectCls} disabled={isReadOnly}>
+                    <option value="none">None</option>
+                    <option value="multiple_plots">OVER MULTIPLE PLOTS</option>
+                    <option value="idco_plot">OVER IDCO PLOT</option>
+                    <option value="other">Other (Custom)</option>
+                  </select>
+                  {fields.addressPrefixType === 'other' && (
+                    <input type="text" value={fields.customAddressPrefix || ''} onChange={e => handleChange('customAddressPrefix', e.target.value)} className={inputCls} placeholder="Custom prefix..." disabled={isReadOnly} />
+                  )}
+                </div>
+              </Field>
+              <Field label="Site Address">
                 <textarea value={fields.propertyAddress} onChange={e => handleChange('propertyAddress', e.target.value)} className={inputCls} rows={2} placeholder="Full site address" disabled={isReadOnly} />
               </Field>
               <Field label="Postal Address" span={2}>
