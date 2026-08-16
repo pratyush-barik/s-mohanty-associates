@@ -826,7 +826,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.advanceCursor(12);
       r.drawCenteredTitle('OWNER OF THE PROPERTY', 12);
       r.advanceCursor(4);
-      r.drawTextBlock(fields.applicantName || fields.ownerName || '________');
+      r.drawTextBlock((fields.applicantName || fields.ownerName || '________').toUpperCase(), { bold: true, align: 'center', fontSize: 13 });
       r.advanceCursor(24);
 
       // Value summary table on cover
