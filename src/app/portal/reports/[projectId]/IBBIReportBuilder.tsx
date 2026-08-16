@@ -68,6 +68,8 @@ interface IBBIFields {
 
   // ── Section 4: Brief Description ──
   applicantName: string;
+  hasManagingDirector?: string;
+  managingDirectorName?: string;
   propertyType: string;
   currentUsage: string;
   revenuePlotNo: string;
@@ -200,6 +202,8 @@ const DEFAULT_FIELDS: IBBIFields = {
   appointmentDate: '',
 
   applicantName: '',
+  hasManagingDirector: 'no',
+  managingDirectorName: '',
   propertyType: 'Defunct Industrial Unit',
   currentUsage: 'Vacant',
   revenuePlotNo: '',
@@ -828,6 +832,10 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.drawCenteredTitle('OWNER OF THE PROPERTY', 13);
       r.advanceCursor(4);
       r.drawTextBlock((fields.applicantName || fields.ownerName || '________').toUpperCase(), { bold: true, align: 'center', fontSize: 11, underline: true });
+      if (fields.hasManagingDirector === 'yes' && fields.managingDirectorName) {
+        r.drawTextBlock('REPRESENTED THROUGH ITS MANAGING DIRECTOR', { align: 'center', fontSize: 11 });
+        r.drawTextBlock(fields.managingDirectorName.toUpperCase(), { align: 'center', fontSize: 11 });
+      }
       r.advanceCursor(24);
 
       // Value summary table on cover
@@ -1654,6 +1662,17 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
               <Field label="Applicant / Owner Name(s)" span={2}>
                 <textarea value={fields.applicantName} onChange={e => handleChange('applicantName', e.target.value)} className={inputCls} rows={2} placeholder="Full list of owners" disabled={isReadOnly} />
               </Field>
+              <Field label="Managing Director">
+                <select value={fields.hasManagingDirector || 'no'} onChange={e => handleChange('hasManagingDirector', e.target.value)} className={selectCls} disabled={isReadOnly}>
+                  <option value="no">No</option>
+                  <option value="yes">Yes</option>
+                </select>
+              </Field>
+              {fields.hasManagingDirector === 'yes' && (
+                <Field label="Managing Director's Name">
+                  <input type="text" value={fields.managingDirectorName || ''} onChange={e => handleChange('managingDirectorName', e.target.value)} className={inputCls} placeholder="e.g. MR. RAJENDRA PRASAD AGARWAL" disabled={isReadOnly} />
+                </Field>
+              )}
               <Field label="Type of Property">
                 <select value={fields.propertyType} onChange={e => handleChange('propertyType', e.target.value)} className={selectCls} disabled={isReadOnly}>
                   <option value="Defunct Industrial Unit">Defunct Industrial Unit</option>
