@@ -812,8 +812,16 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.advanceCursor(60);
       r.drawCenteredTitle('VALUATION REPORT', 20);
       r.advanceCursor(6);
+      // Cover line 1: "OF [property description]" e.g. "OF DEFUNCT INDUSTRIAL UNIT"
       const coverDesc = fields.propertyDescription || `${fields.propertyType || 'Property'} at ${fields.propertyAddress || '________'}`;
       r.drawTextBlock(`OF ${coverDesc.toUpperCase()}`, { bold: true, align: 'center', fontSize: 13 });
+      // Cover line 2: Owner name (underlined, centered)
+      const coverOwner = (fields.applicantName || fields.ownerName || '________').toUpperCase();
+      r.drawCenteredTitle(coverOwner, 13);
+      // Cover line 3: Property address (centered, wrapping)
+      if (fields.propertyAddress) {
+        r.drawTextBlock(fields.propertyAddress.toUpperCase(), { bold: true, align: 'center', fontSize: 12 });
+      }
       r.advanceCursor(12);
       r.drawCenteredTitle('OWNER OF THE PROPERTY', 12);
       r.advanceCursor(4);
