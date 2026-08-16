@@ -556,9 +556,7 @@ export async function generateIncomeTaxPDF(
   // TABLE E — SALES
   drawQHeader('SALES');
   drawQRow('35', 'GIVE INSTANCES OF SALES OF IMMOVABLE PROPERTY IN THE LOCALITY ON A SEPARATE SHEET, INDICATING THE NAME AND ADDRESS OF THE PROPERTY, REGISTRATION NO., SALE PRICE AND AREA OF LAND SOLD:', fields.saleInstances);
-  advanceCursor(6);
 
-  // TABLE F — COST OF CONSTRUCTION
   // Build Q36 formatted sentence from structured rate inputs
   const q36Rate = fields.landRatePerUnit ? Number(fields.landRatePerUnit).toLocaleString('en-IN') : '';
   const q36Unit = fields.landRateUnit || 'DEC';
@@ -570,6 +568,9 @@ export async function generateIncomeTaxPDF(
     : (fields.landRate || '');
   drawQRow('36', 'LAND RATE ADOPTED IN THIS VALUATION:', q36Text);
   drawQRow('37', 'IF SALE INSTANCES ARE NOT AVAILABLE OR NOT RELIED UPON, THE BASIS OF ARRIVING AT THE LAND RATE.', fields.landRateBasis);
+  advanceCursor(6);
+
+  // TABLE F — COST OF CONSTRUCTION
   drawQHeader('COST OF CONSTRUCTION');
   drawQRow('38', 'YEAR OF COMMENCEMENT OF CONSTRUCTION AND YEAR OF COMPLETION:', fields.constructionStartYear ? `COMMENCEMENT IN THE YEAR: ${fields.constructionStartYear}, COMPLETED IN YEAR: ${fields.constructionEndYear}` : 'NOT APPLICABLE');
   drawQRow('39', 'WHAT WAS THE METHOD OF CONSTRUCTION--BY CONTRACT / BY EMPLOYING LABOUR DIRECTLY / BOTH?', fields.constructionMethod);
