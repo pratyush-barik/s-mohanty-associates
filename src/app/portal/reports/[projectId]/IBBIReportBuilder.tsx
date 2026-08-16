@@ -813,6 +813,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       const sketchBytesList = fields.sketchMapImages?.length ? imageResults.slice(imgIdx, imgIdx + fields.sketchMapImages.length) : null;
       if (fields.sketchMapImages?.length) imgIdx += fields.sketchMapImages.length;
       const locationBytes = fields.locationMapImage ? imageResults[imgIdx++] : null;
+      const coverPageImageBytes = fields.coverPageImage ? imageResults[imgIdx++] : null;
 
       const r = new PDFIBBIRenderer();
       await r.init(letterheadBytes || undefined);
