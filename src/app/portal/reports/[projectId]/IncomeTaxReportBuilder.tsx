@@ -467,25 +467,25 @@ function BulletEditor({ label, lines, onChange, disabled, placeholder, span = 2 
 const FloatingNavigator = ({ isLandOnly, showLandAnnexure }: { isLandOnly: boolean; showLandAnnexure: boolean }) => {
   const [activeId, setActiveId] = useState<string>('');
 
-  const NAV_SECTIONS = [
+  const NAV_SECTIONS: { id: string; title: string; sub?: string; indent: boolean }[] = [
     { id: 'section-1', title: '1. Title & Cover', indent: false },
     { id: 'section-2', title: '2. Part I – Questionnaire', indent: false },
-    { id: 'subsection-general', title: '↳ General (Q01–11)', indent: true },
-    { id: 'subsection-land', title: '↳ Land (Q12–20)', indent: true },
-    { id: 'subsection-improvement', title: '↳ Improvement (Q21–24)', indent: true },
-    { id: 'subsection-rent', title: '↳ Rent (Q25–34)', indent: true },
-    { id: 'subsection-sales', title: '↳ Sales (Q35–37)', indent: true },
-    { id: 'subsection-construction', title: '↳ Construction (Q38–42)', indent: true },
+    { id: 'subsection-general', title: '↳ General', sub: '01–11', indent: true },
+    { id: 'subsection-land', title: '↳ Land', sub: '12–20', indent: true },
+    { id: 'subsection-improvement', title: '↳ Improvement', sub: '21–24', indent: true },
+    { id: 'subsection-rent', title: '↳ Rent', sub: '25–34', indent: true },
+    { id: 'subsection-sales', title: '↳ Sales', sub: '35–37', indent: true },
+    { id: 'subsection-construction', title: '↳ Construction', sub: '38–42', indent: true },
     { id: 'section-3', title: '3. Part II – Valuation', indent: false },
     { id: 'subsection-valuation-disc', title: '↳ Valuation Discussion', indent: true },
     ...(!isLandOnly ? [{ id: 'subsection-tech-details', title: '↳ Technical Details', indent: true }] : []),
-    { id: 'subsection-calc-table', title: '↳ Calc Table', indent: true },
-    { id: 'subsection-abstract', title: '↳ Abstract', indent: true },
-    { id: 'subsection-photos', title: '↳ Photos & Maps', indent: true },
+    { id: 'subsection-calc-table', title: '↳ Calculation Table', indent: true },
+    { id: 'subsection-abstract', title: '↳ Total Abstract', indent: true },
+    { id: 'subsection-photos', title: '↳ Photographs & Maps', indent: true },
     { id: 'section-4', title: '4. Part III – Declaration', indent: false },
     { id: 'subsection-declaration', title: '↳ Declaration', indent: true },
     { id: 'subsection-remarks', title: '↳ Remarks', indent: true },
-    { id: 'subsection-certificate', title: '↳ Certificate', indent: true },
+    { id: 'subsection-certificate', title: '↳ Valuation Certificate', indent: true },
   ];
 
   useEffect(() => {
@@ -513,8 +513,8 @@ const FloatingNavigator = ({ isLandOnly, showLandAnnexure }: { isLandOnly: boole
   };
 
   return (
-    <div className="hidden xl:flex flex-col gap-0.5 bg-white/90 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2.5 rounded-2xl w-[220px] sticky top-24 shrink-0 z-40">
-      <div className="text-[10px] font-black text-neutral-400 mb-1 px-2 uppercase tracking-widest">IT Sections</div>
+    <div className="hidden xl:flex flex-col gap-0.5 bg-white/90 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2.5 rounded-2xl w-[210px] sticky top-24 shrink-0 z-40">
+      <div className="text-[10px] font-black text-neutral-400 mb-1 px-2 uppercase tracking-widest">Report Sections</div>
       {NAV_SECTIONS.map((sec) => {
         const isActive = activeId === sec.id;
         return (
@@ -522,15 +522,22 @@ const FloatingNavigator = ({ isLandOnly, showLandAnnexure }: { isLandOnly: boole
             key={sec.id}
             type="button"
             onClick={() => scrollTo(sec.id)}
-            className={`text-left py-1 text-[11px] font-bold rounded-lg transition-all leading-tight ${
-              sec.indent ? 'px-2 pl-3.5 text-[10.5px]' : 'px-2.5 font-extrabold text-[#0f2038]'
+            className={`text-left py-1 px-2.5 rounded-lg transition-all flex flex-col justify-center ${
+              sec.indent ? 'pl-3.5' : 'my-0.5 font-extrabold text-[#0f2038]'
             } ${
               isActive
                 ? '!bg-[#b8860b] !text-white shadow-md'
-                : 'text-slate-500 hover:bg-[#b8860b]/10 hover:text-[#b8860b]'
+                : 'text-slate-600 hover:bg-[#b8860b]/10 hover:text-[#b8860b]'
             }`}
           >
-            {sec.title}
+            <span className={`leading-tight ${sec.indent ? 'text-[11px] font-bold' : 'text-[11.5px]'}`}>
+              {sec.title}
+            </span>
+            {sec.sub && (
+              <span className={`text-[9px] font-semibold tracking-wider ${isActive ? 'text-amber-100' : 'text-slate-400'}`}>
+                {sec.sub}
+              </span>
+            )}
           </button>
         );
       })}
