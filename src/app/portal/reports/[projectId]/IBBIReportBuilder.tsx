@@ -166,6 +166,7 @@ interface IBBIFields {
   representativeName: string;
   representativeFatherName: string;
   valuerQualifications: string;
+  valuerAdditionalDetails: string;
   registeredOfficeAddress: string;
   registeredOfficeTel: string;
 
@@ -285,6 +286,7 @@ const DEFAULT_FIELDS: IBBIFields = {
   representativeName: '',
   representativeFatherName: '',
   valuerQualifications: '',
+  valuerAdditionalDetails: '',
   registeredOfficeAddress: '',
   registeredOfficeTel: '',
 
@@ -827,9 +829,9 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       // Prepared By block
       r.drawCenteredTitle('PREPARED BY', 12);
       r.advanceCursor(4);
-      r.drawTextBlock(`${fields.representativeName || ''}`, { bold: true, align: 'center' });
-      if (fields.valuerQualifications) {
-        fields.valuerQualifications.split('\n').forEach((line: string) => {
+      r.drawTextBlock(`${fields.representativeName || ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications : ''}`, { bold: true, align: 'center' });
+      if (fields.valuerAdditionalDetails) {
+        fields.valuerAdditionalDetails.split('\n').forEach((line: string) => {
           if (line.trim()) r.drawTextBlock(line.trim(), { align: 'center' });
         });
       }
@@ -927,7 +929,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.drawSimpleRow('VALUATION METHOD', (fields.valuationMethod || 'Sale Comparison Method').toUpperCase());
       r.drawSimpleRow('VALUATION DATE', fields.dateOfValuation || 'N/A');
       r.drawSimpleRow('PRESENT VALUE (in Rs)', `Rs.${formatIndianCurrency(fields.fairMarketValueTotal || fields.presentMarketValueTotal || '0')}/-`);
-      r.drawSimpleRow('VALUERS DETAILS', `${fields.representativeName ? fields.representativeName.toUpperCase() : ''}\n${fields.valuerQualifications || ''}\n${fields.registeredOfficeAddress || ''}`);
+      r.drawSimpleRow('VALUERS DETAILS', `${fields.representativeName ? fields.representativeName.toUpperCase() : ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications : ''}\n${fields.valuerAdditionalDetails || ''}\n${fields.registeredOfficeAddress || ''}`);
       r.advanceCursor(8);
 
       // Certificate closing + realisable value
@@ -1605,8 +1607,11 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
               <Field label="Representative's Father's Name">
                 <input type="text" value={fields.representativeFatherName} onChange={e => handleChange('representativeFatherName', e.target.value)} className={inputCls} placeholder="Father's name of representative" disabled={isReadOnly} />
               </Field>
-              <Field label="Valuer Qualifications (Each line will appear centered under the name)" span={2}>
-                <textarea rows={3} value={fields.valuerQualifications} onChange={e => handleChange('valuerQualifications', e.target.value)} className={inputCls + ' resize-none'} placeholder="e.g.\n(B.TECH, Civil) FIIV, AIV\nRegistered Valuer, IBBI Govt. of India..." disabled={isReadOnly} />
+              <Field label="Valuer Qualifications (Appears next to name)">
+                <input type="text" value={fields.valuerQualifications} onChange={e => handleChange('valuerQualifications', e.target.value)} className={inputCls} placeholder="e.g. , (B.TECH, Civil) FIIV, AIV" disabled={isReadOnly} />
+              </Field>
+              <Field label="Additional Valuer Details (Each line will appear centered below)" span={2}>
+                <textarea rows={3} value={fields.valuerAdditionalDetails} onChange={e => handleChange('valuerAdditionalDetails', e.target.value)} className={inputCls + ' resize-none'} placeholder="e.g.\nRegistered Valuer, IBBI Govt. of India (Regd. No.-...)\nM.SC(Real Estate Valuation)..." disabled={isReadOnly} />
               </Field>
               <Field label="Registered Office Address">
                 <input type="text" value={fields.registeredOfficeAddress} onChange={e => handleChange('registeredOfficeAddress', e.target.value)} className={inputCls} placeholder="e.g. AL 71 OSHB COLONY VSS NAGAR BHUBANESWAR 751007" disabled={isReadOnly} />
