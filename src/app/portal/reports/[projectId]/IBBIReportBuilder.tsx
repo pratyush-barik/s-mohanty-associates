@@ -818,8 +818,9 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       // Cover line 2: Owner name (underlined, centered)
       const coverOwner = (fields.applicantName || fields.ownerName || '________').toUpperCase();
       r.drawCenteredTitle(coverOwner, 13);
-      // Cover line 3: Property address (centered, wrapping)
-      if (fields.propertyAddress) {
+      // Cover line 3: Property address (only when propertyDescription is explicitly set,
+      // otherwise the fallback coverDesc already includes the address)
+      if (fields.propertyDescription && fields.propertyAddress) {
         r.drawTextBlock(fields.propertyAddress.toUpperCase(), { bold: true, align: 'center', fontSize: 12 });
       }
       r.advanceCursor(12);
