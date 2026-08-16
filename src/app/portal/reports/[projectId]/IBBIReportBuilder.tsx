@@ -816,21 +816,13 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.advanceCursor(60);
       r.drawCenteredTitle('VALUATION REPORT', 20);
       r.advanceCursor(6);
-      // Cover line 1: "OF [property description]" e.g. "OF DEFUNCT INDUSTRIAL UNIT"
-      const coverDesc = fields.propertyDescription || `${fields.propertyType || 'Property'} at ${fields.propertyAddress || '________'}`;
+      let prefix = '';
+      if (fields.addressPrefixType === 'multiple_plots') prefix = 'OVER MULTIPLE PLOTS ';
+      else if (fields.addressPrefixType === 'idco_plot') prefix = 'OVER IDCO PLOT ';
+      else if (fields.addressPrefixType === 'other') prefix = fields.customAddressPrefix ? fields.customAddressPrefix.trim() + ' ' : '';
+      
+      const coverDesc = `${fields.propertyType || 'Property'} BELONGING TO ${fields.applicantName || fields.ownerName || '________'} ${prefix}${fields.propertyAddress || '________'}`;
       r.drawTextBlock(`OF ${coverDesc.toUpperCase()}`, { bold: true, align: 'center', fontSize: 13 });
-      // Cover line 2: Owner name (underlined, centered)
-      const coverOwner = (fields.applicantName || fields.ownerName || '________').toUpperCase();
-      r.drawCenteredTitle(coverOwner, 13);
-      // Cover line 3: Property address (only when propertyDescription is explicitly set,
-      // otherwise the fallback coverDesc already includes the address)
-      if (fields.propertyDescription && fields.propertyAddress) {
-        let prefix = '';
-        if (fields.addressPrefixType === 'multiple_plots') prefix = 'OVER MULTIPLE PLOTS ';
-        else if (fields.addressPrefixType === 'idco_plot') prefix = 'OVER IDCO PLOT ';
-        else if (fields.addressPrefixType === 'other') prefix = fields.customAddressPrefix ? fields.customAddressPrefix.trim() + ' ' : '';
-        r.drawTextBlock((prefix + fields.propertyAddress).toUpperCase(), { bold: true, align: 'center', fontSize: 12 });
-      }
       r.advanceCursor(12);
       r.drawCenteredTitle('OWNER OF THE PROPERTY', 12);
       r.advanceCursor(4);
@@ -1650,9 +1642,6 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
               </Field>
               <Field label="Valuation Method" span={2}>
                 <input type="text" value={fields.valuationMethod || ''} onChange={e => handleChange('valuationMethod', e.target.value)} className={inputCls} placeholder="Sale Comparison Method coupled with..." disabled={isReadOnly} />
-              </Field>
-              <Field label="Short Property Description (for Cover Page)" span={2}>
-                <textarea value={fields.propertyDescription || ''} onChange={e => handleChange('propertyDescription', e.target.value)} className={inputCls} rows={2} placeholder="e.g. Defunct Industrial Unit over Multiple Plots in Mouza-Natada, PS-Angul, Dist-Angul, Odisha" disabled={isReadOnly} />
               </Field>
             </div>
           </Section>
