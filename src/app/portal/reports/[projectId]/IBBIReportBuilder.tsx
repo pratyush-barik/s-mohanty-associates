@@ -817,9 +817,9 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.drawCenteredTitle('VALUATION REPORT', 20);
       r.advanceCursor(6);
       let prefix = '';
-      if (fields.addressPrefixType === 'multiple_plots') prefix = 'OVER MULTIPLE PLOTS ';
-      else if (fields.addressPrefixType === 'idco_plot') prefix = 'OVER IDCO PLOT ';
-      else if (fields.addressPrefixType === 'other') prefix = fields.customAddressPrefix ? fields.customAddressPrefix.trim() + ' ' : '';
+      if (fields.addressPrefixType === 'multiple_plots') prefix = 'OVER MULTIPLE PLOTS IN ';
+      else if (fields.addressPrefixType === 'idco_plot') prefix = 'OVER IDCO PLOT, ';
+      else if (fields.addressPrefixType === 'other') prefix = fields.customAddressPrefix ? fields.customAddressPrefix.trim() + ', ' : '';
       
       const coverDesc = `${fields.propertyType || 'Property'} BELONGING TO ${fields.applicantName || fields.ownerName || '________'} ${prefix}${fields.propertyAddress || '________'}`;
       r.drawTextBlock(`OF ${coverDesc.toUpperCase()}`, { bold: true, align: 'center', fontSize: 13 });
