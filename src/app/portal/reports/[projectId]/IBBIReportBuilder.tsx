@@ -70,6 +70,7 @@ interface IBBIFields {
   applicantName: string;
   hasManagingDirector?: string;
   managingDirectorName?: string;
+  coverPageImage?: string;
   propertyType: string;
   currentUsage: string;
   revenuePlotNo: string;
@@ -204,6 +205,7 @@ const DEFAULT_FIELDS: IBBIFields = {
   applicantName: '',
   hasManagingDirector: 'no',
   managingDirectorName: '',
+  coverPageImage: '',
   propertyType: 'Defunct Industrial Unit',
   currentUsage: 'Vacant',
   revenuePlotNo: '',
@@ -716,7 +718,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
   };
 
   // ── File upload (photos + maps) ──
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'propertyImages' | 'sketchMapImages' | 'locationMapImage') => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'propertyImages' | 'sketchMapImages' | 'locationMapImage' | 'coverPageImage') => {
     const fileList = e.target.files;
     if (!fileList || fileList.length === 0) return;
     setUploading(true);
@@ -803,6 +805,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
         ...propertyImgs.map((url: string) => fetchBytes(url)),
         ...(fields.sketchMapImages && fields.sketchMapImages.length > 0 ? fields.sketchMapImages.map((u: string) => fetchBytes(u)) : []),
         ...(fields.locationMapImage ? [fetchBytes(fields.locationMapImage)] : []),
+        ...(fields.coverPageImage ? [fetchBytes(fields.coverPageImage)] : []),
       ]);
 
       const propImageBytes: Uint8Array[] = imageResults.slice(0, propertyImgs.length) as Uint8Array[];
@@ -829,6 +832,12 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.drawTextBlock(`${fields.applicantName || fields.ownerName || '________'}`.toUpperCase(), { bold: true, align: 'center', fontSize: 13, underline: true });
       r.drawTextBlock(`${prefix}${fields.propertyAddress || '________'}`.toUpperCase(), { bold: true, align: 'center', fontSize: 13 });
       r.advanceCursor(12);
+      
+      if (coverPageImageBytes) {
+        await r.drawImageBlock(coverPageImageBytes as Uint8Array, { maxWidth: 500, maxHeight: 300, centered: true, borderColor: '#195B8E', borderWidth: 2 });
+        r.advanceCursor(12);
+      }
+      
       r.drawCenteredTitle('OWNER OF THE PROPERTY', 13);
       r.advanceCursor(4);
       r.drawTextBlock((fields.applicantName || fields.ownerName || '________').toUpperCase(), { bold: true, align: 'center', fontSize: 11, underline: true });
@@ -1673,6 +1682,34 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
                   <input type="text" value={fields.managingDirectorName || ''} onChange={e => handleChange('managingDirectorName', e.target.value)} className={inputCls} placeholder="e.g. MR. RAJENDRA PRASAD AGARWAL" disabled={isReadOnly} />
                 </Field>
               )}
+              <div className="col-span-1 md:col-span-2 mt-4 p-4 border border-[#e0e0e0] rounded-xl bg-gray-50">
+                <p className="text-sm font-bold text-[#1e3a5f] uppercase tracking-wider mb-2">Cover Page Photograph (Max 1)</p>
+                {!isReadOnly && (
+                  <div className="flex items-center gap-3 mb-3">
+                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+                      {uploading ? 'Uploading...' : '📷 Add Property Images'}
+                      <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'coverPageImage')} disabled={uploading} />
+                    </label>
+                    {bucketImages && bucketImages.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => openBucketPicker('coverPageImage')}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-sm font-medium hover:bg-[#1e3a5f]/5 transition-colors"
+                      >
+                        📸 Pick from Bucket ({bucketImages.length})
+                      </button>
+                    )}
+                  </div>
+                )}
+                {fields.coverPageImage && (
+                  <div className="relative inline-block border-2 border-[#1e3a5f] rounded-lg overflow-hidden">
+                    <img src={fields.coverPageImage} alt="Cover Page" className="h-40 w-auto object-contain" />
+                    {!isReadOnly && (
+                      <button type="button" onClick={() => handleChange('coverPageImage', '')} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 shadow-md">✕</button>
+                    )}
+                  </div>
+                )}
+              </div>
               <Field label="Type of Property">
                 <select value={fields.propertyType} onChange={e => handleChange('propertyType', e.target.value)} className={selectCls} disabled={isReadOnly}>
                   <option value="Defunct Industrial Unit">Defunct Industrial Unit</option>

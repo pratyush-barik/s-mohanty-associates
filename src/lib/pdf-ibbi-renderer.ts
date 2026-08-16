@@ -888,6 +888,8 @@ export class PDFIBBIRenderer {
       maxHeight?: number;
       caption?: string;
       centered?: boolean;
+      borderColor?: string;
+      borderWidth?: number;
     }
   ): Promise<void> {
     if (!imageBytes || imageBytes.length === 0) return;
@@ -921,6 +923,13 @@ export class PDFIBBIRenderer {
     const pY = this.pdfY(this.cursorY) - h;
 
     this.page.drawImage(img, { x, y: pY, width: w, height: h });
+    if (opts?.borderColor) {
+      this.page.drawRectangle({
+        x, y: pY, width: w, height: h,
+        borderColor: hexToRgb(opts.borderColor),
+        borderWidth: opts.borderWidth || 2,
+      });
+    }
     this.cursorY += h + 4;
 
     if (opts?.caption) {
