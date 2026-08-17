@@ -104,6 +104,7 @@ export interface IncomeTaxFieldsForPDF {
     area: string;
     mouza: string;
   }[];
+  plinthAreaConsidered: string;
 }
 
 export async function generateIncomeTaxPDF(
@@ -420,6 +421,47 @@ export async function generateIncomeTaxPDF(
     cy += rowH;
   };
 
+  const drawQRowMulti = (qNo: string, items: { q: string, a: string }[]) => {
+    const fs = 12;
+    const h1 = cellHeight(qNo, qColW[0], { bold: true, fontSize: fs });
+    let totalH = 0;
+    const subHeights = items.map(item => {
+      const qLines = wrapMultiLineText(item.q, qColW[1] - 8, fontR, fs);
+      const aLines = wrapMultiLineText(item.a, qColW[2] - 8, fontR, fs);
+      const rowH = Math.max(qLines.length * fs * LINE_H + 6, aLines.length * fs * LINE_H + 6);
+      return { rowH, qLines, aLines };
+    });
+    subHeights.forEach(sh => totalH += sh.rowH);
+    totalH = Math.max(totalH, h1);
+    
+    ensureSpace(totalH);
+    const startY = cy;
+    
+    page.drawRectangle({ x: ML, y: pdfY(startY) - totalH, width: qColW[0], height: totalH, borderColor: rgb(0,0,0), borderWidth: 0.5 });
+    page.drawRectangle({ x: ML + qColW[0], y: pdfY(startY) - totalH, width: qColW[1], height: totalH, borderColor: rgb(0,0,0), borderWidth: 0.5 });
+    page.drawRectangle({ x: ML + qColW[0] + qColW[1], y: pdfY(startY) - totalH, width: qColW[2], height: totalH, borderColor: rgb(0,0,0), borderWidth: 0.5 });
+
+    const tw = fontB.widthOfTextAtSize(qNo, fs);
+    page.drawText(qNo, { x: ML + (qColW[0] - tw) / 2, y: pdfY(startY + 3 + (h1 - fs * LINE_H) / 2) - fs * 0.8, size: fs, font: fontB, color: rgb(0,0,0) });
+
+    let currY = startY;
+    const padX = 4; const padY = 3;
+    items.forEach((item, idx) => {
+      const { rowH, qLines, aLines } = subHeights[idx];
+      if (idx > 0) {
+        page.drawLine({ start: { x: ML + qColW[0], y: pdfY(currY) }, end: { x: ML + CW, y: pdfY(currY) }, thickness: 0.5, color: rgb(0,0,0) });
+      }
+      for (let i = 0; i < qLines.length; i++) {
+        page.drawText(qLines[i], { x: ML + qColW[0] + padX, y: pdfY(currY + padY + i * fs * LINE_H) - fs * 0.8, size: fs, font: fontR, color: rgb(0,0,0) });
+      }
+      for (let i = 0; i < aLines.length; i++) {
+        page.drawText(aLines[i], { x: ML + qColW[0] + qColW[1] + padX, y: pdfY(currY + padY + i * fs * LINE_H) - fs * 0.8, size: fs, font: fontR, color: rgb(0,0,0) });
+      }
+      currY += rowH;
+    });
+    cy += totalH;
+  };
+
   // ═══════════════════════════════════════════════════════
   // BLOCK 1 — INNER TITLE BLOCK
   // ═══════════════════════════════════════════════════════
@@ -544,13 +586,13 @@ export async function generateIncomeTaxPDF(
 
   // TABLE D — RENT
   drawQHeader('RENT');
-  const q25Answer = [
-    `(I) ${fields.tenantName || 'NOT APPLICABLE'}`,
-    `(II) ${fields.tenantPortion || 'NOT APPLICABLE'}`,
-    `(III) ${fields.tenantRent || 'NOT APPLICABLE'}`,
-    `(IV) ${fields.tenantGrossAmount || 'NOT APPLICABLE'}`,
-  ].join('\n');
-  drawQRow('25', 'NAME OF TENANT/LESSEES/LICENSEES, ETC. PORTION IN THEIR OCCUPATION. MONTHLY OR ANNUAL RENT/COMPENSATION/LICENSE FEE, ETC. PAID BY EACH. GROSS AMOUNT RECEIVED FOR THE WHOLE PROPERTY:', q25Answer);
+  const q25Items = [
+    { q: '(I) NAME OF TENANT/LESSEES/LICENSEES, ETC.', a: fields.tenantName || 'NOT APPLICABLE' },
+    { q: '(II) PORTION IN THEIR OCCUPATION', a: fields.tenantPortion || 'NOT APPLICABLE' },
+    { q: '(III) MONTHLY OR ANNUAL RENT/COMPENSATION/LICENSE FEE, ETC. PAID BY EACH.', a: fields.tenantRent || 'NOT APPLICABLE' },
+    { q: '(IV) GROSS AMOUNT RECEIVED FOR THE WHOLE PROPERTY:', a: fields.tenantGrossAmount || 'NOT APPLICABLE' }
+  ];
+  drawQRowMulti('25', q25Items);
   drawQRow('26', 'ARE ANY OF THE OCCUPANTS RELATED TO, OR CLOSE BUSINESS ASSOCIATES OF THE OWNER?', fields.relatedOccupants);
   drawQRow('27', 'IS SEPARATE AMOUNT BEING RECOVERED FOR THE USE OF FIXTURES LIKE FANS, GEYSERS, REFRIGERATORS, COOKING RANGES, BUILT IN WARDROBES, ETC., OR FOR SERVICE CHARGES? IF SO GIVE DETAILS.', fields.fixtures);
   drawQRow('28', 'GIVE DETAILS OF WATER AND ELECTRICITY CHARGES, IF ANY, TO BE BORNE BY THE OWNER.', fields.waterElectricCharges);
@@ -639,8 +681,113 @@ export async function generateIncomeTaxPDF(
   if (!isLandOnly) {
     // TABLE E — ANNEXURE HEADER
     ensureSpace(60);
-    drawText('ANNEXURE TO FORM 0-1', { bold: true, align: 'center' });
-    advanceCursor(8);
+    const annxStr = 'ANNEXURE TO FORM 0-1';
+    const annxFs = 14;
+    const annxW = fontB.widthOfTextAtSize(annxStr, annxFs);
+    const annxX = ML + (CW - annxW) / 2;
+    page.drawText(annxStr, { x: annxX, y: pdfY(cy) - annxFs * 0.8, size: annxFs, font: fontB, color: rgb(0,0,0) });
+    page.drawLine({ start: { x: annxX, y: pdfY(cy) - annxFs * 0.8 - 2 }, end: { x: annxX + annxW, y: pdfY(cy) - annxFs * 0.8 - 2 }, thickness: 1, color: rgb(0,0,0) });
+    cy += annxFs * LINE_H + 12;
+
+    // Technical Details Header Table
+    const thCols = [CW * 0.20, CW * 0.20, CW * 0.15, CW * 0.15, CW * 0.15, CW * 0.15];
+    const thH = 20;
+    ensureSpace(thH * 2);
+    
+    // Draw cells for row 1
+    let thX = ML;
+    drawCell(thX, cy, thCols[0], thH * 2, 'TECHNICAL\nDETAILS', { bold: true });
+    thX += thCols[0];
+    drawCell(thX, cy, thCols[1], thH, 'MAIN\nBUILDING', { bold: true });
+    thX += thCols[1];
+    drawCell(thX, cy, thCols[2], thH, 'ANNEXES', { bold: true });
+    thX += thCols[2];
+    drawCell(thX, cy, thCols[3], thH, 'SERVANTS\nQUARTERS', { bold: true });
+    thX += thCols[3];
+    drawCell(thX, cy, thCols[4], thH, 'GARAGE', { bold: true });
+    thX += thCols[4];
+    drawCell(thX, cy, thCols[5], thH, 'PUMP\nHOUSE', { bold: true });
+    
+    // Draw cells for row 2
+    thX = ML + thCols[0];
+    const cy2 = cy + thH;
+    drawCell(thX, cy2, thCols[1], thH, fields.annexMainBuilding || '1 NOS', { bold: true });
+    thX += thCols[1];
+    drawCell(thX, cy2, thCols[2], thH, fields.annexAnnexes || 'NIL', { bold: true });
+    thX += thCols[2];
+    drawCell(thX, cy2, thCols[3], thH, fields.annexServantsQuarters || 'NIL', { bold: true });
+    thX += thCols[3];
+    drawCell(thX, cy2, thCols[4], thH, fields.annexGarage || 'NIL', { bold: true });
+    thX += thCols[4];
+    drawCell(thX, cy2, thCols[5], thH, fields.annexPumpHouse || 'NIL', { bold: true });
+    
+    cy += thH * 2;
+
+    // Q01 Formatting
+    let q01Floors = fields.techFloors ? fields.techFloors.trim().toUpperCase() : '';
+    let q01Height = fields.techFloorHeight ? fields.techFloorHeight.trim().toUpperCase() : '';
+    if (q01Height && !q01Height.startsWith('HEIGHT')) {
+      q01Height = `HEIGHT–${q01Height}`;
+    }
+    const q01Ans = [
+      q01Floors ? `- ${q01Floors}` : '',
+      q01Height ? `- ${q01Height}` : ''
+    ].filter(Boolean).join('\n');
+
+    drawQRow('01', 'NO. OF FLOORS AND HEIGHT OF EACH FLOOR:', q01Ans);
+
+    // Q02 Formatting
+    let q02ActualAns = renderBulletLines((fields.techPlinthAreaActual || '').split('\n'));
+    if (fields.plinthAreaConsidered === 'ACTUAL') {
+      q02ActualAns += '\n\nACTUAL PLINTH AREA IS CONSIDERED FOR VALUATION PURPOSE';
+    }
+
+    let q02ApprovedAns = renderBulletLines((fields.techPlinthAreaApproved || '').split('\n'));
+    if (fields.plinthAreaConsidered === 'APPROVED') {
+      q02ApprovedAns += '\n\nAPPROVED PLINTH AREA IS CONSIDERED FOR VALUATION PURPOSE';
+    }
+
+    let authority = 'PKDA';
+    if (fields.buildingApproval) {
+      const upperApproval = fields.buildingApproval.toUpperCase();
+      if (upperApproval.includes('BDA')) authority = 'BDA';
+      else if (upperApproval.includes('CDA')) authority = 'CDA';
+      else if (upperApproval.includes('PKDA')) authority = 'PKDA';
+      else if (upperApproval.includes('BMC')) authority = 'BMC';
+    }
+
+    drawQRow('02', 'PLINTH AREA FLOOR-WISE(AS PER ISI3861-1966): (AS PER ACTUAL)', q02ActualAns);
+    drawQRow('', `PLINTH AREA FLOOR-WISE(AS PER ISI3861-1966): (AS PER ${authority} APPROVAL PLAN)`, q02ApprovedAns);
+
+    // Q03-Q06
+    drawQRow('03', 'YEAR OF CONSTRUCTION:', fields.techYearConstruction);
+    drawQRow('04', 'ESTIMATED FUTURE LIFE:', fields.techFutureLife);
+    drawQRow('05', 'TYPE OF CONSTRUCTION:', fields.techConstructionType);
+    drawQRow('06', 'TYPE OF FOUNDATION:', fields.techFoundation);
+
+    // Q07 Walls split
+    const q07Items = [
+      { q: '(A) BASEMENT AND PLINTH', a: fields.techWallsBasement || 'NOT APPLICABLE' },
+      { q: '(B) GROUND FLOOR', a: fields.techWallsGround || 'NOT APPLICABLE' }
+    ];
+    drawQRowMulti('07', q07Items);
+
+    // Q08-Q20
+    drawQRow('08', 'PARTITIONS:', fields.techPartitions);
+    drawQRow('09', 'DOORS & WINDOWS:', fields.techDoorsWindows);
+    drawQRow('10', 'FLOORING:', fields.techFlooring);
+    drawQRow('11', 'FINISHING (INTERNAL/EXTERNAL):', fields.techFinishing);
+    drawQRow('12', 'ROOFING & TERRACING:\nARCHITECTURAL FEATURES:', `${fields.techRoofing}\n${fields.techArchitecturalFeatures}`);
+    drawQRow('13', 'TYPE OF WIRING AND CLASS:', fields.techWiring);
+    drawQRow('14', 'SANITARY INSTALLATION:', fields.techSanitary);
+    drawQRow('15', 'COMPOUND WALL:', fields.techCompoundWall);
+    drawQRow('16', 'LIFTS:', fields.techLifts);
+    drawQRow('17', 'OVERHEAD WATER TANK:', fields.techOverheadTank);
+    drawQRow('18', 'PUMP:\nUNDERGROUND SUMP:', `${fields.techPump}\n${fields.techUndergroundSump}`);
+    drawQRow('19', 'ROADS AND PAVING:', fields.techRoadsPaving);
+    drawQRow('20', 'SEWAGE DISPOSAL:', fields.techSewageDisposal);
+    
+    advanceCursor(12);
 
     // TABLE I — VALUATION CALCULATION
     drawText(`MODIFICATION IN THE ANNEXURE TO FORM NO–01 DETAILS OF VALUATION (AS ON ${fields.valuationCalcDate || fields.valuationDate})`, { bold: true });
