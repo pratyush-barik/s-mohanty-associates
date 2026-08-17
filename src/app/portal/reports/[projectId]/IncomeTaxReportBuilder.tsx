@@ -1596,32 +1596,402 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           </div>
         </Section>
 
-        {/* ═══ SECTION 5: ANNEXURES & APPENDICES ═══ */}
-                {/* ═══ SECTION 5: ANNEXURES & APPENDICES ═══ */}
+        ﻿        {/* ÔòÉÔòÉÔòÉ SECTION 5: ANNEXURES & APPENDICES ÔòÉÔòÉÔòÉ */}
         <Section title="ANNEXURES & APPENDICES" number={5}>
           <div className="space-y-3">
-${newTechDetails}
+{!isLandOnly && (
+          <SubSection id="subsection-tech-details" title="Annexure: Technical Details (Items 01ÔÇô20)" defaultOpen={false}>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="md:col-span-2 p-4 bg-[#f8f9fa]/80 border border-[#dee2e6] rounded-xl shadow-sm space-y-3">
+                <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">01. No. of Floors & Height</span>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Field label="No. of Floors">
+                    <input className={inputCls} value={fields.techFloors} onChange={e => handleChange('techFloors', e.target.value)} disabled={isReadOnly} placeholder="B+G+2 STORIED BUILDING" />
+                  </Field>
+                  <Field label="Floor Height">
+                    <input className={inputCls} value={fields.techFloorHeight} onChange={e => handleChange('techFloorHeight', e.target.value)} disabled={isReadOnly} placeholder='HEIGHT-10-6"' />
+                  </Field>
+                </div>
+              </div>
+              <Field label="02. Plinth Area (Actual)" span={2}>
+                <textarea className={textareaCls} value={fields.techPlinthAreaActual} onChange={e => handleChange('techPlinthAreaActual', e.target.value)} disabled={isReadOnly}
+                  placeholder="GF: 791 SQFT, FF: 702 SQFT..." rows={2} />
+              </Field>
+              <Field label="02. Plinth Area (Approved Plan)" span={2}>
+                <textarea className={textareaCls} value={fields.techPlinthAreaApproved} onChange={e => handleChange('techPlinthAreaApproved', e.target.value)} disabled={isReadOnly}
+                  placeholder="GF: 750 SQFT, FF: 680 SQFT..." rows={2} />
+              </Field>
+              <Field label="03. Year of Construction">
+                <input className={inputCls} value={fields.techYearConstruction} onChange={e => handleChange('techYearConstruction', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="04. Estimated Future Life">
+                <input className={inputCls} value={fields.techFutureLife} onChange={e => handleChange('techFutureLife', e.target.value)} disabled={isReadOnly} placeholder="48-YEARS" />
+              </Field>
+              <Field label="05. Construction Type">
+                <input className={inputCls} value={fields.techConstructionType} onChange={e => handleChange('techConstructionType', e.target.value)} disabled={isReadOnly} placeholder="RCC FRAMED" />
+              </Field>
+              <Field label="06. Foundation Type">
+                <input className={inputCls} value={fields.techFoundation} onChange={e => handleChange('techFoundation', e.target.value)} disabled={isReadOnly} placeholder="COLUMN FOUNDATION" />
+              </Field>
+              <Field label="07. Walls" span={2}>
+                <input className={inputCls} value={fields.techWalls} onChange={e => handleChange('techWalls', e.target.value)} disabled={isReadOnly} placeholder='PLINTH WALL IS 10" WIDE BRICK WALL. 10" WIDE BRICK WALL' />
+              </Field>
+              <Field label="08. Partitions">
+                <input className={inputCls} value={fields.techPartitions} onChange={e => handleChange('techPartitions', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="09. Doors & Windows">
+                <input className={inputCls} value={fields.techDoorsWindows} onChange={e => handleChange('techDoorsWindows', e.target.value)} disabled={isReadOnly} placeholder="FIRST CLASS HARD WOOD SHUTTER WITH TEAK WOOD FRAME" />
+              </Field>
+              <Field label="10. Flooring">
+                <input className={inputCls} value={fields.techFlooring} onChange={e => handleChange('techFlooring', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="11. Finishing (Internal/External)">
+                <input className={inputCls} value={fields.techFinishing} onChange={e => handleChange('techFinishing', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="12. Roofing & Terracing">
+                <input className={inputCls} value={fields.techRoofing} onChange={e => handleChange('techRoofing', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Architectural Features">
+                <input className={inputCls} value={fields.techArchitecturalFeatures} onChange={e => handleChange('techArchitecturalFeatures', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="13. Wiring Type & Class">
+                <input className={inputCls} value={fields.techWiring} onChange={e => handleChange('techWiring', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="14. Sanitary Installation" span={2}>
+                <textarea className={textareaCls} value={fields.techSanitary} onChange={e => handleChange('techSanitary', e.target.value)} disabled={isReadOnly} rows={2}
+                  placeholder="NO. OF WATER CLOSETSÔÇôX NOS. / NO. OF WASH BASINSÔÇôX NOS...." />
+              </Field>
+              <Field label="15. Compound Wall">
+                <input className={inputCls} value={fields.techCompoundWall} onChange={e => handleChange('techCompoundWall', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="16. Lifts">
+                <input className={inputCls} value={fields.techLifts} onChange={e => handleChange('techLifts', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="17. Overhead Water Tank">
+                <input className={inputCls} value={fields.techOverheadTank} onChange={e => handleChange('techOverheadTank', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="18. Pump">
+                <input className={inputCls} value={fields.techPump} onChange={e => handleChange('techPump', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Underground Sump">
+                <input className={inputCls} value={fields.techUndergroundSump} onChange={e => handleChange('techUndergroundSump', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="19. Roads & Paving">
+                <input className={inputCls} value={fields.techRoadsPaving} onChange={e => handleChange('techRoadsPaving', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="20. Sewage Disposal">
+                <input className={inputCls} value={fields.techSewageDisposal} onChange={e => handleChange('techSewageDisposal', e.target.value)} disabled={isReadOnly} />
+              </Field>
+            </div>
+          </SubSection>
+          )}
 
-${calcTable}
+<SubSection id="subsection-calc-table" title="Valuation Calculation (Table I)">
+          <div className="grid md:grid-cols-2 gap-4 mb-4">
+            <Field label="Valuation Date (for table header)">
+              <input className={inputCls} value={fields.valuationCalcDate} onChange={e => handleChange('valuationCalcDate', e.target.value)} disabled={isReadOnly} placeholder="01.04.2008" />
+            </Field>
+            <Field label="Depreciation % (1.5% ├ù age)">
+              <input className={inputCls} value={fields.depreciationPct} onChange={e => handleChange('depreciationPct', e.target.value)} disabled={isReadOnly} placeholder="7.5" />
+            </Field>
+          </div>
 
-${extraItemsSubSection}
+          {/* Floor Rows */}
+          <div className="space-y-3">
+            <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest">Floor / Building Component Rows</p>
+            {fields.floorRows.map((row, idx) => (
+              <div key={row.id} className="grid grid-cols-6 gap-2 p-3 bg-[#f8f9fa] rounded-lg border border-[#e9ecef]">
+                <div className="col-span-6 flex justify-between items-center mb-1">
+                  <span className="text-xs font-bold text-[#0f2038]">Row {idx + 1}</span>
+                  {!isReadOnly && (
+                    <button type="button" onClick={() => removeFloorRow(row.id)} className="text-red-400 hover:text-red-600 text-xs">Remove</button>
+                  )}
+                </div>
+                <div>
+                  <label className="text-[9px] font-semibold text-[#6c757d] uppercase">Name</label>
+                  <input className={inputCls} value={row.name} onChange={e => updateFloorRow(row.id, 'name', e.target.value)} disabled={isReadOnly} placeholder="GROUND FLOOR" />
+                </div>
+                <div>
+                  <label className="text-[9px] font-semibold text-[#6c757d] uppercase">Plinth Area (SQFT)</label>
+                  <input className={inputCls} value={row.plinthArea} onChange={e => updateFloorRow(row.id, 'plinthArea', e.target.value)} disabled={isReadOnly} placeholder="791" />
+                </div>
+                <div>
+                  <label className="text-[9px] font-semibold text-[#6c757d] uppercase">Roof Height</label>
+                  <input className={inputCls} value={row.roofHeight} onChange={e => updateFloorRow(row.id, 'roofHeight', e.target.value)} disabled={isReadOnly} placeholder='10-6"' />
+                </div>
+                <div>
+                  <label className="text-[9px] font-semibold text-[#6c757d] uppercase">Age</label>
+                  <input className={inputCls} value={row.age} onChange={e => updateFloorRow(row.id, 'age', e.target.value)} disabled={isReadOnly} placeholder="New / 5 Years" />
+                </div>
+                <div>
+                  <label className="text-[9px] font-semibold text-[#6c757d] uppercase">Rate/SQFT</label>
+                  <input className={inputCls} value={row.ratePerSqft} onChange={e => updateFloorRow(row.id, 'ratePerSqft', e.target.value)} disabled={isReadOnly} placeholder="1077.12" />
+                </div>
+                <div>
+                  <label className="text-[9px] font-semibold text-[#6c757d] uppercase">Net Value (auto)</label>
+                  <div className="px-3 py-2.5 rounded-lg bg-green-50 border border-green-200 text-sm font-bold text-green-800">
+                    RS.{formatIndianCurrency(computedFloorRows[idx]?.netValue || 0)}/-
+                  </div>
+                </div>
+              </div>
+            ))}
+            {!isReadOnly && (
+              <button type="button" onClick={addFloorRow} className="w-full py-2.5 rounded-lg border-2 border-dashed border-[#b8860b]/40 text-[#b8860b] font-bold text-xs hover:bg-[#b8860b]/5 transition-colors">
+                + Add Floor / Component Row
+              </button>
+            )}
+          </div>
 
-${totalAbstractSubSection}
+          {/* Computed Building Total */}
+          <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-[#0a1628] to-[#162d4a] text-white">
+            <p className="text-xs font-black text-amber-400 uppercase tracking-widest mb-1">Total Building Value (Auto-calculated)</p>
+            <p className="text-2xl font-bold">RS.{formatIndianCurrency(computedBuildingValue)}/-</p>
+          </div>
+          </SubSection>
 
-${remarks}
+<SubSection id="subsection-extra-items" title="Extra Items (Table J)">
+          {/* Extra Items */}
+          <div className="mb-6">
+            <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest mb-3">Extra Items (Table J)</p>
+            {fields.extraItems.map((item, idx) => (
+              <div key={item.id} className="flex gap-3 mb-2 items-end">
+                <div className="flex-1">
+                  {idx === 0 && <label className="text-[9px] font-semibold text-[#6c757d] uppercase">Description</label>}
+                  <input className={inputCls} value={item.description} onChange={e => updateExtraItem(item.id, 'description', e.target.value)} disabled={isReadOnly}
+                    placeholder="COMPOUND WALL WITH IRON GRILL GATE IN LS" />
+                </div>
+                <div className="w-40">
+                  {idx === 0 && <label className="text-[9px] font-semibold text-[#6c757d] uppercase">Amount (RS.)</label>}
+                  <input className={inputCls} value={item.amount} onChange={e => updateExtraItem(item.id, 'amount', e.target.value)} disabled={isReadOnly} placeholder="150000" />
+                </div>
+                {!isReadOnly && (
+                  <button type="button" onClick={() => removeExtraItem(item.id)} className="text-red-400 hover:text-red-600 text-sm pb-2.5">Ô£ò</button>
+                )}
+              </div>
+            ))}
+            {!isReadOnly && (
+              <button type="button" onClick={addExtraItem} className="text-xs font-bold text-[#b8860b] hover:text-[#8b6914] transition-colors">
+                + Add Extra Item
+              </button>
+            )}
+          </div>
 
-${certificate}
 
-${photosReordered}
+          </SubSection>
 
-${landAnnexureSubSection}
+          <SubSection id="subsection-total-abstract" title="Total Abstract for the Entire Property (Table K)">
+          {/* Total Abstract Table K Preview */}
+          <div className="border border-[#e9ecef] rounded-xl overflow-hidden">
+            <div className="bg-[#0a1628] text-white px-5 py-3 text-sm font-bold">TOTAL ABSTRACT FOR THE ENTIRE PROPERTY</div>
+            <div className="divide-y divide-[#e9ecef]">
+              {[
+                { label: 'LAND', value: computedLandValue },
+                { label: 'BUILDING', value: computedBuildingValue },
+                { label: 'EXTRA ITEMS', value: computedExtraTotal },
+              ].map(row => (
+                <div key={row.label} className="flex justify-between px-5 py-3">
+                  <span className="text-sm font-bold text-[#0f2038]">{row.label}</span>
+                  <span className="text-sm font-bold text-[#0f2038]">RS.{formatIndianCurrency(row.value)}/-</span>
+                </div>
+              ))}
+              <div className="flex justify-between px-5 py-4 bg-gradient-to-r from-amber-50 to-amber-100">
+                <span className="text-base font-black text-[#0f2038]">TOTAL</span>
+                <span className="text-base font-black text-[#b8860b]">RS.{formatIndianCurrency(computedTotalProperty)}/-</span>
+              </div>
+              <div className="px-5 py-3 bg-[#f8f9fa]">
+                <span className="text-xs text-[#6c757d]">In words: </span>
+                <span className="text-xs font-bold text-[#0f2038]">{rupeesInWords(computedTotalProperty).toUpperCase()}</span>
+              </div>
+            </div>
+          </div>
+          
+          </SubSection>
+
+<SubSection id="subsection-remarks" title="Remarks" defaultOpen={false}>
+          <label className="flex items-center gap-2 mb-3 cursor-pointer">
+            <input type="checkbox" checked={fields.hasRemarks} onChange={e => handleChange('hasRemarks', e.target.checked)} disabled={isReadOnly}
+              className="w-4 h-4 rounded border-[#dee2e6] text-[#b8860b] focus:ring-[#b8860b]/30" />
+            <span className="text-xs font-bold text-[#495057] uppercase tracking-wider">Include Remarks Section in Report</span>
+          </label>
+          {fields.hasRemarks && (
+            <Field label="Remarks Text" span={2}>
+              <textarea className={textareaCls} value={fields.remarks} onChange={e => handleChange('remarks', e.target.value)} disabled={isReadOnly}
+                placeholder="AS CONFIRMED BY THE CUSTOMER, THE SECOND FLOOR AND THE EXTENSION..." rows={4} />
+            </Field>
+          )}
+          </SubSection>
+
+<SubSection id="subsection-certificate" title="Valuation Certificate (Preview)" defaultOpen={false}>
+          <div className="p-5 bg-[#f8f9fa] rounded-xl border border-[#e9ecef] space-y-3">
+            <p className="text-sm font-bold text-[#0f2038]">VALUATION CERTIFICATE</p>
+            <p className="text-sm text-[#212529] leading-relaxed">
+              AS A RESULT OF MY APPRAISAL AND ANALYSIS IT IS MY CONSIDERED OPINION THAT THE ESTIMATED FAIR MARKET VALUE OF THE PROPERTY
+              (<strong>{fields.propertyType}</strong>) BY <strong>{fields.ownerName.toUpperCase() || '________'}</strong> BEARING{' '}
+              <strong>{fields.propertyDescription ? fields.propertyDescription.toUpperCase().substring(0, 150) + '...' : '________'}</strong>{' '}
+              AS ON <strong>{fields.valuationDate || '________'}</strong> IS{' '}
+              <strong>RS.{formatIndianCurrency(computedTotalProperty)}/-</strong>{' '}
+              ({rupeesInWords(computedTotalProperty).toUpperCase()})
+            </p>
+          </div>
+          </SubSection>
+
+          <SubSection id="subsection-photos" title="Appendices: Photos & Maps" defaultOpen={false}>
+{/* Property Photographs */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest">Property Photographs</p>
+              {bucketImages.length > 0 && !isReadOnly && (
+                <button type="button" onClick={() => openBucketPicker('propertyImages')} className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                  ­ƒô© Pick from Bucket ({bucketImages.length})
+                </button>
+              )}
+            </div>
+            {!isReadOnly && (
+              <input type="file" accept="image/*" multiple onChange={e => handleFileUpload(e, 'propertyImages')} disabled={uploading}
+                className="block w-full text-sm text-[#6c757d] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#b8860b]/10 file:text-[#b8860b] hover:file:bg-[#b8860b]/20 mb-3" />
+            )}
+            {fields.propertyImages.length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {fields.propertyImages.map((url, idx) => (
+                  <div key={idx} className="relative group rounded-lg overflow-hidden border border-[#e9ecef]">
+                    <img src={url} alt={`Photo ${idx + 1}`} className="w-full h-32 object-cover" />
+                    {!isReadOnly && (
+                      <button type="button" onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">Ô£ò</button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+{/* Location Map */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest">Location Map with GPS Co-ordinate</p>
+              {bucketImages.length > 0 && !isReadOnly && (
+                <button type="button" onClick={() => openBucketPicker('locationMapImage')} className="text-xs font-bold text-blue-600 hover:text-blue-800">­ƒô© Pick from Bucket</button>
+              )}
+            </div>
+            {!isReadOnly && <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'locationMapImage')} disabled={uploading} className="block w-full text-sm text-[#6c757d] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#b8860b]/10 file:text-[#b8860b] hover:file:bg-[#b8860b]/20 mb-2" />}
+            {fields.locationMapImage && <img src={fields.locationMapImage} alt="Location Map" className="max-h-48 rounded-lg border border-[#e9ecef]" />}
+          </div>
+
+{/* CII Table Image */}
+          <div className="mb-6">
+            <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest mb-2">CII Table Image (optional ÔÇö for reverse calc)</p>
+            {!isReadOnly && <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'ciiTableImage')} disabled={uploading} className="block w-full text-sm text-[#6c757d] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#b8860b]/10 file:text-[#b8860b] hover:file:bg-[#b8860b]/20 mb-2" />}
+            {fields.ciiTableImage && <img src={fields.ciiTableImage} alt="CII Table" className="max-h-48 rounded-lg border border-[#e9ecef]" />}
+          </div>
+
+{/* BDA Map Image */}
+          <div className="mb-6">
+            <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest mb-2">BDA / Jurisdiction Map Image (optional)</p>
+            {!isReadOnly && <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'bdaMapImage')} disabled={uploading} className="block w-full text-sm text-[#6c757d] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#b8860b]/10 file:text-[#b8860b] hover:file:bg-[#b8860b]/20 mb-2" />}
+            {fields.bdaMapImage && <img src={fields.bdaMapImage} alt="BDA Map" className="max-h-48 rounded-lg border border-[#e9ecef]" />}
+          </div>
+
+{/* Benchmark Value Image */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest">Benchmark Value Document</p>
+              {bucketImages.length > 0 && !isReadOnly && (
+                <button type="button" onClick={() => openBucketPicker('benchmarkImage')} className="text-xs font-bold text-blue-600 hover:text-blue-800">­ƒô© Pick from Bucket</button>
+              )}
+            </div>
+            {!isReadOnly && <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'benchmarkImage')} disabled={uploading} className="block w-full text-sm text-[#6c757d] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#b8860b]/10 file:text-[#b8860b] hover:file:bg-[#b8860b]/20 mb-2" />}
+            {fields.benchmarkImage && <img src={fields.benchmarkImage} alt="Benchmark" className="max-h-48 rounded-lg border border-[#e9ecef]" />}
+          </div>
+
+{/* Sketch Maps */}
+          <div className="bg-white p-4 rounded-xl border border-[#e9ecef] shadow-sm">
+            <div className="flex justify-between items-center mb-4">
+              <label className="block text-sm font-bold text-[#1a3a5c]">Sketch Maps</label>
+              <div className="flex gap-2">
+                {!isReadOnly && (
+                  <>
+                    <label className="cursor-pointer text-xs font-bold text-blue-600 hover:text-blue-800">
+                      Upload
+                      <input type="file" multiple accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'sketchMapImages')} disabled={uploading} />
+                    </label>
+                  </>
+                )}
+              </div>
+            </div>
+            
+            {fields.sketchMapImages && fields.sketchMapImages.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {fields.sketchMapImages.map((url, idx) => (
+                  <div key={idx} className="relative group rounded-lg overflow-hidden border border-[#e9ecef]">
+                    <img src={url} alt={`Sketch Map ${idx + 1}`} className="w-full h-32 object-contain bg-[#f8f9fa]" />
+                    {!isReadOnly && (
+                      <button onClick={() => removeSketchMap(idx)} className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center p-4 border border-dashed rounded-lg text-gray-500 text-sm">
+                No sketch maps added
+              </div>
+            )}
+          </div>
+          </SubSection>
+
+          {/* ÔöÇÔöÇ Sub-section: LAND ANNEXURE ÔöÇÔöÇ */}
+          <SubSection id="subsection-land-annexure" title="Land Annexure Table (Multi-Plot Properties)" defaultOpen={false}>
+          {/* Land Annexure Table */}
+          <div>
+            <label className="flex items-center gap-2 mb-3 cursor-pointer">
+              <input type="checkbox" checked={fields.showLandAnnexure} onChange={e => handleChange('showLandAnnexure', e.target.checked)} disabled={isReadOnly}
+                className="w-4 h-4 rounded border-[#dee2e6] text-[#b8860b] focus:ring-[#b8860b]/30" />
+              <span className="text-xs font-bold text-[#495057] uppercase tracking-wider">Enable Land Annexure Table (Multi-Plot Properties)</span>
+            </label>
+            {fields.showLandAnnexure && (
+              <div className="space-y-2">
+                {fields.landAnnexureRows.map((row, idx) => (
+                  <div key={row.id} className="grid grid-cols-6 gap-2 p-2 bg-[#f8f9fa] rounded-lg border border-[#e9ecef]">
+                    <div>
+                      <label className="text-[9px] font-semibold text-[#6c757d]">Sl No</label>
+                      <input className={inputCls} value={row.slNo} onChange={e => updateLandAnnexureRow(row.id, 'slNo', e.target.value)} disabled={isReadOnly} />
+                    </div>
+                    <div>
+                      <label className="text-[9px] font-semibold text-[#6c757d]">Khata No</label>
+                      <input className={inputCls} value={row.khataNo} onChange={e => updateLandAnnexureRow(row.id, 'khataNo', e.target.value)} disabled={isReadOnly} />
+                    </div>
+                    <div>
+                      <label className="text-[9px] font-semibold text-[#6c757d]">Plot No</label>
+                      <input className={inputCls} value={row.plotNo} onChange={e => updateLandAnnexureRow(row.id, 'plotNo', e.target.value)} disabled={isReadOnly} />
+                    </div>
+                    <div>
+                      <label className="text-[9px] font-semibold text-[#6c757d]">Area</label>
+                      <input className={inputCls} value={row.area} onChange={e => updateLandAnnexureRow(row.id, 'area', e.target.value)} disabled={isReadOnly} />
+                    </div>
+                    <div>
+                      <label className="text-[9px] font-semibold text-[#6c757d]">Mouza</label>
+                      <input className={inputCls} value={row.mouza} onChange={e => updateLandAnnexureRow(row.id, 'mouza', e.target.value)} disabled={isReadOnly} />
+                    </div>
+                    <div className="flex items-end pb-1">
+                      {!isReadOnly && (
+                        <button type="button" onClick={() => removeLandAnnexureRow(row.id)} className="text-red-400 hover:text-red-600 text-xs">Remove</button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {!isReadOnly && (
+                  <button type="button" onClick={addLandAnnexureRow} className="text-xs font-bold text-[#b8860b] hover:text-[#8b6914]">+ Add Plot Row</button>
+                )}
+              </div>
+            )}
+          </div>
+          </SubSection>
           </div>
         </Section>
 
 
 
-
-        {/* ═══ ACTION BUTTONS ═══ */}
+{/* ═══ ACTION BUTTONS ═══ */}
         <div className="flex flex-wrap gap-4 pt-4 items-center w-full pb-6">
           {status === 'COMPLETED' && (
             <div className="w-full p-4 rounded-full bg-green-50 border border-green-200 text-green-800 font-bold flex items-center gap-2">
