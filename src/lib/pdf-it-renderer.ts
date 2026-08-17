@@ -95,6 +95,15 @@ export interface IncomeTaxFieldsForPDF {
   benchmarkImage: string;
   sketchMapImages: string[];
   extraItems: ExtraItem[];
+  showLandAnnexure: boolean;
+  landAnnexureRows: {
+    id: string;
+    slNo: string;
+    khataNo: string;
+    plotNo: string;
+    area: string;
+    mouza: string;
+  }[];
 }
 
 export async function generateIncomeTaxPDF(
@@ -816,6 +825,44 @@ export async function generateIncomeTaxPDF(
         await embedImage(sBytes, `SKETCH MAP${sketchBytesList.length > 1 ? ` ${i + 1}` : ''}`, CW, 600);
       }
     }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // BLOCK 10 — LAND ANNEXURE (Multi-Plot Properties)
+  // ═══════════════════════════════════════════════════════
+  if (fields.showLandAnnexure && fields.landAnnexureRows && fields.landAnnexureRows.length > 0) {
+    ensureSpace(60);
+    const annxHeaderStr = 'ANNEXURE (LAND DETAILS)';
+    const annxHeaderFs = 14;
+    const annxHeaderW = fontB.widthOfTextAtSize(annxHeaderStr, annxHeaderFs);
+    const annxHeaderX = ML + (CW - annxHeaderW) / 2;
+    page.drawText(annxHeaderStr, { x: annxHeaderX, y: pdfY(cy) - annxHeaderFs * 0.8, size: annxHeaderFs, font: fontB, color: rgb(0,0,0) });
+    page.drawLine({ start: { x: annxHeaderX, y: pdfY(cy) - annxHeaderFs * 0.8 - 2 }, end: { x: annxHeaderX + annxHeaderW, y: pdfY(cy) - annxHeaderFs * 0.8 - 2 }, thickness: 1, color: rgb(0,0,0) });
+    cy += annxHeaderFs * LINE_H + 12;
+
+    const annxCols = [CW * 0.1, CW * 0.2, CW * 0.2, CW * 0.2, CW * 0.3];
+    const annxHeaders = ['SL NO', 'KHATA NO', 'PLOT NO', 'AREA', 'MOUZA'];
+    const headerH = 20;
+    ensureSpace(headerH);
+    let cx = ML;
+    for (let i = 0; i < annxHeaders.length; i++) {
+      drawCell(cx, cy, annxCols[i], headerH, annxHeaders[i], { bold: true, fontSize: 10, align: 'center' });
+      cx += annxCols[i];
+    }
+    cy += headerH;
+
+    for (const row of fields.landAnnexureRows) {
+      const rowH = 18;
+      ensureSpace(rowH);
+      cx = ML;
+      const vals = [row.slNo, row.khataNo, row.plotNo, row.area, row.mouza];
+      for (let i = 0; i < vals.length; i++) {
+        drawCell(cx, cy, annxCols[i], rowH, vals[i] || '', { fontSize: 10, align: 'center' });
+        cx += annxCols[i];
+      }
+      cy += rowH;
+    }
+    advanceCursor(12);
   }
 
   // Add page number to last page

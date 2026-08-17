@@ -478,14 +478,19 @@ const FloatingNavigator = ({ isLandOnly, showLandAnnexure }: { isLandOnly: boole
     { id: 'subsection-construction', title: '↳ Construction', sub: '38–42', indent: true },
     { id: 'section-3', title: '3. Part II – Valuation', indent: false },
     { id: 'subsection-valuation-disc', title: '↳ Valuation Discussion', indent: true },
-    ...(!isLandOnly ? [{ id: 'subsection-tech-details', title: '↳ Technical Details', indent: true }] : []),
-    { id: 'subsection-calc-table', title: '↳ Calculation Table', indent: true },
-    { id: 'subsection-abstract', title: '↳ Total Abstract', indent: true },
-    { id: 'subsection-photos', title: '↳ Photographs & Maps', indent: true },
+    
     { id: 'section-4', title: '4. Part III – Declaration', indent: false },
     { id: 'subsection-declaration', title: '↳ Declaration', indent: true },
-    { id: 'subsection-remarks', title: '↳ Remarks', indent: true },
-    { id: 'subsection-certificate', title: '↳ Valuation Certificate', indent: true },
+
+    { id: 'section-5', title: '5. Annexures & Appendices', indent: false },
+    ...(!isLandOnly ? [{ id: 'subsection-tech-details', title: '↳ 1) Technical Details (Items 01-20)', indent: true }] : []),
+    { id: 'subsection-calc-table', title: '↳ 2) Valuation Calculation (Table I)', indent: true },
+    { id: 'subsection-extra-items', title: '↳ 3) Extra Items (Table J)', indent: true },
+    { id: 'subsection-total-abstract', title: '↳ 4) Total Abstract (Table K)', indent: true },
+    { id: 'subsection-remarks', title: '↳ 5) Remarks', indent: true },
+    { id: 'subsection-certificate', title: '↳ 6) Valuation Certificate (Preview)', indent: true },
+    { id: 'subsection-photos', title: '↳ 7) Appendices: Photos & Maps', indent: true },
+    { id: 'subsection-land-annexure', title: '↳ 8) Land Annexure (Multi-Plot)', indent: true },
   ];
 
   useEffect(() => {
@@ -1458,11 +1463,10 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
         </Section>
 
         {/* ═══ SECTION 3: PART II – VALUATION ═══ */}
+                {/* ═══ SECTION 3: PART II – VALUATION ═══ */}
         <Section title="PART II – VALUATION" number={3}>
           <div className="space-y-3">
-
-          {/* ── Sub-section: VALUATION DISCUSSION ── */}
-          <SubSection id="subsection-valuation-disc" title="Valuation Discussion">
+<SubSection id="subsection-valuation-disc" title="Valuation Discussion">
           <div className="mb-6 p-5 bg-[#f8f9fa] rounded-xl border border-[#e9ecef] space-y-3 shadow-sm">
             <p className="text-sm font-bold text-[#0f2038] uppercase tracking-wide">
               HERE THE REGISTERED VALUER SHOULD DISCUSS IN DETAIL HIS APPROACH TO VALUATION OF THE PROPERTY AND INDICATE HOW THE VALUE HAS BEEN ARRIVED AT, SUPPORTED BY NECESSARY CALCULATION.
@@ -1530,9 +1534,54 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
             )}
           </div>
           </SubSection>
+          </div>
+        </Section>
 
-          {/* ── Sub-section: TECHNICAL DETAILS ── */}
-          {!isLandOnly && (
+        {/* ═══ SECTION 4: PART III – DECLARATION ═══ */}
+        <Section title="PART III – DECLARATION" number={4}>
+          <div className="space-y-3">
+<SubSection id="subsection-declaration" title="Declaration">
+            <div className="space-y-4">
+              <div className="p-4 bg-[#f8f9fa] rounded-xl border border-[#dee2e6]">
+                <p className="text-sm font-bold text-[#0f2038] mb-3 uppercase tracking-wide">I HEREBY DECLARE THAT —</p>
+                <div className="space-y-3">
+                  <div className="flex gap-3">
+                    <span className="font-bold text-[#b8860b] text-sm shrink-0">(A)</span>
+                    <p className="text-sm text-[#212529] leading-relaxed">THE INFORMATION FURNISHED IN PART I IS TRUE TO THE BEST OF MY KNOWLEDGE AND BELIEF.</p>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="font-bold text-[#b8860b] text-sm shrink-0">(B)</span>
+                    <p className="text-sm text-[#212529] leading-relaxed">I HAVE NO DIRECT OR INDIRECT INTEREST IN THE PROPERTY VALUED.</p>
+                  </div>
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Date">
+                  <input type="date" className={inputCls} value={fields.declarationDate ?? ''} onChange={e => handleChange('declarationDate', e.target.value)} disabled={isReadOnly} />
+                </Field>
+              </div>
+
+              <div className="mt-6 p-5 bg-white rounded-xl border border-[#e9ecef] flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 shadow-sm">
+                <div className="space-y-1.5">
+                  <p className="text-sm font-bold text-[#0f2038] tracking-wide">
+                    DATE–{fields.declarationDate ? fields.declarationDate.split('-').reverse().join('/') : 'DD/MM/YYYY'}
+                  </p>
+                  <p className="text-sm font-bold text-[#0f2038] tracking-wide">PLACE–BHUBANESWAR</p>
+                </div>
+                <div className="sm:text-right space-y-1.5">
+                  <p className="text-sm font-bold text-[#0f2038] tracking-wide">ER. SATYAJIT MOHANTY</p>
+                  <p className="text-sm font-bold text-[#0f2038] tracking-wide">SIGNATURE OF REGISTERED VALUER</p>
+                </div>
+              </div>
+            </div>
+          </SubSection>
+          </div>
+        </Section>
+
+        {/* ═══ SECTION 5: ANNEXURES & APPENDICES ═══ */}
+        <Section title="ANNEXURES & APPENDICES" number={5}>
+          <div className="space-y-3">
+{!isLandOnly && (
           <SubSection id="subsection-tech-details" title="Annexure: Technical Details (Items 01–20)" defaultOpen={false}>
             <div className="grid md:grid-cols-2 gap-4">
               <Field label="01. No. of Floors & Height">
@@ -1614,8 +1663,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           </SubSection>
           )}
 
-          {/* ── Sub-section: CALCULATION TABLE ── */}
-          <SubSection id="subsection-calc-table" title="Valuation Calculation (Table I)">
+<SubSection id="subsection-calc-table" title="Valuation Calculation (Table I)">
           <div className="grid md:grid-cols-2 gap-4 mb-4">
             <Field label="Valuation Date (for table header)">
               <input className={inputCls} value={fields.valuationCalcDate} onChange={e => handleChange('valuationCalcDate', e.target.value)} disabled={isReadOnly} placeholder="01.04.2008" />
@@ -1678,8 +1726,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           </div>
           </SubSection>
 
-          {/* ── Sub-section: EXTRA ITEMS & ABSTRACT ── */}
-          <SubSection id="subsection-abstract" title="Extra Items & Total Abstract">
+<SubSection id="subsection-extra-items" title="Extra Items (Table J)">
           {/* Extra Items */}
           <div className="mb-6">
             <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest mb-3">Extra Items (Table J)</p>
@@ -1706,6 +1753,10 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
             )}
           </div>
 
+
+          </SubSection>
+
+          <SubSection id="subsection-total-abstract" title="Total Abstract for the Entire Property (Table K)">
           {/* Total Abstract Table K Preview */}
           <div className="border border-[#e9ecef] rounded-xl overflow-hidden">
             <div className="bg-[#0a1628] text-white px-5 py-3 text-sm font-bold">TOTAL ABSTRACT FOR THE ENTIRE PROPERTY</div>
@@ -1730,11 +1781,39 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               </div>
             </div>
           </div>
+          
           </SubSection>
 
-          {/* ── Sub-section: PHOTOS & MAPS ── */}
+<SubSection id="subsection-remarks" title="Remarks" defaultOpen={false}>
+          <label className="flex items-center gap-2 mb-3 cursor-pointer">
+            <input type="checkbox" checked={fields.hasRemarks} onChange={e => handleChange('hasRemarks', e.target.checked)} disabled={isReadOnly}
+              className="w-4 h-4 rounded border-[#dee2e6] text-[#b8860b] focus:ring-[#b8860b]/30" />
+            <span className="text-xs font-bold text-[#495057] uppercase tracking-wider">Include Remarks Section in Report</span>
+          </label>
+          {fields.hasRemarks && (
+            <Field label="Remarks Text" span={2}>
+              <textarea className={textareaCls} value={fields.remarks} onChange={e => handleChange('remarks', e.target.value)} disabled={isReadOnly}
+                placeholder="AS CONFIRMED BY THE CUSTOMER, THE SECOND FLOOR AND THE EXTENSION..." rows={4} />
+            </Field>
+          )}
+          </SubSection>
+
+<SubSection id="subsection-certificate" title="Valuation Certificate (Preview)" defaultOpen={false}>
+          <div className="p-5 bg-[#f8f9fa] rounded-xl border border-[#e9ecef] space-y-3">
+            <p className="text-sm font-bold text-[#0f2038]">VALUATION CERTIFICATE</p>
+            <p className="text-sm text-[#212529] leading-relaxed">
+              AS A RESULT OF MY APPRAISAL AND ANALYSIS IT IS MY CONSIDERED OPINION THAT THE ESTIMATED FAIR MARKET VALUE OF THE PROPERTY
+              (<strong>{fields.propertyType}</strong>) BY <strong>{fields.ownerName.toUpperCase() || '________'}</strong> BEARING{' '}
+              <strong>{fields.propertyDescription ? fields.propertyDescription.toUpperCase().substring(0, 150) + '...' : '________'}</strong>{' '}
+              AS ON <strong>{fields.valuationDate || '________'}</strong> IS{' '}
+              <strong>RS.{formatIndianCurrency(computedTotalProperty)}/-</strong>{' '}
+              ({rupeesInWords(computedTotalProperty).toUpperCase()})
+            </p>
+          </div>
+          </SubSection>
+
           <SubSection id="subsection-photos" title="Appendices: Photos & Maps" defaultOpen={false}>
-          {/* Property Photographs */}
+{/* Property Photographs */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest">Property Photographs</p>
@@ -1762,7 +1841,45 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
             )}
           </div>
 
-          {/* Sketch Maps */}
+{/* Location Map */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest">Location Map with GPS Co-ordinate</p>
+              {bucketImages.length > 0 && !isReadOnly && (
+                <button type="button" onClick={() => openBucketPicker('locationMapImage')} className="text-xs font-bold text-blue-600 hover:text-blue-800">📸 Pick from Bucket</button>
+              )}
+            </div>
+            {!isReadOnly && <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'locationMapImage')} disabled={uploading} className="block w-full text-sm text-[#6c757d] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#b8860b]/10 file:text-[#b8860b] hover:file:bg-[#b8860b]/20 mb-2" />}
+            {fields.locationMapImage && <img src={fields.locationMapImage} alt="Location Map" className="max-h-48 rounded-lg border border-[#e9ecef]" />}
+          </div>
+
+{/* CII Table Image */}
+          <div className="mb-6">
+            <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest mb-2">CII Table Image (optional — for reverse calc)</p>
+            {!isReadOnly && <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'ciiTableImage')} disabled={uploading} className="block w-full text-sm text-[#6c757d] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#b8860b]/10 file:text-[#b8860b] hover:file:bg-[#b8860b]/20 mb-2" />}
+            {fields.ciiTableImage && <img src={fields.ciiTableImage} alt="CII Table" className="max-h-48 rounded-lg border border-[#e9ecef]" />}
+          </div>
+
+{/* BDA Map Image */}
+          <div className="mb-6">
+            <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest mb-2">BDA / Jurisdiction Map Image (optional)</p>
+            {!isReadOnly && <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'bdaMapImage')} disabled={uploading} className="block w-full text-sm text-[#6c757d] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#b8860b]/10 file:text-[#b8860b] hover:file:bg-[#b8860b]/20 mb-2" />}
+            {fields.bdaMapImage && <img src={fields.bdaMapImage} alt="BDA Map" className="max-h-48 rounded-lg border border-[#e9ecef]" />}
+          </div>
+
+{/* Benchmark Value Image */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest">Benchmark Value Document</p>
+              {bucketImages.length > 0 && !isReadOnly && (
+                <button type="button" onClick={() => openBucketPicker('benchmarkImage')} className="text-xs font-bold text-blue-600 hover:text-blue-800">📸 Pick from Bucket</button>
+              )}
+            </div>
+            {!isReadOnly && <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'benchmarkImage')} disabled={uploading} className="block w-full text-sm text-[#6c757d] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#b8860b]/10 file:text-[#b8860b] hover:file:bg-[#b8860b]/20 mb-2" />}
+            {fields.benchmarkImage && <img src={fields.benchmarkImage} alt="Benchmark" className="max-h-48 rounded-lg border border-[#e9ecef]" />}
+          </div>
+
+{/* Sketch Maps */}
           <div className="bg-white p-4 rounded-xl border border-[#e9ecef] shadow-sm">
             <div className="flex justify-between items-center mb-4">
               <label className="block text-sm font-bold text-[#1a3a5c]">Sketch Maps</label>
@@ -1797,45 +1914,10 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               </div>
             )}
           </div>
+          </SubSection>
 
-          {/* Location Map */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest">Location Map with GPS Co-ordinate</p>
-              {bucketImages.length > 0 && !isReadOnly && (
-                <button type="button" onClick={() => openBucketPicker('locationMapImage')} className="text-xs font-bold text-blue-600 hover:text-blue-800">📸 Pick from Bucket</button>
-              )}
-            </div>
-            {!isReadOnly && <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'locationMapImage')} disabled={uploading} className="block w-full text-sm text-[#6c757d] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#b8860b]/10 file:text-[#b8860b] hover:file:bg-[#b8860b]/20 mb-2" />}
-            {fields.locationMapImage && <img src={fields.locationMapImage} alt="Location Map" className="max-h-48 rounded-lg border border-[#e9ecef]" />}
-          </div>
-
-          {/* CII Table Image */}
-          <div className="mb-6">
-            <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest mb-2">CII Table Image (optional — for reverse calc)</p>
-            {!isReadOnly && <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'ciiTableImage')} disabled={uploading} className="block w-full text-sm text-[#6c757d] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#b8860b]/10 file:text-[#b8860b] hover:file:bg-[#b8860b]/20 mb-2" />}
-            {fields.ciiTableImage && <img src={fields.ciiTableImage} alt="CII Table" className="max-h-48 rounded-lg border border-[#e9ecef]" />}
-          </div>
-
-          {/* BDA Map Image */}
-          <div className="mb-6">
-            <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest mb-2">BDA / Jurisdiction Map Image (optional)</p>
-            {!isReadOnly && <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'bdaMapImage')} disabled={uploading} className="block w-full text-sm text-[#6c757d] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#b8860b]/10 file:text-[#b8860b] hover:file:bg-[#b8860b]/20 mb-2" />}
-            {fields.bdaMapImage && <img src={fields.bdaMapImage} alt="BDA Map" className="max-h-48 rounded-lg border border-[#e9ecef]" />}
-          </div>
-
-          {/* Benchmark Value Image */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest">Benchmark Value Document</p>
-              {bucketImages.length > 0 && !isReadOnly && (
-                <button type="button" onClick={() => openBucketPicker('benchmarkImage')} className="text-xs font-bold text-blue-600 hover:text-blue-800">📸 Pick from Bucket</button>
-              )}
-            </div>
-            {!isReadOnly && <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'benchmarkImage')} disabled={uploading} className="block w-full text-sm text-[#6c757d] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#b8860b]/10 file:text-[#b8860b] hover:file:bg-[#b8860b]/20 mb-2" />}
-            {fields.benchmarkImage && <img src={fields.benchmarkImage} alt="Benchmark" className="max-h-48 rounded-lg border border-[#e9ecef]" />}
-          </div>
-
+          {/* ── Sub-section: LAND ANNEXURE ── */}
+          <SubSection id="subsection-land-annexure" title="Land Annexure Table (Multi-Plot Properties)" defaultOpen={false}>
           {/* Land Annexure Table */}
           <div>
             <label className="flex items-center gap-2 mb-3 cursor-pointer">
@@ -1880,83 +1962,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               </div>
             )}
           </div>
-
           </SubSection>
-
-          </div>
-        </Section>
-
-        {/* ═══ SECTION 4: PART III – DECLARATION ═══ */}
-        <Section title="PART III – DECLARATION" number={4}>
-          <div className="space-y-3">
-
-          {/* ── Sub-section: DECLARATION ── */}
-          <SubSection id="subsection-declaration" title="Declaration">
-            <div className="space-y-4">
-              <div className="p-4 bg-[#f8f9fa] rounded-xl border border-[#dee2e6]">
-                <p className="text-sm font-bold text-[#0f2038] mb-3 uppercase tracking-wide">I HEREBY DECLARE THAT —</p>
-                <div className="space-y-3">
-                  <div className="flex gap-3">
-                    <span className="font-bold text-[#b8860b] text-sm shrink-0">(A)</span>
-                    <p className="text-sm text-[#212529] leading-relaxed">THE INFORMATION FURNISHED IN PART I IS TRUE TO THE BEST OF MY KNOWLEDGE AND BELIEF.</p>
-                  </div>
-                  <div className="flex gap-3">
-                    <span className="font-bold text-[#b8860b] text-sm shrink-0">(B)</span>
-                    <p className="text-sm text-[#212529] leading-relaxed">I HAVE NO DIRECT OR INDIRECT INTEREST IN THE PROPERTY VALUED.</p>
-                  </div>
-                </div>
-              </div>
-              <div className="grid md:grid-cols-2 gap-4">
-                <Field label="Date">
-                  <input type="date" className={inputCls} value={fields.declarationDate ?? ''} onChange={e => handleChange('declarationDate', e.target.value)} disabled={isReadOnly} />
-                </Field>
-              </div>
-
-              <div className="mt-6 p-5 bg-white rounded-xl border border-[#e9ecef] flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 shadow-sm">
-                <div className="space-y-1.5">
-                  <p className="text-sm font-bold text-[#0f2038] tracking-wide">
-                    DATE–{fields.declarationDate ? fields.declarationDate.split('-').reverse().join('/') : 'DD/MM/YYYY'}
-                  </p>
-                  <p className="text-sm font-bold text-[#0f2038] tracking-wide">PLACE–BHUBANESWAR</p>
-                </div>
-                <div className="sm:text-right space-y-1.5">
-                  <p className="text-sm font-bold text-[#0f2038] tracking-wide">ER. SATYAJIT MOHANTY</p>
-                  <p className="text-sm font-bold text-[#0f2038] tracking-wide">SIGNATURE OF REGISTERED VALUER</p>
-                </div>
-              </div>
-            </div>
-          </SubSection>
-
-          {/* ── Sub-section: REMARKS ── */}
-          <SubSection id="subsection-remarks" title="Remarks" defaultOpen={false}>
-          <label className="flex items-center gap-2 mb-3 cursor-pointer">
-            <input type="checkbox" checked={fields.hasRemarks} onChange={e => handleChange('hasRemarks', e.target.checked)} disabled={isReadOnly}
-              className="w-4 h-4 rounded border-[#dee2e6] text-[#b8860b] focus:ring-[#b8860b]/30" />
-            <span className="text-xs font-bold text-[#495057] uppercase tracking-wider">Include Remarks Section in Report</span>
-          </label>
-          {fields.hasRemarks && (
-            <Field label="Remarks Text" span={2}>
-              <textarea className={textareaCls} value={fields.remarks} onChange={e => handleChange('remarks', e.target.value)} disabled={isReadOnly}
-                placeholder="AS CONFIRMED BY THE CUSTOMER, THE SECOND FLOOR AND THE EXTENSION..." rows={4} />
-            </Field>
-          )}
-          </SubSection>
-
-          {/* ── Sub-section: CERTIFICATE ── */}
-          <SubSection id="subsection-certificate" title="Valuation Certificate (Preview)" defaultOpen={false}>
-          <div className="p-5 bg-[#f8f9fa] rounded-xl border border-[#e9ecef] space-y-3">
-            <p className="text-sm font-bold text-[#0f2038]">VALUATION CERTIFICATE</p>
-            <p className="text-sm text-[#212529] leading-relaxed">
-              AS A RESULT OF MY APPRAISAL AND ANALYSIS IT IS MY CONSIDERED OPINION THAT THE ESTIMATED FAIR MARKET VALUE OF THE PROPERTY
-              (<strong>{fields.propertyType}</strong>) BY <strong>{fields.ownerName.toUpperCase() || '________'}</strong> BEARING{' '}
-              <strong>{fields.propertyDescription ? fields.propertyDescription.toUpperCase().substring(0, 150) + '...' : '________'}</strong>{' '}
-              AS ON <strong>{fields.valuationDate || '________'}</strong> IS{' '}
-              <strong>RS.{formatIndianCurrency(computedTotalProperty)}/-</strong>{' '}
-              ({rupeesInWords(computedTotalProperty).toUpperCase()})
-            </p>
-          </div>
-          </SubSection>
-
           </div>
         </Section>
 
