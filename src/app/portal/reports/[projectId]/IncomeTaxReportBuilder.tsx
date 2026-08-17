@@ -1166,19 +1166,24 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                 )}
               </div>
 
-              <Field label="02 (A) — Valuation Date">
-                <input className={inputCls} value={fields.valuationDate} onChange={e => handleChange('valuationDate', e.target.value)} disabled={isReadOnly}
-                  placeholder="e.g. 01.04.2001 (VALUATION AT THAT TIME BY REVERSE CALCULATION METHOD)" />
-              </Field>
-              <Field label="02 (B) — Date of Inspection">
-                <input type="date" className={inputCls} value={fields.inspectionDate} onChange={e => handleChange('inspectionDate', e.target.value)} disabled={isReadOnly} />
-              </Field>
-              <Field label="02 (C) — Date of Valuation Report">
-                <input type="date" className={inputCls} value={fields.reportDate} onChange={e => handleChange('reportDate', e.target.value)} disabled={isReadOnly} />
-              </Field>
-              <Field label="02 (D) — Identified By Whom">
-                <input className={inputCls} value={fields.identifiedBy} onChange={e => handleChange('identifiedBy', e.target.value)} disabled={isReadOnly} placeholder="MR. TRILOCHAN NAYAK" />
-              </Field>
+              <div className="md:col-span-2 p-4 bg-[#f8f9fa]/80 border border-[#dee2e6] rounded-xl shadow-sm space-y-3">
+                <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">02 — Dates & Identification</span>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Field label="02 (A) — Valuation Date">
+                    <input className={inputCls} value={fields.valuationDate} onChange={e => handleChange('valuationDate', e.target.value)} disabled={isReadOnly}
+                      placeholder="e.g. 01.04.2001 (VALUATION AT THAT TIME BY REVERSE CALCULATION METHOD)" />
+                  </Field>
+                  <Field label="02 (B) — Date of Inspection">
+                    <input type="date" className={inputCls} value={fields.inspectionDate} onChange={e => handleChange('inspectionDate', e.target.value)} disabled={isReadOnly} />
+                  </Field>
+                  <Field label="02 (C) — Date of Valuation Report">
+                    <input type="date" className={inputCls} value={fields.reportDate} onChange={e => handleChange('reportDate', e.target.value)} disabled={isReadOnly} />
+                  </Field>
+                  <Field label="02 (D) — Identified By Whom">
+                    <input className={inputCls} value={fields.identifiedBy} onChange={e => handleChange('identifiedBy', e.target.value)} disabled={isReadOnly} placeholder="MR. TRILOCHAN NAYAK" />
+                  </Field>
+                </div>
+              </div>
               <Field label="03 — Name of the Owner/Owners" span={2}>
                 <input className={inputCls} value={fields.ownerAddress} onChange={e => handleChange('ownerAddress', e.target.value)} disabled={isReadOnly}
                   placeholder="MR. TRILOCHAN NAYAK, S/O: JATINDRA NATH NAYAK" />
@@ -1242,21 +1247,28 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           <SubSection id="subsection-land" title="Land (Q12–Q20)">
             <div className="grid md:grid-cols-2 gap-4">
 
-              <Field label="12 — Area, Shape, Dimensions & Physical Features" span={2}>
-                <div className="space-y-2">
-                  <div className="flex gap-2">
-                    <input className={inputCls} value={fields.landArea} onChange={e => handleChange('landArea', e.target.value)} disabled={isReadOnly} placeholder="AC.5.325" />
-                    <select className="w-28 px-2 py-2 rounded-lg border border-[#dee2e6] text-sm" value={fields.landAreaUnit} onChange={e => handleChange('landAreaUnit', e.target.value)} disabled={isReadOnly}>
-                      <option value="DEC">DEC</option>
-                      <option value="ACRE">ACRE</option>
-                      <option value="SQFT">SQFT</option>
-                      <option value="SQMT">SQMT</option>
-                    </select>
-                  </div>
-                  <input className={inputCls} value={fields.landShape} onChange={e => handleChange('landShape', e.target.value)} disabled={isReadOnly} placeholder="Shape: RECTANGULAR SHAPE" />
-                  <input className={inputCls} value={fields.landLevel} onChange={e => handleChange('landLevel', e.target.value)} disabled={isReadOnly} placeholder="Physical Features: FLAT AND HIGH LEVEL LAND" />
+              <div className="md:col-span-2 p-4 bg-[#f8f9fa]/80 border border-[#dee2e6] rounded-xl shadow-sm space-y-3">
+                <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">12 — Area, Shape, Dimensions & Physical Features</span>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Field label="Land Area & Unit">
+                    <div className="flex gap-2">
+                      <input className={inputCls} value={fields.landArea} onChange={e => handleChange('landArea', e.target.value)} disabled={isReadOnly} placeholder="AC.5.325" />
+                      <select className="w-28 px-2 py-2 rounded-lg border border-[#dee2e6] text-sm" value={fields.landAreaUnit} onChange={e => handleChange('landAreaUnit', e.target.value)} disabled={isReadOnly}>
+                        <option value="DEC">DEC</option>
+                        <option value="ACRE">ACRE</option>
+                        <option value="SQFT">SQFT</option>
+                        <option value="SQMT">SQMT</option>
+                      </select>
+                    </div>
+                  </Field>
+                  <Field label="Land Shape">
+                    <input className={inputCls} value={fields.landShape} onChange={e => handleChange('landShape', e.target.value)} disabled={isReadOnly} placeholder="Shape: RECTANGULAR SHAPE" />
+                  </Field>
+                  <Field label="Physical Features & Level" span={2}>
+                    <input className={inputCls} value={fields.landLevel} onChange={e => handleChange('landLevel', e.target.value)} disabled={isReadOnly} placeholder="Physical Features: FLAT AND HIGH LEVEL LAND" />
+                  </Field>
                 </div>
-              </Field>
+              </div>
               <Field label="13 — Roads/Streets the Land is Abutting" span={2}>
                 <input className={inputCls} value={fields.roadAccess} onChange={e => handleChange('roadAccess', e.target.value)} disabled={isReadOnly}
                   placeholder='THE LAND IS ABUTTING BY 20&apos;-0" WIDE CC ROAD' />
@@ -1299,19 +1311,18 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               <Field label="22 — Technical Details of Buildings">
                 <input className={inputCls} value={fields.technicalDetails} onChange={e => handleChange('technicalDetails', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="23 (I) — Owner-Occupied / Tenanted / Both?" span={2}>
-                <div className="grid md:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[10px] font-semibold text-[#6c757d] uppercase tracking-wider mb-1">(I) Occupancy Status</label>
+              <div className="md:col-span-2 p-4 bg-[#f8f9fa]/80 border border-[#dee2e6] rounded-xl shadow-sm space-y-3">
+                <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">23 — Tenancy Details</span>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Field label="(I) Occupancy Status">
                     <select className={selectCls} value={fields.tenancyStatus} onChange={e => handleChange('tenancyStatus', e.target.value)} disabled={isReadOnly}>
                       <option value="OWNER OCCUPIED">OWNER OCCUPIED</option>
                       <option value="TENANTED">TENANTED</option>
                       <option value="BOTH (OWNER-OCCUPIED AND TENANTED)">BOTH (OWNER-OCCUPIED AND TENANTED)</option>
                       <option value="NOT APPLICABLE">NOT APPLICABLE</option>
                     </select>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-semibold text-[#6c757d] uppercase tracking-wider mb-1">(II) If Partly Owner-Occupied — Portion & Extent</label>
+                  </Field>
+                  <Field label="(II) If Partly Owner-Occupied — Portion & Extent">
                     <input
                       className={inputCls}
                       value={fields.tenancyPortionDetails}
@@ -1319,9 +1330,9 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                       disabled={isReadOnly}
                       placeholder="Specify portion and area under owner occupation"
                     />
-                  </div>
+                  </Field>
                 </div>
-              </Field>
+              </div>
               <Field label="24 — Floor Space Index (FSI)">
                 <input className={inputCls} value={fields.fsi} onChange={e => handleChange('fsi', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
@@ -1335,26 +1346,23 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
             <div className="grid md:grid-cols-2 gap-4">
 
               {/* Q25 — split into 4 sub-entries */}
-              <Field label="25 — Tenant / Lessees / Licensees Details" span={2}>
-                <div className="grid md:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[10px] font-semibold text-[#6c757d] uppercase tracking-wider mb-1">(I) Name of Tenant / Lessees / Licensees, etc.</label>
+              <div className="md:col-span-2 p-4 bg-[#f8f9fa]/80 border border-[#dee2e6] rounded-xl shadow-sm space-y-3">
+                <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">25 — Tenant / Lessees / Licensees Details</span>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Field label="(I) Name of Tenant / Lessees / Licensees, etc.">
                     <input className={inputCls} value={fields.tenantName} onChange={e => handleChange('tenantName', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-semibold text-[#6c757d] uppercase tracking-wider mb-1">(II) Portion in their Occupation</label>
+                  </Field>
+                  <Field label="(II) Portion in their Occupation">
                     <input className={inputCls} value={fields.tenantPortion} onChange={e => handleChange('tenantPortion', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-semibold text-[#6c757d] uppercase tracking-wider mb-1">(III) Monthly / Annual Rent / Compensation / License Fee, etc. paid by each</label>
+                  </Field>
+                  <Field label="(III) Monthly / Annual Rent / Compensation, etc.">
                     <input className={inputCls} value={fields.tenantRent} onChange={e => handleChange('tenantRent', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-semibold text-[#6c757d] uppercase tracking-wider mb-1">(IV) Gross Amount received for the whole property</label>
+                  </Field>
+                  <Field label="(IV) Gross Amount received for the whole property">
                     <input className={inputCls} value={fields.tenantGrossAmount} onChange={e => handleChange('tenantGrossAmount', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
-                  </div>
+                  </Field>
                 </div>
-              </Field>
+              </div>
               <Field label="26 — Related Occupants">
                 <input className={inputCls} value={fields.relatedOccupants} onChange={e => handleChange('relatedOccupants', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
@@ -1395,40 +1403,37 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                   placeholder="DATA COLLECTED FROM SRO, PURI VIDE APPLICATION NO: XXXXX..." />
               </Field>
               {/* Q36 — structured rate + unit */}
-              <Field label="36 — Land Rate Adopted in this Valuation" span={2}>
-                <div className="space-y-2.5">
-                  <div className="flex gap-3 items-end">
-                    <div className="flex-1">
-                      <label className="block text-[10px] font-semibold text-[#6c757d] uppercase tracking-wider mb-1">Rate per Unit (RS.)</label>
-                      <input
-                        className={inputCls}
-                        type="number"
-                        value={fields.landRatePerUnit}
-                        onChange={e => handleChange('landRatePerUnit', e.target.value)}
-                        disabled={isReadOnly}
-                        placeholder="50000"
-                      />
-                    </div>
-                    <div className="w-36">
-                      <label className="block text-[10px] font-semibold text-[#6c757d] uppercase tracking-wider mb-1">Unit</label>
-                      <select className={selectCls} value={fields.landRateUnit} onChange={e => handleChange('landRateUnit', e.target.value)} disabled={isReadOnly}>
-                        <option value="DEC">DEC</option>
-                        <option value="ACRE">ACRE</option>
-                        <option value="SQ.FT.">SQ.FT.</option>
-                        <option value="SQ.MTR.">SQ.MTR.</option>
-                        <option value="GUNTHA">GUNTHA</option>
-                        <option value="CENT">CENT</option>
-                      </select>
-                    </div>
-                  </div>
+              <div className="md:col-span-2 p-4 bg-[#f8f9fa]/80 border border-[#dee2e6] rounded-xl shadow-sm space-y-3">
+                <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">36 — Land Rate Adopted in this Valuation</span>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Field label="Rate per Unit (RS.)">
+                    <input
+                      className={inputCls}
+                      type="number"
+                      value={fields.landRatePerUnit}
+                      onChange={e => handleChange('landRatePerUnit', e.target.value)}
+                      disabled={isReadOnly}
+                      placeholder="50000"
+                    />
+                  </Field>
+                  <Field label="Unit">
+                    <select className={selectCls} value={fields.landRateUnit} onChange={e => handleChange('landRateUnit', e.target.value)} disabled={isReadOnly}>
+                      <option value="DEC">DEC</option>
+                      <option value="ACRE">ACRE</option>
+                      <option value="SQ.FT.">SQ.FT.</option>
+                      <option value="SQ.MTR.">SQ.MTR.</option>
+                      <option value="GUNTHA">GUNTHA</option>
+                      <option value="CENT">CENT</option>
+                    </select>
+                  </Field>
                   {fields.landRatePerUnit && (
-                    <div className="rounded-lg bg-[#fffbee] border border-[#b8860b]/30 px-3 py-2 text-xs text-[#6c4a00] font-mono leading-5">
+                    <div className="md:col-span-2 rounded-lg bg-[#fffbee] border border-[#b8860b]/30 px-3 py-2 text-xs text-[#6c4a00] font-mono leading-5">
                       <span className="text-[10px] font-bold text-[#b8860b] uppercase tracking-wider block mb-0.5">PDF Preview</span>
                       {`THE RATE IS ABOUT RS.${Number(fields.landRatePerUnit).toLocaleString('en-IN')}/-PER ${fields.landRateUnit}. HENCE TOTAL VALUE OF THE LAND AS APPEARING IN THE ROR= ${fields.landArea || '...'} ${fields.landAreaUnit || fields.landRateUnit} @ RS.${Number(fields.landRatePerUnit).toLocaleString('en-IN')}/-PER ${fields.landRateUnit} =RS.${fields.totalLandValue ? Number(fields.totalLandValue).toLocaleString('en-IN') + '/-' : '...'}`}
                     </div>
                   )}
                 </div>
-              </Field>
+              </div>
               <Field label="Total Land Value (RS.)">
                 <input className={inputCls} value={fields.totalLandValue} onChange={e => handleChange('totalLandValue', e.target.value)} disabled={isReadOnly} placeholder="1500000" />
               </Field>
@@ -1444,18 +1449,17 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
             <div className="grid md:grid-cols-2 gap-4">
 
               {/* Q38 — split into 2 sub-entries */}
-              <Field label="38 — Year of Commencement of Construction and Year of Completion" span={2}>
-                <div className="grid md:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[10px] font-semibold text-[#6c757d] uppercase tracking-wider mb-1">(I) Year of Commencement of Construction</label>
+              <div className="md:col-span-2 p-4 bg-[#f8f9fa]/80 border border-[#dee2e6] rounded-xl shadow-sm space-y-3">
+                <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">38 — Year of Commencement of Construction and Year of Completion</span>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Field label="(I) Year of Commencement of Construction">
                     <input className={inputCls} value={fields.constructionStartYear} onChange={e => handleChange('constructionStartYear', e.target.value.replace(/[^0-9-]/g, ''))} disabled={isReadOnly} placeholder="2005" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-semibold text-[#6c757d] uppercase tracking-wider mb-1">(II) Year of Completion</label>
+                  </Field>
+                  <Field label="(II) Year of Completion">
                     <input className={inputCls} value={fields.constructionEndYear} onChange={e => handleChange('constructionEndYear', e.target.value.replace(/[^0-9-]/g, ''))} disabled={isReadOnly} placeholder="2008" />
-                  </div>
+                  </Field>
                 </div>
-              </Field>
+              </div>
               <Field label="39 — Construction Method">
                 <input className={inputCls} value={fields.constructionMethod} onChange={e => handleChange('constructionMethod', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
