@@ -1133,7 +1133,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           <div className="space-y-3">
 
           {/* ── Sub-section: GENERAL ── */}
-          <SubSection id="subsection-general" title="General (Q01–Q11)">
+          <SubSection id="subsection-general" title="General (01–11)">
             <div className="grid md:grid-cols-2 gap-4">
 
               {/* Q01 — Purpose locked with change button */}
@@ -1244,7 +1244,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           </SubSection>
 
           {/* ── Sub-section: LAND ── */}
-          <SubSection id="subsection-land" title="Land (Q12–Q20)">
+          <SubSection id="subsection-land" title="Land (12–20)">
             <div className="grid md:grid-cols-2 gap-4">
 
               <div className="md:col-span-2 p-4 bg-[#f8f9fa]/80 border border-[#dee2e6] rounded-xl shadow-sm space-y-3">
@@ -1302,7 +1302,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           </SubSection>
 
           {/* ── Sub-section: IMPROVEMENT ── */}
-          <SubSection id="subsection-improvement" title="Improvement (Q21–Q24)" defaultOpen={false}>
+          <SubSection id="subsection-improvement" title="Improvement (21–24)" defaultOpen={false}>
             <div className="grid md:grid-cols-2 gap-4">
 
               <Field label="21 — Plans & Elevations of all Structures">
@@ -1342,7 +1342,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
 
           {/* ── Sub-section: RENT & SALES ── */}
           {/* ── Sub-section: RENT ── */}
-          <SubSection id="subsection-rent" title="Rent (Q25–Q34)" defaultOpen={false}>
+          <SubSection id="subsection-rent" title="Rent (25–34)" defaultOpen={false}>
             <div className="grid md:grid-cols-2 gap-4">
 
               {/* Q25 — split into 4 sub-entries */}
@@ -1395,7 +1395,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           </SubSection>
 
           {/* ── Sub-section: SALES ── */}
-          <SubSection id="subsection-sales" title="Sales (Q35–Q37)" defaultOpen={false}>
+          <SubSection id="subsection-sales" title="Sales (35–37)" defaultOpen={false}>
             <div className="grid md:grid-cols-2 gap-4">
 
               <Field label="35 — Sale Instances" span={2}>
@@ -1445,7 +1445,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           </SubSection>
 
           {/* ── Sub-section: COST OF CONSTRUCTION ── */}
-          <SubSection id="subsection-construction" title="Cost of Construction (Q38–Q42)" defaultOpen={false}>
+          <SubSection id="subsection-construction" title="Cost of Construction (38–42)" defaultOpen={false}>
             <div className="grid md:grid-cols-2 gap-4">
 
               {/* Q38 — split into 2 sub-entries */}
