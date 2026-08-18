@@ -1694,18 +1694,23 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               <Field label="11. Finishing (Internal/External)">
                 <input className={inputCls} value={fields.techFinishing} onChange={e => handleChange('techFinishing', e.target.value)} disabled={isReadOnly} />
               </Field>
-              <Field label="12. Roofing & Terracing">
-                <input className={inputCls} value={fields.techRoofing} onChange={e => handleChange('techRoofing', e.target.value)} disabled={isReadOnly} />
-              </Field>
-              <Field label="Architectural Features">
-                <input className={inputCls} value={fields.techArchitecturalFeatures} onChange={e => handleChange('techArchitecturalFeatures', e.target.value)} disabled={isReadOnly} />
-              </Field>
+              <div className="md:col-span-2 p-4 bg-[#f0fdf4] border border-[#d1e7dd] rounded-xl shadow-sm space-y-3">
+                <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">12. Roofing & Terracing & Architectural Features</span>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Field label="12 (A). Roofing & Terracing">
+                    <input className={inputCls} value={fields.techRoofing} onChange={e => handleChange('techRoofing', e.target.value)} disabled={isReadOnly} />
+                  </Field>
+                  <Field label="12 (B). Special Architectural or Decorative Features">
+                    <input className={inputCls} value={fields.techArchitecturalFeatures} onChange={e => handleChange('techArchitecturalFeatures', e.target.value)} disabled={isReadOnly} />
+                  </Field>
+                </div>
+              </div>
               <Field label="13. Wiring Type & Class">
                 <input className={inputCls} value={fields.techWiring} onChange={e => handleChange('techWiring', e.target.value)} disabled={isReadOnly} />
               </Field>
               <Field label="14. Sanitary Installation" span={2}>
                 <textarea className={textareaCls} value={fields.techSanitary} onChange={e => handleChange('techSanitary', e.target.value)} disabled={isReadOnly} rows={2}
-                  placeholder="NO. OF WATER CLOSETSÔÇôX NOS. / NO. OF WASH BASINSÔÇôX NOS...." />
+                  placeholder="NO. OF WATER CLOSETS-X NOS. / NO. OF WASH BASINS-X NOS...." />
               </Field>
               <Field label="15. Compound Wall">
                 <input className={inputCls} value={fields.techCompoundWall} onChange={e => handleChange('techCompoundWall', e.target.value)} disabled={isReadOnly} />
