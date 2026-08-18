@@ -171,6 +171,8 @@ interface IncomeTaxFields {
   propertyImages: string[];
   propertyImageNames: string[];
   locationMapImage: string;
+  latitude: string;
+  longitude: string;
   ciiTableImage: string;
   bdaMapImage: string;
   benchmarkImage: string;
@@ -326,6 +328,8 @@ const DEFAULT_FIELDS: IncomeTaxFields = {
   propertyImages: [],
   propertyImageNames: [],
   locationMapImage: '',
+  latitude: '',
+  longitude: '',
   ciiTableImage: '',
   bdaMapImage: '',
   benchmarkImage: '',
@@ -627,6 +631,8 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
     showPlinthActual: initialFields?.showPlinthActual !== undefined ? initialFields.showPlinthActual : true,
     showPlinthApproved: initialFields?.showPlinthApproved !== undefined ? initialFields.showPlinthApproved : true,
     techFittings: initialFields?.techFittings !== undefined ? initialFields.techFittings : DEFAULT_FIELDS.techFittings,
+    latitude: initialFields?.latitude || '',
+    longitude: initialFields?.longitude || '',
     // Migration: convert old string fields to string[] for bullet editors
     briefDescriptionLines: Array.isArray(initialFields?.briefDescriptionLines)
       ? initialFields.briefDescriptionLines
@@ -1962,15 +1968,105 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           </div>
 
 {/* Location Map */}
-          <div className="mb-6">
+          <div className="mb-6 space-y-4">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest">Location Map with GPS Co-ordinate</p>
-              {bucketImages.length > 0 && !isReadOnly && (
-                <button type="button" onClick={() => openBucketPicker('locationMapImage')} className="text-xs font-bold text-blue-600 hover:text-blue-800">­ƒô© Pick from Bucket</button>
+            </div>
+            {/* Live Google Maps Embed */}
+            {(() => {
+              const mapQuery = fields.latitude && fields.longitude
+                ? `${fields.latitude},${fields.longitude}`
+                : fields.ownerAddress || '';
+              const encodedQuery = encodeURIComponent(mapQuery);
+              const hasQuery = mapQuery.trim().length > 0;
+              const googleMapsUrl = fields.latitude && fields.longitude
+                ? `https://www.google.com/maps?q=${fields.latitude},${fields.longitude}&z=15&t=k`
+                : `https://www.google.com/maps/search/${encodedQuery}`;
+              return (
+                <div className="space-y-3">
+                  {hasQuery ? (
+                    <div className="rounded-xl overflow-hidden border border-[#c8d6e5] shadow-sm">
+                      <div className="bg-[#d5e8f5] px-4 py-2 flex items-center justify-between">
+                        <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider">
+                          Live Map Preview (Property Address)
+                        </span>
+                        <a
+                          href={googleMapsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-semibold text-[#b8860b] hover:underline"
+                        >
+                          Open in Google Maps ↗
+                        </a>
+                      </div>
+                      <iframe
+                        src={`https://maps.google.com/maps?q=${encodedQuery}&t=k&z=16&output=embed`}
+                        width="100%"
+                        height="300"
+                        style={{ border: 0 }}
+                        allowFullScreen
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        title="Property Location Map"
+                      />
+                      {fields.latitude && fields.longitude && (
+                        <div className="bg-[#0a1628] text-[#f0c040] px-4 py-2 text-xs font-bold text-center">
+                          Latitude: {fields.latitude}, Longitude: {fields.longitude}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="p-6 rounded-xl bg-[#f8f9fa] border border-[#dee2e6] text-center text-sm text-[#6c757d]">
+                      <p className="font-semibold mb-1">No address found.</p>
+                      <p>Fill in the <strong>Property Address</strong> in Section 1 or enter Lat/Long below to auto-load the map.</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Screenshot upload for PDF */}
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-[#495057] uppercase tracking-wider">
+                Screenshot for PDF Report
+              </p>
+              <p className="text-xs text-[#6c757d]">
+                To include a map in the PDF, open Google Maps via the link above, take a satellite screenshot with the pin visible, and upload it below.
+              </p>
+              {fields.locationMapImage ? (
+                <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] max-w-lg">
+                  <img src={fields.locationMapImage} alt="Location Map Screenshot" className="w-full object-contain" />
+                  {!isReadOnly && (
+                    <button type="button" onClick={() => handleChange('locationMapImage', '')} className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">Remove</button>
+                  )}
+                  <div className="absolute bottom-0 left-0 right-0 bg-green-600/90 text-white text-center text-xs py-1 font-semibold">
+                    ✅ Screenshot uploaded — will appear in PDF
+                  </div>
+                </div>
+              ) : (
+                !isReadOnly && (
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+                      {uploading ? 'Uploading...' : '📍 Upload Map Screenshot for PDF'}
+                      <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'locationMapImage')} disabled={uploading} />
+                    </label>
+                    {bucketImages.length > 0 && (
+                      <button type="button" onClick={() => openBucketPicker('locationMapImage')} className="text-xs font-bold text-blue-600 hover:text-blue-800">📸 Pick from Bucket</button>
+                    )}
+                  </div>
+                )
               )}
             </div>
-            {!isReadOnly && <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'locationMapImage')} disabled={uploading} className="block w-full text-sm text-[#6c757d] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#b8860b]/10 file:text-[#b8860b] hover:file:bg-[#b8860b]/20 mb-2" />}
-            {fields.locationMapImage && <img src={fields.locationMapImage} alt="Location Map" className="max-h-48 rounded-lg border border-[#e9ecef]" />}
+
+            {/* Lat/Long inputs */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <Field label="Latitude">
+                <input className={inputCls} value={fields.latitude} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 19.976652" />
+              </Field>
+              <Field label="Longitude">
+                <input className={inputCls} value={fields.longitude} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 86.240795" />
+              </Field>
+            </div>
           </div>
 
 {/* CII Table Image */}
