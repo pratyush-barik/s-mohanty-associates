@@ -3580,7 +3580,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                             }`}
                           >
                             <div className="aspect-square bg-gray-100">
-                              <img src={img.url} alt={img.fileName} className="w-full h-full object-cover" loading="lazy" />
+                              <img src={img.url ? encodeURI(img.url) : ''} alt={img.fileName} className="w-full h-full object-cover" loading="lazy" />
                             </div>
                             <div className="p-2 border-t border-gray-100">
                               <p className="text-[10px] font-bold text-[#0f2038] truncate">{img.employee.name}</p>

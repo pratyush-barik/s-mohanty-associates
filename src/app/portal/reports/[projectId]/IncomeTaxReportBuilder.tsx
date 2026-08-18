@@ -1950,7 +1950,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest">Property Photographs</p>
               {bucketImages.length > 0 && !isReadOnly && (
                 <button type="button" onClick={() => openBucketPicker('propertyImages')} className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1">
-                  ­ƒô© Pick from Bucket ({bucketImages.length})
+                  📸 Pick from Bucket ({bucketImages.length})
                 </button>
               )}
             </div>
@@ -1962,7 +1962,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {fields.propertyImages.map((url, idx) => (
                   <div key={idx} className="relative group rounded-lg overflow-hidden border border-[#e9ecef]">
-                    <img src={url} alt={`Photo ${idx + 1}`} className="w-full h-32 object-cover" />
+                    <img src={url ? encodeURI(url) : ''} alt={`Photo ${idx + 1}`} className="w-full h-32 object-cover" />
                     {!isReadOnly && (
                       <button type="button" onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">×</button>
                     )}
@@ -2040,7 +2040,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               </p>
               {fields.locationMapImage ? (
                 <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] max-w-lg">
-                  <img src={fields.locationMapImage} alt="Location Map Screenshot" className="w-full object-contain" />
+                  <img src={fields.locationMapImage ? encodeURI(fields.locationMapImage) : ''} alt="Location Map Screenshot" className="w-full object-contain" />
                   {!isReadOnly && (
                     <button type="button" onClick={() => handleChange('locationMapImage', '')} className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">Remove</button>
                   )}
@@ -2078,14 +2078,14 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           <div className="mb-6">
             <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest mb-2">CII Table Image (optional ÔÇö for reverse calc)</p>
             {!isReadOnly && <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'ciiTableImage')} disabled={uploading} className="block w-full text-sm text-[#6c757d] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#b8860b]/10 file:text-[#b8860b] hover:file:bg-[#b8860b]/20 mb-2" />}
-            {fields.ciiTableImage && <img src={fields.ciiTableImage} alt="CII Table" className="max-h-48 rounded-lg border border-[#e9ecef]" />}
+            {fields.ciiTableImage && <img src={fields.ciiTableImage ? encodeURI(fields.ciiTableImage) : ''} alt="CII Table" className="max-h-48 rounded-lg border border-[#e9ecef]" />}
           </div>
 
 {/* BDA Map Image */}
           <div className="mb-6">
             <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest mb-2">BDA / Jurisdiction Map Image (optional)</p>
             {!isReadOnly && <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'bdaMapImage')} disabled={uploading} className="block w-full text-sm text-[#6c757d] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#b8860b]/10 file:text-[#b8860b] hover:file:bg-[#b8860b]/20 mb-2" />}
-            {fields.bdaMapImage && <img src={fields.bdaMapImage} alt="BDA Map" className="max-h-48 rounded-lg border border-[#e9ecef]" />}
+            {fields.bdaMapImage && <img src={fields.bdaMapImage ? encodeURI(fields.bdaMapImage) : ''} alt="BDA Map" className="max-h-48 rounded-lg border border-[#e9ecef]" />}
           </div>
 
 {/* Benchmark Value Image */}
@@ -2093,11 +2093,11 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest">Benchmark Value Document</p>
               {bucketImages.length > 0 && !isReadOnly && (
-                <button type="button" onClick={() => openBucketPicker('benchmarkImage')} className="text-xs font-bold text-blue-600 hover:text-blue-800">­ƒô© Pick from Bucket</button>
+                <button type="button" onClick={() => openBucketPicker('benchmarkImage')} className="text-xs font-bold text-blue-600 hover:text-blue-800">📸 Pick from Bucket</button>
               )}
             </div>
             {!isReadOnly && <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'benchmarkImage')} disabled={uploading} className="block w-full text-sm text-[#6c757d] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#b8860b]/10 file:text-[#b8860b] hover:file:bg-[#b8860b]/20 mb-2" />}
-            {fields.benchmarkImage && <img src={fields.benchmarkImage} alt="Benchmark" className="max-h-48 rounded-lg border border-[#e9ecef]" />}
+            {fields.benchmarkImage && <img src={fields.benchmarkImage ? encodeURI(fields.benchmarkImage) : ''} alt="Benchmark" className="max-h-48 rounded-lg border border-[#e9ecef]" />}
           </div>
 
 {/* Sketch Maps */}
@@ -2120,7 +2120,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {fields.sketchMapImages.map((url, idx) => (
                   <div key={idx} className="relative group rounded-lg overflow-hidden border border-[#e9ecef]">
-                    <img src={url} alt={`Sketch Map ${idx + 1}`} className="w-full h-32 object-contain bg-[#f8f9fa]" />
+                    <img src={url ? encodeURI(url) : ''} alt={`Sketch Map ${idx + 1}`} className="w-full h-32 object-contain bg-[#f8f9fa]" />
                     {!isReadOnly && (
                       <button onClick={() => removeSketchMap(idx)} className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
                         Remove
@@ -2322,7 +2322,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                     onClick={() => toggleBucketImage(img.id)}
                     className={`relative rounded-xl overflow-hidden border-2 cursor-pointer transition-all ${bucketSelected.has(img.id) ? 'border-[#b8860b] ring-2 ring-[#b8860b]/30 scale-[0.97]' : 'border-transparent hover:border-[#dee2e6]'}`}
                   >
-                    <img src={img.url} alt={img.fileName} className="w-full h-28 object-cover" />
+                    <img src={img.url ? encodeURI(img.url) : ''} alt={img.fileName} className="w-full h-28 object-cover" />
                     {bucketSelected.has(img.id) && (
                       <div className="absolute top-1.5 right-1.5 w-6 h-6 bg-[#b8860b] rounded-full flex items-center justify-center text-white text-xs font-bold">✓</div>
                     )}
