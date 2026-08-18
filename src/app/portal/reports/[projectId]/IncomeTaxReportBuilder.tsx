@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
+import { saveReportDraft, submitReportForVerification, getBucketImages, deleteBucketImage, saveBucketImage } from '@/app/actions/project';
 import { SERVICES_LIST } from './constants';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { generateIncomeTaxPDF } from '@/lib/pdf-it-renderer';
@@ -681,6 +681,103 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
   const [bucketPickerMode, setBucketPickerMode] = useState<'propertyImages' | 'sketchMapImages' | 'locationMapImage' | 'benchmarkImage' | 'ciiTableImage' | 'bdaMapImage'>('propertyImages');
   const [bucketSelected, setBucketSelected] = useState<Set<string>>(new Set());
   const [bucketPickerAgent, setBucketPickerAgent] = useState<string | null>(null);
+  
+  const [localBucketImages, setLocalBucketImages] = useState<any[]>(bucketImages);
+  const [refreshingBucket, setRefreshingBucket] = useState(false);
+  const [bucketUploading, setBucketUploading] = useState(false);
+
+  const handleRefreshBucket = async () => {
+    setRefreshingBucket(true);
+    try {
+      const res = await getBucketImages(projectId);
+      if (res.images) {
+        setLocalBucketImages(res.images.map((img: any) => ({
+          ...img,
+          createdAt: img.createdAt instanceof Date ? img.createdAt.toISOString() : String(img.createdAt)
+        })));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    setRefreshingBucket(false);
+  };
+
+  const handleDeleteBucketImage = async (img: any) => {
+    if (!confirm('Delete this photo from the bucket?')) return;
+    try {
+      await supabaseBrowser.storage
+        .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+        .remove([img.storagePath]);
+
+      const res = await deleteBucketImage(img.id);
+      if (res.error) {
+        alert(res.error);
+      } else {
+        setLocalBucketImages(prev => prev.filter(i => i.id !== img.id));
+        setBucketSelected(prev => {
+          const next = new Set(prev);
+          next.delete(img.id);
+          return next;
+        });
+      }
+    } catch (e) {
+      console.error('Delete error:', e);
+      alert('Failed to delete photo.');
+    }
+  };
+
+  const handleDirectBucketUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setBucketUploading(true);
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.size > 10 * 1024 * 1024) {
+          alert(`${file.name} exceeds 10MB limit.`);
+          continue;
+        }
+        const ext = file.name.split('.').pop() || 'jpg';
+        const uniqueName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
+        const storagePath = `inspection-photos/${projectId}/${uniqueName}`;
+
+        const { error: uploadError } = await supabaseBrowser.storage
+          .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+          .upload(storagePath, file);
+
+        if (uploadError) {
+          alert(`Upload failed: ${uploadError.message}`);
+          continue;
+        }
+
+        const { data: urlData } = supabaseBrowser.storage
+          .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+          .getPublicUrl(storagePath);
+
+        const result = await saveBucketImage(projectId, {
+          url: urlData.publicUrl,
+          storagePath,
+          fileName: file.name,
+          size: file.size,
+          mimeType: file.type || 'image/jpeg',
+        });
+
+        if (result.error) {
+          alert(result.error);
+        } else if (result.image) {
+          const mapped = {
+            ...result.image,
+            createdAt: result.image.createdAt instanceof Date ? result.image.createdAt.toISOString() : String(result.image.createdAt)
+          };
+          setLocalBucketImages(prev => [mapped, ...prev]);
+        }
+      }
+    } catch (err) {
+      console.error('Upload error:', err);
+      alert('Failed to upload file.');
+    }
+    setBucketUploading(false);
+  };
 
   const bypassUnloadRef = useRef(false);
 
@@ -2300,13 +2397,34 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                     : 'Select one image'}
                 </p>
               </div>
-              <button onClick={() => setBucketPickerOpen(false)} className="text-[#6c757d] hover:text-[#0f2038] text-xl font-bold">✕</button>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleRefreshBucket}
+                  disabled={refreshingBucket}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#b8860b]/10 text-[#b8860b] hover:bg-[#b8860b]/20 transition-all flex items-center gap-1"
+                >
+                  {refreshingBucket ? 'Syncing...' : '🔄 Sync Bucket'}
+                </button>
+                <label className="px-3 py-1.5 rounded-lg text-xs font-bold bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-all cursor-pointer flex items-center gap-1">
+                  {bucketUploading ? 'Uploading...' : '📤 Upload to Bucket'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleDirectBucketUpload}
+                    disabled={bucketUploading}
+                  />
+                </label>
+                <button onClick={() => setBucketPickerOpen(false)} className="text-[#6c757d] hover:text-[#0f2038] text-xl font-bold ml-2">✕</button>
+              </div>
             </div>
 
             {/* Agent Filter */}
             <div className="px-5 py-3 border-b border-[#e9ecef] flex gap-2 flex-wrap">
               <button onClick={() => setBucketPickerAgent(null)} className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors ${!bucketPickerAgent ? 'bg-[#b8860b] text-white' : 'bg-[#f1f3f5] text-[#495057] hover:bg-[#e9ecef]'}`}>All</button>
-              {[...new Set(bucketImages.map(i => i.employee.name))].map(name => (
+              {[...new Set(localBucketImages.map(i => i.employee.name))].map(name => (
                 <button key={name} onClick={() => setBucketPickerAgent(name)} className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors ${bucketPickerAgent === name ? 'bg-[#b8860b] text-white' : 'bg-[#f1f3f5] text-[#495057] hover:bg-[#e9ecef]'}`}>
                   {name}
                 </button>
@@ -2316,16 +2434,27 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
             {/* Image Grid */}
             <div className="flex-1 overflow-y-auto p-5">
               <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
-                {bucketImages.filter(img => !bucketPickerAgent || img.employee.name === bucketPickerAgent).map(img => (
+                {localBucketImages.filter(img => !bucketPickerAgent || img.employee.name === bucketPickerAgent).map(img => (
                   <div
                     key={img.id}
                     onClick={() => toggleBucketImage(img.id)}
-                    className={`relative rounded-xl overflow-hidden border-2 cursor-pointer transition-all ${bucketSelected.has(img.id) ? 'border-[#b8860b] ring-2 ring-[#b8860b]/30 scale-[0.97]' : 'border-transparent hover:border-[#dee2e6]'}`}
+                    className={`relative group rounded-xl overflow-hidden border-2 cursor-pointer transition-all ${bucketSelected.has(img.id) ? 'border-[#b8860b] ring-2 ring-[#b8860b]/30 scale-[0.97]' : 'border-transparent hover:border-[#dee2e6]'}`}
                   >
                     <img src={img.url ? encodeURI(img.url) : ''} alt={img.fileName} className="w-full h-28 object-cover" />
                     {bucketSelected.has(img.id) && (
                       <div className="absolute top-1.5 right-1.5 w-6 h-6 bg-[#b8860b] rounded-full flex items-center justify-center text-white text-xs font-bold">✓</div>
                     )}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteBucketImage(img);
+                      }}
+                      className="absolute top-1.5 left-1.5 w-6 h-6 bg-red-600/90 text-white rounded-full flex items-center justify-center text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
+                      title="Delete from bucket"
+                    >
+                      🗑️
+                    </button>
                     <div className="px-2 py-1.5 bg-white">
                       <p className="text-[9px] font-semibold text-[#495057] truncate">{img.employee.name}</p>
                     </div>

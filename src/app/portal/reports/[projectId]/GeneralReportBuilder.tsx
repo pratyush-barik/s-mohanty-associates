@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
+import { saveReportDraft, submitReportForVerification, getBucketImages, deleteBucketImage, saveBucketImage } from '@/app/actions/project';
 import { SERVICES_LIST } from './constants';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
@@ -704,6 +704,103 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
   const [bucketPickerMode, setBucketPickerMode] = useState<'propertyImages' | 'sketchMapImages' | 'locationMapImage'>('propertyImages');
   const [bucketSelected, setBucketSelected] = useState<Set<string>>(new Set());
   const [bucketPickerAgent, setBucketPickerAgent] = useState<string | null>(null);
+
+  const [localBucketImages, setLocalBucketImages] = useState<any[]>(bucketImages);
+  const [refreshingBucket, setRefreshingBucket] = useState(false);
+  const [bucketUploading, setBucketUploading] = useState(false);
+
+  const handleRefreshBucket = async () => {
+    setRefreshingBucket(true);
+    try {
+      const res = await getBucketImages(projectId);
+      if (res.images) {
+        setLocalBucketImages(res.images.map((img: any) => ({
+          ...img,
+          createdAt: img.createdAt instanceof Date ? img.createdAt.toISOString() : String(img.createdAt)
+        })));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    setRefreshingBucket(false);
+  };
+
+  const handleDeleteBucketImage = async (img: any) => {
+    if (!confirm('Delete this photo from the bucket?')) return;
+    try {
+      await supabaseBrowser.storage
+        .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+        .remove([img.storagePath]);
+
+      const res = await deleteBucketImage(img.id);
+      if (res.error) {
+        alert(res.error);
+      } else {
+        setLocalBucketImages(prev => prev.filter(i => i.id !== img.id));
+        setBucketSelected(prev => {
+          const next = new Set(prev);
+          next.delete(img.id);
+          return next;
+        });
+      }
+    } catch (e) {
+      console.error('Delete error:', e);
+      alert('Failed to delete photo.');
+    }
+  };
+
+  const handleDirectBucketUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setBucketUploading(true);
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.size > 10 * 1024 * 1024) {
+          alert(`${file.name} exceeds 10MB limit.`);
+          continue;
+        }
+        const ext = file.name.split('.').pop() || 'jpg';
+        const uniqueName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
+        const storagePath = `inspection-photos/${projectId}/${uniqueName}`;
+
+        const { error: uploadError } = await supabaseBrowser.storage
+          .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+          .upload(storagePath, file);
+
+        if (uploadError) {
+          alert(`Upload failed: ${uploadError.message}`);
+          continue;
+        }
+
+        const { data: urlData } = supabaseBrowser.storage
+          .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+          .getPublicUrl(storagePath);
+
+        const result = await saveBucketImage(projectId, {
+          url: urlData.publicUrl,
+          storagePath,
+          fileName: file.name,
+          size: file.size,
+          mimeType: file.type || 'image/jpeg',
+        });
+
+        if (result.error) {
+          alert(result.error);
+        } else if (result.image) {
+          const mapped = {
+            ...result.image,
+            createdAt: result.image.createdAt instanceof Date ? result.image.createdAt.toISOString() : String(result.image.createdAt)
+          };
+          setLocalBucketImages(prev => [mapped, ...prev]);
+        }
+      }
+    } catch (err) {
+      console.error('Upload error:', err);
+      alert('Failed to upload file.');
+    }
+    setBucketUploading(false);
+  };
 
   const openBucketPicker = (mode: 'propertyImages' | 'sketchMapImages' | 'locationMapImage') => {
     setBucketPickerMode(mode);
@@ -3515,23 +3612,44 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                     : 'Select a single photo for the map'}
                 </p>
               </div>
-              <button
-                onClick={() => setBucketPickerOpen(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-500 transition-colors"
-              >
-                ✕
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleRefreshBucket}
+                  disabled={refreshingBucket}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#b8860b]/10 text-[#b8860b] hover:bg-[#b8860b]/20 transition-all flex items-center gap-1"
+                >
+                  {refreshingBucket ? 'Syncing...' : '🔄 Sync Bucket'}
+                </button>
+                <label className="px-3 py-1.5 rounded-lg text-xs font-bold bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-all cursor-pointer flex items-center gap-1">
+                  {bucketUploading ? 'Uploading...' : '📤 Upload to Bucket'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleDirectBucketUpload}
+                    disabled={bucketUploading}
+                  />
+                </label>
+                <button
+                  onClick={() => setBucketPickerOpen(false)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-500 transition-colors ml-2"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
             
             <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
-              {bucketImages.length > 0 ? (
+              {localBucketImages.length > 0 ? (
                 bucketPickerAgent === null ? (
                   // Agent Selection View
                   <div className="space-y-4">
                     <p className="text-sm font-semibold text-[#495057] mb-2">Select a Field Agent to view their uploaded photos:</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {Array.from(new Set(bucketImages.map(img => img.employee.employeeId))).map(empId => {
-                        const agentImages = bucketImages.filter(img => img.employee.employeeId === empId);
+                      {Array.from(new Set(localBucketImages.map(img => img.employee.employeeId))).map(empId => {
+                        const agentImages = localBucketImages.filter(img => img.employee.employeeId === empId);
                         const agentName = agentImages[0].employee.name;
                         const selectedCount = agentImages.filter(img => bucketSelected.has(img.id)).length;
                         return (
@@ -3563,13 +3681,14 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                   // Photo Selection View
                   <div className="space-y-4">
                     <button
+                      type="button"
                       onClick={() => setBucketPickerAgent(null)}
                       className="text-sm font-bold text-[#1e3a5f] hover:underline flex items-center gap-1 mb-2"
                     >
                       ← Back to Agents
                     </button>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {bucketImages.filter(img => img.employee.employeeId === bucketPickerAgent).map((img) => {
+                      {localBucketImages.filter(img => img.employee.employeeId === bucketPickerAgent).map((img) => {
                         const isSelected = bucketSelected.has(img.id);
                         return (
                           <div
@@ -3596,6 +3715,17 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                             {!isSelected && (
                               <div className="absolute top-2 right-2 w-6 h-6 bg-black/20 border-2 border-white/50 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" />
                             )}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteBucketImage(img);
+                              }}
+                              className="absolute top-2 left-2 w-6 h-6 bg-red-600/90 text-white rounded-full flex items-center justify-center text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
+                              title="Delete from bucket"
+                            >
+                              🗑️
+                            </button>
                           </div>
                         );
                       })}
@@ -3606,7 +3736,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                 <div className="text-center py-12">
                   <div className="text-4xl mb-3">📷</div>
                   <p className="text-sm font-medium text-[#6c757d]">No photos in the bucket yet.</p>
-                  <p className="text-xs text-[#adb5bd] mt-1">Field agents need to upload photos to this project first.</p>
+                  <p className="text-xs text-[#adb5bd] mt-1">Field agents or editors can upload photos to this project bucket.</p>
                 </div>
               )}
             </div>
