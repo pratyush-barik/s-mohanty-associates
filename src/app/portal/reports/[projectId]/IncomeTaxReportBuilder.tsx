@@ -511,9 +511,9 @@ const FloatingNavigator = ({ isLandOnly, showLandAnnexure }: { isLandOnly: boole
 
     { id: 'section-5', title: '5. Annexures & Appendices', indent: false },
     ...(!isLandOnly ? [{ id: 'subsection-tech-details', title: '↳ i) Technical Details (Items 01-20)', indent: true }] : []),
-    { id: 'subsection-calc-table', title: '↳ ii) Valuation Calculation (Table I)', indent: true },
-    { id: 'subsection-extra-items', title: '↳ iii) Extra Items (Table J)', indent: true },
-    { id: 'subsection-total-abstract', title: '↳ iv) Total Abstract (Table K)', indent: true },
+    { id: 'subsection-calc-table', title: '↳ ii) MODIFICATION', indent: true },
+    { id: 'subsection-extra-items', title: '↳ iii) Extra Items', indent: true },
+    { id: 'subsection-total-abstract', title: '↳ iv) Total Abstract', indent: true },
     { id: 'subsection-remarks', title: '↳ v) Remarks', indent: true },
     { id: 'subsection-certificate', title: '↳ vi) Valuation Certificate (Preview)', indent: true },
     { id: 'subsection-photos', title: '↳ vii) Appendices: Photos & Maps', indent: true },
@@ -1649,7 +1649,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
 {!isLandOnly && (
           <SubSection id="subsection-tech-details" title="Annexure: Technical Details (Items 01-20)" defaultOpen={false}>
             <div className="grid md:grid-cols-2 gap-4">
-              <div className="md:col-span-2 p-4 bg-[#f0fdf4] border border-[#d1e7dd] rounded-xl shadow-sm space-y-3">
+              <div className="md:col-span-2 p-4 bg-[#faf5ff] border border-[#e8d5ff] rounded-xl shadow-sm space-y-3">
                 <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">Annexure to Form O-1 (No. of Units)</span>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                   <Field label="Main Building">
@@ -1717,12 +1717,17 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               <Field label="06. Foundation Type">
                 <input className={inputCls} value={fields.techFoundation} onChange={e => handleChange('techFoundation', e.target.value)} disabled={isReadOnly} placeholder="COLUMN FOUNDATION" />
               </Field>
-              <Field label="07 (A). Walls: Basement & Plinth">
-                <input className={inputCls} value={fields.techWallsBasement} onChange={e => handleChange('techWallsBasement', e.target.value)} disabled={isReadOnly} placeholder='PLINTH WALL IS 10" WIDE BRICK WALL' />
-              </Field>
-              <Field label="07 (B). Walls: Ground Floor">
-                <input className={inputCls} value={fields.techWallsGround} onChange={e => handleChange('techWallsGround', e.target.value)} disabled={isReadOnly} placeholder='10" WIDE BRICK WALL' />
-              </Field>
+              <div className="md:col-span-2 p-4 bg-[#f0fdf4] border border-[#d1e7dd] rounded-xl shadow-sm space-y-3">
+                <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">07. Walls</span>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Field label="07 (A). Walls: Basement & Plinth">
+                    <input className={inputCls} value={fields.techWallsBasement} onChange={e => handleChange('techWallsBasement', e.target.value)} disabled={isReadOnly} placeholder='PLINTH WALL IS 10" WIDE BRICK WALL' />
+                  </Field>
+                  <Field label="07 (B). Walls: Ground Floor">
+                    <input className={inputCls} value={fields.techWallsGround} onChange={e => handleChange('techWallsGround', e.target.value)} disabled={isReadOnly} placeholder='10" WIDE BRICK WALL' />
+                  </Field>
+                </div>
+              </div>
               <Field label="08. Partitions">
                 <input className={inputCls} value={fields.techPartitions} onChange={e => handleChange('techPartitions', e.target.value)} disabled={isReadOnly} />
               </Field>
@@ -1789,7 +1794,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           </SubSection>
           )}
 
-<SubSection id="subsection-calc-table" title="Valuation Calculation (Table I)">
+<SubSection id="subsection-calc-table" title="MODIFICATION IN THE ANNEXURE TO FORM NO –01">
           <div className="grid md:grid-cols-2 gap-4 mb-4">
             <Field label="Valuation Date (for table header)">
               <input className={inputCls} value={fields.valuationCalcDate} onChange={e => handleChange('valuationCalcDate', e.target.value)} disabled={isReadOnly} placeholder="01.04.2008" />
@@ -1852,10 +1857,10 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           </div>
           </SubSection>
 
-<SubSection id="subsection-extra-items" title="Extra Items (Table J)">
+<SubSection id="subsection-extra-items" title="Extra Items">
           {/* Extra Items */}
           <div className="mb-6">
-            <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest mb-3">Extra Items (Table J)</p>
+            <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest mb-3">Extra Items</p>
             {fields.extraItems.map((item, idx) => (
               <div key={item.id} className="flex gap-3 mb-2 items-end">
                 <div className="flex-1">
@@ -1868,7 +1873,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                   <input className={inputCls} value={item.amount} onChange={e => updateExtraItem(item.id, 'amount', e.target.value)} disabled={isReadOnly} placeholder="150000" />
                 </div>
                 {!isReadOnly && (
-                  <button type="button" onClick={() => removeExtraItem(item.id)} className="text-red-400 hover:text-red-600 text-sm pb-2.5">Ô£ò</button>
+                  <button type="button" onClick={() => removeExtraItem(item.id)} className="text-red-400 hover:text-red-600 text-sm pb-2.5">×</button>
                 )}
               </div>
             ))}
@@ -1882,7 +1887,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
 
           </SubSection>
 
-          <SubSection id="subsection-total-abstract" title="Total Abstract for the Entire Property (Table K)">
+          <SubSection id="subsection-total-abstract" title="Total Abstract for the Entire Property">
           {/* Total Abstract Table K Preview */}
           <div className="border border-[#e9ecef] rounded-xl overflow-hidden">
             <div className="bg-[#0a1628] text-white px-5 py-3 text-sm font-bold">TOTAL ABSTRACT FOR THE ENTIRE PROPERTY</div>
@@ -1959,7 +1964,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                   <div key={idx} className="relative group rounded-lg overflow-hidden border border-[#e9ecef]">
                     <img src={url} alt={`Photo ${idx + 1}`} className="w-full h-32 object-cover" />
                     {!isReadOnly && (
-                      <button type="button" onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">Ô£ò</button>
+                      <button type="button" onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">×</button>
                     )}
                   </div>
                 ))}
