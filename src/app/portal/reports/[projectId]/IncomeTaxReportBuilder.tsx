@@ -7,6 +7,7 @@ import { SERVICES_LIST } from './constants';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { generateIncomeTaxPDF } from '@/lib/pdf-it-renderer';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
+import * as XLSX from 'xlsx';
 
 // ─── Types ─────────────────────────────────────────────────────────
 interface ValuationFloorRow {
@@ -800,6 +801,30 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
   };
   const updateLandAnnexureRow = (id: string, key: keyof LandAnnexureRow, value: string) => {
     handleChange('landAnnexureRows', fields.landAnnexureRows.map(r => r.id === id ? { ...r, [key]: value } : r));
+  };
+  const handleLandAnnexureExcelUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData: any[][] = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
+      if (jsonData.length > 1) {
+        const rows = jsonData.slice(1).map((row, idx) => ({
+          id: String(Date.now() + idx),
+          slNo: String(row[0] !== undefined && row[0] !== null && row[0] !== '' ? row[0] : idx + 1),
+          khataNo: String(row[1] !== undefined && row[1] !== null ? row[1] : ''),
+          plotNo: String(row[2] !== undefined && row[2] !== null ? row[2] : ''),
+          area: String(row[3] !== undefined && row[3] !== null ? row[3] : ''),
+          mouza: String(row[4] !== undefined && row[4] !== null ? row[4] : ''),
+        }));
+        handleChange('landAnnexureRows', rows);
+      }
+    } catch (parseErr) {
+      console.error('Could not parse Excel file:', parseErr);
+      alert('Failed to parse Excel file. Please ensure it is a valid format.');
+    }
   };
 
   // ── Valuation Bullet Helpers ──
@@ -2052,7 +2077,21 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                   </div>
                 ))}
                 {!isReadOnly && (
-                  <button type="button" onClick={addLandAnnexureRow} className="text-xs font-bold text-[#b8860b] hover:text-[#8b6914]">+ Add Plot Row</button>
+                  <div className="flex gap-4 items-center mt-2 border-t pt-2 w-full">
+                    <button type="button" onClick={addLandAnnexureRow} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#b8860b]/10 text-[#b8860b] hover:bg-[#b8860b]/20 transition-all flex items-center gap-1">
+                      <span>+</span> Add Plot Row
+                    </button>
+                    
+                    <label className="px-3 py-1.5 rounded-lg text-xs font-bold bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-all cursor-pointer flex items-center gap-1">
+                      <span>↑ Import Excel/CSV</span>
+                      <input
+                        type="file"
+                        accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
+                        className="hidden"
+                        onChange={handleLandAnnexureExcelUpload}
+                      />
+                    </label>
+                  </div>
                 )}
               </div>
             )}
