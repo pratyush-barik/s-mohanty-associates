@@ -58,7 +58,7 @@ export async function submitEnquiry(formData: FormData) {
         senderType: senderType as any,
         organisationName: organisationName || null,
         status: 'NEW',
-        messages: {
+        enquiries: {
           create: {
             sender: 'CLIENT',
             body: message,
