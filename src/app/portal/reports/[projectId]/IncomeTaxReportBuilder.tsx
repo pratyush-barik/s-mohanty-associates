@@ -144,7 +144,8 @@ interface IncomeTaxFields {
   techArchitecturalFeatures: string;
   techWiring: string;
   techFittings: string;
-  techSanitary: string;
+  techSanitary?: string;
+  techSanitaryLines: string[];
   techCompoundWall: string;
   techLifts: string;
   techOverheadTank: string;
@@ -302,6 +303,7 @@ const DEFAULT_FIELDS: IncomeTaxFields = {
   techWiring: 'NOT APPLICABLE',
   techFittings: 'SUPERIOR',
   techSanitary: 'NOT APPLICABLE',
+  techSanitaryLines: [],
   techCompoundWall: 'NOT APPLICABLE',
   techLifts: 'NOT APPLICABLE',
   techOverheadTank: 'NOT APPLICABLE',
@@ -636,6 +638,11 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
     locationDetailsLines: Array.isArray(initialFields?.locationDetailsLines)
       ? initialFields.locationDetailsLines
       : (typeof initialFields?.locationDetails === 'string' && initialFields.locationDetails ? [initialFields.locationDetails] : []),
+    techSanitaryLines: Array.isArray(initialFields?.techSanitaryLines)
+      ? initialFields.techSanitaryLines
+      : (typeof initialFields?.techSanitary === 'string' && initialFields.techSanitary && initialFields.techSanitary !== 'NOT APPLICABLE'
+          ? initialFields.techSanitary.split('\n').filter(Boolean)
+          : []),
     surveyPlotNoLines: Array.isArray(initialFields?.surveyPlotNoLines)
       ? initialFields.surveyPlotNoLines
       : (typeof initialFields?.surveyPlotNo === 'string' && initialFields.surveyPlotNo ? [initialFields.surveyPlotNo] : []),
@@ -1719,10 +1726,13 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                   </Field>
                 </div>
               </div>
-              <Field label="14. Sanitary Installation" span={2}>
-                <textarea className={textareaCls} value={fields.techSanitary} onChange={e => handleChange('techSanitary', e.target.value)} disabled={isReadOnly} rows={2}
-                  placeholder="NO. OF WATER CLOSETS-X NOS. / NO. OF WASH BASINS-X NOS...." />
-              </Field>
+              <BulletEditor
+                label="14. Sanitary Installation"
+                lines={fields.techSanitaryLines}
+                onChange={lines => handleChange('techSanitaryLines', lines)}
+                disabled={isReadOnly}
+                placeholder="NO. OF WATER CLOSETS-X NOS. / NO. OF WASH BASINS-X NOS...."
+              />
               <Field label="15. Compound Wall">
                 <input className={inputCls} value={fields.techCompoundWall} onChange={e => handleChange('techCompoundWall', e.target.value)} disabled={isReadOnly} />
               </Field>
