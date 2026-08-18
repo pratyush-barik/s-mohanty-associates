@@ -497,14 +497,14 @@ const FloatingNavigator = ({ isLandOnly, showLandAnnexure }: { isLandOnly: boole
     { id: 'subsection-declaration', title: '↳ Declaration', indent: true },
 
     { id: 'section-5', title: '5. Annexures & Appendices', indent: false },
-    ...(!isLandOnly ? [{ id: 'subsection-tech-details', title: '↳ 1) Technical Details (Items 01-20)', indent: true }] : []),
-    { id: 'subsection-calc-table', title: '↳ 2) Valuation Calculation (Table I)', indent: true },
-    { id: 'subsection-extra-items', title: '↳ 3) Extra Items (Table J)', indent: true },
-    { id: 'subsection-total-abstract', title: '↳ 4) Total Abstract (Table K)', indent: true },
-    { id: 'subsection-remarks', title: '↳ 5) Remarks', indent: true },
-    { id: 'subsection-certificate', title: '↳ 6) Valuation Certificate (Preview)', indent: true },
-    { id: 'subsection-photos', title: '↳ 7) Appendices: Photos & Maps', indent: true },
-    { id: 'subsection-land-annexure', title: '↳ 8) Land Annexure (Multi-Plot)', indent: true },
+    ...(!isLandOnly ? [{ id: 'subsection-tech-details', title: '↳ i) Technical Details (Items 01-20)', indent: true }] : []),
+    { id: 'subsection-calc-table', title: '↳ ii) Valuation Calculation (Table I)', indent: true },
+    { id: 'subsection-extra-items', title: '↳ iii) Extra Items (Table J)', indent: true },
+    { id: 'subsection-total-abstract', title: '↳ iv) Total Abstract (Table K)', indent: true },
+    { id: 'subsection-remarks', title: '↳ v) Remarks', indent: true },
+    { id: 'subsection-certificate', title: '↳ vi) Valuation Certificate (Preview)', indent: true },
+    { id: 'subsection-photos', title: '↳ vii) Appendices: Photos & Maps', indent: true },
+    { id: 'subsection-land-annexure', title: '↳ viii) Land Annexure (Multi-Plot)', indent: true },
   ];
 
   useEffect(() => {
@@ -1166,7 +1166,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                 )}
               </div>
 
-              <div className="md:col-span-2 p-4 bg-[#f8f9fa]/80 border border-[#dee2e6] rounded-xl shadow-sm space-y-3">
+              <div className="md:col-span-2 p-4 bg-[#f0fdf4] border border-[#d1e7dd] rounded-xl shadow-sm space-y-3">
                 <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">02 — Dates & Identification</span>
                 <div className="grid md:grid-cols-2 gap-4">
                   <Field label="02 (A) — Valuation Date">
@@ -1247,7 +1247,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           <SubSection id="subsection-land" title="Land (12–20)">
             <div className="grid md:grid-cols-2 gap-4">
 
-              <div className="md:col-span-2 p-4 bg-[#f8f9fa]/80 border border-[#dee2e6] rounded-xl shadow-sm space-y-3">
+              <div className="md:col-span-2 p-4 bg-[#f0fdf4] border border-[#d1e7dd] rounded-xl shadow-sm space-y-3">
                 <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">12 — Area, Shape, Dimensions & Physical Features</span>
                 <div className="grid md:grid-cols-2 gap-4">
                   <Field label="Land Area & Unit">
@@ -1311,7 +1311,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               <Field label="22 — Technical Details of Buildings">
                 <input className={inputCls} value={fields.technicalDetails} onChange={e => handleChange('technicalDetails', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <div className="md:col-span-2 p-4 bg-[#f8f9fa]/80 border border-[#dee2e6] rounded-xl shadow-sm space-y-3">
+              <div className="md:col-span-2 p-4 bg-[#f0fdf4] border border-[#d1e7dd] rounded-xl shadow-sm space-y-3">
                 <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">23 — Tenancy Details</span>
                 <div className="grid md:grid-cols-2 gap-4">
                   <Field label="(I) Occupancy Status">
@@ -1346,7 +1346,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
             <div className="grid md:grid-cols-2 gap-4">
 
               {/* Q25 — split into 4 sub-entries */}
-              <div className="md:col-span-2 p-4 bg-[#f8f9fa]/80 border border-[#dee2e6] rounded-xl shadow-sm space-y-3">
+              <div className="md:col-span-2 p-4 bg-[#f0fdf4] border border-[#d1e7dd] rounded-xl shadow-sm space-y-3">
                 <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">25 — Tenant / Lessees / Licensees Details</span>
                 <div className="grid md:grid-cols-2 gap-4">
                   <Field label="(I) Name of Tenant / Lessees / Licensees, etc.">
@@ -1403,7 +1403,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                   placeholder="DATA COLLECTED FROM SRO, PURI VIDE APPLICATION NO: XXXXX..." />
               </Field>
               {/* Q36 — structured rate + unit */}
-              <div className="md:col-span-2 p-4 bg-[#f8f9fa]/80 border border-[#dee2e6] rounded-xl shadow-sm space-y-3">
+              <div className="md:col-span-2 p-4 bg-[#f0fdf4] border border-[#d1e7dd] rounded-xl shadow-sm space-y-3">
                 <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">36 — Land Rate Adopted in this Valuation</span>
                 <div className="grid md:grid-cols-2 gap-4">
                   <Field label="Rate per Unit (RS.)">
@@ -1449,7 +1449,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
             <div className="grid md:grid-cols-2 gap-4">
 
               {/* Q38 — split into 2 sub-entries */}
-              <div className="md:col-span-2 p-4 bg-[#f8f9fa]/80 border border-[#dee2e6] rounded-xl shadow-sm space-y-3">
+              <div className="md:col-span-2 p-4 bg-[#f0fdf4] border border-[#d1e7dd] rounded-xl shadow-sm space-y-3">
                 <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">38 — Year of Commencement of Construction and Year of Completion</span>
                 <div className="grid md:grid-cols-2 gap-4">
                   <Field label="(I) Year of Commencement of Construction">
@@ -1600,9 +1600,9 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
         <Section title="ANNEXURES & APPENDICES" number={5}>
           <div className="space-y-3">
 {!isLandOnly && (
-          <SubSection id="subsection-tech-details" title="Annexure: Technical Details (Items 01ÔÇô20)" defaultOpen={false}>
+          <SubSection id="subsection-tech-details" title="Annexure: Technical Details (Items 01-20)" defaultOpen={false}>
             <div className="grid md:grid-cols-2 gap-4">
-              <div className="md:col-span-2 p-4 bg-[#f8f9fa]/80 border border-[#dee2e6] rounded-xl shadow-sm space-y-3">
+              <div className="md:col-span-2 p-4 bg-[#f0fdf4] border border-[#d1e7dd] rounded-xl shadow-sm space-y-3">
                 <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">01. No. of Floors & Height</span>
                 <div className="grid md:grid-cols-2 gap-4">
                   <Field label="No. of Floors">
