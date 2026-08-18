@@ -380,7 +380,7 @@ export async function generateIncomeTaxPDF(
   };
 
   // Table cell primitive
-  const drawCell = (x: number, topY: number, w: number, h: number, text: string, opts?: { bold?: boolean; fontSize?: number; align?: 'left' | 'center' | 'right' }) => {
+  const drawCell = (x: number, topY: number, w: number, h: number, text: string, opts?: { bold?: boolean; fontSize?: number; align?: 'left' | 'center' | 'right'; vAlign?: 'top' | 'center' }) => {
     const fs = opts?.fontSize || 12;
     const font = opts?.bold ? fontB : fontR;
     // Border
@@ -390,6 +390,12 @@ export async function generateIncomeTaxPDF(
     const padY = 3;
     const textW = w - padX * 2;
     const lines = wrapText(text, textW, font, fs);
+    const totalTextH = lines.length * fs * LINE_H;
+    // Vertical start offset
+    let startPadY = padY;
+    if (opts?.vAlign === 'center') {
+      startPadY = (h - totalTextH) / 2;
+    }
     for (let i = 0; i < lines.length; i++) {
       let dx = x + padX;
       if (opts?.align === 'center') {
@@ -401,7 +407,7 @@ export async function generateIncomeTaxPDF(
       }
       page.drawText(lines[i], {
         x: dx,
-        y: pdfY(topY + padY + i * fs * LINE_H) - fs * 0.8,
+        y: pdfY(topY + startPadY + i * fs * LINE_H) - fs * 0.8,
         size: fs,
         font,
         color: rgb(0, 0, 0),
@@ -725,38 +731,39 @@ export async function generateIncomeTaxPDF(
     page.drawLine({ start: { x: annxX, y: pdfY(cy) - annxFs * 0.8 - 2 }, end: { x: annxX + annxW, y: pdfY(cy) - annxFs * 0.8 - 2 }, thickness: 1, color: rgb(0,0,0) });
     cy += annxFs * LINE_H + 12;
 
-    // Technical Details Header Table
+    // Technical Details Header Table — row 1 (labels, all same height, centered)
     const thCols = [CW * 0.20, CW * 0.20, CW * 0.15, CW * 0.15, CW * 0.15, CW * 0.15];
-    const thH = 20;
+    const thH = 36; // tall enough for 2-line labels, all cols identical
     ensureSpace(thH * 2);
-    
-    // Draw cells for row 1
+
     let thX = ML;
-    drawCell(thX, cy, thCols[0], thH * 2, 'TECHNICAL\nDETAILS', { bold: true });
+    drawCell(thX, cy, thCols[0], thH, 'TECHNICAL\nDETAILS', { bold: true, align: 'center', vAlign: 'center' });
     thX += thCols[0];
-    drawCell(thX, cy, thCols[1], thH, 'MAIN\nBUILDING', { bold: true });
+    drawCell(thX, cy, thCols[1], thH, 'MAIN\nBUILDING', { bold: true, align: 'center', vAlign: 'center' });
     thX += thCols[1];
-    drawCell(thX, cy, thCols[2], thH, 'ANNEXES', { bold: true });
+    drawCell(thX, cy, thCols[2], thH, 'ANNEXES', { bold: true, align: 'center', vAlign: 'center' });
     thX += thCols[2];
-    drawCell(thX, cy, thCols[3], thH, 'SERVANTS\nQUARTERS', { bold: true });
+    drawCell(thX, cy, thCols[3], thH, 'SERVANTS\nQUARTERS', { bold: true, align: 'center', vAlign: 'center' });
     thX += thCols[3];
-    drawCell(thX, cy, thCols[4], thH, 'GARAGE', { bold: true });
+    drawCell(thX, cy, thCols[4], thH, 'GARAGE', { bold: true, align: 'center', vAlign: 'center' });
     thX += thCols[4];
-    drawCell(thX, cy, thCols[5], thH, 'PUMP\nHOUSE', { bold: true });
-    
-    // Draw cells for row 2
-    thX = ML + thCols[0];
+    drawCell(thX, cy, thCols[5], thH, 'PUMP\nHOUSE', { bold: true, align: 'center', vAlign: 'center' });
+
+    // Row 2 — values
+    thX = ML;
     const cy2 = cy + thH;
-    drawCell(thX, cy2, thCols[1], thH, fields.annexMainBuilding || '1 NOS', { bold: true });
+    drawCell(thX, cy2, thCols[0], thH, 'P. NOS', { bold: true, align: 'center', vAlign: 'center' });
+    thX += thCols[0];
+    drawCell(thX, cy2, thCols[1], thH, fields.annexMainBuilding || '1 NOS', { bold: true, align: 'center', vAlign: 'center' });
     thX += thCols[1];
-    drawCell(thX, cy2, thCols[2], thH, fields.annexAnnexes || 'NIL', { bold: true });
+    drawCell(thX, cy2, thCols[2], thH, fields.annexAnnexes || 'NIL', { bold: true, align: 'center', vAlign: 'center' });
     thX += thCols[2];
-    drawCell(thX, cy2, thCols[3], thH, fields.annexServantsQuarters || 'NIL', { bold: true });
+    drawCell(thX, cy2, thCols[3], thH, fields.annexServantsQuarters || 'NIL', { bold: true, align: 'center', vAlign: 'center' });
     thX += thCols[3];
-    drawCell(thX, cy2, thCols[4], thH, fields.annexGarage || 'NIL', { bold: true });
+    drawCell(thX, cy2, thCols[4], thH, fields.annexGarage || 'NIL', { bold: true, align: 'center', vAlign: 'center' });
     thX += thCols[4];
-    drawCell(thX, cy2, thCols[5], thH, fields.annexPumpHouse || 'NIL', { bold: true });
-    
+    drawCell(thX, cy2, thCols[5], thH, fields.annexPumpHouse || 'NIL', { bold: true, align: 'center', vAlign: 'center' });
+
     cy += thH * 2;
 
     // Q01 Formatting

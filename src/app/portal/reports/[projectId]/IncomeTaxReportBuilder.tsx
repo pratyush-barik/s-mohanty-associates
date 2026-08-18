@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { saveReportDraft, submitReportForVerification, getBucketImages, deleteBucketImage, saveBucketImage } from '@/app/actions/project';
+import { saveReportDraft, submitReportForVerification, getBucketImages, deleteBucketImage } from '@/app/actions/project';
 import { SERVICES_LIST } from './constants';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { generateIncomeTaxPDF } from '@/lib/pdf-it-renderer';
@@ -681,26 +681,8 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
   const [bucketPickerMode, setBucketPickerMode] = useState<'propertyImages' | 'sketchMapImages' | 'locationMapImage' | 'benchmarkImage' | 'ciiTableImage' | 'bdaMapImage'>('propertyImages');
   const [bucketSelected, setBucketSelected] = useState<Set<string>>(new Set());
   const [bucketPickerAgent, setBucketPickerAgent] = useState<string | null>(null);
-  
-  const [localBucketImages, setLocalBucketImages] = useState<any[]>(bucketImages);
-  const [refreshingBucket, setRefreshingBucket] = useState(false);
-  const [bucketUploading, setBucketUploading] = useState(false);
 
-  const handleRefreshBucket = async () => {
-    setRefreshingBucket(true);
-    try {
-      const res = await getBucketImages(projectId);
-      if (res.images) {
-        setLocalBucketImages(res.images.map((img: any) => ({
-          ...img,
-          createdAt: img.createdAt instanceof Date ? img.createdAt.toISOString() : String(img.createdAt)
-        })));
-      }
-    } catch (e) {
-      console.error(e);
-    }
-    setRefreshingBucket(false);
-  };
+  const [localBucketImages, setLocalBucketImages] = useState<any[]>(bucketImages);
 
   const handleDeleteBucketImage = async (img: any) => {
     if (!confirm('Delete this photo from the bucket?')) return;
@@ -724,59 +706,6 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
       console.error('Delete error:', e);
       alert('Failed to delete photo.');
     }
-  };
-
-  const handleDirectBucketUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-    setBucketUploading(true);
-    try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        if (file.size > 10 * 1024 * 1024) {
-          alert(`${file.name} exceeds 10MB limit.`);
-          continue;
-        }
-        const ext = file.name.split('.').pop() || 'jpg';
-        const uniqueName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
-        const storagePath = `inspection-photos/${projectId}/${uniqueName}`;
-
-        const { error: uploadError } = await supabaseBrowser.storage
-          .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
-          .upload(storagePath, file);
-
-        if (uploadError) {
-          alert(`Upload failed: ${uploadError.message}`);
-          continue;
-        }
-
-        const { data: urlData } = supabaseBrowser.storage
-          .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
-          .getPublicUrl(storagePath);
-
-        const result = await saveBucketImage(projectId, {
-          url: urlData.publicUrl,
-          storagePath,
-          fileName: file.name,
-          size: file.size,
-          mimeType: file.type || 'image/jpeg',
-        });
-
-        if (result.error) {
-          alert(result.error);
-        } else if (result.image) {
-          const mapped = {
-            ...result.image,
-            createdAt: result.image.createdAt instanceof Date ? result.image.createdAt.toISOString() : String(result.image.createdAt)
-          };
-          setLocalBucketImages(prev => [mapped, ...prev]);
-        }
-      }
-    } catch (err) {
-      console.error('Upload error:', err);
-      alert('Failed to upload file.');
-    }
-    setBucketUploading(false);
   };
 
   const bypassUnloadRef = useRef(false);
@@ -812,15 +741,27 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
   }, []);
 
   // ── Bucket Picker Handlers ──
-  const openBucketPicker = (mode: typeof bucketPickerMode) => {
+  const openBucketPicker = async (mode: typeof bucketPickerMode) => {
     setBucketPickerMode(mode);
     setBucketSelected(new Set());
     setBucketPickerAgent(null);
     setBucketPickerOpen(true);
+    // Auto-fetch latest DB records each time the picker opens
+    try {
+      const res = await getBucketImages(projectId);
+      if (res.images) {
+        setLocalBucketImages(res.images.map((img: any) => ({
+          ...img,
+          createdAt: img.createdAt instanceof Date ? img.createdAt.toISOString() : String(img.createdAt)
+        })));
+      }
+    } catch (e) {
+      console.error('Bucket fetch error:', e);
+    }
   };
 
   const handleBucketConfirm = () => {
-    const selectedImages = bucketImages.filter(img => bucketSelected.has(img.id));
+    const selectedImages = localBucketImages.filter(img => bucketSelected.has(img.id));
     if (selectedImages.length === 0) { setBucketPickerOpen(false); return; }
 
     if (bucketPickerMode === 'propertyImages') {
@@ -1948,9 +1889,19 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           </div>
 
           {/* Computed Building Total */}
-          <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-[#0a1628] to-[#162d4a] text-white">
-            <p className="text-xs font-black text-amber-400 uppercase tracking-widest mb-1">Total Building Value (Auto-calculated)</p>
-            <p className="text-2xl font-bold">RS.{formatIndianCurrency(computedBuildingValue)}/-</p>
+          <div className="mt-4 flex items-center justify-between gap-4 p-4 rounded-xl bg-amber-50 border border-amber-200 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+                <span className="text-amber-600 text-base">🏗️</span>
+              </div>
+              <div>
+                <p className="text-[10px] font-extrabold text-amber-600 uppercase tracking-widest">Total Building Value</p>
+                <p className="text-[10px] text-amber-500 font-medium">Auto-calculated from floor rows</p>
+              </div>
+            </div>
+            <div className="text-right shrink-0">
+              <p className="text-xl font-extrabold text-amber-800 tabular-nums">RS.{formatIndianCurrency(computedBuildingValue)}/-</p>
+            </div>
           </div>
           </SubSection>
 
@@ -2397,28 +2348,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                     : 'Select one image'}
                 </p>
               </div>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleRefreshBucket}
-                  disabled={refreshingBucket}
-                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#b8860b]/10 text-[#b8860b] hover:bg-[#b8860b]/20 transition-all flex items-center gap-1"
-                >
-                  {refreshingBucket ? 'Syncing...' : '🔄 Sync Bucket'}
-                </button>
-                <label className="px-3 py-1.5 rounded-lg text-xs font-bold bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-all cursor-pointer flex items-center gap-1">
-                  {bucketUploading ? 'Uploading...' : '📤 Upload to Bucket'}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    onChange={handleDirectBucketUpload}
-                    disabled={bucketUploading}
-                  />
-                </label>
-                <button onClick={() => setBucketPickerOpen(false)} className="text-[#6c757d] hover:text-[#0f2038] text-xl font-bold ml-2">✕</button>
-              </div>
+              <button onClick={() => setBucketPickerOpen(false)} className="text-[#6c757d] hover:text-[#0f2038] text-xl font-bold">✕</button>
             </div>
 
             {/* Agent Filter */}
@@ -2437,10 +2367,19 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                 {localBucketImages.filter(img => !bucketPickerAgent || img.employee.name === bucketPickerAgent).map(img => (
                   <div
                     key={img.id}
+                    data-bucket-card
                     onClick={() => toggleBucketImage(img.id)}
                     className={`relative group rounded-xl overflow-hidden border-2 cursor-pointer transition-all ${bucketSelected.has(img.id) ? 'border-[#b8860b] ring-2 ring-[#b8860b]/30 scale-[0.97]' : 'border-transparent hover:border-[#dee2e6]'}`}
                   >
-                    <img src={img.url ? encodeURI(img.url) : ''} alt={img.fileName} className="w-full h-28 object-cover" />
+                    <img
+                      src={img.url ? encodeURI(img.url) : ''}
+                      alt={img.fileName}
+                      className="w-full h-28 object-cover"
+                      onError={(e) => {
+                        const card = (e.target as HTMLImageElement).closest('[data-bucket-card]') as HTMLElement | null;
+                        if (card) card.style.display = 'none';
+                      }}
+                    />
                     {bucketSelected.has(img.id) && (
                       <div className="absolute top-1.5 right-1.5 w-6 h-6 bg-[#b8860b] rounded-full flex items-center justify-center text-white text-xs font-bold">✓</div>
                     )}

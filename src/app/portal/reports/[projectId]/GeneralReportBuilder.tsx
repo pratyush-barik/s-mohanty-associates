@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { saveReportDraft, submitReportForVerification, getBucketImages, deleteBucketImage, saveBucketImage } from '@/app/actions/project';
+import { saveReportDraft, submitReportForVerification, getBucketImages, deleteBucketImage } from '@/app/actions/project';
 import { SERVICES_LIST } from './constants';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
@@ -706,24 +706,6 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
   const [bucketPickerAgent, setBucketPickerAgent] = useState<string | null>(null);
 
   const [localBucketImages, setLocalBucketImages] = useState<any[]>(bucketImages);
-  const [refreshingBucket, setRefreshingBucket] = useState(false);
-  const [bucketUploading, setBucketUploading] = useState(false);
-
-  const handleRefreshBucket = async () => {
-    setRefreshingBucket(true);
-    try {
-      const res = await getBucketImages(projectId);
-      if (res.images) {
-        setLocalBucketImages(res.images.map((img: any) => ({
-          ...img,
-          createdAt: img.createdAt instanceof Date ? img.createdAt.toISOString() : String(img.createdAt)
-        })));
-      }
-    } catch (e) {
-      console.error(e);
-    }
-    setRefreshingBucket(false);
-  };
 
   const handleDeleteBucketImage = async (img: any) => {
     if (!confirm('Delete this photo from the bucket?')) return;
@@ -749,68 +731,27 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     }
   };
 
-  const handleDirectBucketUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-    setBucketUploading(true);
-    try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        if (file.size > 10 * 1024 * 1024) {
-          alert(`${file.name} exceeds 10MB limit.`);
-          continue;
-        }
-        const ext = file.name.split('.').pop() || 'jpg';
-        const uniqueName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
-        const storagePath = `inspection-photos/${projectId}/${uniqueName}`;
-
-        const { error: uploadError } = await supabaseBrowser.storage
-          .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
-          .upload(storagePath, file);
-
-        if (uploadError) {
-          alert(`Upload failed: ${uploadError.message}`);
-          continue;
-        }
-
-        const { data: urlData } = supabaseBrowser.storage
-          .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
-          .getPublicUrl(storagePath);
-
-        const result = await saveBucketImage(projectId, {
-          url: urlData.publicUrl,
-          storagePath,
-          fileName: file.name,
-          size: file.size,
-          mimeType: file.type || 'image/jpeg',
-        });
-
-        if (result.error) {
-          alert(result.error);
-        } else if (result.image) {
-          const mapped = {
-            ...result.image,
-            createdAt: result.image.createdAt instanceof Date ? result.image.createdAt.toISOString() : String(result.image.createdAt)
-          };
-          setLocalBucketImages(prev => [mapped, ...prev]);
-        }
-      }
-    } catch (err) {
-      console.error('Upload error:', err);
-      alert('Failed to upload file.');
-    }
-    setBucketUploading(false);
-  };
-
-  const openBucketPicker = (mode: 'propertyImages' | 'sketchMapImages' | 'locationMapImage') => {
+  const openBucketPicker = async (mode: 'propertyImages' | 'sketchMapImages' | 'locationMapImage') => {
     setBucketPickerMode(mode);
     setBucketSelected(new Set());
     setBucketPickerAgent(null);
     setBucketPickerOpen(true);
+    // Auto-fetch latest DB records each time the picker opens
+    try {
+      const res = await getBucketImages(projectId);
+      if (res.images) {
+        setLocalBucketImages(res.images.map((img: any) => ({
+          ...img,
+          createdAt: img.createdAt instanceof Date ? img.createdAt.toISOString() : String(img.createdAt)
+        })));
+      }
+    } catch (e) {
+      console.error('Bucket fetch error:', e);
+    }
   };
 
   const handleBucketConfirm = () => {
-    const selectedImages = bucketImages.filter(img => bucketSelected.has(img.id));
+    const selectedImages = localBucketImages.filter(img => bucketSelected.has(img.id));
     if (selectedImages.length === 0) { setBucketPickerOpen(false); return; }
 
     if (bucketPickerMode === 'propertyImages') {
@@ -3612,33 +3553,12 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                     : 'Select a single photo for the map'}
                 </p>
               </div>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleRefreshBucket}
-                  disabled={refreshingBucket}
-                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#b8860b]/10 text-[#b8860b] hover:bg-[#b8860b]/20 transition-all flex items-center gap-1"
-                >
-                  {refreshingBucket ? 'Syncing...' : '🔄 Sync Bucket'}
-                </button>
-                <label className="px-3 py-1.5 rounded-lg text-xs font-bold bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-all cursor-pointer flex items-center gap-1">
-                  {bucketUploading ? 'Uploading...' : '📤 Upload to Bucket'}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    onChange={handleDirectBucketUpload}
-                    disabled={bucketUploading}
-                  />
-                </label>
-                <button
-                  onClick={() => setBucketPickerOpen(false)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-500 transition-colors ml-2"
-                >
-                  ✕
-                </button>
-              </div>
+              <button
+                onClick={() => setBucketPickerOpen(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-500 transition-colors"
+              >
+                ✕
+              </button>
             </div>
             
             <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
@@ -3693,13 +3613,23 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                         return (
                           <div
                             key={img.id}
+                            data-bucket-card
                             onClick={() => toggleBucketImage(img.id)}
                             className={`relative group bg-white rounded-xl border-2 overflow-hidden cursor-pointer transition-all ${
                               isSelected ? 'border-[#1e3a5f] shadow-md scale-[0.98]' : 'border-transparent shadow-sm hover:shadow-md'
                             }`}
                           >
                             <div className="aspect-square bg-gray-100">
-                              <img src={img.url ? encodeURI(img.url) : ''} alt={img.fileName} className="w-full h-full object-cover" loading="lazy" />
+                              <img
+                                src={img.url ? encodeURI(img.url) : ''}
+                                alt={img.fileName}
+                                className="w-full h-full object-cover"
+                                loading="lazy"
+                                onError={(e) => {
+                                  const card = (e.target as HTMLImageElement).closest('[data-bucket-card]') as HTMLElement | null;
+                                  if (card) card.style.display = 'none';
+                                }}
+                              />
                             </div>
                             <div className="p-2 border-t border-gray-100">
                               <p className="text-[10px] font-bold text-[#0f2038] truncate">{img.employee.name}</p>
