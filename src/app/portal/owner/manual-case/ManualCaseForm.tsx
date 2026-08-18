@@ -30,8 +30,20 @@ export default function ManualCaseForm({ managers }: { managers: Manager[] }) {
     setIsSubmitting(true);
     setError('');
 
+    if (formData.guestPhone && formData.guestPhone.length !== 10) {
+      setError('Client Phone must be exactly 10 digits.');
+      setIsSubmitting(false);
+      return;
+    }
+
     const fd = new FormData();
-    Object.entries(formData).forEach(([key, val]) => fd.append(key, val));
+    Object.entries(formData).forEach(([key, val]) => {
+      if (key === 'guestPhone') {
+        fd.append(key, val ? `+91${val}` : '');
+      } else {
+        fd.append(key, val);
+      }
+    });
 
     const result = await createManualCase(fd);
 
@@ -90,7 +102,26 @@ export default function ManualCaseForm({ managers }: { managers: Manager[] }) {
           </div>
           <div>
             <label className="block text-sm font-medium text-[#343a40] mb-1">Client Phone</label>
-            <input type="tel" value={formData.guestPhone} onChange={e => setFormData({ ...formData, guestPhone: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-[#dee2e6] text-sm" />
+            <div className="flex items-center w-full rounded-lg border border-[#dee2e6] bg-white focus-within:ring-2 focus-within:ring-[#b8860b]/30 focus-within:border-[#b8860b] transition-all">
+              <span className="pl-3 text-[#495057] text-sm font-medium select-none">
+                +91
+              </span>
+              <span className="text-[#dee2e6] mx-2 select-none">|</span>
+              <input
+                type="tel"
+                value={formData.guestPhone}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, '');
+                  if (val.length <= 10) {
+                    setFormData({ ...formData, guestPhone: val });
+                  }
+                }}
+                className="w-full pr-3 py-2 bg-transparent text-[#212529] text-sm focus:outline-none placeholder:text-gray-400"
+                placeholder="----------"
+                pattern="[0-9]{10}"
+                maxLength={10}
+              />
+            </div>
           </div>
         </div>
       </div>

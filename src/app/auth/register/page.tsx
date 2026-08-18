@@ -16,6 +16,7 @@ export default function RegisterPage() {
   const [verifyError, setVerifyError] = useState<string | null>(null);
   const [verifySuccess, setVerifySuccess] = useState<string | null>(null);
   const [passwordValue, setPasswordValue] = useState('');
+  const [phone, setPhone] = useState('');
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -223,13 +224,32 @@ export default function RegisterPage() {
             Mobile Number
           </label>
           <input
-            id="register-mobile"
+            type="hidden"
             name="mobile"
-            type="tel"
-            required
-            className="w-full px-4 py-3 rounded-xl bg-white border border-[#dcfce7] text-[#0d3d24] text-sm placeholder:text-[#6b8f6b] focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
-            placeholder="+91 XXXXX XXXXX"
+            value={phone ? `+91${phone}` : ''}
           />
+          <div className="flex items-center w-full rounded-xl bg-white border border-[#dcfce7] focus-within:ring-2 focus-within:ring-[#b8860b]/50 focus-within:border-[#b8860b]/50 transition-all">
+            <span className="pl-4 text-[#6b8f6b] text-sm font-medium select-none">
+              +91
+            </span>
+            <span className="text-[#dee2e6] mx-3 select-none">|</span>
+            <input
+              id="register-mobile"
+              type="tel"
+              required
+              value={phone}
+              onChange={(e) => {
+                const val = e.target.value.replace(/\D/g, '');
+                if (val.length <= 10) {
+                  setPhone(val);
+                }
+              }}
+              className="w-full pr-4 py-3 bg-transparent text-[#0d3d24] text-sm focus:outline-none placeholder:text-[#6b8f6b]/70"
+              placeholder="----------"
+              pattern="[0-9]{10}"
+              maxLength={10}
+            />
+          </div>
           {state?.errors?.mobile && (
             <p className="mt-1 text-xs text-red-600">{state.errors.mobile[0]}</p>
           )}

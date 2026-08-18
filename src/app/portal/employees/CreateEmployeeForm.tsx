@@ -11,13 +11,21 @@ export default function CreateEmployeeForm({ currentUserRole }: CreateEmployeeFo
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [mobile, setMobile] = useState('');
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
 
+    if (mobile && mobile.length !== 10) {
+      setMessage({ type: 'error', text: 'Mobile number must be exactly 10 digits.' });
+      setLoading(false);
+      return;
+    }
+
     const formData = new FormData(e.currentTarget);
+    formData.set('mobile', mobile ? `+91${mobile}` : '');
     const result = await createEmployee(formData);
 
     if (result.error) {
@@ -25,6 +33,7 @@ export default function CreateEmployeeForm({ currentUserRole }: CreateEmployeeFo
     } else {
       setMessage({ type: 'success', text: result.message || 'Employee created!' });
       e.currentTarget.reset();
+      setMobile('');
       setTimeout(() => setIsOpen(false), 2000);
     }
 
@@ -100,13 +109,27 @@ export default function CreateEmployeeForm({ currentUserRole }: CreateEmployeeFo
                 <label htmlFor="emp-mobile" className="block text-xs font-medium text-[#343a40] mb-1.5">
                   Mobile
                 </label>
-                <input
-                  id="emp-mobile"
-                  name="mobile"
-                  type="tel"
-                  className="w-full px-3 py-2.5 rounded-xl border border-[#dee2e6] bg-white text-sm text-[#212529] focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all"
-                  placeholder="+91 XXXXX XXXXX"
-                />
+                <div className="flex items-center w-full rounded-xl border border-[#dee2e6] bg-white focus-within:ring-2 focus-within:ring-[#b8860b]/30 focus-within:border-[#b8860b] transition-all">
+                  <span className="pl-3 text-[#495057] text-sm font-medium select-none">
+                    +91
+                  </span>
+                  <span className="text-[#dee2e6] mx-2 select-none">|</span>
+                  <input
+                    id="emp-mobile"
+                    type="tel"
+                    value={mobile}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '');
+                      if (val.length <= 10) {
+                        setMobile(val);
+                      }
+                    }}
+                    className="w-full pr-3 py-2.5 bg-transparent text-[#212529] text-sm focus:outline-none placeholder:text-gray-400"
+                    placeholder="----------"
+                    pattern="[0-9]{10}"
+                    maxLength={10}
+                  />
+                </div>
               </div>
             </div>
 

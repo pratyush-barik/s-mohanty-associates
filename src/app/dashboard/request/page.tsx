@@ -8,6 +8,7 @@ import { serviceCategoryMap } from '@/lib/services';
 export default function ServiceRequestPage() {
   const [state, action, pending] = useActionState(submitServiceRequest, undefined);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [phone, setPhone] = useState('');
 
   const availablePurposes = selectedCategory ? serviceCategoryMap[selectedCategory] || [] : [];
 
@@ -169,13 +170,32 @@ export default function ServiceRequestPage() {
               Phone Number *
             </label>
             <input
-              id="sr-phone"
+              type="hidden"
               name="contactPhone"
-              type="tel"
-              required
-              className="w-full px-4 py-3 rounded-xl border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all"
-              placeholder="+91 XXXXX XXXXX"
+              value={phone ? `+91${phone}` : ''}
             />
+            <div className="flex items-center w-full rounded-xl border border-[#dee2e6] bg-white focus-within:ring-2 focus-within:ring-[#b8860b]/30 focus-within:border-[#b8860b] transition-all">
+              <span className="pl-4 text-[#495057] text-sm font-medium select-none">
+                +91
+              </span>
+              <span className="text-[#dee2e6] mx-3 select-none">|</span>
+              <input
+                id="sr-phone"
+                type="tel"
+                required
+                value={phone}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, '');
+                  if (val.length <= 10) {
+                    setPhone(val);
+                  }
+                }}
+                className="w-full pr-4 py-3 bg-transparent text-[#212529] text-sm focus:outline-none placeholder:text-gray-400"
+                placeholder="----------"
+                pattern="[0-9]{10}"
+                maxLength={10}
+              />
+            </div>
             {state?.errors?.contactPhone && (
               <p className="mt-1 text-xs text-red-500">{state.errors.contactPhone[0]}</p>
             )}

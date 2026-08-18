@@ -24,10 +24,16 @@ export default function Contact() {
     setIsSubmitting(true);
     setErrorMessage('');
 
+    if (formData.phone && formData.phone.length !== 10) {
+      setErrorMessage('Phone number must be exactly 10 digits.');
+      setIsSubmitting(false);
+      return;
+    }
+
     const fd = new FormData();
     fd.append('name', formData.name);
     fd.append('email', formData.email);
-    fd.append('phone', formData.phone);
+    fd.append('phone', formData.phone ? `+91${formData.phone}` : '');
     fd.append('subject', formData.subject);
     fd.append('message', formData.message);
     fd.append('senderType', senderType);
@@ -249,14 +255,27 @@ export default function Contact() {
                     <label htmlFor="contact-phone" className="block text-sm font-medium text-[#343a40] mb-1.5">
                       Phone Number
                     </label>
-                    <input
-                      id="contact-phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all"
-                      placeholder="+91 XXXXX XXXXX"
-                    />
+                    <div className="flex items-center w-full rounded-xl border border-[#dee2e6] bg-white focus-within:ring-2 focus-within:ring-[#b8860b]/30 focus-within:border-[#b8860b] transition-all">
+                      <span className="pl-4 text-[#495057] text-sm font-medium select-none">
+                        +91
+                      </span>
+                      <span className="text-[#dee2e6] mx-3 select-none">|</span>
+                      <input
+                        id="contact-phone"
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, '');
+                          if (val.length <= 10) {
+                            setFormData({ ...formData, phone: val });
+                          }
+                        }}
+                        className="w-full pr-4 py-3 bg-transparent text-[#212529] text-sm focus:outline-none placeholder:text-gray-400"
+                        placeholder="----------"
+                        pattern="[0-9]{10}"
+                        maxLength={10}
+                      />
+                    </div>
                   </div>
                   <div>
                     <label htmlFor="contact-subject" className="block text-sm font-medium text-[#343a40] mb-1.5">

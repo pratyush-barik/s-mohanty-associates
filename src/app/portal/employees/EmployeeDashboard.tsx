@@ -34,6 +34,7 @@ export default function EmployeeDashboard({ employees: initialEmployees, current
   
   // Modals state
   const [editingEmp, setEditingEmp] = useState<Employee | null>(null);
+  const [mobile, setMobile] = useState('');
   const [terminatingEmp, setTerminatingEmp] = useState<Employee | null>(null);
   
   const [confirmPhrase, setConfirmPhrase] = useState('');
@@ -55,11 +56,17 @@ export default function EmployeeDashboard({ employees: initialEmployees, current
     e.preventDefault();
     if (!editingEmp) return;
 
+    if (mobile && mobile.length !== 10) {
+      setActionMessage({ type: 'error', text: 'Mobile number must be exactly 10 digits.' });
+      return;
+    }
+
     setActionLoading(true);
     setActionMessage(null);
 
     const formData = new FormData(e.currentTarget);
     formData.append('id', editingEmp.id);
+    formData.set('mobile', mobile ? `+91${mobile}` : '');
 
     const res = await updateEmployee(formData);
     if (res.error) {
@@ -92,6 +99,7 @@ export default function EmployeeDashboard({ employees: initialEmployees, current
       setTimeout(() => {
         setEditingEmp(null);
         setActionMessage(null);
+        setMobile('');
       }, 1500);
     }
     setActionLoading(false);
@@ -205,6 +213,9 @@ export default function EmployeeDashboard({ employees: initialEmployees, current
                             onClick={() => {
                               setEditingEmp(emp);
                               setActionMessage(null);
+                              const raw = emp.mobile || '';
+                              const cleaned = raw.replace(/^\+?91/, '').trim();
+                              setMobile(cleaned.length === 10 ? cleaned : raw);
                             }}
                             className="p-1 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-all text-xs font-semibold px-2 py-1 border border-gray-200"
                           >
@@ -273,12 +284,26 @@ export default function EmployeeDashboard({ employees: initialEmployees, current
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-[#343a40] mb-1">Mobile</label>
-                  <input
-                    type="tel"
-                    name="mobile"
-                    defaultValue={editingEmp.mobile || ''}
-                    className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30"
-                  />
+                  <div className="flex items-center w-full rounded-xl border border-gray-200 focus-within:ring-2 focus-within:ring-[#b8860b]/30 transition-all bg-white overflow-hidden">
+                    <span className="pl-3 text-gray-500 text-xs font-medium select-none">
+                      +91
+                    </span>
+                    <span className="text-gray-300 mx-1.5 select-none">|</span>
+                    <input
+                      type="tel"
+                      value={mobile}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '');
+                        if (val.length <= 10) {
+                          setMobile(val);
+                        }
+                      }}
+                      className="w-full pr-3 py-2 bg-transparent text-sm focus:outline-none placeholder:text-gray-400"
+                      placeholder="----------"
+                      pattern="[0-9]{10}"
+                      maxLength={10}
+                    />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#343a40] mb-1">Role</label>
@@ -309,7 +334,10 @@ export default function EmployeeDashboard({ employees: initialEmployees, current
               <div className="flex gap-2 justify-end pt-3">
                 <button
                   type="button"
-                  onClick={() => setEditingEmp(null)}
+                  onClick={() => {
+                    setEditingEmp(null);
+                    setMobile('');
+                  }}
                   disabled={actionLoading}
                   className="px-4 py-2 border border-gray-200 text-sm rounded-xl hover:bg-gray-50 font-medium"
                 >
