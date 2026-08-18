@@ -87,7 +87,8 @@ export async function submitEnquiry(formData: FormData) {
     });
 
     return { success: true };
-  } catch {
+  } catch (error) {
+    console.error("Enquiry submission failed:", error);
     return { error: 'Something went wrong. Please try again later.' };
   }
 }
