@@ -122,6 +122,8 @@ interface IncomeTaxFields {
   techFloorHeight: string;
   techPlinthAreaActual: string;
   techPlinthAreaApproved: string;
+  showPlinthActual: boolean;
+  showPlinthApproved: boolean;
   techYearConstruction: string;
   techFutureLife: string;
   techConstructionType: string;
@@ -276,6 +278,8 @@ const DEFAULT_FIELDS: IncomeTaxFields = {
   techFloorHeight: 'NOT APPLICABLE',
   techPlinthAreaActual: 'NOT APPLICABLE',
   techPlinthAreaApproved: '',
+  showPlinthActual: true,
+  showPlinthApproved: true,
   techYearConstruction: 'NOT APPLICABLE',
   techFutureLife: 'NOT APPLICABLE',
   techConstructionType: 'NOT APPLICABLE',
@@ -615,6 +619,8 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
     extraItems: Array.isArray(initialFields?.extraItems) ? initialFields.extraItems : DEFAULT_FIELDS.extraItems,
     valuationBullets: Array.isArray(initialFields?.valuationBullets) ? initialFields.valuationBullets : DEFAULT_FIELDS.valuationBullets,
     landAnnexureRows: Array.isArray(initialFields?.landAnnexureRows) ? initialFields.landAnnexureRows : DEFAULT_FIELDS.landAnnexureRows,
+    showPlinthActual: initialFields?.showPlinthActual !== undefined ? initialFields.showPlinthActual : true,
+    showPlinthApproved: initialFields?.showPlinthApproved !== undefined ? initialFields.showPlinthApproved : true,
     // Migration: convert old string fields to string[] for bullet editors
     briefDescriptionLines: Array.isArray(initialFields?.briefDescriptionLines)
       ? initialFields.briefDescriptionLines
@@ -1634,14 +1640,30 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                   </Field>
                 </div>
               </div>
-              <Field label="02. Plinth Area (Actual)" span={2}>
-                <textarea className={textareaCls} value={fields.techPlinthAreaActual} onChange={e => handleChange('techPlinthAreaActual', e.target.value)} disabled={isReadOnly}
-                  placeholder="GF: 791 SQFT, FF: 702 SQFT..." rows={2} />
-              </Field>
-              <Field label="02. Plinth Area (Approved Plan)" span={2}>
-                <textarea className={textareaCls} value={fields.techPlinthAreaApproved} onChange={e => handleChange('techPlinthAreaApproved', e.target.value)} disabled={isReadOnly}
-                  placeholder="GF: 750 SQFT, FF: 680 SQFT..." rows={2} />
-              </Field>
+              <div className="md:col-span-2 grid grid-cols-2 gap-4 py-2 border-b border-[#e9ecef] mb-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={fields.showPlinthActual} onChange={e => handleChange('showPlinthActual', e.target.checked)} disabled={isReadOnly}
+                    className="w-4 h-4 rounded border-[#dee2e6] text-[#b8860b] focus:ring-[#b8860b]/30" />
+                  <span className="text-xs font-bold text-[#495057] uppercase tracking-wider">Enable Plinth Area (Actual)</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={fields.showPlinthApproved} onChange={e => handleChange('showPlinthApproved', e.target.checked)} disabled={isReadOnly}
+                    className="w-4 h-4 rounded border-[#dee2e6] text-[#b8860b] focus:ring-[#b8860b]/30" />
+                  <span className="text-xs font-bold text-[#495057] uppercase tracking-wider">Enable Plinth Area (Approved Plan)</span>
+                </label>
+              </div>
+              {fields.showPlinthActual && (
+                <Field label="02. Plinth Area (Actual)" span={2}>
+                  <textarea className={textareaCls} value={fields.techPlinthAreaActual} onChange={e => handleChange('techPlinthAreaActual', e.target.value)} disabled={isReadOnly}
+                    placeholder="GF: 791 SQFT, FF: 702 SQFT..." rows={2} />
+                </Field>
+              )}
+              {fields.showPlinthApproved && (
+                <Field label="02. Plinth Area (Approved Plan)" span={2}>
+                  <textarea className={textareaCls} value={fields.techPlinthAreaApproved} onChange={e => handleChange('techPlinthAreaApproved', e.target.value)} disabled={isReadOnly}
+                    placeholder="GF: 750 SQFT, FF: 680 SQFT..." rows={2} />
+                </Field>
+              )}
               <Field label="03. Year of Construction">
                 <input className={inputCls} value={fields.techYearConstruction} onChange={e => handleChange('techYearConstruction', e.target.value)} disabled={isReadOnly} />
               </Field>

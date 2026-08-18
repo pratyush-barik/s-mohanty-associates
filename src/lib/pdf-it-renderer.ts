@@ -109,6 +109,8 @@ export interface IncomeTaxFieldsForPDF {
   techFloorHeight: string;
   techPlinthAreaActual: string;
   techPlinthAreaApproved: string;
+  showPlinthActual?: boolean;
+  showPlinthApproved?: boolean;
   techYearConstruction: string;
   techFutureLife: string;
   techConstructionType: string;
@@ -786,8 +788,12 @@ export async function generateIncomeTaxPDF(
       else if (upperApproval.includes('BMC')) authority = 'BMC';
     }
 
-    drawQRow('02', 'PLINTH AREA FLOOR-WISE(AS PER ISI3861-1966): (AS PER ACTUAL)', q02ActualAns);
-    drawQRow('', `PLINTH AREA FLOOR-WISE(AS PER ISI3861-1966): (AS PER ${authority} APPROVAL PLAN)`, q02ApprovedAns);
+    if (fields.showPlinthActual) {
+      drawQRow('02', 'PLINTH AREA FLOOR-WISE(AS PER ISI3861-1966): (AS PER ACTUAL)', q02ActualAns);
+    }
+    if (fields.showPlinthApproved) {
+      drawQRow(fields.showPlinthActual ? '' : '02', `PLINTH AREA FLOOR-WISE(AS PER ISI3861-1966): (AS PER ${authority} APPROVAL PLAN)`, q02ApprovedAns);
+    }
 
     // Q03-Q06
     drawQRow('03', 'YEAR OF CONSTRUCTION:', fields.techYearConstruction);
