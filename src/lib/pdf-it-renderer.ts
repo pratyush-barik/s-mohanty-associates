@@ -105,6 +105,36 @@ export interface IncomeTaxFieldsForPDF {
     mouza: string;
   }[];
   plinthAreaConsidered: string;
+  techFloors: string;
+  techFloorHeight: string;
+  techPlinthAreaActual: string;
+  techPlinthAreaApproved: string;
+  techYearConstruction: string;
+  techFutureLife: string;
+  techConstructionType: string;
+  techFoundation: string;
+  techWallsBasement: string;
+  techWallsGround: string;
+  annexMainBuilding: string;
+  annexAnnexes: string;
+  annexServantsQuarters: string;
+  annexGarage: string;
+  annexPumpHouse: string;
+  techPartitions: string;
+  techDoorsWindows: string;
+  techFlooring: string;
+  techFinishing: string;
+  techRoofing: string;
+  techArchitecturalFeatures: string;
+  techWiring: string;
+  techSanitary: string;
+  techCompoundWall: string;
+  techLifts: string;
+  techOverheadTank: string;
+  techPump: string;
+  techUndergroundSump: string;
+  techRoadsPaving: string;
+  techSewageDisposal: string;
 }
 
 export async function generateIncomeTaxPDF(

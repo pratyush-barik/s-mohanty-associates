@@ -1603,6 +1603,27 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           <SubSection id="subsection-tech-details" title="Annexure: Technical Details (Items 01-20)" defaultOpen={false}>
             <div className="grid md:grid-cols-2 gap-4">
               <div className="md:col-span-2 p-4 bg-[#f0fdf4] border border-[#d1e7dd] rounded-xl shadow-sm space-y-3">
+                <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">Annexure to Form O-1 (No. of Units)</span>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  <Field label="Main Building">
+                    <input className={inputCls} value={fields.annexMainBuilding} onChange={e => handleChange('annexMainBuilding', e.target.value)} disabled={isReadOnly} placeholder="1 NOS" />
+                  </Field>
+                  <Field label="Annexes">
+                    <input className={inputCls} value={fields.annexAnnexes} onChange={e => handleChange('annexAnnexes', e.target.value)} disabled={isReadOnly} placeholder="NIL" />
+                  </Field>
+                  <Field label="Servants Quarters">
+                    <input className={inputCls} value={fields.annexServantsQuarters} onChange={e => handleChange('annexServantsQuarters', e.target.value)} disabled={isReadOnly} placeholder="NIL" />
+                  </Field>
+                  <Field label="Garage">
+                    <input className={inputCls} value={fields.annexGarage} onChange={e => handleChange('annexGarage', e.target.value)} disabled={isReadOnly} placeholder="NIL" />
+                  </Field>
+                  <Field label="Pump House">
+                    <input className={inputCls} value={fields.annexPumpHouse} onChange={e => handleChange('annexPumpHouse', e.target.value)} disabled={isReadOnly} placeholder="NIL" />
+                  </Field>
+                </div>
+              </div>
+
+              <div className="md:col-span-2 p-4 bg-[#f0fdf4] border border-[#d1e7dd] rounded-xl shadow-sm space-y-3">
                 <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">01. No. of Floors & Height</span>
                 <div className="grid md:grid-cols-2 gap-4">
                   <Field label="No. of Floors">

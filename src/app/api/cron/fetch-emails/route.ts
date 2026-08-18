@@ -159,7 +159,7 @@ async function processInbox(host: string, port: number, user: string, pass: stri
                 subject: subject,
                 message: bodyText.trim(),
                 status: 'NEW',
-                messages: {
+                enquiries: {
                   create: {
                     sender: 'CLIENT',
                     body: bodyText.trim(),
