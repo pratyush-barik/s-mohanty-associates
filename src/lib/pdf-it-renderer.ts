@@ -229,7 +229,7 @@ export async function generateIncomeTaxPDF(
   const addPageNum = (p: any, num: number) => {
     const numStr = String(num);
     const tw = fontR.widthOfTextAtSize(numStr, 12);
-    p.drawText(numStr, { x: (A4_W - tw) / 2, y: MB / 2, size: 12, font: fontR, color: rgb(0, 0, 0) });
+    p.drawText(numStr, { x: A4_W - MR - tw, y: MB / 2, size: 12, font: fontR, color: rgb(0, 0, 0) });
   };
 
   let pageNum = 1;

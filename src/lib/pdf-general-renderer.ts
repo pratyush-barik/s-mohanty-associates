@@ -1094,7 +1094,7 @@ export class PDFGeneralRenderer {
       const text = String(i + 1);
       const textW = this.fontRegular.widthOfTextAtSize(text, 10);
       page.drawText(text, {
-        x: MARGIN_L + CONTENT_W / 2 - textW / 2,
+        x: MARGIN_L + CONTENT_W - textW, // Aligned to the right
         y: MARGIN_B / 2,
         size: 10,
         font: this.fontRegular,
