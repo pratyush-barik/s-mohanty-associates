@@ -1676,8 +1676,11 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               <Field label="06. Foundation Type">
                 <input className={inputCls} value={fields.techFoundation} onChange={e => handleChange('techFoundation', e.target.value)} disabled={isReadOnly} placeholder="COLUMN FOUNDATION" />
               </Field>
-              <Field label="07. Walls" span={2}>
-                <input className={inputCls} value={fields.techWalls} onChange={e => handleChange('techWalls', e.target.value)} disabled={isReadOnly} placeholder='PLINTH WALL IS 10" WIDE BRICK WALL. 10" WIDE BRICK WALL' />
+              <Field label="07 (A). Walls: Basement & Plinth">
+                <input className={inputCls} value={fields.techWallsBasement} onChange={e => handleChange('techWallsBasement', e.target.value)} disabled={isReadOnly} placeholder='PLINTH WALL IS 10" WIDE BRICK WALL' />
+              </Field>
+              <Field label="07 (B). Walls: Ground Floor">
+                <input className={inputCls} value={fields.techWallsGround} onChange={e => handleChange('techWallsGround', e.target.value)} disabled={isReadOnly} placeholder='10" WIDE BRICK WALL' />
               </Field>
               <Field label="08. Partitions">
                 <input className={inputCls} value={fields.techPartitions} onChange={e => handleChange('techPartitions', e.target.value)} disabled={isReadOnly} />
