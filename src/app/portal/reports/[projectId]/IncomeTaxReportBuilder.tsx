@@ -143,6 +143,7 @@ interface IncomeTaxFields {
   techRoofing: string;
   techArchitecturalFeatures: string;
   techWiring: string;
+  techFittings: string;
   techSanitary: string;
   techCompoundWall: string;
   techLifts: string;
@@ -299,6 +300,7 @@ const DEFAULT_FIELDS: IncomeTaxFields = {
   techRoofing: 'NOT APPLICABLE',
   techArchitecturalFeatures: 'NOT APPLICABLE',
   techWiring: 'NOT APPLICABLE',
+  techFittings: 'SUPERIOR',
   techSanitary: 'NOT APPLICABLE',
   techCompoundWall: 'NOT APPLICABLE',
   techLifts: 'NOT APPLICABLE',
@@ -621,6 +623,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
     landAnnexureRows: Array.isArray(initialFields?.landAnnexureRows) ? initialFields.landAnnexureRows : DEFAULT_FIELDS.landAnnexureRows,
     showPlinthActual: initialFields?.showPlinthActual !== undefined ? initialFields.showPlinthActual : true,
     showPlinthApproved: initialFields?.showPlinthApproved !== undefined ? initialFields.showPlinthApproved : true,
+    techFittings: initialFields?.techFittings !== undefined ? initialFields.techFittings : DEFAULT_FIELDS.techFittings,
     // Migration: convert old string fields to string[] for bullet editors
     briefDescriptionLines: Array.isArray(initialFields?.briefDescriptionLines)
       ? initialFields.briefDescriptionLines
@@ -1705,9 +1708,17 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                   </Field>
                 </div>
               </div>
-              <Field label="13. Wiring Type & Class">
-                <input className={inputCls} value={fields.techWiring} onChange={e => handleChange('techWiring', e.target.value)} disabled={isReadOnly} />
-              </Field>
+              <div className="md:col-span-2 p-4 bg-[#f0fdf4] border border-[#d1e7dd] rounded-xl shadow-sm space-y-3">
+                <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">13. Wiring Details</span>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Field label="13 (A). Type of Wiring (Surface or Conduit)">
+                    <input className={inputCls} value={fields.techWiring} onChange={e => handleChange('techWiring', e.target.value)} disabled={isReadOnly} placeholder="CONCEALED COPPER WIRING" />
+                  </Field>
+                  <Field label="13 (B). Class of Fittings (Superior/Ordinary/Poor)">
+                    <input className={inputCls} value={fields.techFittings} onChange={e => handleChange('techFittings', e.target.value)} disabled={isReadOnly} placeholder="SUPERIOR" />
+                  </Field>
+                </div>
+              </div>
               <Field label="14. Sanitary Installation" span={2}>
                 <textarea className={textareaCls} value={fields.techSanitary} onChange={e => handleChange('techSanitary', e.target.value)} disabled={isReadOnly} rows={2}
                   placeholder="NO. OF WATER CLOSETS-X NOS. / NO. OF WASH BASINS-X NOS...." />

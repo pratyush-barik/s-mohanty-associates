@@ -129,6 +129,7 @@ export interface IncomeTaxFieldsForPDF {
   techRoofing: string;
   techArchitecturalFeatures: string;
   techWiring: string;
+  techFittings: string;
   techSanitary: string;
   techCompoundWall: string;
   techLifts: string;
@@ -814,7 +815,7 @@ export async function generateIncomeTaxPDF(
     drawQRow('10', 'FLOORING:', fields.techFlooring);
     drawQRow('11', 'FINISHING (INTERNAL/EXTERNAL):', fields.techFinishing);
     drawQRow('12', 'ROOFING & TERRACING:\nARCHITECTURAL FEATURES:', `${fields.techRoofing}\n${fields.techArchitecturalFeatures}`);
-    drawQRow('13', 'TYPE OF WIRING AND CLASS:', fields.techWiring);
+    drawQRow('13', 'TYPE OF WIRING:\nCLASS OF FITTINGS:', `${fields.techWiring}\n${fields.techFittings || 'SUPERIOR'}`);
     drawQRow('14', 'SANITARY INSTALLATION:', fields.techSanitary);
     drawQRow('15', 'COMPOUND WALL:', fields.techCompoundWall);
     drawQRow('16', 'LIFTS:', fields.techLifts);
