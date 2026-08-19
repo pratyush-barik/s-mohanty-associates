@@ -9,6 +9,7 @@ import {
   AlignmentType, HeadingLevel, BorderStyle, WidthType, ImageRun,
   PageBreak, Header, Footer, PageNumber, TableLayoutType,
   ShadingType, UnderlineType, convertInchesToTwip, Tab, TabStopType, TabStopPosition, LeaderType,
+  HorizontalPositionRelativeFrom, VerticalPositionRelativeFrom, TextWrappingType, TextWrappingSide,
 } from 'docx';
 
 // ─── Types ──────────────────────────────────────────────────────
@@ -281,16 +282,30 @@ export class DOCXIBBIRenderer {
   async toBlob(): Promise<Blob> {
     const sections: any[] = [];
 
-    // Build header with letterhead if available
+    // Build header with letterhead as full-page background
     let defaultHeader: Header | undefined;
     if (this.letterheadBytes) {
       defaultHeader = new Header({
         children: [new Paragraph({
-          alignment: AlignmentType.CENTER,
           children: [new ImageRun({
             data: this.letterheadBytes,
-            transformation: { width: 595, height: 80 },
+            transformation: { width: 595, height: 842 },
             type: 'png',
+            floating: {
+              horizontalPosition: {
+                relative: HorizontalPositionRelativeFrom.PAGE,
+                offset: 0,
+              },
+              verticalPosition: {
+                relative: VerticalPositionRelativeFrom.PAGE,
+                offset: 0,
+              },
+              behindDocument: true,
+              wrap: {
+                type: TextWrappingType.NONE,
+                side: TextWrappingSide.BOTH_SIDES,
+              },
+            },
           })],
         })],
       });
