@@ -457,7 +457,7 @@ export async function generateIncomeTaxPDF(
   const drawQHeader = (title: string) => {
     const fs = 12;
     const rowH = fs * LINE_H + 6;
-    ensureSpace(rowH);
+    ensureSpace(rowH + 50); // Require space for header + at least one row
     // Spanning full table width with merged header
     drawCell(ML, cy, CW, rowH, title, { bold: true, fontSize: fs, align: 'center' });
     cy += rowH;
@@ -569,7 +569,7 @@ export async function generateIncomeTaxPDF(
   const secFs = 13;
   const secW = fontBI.widthOfTextAtSize(secStr, secFs);
   const secX = ML + (CW - secW) / 2;
-  ensureSpace(secFs * LINE_H + 12);
+  ensureSpace(secFs * LINE_H + 12 + 60); // Ensure header + next lines fit
   page.drawText(secStr, {
     x: secX,
     y: pdfY(cy) - secFs * 0.8,
@@ -675,7 +675,25 @@ export async function generateIncomeTaxPDF(
   // ═══════════════════════════════════════════════════════
   // BLOCK 3 — PART II: VALUATION
   // ═══════════════════════════════════════════════════════
-  drawText('PART II-VALUATION', { bold: true, fontSize: 14 });
+  const part2Str = 'PART–II–VALUATION';
+  const part2Fs = 13;
+  const part2W = fontBI.widthOfTextAtSize(part2Str, part2Fs);
+  const part2X = ML + (CW - part2W) / 2;
+  ensureSpace(part2Fs * LINE_H + 12 + 80); // Ensure header + paragraph fits
+  page.drawText(part2Str, {
+    x: part2X,
+    y: pdfY(cy) - part2Fs * 0.8,
+    size: part2Fs,
+    font: fontBI,
+    color: rgb(0, 0, 0),
+  });
+  page.drawLine({
+    start: { x: part2X, y: pdfY(cy) - part2Fs * 0.8 - 2 },
+    end: { x: part2X + part2W, y: pdfY(cy) - part2Fs * 0.8 - 2 },
+    thickness: 1,
+    color: rgb(0, 0, 0),
+  });
+  cy += part2Fs * LINE_H + 8;
   advanceCursor(6);
   drawText('HERE THE REGISTERED VALUER SHOULD DISCUSS IN DETAIL HIS APPROACH TO VALUATION OF THE PROPERTY AND INDICATE HOW THE VALUE HAS BEEN ARRIVED AT, SUPPORTED BY NECESSARY CALCULATION.');
   advanceCursor(6);
@@ -694,7 +712,25 @@ export async function generateIncomeTaxPDF(
   // ═══════════════════════════════════════════════════════
   // BLOCK 4 — PART III: DECLARATION
   // ═══════════════════════════════════════════════════════
-  drawText('PART III-DECLARATION', { bold: true, fontSize: 14 });
+  const part3Str = 'PART–III–DECLARATION';
+  const part3Fs = 13;
+  const part3W = fontBI.widthOfTextAtSize(part3Str, part3Fs);
+  const part3X = ML + (CW - part3W) / 2;
+  ensureSpace(part3Fs * LINE_H + 12 + 80); // Ensure header + declaration fits
+  page.drawText(part3Str, {
+    x: part3X,
+    y: pdfY(cy) - part3Fs * 0.8,
+    size: part3Fs,
+    font: fontBI,
+    color: rgb(0, 0, 0),
+  });
+  page.drawLine({
+    start: { x: part3X, y: pdfY(cy) - part3Fs * 0.8 - 2 },
+    end: { x: part3X + part3W, y: pdfY(cy) - part3Fs * 0.8 - 2 },
+    thickness: 1,
+    color: rgb(0, 0, 0),
+  });
+  cy += part3Fs * LINE_H + 8;
   advanceCursor(6);
   drawText('I HEREBY DECLARE THAT-');
   drawText(`• THE INFORMATION FURNISHED IN PART I IS TRUE TO THE BEST OF MY KNOWLEDGE AND BELIEF.`);
