@@ -875,8 +875,8 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.advanceCursor(12);
       
       if (coverPageImageBytes) {
-        await r.drawImageBlock(coverPageImageBytes as Uint8Array, { maxWidth: 500, maxHeight: 300, centered: true, borderColor: '#195B8E', borderWidth: 2 });
-        r.advanceCursor(12);
+        await r.drawImageBlock(coverPageImageBytes as Uint8Array, { maxWidth: 380, maxHeight: 180, centered: true, borderColor: '#195B8E', borderWidth: 2 });
+        r.advanceCursor(8);
       }
       
       r.drawCenteredTitle('OWNER OF THE PROPERTY', 13);
