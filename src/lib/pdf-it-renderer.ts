@@ -813,17 +813,17 @@ export async function generateIncomeTaxPDF(
     // Row 2 — values
     thX = ML;
     const cy2 = cy + thH;
-    drawCell(thX, cy2, thCols[0], thH, 'P. NOS', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
+    drawCell(thX, cy2, thCols[0], thH, 'P. NOS', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG });
     thX += thCols[0];
-    drawCell(thX, cy2, thCols[1], thH, fields.annexMainBuilding || '1 NOS', { bold: true, align: 'center', vAlign: 'center' });
+    drawCell(thX, cy2, thCols[1], thH, fields.annexMainBuilding || '1 NOS', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG });
     thX += thCols[1];
-    drawCell(thX, cy2, thCols[2], thH, fields.annexAnnexes || 'NIL', { bold: true, align: 'center', vAlign: 'center' });
+    drawCell(thX, cy2, thCols[2], thH, fields.annexAnnexes || 'NIL', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG });
     thX += thCols[2];
-    drawCell(thX, cy2, thCols[3], thH, fields.annexServantsQuarters || 'NIL', { bold: true, align: 'center', vAlign: 'center' });
+    drawCell(thX, cy2, thCols[3], thH, fields.annexServantsQuarters || 'NIL', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG });
     thX += thCols[3];
-    drawCell(thX, cy2, thCols[4], thH, fields.annexGarage || 'NIL', { bold: true, align: 'center', vAlign: 'center' });
+    drawCell(thX, cy2, thCols[4], thH, fields.annexGarage || 'NIL', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG });
     thX += thCols[4];
-    drawCell(thX, cy2, thCols[5], thH, fields.annexPumpHouse || 'NIL', { bold: true, align: 'center', vAlign: 'center' });
+    drawCell(thX, cy2, thCols[5], thH, fields.annexPumpHouse || 'NIL', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG });
 
     cy += thH * 2;
 
