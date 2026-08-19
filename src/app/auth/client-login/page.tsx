@@ -3,6 +3,7 @@
 import { useActionState, useState, useEffect } from 'react';
 import { login, requestOtp } from '@/app/actions/auth';
 import Link from 'next/link';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const [state, action, pending] = useActionState(login, undefined);
@@ -11,6 +12,7 @@ export default function LoginPage() {
   const [require2FA, setRequire2FA] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [timer, setTimer] = useState(0);
   const [resending, setResending] = useState(false);
   const [resendError, setResendError] = useState<string | null>(null);
@@ -162,16 +164,29 @@ export default function LoginPage() {
               <label htmlFor="login-password" className="block text-sm font-medium text-[#2d4a2d] mb-1.5">
                 Password
               </label>
-              <input
-                id="login-password"
-                name="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-white border border-[#dcfce7] text-[#0d3d24] text-sm placeholder:text-[#6b8f6b] focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
-                placeholder="Enter your password"
-              />
+              <div className="relative flex items-center">
+                <input
+                  id="login-password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-4 pr-11 py-3 rounded-xl bg-white border border-[#dcfce7] text-[#0d3d24] text-sm placeholder:text-[#6b8f6b] focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
+                  placeholder="Enter your password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 text-[#6b8f6b] hover:text-[#0d3d24] focus:outline-none transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <div className="flex justify-end">

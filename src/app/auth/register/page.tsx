@@ -3,6 +3,7 @@
 import { useActionState, useState, useEffect } from 'react';
 import { signup, requestRegistrationOtp } from '@/app/actions/auth';
 import Link from 'next/link';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function RegisterPage() {
   const [state, action, pending] = useActionState(signup, undefined);
@@ -16,6 +17,7 @@ export default function RegisterPage() {
   const [verifyError, setVerifyError] = useState<string | null>(null);
   const [verifySuccess, setVerifySuccess] = useState<string | null>(null);
   const [passwordValue, setPasswordValue] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [phone, setPhone] = useState('');
 
   useEffect(() => {
@@ -260,16 +262,29 @@ export default function RegisterPage() {
           <label htmlFor="register-password" className="block text-sm font-medium text-[#2d4a2d] mb-1.5">
             Password
           </label>
-          <input
-            id="register-password"
-            name="password"
-            type="password"
-            required
-            value={passwordValue}
-            onChange={(e) => setPasswordValue(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl bg-white border border-[#dcfce7] text-[#0d3d24] text-sm placeholder:text-[#6b8f6b] focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
-            placeholder="Minimum 12 characters"
-          />
+          <div className="relative flex items-center">
+            <input
+              id="register-password"
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              required
+              value={passwordValue}
+              onChange={(e) => setPasswordValue(e.target.value)}
+              className="w-full pl-4 pr-11 py-3 rounded-xl bg-white border border-[#dcfce7] text-[#0d3d24] text-sm placeholder:text-[#6b8f6b] focus:outline-none focus:ring-2 focus:ring-[#b8860b]/50 focus:border-[#b8860b]/50 transition-all"
+              placeholder="Minimum 12 characters"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3.5 text-[#6b8f6b] hover:text-[#0d3d24] focus:outline-none transition-colors"
+            >
+              {showPassword ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
+            </button>
+          </div>
           {/* Password Strength Meter */}
           {passwordValue && (
             <div className="mt-2 space-y-2 animate-fade-in">

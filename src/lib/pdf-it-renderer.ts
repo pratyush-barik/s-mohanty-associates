@@ -1,6 +1,16 @@
 import { PDFDocument, PDFPage, PDFEmbeddedPage, StandardFonts, rgb } from 'pdf-lib';
 import { formatIndianCurrency, rupeesInWords } from './numberToWords';
 
+function hexToRgb(hex: string) {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.substring(0, 2), 16) / 255;
+  const g = parseInt(h.substring(2, 4), 16) / 255;
+  const b = parseInt(h.substring(4, 6), 16) / 255;
+  return rgb(r, g, b);
+}
+
+const LBL_BG = '#DBE6F0';
+
 const parseNum = (val: string | number): number => {
   if (typeof val === 'number') return val;
   if (!val) return 0;
@@ -385,9 +395,19 @@ export async function generateIncomeTaxPDF(
   };
 
   // Table cell primitive
-  const drawCell = (x: number, topY: number, w: number, h: number, text: string, opts?: { bold?: boolean; fontSize?: number; align?: 'left' | 'center' | 'right'; vAlign?: 'top' | 'center' }) => {
+  const drawCell = (x: number, topY: number, w: number, h: number, text: string, opts?: { bold?: boolean; fontSize?: number; align?: 'left' | 'center' | 'right'; vAlign?: 'top' | 'center'; fillColor?: string; bgOpacity?: number }) => {
     const fs = opts?.fontSize || 12;
     const font = opts?.bold ? fontB : fontR;
+    if (opts?.fillColor) {
+      page.drawRectangle({
+        x,
+        y: pdfY(topY) - h,
+        width: w,
+        height: h,
+        color: hexToRgb(opts.fillColor),
+        opacity: opts.bgOpacity ?? 1,
+      });
+    }
     // Border
     page.drawRectangle({ x, y: pdfY(topY) - h, width: w, height: h, borderColor: rgb(0, 0, 0), borderWidth: 0.5 });
     // Text
@@ -440,9 +460,9 @@ export async function generateIncomeTaxPDF(
     const rowH = Math.max(h1, h2, h3);
     ensureSpace(rowH);
     let x = ML;
-    drawCell(x, cy, qColW[0], rowH, qNo, { bold: true, fontSize: fs, align: 'center' });
+    drawCell(x, cy, qColW[0], rowH, qNo, { bold: true, fontSize: fs, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
     x += qColW[0];
-    drawCell(x, cy, qColW[1], rowH, question, { fontSize: fs, bold: opts?.headerRow });
+    drawCell(x, cy, qColW[1], rowH, question, { fontSize: fs, bold: opts?.headerRow, fillColor: LBL_BG, bgOpacity: 0.5 });
     x += qColW[1];
     // Draw answer cell with multi-line support
     page.drawRectangle({ x, y: pdfY(cy) - rowH, width: qColW[2], height: rowH, borderColor: rgb(0, 0, 0), borderWidth: 0.5 });
@@ -464,7 +484,7 @@ export async function generateIncomeTaxPDF(
     const rowH = fs * LINE_H + 6;
     ensureSpace(rowH + 50); // Require space for header + at least one row
     // Spanning full table width with merged header
-    drawCell(ML, cy, CW, rowH, title, { bold: true, fontSize: fs, align: 'center' });
+    drawCell(ML, cy, CW, rowH, title, { bold: true, fontSize: fs, align: 'center', fillColor: LBL_BG });
     cy += rowH;
   };
 
@@ -778,22 +798,22 @@ export async function generateIncomeTaxPDF(
     ensureSpace(thH * 2);
 
     let thX = ML;
-    drawCell(thX, cy, thCols[0], thH, 'TECHNICAL\nDETAILS', { bold: true, align: 'center', vAlign: 'center' });
+    drawCell(thX, cy, thCols[0], thH, 'TECHNICAL\nDETAILS', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG });
     thX += thCols[0];
-    drawCell(thX, cy, thCols[1], thH, 'MAIN\nBUILDING', { bold: true, align: 'center', vAlign: 'center' });
+    drawCell(thX, cy, thCols[1], thH, 'MAIN\nBUILDING', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG });
     thX += thCols[1];
-    drawCell(thX, cy, thCols[2], thH, 'ANNEXES', { bold: true, align: 'center', vAlign: 'center' });
+    drawCell(thX, cy, thCols[2], thH, 'ANNEXES', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG });
     thX += thCols[2];
-    drawCell(thX, cy, thCols[3], thH, 'SERVANTS\nQUARTERS', { bold: true, align: 'center', vAlign: 'center' });
+    drawCell(thX, cy, thCols[3], thH, 'SERVANTS\nQUARTERS', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG });
     thX += thCols[3];
-    drawCell(thX, cy, thCols[4], thH, 'GARAGE', { bold: true, align: 'center', vAlign: 'center' });
+    drawCell(thX, cy, thCols[4], thH, 'GARAGE', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG });
     thX += thCols[4];
-    drawCell(thX, cy, thCols[5], thH, 'PUMP\nHOUSE', { bold: true, align: 'center', vAlign: 'center' });
+    drawCell(thX, cy, thCols[5], thH, 'PUMP\nHOUSE', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG });
 
     // Row 2 — values
     thX = ML;
     const cy2 = cy + thH;
-    drawCell(thX, cy2, thCols[0], thH, 'P. NOS', { bold: true, align: 'center', vAlign: 'center' });
+    drawCell(thX, cy2, thCols[0], thH, 'P. NOS', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
     thX += thCols[0];
     drawCell(thX, cy2, thCols[1], thH, fields.annexMainBuilding || '1 NOS', { bold: true, align: 'center', vAlign: 'center' });
     thX += thCols[1];
@@ -887,7 +907,7 @@ export async function generateIncomeTaxPDF(
     const headerH = 45;
     let cx = ML;
     for (let i = 0; i < calcHeaders.length; i++) {
-      drawCell(cx, cy, calcCols[i], headerH, calcHeaders[i], { bold: true, fontSize: 8, align: 'center' });
+      drawCell(cx, cy, calcCols[i], headerH, calcHeaders[i], { bold: true, fontSize: 8, align: 'center', fillColor: LBL_BG });
       cx += calcCols[i];
     }
     cy += headerH;
@@ -916,7 +936,7 @@ export async function generateIncomeTaxPDF(
 
     // Building value summary row
     ensureSpace(22);
-    drawCell(ML, cy, CW * 0.6, 22, `VALUE OF THE BUILDING: RS.${formatIndianCurrency(computedBuildingValue)}/-`, { bold: true, fontSize: 10, align: 'center' });
+    drawCell(ML, cy, CW * 0.6, 22, `VALUE OF THE BUILDING: RS.${formatIndianCurrency(computedBuildingValue)}/-`, { bold: true, fontSize: 10, align: 'center', fillColor: LBL_BG });
     drawCell(ML + CW * 0.6, cy, CW * 0.4, 22, `RS.${formatIndianCurrency(computedBuildingValue)}/-`, { bold: true, fontSize: 10, align: 'center' });
     cy += 22;
     advanceCursor(8);
@@ -924,10 +944,10 @@ export async function generateIncomeTaxPDF(
 
   // TABLE J — EXTRA ITEMS
   ensureSpace(40);
-  drawCell(ML, cy, CW, 20, 'EXTRA ITEM', { bold: true, align: 'center' });
+  drawCell(ML, cy, CW, 20, 'EXTRA ITEM', { bold: true, align: 'center', fillColor: LBL_BG });
   cy += 20;
-  drawCell(ML, cy, CW * 0.7, 18, 'PARTICULARS', { bold: true });
-  drawCell(ML + CW * 0.7, cy, CW * 0.3, 18, 'AMOUNT', { bold: true, align: 'center' });
+  drawCell(ML, cy, CW * 0.7, 18, 'PARTICULARS', { bold: true, fillColor: LBL_BG });
+  drawCell(ML + CW * 0.7, cy, CW * 0.3, 18, 'AMOUNT', { bold: true, align: 'center', fillColor: LBL_BG });
   cy += 18;
   for (const item of fields.extraItems) {
     ensureSpace(18);
@@ -935,14 +955,14 @@ export async function generateIncomeTaxPDF(
     drawCell(ML + CW * 0.7, cy, CW * 0.3, 18, `RS.${formatIndianCurrency(item.amount)}/-`, { align: 'center' });
     cy += 18;
   }
-  drawCell(ML, cy, CW * 0.7, 20, 'TOTAL', { bold: true });
+  drawCell(ML, cy, CW * 0.7, 20, 'TOTAL', { bold: true, fillColor: LBL_BG });
   drawCell(ML + CW * 0.7, cy, CW * 0.3, 20, `RS.${formatIndianCurrency(computedExtraTotal)}/-`, { bold: true, align: 'center' });
   cy += 20;
   advanceCursor(8);
 
   // TABLE K — TOTAL ABSTRACT
   ensureSpace(100);
-  drawCell(ML, cy, CW, 22, 'TOTAL ABSTRACT FOR THE ENTIRE PROPERTY', { bold: true, align: 'center' });
+  drawCell(ML, cy, CW, 22, 'TOTAL ABSTRACT FOR THE ENTIRE PROPERTY', { bold: true, align: 'center', fillColor: LBL_BG });
   cy += 22;
   const absRows = [
     ['LAND', `RS.${formatIndianCurrency(computedLandValue)}/-`],
@@ -951,7 +971,7 @@ export async function generateIncomeTaxPDF(
     ['TOTAL', `RS.${formatIndianCurrency(computedTotalProperty)}/-`],
   ];
   for (const [label, val] of absRows) {
-    drawCell(ML, cy, CW * 0.65, 20, label, { bold: true });
+    drawCell(ML, cy, CW * 0.65, 20, label, { bold: true, fillColor: LBL_BG, bgOpacity: 0.5 });
     drawCell(ML + CW * 0.65, cy, CW * 0.35, 20, val, { bold: true, align: 'center' });
     cy += 20;
   }
@@ -1081,7 +1101,7 @@ export async function generateIncomeTaxPDF(
     ensureSpace(headerH);
     let cx = ML;
     for (let i = 0; i < annxHeaders.length; i++) {
-      drawCell(cx, cy, annxCols[i], headerH, annxHeaders[i], { bold: true, fontSize: 10, align: 'center' });
+      drawCell(cx, cy, annxCols[i], headerH, annxHeaders[i], { bold: true, fontSize: 10, align: 'center', fillColor: LBL_BG });
       cx += annxCols[i];
     }
     cy += headerH;
