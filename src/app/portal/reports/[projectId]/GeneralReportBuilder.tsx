@@ -598,21 +598,34 @@ const FloatingNavigator = ({ isApartmentFlat, annexureEnabled }: { isApartmentFl
   return (
     <div className="hidden xl:flex flex-col gap-0 bg-white/80 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2 rounded-2xl w-[160px] sticky top-24 shrink-0 z-40">
       <div className="text-[10px] font-black text-neutral-400 mb-1 px-2 uppercase tracking-widest">Sections</div>
-      {NAV_SECTIONS.map((sec) => {
+      {NAV_SECTIONS.map((sec: any) => {
         const isActive = activeId === sec.id;
-        const isSpecial = (sec as any).special;
+        const isSpecial = sec.special;
         return (
           <button
             key={sec.id}
             type="button"
             onClick={() => scrollTo(sec.id)}
-            className={`text-left px-3 py-1 text-[11px] font-bold rounded-lg transition-all truncate ${
+            className={`text-left py-1 px-2.5 rounded-lg transition-all flex flex-col justify-center ${
               isSpecial
                 ? isActive ? 'bg-blue-600 text-white shadow-md my-1' : 'bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white border border-blue-100 my-1'
-                : isActive ? 'bg-[#b8860b] text-white shadow-md' : 'text-slate-500 hover:bg-[#b8860b]/10 hover:text-[#b8860b]'
+                : !sec.indent
+                  ? 'my-1 font-extrabold bg-indigo-50 text-indigo-800 border border-indigo-100 shadow-sm'
+                  : 'pl-3.5 text-slate-600 hover:bg-[#b8860b]/10 hover:text-[#b8860b]'
+            } ${
+              !isSpecial && isActive
+                ? '!bg-[#b8860b] !text-white !border-[#b8860b] shadow-md'
+                : ''
             }`}
           >
-            {sec.title}
+            <span className={`leading-tight truncate w-full ${sec.indent ? 'text-[11px] font-bold' : 'text-[11.5px]'}`}>
+              {sec.title}
+            </span>
+            {sec.sub && (
+              <span className={`text-[9px] font-semibold tracking-wider mt-0.5 ${isActive && !isSpecial ? 'text-amber-100' : 'text-slate-400'}`}>
+                {sec.sub}
+              </span>
+            )}
           </button>
         );
       })}

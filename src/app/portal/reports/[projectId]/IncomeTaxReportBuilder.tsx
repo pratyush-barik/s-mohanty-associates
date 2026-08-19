@@ -390,10 +390,10 @@ function SubSection({ id, title, children, defaultOpen = true }: { id: string; t
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-5 py-3 bg-gradient-to-r from-[#1a3558] to-[#1e4070] text-white hover:from-[#1e3d65] hover:to-[#224880] transition-all"
+        className={`w-full flex items-center justify-between px-5 py-3 bg-[#f1f3f5] text-[#495057] hover:bg-[#e9ecef] transition-all ${open ? 'border-b border-[#dee2e6]' : ''}`}
       >
-        <span className="font-semibold text-xs uppercase tracking-wider">{title}</span>
-        <svg className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <span className="font-bold text-xs uppercase tracking-wider">{title}</span>
+        <svg className={`w-4 h-4 text-[#868e96] transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
@@ -433,9 +433,9 @@ function BulletEditor({ label, lines, onChange, disabled, placeholder, span = 2 
   const showBullets = safeLines.filter(l => l.trim()).length > 1;
 
   return (
-    <div className={span === 2 ? 'md:col-span-2' : ''}>
+    <div className={`${span === 2 ? 'md:col-span-2' : ''} p-4 bg-[#f0fdf4] border border-[#d1e7dd] rounded-xl shadow-sm space-y-3`}>
       <div className="flex items-center justify-between mb-1.5">
-        <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider">{label}</label>
+        <label className="block text-xs font-bold text-[#b8860b] uppercase tracking-wider">{label}</label>
         {showBullets && (
           <span className="text-[10px] text-[#b8860b] font-semibold italic">Bullets active ({safeLines.filter(l => l.trim()).length} entries)</span>
         )}
@@ -510,14 +510,14 @@ const FloatingNavigator = ({ isLandOnly, showLandAnnexure }: { isLandOnly: boole
     { id: 'subsection-declaration', title: '↳ Declaration', indent: true },
 
     { id: 'section-5', title: '5. Annexures & Appendices', indent: false },
-    ...(!isLandOnly ? [{ id: 'subsection-tech-details', title: '↳ i) Technical Details (Items 01-20)', indent: true }] : []),
+    ...(!isLandOnly ? [{ id: 'subsection-tech-details', title: '↳ i) Technical Details', sub: '(Items 01-20)', indent: true }] : []),
     { id: 'subsection-calc-table', title: '↳ ii) MODIFICATION', indent: true },
     { id: 'subsection-extra-items', title: '↳ iii) Extra Items', indent: true },
     { id: 'subsection-total-abstract', title: '↳ iv) Total Abstract', indent: true },
     { id: 'subsection-remarks', title: '↳ v) Remarks', indent: true },
-    { id: 'subsection-certificate', title: '↳ vi) Valuation Certificate (Preview)', indent: true },
+    { id: 'subsection-certificate', title: '↳ vi) Valuation Certificate', sub: '(Preview)', indent: true },
     { id: 'subsection-photos', title: '↳ vii) Appendices: Photos & Maps', indent: true },
-    { id: 'subsection-land-annexure', title: '↳ viii) Land Annexure (Multi-Plot)', indent: true },
+    { id: 'subsection-land-annexure', title: '↳ viii) Land Annexure', sub: '(Multi-Plot)', indent: true },
   ];
 
   useEffect(() => {
@@ -555,18 +555,20 @@ const FloatingNavigator = ({ isLandOnly, showLandAnnexure }: { isLandOnly: boole
             type="button"
             onClick={() => scrollTo(sec.id)}
             className={`text-left py-1 px-2.5 rounded-lg transition-all flex flex-col justify-center ${
-              sec.indent ? 'pl-3.5' : 'my-0.5 font-extrabold text-[#0f2038]'
+              !sec.indent 
+                ? 'my-1 font-extrabold bg-indigo-50 text-indigo-800 border border-indigo-100 shadow-sm' 
+                : 'pl-3.5 text-slate-600 hover:bg-[#b8860b]/10 hover:text-[#b8860b]'
             } ${
               isActive
-                ? '!bg-[#b8860b] !text-white shadow-md'
-                : 'text-slate-600 hover:bg-[#b8860b]/10 hover:text-[#b8860b]'
+                ? '!bg-[#b8860b] !text-white !border-[#b8860b] shadow-md'
+                : ''
             }`}
           >
             <span className={`leading-tight ${sec.indent ? 'text-[11px] font-bold' : 'text-[11.5px]'}`}>
               {sec.title}
             </span>
             {sec.sub && (
-              <span className={`text-[9px] font-semibold tracking-wider ${isActive ? 'text-amber-100' : 'text-slate-400'}`}>
+              <span className={`text-[9px] font-semibold tracking-wider mt-0.5 ${isActive ? 'text-amber-100' : 'text-slate-400'}`}>
                 {sec.sub}
               </span>
             )}
