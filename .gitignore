@@ -109,3 +109,7 @@ temp-parser
 
 # Python Virtual Environments
 .venv_rembg/
+
+# temp PDF drafts
+temp_report_draft_pdf/
+temp_report_draft_pdf
