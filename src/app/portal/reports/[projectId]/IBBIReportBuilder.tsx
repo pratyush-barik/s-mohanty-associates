@@ -179,6 +179,13 @@ interface IBBIFields {
   annexureEnabled: boolean;
   annexures: AnnexureItem[];
 
+  // ── Valuation Certificate (dedicated) ──
+  certificateDescription?: string;
+  ownerContactDetails?: string;
+  caseParties?: string;
+  caseReferenceNo2?: string;
+  appointedByDesignation?: string;
+
   // ── Meta ──
   clientType?: string;
   organisationTemplate?: string;
@@ -199,8 +206,13 @@ const DEFAULT_FIELDS: IBBIFields = {
   valuationMethod: 'Sale Comparison Method coupled with Replacement Cost Approach',
   propertyDescription: '',
   caseReferenceNo: '',
+  caseReferenceNo2: '',
   appointedBy: '',
+  appointedByDesignation: '',
   appointmentDate: '',
+  caseParties: '',
+  certificateDescription: '',
+  ownerContactDetails: '',
 
   applicantName: '',
   hasManagingDirector: 'no',
@@ -987,12 +999,17 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       const certAddress = fields.propertyAddress || fields.ownerAddress || '________';
       const certDate = fields.dateOfInspection || '________';
       const coverDesc = fields.propertyType || 'Property';
-      const appointedByText = fields.appointedBy ? `Pursuant to Letter of Appointment from ${fields.appointedBy}` : 'Pursuant to Letter of Appointment';
+      const appointedByName = fields.appointedBy || '';
+      const appointedByDesg = fields.appointedByDesignation ? ` (${fields.appointedByDesignation})` : '';
+      const appointedByText = appointedByName ? `Pursuant to Letter of Appointment from ${appointedByName}${appointedByDesg}` : 'Pursuant to Letter of Appointment';
       const appointmentDateText = fields.appointmentDate ? ` on ${fields.appointmentDate}` : '';
-      const caseRefText = fields.caseReferenceNo ? `, vide Reference ${fields.caseReferenceNo}` : '';
+      const casePartiesText = fields.caseParties ? ` in the matter of ${fields.caseParties}` : '';
+      const caseRef1 = fields.caseReferenceNo || '';
+      const caseRef2 = fields.caseReferenceNo2 || '';
+      const caseRefText = caseRef1 ? `, vide Reference ${caseRef1}${caseRef2 ? ' ' + caseRef2 : ''}` : '';
 
       r.drawTextBlock(
-        `${appointedByText}${appointmentDateText} for carrying out Valuation of Immovable assets${caseRefText}, to assess the fair market and thereby deriving liquidation value of ${coverDesc} at ${certAddress}, currently owned by ${certOwner}, inspected on ${certDate}.`
+        `${appointedByText}${appointmentDateText} for carrying out Valuation of Immovable assets${casePartiesText}${caseRefText}, to assess the fair market and thereby deriving liquidation value of ${coverDesc} at ${certAddress}, currently owned by ${certOwner}, inspected on ${certDate}.`
       );
       r.advanceCursor(6);
       r.drawTextBlock('The Valuation Certificate is to be used in conjunction with the Detailed Valuation Report Enclosed herewith based on the information and particulars furnished and actual observation, Valuation methodology, assumption, limitations, Disclaimer and bases of valuation stated herein and should not be referred in Isolation.');
@@ -1002,8 +1019,8 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.drawSimpleRow('CLIENT NAME', certOwner.toUpperCase());
       r.drawSimpleRow('PROPERTY ADDRESS', certAddress.toUpperCase());
       r.drawSimpleRow('PURPOSE OF VALUATION', (fields.purposeOfValuation || 'ACCESS OF FAIR MARKET VALUE').toUpperCase());
-      r.drawSimpleRow('CURRENT OWNER, CONTACT DETAILS', certOwner.toUpperCase());
-      r.drawSimpleRow('DESCRIPTION', coverDesc.toUpperCase());
+      r.drawSimpleRow('CURRENT OWNER, CONTACT DETAILS', `${certOwner.toUpperCase()}${fields.ownerContactDetails ? '\n' + fields.ownerContactDetails : ''}`);
+      r.drawSimpleRow('DESCRIPTION', (fields.certificateDescription || coverDesc).toUpperCase());
       r.drawSimpleRow('AREA', fields.extentOfSite || 'N/A');
       r.drawSimpleRow('STATUS OF PLOT', `${fields.conversionStatus || fields.currentUsage || 'N/A'} (${fields.occupancyStatus || 'N/A'})`);
       r.drawSimpleRow('VALUATION METHOD', (fields.valuationMethod || 'Sale Comparison Method').toUpperCase());
@@ -1699,20 +1716,57 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
               <Field label="Registered Office Telephone">
                 <input type="text" value={fields.registeredOfficeTel} onChange={e => handleChange('registeredOfficeTel', e.target.value)} className={inputCls} placeholder="e.g. (0674)3594365" disabled={isReadOnly} />
               </Field>
-              <Field label="Case Reference No" span={2}>
+
+            </div>
+          </Section>
+
+          {/* ── Valuation Certificate ── */}
+          <Section title="📜 Valuation Certificate Details" number={0}>
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+              <p className="text-xs text-amber-800">These fields populate the <strong>Valuation Certificate</strong> page in the PDF. Fields marked <span className="inline-block px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-semibold">AUTO</span> are auto-filled from other sections but can be overridden.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Case Parties (in the matter of...)" span={2}>
+                <input type="text" value={fields.caseParties || ''} onChange={e => handleChange('caseParties', e.target.value)} className={inputCls} placeholder="e.g. Noida Infratech Two Pvt Ltd vs Falcony Consultancy Pvt Ltd" disabled={isReadOnly} />
+              </Field>
+              <Field label="Case Reference No (Primary)">
                 <input type="text" value={fields.caseReferenceNo || ''} onChange={e => handleChange('caseReferenceNo', e.target.value)} className={inputCls} placeholder="e.g. C.P.(IB) No. 300/KB/2017" disabled={isReadOnly} />
               </Field>
+              <Field label="Case Reference No (Secondary)">
+                <input type="text" value={fields.caseReferenceNo2 || ''} onChange={e => handleChange('caseReferenceNo2', e.target.value)} className={inputCls} placeholder="e.g. T.P. (IB) No 112/CTB/2019" disabled={isReadOnly} />
+              </Field>
               <Field label="Appointed By">
-                <input type="text" value={fields.appointedBy || ''} onChange={e => handleChange('appointedBy', e.target.value)} className={inputCls} placeholder="e.g. CA Sonu Jain (Insolvency Professional)" disabled={isReadOnly} />
+                <input type="text" value={fields.appointedBy || ''} onChange={e => handleChange('appointedBy', e.target.value)} className={inputCls} placeholder="e.g. CA Sonu Jain" disabled={isReadOnly} />
+              </Field>
+              <Field label="Appointee Designation">
+                <input type="text" value={fields.appointedByDesignation || ''} onChange={e => handleChange('appointedByDesignation', e.target.value)} className={inputCls} placeholder="e.g. an Insolvency Professional" disabled={isReadOnly} />
               </Field>
               <Field label="Appointment Date">
                 <input type="date" value={fields.appointmentDate || ''} onChange={e => handleChange('appointmentDate', e.target.value)} className={inputCls} disabled={isReadOnly} />
               </Field>
-              <Field label="Purpose of Valuation" span={2}>
-                <input type="text" value={fields.purposeOfValuation || ''} onChange={e => handleChange('purposeOfValuation', e.target.value)} className={inputCls} placeholder="To assess the Fair Market Value for..." disabled={isReadOnly} />
+              <Field label="Purpose of Valuation">
+                <input type="text" value={fields.purposeOfValuation || ''} onChange={e => handleChange('purposeOfValuation', e.target.value)} className={inputCls} placeholder="Access of Fair Market Value for Auction purpose" disabled={isReadOnly} />
               </Field>
-              <Field label="Valuation Method" span={2}>
+
+              {/* Auto-filled fields with override */}
+              <div className="col-span-2 border-t border-gray-200 pt-3 mt-1">
+                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-2">Certificate Table Fields <span className="inline-block px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-semibold ml-1">AUTO-FILLED</span></p>
+              </div>
+
+              <Field label="Client Name" span={2}>
+                <div className="flex items-center gap-2">
+                  <input type="text" value={fields.applicantName || fields.ownerName || ''} className={inputCls + ' bg-blue-50 opacity-70'} disabled={true} />
+                  <span className="text-[10px] text-blue-600 whitespace-nowrap">← from Owner Name</span>
+                </div>
+              </Field>
+              <Field label="Owner Contact Details">
+                <input type="text" value={fields.ownerContactDetails || ''} onChange={e => handleChange('ownerContactDetails', e.target.value)} className={inputCls} placeholder="e.g. 9876543210, owner@email.com" disabled={isReadOnly} />
+              </Field>
+              <Field label="Valuation Method">
                 <input type="text" value={fields.valuationMethod || ''} onChange={e => handleChange('valuationMethod', e.target.value)} className={inputCls} placeholder="Sale Comparison Method coupled with..." disabled={isReadOnly} />
+              </Field>
+              <Field label="Certificate Description (detailed property description)" span={2}>
+                <textarea rows={3} value={fields.certificateDescription || ''} onChange={e => handleChange('certificateDescription', e.target.value)} className={inputCls + ' resize-none'} placeholder="e.g. This IDCO Plot close to NH-16, Cuttack-Chandabali Road, approx 1 KM" disabled={isReadOnly} />
               </Field>
             </div>
           </Section>
