@@ -460,12 +460,12 @@ export async function generateIncomeTaxPDF(
     const rowH = Math.max(h1, h2, h3);
     ensureSpace(rowH);
     let x = ML;
-    drawCell(x, cy, qColW[0], rowH, qNo, { bold: true, fontSize: fs, align: 'center', fillColor: LBL_BG });
+    drawCell(x, cy, qColW[0], rowH, qNo, { bold: true, fontSize: fs, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
     x += qColW[0];
-    drawCell(x, cy, qColW[1], rowH, question, { fontSize: fs, bold: opts?.headerRow, fillColor: LBL_BG });
+    drawCell(x, cy, qColW[1], rowH, question, { fontSize: fs, bold: opts?.headerRow, fillColor: LBL_BG, bgOpacity: 0.5 });
     x += qColW[1];
     // Draw answer cell with multi-line support
-    page.drawRectangle({ x, y: pdfY(cy) - rowH, width: qColW[2], height: rowH, borderColor: rgb(0, 0, 0), borderWidth: 0.5 });
+    page.drawRectangle({ x, y: pdfY(cy) - rowH, width: qColW[2], height: rowH, color: hexToRgb(LBL_BG), opacity: 0.5, borderColor: rgb(0, 0, 0), borderWidth: 0.5 });
     const padX = 4; const padY = 3;
     for (let i = 0; i < answerLines.length; i++) {
       page.drawText(answerLines[i], {
@@ -484,7 +484,7 @@ export async function generateIncomeTaxPDF(
     const rowH = fs * LINE_H + 6;
     ensureSpace(rowH + 50); // Require space for header + at least one row
     // Spanning full table width with merged header
-    drawCell(ML, cy, CW, rowH, title, { bold: true, fontSize: fs, align: 'center', fillColor: LBL_BG });
+    drawCell(ML, cy, CW, rowH, title, { bold: true, fontSize: fs, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
     cy += rowH;
   };
 
@@ -504,9 +504,9 @@ export async function generateIncomeTaxPDF(
     ensureSpace(totalH);
     const startY = cy;
     
-    page.drawRectangle({ x: ML, y: pdfY(startY) - totalH, width: qColW[0], height: totalH, borderColor: rgb(0,0,0), borderWidth: 0.5, color: hexToRgb(LBL_BG) });
-    page.drawRectangle({ x: ML + qColW[0], y: pdfY(startY) - totalH, width: qColW[1], height: totalH, borderColor: rgb(0,0,0), borderWidth: 0.5, color: hexToRgb(LBL_BG) });
-    page.drawRectangle({ x: ML + qColW[0] + qColW[1], y: pdfY(startY) - totalH, width: qColW[2], height: totalH, borderColor: rgb(0,0,0), borderWidth: 0.5 });
+    page.drawRectangle({ x: ML, y: pdfY(startY) - totalH, width: qColW[0], height: totalH, color: hexToRgb(LBL_BG), opacity: 0.5, borderColor: rgb(0,0,0), borderWidth: 0.5 });
+    page.drawRectangle({ x: ML + qColW[0], y: pdfY(startY) - totalH, width: qColW[1], height: totalH, color: hexToRgb(LBL_BG), opacity: 0.5, borderColor: rgb(0,0,0), borderWidth: 0.5 });
+    page.drawRectangle({ x: ML + qColW[0] + qColW[1], y: pdfY(startY) - totalH, width: qColW[2], height: totalH, color: hexToRgb(LBL_BG), opacity: 0.5, borderColor: rgb(0,0,0), borderWidth: 0.5 });
 
     const tw = fontB.widthOfTextAtSize(qNo, fs);
     page.drawText(qNo, { x: ML + (qColW[0] - tw) / 2, y: pdfY(startY + 3 + (h1 - fs * LINE_H) / 2) - fs * 0.8, size: fs, font: fontB, color: rgb(0,0,0) });
@@ -813,17 +813,17 @@ export async function generateIncomeTaxPDF(
     // Row 2 — values
     thX = ML;
     const cy2 = cy + thH;
-    drawCell(thX, cy2, thCols[0], thH, 'P. NOS', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG });
+    drawCell(thX, cy2, thCols[0], thH, 'P. NOS', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
     thX += thCols[0];
-    drawCell(thX, cy2, thCols[1], thH, fields.annexMainBuilding || '1 NOS', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG });
+    drawCell(thX, cy2, thCols[1], thH, fields.annexMainBuilding || '1 NOS', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
     thX += thCols[1];
-    drawCell(thX, cy2, thCols[2], thH, fields.annexAnnexes || 'NIL', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG });
+    drawCell(thX, cy2, thCols[2], thH, fields.annexAnnexes || 'NIL', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
     thX += thCols[2];
-    drawCell(thX, cy2, thCols[3], thH, fields.annexServantsQuarters || 'NIL', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG });
+    drawCell(thX, cy2, thCols[3], thH, fields.annexServantsQuarters || 'NIL', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
     thX += thCols[3];
-    drawCell(thX, cy2, thCols[4], thH, fields.annexGarage || 'NIL', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG });
+    drawCell(thX, cy2, thCols[4], thH, fields.annexGarage || 'NIL', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
     thX += thCols[4];
-    drawCell(thX, cy2, thCols[5], thH, fields.annexPumpHouse || 'NIL', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG });
+    drawCell(thX, cy2, thCols[5], thH, fields.annexPumpHouse || 'NIL', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
 
     cy += thH * 2;
 
@@ -936,33 +936,33 @@ export async function generateIncomeTaxPDF(
 
     // Building value summary row
     ensureSpace(22);
-    drawCell(ML, cy, CW * 0.6, 22, `VALUE OF THE BUILDING: RS.${formatIndianCurrency(computedBuildingValue)}/-`, { bold: true, fontSize: 10, align: 'center', fillColor: LBL_BG });
-    drawCell(ML + CW * 0.6, cy, CW * 0.4, 22, `RS.${formatIndianCurrency(computedBuildingValue)}/-`, { bold: true, fontSize: 10, align: 'center' });
+    drawCell(ML, cy, CW * 0.6, 22, `VALUE OF THE BUILDING: RS.${formatIndianCurrency(computedBuildingValue)}/-`, { bold: true, fontSize: 10, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
+    drawCell(ML + CW * 0.6, cy, CW * 0.4, 22, `RS.${formatIndianCurrency(computedBuildingValue)}/-`, { bold: true, fontSize: 10, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
     cy += 22;
     advanceCursor(8);
   }
 
   // TABLE J — EXTRA ITEMS
   ensureSpace(40);
-  drawCell(ML, cy, CW, 20, 'EXTRA ITEM', { bold: true, align: 'center', fillColor: LBL_BG });
+  drawCell(ML, cy, CW, 20, 'EXTRA ITEM', { bold: true, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
   cy += 20;
-  drawCell(ML, cy, CW * 0.7, 18, 'PARTICULARS', { bold: true, fillColor: LBL_BG });
-  drawCell(ML + CW * 0.7, cy, CW * 0.3, 18, 'AMOUNT', { bold: true, align: 'center', fillColor: LBL_BG });
+  drawCell(ML, cy, CW * 0.7, 18, 'PARTICULARS', { bold: true, fillColor: LBL_BG, bgOpacity: 0.5 });
+  drawCell(ML + CW * 0.7, cy, CW * 0.3, 18, 'AMOUNT', { bold: true, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
   cy += 18;
   for (const item of fields.extraItems) {
     ensureSpace(18);
-    drawCell(ML, cy, CW * 0.7, 18, item.description);
-    drawCell(ML + CW * 0.7, cy, CW * 0.3, 18, `RS.${formatIndianCurrency(item.amount)}/-`, { align: 'center' });
+    drawCell(ML, cy, CW * 0.7, 18, item.description, { fillColor: LBL_BG, bgOpacity: 0.5 });
+    drawCell(ML + CW * 0.7, cy, CW * 0.3, 18, `RS.${formatIndianCurrency(item.amount)}/-`, { align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
     cy += 18;
   }
-  drawCell(ML, cy, CW * 0.7, 20, 'TOTAL', { bold: true, fillColor: LBL_BG });
-  drawCell(ML + CW * 0.7, cy, CW * 0.3, 20, `RS.${formatIndianCurrency(computedExtraTotal)}/-`, { bold: true, align: 'center' });
+  drawCell(ML, cy, CW * 0.7, 20, 'TOTAL', { bold: true, fillColor: LBL_BG, bgOpacity: 0.5 });
+  drawCell(ML + CW * 0.7, cy, CW * 0.3, 20, `RS.${formatIndianCurrency(computedExtraTotal)}/-`, { bold: true, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
   cy += 20;
   advanceCursor(8);
 
   // TABLE K — TOTAL ABSTRACT
   ensureSpace(100);
-  drawCell(ML, cy, CW, 22, 'TOTAL ABSTRACT FOR THE ENTIRE PROPERTY', { bold: true, align: 'center', fillColor: LBL_BG });
+  drawCell(ML, cy, CW, 22, 'TOTAL ABSTRACT FOR THE ENTIRE PROPERTY', { bold: true, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
   cy += 22;
   const absRows = [
     ['LAND', `RS.${formatIndianCurrency(computedLandValue)}/-`],
@@ -971,8 +971,8 @@ export async function generateIncomeTaxPDF(
     ['TOTAL', `RS.${formatIndianCurrency(computedTotalProperty)}/-`],
   ];
   for (const [label, val] of absRows) {
-    drawCell(ML, cy, CW * 0.65, 20, label, { bold: true, fillColor: LBL_BG });
-    drawCell(ML + CW * 0.65, cy, CW * 0.35, 20, val, { bold: true, align: 'center' });
+    drawCell(ML, cy, CW * 0.65, 20, label, { bold: true, fillColor: LBL_BG, bgOpacity: 0.5 });
+    drawCell(ML + CW * 0.65, cy, CW * 0.35, 20, val, { bold: true, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
     cy += 20;
   }
   advanceCursor(12);
