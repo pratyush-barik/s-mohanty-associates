@@ -285,11 +285,13 @@ export class DOCXIBBIRenderer {
     // Build header with letterhead as full-page background
     let defaultHeader: Header | undefined;
     if (this.letterheadBytes) {
+      // A4 = 8.27 x 11.69 inches. At 96 DPI = ~794 x 1123 pixels.
+      // Floating offsets are in EMUs. 1 inch = 914400 EMUs.
       defaultHeader = new Header({
         children: [new Paragraph({
           children: [new ImageRun({
             data: this.letterheadBytes,
-            transformation: { width: 595, height: 842 },
+            transformation: { width: 794, height: 1123 },
             type: 'png',
             floating: {
               horizontalPosition: {
@@ -305,6 +307,8 @@ export class DOCXIBBIRenderer {
                 type: TextWrappingType.NONE,
                 side: TextWrappingSide.BOTH_SIDES,
               },
+              allowOverlap: true,
+              lockAnchor: true,
             },
           })],
         })],
@@ -320,6 +324,8 @@ export class DOCXIBBIRenderer {
             bottom: convertInchesToTwip(1.11), // ~80pt
             left: convertInchesToTwip(0.75),   // ~54pt
             right: convertInchesToTwip(0.75),  // ~54pt
+            header: 0,  // Allow header image to start from page edge
+            footer: convertInchesToTwip(0.3),
           },
         },
       },
