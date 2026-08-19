@@ -1835,9 +1835,9 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
 <SubSection id="subsection-calc-table" title="MODIFICATION IN THE ANNEXURE TO FORM NO –01">
           <div className="grid md:grid-cols-2 gap-4 mb-4">
             <Field label="Valuation Date (for table header)">
-              <input className={inputCls} value={fields.valuationCalcDate} onChange={e => handleChange('valuationCalcDate', e.target.value)} disabled={isReadOnly} placeholder="01.04.2008" />
+              <input type="date" className={inputCls} value={fields.valuationCalcDate} onChange={e => handleChange('valuationCalcDate', e.target.value)} disabled={isReadOnly} />
             </Field>
-            <Field label="Depreciation % (1.5% ├ù age)">
+            <Field label="Depreciation % (1.5% × age)">
               <input className={inputCls} value={fields.depreciationPct} onChange={e => handleChange('depreciationPct', e.target.value)} disabled={isReadOnly} placeholder="7.5" />
             </Field>
           </div>
@@ -1889,18 +1889,13 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           </div>
 
           {/* Computed Building Total */}
-          <div className="mt-4 flex items-center justify-between gap-4 p-4 rounded-xl bg-amber-50 border border-amber-200 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
-                <span className="text-amber-600 text-base">🏗️</span>
-              </div>
-              <div>
-                <p className="text-[10px] font-extrabold text-amber-600 uppercase tracking-widest">Total Building Value</p>
-                <p className="text-[10px] text-amber-500 font-medium">Auto-calculated from floor rows</p>
-              </div>
+          <div className="mt-4 flex items-center justify-between gap-4 p-4 rounded-xl border border-[#dee2e6] bg-[#f8f9fa]">
+            <div>
+              <p className="text-xs font-bold text-[#495057] uppercase tracking-wider">Total Building Value</p>
+              <p className="text-[10px] text-[#6c757d] font-medium">Auto-calculated from floor rows</p>
             </div>
             <div className="text-right shrink-0">
-              <p className="text-xl font-extrabold text-amber-800 tabular-nums">RS.{formatIndianCurrency(computedBuildingValue)}/-</p>
+              <p className="text-lg font-bold text-[#212529] tabular-nums">RS.{formatIndianCurrency(computedBuildingValue)}/-</p>
             </div>
           </div>
           </SubSection>
@@ -2149,20 +2144,14 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           </div>
 
 {/* Sketch Maps */}
-          <div className="bg-white p-4 rounded-xl border border-[#e9ecef] shadow-sm">
-            <div className="flex justify-between items-center mb-4">
-              <label className="block text-sm font-bold text-[#1a3a5c]">Sketch Maps</label>
-              <div className="flex gap-2">
-                {!isReadOnly && (
-                  <>
-                    <label className="cursor-pointer text-xs font-bold text-blue-600 hover:text-blue-800">
-                      Upload
-                      <input type="file" multiple accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'sketchMapImages')} disabled={uploading} />
-                    </label>
-                  </>
-                )}
-              </div>
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest">Sketch Maps</p>
+              {bucketImages.length > 0 && !isReadOnly && (
+                <button type="button" onClick={() => openBucketPicker('sketchMapImages')} className="text-xs font-bold text-blue-600 hover:text-blue-800">📸 Pick from Bucket</button>
+              )}
             </div>
+            {!isReadOnly && <input type="file" multiple accept="image/*" onChange={e => handleFileUpload(e, 'sketchMapImages')} disabled={uploading} className="block w-full text-sm text-[#6c757d] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#b8860b]/10 file:text-[#b8860b] hover:file:bg-[#b8860b]/20 mb-2" />}
             
             {fields.sketchMapImages && fields.sketchMapImages.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
