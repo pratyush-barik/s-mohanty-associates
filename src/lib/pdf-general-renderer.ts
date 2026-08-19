@@ -3,7 +3,7 @@
  * Uses A4 Portrait size.
  */
 
-import { PDFDocument, PDFPage, PDFFont, StandardFonts, rgb, PDFImage } from 'pdf-lib';
+import { PDFDocument, PDFPage, PDFFont, PDFImage, PDFEmbeddedPage, StandardFonts, rgb } from 'pdf-lib';
 
 // ─── Color helpers ──────────────────────────────────────────────────
 function hexToRgb(hex: string) {
@@ -63,7 +63,11 @@ export class PDFGeneralRenderer {
   private fontBold!: PDFFont;
   private fontItalic!: PDFFont;
   private fontBoldItalic!: PDFFont;
-  private letterheadImage: PDFImage | null = null;
+  // Form XObject (embedded PDF page) for the letterhead background.
+  // Using embedPdf+drawPage produces /Subtype/Form instead of /Subtype/Image,
+  // which PDF-to-Word converters (e.g. ilovepdf) recognise as a template/background
+  // layer rather than an inline image, giving consistent letterhead in exported DOCX.
+  private letterheadForm: PDFEmbeddedPage | null = null;
   private cursorY = 0; // distance from top of content area (top-down)
   private initialized = false;
 
@@ -79,13 +83,22 @@ export class PDFGeneralRenderer {
 
     if (letterheadBytes && letterheadBytes.length > 0) {
       try {
-        this.letterheadImage = await this.doc.embedPng(letterheadBytes);
-      } catch {
-        try {
-          this.letterheadImage = await this.doc.embedJpg(letterheadBytes);
-        } catch {
-          this.letterheadImage = null;
+        // Build a single-page temp PDF containing only the letterhead image,
+        // then embed it into the main document as a Form XObject.
+        const tmpDoc = await PDFDocument.create();
+        let tmpImg = null;
+        try { tmpImg = await tmpDoc.embedPng(letterheadBytes); } catch { /* try jpg */ }
+        if (!tmpImg) {
+          try { tmpImg = await tmpDoc.embedJpg(letterheadBytes); } catch { /* ignore */ }
         }
+        if (tmpImg) {
+          const tmpPage = tmpDoc.addPage([PAGE_W, PAGE_H]);
+          tmpPage.drawImage(tmpImg, { x: 0, y: 0, width: PAGE_W, height: PAGE_H });
+          const tmpBytes = await tmpDoc.save();
+          [this.letterheadForm] = await this.doc.embedPdf(tmpBytes, [0]);
+        }
+      } catch {
+        this.letterheadForm = null;
       }
     }
 
@@ -99,9 +112,10 @@ export class PDFGeneralRenderer {
     this.page = this.doc.addPage([PAGE_W, PAGE_H]);
     this.cursorY = 0;
 
-    // Draw letterhead background
-    if (this.letterheadImage) {
-      this.page.drawImage(this.letterheadImage, {
+    // Draw letterhead as a Form XObject so PDF-to-Word converters treat it
+    // as a background/template layer, not an inline content image.
+    if (this.letterheadForm) {
+      this.page.drawPage(this.letterheadForm, {
         x: 0, y: 0, width: PAGE_W, height: PAGE_H,
       });
     }

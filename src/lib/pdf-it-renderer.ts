@@ -1,4 +1,4 @@
-import { PDFDocument, PDFPage, PDFImage, StandardFonts, rgb } from 'pdf-lib';
+import { PDFDocument, PDFPage, PDFEmbeddedPage, StandardFonts, rgb } from 'pdf-lib';
 import { formatIndianCurrency, rupeesInWords } from './numberToWords';
 
 const parseNum = (val: string | number): number => {
@@ -195,27 +195,32 @@ export async function generateIncomeTaxPDF(
   const sketchBytesList = fields.sketchMapImages?.length ? allImageBytes.slice(imgIdx, imgIdx + fields.sketchMapImages.length) : null;
   if (fields.sketchMapImages?.length) imgIdx += fields.sketchMapImages.length;
 
-  let letterheadImage: PDFImage | null = null;
+  // Build the letterhead as a Form XObject (embedPdf+drawPage = /Subtype/Form)
+  // so PDF-to-Word converters (e.g. ilovepdf) treat it as a background/template layer
+  // rather than an inline content image, giving consistent letterhead in exported DOCX.
+  let letterheadForm: PDFEmbeddedPage | null = null;
   if (letterheadBytes && letterheadBytes.length > 0) {
     try {
-      letterheadImage = await doc.embedPng(letterheadBytes);
-    } catch {
-      try {
-        letterheadImage = await doc.embedJpg(letterheadBytes);
-      } catch {
-        letterheadImage = null;
+      const tmpDoc = await PDFDocument.create();
+      let tmpImg = null;
+      try { tmpImg = await tmpDoc.embedPng(letterheadBytes); } catch { /* try jpg */ }
+      if (!tmpImg) {
+        try { tmpImg = await tmpDoc.embedJpg(letterheadBytes); } catch { /* ignore */ }
       }
+      if (tmpImg) {
+        const tmpPage = tmpDoc.addPage([A4_W, A4_H]);
+        tmpPage.drawImage(tmpImg, { x: 0, y: 0, width: A4_W, height: A4_H });
+        const tmpBytes = await tmpDoc.save();
+        [letterheadForm] = await doc.embedPdf(tmpBytes, [0]);
+      }
+    } catch {
+      letterheadForm = null;
     }
   }
 
   const drawBackground = (p: PDFPage) => {
-    if (letterheadImage) {
-      p.drawImage(letterheadImage, {
-        x: 0,
-        y: 0,
-        width: A4_W,
-        height: A4_H,
-      });
+    if (letterheadForm) {
+      p.drawPage(letterheadForm, { x: 0, y: 0, width: A4_W, height: A4_H });
     }
   };
 
