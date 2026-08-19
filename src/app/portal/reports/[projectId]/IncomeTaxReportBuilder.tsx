@@ -390,10 +390,10 @@ function SubSection({ id, title, children, defaultOpen = true }: { id: string; t
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className={`w-full flex items-center justify-between px-5 py-3 bg-[#f1f3f5] text-[#495057] hover:bg-[#e9ecef] transition-all ${open ? 'border-b border-[#dee2e6]' : ''}`}
+        className={`w-full flex items-center justify-between px-5 py-3 bg-[#4b5320] text-white hover:bg-[#3f471b] transition-all ${open ? 'border-b border-[#3f471b]' : ''}`}
       >
         <span className="font-bold text-xs uppercase tracking-wider">{title}</span>
-        <svg className={`w-4 h-4 text-[#868e96] transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className={`w-4 h-4 text-white/80 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
