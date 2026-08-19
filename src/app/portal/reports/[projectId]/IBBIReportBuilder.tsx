@@ -155,6 +155,10 @@ interface IBBIFields {
   presentMarketValueTotal: string;
   realisableValueTotal: string;
   valuationRows: ValuationRow[];
+  methodology13_1?: string;
+  considerations13_3?: string;
+  assumptions13_4?: string;
+  analysis13_5?: string;
 
   // ── Section 14: Site Location ──
   latitude: string;
@@ -294,6 +298,10 @@ const DEFAULT_FIELDS: IBBIFields = {
   fairMarketValueTotal: '',
   presentMarketValueTotal: '',
   realisableValueTotal: '',
+  methodology13_1: '',
+  considerations13_3: '',
+  assumptions13_4: '',
+  analysis13_5: '',
   valuationRows: [],
 
   latitude: '',
@@ -1246,7 +1254,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
       r.drawTextBlock('13.1 METHODOLOGY', { bold: true });
       tocPageMap['    13.1  Methodology'] = r.getPageCount();
-      r.drawTextBlock(`${fields.valuationMethod || 'Sale Comparison Method coupled with Replacement Cost Approach'} has been adopted for the valuation of the subject property. The market approach is based on actual market transactions of comparable properties in the vicinity. The cost approach estimates the replacement cost of the improvements less depreciation.`);
+      r.drawTextBlock(fields.methodology13_1 || `${fields.valuationMethod || 'Sale Comparison Method coupled with Replacement Cost Approach'} has been adopted for the valuation of the subject property. The market approach is based on actual market transactions of comparable properties in the vicinity. The cost approach estimates the replacement cost of the improvements less depreciation.`);
       r.advanceCursor(4);
 
       r.drawTextBlock('13.2 VALUATION BASES', { bold: true });
@@ -1256,17 +1264,17 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
       r.drawTextBlock('13.3 VALUATION CONSIDERATIONS', { bold: true });
       tocPageMap['    13.3  Valuation Considerations'] = r.getPageCount();
-      r.drawTextBlock('In arriving at the valuation, the following factors have been considered: location and accessibility, size and shape of the plot, nature of surrounding development, availability of civic amenities, demand and supply position, comparable sale instances, and applicable government rates.');
+      r.drawTextBlock(fields.considerations13_3 || 'In arriving at the valuation, the following factors have been considered: location and accessibility, size and shape of the plot, nature of surrounding development, availability of civic amenities, demand and supply position, comparable sale instances, and applicable government rates.');
       r.advanceCursor(4);
 
       r.drawTextBlock('13.4 VALUATION ASSUMPTIONS', { bold: true });
       tocPageMap['    13.4  Valuation Assumptions'] = r.getPageCount();
-      r.drawTextBlock('The valuation assumes that the property has a clear and marketable title, that there are no hidden or unapparent conditions of the property that would affect value, that the information provided by the client is true and correct, and that the property conforms to applicable government regulations.');
+      r.drawTextBlock(fields.assumptions13_4 || 'The valuation assumes that the property has a clear and marketable title, that there are no hidden or unapparent conditions of the property that would affect value, that the information provided by the client is true and correct, and that the property conforms to applicable government regulations.');
       r.advanceCursor(4);
 
       r.drawTextBlock('13.5 VALUATION ANALYSIS', { bold: true });
       tocPageMap['    13.5  Valuation Analysis'] = r.getPageCount();
-      r.drawTextBlock('Based on the market survey conducted in the area and analysis of comparable sale transactions, the prevailing market rates have been assessed. The government guideline rates as published by the Registration Department have also been considered. After due consideration of all relevant factors including location, accessibility, amenities, and market conditions, the values have been arrived at as detailed below.');
+      r.drawTextBlock(fields.analysis13_5 || 'Based on the market survey conducted in the area and analysis of comparable sale transactions, the prevailing market rates have been assessed. The government guideline rates as published by the Registration Department have also been considered. After due consideration of all relevant factors including location, accessibility, amenities, and market conditions, the values have been arrived at as detailed below.');
       r.advanceCursor(6);
 
       r.drawTextBlock('13.6 DETAILS OF VALUATION', { bold: true });
@@ -1774,6 +1782,9 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
           {/* ── Section 4: Brief Description ── */}
           <Section title="Brief Description of the Property" number={4}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Property Description (Introductory paragraph in PDF)" span={2}>
+                <textarea value={fields.propertyDescription || ''} onChange={e => handleChange('propertyDescription', e.target.value)} className={inputCls + ' resize-none'} rows={3} placeholder="e.g. an inoperative water bottling unit over IDCO plot no 11,11/A at Jagatpur Industrial Estate" disabled={isReadOnly} />
+              </Field>
               <Field label="Applicant / Owner Name(s)" span={2}>
                 <textarea value={fields.applicantName} onChange={e => handleChange('applicantName', e.target.value)} className={inputCls} rows={2} placeholder="Full list of owners" disabled={isReadOnly} />
               </Field>
@@ -1888,6 +1899,16 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
                   <option value="Industrial Zone">Industrial Zone</option>
                 </select>
               </Field>
+              <Field label="Conversion Status">
+                <select value={fields.conversionStatus || 'Agricultural'} onChange={e => handleChange('conversionStatus', e.target.value)} className={inputCls} disabled={isReadOnly}>
+                  <option value="Agricultural">Agricultural</option>
+                  <option value="IDCO Industrial Plot">IDCO Industrial Plot</option>
+                  <option value="Residential Converted">Residential Converted</option>
+                  <option value="Commercial Converted">Commercial Converted</option>
+                  <option value="Non-Agricultural">Non-Agricultural</option>
+                  <option value="Government Allotted">Government Allotted</option>
+                </select>
+              </Field>
               <Field label="Extent of Site (Acres/Dec/Sqft)">
                 <input type="text" value={fields.extentOfSite} onChange={e => handleChange('extentOfSite', e.target.value)} className={inputCls} placeholder="e.g. 0.45 Acres" disabled={isReadOnly} />
               </Field>
@@ -1915,6 +1936,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Master Plan Provision"><input type="text" value={fields.masterPlanProvision} onChange={e => handleChange('masterPlanProvision', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
               <Field label="Approved Plan Authority"><input type="text" value={fields.approvedPlanAuthority} onChange={e => handleChange('approvedPlanAuthority', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Approved Plan Date"><input type="date" value={fields.approvedPlanDate || ''} onChange={e => handleChange('approvedPlanDate', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
               <Field label="Ground Coverage"><input type="text" value={fields.groundCoverage} onChange={e => handleChange('groundCoverage', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
               <Field label="Surrounding Land Use"><input type="text" value={fields.surroundingLandUse} onChange={e => handleChange('surroundingLandUse', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
               <Field label="Development Controls" span={2}><textarea value={fields.developmentControls} onChange={e => handleChange('developmentControls', e.target.value)} className={inputCls} rows={2} disabled={isReadOnly} /></Field>
@@ -1930,6 +1952,9 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
               <Field label="Acquisition Notification"><input type="text" value={fields.acquisitionNotification} onChange={e => handleChange('acquisitionNotification', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
               <Field label="Transferability"><input type="text" value={fields.transferability} onChange={e => handleChange('transferability', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
               <Field label="Existing Mortgages / Charge"><input type="text" value={fields.existingMortgages} onChange={e => handleChange('existingMortgages', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Road Widening Notification"><input type="text" value={fields.roadWideningNotification || ''} onChange={e => handleChange('roadWideningNotification', e.target.value)} className={inputCls} placeholder="Any road widening notification" disabled={isReadOnly} /></Field>
+              <Field label="Heritage Restriction"><input type="text" value={fields.heritageRestriction || ''} onChange={e => handleChange('heritageRestriction', e.target.value)} className={inputCls} placeholder="Any heritage restriction" disabled={isReadOnly} /></Field>
+              <Field label="Guarantee Issued"><input type="text" value={fields.guaranteeIssued || ''} onChange={e => handleChange('guaranteeIssued', e.target.value)} className={inputCls} placeholder="Any guarantee issued" disabled={isReadOnly} /></Field>
               <Field label="SARFAESI Compliant"><input type="text" value={fields.sarfaesiCompliant} onChange={e => handleChange('sarfaesiCompliant', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
               <Field label="Disputes / Dues"><input type="text" value={fields.disputesDues} onChange={e => handleChange('disputesDues', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
             </div>
@@ -1942,8 +1967,12 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
               <Field label="Sewerage"><input type="text" value={fields.sewerage} onChange={e => handleChange('sewerage', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
               <Field label="Electricity"><input type="text" value={fields.electricity} onChange={e => handleChange('electricity', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
               <Field label="Road Connectivity"><input type="text" value={fields.roadConnectivity} onChange={e => handleChange('roadConnectivity', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Storm Water Drainage"><input type="text" value={fields.stormWater || ''} onChange={e => handleChange('stormWater', e.target.value)} className={inputCls} placeholder="e.g. Available / Not Available" disabled={isReadOnly} /></Field>
+              <Field label="Solid Waste Management"><input type="text" value={fields.solidWaste || ''} onChange={e => handleChange('solidWaste', e.target.value)} className={inputCls} placeholder="e.g. Municipal Collection" disabled={isReadOnly} /></Field>
               <Field label="Distance to Police Station"><input type="text" value={fields.policeStationDist} onChange={e => handleChange('policeStationDist', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
               <Field label="Distance to Bus Stop"><input type="text" value={fields.busStopDist} onChange={e => handleChange('busStopDist', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Distance to Nearest School"><input type="text" value={fields.schoolDist || ''} onChange={e => handleChange('schoolDist', e.target.value)} className={inputCls} placeholder="e.g. 2 KM" disabled={isReadOnly} /></Field>
+              <Field label="Distance to Nearest College"><input type="text" value={fields.collegeDist || ''} onChange={e => handleChange('collegeDist', e.target.value)} className={inputCls} placeholder="e.g. 5 KM" disabled={isReadOnly} /></Field>
             </div>
           </Section>
 
@@ -1989,6 +2018,26 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
           <Section title="Valuation Approaches & Methodology" number={13}>
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
               <p className="text-sm text-blue-800 font-medium">Upload detailed plot-by-plot Valuation Tables using the <strong>Annexure</strong> section below. The PDF will auto-reference them. Enter the summary totals here:</p>
+            </div>
+
+            {/* Optional sub-section text overrides */}
+            <div className="mb-6">
+              <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-3">Sub-section Text Overrides <span className="inline-block px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-semibold ml-1">OPTIONAL</span></p>
+              <p className="text-xs text-gray-500 mb-3">Leave blank to use standard IBBI-IVS default text. Fill to override with your own custom text.</p>
+              <div className="grid grid-cols-1 gap-4">
+                <Field label="13.1 Methodology (custom text)" span={2}>
+                  <textarea rows={3} value={fields.methodology13_1 || ''} onChange={e => handleChange('methodology13_1', e.target.value)} className={inputCls + ' resize-none'} placeholder="Leave blank for default: 'Sale Comparison Method coupled with Replacement Cost Approach has been adopted...'" disabled={isReadOnly} />
+                </Field>
+                <Field label="13.3 Valuation Considerations (custom text)" span={2}>
+                  <textarea rows={3} value={fields.considerations13_3 || ''} onChange={e => handleChange('considerations13_3', e.target.value)} className={inputCls + ' resize-none'} placeholder="Leave blank for default: 'In arriving at the valuation, the following factors have been considered...'" disabled={isReadOnly} />
+                </Field>
+                <Field label="13.4 Valuation Assumptions (custom text)" span={2}>
+                  <textarea rows={3} value={fields.assumptions13_4 || ''} onChange={e => handleChange('assumptions13_4', e.target.value)} className={inputCls + ' resize-none'} placeholder="Leave blank for default: 'The valuation assumes that the property has a clear and marketable title...'" disabled={isReadOnly} />
+                </Field>
+                <Field label="13.5 Valuation Analysis (custom text)" span={2}>
+                  <textarea rows={3} value={fields.analysis13_5 || ''} onChange={e => handleChange('analysis13_5', e.target.value)} className={inputCls + ' resize-none'} placeholder="Leave blank for default: 'Based on the market survey conducted in the area...'" disabled={isReadOnly} />
+                </Field>
+              </div>
             </div>
             
             {/* Dynamic Valuation Rows Table */}
