@@ -947,8 +947,7 @@ export async function generateIncomeTaxPDF(
 
     // Building value summary row
     ensureSpace(22);
-    drawCell(ML, cy, CW * 0.6, 22, `VALUE OF THE BUILDING: RS.${formatIndianCurrency(computedBuildingValue)}/-`, { bold: true, fontSize: 10, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
-    drawCell(ML + CW * 0.6, cy, CW * 0.4, 22, `RS.${formatIndianCurrency(computedBuildingValue)}/-`, { bold: true, fontSize: 10, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
+    drawCell(ML, cy, CW, 22, `VALUE OF THE BUILDING: RS.${formatIndianCurrency(computedBuildingValue)}/-`, { bold: true, fontSize: 10, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
     cy += 22;
     advanceCursor(8);
   }
