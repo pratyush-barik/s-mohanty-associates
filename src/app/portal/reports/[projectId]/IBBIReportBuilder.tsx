@@ -1554,10 +1554,68 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     }
 
     try {
-      const blob = await handleGeneratePDF();
-      if (blob && previewWindow) {
-        const url = URL.createObjectURL(blob);
-        previewWindow.location.href = url;
+      const [pdfBlob, docxBlob] = await Promise.all([
+        handleGeneratePDF(),
+        handleGenerateDOCX(),
+      ]);
+      if (pdfBlob && previewWindow) {
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+        const docxFileName = `${fields.applicantName ? fields.applicantName.replace(/\s+/g, '_') : 'IBBI'}_Valuation_Report_${projectId}.docx`;
+
+        // Build a custom preview page with toolbar + embedded PDF
+        previewWindow.document.open();
+        previewWindow.document.write(`
+          <html>
+            <head><title>IBBI Report Preview</title></head>
+            <body style="margin:0; padding:0; overflow:hidden; background:#2d2d2d;">
+              <div id="toolbar" style="position:fixed; top:0; left:0; right:0; height:48px; background:linear-gradient(135deg,#1e3a5f,#2c5f8a); display:flex; align-items:center; justify-content:space-between; padding:0 16px; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,0.3);">
+                <span style="color:#fff; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; font-size:14px; font-weight:600;">IBBI Valuation Report Preview</span>
+                <div style="display:flex; gap:10px; align-items:center;">
+                  <button id="downloadDocxBtn" style="background:#fff; color:#1e3a5f; border:none; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.2s;">
+                    \ud83d\udcc4 Download DOCX
+                  </button>
+                  <button id="downloadPdfBtn" style="background:rgba(255,255,255,0.15); color:#fff; border:1px solid rgba(255,255,255,0.3); padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.2s;">
+                    \ud83d\udce5 Download PDF
+                  </button>
+                </div>
+              </div>
+              <iframe src="${pdfUrl}" style="position:absolute; top:48px; left:0; right:0; bottom:0; width:100%; height:calc(100vh - 48px); border:none;"></iframe>
+            </body>
+          </html>
+        `);
+        previewWindow.document.close();
+
+        // Attach download handlers after DOM is ready
+        setTimeout(() => {
+          const docxBtn = previewWindow.document.getElementById('downloadDocxBtn');
+          const pdfBtn = previewWindow.document.getElementById('downloadPdfBtn');
+
+          if (docxBtn && docxBlob) {
+            docxBtn.addEventListener('click', () => {
+              const docxUrl = URL.createObjectURL(docxBlob);
+              const a = previewWindow.document.createElement('a');
+              a.href = docxUrl;
+              a.download = docxFileName;
+              previewWindow.document.body.appendChild(a);
+              a.click();
+              previewWindow.document.body.removeChild(a);
+              URL.revokeObjectURL(docxUrl);
+            });
+          }
+
+          if (pdfBtn && pdfBlob) {
+            pdfBtn.addEventListener('click', () => {
+              const pdfDlUrl = URL.createObjectURL(pdfBlob);
+              const a = previewWindow.document.createElement('a');
+              a.href = pdfDlUrl;
+              a.download = docxFileName.replace('.docx', '.pdf');
+              previewWindow.document.body.appendChild(a);
+              a.click();
+              previewWindow.document.body.removeChild(a);
+              URL.revokeObjectURL(pdfDlUrl);
+            });
+          }
+        }, 200);
       } else if (previewWindow) {
         previewWindow.close();
         setMessage({ type: 'error', text: 'Failed to generate PDF preview.' });
