@@ -460,9 +460,9 @@ export async function generateIncomeTaxPDF(
     const rowH = Math.max(h1, h2, h3);
     ensureSpace(rowH);
     let x = ML;
-    drawCell(x, cy, qColW[0], rowH, qNo, { bold: true, fontSize: fs, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
+    drawCell(x, cy, qColW[0], rowH, qNo, { bold: true, fontSize: fs, align: 'center', fillColor: LBL_BG });
     x += qColW[0];
-    drawCell(x, cy, qColW[1], rowH, question, { fontSize: fs, bold: opts?.headerRow, fillColor: LBL_BG, bgOpacity: 0.5 });
+    drawCell(x, cy, qColW[1], rowH, question, { fontSize: fs, bold: opts?.headerRow, fillColor: LBL_BG });
     x += qColW[1];
     // Draw answer cell with multi-line support
     page.drawRectangle({ x, y: pdfY(cy) - rowH, width: qColW[2], height: rowH, borderColor: rgb(0, 0, 0), borderWidth: 0.5 });
@@ -504,8 +504,8 @@ export async function generateIncomeTaxPDF(
     ensureSpace(totalH);
     const startY = cy;
     
-    page.drawRectangle({ x: ML, y: pdfY(startY) - totalH, width: qColW[0], height: totalH, borderColor: rgb(0,0,0), borderWidth: 0.5 });
-    page.drawRectangle({ x: ML + qColW[0], y: pdfY(startY) - totalH, width: qColW[1], height: totalH, borderColor: rgb(0,0,0), borderWidth: 0.5 });
+    page.drawRectangle({ x: ML, y: pdfY(startY) - totalH, width: qColW[0], height: totalH, borderColor: rgb(0,0,0), borderWidth: 0.5, color: hexToRgb(LBL_BG) });
+    page.drawRectangle({ x: ML + qColW[0], y: pdfY(startY) - totalH, width: qColW[1], height: totalH, borderColor: rgb(0,0,0), borderWidth: 0.5, color: hexToRgb(LBL_BG) });
     page.drawRectangle({ x: ML + qColW[0] + qColW[1], y: pdfY(startY) - totalH, width: qColW[2], height: totalH, borderColor: rgb(0,0,0), borderWidth: 0.5 });
 
     const tw = fontB.widthOfTextAtSize(qNo, fs);
@@ -971,7 +971,7 @@ export async function generateIncomeTaxPDF(
     ['TOTAL', `RS.${formatIndianCurrency(computedTotalProperty)}/-`],
   ];
   for (const [label, val] of absRows) {
-    drawCell(ML, cy, CW * 0.65, 20, label, { bold: true, fillColor: LBL_BG, bgOpacity: 0.5 });
+    drawCell(ML, cy, CW * 0.65, 20, label, { bold: true, fillColor: LBL_BG });
     drawCell(ML + CW * 0.65, cy, CW * 0.35, 20, val, { bold: true, align: 'center' });
     cy += 20;
   }
