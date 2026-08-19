@@ -912,26 +912,37 @@ export async function generateIncomeTaxPDF(
     }
     cy += headerH;
 
-    // Data rows
-    for (const fr of computedFloorRows) {
+    // Data rows (show default "--" row if no floors entered)
+    if (computedFloorRows.length === 0) {
       const rowH = 20;
       ensureSpace(rowH);
       cx = ML;
-      const vals = [
-        fr.name,
-        `${fr.plinthArea} SQFT`,
-        fr.roofHeight,
-        fr.age,
-        `RS.${formatIndianCurrency(parseNum(fr.ratePerSqft))}/-`,
-        `RS.${formatIndianCurrency(fr.replacementCost)}/-`,
-        `RS.${formatIndianCurrency(fr.depAmt)}/-`,
-        `RS.${formatIndianCurrency(fr.netValue)}/-`,
-      ];
-      for (let i = 0; i < vals.length; i++) {
-        drawCell(cx, cy, calcCols[i], rowH, vals[i], { fontSize: 8, align: 'center' });
+      for (let i = 0; i < calcCols.length; i++) {
+        drawCell(cx, cy, calcCols[i], rowH, '--', { fontSize: 8, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
         cx += calcCols[i];
       }
       cy += rowH;
+    } else {
+      for (const fr of computedFloorRows) {
+        const rowH = 20;
+        ensureSpace(rowH);
+        cx = ML;
+        const vals = [
+          fr.name,
+          `${fr.plinthArea} SQFT`,
+          fr.roofHeight,
+          fr.age,
+          `RS.${formatIndianCurrency(parseNum(fr.ratePerSqft))}/-`,
+          `RS.${formatIndianCurrency(fr.replacementCost)}/-`,
+          `RS.${formatIndianCurrency(fr.depAmt)}/-`,
+          `RS.${formatIndianCurrency(fr.netValue)}/-`,
+        ];
+        for (let i = 0; i < vals.length; i++) {
+          drawCell(cx, cy, calcCols[i], rowH, vals[i], { fontSize: 8, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
+          cx += calcCols[i];
+        }
+        cy += rowH;
+      }
     }
 
     // Building value summary row
