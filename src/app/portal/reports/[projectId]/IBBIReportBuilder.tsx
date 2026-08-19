@@ -20,6 +20,7 @@ import { saveReportDraft, submitReportForVerification, getBucketImages, deleteBu
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
 import { PDFIBBIRenderer } from '@/lib/pdf-ibbi-renderer';
+import { DOCXIBBIRenderer } from '@/lib/docx-ibbi-renderer';
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
 // @ts-ignore
@@ -1584,6 +1585,612 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     }
   };
 
+
+  // ── DOCX Generation (mirrors PDF layout) ──
+  const handleGenerateDOCX = async (): Promise<Blob | null> => {
+    try {
+      const fetchBytes = async (url: string | undefined): Promise<Uint8Array | null> => {
+        if (!url) return null;
+        try {
+          const resp = await fetch(url);
+          const buf = await resp.arrayBuffer();
+          return new Uint8Array(buf);
+        } catch { return null; }
+      };
+
+      const propertyImgs = Array.isArray(fields.propertyImages) ? fields.propertyImages.filter((img: string) => typeof img === 'string' && img.length > 0) : [];
+
+      const [letterheadBytes, ...imageResults] = await Promise.all([
+        fetchBytes('/templates/letterhead.png'),
+        ...propertyImgs.map((url: string) => fetchBytes(url)),
+        ...(fields.sketchMapImages && fields.sketchMapImages.length > 0 ? fields.sketchMapImages.map((u: string) => fetchBytes(u)) : []),
+        ...(fields.locationMapImage ? [fetchBytes(fields.locationMapImage)] : []),
+        ...(fields.coverPageImage ? [fetchBytes(fields.coverPageImage)] : []),
+      ]);
+
+      const propImageBytes: Uint8Array[] = imageResults.slice(0, propertyImgs.length) as Uint8Array[];
+      let imgIdx = propertyImgs.length;
+      const sketchBytesList = fields.sketchMapImages?.length ? imageResults.slice(imgIdx, imgIdx + fields.sketchMapImages.length) : null;
+      if (fields.sketchMapImages?.length) imgIdx += fields.sketchMapImages.length;
+      const locationBytes = fields.locationMapImage ? imageResults[imgIdx++] : null;
+      const coverPageImageBytes = fields.coverPageImage ? imageResults[imgIdx++] : null;
+
+      const r = new DOCXIBBIRenderer();
+      await r.init(letterheadBytes || undefined);
+
+      // ━━━ COVER PAGE ━━━
+      r.advanceCursor(60);
+      r.drawCenteredTitle('VALUATION REPORT', 20);
+      r.advanceCursor(6);
+      let prefix = '';
+      if (fields.addressPrefixType === 'multiple_plots') prefix = 'OVER MULTIPLE PLOTS IN ';
+      else if (fields.addressPrefixType === 'idco_plot') prefix = 'OVER IDCO PLOT, ';
+      else if (fields.addressPrefixType === 'other') prefix = fields.customAddressPrefix ? fields.customAddressPrefix.trim() + ', ' : '';
+
+      r.drawTextBlock(`OF ${fields.propertyType || 'Property'} BELONGING TO`.toUpperCase(), { bold: true, align: 'center', fontSize: 13 });
+      r.drawTextBlock(`${fields.applicantName || fields.ownerName || '________'}`.toUpperCase(), { bold: true, align: 'center', fontSize: 13, underline: true });
+      r.drawTextBlock(`${prefix}${fields.propertyAddress || '________'}`.toUpperCase(), { bold: true, align: 'center', fontSize: 13 });
+      r.advanceCursor(12);
+
+      if (coverPageImageBytes) {
+        await r.drawImageBlock(coverPageImageBytes as Uint8Array, { maxWidth: 380, maxHeight: 180, centered: true });
+        r.advanceCursor(8);
+      }
+
+      r.drawCenteredTitle('OWNER OF THE PROPERTY', 13);
+      r.advanceCursor(4);
+      r.drawTextBlock((fields.applicantName || fields.ownerName || '________').toUpperCase(), { bold: true, align: 'center', fontSize: 11, underline: true });
+      if (fields.hasManagingDirector === 'yes' && fields.managingDirectorName) {
+        r.drawTextBlock('REPRESENTED THROUGH ITS MANAGING DIRECTOR', { align: 'center', fontSize: 11 });
+        r.drawTextBlock(fields.managingDirectorName.toUpperCase(), { align: 'center', fontSize: 11 });
+      }
+      r.advanceCursor(24);
+
+      r.drawSimpleRow('FAIR MARKET VALUE', `Rs.${formatIndianCurrency(fields.fairMarketValueTotal || '0')}/-`);
+      r.drawSimpleRow('LIQUIDATION VALUE', `Rs.${formatIndianCurrency(fields.realisableValueTotal || '0')}/-`);
+      r.drawSimpleRow('GOVT. GUIDELINE VALUE', `Rs.${formatIndianCurrency(fields.bookValueTotal || '0')}/-`);
+      r.advanceCursor(24);
+
+      r.drawCenteredTitle('PREPARED BY', 12);
+      r.advanceCursor(4);
+      r.drawTextBlock(`${fields.representativeName || ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications : ''}`, { bold: true, align: 'center', underline: true });
+      if (fields.valuerAdditionalDetails) {
+        fields.valuerAdditionalDetails.split('\n').forEach((line: string) => {
+          if (line.trim()) r.drawTextBlock(line.trim(), { align: 'center' });
+        });
+      }
+      r.advanceCursor(6);
+      r.drawTextBlock(`REGISTERED OFFICE ADDRESS ${fields.registeredOfficeAddress || ''} ${fields.registeredOfficeTel ? 'Tel-' + fields.registeredOfficeTel : ''}`.trim(), { align: 'center' });
+
+      // ━━━ TABLE OF CONTENTS ━━━
+      r.newPage();
+      r.drawCenteredTitle('CONTENTS', 16);
+      r.advanceCursor(12);
+      const tocItems = [
+        'VALUATION CERTIFICATE',
+        '1.  OBJECTIVE',
+        '    1.1  Valuation Standard',
+        '    1.2  Purpose of Valuation',
+        '    1.3  Conflict of Interest',
+        '    1.4  Currency and Measurement',
+        '    1.5  Responsibility to Third Parties',
+        '    1.6  Disclosure and Publication',
+        '    1.7  Limitations on Liability',
+        '2.  SCOPE OF ENQUIRIES AND INVESTIGATION',
+        '3.  BASIS OF VALUATION',
+        '4.  BRIEF DESCRIPTION OF THE PROPERTY',
+        '5.  TOWN PLANNING PARAMETERS',
+        '6.  DOCUMENT DETAILS AND LEGAL ASPECTS',
+        '7.  FUNCTIONAL AND INFRASTRUCTURE ASPECTS',
+        '8.  SOCIO-CULTURAL ASPECTS',
+        '9.  ENVIRONMENTAL FACTORS',
+        '10. MARKETABILITY OF THE PROPERTY',
+        '11. ARCHITECTURAL ASPECTS',
+        '12. ENGINEERING ASPECTS',
+        '13. VALUATION APPROACHES & METHODOLOGY',
+        '    13.1  Methodology',
+        '    13.2  Valuation Bases',
+        '    13.3  Valuation Considerations',
+        '    13.4  Valuation Assumptions',
+        '    13.5  Valuation Analysis',
+        '    13.6  Details of Valuation',
+        '14. SITE LOCATION',
+        '15. ASSUMPTIONS & LIMITATIONS',
+        'CONCLUSION',
+        'DECLARATION AND UNDERTAKING',
+        'PROPERTY PHOTOGRAPHS',
+      ];
+      if (fields.annexureEnabled && fields.annexures.length > 0) {
+        fields.annexures.forEach((ann: AnnexureItem) => {
+          tocItems.push(`ANNEXURE ${ann.label}${ann.title ? ': ' + ann.title.toUpperCase() : ''}`);
+        });
+      }
+      for (const item of tocItems) {
+        r.drawTOCRow(item, item);
+      }
+
+      // ━━━ VALUATION CERTIFICATE ━━━
+      r.newPage();
+      r.drawRichTextBlock([{ text: `Ref: ${fields.refNo || '________'}` }]);
+      r.drawRichTextBlock([{ text: `Date: ${fields.dateOfValuation || '________'}` }]);
+      r.advanceCursor(6);
+      r.drawCenteredTitle('VALUATION CERTIFICATE');
+      r.advanceCursor(6);
+
+      const certOwner = fields.applicantName || fields.ownerName || '________';
+      const certAddress = fields.propertyAddress || fields.ownerAddress || '________';
+      const certDate = fields.dateOfInspection || '________';
+      const coverDesc = fields.propertyType || 'Property';
+      const appointedByText = fields.appointedBy ? `Pursuant to Letter of Appointment from ${fields.appointedBy}` : 'Pursuant to Letter of Appointment';
+      const appointmentDateText = fields.appointmentDate ? ` on ${fields.appointmentDate}` : '';
+      const caseRefText = fields.caseReferenceNo ? `, vide Reference ${fields.caseReferenceNo}` : '';
+
+      r.drawTextBlock(`${appointedByText}${appointmentDateText} for carrying out Valuation of Immovable assets${caseRefText}, to assess the fair market and thereby deriving liquidation value of ${coverDesc} at ${certAddress}, currently owned by ${certOwner}, inspected on ${certDate}.`);
+      r.advanceCursor(6);
+      r.drawTextBlock('The Valuation Certificate is to be used in conjunction with the Detailed Valuation Report Enclosed herewith based on the information and particulars furnished and actual observation, Valuation methodology, assumption, limitations, Disclaimer and bases of valuation stated herein and should not be referred in Isolation.');
+      r.advanceCursor(8);
+
+      r.drawSimpleRow('CLIENT NAME', certOwner.toUpperCase());
+      r.drawSimpleRow('PROPERTY ADDRESS', certAddress.toUpperCase());
+      r.drawSimpleRow('PURPOSE OF VALUATION', (fields.purposeOfValuation || 'ACCESS OF FAIR MARKET VALUE').toUpperCase());
+      r.drawSimpleRow('CURRENT OWNER, CONTACT DETAILS', certOwner.toUpperCase());
+      r.drawSimpleRow('DESCRIPTION', coverDesc.toUpperCase());
+      r.drawSimpleRow('AREA', fields.extentOfSite || 'N/A');
+      r.drawSimpleRow('STATUS OF PLOT', `${fields.conversionStatus || fields.currentUsage || 'N/A'} (${fields.occupancyStatus || 'N/A'})`);
+      r.drawSimpleRow('VALUATION METHOD', (fields.valuationMethod || 'Sale Comparison Method').toUpperCase());
+      r.drawSimpleRow('VALUATION DATE', fields.dateOfValuation || 'N/A');
+      r.drawSimpleRow('PRESENT VALUE (in Rs)', `Rs.${formatIndianCurrency(fields.fairMarketValueTotal || fields.presentMarketValueTotal || '0')}/-`);
+      r.drawSimpleRow('VALUERS DETAILS', `${fields.representativeName ? fields.representativeName.toUpperCase() : ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications : ''}\n${fields.valuerAdditionalDetails || ''}\n${fields.registeredOfficeAddress || ''}`);
+      r.advanceCursor(8);
+
+      const certValue = fields.fairMarketValueTotal || fields.presentMarketValueTotal || '0';
+      const realValue = fields.realisableValueTotal || '0';
+      r.drawTextBlock(`After considering various important factors discussed above, we are of the opinion that the Realisable value of the property is INR. ${formatIndianCurrency(realValue)} (${rupeesInWords(parseFloat(realValue) || 0)}).`);
+      r.advanceCursor(12);
+
+      r.drawSignatureBlock([
+        { text: 'Signature & Seal of Valuer' },
+        { text: `Place - Bhubaneswar`, italic: true },
+        { text: `Name of the Valuer - ${fields.representativeName || ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications : ''}`, bold: true },
+      ]);
+
+      // ━━━ VALUATION REPORT — SECTIONS 1-3 ━━━
+      r.newPage();
+      r.drawCenteredTitle('VALUATION REPORT');
+      r.advanceCursor(8);
+
+      r.drawSectionHeader('1. OBJECTIVE:');
+      const objParagraph = fields.appointedBy
+        ? `Pursuant to request from ${certOwner}, represented through ${fields.representativeName ? 'Mr. ' + fields.representativeName : 'its authorized representative'}${caseRefText}, to assess the fair market value of ${coverDesc} at ${certAddress}, currently owned by ${certOwner}, inspected on ${certDate}.`
+        : `To assess the fair market value of ${coverDesc} at ${certAddress}, currently owned by ${certOwner}, inspected on ${certDate}.`;
+      r.drawTextBlock(objParagraph);
+      r.advanceCursor(6);
+
+      r.drawTextBlock('1.1 VALUATION STANDARD', { bold: true });
+      r.drawTextBlock('The entire valuation exercise has been carried out in accordance of Standard procedures laid down as per the International Valuation Standards.');
+      r.advanceCursor(4);
+      r.drawTextBlock('1.2 PURPOSE OF VALUATION', { bold: true });
+      r.drawTextBlock(`The Valuation is required for the purpose of ${fields.purposeOfValuation || 'accessing the impartial and true Liquidation / Realisable Market value'} of the aforesaid property on the basis of market survey method as on the date of valuation.`);
+      r.advanceCursor(4);
+      r.drawTextBlock('1.3 CONFLICT OF INTEREST', { bold: true });
+      r.drawTextBlock('The valuer has no direct or indirect interest in the property valued, nor any personal interest or bias with respect to the parties involved.');
+      r.advanceCursor(4);
+      r.drawTextBlock('1.4 CURRENCY AND MEASUREMENT', { bold: true });
+      r.drawTextBlock('All amounts are in Indian Rupees (INR). Land is measured in Acres/Decimals/Sq. ft. as applicable.');
+      r.advanceCursor(4);
+      r.drawTextBlock('1.5 RESPONSIBILITY TO THIRD PARTIES', { bold: true });
+      r.drawTextBlock('This report is prepared only for the stated purpose and the parties named herein.');
+      r.advanceCursor(4);
+      r.drawTextBlock('1.6 DISCLOSURE AND PUBLICATION', { bold: true });
+      r.drawTextBlock('This valuation report or any reference thereof should not be used in any published document without the consent of the valuer.');
+      r.advanceCursor(4);
+      r.drawTextBlock('1.7 LIMITATIONS ON LIABILITY', { bold: true });
+      r.drawTextBlock("The valuer shall not be liable for any loss or damage arising from this report except to the extent that such loss or damage is caused by the valuer's negligence.");
+      r.advanceCursor(8);
+
+      r.drawSectionHeader('2. SCOPE OF ENQUIRIES AND INVESTIGATION:');
+      r.drawTextBlock('2.1 SITE INSPECTION', { bold: true });
+      r.drawTextBlock(`Site inspection was carried out on ${fields.dateOfInspection || '________'}.`);
+      r.advanceCursor(4);
+      r.drawTextBlock('2.2 ENQUIRIES', { bold: true });
+      r.drawTextBlock('Enquiries were made with local people, real estate agents, and brokers to assess the prevailing market conditions.');
+      r.advanceCursor(4);
+      r.drawTextBlock('2.3 LEGAL PARAMETERS OF PROPERTY', { bold: true });
+      r.drawTextBlock('Documents and records relating to title, extent, and encumbrances were examined.');
+      r.advanceCursor(4);
+      r.drawTextBlock('2.4 ENVIRONMENTAL ASPECTS', { bold: true });
+      r.drawTextBlock('The property was assessed for environmental conditions as observed during inspection.');
+      r.advanceCursor(4);
+      r.drawTextBlock('2.5 INFORMATION PROVIDED', { bold: true });
+      r.drawTextBlock('Information was provided by the property owners, authorized representatives, and from public records.');
+      r.advanceCursor(8);
+
+      r.drawSectionHeader('3. BASIS OF VALUATION:');
+      r.drawTextBlock("The valuation is based on Fair Market Value as defined in IVS 104 -- the estimated amount for which an asset or liability should exchange on the valuation date between a willing buyer and a willing seller in an arm's length transaction, after proper marketing and where the parties had each acted knowledgeably, prudently and without compulsion.");
+      r.advanceCursor(8);
+
+      // ━━━ SECTIONS 4-12 ━━━
+      r.drawSectionHeader('4. BRIEF DESCRIPTION OF THE PROPERTY');
+      if (fields.propertyDescription) {
+        r.drawTextBlock(`The Property in consideration is ${fields.propertyDescription} conveniently located at ${fields.propertyAddress || '________'}.`);
+        r.advanceCursor(6);
+      }
+      r.drawTextBlock('BASIC DETAILS OF THE PROPERTY', { bold: true });
+      r.advanceCursor(4);
+      r.drawSimpleRow('4.1  Applicant Name / Owners', fields.applicantName || fields.ownerName);
+      r.drawSimpleRow('4.2  Type of Property', fields.propertyType);
+      r.drawSimpleRow('     Current Usage', fields.currentUsage);
+      r.drawSimpleRow('4.3  Site Address', fields.propertyAddress);
+      r.drawSimpleRow('     Address as per Documents', fields.legalAddress);
+      r.drawSimpleRow('4.8  Revenue Plot No', fields.revenuePlotNo);
+      r.drawSimpleRow('     Khata No', fields.revenueKhataNo);
+      r.drawSimpleRow('     Village (Mouza)', fields.revenueVillage);
+      r.drawSimpleRow('     Tahasil', fields.revenueTahasil);
+      r.drawSimpleRow('     Police Station', fields.revenuePS);
+      r.drawSimpleRow('     District', fields.revenueDistrict);
+      r.drawSimpleRow('     State', fields.revenueState);
+      r.drawSimpleRow('4.10 Classification of Area', fields.classificationArea);
+      r.drawSimpleRow('4.13 Conversion Status', fields.conversionStatus);
+      r.drawSimpleRow('4.14 Boundaries (North)', fields.boundNorth);
+      r.drawSimpleRow('     Boundaries (South)', fields.boundSouth);
+      r.drawSimpleRow('     Boundaries (East)', fields.boundEast);
+      r.drawSimpleRow('     Boundaries (West)', fields.boundWest);
+      r.drawSimpleRow('4.15 Extent of Site', fields.extentOfSite);
+      r.drawSimpleRow('4.16 Occupancy Status', fields.occupancyStatus);
+      r.advanceCursor(8);
+
+      r.drawSectionHeader('5. TOWN PLANNING PARAMETERS:');
+      r.drawSimpleRow('Master Plan Provision', fields.masterPlanProvision);
+      r.drawSimpleRow('Approved Plan Date', fields.approvedPlanDate);
+      r.drawSimpleRow('Approved Plan Authority', fields.approvedPlanAuthority);
+      r.drawSimpleRow('Development Controls', fields.developmentControls);
+      r.drawSimpleRow('Ground Coverage', fields.groundCoverage);
+      r.drawSimpleRow('Surrounding Land Use', fields.surroundingLandUse);
+      r.advanceCursor(8);
+
+      r.drawSectionHeader('6. DOCUMENT DETAILS AND LEGAL ASPECTS OF THE PROPERTY:');
+      r.drawSimpleRow('Ownership Documents', fields.ownershipDocuments);
+      r.drawSimpleRow('Owner as per ROR', fields.ownerAsPerROR);
+      r.drawSimpleRow('Easement Agreement', fields.easementAgreement);
+      r.drawSimpleRow('Acquisition Notification', fields.acquisitionNotification);
+      r.drawSimpleRow('Road Widening Notification', fields.roadWideningNotification);
+      r.drawSimpleRow('Heritage Restriction', fields.heritageRestriction);
+      r.drawSimpleRow('Transferability', fields.transferability);
+      r.drawSimpleRow('Existing Mortgages / Charge', fields.existingMortgages);
+      r.drawSimpleRow('Guarantee Issued', fields.guaranteeIssued);
+      r.drawSimpleRow('SARFAESI Compliant', fields.sarfaesiCompliant);
+      r.drawSimpleRow('Disputes / Dues', fields.disputesDues);
+      r.advanceCursor(8);
+
+      r.drawSectionHeader('7. FUNCTIONAL AND INFRASTRUCTURE ASPECTS OF THE PROPERTY:');
+      r.drawSimpleRow('Water Supply', fields.waterSupply);
+      r.drawSimpleRow('Sewerage', fields.sewerage);
+      r.drawSimpleRow('Storm Water Drainage', fields.stormWater);
+      r.drawSimpleRow('Solid Waste Management', fields.solidWaste);
+      r.drawSimpleRow('Electricity', fields.electricity);
+      r.drawSimpleRow('Road Connectivity', fields.roadConnectivity);
+      r.drawSimpleRow('Nearest Police Station', fields.policeStationDist);
+      r.drawSimpleRow('Nearest Bus Stop', fields.busStopDist);
+      r.drawSimpleRow('Nearest School', fields.schoolDist);
+      r.drawSimpleRow('Nearest College', fields.collegeDist);
+      r.advanceCursor(8);
+
+      r.drawSectionHeader('8. SOCIO-CULTURAL ASPECTS OF THE PROPERTY:');
+      r.drawSimpleRow('Social Structure', fields.socialStructure);
+      r.drawSimpleRow('Social Infrastructure', fields.socialInfrastructure);
+      r.advanceCursor(8);
+
+      r.drawSectionHeader('9. ENVIRONMENTAL FACTORS AFFECTING THE PROPERTY:');
+      r.drawSimpleRow('Eco-friendly Materials', fields.ecoMaterials);
+      r.drawSimpleRow('Rain Water Harvesting', fields.rainWaterHarvesting);
+      r.drawSimpleRow('Solar System', fields.solarSystem);
+      r.drawSimpleRow('Environmental Pollution', fields.environmentalPollution);
+      r.advanceCursor(8);
+
+      r.drawSectionHeader('10. MARKETABILITY ASPECTS OF THE PROPERTY:');
+      r.drawSimpleRow('Locational Attributes', fields.locationalAttributes);
+      r.drawSimpleRow('Scarcity', fields.scarcity);
+      r.drawSimpleRow('Demand & Supply', fields.demandSupply);
+      r.advanceCursor(8);
+
+      r.drawSectionHeader('11. ARCHITECTURAL ASPECTS:');
+      r.drawSimpleRow('Architectural Aspects', fields.architecturalAspects);
+      r.advanceCursor(8);
+
+      r.drawSectionHeader('12. ENGINEERING ASPECTS OF THE PROPERTY:');
+      r.drawSimpleRow('Type of Construction', fields.constructionType);
+      r.drawSimpleRow('Materials Used', fields.materialsUsed);
+      r.drawSimpleRow('Specifications', fields.specifications);
+      r.drawSimpleRow('Maintenance Issues', fields.maintenanceIssues);
+      r.drawSimpleRow('Age of Building', fields.ageOfBuilding ? `${fields.ageOfBuilding} Years` : 'N/A');
+      r.drawSimpleRow('Residual Life', fields.residualLife ? `${fields.residualLife} Years` : 'N/A');
+      r.drawSimpleRow('Extent of Deterioration', fields.extentDeterioration);
+      r.drawSimpleRow('Structural Safety', fields.structuralSafety);
+      r.drawSimpleRow('Natural Disaster Protection', fields.naturalDisasterProtection);
+      r.drawSimpleRow('Visible Damage', fields.visibleDamage);
+      r.advanceCursor(8);
+
+      // ━━━ SECTION 13 ━━━
+      r.drawSectionHeader('13. VALUATION APPROACHES & METHODOLOGY ADOPTED');
+      r.advanceCursor(4);
+      r.drawTextBlock('13.1 METHODOLOGY', { bold: true });
+      r.drawTextBlock(`The valuation has been carried out using the ${fields.valuationMethod || 'Sale Comparison Method'}. This method involves comparing the subject property with similar properties that have been sold recently in the same or comparable locations.`);
+      r.advanceCursor(4);
+      r.drawTextBlock('13.2 VALUATION BASES', { bold: true });
+      r.drawTextBlock('The value has been assessed on the basis of Fair Market Value and Liquidation/Realisable Value as per IVS standards and IBBI regulations.');
+      r.advanceCursor(4);
+      r.drawTextBlock('13.3 VALUATION CONSIDERATIONS', { bold: true });
+      r.drawTextBlock('In arriving at the valuation, the following factors have been considered: location and accessibility, size and shape of the plot, nature of surrounding development, availability of civic amenities, demand and supply position, comparable sale instances, and applicable government rates.');
+      r.advanceCursor(4);
+      r.drawTextBlock('13.4 VALUATION ASSUMPTIONS', { bold: true });
+      r.drawTextBlock('The valuation assumes that the property has a clear and marketable title, that there are no hidden or unapparent conditions of the property that would affect value, that the information provided by the client is true and correct, and that the property conforms to applicable government regulations.');
+      r.advanceCursor(4);
+      r.drawTextBlock('13.5 VALUATION ANALYSIS', { bold: true });
+      r.drawTextBlock('Based on the market survey conducted in the area and analysis of comparable sale transactions, the prevailing market rates have been assessed. The government guideline rates as published by the Registration Department have also been considered. After due consideration of all relevant factors including location, accessibility, amenities, and market conditions, the values have been arrived at as detailed below.');
+      r.advanceCursor(6);
+      r.drawTextBlock('13.6 DETAILS OF VALUATION', { bold: true });
+      r.advanceCursor(4);
+
+      if (fields.valuationRows && fields.valuationRows.length > 0) {
+        const headers = ['Sl No', 'Plot No', 'Khata No', 'Area', 'Rate/Unit', 'Guideline Value', 'Fair Market Value'];
+        const rows = fields.valuationRows.map((row: ValuationRow, i: number) => [
+          String(i + 1), row.plotNo || '-', row.khataNo || '-', row.area || '-', row.rate || '-', row.guidelineValue || '-', row.fairMarketValue || '-',
+        ]);
+        r.drawDataTable(headers, rows);
+        r.advanceCursor(6);
+      }
+
+      if (fields.annexureEnabled && fields.annexures.length > 0) {
+        const firstAnnexure = fields.annexures.find((a: AnnexureItem) => a.parsedData);
+        const annexureLabel = firstAnnexure ? firstAnnexure.label : fields.annexures[0].label;
+        r.drawTextBlock(`The detailed plot-by-plot calculations and area abstracts are provided in Annexure ${annexureLabel}.`);
+        r.advanceCursor(6);
+      }
+
+      r.drawSimpleRow('Total Govt. Guideline / Book Value', `Rs.${formatIndianCurrency(fields.bookValueTotal || '0')}/-`);
+      r.drawSimpleRow('Total Fair Market Value', `Rs.${formatIndianCurrency(fields.fairMarketValueTotal || '0')}/- (${rupeesInWords(parseFloat(fields.fairMarketValueTotal) || 0)})`);
+      r.drawSimpleRow('Total Present Market Value', `Rs.${formatIndianCurrency(fields.presentMarketValueTotal || '0')}/-`);
+      r.drawSimpleRow('Realisable / Liquidation Value', `Rs.${formatIndianCurrency(fields.realisableValueTotal || '0')}/- (${rupeesInWords(parseFloat(fields.realisableValueTotal) || 0)})`);
+      r.advanceCursor(8);
+
+      // ━━━ SECTION 14 ━━━
+      r.drawSectionHeader('14. SITE LOCATION:');
+      if (fields.latitude || fields.longitude) {
+        r.drawSimpleRow('Latitude', fields.latitude || 'N/A');
+        r.drawSimpleRow('Longitude', fields.longitude || 'N/A');
+      }
+      r.drawTextBlock('Site location maps and photographs are enclosed herewith at the end of this report.');
+      r.advanceCursor(8);
+
+      // ━━━ SECTION 15 ━━━
+      r.drawSectionHeader('15. ASSUMPTION & LIMITATION.');
+      r.advanceCursor(4);
+      r.drawTextBlock('For this report we have carried out analysis and assessments of the market(s) under consideration and the demand-supply for the residential and commercial sectors in general.');
+      r.advanceCursor(4);
+      r.drawTextBlock('This report is not based on comprehensive market research of the overall market for all possible situations. We have covered specific market and situations, which are highlighted in the report. The opinions expressed in the report are subject to the limitations mentioned in this para.');
+      r.advanceCursor(4);
+      r.drawTextBlock('It should be noted that value assessments are based upon the facts and evidence available at the date of assessment. Changes in socio-economic and political conditions could result in a substantially different situation that the value assessments be periodically reviewed.');
+      r.advanceCursor(4);
+      r.drawTextBlock(`The report is only for the purpose of assessing fair market value of the property as per detail provided by the client and for the exclusive use of ${certOwner}, and should not be used by any other person or for any other purpose. Report provided is limited to opinion of value and do not constitute an audit, a due diligence and tax related services. Through this report we do not express an opinion on the financial information of the business of any party, including the owners and its affiliates and subsidiaries. The report is prepared solely for the purpose stated, and should not be used for any other purpose.`);
+      r.advanceCursor(4);
+      r.drawTextBlock('No investigation of the title of the assets has been made and owners claims to the assets are assumed to be valid. It is assumed that the property is free from all encumbrance.');
+      r.advanceCursor(4);
+      r.drawTextBlock('It is also assumed, that there is no liability of outstanding on the owners taxation or any other expense towards statutory compliance for realization.');
+      r.advanceCursor(4);
+      r.drawTextBlock('In the preparations of the report, we have relied on the following information:');
+      r.drawTextBlock('\u2022 The information provided by the owner\'s or their representative appointed / its affiliates subsidiaries during the visits.');
+      r.drawTextBlock('\u2022 Recent data on the industry segments and market projections.');
+      r.advanceCursor(4);
+      r.drawTextBlock('The value assessed is my best opinion under the current circumstances and market scenario and is not a guarantee. Real estate prices are subject to wide fluctuations and the valuation need to be reviewed at suitable regular intervals.');
+      r.advanceCursor(8);
+
+      // ━━━ CONCLUSION ━━━
+      r.drawSectionHeader('CONCLUSION');
+      r.advanceCursor(4);
+      const fmvVal = parseFloat(fields.fairMarketValueTotal) || 0;
+      const realVal = parseFloat(fields.realisableValueTotal) || 0;
+      const guideVal = parseFloat(fields.bookValueTotal) || 0;
+      r.drawTextBlock('The present market value of a property is the price which a willing buyer will pay to a willing seller considering the risks involved at the reality and authenticity of the property, including thorough investigation about its genuineness of existence and all that required. Liquidation value of the assets in present consideration, is estimated in a reasonable manner and judiciously on the basis of facts and circumstances observed by us & estimation of benefits, subject to its propriety, on above consideration. It will of course vary from professionals opinion and case to case, place to place, location to location and for different characteristics too. We assess it accordingly, based on the above considerations.');
+      r.advanceCursor(6);
+      r.drawTextBlock(`After considering various important factor discussed above, we are of the opinion that the fair market Value of ${coverDesc} as per the current date at ${certAddress}, currently owned by ${certOwner}`);
+      r.advanceCursor(4);
+      r.drawTextBlock(`Present Market Value is INR. ${formatIndianCurrency(fields.fairMarketValueTotal || '0')}. (${rupeesInWords(fmvVal).toUpperCase()}).`, { bold: true });
+      r.advanceCursor(2);
+      if (fields.realisableValueTotal) {
+        r.drawTextBlock(`Realisable value is INR. ${formatIndianCurrency(fields.realisableValueTotal || '0')}. (${rupeesInWords(realVal).toUpperCase()}).`, { bold: true });
+        r.advanceCursor(2);
+      }
+      if (fields.bookValueTotal) {
+        r.drawTextBlock(`Govt Guideline Value is INR. ${formatIndianCurrency(fields.bookValueTotal || '0')}. (${rupeesInWords(guideVal).toUpperCase()}).`, { bold: true });
+        r.advanceCursor(2);
+      }
+      r.advanceCursor(8);
+
+      r.drawSignatureBlock([
+        { text: `Date: ${fields.dateOfValuation || '________'}` },
+        { text: 'Signature & Seal of Valuer' },
+        { text: `Place: Bhubaneswar` },
+        { text: `Name of the Valuer - ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications.toUpperCase() : ''}`, bold: true },
+      ]);
+
+      // ━━━ REMARKS ━━━
+      if (fields.remarks) {
+        r.drawSectionHeader('REMARKS');
+        r.drawTextBlock(fields.remarks);
+        r.advanceCursor(8);
+      }
+
+      // ━━━ DECLARATION AND UNDERTAKING ━━━
+      r.newPage();
+      r.drawSectionHeader('DECLARATION AND UNDERTAKING');
+      r.advanceCursor(6);
+      r.drawTextBlock(`I ${fields.representativeName ? 'Mr. ' + fields.representativeName : 'Mr. ________'}${fields.representativeFatherName ? ", S/o: " + fields.representativeFatherName : ''} do hereby solemnly affirm and state that:`, { bold: true });
+      r.advanceCursor(4);
+      const declarations = [
+        'I am citizen of India.',
+        'I will not undertake valuation of any assets in which I have a direct or indirect interest or become so interested at any time during a period of three years prior to my appointments as valuer or three years after the valuation of assets was conducted by me.',
+        `The information furnished in my valuation report dated ${fields.dateOfValuation || '________'} is true & correct to the best of my knowledge & belief & I have made an impartial & true valuation of the property.`,
+        `I have personally inspected the property on ${fields.dateOfInspection || '________'}. The work is not sub-contracted to any other valuer & carried out by myself.`,
+        'I have not been removed from service/employment earlier.',
+        'I have not been convicted of any offence & sentenced to a term of imprisonment.',
+        'I have not been declared to be unsound mind.',
+        'I have not been found guilty of misconduct in my professional capacity.',
+        'I am not an undischarged bankrupt, or have not applied to be adjudicated as a bankrupt.',
+        'I have not undischarged insolvent.',
+        'I have not been levied a penalty under section 271J of Income-Tax Act, 1961 (43 of 1961) and time limit for filing appeal before commissioner of Income Tax (Appeals) or Income-Tax Appellate Tribunal, as the case may be has expired, or such penalty has been confirmed by Income-Tax Appellate Tribunal, and five years have not elapsed after levy of such penalty.',
+        'I have not been convicted of an offence connected with any proceeding under the Income-Tax Act 1961, wealth Tax Act 1957 or Gift Tax Act 1958.',
+        'My PAN Card number as applicable is AOVPP5837R.',
+        'I have not concealed or suppressed any material information, facts and records and I have made a complete and full disclosure.',
+        "I have read the International Valuation Standards (IVS) & the report submitted to the Bank for the respective asset class is in conformity to the 'Standards' enshrined for valuation in the IVS in 'General Standards' & 'Asset Standards' as applicable.",
+        'I abide by the Model Code of Conduct for empanelment of valuer in the Bank.',
+        'I am not registered under Section 34 AB of the Wealth Tax Act, 1957.',
+        'I am valuer registered with Insolvency & Bankruptcy Board of India (IBBI).',
+        'I am the authorized official of the firm who is competent to sign this valuation report.',
+        'Further, I hereby provide the following information.',
+      ];
+      for (let i = 0; i < declarations.length; i++) {
+        r.drawTextBlock(declarations[i]);
+        r.advanceCursor(3);
+      }
+      r.advanceCursor(8);
+
+      r.drawSignatureBlock([
+        { text: `Date: ${fields.dateOfValuation || '________'}` },
+        { text: 'Signature & Seal of Valuer' },
+        { text: 'Place: Bhubaneswar' },
+        { text: `Name of the Valuer - ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications.toUpperCase() : ''}`, bold: true },
+      ]);
+
+      // ━━━ PROPERTY PHOTOGRAPHS ━━━
+      if (propImageBytes.length > 0) {
+        r.newPage();
+        r.drawCenteredTitle('PROPERTY PHOTOGRAPHS');
+        r.advanceCursor(6);
+        for (let i = 0; i < propImageBytes.length; i += 2) {
+          const name1 = fields.propertyImageNames?.[i] || '';
+          const caption1 = name1 ? `Figure ${i + 1} - ${name1.toUpperCase()}` : `Figure ${i + 1}`;
+          const img2 = i + 1 < propImageBytes.length ? propImageBytes[i + 1] : null;
+          const name2 = fields.propertyImageNames?.[i + 1] || '';
+          const caption2 = name2 ? `Figure ${i + 2} - ${name2.toUpperCase()}` : `Figure ${i + 2}`;
+          await r.drawImagePair(propImageBytes[i], caption1, img2, caption2);
+          r.advanceCursor(2);
+        }
+      }
+
+      // ━━━ SKETCH MAPS ━━━
+      if (sketchBytesList && sketchBytesList.length > 0) {
+        for (let i = 0; i < sketchBytesList.length; i++) {
+          const sBytes = sketchBytesList[i];
+          if (sBytes) {
+            r.newPage();
+            r.drawCenteredTitle(`SKETCH MAP${sketchBytesList.length > 1 ? ` ${i + 1}` : ''}`);
+            r.advanceCursor(6);
+            await r.drawImageBlock(sBytes as Uint8Array, { maxWidth: 500, maxHeight: 600, centered: true });
+          }
+        }
+      }
+
+      // ━━━ LOCATION MAP ━━━
+      if (locationBytes) {
+        r.newPage();
+        r.drawCenteredTitle('LOCATION MAP');
+        r.advanceCursor(6);
+        await r.drawImageBlock(locationBytes as Uint8Array, { maxWidth: 500, maxHeight: 600, centered: true });
+      }
+
+      // ━━━ ANNEXURES ━━━
+      if (fields.annexureEnabled && fields.annexures.length > 0) {
+        for (const annexure of fields.annexures) {
+          if (annexure.parsedData && annexure.parsedData.headers && annexure.parsedData.rows) {
+            r.newPage();
+            r.drawCenteredTitle(annexure.title ? `ANNEXURE ${annexure.label} - ${annexure.title.toUpperCase()}` : `ANNEXURE ${annexure.label}`);
+            r.advanceCursor(6);
+            r.drawDataTable(annexure.parsedData.headers, annexure.parsedData.rows);
+          }
+        }
+      }
+
+      // ━━━ ANNEXURE I ━━━
+      r.newPage();
+      r.drawCenteredTitle('ANNEXURE I: GENERAL PRINCIPLES AND LIMITING CONDITIONS');
+      r.advanceCursor(8);
+      r.drawTextBlock('CONFIDENTIALITY', { bold: true });
+      r.drawTextBlock('Our valuation and reports are confidential to the client or to whom they are addressed for the specific purpose to which they refer. They may be disclosed to other professional advisors assisting the client in respect of that purpose, but the client shall not disclose the report to any other party. No responsibility is accepted to any other party and neither the whole, nor any part, nor reference thereto may be included in any published document, statement or circular, or published in any way, nor in any communication with third parties, without our prior written approval of the form and context in which it will appear.');
+      r.advanceCursor(4);
+      r.drawTextBlock('USE OF REPORT', { bold: true });
+      r.drawTextBlock('The opinion of value expressed in this Report shall be used for the purpose stated in this Report only. We are not responsible for any consequences arising from the Valuation being quoted out of context.');
+      r.advanceCursor(4);
+      r.drawTextBlock('SOURCE OF INFORMATION', { bold: true });
+      r.drawTextBlock('Where it is stated in the Report that information has been supplied by the sources listed, this information is believed to be reliable and no responsibility is accepted should it prove incorrect. All other information stated without being attributed directly to another party is obtained from our searches of documents or enquiries with the relevant authorities. This Report has been prepared on the basis that full disclosure of all information and facts which may affect the Valuation have been made known to ourselves and we cannot accept any liability or responsibility in any event, unless such full disclosure has been made.');
+      r.advanceCursor(4);
+      r.drawTextBlock('LEGAL TITLE', { bold: true });
+      r.drawTextBlock('Whilst we may have inspected the title of the property as recorded in the Register Document of Title, we cannot accept any responsibility for its legal validity.');
+      r.advanceCursor(4);
+      r.drawTextBlock('TOWN PLANNING AND OTHER STATUTORY REGULATIONS', { bold: true });
+      r.drawTextBlock('Whilst we may make verbal enquiries or gather information on Town Planning, we do not normally carry out requisitions with the various public authorities to confirm that the property is not adversely affected by any public schemes such as road and drainage improvements. If reassurance is required, we recommend that verification be obtained from your lawyers or other professional advisors.');
+      r.drawTextBlock('Our valuation has been prepared on the basis and any improvements thereon comply with all relevant statutory regulations. It is assumed that they have been, or will be issued with a Certificate of Fitness for Occupation by the competent authority.');
+      r.advanceCursor(4);
+      r.drawTextBlock('LEASES AND TENANCIES', { bold: true });
+      r.drawTextBlock('Enquiries as to the financial standing of actual or prospective lessees or tenants are not normally made unless specifically requested. Where properties are valued with the benefit of lettings, it is therefore assumed that the lessees or tenants are capable of meeting their obligations under the lease or tenancy and that there are no arrears of rent or undisclosed breaches of covenant.');
+      r.advanceCursor(4);
+      r.drawTextBlock('DEVELOPMENT AGREEMENTS', { bold: true });
+      r.drawTextBlock('Unless otherwise stated, no allowances are made in our valuation for any joint venture agreement, development right agreement or other similar contracts.');
+      r.advanceCursor(4);
+      r.drawTextBlock('SITE SURVEYS', { bold: true });
+      r.drawTextBlock('We have conducted boundary checks, and, we assume that the dimensions correspond with those shown in the title document, certified plan or any relevant agreement.');
+      r.advanceCursor(4);
+      r.drawTextBlock('STRUCTURAL SURVEYS', { bold: true });
+      r.drawTextBlock('We have neither carried out a building survey nor any testing of services, nor have we inspected those parts of the property which are inaccessible. We cannot express an opinion about or advice upon the condition of uninspected parts and this Report should not be taken as making any implied representation or statement about such parts.');
+      r.advanceCursor(8);
+
+      // ━━━ ANNEXURE II ━━━
+      r.newPage();
+      r.drawCenteredTitle('ANNEXURE II: GENERAL ASSUMPTIONS');
+      r.advanceCursor(8);
+      r.drawTextBlock('We assume that information provided by client or its representative for this Valuation for all relevant projects is true and accurate. It includes details of measurements of land and built up area, etc.');
+      r.advanceCursor(4);
+      r.drawTextBlock('We have not gone through the legal aspects like documents of title deed, lease deed, revenue records, court matters (if any), and documentation like joint development with other companies. We also assume for this valuation assignment that the title and development rights of all the properties lies with the Company and is clear, marketable and free of all encumbrances, restrictions, easements or charges which may have detrimental effect upon the value of the property. It is also assumed that company has paid all property related taxes.');
+      r.advanceCursor(4);
+      r.drawTextBlock('We have neither carried out any soil testing nor structural surveys nor are we experts in the field of structural survey. Therefore, we do not give any assurance that properties are free from structural defect. If any investigation identifies any structural defect in the property our report may require revision. Neither are we the experts in the town planning to factor the town planning aspects in the project. Sewers, main services and the roads giving access to the property have been provided.');
+      r.advanceCursor(4);
+      r.drawTextBlock('We assumed that all the constructed structures and proposed construction is/will be free from harmful materials and/or techniques. Our valuation is on the basis that no such materials or techniques have been used.');
+      r.advanceCursor(4);
+      r.drawTextBlock('Unless advised by the company or representative of the company, we do not normally make allowance for any liability already incurred, but not yet discharged, in respect of balance land cost, completed works, or obligations in favour of contractors, subcontractors or any other professional.');
+      r.advanceCursor(4);
+      r.drawTextBlock('Unless advised by the company or representative of the company, no allowance is made for any expense of realization or for taxation, which may arise in the event of a disposal. The property is considered as if free and clears of all mortgages or other charges that may be secured thereon.');
+      r.advanceCursor(8);
+
+      r.drawSignatureBlock([
+        { text: `Date: ${fields.dateOfValuation || '________'}` },
+        { text: 'Signature & Seal of Valuer' },
+        { text: 'Place: Bhubaneswar' },
+        { text: `Name of the Valuer - ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications.toUpperCase() : ''}`, bold: true },
+      ]);
+
+      return await r.toBlob();
+    } catch (err) {
+      console.error('DOCX generation failed:', err);
+      throw err;
+    }
+  };
+
+  const handleDownloadDOCX = async () => {
+    setMessage({ type: 'success', text: 'Generating DOCX for download...' });
+    try {
+      const blob = await handleGenerateDOCX();
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${fields.applicantName ? fields.applicantName.replace(/\s+/g, '_') : 'IBBI'}_Valuation_Report_${projectId}.docx`;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+      }
+      setMessage(null);
+    } catch (err: any) {
+      setMessage({ type: 'error', text: 'DOCX Error: ' + (err?.message || String(err)) });
+    }
+  };
+
   // Feature flag: AI Assist panel visibility
   const aiAssistEnabled = process.env.NEXT_PUBLIC_AI_ASSIST_ENABLED === 'true';
 
@@ -2253,6 +2860,14 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
           className="px-6 py-3 rounded-xl border-2 border-gray-400 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center gap-2"
         >
           📥 Download PDF
+        </button>
+
+        <button
+          onClick={handleDownloadDOCX}
+          disabled={loading}
+          className="px-6 py-3 rounded-xl border-2 border-blue-400 text-blue-700 font-semibold text-sm hover:bg-blue-50 transition-all disabled:opacity-50 flex items-center gap-2"
+        >
+          📄 Download DOCX
         </button>
 
         {status === 'MANAGER_REVIEW' && isManagerOrOwner && (
