@@ -108,13 +108,17 @@ export interface IncomeTaxFieldsForPDF {
   sketchMapImages: string[];
   extraItems: ExtraItem[];
   showLandAnnexure: boolean;
-  landAnnexureRows: {
+  annexureEnabled?: boolean;
+  annexures?: {
     id: string;
-    slNo: string;
-    khataNo: string;
-    plotNo: string;
-    area: string;
-    mouza: string;
+    label: string;
+    title?: string;
+    excelFileUrl: string;
+    excelFileName: string;
+    parsedData?: {
+      headers: string[];
+      rows: string[][];
+    };
   }[];
   plinthAreaConsidered: string;
   techFloors: string;
@@ -1093,37 +1097,43 @@ export async function generateIncomeTaxPDF(
   }
 
   // ═══════════════════════════════════════════════════════
-  // BLOCK 10 — LAND ANNEXURE (Multi-Plot Properties)
+  // BLOCK 10 — ANNEXURES (Multi-Plot / Schedule)
   // ═══════════════════════════════════════════════════════
-  if (fields.showLandAnnexure && fields.landAnnexureRows && fields.landAnnexureRows.length > 0) {
+  const annexuresToRender = (fields.annexures || []).filter(
+    (a: any) => a.parsedData && a.parsedData.headers && a.parsedData.headers.length > 0
+  );
+  for (const annexure of annexuresToRender) {
+    const { headers, rows } = annexure.parsedData!;
     ensureSpace(60);
-    const annxHeaderStr = 'ANNEXURE (LAND DETAILS)';
-    const annxHeaderFs = 14;
-    const annxHeaderW = fontB.widthOfTextAtSize(annxHeaderStr, annxHeaderFs);
+    const annxTitleStr = annexure.title
+      ? `ANNEXURE ${annexure.label} — ${annexure.title.toUpperCase()}`
+      : `ANNEXURE ${annexure.label}`;
+    const annxHeaderFs = 13;
+    const annxHeaderW = fontB.widthOfTextAtSize(annxTitleStr, annxHeaderFs);
     const annxHeaderX = ML + (CW - annxHeaderW) / 2;
-    page.drawText(annxHeaderStr, { x: annxHeaderX, y: pdfY(cy) - annxHeaderFs * 0.8, size: annxHeaderFs, font: fontB, color: rgb(0,0,0) });
-    page.drawLine({ start: { x: annxHeaderX, y: pdfY(cy) - annxHeaderFs * 0.8 - 2 }, end: { x: annxHeaderX + annxHeaderW, y: pdfY(cy) - annxHeaderFs * 0.8 - 2 }, thickness: 1, color: rgb(0,0,0) });
+    page.drawText(annxTitleStr, { x: annxHeaderX, y: pdfY(cy) - annxHeaderFs * 0.8, size: annxHeaderFs, font: fontB, color: rgb(0, 0, 0) });
+    page.drawLine({ start: { x: annxHeaderX, y: pdfY(cy) - annxHeaderFs * 0.8 - 2 }, end: { x: annxHeaderX + annxHeaderW, y: pdfY(cy) - annxHeaderFs * 0.8 - 2 }, thickness: 1, color: rgb(0, 0, 0) });
     cy += annxHeaderFs * LINE_H + 12;
 
-    const annxCols = [CW * 0.1, CW * 0.2, CW * 0.2, CW * 0.2, CW * 0.3];
-    const annxHeaders = ['SL NO', 'KHATA NO', 'PLOT NO', 'AREA', 'MOUZA'];
+    // Equal column widths based on column count
+    const colCount = headers.length;
+    const colW = headers.map(() => CW / colCount);
     const headerH = 20;
     ensureSpace(headerH);
     let cx = ML;
-    for (let i = 0; i < annxHeaders.length; i++) {
-      drawCell(cx, cy, annxCols[i], headerH, annxHeaders[i], { bold: true, fontSize: 10, align: 'center', fillColor: LBL_BG });
-      cx += annxCols[i];
+    for (let i = 0; i < colCount; i++) {
+      drawCell(cx, cy, colW[i], headerH, headers[i].toUpperCase(), { bold: true, fontSize: 9, align: 'center', fillColor: LBL_BG });
+      cx += colW[i];
     }
     cy += headerH;
 
-    for (const row of fields.landAnnexureRows) {
+    for (const row of rows) {
       const rowH = 18;
       ensureSpace(rowH);
       cx = ML;
-      const vals = [row.slNo, row.khataNo, row.plotNo, row.area, row.mouza];
-      for (let i = 0; i < vals.length; i++) {
-        drawCell(cx, cy, annxCols[i], rowH, vals[i] || '', { fontSize: 10, align: 'center' });
-        cx += annxCols[i];
+      for (let i = 0; i < colCount; i++) {
+        drawCell(cx, cy, colW[i], rowH, row[i] || '', { fontSize: 9, align: 'center' });
+        cx += colW[i];
       }
       cy += rowH;
     }

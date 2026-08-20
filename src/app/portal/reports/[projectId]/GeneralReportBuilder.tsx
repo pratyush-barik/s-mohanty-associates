@@ -3165,7 +3165,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-                  {uploading ? 'Uploading...' : '\uD83D\uDCF7 Add Property Images'}
+                  {uploading ? 'Uploading...' : 'Add Property Images'}
                   <input type="file" accept="image/*" multiple className="hidden" onChange={e => handleFileUpload(e, 'propertyImages')} disabled={uploading} />
                 </label>
                 {bucketImages.length > 0 && (
@@ -3174,7 +3174,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                     onClick={() => openBucketPicker('propertyImages')}
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-sm font-medium hover:bg-[#1e3a5f]/5 transition-colors"
                   >
-                    📸 Pick from Bucket ({bucketImages.length})
+                    Pick from Bucket ({bucketImages.length})
                   </button>
                 )}
                 <span className="text-xs text-[#6c757d]">Max size: 5MB per photograph</span>
@@ -3187,7 +3187,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
               </div>
               {uploadError && (
                 <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold">
-                  &#x26A0;&#xFE0F; {uploadError}
+                  {uploadError}
                 </div>
               )}
             </div>
@@ -3203,7 +3203,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
         {!isReadOnly && (
           <div className="mb-3">
             <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-              {uploading ? 'Uploading...' : '🗺️ Upload Sketch Maps'}
+              {uploading ? 'Uploading...' : 'Upload Sketch Maps'}
               <input type="file" multiple accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'sketchMapImages')} disabled={uploading} />
             </label>
           </div>
@@ -3299,14 +3299,14 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                   <button onClick={() => handleChange('locationMapImage', '')} className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">Remove</button>
                 )}
                 <div className="absolute bottom-0 left-0 right-0 bg-green-600/90 text-white text-center text-xs py-1 font-semibold">
-                  &#x2705; Screenshot uploaded — will appear in PDF
+                  Screenshot uploaded — will appear in PDF
                 </div>
               </div>
             ) : (
               !isReadOnly && (
                 <div className="flex items-center gap-3 flex-wrap">
                   <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-                    {uploading ? 'Uploading...' : '\uD83D\uDCCD Upload Map Screenshot for PDF'}
+                    {uploading ? 'Uploading...' : 'Upload Map Screenshot for PDF'}
                     <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'locationMapImage')} disabled={uploading} />
                   </label>
                 </div>

@@ -28,13 +28,16 @@ interface ExtraItem {
   amount: string;
 }
 
-interface LandAnnexureRow {
+interface AnnexureItem {
   id: string;
-  slNo: string;
-  khataNo: string;
-  plotNo: string;
-  area: string;
-  mouza: string;
+  label: string;       // 'A', 'B', 'C', ...
+  title?: string;
+  excelFileUrl: string;
+  excelFileName: string;
+  parsedData?: {
+    headers: string[];
+    rows: string[][];
+  };
 }
 
 interface IncomeTaxFields {
@@ -177,8 +180,8 @@ interface IncomeTaxFields {
   bdaMapImage: string;
   benchmarkImage: string;
   sketchMapImages: string[];
-  landAnnexureRows: LandAnnexureRow[];
-  showLandAnnexure: boolean;
+  annexures: AnnexureItem[];
+  annexureEnabled: boolean;
 
   // ── Remarks ──
   hasRemarks: boolean;
@@ -334,8 +337,8 @@ const DEFAULT_FIELDS: IncomeTaxFields = {
   bdaMapImage: '',
   benchmarkImage: '',
   sketchMapImages: [],
-  landAnnexureRows: [],
-  showLandAnnexure: false,
+  annexures: [],
+  annexureEnabled: false,
 
   hasRemarks: false,
   remarks: '',
@@ -629,7 +632,8 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
     floorRows: Array.isArray(initialFields?.floorRows) ? initialFields.floorRows : DEFAULT_FIELDS.floorRows,
     extraItems: Array.isArray(initialFields?.extraItems) ? initialFields.extraItems : DEFAULT_FIELDS.extraItems,
     valuationBullets: Array.isArray(initialFields?.valuationBullets) ? initialFields.valuationBullets : DEFAULT_FIELDS.valuationBullets,
-    landAnnexureRows: Array.isArray(initialFields?.landAnnexureRows) ? initialFields.landAnnexureRows : DEFAULT_FIELDS.landAnnexureRows,
+    annexures: Array.isArray(initialFields?.annexures) ? initialFields.annexures : DEFAULT_FIELDS.annexures,
+    annexureEnabled: initialFields?.annexureEnabled ?? DEFAULT_FIELDS.annexureEnabled,
     showPlinthActual: initialFields?.showPlinthActual !== undefined ? initialFields.showPlinthActual : true,
     showPlinthApproved: initialFields?.showPlinthApproved !== undefined ? initialFields.showPlinthApproved : true,
     techFittings: initialFields?.techFittings !== undefined ? initialFields.techFittings : DEFAULT_FIELDS.techFittings,
@@ -831,46 +835,70 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
     handleChange('extraItems', fields.extraItems.map(e => e.id === id ? { ...e, [key]: value } : e));
   };
 
-  // ── Land Annexure Helpers ──
-  const addLandAnnexureRow = () => {
-    handleChange('landAnnexureRows', [...fields.landAnnexureRows, {
+  // ── Annexure helpers (mirrors GeneralReportBuilder) ──
+  const addAnnexure = () => {
+    const nextIndex = fields.annexures.length;
+    const label = String.fromCharCode(65 + nextIndex); // A, B, C, ...
+    handleChange('annexures', [...fields.annexures, {
       id: String(Date.now()),
-      slNo: String(fields.landAnnexureRows.length + 1),
-      khataNo: '',
-      plotNo: '',
-      area: '',
-      mouza: '',
+      label,
+      title: '',
+      excelFileUrl: '',
+      excelFileName: '',
     }]);
   };
-  const removeLandAnnexureRow = (id: string) => {
-    handleChange('landAnnexureRows', fields.landAnnexureRows.filter(r => r.id !== id));
+  const removeAnnexure = (id: string) => {
+    handleChange('annexures', fields.annexures.filter(a => a.id !== id));
   };
-  const updateLandAnnexureRow = (id: string, key: keyof LandAnnexureRow, value: string) => {
-    handleChange('landAnnexureRows', fields.landAnnexureRows.map(r => r.id === id ? { ...r, [key]: value } : r));
+  const updateAnnexureTitle = (id: string, title: string) => {
+    handleChange('annexures', fields.annexures.map(a => a.id === id ? { ...a, title } : a));
   };
-  const handleLandAnnexureExcelUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAnnexureUpload = async (annexureId: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 10 * 1024 * 1024) { setUploadError('File exceeds 10MB limit.'); return; }
+    e.target.value = '';
+    setUploading(true);
+    setUploadError(null);
+    // Parse client-side first
+    let parsedData: { headers: string[]; rows: string[][] } | undefined;
     try {
       const arrayBuffer = await file.arrayBuffer();
       const workbook = XLSX.read(arrayBuffer, { type: 'array' });
       const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData: any[][] = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
-      if (jsonData.length > 1) {
-        const rows = jsonData.slice(1).map((row, idx) => ({
-          id: String(Date.now() + idx),
-          slNo: String(row[0] !== undefined && row[0] !== null && row[0] !== '' ? row[0] : idx + 1),
-          khataNo: String(row[1] !== undefined && row[1] !== null ? row[1] : ''),
-          plotNo: String(row[2] !== undefined && row[2] !== null ? row[2] : ''),
-          area: String(row[3] !== undefined && row[3] !== null ? row[3] : ''),
-          mouza: String(row[4] !== undefined && row[4] !== null ? row[4] : ''),
-        }));
-        handleChange('landAnnexureRows', rows);
+      const jsonData: string[][] = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' }) as string[][];
+      if (jsonData.length > 0) {
+        parsedData = {
+          headers: jsonData[0].map(h => String(h)),
+          rows: jsonData.slice(1).map(row => row.map(cell => String(cell))),
+        };
       }
     } catch (parseErr) {
-      console.error('Could not parse Excel file:', parseErr);
-      alert('Failed to parse Excel file. Please ensure it is a valid format.');
+      console.warn('Could not parse Excel/CSV file:', parseErr);
     }
+    // Upload to Supabase storage
+    const ext = file.name.split('.').pop();
+    const fileName = `annexure-${annexureId}-${Date.now()}.${ext}`;
+    const filePath = `annexures/${projectId}/${fileName}`;
+    const { error } = await supabaseBrowser.storage
+      .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+      .upload(filePath, file);
+    if (error) {
+      setUploadError(`Upload failed: ${error.message}`);
+    } else {
+      const { data } = supabaseBrowser.storage
+        .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+        .getPublicUrl(filePath);
+      handleChange('annexures', fields.annexures.map(a =>
+        a.id === annexureId ? { ...a, excelFileUrl: data.publicUrl, excelFileName: file.name, parsedData } : a
+      ));
+    }
+    setUploading(false);
+  };
+  const removeAnnexureFile = (annexureId: string) => {
+    handleChange('annexures', fields.annexures.map(a =>
+      a.id === annexureId ? { ...a, excelFileUrl: '', excelFileName: '', parsedData: undefined } : a
+    ));
   };
 
   // ── Valuation Bullet Helpers ──
@@ -1995,7 +2023,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest">Property Photographs</p>
               {bucketImages.length > 0 && !isReadOnly && (
                 <button type="button" onClick={() => openBucketPicker('propertyImages')} className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1">
-                  📸 Pick from Bucket ({bucketImages.length})
+                  Pick from Bucket ({bucketImages.length})
                 </button>
               )}
             </div>
@@ -2097,12 +2125,10 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                 !isReadOnly && (
                   <div className="flex items-center gap-3 flex-wrap">
                     <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-                      {uploading ? 'Uploading...' : '📍 Upload Map Screenshot for PDF'}
+                      {uploading ? 'Uploading...' : 'Upload Map Screenshot for PDF'}
                       <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'locationMapImage')} disabled={uploading} />
                     </label>
-                    {bucketImages.length > 0 && (
-                      <button type="button" onClick={() => openBucketPicker('locationMapImage')} className="text-xs font-bold text-blue-600 hover:text-blue-800">📸 Pick from Bucket</button>
-                    )}
+                    {/* Pick from Bucket removed */}
                   </div>
                 )
               )}
@@ -2121,7 +2147,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
 
 {/* CII Table Image */}
           <div className="mb-6">
-            <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest mb-2">CII Table Image (optional ÔÇö for reverse calc)</p>
+            <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest mb-2">CII Table Image (optional - for reverse calc)</p>
             {!isReadOnly && <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'ciiTableImage')} disabled={uploading} className="block w-full text-sm text-[#6c757d] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#b8860b]/10 file:text-[#b8860b] hover:file:bg-[#b8860b]/20 mb-2" />}
             {fields.ciiTableImage && <img src={fields.ciiTableImage ? encodeURI(fields.ciiTableImage) : ''} alt="CII Table" className="max-h-48 rounded-lg border border-[#e9ecef]" />}
           </div>
@@ -2137,9 +2163,6 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest">Benchmark Value Document</p>
-              {bucketImages.length > 0 && !isReadOnly && (
-                <button type="button" onClick={() => openBucketPicker('benchmarkImage')} className="text-xs font-bold text-blue-600 hover:text-blue-800">📸 Pick from Bucket</button>
-              )}
             </div>
             {!isReadOnly && <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'benchmarkImage')} disabled={uploading} className="block w-full text-sm text-[#6c757d] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#b8860b]/10 file:text-[#b8860b] hover:file:bg-[#b8860b]/20 mb-2" />}
             {fields.benchmarkImage && <img src={fields.benchmarkImage ? encodeURI(fields.benchmarkImage) : ''} alt="Benchmark" className="max-h-48 rounded-lg border border-[#e9ecef]" />}
@@ -2149,9 +2172,6 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest">Sketch Maps</p>
-              {bucketImages.length > 0 && !isReadOnly && (
-                <button type="button" onClick={() => openBucketPicker('sketchMapImages')} className="text-xs font-bold text-blue-600 hover:text-blue-800">📸 Pick from Bucket</button>
-              )}
             </div>
             {!isReadOnly && <input type="file" multiple accept="image/*" onChange={e => handleFileUpload(e, 'sketchMapImages')} disabled={uploading} className="block w-full text-sm text-[#6c757d] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#b8860b]/10 file:text-[#b8860b] hover:file:bg-[#b8860b]/20 mb-2" />}
             
@@ -2176,64 +2196,100 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           </div>
           </SubSection>
 
-          {/* ÔöÇÔöÇ Sub-section: LAND ANNEXURE ÔöÇÔöÇ */}
-          <SubSection id="subsection-land-annexure" title="Land Annexure Table (Multi-Plot Properties)" defaultOpen={false}>
-          {/* Land Annexure Table */}
-          <div>
-            <label className="flex items-center gap-2 mb-3 cursor-pointer">
-              <input type="checkbox" checked={fields.showLandAnnexure} onChange={e => handleChange('showLandAnnexure', e.target.checked)} disabled={isReadOnly}
-                className="w-4 h-4 rounded border-[#dee2e6] text-[#b8860b] focus:ring-[#b8860b]/30" />
-              <span className="text-xs font-bold text-[#495057] uppercase tracking-wider">Enable Land Annexure Table (Multi-Plot Properties)</span>
-            </label>
-            {fields.showLandAnnexure && (
-              <div className="space-y-2">
-                {fields.landAnnexureRows.map((row, idx) => (
-                  <div key={row.id} className="grid grid-cols-6 gap-2 p-2 bg-[#f8f9fa] rounded-lg border border-[#e9ecef]">
-                    <div>
-                      <label className="text-[9px] font-semibold text-[#6c757d]">Sl No</label>
-                      <input className={inputCls} value={row.slNo} onChange={e => updateLandAnnexureRow(row.id, 'slNo', e.target.value)} disabled={isReadOnly} />
-                    </div>
-                    <div>
-                      <label className="text-[9px] font-semibold text-[#6c757d]">Khata No</label>
-                      <input className={inputCls} value={row.khataNo} onChange={e => updateLandAnnexureRow(row.id, 'khataNo', e.target.value)} disabled={isReadOnly} />
-                    </div>
-                    <div>
-                      <label className="text-[9px] font-semibold text-[#6c757d]">Plot No</label>
-                      <input className={inputCls} value={row.plotNo} onChange={e => updateLandAnnexureRow(row.id, 'plotNo', e.target.value)} disabled={isReadOnly} />
-                    </div>
-                    <div>
-                      <label className="text-[9px] font-semibold text-[#6c757d]">Area</label>
-                      <input className={inputCls} value={row.area} onChange={e => updateLandAnnexureRow(row.id, 'area', e.target.value)} disabled={isReadOnly} />
-                    </div>
-                    <div>
-                      <label className="text-[9px] font-semibold text-[#6c757d]">Mouza</label>
-                      <input className={inputCls} value={row.mouza} onChange={e => updateLandAnnexureRow(row.id, 'mouza', e.target.value)} disabled={isReadOnly} />
-                    </div>
-                    <div className="flex items-end pb-1">
+          {/* Sub-section: ANNEXURE */}
+          <SubSection id="subsection-land-annexure" title="Annexure (Multi-Plot / Schedule)" defaultOpen={false}>
+          <div className="space-y-4">
+            {/* Info banner */}
+            <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-[#0a1628]/5 to-[#b8860b]/5 border border-[#b8860b]/20">
+              <svg className="w-5 h-5 text-[#b8860b] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              <p className="text-xs text-[#495057]">
+                Upload Excel / CSV schedules (plot details, land schedule, etc.). Row 1 becomes headers; all subsequent rows become data. Each annexure renders as a full table page in the PDF.
+              </p>
+            </div>
+
+            {/* Annexure Cards */}
+            {fields.annexures.map((annexure) => (
+              <div key={annexure.id} className="rounded-xl border border-[#dee2e6] overflow-hidden">
+                {/* Header */}
+                <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-[#162d4a] to-[#1e3a5f]">
+                  <div className="flex items-center gap-2">
+                    <span className="w-7 h-7 rounded-lg bg-[#b8860b] flex items-center justify-center text-xs font-bold text-white">{annexure.label}</span>
+                    <span className="text-sm font-semibold text-white">Annexure {annexure.label}</span>
+                  </div>
+                  {!isReadOnly && (
+                    <button
+                      type="button"
+                      onClick={() => removeAnnexure(annexure.id)}
+                      className="text-red-300 hover:text-red-100 hover:bg-red-500/20 p-1 rounded-lg transition-colors"
+                      title="Remove this annexure"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  )}
+                </div>
+                {/* Body */}
+                <div className="p-5 space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider mb-1.5">Annexure Title / Heading</label>
+                    <input
+                      type="text"
+                      value={annexure.title || ''}
+                      onChange={e => updateAnnexureTitle(annexure.id, e.target.value)}
+                      disabled={isReadOnly}
+                      placeholder="e.g. Schedule of Land Details"
+                      className={inputCls}
+                    />
+                  </div>
+                  <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider">Excel / CSV Upload</label>
+                  {annexure.excelFileUrl ? (
+                    <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-green-50 border border-green-200">
+                      <svg className="w-8 h-8 text-green-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-green-800 truncate">{annexure.excelFileName}</p>
+                        <a href={annexure.excelFileUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-green-600 hover:underline">
+                          Download / View file ↗
+                        </a>
+                        {annexure.parsedData && (
+                          <p className="text-xs text-green-600 mt-0.5">{annexure.parsedData.rows.length} rows, {annexure.parsedData.headers.length} columns — will render as table in PDF</p>
+                        )}
+                      </div>
                       {!isReadOnly && (
-                        <button type="button" onClick={() => removeLandAnnexureRow(row.id)} className="text-red-400 hover:text-red-600 text-xs">Remove</button>
+                        <button
+                          type="button"
+                          onClick={() => removeAnnexureFile(annexure.id)}
+                          className="px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
+                        >
+                          Remove
+                        </button>
                       )}
                     </div>
-                  </div>
-                ))}
-                {!isReadOnly && (
-                  <div className="flex gap-4 items-center mt-2 border-t pt-2 w-full">
-                    <button type="button" onClick={addLandAnnexureRow} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#b8860b]/10 text-[#b8860b] hover:bg-[#b8860b]/20 transition-all flex items-center gap-1">
-                      <span>+</span> Add Plot Row
-                    </button>
-                    
-                    <label className="px-3 py-1.5 rounded-lg text-xs font-bold bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-all cursor-pointer flex items-center gap-1">
-                      <span>↑ Import Excel/CSV</span>
-                      <input
-                        type="file"
-                        accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
-                        className="hidden"
-                        onChange={handleLandAnnexureExcelUpload}
-                      />
-                    </label>
-                  </div>
-                )}
+                  ) : (
+                    !isReadOnly && (
+                      <label className="flex flex-col items-center justify-center gap-2 px-6 py-8 rounded-xl border-2 border-dashed border-[#b8860b]/30 bg-[#fffaf0] cursor-pointer hover:bg-[#fff5e0] hover:border-[#b8860b]/50 transition-all group">
+                        <svg className="w-10 h-10 text-[#b8860b]/40 group-hover:text-[#b8860b]/70 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+                        <span className="text-sm font-medium text-[#b8860b]">
+                          {uploading ? 'Uploading...' : 'Click to upload Excel / CSV'}
+                        </span>
+                        <span className="text-[10px] text-[#999]">Supports .xlsx, .xls, .csv (max 10MB)</span>
+                        <input
+                          type="file"
+                          accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
+                          className="hidden"
+                          onChange={e => handleAnnexureUpload(annexure.id, e)}
+                          disabled={uploading}
+                        />
+                      </label>
+                    )
+                  )}
+                </div>
               </div>
+            ))}
+
+            {/* Add Annexure button */}
+            {!isReadOnly && (
+              <button onClick={addAnnexure} className="mt-1 text-sm text-[#b8860b] hover:text-[#96700a] font-medium flex items-center gap-1">
+                <span className="text-lg">+</span> Add Annexure
+              </button>
             )}
           </div>
           </SubSection>
