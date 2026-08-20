@@ -1125,12 +1125,12 @@ export class PDFGeneralRenderer {
     let x = MARGIN_L;
     if (headerIsFull) {
       this.drawCell(x, this.cursorY, CONTENT_W, headerH, headers[0], {
-        bold: true, fontSize, align: 'center', vAlign: 'middle', fillColor: LBL_BG, bgOpacity: 0.6,
+        bold: true, fontSize, align: 'center', vAlign: 'middle', fillColor: LBL_BG, bgOpacity: 0.45,
       });
     } else {
       for (let c = 0; c < numCols; c++) {
         this.drawCell(x, this.cursorY, finalWidths[c], headerH, headers[c], {
-          bold: true, fontSize, align: 'center', vAlign: 'middle', fillColor: LBL_BG, bgOpacity: 0.6,
+          bold: true, fontSize, align: 'center', vAlign: 'middle', fillColor: LBL_BG, bgOpacity: 0.45,
         });
         x += finalWidths[c];
       }
@@ -1156,10 +1156,10 @@ export class PDFGeneralRenderer {
 
       x = MARGIN_L;
       if (rowIsFull) {
-        this.drawCell(x, this.cursorY, CONTENT_W, rowH, row[0], { fontSize, vAlign: 'middle', fillColor: LBL_BG, bgOpacity: 0.3 });
+        this.drawCell(x, this.cursorY, CONTENT_W, rowH, row[0], { fontSize, vAlign: 'middle', fillColor: LBL_BG, bgOpacity: 0.45 });
       } else {
         for (let c = 0; c < numCols; c++) {
-          this.drawCell(x, this.cursorY, finalWidths[c], rowH, row[c] || '', { fontSize, align: 'center', vAlign: 'middle' });
+          this.drawCell(x, this.cursorY, finalWidths[c], rowH, row[c] || '', { fontSize, align: 'center', vAlign: 'middle', fillColor: LBL_BG, bgOpacity: 0.45 });
           x += finalWidths[c];
         }
       }
@@ -1258,8 +1258,8 @@ export class PDFGeneralRenderer {
           fontSize,
           align: 'center',
           vAlign: 'middle',
-          fillColor: (isHeader || isSpannedHeader) ? LBL_BG : undefined,
-          bgOpacity: (isHeader || isSpannedHeader) ? 0.5 : undefined,
+          fillColor: LBL_BG,
+          bgOpacity: 0.45,
         });
 
         x += colW;

@@ -1263,8 +1263,8 @@ export async function generateIncomeTaxPDF(
           fontSize: FONT_SZ,
           align: 'center',
           vAlign: 'middle',
-          fillColor: (isHeader || isSpannedHeader) ? LBL_BG : undefined,
-          bgOpacity: (isHeader || isSpannedHeader) ? 0.5 : undefined,
+          fillColor: LBL_BG,
+          bgOpacity: 0.45,
         });
         cx += cw;
       }
