@@ -1080,7 +1080,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       if (ref) {
         const range = XLSX.utils.decode_range(ref);
         // Read every cell into a 2-D array
-        const allRows: string[][] = [];
+        let rawAllRows: string[][] = [];
         for (let r = range.s.r; r <= range.e.r; r++) {
           const row: string[] = [];
           for (let c = range.s.c; c <= range.e.c; c++) {
@@ -1088,14 +1088,12 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
             const cell = ws[addr];
             row.push(cell ? String(XLSX.utils.format_cell(cell)) : '');
           }
-          allRows.push(row);
+          rawAllRows.push(row);
         }
-        // Merge info — relative to range start
-        const merges = ((ws['!merges'] || []) as any[]).map((m: any) => ({
+        const rawMerges = ((ws['!merges'] || []) as any[]).map((m: any) => ({
           sr: m.s.r - range.s.r, sc: m.s.c - range.s.c,
           er: m.e.r - range.s.r, ec: m.e.c - range.s.c,
         }));
-        // Column widths — normalised to 0-1
         const wsCols: any[] = ws['!cols'] || [];
         const numCols = range.e.c - range.s.c + 1;
         const rawW: number[] = [];
@@ -1103,15 +1101,74 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           const col = wsCols[range.s.c + c];
           rawW.push(col?.wpx || (col?.wch ? col.wch * 7 : 0) || 64);
         }
-        const totalW = rawW.reduce((s, w) => s + w, 0) || numCols * 64;
-        const colWidths = rawW.map(w => w / totalW);
-        parsedData = {
-          headers: allRows[0]?.map(h => String(h)) || [],
-          rows: allRows.slice(1).map(row => row.map(c => String(c))),
-          allRows,
-          merges,
-          colWidths,
-        };
+
+        // Trim leading/trailing blank columns and rows
+        let minCol = 0;
+        while (minCol < numCols) {
+          if (!rawAllRows.every(row => !row[minCol] || row[minCol].trim() === '')) break;
+          minCol++;
+        }
+        let maxCol = numCols - 1;
+        while (maxCol >= minCol) {
+          if (!rawAllRows.every(row => !row[maxCol] || row[maxCol].trim() === '')) break;
+          maxCol--;
+        }
+        let minRow = 0;
+        while (minRow < rawAllRows.length) {
+          if (!rawAllRows[minRow].every(cell => !cell || cell.trim() === '')) break;
+          minRow++;
+        }
+        let maxRow = rawAllRows.length - 1;
+        while (maxRow >= minRow) {
+          if (!rawAllRows[maxRow].every(cell => !cell || cell.trim() === '')) break;
+          maxRow--;
+        }
+
+        if (minCol <= maxCol && minRow <= maxRow) {
+          const allRows = rawAllRows.slice(minRow, maxRow + 1).map(row => row.slice(minCol, maxCol + 1));
+          const trimmedRawW = rawW.slice(minCol, maxCol + 1);
+          const totalW = trimmedRawW.reduce((s, w) => s + w, 0) || (maxCol - minCol + 1) * 64;
+          const colWidths = trimmedRawW.map(w => w / totalW);
+
+          const newNumRows = maxRow - minRow + 1;
+          const newNumCols = maxCol - minCol + 1;
+          const merges: { sr: number; sc: number; er: number; ec: number }[] = [];
+
+          for (const m of rawMerges) {
+            const sr = m.sr - minRow;
+            const er = m.er - minRow;
+            const sc = m.sc - minCol;
+            const ec = m.ec - minCol;
+            if (er < 0 || sr >= newNumRows || ec < 0 || sc >= newNumCols) continue;
+            merges.push({
+              sr: Math.max(0, sr),
+              sc: Math.max(0, sc),
+              er: Math.min(newNumRows - 1, er),
+              ec: Math.min(newNumCols - 1, ec),
+            });
+          }
+
+          // Auto-detect horizontal row merges for single-entry rows (e.g. section titles)
+          for (let r = 0; r < allRows.length; r++) {
+            const row = allRows[r];
+            const nonEmpties = row.map((cell, c) => ({ cell: cell.trim(), c })).filter(item => item.cell !== '');
+            if (nonEmpties.length === 1 && newNumCols > 1) {
+              const firstCol = nonEmpties[0].c;
+              const existing = merges.find(m => m.sr === r && m.sc === firstCol);
+              if (!existing) {
+                merges.push({ sr: r, sc: firstCol, er: r, ec: newNumCols - 1 });
+              }
+            }
+          }
+
+          parsedData = {
+            headers: allRows[0]?.map(h => String(h)) || [],
+            rows: allRows.slice(1).map(row => row.map(c => String(c))),
+            allRows,
+            merges,
+            colWidths,
+          };
+        }
       }
     } catch (parseErr) {
       console.warn('Could not parse Excel/CSV file:', parseErr);
