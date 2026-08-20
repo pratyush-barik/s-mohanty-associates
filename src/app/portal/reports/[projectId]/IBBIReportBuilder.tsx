@@ -991,12 +991,10 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       //  VALUATION CERTIFICATE (enhanced with label-value table)
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       r.newPage();
-      r.drawRichTextBlock([
-        { text: `Ref: ${fields.refNo || '________'}` },
-      ]);
-      r.drawRichTextBlock([
-        { text: `Date: ${fields.dateOfValuation || '________'}` },
-      ]);
+      r.drawSplitLine(
+        `Ref: ${fields.refNo || '________'}`,
+        `Date: ${fields.dateOfValuation || '________'}`
+      );
       r.advanceCursor(4);
       r.drawCenteredTitle('VALUATION CERTIFICATE');
       tocPageMap['VALUATION CERTIFICATE'] = r.getPageCount();
@@ -1036,7 +1034,11 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.drawSimpleRow('VALUATION METHOD', (fields.valuationMethod || 'Sale Comparison Method').toUpperCase());
       r.drawSimpleRow('VALUATION DATE', fields.dateOfValuation || 'N/A');
       r.drawSimpleRow('PRESENT VALUE (in Rs)', `Rs.${formatIndianCurrency(fields.fairMarketValueTotal || fields.presentMarketValueTotal || '0')}/-`);
-      r.drawSimpleRow('VALUERS DETAILS', `${fields.representativeName ? fields.representativeName.toUpperCase() : ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications : ''}\n${fields.valuerAdditionalDetails || ''}\n${fields.registeredOfficeAddress || ''}`);
+      r.drawSimpleRow('VALUERS DETAILS', [
+          fields.representativeName ? `${fields.representativeName.toUpperCase()}${fields.valuerQualifications ? ' ' + fields.valuerQualifications : ''}` : '',
+          fields.valuerAdditionalDetails || '',
+          fields.registeredOfficeAddress || '',
+        ].filter(Boolean).join('\n'));
       r.advanceCursor(8);
 
       // Certificate closing + realisable value
@@ -1052,7 +1054,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
         ],
         [
           { text: 'Signature & Seal of Valuer', italic: true },
-          { text: `Name of the Valuer - ${fields.representativeName || ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications : ''}`, bold: true },
+          { text: `Name of the Valuer - ${fields.representativeName || ''}`, bold: true },
         ]
       );
 
@@ -1389,7 +1391,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
         ],
         [
           { text: 'Signature & Seal of Valuer', italic: true },
-          { text: `Name of the Valuer - ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications.toUpperCase() : ''}`, bold: true },
+          { text: `Name of the Valuer - ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}`, bold: true },
         ]
       );
 

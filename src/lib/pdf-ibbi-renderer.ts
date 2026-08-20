@@ -930,6 +930,32 @@ export class PDFIBBIRenderer {
     this.cursorY += maxLines * lineH;
   }
 
+  /**
+   * Draw two text items on the same line: one left-aligned, one right-aligned.
+   * Advances cursor by one line.
+   */
+  drawSplitLine(
+    leftText: string,
+    rightText: string,
+    opts?: { bold?: boolean; italic?: boolean; fontSize?: number }
+  ): void {
+    const fs = opts?.fontSize || FONT_SIZE;
+    const lineH = fs * LINE_HEIGHT;
+    this.checkPageBreak(lineH);
+
+    // Left text
+    this.drawTextAt(leftText, MARGIN_L, this.cursorY, {
+      bold: opts?.bold, italic: opts?.italic, fontSize: fs,
+    });
+
+    // Right text
+    this.drawTextAt(rightText, MARGIN_L, this.cursorY, {
+      bold: opts?.bold, italic: opts?.italic, fontSize: fs, align: 'right', maxWidth: CONTENT_W,
+    });
+
+    this.cursorY += lineH;
+  }
+
   // ─── Image Support ─────────────────────────────────────────────
 
   /**
