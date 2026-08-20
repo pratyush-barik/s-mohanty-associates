@@ -1257,12 +1257,14 @@ export async function generateIncomeTaxPDF(
           : rowHeights[ri];
 
         const isHeader = ri === 0;
+        const isSpannedHeader = colSpan === numCols;
         drawCell(cx, cy, cellW, cellH, row[ci] || '', {
-          bold: isHeader,
+          bold: isHeader || isSpannedHeader,
           fontSize: FONT_SZ,
           align: 'center',
           vAlign: 'middle',
-          fillColor: undefined, // NO cell color per user request!
+          fillColor: (isHeader || isSpannedHeader) ? LBL_BG : undefined,
+          bgOpacity: (isHeader || isSpannedHeader) ? 0.5 : undefined,
         });
         cx += cw;
       }

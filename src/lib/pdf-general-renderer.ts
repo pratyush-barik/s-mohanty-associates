@@ -1125,12 +1125,12 @@ export class PDFGeneralRenderer {
     let x = MARGIN_L;
     if (headerIsFull) {
       this.drawCell(x, this.cursorY, CONTENT_W, headerH, headers[0], {
-        bold: true, fontSize, align: 'center', vAlign: 'middle',
+        bold: true, fontSize, align: 'center', vAlign: 'middle', fillColor: LBL_BG, bgOpacity: 0.6,
       });
     } else {
       for (let c = 0; c < numCols; c++) {
         this.drawCell(x, this.cursorY, finalWidths[c], headerH, headers[c], {
-          bold: true, fontSize, align: 'center', vAlign: 'middle',
+          bold: true, fontSize, align: 'center', vAlign: 'middle', fillColor: LBL_BG, bgOpacity: 0.6,
         });
         x += finalWidths[c];
       }
@@ -1156,7 +1156,7 @@ export class PDFGeneralRenderer {
 
       x = MARGIN_L;
       if (rowIsFull) {
-        this.drawCell(x, this.cursorY, CONTENT_W, rowH, row[0], { fontSize, vAlign: 'middle' });
+        this.drawCell(x, this.cursorY, CONTENT_W, rowH, row[0], { fontSize, vAlign: 'middle', fillColor: LBL_BG, bgOpacity: 0.3 });
       } else {
         for (let c = 0; c < numCols; c++) {
           this.drawCell(x, this.cursorY, finalWidths[c], rowH, row[c] || '', { fontSize, align: 'center', vAlign: 'middle' });
@@ -1252,12 +1252,14 @@ export class PDFGeneralRenderer {
           : rowH[ri];
 
         const isHeader = ri === 0;
+        const isSpannedHeader = colSpan === numCols;
         this.drawCell(x, this.cursorY, cellW, cellH, row[ci] || '', {
-          bold: isHeader,
+          bold: isHeader || isSpannedHeader,
           fontSize,
           align: 'center',
           vAlign: 'middle',
-          fillColor: undefined, // NO cell color per user request!
+          fillColor: (isHeader || isSpannedHeader) ? LBL_BG : undefined,
+          bgOpacity: (isHeader || isSpannedHeader) ? 0.5 : undefined,
         });
 
         x += colW;
