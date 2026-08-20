@@ -1101,6 +1101,125 @@ export class PDFGeneralRenderer {
     }
   }
 
+  /**
+   * Draw a table from Excel data that may contain merged cells (col/row spans).
+   * allRows     — every row including header
+   * merges      — 0-indexed { sr, sc, er, ec } ranges (relative to allRows)
+   * colWidths   — normalised 0-1 column widths (from workbook or equal-split)
+   */
+  drawMergedTable(
+    allRows: string[][],
+    merges: { sr: number; sc: number; er: number; ec: number }[],
+    colWidths: number[],
+  ): void {
+    if (!allRows || allRows.length === 0) return;
+
+    const numCols = allRows[0].length;
+    const fontSize = 10;
+    const padX = 4;
+    const padY = 3;
+    const DEFAULT_ROW_H = fontSize * LINE_HEIGHT + padY * 2 + 2;
+
+    // Compute actual pixel widths from normalised colWidths
+    const totalNorm = colWidths.reduce((s, w) => s + w, 0) || 1;
+    const colPx: number[] = colWidths.map(w => (w / totalNorm) * CONTENT_W);
+    // Ensure columns sum exactly to CONTENT_W
+    const pxSum = colPx.reduce((s, w) => s + w, 0);
+    if (pxSum > 0) { const scale = CONTENT_W / pxSum; colPx.forEach((_, i) => { colPx[i] *= scale; }); }
+
+    // Build lookup structures from merge info
+    // covered: cells that are NOT the top-left of a merge (should be skipped)
+    const covered = new Set<string>();
+    // spanMap: for the top-left cell of a merge, stores its span
+    const spanMap = new Map<string, { er: number; ec: number }>();
+    // rowspanBusy[ci] = how many MORE rows column ci is still occupied by an active rowspan
+    const rowspanBusy: number[] = Array(numCols).fill(0);
+
+    for (const m of merges) {
+      spanMap.set(`${m.sr},${m.sc}`, { er: m.er, ec: m.ec });
+      for (let r = m.sr; r <= m.er; r++) {
+        for (let c = m.sc; c <= m.ec; c++) {
+          if (r !== m.sr || c !== m.sc) covered.add(`${r},${c}`);
+        }
+      }
+    }
+
+    // Pre-compute row heights: height is the max needed across all non-covered cells
+    // For row-spanning cells we don't inflate the originating row — we just draw tall.
+    const rowH: number[] = allRows.map((row, ri) => {
+      let h = DEFAULT_ROW_H;
+      for (let ci = 0; ci < numCols; ci++) {
+        if (covered.has(`${ri},${ci}`)) continue;
+        const span = spanMap.get(`${ri},${ci}`);
+        const rowSpan = span ? span.er - ri + 1 : 1;
+        if (rowSpan > 1) continue; // multi-row cell height not added to this row
+        const colSpan = span ? span.ec - ci + 1 : 1;
+        const cellW = colPx.slice(ci, ci + colSpan).reduce((s, w) => s + w, 0);
+        const lines = this.wrapText(row[ci] || '', cellW - padX * 2, fontSize);
+        const needed = lines.length * fontSize * LINE_HEIGHT + padY * 2;
+        if (needed > h) h = needed;
+      }
+      return h;
+    });
+
+    // Reset rowspanBusy for drawing pass
+    rowspanBusy.fill(0);
+
+    for (let ri = 0; ri < allRows.length; ri++) {
+      const row = allRows[ri];
+      this.checkPageBreak(rowH[ri]);
+
+      let x = MARGIN_L;
+      for (let ci = 0; ci < numCols; ci++) {
+        const colW = colPx[ci] || (CONTENT_W / numCols);
+
+        // Skip cells covered by a previous rowspan
+        if (rowspanBusy[ci] > 0) {
+          rowspanBusy[ci]--;
+          x += colW;
+          continue;
+        }
+        // Skip cells covered by a horizontal merge from left
+        if (covered.has(`${ri},${ci}`)) {
+          x += colW;
+          continue;
+        }
+
+        const span = spanMap.get(`${ri},${ci}`);
+        const colSpan = span ? span.ec - ci + 1 : 1;
+        const rowSpan = span ? span.er - ri + 1 : 1;
+
+        // Total pixel width for this cell (sum of spanned columns)
+        const cellW = colPx.slice(ci, ci + colSpan).reduce((s, w) => s + w, 0);
+        // Total pixel height for this cell (sum of spanned rows)
+        const cellH = rowSpan > 1
+          ? rowH.slice(ri, ri + rowSpan).reduce((s, h) => s + h, 0)
+          : rowH[ri];
+
+        // Mark rowspan busy for subsequent rows
+        if (rowSpan > 1) {
+          for (let sc = ci; sc < ci + colSpan && sc < numCols; sc++) {
+            rowspanBusy[sc] = rowSpan - 1;
+          }
+        }
+
+        const isHeader = ri === 0;
+        this.drawCell(x, this.cursorY, cellW, cellH, row[ci] || '', {
+          bold: isHeader,
+          fontSize,
+          align: 'center',
+          vAlign: 'middle',
+          fillColor: isHeader ? LBL_BG : undefined,
+          bgOpacity: isHeader ? 0.6 : undefined,
+        });
+
+        x += colW; // advance x by single column width
+      }
+
+      this.cursorY += rowH[ri];
+    }
+  }
+
   private drawPageNumbers(): void {
     const pages = this.doc.getPages();
     for (let i = 1; i < pages.length; i++) {

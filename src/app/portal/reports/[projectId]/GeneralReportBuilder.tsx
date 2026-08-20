@@ -31,8 +31,11 @@ interface AnnexureItem {
   excelFileUrl: string;   // Uploaded Excel URL from Supabase
   excelFileName: string;  // Original filename
   parsedData?: {          // Parsed Excel table data
-    headers: string[];
-    rows: string[][];
+    headers: string[];         // row 0 (kept for compat)
+    rows: string[][];          // rows 1+ (kept for compat)
+    allRows: string[][];       // ALL rows including row 0 (used for merged rendering)
+    merges: { sr: number; sc: number; er: number; ec: number }[]; // 0-indexed merge ranges
+    colWidths: number[];       // normalised 0-1 column widths from workbook
   };
 }
 
@@ -1067,21 +1070,51 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     setUploading(true);
     setUploadError(null);
 
-    // Parse Excel/CSV content before uploading
-    let parsedData: { headers: string[]; rows: string[][] } | undefined;
+    // Parse Excel/CSV — cell-by-cell to preserve merge info and column widths
+    let parsedData: AnnexureItem['parsedData'] | undefined;
     try {
       const arrayBuffer = await file.arrayBuffer();
       const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData: string[][] = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
-      if (jsonData.length > 0) {
+      const ws = workbook.Sheets[workbook.SheetNames[0]];
+      const ref = ws['!ref'];
+      if (ref) {
+        const range = XLSX.utils.decode_range(ref);
+        // Read every cell into a 2-D array
+        const allRows: string[][] = [];
+        for (let r = range.s.r; r <= range.e.r; r++) {
+          const row: string[] = [];
+          for (let c = range.s.c; c <= range.e.c; c++) {
+            const addr = XLSX.utils.encode_cell({ r, c });
+            const cell = ws[addr];
+            row.push(cell ? String(XLSX.utils.format_cell(cell)) : '');
+          }
+          allRows.push(row);
+        }
+        // Merge info — relative to range start
+        const merges = ((ws['!merges'] || []) as any[]).map((m: any) => ({
+          sr: m.s.r - range.s.r, sc: m.s.c - range.s.c,
+          er: m.e.r - range.s.r, ec: m.e.c - range.s.c,
+        }));
+        // Column widths — normalised to 0-1
+        const wsCols: any[] = ws['!cols'] || [];
+        const numCols = range.e.c - range.s.c + 1;
+        const rawW: number[] = [];
+        for (let c = 0; c < numCols; c++) {
+          const col = wsCols[range.s.c + c];
+          rawW.push(col?.wpx || (col?.wch ? col.wch * 7 : 0) || 64);
+        }
+        const totalW = rawW.reduce((s, w) => s + w, 0) || numCols * 64;
+        const colWidths = rawW.map(w => w / totalW);
         parsedData = {
-          headers: jsonData[0].map(h => String(h)),
-          rows: jsonData.slice(1).map(row => row.map(cell => String(cell))),
+          headers: allRows[0]?.map(h => String(h)) || [],
+          rows: allRows.slice(1).map(row => row.map(c => String(c))),
+          allRows,
+          merges,
+          colWidths,
         };
       }
     } catch (parseErr) {
-      console.warn('Could not parse Excel file:', parseErr);
+      console.warn('Could not parse Excel/CSV file:', parseErr);
     }
 
     const ext = file.name.split('.').pop();
@@ -1541,7 +1574,16 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
             r.newPage();
             r.drawCenteredTitle(annexure.title ? `ANNEXURE ${annexure.label} - ${annexure.title.toUpperCase()}` : `ANNEXURE ${annexure.label}`);
             r.advanceCursor(8);
-            r.drawDataTable(annexure.parsedData.headers, annexure.parsedData.rows);
+            // Use merged-cell renderer when full data available, fall back to flat table
+            if (annexure.parsedData.allRows && annexure.parsedData.merges && annexure.parsedData.colWidths) {
+              r.drawMergedTable(
+                annexure.parsedData.allRows,
+                annexure.parsedData.merges,
+                annexure.parsedData.colWidths,
+              );
+            } else {
+              r.drawDataTable(annexure.parsedData.headers, annexure.parsedData.rows);
+            }
           }
         }
       }

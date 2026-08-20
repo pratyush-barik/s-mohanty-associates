@@ -1103,10 +1103,10 @@ export async function generateIncomeTaxPDF(
     (a: any) => a.parsedData && a.parsedData.headers && a.parsedData.headers.length > 0
   );
   for (const annexure of annexuresToRender) {
-    const { headers, rows } = annexure.parsedData!;
+    const pd = annexure.parsedData!;
     ensureSpace(60);
     const annxTitleStr = annexure.title
-      ? `ANNEXURE ${annexure.label} — ${annexure.title.toUpperCase()}`
+      ? `ANNEXURE ${annexure.label} \u2014 ${annexure.title.toUpperCase()}`
       : `ANNEXURE ${annexure.label}`;
     const annxHeaderFs = 13;
     const annxHeaderW = fontB.widthOfTextAtSize(annxTitleStr, annxHeaderFs);
@@ -1115,27 +1115,85 @@ export async function generateIncomeTaxPDF(
     page.drawLine({ start: { x: annxHeaderX, y: pdfY(cy) - annxHeaderFs * 0.8 - 2 }, end: { x: annxHeaderX + annxHeaderW, y: pdfY(cy) - annxHeaderFs * 0.8 - 2 }, thickness: 1, color: rgb(0, 0, 0) });
     cy += annxHeaderFs * LINE_H + 12;
 
-    // Equal column widths based on column count
-    const colCount = headers.length;
-    const colW = headers.map(() => CW / colCount);
-    const headerH = 20;
-    ensureSpace(headerH);
-    let cx = ML;
-    for (let i = 0; i < colCount; i++) {
-      drawCell(cx, cy, colW[i], headerH, headers[i].toUpperCase(), { bold: true, fontSize: 9, align: 'center', fillColor: LBL_BG });
-      cx += colW[i];
+    // Use allRows+merges+colWidths when available (rich path), else fall back to flat
+    const allRows: string[][] = pd.allRows || [pd.headers, ...pd.rows];
+    const merges: { sr: number; sc: number; er: number; ec: number }[] = pd.merges || [];
+    const numCols = allRows[0]?.length || 0;
+    // Column widths in points
+    let colPx: number[];
+    if (pd.colWidths && pd.colWidths.length === numCols) {
+      const totalNorm = pd.colWidths.reduce((s: number, w: number) => s + w, 0) || 1;
+      colPx = pd.colWidths.map((w: number) => (w / totalNorm) * CW);
+    } else {
+      colPx = Array(numCols).fill(CW / (numCols || 1));
     }
-    cy += headerH;
 
-    for (const row of rows) {
-      const rowH = 18;
-      ensureSpace(rowH);
-      cx = ML;
-      for (let i = 0; i < colCount; i++) {
-        drawCell(cx, cy, colW[i], rowH, row[i] || '', { fontSize: 9, align: 'center' });
-        cx += colW[i];
+    // Build merge lookup
+    const covered = new Set<string>();
+    const spanMap = new Map<string, { er: number; ec: number }>();
+    for (const m of merges) {
+      spanMap.set(`${m.sr},${m.sc}`, { er: m.er, ec: m.ec });
+      for (let r = m.sr; r <= m.er; r++)
+        for (let c = m.sc; c <= m.ec; c++)
+          if (r !== m.sr || c !== m.sc) covered.add(`${r},${c}`);
+    }
+
+    // Pre-compute row heights
+    const FONT_SZ = 9;
+    const PAD_Y = 3;
+    const DEF_ROW_H = FONT_SZ * LINE_H + PAD_Y * 2 + 2;
+    const rowHeights: number[] = allRows.map((row, ri) => {
+      let h = DEF_ROW_H;
+      for (let ci = 0; ci < numCols; ci++) {
+        if (covered.has(`${ri},${ci}`)) continue;
+        const span = spanMap.get(`${ri},${ci}`);
+        if (span && span.er > ri) continue; // rowspan; height spread across rows
+        const colSpan = span ? span.ec - ci + 1 : 1;
+        const cellW = colPx.slice(ci, ci + colSpan).reduce((s, w) => s + w, 0);
+        // Rough line count estimate
+        const text = row[ci] || '';
+        const approxCharsPerLine = Math.max(1, Math.floor((cellW - 8) / (FONT_SZ * 0.55)));
+        const lineCount = Math.ceil(text.length / approxCharsPerLine) || 1;
+        const needed = lineCount * FONT_SZ * LINE_H + PAD_Y * 2;
+        if (needed > h) h = needed;
       }
-      cy += rowH;
+      return Math.max(h, DEF_ROW_H);
+    });
+
+    // Draw rows
+    const rowspanBusy: number[] = Array(numCols).fill(0);
+    for (let ri = 0; ri < allRows.length; ri++) {
+      const row = allRows[ri];
+      ensureSpace(rowHeights[ri]);
+      let cx = ML;
+      for (let ci = 0; ci < numCols; ci++) {
+        const cw = colPx[ci] || (CW / numCols);
+        if (rowspanBusy[ci] > 0) { rowspanBusy[ci]--; cx += cw; continue; }
+        if (covered.has(`${ri},${ci}`)) { cx += cw; continue; }
+
+        const span = spanMap.get(`${ri},${ci}`);
+        const colSpan = span ? span.ec - ci + 1 : 1;
+        const rowSpan = span ? span.er - ri + 1 : 1;
+        const cellW = colPx.slice(ci, ci + colSpan).reduce((s, w) => s + w, 0);
+        const cellH = rowSpan > 1
+          ? rowHeights.slice(ri, ri + rowSpan).reduce((s, h) => s + h, 0)
+          : rowHeights[ri];
+
+        if (rowSpan > 1) {
+          for (let sc = ci; sc < ci + colSpan && sc < numCols; sc++)
+            rowspanBusy[sc] = rowSpan - 1;
+        }
+
+        const isHeader = ri === 0;
+        drawCell(cx, cy, cellW, cellH, row[ci] || '', {
+          bold: isHeader,
+          fontSize: FONT_SZ,
+          align: 'center',
+          fillColor: isHeader ? LBL_BG : undefined,
+        });
+        cx += cw;
+      }
+      cy += rowHeights[ri];
     }
     advanceCursor(12);
   }
