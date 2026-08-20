@@ -1097,6 +1097,76 @@ export async function generateIncomeTaxPDF(
     }
   }
 
+  const trimEmptyGrid = (
+    allRows: string[][],
+    merges: { sr: number; sc: number; er: number; ec: number }[],
+    colWidths?: number[]
+  ) => {
+    if (!allRows || allRows.length === 0) return { allRows: [], merges: [], colWidths: [] };
+    const numRows = allRows.length;
+    const numCols = allRows[0]?.length || 0;
+    const cellStr = (v: any) => String(v ?? '').trim();
+
+    let minCol = 0;
+    while (minCol < numCols) {
+      if (!allRows.every(row => !row || cellStr(row[minCol]) === '')) break;
+      minCol++;
+    }
+    let maxCol = numCols - 1;
+    while (maxCol >= minCol) {
+      if (!allRows.every(row => !row || cellStr(row[maxCol]) === '')) break;
+      maxCol--;
+    }
+    let minRow = 0;
+    while (minRow < numRows) {
+      if (!allRows[minRow] || !allRows[minRow].every(cell => cellStr(cell) === '')) break;
+      minRow++;
+    }
+    let maxRow = numRows - 1;
+    while (maxRow >= minRow) {
+      if (!allRows[maxRow] || !allRows[maxRow].every(cell => cellStr(cell) === '')) break;
+      maxRow--;
+    }
+
+    if (minCol > maxCol || minRow > maxRow) return { allRows: [], merges: [], colWidths: [] };
+
+    const trimmedRows = allRows.slice(minRow, maxRow + 1).map(row => (row || []).slice(minCol, maxCol + 1));
+    const trimmedColWidths = (colWidths && colWidths.length === numCols) ? colWidths.slice(minCol, maxCol + 1) : [];
+
+    const newNumRows = maxRow - minRow + 1;
+    const newNumCols = maxCol - minCol + 1;
+    const trimmedMerges: { sr: number; sc: number; er: number; ec: number }[] = [];
+
+    for (const m of merges) {
+      const sr = m.sr - minRow;
+      const er = m.er - minRow;
+      const sc = m.sc - minCol;
+      const ec = m.ec - minCol;
+      if (er < 0 || sr >= newNumRows || ec < 0 || sc >= newNumCols) continue;
+      trimmedMerges.push({
+        sr: Math.max(0, sr),
+        sc: Math.max(0, sc),
+        er: Math.min(newNumRows - 1, er),
+        ec: Math.min(newNumCols - 1, ec),
+      });
+    }
+
+    // Auto-detect horizontal row merges for single-entry rows (e.g. section titles)
+    for (let r = 0; r < trimmedRows.length; r++) {
+      const row = trimmedRows[r];
+      const nonEmpties = row.map((cell, c) => ({ cell: cellStr(cell), c })).filter(item => item.cell !== '');
+      if (nonEmpties.length === 1 && newNumCols > 1) {
+        const firstCol = nonEmpties[0].c;
+        const existing = trimmedMerges.find(m => m.sr === r && m.sc === firstCol);
+        if (!existing) {
+          trimmedMerges.push({ sr: r, sc: firstCol, er: r, ec: newNumCols - 1 });
+        }
+      }
+    }
+
+    return { allRows: trimmedRows, merges: trimmedMerges, colWidths: trimmedColWidths };
+  };
+
   // ═══════════════════════════════════════════════════════
   // BLOCK 10 — ANNEXURES (Multi-Plot / Schedule)
   // ═══════════════════════════════════════════════════════

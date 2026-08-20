@@ -1014,31 +1014,32 @@ export class PDFGeneralRenderer {
     if (!allRows || allRows.length === 0) return { allRows: [], merges: [], colWidths: [] };
     const numRows = allRows.length;
     const numCols = allRows[0]?.length || 0;
+    const cellStr = (v: any) => String(v ?? '').trim();
 
     let minCol = 0;
     while (minCol < numCols) {
-      if (!allRows.every(row => !row[minCol] || row[minCol].trim() === '')) break;
+      if (!allRows.every(row => !row || cellStr(row[minCol]) === '')) break;
       minCol++;
     }
     let maxCol = numCols - 1;
     while (maxCol >= minCol) {
-      if (!allRows.every(row => !row[maxCol] || row[maxCol].trim() === '')) break;
+      if (!allRows.every(row => !row || cellStr(row[maxCol]) === '')) break;
       maxCol--;
     }
     let minRow = 0;
     while (minRow < numRows) {
-      if (!allRows[minRow].every(cell => !cell || cell.trim() === '')) break;
+      if (!allRows[minRow] || !allRows[minRow].every(cell => cellStr(cell) === '')) break;
       minRow++;
     }
     let maxRow = numRows - 1;
     while (maxRow >= minRow) {
-      if (!allRows[maxRow].every(cell => !cell || cell.trim() === '')) break;
+      if (!allRows[maxRow] || !allRows[maxRow].every(cell => cellStr(cell) === '')) break;
       maxRow--;
     }
 
     if (minCol > maxCol || minRow > maxRow) return { allRows: [], merges: [], colWidths: [] };
 
-    const trimmedRows = allRows.slice(minRow, maxRow + 1).map(row => row.slice(minCol, maxCol + 1));
+    const trimmedRows = allRows.slice(minRow, maxRow + 1).map(row => (row || []).slice(minCol, maxCol + 1));
     const trimmedColWidths = (colWidths && colWidths.length === numCols) ? colWidths.slice(minCol, maxCol + 1) : [];
 
     const newNumRows = maxRow - minRow + 1;
@@ -1062,7 +1063,7 @@ export class PDFGeneralRenderer {
     // Auto-detect horizontal row merges for single-entry rows (e.g. section titles)
     for (let r = 0; r < trimmedRows.length; r++) {
       const row = trimmedRows[r];
-      const nonEmpties = row.map((cell, c) => ({ cell: cell.trim(), c })).filter(item => item.cell !== '');
+      const nonEmpties = row.map((cell, c) => ({ cell: cellStr(cell), c })).filter(item => item.cell !== '');
       if (nonEmpties.length === 1 && newNumCols > 1) {
         const firstCol = nonEmpties[0].c;
         const existing = trimmedMerges.find(m => m.sr === r && m.sc === firstCol);
@@ -1083,7 +1084,8 @@ export class PDFGeneralRenderer {
     if (headers.length === 0) return;
 
     const numCols = headers.length;
-    const isFullWidth = (arr: string[]) => arr.length > 0 && arr[0].trim() !== '' && arr.slice(1).every(c => !c || c.trim() === '');
+    const cellStr = (v: any) => String(v ?? '').trim();
+    const isFullWidth = (arr: string[]) => arr && arr.length > 0 && cellStr(arr[0]) !== '' && arr.slice(1).every(c => cellStr(c) === '');
 
     const maxColChars = Array(numCols).fill(3);
     if (!isFullWidth(headers)) {
