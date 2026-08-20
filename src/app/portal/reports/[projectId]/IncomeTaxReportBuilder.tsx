@@ -872,8 +872,8 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
       const ref = ws['!ref'];
       if (ref) {
         const range = XLSX.utils.decode_range(ref);
-        // Read every cell into a 2-D array
-        const allRows: string[][] = [];
+        // Parse client-side — cell-by-cell to preserve merge info and column widths
+        let rawAllRows: string[][] = [];
         for (let r = range.s.r; r <= range.e.r; r++) {
           const row: string[] = [];
           for (let c = range.s.c; c <= range.e.c; c++) {
@@ -881,14 +881,12 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
             const cell = ws[addr];
             row.push(cell ? String(XLSX.utils.format_cell(cell)) : '');
           }
-          allRows.push(row);
+          rawAllRows.push(row);
         }
-        // Merge info — make relative to range start
-        const merges = ((ws['!merges'] || []) as any[]).map((m: any) => ({
+        const rawMerges = ((ws['!merges'] || []) as any[]).map((m: any) => ({
           sr: m.s.r - range.s.r, sc: m.s.c - range.s.c,
           er: m.e.r - range.s.r, ec: m.e.c - range.s.c,
         }));
-        // Column widths — normalised to 0-1
         const wsCols: any[] = ws['!cols'] || [];
         const numCols = range.e.c - range.s.c + 1;
         const rawW: number[] = [];

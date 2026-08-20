@@ -1002,7 +1002,78 @@ export class PDFGeneralRenderer {
     this.cursorY += pairH;
   }
 
-  // ─── Data Table (for Annexure Excel data) ───────────────────────
+  /**
+   * Helper to trim empty leading/trailing columns and rows from an Excel table grid
+   * and adjust merge coordinates and column widths accordingly.
+   */
+  trimEmptyGrid(
+    allRows: string[][],
+    merges: { sr: number; sc: number; er: number; ec: number }[],
+    colWidths?: number[]
+  ) {
+    if (!allRows || allRows.length === 0) return { allRows: [], merges: [], colWidths: [] };
+    const numRows = allRows.length;
+    const numCols = allRows[0]?.length || 0;
+
+    let minCol = 0;
+    while (minCol < numCols) {
+      if (!allRows.every(row => !row[minCol] || row[minCol].trim() === '')) break;
+      minCol++;
+    }
+    let maxCol = numCols - 1;
+    while (maxCol >= minCol) {
+      if (!allRows.every(row => !row[maxCol] || row[maxCol].trim() === '')) break;
+      maxCol--;
+    }
+    let minRow = 0;
+    while (minRow < numRows) {
+      if (!allRows[minRow].every(cell => !cell || cell.trim() === '')) break;
+      minRow++;
+    }
+    let maxRow = numRows - 1;
+    while (maxRow >= minRow) {
+      if (!allRows[maxRow].every(cell => !cell || cell.trim() === '')) break;
+      maxRow--;
+    }
+
+    if (minCol > maxCol || minRow > maxRow) return { allRows: [], merges: [], colWidths: [] };
+
+    const trimmedRows = allRows.slice(minRow, maxRow + 1).map(row => row.slice(minCol, maxCol + 1));
+    const trimmedColWidths = (colWidths && colWidths.length === numCols) ? colWidths.slice(minCol, maxCol + 1) : [];
+
+    const newNumRows = maxRow - minRow + 1;
+    const newNumCols = maxCol - minCol + 1;
+    const trimmedMerges: { sr: number; sc: number; er: number; ec: number }[] = [];
+
+    for (const m of merges) {
+      const sr = m.sr - minRow;
+      const er = m.er - minRow;
+      const sc = m.sc - minCol;
+      const ec = m.ec - minCol;
+      if (er < 0 || sr >= newNumRows || ec < 0 || sc >= newNumCols) continue;
+      trimmedMerges.push({
+        sr: Math.max(0, sr),
+        sc: Math.max(0, sc),
+        er: Math.min(newNumRows - 1, er),
+        ec: Math.min(newNumCols - 1, ec),
+      });
+    }
+
+    // Auto-detect horizontal row merges for single-entry rows (e.g. section titles)
+    for (let r = 0; r < trimmedRows.length; r++) {
+      const row = trimmedRows[r];
+      const nonEmpties = row.map((cell, c) => ({ cell: cell.trim(), c })).filter(item => item.cell !== '');
+      if (nonEmpties.length === 1 && newNumCols > 1) {
+        const firstCol = nonEmpties[0].c;
+        const existing = trimmedMerges.find(m => m.sr === r && m.sc === firstCol);
+        if (!existing) {
+          trimmedMerges.push({ sr: r, sc: firstCol, er: r, ec: newNumCols - 1 });
+        }
+      }
+    }
+
+    return { allRows: trimmedRows, merges: trimmedMerges, colWidths: trimmedColWidths };
+  }
 
   /**
    * Draw a generic data table from a 2D string array (headers + rows).
@@ -1014,13 +1085,10 @@ export class PDFGeneralRenderer {
     const numCols = headers.length;
     const isFullWidth = (arr: string[]) => arr.length > 0 && arr[0].trim() !== '' && arr.slice(1).every(c => !c || c.trim() === '');
 
-    // Calculate column widths proportional to content
     const maxColChars = Array(numCols).fill(3);
-    
     if (!isFullWidth(headers)) {
       headers.forEach((h, i) => { if (h && h.length > maxColChars[i]) maxColChars[i] = h.length; });
     }
-    
     for (const row of rows) {
       if (isFullWidth(row)) continue;
       row.forEach((cell, i) => {
@@ -1030,26 +1098,23 @@ export class PDFGeneralRenderer {
 
     const totalChars = maxColChars.reduce((a, b) => a + b, 0);
     const colWidths = maxColChars.map(c => Math.max((c / totalChars) * CONTENT_W, 30));
-
-    // Normalize widths to exactly fill CONTENT_W
     const widthSum = colWidths.reduce((a, b) => a + b, 0);
     const scale = CONTENT_W / widthSum;
     const finalWidths = colWidths.map(w => w * scale);
 
-    const fontSize = 10;
-    const rowPadY = 3;
-    const rowPadX = 3;
+    const fontSize = 9;
+    const rowPadY = 4;
+    const rowPadX = 4;
 
-    // Draw header row
     let headerH = 0;
     const headerIsFull = isFullWidth(headers);
     if (headerIsFull) {
       const lines = this.wrapText(headers[0], CONTENT_W - rowPadX * 2, fontSize, true);
-      headerH = lines.length * fontSize * LINE_HEIGHT + rowPadY * 2;
+      headerH = lines.length * fontSize * LINE_HEIGHT + rowPadY * 2 + 2;
     } else {
       headerH = Math.max(...headers.map((h, i) => {
         const lines = this.wrapText(h, finalWidths[i] - rowPadX * 2, fontSize, true);
-        return lines.length * fontSize * LINE_HEIGHT + rowPadY * 2;
+        return lines.length * fontSize * LINE_HEIGHT + rowPadY * 2 + 2;
       }));
     }
 
@@ -1058,42 +1123,41 @@ export class PDFGeneralRenderer {
     let x = MARGIN_L;
     if (headerIsFull) {
       this.drawCell(x, this.cursorY, CONTENT_W, headerH, headers[0], {
-        bold: true, fontSize, fillColor: LBL_BG, bgOpacity: 0.6,
+        bold: true, fontSize, align: 'center', vAlign: 'middle',
       });
     } else {
       for (let c = 0; c < numCols; c++) {
         this.drawCell(x, this.cursorY, finalWidths[c], headerH, headers[c], {
-          bold: true, fontSize, fillColor: LBL_BG, bgOpacity: 0.6,
+          bold: true, fontSize, align: 'center', vAlign: 'middle',
         });
         x += finalWidths[c];
       }
     }
     this.cursorY += headerH;
 
-    // Draw data rows
     for (const row of rows) {
       const rowIsFull = isFullWidth(row);
       let rowH = 0;
-      
+
       if (rowIsFull) {
         const lines = this.wrapText(row[0], CONTENT_W - rowPadX * 2, fontSize);
-        rowH = lines.length * fontSize * LINE_HEIGHT + rowPadY * 2;
+        rowH = lines.length * fontSize * LINE_HEIGHT + rowPadY * 2 + 2;
       } else {
         const cellHeights = row.map((cell, c) => {
           const lines = this.wrapText(cell || '', finalWidths[c] - rowPadX * 2, fontSize);
-          return lines.length * fontSize * LINE_HEIGHT + rowPadY * 2;
+          return lines.length * fontSize * LINE_HEIGHT + rowPadY * 2 + 2;
         });
-        rowH = Math.max(...cellHeights, fontSize * LINE_HEIGHT + rowPadY * 2);
+        rowH = Math.max(...cellHeights, fontSize * LINE_HEIGHT + rowPadY * 2 + 2);
       }
 
       this.checkPageBreak(rowH);
 
       x = MARGIN_L;
       if (rowIsFull) {
-        this.drawCell(x, this.cursorY, CONTENT_W, rowH, row[0], { fontSize });
+        this.drawCell(x, this.cursorY, CONTENT_W, rowH, row[0], { fontSize, vAlign: 'middle' });
       } else {
         for (let c = 0; c < numCols; c++) {
-          this.drawCell(x, this.cursorY, finalWidths[c], rowH, row[c] || '', { fontSize });
+          this.drawCell(x, this.cursorY, finalWidths[c], rowH, row[c] || '', { fontSize, align: 'center', vAlign: 'middle' });
           x += finalWidths[c];
         }
       }
@@ -1108,33 +1172,34 @@ export class PDFGeneralRenderer {
    * colWidths   — normalised 0-1 column widths (from workbook or equal-split)
    */
   drawMergedTable(
-    allRows: string[][],
-    merges: { sr: number; sc: number; er: number; ec: number }[],
-    colWidths: number[],
+    rawAllRows: string[][],
+    rawMerges: { sr: number; sc: number; er: number; ec: number }[],
+    rawColWidths: number[],
   ): void {
+    const { allRows, merges, colWidths } = this.trimEmptyGrid(rawAllRows, rawMerges, rawColWidths);
     if (!allRows || allRows.length === 0) return;
 
     const numCols = allRows[0].length;
-    const fontSize = 10;
+    const fontSize = 9;
     const padX = 4;
-    const padY = 3;
+    const padY = 4;
     const DEFAULT_ROW_H = fontSize * LINE_HEIGHT + padY * 2 + 2;
 
-    // Compute actual pixel widths from normalised colWidths
-    const totalNorm = colWidths.reduce((s, w) => s + w, 0) || 1;
-    const colPx: number[] = colWidths.map(w => (w / totalNorm) * CONTENT_W);
-    // Ensure columns sum exactly to CONTENT_W
+    let colPx: number[];
+    if (colWidths && colWidths.length === numCols) {
+      const totalNorm = colWidths.reduce((s, w) => s + w, 0) || 1;
+      colPx = colWidths.map(w => (w / totalNorm) * CONTENT_W);
+    } else {
+      colPx = Array(numCols).fill(CONTENT_W / numCols);
+    }
     const pxSum = colPx.reduce((s, w) => s + w, 0);
-    if (pxSum > 0) { const scale = CONTENT_W / pxSum; colPx.forEach((_, i) => { colPx[i] *= scale; }); }
+    if (pxSum > 0) {
+      const scale = CONTENT_W / pxSum;
+      colPx = colPx.map(w => w * scale);
+    }
 
-    // Build lookup structures from merge info
-    // covered: cells that are NOT the top-left of a merge (should be skipped)
     const covered = new Set<string>();
-    // spanMap: for the top-left cell of a merge, stores its span
     const spanMap = new Map<string, { er: number; ec: number }>();
-    // rowspanBusy[ci] = how many MORE rows column ci is still occupied by an active rowspan
-    const rowspanBusy: number[] = Array(numCols).fill(0);
-
     for (const m of merges) {
       spanMap.set(`${m.sr},${m.sc}`, { er: m.er, ec: m.ec });
       for (let r = m.sr; r <= m.er; r++) {
@@ -1144,26 +1209,23 @@ export class PDFGeneralRenderer {
       }
     }
 
-    // Pre-compute row heights: height is the max needed across all non-covered cells
-    // For row-spanning cells we don't inflate the originating row — we just draw tall.
+    // Pre-compute row heights using exact text wrapping
     const rowH: number[] = allRows.map((row, ri) => {
       let h = DEFAULT_ROW_H;
       for (let ci = 0; ci < numCols; ci++) {
         if (covered.has(`${ri},${ci}`)) continue;
         const span = spanMap.get(`${ri},${ci}`);
-        const rowSpan = span ? span.er - ri + 1 : 1;
-        if (rowSpan > 1) continue; // multi-row cell height not added to this row
+        if (span && span.er > ri) continue;
         const colSpan = span ? span.ec - ci + 1 : 1;
         const cellW = colPx.slice(ci, ci + colSpan).reduce((s, w) => s + w, 0);
-        const lines = this.wrapText(row[ci] || '', cellW - padX * 2, fontSize);
-        const needed = lines.length * fontSize * LINE_HEIGHT + padY * 2;
+        const text = row[ci] || '';
+        const isHeader = ri === 0;
+        const lines = this.wrapText(text, cellW - padX * 2, fontSize, isHeader);
+        const needed = lines.length * fontSize * LINE_HEIGHT + padY * 2 + 2;
         if (needed > h) h = needed;
       }
       return h;
     });
-
-    // Reset rowspanBusy for drawing pass
-    rowspanBusy.fill(0);
 
     for (let ri = 0; ri < allRows.length; ri++) {
       const row = allRows[ri];
@@ -1173,13 +1235,6 @@ export class PDFGeneralRenderer {
       for (let ci = 0; ci < numCols; ci++) {
         const colW = colPx[ci] || (CONTENT_W / numCols);
 
-        // Skip cells covered by a previous rowspan
-        if (rowspanBusy[ci] > 0) {
-          rowspanBusy[ci]--;
-          x += colW;
-          continue;
-        }
-        // Skip cells covered by a horizontal merge from left
         if (covered.has(`${ri},${ci}`)) {
           x += colW;
           continue;
@@ -1189,19 +1244,10 @@ export class PDFGeneralRenderer {
         const colSpan = span ? span.ec - ci + 1 : 1;
         const rowSpan = span ? span.er - ri + 1 : 1;
 
-        // Total pixel width for this cell (sum of spanned columns)
         const cellW = colPx.slice(ci, ci + colSpan).reduce((s, w) => s + w, 0);
-        // Total pixel height for this cell (sum of spanned rows)
         const cellH = rowSpan > 1
           ? rowH.slice(ri, ri + rowSpan).reduce((s, h) => s + h, 0)
           : rowH[ri];
-
-        // Mark rowspan busy for subsequent rows
-        if (rowSpan > 1) {
-          for (let sc = ci; sc < ci + colSpan && sc < numCols; sc++) {
-            rowspanBusy[sc] = rowSpan - 1;
-          }
-        }
 
         const isHeader = ri === 0;
         this.drawCell(x, this.cursorY, cellW, cellH, row[ci] || '', {
@@ -1209,11 +1255,10 @@ export class PDFGeneralRenderer {
           fontSize,
           align: 'center',
           vAlign: 'middle',
-          fillColor: isHeader ? LBL_BG : undefined,
-          bgOpacity: isHeader ? 0.6 : undefined,
+          fillColor: undefined, // NO cell color per user request!
         });
 
-        x += colW; // advance x by single column width
+        x += colW;
       }
 
       this.cursorY += rowH[ri];

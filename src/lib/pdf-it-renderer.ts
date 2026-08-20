@@ -399,7 +399,7 @@ export async function generateIncomeTaxPDF(
   };
 
   // Table cell primitive
-  const drawCell = (x: number, topY: number, w: number, h: number, text: string, opts?: { bold?: boolean; fontSize?: number; align?: 'left' | 'center' | 'right'; vAlign?: 'top' | 'center'; fillColor?: string; bgOpacity?: number }) => {
+  const drawCell = (x: number, topY: number, w: number, h: number, text: string, opts?: { bold?: boolean; fontSize?: number; align?: 'left' | 'center' | 'right'; vAlign?: 'top' | 'center' | 'middle'; fillColor?: string; bgOpacity?: number }) => {
     const fs = opts?.fontSize || 12;
     const font = opts?.bold ? fontB : fontR;
     if (opts?.fillColor) {
@@ -416,14 +416,15 @@ export async function generateIncomeTaxPDF(
     page.drawRectangle({ x, y: pdfY(topY) - h, width: w, height: h, borderColor: rgb(0, 0, 0), borderWidth: 0.5 });
     // Text
     const padX = 4;
-    const padY = 3;
+    const padY = 4;
     const textW = w - padX * 2;
     const lines = wrapText(text, textW, font, fs);
     const totalTextH = lines.length * fs * LINE_H;
     // Vertical start offset
     let startPadY = padY;
-    if (opts?.vAlign === 'center') {
+    if (opts?.vAlign === 'center' || opts?.vAlign === 'middle') {
       startPadY = (h - totalTextH) / 2;
+      if (startPadY < padY) startPadY = padY;
     }
     for (let i = 0; i < lines.length; i++) {
       let dx = x + padX;
@@ -1115,20 +1116,32 @@ export async function generateIncomeTaxPDF(
     page.drawLine({ start: { x: annxHeaderX, y: pdfY(cy) - annxHeaderFs * 0.8 - 2 }, end: { x: annxHeaderX + annxHeaderW, y: pdfY(cy) - annxHeaderFs * 0.8 - 2 }, thickness: 1, color: rgb(0, 0, 0) });
     cy += annxHeaderFs * LINE_H + 12;
 
-    // Use allRows+merges+colWidths when available (rich path), else fall back to flat
-    const allRows: string[][] = pd.allRows || [pd.headers, ...pd.rows];
-    const merges: { sr: number; sc: number; er: number; ec: number }[] = pd.merges || [];
+    const { allRows, merges, colWidths } = trimEmptyGrid(
+      pd.allRows || [pd.headers, ...pd.rows],
+      pd.merges || [],
+      pd.colWidths || []
+    );
+    if (!allRows || allRows.length === 0) continue;
+
     const numCols = allRows[0]?.length || 0;
-    // Column widths in points
+    const FONT_SZ = 9;
+    const PAD_Y = 4;
+    const PAD_X = 4;
+    const DEF_ROW_H = FONT_SZ * LINE_H + PAD_Y * 2 + 2;
+
     let colPx: number[];
-    if (pd.colWidths && pd.colWidths.length === numCols) {
-      const totalNorm = pd.colWidths.reduce((s: number, w: number) => s + w, 0) || 1;
-      colPx = pd.colWidths.map((w: number) => (w / totalNorm) * CW);
+    if (colWidths && colWidths.length === numCols) {
+      const totalNorm = colWidths.reduce((s: number, w: number) => s + w, 0) || 1;
+      colPx = colWidths.map((w: number) => (w / totalNorm) * CW);
     } else {
       colPx = Array(numCols).fill(CW / (numCols || 1));
     }
+    const pxSum = colPx.reduce((s, w) => s + w, 0);
+    if (pxSum > 0) {
+      const scale = CW / pxSum;
+      colPx = colPx.map(w => w * scale);
+    }
 
-    // Build merge lookup
     const covered = new Set<string>();
     const spanMap = new Map<string, { er: number; ec: number }>();
     for (const m of merges) {
@@ -1138,37 +1151,31 @@ export async function generateIncomeTaxPDF(
           if (r !== m.sr || c !== m.sc) covered.add(`${r},${c}`);
     }
 
-    // Pre-compute row heights
-    const FONT_SZ = 9;
-    const PAD_Y = 3;
-    const DEF_ROW_H = FONT_SZ * LINE_H + PAD_Y * 2 + 2;
+    // Pre-compute row heights using exact text wrapping
     const rowHeights: number[] = allRows.map((row, ri) => {
       let h = DEF_ROW_H;
       for (let ci = 0; ci < numCols; ci++) {
         if (covered.has(`${ri},${ci}`)) continue;
         const span = spanMap.get(`${ri},${ci}`);
-        if (span && span.er > ri) continue; // rowspan; height spread across rows
+        if (span && span.er > ri) continue;
         const colSpan = span ? span.ec - ci + 1 : 1;
         const cellW = colPx.slice(ci, ci + colSpan).reduce((s, w) => s + w, 0);
-        // Rough line count estimate
         const text = row[ci] || '';
-        const approxCharsPerLine = Math.max(1, Math.floor((cellW - 8) / (FONT_SZ * 0.55)));
-        const lineCount = Math.ceil(text.length / approxCharsPerLine) || 1;
-        const needed = lineCount * FONT_SZ * LINE_H + PAD_Y * 2;
+        const isHeader = ri === 0;
+        const font = isHeader ? fontB : fontR;
+        const lines = wrapText(text, cellW - PAD_X * 2, font, FONT_SZ);
+        const needed = lines.length * FONT_SZ * LINE_H + PAD_Y * 2 + 2;
         if (needed > h) h = needed;
       }
-      return Math.max(h, DEF_ROW_H);
+      return h;
     });
 
-    // Draw rows
-    const rowspanBusy: number[] = Array(numCols).fill(0);
     for (let ri = 0; ri < allRows.length; ri++) {
       const row = allRows[ri];
       ensureSpace(rowHeights[ri]);
       let cx = ML;
       for (let ci = 0; ci < numCols; ci++) {
         const cw = colPx[ci] || (CW / numCols);
-        if (rowspanBusy[ci] > 0) { rowspanBusy[ci]--; cx += cw; continue; }
         if (covered.has(`${ri},${ci}`)) { cx += cw; continue; }
 
         const span = spanMap.get(`${ri},${ci}`);
@@ -1179,17 +1186,13 @@ export async function generateIncomeTaxPDF(
           ? rowHeights.slice(ri, ri + rowSpan).reduce((s, h) => s + h, 0)
           : rowHeights[ri];
 
-        if (rowSpan > 1) {
-          for (let sc = ci; sc < ci + colSpan && sc < numCols; sc++)
-            rowspanBusy[sc] = rowSpan - 1;
-        }
-
         const isHeader = ri === 0;
         drawCell(cx, cy, cellW, cellH, row[ci] || '', {
           bold: isHeader,
           fontSize: FONT_SZ,
           align: 'center',
-          fillColor: isHeader ? LBL_BG : undefined,
+          vAlign: 'middle',
+          fillColor: undefined, // NO cell color per user request!
         });
         cx += cw;
       }
