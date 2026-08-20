@@ -889,6 +889,47 @@ export class PDFIBBIRenderer {
     }
   }
 
+  /**
+   * Draw a split signature block: left items on the left, right items on the right.
+   * Matches IBBI sample layout: Place on left, Signature + Name on right.
+   */
+  drawSplitSignatureBlock(
+    leftLines: { text: string; bold?: boolean; italic?: boolean; fontSize?: number }[],
+    rightLines: { text: string; bold?: boolean; italic?: boolean; fontSize?: number }[]
+  ): void {
+    const lineH = FONT_SIZE * LINE_HEIGHT;
+    const maxLines = Math.max(leftLines.length, rightLines.length);
+    const totalH = maxLines * lineH + 20;
+
+    this.checkPageBreak(totalH);
+    this.cursorY += 20; // gap before signature
+
+    const halfW = CONTENT_W / 2;
+
+    // Draw right lines first (they start from the top of the block)
+    let rightY = this.cursorY;
+    for (const line of rightLines) {
+      const fs = line.fontSize || FONT_SIZE;
+      this.drawTextAt(line.text, MARGIN_L + halfW, rightY, {
+        bold: line.bold, italic: line.italic, fontSize: fs, align: 'right', maxWidth: halfW,
+      });
+      rightY += fs * LINE_HEIGHT;
+    }
+
+    // Draw left lines (aligned to bottom of block, matching right side)
+    const leftStartY = this.cursorY + (maxLines - leftLines.length) * lineH;
+    let leftY = leftStartY;
+    for (const line of leftLines) {
+      const fs = line.fontSize || FONT_SIZE;
+      this.drawTextAt(line.text, MARGIN_L, leftY, {
+        bold: line.bold, italic: line.italic, fontSize: fs,
+      });
+      leftY += fs * LINE_HEIGHT;
+    }
+
+    this.cursorY += maxLines * lineH;
+  }
+
   // ─── Image Support ─────────────────────────────────────────────
 
   /**

@@ -997,10 +997,10 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.drawRichTextBlock([
         { text: `Date: ${fields.dateOfValuation || '________'}` },
       ]);
-      r.advanceCursor(6);
+      r.advanceCursor(4);
       r.drawCenteredTitle('VALUATION CERTIFICATE');
       tocPageMap['VALUATION CERTIFICATE'] = r.getPageCount();
-      r.advanceCursor(6);
+      r.advanceCursor(4);
 
       // Certificate introductory paragraph
       const certOwner = fields.applicantName || fields.ownerName || '________';
@@ -1018,10 +1018,12 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
       r.drawTextBlock(
         `${appointedByText}${appointmentDateText} for carrying out Valuation of Immovable assets${casePartiesText}${caseRefText}, to assess the fair market and thereby deriving liquidation value of ${coverDesc} at ${certAddress}, currently owned by ${certOwner}, inspected on ${certDate}.`
+,
+        { fontSize: 10 }
       );
-      r.advanceCursor(6);
-      r.drawTextBlock('The Valuation Certificate is to be used in conjunction with the Detailed Valuation Report Enclosed herewith based on the information and particulars furnished and actual observation, Valuation methodology, assumption, limitations, Disclaimer and bases of valuation stated herein and should not be referred in Isolation.');
-      r.advanceCursor(8);
+      r.advanceCursor(3);
+      r.drawTextBlock('The Valuation Certificate is to be used in conjunction with the Detailed Valuation Report Enclosed herewith based on the information and particulars furnished and actual observation, Valuation methodology, assumption, limitations, Disclaimer and bases of valuation stated herein and should not be referred in Isolation.', { fontSize: 10 });
+      r.advanceCursor(4);
 
       // Certificate table (label-value pairs matching IBBI sample)
       r.drawSimpleRow('CLIENT NAME', certOwner.toUpperCase());
@@ -1040,15 +1042,19 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       // Certificate closing + realisable value
       const certValue = fields.fairMarketValueTotal || fields.presentMarketValueTotal || '0';
       const realValue = fields.realisableValueTotal || '0';
-      r.drawTextBlock(`After considering various important factors discussed above, we are of the opinion that the Realisable value of the property is INR. ${formatIndianCurrency(realValue)} (${rupeesInWords(parseFloat(realValue) || 0)}).`);
-      r.advanceCursor(12);
+      r.drawTextBlock(`After considering various important factors discussed above, we are of the opinion that the Realisable value of the property is INR. ${formatIndianCurrency(realValue)} (${rupeesInWords(parseFloat(realValue) || 0)}).`, { fontSize: 10 });
+      r.advanceCursor(6);
 
-      // Signature
-      r.drawSignatureBlock([
-        { text: 'Signature & Seal of Valuer' },
-        { text: `Place - Bhubaneswar`, italic: true },
-        { text: `Name of the Valuer - ${fields.representativeName || ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications : ''}`, bold: true },
-      ]);
+      // Signature (Place on left, Signature + Name on right)
+      r.drawSplitSignatureBlock(
+        [
+          { text: `Place - Bhubaneswar`, bold: true },
+        ],
+        [
+          { text: 'Signature & Seal of Valuer', italic: true },
+          { text: `Name of the Valuer - ${fields.representativeName || ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications : ''}`, bold: true },
+        ]
+      );
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       //  VALUATION REPORT — SECTIONS 1-3 (statutory auto-text)
@@ -1375,13 +1381,17 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       }
       r.advanceCursor(8);
 
-      // Conclusion signature
-      r.drawSignatureBlock([
-        { text: `Date: ${fields.dateOfValuation || '________'}` },
-        { text: 'Signature & Seal of Valuer' },
-        { text: `Place: Bhubaneswar` },
-        { text: `Name of the Valuer - ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications.toUpperCase() : ''}`, bold: true },
-      ]);
+      // Conclusion signature (Place on left, Signature + Name on right)
+      r.drawSplitSignatureBlock(
+        [
+          { text: `Date: ${fields.dateOfValuation || '________'}` },
+          { text: `Place - Bhubaneswar`, bold: true },
+        ],
+        [
+          { text: 'Signature & Seal of Valuer', italic: true },
+          { text: `Name of the Valuer - ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications.toUpperCase() : ''}`, bold: true },
+        ]
+      );
 
       // ── Remarks ──
       if (fields.remarks) {
