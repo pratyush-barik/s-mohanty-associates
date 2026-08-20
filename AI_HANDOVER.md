@@ -265,9 +265,8 @@ Outstanding items in **priority order**:
 
 ### High Priority — In Progress
 
-1. **IBBI-IVS Template End-to-End Verification**: The `IBBIReportBuilder.tsx` component is built and functionally complete (with dynamic valuation rows and annexures), but the generated PDF layout needs to be battle-tested with real data. The user should verify:
-
-   - That spacing, pagination, and tables in the IBBI PDF (especially the Valuation Certificate layout and the Plot-by-Plot valuation table) look perfect.
+1. **IBBI-IVS Template End-to-End Verification**: The `IBBIReportBuilder.tsx` component is built and functionally complete. Recent fixes have resolved missing fields (Sec 4-7), Section 13 custom overrides, and polished the Valuation Certificate layout (spacing, signatures, field alignments). The user should verify:
+   - That the rest of the tables in the IBBI PDF (especially the Plot-by-Plot valuation table) look perfect with real data.
    - Test the flow from the Setup Wizard -> changing to IBBI_IVS -> reloading -> saving -> previewing PDF.
 2. **Default Template End-to-End Verification**: The 14-section `GeneralReportBuilder.tsx` is complete, perfectly balanced, and on GitHub (branch: `main`). The user should verify locally or deploy to Vercel and check:
 
@@ -388,8 +387,8 @@ Outstanding items in **priority order**:
 
 
 ### Recent Updates
-- latest - style(Clients): remove duplicate entries for Aditya Birla Capital and IDFC First Bank
-- latest - style(Clients): add Aditya Birla Capital and IDFC First Bank to rotating carousel
-- latest - style(logo): strip fake transparency checkerboard background from PNG
-- `latest` - feat(report): add Representative's Father's Name field to both IBBI and General report builders with S/o in declaration PDF
-- `latest` - feat(report): parameterize Prepared By and Registered Office Address fields in IBBI report
+- `latest` - fix(pdf): Ref left/Date right, signature name-only, VALUERS DETAILS line breaks
+- `latest` - fix(pdf): reduce certificate overflow (smaller font/spacing) + fix signature layout (Place left, Seal right)
+- `latest` - feat(report): add missing form fields (Sec 4-7) + Section 13 customizable text overrides for better UX
+- `previous` - feat(report): add Representative's Father's Name field to both IBBI and General report builders with S/o in declaration PDF
+- `previous` - feat(report): parameterize Prepared By and Registered Office Address fields in IBBI report
