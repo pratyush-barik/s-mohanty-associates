@@ -61,6 +61,15 @@ const convertLandRate = (rateVal: string | number, fromUnit: string, toUnit: str
   return converted > 0 ? String(converted) : '';
 };
 
+const cleanAddressForMap = (rawAddr: string): string => {
+  if (!rawAddr || !rawAddr.trim()) return '';
+  let str = rawAddr.trim();
+  str = str.replace(/^(MR|MRS|DR|MS|M\/S)\.?[^,]+,?\s*/gi, '');
+  str = str.replace(/^[A-Z\s.&]+\s*&\s*OTHERS,?\s*/gi, '');
+  str = str.replace(/\b(AT\/PO|PS|DIST):?\s*/gi, '');
+  return str.trim();
+};
+
 interface IncomeTaxFields {
   // ── Title Block ──
   propertyType: string; // RESIDENTIAL LAND & BUILDING, RESIDENTIAL LAND, etc.
@@ -154,6 +163,7 @@ interface IncomeTaxFields {
   showPlinthActual: boolean;
   showPlinthApproved: boolean;
   techYearConstruction: string;
+  techYearCompletion?: string;
   techFutureLife: string;
   techConstructionType: string;
   techFoundation: string;
@@ -176,6 +186,7 @@ interface IncomeTaxFields {
   techSanitary?: string;
   techSanitaryLines: string[];
   techCompoundWall: string;
+  techCompoundWallType?: string;
   techLifts: string;
   techOverheadTank: string;
   techPump: string;
@@ -334,6 +345,7 @@ const DEFAULT_FIELDS: IncomeTaxFields = {
   showPlinthActual: true,
   showPlinthApproved: true,
   techYearConstruction: 'NOT APPLICABLE',
+  techYearCompletion: '',
   techFutureLife: 'NOT APPLICABLE',
   techConstructionType: 'NOT APPLICABLE',
   techFoundation: 'NOT APPLICABLE',
@@ -356,6 +368,7 @@ const DEFAULT_FIELDS: IncomeTaxFields = {
   techSanitary: 'NOT APPLICABLE',
   techSanitaryLines: [],
   techCompoundWall: 'NOT APPLICABLE',
+  techCompoundWallType: '',
   techLifts: 'NOT APPLICABLE',
   techOverheadTank: 'NOT APPLICABLE',
   techPump: 'NOT APPLICABLE',
@@ -1803,6 +1816,11 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
 
                 {(fields.landRateMode || 'auto') === 'auto' ? (
                   <div className="space-y-4">
+                    {/* Derived Area Notice */}
+                    <div className="text-xs font-semibold text-emerald-800 bg-[#e6f4ea] border border-[#ceead6] rounded-xl p-3 shadow-sm">
+                      📍 Primary Land Area derived from Q12: <span className="font-bold text-[#137333]">{fields.landArea || '0'} {fields.landAreaUnit || 'DEC'}</span> (defined under Q12 — Land Area).
+                    </div>
+
                     {/* Primary Rate & Unit */}
                     <div className="grid md:grid-cols-3 gap-4">
                       <Field label="Primary Rate per Unit (RS.)">
@@ -1822,12 +1840,16 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                               handleChange('landRateSecondaryPerUnit', autoSec);
                             }
 
-                            // Auto-calculate total land value
+                            // Auto-calculate total land value using derived Q12 land area with unit conversion
                             if (fields.landArea && newRate) {
-                              const areaNum = parseFloat(fields.landArea.replace(/[^0-9.]/g, '')) || 0;
+                              const pArea = parseFloat(fields.landArea.replace(/[^0-9.]/g, '')) || 0;
+                              const pAreaUnit = fields.landAreaUnit || pUnit;
+                              const areaSqft = pArea * (pAreaUnit === 'ACRE' ? 43560 : pAreaUnit === 'SQFT' || pAreaUnit === 'SQ.FT.' ? 1 : pAreaUnit === 'SQMT' || pAreaUnit === 'SQ.MTR.' ? 10.7639 : 435.6);
+                              const rateSqft = pUnit === 'ACRE' ? 43560 : pUnit === 'SQFT' || pUnit === 'SQ.FT.' ? 1 : pUnit === 'SQMT' || pUnit === 'SQ.MTR.' ? 10.7639 : 435.6;
+                              const areaInRateUnits = areaSqft / rateSqft;
                               const rateNum = parseFloat(newRate) || 0;
-                              if (areaNum > 0 && rateNum > 0) {
-                                handleChange('totalLandValue', String(Math.round(areaNum * rateNum)));
+                              if (areaInRateUnits > 0 && rateNum > 0) {
+                                handleChange('totalLandValue', String(Math.round(areaInRateUnits * rateNum)));
                               }
                             }
                           }}
@@ -2166,28 +2188,26 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
 
                 <div className="grid md:grid-cols-2 gap-4 pt-1">
                   {fields.showPlinthActual && (
-                    <Field label="Plinth Area (As Per Actual)" span={fields.showPlinthApproved ? 1 : 2}>
-                      <textarea
-                        className={textareaCls}
-                        value={fields.techPlinthAreaActual}
-                        onChange={e => handleChange('techPlinthAreaActual', e.target.value)}
+                    <div className={fields.showPlinthApproved ? "col-span-1" : "col-span-2"}>
+                      <BulletEditor
+                        label="Plinth Area (As Per Actual)"
+                        lines={fields.techPlinthAreaActual ? fields.techPlinthAreaActual.split('\n') : []}
+                        onChange={lines => handleChange('techPlinthAreaActual', lines.join('\n'))}
                         disabled={isReadOnly}
                         placeholder="BASEMENT FLOOR AREA-2166 SFT&#10;GROUND FLOOR AREA-1596 SFT&#10;FIRST FLOOR AREA-1596 SQFT..."
-                        rows={4}
                       />
-                    </Field>
+                    </div>
                   )}
                   {fields.showPlinthApproved && (
-                    <Field label="Plinth Area (As Per Approved Plan)" span={fields.showPlinthActual ? 1 : 2}>
-                      <textarea
-                        className={textareaCls}
-                        value={fields.techPlinthAreaApproved}
-                        onChange={e => handleChange('techPlinthAreaApproved', e.target.value)}
+                    <div className={fields.showPlinthActual ? "col-span-1" : "col-span-2"}>
+                      <BulletEditor
+                        label="Plinth Area (As Per Approved Plan)"
+                        lines={fields.techPlinthAreaApproved ? fields.techPlinthAreaApproved.split('\n') : []}
+                        onChange={lines => handleChange('techPlinthAreaApproved', lines.join('\n'))}
                         disabled={isReadOnly}
                         placeholder="GROUND FLOOR AREA-791 SFT&#10;FIRST FLOOR AREA-791 SQFT..."
-                        rows={4}
                       />
-                    </Field>
+                    </div>
                   )}
                   {!fields.showPlinthActual && !fields.showPlinthApproved && (
                     <p className="col-span-2 text-xs italic text-gray-500 py-2">
@@ -2196,9 +2216,17 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                   )}
                 </div>
               </div>
-              <Field label="03. Year of Construction">
-                <input className={inputCls} value={fields.techYearConstruction} onChange={e => handleChange('techYearConstruction', e.target.value)} disabled={isReadOnly} />
-              </Field>
+              <div className="md:col-span-2 p-4 bg-[#f0fdf4] border border-[#d1e7dd] rounded-xl shadow-sm space-y-3">
+                <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">03. Year of Construction & Completion</span>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Field label="03 (A). Year of Construction">
+                    <input className={inputCls} value={fields.techYearConstruction} onChange={e => handleChange('techYearConstruction', e.target.value)} disabled={isReadOnly} placeholder="2006" />
+                  </Field>
+                  <Field label="03 (B). Year of Completion">
+                    <input className={inputCls} value={fields.techYearCompletion || ''} onChange={e => handleChange('techYearCompletion', e.target.value)} disabled={isReadOnly} placeholder="2008" />
+                  </Field>
+                </div>
+              </div>
               <Field label="04. Estimated Future Life">
                 <input className={inputCls} value={fields.techFutureLife} onChange={e => handleChange('techFutureLife', e.target.value)} disabled={isReadOnly} placeholder="48-YEARS" />
               </Field>
@@ -2211,10 +2239,10 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               <div className="md:col-span-2 p-4 bg-[#f0fdf4] border border-[#d1e7dd] rounded-xl shadow-sm space-y-3">
                 <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">07. Walls</span>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <Field label="07 (A). Walls: Basement & Plinth">
+                  <Field label="(A) Basement & Plinth">
                     <input className={inputCls} value={fields.techWallsBasement} onChange={e => handleChange('techWallsBasement', e.target.value)} disabled={isReadOnly} placeholder='PLINTH WALL IS 10" WIDE BRICK WALL' />
                   </Field>
-                  <Field label="07 (B). Walls: Ground Floor">
+                  <Field label="(B) Ground Floor">
                     <input className={inputCls} value={fields.techWallsGround} onChange={e => handleChange('techWallsGround', e.target.value)} disabled={isReadOnly} placeholder='10" WIDE BRICK WALL' />
                   </Field>
                 </div>
@@ -2260,21 +2288,34 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                 disabled={isReadOnly}
                 placeholder="NO. OF WATER CLOSETS-X NOS. / NO. OF WASH BASINS-X NOS...."
               />
-              <Field label="15. Compound Wall">
-                <input className={inputCls} value={fields.techCompoundWall} onChange={e => handleChange('techCompoundWall', e.target.value)} disabled={isReadOnly} />
-              </Field>
+              <div className="md:col-span-2 p-4 bg-[#f0fdf4] border border-[#d1e7dd] rounded-xl shadow-sm space-y-3">
+                <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">15. Compound Wall</span>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Field label="Compound Wall (Height & Length)">
+                    <input className={inputCls} value={fields.techCompoundWall} onChange={e => handleChange('techCompoundWall', e.target.value)} disabled={isReadOnly} placeholder="HEIGHT: 5 FT, LENGTH: 120 FT" />
+                  </Field>
+                  <Field label="Type of Construction">
+                    <input className={inputCls} value={fields.techCompoundWallType || ''} onChange={e => handleChange('techCompoundWallType', e.target.value)} disabled={isReadOnly} placeholder="BRICK MASONRY WALL" />
+                  </Field>
+                </div>
+              </div>
               <Field label="16. Lifts">
                 <input className={inputCls} value={fields.techLifts} onChange={e => handleChange('techLifts', e.target.value)} disabled={isReadOnly} />
               </Field>
               <Field label="17. Overhead Water Tank">
                 <input className={inputCls} value={fields.techOverheadTank} onChange={e => handleChange('techOverheadTank', e.target.value)} disabled={isReadOnly} />
               </Field>
-              <Field label="18. Pump">
-                <input className={inputCls} value={fields.techPump} onChange={e => handleChange('techPump', e.target.value)} disabled={isReadOnly} />
-              </Field>
-              <Field label="Underground Sump">
-                <input className={inputCls} value={fields.techUndergroundSump} onChange={e => handleChange('techUndergroundSump', e.target.value)} disabled={isReadOnly} />
-              </Field>
+              <div className="md:col-span-2 p-4 bg-[#f0fdf4] border border-[#d1e7dd] rounded-xl shadow-sm space-y-3">
+                <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">18. Pump & Underground Sump</span>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Field label="Pump No. and Their Horse Power">
+                    <input className={inputCls} value={fields.techPump} onChange={e => handleChange('techPump', e.target.value)} disabled={isReadOnly} placeholder="1 HP SUBMERSIBLE PUMP" />
+                  </Field>
+                  <Field label="Underground Sump - Capacity & Type of Construction">
+                    <input className={inputCls} value={fields.techUndergroundSump} onChange={e => handleChange('techUndergroundSump', e.target.value)} disabled={isReadOnly} placeholder="5000 LTRS RCC SUMP" />
+                  </Field>
+                </div>
+              </div>
               <Field label="19. Roads & Paving">
                 <input className={inputCls} value={fields.techRoadsPaving} onChange={e => handleChange('techRoadsPaving', e.target.value)} disabled={isReadOnly} />
               </Field>
@@ -2476,12 +2517,12 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
             {/* Live Google Maps Embed */}
             {(() => {
               const mapQuery = fields.latitude && fields.longitude
-                ? `${fields.latitude},${fields.longitude}`
-                : fields.ownerAddress || '';
+                ? `${fields.latitude.trim()},${fields.longitude.trim()}`
+                : cleanAddressForMap(fields.propertyDescription || fields.ownerAddress || '');
               const encodedQuery = encodeURIComponent(mapQuery);
               const hasQuery = mapQuery.trim().length > 0;
               const googleMapsUrl = fields.latitude && fields.longitude
-                ? `https://www.google.com/maps?q=${fields.latitude},${fields.longitude}&z=15&t=k`
+                ? `https://www.google.com/maps?q=${fields.latitude.trim()},${fields.longitude.trim()}&z=15&t=k`
                 : `https://www.google.com/maps/search/${encodedQuery}`;
               return (
                 <div className="space-y-3">

@@ -143,6 +143,7 @@ export interface IncomeTaxFieldsForPDF {
   showPlinthActual?: boolean;
   showPlinthApproved?: boolean;
   techYearConstruction: string;
+  techYearCompletion?: string;
   techFutureLife: string;
   techConstructionType: string;
   techFoundation: string;
@@ -164,6 +165,7 @@ export interface IncomeTaxFieldsForPDF {
   techSanitary?: string;
   techSanitaryLines: string[];
   techCompoundWall: string;
+  techCompoundWallType?: string;
   techLifts: string;
   techOverheadTank: string;
   techPump: string;
@@ -171,6 +173,34 @@ export interface IncomeTaxFieldsForPDF {
   techRoadsPaving: string;
   techSewageDisposal: string;
 }
+
+const UNIT_SQFT_MAP: Record<string, number> = {
+  'DEC': 435.6,
+  'ACRE': 43560,
+  'SQFT': 1,
+  'SQ.FT.': 1,
+  'SQMT': 10.7639,
+  'SQ.MTR.': 10.7639,
+  'GUNTHA': 1089,
+  'CENT': 435.6,
+};
+
+export const calculateLandValue = (
+  areaStr: string,
+  areaUnit: string,
+  rateStr: string,
+  rateUnit: string
+): number => {
+  const areaNum = parseFloat(areaStr?.replace(/[^0-9.]/g, '') || '');
+  const rateNum = parseFloat(rateStr || '');
+  if (!areaNum || isNaN(areaNum) || !rateNum || isNaN(rateNum)) return 0;
+
+  const areaSqft = areaNum * (UNIT_SQFT_MAP[areaUnit?.toUpperCase()] || 435.6);
+  const rateUnitSqft = UNIT_SQFT_MAP[rateUnit?.toUpperCase()] || 435.6;
+  const areaInRateUnits = areaSqft / rateUnitSqft;
+
+  return Math.round(areaInRateUnits * rateNum);
+};
 
 export async function generateIncomeTaxPDF(
   fields: IncomeTaxFieldsForPDF,
@@ -397,21 +427,24 @@ export async function generateIncomeTaxPDF(
     return `${day}${suffix} ${mStr} ${yStr}`;
   };
 
-  // Render bullet lines: bullet-prefixed for entries, 'NOT APPLICABLE' if none entered
+  // Render bullet lines: bullet-prefixed for entries, non-bulleted if single entry, 'NOT APPLICABLE' if none entered
   const renderBulletLines = (lines: string | string[]): string => {
     if (typeof lines === 'string') {
       const s = lines.trim();
       if (!s) return 'NOT APPLICABLE';
-      const splitLines = s.split('\n').filter(l => l && l.trim());
-      if (splitLines.length <= 1) {
-        const cleanSingle = s.replace(/^[-*•]\s*/, '');
-        return `• ${cleanSingle}`;
+      const splitLines = s.split('\n').map(l => l.trim()).filter(Boolean);
+      if (splitLines.length === 0) return 'NOT APPLICABLE';
+      if (splitLines.length === 1) {
+        return splitLines[0].replace(/^[-*•]\s*/, '');
       }
-      return splitLines.map(l => `• ${l.trim().replace(/^[-*•]\s*/, '')}`).join('\n');
+      return splitLines.map(l => `• ${l.replace(/^[-*•]\s*/, '')}`).join('\n');
     }
-    const filled = lines.filter(l => l && l.trim());
+    const filled = lines.map(l => l?.trim()).filter(Boolean) as string[];
     if (filled.length === 0) return 'NOT APPLICABLE';
-    return filled.map(l => `• ${l.trim().replace(/^[-*•]\s*/, '')}`).join('\n');
+    if (filled.length === 1) {
+      return filled[0].replace(/^[-*•]\s*/, '');
+    }
+    return filled.map(l => `• ${l.replace(/^[-*•]\s*/, '')}`).join('\n');
   };
 
   interface TextLineInfo {
@@ -763,11 +796,15 @@ export async function generateIncomeTaxPDF(
   drawQRow('01', 'PURPOSE FOR WHICH THE VALUATION IS MADE:', 'TO ASSESS OF CAPITAL GAIN FOR INCOME TAX');
   const valDateSuffix = fields.isValuationDateReverseCalc ? ' (VALUATION AT THAT TIME BY REVERSE CALCULATION METHOD)' : '';
   const fullValuationDate = (fields.valuationDate || '') + valDateSuffix;
-  drawQRow('A', 'DATE ON WHICH THE VALUATION IS MADE:', fullValuationDate);
-  drawQRow('B', 'DATE OF INSPECTION:', fields.inspectionDate ? formatReportDate(fields.inspectionDate) : '');
-  drawQRow('C', 'DATE OF VALUATION REPORT:', fields.reportDate ? formatReportDate(fields.reportDate) : '');
   const cleanIdentified = fields.identifiedBy ? fields.identifiedBy.replace(/^\(?D\)?\s*IDENTIFIED BY WHOM:?\s*/i, '').trim() : '';
-  drawQRow('D', 'IDENTIFIED BY WHOM:', cleanIdentified);
+
+  const q02Items = [
+    { q: '(A) DATE ON WHICH THE VALUATION IS MADE:', a: fullValuationDate || 'NOT APPLICABLE' },
+    { q: '(B) DATE OF INSPECTION:', a: fields.inspectionDate ? formatReportDate(fields.inspectionDate) : 'NOT APPLICABLE' },
+    { q: '(C) DATE OF VALUATION REPORT:', a: fields.reportDate ? formatReportDate(fields.reportDate) : 'NOT APPLICABLE' },
+    { q: '(D) IDENTIFIED BY WHOM:', a: cleanIdentified || 'NOT APPLICABLE' }
+  ];
+  drawQRowMulti('02', q02Items);
   drawQRow('03', 'NAME OF THE OWNER/OWNERS.', fields.ownerName.toUpperCase() + (fields.ownerAddress ? ', ' + fields.ownerAddress.toUpperCase() : ''));
   drawQRow('04', 'IF THE PROPERTY IS UNDER JOINT OWNERSHIP/CO-OWNERSHIP, SHARE OF EACH SUCH OWNER. ARE THE SHARE OF UNDIVIDED?', fields.ownershipType);
   drawQRow('05', 'BRIEF DESCRIPTION OF THE PROPERTY.', renderBulletLines(fields.briefDescriptionLines));
@@ -848,8 +885,8 @@ export async function generateIncomeTaxPDF(
   let q35Answer = fields.saleInstances || 'NOT APPLICABLE';
   if (fields.saleInstancesLines && fields.saleInstancesLines.length > 0) {
     q35Answer = renderBulletLines(fields.saleInstancesLines);
-  } else if (q35Answer && q35Answer !== 'NOT APPLICABLE' && !q35Answer.startsWith('•')) {
-    q35Answer = `• ${q35Answer}`;
+  } else if (q35Answer && q35Answer !== 'NOT APPLICABLE') {
+    q35Answer = renderBulletLines(q35Answer);
   }
   drawQRow('35', 'GIVE INSTANCES OF SALES OF IMMOVABLE PROPERTY IN THE LOCALITY ON A SEPARATE SHEET, INDICATING THE NAME AND ADDRESS OF THE PROPERTY, REGISTRATION NO., SALE PRICE AND AREA OF LAND SOLD:', q35Answer);
 
@@ -861,7 +898,8 @@ export async function generateIncomeTaxPDF(
     const q36Unit = fields.landRateUnit || 'DEC';
     const q36LandArea = fields.landArea || '';
     const q36LandAreaUnit = fields.landAreaUnit || q36Unit;
-    const q36TotalVal = computedLandValue || parseNum(fields.totalLandValue);
+    const calcVal = calculateLandValue(fields.landArea, fields.landAreaUnit, fields.landRatePerUnit, fields.landRateUnit);
+    const q36TotalVal = calcVal || computedLandValue || parseNum(fields.totalLandValue);
     const q36TotalStr = q36TotalVal ? `${formatIndianCurrency(q36TotalVal)}/-` : '...';
 
     if (q36Rate) {
@@ -883,13 +921,15 @@ export async function generateIncomeTaxPDF(
   drawQHeader('COST OF CONSTRUCTION');
   let q38Answer = 'NOT APPLICABLE';
   if (fields.constructionStartYear || fields.constructionEndYear) {
-    q38Answer = `• COMMENCEMENT IN THE YEAR: ${fields.constructionStartYear || 'N/A'}\n• COMPLETED IN YEAR: ${fields.constructionEndYear || 'N/A'}`;
+    const startStr = fields.constructionStartYear ? `COMMENCEMENT IN THE YEAR: ${fields.constructionStartYear}` : '';
+    const endStr = fields.constructionEndYear ? `COMPLETED IN YEAR: ${fields.constructionEndYear}` : '';
+    q38Answer = renderBulletLines([startStr, endStr].filter(Boolean));
   }
   drawQRow('38', 'YEAR OF COMMENCEMENT OF CONSTRUCTION AND YEAR OF COMPLETION:', q38Answer);
-  drawQRow('39', 'WHAT WAS THE METHOD OF CONSTRUCTION--BY CONTRACT / BY EMPLOYING LABOUR DIRECTLY / BOTH?', fields.constructionMethod ? (fields.constructionMethod.startsWith('•') ? fields.constructionMethod : `• ${fields.constructionMethod}`) : 'NOT APPLICABLE');
-  drawQRow('40', 'FOR ITEMS OF WORK DONE ON CONTRACT, PRODUCE COPIES OF AGREEMENTS.', fields.contractAgreements ? (fields.contractAgreements.startsWith('•') ? fields.contractAgreements : `• ${fields.contractAgreements}`) : 'NOT APPLICABLE');
-  drawQRow('41', 'FOR ITEMS OF WORK DONE BY ENGAGING LABOUR DIRECTLY, GIVE BASIC RATES OF MATERIALS AND SUPPORTED BY DOCUMENTARY PROOF:', fields.materialRates ? (fields.materialRates.startsWith('•') ? fields.materialRates : `• ${fields.materialRates}`) : 'NOT APPLICABLE');
-  drawQRow('42', 'BUILDING APPROVAL PLAN IF ANY', fields.buildingApproval ? (fields.buildingApproval.startsWith('•') ? fields.buildingApproval : `• ${fields.buildingApproval}`) : 'NOT APPLICABLE');
+  drawQRow('39', 'WHAT WAS THE METHOD OF CONSTRUCTION--BY CONTRACT / BY EMPLOYING LABOUR DIRECTLY / BOTH?', fields.constructionMethod ? renderBulletLines(fields.constructionMethod) : 'NOT APPLICABLE');
+  drawQRow('40', 'FOR ITEMS OF WORK DONE ON CONTRACT, PRODUCE COPIES OF AGREEMENTS.', fields.contractAgreements ? renderBulletLines(fields.contractAgreements) : 'NOT APPLICABLE');
+  drawQRow('41', 'FOR ITEMS OF WORK DONE BY ENGAGING LABOUR DIRECTLY, GIVE BASIC RATES OF MATERIALS AND SUPPORTED BY DOCUMENTARY PROOF:', fields.materialRates ? renderBulletLines(fields.materialRates) : 'NOT APPLICABLE');
+  drawQRow('42', 'BUILDING APPROVAL PLAN IF ANY', fields.buildingApproval ? renderBulletLines(fields.buildingApproval) : 'NOT APPLICABLE');
   advanceCursor(12);
 
   // ═══════════════════════════════════════════════════════
@@ -1200,9 +1240,24 @@ export async function generateIncomeTaxPDF(
     if (fields.showPlinthApproved) {
       drawQRow(fields.showPlinthActual ? '' : '02.', `PLINTH AREA FLOOR-WISE(AS PER ISI3861-1966): (AS PER ${authority} APPROVAL PLAN)`, q02ApprovedAns);
     }
+    if (!fields.showPlinthActual && !fields.showPlinthApproved) {
+      drawQRow('02.', 'PLINTH AREA FLOOR-WISE(AS PER ISI3861-1966):', 'NOT APPLICABLE');
+    }
 
     // Q03-Q06
-    drawQRow('03.', 'YEAR OF CONSTRUCTION:', fields.techYearConstruction);
+    const constYear = fields.techYearConstruction ? fields.techYearConstruction.trim() : '';
+    const compYear = fields.techYearCompletion ? fields.techYearCompletion.trim() : '';
+
+    if (constYear && compYear) {
+      drawQRow('03.', 'YEAR OF CONSTRUCTION\nYEAR OF COMPLETION', `${renderBulletLines(constYear)}\n${renderBulletLines(compYear)}`);
+    } else if (constYear) {
+      drawQRow('03.', 'YEAR OF CONSTRUCTION', renderBulletLines(constYear));
+    } else if (compYear) {
+      drawQRow('03.', 'YEAR OF COMPLETION', renderBulletLines(compYear));
+    } else {
+      drawQRow('03.', 'YEAR OF CONSTRUCTION', 'NOT APPLICABLE');
+    }
+
     drawQRow('04.', 'ESTIMATED FUTURE LIFE:', fields.techFutureLife);
     drawQRow('05.', 'TYPE OF CONSTRUCTION:', fields.techConstructionType);
     drawQRow('06.', 'TYPE OF FOUNDATION:', fields.techFoundation);
@@ -1222,10 +1277,22 @@ export async function generateIncomeTaxPDF(
     drawQRow('12.', 'ROOFING & TERRACING:\nARCHITECTURAL FEATURES:', `${fields.techRoofing}\n${fields.techArchitecturalFeatures}`);
     drawQRow('13.', 'TYPE OF WIRING:\nCLASS OF FITTINGS:', `${fields.techWiring}\n${fields.techFittings || 'SUPERIOR'}`);
     drawQRow('14.', 'SANITARY INSTALLATION:', renderBulletLines(fields.techSanitaryLines));
-    drawQRow('15.', 'COMPOUND WALL:', fields.techCompoundWall);
+    
+    // Q15 Compound Wall
+    const q15Question = 'COMPOUND WALL (HEIGHT AND LENGTH):\nTYPE OF CONSTRUCTION:';
+    const q15Ans1 = fields.techCompoundWall || 'NOT APPLICABLE';
+    const q15Ans2 = fields.techCompoundWallType || 'NOT APPLICABLE';
+    drawQRow('15.', q15Question, `${q15Ans1}\n${q15Ans2}`);
+
     drawQRow('16.', 'LIFTS:', fields.techLifts);
     drawQRow('17.', 'OVERHEAD WATER TANK:', fields.techOverheadTank);
-    drawQRow('18.', 'PUMP:\nUNDERGROUND SUMP:', `${fields.techPump}\n${fields.techUndergroundSump}`);
+
+    // Q18 Pump & Underground Sump
+    const q18Question = 'PUMP NO. AND THEIR HORSE POWER\nUNDER GROUND SUMP-CAPACITY AND TYPE OF CONSTRUCTION.';
+    const q18Ans1 = fields.techPump || 'NOT APPLICABLE';
+    const q18Ans2 = fields.techUndergroundSump || 'NOT APPLICABLE';
+    drawQRow('18.', q18Question, `${q18Ans1}\n${q18Ans2}`);
+
     drawQRow('19.', 'ROADS AND PAVING:', fields.techRoadsPaving);
     drawQRow('20.', 'SEWAGE DISPOSAL:', fields.techSewageDisposal);
     

@@ -39,6 +39,15 @@ interface AnnexureItem {
   };
 }
 
+const cleanAddressForMap = (rawAddr: string): string => {
+  if (!rawAddr || !rawAddr.trim()) return '';
+  let str = rawAddr.trim();
+  str = str.replace(/^(MR|MRS|DR|MS|M\/S)\.?[^,]+,?\s*/gi, '');
+  str = str.replace(/^[A-Z\s.&]+\s*&\s*OTHERS,?\s*/gi, '');
+  str = str.replace(/\b(AT\/PO|PS|DIST):?\s*/gi, '');
+  return str.trim();
+};
+
 interface ReportFields {
   // Section 1 – General Details
   propertyType: string;
@@ -3333,12 +3342,12 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           {/* Live Google Maps Embed — auto-reads from property address */}
           {(() => {
             const mapQuery = fields.latitude && fields.longitude
-              ? `${fields.latitude},${fields.longitude}`
-              : getFullAddress() || '';
+              ? `${fields.latitude.trim()},${fields.longitude.trim()}`
+              : cleanAddressForMap(getFullAddress());
             const encodedQuery = encodeURIComponent(mapQuery);
             const hasQuery = mapQuery.trim().length > 0;
             const googleMapsUrl = fields.latitude && fields.longitude
-              ? `https://www.google.com/maps?q=${fields.latitude},${fields.longitude}&z=15&t=k`
+              ? `https://www.google.com/maps?q=${fields.latitude.trim()},${fields.longitude.trim()}&z=15&t=k`
               : `https://www.google.com/maps/search/${encodedQuery}`;
             return (
               <div className="space-y-3">
