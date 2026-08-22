@@ -1231,19 +1231,19 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.drawSectionHeader('2. SCOPE OF ENQUIRIES AND INVESTIGATION:');
       tocPageMap['2.  SCOPE OF ENQUIRIES AND INVESTIGATION'] = r.getPageCount();
       r.drawTextBlock('2.1 SITE INSPECTION', { bold: true });
-      r.drawTextBlock(`Site inspection was carried out on ${fields.dateOfInspection || '________'}.`);
+      r.drawTextBlock(fields.scope2_1 || `Site inspection was carried out on ${fields.dateOfInspection || '________'}.`);
       r.advanceCursor(4);
       r.drawTextBlock('2.2 ENQUIRIES', { bold: true });
-      r.drawTextBlock('Enquiries were made with local people, real estate agents, and brokers to assess the prevailing market conditions.');
+      r.drawTextBlock(fields.scope2_2 || 'Enquiries were made with local people, real estate agents, and brokers to assess the prevailing market conditions.');
       r.advanceCursor(4);
       r.drawTextBlock('2.3 LEGAL PARAMETERS OF PROPERTY', { bold: true });
-      r.drawTextBlock('Documents and records relating to title, extent, and encumbrances were examined.');
+      r.drawTextBlock(fields.scope2_3 || 'Documents and records relating to title, extent, and encumbrances were examined.');
       r.advanceCursor(4);
       r.drawTextBlock('2.4 ENVIRONMENTAL ASPECTS', { bold: true });
-      r.drawTextBlock('The property was assessed for environmental conditions as observed during inspection.');
+      r.drawTextBlock(fields.scope2_4 || 'The property was assessed for environmental conditions as observed during inspection.');
       r.advanceCursor(4);
       r.drawTextBlock('2.5 INFORMATION PROVIDED', { bold: true });
-      r.drawTextBlock('Information was provided by the property owners, authorized representatives, and from public records.');
+      r.drawTextBlock(fields.scope2_5 || 'Information was provided by the property owners, authorized representatives, and from public records.');
       r.advanceCursor(8);
 
       // ── 3. BASIS OF VALUATION ──
@@ -1912,6 +1912,29 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
                 </Field>
                 <Field label="1.7 Limitations on Liability" span={2}>
                   <textarea rows={2} value={fields.objective1_7 || ''} onChange={e => handleChange('objective1_7', e.target.value)} className={inputCls + ' resize-none'} placeholder="Default: The valuer shall not be liable for any loss or damage arising from this report except to the extent that such loss or damage is caused by the valuer's negligence." disabled={isReadOnly} />
+                </Field>
+              </div>
+            </div>
+
+            {/* Section 2 sub-section text overrides */}
+            <div className="mt-6">
+              <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-3">Section 2: Scope of Enquiries <span className="inline-block px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-semibold ml-1">OPTIONAL</span></p>
+              <p className="text-xs text-gray-500 mb-3">Leave blank to use standard IBBI-IVS default text. Fill to override.</p>
+              <div className="grid grid-cols-1 gap-4">
+                <Field label="2.1 Site Inspection" span={2}>
+                  <textarea rows={2} value={fields.scope2_1 || ''} onChange={e => handleChange('scope2_1', e.target.value)} className={inputCls + ' resize-none'} placeholder="Default: Site inspection was carried out on [Date of Inspection]." disabled={isReadOnly} />
+                </Field>
+                <Field label="2.2 Enquiries" span={2}>
+                  <textarea rows={2} value={fields.scope2_2 || ''} onChange={e => handleChange('scope2_2', e.target.value)} className={inputCls + ' resize-none'} placeholder="Default: Enquiries were made with local people, real estate agents, and brokers to assess the prevailing market conditions." disabled={isReadOnly} />
+                </Field>
+                <Field label="2.3 Legal Parameters of Property" span={2}>
+                  <textarea rows={2} value={fields.scope2_3 || ''} onChange={e => handleChange('scope2_3', e.target.value)} className={inputCls + ' resize-none'} placeholder="Default: Documents and records relating to title, extent, and encumbrances were examined." disabled={isReadOnly} />
+                </Field>
+                <Field label="2.4 Environmental Aspects" span={2}>
+                  <textarea rows={2} value={fields.scope2_4 || ''} onChange={e => handleChange('scope2_4', e.target.value)} className={inputCls + ' resize-none'} placeholder="Default: The property was assessed for environmental conditions as observed during inspection." disabled={isReadOnly} />
+                </Field>
+                <Field label="2.5 Information Provided" span={2}>
+                  <textarea rows={2} value={fields.scope2_5 || ''} onChange={e => handleChange('scope2_5', e.target.value)} className={inputCls + ' resize-none'} placeholder="Default: Information was provided by the property owners, authorized representatives, and from public records." disabled={isReadOnly} />
                 </Field>
               </div>
             </div>
