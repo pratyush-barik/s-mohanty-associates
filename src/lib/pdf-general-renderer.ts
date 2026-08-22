@@ -176,14 +176,13 @@ export class PDFGeneralRenderer {
 
     return clean
       .replace(/[\r\n\t]/g, ' ')          // newlines/tabs -> space
-      .replace(/\u2022/g, '-')             // bullet -> dash
       .replace(/[\u2018\u2019]/g, "'")     // smart single quotes
       .replace(/[\u201C\u201D]/g, '"')     // smart double quotes
       .replace(/\u2013/g, '-')             // en-dash
       .replace(/\u2014/g, '--')            // em-dash
       .replace(/\u2026/g, '...')           // ellipsis
       .replace(/\u20B9/g, 'Rs.')           // rupee sign
-      .replace(/[^\x20-\x7E]/g, '');       // strip any remaining non-ASCII
+      .replace(/[^\x20-\x7E\u2022]/g, '');       // allow ASCII + bullet •
   }
 
   // ─── Text Measurement ──────────────────────────────────────────

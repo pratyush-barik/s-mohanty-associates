@@ -300,7 +300,7 @@ export async function generateIncomeTaxPDF(
 
     return clean
       .replace(/[\r\n\t]/g, ' ')                          // newlines/tabs -> space
-      .replace(/[\u2022\u2023\u25E6\u2043\u2219\u25CF]/g, '-') // bullets -> dash
+      .replace(/[\u2023\u25E6\u2043\u2219\u25CF]/g, '•') // other bullet variants -> standard bullet •
       .replace(/[\u2018\u2019\u201A\u201B\u2032\u0060\u00B4]/g, "'") // smart single quotes / primes / feet sign -> '
       .replace(/[\u201C\u201D\u201E\u201F\u2033]/g, '"') // smart double quotes / double primes / inch sign -> "
       .replace(/[\u2013\u2014\u2015\u2212]/g, '-')       // en-dash, em-dash, minus -> -
@@ -313,7 +313,7 @@ export async function generateIncomeTaxPDF(
       .replace(/\u00BD/g, ' 1/2')                         // 1/2
       .replace(/\u00BE/g, ' 3/4')                         // 3/4
       .replace(/[\u00A0\u2000-\u200B\u202F\u205F\u3000\uFEFF]/g, ' ') // non-breaking and special spaces -> regular space
-      .replace(/[^\x20-\x7E]/g, '');                      // strip any other unsupported non-ASCII
+      .replace(/[^\x20-\x7E\u2022]/g, '');                      // allow ASCII + bullet •
   };
 
   // Text helpers
@@ -397,22 +397,41 @@ export async function generateIncomeTaxPDF(
     return `${day}${suffix} ${mStr} ${yStr}`;
   };
 
-  // Render bullet lines: plain text for 1 non-empty entry, bullet-prefixed for 2+, 'NOT APPLICABLE' if none entered
+  // Render bullet lines: bullet-prefixed for entries, 'NOT APPLICABLE' if none entered
   const renderBulletLines = (lines: string | string[]): string => {
-    if (typeof lines === 'string') return lines.trim() ? lines : 'NOT APPLICABLE';
+    if (typeof lines === 'string') {
+      const s = lines.trim();
+      if (!s) return 'NOT APPLICABLE';
+      const splitLines = s.split('\n').filter(l => l && l.trim());
+      if (splitLines.length <= 1) {
+        const cleanSingle = s.replace(/^[-*•]\s*/, '');
+        return `• ${cleanSingle}`;
+      }
+      return splitLines.map(l => `• ${l.trim().replace(/^[-*•]\s*/, '')}`).join('\n');
+    }
     const filled = lines.filter(l => l && l.trim());
     if (filled.length === 0) return 'NOT APPLICABLE';
-    if (filled.length === 1) return filled[0];
-    return filled.map(l => `- ${l.trim()}`).join('\n');
+    return filled.map(l => `• ${l.trim().replace(/^[-*•]\s*/, '')}`).join('\n');
   };
 
-  // Render multi-line answer in Q-row (supports \n line-breaks in answer text)
-  const wrapMultiLineText = (text: string, maxW: number, font: any, fs: number): string[] => {
+  interface TextLineInfo {
+    text: string;
+    isNewParagraph: boolean;
+  }
+
+  // Render multi-line answer in Q-row (supports \n line-breaks in answer text with paragraph gap)
+  const wrapMultiLineParagraphs = (text: string, maxW: number, font: any, fs: number): TextLineInfo[] => {
     const paragraphs = String(text ?? '').split('\n');
-    const result: string[] = [];
-    for (const para of paragraphs) {
+    const result: TextLineInfo[] = [];
+    for (let pIdx = 0; pIdx < paragraphs.length; pIdx++) {
+      const para = paragraphs[pIdx];
       const wrapped = wrapText(para, maxW, font, fs);
-      result.push(...wrapped);
+      for (let lIdx = 0; lIdx < wrapped.length; lIdx++) {
+        result.push({
+          text: wrapped[lIdx],
+          isNewParagraph: lIdx === 0 && pIdx > 0,
+        });
+      }
     }
     return result;
   };
@@ -473,32 +492,49 @@ export async function generateIncomeTaxPDF(
 
   // Questionnaire table row (3 cols: QNo | Question | Answer)
   const qColW = [CW * 0.06, CW * 0.46, CW * 0.48];
+  const PARA_GAP = 5;
 
   const drawQRow = (qNo: string, question: string, answer: string, opts?: { qBold?: boolean; headerRow?: boolean }) => {
-    const fs = 12;
+    const fs = 11;
+    const lh = fs * LINE_H;
     const h1 = cellHeight(qNo, qColW[0], { bold: true, fontSize: fs });
     const h2 = cellHeight(question, qColW[1], { fontSize: fs });
-    // For multi-line answers (containing \n), compute height correctly
-    const answerLines = wrapMultiLineText(answer, qColW[2] - 8, fontR, fs);
-    const h3 = Math.max(answerLines.length * fs * LINE_H + 6, fs * LINE_H + 6);
+
+    const answerLineInfos = wrapMultiLineParagraphs(answer, qColW[2] - 10, fontR, fs);
+    let totalAnsH = 0;
+    for (let i = 0; i < answerLineInfos.length; i++) {
+      totalAnsH += lh;
+      if (answerLineInfos[i].isNewParagraph) {
+        totalAnsH += PARA_GAP;
+      }
+    }
+    const h3 = Math.max(totalAnsH + 8, lh + 8);
     const rowH = Math.max(h1, h2, h3);
     ensureSpace(rowH);
+
     let x = ML;
     drawCell(x, cy, qColW[0], rowH, qNo, { bold: true, fontSize: fs, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
     x += qColW[0];
     drawCell(x, cy, qColW[1], rowH, question, { fontSize: fs, bold: opts?.headerRow, fillColor: LBL_BG, bgOpacity: 0.5 });
     x += qColW[1];
-    // Draw answer cell with multi-line support
+
     page.drawRectangle({ x, y: pdfY(cy) - rowH, width: qColW[2], height: rowH, color: hexToRgb(LBL_BG), opacity: 0.5, borderColor: rgb(0, 0, 0), borderWidth: 0.5 });
-    const padX = 4; const padY = 3;
-    for (let i = 0; i < answerLines.length; i++) {
-      page.drawText(answerLines[i], {
+    const padX = 5;
+    const padY = 4;
+    let lineY = cy + padY;
+
+    for (let i = 0; i < answerLineInfos.length; i++) {
+      if (answerLineInfos[i].isNewParagraph) {
+        lineY += PARA_GAP;
+      }
+      page.drawText(answerLineInfos[i].text, {
         x: x + padX,
-        y: pdfY(cy + padY + i * fs * LINE_H) - fs * 0.8,
+        y: pdfY(lineY) - fs * 0.8,
         size: fs,
         font: fontR,
         color: rgb(0, 0, 0),
       });
+      lineY += lh;
     }
     cy += rowH;
   };
@@ -513,14 +549,19 @@ export async function generateIncomeTaxPDF(
   };
 
   const drawQRowMulti = (qNo: string, items: { q: string, a: string }[]) => {
-    const fs = 12;
+    const fs = 11;
+    const lh = fs * LINE_H;
     const h1 = cellHeight(qNo, qColW[0], { bold: true, fontSize: fs });
     let totalH = 0;
     const subHeights = items.map(item => {
-      const qLines = wrapMultiLineText(item.q, qColW[1] - 8, fontR, fs);
-      const aLines = wrapMultiLineText(item.a, qColW[2] - 8, fontR, fs);
-      const rowH = Math.max(qLines.length * fs * LINE_H + 6, aLines.length * fs * LINE_H + 6);
-      return { rowH, qLines, aLines };
+      const qLineInfos = wrapMultiLineParagraphs(item.q, qColW[1] - 10, fontR, fs);
+      const aLineInfos = wrapMultiLineParagraphs(item.a, qColW[2] - 10, fontR, fs);
+      let qH = 0;
+      qLineInfos.forEach(l => qH += lh + (l.isNewParagraph ? PARA_GAP : 0));
+      let aH = 0;
+      aLineInfos.forEach(l => aH += lh + (l.isNewParagraph ? PARA_GAP : 0));
+      const rowH = Math.max(qH + 8, aH + 8, lh + 8);
+      return { rowH, qLineInfos, aLineInfos };
     });
     subHeights.forEach(sh => totalH += sh.rowH);
     totalH = Math.max(totalH, h1);
@@ -536,17 +577,24 @@ export async function generateIncomeTaxPDF(
     page.drawText(qNo, { x: ML + (qColW[0] - tw) / 2, y: pdfY(startY + 3 + (h1 - fs * LINE_H) / 2) - fs * 0.8, size: fs, font: fontB, color: rgb(0,0,0) });
 
     let currY = startY;
-    const padX = 4; const padY = 3;
+    const padX = 5;
+    const padY = 4;
     items.forEach((item, idx) => {
-      const { rowH, qLines, aLines } = subHeights[idx];
+      const { rowH, qLineInfos, aLineInfos } = subHeights[idx];
       if (idx > 0) {
         page.drawLine({ start: { x: ML + qColW[0], y: pdfY(currY) }, end: { x: ML + CW, y: pdfY(currY) }, thickness: 0.5, color: rgb(0,0,0) });
       }
-      for (let i = 0; i < qLines.length; i++) {
-        page.drawText(qLines[i], { x: ML + qColW[0] + padX, y: pdfY(currY + padY + i * fs * LINE_H) - fs * 0.8, size: fs, font: fontR, color: rgb(0,0,0) });
+      let qLineY = currY + padY;
+      for (let i = 0; i < qLineInfos.length; i++) {
+        if (qLineInfos[i].isNewParagraph) qLineY += PARA_GAP;
+        page.drawText(qLineInfos[i].text, { x: ML + qColW[0] + padX, y: pdfY(qLineY) - fs * 0.8, size: fs, font: fontR, color: rgb(0,0,0) });
+        qLineY += lh;
       }
-      for (let i = 0; i < aLines.length; i++) {
-        page.drawText(aLines[i], { x: ML + qColW[0] + qColW[1] + padX, y: pdfY(currY + padY + i * fs * LINE_H) - fs * 0.8, size: fs, font: fontR, color: rgb(0,0,0) });
+      let aLineY = currY + padY;
+      for (let i = 0; i < aLineInfos.length; i++) {
+        if (aLineInfos[i].isNewParagraph) aLineY += PARA_GAP;
+        page.drawText(aLineInfos[i].text, { x: ML + qColW[0] + qColW[1] + padX, y: pdfY(aLineY) - fs * 0.8, size: fs, font: fontR, color: rgb(0,0,0) });
+        aLineY += lh;
       }
       currY += rowH;
     });
