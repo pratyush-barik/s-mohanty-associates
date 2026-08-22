@@ -43,6 +43,24 @@ interface AnnexureItem {
   };
 }
 
+const UNIT_SQFT_MAP: Record<string, number> = {
+  'DEC': 435.6,
+  'ACRE': 43560,
+  'SQ.FT.': 1,
+  'SQ.MTR.': 10.7639,
+  'GUNTHA': 1089,
+  'CENT': 435.6,
+};
+
+const convertLandRate = (rateVal: string | number, fromUnit: string, toUnit: string): string => {
+  const rate = typeof rateVal === 'number' ? rateVal : parseFloat(rateVal);
+  if (!rate || isNaN(rate)) return '';
+  const fromArea = UNIT_SQFT_MAP[fromUnit] || 435.6;
+  const toArea = UNIT_SQFT_MAP[toUnit] || 43560;
+  const converted = Math.round((rate / fromArea) * toArea);
+  return converted > 0 ? String(converted) : '';
+};
+
 interface IncomeTaxFields {
   // ── Title Block ──
   propertyType: string; // RESIDENTIAL LAND & BUILDING, RESIDENTIAL LAND, etc.
@@ -1795,6 +1813,16 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                           onChange={e => {
                             const newRate = e.target.value;
                             handleChange('landRatePerUnit', newRate);
+
+                            // Auto-convert secondary rate
+                            const pUnit = fields.landRateUnit || 'DEC';
+                            const sUnit = fields.landRateSecondaryUnit || 'ACRE';
+                            if (newRate) {
+                              const autoSec = convertLandRate(newRate, pUnit, sUnit);
+                              handleChange('landRateSecondaryPerUnit', autoSec);
+                            }
+
+                            // Auto-calculate total land value
                             if (fields.landArea && newRate) {
                               const areaNum = parseFloat(fields.landArea.replace(/[^0-9.]/g, '')) || 0;
                               const rateNum = parseFloat(newRate) || 0;
@@ -1808,7 +1836,20 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                         />
                       </Field>
                       <Field label="Primary Unit">
-                        <select className={selectCls} value={fields.landRateUnit || 'DEC'} onChange={e => handleChange('landRateUnit', e.target.value)} disabled={isReadOnly}>
+                        <select
+                          className={selectCls}
+                          value={fields.landRateUnit || 'DEC'}
+                          onChange={e => {
+                            const newPUnit = e.target.value;
+                            handleChange('landRateUnit', newPUnit);
+                            const sUnit = fields.landRateSecondaryUnit || 'ACRE';
+                            if (fields.landRatePerUnit) {
+                              const autoSec = convertLandRate(fields.landRatePerUnit, newPUnit, sUnit);
+                              handleChange('landRateSecondaryPerUnit', autoSec);
+                            }
+                          }}
+                          disabled={isReadOnly}
+                        >
                           <option value="DEC">DEC</option>
                           <option value="ACRE">ACRE</option>
                           <option value="SQ.FT.">SQ.FT.</option>
@@ -1828,9 +1869,26 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                       </Field>
                     </div>
 
-                    {/* Secondary Rate (Optional) */}
+                    {/* Secondary Rate (Auto-Converted) */}
                     <div className="p-3 bg-white/70 border border-[#d1e7dd] rounded-xl space-y-2">
-                      <span className="text-[11px] font-bold text-[#6c757d] uppercase tracking-wider block">Equivalent Rate Expression (Optional, e.g. Rate per ACRE)</span>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[11px] font-bold text-[#6c757d] uppercase tracking-wider block">Equivalent Rate Expression (Auto-Converted)</span>
+                        {!isReadOnly && fields.landRatePerUnit && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const pUnit = fields.landRateUnit || 'DEC';
+                              const sUnit = fields.landRateSecondaryUnit || 'ACRE';
+                              const autoSec = convertLandRate(fields.landRatePerUnit, pUnit, sUnit);
+                              handleChange('landRateSecondaryPerUnit', autoSec);
+                            }}
+                            className="text-[10px] font-bold text-[#b8860b] hover:underline"
+                            title="Recalculate conversion"
+                          >
+                            🔄 Re-Sync Conversion
+                          </button>
+                        )}
+                      </div>
                       <div className="grid md:grid-cols-2 gap-4">
                         <Field label="Secondary Rate (RS.)">
                           <input
@@ -1839,11 +1897,24 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                             value={fields.landRateSecondaryPerUnit || ''}
                             onChange={e => handleChange('landRateSecondaryPerUnit', e.target.value)}
                             disabled={isReadOnly}
-                            placeholder="e.g. 5000000 (i.e. RS.50,00,000/- PER ACRE)"
+                            placeholder="Auto-converted from primary rate..."
                           />
                         </Field>
                         <Field label="Secondary Unit">
-                          <select className={selectCls} value={fields.landRateSecondaryUnit || 'ACRE'} onChange={e => handleChange('landRateSecondaryUnit', e.target.value)} disabled={isReadOnly}>
+                          <select
+                            className={selectCls}
+                            value={fields.landRateSecondaryUnit || 'ACRE'}
+                            onChange={e => {
+                              const newSUnit = e.target.value;
+                              handleChange('landRateSecondaryUnit', newSUnit);
+                              const pUnit = fields.landRateUnit || 'DEC';
+                              if (fields.landRatePerUnit) {
+                                const autoSec = convertLandRate(fields.landRatePerUnit, pUnit, newSUnit);
+                                handleChange('landRateSecondaryPerUnit', autoSec);
+                              }
+                            }}
+                            disabled={isReadOnly}
+                          >
                             <option value="ACRE">ACRE</option>
                             <option value="DEC">DEC</option>
                             <option value="SQ.FT.">SQ.FT.</option>
