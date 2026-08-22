@@ -64,11 +64,34 @@ const convertLandRate = (rateVal: string | number, fromUnit: string, toUnit: str
 const cleanAddressForMap = (rawAddr: string): string => {
   if (!rawAddr || !rawAddr.trim()) return '';
   let str = rawAddr.trim();
+
+  // 1. Remove parenthetical notes like "(AS PER ROR)", "(AS PER SALE DEED)", "(AS PER ACTUAL)"
+  str = str.replace(/\([^)]*\)/gi, '');
+
+  // 2. Remove technical ROR/Deed keywords & specs: AREA-..., KISSAM:..., KHATA..., PLOT...
+  str = str.replace(/\bAREA-?[^,]+/gi, '');
+  str = str.replace(/\bKISSAM:?[^,]+/gi, '');
+  str = str.replace(/\b(KHATA|PLOT|SURVEY|STREET|WARD)\s*NO:?[^,]+/gi, '');
+
+  // 3. Remove owner name prefixes (MR., MRS., DR., M/S, & OTHERS)
   str = str.replace(/^(MR|MRS|DR|MS|M\/S)\.?[^,]+,?\s*/gi, '');
   str = str.replace(/^[A-Z\s.&]+\s*&\s*OTHERS,?\s*/gi, '');
-  str = str.replace(/\b(AT\/PO|PS|DIST|THANA|TAHASIL|MOUZA|KHATA NO|PLOT NO):?\s*/gi, '');
-  str = str.replace(/["';]/g, '').trim();
-  return str.trim();
+
+  // 4. Remove labels like AT/PO:, PS:, DIST:, THANA:, TAHASIL:, MOUZA:
+  str = str.replace(/\b(AT\/PO|PS|DIST|THANA|TAHASIL|MOUZA):?\s*/gi, '');
+
+  // 5. Remove standalone numbers and fractions like "211/386", "909", "30", "360/428"
+  str = str.replace(/\b\d+([\/\-]\d+)*\b/g, '');
+
+  // 6. Clean up trailing commas, periods, double spaces
+  str = str
+    .replace(/["';]/g, '')
+    .replace(/\s*,\s*/g, ', ')
+    .replace(/(,\s*)+/g, ', ')
+    .replace(/^[\s,.-]+|[\s,.-]+$/g, '')
+    .trim();
+
+  return str;
 };
 
 const getIncomeTaxLocationAddress = (fields: IncomeTaxFields): string => {
