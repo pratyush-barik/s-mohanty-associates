@@ -428,6 +428,19 @@ export async function generateIncomeTaxPDF(
     return `${day}${suffix} ${mStr} ${yStr}`;
   };
 
+  const formatDateDDMMYYYY = (dStr: string): string => {
+    if (!dStr) return '';
+    const trimmed = dStr.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+      const [y, m, d] = trimmed.split('-');
+      return `${d}.${m}.${y}`;
+    }
+    if (/^\d{2}[.-/]\d{2}[.-/]\d{4}$/.test(trimmed)) {
+      return trimmed.replace(/[-/]/g, '.');
+    }
+    return trimmed;
+  };
+
   // Render bullet lines: bullet-prefixed for entries, non-bulleted if single entry, 'NOT APPLICABLE' if none entered
   const renderBulletLines = (lines: string | string[]): string => {
     if (typeof lines === 'string') {
@@ -797,16 +810,16 @@ export async function generateIncomeTaxPDF(
   drawQHeader('GENERAL');
   drawQRow('01', 'PURPOSE FOR WHICH THE VALUATION IS MADE:', 'TO ASSESS OF CAPITAL GAIN FOR INCOME TAX');
   const valDateSuffix = fields.isValuationDateReverseCalc ? ' (VALUATION AT THAT TIME BY REVERSE CALCULATION METHOD)' : '';
-  const fullValuationDate = (fields.valuationDate || '') + valDateSuffix;
+  const fullValuationDate = (fields.valuationDate ? formatDateDDMMYYYY(fields.valuationDate) : '') + valDateSuffix;
   const cleanIdentified = fields.identifiedBy ? fields.identifiedBy.replace(/^\(?D\)?\s*IDENTIFIED BY WHOM:?\s*/i, '').trim() : '';
 
   const q02Items = [
     { q: '(A) DATE ON WHICH THE VALUATION IS MADE:', a: fullValuationDate || 'NOT APPLICABLE' },
-    { q: '(B) DATE OF INSPECTION:', a: fields.inspectionDate ? formatReportDate(fields.inspectionDate) : 'NOT APPLICABLE' },
-    { q: '(C) DATE OF VALUATION REPORT:', a: fields.reportDate ? formatReportDate(fields.reportDate) : 'NOT APPLICABLE' },
+    { q: '(B) DATE OF INSPECTION:', a: fields.inspectionDate ? formatDateDDMMYYYY(fields.inspectionDate) : 'NOT APPLICABLE' },
+    { q: '(C) DATE OF VALUATION REPORT:', a: fields.reportDate ? formatDateDDMMYYYY(fields.reportDate) : 'NOT APPLICABLE' },
     { q: '(D) IDENTIFIED BY WHOM:', a: cleanIdentified || 'NOT APPLICABLE' }
   ];
-  drawQRowMulti('02', q02Items);
+  drawQRowMulti('02', q02Items, { drawSubBorders: true });
   drawQRow('03', 'NAME OF THE OWNER/OWNERS.', fields.ownerName.toUpperCase() + (fields.ownerAddress ? ', ' + fields.ownerAddress.toUpperCase() : ''));
   drawQRow('04', 'IF THE PROPERTY IS UNDER JOINT OWNERSHIP/CO-OWNERSHIP, SHARE OF EACH SUCH OWNER. ARE THE SHARE OF UNDIVIDED?', fields.ownershipType);
   drawQRow('05', 'BRIEF DESCRIPTION OF THE PROPERTY.', renderBulletLines(fields.briefDescriptionLines));
