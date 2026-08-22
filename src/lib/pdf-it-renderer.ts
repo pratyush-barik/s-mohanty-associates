@@ -420,6 +420,7 @@ export async function generateIncomeTaxPDF(
     isBulletStart: boolean;
     bulletSymbol?: string;
     indentX: number;
+    isBold?: boolean;
   }
 
   // Render multi-line answer in Q-row (supports \n line-breaks in answer text with bullet hanging indent & paragraph gap)
@@ -450,13 +451,16 @@ export async function generateIncomeTaxPDF(
           });
         }
       } else {
-        const wrapped = wrapText(para, maxW, font, fs);
+        const isBoldLine = para.includes('CONSIDERED FOR VALUATION PURPOSE') || para.includes('PLINTH AREA IS CONSIDERED');
+        const targetFont = isBoldLine ? fontB : font;
+        const wrapped = wrapText(para, maxW, targetFont, fs);
         for (let lIdx = 0; lIdx < wrapped.length; lIdx++) {
           result.push({
             text: wrapped[lIdx],
             isNewParagraph: lIdx === 0 && isNewParagraph,
             isBulletStart: false,
             indentX: 0,
+            isBold: isBoldLine,
           });
         }
       }
@@ -470,7 +474,7 @@ export async function generateIncomeTaxPDF(
   };
 
   // Table cell primitive
-  const drawCell = (x: number, topY: number, w: number, h: number, text: string, opts?: { bold?: boolean; fontSize?: number; align?: 'left' | 'center' | 'right'; vAlign?: 'top' | 'center' | 'middle'; fillColor?: string; bgOpacity?: number }) => {
+  const drawCell = (x: number, topY: number, w: number, h: number, text: string, opts?: { bold?: boolean; fontSize?: number; align?: 'left' | 'center' | 'right'; vAlign?: 'top' | 'center' | 'middle'; fillColor?: string; bgOpacity?: number; dottedBorder?: boolean }) => {
     const fs = opts?.fontSize || 12;
     const font = opts?.bold ? fontB : fontR;
     if (opts?.fillColor) {
@@ -484,7 +488,15 @@ export async function generateIncomeTaxPDF(
       });
     }
     // Border
-    page.drawRectangle({ x, y: pdfY(topY) - h, width: w, height: h, borderColor: rgb(0, 0, 0), borderWidth: 0.5 });
+    page.drawRectangle({
+      x,
+      y: pdfY(topY) - h,
+      width: w,
+      height: h,
+      borderColor: rgb(0, 0, 0),
+      borderWidth: 0.8,
+      ...(opts?.dottedBorder ? { dashArray: [2, 2] } : {}),
+    });
     // Text
     const padX = 4;
     const padY = 4;
@@ -527,7 +539,7 @@ export async function generateIncomeTaxPDF(
   const qColW = [CW * 0.06, CW * 0.46, CW * 0.48];
   const PARA_GAP = 6;
 
-  const drawQRow = (qNo: string, question: string, answer: string, opts?: { qBold?: boolean; headerRow?: boolean }) => {
+  const drawQRow = (qNo: string, question: string, answer: string, opts?: { qBold?: boolean; headerRow?: boolean; dottedBorder?: boolean }) => {
     const fs = 11;
     const lh = fs * LINE_H;
     const h1 = cellHeight(qNo, qColW[0], { bold: true, fontSize: fs });
@@ -546,12 +558,22 @@ export async function generateIncomeTaxPDF(
     ensureSpace(rowH);
 
     let x = ML;
-    drawCell(x, cy, qColW[0], rowH, qNo, { bold: true, fontSize: fs, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
+    drawCell(x, cy, qColW[0], rowH, qNo, { bold: true, fontSize: fs, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5, dottedBorder: opts?.dottedBorder });
     x += qColW[0];
-    drawCell(x, cy, qColW[1], rowH, question, { fontSize: fs, bold: opts?.headerRow, fillColor: LBL_BG, bgOpacity: 0.5 });
+    drawCell(x, cy, qColW[1], rowH, question, { fontSize: fs, bold: opts?.headerRow, fillColor: LBL_BG, bgOpacity: 0.5, dottedBorder: opts?.dottedBorder });
     x += qColW[1];
 
-    page.drawRectangle({ x, y: pdfY(cy) - rowH, width: qColW[2], height: rowH, color: hexToRgb(LBL_BG), opacity: 0.5, borderColor: rgb(0, 0, 0), borderWidth: 0.5 });
+    page.drawRectangle({
+      x,
+      y: pdfY(cy) - rowH,
+      width: qColW[2],
+      height: rowH,
+      color: hexToRgb(LBL_BG),
+      opacity: 0.5,
+      borderColor: rgb(0, 0, 0),
+      borderWidth: 0.8,
+      ...(opts?.dottedBorder ? { dashArray: [2, 2] } : {}),
+    });
     const padX = 5;
     const padY = 4;
     let lineY = cy + padY;
@@ -572,11 +594,12 @@ export async function generateIncomeTaxPDF(
         });
       }
 
+      const targetFont = info.isBold ? fontB : fontR;
       page.drawText(info.text, {
         x: x + padX + info.indentX,
         y: pdfY(lineY) - fs * 0.8,
         size: fs,
-        font: fontR,
+        font: targetFont,
         color: rgb(0, 0, 0),
       });
       lineY += lh;
@@ -593,7 +616,7 @@ export async function generateIncomeTaxPDF(
     cy += rowH;
   };
 
-  const drawQRowMulti = (qNo: string, items: { q: string, a: string }[]) => {
+  const drawQRowMulti = (qNo: string, items: { q: string, a: string }[], opts?: { dottedBorder?: boolean }) => {
     const fs = 11;
     const lh = fs * LINE_H;
     const h1 = cellHeight(qNo, qColW[0], { bold: true, fontSize: fs });
@@ -614,9 +637,9 @@ export async function generateIncomeTaxPDF(
     ensureSpace(totalH);
     const startY = cy;
     
-    page.drawRectangle({ x: ML, y: pdfY(startY) - totalH, width: qColW[0], height: totalH, color: hexToRgb(LBL_BG), opacity: 0.5, borderColor: rgb(0,0,0), borderWidth: 0.5 });
-    page.drawRectangle({ x: ML + qColW[0], y: pdfY(startY) - totalH, width: qColW[1], height: totalH, color: hexToRgb(LBL_BG), opacity: 0.5, borderColor: rgb(0,0,0), borderWidth: 0.5 });
-    page.drawRectangle({ x: ML + qColW[0] + qColW[1], y: pdfY(startY) - totalH, width: qColW[2], height: totalH, color: hexToRgb(LBL_BG), opacity: 0.5, borderColor: rgb(0,0,0), borderWidth: 0.5 });
+    page.drawRectangle({ x: ML, y: pdfY(startY) - totalH, width: qColW[0], height: totalH, color: hexToRgb(LBL_BG), opacity: 0.5, borderColor: rgb(0,0,0), borderWidth: 0.8, ...(opts?.dottedBorder ? { dashArray: [2, 2] } : {}) });
+    page.drawRectangle({ x: ML + qColW[0], y: pdfY(startY) - totalH, width: qColW[1], height: totalH, color: hexToRgb(LBL_BG), opacity: 0.5, borderColor: rgb(0,0,0), borderWidth: 0.8, ...(opts?.dottedBorder ? { dashArray: [2, 2] } : {}) });
+    page.drawRectangle({ x: ML + qColW[0] + qColW[1], y: pdfY(startY) - totalH, width: qColW[2], height: totalH, color: hexToRgb(LBL_BG), opacity: 0.5, borderColor: rgb(0,0,0), borderWidth: 0.8, ...(opts?.dottedBorder ? { dashArray: [2, 2] } : {}) });
 
     const tw = fontB.widthOfTextAtSize(qNo, fs);
     page.drawText(qNo, { x: ML + (qColW[0] - tw) / 2, y: pdfY(startY + 3 + (h1 - fs * LINE_H) / 2) - fs * 0.8, size: fs, font: fontB, color: rgb(0,0,0) });
@@ -636,7 +659,8 @@ export async function generateIncomeTaxPDF(
         if (info.isBulletStart && info.bulletSymbol) {
           page.drawText(info.bulletSymbol, { x: ML + qColW[0] + padX, y: pdfY(qLineY) - fs * 0.8, size: fs, font: fontR, color: rgb(0,0,0) });
         }
-        page.drawText(info.text, { x: ML + qColW[0] + padX + info.indentX, y: pdfY(qLineY) - fs * 0.8, size: fs, font: fontR, color: rgb(0,0,0) });
+        const targetFont = info.isBold ? fontB : fontR;
+        page.drawText(info.text, { x: ML + qColW[0] + padX + info.indentX, y: pdfY(qLineY) - fs * 0.8, size: fs, font: targetFont, color: rgb(0,0,0) });
         qLineY += lh;
       }
       let aLineY = currY + padY;
@@ -646,7 +670,8 @@ export async function generateIncomeTaxPDF(
         if (info.isBulletStart && info.bulletSymbol) {
           page.drawText(info.bulletSymbol, { x: ML + qColW[0] + qColW[1] + padX, y: pdfY(aLineY) - fs * 0.8, size: fs, font: fontR, color: rgb(0,0,0) });
         }
-        page.drawText(info.text, { x: ML + qColW[0] + qColW[1] + padX + info.indentX, y: pdfY(aLineY) - fs * 0.8, size: fs, font: fontR, color: rgb(0,0,0) });
+        const targetFont = info.isBold ? fontB : fontR;
+        page.drawText(info.text, { x: ML + qColW[0] + qColW[1] + padX + info.indentX, y: pdfY(aLineY) - fs * 0.8, size: fs, font: targetFont, color: rgb(0,0,0) });
         aLineY += lh;
       }
       currY += rowH;
@@ -1109,32 +1134,32 @@ export async function generateIncomeTaxPDF(
     ensureSpace(thH * 2);
 
     let thX = ML;
-    drawCell(thX, cy, thCols[0], thH, 'TECHNICAL\nDETAILS', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG });
+    drawCell(thX, cy, thCols[0], thH, 'TECHNICAL\nDETAILS', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, dottedBorder: true });
     thX += thCols[0];
-    drawCell(thX, cy, thCols[1], thH, 'MAIN\nBUILDING', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG });
+    drawCell(thX, cy, thCols[1], thH, 'MAIN\nBUILDING', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, dottedBorder: true });
     thX += thCols[1];
-    drawCell(thX, cy, thCols[2], thH, 'ANNEXES', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG });
+    drawCell(thX, cy, thCols[2], thH, 'ANNEXES', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, dottedBorder: true });
     thX += thCols[2];
-    drawCell(thX, cy, thCols[3], thH, 'SERVANTS\nQUARTERS', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG });
+    drawCell(thX, cy, thCols[3], thH, 'SERVANTS\nQUARTERS', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, dottedBorder: true });
     thX += thCols[3];
-    drawCell(thX, cy, thCols[4], thH, 'GARAGE', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG });
+    drawCell(thX, cy, thCols[4], thH, 'GARAGE', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, dottedBorder: true });
     thX += thCols[4];
-    drawCell(thX, cy, thCols[5], thH, 'PUMP\nHOUSE', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG });
+    drawCell(thX, cy, thCols[5], thH, 'PUMP\nHOUSE', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, dottedBorder: true });
 
     // Row 2 — values
     thX = ML;
     const cy2 = cy + thH;
-    drawCell(thX, cy2, thCols[0], thH, 'P. NOS', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
+    drawCell(thX, cy2, thCols[0], thH, '', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, bgOpacity: 0.5, dottedBorder: true });
     thX += thCols[0];
-    drawCell(thX, cy2, thCols[1], thH, fields.annexMainBuilding || '1 NOS', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
+    drawCell(thX, cy2, thCols[1], thH, fields.annexMainBuilding || '1 NOS', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, bgOpacity: 0.5, dottedBorder: true });
     thX += thCols[1];
-    drawCell(thX, cy2, thCols[2], thH, fields.annexAnnexes || 'NIL', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
+    drawCell(thX, cy2, thCols[2], thH, fields.annexAnnexes || 'NIL', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, bgOpacity: 0.5, dottedBorder: true });
     thX += thCols[2];
-    drawCell(thX, cy2, thCols[3], thH, fields.annexServantsQuarters || 'NIL', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
+    drawCell(thX, cy2, thCols[3], thH, fields.annexServantsQuarters || 'NIL', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, bgOpacity: 0.5, dottedBorder: true });
     thX += thCols[3];
-    drawCell(thX, cy2, thCols[4], thH, fields.annexGarage || 'NIL', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
+    drawCell(thX, cy2, thCols[4], thH, fields.annexGarage || 'NIL', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, bgOpacity: 0.5, dottedBorder: true });
     thX += thCols[4];
-    drawCell(thX, cy2, thCols[5], thH, fields.annexPumpHouse || 'NIL', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
+    drawCell(thX, cy2, thCols[5], thH, fields.annexPumpHouse || 'NIL', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, bgOpacity: 0.5, dottedBorder: true });
 
     cy += thH * 2;
 
@@ -1149,7 +1174,7 @@ export async function generateIncomeTaxPDF(
       q01Height ? `- ${q01Height}` : ''
     ].filter(Boolean).join('\n');
 
-    drawQRow('01', 'NO. OF FLOORS AND HEIGHT OF EACH FLOOR:', q01Ans);
+    drawQRow('01.', 'NO. OF FLOORS AND HEIGHT OF EACH FLOOR:', q01Ans, { dottedBorder: true });
 
     // Q02 Formatting
     let q02ActualAns = renderBulletLines((fields.techPlinthAreaActual || '').split('\n'));
@@ -1172,39 +1197,39 @@ export async function generateIncomeTaxPDF(
     }
 
     if (fields.showPlinthActual) {
-      drawQRow('02', 'PLINTH AREA FLOOR-WISE(AS PER ISI3861-1966): (AS PER ACTUAL)', q02ActualAns);
+      drawQRow('02.', 'PLINTH AREA FLOOR-WISE(AS PER ISI3861-1966): (AS PER ACTUAL)', q02ActualAns, { dottedBorder: true });
     }
     if (fields.showPlinthApproved) {
-      drawQRow(fields.showPlinthActual ? '' : '02', `PLINTH AREA FLOOR-WISE(AS PER ISI3861-1966): (AS PER ${authority} APPROVAL PLAN)`, q02ApprovedAns);
+      drawQRow(fields.showPlinthActual ? '' : '02.', `PLINTH AREA FLOOR-WISE(AS PER ISI3861-1966): (AS PER ${authority} APPROVAL PLAN)`, q02ApprovedAns, { dottedBorder: true });
     }
 
     // Q03-Q06
-    drawQRow('03', 'YEAR OF CONSTRUCTION:', fields.techYearConstruction);
-    drawQRow('04', 'ESTIMATED FUTURE LIFE:', fields.techFutureLife);
-    drawQRow('05', 'TYPE OF CONSTRUCTION:', fields.techConstructionType);
-    drawQRow('06', 'TYPE OF FOUNDATION:', fields.techFoundation);
+    drawQRow('03.', 'YEAR OF CONSTRUCTION:', fields.techYearConstruction, { dottedBorder: true });
+    drawQRow('04.', 'ESTIMATED FUTURE LIFE:', fields.techFutureLife, { dottedBorder: true });
+    drawQRow('05.', 'TYPE OF CONSTRUCTION:', fields.techConstructionType, { dottedBorder: true });
+    drawQRow('06.', 'TYPE OF FOUNDATION:', fields.techFoundation, { dottedBorder: true });
 
     // Q07 Walls split
     const q07Items = [
       { q: '(A) BASEMENT AND PLINTH', a: fields.techWallsBasement || 'NOT APPLICABLE' },
       { q: '(B) GROUND FLOOR', a: fields.techWallsGround || 'NOT APPLICABLE' }
     ];
-    drawQRowMulti('07', q07Items);
+    drawQRowMulti('07.', q07Items, { dottedBorder: true });
 
     // Q08-Q20
-    drawQRow('08', 'PARTITIONS:', fields.techPartitions);
-    drawQRow('09', 'DOORS & WINDOWS:', fields.techDoorsWindows);
-    drawQRow('10', 'FLOORING:', fields.techFlooring);
-    drawQRow('11', 'FINISHING (INTERNAL/EXTERNAL):', fields.techFinishing);
-    drawQRow('12', 'ROOFING & TERRACING:\nARCHITECTURAL FEATURES:', `${fields.techRoofing}\n${fields.techArchitecturalFeatures}`);
-    drawQRow('13', 'TYPE OF WIRING:\nCLASS OF FITTINGS:', `${fields.techWiring}\n${fields.techFittings || 'SUPERIOR'}`);
-    drawQRow('14', 'SANITARY INSTALLATION:', renderBulletLines(fields.techSanitaryLines));
-    drawQRow('15', 'COMPOUND WALL:', fields.techCompoundWall);
-    drawQRow('16', 'LIFTS:', fields.techLifts);
-    drawQRow('17', 'OVERHEAD WATER TANK:', fields.techOverheadTank);
-    drawQRow('18', 'PUMP:\nUNDERGROUND SUMP:', `${fields.techPump}\n${fields.techUndergroundSump}`);
-    drawQRow('19', 'ROADS AND PAVING:', fields.techRoadsPaving);
-    drawQRow('20', 'SEWAGE DISPOSAL:', fields.techSewageDisposal);
+    drawQRow('08.', 'PARTITIONS:', fields.techPartitions, { dottedBorder: true });
+    drawQRow('09.', 'DOORS & WINDOWS:', fields.techDoorsWindows, { dottedBorder: true });
+    drawQRow('10.', 'FLOORING:', fields.techFlooring, { dottedBorder: true });
+    drawQRow('11.', 'FINISHING (INTERNAL/EXTERNAL):', fields.techFinishing, { dottedBorder: true });
+    drawQRow('12.', 'ROOFING & TERRACING:\nARCHITECTURAL FEATURES:', `${fields.techRoofing}\n${fields.techArchitecturalFeatures}`, { dottedBorder: true });
+    drawQRow('13.', 'TYPE OF WIRING:\nCLASS OF FITTINGS:', `${fields.techWiring}\n${fields.techFittings || 'SUPERIOR'}`, { dottedBorder: true });
+    drawQRow('14.', 'SANITARY INSTALLATION:', renderBulletLines(fields.techSanitaryLines), { dottedBorder: true });
+    drawQRow('15.', 'COMPOUND WALL:', fields.techCompoundWall, { dottedBorder: true });
+    drawQRow('16.', 'LIFTS:', fields.techLifts, { dottedBorder: true });
+    drawQRow('17.', 'OVERHEAD WATER TANK:', fields.techOverheadTank, { dottedBorder: true });
+    drawQRow('18.', 'PUMP:\nUNDERGROUND SUMP:', `${fields.techPump}\n${fields.techUndergroundSump}`, { dottedBorder: true });
+    drawQRow('19.', 'ROADS AND PAVING:', fields.techRoadsPaving, { dottedBorder: true });
+    drawQRow('20.', 'SEWAGE DISPOSAL:', fields.techSewageDisposal, { dottedBorder: true });
     
     advanceCursor(12);
 
