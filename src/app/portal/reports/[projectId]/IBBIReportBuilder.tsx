@@ -1866,7 +1866,7 @@ Our valuation is based on information obtained from the client and on data gathe
           {/* ── Section 1: Objective & Dates ── */}
           <Section title="Objective & Declarations" number={1}>
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
-              <p className="text-xs text-blue-800">Fill the dates, representative details, and certificate fields below. Sub-sections 1.1–1.7, Section 2 (Scope), and Section 3 (Basis) use <strong>standard IBBI-IVS text by default</strong>. You can override any sub-section text below.</p>
+              <p className="text-xs text-blue-800">Fill the dates, representative details, and certificate fields below. Section 1 (Objective), Section 2 (Scope), and Section 3 (Basis) use <strong>standard IBBI-IVS text by default</strong>. You can override any sub-section text below.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Date of Inspection">
