@@ -185,6 +185,14 @@ interface IncomeTaxFields {
   sketchMapImages: string[];
   annexures: AnnexureItem[];
   annexureEnabled: boolean;
+  isValuationDateReverseCalc?: boolean;
+  plotAreaLines?: string[];
+  landDimension?: string;
+  easementAttached?: boolean;
+  easementImages?: string[];
+  fsiPermissible?: string;
+  fsiUtilized?: string;
+  saleInstancesLines?: string[];
 
   // ── Remarks ──
   hasRemarks: boolean;
@@ -280,6 +288,14 @@ const DEFAULT_FIELDS: IncomeTaxFields = {
   completionYear: '',
   valuationBullets: [],
   isReverseCalculation: false,
+  isValuationDateReverseCalc: false,
+  plotAreaLines: [],
+  landDimension: '',
+  easementAttached: false,
+  easementImages: [],
+  fsiPermissible: '',
+  fsiUtilized: '',
+  saleInstancesLines: [],
   ciiBaseYear: '',
   ciiBaseValue: '',
   ciiTargetYear: '',
@@ -422,6 +438,7 @@ function BulletEditor({ label, lines, onChange, disabled, placeholder, span = 2 
   span?: number;
 }) {
   const safeLines = Array.isArray(lines) ? lines : [];
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
 
   const updateLine = (idx: number, val: string) => {
     const next = [...safeLines];
@@ -436,6 +453,14 @@ function BulletEditor({ label, lines, onChange, disabled, placeholder, span = 2 
     onChange(next);
   };
 
+  const moveLine = (from: number, to: number) => {
+    if (from === null || from === to || from < 0 || to < 0 || from >= safeLines.length || to >= safeLines.length) return;
+    const next = [...safeLines];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    onChange(next);
+  };
+
   const showBullets = safeLines.filter(l => l.trim()).length > 1;
 
   return (
@@ -443,13 +468,50 @@ function BulletEditor({ label, lines, onChange, disabled, placeholder, span = 2 
       <div className="flex items-center justify-between mb-1.5">
         <label className="block text-xs font-bold text-[#b8860b] uppercase tracking-wider">{label}</label>
         {showBullets && (
-          <span className="text-[10px] text-[#b8860b] font-semibold italic">Bullets active ({safeLines.filter(l => l.trim()).length} entries)</span>
+          <span className="text-[10px] text-[#b8860b] font-semibold italic">Bullets active ({safeLines.filter(l => l.trim()).length} entries — drag to reorder)</span>
         )}
       </div>
       {safeLines.length > 0 ? (
         <div className="space-y-1.5">
           {safeLines.map((line, idx) => (
-            <div key={idx} className="flex items-start gap-2">
+            <div
+              key={idx}
+              draggable={!disabled && safeLines.length > 1}
+              onDragStart={() => setDraggedIdx(idx)}
+              onDragOver={e => e.preventDefault()}
+              onDrop={e => {
+                e.preventDefault();
+                if (draggedIdx !== null) {
+                  moveLine(draggedIdx, idx);
+                  setDraggedIdx(null);
+                }
+              }}
+              className={`flex items-start gap-2 p-1 rounded-lg transition-colors ${
+                draggedIdx === idx ? 'bg-amber-100/60 border border-dashed border-[#b8860b]' : ''
+              }`}
+            >
+              {!disabled && safeLines.length > 1 && (
+                <div className="flex flex-col gap-0.5 mt-2 text-gray-400 shrink-0 cursor-grab active:cursor-grabbing hover:text-[#b8860b]" title="Drag or use arrows to reorder">
+                  <button
+                    type="button"
+                    onClick={() => moveLine(idx, idx - 1)}
+                    disabled={idx === 0}
+                    className="disabled:opacity-30 p-0.5 hover:bg-black/5 rounded text-[10px] leading-none"
+                    title="Move up"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveLine(idx, idx + 1)}
+                    disabled={idx === safeLines.length - 1}
+                    className="disabled:opacity-30 p-0.5 hover:bg-black/5 rounded text-[10px] leading-none"
+                    title="Move down"
+                  >
+                    ▼
+                  </button>
+                </div>
+              )}
               {showBullets && (
                 <span className="mt-2.5 text-[#b8860b] font-bold text-sm shrink-0">•</span>
               )}
@@ -873,7 +935,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
       if (ref) {
         const range = XLSX.utils.decode_range(ref);
         // Parse client-side — cell-by-cell to preserve merge info and column widths
-        let rawAllRows: string[][] = [];
+        let allRows: string[][] = [];
         for (let r = range.s.r; r <= range.e.r; r++) {
           const row: string[] = [];
           for (let c = range.s.c; c <= range.e.c; c++) {
@@ -881,9 +943,9 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
             const cell = ws[addr];
             row.push(cell ? String(XLSX.utils.format_cell(cell)) : '');
           }
-          rawAllRows.push(row);
+          allRows.push(row);
         }
-        const rawMerges = ((ws['!merges'] || []) as any[]).map((m: any) => ({
+        const merges = ((ws['!merges'] || []) as any[]).map((m: any) => ({
           sr: m.s.r - range.s.r, sc: m.s.c - range.s.c,
           er: m.e.r - range.s.r, ec: m.e.c - range.s.c,
         }));
@@ -961,7 +1023,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
   const computedTotalProperty = computedLandValue + computedBuildingValue + computedExtraTotal;
 
   // ── File upload ──
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'propertyImages' | 'sketchMapImages' | 'locationMapImage' | 'benchmarkImage' | 'ciiTableImage' | 'bdaMapImage') => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'propertyImages' | 'sketchMapImages' | 'easementImages' | 'locationMapImage' | 'benchmarkImage' | 'ciiTableImage' | 'bdaMapImage') => {
     const fileList = e.target.files;
     if (!fileList || fileList.length === 0) return;
     setUploading(true);
@@ -987,6 +1049,8 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
         handleChange('propertyImages', [...(fields.propertyImages || []), ...uploadedUrls]);
       } else if (fieldName === 'sketchMapImages') {
         handleChange('sketchMapImages', [...(fields.sketchMapImages || []), ...uploadedUrls]);
+      } else if (fieldName === 'easementImages') {
+        handleChange('easementImages', [...(fields.easementImages || []), ...uploadedUrls]);
       } else {
         handleChange(fieldName, uploadedUrls[0]);
       }
@@ -1264,7 +1328,10 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
             <Field label="REF NO">
               <input className={inputCls} value={fields.refNo} onChange={e => handleChange('refNo', e.target.value)} disabled={isReadOnly} placeholder="SMA/V-01/IT/BBSR-XX/YY" />
             </Field>
-            <Field label="Owner Name (ALL CAPS)" span={2}>
+            <Field label="Date of Valuation Report">
+              <input type="date" className={inputCls} value={fields.reportDate} onChange={e => handleChange('reportDate', e.target.value)} disabled={isReadOnly} />
+            </Field>
+            <Field label="Owner Name (ALL CAPS)">
               <input className={inputCls} value={fields.ownerName} onChange={e => handleChange('ownerName', e.target.value)} disabled={isReadOnly} placeholder="MR. JAYANTA KUMAR DAS & OTHERS" />
             </Field>
             <Field label="Full Legal Property Description" span={2}>
@@ -1315,17 +1382,29 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               <div className="md:col-span-2 p-4 bg-[#f0fdf4] border border-[#d1e7dd] rounded-xl shadow-sm space-y-3">
                 <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">02 — Dates & Identification</span>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <Field label="02 (A) — Valuation Date">
-                    <input className={inputCls} value={fields.valuationDate} onChange={e => handleChange('valuationDate', e.target.value)} disabled={isReadOnly}
-                      placeholder="e.g. 01.04.2001 (VALUATION AT THAT TIME BY REVERSE CALCULATION METHOD)" />
-                  </Field>
-                  <Field label="02 (B) — Date of Inspection">
+                  <div className="space-y-2">
+                    <Field label="Part A — Valuation Date">
+                      <input className={inputCls} value={fields.valuationDate} onChange={e => handleChange('valuationDate', e.target.value)} disabled={isReadOnly}
+                        placeholder="e.g. 01.04.2001" />
+                    </Field>
+                    <label className="flex items-center gap-2 text-xs font-medium text-[#495057] cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={!!fields.isValuationDateReverseCalc}
+                        onChange={e => handleChange('isValuationDateReverseCalc', e.target.checked)}
+                        disabled={isReadOnly}
+                        className="rounded border-gray-300 text-[#b8860b] focus:ring-[#b8860b]"
+                      />
+                      <span>(VALUATION AT THAT TIME BY REVERSE CALCULATION METHOD)</span>
+                    </label>
+                  </div>
+                  <Field label="Part B — Date of Inspection">
                     <input type="date" className={inputCls} value={fields.inspectionDate} onChange={e => handleChange('inspectionDate', e.target.value)} disabled={isReadOnly} />
                   </Field>
-                  <Field label="02 (C) — Date of Valuation Report">
+                  <Field label="Part C — Date of Valuation Report">
                     <input type="date" className={inputCls} value={fields.reportDate} onChange={e => handleChange('reportDate', e.target.value)} disabled={isReadOnly} />
                   </Field>
-                  <Field label="02 (D) — Identified By Whom">
+                  <Field label="Part D — Identified By Whom">
                     <input className={inputCls} value={fields.identifiedBy} onChange={e => handleChange('identifiedBy', e.target.value)} disabled={isReadOnly} placeholder="MR. TRILOCHAN NAYAK" />
                   </Field>
                 </div>
@@ -1395,10 +1474,17 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
 
               <div className="md:col-span-2 p-4 bg-[#f0fdf4] border border-[#d1e7dd] rounded-xl shadow-sm space-y-3">
                 <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">12 — Area, Shape, Dimensions & Physical Features</span>
+                <BulletEditor
+                  label="Area of the Plot (e.g. ROR / Sale Deed Entries)"
+                  lines={fields.plotAreaLines && fields.plotAreaLines.length > 0 ? fields.plotAreaLines : (fields.landArea ? [`${fields.landArea} ${fields.landAreaUnit}`] : [])}
+                  onChange={lines => handleChange('plotAreaLines', lines)}
+                  disabled={isReadOnly}
+                  placeholder="e.g. AC.0.050 DEC I.E. 2178.00 SFT (AS PER ROR)"
+                />
                 <div className="grid md:grid-cols-2 gap-4">
-                  <Field label="Land Area & Unit">
+                  <Field label="Primary Land Area & Unit">
                     <div className="flex gap-2">
-                      <input className={inputCls} value={fields.landArea} onChange={e => handleChange('landArea', e.target.value)} disabled={isReadOnly} placeholder="AC.5.325" />
+                      <input className={inputCls} value={fields.landArea} onChange={e => handleChange('landArea', e.target.value)} disabled={isReadOnly} placeholder="AC.0.050" />
                       <select className="w-28 px-2 py-2 rounded-lg border border-[#dee2e6] text-sm" value={fields.landAreaUnit} onChange={e => handleChange('landAreaUnit', e.target.value)} disabled={isReadOnly}>
                         <option value="DEC">DEC</option>
                         <option value="ACRE">ACRE</option>
@@ -1407,11 +1493,14 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                       </select>
                     </div>
                   </Field>
-                  <Field label="Land Shape">
-                    <input className={inputCls} value={fields.landShape} onChange={e => handleChange('landShape', e.target.value)} disabled={isReadOnly} placeholder="Shape: RECTANGULAR SHAPE" />
+                  <Field label="Shape of the Land">
+                    <input className={inputCls} value={fields.landShape} onChange={e => handleChange('landShape', e.target.value)} disabled={isReadOnly} placeholder="RECTANGULAR SHAPE" />
                   </Field>
-                  <Field label="Physical Features & Level" span={2}>
-                    <input className={inputCls} value={fields.landLevel} onChange={e => handleChange('landLevel', e.target.value)} disabled={isReadOnly} placeholder="Physical Features: FLAT AND HIGH LEVEL LAND" />
+                  <Field label="Dimension of the Plot (if any)">
+                    <input className={inputCls} value={fields.landDimension || ''} onChange={e => handleChange('landDimension', e.target.value)} disabled={isReadOnly} placeholder="e.g. NORTH: 50', SOUTH: 50'..." />
+                  </Field>
+                  <Field label="Physical Features & Level">
+                    <input className={inputCls} value={fields.landLevel} onChange={e => handleChange('landLevel', e.target.value)} disabled={isReadOnly} placeholder="FLAT AND HIGH LEVEL LAND" />
                   </Field>
                 </div>
               </div>
@@ -1429,9 +1518,64 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                 <input className={inputCls} value={fields.restrictiveCovenant} onChange={e => handleChange('restrictiveCovenant', e.target.value)} disabled={isReadOnly}
                   placeholder="AS PER BDA CDP MAP, IT IS COMING UNDER AGRICULTURE USE ZONE" />
               </Field>
-              <Field label="17 — Easements">
-                <input className={inputCls} value={fields.easements} onChange={e => handleChange('easements', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
-              </Field>
+
+              <div className="md:col-span-2 p-4 bg-[#f0fdf4] border border-[#d1e7dd] rounded-xl shadow-sm space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-[#b8860b] uppercase tracking-wider">17 — AGREEMENT OF EASEMENTS? IF SO, ATTACH COPIES.</label>
+                  <label className="flex items-center gap-2 text-xs font-semibold text-[#b8860b] cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={!!fields.easementAttached}
+                      onChange={e => handleChange('easementAttached', e.target.checked)}
+                      disabled={isReadOnly}
+                      className="rounded border-gray-300 text-[#b8860b] focus:ring-[#b8860b]"
+                    />
+                    <span>Attach Copies in Annexure</span>
+                  </label>
+                </div>
+                <Field label="Easement Details / Description">
+                  <input className={inputCls} value={fields.easements} onChange={e => handleChange('easements', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
+                </Field>
+                {fields.easementAttached && (
+                  <div className="p-3 bg-white border border-[#d1e7dd] rounded-lg space-y-2">
+                    <span className="text-xs font-semibold text-gray-700 block">Easement Agreement Documents (Images / Scans)</span>
+                    {!isReadOnly && (
+                      <label className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-[#dee2e6] rounded-lg text-xs font-bold text-[#b8860b] hover:bg-[#fffbf0] cursor-pointer">
+                        <span>📤 Upload Easement Copy Image(s)</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          className="hidden"
+                          onChange={e => handleFileUpload(e, 'easementImages')}
+                          disabled={uploading}
+                        />
+                      </label>
+                    )}
+                    {fields.easementImages && fields.easementImages.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {fields.easementImages.map((imgUrl: string, idx: number) => (
+                          <div key={idx} className="relative group w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
+                            <img src={imgUrl} alt={`Easement Copy ${idx + 1}`} className="w-full h-full object-cover" />
+                            {!isReadOnly && (
+                              <button
+                                type="button"
+                                onClick={() => handleChange('easementImages', fields.easementImages?.filter((_, i) => i !== idx))}
+                                className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded-full opacity-80 hover:opacity-100 text-[10px] leading-none"
+                                title="Remove image"
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <p className="text-xs text-emerald-700 italic">Attached copies will be displayed at the end of the report in Annexure.</p>
+                  </div>
+                )}
+              </div>
+
               <Field label="18 — Development Contribution">
                 <input className={inputCls} value={fields.developmentContribution} onChange={e => handleChange('developmentContribution', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
@@ -1479,16 +1623,23 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                   </Field>
                 </div>
               </div>
-              <Field label="24 — Floor Space Index (FSI)">
-                <input className={inputCls} value={fields.fsi} onChange={e => handleChange('fsi', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
-              </Field>
+              <div className="md:col-span-2 p-4 bg-[#f0fdf4] border border-[#d1e7dd] rounded-xl shadow-sm space-y-3">
+                <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">24 — Floor Space Index (FSI) & Utilized Percentage</span>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Field label="Floor Space Index Permissible">
+                    <input className={inputCls} value={fields.fsiPermissible || fields.fsi || ''} onChange={e => handleChange('fsiPermissible', e.target.value)} disabled={isReadOnly} placeholder="e.g. 1.99" />
+                  </Field>
+                  <Field label="Percentage Actually Utilized">
+                    <input className={inputCls} value={fields.fsiUtilized || ''} onChange={e => handleChange('fsiUtilized', e.target.value)} disabled={isReadOnly} placeholder="e.g. 66% OF THE TOTAL FSI PERMITTED" />
+                  </Field>
+                </div>
+              </div>
 
             </div>
           </SubSection>
 
-          {/* ── Sub-section: RENT & SALES ── */}
           {/* ── Sub-section: RENT ── */}
-          <SubSection id="subsection-rent" title="Rent (25–34)" defaultOpen={false}>
+          <SubSection id="subsection-rent" title="Rent & Charges (25–34)" defaultOpen={false}>
             <div className="grid md:grid-cols-2 gap-4">
 
               {/* Q25 — split into 4 sub-entries */}
@@ -1515,25 +1666,34 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               <Field label="27 — Fixtures">
                 <input className={inputCls} value={fields.fixtures} onChange={e => handleChange('fixtures', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="28 — Water & Electric Charges">
+              <Field label="28 — DETAILS OF WATER AND ELECTRICITY CHARGES TO BE BORNE BY THE OWNER" span={2}>
                 <input className={inputCls} value={fields.waterElectricCharges} onChange={e => handleChange('waterElectricCharges', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="29 — Pump Maintenance">
-                <input className={inputCls} value={fields.pumpMaintenance} onChange={e => handleChange('pumpMaintenance', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
+              <Field label="29 — Pump Maintenance Cost Bearer">
+                <select className={selectCls} value={fields.pumpMaintenance} onChange={e => handleChange('pumpMaintenance', e.target.value)} disabled={isReadOnly}>
+                  <option value="TENANT">TENANT</option>
+                  <option value="OWNER">OWNER</option>
+                  <option value="NOT APPLICABLE">NOT APPLICABLE</option>
+                </select>
               </Field>
-              <Field label="30 — Common Electricity">
-                <input className={inputCls} value={fields.commonElectricity} onChange={e => handleChange('commonElectricity', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
+              <Field label="30 — Electricity Charges Bearer for Common Spaces">
+                <select className={selectCls} value={fields.commonElectricity} onChange={e => handleChange('commonElectricity', e.target.value)} disabled={isReadOnly}>
+                  <option value="TENANT">TENANT</option>
+                  <option value="OWNER">OWNER</option>
+                  <option value="SHARED / PRO-RATA">SHARED / PRO-RATA</option>
+                  <option value="NOT APPLICABLE">NOT APPLICABLE</option>
+                </select>
               </Field>
-              <Field label="31 — Property Tax">
+              <Field label="31 — Amount of Property Tax & Who Bears It (Details with Proof)">
                 <input className={inputCls} value={fields.propertyTax} onChange={e => handleChange('propertyTax', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="32 — Building Insured">
+              <Field label="32 — Building Insurance Details (Policy No, Insured Amount, Annual Premium)">
                 <input className={inputCls} value={fields.buildingInsured} onChange={e => handleChange('buildingInsured', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="33 — Landlord-Tenant Dispute">
+              <Field label="33 — Landlord-Tenant Rent Dispute Pending in Court?">
                 <input className={inputCls} value={fields.landlordTenantDispute} onChange={e => handleChange('landlordTenantDispute', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
-              <Field label="34 — Standard Rent">
+              <Field label="34 — Standard Rent Fixed Under Rent Control Law?">
                 <input className={inputCls} value={fields.standardRent} onChange={e => handleChange('standardRent', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
 
@@ -1544,10 +1704,16 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           <SubSection id="subsection-sales" title="Sales (35–37)" defaultOpen={false}>
             <div className="grid md:grid-cols-2 gap-4">
 
-              <Field label="35 — Sale Instances" span={2}>
-                <textarea className={textareaCls} value={fields.saleInstances} onChange={e => handleChange('saleInstances', e.target.value)} disabled={isReadOnly} rows={3}
-                  placeholder="DATA COLLECTED FROM SRO, PURI VIDE APPLICATION NO: XXXXX..." />
-              </Field>
+              <BulletEditor
+                label="35 — Give Instances of Sales of Immovable Property in the Locality (with Registration No, Sale Price, Area Sold)"
+                lines={fields.saleInstancesLines && fields.saleInstancesLines.length > 0 ? fields.saleInstancesLines : (fields.saleInstances ? [fields.saleInstances] : [])}
+                onChange={lines => {
+                  handleChange('saleInstancesLines', lines);
+                  handleChange('saleInstances', lines.join('\n'));
+                }}
+                disabled={isReadOnly}
+                placeholder="DATA COLLECTED FROM SRO, PURI VIDE APPLICATION NO: 32700/7349 ON DATED 16.10.2025 (LETTER ATTACHED FOR REFERENCES)"
+              />
               {/* Q36 — structured rate + unit */}
               <div className="md:col-span-2 p-4 bg-[#f0fdf4] border border-[#d1e7dd] rounded-xl shadow-sm space-y-3">
                 <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">36 — Land Rate Adopted in this Valuation</span>
@@ -1583,7 +1749,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               <Field label="Total Land Value (RS.)">
                 <input className={inputCls} value={fields.totalLandValue} onChange={e => handleChange('totalLandValue', e.target.value)} disabled={isReadOnly} placeholder="1500000" />
               </Field>
-              <Field label="37 — Land Rate Basis">
+              <Field label="37 — Land Rate Basis (if Sale Instances Not Available/Relied Upon)">
                 <input className={inputCls} value={fields.landRateBasis} onChange={e => handleChange('landRateBasis', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>
 
@@ -1599,25 +1765,30 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                 <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">38 — Year of Commencement of Construction and Year of Completion</span>
                 <div className="grid md:grid-cols-2 gap-4">
                   <Field label="(I) Year of Commencement of Construction">
-                    <input className={inputCls} value={fields.constructionStartYear} onChange={e => handleChange('constructionStartYear', e.target.value.replace(/[^0-9-]/g, ''))} disabled={isReadOnly} placeholder="2005" />
+                    <input className={inputCls} value={fields.constructionStartYear} onChange={e => handleChange('constructionStartYear', e.target.value.replace(/[^0-9-]/g, ''))} disabled={isReadOnly} placeholder="2006" />
                   </Field>
                   <Field label="(II) Year of Completion">
                     <input className={inputCls} value={fields.constructionEndYear} onChange={e => handleChange('constructionEndYear', e.target.value.replace(/[^0-9-]/g, ''))} disabled={isReadOnly} placeholder="2008" />
                   </Field>
                 </div>
               </div>
-              <Field label="39 — Construction Method">
-                <input className={inputCls} value={fields.constructionMethod} onChange={e => handleChange('constructionMethod', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
+              <Field label="39 — Construction Method" span={2}>
+                <select className={selectCls} value={fields.constructionMethod} onChange={e => handleChange('constructionMethod', e.target.value)} disabled={isReadOnly}>
+                  <option value="BY CONTRACT">BY CONTRACT</option>
+                  <option value="BY EMPLOYING LABOUR DIRECTLY">BY EMPLOYING LABOUR DIRECTLY</option>
+                  <option value="BY BOTH">BY BOTH</option>
+                  <option value="NOT APPLICABLE">NOT APPLICABLE</option>
+                </select>
               </Field>
-              <Field label="40 — Contract Agreements">
-                <input className={inputCls} value={fields.contractAgreements} onChange={e => handleChange('contractAgreements', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
+              <Field label="40 — Contract Agreements Details" span={2}>
+                <input className={inputCls} value={fields.contractAgreements} onChange={e => handleChange('contractAgreements', e.target.value)} disabled={isReadOnly} placeholder="DOCUMENTS ARE NOT PROVIDED" />
               </Field>
-              <Field label="41 — Material Rates">
-                <input className={inputCls} value={fields.materialRates} onChange={e => handleChange('materialRates', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
+              <Field label="41 — Material Rates & Proof (Work Done Directly)" span={2}>
+                <input className={inputCls} value={fields.materialRates} onChange={e => handleChange('materialRates', e.target.value)} disabled={isReadOnly} placeholder="DOCUMENTS ARE NOT PROVIDED" />
               </Field>
-              <Field label="42 — Building Approval Plan (if any)" span={2}>
-                <textarea className={textareaCls} value={fields.buildingApproval} onChange={e => handleChange('buildingApproval', e.target.value)} disabled={isReadOnly}
-                  placeholder="APPROVED BY PKDA, PURI VIDE LETTER NO: XX DATED: XX... / NOT APPLICABLE" rows={2} />
+              <Field label="42 — Building Approval Plan Details" span={2}>
+                <textarea className={textareaCls} value={fields.buildingApproval} onChange={e => handleChange('buildingApproval', e.target.value)} disabled={isReadOnly} rows={3}
+                  placeholder="THE BUILDING IS APPROVED BY PURI KONARK DEVELOPMENT AUTHORITY..." />
               </Field>
 
             </div>

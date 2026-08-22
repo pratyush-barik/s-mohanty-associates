@@ -107,7 +107,15 @@ export interface IncomeTaxFieldsForPDF {
   benchmarkImage: string;
   sketchMapImages: string[];
   extraItems: ExtraItem[];
-  showLandAnnexure: boolean;
+  showLandAnnexure?: boolean;
+  isValuationDateReverseCalc?: boolean;
+  plotAreaLines?: string[];
+  landDimension?: string;
+  easementAttached?: boolean;
+  easementImages?: string[];
+  fsiPermissible?: string;
+  fsiUtilized?: string;
+  saleInstancesLines?: string[];
   annexureEnabled?: boolean;
   annexures?: {
     id: string;
@@ -118,6 +126,9 @@ export interface IncomeTaxFieldsForPDF {
     parsedData?: {
       headers: string[];
       rows: string[][];
+      allRows?: string[][];
+      merges?: { sr: number; sc: number; er: number; ec: number }[];
+      colWidths?: number[];
     };
   }[];
   plinthAreaConsidered: string;
@@ -188,9 +199,11 @@ export async function generateIncomeTaxPDF(
 
   // Fetch letterhead & all appendix images upfront
   const propImgs = (fields.propertyImages || []).filter(Boolean);
+  const easementImgs = (fields.easementAttached && fields.easementImages) ? fields.easementImages.filter(Boolean) : [];
   const allImageUrls = [
     '/templates/letterhead.png',
     ...propImgs,
+    ...easementImgs,
     ...(fields.locationMapImage ? [fields.locationMapImage] : []),
     ...(fields.ciiTableImage ? [fields.ciiTableImage] : []),
     ...(fields.bdaMapImage ? [fields.bdaMapImage] : []),
@@ -202,6 +215,8 @@ export async function generateIncomeTaxPDF(
   let imgIdx = 1;
   const propImageBytes = allImageBytes.slice(imgIdx, imgIdx + propImgs.length).filter(Boolean) as Uint8Array[];
   imgIdx += propImgs.length;
+  const easementImageBytes = easementImgs.length > 0 ? (allImageBytes.slice(imgIdx, imgIdx + easementImgs.length).filter(Boolean) as Uint8Array[]) : [];
+  if (easementImgs.length > 0) imgIdx += easementImgs.length;
   const locationBytes = fields.locationMapImage ? allImageBytes[imgIdx++] : null;
   const ciiBytes = fields.ciiTableImage ? allImageBytes[imgIdx++] : null;
   const bdaBytes = fields.bdaMapImage ? allImageBytes[imgIdx++] : null;
@@ -618,11 +633,13 @@ export async function generateIncomeTaxPDF(
   // TABLE A — GENERAL
   drawQHeader('GENERAL');
   drawQRow('01', 'PURPOSE FOR WHICH THE VALUATION IS MADE:', 'TO ASSESS OF CAPITAL GAIN FOR INCOME TAX');
-  drawQRow('02', '(A) DATE ON WHICH THE VALUATION IS MADE:', fields.valuationDate);
-  drawQRow('', '(B) DATE OF INSPECTION:', fields.inspectionDate);
-  drawQRow('', '(C) DATE OF VALUATION REPORT', fields.reportDate);
+  const valDateSuffix = fields.isValuationDateReverseCalc ? ' (VALUATION AT THAT TIME BY REVERSE CALCULATION METHOD)' : '';
+  const fullValuationDate = (fields.valuationDate || '') + valDateSuffix;
+  drawQRow('A', 'DATE ON WHICH THE VALUATION IS MADE:', fullValuationDate);
+  drawQRow('B', 'DATE OF INSPECTION:', fields.inspectionDate ? formatReportDate(fields.inspectionDate) : '');
+  drawQRow('C', 'DATE OF VALUATION REPORT:', fields.reportDate ? formatReportDate(fields.reportDate) : '');
   const cleanIdentified = fields.identifiedBy ? fields.identifiedBy.replace(/^\(?D\)?\s*IDENTIFIED BY WHOM:?\s*/i, '').trim() : '';
-  drawQRow('', '(D) IDENTIFIED BY WHOM:', cleanIdentified);
+  drawQRow('D', 'IDENTIFIED BY WHOM:', cleanIdentified);
   drawQRow('03', 'NAME OF THE OWNER/OWNERS.', fields.ownerName.toUpperCase() + (fields.ownerAddress ? ', ' + fields.ownerAddress.toUpperCase() : ''));
   drawQRow('04', 'IF THE PROPERTY IS UNDER JOINT OWNERSHIP/CO-OWNERSHIP, SHARE OF EACH SUCH OWNER. ARE THE SHARE OF UNDIVIDED?', fields.ownershipType);
   drawQRow('05', 'BRIEF DESCRIPTION OF THE PROPERTY.', renderBulletLines(fields.briefDescriptionLines));
@@ -636,13 +653,31 @@ export async function generateIncomeTaxPDF(
 
   // TABLE B — LAND
   drawQHeader('LAND');
-  drawQRow('12', 'AREA OF THE LAND SUPPORTED BY DOCUMENTARY PROOF, SHAPE, DIMENSIONS AND PHYSICAL FEATURES:', `${fields.landArea} ${fields.landAreaUnit}, ${fields.landShape}, ${fields.landLevel}`);
+  const q12Question = 'AREA OF THE LAND SUPPORTED BY DOCUMENTARY PROOF, SHAPE, DIMENSIONS AND PHYSICAL FEATURES,\nSHAPE OF THE LAND-\nDIMENSION OF THE PLOT-\nPHYSICAL FEATURES–';
+  let q12Answer = 'AREA OF THE PLOT-\n';
+  if (fields.plotAreaLines && fields.plotAreaLines.length > 0) {
+    q12Answer += fields.plotAreaLines.join('\n') + '\n';
+  } else if (fields.landArea) {
+    q12Answer += `${fields.landArea} ${fields.landAreaUnit}\n`;
+  }
+  q12Answer += `• ${fields.landShape || 'RECTANGULAR SHAPE'}\n`;
+  if (fields.landDimension) {
+    q12Answer += `• DIMENSION: ${fields.landDimension}\n`;
+  }
+  q12Answer += `• ${fields.landLevel || 'FLAT AND HIGH LEVEL LAND'}`;
+  drawQRow('12', q12Question, q12Answer);
+
   const cleanRoadAccess = fields.roadAccess ? fields.roadAccess.replace(/^13\s*ROADS,?\s*STREETS\s*OR\s*LANES\s*ON\s*WHICH\s*THE\s*LAND\s*IS\s*ABUTTING\.?\s*/i, '').trim() : '';
   drawQRow('13', 'ROADS, STREETS OR LANES ON WHICH THE LAND IS ABUTTING.', cleanRoadAccess);
   drawQRow('14', 'IS IT FREE HOLD OR LEASE HOLD LAND?', fields.landTenure);
   drawQRow('15', 'IF LEASE HOLD, THE NAME OF LEASER/LESSEE, NATURE OF LEASE, DATES OF COMMENCEMENT AND TERMINATION OF LEASE AND TERMS OF RENEWAL OF LEASE.', fields.leaseDetails);
   drawQRow('16', 'IS THERE ANY RESTRICTIVE COVENANT IN REGARD TO USE OF LAND? IF SO, ATTACH A COPY OF THE COVENANT.', fields.restrictiveCovenant);
-  drawQRow('17', 'ARE THERE ANY AGREEMENT OF EASEMENTS? IF SO, ATTACH COPIES.', fields.easements);
+
+  let q17Answer = fields.easements || 'NOT APPLICABLE';
+  if (fields.easementAttached) {
+    q17Answer = (fields.easements ? fields.easements + ' ' : '') + '(COPIES ATTACHED IN ANNEXURE)';
+  }
+  drawQRow('17', 'AGREEMENT OF EASEMENTS? IF SO, ATTACH COPIES.', q17Answer);
   drawQRow('18', 'HAS ANY CONTRIBUTION BEEN MADE TOWARDS DEVELOPMENT OR IS ANY DEMAND FOR SUCH CONTRIBUTION STILL OUT STANDING?', fields.developmentContribution);
   drawQRow('19', 'HAS THE WHOLE OR PART OF THE LAND BEEN NOTIFIED FOR ACQUISITION BY GOVERNMENT OR ANY STATUTORY BODY? GIVE DATE OF THE NOTIFICATION', 'NO SUCH PARTICULARS ARE OBSERVED BY US');
   drawQRow('20', 'ATTACH A DIMENSION SITE PLAN.', 'SITE PLAN IS ATTACHED (GPS LOCATION MAP ATTACHED)');
@@ -653,7 +688,11 @@ export async function generateIncomeTaxPDF(
   drawQRow('21', 'ATTACH PLANS AND ELEVATIONS OF ALL STRUCTURES STANDING ON THE LAND AND LAY-OUT PLAN.', fields.plansAttached);
   drawQRow('22', 'FURNISH TECHNICAL DETAILS OF THE BUILDING ON A SEPARATE SHEET [THE ANNEXURE TO THIS FORM MAY BE USED]', fields.technicalDetails);
   drawQRow('23', 'IS THE BUILDING OWNER-OCCUPIED / TENANTED / BOTH? IF PARTLY OWNER OCCUPIED, SPECIFY PORTION AND EXTENT OF AREA UNDER OWNER OCCUPATION.', `(I) ${fields.tenancyStatus}\n(II) ${fields.tenancyPortionDetails || 'NOT APPLICABLE'}`);
-  drawQRow('24', 'WHAT IS THE FLOOR SPACE INDEX PERMISSIBLE AND PERCENTAGE ACTUALLY UTILIZED?', fields.fsi);
+
+  const fsiPerm = fields.fsiPermissible || fields.fsi || 'NOT APPLICABLE';
+  const fsiUtil = fields.fsiUtilized || '';
+  const q24Answer = `• FLOOR SPACE INDEX PERMISSIBLE: ${fsiPerm}\n• PERCENTAGE ACTUALLY UTILIZED: ${fsiUtil || 'NOT APPLICABLE'}`;
+  drawQRow('24', 'WHAT IS THE FLOOR SPACE INDEX PERMISSIBLE AND PERCENTAGE ACTUALLY UTILIZED?', q24Answer);
   advanceCursor(6);
 
   // TABLE D — RENT
@@ -667,9 +706,9 @@ export async function generateIncomeTaxPDF(
   drawQRowMulti('25', q25Items);
   drawQRow('26', 'ARE ANY OF THE OCCUPANTS RELATED TO, OR CLOSE BUSINESS ASSOCIATES OF THE OWNER?', fields.relatedOccupants);
   drawQRow('27', 'IS SEPARATE AMOUNT BEING RECOVERED FOR THE USE OF FIXTURES LIKE FANS, GEYSERS, REFRIGERATORS, COOKING RANGES, BUILT IN WARDROBES, ETC., OR FOR SERVICE CHARGES? IF SO GIVE DETAILS.', fields.fixtures);
-  drawQRow('28', 'GIVE DETAILS OF WATER AND ELECTRICITY CHARGES, IF ANY, TO BE BORNE BY THE OWNER.', fields.waterElectricCharges);
-  drawQRow('29', 'IF A PUMP IS INSTALLED, WHO HAS TO BEAR THE COST AND MAINTENANCE AND OPERATION--OWNER OR TENANT.', fields.pumpMaintenance);
-  drawQRow('30', 'WHO IS TO BEAR THE COST OF ELECTRICITY CHARGES FOR LIGHTING OF COMMON SPACE LIKE ENTRANCE HALL, STAIRS, PASSAGES, COMPOUND, ETC.--OWNER OR TENANT.', fields.commonElectricity);
+  drawQRow('28', 'DETAILS OF WATER AND ELECTRICITY CHARGES TO BE BORNE BY THE OWNER', fields.waterElectricCharges || 'NOT APPLICABLE');
+  drawQRow('29', 'IF A PUMP IS INSTALLED, WHO HAS TO BEAR THE COST AND MAINTENANCE AND OPERATION--OWNER OR TENANT.', fields.pumpMaintenance || 'NOT APPLICABLE');
+  drawQRow('30', 'WHO IS TO BEAR THE COST OF ELECTRICITY CHARGES FOR LIGHTING OF COMMON SPACE LIKE ENTRANCE HALL, STAIRS, PASSAGES, COMPOUND, ETC.--OWNER OR TENANT.', fields.commonElectricity || 'NOT APPLICABLE');
   drawQRow('31', 'WHAT IS THE AMOUNT OF PROPERTY TAX? WHO IS TO BEAR IT? GIVE DETAILS WITH DOCUMENTARY PROOF.', fields.propertyTax || 'NOT APPLICABLE');
   drawQRow('32', 'IS THE BUILDING INSURED? IF SO, GIVE THE POLICY NO., AMOUNT FOR WHICH IT IS INSURED AND ANNUAL PREMIUM.', fields.buildingInsured);
   drawQRow('33', 'IF ANY DISPUTE BETWEEN LAND LORD AND TENANT REGARDING RENT PENDING IN COURT OF LAW?', fields.landlordTenantDispute);
@@ -678,9 +717,14 @@ export async function generateIncomeTaxPDF(
 
   // TABLE E — SALES
   drawQHeader('SALES');
-  drawQRow('35', 'GIVE INSTANCES OF SALES OF IMMOVABLE PROPERTY IN THE LOCALITY ON A SEPARATE SHEET, INDICATING THE NAME AND ADDRESS OF THE PROPERTY, REGISTRATION NO., SALE PRICE AND AREA OF LAND SOLD:', fields.saleInstances);
+  let q35Answer = fields.saleInstances || 'NOT APPLICABLE';
+  if (fields.saleInstancesLines && fields.saleInstancesLines.length > 0) {
+    q35Answer = renderBulletLines(fields.saleInstancesLines);
+  } else if (q35Answer && q35Answer !== 'NOT APPLICABLE' && !q35Answer.startsWith('•')) {
+    q35Answer = `• ${q35Answer}`;
+  }
+  drawQRow('35', 'GIVE INSTANCES OF SALES OF IMMOVABLE PROPERTY IN THE LOCALITY ON A SEPARATE SHEET, INDICATING THE NAME AND ADDRESS OF THE PROPERTY, REGISTRATION NO., SALE PRICE AND AREA OF LAND SOLD:', q35Answer);
 
-  // Build Q36 formatted sentence from structured rate inputs
   const q36Rate = fields.landRatePerUnit ? Number(fields.landRatePerUnit).toLocaleString('en-IN') : '';
   const q36Unit = fields.landRateUnit || 'DEC';
   const q36LandArea = fields.landArea || '';
@@ -695,11 +739,15 @@ export async function generateIncomeTaxPDF(
 
   // TABLE F — COST OF CONSTRUCTION
   drawQHeader('COST OF CONSTRUCTION');
-  drawQRow('38', 'YEAR OF COMMENCEMENT OF CONSTRUCTION AND YEAR OF COMPLETION:', fields.constructionStartYear ? `COMMENCEMENT IN THE YEAR: ${fields.constructionStartYear}, COMPLETED IN YEAR: ${fields.constructionEndYear}` : 'NOT APPLICABLE');
-  drawQRow('39', 'WHAT WAS THE METHOD OF CONSTRUCTION--BY CONTRACT / BY EMPLOYING LABOUR DIRECTLY / BOTH?', fields.constructionMethod);
-  drawQRow('40', 'FOR ITEMS OF WORK DONE ON CONTRACT, PRODUCE COPIES OF AGREEMENTS.', fields.contractAgreements);
-  drawQRow('41', 'FOR ITEMS OF WORK DONE BY ENGAGING LABOUR DIRECTLY, GIVE BASIC RATES OF MATERIALS AND SUPPORTED BY DOCUMENTARY PROOF:', fields.materialRates);
-  drawQRow('42', 'BUILDING APPROVAL PLAN IF ANY', fields.buildingApproval || 'NOT APPLICABLE');
+  let q38Answer = 'NOT APPLICABLE';
+  if (fields.constructionStartYear || fields.constructionEndYear) {
+    q38Answer = `• COMMENCEMENT IN THE YEAR: ${fields.constructionStartYear || 'N/A'}\n• COMPLETED IN YEAR: ${fields.constructionEndYear || 'N/A'}`;
+  }
+  drawQRow('38', 'YEAR OF COMMENCEMENT OF CONSTRUCTION AND YEAR OF COMPLETION:', q38Answer);
+  drawQRow('39', 'WHAT WAS THE METHOD OF CONSTRUCTION--BY CONTRACT / BY EMPLOYING LABOUR DIRECTLY / BOTH?', fields.constructionMethod ? (fields.constructionMethod.startsWith('•') ? fields.constructionMethod : `• ${fields.constructionMethod}`) : 'NOT APPLICABLE');
+  drawQRow('40', 'FOR ITEMS OF WORK DONE ON CONTRACT, PRODUCE COPIES OF AGREEMENTS.', fields.contractAgreements ? (fields.contractAgreements.startsWith('•') ? fields.contractAgreements : `• ${fields.contractAgreements}`) : 'NOT APPLICABLE');
+  drawQRow('41', 'FOR ITEMS OF WORK DONE BY ENGAGING LABOUR DIRECTLY, GIVE BASIC RATES OF MATERIALS AND SUPPORTED BY DOCUMENTARY PROOF:', fields.materialRates ? (fields.materialRates.startsWith('•') ? fields.materialRates : `• ${fields.materialRates}`) : 'NOT APPLICABLE');
+  drawQRow('42', 'BUILDING APPROVAL PLAN IF ANY', fields.buildingApproval ? (fields.buildingApproval.startsWith('•') ? fields.buildingApproval : `• ${fields.buildingApproval}`) : 'NOT APPLICABLE');
   advanceCursor(12);
 
   // ═══════════════════════════════════════════════════════
@@ -1074,6 +1122,13 @@ export async function generateIncomeTaxPDF(
       } catch (e) {
         console.warn('Failed to embed photo:', e);
       }
+    }
+  }
+
+  // Easement Document Copies Annexure
+  if (easementImageBytes.length > 0) {
+    for (let i = 0; i < easementImageBytes.length; i++) {
+      await embedImage(easementImageBytes[i], `ANNEXURE — EASEMENT AGREEMENT COPY${easementImageBytes.length > 1 ? ` (${i + 1})` : ''}`, CW, 600);
     }
   }
 
