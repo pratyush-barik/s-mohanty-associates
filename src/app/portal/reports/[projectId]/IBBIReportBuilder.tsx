@@ -89,6 +89,9 @@ interface IBBIFields {
   boundSouth: string;
   extentOfSite: string;
   occupancyStatus: string;
+  crzArea: string;
+  floodProneArea: string;
+  extentConsidered: string;
 
   // ── Section 5: Town Planning ──
   masterPlanProvision: string;
@@ -97,6 +100,9 @@ interface IBBIFields {
   developmentControls: string;
   groundCoverage: string;
   surroundingLandUse: string;
+  planGenuineness: string;
+  planAuthenticityComments: string;
+  otherAspect5: string;
 
   // ── Section 6: Legal Aspects ──
   ownershipDocuments: string;
@@ -122,6 +128,11 @@ interface IBBIFields {
   busStopDist: string;
   schoolDist: string;
   collegeDist: string;
+  spaceAllocation: string;
+  storageSpaces: string;
+  utilitySpaces: string;
+  carParking: string;
+  balconies: string;
 
   // ── Section 8 & 9: Socio-Cultural / Environment ──
   socialStructure: string;
@@ -135,6 +146,8 @@ interface IBBIFields {
   locationalAttributes: string;
   scarcity: string;
   demandSupply: string;
+  comparableSalePrices: string;
+  otherMarketability: string;
   architecturalAspects: string;
 
   // ── Section 12: Engineering ──
@@ -148,6 +161,22 @@ interface IBBIFields {
   structuralSafety: string;
   naturalDisasterProtection: string;
   visibleDamage: string;
+  airConditioning: string;
+  fireFighting: string;
+  yearOfConstruction: string;
+  foundationType: string;
+  superstructure: string;
+  buildingType: string;
+  numberOfFloors: string;
+  roofType: string;
+  roofHeight: string;
+  flooringType: string;
+  joineriesType: string;
+  amenitiesFitting: string;
+  buildingCondition: string;
+  constructionQuality: string;
+  assumedSalvageValue: string;
+  plinthArea12: string;
 
   // ── Section 13: Valuation ──
   bookValueTotal: string;
@@ -240,6 +269,9 @@ const DEFAULT_FIELDS: IBBIFields = {
   boundSouth: '',
   extentOfSite: '',
   occupancyStatus: 'Vacant',
+  crzArea: 'NO',
+  floodProneArea: 'NO',
+  extentConsidered: '',
 
   masterPlanProvision: '',
   approvedPlanDate: '',
@@ -247,6 +279,9 @@ const DEFAULT_FIELDS: IBBIFields = {
   developmentControls: '',
   groundCoverage: '',
   surroundingLandUse: '',
+  planGenuineness: '',
+  planAuthenticityComments: '',
+  otherAspect5: '',
 
   ownershipDocuments: 'ROR',
   ownerAsPerROR: '',
@@ -270,6 +305,11 @@ const DEFAULT_FIELDS: IBBIFields = {
   busStopDist: '',
   schoolDist: '',
   collegeDist: '',
+  spaceAllocation: 'NO',
+  storageSpaces: 'NO',
+  utilitySpaces: 'NO',
+  carParking: 'NO',
+  balconies: 'NO',
 
   socialStructure: 'Average',
   socialInfrastructure: 'No',
@@ -281,6 +321,8 @@ const DEFAULT_FIELDS: IBBIFields = {
   locationalAttributes: 'Average',
   scarcity: 'No',
   demandSupply: 'Restricted',
+  comparableSalePrices: '',
+  otherMarketability: '',
   architecturalAspects: 'None',
 
   constructionType: 'None at site',
@@ -293,6 +335,22 @@ const DEFAULT_FIELDS: IBBIFields = {
   structuralSafety: 'None',
   naturalDisasterProtection: 'None',
   visibleDamage: 'None',
+  airConditioning: 'None at site',
+  fireFighting: 'None at site',
+  yearOfConstruction: '',
+  foundationType: 'None at site',
+  superstructure: 'None at site',
+  buildingType: 'None at site',
+  numberOfFloors: '',
+  roofType: 'None at site',
+  roofHeight: '',
+  flooringType: 'None at site',
+  joineriesType: 'None at site',
+  amenitiesFitting: 'None at site',
+  buildingCondition: 'None at site',
+  constructionQuality: 'Not Applicable',
+  assumedSalvageValue: 'Not Applicable',
+  plinthArea12: 'Not Applicable',
 
   bookValueTotal: '',
   fairMarketValueTotal: '',
