@@ -1190,31 +1190,31 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
       r.drawTextBlock('1.1 VALUATION STANDARD', { bold: true });
       tocPageMap['    1.1  Valuation Standard'] = r.getPageCount();
-      r.drawTextBlock('The entire valuation exercise has been carried out in accordance of Standard procedures laid down as per the International Valuation Standards.');
+      r.drawTextBlock(fields.objective1_1 || 'The entire valuation exercise has been carried out in accordance of Standard procedures laid down as per the International Valuation Standards.');
       r.advanceCursor(4);
       r.drawTextBlock('1.2 PURPOSE OF VALUATION', { bold: true });
       tocPageMap['    1.2  Purpose of Valuation'] = r.getPageCount();
-      r.drawTextBlock(`The Valuation is required for the purpose of ${fields.purposeOfValuation || 'accessing the impartial and true Liquidation / Realisable Market value'} of the aforesaid property on the basis of market survey method as on the date of valuation.`);
+      r.drawTextBlock(fields.objective1_2 || `The Valuation is required for the purpose of ${fields.purposeOfValuation || 'accessing the impartial and true Liquidation / Realisable Market value'} of the aforesaid property on the basis of market survey method as on the date of valuation.`);
       r.advanceCursor(4);
       r.drawTextBlock('1.3 CONFLICT OF INTEREST', { bold: true });
       tocPageMap['    1.3  Conflict of Interest'] = r.getPageCount();
-      r.drawTextBlock('The valuer has no direct or indirect interest in the property valued, nor any personal interest or bias with respect to the parties involved.');
+      r.drawTextBlock(fields.objective1_3 || 'The valuer has no direct or indirect interest in the property valued, nor any personal interest or bias with respect to the parties involved.');
       r.advanceCursor(4);
       r.drawTextBlock('1.4 CURRENCY AND MEASUREMENT', { bold: true });
       tocPageMap['    1.4  Currency and Measurement'] = r.getPageCount();
-      r.drawTextBlock('All amounts are in Indian Rupees (INR). Land is measured in Acres/Decimals/Sq. ft. as applicable.');
+      r.drawTextBlock(fields.objective1_4 || 'All amounts are in Indian Rupees (INR). Land is measured in Acres/Decimals/Sq. ft. as applicable.');
       r.advanceCursor(4);
       r.drawTextBlock('1.5 RESPONSIBILITY TO THIRD PARTIES', { bold: true });
       tocPageMap['    1.5  Responsibility to Third Parties'] = r.getPageCount();
-      r.drawTextBlock('This report is prepared only for the stated purpose and the parties named herein.');
+      r.drawTextBlock(fields.objective1_5 || 'This report is prepared only for the stated purpose and the parties named herein.');
       r.advanceCursor(4);
       r.drawTextBlock('1.6 DISCLOSURE AND PUBLICATION', { bold: true });
       tocPageMap['    1.6  Disclosure and Publication'] = r.getPageCount();
-      r.drawTextBlock('This valuation report or any reference thereof should not be used in any published document without the consent of the valuer.');
+      r.drawTextBlock(fields.objective1_6 || 'This valuation report or any reference thereof should not be used in any published document without the consent of the valuer.');
       r.advanceCursor(4);
       r.drawTextBlock('1.7 LIMITATIONS ON LIABILITY', { bold: true });
       tocPageMap['    1.7  Limitations on Liability'] = r.getPageCount();
-      r.drawTextBlock('The valuer shall not be liable for any loss or damage arising from this report except to the extent that such loss or damage is caused by the valuer\'s negligence.');
+      r.drawTextBlock(fields.objective1_7 || 'The valuer shall not be liable for any loss or damage arising from this report except to the extent that such loss or damage is caused by the valuer\'s negligence.');
       r.advanceCursor(8);
 
       // ── 2. SCOPE OF ENQUIRIES ──
@@ -1842,9 +1842,9 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
         )}
 
           {/* ── Section 1: Objective & Dates ── */}
-          <Section title="Objective & Static Declarations" number={1}>
+          <Section title="Objective & Declarations" number={1}>
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
-              <p className="text-xs text-blue-800">Sections 1 (Objective), 2 (Scope), and 3 (Basis) are standard IBBI-IVS statutory texts. They will be <strong>auto-generated</strong> in the PDF. Fill the Cover Page, Certificate, and Declaration fields below.</p>
+              <p className="text-xs text-blue-800">Fill the dates, representative details, and certificate fields below. Sub-sections 1.1–1.7, Section 2 (Scope), and Section 3 (Basis) use <strong>standard IBBI-IVS text by default</strong>. You can override any sub-section text below.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Date of Inspection">
@@ -1875,6 +1875,35 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
                 <input type="text" value={fields.registeredOfficeTel} onChange={e => handleChange('registeredOfficeTel', e.target.value)} className={inputCls} placeholder="e.g. (0674)3594365" disabled={isReadOnly} />
               </Field>
 
+            </div>
+
+            {/* Sub-section text overrides */}
+            <div className="mt-6">
+              <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-3">Section 1 Sub-section Text Overrides <span className="inline-block px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-semibold ml-1">OPTIONAL</span></p>
+              <p className="text-xs text-gray-500 mb-3">Leave blank to use standard IBBI-IVS default text. Fill to override with your own custom text.</p>
+              <div className="grid grid-cols-1 gap-4">
+                <Field label="1.1 Valuation Standard" span={2}>
+                  <textarea rows={2} value={fields.objective1_1 || ''} onChange={e => handleChange('objective1_1', e.target.value)} className={inputCls + ' resize-none'} placeholder="Default: The entire valuation exercise has been carried out in accordance of Standard procedures laid down as per the International Valuation Standards." disabled={isReadOnly} />
+                </Field>
+                <Field label="1.2 Purpose of Valuation (full paragraph)" span={2}>
+                  <textarea rows={2} value={fields.objective1_2 || ''} onChange={e => handleChange('objective1_2', e.target.value)} className={inputCls + ' resize-none'} placeholder="Default: The Valuation is required for the purpose of [purposeOfValuation] of the aforesaid property on the basis of market survey method as on the date of valuation." disabled={isReadOnly} />
+                </Field>
+                <Field label="1.3 Conflict of Interest" span={2}>
+                  <textarea rows={2} value={fields.objective1_3 || ''} onChange={e => handleChange('objective1_3', e.target.value)} className={inputCls + ' resize-none'} placeholder="Default: The valuer has no direct or indirect interest in the property valued, nor any personal interest or bias with respect to the parties involved." disabled={isReadOnly} />
+                </Field>
+                <Field label="1.4 Currency and Measurement" span={2}>
+                  <textarea rows={2} value={fields.objective1_4 || ''} onChange={e => handleChange('objective1_4', e.target.value)} className={inputCls + ' resize-none'} placeholder="Default: All amounts are in Indian Rupees (INR). Land is measured in Acres/Decimals/Sq. ft. as applicable." disabled={isReadOnly} />
+                </Field>
+                <Field label="1.5 Responsibility to Third Parties" span={2}>
+                  <textarea rows={2} value={fields.objective1_5 || ''} onChange={e => handleChange('objective1_5', e.target.value)} className={inputCls + ' resize-none'} placeholder="Default: This report is prepared only for the stated purpose and the parties named herein." disabled={isReadOnly} />
+                </Field>
+                <Field label="1.6 Disclosure and Publication" span={2}>
+                  <textarea rows={2} value={fields.objective1_6 || ''} onChange={e => handleChange('objective1_6', e.target.value)} className={inputCls + ' resize-none'} placeholder="Default: This valuation report or any reference thereof should not be used in any published document without the consent of the valuer." disabled={isReadOnly} />
+                </Field>
+                <Field label="1.7 Limitations on Liability" span={2}>
+                  <textarea rows={2} value={fields.objective1_7 || ''} onChange={e => handleChange('objective1_7', e.target.value)} className={inputCls + ' resize-none'} placeholder="Default: The valuer shall not be liable for any loss or damage arising from this report except to the extent that such loss or damage is caused by the valuer's negligence." disabled={isReadOnly} />
+                </Field>
+              </div>
             </div>
           </Section>
 
