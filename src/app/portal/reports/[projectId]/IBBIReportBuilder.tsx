@@ -1264,88 +1264,114 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       // ── 5. TOWN PLANNING ──
       r.drawSectionHeader('5. TOWN PLANNING PARAMETERS:');
       tocPageMap['5.  TOWN PLANNING PARAMETERS'] = r.getPageCount();
-      r.drawSimpleRow('Master Plan Provision', fields.masterPlanProvision);
-      r.drawSimpleRow('Approved Plan Date', fields.approvedPlanDate);
-      r.drawSimpleRow('Approved Plan Authority', fields.approvedPlanAuthority);
-      r.drawSimpleRow('Development Controls', fields.developmentControls);
-      r.drawSimpleRow('Ground Coverage', fields.groundCoverage);
-      r.drawSimpleRow('Surrounding Land Use', fields.surroundingLandUse);
+      r.drawSimpleRow('5.1   Master Plan Provision', fields.masterPlanProvision);
+      r.drawSimpleRow('5.2   Date of approved building plan', fields.approvedPlanDate);
+      r.drawSimpleRow('5.3   Approved plan issuing authority', fields.approvedPlanAuthority);
+      r.drawSimpleRow('5.4   Genuineness of approved plan', fields.planGenuineness || 'N/A');
+      r.drawSimpleRow('5.5   Comments on authenticity', fields.planAuthenticityComments || 'N/A');
+      r.drawSimpleRow('5.6   Development Controls', fields.developmentControls);
+      r.drawSimpleRow('5.7   Ground Coverage', fields.groundCoverage);
+      r.drawSimpleRow('5.8   Surrounding Land Use', fields.surroundingLandUse);
+      r.drawSimpleRow('5.9   Any other aspect', fields.otherAspect5 || 'N/A');
       r.advanceCursor(8);
 
       // ── 6. LEGAL ASPECTS ──
       r.drawSectionHeader('6. DOCUMENT DETAILS AND LEGAL ASPECTS OF THE PROPERTY:');
       tocPageMap['6.  DOCUMENT DETAILS AND LEGAL ASPECTS'] = r.getPageCount();
-      r.drawSimpleRow('Ownership Documents', fields.ownershipDocuments);
-      r.drawSimpleRow('Owner as per ROR', fields.ownerAsPerROR);
-      r.drawSimpleRow('Easement Agreement', fields.easementAgreement);
-      r.drawSimpleRow('Acquisition Notification', fields.acquisitionNotification);
-      r.drawSimpleRow('Road Widening Notification', fields.roadWideningNotification);
-      r.drawSimpleRow('Heritage Restriction', fields.heritageRestriction);
-      r.drawSimpleRow('Transferability', fields.transferability);
-      r.drawSimpleRow('Existing Mortgages / Charge', fields.existingMortgages);
-      r.drawSimpleRow('Guarantee Issued', fields.guaranteeIssued);
-      r.drawSimpleRow('SARFAESI Compliant', fields.sarfaesiCompliant);
-      r.drawSimpleRow('Disputes / Dues', fields.disputesDues);
+      r.drawSimpleRow('6.1   Ownership Documents', fields.ownershipDocuments);
+      r.drawSimpleRow('6.2   Owner as per ROR', fields.ownerAsPerROR);
+      r.drawSimpleRow('6.3   Agreement of easement if any', fields.easementAgreement);
+      r.drawSimpleRow('6.4   Notification of acquisition if any', fields.acquisitionNotification);
+      r.drawSimpleRow('6.5   Notification of road widening if any', fields.roadWideningNotification);
+      r.drawSimpleRow('6.6   Heritage restriction, if any', fields.heritageRestriction);
+      r.drawSimpleRow('6.7   Comment on transferability of ownership', fields.transferability);
+      r.drawSimpleRow('6.8   Existing mortgages / charge / encumbrances', fields.existingMortgages);
+      r.drawSimpleRow('6.9   Guarantee issued (personal/corporate)', fields.guaranteeIssued);
+      r.drawSimpleRow('6.10  Whether property is SARFAESI compliant', fields.sarfaesiCompliant);
+      r.drawSimpleRow('6.11  Disputes or dues in payment of bills/taxes', fields.disputesDues);
       r.advanceCursor(8);
 
       // ── 7. INFRASTRUCTURE ──
       r.drawSectionHeader('7. FUNCTIONAL AND INFRASTRUCTURE ASPECTS OF THE PROPERTY:');
       tocPageMap['7.  FUNCTIONAL AND INFRASTRUCTURE ASPECTS'] = r.getPageCount();
-      r.drawSimpleRow('Water Supply', fields.waterSupply);
-      r.drawSimpleRow('Sewerage', fields.sewerage);
-      r.drawSimpleRow('Storm Water Drainage', fields.stormWater);
-      r.drawSimpleRow('Solid Waste Management', fields.solidWaste);
-      r.drawSimpleRow('Electricity', fields.electricity);
-      r.drawSimpleRow('Road Connectivity', fields.roadConnectivity);
-      r.drawSimpleRow('Nearest Police Station', fields.policeStationDist);
-      r.drawSimpleRow('Nearest Bus Stop', fields.busStopDist);
-      r.drawSimpleRow('Nearest School', fields.schoolDist);
-      r.drawSimpleRow('Nearest College', fields.collegeDist);
+      r.drawTextBlock('Description of aqua infrastructure availability in terms of', { bold: true, fontSize: 10 });
+      r.drawSimpleRow('7.1   Water Supply', fields.waterSupply);
+      r.drawSimpleRow('7.2   Sewerage / Sanitation system', fields.sewerage);
+      r.drawSimpleRow('7.3   Storm Water Drainage', fields.stormWater);
+      r.drawTextBlock('Description of the other physical infrastructure facilities viz', { bold: true, fontSize: 10 });
+      r.drawSimpleRow('7.4   Solid Waste Management', fields.solidWaste);
+      r.drawSimpleRow('7.5   Electricity', fields.electricity);
+      r.drawSimpleRow('7.6   Road and public transport connectivity', fields.roadConnectivity);
+      r.drawSimpleRow('7.7   Availability of other public utilities nearby', [fields.policeStationDist ? 'Police Station: ' + fields.policeStationDist : '', fields.busStopDist ? 'Bus Stop: ' + fields.busStopDist : '', fields.schoolDist ? 'School: ' + fields.schoolDist : '', fields.collegeDist ? 'College: ' + fields.collegeDist : ''].filter(Boolean).join(', ') || 'N/A');
+      r.drawTextBlock('Description of the functionality and utility of the property in terms of', { bold: true, fontSize: 10 });
+      r.drawSimpleRow('7.8   Space Allocation', fields.spaceAllocation || 'N/A');
+      r.drawSimpleRow('7.9   Storage Spaces', fields.storageSpaces || 'N/A');
+      r.drawSimpleRow('7.10  Utility Spaces', fields.utilitySpaces || 'N/A');
+      r.drawSimpleRow('7.11  Car Parking Facility', fields.carParking || 'N/A');
+      r.drawSimpleRow('7.12  Balconies etc.', fields.balconies || 'N/A');
       r.advanceCursor(8);
 
       // ── 8. SOCIO-CULTURAL ──
       r.drawSectionHeader('8. SOCIO-CULTURAL ASPECTS OF THE PROPERTY:');
       tocPageMap['8.  SOCIO-CULTURAL ASPECTS'] = r.getPageCount();
-      r.drawSimpleRow('Social Structure', fields.socialStructure);
-      r.drawSimpleRow('Social Infrastructure', fields.socialInfrastructure);
+      r.drawSimpleRow('8.1   Descriptive account of location of property', fields.socialStructure);
+      r.drawSimpleRow('8.2   Whether property belongs to social infrastructure', fields.socialInfrastructure);
       r.advanceCursor(8);
 
       // ── 9. ENVIRONMENTAL ──
       r.drawSectionHeader('9. ENVIRONMENTAL FACTORS AFFECTING THE PROPERTY:');
       tocPageMap['9.  ENVIRONMENTAL FACTORS'] = r.getPageCount();
-      r.drawSimpleRow('Eco-friendly Materials', fields.ecoMaterials);
-      r.drawSimpleRow('Rain Water Harvesting', fields.rainWaterHarvesting);
-      r.drawSimpleRow('Solar System', fields.solarSystem);
-      r.drawSimpleRow('Environmental Pollution', fields.environmentalPollution);
+      r.drawSimpleRow('9.1   Use of eco-friendly building material', fields.ecoMaterials);
+      r.drawSimpleRow('9.2   Provision of rain water harvesting', fields.rainWaterHarvesting);
+      r.drawSimpleRow('9.3   Use of solar heating, lighting system', fields.solarSystem);
+      r.drawSimpleRow('9.4   Presence of environmental pollution in vicinity', fields.environmentalPollution);
       r.advanceCursor(8);
 
       // ── 10. MARKETABILITY ──
       r.drawSectionHeader('10. MARKETABILITY ASPECTS OF THE PROPERTY:');
       tocPageMap['10. MARKETABILITY OF THE PROPERTY'] = r.getPageCount();
-      r.drawSimpleRow('Locational Attributes', fields.locationalAttributes);
-      r.drawSimpleRow('Scarcity', fields.scarcity);
-      r.drawSimpleRow('Demand & Supply', fields.demandSupply);
+      r.drawSimpleRow('10.1  Locational Attributes', fields.locationalAttributes);
+      r.drawSimpleRow('10.2  Scarcity', fields.scarcity);
+      r.drawSimpleRow('10.3  Demand & Supply', fields.demandSupply);
+      r.drawSimpleRow('10.4  Comparable sale prices in locality', fields.comparableSalePrices || 'N/A');
+      r.drawSimpleRow('10.5  Other aspect relevant to value or marketability', fields.otherMarketability || 'N/A');
       r.advanceCursor(8);
 
       // ── 11. ARCHITECTURAL ──
       r.drawSectionHeader('11. ARCHITECTURAL ASPECTS:');
       tocPageMap['11. ARCHITECTURAL ASPECTS'] = r.getPageCount();
-      r.drawSimpleRow('Architectural Aspects', fields.architecturalAspects);
+      r.drawSimpleRow('11.1  Descriptive account of architecture', fields.architecturalAspects);
       r.advanceCursor(8);
 
       // ── 12. ENGINEERING ──
       r.drawSectionHeader('12. ENGINEERING ASPECTS OF THE PROPERTY:');
       tocPageMap['12. ENGINEERING ASPECTS'] = r.getPageCount();
-      r.drawSimpleRow('Type of Construction', fields.constructionType);
-      r.drawSimpleRow('Materials Used', fields.materialsUsed);
-      r.drawSimpleRow('Specifications', fields.specifications);
-      r.drawSimpleRow('Maintenance Issues', fields.maintenanceIssues);
-      r.drawSimpleRow('Age of Building', fields.ageOfBuilding ? `${fields.ageOfBuilding} Years` : 'N/A');
-      r.drawSimpleRow('Residual Life', fields.residualLife ? `${fields.residualLife} Years` : 'N/A');
-      r.drawSimpleRow('Extent of Deterioration', fields.extentDeterioration);
-      r.drawSimpleRow('Structural Safety', fields.structuralSafety);
-      r.drawSimpleRow('Natural Disaster Protection', fields.naturalDisasterProtection);
-      r.drawSimpleRow('Visible Damage', fields.visibleDamage);
+      r.drawSimpleRow('01.  Type of Construction', fields.constructionType);
+      r.drawSimpleRow('02.  Material and technology used', fields.materialsUsed);
+      r.drawSimpleRow('03.  Specifications', fields.specifications);
+      r.drawSimpleRow('04.  Maintenance Issues', fields.maintenanceIssues);
+      r.drawSimpleRow('05.  Age of Building', fields.ageOfBuilding ? `${fields.ageOfBuilding} Years` : 'N/A');
+      r.drawSimpleRow('06.  Residual Life', fields.residualLife ? `${fields.residualLife} Years` : 'N/A');
+      r.drawSimpleRow('07.  Extent of Deterioration', fields.extentDeterioration);
+      r.drawSimpleRow('08.  Structural Safety', fields.structuralSafety);
+      r.drawSimpleRow('09.  Protection against natural disaster', fields.naturalDisasterProtection);
+      r.drawSimpleRow('10.  Visible Damage', fields.visibleDamage);
+      r.drawSimpleRow('11.  System of air-conditioning', fields.airConditioning || 'N/A');
+      r.drawSimpleRow('12.  Provision of fire-fighting', fields.fireFighting || 'N/A');
+      r.drawSimpleRow('13.  Year of construction', fields.yearOfConstruction || 'N/A');
+      r.drawSimpleRow('14.  Type of foundation', fields.foundationType || 'N/A');
+      r.drawSimpleRow('15.  Superstructure', fields.superstructure || 'N/A');
+      r.drawSimpleRow('16.  Type of building', fields.buildingType || 'N/A');
+      r.drawSimpleRow('17.  Number of floors', fields.numberOfFloors || 'N/A');
+      r.drawSimpleRow('18.  Type of roof', fields.roofType || 'N/A');
+      r.drawSimpleRow('19.  Roof height', fields.roofHeight || 'N/A');
+      r.drawSimpleRow('20.  Type of flooring', fields.flooringType || 'N/A');
+      r.drawSimpleRow('21.  Type of joineries (Door/Windows)', fields.joineriesType || 'N/A');
+      r.drawSimpleRow('22.  Amenities / extra fitting', fields.amenitiesFitting || 'N/A');
+      r.drawSimpleRow('23.  Condition of the building', fields.buildingCondition || 'N/A');
+      r.drawSimpleRow('24.  Quality of construction', fields.constructionQuality || 'N/A');
+      r.drawSimpleRow('25.  Assumed salvage value', fields.assumedSalvageValue || 'N/A');
+      r.drawSimpleRow('       Plinth Area', fields.plinthArea12 || 'N/A');
       r.advanceCursor(8);
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2045,7 +2071,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
           <Section title="Document Details & Legal Aspects" number={6}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Ownership Documents"><input type="text" value={fields.ownershipDocuments} onChange={e => handleChange('ownershipDocuments', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Owner as per ROR"><input type="text" value={fields.ownerAsPerROR} onChange={e => handleChange('ownerAsPerROR', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Owner as per ROR"><textarea rows={2} value={fields.ownerAsPerROR} onChange={e => handleChange('ownerAsPerROR', e.target.value)} className={inputCls + ' resize-none'} placeholder="Multiple owners can be listed" disabled={isReadOnly} /></Field>
               <Field label="Easement Agreement"><input type="text" value={fields.easementAgreement} onChange={e => handleChange('easementAgreement', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
               <Field label="Acquisition Notification"><input type="text" value={fields.acquisitionNotification} onChange={e => handleChange('acquisitionNotification', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
               <Field label="Transferability"><input type="text" value={fields.transferability} onChange={e => handleChange('transferability', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
@@ -2053,8 +2079,8 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
               <Field label="Road Widening Notification"><input type="text" value={fields.roadWideningNotification || ''} onChange={e => handleChange('roadWideningNotification', e.target.value)} className={inputCls} placeholder="Any road widening notification" disabled={isReadOnly} /></Field>
               <Field label="Heritage Restriction"><input type="text" value={fields.heritageRestriction || ''} onChange={e => handleChange('heritageRestriction', e.target.value)} className={inputCls} placeholder="Any heritage restriction" disabled={isReadOnly} /></Field>
               <Field label="Guarantee Issued"><input type="text" value={fields.guaranteeIssued || ''} onChange={e => handleChange('guaranteeIssued', e.target.value)} className={inputCls} placeholder="Any guarantee issued" disabled={isReadOnly} /></Field>
-              <Field label="SARFAESI Compliant"><input type="text" value={fields.sarfaesiCompliant} onChange={e => handleChange('sarfaesiCompliant', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Disputes / Dues"><input type="text" value={fields.disputesDues} onChange={e => handleChange('disputesDues', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="SARFAESI Compliant"><textarea rows={2} value={fields.sarfaesiCompliant} onChange={e => handleChange('sarfaesiCompliant', e.target.value)} className={inputCls + ' resize-none'} disabled={isReadOnly} /></Field>
+              <Field label="Disputes / Dues"><textarea rows={2} value={fields.disputesDues} onChange={e => handleChange('disputesDues', e.target.value)} className={inputCls + ' resize-none'} disabled={isReadOnly} /></Field>
             </div>
           </Section>
 
@@ -2064,7 +2090,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
               <Field label="Water Supply"><input type="text" value={fields.waterSupply} onChange={e => handleChange('waterSupply', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
               <Field label="Sewerage"><input type="text" value={fields.sewerage} onChange={e => handleChange('sewerage', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
               <Field label="Electricity"><input type="text" value={fields.electricity} onChange={e => handleChange('electricity', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Road Connectivity"><input type="text" value={fields.roadConnectivity} onChange={e => handleChange('roadConnectivity', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Road Connectivity"><textarea rows={2} value={fields.roadConnectivity} onChange={e => handleChange('roadConnectivity', e.target.value)} className={inputCls + ' resize-none'} placeholder="Road width, type, connectivity details" disabled={isReadOnly} /></Field>
               <Field label="Storm Water Drainage"><input type="text" value={fields.stormWater || ''} onChange={e => handleChange('stormWater', e.target.value)} className={inputCls} placeholder="e.g. Available / Not Available" disabled={isReadOnly} /></Field>
               <Field label="Solid Waste Management"><input type="text" value={fields.solidWaste || ''} onChange={e => handleChange('solidWaste', e.target.value)} className={inputCls} placeholder="e.g. Municipal Collection" disabled={isReadOnly} /></Field>
               <Field label="Distance to Police Station"><input type="text" value={fields.policeStationDist} onChange={e => handleChange('policeStationDist', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
@@ -2072,12 +2098,20 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
               <Field label="Distance to Nearest School"><input type="text" value={fields.schoolDist || ''} onChange={e => handleChange('schoolDist', e.target.value)} className={inputCls} placeholder="e.g. 2 KM" disabled={isReadOnly} /></Field>
               <Field label="Distance to Nearest College"><input type="text" value={fields.collegeDist || ''} onChange={e => handleChange('collegeDist', e.target.value)} className={inputCls} placeholder="e.g. 5 KM" disabled={isReadOnly} /></Field>
             </div>
+            <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mt-4 mb-2">Functionality & Utility of the Property</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Space Allocation (7.8)"><input type="text" value={fields.spaceAllocation || ''} onChange={e => handleChange('spaceAllocation', e.target.value)} className={inputCls} placeholder="e.g. YES / NO" disabled={isReadOnly} /></Field>
+              <Field label="Storage Spaces (7.9)"><input type="text" value={fields.storageSpaces || ''} onChange={e => handleChange('storageSpaces', e.target.value)} className={inputCls} placeholder="e.g. YES / NO" disabled={isReadOnly} /></Field>
+              <Field label="Utility Spaces (7.10)"><input type="text" value={fields.utilitySpaces || ''} onChange={e => handleChange('utilitySpaces', e.target.value)} className={inputCls} placeholder="e.g. YES / NO" disabled={isReadOnly} /></Field>
+              <Field label="Car Parking Facility (7.11)"><input type="text" value={fields.carParking || ''} onChange={e => handleChange('carParking', e.target.value)} className={inputCls} placeholder="e.g. YES / NO" disabled={isReadOnly} /></Field>
+              <Field label="Balconies etc. (7.12)"><input type="text" value={fields.balconies || ''} onChange={e => handleChange('balconies', e.target.value)} className={inputCls} placeholder="e.g. YES / NO" disabled={isReadOnly} /></Field>
+            </div>
           </Section>
 
           {/* ── Section 8–9: Socio-Cultural & Environmental ── */}
           <Section title="Socio-Cultural & Environmental Factors" number={8}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Social Structure"><input type="text" value={fields.socialStructure} onChange={e => handleChange('socialStructure', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Social Structure (8.1)"><textarea rows={3} value={fields.socialStructure} onChange={e => handleChange('socialStructure', e.target.value)} className={inputCls + ' resize-none'} placeholder="Descriptive account of location, social structure, population" disabled={isReadOnly} /></Field>
               <Field label="Social Infrastructure"><input type="text" value={fields.socialInfrastructure} onChange={e => handleChange('socialInfrastructure', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
               <Field label="Eco-friendly Materials"><input type="text" value={fields.ecoMaterials} onChange={e => handleChange('ecoMaterials', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
               <Field label="Rain Water Harvesting"><input type="text" value={fields.rainWaterHarvesting} onChange={e => handleChange('rainWaterHarvesting', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
@@ -2092,7 +2126,9 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
               <Field label="Locational Attributes"><input type="text" value={fields.locationalAttributes} onChange={e => handleChange('locationalAttributes', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
               <Field label="Scarcity"><input type="text" value={fields.scarcity} onChange={e => handleChange('scarcity', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
               <Field label="Demand & Supply"><input type="text" value={fields.demandSupply} onChange={e => handleChange('demandSupply', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Architectural Aspects"><input type="text" value={fields.architecturalAspects} onChange={e => handleChange('architecturalAspects', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Comparable Sale Prices (10.4)"><input type="text" value={fields.comparableSalePrices || ''} onChange={e => handleChange('comparableSalePrices', e.target.value)} className={inputCls} placeholder="e.g. DISCUSSED IN RESPECTIVE CHAPTER" disabled={isReadOnly} /></Field>
+              <Field label="Other Marketability Aspect (10.5)"><textarea rows={2} value={fields.otherMarketability || ''} onChange={e => handleChange('otherMarketability', e.target.value)} className={inputCls + ' resize-none'} placeholder="Any other aspect relevant to value or marketability" disabled={isReadOnly} /></Field>
+              <Field label="Architectural Aspects (11.1)"><textarea rows={3} value={fields.architecturalAspects} onChange={e => handleChange('architecturalAspects', e.target.value)} className={inputCls + ' resize-none'} placeholder="Descriptive account: modern, old fashioned, decorative..." disabled={isReadOnly} /></Field>
             </div>
           </Section>
 
@@ -2109,6 +2145,22 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
               <Field label="Structural Safety"><input type="text" value={fields.structuralSafety} onChange={e => handleChange('structuralSafety', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
               <Field label="Natural Disaster Protection"><input type="text" value={fields.naturalDisasterProtection} onChange={e => handleChange('naturalDisasterProtection', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
               <Field label="Visible Damage"><input type="text" value={fields.visibleDamage} onChange={e => handleChange('visibleDamage', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="Air-conditioning System (11)"><input type="text" value={fields.airConditioning || ''} onChange={e => handleChange('airConditioning', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE" disabled={isReadOnly} /></Field>
+              <Field label="Fire-fighting Provision (12)"><input type="text" value={fields.fireFighting || ''} onChange={e => handleChange('fireFighting', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE" disabled={isReadOnly} /></Field>
+              <Field label="Year of Construction (13)"><input type="text" value={fields.yearOfConstruction || ''} onChange={e => handleChange('yearOfConstruction', e.target.value)} className={inputCls} placeholder="e.g. 2015" disabled={isReadOnly} /></Field>
+              <Field label="Type of Foundation (14)"><input type="text" value={fields.foundationType || ''} onChange={e => handleChange('foundationType', e.target.value)} className={inputCls} placeholder="e.g. RCC" disabled={isReadOnly} /></Field>
+              <Field label="Superstructure (15)"><input type="text" value={fields.superstructure || ''} onChange={e => handleChange('superstructure', e.target.value)} className={inputCls} placeholder="e.g. RCC FRAMED" disabled={isReadOnly} /></Field>
+              <Field label="Type of Building (16)"><input type="text" value={fields.buildingType || ''} onChange={e => handleChange('buildingType', e.target.value)} className={inputCls} placeholder="e.g. RESIDENTIAL / COMMERCIAL" disabled={isReadOnly} /></Field>
+              <Field label="Number of Floors (17)"><input type="text" value={fields.numberOfFloors || ''} onChange={e => handleChange('numberOfFloors', e.target.value)} className={inputCls} placeholder="e.g. G+2" disabled={isReadOnly} /></Field>
+              <Field label="Type of Roof (18)"><input type="text" value={fields.roofType || ''} onChange={e => handleChange('roofType', e.target.value)} className={inputCls} placeholder="e.g. RCC FLAT ROOF" disabled={isReadOnly} /></Field>
+              <Field label="Roof Height (19)"><input type="text" value={fields.roofHeight || ''} onChange={e => handleChange('roofHeight', e.target.value)} className={inputCls} placeholder="e.g. 10 FT" disabled={isReadOnly} /></Field>
+              <Field label="Type of Flooring (20)"><input type="text" value={fields.flooringType || ''} onChange={e => handleChange('flooringType', e.target.value)} className={inputCls} placeholder="e.g. VITRIFIED TILES" disabled={isReadOnly} /></Field>
+              <Field label="Type of Joineries - Door/Windows (21)"><input type="text" value={fields.joineriesType || ''} onChange={e => handleChange('joineriesType', e.target.value)} className={inputCls} placeholder="e.g. WOODEN / ALUMINIUM" disabled={isReadOnly} /></Field>
+              <Field label="Amenities / Extra Fitting (22)"><input type="text" value={fields.amenitiesFitting || ''} onChange={e => handleChange('amenitiesFitting', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE" disabled={isReadOnly} /></Field>
+              <Field label="Condition of Building (23)"><input type="text" value={fields.buildingCondition || ''} onChange={e => handleChange('buildingCondition', e.target.value)} className={inputCls} placeholder="e.g. GOOD / FAIR / POOR" disabled={isReadOnly} /></Field>
+              <Field label="Quality of Construction (24)"><input type="text" value={fields.constructionQuality || ''} onChange={e => handleChange('constructionQuality', e.target.value)} className={inputCls} placeholder="e.g. GOOD / AVERAGE" disabled={isReadOnly} /></Field>
+              <Field label="Assumed Salvage Value (25)"><input type="text" value={fields.assumedSalvageValue || ''} onChange={e => handleChange('assumedSalvageValue', e.target.value)} className={inputCls} placeholder="e.g. NOT APPLICABLE" disabled={isReadOnly} /></Field>
+              <Field label="Plinth Area"><input type="text" value={fields.plinthArea12 || ''} onChange={e => handleChange('plinthArea12', e.target.value)} className={inputCls} placeholder="e.g. NOT APPLICABLE" disabled={isReadOnly} /></Field>
             </div>
           </Section>
 
