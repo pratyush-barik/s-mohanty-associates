@@ -66,8 +66,26 @@ const cleanAddressForMap = (rawAddr: string): string => {
   let str = rawAddr.trim();
   str = str.replace(/^(MR|MRS|DR|MS|M\/S)\.?[^,]+,?\s*/gi, '');
   str = str.replace(/^[A-Z\s.&]+\s*&\s*OTHERS,?\s*/gi, '');
-  str = str.replace(/\b(AT\/PO|PS|DIST):?\s*/gi, '');
+  str = str.replace(/\b(AT\/PO|PS|DIST|THANA|TAHASIL|MOUZA|KHATA NO|PLOT NO):?\s*/gi, '');
+  str = str.replace(/["';]/g, '').trim();
   return str.trim();
+};
+
+const getIncomeTaxLocationAddress = (fields: IncomeTaxFields): string => {
+  if (fields.locationDetailsLines && fields.locationDetailsLines.length > 0) {
+    const joined = fields.locationDetailsLines.filter(Boolean).join(', ');
+    const cleaned = cleanAddressForMap(joined);
+    if (cleaned) return cleaned;
+  }
+  if (fields.propertyDescription && fields.propertyDescription.trim()) {
+    const cleaned = cleanAddressForMap(fields.propertyDescription);
+    if (cleaned) return cleaned;
+  }
+  if (fields.ownerAddress && fields.ownerAddress.trim()) {
+    const cleaned = cleanAddressForMap(fields.ownerAddress);
+    if (cleaned) return cleaned;
+  }
+  return '';
 };
 
 interface IncomeTaxFields {
@@ -210,6 +228,7 @@ interface IncomeTaxFields {
   propertyImages: string[];
   propertyImageNames: string[];
   locationMapImage: string;
+  locationSearchQuery?: string;
   latitude: string;
   longitude: string;
   ciiTableImage: string;
@@ -2516,9 +2535,11 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
             </div>
             {/* Live Google Maps Embed */}
             {(() => {
+              const defaultAddr = getIncomeTaxLocationAddress(fields);
+              const activeAddr = fields.locationSearchQuery !== undefined ? fields.locationSearchQuery : defaultAddr;
               const mapQuery = fields.latitude && fields.longitude
                 ? `${fields.latitude.trim()},${fields.longitude.trim()}`
-                : cleanAddressForMap(fields.propertyDescription || fields.ownerAddress || '');
+                : activeAddr;
               const encodedQuery = encodeURIComponent(mapQuery);
               const hasQuery = mapQuery.trim().length > 0;
               const googleMapsUrl = fields.latitude && fields.longitude
@@ -2526,11 +2547,20 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                 : `https://www.google.com/maps/search/${encodedQuery}`;
               return (
                 <div className="space-y-3">
+                  <Field label="Google Maps Location Address / Search Query (Auto-derived from Q06 Location Details & Legal Address)">
+                    <input
+                      className={inputCls}
+                      value={activeAddr}
+                      onChange={e => handleChange('locationSearchQuery', e.target.value)}
+                      disabled={isReadOnly}
+                      placeholder="e.g. KALYANPUR, BINJHARPUR, JAJPUR, ODISHA"
+                    />
+                  </Field>
                   {hasQuery ? (
                     <div className="rounded-xl overflow-hidden border border-[#c8d6e5] shadow-sm">
                       <div className="bg-[#d5e8f5] px-4 py-2 flex items-center justify-between">
                         <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider">
-                          Live Map Preview (Property Address)
+                          Live Map Preview (Property Legal Location)
                         </span>
                         <a
                           href={googleMapsUrl}
@@ -2560,7 +2590,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                   ) : (
                     <div className="p-6 rounded-xl bg-[#f8f9fa] border border-[#dee2e6] text-center text-sm text-[#6c757d]">
                       <p className="font-semibold mb-1">No address found.</p>
-                      <p>Fill in the <strong>Property Address</strong> in Section 1 or enter Lat/Long below to auto-load the map.</p>
+                      <p>Type the location address above or enter Lat/Long to load the live map.</p>
                     </div>
                   )}
                 </div>

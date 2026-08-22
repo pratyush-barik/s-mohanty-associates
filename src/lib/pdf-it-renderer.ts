@@ -104,6 +104,7 @@ export interface IncomeTaxFieldsForPDF {
   remarks: string;
   propertyImages: string[];
   locationMapImage: string;
+  locationSearchQuery?: string;
   latitude?: string;
   longitude?: string;
   ciiTableImage: string;
