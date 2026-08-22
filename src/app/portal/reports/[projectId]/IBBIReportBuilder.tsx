@@ -220,6 +220,11 @@ interface IBBIFields {
   appointedByDesignation?: string;
 
   // ── Section 1 Sub-section Overrides ──
+  scope2_1?: string;
+  scope2_2?: string;
+  scope2_3?: string;
+  scope2_4?: string;
+  scope2_5?: string;
   objective1_1?: string;
   objective1_2?: string;
   objective1_3?: string;
@@ -390,6 +395,11 @@ const DEFAULT_FIELDS: IBBIFields = {
   annexureEnabled: false,
   annexures: [],
 
+  scope2_1: '',
+  scope2_2: '',
+  scope2_3: '',
+  scope2_4: '',
+  scope2_5: '',
   objective1_1: '',
   objective1_2: '',
   objective1_3: '',
