@@ -1869,33 +1869,16 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                       </Field>
                     </div>
 
-                    {/* Secondary Rate (Auto-Converted) */}
+                    {/* Secondary Rate (100% Auto-Converted) */}
                     <div className="p-3 bg-white/70 border border-[#d1e7dd] rounded-xl space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[11px] font-bold text-[#6c757d] uppercase tracking-wider block">Equivalent Rate Expression (Auto-Converted)</span>
-                        {!isReadOnly && fields.landRatePerUnit && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const pUnit = fields.landRateUnit || 'DEC';
-                              const sUnit = fields.landRateSecondaryUnit || 'ACRE';
-                              const autoSec = convertLandRate(fields.landRatePerUnit, pUnit, sUnit);
-                              handleChange('landRateSecondaryPerUnit', autoSec);
-                            }}
-                            className="text-[10px] font-bold text-[#b8860b] hover:underline"
-                            title="Recalculate conversion"
-                          >
-                            🔄 Re-Sync Conversion
-                          </button>
-                        )}
-                      </div>
+                      <span className="text-[11px] font-bold text-[#6c757d] uppercase tracking-wider block">Equivalent Rate Expression (Auto-Converted)</span>
                       <div className="grid md:grid-cols-2 gap-4">
-                        <Field label="Secondary Rate (RS.)">
+                        <Field label="Secondary Rate (RS. - Auto-Converted)">
                           <input
-                            className={inputCls}
+                            className={`${inputCls} bg-emerald-50/50 text-emerald-900 font-semibold`}
                             type="number"
-                            value={fields.landRateSecondaryPerUnit || ''}
-                            onChange={e => handleChange('landRateSecondaryPerUnit', e.target.value)}
+                            value={fields.landRatePerUnit ? convertLandRate(fields.landRatePerUnit, fields.landRateUnit || 'DEC', fields.landRateSecondaryUnit || 'ACRE') : (fields.landRateSecondaryPerUnit || '')}
+                            readOnly
                             disabled={isReadOnly}
                             placeholder="Auto-converted from primary rate..."
                           />
@@ -1932,7 +1915,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                       {fields.landRatePerUnit ? (
                         <>
                           {`THE RATE IS ABOUT RS.${Number(fields.landRatePerUnit).toLocaleString('en-IN')}/- PER ${fields.landRateUnit || 'DEC'}`}
-                          {fields.landRateSecondaryPerUnit && ` I.E. RS.${Number(fields.landRateSecondaryPerUnit).toLocaleString('en-IN')}/- PER ${fields.landRateSecondaryUnit || 'ACRE'}`}
+                          {(convertLandRate(fields.landRatePerUnit, fields.landRateUnit || 'DEC', fields.landRateSecondaryUnit || 'ACRE') || fields.landRateSecondaryPerUnit) && ` I.E. RS.${Number(convertLandRate(fields.landRatePerUnit, fields.landRateUnit || 'DEC', fields.landRateSecondaryUnit || 'ACRE') || fields.landRateSecondaryPerUnit).toLocaleString('en-IN')}/- PER ${fields.landRateSecondaryUnit || 'ACRE'}`}
                           {`. HENCE TOTAL VALUE OF THE LAND AS APPEARING IN THE ROR = ${fields.landArea || '...'} ${fields.landAreaUnit || fields.landRateUnit || 'DEC'} @ RS.${Number(fields.landRatePerUnit).toLocaleString('en-IN')}/- PER ${fields.landRateUnit || 'DEC'} = RS.${fields.totalLandValue ? Number(fields.totalLandValue).toLocaleString('en-IN') + '/-' : '...'}`}
                         </>
                       ) : (
