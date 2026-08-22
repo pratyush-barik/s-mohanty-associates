@@ -648,11 +648,13 @@ export async function generateIncomeTaxPDF(
     cy += rowH;
   };
 
-  const drawQRowMulti = (qNo: string, items: { q: string, a: string }[]) => {
+  const drawQRowMulti = (qNo: string, items: { q: string, a: string }[], opts?: { drawSubBorders?: boolean }) => {
+    const drawSubBorders = opts?.drawSubBorders ?? false;
     const fs = 11;
     const lh = fs * LINE_H;
     const h1 = cellHeight(qNo, qColW[0], { bold: true, fontSize: fs });
     let totalH = 0;
+    const padY = drawSubBorders ? 4 : 2;
     const subHeights = items.map(item => {
       const qLineInfos = wrapMultiLineParagraphs(item.q, qColW[1] - 10, fontR, fs);
       const aLineInfos = wrapMultiLineParagraphs(item.a, qColW[2] - 10, fontR, fs);
@@ -660,7 +662,7 @@ export async function generateIncomeTaxPDF(
       qLineInfos.forEach(l => qH += lh + (l.isNewParagraph ? PARA_GAP : 0));
       let aH = 0;
       aLineInfos.forEach(l => aH += lh + (l.isNewParagraph ? PARA_GAP : 0));
-      const rowH = Math.max(qH + 8, aH + 8, lh + 8);
+      const rowH = Math.max(qH + padY * 2, aH + padY * 2, lh + padY * 2);
       return { rowH, qLineInfos, aLineInfos };
     });
     subHeights.forEach(sh => totalH += sh.rowH);
@@ -678,10 +680,9 @@ export async function generateIncomeTaxPDF(
 
     let currY = startY;
     const padX = 5;
-    const padY = 4;
     items.forEach((item, idx) => {
       const { rowH, qLineInfos, aLineInfos } = subHeights[idx];
-      if (idx > 0) {
+      if (idx > 0 && drawSubBorders) {
         page.drawLine({ start: { x: ML + qColW[0], y: pdfY(currY) }, end: { x: ML + CW, y: pdfY(currY) }, thickness: 0.5, color: rgb(0,0,0) });
       }
       let qLineY = currY + padY;
@@ -869,7 +870,7 @@ export async function generateIncomeTaxPDF(
     { q: '(III) MONTHLY OR ANNUAL RENT/COMPENSATION/LICENSE FEE, ETC. PAID BY EACH.', a: fields.tenantRent || 'NOT APPLICABLE' },
     { q: '(IV) GROSS AMOUNT RECEIVED FOR THE WHOLE PROPERTY:', a: fields.tenantGrossAmount || 'NOT APPLICABLE' }
   ];
-  drawQRowMulti('25', q25Items);
+  drawQRowMulti('25', q25Items, { drawSubBorders: true });
   drawQRow('26', 'ARE ANY OF THE OCCUPANTS RELATED TO, OR CLOSE BUSINESS ASSOCIATES OF THE OWNER?', fields.relatedOccupants);
   drawQRow('27', 'IS SEPARATE AMOUNT BEING RECOVERED FOR THE USE OF FIXTURES LIKE FANS, GEYSERS, REFRIGERATORS, COOKING RANGES, BUILT IN WARDROBES, ETC., OR FOR SERVICE CHARGES? IF SO GIVE DETAILS.', fields.fixtures);
   drawQRow('28', 'DETAILS OF WATER AND ELECTRICITY CHARGES TO BE BORNE BY THE OWNER', fields.waterElectricCharges || 'NOT APPLICABLE');
