@@ -219,6 +219,15 @@ interface IBBIFields {
   caseReferenceNo2?: string;
   appointedByDesignation?: string;
 
+  // ── Section 1 Sub-section Overrides ──
+  objective1_1?: string;
+  objective1_2?: string;
+  objective1_3?: string;
+  objective1_4?: string;
+  objective1_5?: string;
+  objective1_6?: string;
+  objective1_7?: string;
+
   // ── Meta ──
   clientType?: string;
   organisationTemplate?: string;
@@ -380,6 +389,14 @@ const DEFAULT_FIELDS: IBBIFields = {
 
   annexureEnabled: false,
   annexures: [],
+
+  objective1_1: '',
+  objective1_2: '',
+  objective1_3: '',
+  objective1_4: '',
+  objective1_5: '',
+  objective1_6: '',
+  objective1_7: '',
 
   clientType: 'organisation',
   organisationTemplate: 'IBBI_IVS',
