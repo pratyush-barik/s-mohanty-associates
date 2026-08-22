@@ -387,6 +387,10 @@ Outstanding items in **priority order**:
 
 
 ### Recent Updates
+- `latest` - fix(IBBI): update Section 3 default text to match sample (3 paragraphs: basis of value, IBBI Regulations 2016, client reliance) with paragraph-splitting PDF render
+- `latest` - feat(IBBI): de-hardcode Section 1, 2, and 3 with optional override textareas and dynamic PDF fallbacks matching IBBI standard text
+- `latest` - feat(IBBI): add 30 new fields, sub-numbering, sub-headers, new form inputs, and textarea conversions for sections 4-12 to IBBIFields interface and PDF render
+- `latest` - update(Resume): update CGPA to 7.43 and S Mohanty Associates full-stack internship details with 5 priority bullet points
 - `latest` - fix(pdf): Ref left/Date right, signature name-only, VALUERS DETAILS line breaks
 - `latest` - fix(pdf): reduce certificate overflow (smaller font/spacing) + fix signature layout (Place left, Seal right)
 - `latest` - feat(report): add missing form fields (Sec 4-7) + Section 13 customizable text overrides for better UX
