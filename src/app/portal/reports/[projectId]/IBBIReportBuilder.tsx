@@ -1251,7 +1251,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       // ── 3. BASIS OF VALUATION ──
       r.drawSectionHeader('3. BASIS OF VALUATION:');
       tocPageMap['3.  BASIS OF VALUATION'] = r.getPageCount();
-      r.drawTextBlock('The valuation is based on Fair Market Value as defined in IVS 104 -- the estimated amount for which an asset or liability should exchange on the valuation date between a willing buyer and a willing seller in an arm\'s length transaction, after proper marketing and where the parties had each acted knowledgeably, prudently and without compulsion.');
+      r.drawTextBlock(fields.basis3 || 'The valuation is based on Fair Market Value as defined in IVS 104 -- the estimated amount for which an asset or liability should exchange on the valuation date between a willing buyer and a willing seller in an arm\'s length transaction, after proper marketing and where the parties had each acted knowledgeably, prudently and without compulsion.');
       r.advanceCursor(8);
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1937,6 +1937,17 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
                 </Field>
                 <Field label="2.5 Information Provided" span={2}>
                   <textarea rows={2} value={fields.scope2_5 || ''} onChange={e => handleChange('scope2_5', e.target.value)} className={inputCls + ' resize-none'} placeholder="Default: Information was provided by the property owners, authorized representatives, and from public records." disabled={isReadOnly} />
+                </Field>
+              </div>
+            </div>
+
+            {/* Section 3 text override */}
+            <div className="mt-6">
+              <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-3">Section 3: Basis of Valuation <span className="inline-block px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-semibold ml-1">OPTIONAL</span></p>
+              <p className="text-xs text-gray-500 mb-3">Leave blank to use standard IBBI-IVS default text. Fill to override.</p>
+              <div className="grid grid-cols-1 gap-4">
+                <Field label="3. Basis of Valuation (full paragraph)" span={2}>
+                  <textarea rows={3} value={fields.basis3 || ''} onChange={e => handleChange('basis3', e.target.value)} className={inputCls + ' resize-none'} placeholder="Default: The valuation is based on Fair Market Value as defined in IVS 104 -- the estimated amount for which an asset or liability should exchange on the valuation date between a willing buyer and a willing seller in an arm's length transaction, after proper marketing and where the parties had each acted knowledgeably, prudently and without compulsion." disabled={isReadOnly} />
                 </Field>
               </div>
             </div>
