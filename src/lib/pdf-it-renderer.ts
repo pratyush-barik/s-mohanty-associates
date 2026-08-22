@@ -817,85 +817,224 @@ export async function generateIncomeTaxPDF(
   advanceCursor(12);
 
   // ═══════════════════════════════════════════════════════
-  // BLOCK 3 — PART II: VALUATION
+  // BLOCK 3 — PART II: VALUATION (ENCLOSED IN BORDER BOX)
   // ═══════════════════════════════════════════════════════
-  const part2Str = 'PART–II–VALUATION';
-  const part2Fs = 13;
-  const part2W = fontBI.widthOfTextAtSize(part2Str, part2Fs);
-  const part2X = ML + (CW - part2W) / 2;
-  ensureSpace(part2Fs * LINE_H + 12 + 80); // Ensure header + paragraph fits
-  page.drawText(part2Str, {
-    x: part2X,
-    y: pdfY(cy) - part2Fs * 0.8,
-    size: part2Fs,
-    font: fontBI,
-    color: rgb(0, 0, 0),
-  });
-  page.drawLine({
-    start: { x: part2X, y: pdfY(cy) - part2Fs * 0.8 - 2 },
-    end: { x: part2X + part2W, y: pdfY(cy) - part2Fs * 0.8 - 2 },
-    thickness: 1,
-    color: rgb(0, 0, 0),
-  });
-  cy += part2Fs * LINE_H + 8;
-  advanceCursor(6);
-  drawText('HERE THE REGISTERED VALUER SHOULD DISCUSS IN DETAIL HIS APPROACH TO VALUATION OF THE PROPERTY AND INDICATE HOW THE VALUE HAS BEEN ARRIVED AT, SUPPORTED BY NECESSARY CALCULATION.');
-  advanceCursor(6);
-  if (fields.valuationYear) {
-    drawText(`VALUATION HAS BEEN PROVIDED FOR THE YEAR ${fields.valuationYear} AT THE REQUEST OF THE CUSTOMER IN ORDER TO ACCESS THE VALUE OF PROPERTY POST COMPLETION OF CONSTRUCTION IN THE YEAR ${fields.completionYear || fields.valuationYear}.`);
-  }
-  advanceCursor(4);
-  for (const bullet of fields.valuationBullets) {
-    if (bullet.trim()) {
-      drawText(`• ${bullet.trim()}`);
-      advanceCursor(2);
+  const boxW = CW;
+  const boxX = ML;
+  const padX = 16;
+  const padY = 14;
+  const contentW = boxW - padX * 2;
+  const p2Fs = 11;
+  const p2Lh = p2Fs * LINE_H;
+
+  const p2HeaderStr = 'PART II-VALUATION';
+  const p2IntroStr = 'HERE THE REGISTERED VALUER SHOULD DISCUSS IN DETAIL HIS APPROACH TO VALUATION OF THE PROPERTY AND INDICATE HOW THE VALUE HAS BEEN ARRIVED AT, SUPPORTED BY NECESSARY CALCULATION.';
+  const p2YearStr = fields.valuationYear
+    ? `VALUATION HAS BEEN PROVIDED FOR THE YEAR ${fields.valuationYear} AT THE REQUEST OF THE CUSTOMER IN ORDER TO ACCESS THE VALUE OF PROPERTY POST COMPLETION OF CONSTRUCTION IN THE YEAR ${fields.completionYear || fields.valuationYear}.`
+    : '';
+
+  const p2IntroLines = wrapText(p2IntroStr, contentW, fontR, p2Fs);
+  const p2YearLines = p2YearStr ? wrapText(p2YearStr, contentW, fontB, p2Fs) : [];
+  
+  const p2BulletItemLines: { lines: string[] }[] = [];
+  for (const bullet of fields.valuationBullets || []) {
+    const trimmed = bullet ? bullet.trim().replace(/^[-*•]\s*/, '') : '';
+    if (trimmed) {
+      const bText = `• ${trimmed}`;
+      const wrapped = wrapText(bText, contentW - 12, fontR, p2Fs);
+      p2BulletItemLines.push({ lines: wrapped });
     }
   }
-  advanceCursor(12);
 
-  // ═══════════════════════════════════════════════════════
-  // BLOCK 4 — PART III: DECLARATION
-  // ═══════════════════════════════════════════════════════
-  const part3Str = 'PART–III–DECLARATION';
-  const part3Fs = 13;
-  const part3W = fontBI.widthOfTextAtSize(part3Str, part3Fs);
-  const part3X = ML + (CW - part3W) / 2;
-  ensureSpace(part3Fs * LINE_H + 12 + 80); // Ensure header + declaration fits
-  page.drawText(part3Str, {
-    x: part3X,
-    y: pdfY(cy) - part3Fs * 0.8,
-    size: part3Fs,
+  let p2BoxH = padY * 2;
+  const headerFs = 13;
+  p2BoxH += headerFs * LINE_H + 6;
+  p2BoxH += 8;
+  p2BoxH += p2IntroLines.length * p2Lh;
+  if (p2YearLines.length > 0) {
+    p2BoxH += 6 + p2YearLines.length * p2Lh;
+  }
+  if (p2BulletItemLines.length > 0) {
+    p2BoxH += 8;
+    for (const bItem of p2BulletItemLines) {
+      p2BoxH += bItem.lines.length * p2Lh + 4;
+    }
+  }
+
+  ensureSpace(p2BoxH + 10);
+  const p2BoxStartY = cy;
+
+  page.drawRectangle({
+    x: boxX,
+    y: pdfY(p2BoxStartY) - p2BoxH,
+    width: boxW,
+    height: p2BoxH,
+    borderColor: rgb(0, 0, 0),
+    borderWidth: 1,
+  });
+
+  let curInnerY = p2BoxStartY + padY;
+
+  const p2Hw = fontBI.widthOfTextAtSize(p2HeaderStr, headerFs);
+  const p2Hx = boxX + (boxW - p2Hw) / 2;
+  page.drawText(p2HeaderStr, {
+    x: p2Hx,
+    y: pdfY(curInnerY) - headerFs * 0.8,
+    size: headerFs,
     font: fontBI,
     color: rgb(0, 0, 0),
   });
   page.drawLine({
-    start: { x: part3X, y: pdfY(cy) - part3Fs * 0.8 - 2 },
-    end: { x: part3X + part3W, y: pdfY(cy) - part3Fs * 0.8 - 2 },
+    start: { x: p2Hx, y: pdfY(curInnerY) - headerFs * 0.8 - 2 },
+    end: { x: p2Hx + p2Hw, y: pdfY(curInnerY) - headerFs * 0.8 - 2 },
     thickness: 1,
     color: rgb(0, 0, 0),
   });
-  cy += part3Fs * LINE_H + 8;
-  advanceCursor(6);
-  drawText('I HEREBY DECLARE THAT-');
-  drawText(`• THE INFORMATION FURNISHED IN PART I IS TRUE TO THE BEST OF MY KNOWLEDGE AND BELIEF.`);
-  drawText(`• I HAVE NO DIRECT OR INDIRECT INTEREST IN THE PROPERTY VALUED.`);
-  drawText(`• I HAVE PERSONALLY INSPECTED THE PROPERTY ON ${fields.inspectionDate}`);
-  advanceCursor(12);
+  curInnerY += headerFs * LINE_H + 10;
 
-  // Date + Signature
-  ensureSpace(40);
-  const dateStr = `DATE–${fields.reportDate}`;
-  const sigStr = 'ER. SATYAJIT MOHANTY';
-  page.drawText(dateStr, { x: ML, y: pdfY(cy) - 10, size: 12, font: fontR, color: rgb(0, 0, 0) });
-  const sigW = fontR.widthOfTextAtSize(sigStr, 12);
-  page.drawText(sigStr, { x: A4_W - MR - sigW, y: pdfY(cy) - 10, size: 12, font: fontR, color: rgb(0, 0, 0) });
-  cy += 18;
-  page.drawText('PLACE–BHUBANESWAR', { x: ML, y: pdfY(cy) - 10, size: 12, font: fontR, color: rgb(0, 0, 0) });
-  const sigLabel = 'SIGNATURE OF REGISTERED VALUER';
-  const sigLW = fontR.widthOfTextAtSize(sigLabel, 12);
-  page.drawText(sigLabel, { x: A4_W - MR - sigLW, y: pdfY(cy) - 10, size: 12, font: fontR, color: rgb(0, 0, 0) });
-  cy += 18;
-  advanceCursor(16);
+  for (let i = 0; i < p2IntroLines.length; i++) {
+    page.drawText(p2IntroLines[i], {
+      x: boxX + padX,
+      y: pdfY(curInnerY) - p2Fs * 0.8,
+      size: p2Fs,
+      font: fontR,
+      color: rgb(0, 0, 0),
+    });
+    curInnerY += p2Lh;
+  }
+
+  if (p2YearLines.length > 0) {
+    curInnerY += 6;
+    for (let i = 0; i < p2YearLines.length; i++) {
+      page.drawText(p2YearLines[i], {
+        x: boxX + padX,
+        y: pdfY(curInnerY) - p2Fs * 0.8,
+        size: p2Fs,
+        font: fontB,
+        color: rgb(0, 0, 0),
+      });
+      curInnerY += p2Lh;
+    }
+  }
+
+  if (p2BulletItemLines.length > 0) {
+    curInnerY += 6;
+    for (const bItem of p2BulletItemLines) {
+      for (let i = 0; i < bItem.lines.length; i++) {
+        page.drawText(bItem.lines[i], {
+          x: boxX + padX + (i === 0 ? 10 : 22),
+          y: pdfY(curInnerY) - p2Fs * 0.8,
+          size: p2Fs,
+          font: fontR,
+          color: rgb(0, 0, 0),
+        });
+        curInnerY += p2Lh;
+      }
+      curInnerY += 4;
+    }
+  }
+
+  cy += p2BoxH + 16;
+
+  // ═══════════════════════════════════════════════════════
+  // BLOCK 4 — PART III: DECLARATION (ENCLOSED IN BORDER BOX)
+  // ═══════════════════════════════════════════════════════
+  const p3Fs = 11;
+  const p3Lh = p3Fs * LINE_H;
+
+  const p3HeaderStr = 'PART III-DECLARATION';
+  const p3IntroStr = 'I HEREBY DECLARE THAT —';
+  const p3Bullet1 = '• THE INFORMATION FURNISHED IN PART I IS TRUE TO THE BEST OF MY KNOWLEDGE AND BELIEF.';
+  const p3Bullet2 = '• I HAVE NO DIRECT OR INDIRECT INTEREST IN THE PROPERTY VALUED.';
+  const p3Bullet3 = fields.inspectionDate
+    ? `• I HAVE PERSONALLY INSPECTED THE PROPERTY ON ${formatReportDate(fields.inspectionDate)}.`
+    : '• I HAVE PERSONALLY INSPECTED THE PROPERTY ON THE GIVEN INSPECTION DATE.';
+
+  const b1Lines = wrapText(p3Bullet1, contentW - 12, fontR, p3Fs);
+  const b2Lines = wrapText(p3Bullet2, contentW - 12, fontR, p3Fs);
+  const b3Lines = wrapText(p3Bullet3, contentW - 12, fontR, p3Fs);
+
+  const dateLabel = `DATE–${fields.reportDate ? formatReportDate(fields.reportDate) : ''}`;
+  const placeLabel = 'PLACE–BHUBANESWAR';
+  const valuerName = 'ER. SATYAJIT MOHANTY';
+  const valuerTitle = 'SIGNATURE OF REGISTERED VALUER';
+
+  let p3BoxH = padY * 2;
+  p3BoxH += headerFs * LINE_H + 6;
+  p3BoxH += 8;
+  p3BoxH += p3Lh + 6;
+  p3BoxH += b1Lines.length * p3Lh + 4;
+  p3BoxH += b2Lines.length * p3Lh + 4;
+  p3BoxH += b3Lines.length * p3Lh + 16;
+  p3BoxH += 36;
+
+  ensureSpace(p3BoxH + 10);
+  const p3BoxStartY = cy;
+
+  page.drawRectangle({
+    x: boxX,
+    y: pdfY(p3BoxStartY) - p3BoxH,
+    width: boxW,
+    height: p3BoxH,
+    borderColor: rgb(0, 0, 0),
+    borderWidth: 1,
+  });
+
+  let curP3Y = p3BoxStartY + padY;
+
+  const p3Hw = fontBI.widthOfTextAtSize(p3HeaderStr, headerFs);
+  const p3Hx = boxX + (boxW - p3Hw) / 2;
+  page.drawText(p3HeaderStr, {
+    x: p3Hx,
+    y: pdfY(curP3Y) - headerFs * 0.8,
+    size: headerFs,
+    font: fontBI,
+    color: rgb(0, 0, 0),
+  });
+  page.drawLine({
+    start: { x: p3Hx, y: pdfY(curP3Y) - headerFs * 0.8 - 2 },
+    end: { x: p3Hx + p3Hw, y: pdfY(curP3Y) - headerFs * 0.8 - 2 },
+    thickness: 1,
+    color: rgb(0, 0, 0),
+  });
+  curP3Y += headerFs * LINE_H + 10;
+
+  page.drawText(p3IntroStr, {
+    x: boxX + padX,
+    y: pdfY(curP3Y) - p3Fs * 0.8,
+    size: p3Fs,
+    font: fontB,
+    color: rgb(0, 0, 0),
+  });
+  curP3Y += p3Lh + 6;
+
+  const allP3Bullets = [b1Lines, b2Lines, b3Lines];
+  for (const bLines of allP3Bullets) {
+    for (let i = 0; i < bLines.length; i++) {
+      page.drawText(bLines[i], {
+        x: boxX + padX + (i === 0 ? 10 : 22),
+        y: pdfY(curP3Y) - p3Fs * 0.8,
+        size: p3Fs,
+        font: fontR,
+        color: rgb(0, 0, 0),
+      });
+      curP3Y += p3Lh;
+    }
+    curP3Y += 4;
+  }
+  curP3Y += 12;
+
+  const sigRightX = boxX + boxW - padX;
+  page.drawText(dateLabel, { x: boxX + padX, y: pdfY(curP3Y) - 10, size: 11, font: fontB, color: rgb(0, 0, 0) });
+  const valuerW = fontB.widthOfTextAtSize(valuerName, 11);
+  page.drawText(valuerName, { x: sigRightX - valuerW, y: pdfY(curP3Y) - 10, size: 11, font: fontB, color: rgb(0, 0, 0) });
+  curP3Y += 18;
+
+  page.drawText(placeLabel, { x: boxX + padX, y: pdfY(curP3Y) - 10, size: 11, font: fontB, color: rgb(0, 0, 0) });
+  const sigTitleW = fontB.widthOfTextAtSize(valuerTitle, 11);
+  page.drawText(valuerTitle, { x: sigRightX - sigTitleW, y: pdfY(curP3Y) - 10, size: 11, font: fontB, color: rgb(0, 0, 0) });
+
+  cy += p3BoxH + 16;
 
   // ═══════════════════════════════════════════════════════
   // BLOCK 5 — ANNEXURE TABLES (Technical Details + Valuation)

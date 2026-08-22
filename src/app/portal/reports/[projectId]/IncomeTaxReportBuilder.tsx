@@ -1987,30 +1987,15 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
             )}
           </div>
 
-          {/* Bullet Points Editor */}
+          {/* Bullet Points Editor with Drag and Drop */}
           <div className="mt-4">
-            <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest mb-3">Valuation Approach Bullet Points</p>
-            {fields.valuationBullets.map((bullet, idx) => (
-              <div key={idx} className="flex gap-2 mb-2">
-                <span className="text-sm font-bold text-[#6c757d] mt-2.5">•</span>
-                <textarea
-                  className={`${textareaCls} flex-1`}
-                  value={bullet}
-                  onChange={e => updateBullet(idx, e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="Enter valuation approach detail..."
-                  rows={2}
-                />
-                {!isReadOnly && (
-                  <button type="button" onClick={() => removeBullet(idx)} className="text-red-400 hover:text-red-600 text-sm mt-2.5">✕</button>
-                )}
-              </div>
-            ))}
-            {!isReadOnly && (
-              <button type="button" onClick={addBullet} className="text-xs font-bold text-[#b8860b] hover:text-[#8b6914] transition-colors mt-1">
-                + Add Bullet Point
-              </button>
-            )}
+            <BulletEditor
+              label="Valuation Approach Bullet Points"
+              lines={fields.valuationBullets}
+              onChange={lines => handleChange('valuationBullets', lines)}
+              disabled={isReadOnly}
+              placeholder="Enter valuation approach detail..."
+            />
           </div>
           </SubSection>
           </div>
