@@ -860,24 +860,60 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
     }
   };
 
+  const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
   const bypassUnloadRef = useRef(false);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const isInitialMount = useRef(true);
+  const debouncedSaveTimer = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    if (isReadOnly) return;
+
+    setAutoSaveStatus('saving');
+
+    if (debouncedSaveTimer.current) {
+      clearTimeout(debouncedSaveTimer.current);
+    }
+
+    debouncedSaveTimer.current = setTimeout(async () => {
+      try {
+        const res = await saveReportDraft(projectId, fields);
+        if (res?.error) {
+          setAutoSaveStatus('error');
+        } else {
+          setAutoSaveStatus('saved');
+        }
+      } catch (err) {
+        console.error('Auto-save error:', err);
+        setAutoSaveStatus('error');
+      }
+    }, 1200);
+
+    return () => {
+      if (debouncedSaveTimer.current) {
+        clearTimeout(debouncedSaveTimer.current);
+      }
+    };
+  }, [fields, projectId, isReadOnly]);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (bypassUnloadRef.current) return;
+      if (bypassUnloadRef.current || isReadOnly) return;
       saveReportDraft(projectId, fields).catch(e => console.error(e));
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [projectId, fields]);
+  }, [projectId, fields, isReadOnly]);
 
   // Rework Modal State
   const [showReworkModal, setShowReworkModal] = useState(false);
   const [reworkComment, setReworkComment] = useState('');
   // Q01 Purpose field lock/unlock
   const [purposeUnlocked, setPurposeUnlocked] = useState(false);
-
-  const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
   const isManagerOrOwner = userRole === 'MANAGER' || userRole === 'OWNER';
   const isLandOnly = !fields.propertyType.includes('BUILDING');
 
@@ -2818,6 +2854,24 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
 
           {!isReadOnly && (
             <>
+              {autoSaveStatus === 'saving' && (
+                <span className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full flex items-center gap-1.5 animate-pulse">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                  Auto-saving...
+                </span>
+              )}
+              {autoSaveStatus === 'saved' && (
+                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  ✓ Auto-saved
+                </span>
+              )}
+              {autoSaveStatus === 'error' && (
+                <span className="text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                  ⚠️ Auto-save failed
+                </span>
+              )}
               <button
                 onClick={handleSaveDraft}
                 disabled={loading}
