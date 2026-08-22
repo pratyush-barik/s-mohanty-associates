@@ -104,6 +104,10 @@ interface IncomeTaxFields {
   // ── Cost of Construction (Q36-Q42) ──
   landRatePerUnit: string;      // Q36 — value per unit
   landRateUnit: string;         // Q36 — unit (DEC/ACRE/SQFT)
+  landRateSecondaryPerUnit?: string;
+  landRateSecondaryUnit?: string;
+  landRateMode?: 'auto' | 'custom';
+  landRateCustomText?: string;
   landRate: string;             // Q36 — legacy/full text
   totalLandValue: string;
   landRateBasis: string;        // Q37
@@ -274,6 +278,10 @@ const DEFAULT_FIELDS: IncomeTaxFields = {
 
   landRatePerUnit: '',
   landRateUnit: 'DEC',
+  landRateSecondaryPerUnit: '',
+  landRateSecondaryUnit: 'ACRE',
+  landRateMode: 'auto',
+  landRateCustomText: '',
   landRate: '',
   totalLandValue: '',
   landRateBasis: 'NOT APPLICABLE',
@@ -1740,41 +1748,151 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                 disabled={isReadOnly}
                 placeholder="DATA COLLECTED FROM SRO, PURI VIDE APPLICATION NO: 32700/7349 ON DATED 16.10.2025 (LETTER ATTACHED FOR REFERENCES)"
               />
-              {/* Q36 — structured rate + unit */}
-              <div className="md:col-span-2 p-4 bg-[#f0fdf4] border border-[#d1e7dd] rounded-xl shadow-sm space-y-3">
-                <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">36 — Land Rate Adopted in this Valuation</span>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <Field label="Rate per Unit (RS.)">
-                    <input
-                      className={inputCls}
-                      type="number"
-                      value={fields.landRatePerUnit}
-                      onChange={e => handleChange('landRatePerUnit', e.target.value)}
+              {/* Q36 — Land Rate Adopted in this Valuation */}
+              <div className="md:col-span-2 p-5 bg-[#f0fdf4] border border-[#d1e7dd] rounded-2xl shadow-sm space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#d1e7dd] pb-3">
+                  <div>
+                    <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">36 — Land Rate Adopted in this Valuation</span>
+                    <p className="text-[11px] text-[#6c757d]">Specify rate per unit or switch to custom text mode</p>
+                  </div>
+                  <div className="inline-flex p-1 bg-white border border-gray-200 rounded-xl shrink-0 self-start sm:self-auto">
+                    <button
+                      type="button"
+                      onClick={() => handleChange('landRateMode', 'auto')}
                       disabled={isReadOnly}
-                      placeholder="50000"
-                    />
-                  </Field>
-                  <Field label="Unit">
-                    <select className={selectCls} value={fields.landRateUnit} onChange={e => handleChange('landRateUnit', e.target.value)} disabled={isReadOnly}>
-                      <option value="DEC">DEC</option>
-                      <option value="ACRE">ACRE</option>
-                      <option value="SQ.FT.">SQ.FT.</option>
-                      <option value="SQ.MTR.">SQ.MTR.</option>
-                      <option value="GUNTHA">GUNTHA</option>
-                      <option value="CENT">CENT</option>
-                    </select>
-                  </Field>
-                  {fields.landRatePerUnit && (
-                    <div className="md:col-span-2 rounded-lg bg-[#fffbee] border border-[#b8860b]/30 px-3 py-2 text-xs text-[#6c4a00] font-mono leading-5">
-                      <span className="text-[10px] font-bold text-[#b8860b] uppercase tracking-wider block mb-0.5">PDF Preview</span>
-                      {`THE RATE IS ABOUT RS.${Number(fields.landRatePerUnit).toLocaleString('en-IN')}/-PER ${fields.landRateUnit}. HENCE TOTAL VALUE OF THE LAND AS APPEARING IN THE ROR= ${fields.landArea || '...'} ${fields.landAreaUnit || fields.landRateUnit} @ RS.${Number(fields.landRatePerUnit).toLocaleString('en-IN')}/-PER ${fields.landRateUnit} =RS.${fields.totalLandValue ? Number(fields.totalLandValue).toLocaleString('en-IN') + '/-' : '...'}`}
-                    </div>
-                  )}
+                      className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                        (fields.landRateMode || 'auto') === 'auto'
+                          ? 'bg-[#b8860b] text-white shadow-sm'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      ⚡ Auto Builder
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleChange('landRateMode', 'custom')}
+                      disabled={isReadOnly}
+                      className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                        fields.landRateMode === 'custom'
+                          ? 'bg-[#b8860b] text-white shadow-sm'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      ✏️ Custom Text
+                    </button>
+                  </div>
                 </div>
+
+                {(fields.landRateMode || 'auto') === 'auto' ? (
+                  <div className="space-y-4">
+                    {/* Primary Rate & Unit */}
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <Field label="Primary Rate per Unit (RS.)">
+                        <input
+                          className={inputCls}
+                          type="number"
+                          value={fields.landRatePerUnit}
+                          onChange={e => {
+                            const newRate = e.target.value;
+                            handleChange('landRatePerUnit', newRate);
+                            if (fields.landArea && newRate) {
+                              const areaNum = parseFloat(fields.landArea.replace(/[^0-9.]/g, '')) || 0;
+                              const rateNum = parseFloat(newRate) || 0;
+                              if (areaNum > 0 && rateNum > 0) {
+                                handleChange('totalLandValue', String(Math.round(areaNum * rateNum)));
+                              }
+                            }
+                          }}
+                          disabled={isReadOnly}
+                          placeholder="e.g. 50000"
+                        />
+                      </Field>
+                      <Field label="Primary Unit">
+                        <select className={selectCls} value={fields.landRateUnit || 'DEC'} onChange={e => handleChange('landRateUnit', e.target.value)} disabled={isReadOnly}>
+                          <option value="DEC">DEC</option>
+                          <option value="ACRE">ACRE</option>
+                          <option value="SQ.FT.">SQ.FT.</option>
+                          <option value="SQ.MTR.">SQ.MTR.</option>
+                          <option value="GUNTHA">GUNTHA</option>
+                          <option value="CENT">CENT</option>
+                        </select>
+                      </Field>
+                      <Field label="Total Land Value (RS.)">
+                        <input
+                          className={inputCls}
+                          value={fields.totalLandValue}
+                          onChange={e => handleChange('totalLandValue', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="e.g. 250000"
+                        />
+                      </Field>
+                    </div>
+
+                    {/* Secondary Rate (Optional) */}
+                    <div className="p-3 bg-white/70 border border-[#d1e7dd] rounded-xl space-y-2">
+                      <span className="text-[11px] font-bold text-[#6c757d] uppercase tracking-wider block">Equivalent Rate Expression (Optional, e.g. Rate per ACRE)</span>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <Field label="Secondary Rate (RS.)">
+                          <input
+                            className={inputCls}
+                            type="number"
+                            value={fields.landRateSecondaryPerUnit || ''}
+                            onChange={e => handleChange('landRateSecondaryPerUnit', e.target.value)}
+                            disabled={isReadOnly}
+                            placeholder="e.g. 5000000 (i.e. RS.50,00,000/- PER ACRE)"
+                          />
+                        </Field>
+                        <Field label="Secondary Unit">
+                          <select className={selectCls} value={fields.landRateSecondaryUnit || 'ACRE'} onChange={e => handleChange('landRateSecondaryUnit', e.target.value)} disabled={isReadOnly}>
+                            <option value="ACRE">ACRE</option>
+                            <option value="DEC">DEC</option>
+                            <option value="SQ.FT.">SQ.FT.</option>
+                            <option value="SQ.MTR.">SQ.MTR.</option>
+                            <option value="GUNTHA">GUNTHA</option>
+                            <option value="CENT">CENT</option>
+                          </select>
+                        </Field>
+                      </div>
+                    </div>
+
+                    {/* PDF Sentence Live Preview */}
+                    <div className="rounded-xl bg-[#fffbee] border border-[#b8860b]/30 p-3.5 text-xs text-[#6c4a00] font-mono leading-5 shadow-inner">
+                      <span className="text-[10px] font-black text-[#b8860b] uppercase tracking-widest block mb-1">📄 Live PDF Statement Preview</span>
+                      {fields.landRatePerUnit ? (
+                        <>
+                          {`THE RATE IS ABOUT RS.${Number(fields.landRatePerUnit).toLocaleString('en-IN')}/- PER ${fields.landRateUnit || 'DEC'}`}
+                          {fields.landRateSecondaryPerUnit && ` I.E. RS.${Number(fields.landRateSecondaryPerUnit).toLocaleString('en-IN')}/- PER ${fields.landRateSecondaryUnit || 'ACRE'}`}
+                          {`. HENCE TOTAL VALUE OF THE LAND AS APPEARING IN THE ROR = ${fields.landArea || '...'} ${fields.landAreaUnit || fields.landRateUnit || 'DEC'} @ RS.${Number(fields.landRatePerUnit).toLocaleString('en-IN')}/- PER ${fields.landRateUnit || 'DEC'} = RS.${fields.totalLandValue ? Number(fields.totalLandValue).toLocaleString('en-IN') + '/-' : '...'}`}
+                        </>
+                      ) : (
+                        <span className="text-gray-400 italic">Enter Primary Rate per Unit above to generate statement...</span>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <Field label="Custom Land Rate Statement / Paragraph">
+                      <textarea
+                        className={textareaCls}
+                        rows={4}
+                        value={fields.landRateCustomText || ''}
+                        onChange={e => handleChange('landRateCustomText', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="Type or paste exact custom statement for Question 36..."
+                      />
+                    </Field>
+                    <Field label="Total Land Value (RS.)">
+                      <input
+                        className={inputCls}
+                        value={fields.totalLandValue}
+                        onChange={e => handleChange('totalLandValue', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="e.g. 250000"
+                      />
+                    </Field>
+                  </div>
+                )}
               </div>
-              <Field label="Total Land Value (RS.)">
-                <input className={inputCls} value={fields.totalLandValue} onChange={e => handleChange('totalLandValue', e.target.value)} disabled={isReadOnly} placeholder="1500000" />
-              </Field>
               <Field label="37 — Land Rate Basis (if Sale Instances Not Available/Relied Upon)">
                 <input className={inputCls} value={fields.landRateBasis} onChange={e => handleChange('landRateBasis', e.target.value)} disabled={isReadOnly} placeholder="NOT APPLICABLE" />
               </Field>

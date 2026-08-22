@@ -82,6 +82,10 @@ export interface IncomeTaxFieldsForPDF {
   saleInstances: string;
   landRatePerUnit: string;
   landRateUnit: string;
+  landRateSecondaryPerUnit?: string;
+  landRateSecondaryUnit?: string;
+  landRateMode?: 'auto' | 'custom';
+  landRateCustomText?: string;
   landRate: string;
   totalLandValue: string;
   landRateBasis: string;
@@ -725,14 +729,28 @@ export async function generateIncomeTaxPDF(
   }
   drawQRow('35', 'GIVE INSTANCES OF SALES OF IMMOVABLE PROPERTY IN THE LOCALITY ON A SEPARATE SHEET, INDICATING THE NAME AND ADDRESS OF THE PROPERTY, REGISTRATION NO., SALE PRICE AND AREA OF LAND SOLD:', q35Answer);
 
-  const q36Rate = fields.landRatePerUnit ? Number(fields.landRatePerUnit).toLocaleString('en-IN') : '';
-  const q36Unit = fields.landRateUnit || 'DEC';
-  const q36LandArea = fields.landArea || '';
-  const q36LandAreaUnit = fields.landAreaUnit || q36Unit;
-  const q36Total = computedLandValue ? formatIndianCurrency(computedLandValue) : (fields.totalLandValue || '');
-  const q36Text = q36Rate
-    ? `THE RATE IS ABOUT RS.${q36Rate}/-PER ${q36Unit}. HENCE TOTAL VALUE OF THE LAND AS APPEARING IN THE ROR= ${q36LandArea} ${q36LandAreaUnit} @ RS.${q36Rate}/-PER ${q36Unit} =RS.${q36Total}/-`
-    : (fields.landRate || '');
+  let q36Text = '';
+  if (fields.landRateMode === 'custom' && fields.landRateCustomText) {
+    q36Text = fields.landRateCustomText;
+  } else {
+    const q36Rate = fields.landRatePerUnit ? parseNum(fields.landRatePerUnit).toLocaleString('en-IN') : '';
+    const q36Unit = fields.landRateUnit || 'DEC';
+    const q36LandArea = fields.landArea || '';
+    const q36LandAreaUnit = fields.landAreaUnit || q36Unit;
+    const q36TotalVal = computedLandValue || parseNum(fields.totalLandValue);
+    const q36TotalStr = q36TotalVal ? `${formatIndianCurrency(q36TotalVal)}/-` : '...';
+
+    if (q36Rate) {
+      let ratePhrase = `THE RATE IS ABOUT RS.${q36Rate}/- PER ${q36Unit}`;
+      if (fields.landRateSecondaryPerUnit && fields.landRateSecondaryUnit) {
+        const secRate = parseNum(fields.landRateSecondaryPerUnit).toLocaleString('en-IN');
+        ratePhrase += ` I.E. RS.${secRate}/- PER ${fields.landRateSecondaryUnit}`;
+      }
+      q36Text = `${ratePhrase}. HENCE TOTAL VALUE OF THE LAND AS APPEARING IN THE ROR= ${q36LandArea} ${q36LandAreaUnit} @ RS.${q36Rate}/- PER ${q36Unit} = RS.${q36TotalStr}`;
+    } else {
+      q36Text = fields.landRate || 'NOT APPLICABLE';
+    }
+  }
   drawQRow('36', 'LAND RATE ADOPTED IN THIS VALUATION:', q36Text);
   drawQRow('37', 'IF SALE INSTANCES ARE NOT AVAILABLE OR NOT RELIED UPON, THE BASIS OF ARRIVING AT THE LAND RATE.', fields.landRateBasis);
   advanceCursor(6);
