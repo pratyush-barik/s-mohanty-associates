@@ -1442,34 +1442,14 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Field label="Part A — Valuation Date">
-                      <div className="flex gap-2 items-center">
-                        <input
-                          type="date"
-                          className={`${inputCls} w-36 sm:w-44 shrink-0`}
-                          value={fields.valuationDate && /^\d{4}-\d{2}-\d{2}$/.test(fields.valuationDate) ? fields.valuationDate : ''}
-                          onChange={e => handleChange('valuationDate', e.target.value)}
-                          disabled={isReadOnly}
-                          title="Select Date from Picker"
-                        />
-                        <input
-                          type="text"
-                          className={`${inputCls} flex-1`}
-                          value={fields.valuationDate || ''}
-                          onChange={e => handleChange('valuationDate', e.target.value)}
-                          disabled={isReadOnly}
-                          placeholder="e.g. 01.04.2001"
-                        />
-                        {!isReadOnly && (
-                          <button
-                            type="button"
-                            onClick={() => handleChange('valuationDate', '01.04.2001')}
-                            className="px-2.5 py-2 text-xs font-bold text-[#b8860b] bg-white border border-[#b8860b]/40 rounded-lg hover:bg-[#fffbf0] shrink-0 transition-colors whitespace-nowrap"
-                            title="Set Base Valuation Date 01.04.2001"
-                          >
-                            01.04.2001
-                          </button>
-                        )}
-                      </div>
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.valuationDate || ''}
+                        onChange={e => handleChange('valuationDate', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="e.g. 01.04.2001 or 13-08-2026"
+                      />
                     </Field>
                     <label className="flex items-center gap-2 text-xs font-medium text-[#495057] cursor-pointer">
                       <input
