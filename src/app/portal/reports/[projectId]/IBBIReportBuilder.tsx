@@ -1251,7 +1251,17 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       // ── 3. BASIS OF VALUATION ──
       r.drawSectionHeader('3. BASIS OF VALUATION:');
       tocPageMap['3.  BASIS OF VALUATION'] = r.getPageCount();
-      r.drawTextBlock(fields.basis3 || 'The valuation is based on Fair Market Value as defined in IVS 104 -- the estimated amount for which an asset or liability should exchange on the valuation date between a willing buyer and a willing seller in an arm\'s length transaction, after proper marketing and where the parties had each acted knowledgeably, prudently and without compulsion.');
+      const basis3Default = `The basis of valuation of industries depends on various factors such as the purpose of valuation, statutory requirements, business drivers, macro and micro economic environment, government policies as applicable to the asset being valued. The purpose of the valuation is a critical first step in the process as it dictates the "basis of value" or "standard of value" to be applied, which, in turn, impacts the selection of approaches, inputs and assumptions considered in the valuation.
+
+The fair value and liquidation value of all the tangible assets of the company are determined in accordance with the internationally accepted valuation standards after physical verification of the inventory and fixed assets of the company included in the scope of work. The fair value and liquidation value shall have the meaning assigned to it in Regulation 2 (1) (hb) and Regulation 2 (1) (k) respectively of the Insolvency and Bankruptcy Board of India (Insolvency Resolution Process for Corporate Persons) Regulations, 2016.
+
+Our valuation is based on information obtained from the client and on data gathered out of our reasonable local enquiry. We have relied on this being correct & complete and there is no undisclosed matters which would affect the cause, from client's side.`;
+      const basis3Text = fields.basis3 || basis3Default;
+      // Split by double newlines to render as separate paragraphs
+      basis3Text.split('\n\n').filter(Boolean).forEach((para: string) => {
+        r.drawTextBlock(para.trim());
+        r.advanceCursor(3);
+      });
       r.advanceCursor(8);
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1946,8 +1956,8 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
               <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-3">Section 3: Basis of Valuation <span className="inline-block px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-semibold ml-1">OPTIONAL</span></p>
               <p className="text-xs text-gray-500 mb-3">Leave blank to use standard IBBI-IVS default text. Fill to override.</p>
               <div className="grid grid-cols-1 gap-4">
-                <Field label="3. Basis of Valuation (full paragraph)" span={2}>
-                  <textarea rows={3} value={fields.basis3 || ''} onChange={e => handleChange('basis3', e.target.value)} className={inputCls + ' resize-none'} placeholder="Default: The valuation is based on Fair Market Value as defined in IVS 104 -- the estimated amount for which an asset or liability should exchange on the valuation date between a willing buyer and a willing seller in an arm's length transaction, after proper marketing and where the parties had each acted knowledgeably, prudently and without compulsion." disabled={isReadOnly} />
+                <Field label="3. Basis of Valuation (use double line-breaks to separate paragraphs)" span={2}>
+                  <textarea rows={5} value={fields.basis3 || ''} onChange={e => handleChange('basis3', e.target.value)} className={inputCls + ' resize-none'} placeholder="Default: The basis of valuation of industries depends on various factors such as the purpose of valuation, statutory requirements, business drivers... (3 paragraphs covering: basis of value, fair value & liquidation value per IBBI Regulations 2016, and reliance on client information). Leave blank to use full default text." disabled={isReadOnly} />
                 </Field>
               </div>
             </div>
