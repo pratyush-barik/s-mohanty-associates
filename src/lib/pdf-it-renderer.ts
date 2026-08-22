@@ -417,22 +417,55 @@ export async function generateIncomeTaxPDF(
   interface TextLineInfo {
     text: string;
     isNewParagraph: boolean;
+    isBulletStart: boolean;
+    bulletSymbol?: string;
+    indentX: number;
   }
 
-  // Render multi-line answer in Q-row (supports \n line-breaks in answer text with paragraph gap)
+  // Render multi-line answer in Q-row (supports \n line-breaks in answer text with bullet hanging indent & paragraph gap)
   const wrapMultiLineParagraphs = (text: string, maxW: number, font: any, fs: number): TextLineInfo[] => {
-    const paragraphs = String(text ?? '').split('\n');
+    const rawParagraphs = String(text ?? '').split('\n');
     const result: TextLineInfo[] = [];
-    for (let pIdx = 0; pIdx < paragraphs.length; pIdx++) {
-      const para = paragraphs[pIdx];
-      const wrapped = wrapText(para, maxW, font, fs);
-      for (let lIdx = 0; lIdx < wrapped.length; lIdx++) {
-        result.push({
-          text: wrapped[lIdx],
-          isNewParagraph: lIdx === 0 && pIdx > 0,
-        });
+
+    for (let pIdx = 0; pIdx < rawParagraphs.length; pIdx++) {
+      const para = rawParagraphs[pIdx].trim();
+      if (!para) continue;
+
+      const isBullet = /^•\s*/.test(para) || /^[-*]\s*/.test(para);
+      const isNewParagraph = result.length > 0;
+
+      if (isBullet) {
+        const cleanPara = para.replace(/^[-*•]\s*/, '');
+        const bulletIndent = 14;
+        const availW = maxW - bulletIndent;
+        const wrapped = wrapText(cleanPara, availW, font, fs);
+
+        for (let lIdx = 0; lIdx < wrapped.length; lIdx++) {
+          result.push({
+            text: wrapped[lIdx],
+            isNewParagraph: lIdx === 0 && isNewParagraph,
+            isBulletStart: lIdx === 0,
+            bulletSymbol: '•',
+            indentX: bulletIndent,
+          });
+        }
+      } else {
+        const wrapped = wrapText(para, maxW, font, fs);
+        for (let lIdx = 0; lIdx < wrapped.length; lIdx++) {
+          result.push({
+            text: wrapped[lIdx],
+            isNewParagraph: lIdx === 0 && isNewParagraph,
+            isBulletStart: false,
+            indentX: 0,
+          });
+        }
       }
     }
+
+    if (result.length === 0) {
+      result.push({ text: 'NOT APPLICABLE', isNewParagraph: false, isBulletStart: false, indentX: 0 });
+    }
+
     return result;
   };
 
@@ -492,7 +525,7 @@ export async function generateIncomeTaxPDF(
 
   // Questionnaire table row (3 cols: QNo | Question | Answer)
   const qColW = [CW * 0.06, CW * 0.46, CW * 0.48];
-  const PARA_GAP = 5;
+  const PARA_GAP = 6;
 
   const drawQRow = (qNo: string, question: string, answer: string, opts?: { qBold?: boolean; headerRow?: boolean }) => {
     const fs = 11;
@@ -500,7 +533,7 @@ export async function generateIncomeTaxPDF(
     const h1 = cellHeight(qNo, qColW[0], { bold: true, fontSize: fs });
     const h2 = cellHeight(question, qColW[1], { fontSize: fs });
 
-    const answerLineInfos = wrapMultiLineParagraphs(answer, qColW[2] - 10, fontR, fs);
+    const answerLineInfos = wrapMultiLineParagraphs(answer, qColW[2] - 12, fontR, fs);
     let totalAnsH = 0;
     for (let i = 0; i < answerLineInfos.length; i++) {
       totalAnsH += lh;
@@ -524,11 +557,23 @@ export async function generateIncomeTaxPDF(
     let lineY = cy + padY;
 
     for (let i = 0; i < answerLineInfos.length; i++) {
-      if (answerLineInfos[i].isNewParagraph) {
+      const info = answerLineInfos[i];
+      if (info.isNewParagraph) {
         lineY += PARA_GAP;
       }
-      page.drawText(answerLineInfos[i].text, {
-        x: x + padX,
+
+      if (info.isBulletStart && info.bulletSymbol) {
+        page.drawText(info.bulletSymbol, {
+          x: x + padX,
+          y: pdfY(lineY) - fs * 0.8,
+          size: fs,
+          font: fontR,
+          color: rgb(0, 0, 0),
+        });
+      }
+
+      page.drawText(info.text, {
+        x: x + padX + info.indentX,
         y: pdfY(lineY) - fs * 0.8,
         size: fs,
         font: fontR,
@@ -586,14 +631,22 @@ export async function generateIncomeTaxPDF(
       }
       let qLineY = currY + padY;
       for (let i = 0; i < qLineInfos.length; i++) {
-        if (qLineInfos[i].isNewParagraph) qLineY += PARA_GAP;
-        page.drawText(qLineInfos[i].text, { x: ML + qColW[0] + padX, y: pdfY(qLineY) - fs * 0.8, size: fs, font: fontR, color: rgb(0,0,0) });
+        const info = qLineInfos[i];
+        if (info.isNewParagraph) qLineY += PARA_GAP;
+        if (info.isBulletStart && info.bulletSymbol) {
+          page.drawText(info.bulletSymbol, { x: ML + qColW[0] + padX, y: pdfY(qLineY) - fs * 0.8, size: fs, font: fontR, color: rgb(0,0,0) });
+        }
+        page.drawText(info.text, { x: ML + qColW[0] + padX + info.indentX, y: pdfY(qLineY) - fs * 0.8, size: fs, font: fontR, color: rgb(0,0,0) });
         qLineY += lh;
       }
       let aLineY = currY + padY;
       for (let i = 0; i < aLineInfos.length; i++) {
-        if (aLineInfos[i].isNewParagraph) aLineY += PARA_GAP;
-        page.drawText(aLineInfos[i].text, { x: ML + qColW[0] + qColW[1] + padX, y: pdfY(aLineY) - fs * 0.8, size: fs, font: fontR, color: rgb(0,0,0) });
+        const info = aLineInfos[i];
+        if (info.isNewParagraph) aLineY += PARA_GAP;
+        if (info.isBulletStart && info.bulletSymbol) {
+          page.drawText(info.bulletSymbol, { x: ML + qColW[0] + qColW[1] + padX, y: pdfY(aLineY) - fs * 0.8, size: fs, font: fontR, color: rgb(0,0,0) });
+        }
+        page.drawText(info.text, { x: ML + qColW[0] + qColW[1] + padX + info.indentX, y: pdfY(aLineY) - fs * 0.8, size: fs, font: fontR, color: rgb(0,0,0) });
         aLineY += lh;
       }
       currY += rowH;
