@@ -2134,30 +2134,68 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                   </Field>
                 </div>
               </div>
-              <div className="md:col-span-2 grid grid-cols-2 gap-4 py-2 border-b border-[#e9ecef] mb-2">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={fields.showPlinthActual} onChange={e => handleChange('showPlinthActual', e.target.checked)} disabled={isReadOnly}
-                    className="w-4 h-4 rounded border-[#dee2e6] text-[#b8860b] focus:ring-[#b8860b]/30" />
-                  <span className="text-xs font-bold text-[#495057] uppercase tracking-wider">Enable Plinth Area (Actual)</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={fields.showPlinthApproved} onChange={e => handleChange('showPlinthApproved', e.target.checked)} disabled={isReadOnly}
-                    className="w-4 h-4 rounded border-[#dee2e6] text-[#b8860b] focus:ring-[#b8860b]/30" />
-                  <span className="text-xs font-bold text-[#495057] uppercase tracking-wider">Enable Plinth Area (Approved Plan)</span>
-                </label>
+              {/* Question 02 Card Container */}
+              <div className="md:col-span-2 p-4 bg-[#f0fdf4] border border-[#d1e7dd] rounded-xl shadow-sm space-y-3">
+                <div className="flex flex-wrap justify-between items-center border-b border-[#d1e7dd] pb-2.5 gap-2">
+                  <span className="text-xs font-black text-[#b8860b] uppercase tracking-wider block">
+                    02. PLINTH AREA FLOOR-WISE (AS PER ISI3861-1966)
+                  </span>
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={fields.showPlinthActual}
+                        onChange={e => handleChange('showPlinthActual', e.target.checked)}
+                        disabled={isReadOnly}
+                        className="w-4 h-4 rounded border-[#dee2e6] text-[#b8860b] focus:ring-[#b8860b]/30"
+                      />
+                      <span className="text-xs font-bold text-[#495057] uppercase tracking-wider">As Per Actual</span>
+                    </label>
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={fields.showPlinthApproved}
+                        onChange={e => handleChange('showPlinthApproved', e.target.checked)}
+                        disabled={isReadOnly}
+                        className="w-4 h-4 rounded border-[#dee2e6] text-[#b8860b] focus:ring-[#b8860b]/30"
+                      />
+                      <span className="text-xs font-bold text-[#495057] uppercase tracking-wider">As Per Approved Plan</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4 pt-1">
+                  {fields.showPlinthActual && (
+                    <Field label="Plinth Area (As Per Actual)" span={fields.showPlinthApproved ? 1 : 2}>
+                      <textarea
+                        className={textareaCls}
+                        value={fields.techPlinthAreaActual}
+                        onChange={e => handleChange('techPlinthAreaActual', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="BASEMENT FLOOR AREA-2166 SFT&#10;GROUND FLOOR AREA-1596 SFT&#10;FIRST FLOOR AREA-1596 SQFT..."
+                        rows={4}
+                      />
+                    </Field>
+                  )}
+                  {fields.showPlinthApproved && (
+                    <Field label="Plinth Area (As Per Approved Plan)" span={fields.showPlinthActual ? 1 : 2}>
+                      <textarea
+                        className={textareaCls}
+                        value={fields.techPlinthAreaApproved}
+                        onChange={e => handleChange('techPlinthAreaApproved', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="GROUND FLOOR AREA-791 SFT&#10;FIRST FLOOR AREA-791 SQFT..."
+                        rows={4}
+                      />
+                    </Field>
+                  )}
+                  {!fields.showPlinthActual && !fields.showPlinthApproved && (
+                    <p className="col-span-2 text-xs italic text-gray-500 py-2">
+                      Check &quot;As Per Actual&quot; or &quot;As Per Approved Plan&quot; toggle box above to enter plinth area floor details.
+                    </p>
+                  )}
+                </div>
               </div>
-              {fields.showPlinthActual && (
-                <Field label="02. Plinth Area (Actual)" span={2}>
-                  <textarea className={textareaCls} value={fields.techPlinthAreaActual} onChange={e => handleChange('techPlinthAreaActual', e.target.value)} disabled={isReadOnly}
-                    placeholder="GF: 791 SQFT, FF: 702 SQFT..." rows={2} />
-                </Field>
-              )}
-              {fields.showPlinthApproved && (
-                <Field label="02. Plinth Area (Approved Plan)" span={2}>
-                  <textarea className={textareaCls} value={fields.techPlinthAreaApproved} onChange={e => handleChange('techPlinthAreaApproved', e.target.value)} disabled={isReadOnly}
-                    placeholder="GF: 750 SQFT, FF: 680 SQFT..." rows={2} />
-                </Field>
-              )}
               <Field label="03. Year of Construction">
                 <input className={inputCls} value={fields.techYearConstruction} onChange={e => handleChange('techYearConstruction', e.target.value)} disabled={isReadOnly} />
               </Field>
