@@ -1087,7 +1087,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
         '8.  SOCIO-CULTURAL ASPECTS',
         '9.  ENVIRONMENTAL FACTORS',
         '10. MARKETABILITY OF THE PROPERTY',
-        '11. ARCHITECTURAL ASPECTS',
+        '11. ARCHITECTURAL ASPECTS OF THE PROPERTY',
         '12. ENGINEERING ASPECTS',
         '13. VALUATION APPROACHES & METHODOLOGY',
         '    13.1  Methodology',
@@ -1379,9 +1379,9 @@ Our valuation is based on information obtained from the client and on data gathe
       r.advanceCursor(8);
 
       // ── 11. ARCHITECTURAL ──
-      r.drawSectionHeader('11. ARCHITECTURAL ASPECTS:');
-      tocPageMap['11. ARCHITECTURAL ASPECTS'] = r.getPageCount();
-      r.drawSimpleRow('11.1  Descriptive account of architecture', fields.architecturalAspects);
+      r.drawSectionHeader('11. ARCHITECTURAL ASPECTS OF THE PROPERTY:');
+      tocPageMap['11. ARCHITECTURAL ASPECTS OF THE PROPERTY'] = r.getPageCount();
+      r.drawSimpleRow('11.1  Descriptive account on whether, building is modern, old fashioned, plain looking or decorative, heritage, landscape element, etc', fields.architecturalAspects);
       r.advanceCursor(8);
 
       // ── 12. ENGINEERING ──
@@ -2250,9 +2250,9 @@ Our valuation is based on information obtained from the client and on data gathe
           </Section>
 
           {/* ── Section 11: Architectural Aspects ── */}
-          <Section title="Architectural Aspects" number={11}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="11.1 Architectural Aspects"><textarea rows={3} value={fields.architecturalAspects} onChange={e => handleChange('architecturalAspects', e.target.value)} className={inputCls + ' resize-none'} placeholder="Descriptive account: modern, old fashioned, decorative..." disabled={isReadOnly} /></Field>
+          <Section title="Architectural Aspects of the Property" number={11}>
+            <div className="grid grid-cols-1 gap-4">
+              <Field label="11.1 Descriptive account on whether, building is modern, old fashioned, plain looking or decorative, heritage, landscape element, etc" span={2}><textarea rows={6} value={fields.architecturalAspects} onChange={e => handleChange('architecturalAspects', e.target.value)} className={inputCls + ' resize-none'} placeholder={"e.g. DEFUNCT WATER BOTTLING UNIT SINCE 2018 USED ON LEASE SEASHORE TOURISM AND DEVELOPMENT COMPANY.\n\nDILAPIDATED BUILDING OBSERVED AT SITE WITH ZERO MAINTAINANCE\n\nINTERNAL ROADS AND PASSAGES ARE COVERED WITH VEGETATION AND NON OF THE BASIC CIVIC AMENITIES LIKE ELECTRICITY, WATER, SEWERAGE AND EQUIPMENTS ARE IN FUNCTIONAL STATE"} disabled={isReadOnly} /></Field>
             </div>
           </Section>
 
