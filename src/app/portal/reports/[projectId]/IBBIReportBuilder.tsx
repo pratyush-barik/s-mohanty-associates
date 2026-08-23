@@ -1361,10 +1361,10 @@ Our valuation is based on information obtained from the client and on data gathe
       // ── 9. ENVIRONMENTAL ──
       r.drawSectionHeader('9. ENVIRONMENTAL FACTORS AFFECTING THE PROPERTY:');
       tocPageMap['9.  ENVIRONMENTAL FACTORS'] = r.getPageCount();
-      r.drawSimpleRow('9.1   Use of eco-friendly building material', fields.ecoMaterials);
+      r.drawSimpleRow('9.1   Use of environmental friendly building material green building techniques if any', fields.ecoMaterials);
       r.drawSimpleRow('9.2   Provision of rain water harvesting', fields.rainWaterHarvesting);
-      r.drawSimpleRow('9.3   Use of solar heating, lighting system', fields.solarSystem);
-      r.drawSimpleRow('9.4   Presence of environmental pollution in vicinity', fields.environmentalPollution);
+      r.drawSimpleRow('9.3   Use of solar heating, lightening system, etc', fields.solarSystem);
+      r.drawSimpleRow('9.4   Presence of environmental pollution in vicinity in terms of industry, heavy traffic.', fields.environmentalPollution);
       r.advanceCursor(8);
 
       // ── 10. MARKETABILITY ──
@@ -2229,10 +2229,10 @@ Our valuation is based on information obtained from the client and on data gathe
           {/* ── Section 9: Environmental Factors ── */}
           <Section title="Environmental Factors Affecting the Property" number={9}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="9.1 Use of eco-friendly building material"><input type="text" value={fields.ecoMaterials} onChange={e => handleChange('ecoMaterials', e.target.value)} className={inputCls} placeholder="e.g. NO" disabled={isReadOnly} /></Field>
+              <Field label="9.1 Use of environmental friendly building material green building techniques if any"><input type="text" value={fields.ecoMaterials} onChange={e => handleChange('ecoMaterials', e.target.value)} className={inputCls} placeholder="e.g. NO" disabled={isReadOnly} /></Field>
               <Field label="9.2 Provision of rain water harvesting"><input type="text" value={fields.rainWaterHarvesting} onChange={e => handleChange('rainWaterHarvesting', e.target.value)} className={inputCls} placeholder="e.g. NO" disabled={isReadOnly} /></Field>
-              <Field label="9.3 Use of solar heating, lighting system"><input type="text" value={fields.solarSystem} onChange={e => handleChange('solarSystem', e.target.value)} className={inputCls} placeholder="e.g. NO" disabled={isReadOnly} /></Field>
-              <Field label="9.4 Presence of environmental pollution in vicinity"><input type="text" value={fields.environmentalPollution} onChange={e => handleChange('environmentalPollution', e.target.value)} className={inputCls} placeholder="e.g. None observed" disabled={isReadOnly} /></Field>
+              <Field label="9.3 Use of solar heating, lightening system, etc"><input type="text" value={fields.solarSystem} onChange={e => handleChange('solarSystem', e.target.value)} className={inputCls} placeholder="e.g. NO" disabled={isReadOnly} /></Field>
+              <Field label="9.4 Presence of environmental pollution in vicinity in terms of industry, heavy traffic."><input type="text" value={fields.environmentalPollution} onChange={e => handleChange('environmentalPollution', e.target.value)} className={inputCls} placeholder="e.g. NOTHING COULD BE VISUALIZED RELATING TO THE ENVIRONMENTAL POLLUTION HOWEVER THERE ARE MULTIPLE FACTORIES & PLANTS IN THE VICINITY..." disabled={isReadOnly} /></Field>
             </div>
           </Section>
 
