@@ -1194,17 +1194,12 @@ export async function generateIncomeTaxPDF(
   const p3Lh = p3Fs * LINE_H;
 
   const p3HeaderStr = 'PART III-DECLARATION';
-  const p3IntroStr = 'I HEREBY DECLARE THAT —';
+  const p3IntroStr = 'I HERE BY DECLARE THAT-';
   const p3Bullet1 = '(A) THE INFORMATION FURNISHED IN PART I IS TRUE TO THE BEST OF MY KNOWLEDGE AND BELIEF.';
   const p3Bullet2 = '(B) I HAVE NO DIRECT OR INDIRECT INTEREST IN THE PROPERTY VALUED.';
-  const formattedInspDate = fields.inspectionDate ? formatReportDate(fields.inspectionDate) : '';
-  const p3Bullet3 = formattedInspDate
-    ? `(C) I HAVE PERSONALLY INSPECTED THE PROPERTY ON ${formattedInspDate}.`
-    : '(C) I HAVE PERSONALLY INSPECTED THE PROPERTY ON THE GIVEN INSPECTION DATE.';
 
-  const b1Lines = wrapText(p3Bullet1, contentW - 12, fontR, p3Fs);
-  const b2Lines = wrapText(p3Bullet2, contentW - 12, fontR, p3Fs);
-  const b3Lines = wrapText(p3Bullet3, contentW - 12, fontR, p3Fs);
+  const b1Lines = wrapText(p3Bullet1, contentW - 20, fontR, p3Fs);
+  const b2Lines = wrapText(p3Bullet2, contentW - 20, fontR, p3Fs);
 
   const formattedReportDate = fields.reportDate ? formatReportDate(fields.reportDate) : (fields.valuationDate ? formatReportDate(fields.valuationDate) : '');
   const dateLabel = `DATE–${formattedReportDate || '________'}`;
@@ -1214,17 +1209,17 @@ export async function generateIncomeTaxPDF(
   const valuerTitle = 'SIGNATURE OF REGISTERED VALUER';
 
   let p3BoxH = padY * 2;
-  p3BoxH += headerFs * LINE_H + 6;
-  p3BoxH += 8;
-  p3BoxH += p3Lh + 6;
-  p3BoxH += b1Lines.length * p3Lh + 4;
-  p3BoxH += b2Lines.length * p3Lh + 4;
-  p3BoxH += b3Lines.length * p3Lh + 16;
-  p3BoxH += 36;
+  p3BoxH += headerFs * LINE_H + 10;
+  p3BoxH += p3Lh + 10;
+  p3BoxH += b1Lines.length * p3Lh + 6;
+  p3BoxH += b2Lines.length * p3Lh + 10;
 
-  ensureSpace(p3BoxH + 10);
+  const totalBlockH = p3BoxH + 48;
+  ensureSpace(totalBlockH);
+
   const p3BoxStartY = cy;
 
+  // Box around header + items A & B
   page.drawRectangle({
     x: boxX,
     y: pdfY(p3BoxStartY) - p3BoxH,
@@ -1234,25 +1229,21 @@ export async function generateIncomeTaxPDF(
     borderWidth: 1,
   });
 
-  let curP3Y = p3BoxStartY + padY;
+  let curP3Y = p3BoxStartY + padY + 4;
 
-  const p3Hw = fontBI.widthOfTextAtSize(p3HeaderStr, headerFs);
+  // Centered Header (Bold, No Underline)
+  const p3Hw = fontB.widthOfTextAtSize(p3HeaderStr, headerFs);
   const p3Hx = boxX + (boxW - p3Hw) / 2;
   page.drawText(p3HeaderStr, {
     x: p3Hx,
     y: pdfY(curP3Y) - headerFs * 0.8,
     size: headerFs,
-    font: fontBI,
-    color: rgb(0, 0, 0),
-  });
-  page.drawLine({
-    start: { x: p3Hx, y: pdfY(curP3Y) - headerFs * 0.8 - 2 },
-    end: { x: p3Hx + p3Hw, y: pdfY(curP3Y) - headerFs * 0.8 - 2 },
-    thickness: 1,
+    font: fontB,
     color: rgb(0, 0, 0),
   });
   curP3Y += headerFs * LINE_H + 10;
 
+  // Intro line
   page.drawText(p3IntroStr, {
     x: boxX + padX,
     y: pdfY(curP3Y) - p3Fs * 0.8,
@@ -1260,13 +1251,14 @@ export async function generateIncomeTaxPDF(
     font: fontB,
     color: rgb(0, 0, 0),
   });
-  curP3Y += p3Lh + 6;
+  curP3Y += p3Lh + 8;
 
-  const allP3Bullets = [b1Lines, b2Lines, b3Lines];
+  // Items (A) and (B)
+  const allP3Bullets = [b1Lines, b2Lines];
   for (const bLines of allP3Bullets) {
     for (let i = 0; i < bLines.length; i++) {
       page.drawText(bLines[i], {
-        x: boxX + padX + (i === 0 ? 10 : 28),
+        x: boxX + padX + (i === 0 ? 0 : 18),
         y: pdfY(curP3Y) - p3Fs * 0.8,
         size: p3Fs,
         font: fontR,
@@ -1274,21 +1266,24 @@ export async function generateIncomeTaxPDF(
       });
       curP3Y += p3Lh;
     }
-    curP3Y += 4;
+    curP3Y += 6;
   }
-  curP3Y += 12;
 
-  const sigRightX = boxX + boxW - padX;
-  page.drawText(dateLabel, { x: boxX + padX, y: pdfY(curP3Y) - 10, size: 11, font: fontB, color: rgb(0, 0, 0) });
+  // Position cy past box
+  cy += p3BoxH + 14;
+
+  // Date, Place, and Signature OUTSIDE the box below it
+  const sigRightX = ML + CW;
+  page.drawText(dateLabel, { x: ML, y: pdfY(cy) - 10, size: 11, font: fontB, color: rgb(0, 0, 0) });
   const valuerW = fontB.widthOfTextAtSize(valuerName, 11);
-  page.drawText(valuerName, { x: sigRightX - valuerW, y: pdfY(curP3Y) - 10, size: 11, font: fontB, color: rgb(0, 0, 0) });
-  curP3Y += 18;
+  page.drawText(valuerName, { x: sigRightX - valuerW, y: pdfY(cy) - 10, size: 11, font: fontB, color: rgb(0, 0, 0) });
+  cy += 18;
 
-  page.drawText(placeLabel, { x: boxX + padX, y: pdfY(curP3Y) - 10, size: 11, font: fontB, color: rgb(0, 0, 0) });
+  page.drawText(placeLabel, { x: ML, y: pdfY(cy) - 10, size: 11, font: fontB, color: rgb(0, 0, 0) });
   const sigTitleW = fontB.widthOfTextAtSize(valuerTitle, 11);
-  page.drawText(valuerTitle, { x: sigRightX - sigTitleW, y: pdfY(curP3Y) - 10, size: 11, font: fontB, color: rgb(0, 0, 0) });
+  page.drawText(valuerTitle, { x: sigRightX - sigTitleW, y: pdfY(cy) - 10, size: 11, font: fontB, color: rgb(0, 0, 0) });
 
-  cy += p3BoxH + 16;
+  cy += 24;
 
   // ═══════════════════════════════════════════════════════
   // BLOCK 5 — ANNEXURE TABLES (Technical Details + Valuation)
