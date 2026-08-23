@@ -1351,18 +1351,7 @@ export async function generateIncomeTaxPDF(
 
     // Q02 Formatting
     let q02ActualAns = renderBulletLines((fields.techPlinthAreaActual || '').split('\n'), true);
-    if (fields.plinthAreaConsidered === 'ACTUAL') {
-      q02ActualAns = q02ActualAns
-        ? `${q02ActualAns}\n\nACTUAL PLINTH AREA IS CONSIDERED FOR VALUATION PURPOSE`
-        : 'ACTUAL PLINTH AREA IS CONSIDERED FOR VALUATION PURPOSE';
-    }
-
     let q02ApprovedAns = renderBulletLines((fields.techPlinthAreaApproved || '').split('\n'), true);
-    if (fields.plinthAreaConsidered === 'APPROVED') {
-      q02ApprovedAns = q02ApprovedAns
-        ? `${q02ApprovedAns}\n\nAPPROVED PLINTH AREA IS CONSIDERED FOR VALUATION PURPOSE`
-        : 'APPROVED PLINTH AREA IS CONSIDERED FOR VALUATION PURPOSE';
-    }
 
     let authority = 'PKDA';
     if (fields.buildingApproval) {
