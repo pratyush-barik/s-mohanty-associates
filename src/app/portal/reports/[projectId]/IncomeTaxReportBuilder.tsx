@@ -218,6 +218,7 @@ interface IncomeTaxFields {
   inspectionDate: string;      // Q02B
   reportDate: string;          // Q02C
   identifiedBy: string;        // Q02D
+  valuationPlace?: string;     // Q02 E / PART III Place
   ownerAddress: string;        // Q03
   ownershipType: string;       // Q04
   briefDescriptionLines: string[]; // Q05 — merged into single bullet editor
@@ -398,6 +399,7 @@ const DEFAULT_FIELDS: IncomeTaxFields = {
   inspectionDate: new Date().toISOString().split('T')[0],
   reportDate: new Date().toISOString().split('T')[0],
   identifiedBy: '',
+  valuationPlace: 'BHUBANESWAR',
   ownerAddress: '',
   ownershipType: 'SINGLE OWNERSHIP LAND & FREE HOLD IN NATURE',
   briefDescriptionLines: [],
@@ -1645,6 +1647,9 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                   </Field>
                   <Field label="Part D — Identified By Whom">
                     <input className={inputCls} value={fields.identifiedBy} onChange={e => handleChange('identifiedBy', e.target.value)} disabled={isReadOnly} placeholder="MR. TRILOCHAN NAYAK" />
+                  </Field>
+                  <Field label="Valuation Place (Part III Declaration)">
+                    <input className={inputCls} value={fields.valuationPlace || 'BHUBANESWAR'} onChange={e => handleChange('valuationPlace', e.target.value)} disabled={isReadOnly} placeholder="BHUBANESWAR" />
                   </Field>
                 </div>
               </div>

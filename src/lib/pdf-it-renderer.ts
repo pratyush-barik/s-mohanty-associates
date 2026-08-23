@@ -43,6 +43,8 @@ export interface IncomeTaxFieldsForPDF {
   inspectionDate: string;
   reportDate: string;
   identifiedBy: string;
+  valuationPlace?: string;
+  place?: string;
   ownerAddress: string;
   ownershipType: string;
   briefDescriptionLines: string[];
@@ -488,46 +490,35 @@ export async function generateIncomeTaxPDF(
 
   const advanceCursor = (pts: number) => { cy += pts; };
 
-  // Helper to format report date nicely like '22TH OCT 2025'
+  // Helper to format report date as DD/MM/YYYY
   const formatReportDate = (dStr: string): string => {
-    if (!dStr) return '';
-    const trimmed = dStr.trim();
-    if (/[A-Za-z]{3}/.test(trimmed)) return trimmed.toUpperCase();
-    const parts = trimmed.split(/[-/.]/);
-    let d: Date | null = null;
-    if (parts.length === 3) {
-      if (parts[0].length === 4) {
-        d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-      } else if (parts[2].length === 4) {
-        d = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-      }
-    }
-    if (!d || isNaN(d.getTime())) d = new Date(trimmed);
-    if (isNaN(d.getTime())) return trimmed.toUpperCase();
-
-    const day = d.getDate();
-    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-    const mStr = months[d.getMonth()];
-    const yStr = d.getFullYear();
-    let suffix = 'TH';
-    if (day === 1 || day === 21 || day === 31) suffix = 'ST';
-    else if (day === 2 || day === 22) suffix = 'ND';
-    else if (day === 3 || day === 23) suffix = 'RD';
-    return `${day}${suffix} ${mStr} ${yStr}`;
-  };
-
-  const formatDateDDMMYYYY = (dStr: string): string => {
-    if (!dStr) return '';
+    if (!dStr || !dStr.trim()) return '';
     const trimmed = dStr.trim();
     if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
       const [y, m, d] = trimmed.split('-');
-      return `${d}.${m}.${y}`;
+      return `${d}/${m}/${y}`;
     }
     if (/^\d{2}[.-/]\d{2}[.-/]\d{4}$/.test(trimmed)) {
-      return trimmed.replace(/[-/]/g, '.');
+      return trimmed.replace(/[-.]/g, '/');
+    }
+    const parts = trimmed.split(/[-/.]/);
+    if (parts.length === 3) {
+      if (parts[0].length === 4) {
+        const y = parts[0];
+        const m = parts[1].padStart(2, '0');
+        const d = parts[2].padStart(2, '0');
+        return `${d}/${m}/${y}`;
+      } else if (parts[2].length === 4) {
+        const d = parts[0].padStart(2, '0');
+        const m = parts[1].padStart(2, '0');
+        const y = parts[2];
+        return `${d}/${m}/${y}`;
+      }
     }
     return trimmed;
   };
+
+  const formatDateDDMMYYYY = (dStr: string): string => formatReportDate(dStr);
 
   const formatLandAreaWithSqft = (rawLine: string): string => {
     if (!rawLine || !rawLine.trim()) return '';
@@ -1204,18 +1195,21 @@ export async function generateIncomeTaxPDF(
 
   const p3HeaderStr = 'PART III-DECLARATION';
   const p3IntroStr = 'I HEREBY DECLARE THAT —';
-  const p3Bullet1 = '• THE INFORMATION FURNISHED IN PART I IS TRUE TO THE BEST OF MY KNOWLEDGE AND BELIEF.';
-  const p3Bullet2 = '• I HAVE NO DIRECT OR INDIRECT INTEREST IN THE PROPERTY VALUED.';
-  const p3Bullet3 = fields.inspectionDate
-    ? `• I HAVE PERSONALLY INSPECTED THE PROPERTY ON ${formatReportDate(fields.inspectionDate)}.`
-    : '• I HAVE PERSONALLY INSPECTED THE PROPERTY ON THE GIVEN INSPECTION DATE.';
+  const p3Bullet1 = '(A) THE INFORMATION FURNISHED IN PART I IS TRUE TO THE BEST OF MY KNOWLEDGE AND BELIEF.';
+  const p3Bullet2 = '(B) I HAVE NO DIRECT OR INDIRECT INTEREST IN THE PROPERTY VALUED.';
+  const formattedInspDate = fields.inspectionDate ? formatReportDate(fields.inspectionDate) : '';
+  const p3Bullet3 = formattedInspDate
+    ? `(C) I HAVE PERSONALLY INSPECTED THE PROPERTY ON ${formattedInspDate}.`
+    : '(C) I HAVE PERSONALLY INSPECTED THE PROPERTY ON THE GIVEN INSPECTION DATE.';
 
   const b1Lines = wrapText(p3Bullet1, contentW - 12, fontR, p3Fs);
   const b2Lines = wrapText(p3Bullet2, contentW - 12, fontR, p3Fs);
   const b3Lines = wrapText(p3Bullet3, contentW - 12, fontR, p3Fs);
 
-  const dateLabel = `DATE–${fields.reportDate ? formatReportDate(fields.reportDate) : ''}`;
-  const placeLabel = 'PLACE–BHUBANESWAR';
+  const formattedReportDate = fields.reportDate ? formatReportDate(fields.reportDate) : (fields.valuationDate ? formatReportDate(fields.valuationDate) : '');
+  const dateLabel = `DATE–${formattedReportDate || '________'}`;
+  const userPlace = (fields.valuationPlace || fields.place || 'BHUBANESWAR').toUpperCase().trim();
+  const placeLabel = `PLACE–${userPlace}`;
   const valuerName = 'ER. SATYAJIT MOHANTY';
   const valuerTitle = 'SIGNATURE OF REGISTERED VALUER';
 
@@ -1272,7 +1266,7 @@ export async function generateIncomeTaxPDF(
   for (const bLines of allP3Bullets) {
     for (let i = 0; i < bLines.length; i++) {
       page.drawText(bLines[i], {
-        x: boxX + padX + (i === 0 ? 10 : 22),
+        x: boxX + padX + (i === 0 ? 10 : 28),
         y: pdfY(curP3Y) - p3Fs * 0.8,
         size: p3Fs,
         font: fontR,
