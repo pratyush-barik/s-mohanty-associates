@@ -45,20 +45,57 @@ interface AnnexureItem {
 
 const UNIT_SQFT_MAP: Record<string, number> = {
   'DEC': 435.6,
+  'DECIMAL': 435.6,
   'ACRE': 43560,
+  'ACRES': 43560,
+  'SQFT': 1,
   'SQ.FT.': 1,
+  'SQ FT': 1,
+  'SFT': 1,
+  'SQMT': 10.7639,
   'SQ.MTR.': 10.7639,
+  'SQ.M.': 10.7639,
+  'SMT': 10.7639,
   'GUNTHA': 1089,
   'CENT': 435.6,
+};
+
+const getSqftFactor = (unitStr: string): number => {
+  if (!unitStr) return 435.6;
+  const u = unitStr.toUpperCase().trim();
+  if (UNIT_SQFT_MAP[u]) return UNIT_SQFT_MAP[u];
+  if (u.includes('ACRE')) return 43560;
+  if (u.includes('SQFT') || u.includes('SQ.FT') || u.includes('SFT') || u === 'SF') return 1;
+  if (u.includes('SQMT') || u.includes('SQ.M') || u.includes('SMT') || u === 'SM') return 10.7639;
+  if (u.includes('GUNTHA')) return 1089;
+  if (u.includes('CENT')) return 435.6;
+  return 435.6;
 };
 
 const convertLandRate = (rateVal: string | number, fromUnit: string, toUnit: string): string => {
   const rate = typeof rateVal === 'number' ? rateVal : parseFloat(rateVal);
   if (!rate || isNaN(rate)) return '';
-  const fromArea = UNIT_SQFT_MAP[fromUnit] || 435.6;
-  const toArea = UNIT_SQFT_MAP[toUnit] || 43560;
+  const fromArea = getSqftFactor(fromUnit);
+  const toArea = getSqftFactor(toUnit);
   const converted = Math.round((rate / fromArea) * toArea);
   return converted > 0 ? String(converted) : '';
+};
+
+const calculateTotalLandValue = (
+  areaStr: string,
+  areaUnit: string,
+  rateStr: string,
+  rateUnit?: string
+): number => {
+  const areaNum = parseFloat(String(areaStr).replace(/[^0-9.]/g, '')) || 0;
+  const rateNum = parseFloat(String(rateStr).replace(/[^0-9.]/g, '')) || 0;
+  if (!areaNum || !rateNum) return 0;
+
+  const areaSqft = areaNum * getSqftFactor(areaUnit);
+  const rateSqftFactor = getSqftFactor(rateUnit || areaUnit);
+
+  const totalValue = (areaSqft / rateSqftFactor) * rateNum;
+  return Math.round(totalValue);
 };
 
 const cleanAddressForMap = (rawAddr: string): string => {

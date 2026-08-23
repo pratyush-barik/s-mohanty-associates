@@ -72,6 +72,52 @@ const cleanAddressForMap = (rawAddr: string): string => {
   return str;
 };
 
+const UNIT_SQFT_MAP: Record<string, number> = {
+  'DEC': 435.6,
+  'DECIMAL': 435.6,
+  'ACRE': 43560,
+  'ACRES': 43560,
+  'SQFT': 1,
+  'SQ.FT.': 1,
+  'SQ FT': 1,
+  'SFT': 1,
+  'SQMT': 10.7639,
+  'SQ.MTR.': 10.7639,
+  'SQ.M.': 10.7639,
+  'SMT': 10.7639,
+  'GUNTHA': 1089,
+  'CENT': 435.6,
+};
+
+const getSqftFactor = (unitStr: string): number => {
+  if (!unitStr) return 435.6;
+  const u = unitStr.toUpperCase().trim();
+  if (UNIT_SQFT_MAP[u]) return UNIT_SQFT_MAP[u];
+  if (u.includes('ACRE')) return 43560;
+  if (u.includes('SQFT') || u.includes('SQ.FT') || u.includes('SFT') || u === 'SF') return 1;
+  if (u.includes('SQMT') || u.includes('SQ.M') || u.includes('SMT') || u === 'SM') return 10.7639;
+  if (u.includes('GUNTHA')) return 1089;
+  if (u.includes('CENT')) return 435.6;
+  return 435.6;
+};
+
+const calculateTotalLandValue = (
+  areaStr: string,
+  areaUnit: string,
+  rateStr: string,
+  rateUnit?: string
+): number => {
+  const areaNum = parseFloat(String(areaStr).replace(/[^0-9.]/g, '')) || 0;
+  const rateNum = parseFloat(String(rateStr).replace(/[^0-9.]/g, '')) || 0;
+  if (!areaNum || !rateNum) return 0;
+
+  const areaSqft = areaNum * getSqftFactor(areaUnit);
+  const rateSqftFactor = getSqftFactor(rateUnit || areaUnit);
+
+  const totalValue = (areaSqft / rateSqftFactor) * rateNum;
+  return Math.round(totalValue);
+};
+
 interface ReportFields {
   // Section 1 – General Details
   propertyType: string;
@@ -1310,7 +1356,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
 
   // ── Computed values ──
   const totalPlinthArea = fields.floors.reduce((sum, f) => sum + parseNum(f.area), 0);
-  const landValue = parseNum(fields.landArea) * parseNum(fields.landRatePerUnit);
+  const landValue = calculateTotalLandValue(fields.landArea, fields.landAreaUnit, fields.landRatePerUnit);
 
   const floorValuations = fields.floors.map(f => {
     const area = parseNum(f.area);
