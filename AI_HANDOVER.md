@@ -387,12 +387,18 @@ Outstanding items in **priority order**:
 
 
 ### Recent Updates
+- `latest` - fix(IBBI): unmerge sections 8-9 and 10-11 in the floating sidebar panel
+- `latest` - feat(IBBI): add dynamic plinth area table with dropdown options (Section 12)
+- `latest` - feat(IBBI): add Total life of building and Floor details table to Section 12 Engineering Aspects
+- `latest` - feat(IBBI): match Section 12 Engineering Aspects labels and values to IBBI sample exactly (12.1-12.27), update PDF/TOC labels
+- `latest` - feat(IBBI): match Section 11 Architectural Aspects labels to IBBI sample exactly
+- `latest` - feat(IBBI): split Section 10 and 11, update Section 10 Marketability of the Property labels to IBBI sample exactly
+- `latest` - feat(IBBI): match Section 9 Environmental Factors labels to IBBI sample exactly
+- `latest` - feat(IBBI): split Section 8 and 9, update Section 8 Socio-Cultural Aspects labels to IBBI sample exactly
+- `latest` - feat(IBBI): match Section 7 Functional and Infrastructure Aspects labels to IBBI sample exactly
+- `latest` - feat(IBBI): match Section 6 Document Details and Legal Aspects labels to IBBI sample exactly
+- `latest` - feat(IBBI): match Section 5 Town Planning Parameters labels to IBBI sample exactly
 - `latest` - fix(IBBI): update Section 3 default text to match sample (3 paragraphs: basis of value, IBBI Regulations 2016, client reliance) with paragraph-splitting PDF render
 - `latest` - feat(IBBI): de-hardcode Section 1, 2, and 3 with optional override textareas and dynamic PDF fallbacks matching IBBI standard text
 - `latest` - feat(IBBI): add 30 new fields, sub-numbering, sub-headers, new form inputs, and textarea conversions for sections 4-12 to IBBIFields interface and PDF render
 - `latest` - update(Resume): update CGPA to 7.43 and S Mohanty Associates full-stack internship details with 5 priority bullet points
-- `latest` - fix(pdf): Ref left/Date right, signature name-only, VALUERS DETAILS line breaks
-- `latest` - fix(pdf): reduce certificate overflow (smaller font/spacing) + fix signature layout (Place left, Seal right)
-- `latest` - feat(report): add missing form fields (Sec 4-7) + Section 13 customizable text overrides for better UX
-- `previous` - feat(report): add Representative's Father's Name field to both IBBI and General report builders with S/o in declaration PDF
-- `previous` - feat(report): parameterize Prepared By and Registered Office Address fields in IBBI report
