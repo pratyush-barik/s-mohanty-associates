@@ -812,7 +812,7 @@ export class PDFGeneralRenderer {
    * Draw a centered title.
    * Advances cursor.
    */
-  drawCenteredTitle(text: string, fontSize?: number): void {
+  drawCenteredTitle(text: string, fontSize?: number, underline?: boolean): void {
     const fs = fontSize || FONT_SIZE_HEADER;
     const lineH = fs * LINE_HEIGHT;
     // Require an extra 60pt of space to prevent orphaned headings
@@ -820,6 +820,14 @@ export class PDFGeneralRenderer {
     this.drawTextAt(text, MARGIN_L, this.cursorY, {
       bold: true, fontSize: fs, align: 'center', maxWidth: CONTENT_W,
     });
+    if (underline) {
+      const font = this.getFont(true);
+      const safeStr = this.sanitizeText(text);
+      const tw = font.widthOfTextAtSize(safeStr, fs);
+      const drawX = MARGIN_L + (CONTENT_W - tw) / 2;
+      const lineTopY = this.cursorY + fs * 0.95;
+      this.drawHLine(drawX, drawX + tw, lineTopY, '#000000', 1);
+    }
     this.cursorY += lineH;
   }
 

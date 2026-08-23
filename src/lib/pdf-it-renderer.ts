@@ -221,6 +221,7 @@ export async function generateIncomeTaxPDF(
   const doc = await PDFDocument.create();
   const fontR = await doc.embedFont(StandardFonts.TimesRoman);
   const fontB = await doc.embedFont(StandardFonts.TimesRomanBold);
+  const fontI = await doc.embedFont(StandardFonts.TimesRomanItalic);
   const fontBI = await doc.embedFont(StandardFonts.TimesRomanBoldItalic);
 
   const fetchBytes = async (url: string | undefined): Promise<Uint8Array | null> => {
@@ -369,7 +370,7 @@ export async function generateIncomeTaxPDF(
     return lines;
   };
 
-  const drawText = (text: string, opts?: { bold?: boolean; italic?: boolean; fontSize?: number; align?: 'left' | 'center' | 'right'; x?: number; maxW?: number }) => {
+  const drawText = (text: string, opts?: { bold?: boolean; italic?: boolean; underline?: boolean; fontSize?: number; align?: 'left' | 'center' | 'right'; x?: number; maxW?: number }) => {
     const fs = opts?.fontSize || 12;
     const lh = fs * LINE_H;
     const font = opts?.bold && opts?.italic ? fontBI : opts?.bold ? fontB : fontR;
@@ -380,20 +381,107 @@ export async function generateIncomeTaxPDF(
     ensureSpace(totalH);
     for (let i = 0; i < lines.length; i++) {
       let dx = x;
+      const tw = font.widthOfTextAtSize(lines[i], fs);
       if (opts?.align === 'center') {
-        const tw = font.widthOfTextAtSize(lines[i], fs);
         dx = x + (maxW - tw) / 2;
       } else if (opts?.align === 'right') {
-        const tw = font.widthOfTextAtSize(lines[i], fs);
         dx = x + maxW - tw;
       }
+      const textY = pdfY(cy + i * lh) - fs * 0.8;
       page.drawText(lines[i], {
         x: dx,
-        y: pdfY(cy + i * lh) - fs * 0.8,
+        y: textY,
         size: fs,
         font,
         color: rgb(0, 0, 0),
       });
+      if (opts?.underline && lines[i].trim()) {
+        const lineY = textY - 2;
+        page.drawLine({
+          start: { x: dx, y: lineY },
+          end: { x: dx + tw, y: lineY },
+          thickness: 1,
+          color: rgb(0, 0, 0),
+        });
+      }
+    }
+    cy += totalH;
+  };
+
+  const drawRichParagraph = (
+    segments: { text: string; bold?: boolean; italic?: boolean }[],
+    opts?: { fontSize?: number; align?: 'left' | 'center'; x?: number; maxW?: number }
+  ) => {
+    const fs = opts?.fontSize || 11;
+    const lh = fs * LINE_H;
+    const x = opts?.x ?? ML;
+    const maxW = opts?.maxW ?? CW;
+
+    interface Token {
+      word: string;
+      font: any;
+      width: number;
+    }
+
+    const tokens: Token[] = [];
+    for (const seg of segments) {
+      const font = seg.bold && seg.italic ? fontBI : seg.bold ? fontB : seg.italic ? fontI : fontR;
+      const cleanSeg = cleanText(seg.text);
+      const words = cleanSeg.split(/(\s+)/);
+      for (const w of words) {
+        if (!w) continue;
+        tokens.push({
+          word: w,
+          font,
+          width: font.widthOfTextAtSize(w, fs),
+        });
+      }
+    }
+
+    const lines: Token[][] = [];
+    let curLine: Token[] = [];
+    let curW = 0;
+
+    for (const tok of tokens) {
+      if (tok.word === '\n') {
+        lines.push(curLine);
+        curLine = [];
+        curW = 0;
+        continue;
+      }
+      if (curW + tok.width > maxW && curLine.length > 0 && tok.word.trim()) {
+        lines.push(curLine);
+        curLine = [tok];
+        curW = tok.width;
+      } else {
+        curLine.push(tok);
+        curW += tok.width;
+      }
+    }
+    if (curLine.length > 0) {
+      lines.push(curLine);
+    }
+
+    const totalH = lines.length * lh;
+    ensureSpace(totalH);
+
+    for (let i = 0; i < lines.length; i++) {
+      const lineTokens = lines[i];
+      let dx = x;
+      if (opts?.align === 'center') {
+        const lineW = lineTokens.reduce((sum, t) => sum + t.width, 0);
+        dx = x + (maxW - lineW) / 2;
+      }
+      for (const tok of lineTokens) {
+        page.drawText(tok.word, {
+          x: dx,
+          y: pdfY(cy + i * lh) - fs * 0.8,
+          size: fs,
+          font: tok.font,
+          color: rgb(0, 0, 0),
+        });
+        dx += tok.width;
+      }
     }
     cy += totalH;
   };
@@ -1464,10 +1552,23 @@ export async function generateIncomeTaxPDF(
   // BLOCK 8 — VALUATION CERTIFICATE
   // ═══════════════════════════════════════════════════════
   ensureSpace(140);
-  drawText('VALUATION CERTIFICATE', { bold: true });
-  advanceCursor(6);
-  drawText(`AS A RESULT OF MY APPRAISAL AND ANALYSIS IT IS MY CONSIDERED OPINION THAT THE ESTIMATED FAIR MARKET VALUE OF THE PROPERTY (${fields.propertyType}) BY ${fields.ownerName.toUpperCase()} BEARING ${fields.propertyDescription ? fields.propertyDescription.toUpperCase().substring(0, 200) : '________'} AS ON ${fields.valuationDate || '________'} IS RS.${formatIndianCurrency(computedTotalProperty)}/- (${rupeesInWords(computedTotalProperty).toUpperCase()})`);
-  advanceCursor(12);
+  drawText('VALUATION CERTIFICATE', { bold: true, align: 'center', underline: true, fontSize: 13 });
+  advanceCursor(10);
+
+  const valDateText = fields.valuationDate ? `AS ON ${fields.valuationDate}` : 'AS ON ________';
+  const amountWords = rupeesInWords(computedTotalProperty).toUpperCase();
+
+  drawRichParagraph([
+    {
+      text: `AS A RESULT OF MY APPRAISAL AND ANALYSIS IT IS MY CONSIDERED OPINION THAT THE ESTIMATED FAIR MARKET VALUE OF THE PROPERTY (${fields.propertyType.toUpperCase()}) BY ${fields.ownerName.toUpperCase()} BEARING ${fields.propertyDescription ? fields.propertyDescription.toUpperCase().substring(0, 250) : '________'} ${valDateText} `,
+      bold: false,
+    },
+    {
+      text: `IS RS.${formatIndianCurrency(computedTotalProperty)}/- (${amountWords})`,
+      bold: true,
+    },
+  ], { fontSize: 11 });
+  advanceCursor(14);
 
   // ═══════════════════════════════════════════════════════
   // BLOCK 9 — APPENDICES (Images)

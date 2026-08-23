@@ -1684,7 +1684,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
 
       // ── Valuation Certificate ──
       r.checkPageBreak(200);
-      r.drawCenteredTitle('VALUATION CERTIFICATE');
+      r.drawCenteredTitle('VALUATION CERTIFICATE', undefined, true);
       r.advanceCursor(6);
       r.drawCertificateBox([
         {
