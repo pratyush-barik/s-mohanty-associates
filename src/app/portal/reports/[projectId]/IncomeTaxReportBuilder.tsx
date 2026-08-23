@@ -98,6 +98,51 @@ const calculateTotalLandValue = (
   return Math.round(totalValue);
 };
 
+const formatLandAreaWithSqft = (rawLine: string): string => {
+  if (!rawLine || !rawLine.trim()) return '';
+  let str = rawLine.trim();
+
+  if (/\bI\.E\.\s*\d+(?:\.\d+)?\s*SFT/i.test(str)) {
+    return str;
+  }
+
+  const match = str.match(/^(?:AC\.)?(\d+(?:\.\d+)?)\s*(ACRE|ACRES|DEC|DECIMAL|SQMT|SQ\.MTR\.|SQFT|SQ\.FT\.|SFT)?(.*)$/i);
+  if (!match) return str;
+
+  const numVal = parseFloat(match[1]);
+  if (isNaN(numVal) || numVal <= 0) return str;
+
+  let unit = (match[2] || 'DEC').toUpperCase();
+  const restStr = match[3] ? match[3].trim() : '';
+
+  let sqftVal = 0;
+  if (unit.includes('ACRE')) {
+    sqftVal = numVal * 43560;
+  } else if (unit.includes('SQMT') || unit.includes('SQ.M')) {
+    sqftVal = numVal * 10.7639;
+  } else if (unit.includes('SQFT') || unit.includes('SQ.FT') || unit === 'SFT') {
+    sqftVal = numVal;
+  } else {
+    if (numVal < 1 || str.toUpperCase().startsWith('AC.')) {
+      sqftVal = numVal * 43560;
+    } else {
+      sqftVal = numVal * 435.6;
+    }
+  }
+
+  const formattedSqft = sqftVal.toFixed(2);
+
+  if (restStr) {
+    if (/^\(AS PER [^)]+\)$/i.test(restStr)) {
+      const mainPart = match[0].replace(restStr, '').trim();
+      return `${mainPart} I.E. ${formattedSqft} SFT ${restStr}`;
+    }
+    return `${str} I.E. ${formattedSqft} SFT`;
+  }
+
+  return `${str} I.E. ${formattedSqft} SFT`;
+};
+
 const cleanAddressForMap = (rawAddr: string): string => {
   if (!rawAddr || !rawAddr.trim()) return '';
   let str = rawAddr.trim();
@@ -1661,7 +1706,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                   lines={
                     fields.plotAreaLines && fields.plotAreaLines.length > 0 && fields.plotAreaLines.some(l => l.trim().length > 0)
                       ? fields.plotAreaLines
-                      : (fields.landArea ? [`${fields.landArea} ${fields.landAreaUnit || 'DEC'}`] : [])
+                      : (fields.landArea ? [formatLandAreaWithSqft(`${fields.landArea} ${fields.landAreaUnit || 'DEC'}`)] : [])
                   }
                   onChange={lines => handleChange('plotAreaLines', lines)}
                   disabled={isReadOnly}
