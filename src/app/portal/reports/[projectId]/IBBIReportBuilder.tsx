@@ -32,6 +32,12 @@ const SERVICES_LIST = [
 ];
 
 // ─── Types ─────────────────────────────────────────────────────────
+export interface PlinthAreaRow {
+  floorDetails: string;
+  actualArea: string;
+  consideredArea: string;
+}
+
 interface AnnexureItem {
   id: string;
   label: string;          // 'A', 'B', 'C', ...
@@ -178,6 +184,9 @@ interface IBBIFields {
   constructionQuality: string;
   assumedSalvageValue: string;
   plinthArea12: string;
+  plinthAreaOption: string;
+  plinthAreaCustom: string;
+  plinthAreaTable: PlinthAreaRow[];
 
   // ── Section 13: Valuation ──
   bookValueTotal: string;
@@ -368,6 +377,9 @@ const DEFAULT_FIELDS: IBBIFields = {
   constructionQuality: 'Not Applicable',
   assumedSalvageValue: 'Not Applicable',
   plinthArea12: 'Not Applicable',
+  plinthAreaOption: 'NOT APPLICABLE',
+  plinthAreaCustom: '',
+  plinthAreaTable: [{ floorDetails: '1. GROUND FLOOR RCC', actualArea: '5240 sqft', consideredArea: '5240 sqft' }],
 
   bookValueTotal: '',
   fairMarketValueTotal: '',
@@ -1415,13 +1427,22 @@ Our valuation is based on information obtained from the client and on data gathe
       r.drawSimpleRow('24  Condition of the building', fields.buildingCondition || 'N/A');
       r.drawSimpleRow('25  Quality of construction', fields.constructionQuality || 'N/A');
       r.drawSimpleRow('26  Assumed salvage value of the building', fields.assumedSalvageValue || 'N/A');
-      r.drawSimpleRow('27  Plinth area', fields.plinthArea12 || 'N/A');
+      const plinthText = fields.plinthAreaOption === 'Other' ? fields.plinthAreaCustom : fields.plinthAreaOption || 'NOT APPLICABLE';
+      r.drawSimpleRow('27  Plinth area', plinthText);
       
-      r.drawTextBlock('(if applicable)', { align: 'left', fontSize: 10, italic: true });
-      r.drawDataTable(
-        ['', 'Floor details', 'Actual construction area', 'Area considered'],
-        [['1.', 'GROUND FLOOR RCC', '5240 sqft', '5240 sqft']]
-      );
+      if (fields.plinthAreaOption === 'AS BELOW' && fields.plinthAreaTable && fields.plinthAreaTable.length > 0) {
+        r.drawTextBlock('(if applicable)', { align: 'left', fontSize: 10, italic: true });
+        const tableRows = fields.plinthAreaTable.map((row: PlinthAreaRow, i: number) => [
+          '',
+          row.floorDetails,
+          row.actualArea,
+          row.consideredArea
+        ]);
+        r.drawDataTable(
+          ['', 'Floor details', 'Actual construction area', 'Area considered'],
+          tableRows
+        );
+      }
       r.advanceCursor(8);
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2294,7 +2315,50 @@ Our valuation is based on information obtained from the client and on data gathe
               <Field label="24 Condition of the building"><input type="text" value={fields.buildingCondition || ''} onChange={e => handleChange('buildingCondition', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE" disabled={isReadOnly} /></Field>
               <Field label="25 Quality of construction"><input type="text" value={fields.constructionQuality || ''} onChange={e => handleChange('constructionQuality', e.target.value)} className={inputCls} placeholder="e.g. NOT APPLICABLE" disabled={isReadOnly} /></Field>
               <Field label="26 Assumed salvage value of the building"><input type="text" value={fields.assumedSalvageValue || ''} onChange={e => handleChange('assumedSalvageValue', e.target.value)} className={inputCls} placeholder="e.g. NOT APPLICABLE" disabled={isReadOnly} /></Field>
-              <Field label="27 Plinth area"><input type="text" value={fields.plinthArea12 || ''} onChange={e => handleChange('plinthArea12', e.target.value)} className={inputCls} placeholder="e.g. NOT APPLICABLE" disabled={isReadOnly} /></Field>
+                            <div className="col-span-1 md:col-span-2 border rounded-md p-4 bg-gray-50">
+                <div className="flex flex-col md:flex-row gap-4 items-start md:items-end mb-4">
+                  <Field label="27 Plinth area">
+                    <select value={fields.plinthAreaOption || 'NOT APPLICABLE'} onChange={e => handleChange('plinthAreaOption', e.target.value)} className={inputCls} disabled={isReadOnly}>
+                      <option value="PLEASE REFER BUILDING VALUATION">PLEASE REFER BUILDING VALUATION</option>
+                      <option value="NOT APPLICABLE">NOT APPLICABLE</option>
+                      <option value="AS BELOW">AS BELOW</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </Field>
+                  {fields.plinthAreaOption === 'Other' && (
+                    <Field label="Custom Plinth Area Text">
+                      <input type="text" value={fields.plinthAreaCustom || ''} onChange={e => handleChange('plinthAreaCustom', e.target.value)} className={inputCls} placeholder="Type custom text..." disabled={isReadOnly} />
+                    </Field>
+                  )}
+                </div>
+                {fields.plinthAreaOption === 'AS BELOW' && (
+                  <div>
+                    <h4 className="text-xs font-bold text-gray-700 mb-2 uppercase">Floor Details (if applicable)</h4>
+                    <div className="hidden md:grid grid-cols-[3fr_2fr_2fr_auto] gap-2 mb-1 px-1">
+                      <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Floor details</span>
+                      <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Actual construction area</span>
+                      <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Area considered</span>
+                      <span></span>
+                    </div>
+                    {fields.plinthAreaTable?.map((row, idx) => (
+                      <div key={idx} className="grid grid-cols-1 md:grid-cols-[3fr_2fr_2fr_auto] gap-2 items-center mb-2">
+                        <input type="text" value={row.floorDetails} onChange={e => { const newTable = [...(fields.plinthAreaTable || [])]; newTable[idx].floorDetails = e.target.value; handleChange('plinthAreaTable', newTable); }} className={inputCls} placeholder="1. GROUND FLOOR RCC" disabled={isReadOnly} />
+                        <input type="text" value={row.actualArea} onChange={e => { const newTable = [...(fields.plinthAreaTable || [])]; newTable[idx].actualArea = e.target.value; handleChange('plinthAreaTable', newTable); }} className={inputCls} placeholder="5240 sqft" disabled={isReadOnly} />
+                        <input type="text" value={row.consideredArea} onChange={e => { const newTable = [...(fields.plinthAreaTable || [])]; newTable[idx].consideredArea = e.target.value; handleChange('plinthAreaTable', newTable); }} className={inputCls} placeholder="5240 sqft" disabled={isReadOnly} />
+                        <button type="button" onClick={() => { const newTable = fields.plinthAreaTable.filter((_, i) => i !== idx); handleChange('plinthAreaTable', newTable); }} className="p-2 text-red-500 hover:bg-red-50 rounded hidden md:block" disabled={isReadOnly}>
+                          ✕
+                        </button>
+                        <button type="button" onClick={() => { const newTable = fields.plinthAreaTable.filter((_, i) => i !== idx); handleChange('plinthAreaTable', newTable); }} className="p-2 text-red-500 text-xs text-left hover:bg-red-50 rounded md:hidden" disabled={isReadOnly}>
+                          Remove Row
+                        </button>
+                      </div>
+                    ))}
+                    <button type="button" onClick={() => handleChange('plinthAreaTable', [...(fields.plinthAreaTable || []), { floorDetails: '', actualArea: '', consideredArea: '' }])} className="text-xs font-semibold text-blue-600 hover:underline mt-2 inline-block" disabled={isReadOnly}>
+                      + Add Row
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </Section>
 
