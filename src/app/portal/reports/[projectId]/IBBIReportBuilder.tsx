@@ -1304,15 +1304,15 @@ Our valuation is based on information obtained from the client and on data gathe
       // ── 5. TOWN PLANNING ──
       r.drawSectionHeader('5. TOWN PLANNING PARAMETERS:');
       tocPageMap['5.  TOWN PLANNING PARAMETERS'] = r.getPageCount();
-      r.drawSimpleRow('5.1   Master Plan Provision', fields.masterPlanProvision);
-      r.drawSimpleRow('5.2   Date of approved building plan', fields.approvedPlanDate);
-      r.drawSimpleRow('5.3   Approved plan issuing authority', fields.approvedPlanAuthority);
-      r.drawSimpleRow('5.4   Genuineness of approved plan', fields.planGenuineness || 'N/A');
-      r.drawSimpleRow('5.5   Comments on authenticity', fields.planAuthenticityComments || 'N/A');
-      r.drawSimpleRow('5.6   Development Controls', fields.developmentControls);
-      r.drawSimpleRow('5.7   Ground Coverage', fields.groundCoverage);
-      r.drawSimpleRow('5.8   Surrounding Land Use', fields.surroundingLandUse);
-      r.drawSimpleRow('5.9   Any other aspect', fields.otherAspect5 || 'N/A');
+      r.drawSimpleRow('5.1   Master plan provision, related to property in terms of land use.', fields.masterPlanProvision);
+      r.drawSimpleRow('5.2   Date of issue of approved building plan', fields.approvedPlanDate || 'NOT PROVIDED');
+      r.drawSimpleRow('5.3   Approved map/plan issuing authority', fields.approvedPlanAuthority || 'NOT PROVIDED');
+      r.drawSimpleRow('5.4   Whether genuineness or authenticity of the approved map/plan.', fields.planGenuineness || 'APPROVED PLAN NOT PRODUCED');
+      r.drawSimpleRow('5.5   Any comments over the authenticity of the building plan approval.', fields.planAuthenticityComments || 'APPROVED PLAN NOT PRODUCED');
+      r.drawSimpleRow('5.6   Development controls', fields.developmentControls);
+      r.drawSimpleRow('5.7   Ground coverage', fields.groundCoverage);
+      r.drawSimpleRow('5.8   Comment on the surrounding land use, adjoining properties in terms of use.', fields.surroundingLandUse);
+      r.drawSimpleRow('5.9   Any other aspect.', fields.otherAspect5 || 'NONE');
       r.advanceCursor(8);
 
       // ── 6. LEGAL ASPECTS ──
@@ -2161,12 +2161,15 @@ Our valuation is based on information obtained from the client and on data gathe
           {/* ── Section 5: Town Planning ── */}
           <Section title="Town Planning Parameters" number={5}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Master Plan Provision"><input type="text" value={fields.masterPlanProvision} onChange={e => handleChange('masterPlanProvision', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Approved Plan Authority"><input type="text" value={fields.approvedPlanAuthority} onChange={e => handleChange('approvedPlanAuthority', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Approved Plan Date"><input type="date" value={fields.approvedPlanDate || ''} onChange={e => handleChange('approvedPlanDate', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Ground Coverage"><input type="text" value={fields.groundCoverage} onChange={e => handleChange('groundCoverage', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Surrounding Land Use"><input type="text" value={fields.surroundingLandUse} onChange={e => handleChange('surroundingLandUse', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Development Controls" span={2}><textarea value={fields.developmentControls} onChange={e => handleChange('developmentControls', e.target.value)} className={inputCls} rows={2} disabled={isReadOnly} /></Field>
+              <Field label="5.1 Master plan provision, related to property in terms of land use" span={2}><textarea rows={2} value={fields.masterPlanProvision} onChange={e => handleChange('masterPlanProvision', e.target.value)} className={inputCls + ' resize-none'} placeholder="e.g. WHOLESALE COMMERCIAL ZONE AS PER CDP" disabled={isReadOnly} /></Field>
+              <Field label="5.2 Date of issue of approved building plan"><input type="text" value={fields.approvedPlanDate || ''} onChange={e => handleChange('approvedPlanDate', e.target.value)} className={inputCls} placeholder="e.g. NOT PROVIDED" disabled={isReadOnly} /></Field>
+              <Field label="5.3 Approved map/plan issuing authority"><input type="text" value={fields.approvedPlanAuthority} onChange={e => handleChange('approvedPlanAuthority', e.target.value)} className={inputCls} placeholder="e.g. NOT PROVIDED" disabled={isReadOnly} /></Field>
+              <Field label="5.4 Whether genuineness or authenticity of the approved map/plan"><input type="text" value={fields.planGenuineness || ''} onChange={e => handleChange('planGenuineness', e.target.value)} className={inputCls} placeholder="e.g. APPROVED PLAN NOT PRODUCED" disabled={isReadOnly} /></Field>
+              <Field label="5.5 Any comments over the authenticity of the building plan approval"><input type="text" value={fields.planAuthenticityComments || ''} onChange={e => handleChange('planAuthenticityComments', e.target.value)} className={inputCls} placeholder="e.g. APPROVED PLAN NOT PRODUCED" disabled={isReadOnly} /></Field>
+              <Field label="5.6 Development controls" span={2}><textarea rows={2} value={fields.developmentControls} onChange={e => handleChange('developmentControls', e.target.value)} className={inputCls + ' resize-none'} placeholder="e.g. TANGI CHOUDWAR (NAC) & SARPANCH OF NAPANGA G.P" disabled={isReadOnly} /></Field>
+              <Field label="5.7 Ground coverage"><input type="text" value={fields.groundCoverage} onChange={e => handleChange('groundCoverage', e.target.value)} className={inputCls} placeholder="e.g. 5.65 %" disabled={isReadOnly} /></Field>
+              <Field label="5.8 Comment on the surrounding land use, adjoining properties"><textarea rows={2} value={fields.surroundingLandUse} onChange={e => handleChange('surroundingLandUse', e.target.value)} className={inputCls + ' resize-none'} placeholder="e.g. SIMILAR INDUSTRIAL PROPERTIES" disabled={isReadOnly} /></Field>
+              <Field label="5.9 Any other aspect" span={2}><textarea rows={2} value={fields.otherAspect5 || ''} onChange={e => handleChange('otherAspect5', e.target.value)} className={inputCls + ' resize-none'} placeholder="e.g. SHAPE OF THE PROPERTY IS IRREGULAR WITH MULTIPLE ENCUMBRANCES..." disabled={isReadOnly} /></Field>
             </div>
           </Section>
 
