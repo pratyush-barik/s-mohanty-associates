@@ -1354,8 +1354,8 @@ Our valuation is based on information obtained from the client and on data gathe
       // ── 8. SOCIO-CULTURAL ──
       r.drawSectionHeader('8. SOCIO-CULTURAL ASPECTS OF THE PROPERTY:');
       tocPageMap['8.  SOCIO-CULTURAL ASPECTS'] = r.getPageCount();
-      r.drawSimpleRow('8.1   Descriptive account of location of property', fields.socialStructure);
-      r.drawSimpleRow('8.2   Whether property belongs to social infrastructure', fields.socialInfrastructure);
+      r.drawSimpleRow('8.1   Descriptive account of location of property, in terms of social structure of area, population, social satisfaction, regional origin, economic level, location of slum, squatter settlements nearby, etc.', fields.socialStructure);
+      r.drawSimpleRow('8.2   Whether property belongs to social infrastructure like hospital, school, old age home', fields.socialInfrastructure);
       r.advanceCursor(8);
 
       // ── 9. ENVIRONMENTAL ──
@@ -2218,15 +2218,21 @@ Our valuation is based on information obtained from the client and on data gathe
             </div>
           </Section>
 
-          {/* ── Section 8–9: Socio-Cultural & Environmental ── */}
-          <Section title="Socio-Cultural & Environmental Factors" number={8}>
+          {/* ── Section 8: Socio-Cultural Aspects ── */}
+          <Section title="Socio-Cultural Aspects of the Property" number={8}>
+            <div className="grid grid-cols-1 gap-4">
+              <Field label="8.1 Descriptive account of location of property, in terms of social structure of area, population, social satisfaction, regional origin, economic level, location of slum, squatter settlements nearby, etc." span={2}><textarea rows={4} value={fields.socialStructure} onChange={e => handleChange('socialStructure', e.target.value)} className={inputCls + ' resize-none'} placeholder="e.g. AQUA GOLD FIN TOWER PRIVATE LIMITED HAS VACANT PLOTS SITUATED AT BARALA VILLAGE.&#10;&#10;SOCIAL AND ECONOMICAL STATUS OF THE AREA MAY BE TREATED AS LOWER RURAL CLASS & PEOPLE OF ALL AGE GROUP ARE PUTTING UP IN THE AREA. SOCIAL RATING IS CONSIDERED AS AVERAGE." disabled={isReadOnly} /></Field>
+              <Field label="8.2 Whether property belongs to social infrastructure like hospital, school, old age home"><input type="text" value={fields.socialInfrastructure} onChange={e => handleChange('socialInfrastructure', e.target.value)} className={inputCls} placeholder="e.g. NO" disabled={isReadOnly} /></Field>
+            </div>
+          </Section>
+
+          {/* ── Section 9: Environmental Factors ── */}
+          <Section title="Environmental Factors Affecting the Property" number={9}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Social Structure (8.1)"><textarea rows={3} value={fields.socialStructure} onChange={e => handleChange('socialStructure', e.target.value)} className={inputCls + ' resize-none'} placeholder="Descriptive account of location, social structure, population" disabled={isReadOnly} /></Field>
-              <Field label="Social Infrastructure"><input type="text" value={fields.socialInfrastructure} onChange={e => handleChange('socialInfrastructure', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Eco-friendly Materials"><input type="text" value={fields.ecoMaterials} onChange={e => handleChange('ecoMaterials', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Rain Water Harvesting"><input type="text" value={fields.rainWaterHarvesting} onChange={e => handleChange('rainWaterHarvesting', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Solar System"><input type="text" value={fields.solarSystem} onChange={e => handleChange('solarSystem', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Environmental Pollution"><input type="text" value={fields.environmentalPollution} onChange={e => handleChange('environmentalPollution', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+              <Field label="9.1 Use of eco-friendly building material"><input type="text" value={fields.ecoMaterials} onChange={e => handleChange('ecoMaterials', e.target.value)} className={inputCls} placeholder="e.g. NO" disabled={isReadOnly} /></Field>
+              <Field label="9.2 Provision of rain water harvesting"><input type="text" value={fields.rainWaterHarvesting} onChange={e => handleChange('rainWaterHarvesting', e.target.value)} className={inputCls} placeholder="e.g. NO" disabled={isReadOnly} /></Field>
+              <Field label="9.3 Use of solar heating, lighting system"><input type="text" value={fields.solarSystem} onChange={e => handleChange('solarSystem', e.target.value)} className={inputCls} placeholder="e.g. NO" disabled={isReadOnly} /></Field>
+              <Field label="9.4 Presence of environmental pollution in vicinity"><input type="text" value={fields.environmentalPollution} onChange={e => handleChange('environmentalPollution', e.target.value)} className={inputCls} placeholder="e.g. None observed" disabled={isReadOnly} /></Field>
             </div>
           </Section>
 
