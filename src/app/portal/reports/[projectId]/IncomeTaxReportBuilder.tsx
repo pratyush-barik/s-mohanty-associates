@@ -2253,14 +2253,17 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                 <Field label="Date">
                   <input type="date" className={inputCls} value={fields.declarationDate ?? ''} onChange={e => handleChange('declarationDate', e.target.value)} disabled={isReadOnly} />
                 </Field>
+                <Field label="Location / Place">
+                  <input className={inputCls} value={fields.valuationPlace ?? 'BHUBANESWAR'} onChange={e => handleChange('valuationPlace', e.target.value)} disabled={isReadOnly} placeholder="e.g. BHUBANESWAR" />
+                </Field>
               </div>
 
               <div className="mt-6 p-5 bg-white rounded-xl border border-[#e9ecef] flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 shadow-sm">
                 <div className="space-y-1.5">
                   <p className="text-sm font-bold text-[#0f2038] tracking-wide">
-                    DATE–{fields.declarationDate ? fields.declarationDate.split('-').reverse().join('/') : 'DD/MM/YYYY'}
+                    DATE–{fields.declarationDate ? fields.declarationDate.split('-').reverse().join('/') : (fields.reportDate ? fields.reportDate.split('-').reverse().join('/') : 'DD/MM/YYYY')}
                   </p>
-                  <p className="text-sm font-bold text-[#0f2038] tracking-wide">PLACE–BHUBANESWAR</p>
+                  <p className="text-sm font-bold text-[#0f2038] tracking-wide">PLACE–{(fields.valuationPlace || 'BHUBANESWAR').toUpperCase()}</p>
                 </div>
                 <div className="sm:text-right space-y-1.5">
                   <p className="text-sm font-bold text-[#0f2038] tracking-wide">ER. SATYAJIT MOHANTY</p>

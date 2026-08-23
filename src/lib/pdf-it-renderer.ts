@@ -42,6 +42,7 @@ export interface IncomeTaxFieldsForPDF {
   valuationDate: string;
   inspectionDate: string;
   reportDate: string;
+  declarationDate?: string;
   identifiedBy: string;
   valuationPlace?: string;
   place?: string;
@@ -1201,7 +1202,7 @@ export async function generateIncomeTaxPDF(
   const b1Lines = wrapText(p3Bullet1, contentW - 20, fontR, p3Fs);
   const b2Lines = wrapText(p3Bullet2, contentW - 20, fontR, p3Fs);
 
-  const formattedReportDate = fields.reportDate ? formatReportDate(fields.reportDate) : (fields.valuationDate ? formatReportDate(fields.valuationDate) : '');
+  const formattedReportDate = fields.declarationDate ? formatReportDate(fields.declarationDate) : (fields.reportDate ? formatReportDate(fields.reportDate) : (fields.valuationDate ? formatReportDate(fields.valuationDate) : ''));
   const dateLabel = `DATE–${formattedReportDate || '________'}`;
   const userPlace = (fields.valuationPlace || fields.place || 'BHUBANESWAR').toUpperCase().trim();
   const placeLabel = `PLACE–${userPlace}`;
