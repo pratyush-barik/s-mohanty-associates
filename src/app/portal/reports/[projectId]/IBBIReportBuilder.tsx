@@ -1318,17 +1318,17 @@ Our valuation is based on information obtained from the client and on data gathe
       // ── 6. LEGAL ASPECTS ──
       r.drawSectionHeader('6. DOCUMENT DETAILS AND LEGAL ASPECTS OF THE PROPERTY:');
       tocPageMap['6.  DOCUMENT DETAILS AND LEGAL ASPECTS'] = r.getPageCount();
-      r.drawSimpleRow('6.1   Ownership Documents', fields.ownershipDocuments);
-      r.drawSimpleRow('6.2   Owner as per ROR', fields.ownerAsPerROR);
+      r.drawSimpleRow('6.1   Ownership documents', fields.ownershipDocuments);
+      r.drawSimpleRow('6.2   Owner of the property as per ROR', fields.ownerAsPerROR);
       r.drawSimpleRow('6.3   Agreement of easement if any', fields.easementAgreement);
       r.drawSimpleRow('6.4   Notification of acquisition if any', fields.acquisitionNotification);
       r.drawSimpleRow('6.5   Notification of road widening if any', fields.roadWideningNotification);
       r.drawSimpleRow('6.6   Heritage restriction, if any', fields.heritageRestriction);
       r.drawSimpleRow('6.7   Comment on transferability of ownership', fields.transferability);
-      r.drawSimpleRow('6.8   Existing mortgages / charge / encumbrances', fields.existingMortgages);
-      r.drawSimpleRow('6.9   Guarantee issued (personal/corporate)', fields.guaranteeIssued);
+      r.drawSimpleRow('6.8   Comment on existing mortgages/charge/encumbrances on the property, if any', fields.existingMortgages);
+      r.drawSimpleRow('6.9   Comment on, whether owner of property have issued any guarantee (personal/corporate) as the case may be.', fields.guaranteeIssued);
       r.drawSimpleRow('6.10  Whether property is SARFAESI compliant', fields.sarfaesiCompliant);
-      r.drawSimpleRow('6.11  Disputes or dues in payment of bills/taxes', fields.disputesDues);
+      r.drawSimpleRow('6.11  Observation on dispute or dues if any, in payment of bills/taxes to be reported.', fields.disputesDues);
       r.advanceCursor(8);
 
       // ── 7. INFRASTRUCTURE ──
@@ -2173,20 +2173,20 @@ Our valuation is based on information obtained from the client and on data gathe
             </div>
           </Section>
 
-          {/* ── Section 6: Legal Aspects ── */}
-          <Section title="Document Details & Legal Aspects" number={6}>
+          {/* ── Section 6: Document Details & Legal Aspects ── */}
+          <Section title="Document Details & Legal Aspects of the Property" number={6}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Ownership Documents"><input type="text" value={fields.ownershipDocuments} onChange={e => handleChange('ownershipDocuments', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Owner as per ROR"><textarea rows={2} value={fields.ownerAsPerROR} onChange={e => handleChange('ownerAsPerROR', e.target.value)} className={inputCls + ' resize-none'} placeholder="Multiple owners can be listed" disabled={isReadOnly} /></Field>
-              <Field label="Easement Agreement"><input type="text" value={fields.easementAgreement} onChange={e => handleChange('easementAgreement', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Acquisition Notification"><input type="text" value={fields.acquisitionNotification} onChange={e => handleChange('acquisitionNotification', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Transferability"><input type="text" value={fields.transferability} onChange={e => handleChange('transferability', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Existing Mortgages / Charge"><input type="text" value={fields.existingMortgages} onChange={e => handleChange('existingMortgages', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Road Widening Notification"><input type="text" value={fields.roadWideningNotification || ''} onChange={e => handleChange('roadWideningNotification', e.target.value)} className={inputCls} placeholder="Any road widening notification" disabled={isReadOnly} /></Field>
-              <Field label="Heritage Restriction"><input type="text" value={fields.heritageRestriction || ''} onChange={e => handleChange('heritageRestriction', e.target.value)} className={inputCls} placeholder="Any heritage restriction" disabled={isReadOnly} /></Field>
-              <Field label="Guarantee Issued"><input type="text" value={fields.guaranteeIssued || ''} onChange={e => handleChange('guaranteeIssued', e.target.value)} className={inputCls} placeholder="Any guarantee issued" disabled={isReadOnly} /></Field>
-              <Field label="SARFAESI Compliant"><textarea rows={2} value={fields.sarfaesiCompliant} onChange={e => handleChange('sarfaesiCompliant', e.target.value)} className={inputCls + ' resize-none'} disabled={isReadOnly} /></Field>
-              <Field label="Disputes / Dues"><textarea rows={2} value={fields.disputesDues} onChange={e => handleChange('disputesDues', e.target.value)} className={inputCls + ' resize-none'} disabled={isReadOnly} /></Field>
+              <Field label="6.1 Ownership documents"><input type="text" value={fields.ownershipDocuments} onChange={e => handleChange('ownershipDocuments', e.target.value)} className={inputCls} placeholder="e.g. AREA MAP, ROR" disabled={isReadOnly} /></Field>
+              <Field label="6.2 Owner of the property as per ROR" span={2}><textarea rows={3} value={fields.ownerAsPerROR} onChange={e => handleChange('ownerAsPerROR', e.target.value)} className={inputCls + ' resize-none'} placeholder={"e.g. JOINT OWNERS OF THE PROPERTY AS PER ROR FROM GOVT REVENUE DEPT. WEBSITE\n1. NAME ONE\n2. NAME TWO"} disabled={isReadOnly} /></Field>
+              <Field label="6.3 Agreement of easement if any" span={2}><textarea rows={2} value={fields.easementAgreement} onChange={e => handleChange('easementAgreement', e.target.value)} className={inputCls + ' resize-none'} placeholder="e.g. NO SUCH AGREEMENTS AS REPORTED BUT OBSERVED AT SITE AND CONFIRMED THROUGH LOCAL ENQUIRY" disabled={isReadOnly} /></Field>
+              <Field label="6.4 Notification of acquisition if any"><input type="text" value={fields.acquisitionNotification} onChange={e => handleChange('acquisitionNotification', e.target.value)} className={inputCls} placeholder="e.g. LIQUIDATORS NOTIFICATION SEEN AT SITE." disabled={isReadOnly} /></Field>
+              <Field label="6.5 Notification of road widening if any"><input type="text" value={fields.roadWideningNotification || ''} onChange={e => handleChange('roadWideningNotification', e.target.value)} className={inputCls} placeholder="e.g. NO NOTIFICATION ARE THERE AS REPORTED." disabled={isReadOnly} /></Field>
+              <Field label="6.6 Heritage restriction, if any"><input type="text" value={fields.heritageRestriction || ''} onChange={e => handleChange('heritageRestriction', e.target.value)} className={inputCls} placeholder="e.g. NOTHING OBSERVED." disabled={isReadOnly} /></Field>
+              <Field label="6.7 Comment on transferability of ownership"><input type="text" value={fields.transferability} onChange={e => handleChange('transferability', e.target.value)} className={inputCls} placeholder="e.g. THERE IS NO RESTRICTION AS OBSERVED." disabled={isReadOnly} /></Field>
+              <Field label="6.8 Comment on existing mortgages/charge/encumbrances on the property, if any" span={2}><textarea rows={2} value={fields.existingMortgages} onChange={e => handleChange('existingMortgages', e.target.value)} className={inputCls + ' resize-none'} placeholder="e.g. NO SUCH DOCUMENTS OR INFORMATION RECEIVED." disabled={isReadOnly} /></Field>
+              <Field label="6.9 Comment on, whether owner of property have issued any guarantee (personal/corporate)" span={2}><textarea rows={2} value={fields.guaranteeIssued || ''} onChange={e => handleChange('guaranteeIssued', e.target.value)} className={inputCls + ' resize-none'} placeholder="e.g. NO INFORMATION" disabled={isReadOnly} /></Field>
+              <Field label="6.10 Whether property is SARFAESI compliant" span={2}><textarea rows={3} value={fields.sarfaesiCompliant} onChange={e => handleChange('sarfaesiCompliant', e.target.value)} className={inputCls + ' resize-none'} placeholder="e.g. YES AS PLOT HAVE STATUS AS HOMESTEAD EXCEPT PLOT NO 976..." disabled={isReadOnly} /></Field>
+              <Field label="6.11 Observation on dispute or dues if any, in payment of bills/taxes to be reported" span={2}><textarea rows={3} value={fields.disputesDues} onChange={e => handleChange('disputesDues', e.target.value)} className={inputCls + ' resize-none'} placeholder="e.g. NO INFORMATION PROVIDED THOUGH LOCAL ENQUIRY SUGGESTED LEGAL LITIGATIONS AND ENCUMBRANCES..." disabled={isReadOnly} /></Field>
             </div>
           </Section>
 
