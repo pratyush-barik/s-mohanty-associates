@@ -1334,6 +1334,7 @@ export async function generateIncomeTaxPDF(
     drawCell(thX, cy2, thCols[5], thH, fields.annexPumpHouse || 'NIL', { bold: true, align: 'center', vAlign: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
 
     cy += thH * 2;
+    advanceCursor(12);
 
     // Q01 Formatting
     let q01Floors = fields.techFloors ? fields.techFloors.trim().toUpperCase() : '';
