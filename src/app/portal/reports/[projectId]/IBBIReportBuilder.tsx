@@ -1088,7 +1088,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
         '9.  ENVIRONMENTAL FACTORS',
         '10. MARKETABILITY OF THE PROPERTY',
         '11. ARCHITECTURAL ASPECTS OF THE PROPERTY',
-        '12. ENGINEERING ASPECTS',
+        '12. ENGINEERING ASPECTS OF THE PROPERTY',
         '13. VALUATION APPROACHES & METHODOLOGY',
         '    13.1  Methodology',
         '    13.2  Valuation Bases',
@@ -1386,33 +1386,33 @@ Our valuation is based on information obtained from the client and on data gathe
 
       // ── 12. ENGINEERING ──
       r.drawSectionHeader('12. ENGINEERING ASPECTS OF THE PROPERTY:');
-      tocPageMap['12. ENGINEERING ASPECTS'] = r.getPageCount();
-      r.drawSimpleRow('01.  Type of Construction', fields.constructionType);
-      r.drawSimpleRow('02.  Material and technology used', fields.materialsUsed);
-      r.drawSimpleRow('03.  Specifications', fields.specifications);
-      r.drawSimpleRow('04.  Maintenance Issues', fields.maintenanceIssues);
-      r.drawSimpleRow('05.  Age of Building', fields.ageOfBuilding ? `${fields.ageOfBuilding} Years` : 'N/A');
-      r.drawSimpleRow('06.  Residual Life', fields.residualLife ? `${fields.residualLife} Years` : 'N/A');
-      r.drawSimpleRow('07.  Extent of Deterioration', fields.extentDeterioration);
-      r.drawSimpleRow('08.  Structural Safety', fields.structuralSafety);
-      r.drawSimpleRow('09.  Protection against natural disaster', fields.naturalDisasterProtection);
-      r.drawSimpleRow('10.  Visible Damage', fields.visibleDamage);
-      r.drawSimpleRow('11.  System of air-conditioning', fields.airConditioning || 'N/A');
-      r.drawSimpleRow('12.  Provision of fire-fighting', fields.fireFighting || 'N/A');
-      r.drawSimpleRow('13.  Year of construction', fields.yearOfConstruction || 'N/A');
-      r.drawSimpleRow('14.  Type of foundation', fields.foundationType || 'N/A');
-      r.drawSimpleRow('15.  Superstructure', fields.superstructure || 'N/A');
-      r.drawSimpleRow('16.  Type of building', fields.buildingType || 'N/A');
-      r.drawSimpleRow('17.  Number of floors', fields.numberOfFloors || 'N/A');
-      r.drawSimpleRow('18.  Type of roof', fields.roofType || 'N/A');
-      r.drawSimpleRow('19.  Roof height', fields.roofHeight || 'N/A');
-      r.drawSimpleRow('20.  Type of flooring', fields.flooringType || 'N/A');
-      r.drawSimpleRow('21.  Type of joineries (Door/Windows)', fields.joineriesType || 'N/A');
-      r.drawSimpleRow('22.  Amenities / extra fitting', fields.amenitiesFitting || 'N/A');
-      r.drawSimpleRow('23.  Condition of the building', fields.buildingCondition || 'N/A');
-      r.drawSimpleRow('24.  Quality of construction', fields.constructionQuality || 'N/A');
-      r.drawSimpleRow('25.  Assumed salvage value', fields.assumedSalvageValue || 'N/A');
-      r.drawSimpleRow('       Plinth Area', fields.plinthArea12 || 'N/A');
+      tocPageMap['12. ENGINEERING ASPECTS OF THE PROPERTY'] = r.getPageCount();
+      r.drawSimpleRow('01  Type of construction', fields.constructionType);
+      r.drawSimpleRow('02  Material and technology used', fields.materialsUsed);
+      r.drawSimpleRow('03  Specifications', fields.specifications);
+      r.drawSimpleRow('04  Maintenance issues', fields.maintenanceIssues);
+      r.drawSimpleRow('05  Age of the building/sheds', fields.ageOfBuilding ? `${fields.ageOfBuilding} YEARS` : 'N/A');
+      r.drawSimpleRow('06  Residual life of the building', fields.residualLife ? `${fields.residualLife} YEARS` : 'N/A');
+      r.drawSimpleRow('07  Extent of deterioration', fields.extentDeterioration);
+      r.drawSimpleRow('08  Structural safety', fields.structuralSafety);
+      r.drawSimpleRow('09  Protection against natural disaster/earthquake', fields.naturalDisasterProtection);
+      r.drawSimpleRow('10  Visible damage in the building', fields.visibleDamage);
+      r.drawSimpleRow('11  System of air-conditioning', fields.airConditioning || 'N/A');
+      r.drawSimpleRow('12  Provision of fire-fighting', fields.fireFighting || 'N/A');
+      r.drawSimpleRow('13  Year of construction', fields.yearOfConstruction || 'N/A');
+      r.drawSimpleRow('14  Type of foundation', fields.foundationType || 'N/A');
+      r.drawSimpleRow('15  Superstructure', fields.superstructure || 'N/A');
+      r.drawSimpleRow('16  Type of building', fields.buildingType || 'N/A');
+      r.drawSimpleRow('17  No.of floors', fields.numberOfFloors || 'N/A');
+      r.drawSimpleRow('18  Type of roof', fields.roofType || 'N/A');
+      r.drawSimpleRow('19  Roof height', fields.roofHeight || 'N/A');
+      r.drawSimpleRow('20  Type of flooring', fields.flooringType || 'N/A');
+      r.drawSimpleRow('21  Type of joineries (Door/Windows)', fields.joineriesType || 'N/A');
+      r.drawSimpleRow('22  Amenities/extra fitting', fields.amenitiesFitting || 'N/A');
+      r.drawSimpleRow('22  Condition of the building', fields.buildingCondition || 'N/A');
+      r.drawSimpleRow('23  Quality of construction', fields.constructionQuality || 'N/A');
+      r.drawSimpleRow('24  Assumed salvage value of the building', fields.assumedSalvageValue || 'N/A');
+      r.drawSimpleRow('25  Plinth area', fields.plinthArea12 || 'N/A');
       r.advanceCursor(8);
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2257,34 +2257,34 @@ Our valuation is based on information obtained from the client and on data gathe
           </Section>
 
           {/* ── Section 12: Engineering ── */}
-          <Section title="Engineering Aspects" number={12}>
+          <Section title="Engineering Aspects of the Property" number={12}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Type of Construction"><input type="text" value={fields.constructionType} onChange={e => handleChange('constructionType', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Materials Used"><input type="text" value={fields.materialsUsed} onChange={e => handleChange('materialsUsed', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Specifications"><input type="text" value={fields.specifications} onChange={e => handleChange('specifications', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Maintenance Issues"><input type="text" value={fields.maintenanceIssues} onChange={e => handleChange('maintenanceIssues', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Age of Building (Years)"><input type="number" value={fields.ageOfBuilding} onChange={e => handleChange('ageOfBuilding', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Residual Life (Years)"><input type="number" value={fields.residualLife} onChange={e => handleChange('residualLife', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Extent of Deterioration"><input type="text" value={fields.extentDeterioration} onChange={e => handleChange('extentDeterioration', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Structural Safety"><input type="text" value={fields.structuralSafety} onChange={e => handleChange('structuralSafety', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Natural Disaster Protection"><input type="text" value={fields.naturalDisasterProtection} onChange={e => handleChange('naturalDisasterProtection', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Visible Damage"><input type="text" value={fields.visibleDamage} onChange={e => handleChange('visibleDamage', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Air-conditioning System (11)"><input type="text" value={fields.airConditioning || ''} onChange={e => handleChange('airConditioning', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE" disabled={isReadOnly} /></Field>
-              <Field label="Fire-fighting Provision (12)"><input type="text" value={fields.fireFighting || ''} onChange={e => handleChange('fireFighting', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE" disabled={isReadOnly} /></Field>
-              <Field label="Year of Construction (13)"><input type="text" value={fields.yearOfConstruction || ''} onChange={e => handleChange('yearOfConstruction', e.target.value)} className={inputCls} placeholder="e.g. 2015" disabled={isReadOnly} /></Field>
-              <Field label="Type of Foundation (14)"><input type="text" value={fields.foundationType || ''} onChange={e => handleChange('foundationType', e.target.value)} className={inputCls} placeholder="e.g. RCC" disabled={isReadOnly} /></Field>
-              <Field label="Superstructure (15)"><input type="text" value={fields.superstructure || ''} onChange={e => handleChange('superstructure', e.target.value)} className={inputCls} placeholder="e.g. RCC FRAMED" disabled={isReadOnly} /></Field>
-              <Field label="Type of Building (16)"><input type="text" value={fields.buildingType || ''} onChange={e => handleChange('buildingType', e.target.value)} className={inputCls} placeholder="e.g. RESIDENTIAL / COMMERCIAL" disabled={isReadOnly} /></Field>
-              <Field label="Number of Floors (17)"><input type="text" value={fields.numberOfFloors || ''} onChange={e => handleChange('numberOfFloors', e.target.value)} className={inputCls} placeholder="e.g. G+2" disabled={isReadOnly} /></Field>
-              <Field label="Type of Roof (18)"><input type="text" value={fields.roofType || ''} onChange={e => handleChange('roofType', e.target.value)} className={inputCls} placeholder="e.g. RCC FLAT ROOF" disabled={isReadOnly} /></Field>
-              <Field label="Roof Height (19)"><input type="text" value={fields.roofHeight || ''} onChange={e => handleChange('roofHeight', e.target.value)} className={inputCls} placeholder="e.g. 10 FT" disabled={isReadOnly} /></Field>
-              <Field label="Type of Flooring (20)"><input type="text" value={fields.flooringType || ''} onChange={e => handleChange('flooringType', e.target.value)} className={inputCls} placeholder="e.g. VITRIFIED TILES" disabled={isReadOnly} /></Field>
-              <Field label="Type of Joineries - Door/Windows (21)"><input type="text" value={fields.joineriesType || ''} onChange={e => handleChange('joineriesType', e.target.value)} className={inputCls} placeholder="e.g. WOODEN / ALUMINIUM" disabled={isReadOnly} /></Field>
-              <Field label="Amenities / Extra Fitting (22)"><input type="text" value={fields.amenitiesFitting || ''} onChange={e => handleChange('amenitiesFitting', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE" disabled={isReadOnly} /></Field>
-              <Field label="Condition of Building (23)"><input type="text" value={fields.buildingCondition || ''} onChange={e => handleChange('buildingCondition', e.target.value)} className={inputCls} placeholder="e.g. GOOD / FAIR / POOR" disabled={isReadOnly} /></Field>
-              <Field label="Quality of Construction (24)"><input type="text" value={fields.constructionQuality || ''} onChange={e => handleChange('constructionQuality', e.target.value)} className={inputCls} placeholder="e.g. GOOD / AVERAGE" disabled={isReadOnly} /></Field>
-              <Field label="Assumed Salvage Value (25)"><input type="text" value={fields.assumedSalvageValue || ''} onChange={e => handleChange('assumedSalvageValue', e.target.value)} className={inputCls} placeholder="e.g. NOT APPLICABLE" disabled={isReadOnly} /></Field>
-              <Field label="Plinth Area"><input type="text" value={fields.plinthArea12 || ''} onChange={e => handleChange('plinthArea12', e.target.value)} className={inputCls} placeholder="e.g. NOT APPLICABLE" disabled={isReadOnly} /></Field>
+              <Field label="01 Type of construction"><input type="text" value={fields.constructionType} onChange={e => handleChange('constructionType', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE." disabled={isReadOnly} /></Field>
+              <Field label="02 Material and technology used"><input type="text" value={fields.materialsUsed} onChange={e => handleChange('materialsUsed', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE.." disabled={isReadOnly} /></Field>
+              <Field label="03 Specifications"><input type="text" value={fields.specifications} onChange={e => handleChange('specifications', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE." disabled={isReadOnly} /></Field>
+              <Field label="04 Maintenance issues"><input type="text" value={fields.maintenanceIssues} onChange={e => handleChange('maintenanceIssues', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE." disabled={isReadOnly} /></Field>
+              <Field label="05 Age of the building/sheds"><input type="number" value={fields.ageOfBuilding} onChange={e => handleChange('ageOfBuilding', e.target.value)} className={inputCls} placeholder="e.g. 0 YEARS" disabled={isReadOnly} /></Field>
+              <Field label="06 Residual life of the building"><input type="number" value={fields.residualLife} onChange={e => handleChange('residualLife', e.target.value)} className={inputCls} placeholder="e.g. 0 YEARS" disabled={isReadOnly} /></Field>
+              <Field label="07 Extent of deterioration"><input type="text" value={fields.extentDeterioration} onChange={e => handleChange('extentDeterioration', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE." disabled={isReadOnly} /></Field>
+              <Field label="08 Structural safety"><input type="text" value={fields.structuralSafety} onChange={e => handleChange('structuralSafety', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE." disabled={isReadOnly} /></Field>
+              <Field label="09 Protection against natural disaster/earthquake"><input type="text" value={fields.naturalDisasterProtection} onChange={e => handleChange('naturalDisasterProtection', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE" disabled={isReadOnly} /></Field>
+              <Field label="10 Visible damage in the building"><input type="text" value={fields.visibleDamage} onChange={e => handleChange('visibleDamage', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE." disabled={isReadOnly} /></Field>
+              <Field label="11 System of air-conditioning"><input type="text" value={fields.airConditioning || ''} onChange={e => handleChange('airConditioning', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE" disabled={isReadOnly} /></Field>
+              <Field label="12 Provision of fire-fighting"><input type="text" value={fields.fireFighting || ''} onChange={e => handleChange('fireFighting', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE" disabled={isReadOnly} /></Field>
+              <Field label="13 Year of construction"><input type="text" value={fields.yearOfConstruction || ''} onChange={e => handleChange('yearOfConstruction', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE" disabled={isReadOnly} /></Field>
+              <Field label="14 Type of foundation"><input type="text" value={fields.foundationType || ''} onChange={e => handleChange('foundationType', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE" disabled={isReadOnly} /></Field>
+              <Field label="15 Superstructure"><input type="text" value={fields.superstructure || ''} onChange={e => handleChange('superstructure', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE." disabled={isReadOnly} /></Field>
+              <Field label="16 Type of building"><input type="text" value={fields.buildingType || ''} onChange={e => handleChange('buildingType', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE" disabled={isReadOnly} /></Field>
+              <Field label="17 No.of floors"><input type="text" value={fields.numberOfFloors || ''} onChange={e => handleChange('numberOfFloors', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE." disabled={isReadOnly} /></Field>
+              <Field label="18 Type of roof"><input type="text" value={fields.roofType || ''} onChange={e => handleChange('roofType', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE" disabled={isReadOnly} /></Field>
+              <Field label="19 Roof height"><input type="text" value={fields.roofHeight || ''} onChange={e => handleChange('roofHeight', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE" disabled={isReadOnly} /></Field>
+              <Field label="20 Type of flooring"><input type="text" value={fields.flooringType || ''} onChange={e => handleChange('flooringType', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE" disabled={isReadOnly} /></Field>
+              <Field label="21 Type of joineries (Door/Windows)"><input type="text" value={fields.joineriesType || ''} onChange={e => handleChange('joineriesType', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE" disabled={isReadOnly} /></Field>
+              <Field label="22 Amenities/extra fitting"><input type="text" value={fields.amenitiesFitting || ''} onChange={e => handleChange('amenitiesFitting', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE" disabled={isReadOnly} /></Field>
+              <Field label="22 Condition of the building"><input type="text" value={fields.buildingCondition || ''} onChange={e => handleChange('buildingCondition', e.target.value)} className={inputCls} placeholder="e.g. NONE AT SITE" disabled={isReadOnly} /></Field>
+              <Field label="23 Quality of construction"><input type="text" value={fields.constructionQuality || ''} onChange={e => handleChange('constructionQuality', e.target.value)} className={inputCls} placeholder="e.g. NOT APPLICABLE" disabled={isReadOnly} /></Field>
+              <Field label="24 Assumed salvage value of the building"><input type="text" value={fields.assumedSalvageValue || ''} onChange={e => handleChange('assumedSalvageValue', e.target.value)} className={inputCls} placeholder="e.g. NOT APPLICABLE" disabled={isReadOnly} /></Field>
+              <Field label="25 Plinth area"><input type="text" value={fields.plinthArea12 || ''} onChange={e => handleChange('plinthArea12', e.target.value)} className={inputCls} placeholder="e.g. NOT APPLICABLE" disabled={isReadOnly} /></Field>
             </div>
           </Section>
 
