@@ -1335,20 +1335,20 @@ Our valuation is based on information obtained from the client and on data gathe
       r.drawSectionHeader('7. FUNCTIONAL AND INFRASTRUCTURE ASPECTS OF THE PROPERTY:');
       tocPageMap['7.  FUNCTIONAL AND INFRASTRUCTURE ASPECTS'] = r.getPageCount();
       r.drawTextBlock('Description of aqua infrastructure availability in terms of', { bold: true, fontSize: 10 });
-      r.drawSimpleRow('7.1   Water Supply', fields.waterSupply);
-      r.drawSimpleRow('7.2   Sewerage / Sanitation system', fields.sewerage);
-      r.drawSimpleRow('7.3   Storm Water Drainage', fields.stormWater);
+      r.drawSimpleRow('7.1   Water supply', fields.waterSupply);
+      r.drawSimpleRow('7.2   Sewerage/sanitation system, u/g or open.', fields.sewerage);
+      r.drawSimpleRow('7.3   Storm water drainage', fields.stormWater);
       r.drawTextBlock('Description of the other physical infrastructure facilities viz', { bold: true, fontSize: 10 });
-      r.drawSimpleRow('7.4   Solid Waste Management', fields.solidWaste);
+      r.drawSimpleRow('7.4   Solid waste management', fields.solidWaste);
       r.drawSimpleRow('7.5   Electricity', fields.electricity);
       r.drawSimpleRow('7.6   Road and public transport connectivity', fields.roadConnectivity);
       r.drawSimpleRow('7.7   Availability of other public utilities nearby', [fields.policeStationDist ? 'Police Station: ' + fields.policeStationDist : '', fields.busStopDist ? 'Bus Stop: ' + fields.busStopDist : '', fields.schoolDist ? 'School: ' + fields.schoolDist : '', fields.collegeDist ? 'College: ' + fields.collegeDist : ''].filter(Boolean).join(', ') || 'N/A');
       r.drawTextBlock('Description of the functionality and utility of the property in terms of', { bold: true, fontSize: 10 });
-      r.drawSimpleRow('7.8   Space Allocation', fields.spaceAllocation || 'N/A');
-      r.drawSimpleRow('7.9   Storage Spaces', fields.storageSpaces || 'N/A');
-      r.drawSimpleRow('7.10  Utility Spaces', fields.utilitySpaces || 'N/A');
-      r.drawSimpleRow('7.11  Car Parking Facility', fields.carParking || 'N/A');
-      r.drawSimpleRow('7.12  Balconies etc.', fields.balconies || 'N/A');
+      r.drawSimpleRow('7.8   Space allocation', fields.spaceAllocation || 'NO');
+      r.drawSimpleRow('7.9   Storage spaces', fields.storageSpaces || 'NO');
+      r.drawSimpleRow('7.10  Utility spaces provided within the unit', fields.utilitySpaces || 'NO');
+      r.drawSimpleRow('7.11  Car parking facility', fields.carParking || 'NO');
+      r.drawSimpleRow('7.12  Balconies etc.', fields.balconies || 'NO');
       r.advanceCursor(8);
 
       // ── 8. SOCIO-CULTURAL ──
@@ -2190,27 +2190,31 @@ Our valuation is based on information obtained from the client and on data gathe
             </div>
           </Section>
 
-          {/* ── Section 7: Infrastructure ── */}
-          <Section title="Functional & Infrastructure Aspects" number={7}>
+          {/* ── Section 7: Functional and Infrastructure Aspects ── */}
+          <Section title="Functional and Infrastructure Aspects of the Property" number={7}>
+            <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-2">Description of aqua infrastructure availability in terms of</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Water Supply"><input type="text" value={fields.waterSupply} onChange={e => handleChange('waterSupply', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Sewerage"><input type="text" value={fields.sewerage} onChange={e => handleChange('sewerage', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Electricity"><input type="text" value={fields.electricity} onChange={e => handleChange('electricity', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Road Connectivity"><textarea rows={2} value={fields.roadConnectivity} onChange={e => handleChange('roadConnectivity', e.target.value)} className={inputCls + ' resize-none'} placeholder="Road width, type, connectivity details" disabled={isReadOnly} /></Field>
-              <Field label="Storm Water Drainage"><input type="text" value={fields.stormWater || ''} onChange={e => handleChange('stormWater', e.target.value)} className={inputCls} placeholder="e.g. Available / Not Available" disabled={isReadOnly} /></Field>
-              <Field label="Solid Waste Management"><input type="text" value={fields.solidWaste || ''} onChange={e => handleChange('solidWaste', e.target.value)} className={inputCls} placeholder="e.g. Municipal Collection" disabled={isReadOnly} /></Field>
-              <Field label="Distance to Police Station"><input type="text" value={fields.policeStationDist} onChange={e => handleChange('policeStationDist', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Distance to Bus Stop"><input type="text" value={fields.busStopDist} onChange={e => handleChange('busStopDist', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Distance to Nearest School"><input type="text" value={fields.schoolDist || ''} onChange={e => handleChange('schoolDist', e.target.value)} className={inputCls} placeholder="e.g. 2 KM" disabled={isReadOnly} /></Field>
-              <Field label="Distance to Nearest College"><input type="text" value={fields.collegeDist || ''} onChange={e => handleChange('collegeDist', e.target.value)} className={inputCls} placeholder="e.g. 5 KM" disabled={isReadOnly} /></Field>
+              <Field label="7.1 Water supply"><input type="text" value={fields.waterSupply} onChange={e => handleChange('waterSupply', e.target.value)} className={inputCls} placeholder="e.g. NOT AVAILABLE" disabled={isReadOnly} /></Field>
+              <Field label="7.2 Sewerage/sanitation system, u/g or open."><input type="text" value={fields.sewerage} onChange={e => handleChange('sewerage', e.target.value)} className={inputCls} placeholder="e.g. NOT AVAILABLE" disabled={isReadOnly} /></Field>
+              <Field label="7.3 Storm water drainage"><input type="text" value={fields.stormWater || ''} onChange={e => handleChange('stormWater', e.target.value)} className={inputCls} placeholder="e.g. NO" disabled={isReadOnly} /></Field>
             </div>
-            <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mt-4 mb-2">Functionality & Utility of the Property</p>
+            <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mt-4 mb-2">Description of the other physical infrastructure facilities viz</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Space Allocation (7.8)"><input type="text" value={fields.spaceAllocation || ''} onChange={e => handleChange('spaceAllocation', e.target.value)} className={inputCls} placeholder="e.g. YES / NO" disabled={isReadOnly} /></Field>
-              <Field label="Storage Spaces (7.9)"><input type="text" value={fields.storageSpaces || ''} onChange={e => handleChange('storageSpaces', e.target.value)} className={inputCls} placeholder="e.g. YES / NO" disabled={isReadOnly} /></Field>
-              <Field label="Utility Spaces (7.10)"><input type="text" value={fields.utilitySpaces || ''} onChange={e => handleChange('utilitySpaces', e.target.value)} className={inputCls} placeholder="e.g. YES / NO" disabled={isReadOnly} /></Field>
-              <Field label="Car Parking Facility (7.11)"><input type="text" value={fields.carParking || ''} onChange={e => handleChange('carParking', e.target.value)} className={inputCls} placeholder="e.g. YES / NO" disabled={isReadOnly} /></Field>
-              <Field label="Balconies etc. (7.12)"><input type="text" value={fields.balconies || ''} onChange={e => handleChange('balconies', e.target.value)} className={inputCls} placeholder="e.g. YES / NO" disabled={isReadOnly} /></Field>
+              <Field label="7.4 Solid waste management"><input type="text" value={fields.solidWaste || ''} onChange={e => handleChange('solidWaste', e.target.value)} className={inputCls} placeholder="e.g. NO" disabled={isReadOnly} /></Field>
+              <Field label="7.5 Electricity"><input type="text" value={fields.electricity} onChange={e => handleChange('electricity', e.target.value)} className={inputCls} placeholder="e.g. YES" disabled={isReadOnly} /></Field>
+              <Field label="7.6 Road and public transport connectivity" span={2}><textarea rows={2} value={fields.roadConnectivity} onChange={e => handleChange('roadConnectivity', e.target.value)} className={inputCls + ' resize-none'} placeholder="e.g. EXISTING 3 MTS WIDE MURROM ROAD OF LENGTH APPROX 50 MTS CONNECTING TO NH 16" disabled={isReadOnly} /></Field>
+              <Field label="7.7 Availability of other public utilities nearby — Police Station"><input type="text" value={fields.policeStationDist} onChange={e => handleChange('policeStationDist', e.target.value)} className={inputCls} placeholder="e.g. TANGI POLICE STATION - 8.00 KMS" disabled={isReadOnly} /></Field>
+              <Field label="7.7 Bus Stop"><input type="text" value={fields.busStopDist} onChange={e => handleChange('busStopDist', e.target.value)} className={inputCls} placeholder="e.g. MANGULI NH 16 BUS STOP - 500 MTRS" disabled={isReadOnly} /></Field>
+              <Field label="7.7 School"><input type="text" value={fields.schoolDist || ''} onChange={e => handleChange('schoolDist', e.target.value)} className={inputCls} placeholder="e.g. CHOUDWAR HIGH SCHOOL - 2.50 KMS" disabled={isReadOnly} /></Field>
+              <Field label="7.7 College"><input type="text" value={fields.collegeDist || ''} onChange={e => handleChange('collegeDist', e.target.value)} className={inputCls} placeholder="e.g. CHOUDWAR COLLEGE - 4.00 KMS" disabled={isReadOnly} /></Field>
+            </div>
+            <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mt-4 mb-2">Description of the functionality and utility of the property in terms of</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="7.8 Space allocation"><input type="text" value={fields.spaceAllocation || ''} onChange={e => handleChange('spaceAllocation', e.target.value)} className={inputCls} placeholder="e.g. NO" disabled={isReadOnly} /></Field>
+              <Field label="7.9 Storage spaces"><input type="text" value={fields.storageSpaces || ''} onChange={e => handleChange('storageSpaces', e.target.value)} className={inputCls} placeholder="e.g. NO" disabled={isReadOnly} /></Field>
+              <Field label="7.10 Utility spaces provided within the unit"><input type="text" value={fields.utilitySpaces || ''} onChange={e => handleChange('utilitySpaces', e.target.value)} className={inputCls} placeholder="e.g. NO" disabled={isReadOnly} /></Field>
+              <Field label="7.11 Car parking facility"><input type="text" value={fields.carParking || ''} onChange={e => handleChange('carParking', e.target.value)} className={inputCls} placeholder="e.g. NO" disabled={isReadOnly} /></Field>
+              <Field label="7.12 Balconies etc."><input type="text" value={fields.balconies || ''} onChange={e => handleChange('balconies', e.target.value)} className={inputCls} placeholder="e.g. NO" disabled={isReadOnly} /></Field>
             </div>
           </Section>
 
