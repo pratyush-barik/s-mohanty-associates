@@ -962,7 +962,29 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
     }
   };
   const handleChange = useCallback((field: keyof IncomeTaxFields, value: any) => {
-    setFields(prev => ({ ...prev, [field]: value }));
+    setFields(prev => {
+      const next = { ...prev, [field]: value };
+      if (['landArea', 'landAreaUnit', 'landRatePerUnit', 'landRateUnit', 'landRateSecondaryUnit'].includes(field as string)) {
+        const rateVal = next.landRatePerUnit;
+        const pUnit = next.landRateUnit || 'DEC';
+        const sUnit = next.landRateSecondaryUnit || 'ACRE';
+        if (rateVal) {
+          next.landRateSecondaryPerUnit = convertLandRate(rateVal, pUnit, sUnit);
+        }
+        if (next.landArea && rateVal) {
+          const totalVal = calculateTotalLandValue(
+            next.landArea,
+            next.landAreaUnit || pUnit,
+            rateVal,
+            pUnit
+          );
+          if (totalVal > 0) {
+            next.totalLandValue = String(totalVal);
+          }
+        }
+      }
+      return next;
+    });
   }, []);
 
   // ── Bucket Picker Handlers ──
@@ -1636,7 +1658,11 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                 <span className="text-xs font-bold text-[#b8860b] uppercase tracking-wider block">12 — Area, Shape, Dimensions & Physical Features</span>
                 <BulletEditor
                   label="Area of the Plot (e.g. ROR / Sale Deed Entries)"
-                  lines={fields.plotAreaLines && fields.plotAreaLines.length > 0 ? fields.plotAreaLines : (fields.landArea ? [`${fields.landArea} ${fields.landAreaUnit}`] : [])}
+                  lines={
+                    fields.plotAreaLines && fields.plotAreaLines.length > 0 && fields.plotAreaLines.some(l => l.trim().length > 0)
+                      ? fields.plotAreaLines
+                      : (fields.landArea ? [`${fields.landArea} ${fields.landAreaUnit || 'DEC'}`] : [])
+                  }
                   onChange={lines => handleChange('plotAreaLines', lines)}
                   disabled={isReadOnly}
                   placeholder="e.g. AC.0.050 DEC I.E. 2178.00 SFT (AS PER ROR)"
