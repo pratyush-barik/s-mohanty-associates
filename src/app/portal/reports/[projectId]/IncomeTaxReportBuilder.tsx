@@ -116,18 +116,14 @@ const formatLandAreaWithSqft = (rawLine: string): string => {
   const restStr = match[3] ? match[3].trim() : '';
 
   let sqftVal = 0;
-  if (unit.includes('ACRE')) {
+  if (unit.includes('ACRE') || str.toUpperCase().startsWith('AC.')) {
     sqftVal = numVal * 43560;
   } else if (unit.includes('SQMT') || unit.includes('SQ.M')) {
     sqftVal = numVal * 10.7639;
   } else if (unit.includes('SQFT') || unit.includes('SQ.FT') || unit === 'SFT') {
     sqftVal = numVal;
   } else {
-    if (numVal < 1 || str.toUpperCase().startsWith('AC.')) {
-      sqftVal = numVal * 43560;
-    } else {
-      sqftVal = numVal * 435.6;
-    }
+    sqftVal = numVal * 435.6;
   }
 
   const formattedSqft = sqftVal.toFixed(2);
