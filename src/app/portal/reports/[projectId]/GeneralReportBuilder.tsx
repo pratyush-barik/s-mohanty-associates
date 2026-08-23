@@ -115,7 +115,23 @@ const calculateTotalLandValue = (
   const rateSqftFactor = getSqftFactor(rateUnit || areaUnit);
 
   const totalValue = (areaSqft / rateSqftFactor) * rateNum;
-  return Math.round(totalValue);
+  return totalValue >= 100 ? Math.round(totalValue) : Number(totalValue.toFixed(2));
+};
+
+const blockNegativeKeys = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  if (['-', '+', 'e', 'E'].includes(e.key)) {
+    e.preventDefault();
+  }
+};
+
+const sanitizePositiveDecimal = (val: string): string => {
+  if (!val) return '';
+  let cleaned = val.replace(/[^0-9.]/g, '');
+  const parts = cleaned.split('.');
+  if (parts.length > 2) {
+    cleaned = parts[0] + '.' + parts.slice(1).join('');
+  }
+  return cleaned;
 };
 
 interface ReportFields {
@@ -3194,7 +3210,15 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           <div className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
               <Field label="Land Area">
-                <input className={inputCls} value={fields.landArea} onChange={e => handleChange('landArea', e.target.value)} disabled={isReadOnly} placeholder="e.g. 13068" />
+                <input
+                  className={inputCls}
+                  type="text"
+                  value={fields.landArea}
+                  onKeyDown={blockNegativeKeys}
+                  onChange={e => handleChange('landArea', sanitizePositiveDecimal(e.target.value))}
+                  disabled={isReadOnly}
+                  placeholder="e.g. 13068"
+                />
               </Field>
               <Field label="Land Area Unit">
                 <select className={selectCls} value={fields.landAreaUnit} onChange={e => handleChange('landAreaUnit', e.target.value)} disabled={isReadOnly}>
@@ -3202,10 +3226,26 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                 </select>
               </Field>
               <Field label="Current Govt. Approved Rate (₹)">
-                <input className={inputCls} value={fields.govtLandRate} onChange={e => handleChange('govtLandRate', e.target.value)} disabled={isReadOnly} placeholder="e.g. 23" />
+                <input
+                  className={inputCls}
+                  type="text"
+                  value={fields.govtLandRate}
+                  onKeyDown={blockNegativeKeys}
+                  onChange={e => handleChange('govtLandRate', sanitizePositiveDecimal(e.target.value))}
+                  disabled={isReadOnly}
+                  placeholder="e.g. 23"
+                />
               </Field>
               <Field label={`Recommended Rate per ${fields.landAreaUnit} (₹)`}>
-                <input type="number" min="0" step="any" className={inputCls} value={fields.landRatePerUnit} onChange={e => handleChange('landRatePerUnit', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="e.g. 450" />
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.landRatePerUnit}
+                  onKeyDown={blockNegativeKeys}
+                  onChange={e => handleChange('landRatePerUnit', sanitizePositiveDecimal(e.target.value))}
+                  disabled={isReadOnly}
+                  placeholder="e.g. 450"
+                />
               </Field>
               <Field label="Basis for Recommendation" span={2}>
                 <input className={inputCls} value={fields.recommendedRateBasis} onChange={e => handleChange('recommendedRateBasis', e.target.value)} disabled={isReadOnly} placeholder="e.g. As per local feedback and market survey" />
