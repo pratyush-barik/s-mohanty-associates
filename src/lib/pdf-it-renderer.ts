@@ -562,20 +562,20 @@ export async function generateIncomeTaxPDF(
     return `${str} I.E. ${formattedSqft} SFT`;
   };
 
-  // Render bullet lines: bullet-prefixed for entries, non-bulleted if single entry, 'NOT APPLICABLE' if none entered
-  const renderBulletLines = (lines: string | string[]): string => {
+  // Render bullet lines: bullet-prefixed for entries, non-bulleted if single entry, 'NOT APPLICABLE' if none entered (or '' if allowBlank)
+  const renderBulletLines = (lines: string | string[], allowBlank = false): string => {
     if (typeof lines === 'string') {
       const s = lines.trim();
-      if (!s) return 'NOT APPLICABLE';
+      if (!s) return allowBlank ? '' : 'NOT APPLICABLE';
       const splitLines = s.split('\n').map(l => l.trim()).filter(Boolean);
-      if (splitLines.length === 0) return 'NOT APPLICABLE';
+      if (splitLines.length === 0) return allowBlank ? '' : 'NOT APPLICABLE';
       if (splitLines.length === 1) {
         return splitLines[0].replace(/^[-*•]\s*/, '');
       }
       return splitLines.map(l => `• ${l.replace(/^[-*•]\s*/, '')}`).join('\n');
     }
     const filled = lines.map(l => l?.trim()).filter(Boolean) as string[];
-    if (filled.length === 0) return 'NOT APPLICABLE';
+    if (filled.length === 0) return allowBlank ? '' : 'NOT APPLICABLE';
     if (filled.length === 1) {
       return filled[0].replace(/^[-*•]\s*/, '');
     }
@@ -1350,14 +1350,18 @@ export async function generateIncomeTaxPDF(
     drawQRow('01.', 'NO. OF FLOORS AND HEIGHT OF EACH FLOOR:', q01Ans);
 
     // Q02 Formatting
-    let q02ActualAns = renderBulletLines((fields.techPlinthAreaActual || '').split('\n'));
+    let q02ActualAns = renderBulletLines((fields.techPlinthAreaActual || '').split('\n'), true);
     if (fields.plinthAreaConsidered === 'ACTUAL') {
-      q02ActualAns += '\n\nACTUAL PLINTH AREA IS CONSIDERED FOR VALUATION PURPOSE';
+      q02ActualAns = q02ActualAns
+        ? `${q02ActualAns}\n\nACTUAL PLINTH AREA IS CONSIDERED FOR VALUATION PURPOSE`
+        : 'ACTUAL PLINTH AREA IS CONSIDERED FOR VALUATION PURPOSE';
     }
 
-    let q02ApprovedAns = renderBulletLines((fields.techPlinthAreaApproved || '').split('\n'));
+    let q02ApprovedAns = renderBulletLines((fields.techPlinthAreaApproved || '').split('\n'), true);
     if (fields.plinthAreaConsidered === 'APPROVED') {
-      q02ApprovedAns += '\n\nAPPROVED PLINTH AREA IS CONSIDERED FOR VALUATION PURPOSE';
+      q02ApprovedAns = q02ApprovedAns
+        ? `${q02ApprovedAns}\n\nAPPROVED PLINTH AREA IS CONSIDERED FOR VALUATION PURPOSE`
+        : 'APPROVED PLINTH AREA IS CONSIDERED FOR VALUATION PURPOSE';
     }
 
     let authority = 'PKDA';
