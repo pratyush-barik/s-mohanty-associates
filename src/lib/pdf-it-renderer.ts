@@ -1463,6 +1463,7 @@ export async function generateIncomeTaxPDF(
   // ═══════════════════════════════════════════════════════
   // BLOCK 8 — VALUATION CERTIFICATE
   // ═══════════════════════════════════════════════════════
+  ensureSpace(140);
   drawText('VALUATION CERTIFICATE', { bold: true });
   advanceCursor(6);
   drawText(`AS A RESULT OF MY APPRAISAL AND ANALYSIS IT IS MY CONSIDERED OPINION THAT THE ESTIMATED FAIR MARKET VALUE OF THE PROPERTY (${fields.propertyType}) BY ${fields.ownerName.toUpperCase()} BEARING ${fields.propertyDescription ? fields.propertyDescription.toUpperCase().substring(0, 200) : '________'} AS ON ${fields.valuationDate || '________'} IS RS.${formatIndianCurrency(computedTotalProperty)}/- (${rupeesInWords(computedTotalProperty).toUpperCase()})`);

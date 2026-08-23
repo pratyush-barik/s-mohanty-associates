@@ -1120,6 +1120,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
         `Date: ${fields.dateOfValuation || '________'}`
       );
       r.advanceCursor(4);
+      r.checkPageBreak(200);
       r.drawCenteredTitle('VALUATION CERTIFICATE');
       tocPageMap['VALUATION CERTIFICATE'] = r.getPageCount();
       r.advanceCursor(4);
