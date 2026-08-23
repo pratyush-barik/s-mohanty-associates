@@ -1368,13 +1368,14 @@ Our valuation is based on information obtained from the client and on data gathe
       r.advanceCursor(8);
 
       // ── 10. MARKETABILITY ──
-      r.drawSectionHeader('10. MARKETABILITY ASPECTS OF THE PROPERTY:');
+      r.drawSectionHeader('10. MARKETABILITY OF THE PROPERTY:');
+      r.drawTextBlock('Marketability of the property in terms of', { bold: true, fontSize: 10 });
       tocPageMap['10. MARKETABILITY OF THE PROPERTY'] = r.getPageCount();
-      r.drawSimpleRow('10.1  Locational Attributes', fields.locationalAttributes);
+      r.drawSimpleRow('10.1  Locational attributes', fields.locationalAttributes);
       r.drawSimpleRow('10.2  Scarcity', fields.scarcity);
-      r.drawSimpleRow('10.3  Demand & Supply', fields.demandSupply);
-      r.drawSimpleRow('10.4  Comparable sale prices in locality', fields.comparableSalePrices || 'N/A');
-      r.drawSimpleRow('10.5  Other aspect relevant to value or marketability', fields.otherMarketability || 'N/A');
+      r.drawSimpleRow('10.3  Demand & supply of the subject property.', fields.demandSupply);
+      r.drawSimpleRow('10.4  Comparable sale prices in the locality', fields.comparableSalePrices || 'N/A');
+      r.drawSimpleRow('10.5  Any other aspect which has relevance on the value or marketability of the property', fields.otherMarketability || 'N/A');
       r.advanceCursor(8);
 
       // ── 11. ARCHITECTURAL ──
@@ -2236,15 +2237,22 @@ Our valuation is based on information obtained from the client and on data gathe
             </div>
           </Section>
 
-          {/* ── Section 10–11: Marketability & Architecture ── */}
-          <Section title="Marketability & Architectural Aspects" number={10}>
+          {/* ── Section 10: Marketability ── */}
+          <Section title="Marketability of the Property" number={10}>
+            <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-2">Marketability of the property in terms of</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Locational Attributes"><input type="text" value={fields.locationalAttributes} onChange={e => handleChange('locationalAttributes', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Scarcity"><input type="text" value={fields.scarcity} onChange={e => handleChange('scarcity', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Demand & Supply"><input type="text" value={fields.demandSupply} onChange={e => handleChange('demandSupply', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Comparable Sale Prices (10.4)"><input type="text" value={fields.comparableSalePrices || ''} onChange={e => handleChange('comparableSalePrices', e.target.value)} className={inputCls} placeholder="e.g. DISCUSSED IN RESPECTIVE CHAPTER" disabled={isReadOnly} /></Field>
-              <Field label="Other Marketability Aspect (10.5)"><textarea rows={2} value={fields.otherMarketability || ''} onChange={e => handleChange('otherMarketability', e.target.value)} className={inputCls + ' resize-none'} placeholder="Any other aspect relevant to value or marketability" disabled={isReadOnly} /></Field>
-              <Field label="Architectural Aspects (11.1)"><textarea rows={3} value={fields.architecturalAspects} onChange={e => handleChange('architecturalAspects', e.target.value)} className={inputCls + ' resize-none'} placeholder="Descriptive account: modern, old fashioned, decorative..." disabled={isReadOnly} /></Field>
+              <Field label="10.1 Locational attributes"><input type="text" value={fields.locationalAttributes} onChange={e => handleChange('locationalAttributes', e.target.value)} className={inputCls} placeholder="e.g. AVERAGE" disabled={isReadOnly} /></Field>
+              <Field label="10.2 Scarcity"><input type="text" value={fields.scarcity} onChange={e => handleChange('scarcity', e.target.value)} className={inputCls} placeholder="e.g. NO" disabled={isReadOnly} /></Field>
+              <Field label="10.3 Demand & supply of the subject property."><input type="text" value={fields.demandSupply} onChange={e => handleChange('demandSupply', e.target.value)} className={inputCls} placeholder="e.g. RESTRICTED" disabled={isReadOnly} /></Field>
+              <Field label="10.4 Comparable sale prices in the locality"><input type="text" value={fields.comparableSalePrices || ''} onChange={e => handleChange('comparableSalePrices', e.target.value)} className={inputCls} placeholder="e.g. DISCUSSED IN RESPECTIVE CHAPTER" disabled={isReadOnly} /></Field>
+              <Field label="10.5 Any other aspect which has relevance on the value or marketability of the property" span={2}><textarea rows={2} value={fields.otherMarketability || ''} onChange={e => handleChange('otherMarketability', e.target.value)} className={inputCls + ' resize-none'} placeholder="e.g. SUITABLE FOR INDUSTRIAL UNIT. THE MARKETABILITY IS LIMITED..." disabled={isReadOnly} /></Field>
+            </div>
+          </Section>
+
+          {/* ── Section 11: Architectural Aspects ── */}
+          <Section title="Architectural Aspects" number={11}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="11.1 Architectural Aspects"><textarea rows={3} value={fields.architecturalAspects} onChange={e => handleChange('architecturalAspects', e.target.value)} className={inputCls + ' resize-none'} placeholder="Descriptive account: modern, old fashioned, decorative..." disabled={isReadOnly} /></Field>
             </div>
           </Section>
 
