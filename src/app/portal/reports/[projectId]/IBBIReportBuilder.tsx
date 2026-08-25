@@ -60,6 +60,42 @@ export interface ValuationRow {
   fairMarketValue: string;
 }
 
+export interface GuidelinePlotRow {
+  id: string;
+  mouza: string;
+  nature: string;
+  owner: string;
+  plotNo: string;
+  khataNo: string;
+  area: string;
+  ratePerDec: string;
+  amount: string;
+}
+
+export interface PresentPlotRow {
+  id: string;
+  mouza: string;
+  nature: string;
+  owner: string;
+  plotNo: string;
+  khataNo: string;
+  area: string;
+  ratePerDec: string;
+  amount: string;
+}
+
+export interface BuildingCostRow {
+  id: string;
+  sl: string;
+  areaParticular: string;
+  plinthArea: string;
+  age: string;
+  rateSft: string;
+  replacementCost: string;
+  depreciation: string;
+  netValue: string;
+}
+
 interface IBBIFields {
   // ── Common / Cover Page ──
   ownerName: string;
@@ -189,15 +225,81 @@ interface IBBIFields {
   plinthAreaTable: PlinthAreaRow[];
 
   // ── Section 13: Valuation ──
-  bookValueTotal: string;
-  fairMarketValueTotal: string;
-  presentMarketValueTotal: string;
-  realisableValueTotal: string;
-  valuationRows: ValuationRow[];
+  valuationVariant: string;
   methodology13_1?: string;
   considerations13_3?: string;
   assumptions13_4?: string;
   analysis13_5?: string;
+
+  // ── Section 13.6: Details of Valuation ──
+  // Guideline Value Plot Table
+  guidelinePlotRows: GuidelinePlotRow[];
+  guidelinePlotTotal: string;
+  guidelineDiscountPercent: string;
+  guidelineDiscountedTotal: string;
+  // Present Market Value Plot Table
+  presentMarketDescription: string;
+  presentPlotRows: PresentPlotRow[];
+  presentPlotTotal: string;
+  presentDiscountPercent: string;
+  presentDiscountedTotal: string;
+  // Building/Shed Cost (Fair Market Value)
+  hasBuildingCost: boolean;
+  rccRowsFMV: BuildingCostRow[];
+  shedRowsFMV: BuildingCostRow[];
+  rccDepreciationPercentFMV: string;
+  shedDepreciationPercentFMV: string;
+  totalRccFMV: string;
+  totalShedFMV: string;
+  totalBuildingValueFMV: string;
+  depreciationDescFMV: string;
+  compoundWallValueFMV: string;
+  totalBuildingShedComponentsFMV: string;
+  // Building/Shed Cost (Guideline Value)
+  rccRowsGuideline: BuildingCostRow[];
+  shedRowsGuideline: BuildingCostRow[];
+  rccDepreciationPercentGuideline: string;
+  shedDepreciationPercentGuideline: string;
+  totalRccGuideline: string;
+  totalShedGuideline: string;
+  totalBuildingValueGuideline: string;
+  depreciationDescGuideline: string;
+  compoundWallValueGuideline: string;
+  totalBuildingShedComponentsGuideline: string;
+  // Abstract of Valuation
+  presentValueOfPlot: string;
+  presentValueOfBuildings: string;
+  totalPresentValue: string;
+  totalPresentValueOrSay: string;
+  totalPresentValueInWords: string;
+  bookValueOfPlot: string;
+  bookValueOfBuildings: string;
+  totalBookValue: string;
+  totalBookValueOrSay: string;
+  totalBookValueInWords: string;
+  // Realisable / Liquidation
+  realisableValueAmount: string;
+  realisableValueOrSay: string;
+  realisableValueInWords: string;
+  // Cuttack variant extras
+  cuttackLandComponentDescGuideline: string;
+  cuttackCompoundWallGuideline: string;
+  cuttackShedsDepreciationGuideline: string;
+  cuttackTotalGuidelineLandBuilding: string;
+  cuttackGuidelineOrSay: string;
+  cuttackGuidelineInWords: string;
+  cuttackLandComponentDescPresent: string;
+  cuttackCompoundWallPresent: string;
+  cuttackShedsDepreciationPresent: string;
+  cuttackTotalPresentLandBuilding: string;
+  cuttackPresentOrSay: string;
+  cuttackPresentInWords: string;
+  cuttackBuildingRows: BuildingCostRow[];
+  cuttackBuildingDepreciationPercent: string;
+  cuttackBuildingTotal: string;
+  cuttackBuildingComponentsTotal: string;
+  cuttackBuildingOrSay: string;
+  cuttackBuildingInWords: string;
 
   // ── Section 14: Site Location ──
   latitude: string;
@@ -210,7 +312,6 @@ interface IBBIFields {
   locationMapImage: string;
 
   // ── Remarks ──
-  remarks: string;
   representativeName: string;
   representativeFatherName: string;
   valuerQualifications: string;
@@ -381,15 +482,79 @@ const DEFAULT_FIELDS: IBBIFields = {
   plinthAreaCustom: '',
   plinthAreaTable: [{ floorDetails: '1. GROUND FLOOR RCC', actualArea: '5240 sqft', consideredArea: '5240 sqft' }],
 
-  bookValueTotal: '',
-  fairMarketValueTotal: '',
-  presentMarketValueTotal: '',
-  realisableValueTotal: '',
+  valuationVariant: 'standard',
   methodology13_1: '',
   considerations13_3: '',
   assumptions13_4: '',
   analysis13_5: '',
-  valuationRows: [],
+  // Guideline Value Plot Table
+  guidelinePlotRows: [],
+  guidelinePlotTotal: '',
+  guidelineDiscountPercent: '40',
+  guidelineDiscountedTotal: '',
+  // Present Market Value Plot Table
+  presentMarketDescription: 'The present market value is the price a willing buyer is paying a seller considering all the encumbrances, risks involved, cost of funds and road accessibility keeping in view the current market trends, and, estimation of benefit in the locality as a going concern matter',
+  presentPlotRows: [],
+  presentPlotTotal: '',
+  presentDiscountPercent: '40',
+  presentDiscountedTotal: '',
+  // Building/Shed Cost (Fair Market Value)
+  hasBuildingCost: false,
+  rccRowsFMV: [],
+  shedRowsFMV: [],
+  rccDepreciationPercentFMV: '70',
+  shedDepreciationPercentFMV: '90',
+  totalRccFMV: '',
+  totalShedFMV: '',
+  totalBuildingValueFMV: '',
+  depreciationDescFMV: 'Present depreciated market value of the available RCC buildings, at its present status, assessed @ 30% of the present value And @10% For Acc Roof Sheds',
+  compoundWallValueFMV: '',
+  totalBuildingShedComponentsFMV: '',
+  // Building/Shed Cost (Guideline Value)
+  rccRowsGuideline: [],
+  shedRowsGuideline: [],
+  rccDepreciationPercentGuideline: '70',
+  shedDepreciationPercentGuideline: '90',
+  totalRccGuideline: '',
+  totalShedGuideline: '',
+  totalBuildingValueGuideline: '',
+  depreciationDescGuideline: 'Present depreciated market value of the available RCC buildings, at its present status, assessed @ 30% of the present value And @10% For Acc Roof Sheds',
+  compoundWallValueGuideline: '',
+  totalBuildingShedComponentsGuideline: '',
+  // Abstract of Valuation
+  presentValueOfPlot: '',
+  presentValueOfBuildings: '',
+  totalPresentValue: '',
+  totalPresentValueOrSay: '',
+  totalPresentValueInWords: '',
+  bookValueOfPlot: '',
+  bookValueOfBuildings: '',
+  totalBookValue: '',
+  totalBookValueOrSay: '',
+  totalBookValueInWords: '',
+  // Realisable / Liquidation
+  realisableValueAmount: '',
+  realisableValueOrSay: '',
+  realisableValueInWords: '',
+  // Cuttack variant extras
+  cuttackLandComponentDescGuideline: '',
+  cuttackCompoundWallGuideline: '',
+  cuttackShedsDepreciationGuideline: '',
+  cuttackTotalGuidelineLandBuilding: '',
+  cuttackGuidelineOrSay: '',
+  cuttackGuidelineInWords: '',
+  cuttackLandComponentDescPresent: '',
+  cuttackCompoundWallPresent: '',
+  cuttackShedsDepreciationPresent: '',
+  cuttackTotalPresentLandBuilding: '',
+  cuttackPresentOrSay: '',
+  cuttackPresentInWords: '',
+  cuttackBuildingRows: [],
+  cuttackBuildingDepreciationPercent: '50',
+  cuttackBuildingTotal: '',
+  cuttackBuildingComponentsTotal: '',
+  cuttackBuildingOrSay: '',
+  cuttackBuildingInWords: '',
 
   latitude: '',
   longitude: '',
@@ -399,7 +564,6 @@ const DEFAULT_FIELDS: IBBIFields = {
   sketchMapImages: [],
   locationMapImage: '',
 
-  remarks: '',
   representativeName: '',
   representativeFatherName: '',
   valuerQualifications: '',
@@ -841,24 +1005,6 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       return updated;
     });
   }, []);
-
-  // ── Valuation Table Helpers ──
-  const addValuationRow = () => {
-    handleChange('valuationRows', [
-      ...fields.valuationRows,
-      { id: String(Date.now()), plotNo: '', khataNo: '', area: '', rate: '', guidelineValue: '', fairMarketValue: '' }
-    ]);
-  };
-  
-  const removeValuationRow = (id: string) => {
-    handleChange('valuationRows', fields.valuationRows.filter(row => row.id !== id));
-  };
-  
-  const updateValuationRow = (id: string, field: keyof ValuationRow, value: string) => {
-    handleChange('valuationRows', fields.valuationRows.map(row => 
-      row.id === id ? { ...row, [field]: value } : row
-    ));
-  };
 
   // ── Annexure helpers ──
   const addAnnexure = () => {
@@ -1483,37 +1629,303 @@ Our valuation is based on information obtained from the client and on data gathe
       tocPageMap['    13.6  Details of Valuation'] = r.getPageCount();
       r.advanceCursor(4);
 
-      // Dynamic valuation rows table (if manual rows exist)
-      if (fields.valuationRows && fields.valuationRows.length > 0) {
-        const headers = ['Sl No', 'Plot No', 'Khata No', 'Area', 'Rate/Unit', 'Guideline Value', 'Fair Market Value'];
-        const rows = fields.valuationRows.map((row: ValuationRow, i: number) => [
-          String(i + 1),
-          row.plotNo || '-',
-          row.khataNo || '-',
-          row.area || '-',
-          row.rate || '-',
-          row.guidelineValue || '-',
-          row.fairMarketValue || '-',
-        ]);
-
-        r.drawDataTable(headers, rows);
+      // ════════════════════════════════════════════════
+      // VARIANT A: STANDARD (Bajrangbali, Angul, Satyabadi)
+      // ════════════════════════════════════════════════
+      if (fields.valuationVariant !== 'cuttack') {
+        
+        // ─── BOOK VALUE (GUIDELINE VALUE) ───
+        r.drawTextBlock('BOOK VALUE (GUIDELINE VALUE)', { bold: true, fontSize: 11, underline: true });
+        r.advanceCursor(4);
+        if (fields.guidelinePlotRows && fields.guidelinePlotRows.length > 0) {
+          const headers = ['Mouza', 'Nature', 'Owner', 'Plot no', 'Khata no', 'Area', 'Rate per dec', 'Amount'];
+          const rows = fields.guidelinePlotRows.map((row: GuidelinePlotRow) => [row.mouza, row.nature, row.owner, row.plotNo, row.khataNo, row.area, row.ratePerDec, row.amount]);
+          r.drawDataTable(headers, rows);
+          r.advanceCursor(2);
+        }
+        if (fields.guidelinePlotTotal) {
+          r.drawTextBlock(`TOTAL GUIDELINE PLOT VALUE: ${fields.guidelinePlotTotal}`, { bold: true, align: 'right' });
+        }
+        if (fields.guidelineDiscountedTotal) {
+          r.drawTextBlock(`Total Accessed Value Post Discounted reduction of ${fields.guidelineDiscountPercent}% on Total Guideline Value = ${fields.guidelineDiscountedTotal}`, { bold: true, align: 'right' });
+        }
         r.advanceCursor(6);
+
+        // ─── PRESENT MARKET VALUE ───
+        r.drawTextBlock('PRESENT MARKET VALUE (POST DISCOUNTING ON FAIR MARKET VALUE)', { bold: true, fontSize: 11, underline: true });
+        r.advanceCursor(4);
+        if (fields.presentMarketDescription) {
+          r.drawTextBlock(fields.presentMarketDescription);
+          r.advanceCursor(4);
+        }
+        if (fields.presentPlotRows && fields.presentPlotRows.length > 0) {
+          const headers = ['Mouza', 'Nature', 'Owner', 'Plot no', 'Khata no', 'Area', 'Rate per dec', 'Amount'];
+          const rows = fields.presentPlotRows.map((row: PresentPlotRow) => [row.mouza, row.nature, row.owner, row.plotNo, row.khataNo, row.area, row.ratePerDec, row.amount]);
+          r.drawDataTable(headers, rows);
+          r.advanceCursor(2);
+        }
+        if (fields.presentPlotTotal) {
+          r.drawTextBlock(`TOTAL FAIR PLOT VALUE: ${fields.presentPlotTotal}`, { bold: true, align: 'right' });
+        }
+        if (fields.presentDiscountedTotal) {
+          r.drawTextBlock(`Total Present Plot Value = ${fields.presentDiscountedTotal}`, { bold: true, align: 'right' });
+        }
+        r.advanceCursor(6);
+
+        // ─── BUILDING/SHED COST (FAIR MARKET VALUE) ───
+        if (fields.hasBuildingCost) {
+          r.drawTextBlock('BUILDING/SHED COST (FAIR MARKET VALUE)', { bold: true, fontSize: 11, underline: true });
+          r.advanceCursor(4);
+          
+          r.drawTextBlock('RCC Roof Structure:', { bold: true });
+          if (fields.rccRowsFMV && fields.rccRowsFMV.length > 0) {
+            const headers = ['Sl', 'Area particular', 'Plinth area', 'Age', 'Rate/sft.', 'Replacement cost', `Depreciation (${fields.rccDepreciationPercentFMV}%)`, 'Net value'];
+            const rows = fields.rccRowsFMV.map((row: BuildingCostRow) => [row.sl, row.areaParticular, row.plinthArea, row.age, row.rateSft, row.replacementCost, row.depreciation, row.netValue]);
+            r.drawDataTable(headers, rows);
+            r.advanceCursor(2);
+          }
+          if (fields.totalRccFMV) {
+            r.drawTextBlock(`TOTAL OF RCC ROOF STRUCTURE: ${fields.totalRccFMV}`, { bold: true, align: 'right' });
+          }
+          r.advanceCursor(4);
+          
+          r.drawTextBlock('Shed Structure:', { bold: true });
+          if (fields.shedRowsFMV && fields.shedRowsFMV.length > 0) {
+            const headers = ['Sl', 'Area particular', 'Plinth area', 'Age', 'Rate/sft.', 'Replacement cost', `Depreciation (${fields.shedDepreciationPercentFMV}%)`, 'Net value'];
+            const rows = fields.shedRowsFMV.map((row: BuildingCostRow) => [row.sl, row.areaParticular, row.plinthArea, row.age, row.rateSft, row.replacementCost, row.depreciation, row.netValue]);
+            r.drawDataTable(headers, rows);
+            r.advanceCursor(2);
+          }
+          if (fields.totalShedFMV) {
+            r.drawTextBlock(`TOTAL OF SHED STRUCTURE: ${fields.totalShedFMV}`, { bold: true, align: 'right' });
+          }
+          r.advanceCursor(2);
+          if (fields.totalBuildingValueFMV) {
+            r.drawTextBlock(`TOTAL BUILDING VALUE: ${fields.totalBuildingValueFMV}`, { bold: true, align: 'right' });
+          }
+          r.advanceCursor(4);
+          
+          if (fields.depreciationDescFMV) {
+            r.drawTextBlock(fields.depreciationDescFMV);
+            r.advanceCursor(4);
+          }
+          if (fields.compoundWallValueFMV) {
+            r.drawTextBlock(`Compound wall value (Assumed): ${fields.compoundWallValueFMV}`, { align: 'right' });
+          }
+          if (fields.totalBuildingShedComponentsFMV) {
+            r.drawTextBlock(`TOTAL BUILDING/SHED COMPONENTS: ${fields.totalBuildingShedComponentsFMV}`, { bold: true, align: 'right' });
+          }
+          r.advanceCursor(6);
+
+          // ─── BUILDING/SHED COST (GUIDELINE VALUE) ───
+          r.drawTextBlock('BUILDING/SHED COST (GUIDELINE VALUE)', { bold: true, fontSize: 11, underline: true });
+          r.advanceCursor(4);
+          
+          r.drawTextBlock('RCC Roof Structure:', { bold: true });
+          if (fields.rccRowsGuideline && fields.rccRowsGuideline.length > 0) {
+            const headers = ['Sl', 'Area particular', 'Plinth area', 'Age', 'Rate/sft.', 'Replacement cost', `Depreciation (${fields.rccDepreciationPercentGuideline}%)`, 'Net value'];
+            const rows = fields.rccRowsGuideline.map((row: BuildingCostRow) => [row.sl, row.areaParticular, row.plinthArea, row.age, row.rateSft, row.replacementCost, row.depreciation, row.netValue]);
+            r.drawDataTable(headers, rows);
+            r.advanceCursor(2);
+          }
+          if (fields.totalRccGuideline) {
+            r.drawTextBlock(`TOTAL OF RCC ROOF STRUCTURE: ${fields.totalRccGuideline}`, { bold: true, align: 'right' });
+          }
+          r.advanceCursor(4);
+          
+          r.drawTextBlock('Shed Structure:', { bold: true });
+          if (fields.shedRowsGuideline && fields.shedRowsGuideline.length > 0) {
+            const headers = ['Sl', 'Area particular', 'Plinth area', 'Age', 'Rate/sft.', 'Replacement cost', `Depreciation (${fields.shedDepreciationPercentGuideline}%)`, 'Net value'];
+            const rows = fields.shedRowsGuideline.map((row: BuildingCostRow) => [row.sl, row.areaParticular, row.plinthArea, row.age, row.rateSft, row.replacementCost, row.depreciation, row.netValue]);
+            r.drawDataTable(headers, rows);
+            r.advanceCursor(2);
+          }
+          if (fields.totalShedGuideline) {
+            r.drawTextBlock(`TOTAL OF SHED STRUCTURE: ${fields.totalShedGuideline}`, { bold: true, align: 'right' });
+          }
+          r.advanceCursor(2);
+          if (fields.totalBuildingValueGuideline) {
+            r.drawTextBlock(`TOTAL GUIDELINE BUILDING VALUE: ${fields.totalBuildingValueGuideline}`, { bold: true, align: 'right' });
+          }
+          r.advanceCursor(4);
+          
+          if (fields.depreciationDescGuideline) {
+            r.drawTextBlock(fields.depreciationDescGuideline);
+            r.advanceCursor(4);
+          }
+          if (fields.compoundWallValueGuideline) {
+            r.drawTextBlock(`Compound wall value (Assumed): ${fields.compoundWallValueGuideline}`, { align: 'right' });
+          }
+          if (fields.totalBuildingShedComponentsGuideline) {
+            r.drawTextBlock(`TOTAL GUIDELINE BUILDING/SHED COMPONENTS: ${fields.totalBuildingShedComponentsGuideline}`, { bold: true, align: 'right' });
+          }
+          r.advanceCursor(6);
+        }
+
+        // ─── ABSTRACT OF VALUATION ───
+        r.drawTextBlock('ABSTRACT OF VALUATION', { bold: true, fontSize: 11, underline: true });
+        r.advanceCursor(4);
+        
+        r.drawTextBlock('FAIR MARKET PRESENT VALUE', { bold: true });
+        r.drawSimpleRow('Present Value of Plot', fields.presentValueOfPlot);
+        r.drawSimpleRow('Present Value of Buildings and Sheds', fields.presentValueOfBuildings);
+        r.drawSimpleRow('Total Present Value', fields.totalPresentValue);
+        if (fields.totalPresentValueOrSay) {
+          r.drawTextBlock(`Or Say: ${fields.totalPresentValueOrSay}`, { bold: true, align: 'right' });
+        }
+        if (fields.totalPresentValueInWords) {
+          r.drawTextBlock(`(${fields.totalPresentValueInWords})`, { bold: true, italic: true, align: 'right' });
+        }
+        r.advanceCursor(6);
+
+        r.drawTextBlock('BOOK VALUE / GUIDELINE VALUE', { bold: true });
+        r.drawSimpleRow('Book Value of Plot', fields.bookValueOfPlot);
+        r.drawSimpleRow('Book Value of Buildings and Sheds', fields.bookValueOfBuildings);
+        r.drawSimpleRow('Total Book Value', fields.totalBookValue);
+        if (fields.totalBookValueOrSay) {
+          r.drawTextBlock(`Or Say: ${fields.totalBookValueOrSay}`, { bold: true, align: 'right' });
+        }
+        if (fields.totalBookValueInWords) {
+          r.drawTextBlock(`(${fields.totalBookValueInWords})`, { bold: true, italic: true, align: 'right' });
+        }
+        r.advanceCursor(6);
+
+        // ─── REALISABLE / LIQUIDATION VALUE ───
+        if (fields.realisableValueAmount) {
+          r.drawTextBlock('REALISABLE VALUE / LIQUIDATION VALUE', { bold: true, underline: true });
+          r.advanceCursor(4);
+          r.drawTextBlock('The Realisable/Liquidation value of the property has been assumed @ 80% of Fair Market value keeping in view the present scenario i.e. location of plot, the present condition of plot & non availability of required documents in respect of the property & present condition of sheds & building & as the property is offered as distressed asset sale in open market place considering limited scope of purchasers in competitive open market.');
+          r.advanceCursor(4);
+          r.drawTextBlock(`Realisable / Liquidation Value = ${fields.realisableValueAmount}`, { bold: true, align: 'right' });
+          if (fields.realisableValueOrSay) {
+            r.drawTextBlock(`Or Say = ${fields.realisableValueOrSay}`, { bold: true, align: 'right' });
+          }
+          if (fields.realisableValueInWords) {
+            r.drawTextBlock(`(${fields.realisableValueInWords})`, { bold: true, italic: true, align: 'right' });
+          }
+          r.advanceCursor(6);
+        }
+      } 
+      
+      // ════════════════════════════════════════════════
+      // VARIANT B: CUTTACK
+      // ════════════════════════════════════════════════
+      else {
+        
+        // ─── GOVERNMENT GUIDELINE VALUE ───
+        r.drawTextBlock('GOVERNMENT GUIDELINE VALUE', { bold: true, fontSize: 11, underline: true });
+        r.advanceCursor(4);
+        if (fields.cuttackLandComponentDescGuideline) {
+          r.drawTextBlock(fields.cuttackLandComponentDescGuideline);
+          r.advanceCursor(4);
+        }
+        if (fields.guidelinePlotRows && fields.guidelinePlotRows.length > 0) {
+          const headers = ['Mouza', 'Nature', 'Plot no', 'Khata no', 'Area', 'Rate per dec', 'Amount'];
+          const rows = fields.guidelinePlotRows.map((row: GuidelinePlotRow) => [row.mouza, row.nature, row.plotNo, row.khataNo, row.area, row.ratePerDec, row.amount]);
+          r.drawDataTable(headers, rows);
+          r.advanceCursor(2);
+        }
+        if (fields.guidelinePlotTotal) {
+          r.drawTextBlock(`TOTAL GUIDELINE PLOT VALUE: ${fields.guidelinePlotTotal}`, { bold: true, align: 'right' });
+        }
+        if (fields.cuttackCompoundWallGuideline) {
+          r.drawTextBlock(`Depreciation value of compound wall: ${fields.cuttackCompoundWallGuideline}`, { align: 'right' });
+        }
+        if (fields.cuttackShedsDepreciationGuideline) {
+          r.drawTextBlock(`Depreciation value of Sheds / Buildings: ${fields.cuttackShedsDepreciationGuideline}`, { align: 'right' });
+        }
+        if (fields.cuttackTotalGuidelineLandBuilding) {
+          r.drawTextBlock(`TOTAL GUIDELINE VALUE FOR LAND AND BUILDING: ${fields.cuttackTotalGuidelineLandBuilding}`, { bold: true, align: 'right' });
+        }
+        if (fields.cuttackGuidelineOrSay) {
+          r.drawTextBlock(`Or Say: ${fields.cuttackGuidelineOrSay}`, { bold: true, align: 'right' });
+        }
+        if (fields.cuttackGuidelineInWords) {
+          r.drawTextBlock(`(${fields.cuttackGuidelineInWords})`, { bold: true, italic: true, align: 'right' });
+        }
+        r.advanceCursor(6);
+
+        // ─── PRESENT MARKET VALUE ───
+        r.drawTextBlock('PRESENT MARKET VALUE', { bold: true, fontSize: 11, underline: true });
+        r.advanceCursor(4);
+        if (fields.cuttackLandComponentDescPresent) {
+          r.drawTextBlock(fields.cuttackLandComponentDescPresent);
+          r.advanceCursor(4);
+        }
+        if (fields.presentPlotRows && fields.presentPlotRows.length > 0) {
+          const headers = ['Mouza', 'Nature', 'Plot no', 'Khata no', 'Area', 'Rate per dec', 'Amount'];
+          const rows = fields.presentPlotRows.map((row: PresentPlotRow) => [row.mouza, row.nature, row.plotNo, row.khataNo, row.area, row.ratePerDec, row.amount]);
+          r.drawDataTable(headers, rows);
+          r.advanceCursor(2);
+        }
+        if (fields.presentPlotTotal) {
+          r.drawTextBlock(`TOTAL PRESENT MARKET VALUE PLOT: ${fields.presentPlotTotal}`, { bold: true, align: 'right' });
+        }
+        if (fields.cuttackCompoundWallPresent) {
+          r.drawTextBlock(`Depreciation value of compound wall: ${fields.cuttackCompoundWallPresent}`, { align: 'right' });
+        }
+        if (fields.cuttackShedsDepreciationPresent) {
+          r.drawTextBlock(`Depreciation value of Sheds / Buildings: ${fields.cuttackShedsDepreciationPresent}`, { align: 'right' });
+        }
+        if (fields.cuttackTotalPresentLandBuilding) {
+          r.drawTextBlock(`TOTAL PRESENT VALUE FOR LAND AND BUILDING: ${fields.cuttackTotalPresentLandBuilding}`, { bold: true, align: 'right' });
+        }
+        if (fields.cuttackPresentOrSay) {
+          r.drawTextBlock(`Or Say: ${fields.cuttackPresentOrSay}`, { bold: true, align: 'right' });
+        }
+        if (fields.cuttackPresentInWords) {
+          r.drawTextBlock(`(${fields.cuttackPresentInWords})`, { bold: true, italic: true, align: 'right' });
+        }
+        r.advanceCursor(6);
+
+        // ─── BUILDING/SHED COST ───
+        r.drawTextBlock('BUILDING/SHED COST', { bold: true, fontSize: 11, underline: true });
+        r.advanceCursor(4);
+        if (fields.cuttackBuildingRows && fields.cuttackBuildingRows.length > 0) {
+          const headers = ['Sl', 'Area particular', 'Plinth area', 'Age', 'Rate/sft.', 'Replacement cost', `Depreciation (${fields.cuttackBuildingDepreciationPercent}%)`, 'Net value'];
+          const rows = fields.cuttackBuildingRows.map((row: BuildingCostRow) => [row.sl, row.areaParticular, row.plinthArea, row.age, row.rateSft, row.replacementCost, row.depreciation, row.netValue]);
+          r.drawDataTable(headers, rows);
+          r.advanceCursor(2);
+        }
+        if (fields.cuttackBuildingTotal) {
+          r.drawTextBlock(`TOTAL: ${fields.cuttackBuildingTotal}`, { bold: true, align: 'right' });
+        }
+        if (fields.cuttackBuildingComponentsTotal) {
+          r.drawTextBlock(`TOTAL LAND AND BUILDING/SHED COMPONENTS: ${fields.cuttackBuildingComponentsTotal}`, { bold: true, align: 'right' });
+        }
+        if (fields.cuttackBuildingOrSay) {
+          r.drawTextBlock(`Or Say: ${fields.cuttackBuildingOrSay}`, { bold: true, align: 'right' });
+        }
+        if (fields.cuttackBuildingInWords) {
+          r.drawTextBlock(`(${fields.cuttackBuildingInWords})`, { bold: true, italic: true, align: 'right' });
+        }
+        r.advanceCursor(6);
+
+        // ─── REALISABLE / LIQUIDATION VALUE ───
+        if (fields.realisableValueAmount) {
+          r.drawTextBlock('REALISABLE VALUE / LIQUIDATION VALUE', { bold: true, underline: true });
+          r.advanceCursor(4);
+          r.drawTextBlock('The Realisable/Liquidation value of the property has been assumed @ 80% of Fair Market value keeping in view the present scenario i.e. location of plot, the present condition of plot & non availability of required documents in respect of the property & present condition of sheds & building & as the property is offered as distressed asset sale in open market place considering limited scope of purchasers in competitive open market.');
+          r.advanceCursor(4);
+          r.drawTextBlock(`Realisable / Liquidation Value = ${fields.realisableValueAmount}`, { bold: true, align: 'right' });
+          if (fields.realisableValueOrSay) {
+            r.drawTextBlock(`Or Say = ${fields.realisableValueOrSay}`, { bold: true, align: 'right' });
+          }
+          if (fields.realisableValueInWords) {
+            r.drawTextBlock(`(${fields.realisableValueInWords})`, { bold: true, italic: true, align: 'right' });
+          }
+          r.advanceCursor(6);
+        }
       }
 
-      // Annexure reference
+      // Annexure reference (Applies to both)
       if (fields.annexureEnabled && fields.annexures.length > 0) {
         const firstAnnexure = fields.annexures.find((a: AnnexureItem) => a.parsedData);
         const annexureLabel = firstAnnexure ? firstAnnexure.label : fields.annexures[0].label;
         r.drawTextBlock(`The detailed plot-by-plot calculations and area abstracts are provided in Annexure ${annexureLabel}.`);
-        r.advanceCursor(6);
+        r.advanceCursor(8);
       }
 
-      // Valuation summary totals
-      r.drawSimpleRow('Total Govt. Guideline / Book Value', `Rs.${formatIndianCurrency(fields.bookValueTotal || '0')}/-`);
-      r.drawSimpleRow('Total Fair Market Value', `Rs.${formatIndianCurrency(fields.fairMarketValueTotal || '0')}/- (${rupeesInWords(parseFloat(fields.fairMarketValueTotal) || 0)})`);
-      r.drawSimpleRow('Total Present Market Value', `Rs.${formatIndianCurrency(fields.presentMarketValueTotal || '0')}/-`);
-      r.drawSimpleRow('Realisable / Liquidation Value', `Rs.${formatIndianCurrency(fields.realisableValueTotal || '0')}/- (${rupeesInWords(parseFloat(fields.realisableValueTotal) || 0)})`);
-      r.advanceCursor(8);
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       //  SECTION 14: SITE LOCATION (reference)
@@ -2366,109 +2778,423 @@ Our valuation is based on information obtained from the client and on data gathe
 
           {/* ── Section 13: Valuation ── */}
           <Section title="Valuation Approaches & Methodology" number={13}>
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
-              <p className="text-sm text-blue-800 font-medium">Upload detailed plot-by-plot Valuation Tables using the <strong>Annexure</strong> section below. The PDF will auto-reference them. Enter the summary totals here:</p>
-            </div>
-
-            {/* Optional sub-section text overrides */}
+            {/* Sub-section text overrides (kept) */}
             <div className="mb-6">
               <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-3">Sub-section Text Overrides <span className="inline-block px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-semibold ml-1">OPTIONAL</span></p>
               <p className="text-xs text-gray-500 mb-3">Leave blank to use standard IBBI-IVS default text. Fill to override with your own custom text.</p>
               <div className="grid grid-cols-1 gap-4">
-                <Field label="13.1 Methodology (custom text)" span={2}>
-                  <textarea rows={3} value={fields.methodology13_1 || ''} onChange={e => handleChange('methodology13_1', e.target.value)} className={inputCls + ' resize-none'} placeholder="Leave blank for default: 'Sale Comparison Method coupled with Replacement Cost Approach has been adopted...'" disabled={isReadOnly} />
-                </Field>
-                <Field label="13.3 Valuation Considerations (custom text)" span={2}>
-                  <textarea rows={3} value={fields.considerations13_3 || ''} onChange={e => handleChange('considerations13_3', e.target.value)} className={inputCls + ' resize-none'} placeholder="Leave blank for default: 'In arriving at the valuation, the following factors have been considered...'" disabled={isReadOnly} />
-                </Field>
-                <Field label="13.4 Valuation Assumptions (custom text)" span={2}>
-                  <textarea rows={3} value={fields.assumptions13_4 || ''} onChange={e => handleChange('assumptions13_4', e.target.value)} className={inputCls + ' resize-none'} placeholder="Leave blank for default: 'The valuation assumes that the property has a clear and marketable title...'" disabled={isReadOnly} />
-                </Field>
-                <Field label="13.5 Valuation Analysis (custom text)" span={2}>
-                  <textarea rows={3} value={fields.analysis13_5 || ''} onChange={e => handleChange('analysis13_5', e.target.value)} className={inputCls + ' resize-none'} placeholder="Leave blank for default: 'Based on the market survey conducted in the area...'" disabled={isReadOnly} />
-                </Field>
-              </div>
-            </div>
-            
-            {/* Dynamic Valuation Rows Table */}
-            <div className="mt-6 mb-6">
-              <p className="text-xs font-bold text-[#495057] uppercase tracking-wider mb-2">Detailed Plot-by-Plot Valuation (Optional)</p>
-              <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left">
-                    <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs uppercase font-semibold">
-                      <tr>
-                        <th className="px-4 py-3">Sl No</th>
-                        <th className="px-4 py-3">Plot No</th>
-                        <th className="px-4 py-3">Khata No</th>
-                        <th className="px-4 py-3">Area</th>
-                        <th className="px-4 py-3">Rate/Unit</th>
-                        <th className="px-4 py-3">Guideline Value</th>
-                        <th className="px-4 py-3">Fair Market Value</th>
-                        {!isReadOnly && <th className="px-4 py-3 w-10"></th>}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {fields.valuationRows.length === 0 && (
-                        <tr>
-                          <td colSpan={8} className="px-4 py-6 text-center text-slate-400 italic">
-                            No manual rows added. You can use this table OR the Annexure upload below.
-                          </td>
-                        </tr>
-                      )}
-                      {fields.valuationRows.map((row, idx) => (
-                        <tr key={row.id} className="hover:bg-slate-50 transition-colors">
-                          <td className="px-4 py-2 text-slate-500 font-medium">{idx + 1}</td>
-                          <td className="px-4 py-2">
-                            <input type="text" value={row.plotNo} onChange={e => updateValuationRow(row.id, 'plotNo', e.target.value)} className="w-full bg-transparent border-none p-1 focus:ring-1 focus:ring-amber-400 rounded" placeholder="Plot..." disabled={isReadOnly} />
-                          </td>
-                          <td className="px-4 py-2">
-                            <input type="text" value={row.khataNo} onChange={e => updateValuationRow(row.id, 'khataNo', e.target.value)} className="w-full bg-transparent border-none p-1 focus:ring-1 focus:ring-amber-400 rounded" placeholder="Khata..." disabled={isReadOnly} />
-                          </td>
-                          <td className="px-4 py-2">
-                            <input type="text" value={row.area} onChange={e => updateValuationRow(row.id, 'area', e.target.value)} className="w-full bg-transparent border-none p-1 focus:ring-1 focus:ring-amber-400 rounded" placeholder="Area..." disabled={isReadOnly} />
-                          </td>
-                          <td className="px-4 py-2">
-                            <input type="text" value={row.rate} onChange={e => updateValuationRow(row.id, 'rate', e.target.value)} className="w-full bg-transparent border-none p-1 focus:ring-1 focus:ring-amber-400 rounded" placeholder="Rate..." disabled={isReadOnly} />
-                          </td>
-                          <td className="px-4 py-2">
-                            <input type="text" value={row.guidelineValue} onChange={e => updateValuationRow(row.id, 'guidelineValue', e.target.value)} className="w-full bg-transparent border-none p-1 focus:ring-1 focus:ring-amber-400 rounded" placeholder="Value..." disabled={isReadOnly} />
-                          </td>
-                          <td className="px-4 py-2">
-                            <input type="text" value={row.fairMarketValue} onChange={e => updateValuationRow(row.id, 'fairMarketValue', e.target.value)} className="w-full bg-transparent border-none p-1 focus:ring-1 focus:ring-amber-400 rounded" placeholder="Value..." disabled={isReadOnly} />
-                          </td>
-                          {!isReadOnly && (
-                            <td className="px-4 py-2 text-center">
-                              <button onClick={() => removeValuationRow(row.id)} className="text-red-400 hover:text-red-600 transition-colors" title="Remove Row">
-                                &times;
-                              </button>
-                            </td>
-                          )}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                {!isReadOnly && (
-                  <div className="bg-slate-50 border-t border-slate-200 p-2 text-center">
-                    <button type="button" onClick={addValuationRow} className="text-xs font-bold text-amber-700 hover:text-amber-900 transition-colors uppercase tracking-wider px-4 py-1.5 rounded hover:bg-amber-100">
-                      + Add Row
-                    </button>
-                  </div>
-                )}
+                <Field label="13.1 Methodology (custom text)" span={2}><textarea rows={3} value={fields.methodology13_1 || ''} onChange={e => handleChange('methodology13_1', e.target.value)} className={inputCls + ' resize-none'} placeholder="Leave blank for default: 'Sale Comparison Method coupled with Replacement Cost Approach has been adopted...'" disabled={isReadOnly} /></Field>
+                <Field label="13.3 Valuation Considerations (custom text)" span={2}><textarea rows={3} value={fields.considerations13_3 || ''} onChange={e => handleChange('considerations13_3', e.target.value)} className={inputCls + ' resize-none'} placeholder="Leave blank for default: 'In arriving at the valuation, the following factors have been considered...'" disabled={isReadOnly} /></Field>
+                <Field label="13.4 Valuation Assumptions (custom text)" span={2}><textarea rows={3} value={fields.assumptions13_4 || ''} onChange={e => handleChange('assumptions13_4', e.target.value)} className={inputCls + ' resize-none'} placeholder="Leave blank for default: 'The valuation assumes that the property has a clear and marketable title...'" disabled={isReadOnly} /></Field>
+                <Field label="13.5 Valuation Analysis (custom text)" span={2}><textarea rows={3} value={fields.analysis13_5 || ''} onChange={e => handleChange('analysis13_5', e.target.value)} className={inputCls + ' resize-none'} placeholder="Leave blank for default: 'Based on the market survey conducted in the area...'" disabled={isReadOnly} /></Field>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Total Govt. Guideline / Book Value (Rs)"><input type="text" value={fields.bookValueTotal} onChange={e => handleChange('bookValueTotal', e.target.value)} className={inputCls} placeholder="e.g. 17200000" disabled={isReadOnly} /></Field>
-              <Field label="Total Fair Market Value (Rs)"><input type="text" value={fields.fairMarketValueTotal} onChange={e => handleChange('fairMarketValueTotal', e.target.value)} className={inputCls} placeholder="e.g. 18450000" disabled={isReadOnly} /></Field>
-              <Field label="Total Present Market Value (Rs)"><input type="text" value={fields.presentMarketValueTotal} onChange={e => handleChange('presentMarketValueTotal', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-              <Field label="Realisable / Liquidation Value (Rs)"><input type="text" value={fields.realisableValueTotal} onChange={e => handleChange('realisableValueTotal', e.target.value)} className={inputCls} placeholder="e.g. 14760000" disabled={isReadOnly} /></Field>
-            </div>
-            <div className="mt-4">
-              <Field label="Remarks / Observations" span={2}>
-                <textarea value={fields.remarks} onChange={e => handleChange('remarks', e.target.value)} className={inputCls} rows={3} disabled={isReadOnly} />
-              </Field>
+            {/* ── 13.6 DETAILS OF VALUATION ── */}
+            <div className="mt-6">
+              <p className="text-xs font-bold text-[#495057] uppercase tracking-wider mb-2">13.6 Details of Valuation</p>
+              <p className="text-xs text-gray-500 mb-4">The detailed workings are shown in the following tables:</p>
+
+              {/* Variant Selector */}
+              <div className="mb-6">
+                <Field label="Valuation Table Format">
+                  <select value={fields.valuationVariant || 'standard'} onChange={e => handleChange('valuationVariant', e.target.value)} className={inputCls} disabled={isReadOnly}>
+                    <option value="standard">Standard (Bajrangbali / Angul / Satyabadi)</option>
+                    <option value="cuttack">Cuttack</option>
+                  </select>
+                </Field>
+              </div>
+
+              {/* ══════════════════════════════════════════ */}
+              {/* VARIANT A: STANDARD                       */}
+              {/* ══════════════════════════════════════════ */}
+              {fields.valuationVariant !== 'cuttack' && (
+                <div className="space-y-8">
+
+                  {/* ─── BOOK VALUE (GUIDELINE VALUE) ─── */}
+                  <div className="border border-amber-200 rounded-xl p-4 bg-amber-50/30">
+                    <h4 className="text-xs font-black text-amber-800 uppercase tracking-wider mb-3">Book Value (Guideline Value)</h4>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm text-left">
+                        <thead className="bg-amber-100/50 border-b border-amber-200 text-amber-900 text-[10px] uppercase font-semibold">
+                          <tr>
+                            <th className="px-2 py-2">Mouza</th><th className="px-2 py-2">Nature</th><th className="px-2 py-2">Owner</th>
+                            <th className="px-2 py-2">Plot no</th><th className="px-2 py-2">Khata no</th><th className="px-2 py-2">Area</th>
+                            <th className="px-2 py-2">Rate per dec</th><th className="px-2 py-2">Amount</th>
+                            {!isReadOnly && <th className="px-2 py-2 w-8"></th>}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-amber-100">
+                          {fields.guidelinePlotRows.length === 0 && (
+                            <tr><td colSpan={9} className="px-4 py-4 text-center text-slate-400 italic text-xs">No rows added yet.</td></tr>
+                          )}
+                          {fields.guidelinePlotRows.map((row: GuidelinePlotRow, idx: number) => (
+                            <tr key={row.id} className="hover:bg-amber-50">
+                              {(['mouza','nature','owner','plotNo','khataNo','area','ratePerDec','amount'] as const).map(field => (
+                                <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => { const r = [...fields.guidelinePlotRows]; r[idx] = {...r[idx], [field]: e.target.value}; handleChange('guidelinePlotRows', r); }} className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-amber-400" disabled={isReadOnly} /></td>
+                              ))}
+                              {!isReadOnly && <td className="px-1 py-1 text-center"><button onClick={() => handleChange('guidelinePlotRows', fields.guidelinePlotRows.filter((_: GuidelinePlotRow, i: number) => i !== idx))} className="text-red-400 hover:text-red-600 text-xs">&times;</button></td>}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {!isReadOnly && (
+                      <button type="button" onClick={() => handleChange('guidelinePlotRows', [...fields.guidelinePlotRows, { id: String(Date.now()), mouza: '', nature: '', owner: '', plotNo: '', khataNo: '', area: '', ratePerDec: '', amount: '' }])} className="text-xs font-bold text-amber-700 hover:underline mt-2">+ Add Row</button>
+                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                      <Field label="Total Guideline Plot Value"><input type="text" value={fields.guidelinePlotTotal} onChange={e => handleChange('guidelinePlotTotal', e.target.value)} className={inputCls} placeholder="e.g. Rs. 28,21,40,000" disabled={isReadOnly} /></Field>
+                      <Field label="Discount %"><input type="text" value={fields.guidelineDiscountPercent} onChange={e => handleChange('guidelineDiscountPercent', e.target.value)} className={inputCls} placeholder="e.g. 40" disabled={isReadOnly} /></Field>
+                      <Field label="Total Accessed Value (Post Discount)" span={2}><input type="text" value={fields.guidelineDiscountedTotal} onChange={e => handleChange('guidelineDiscountedTotal', e.target.value)} className={inputCls} placeholder="e.g. Rs. 16,92,84,000" disabled={isReadOnly} /></Field>
+                    </div>
+                  </div>
+
+                  {/* ─── PRESENT MARKET VALUE ─── */}
+                  <div className="border border-blue-200 rounded-xl p-4 bg-blue-50/30">
+                    <h4 className="text-xs font-black text-blue-800 uppercase tracking-wider mb-3">Present Market Value (Post Discounting on Fair Market Value)</h4>
+                    <Field label="Description Text" span={2}><textarea rows={3} value={fields.presentMarketDescription || ''} onChange={e => handleChange('presentMarketDescription', e.target.value)} className={inputCls + ' resize-none'} disabled={isReadOnly} /></Field>
+                    <div className="overflow-x-auto mt-3">
+                      <table className="w-full text-sm text-left">
+                        <thead className="bg-blue-100/50 border-b border-blue-200 text-blue-900 text-[10px] uppercase font-semibold">
+                          <tr>
+                            <th className="px-2 py-2">Mouza</th><th className="px-2 py-2">Nature</th><th className="px-2 py-2">Owner</th>
+                            <th className="px-2 py-2">Plot no</th><th className="px-2 py-2">Khata no</th><th className="px-2 py-2">Area</th>
+                            <th className="px-2 py-2">Rate per dec</th><th className="px-2 py-2">Amount</th>
+                            {!isReadOnly && <th className="px-2 py-2 w-8"></th>}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-blue-100">
+                          {fields.presentPlotRows.length === 0 && (
+                            <tr><td colSpan={9} className="px-4 py-4 text-center text-slate-400 italic text-xs">No rows added yet.</td></tr>
+                          )}
+                          {fields.presentPlotRows.map((row: PresentPlotRow, idx: number) => (
+                            <tr key={row.id} className="hover:bg-blue-50">
+                              {(['mouza','nature','owner','plotNo','khataNo','area','ratePerDec','amount'] as const).map(field => (
+                                <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => { const r = [...fields.presentPlotRows]; r[idx] = {...r[idx], [field]: e.target.value}; handleChange('presentPlotRows', r); }} className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-blue-400" disabled={isReadOnly} /></td>
+                              ))}
+                              {!isReadOnly && <td className="px-1 py-1 text-center"><button onClick={() => handleChange('presentPlotRows', fields.presentPlotRows.filter((_: PresentPlotRow, i: number) => i !== idx))} className="text-red-400 hover:text-red-600 text-xs">&times;</button></td>}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {!isReadOnly && (
+                      <button type="button" onClick={() => handleChange('presentPlotRows', [...fields.presentPlotRows, { id: String(Date.now()), mouza: '', nature: '', owner: '', plotNo: '', khataNo: '', area: '', ratePerDec: '', amount: '' }])} className="text-xs font-bold text-blue-700 hover:underline mt-2">+ Add Row</button>
+                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                      <Field label="Total Fair Plot Value"><input type="text" value={fields.presentPlotTotal} onChange={e => handleChange('presentPlotTotal', e.target.value)} className={inputCls} placeholder="e.g. Rs. 30,22,42,500" disabled={isReadOnly} /></Field>
+                      <Field label="Discount %"><input type="text" value={fields.presentDiscountPercent} onChange={e => handleChange('presentDiscountPercent', e.target.value)} className={inputCls} placeholder="e.g. 40" disabled={isReadOnly} /></Field>
+                      <Field label="Total Present Plot Value (Post Discount)" span={2}><input type="text" value={fields.presentDiscountedTotal} onChange={e => handleChange('presentDiscountedTotal', e.target.value)} className={inputCls} placeholder="e.g. Rs. 18,13,45,500" disabled={isReadOnly} /></Field>
+                    </div>
+                  </div>
+
+                  {/* ─── BUILDING/SHED COST TOGGLE ─── */}
+                  <div className="flex items-center gap-3 mb-2">
+                    <label className="text-xs font-bold text-[#495057] uppercase tracking-wider">Include Building/Shed Cost Tables?</label>
+                    <input type="checkbox" checked={fields.hasBuildingCost} onChange={e => handleChange('hasBuildingCost', e.target.checked)} disabled={isReadOnly} className="w-4 h-4 text-amber-600 rounded" />
+                  </div>
+
+                  {fields.hasBuildingCost && (
+                    <>
+                      {/* ─── BUILDING/SHED COST (FAIR MARKET VALUE) ─── */}
+                      <div className="border border-emerald-200 rounded-xl p-4 bg-emerald-50/30">
+                        <h4 className="text-xs font-black text-emerald-800 uppercase tracking-wider mb-3">Building/Shed Cost (Fair Market Value)</h4>
+                        <p className="text-[10px] font-bold text-neutral-400 uppercase mb-2">RCC Roof Structure</p>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm text-left">
+                            <thead className="bg-emerald-100/50 border-b border-emerald-200 text-emerald-900 text-[10px] uppercase font-semibold">
+                              <tr>
+                                <th className="px-2 py-2">Sl</th><th className="px-2 py-2">Area particular</th><th className="px-2 py-2">Plinth area</th>
+                                <th className="px-2 py-2">Age</th><th className="px-2 py-2">Rate/sft.</th><th className="px-2 py-2">Replacement cost</th>
+                                <th className="px-2 py-2">Depreciation ({fields.rccDepreciationPercentFMV}%)</th><th className="px-2 py-2">Net value</th>
+                                {!isReadOnly && <th className="px-2 py-2 w-8"></th>}
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-emerald-100">
+                              {fields.rccRowsFMV.map((row: BuildingCostRow, idx: number) => (
+                                <tr key={row.id}>
+                                  {(['sl','areaParticular','plinthArea','age','rateSft','replacementCost','depreciation','netValue'] as const).map(field => (
+                                    <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => { const r = [...fields.rccRowsFMV]; r[idx] = {...r[idx], [field]: e.target.value}; handleChange('rccRowsFMV', r); }} className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-emerald-400" disabled={isReadOnly} /></td>
+                                  ))}
+                                  {!isReadOnly && <td className="px-1 py-1 text-center"><button onClick={() => handleChange('rccRowsFMV', fields.rccRowsFMV.filter((_: BuildingCostRow, i: number) => i !== idx))} className="text-red-400 hover:text-red-600 text-xs">&times;</button></td>}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        {!isReadOnly && <button type="button" onClick={() => handleChange('rccRowsFMV', [...fields.rccRowsFMV, { id: String(Date.now()), sl: '', areaParticular: '', plinthArea: '', age: '', rateSft: '', replacementCost: '', depreciation: '', netValue: '' }])} className="text-xs font-bold text-emerald-700 hover:underline mt-2">+ Add RCC Row</button>}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                          <Field label="RCC Depreciation %"><input type="text" value={fields.rccDepreciationPercentFMV} onChange={e => handleChange('rccDepreciationPercentFMV', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                          <Field label="Total of RCC Roof Structure"><input type="text" value={fields.totalRccFMV} onChange={e => handleChange('totalRccFMV', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                        </div>
+
+                        <p className="text-[10px] font-bold text-neutral-400 uppercase mt-4 mb-2">Shed Structure</p>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm text-left">
+                            <thead className="bg-emerald-100/50 border-b border-emerald-200 text-emerald-900 text-[10px] uppercase font-semibold">
+                              <tr>
+                                <th className="px-2 py-2">Sl</th><th className="px-2 py-2">Area particular</th><th className="px-2 py-2">Plinth area</th>
+                                <th className="px-2 py-2">Age</th><th className="px-2 py-2">Rate/sft.</th><th className="px-2 py-2">Replacement cost</th>
+                                <th className="px-2 py-2">Depreciation ({fields.shedDepreciationPercentFMV}%)</th><th className="px-2 py-2">Net value</th>
+                                {!isReadOnly && <th className="px-2 py-2 w-8"></th>}
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-emerald-100">
+                              {fields.shedRowsFMV.map((row: BuildingCostRow, idx: number) => (
+                                <tr key={row.id}>
+                                  {(['sl','areaParticular','plinthArea','age','rateSft','replacementCost','depreciation','netValue'] as const).map(field => (
+                                    <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => { const r = [...fields.shedRowsFMV]; r[idx] = {...r[idx], [field]: e.target.value}; handleChange('shedRowsFMV', r); }} className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-emerald-400" disabled={isReadOnly} /></td>
+                                  ))}
+                                  {!isReadOnly && <td className="px-1 py-1 text-center"><button onClick={() => handleChange('shedRowsFMV', fields.shedRowsFMV.filter((_: BuildingCostRow, i: number) => i !== idx))} className="text-red-400 hover:text-red-600 text-xs">&times;</button></td>}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        {!isReadOnly && <button type="button" onClick={() => handleChange('shedRowsFMV', [...fields.shedRowsFMV, { id: String(Date.now()), sl: '', areaParticular: '', plinthArea: '', age: '', rateSft: '', replacementCost: '', depreciation: '', netValue: '' }])} className="text-xs font-bold text-emerald-700 hover:underline mt-2">+ Add Shed Row</button>}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                          <Field label="Shed Depreciation %"><input type="text" value={fields.shedDepreciationPercentFMV} onChange={e => handleChange('shedDepreciationPercentFMV', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                          <Field label="Total of Shed Structure"><input type="text" value={fields.totalShedFMV} onChange={e => handleChange('totalShedFMV', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                          <Field label="Total Building Value"><input type="text" value={fields.totalBuildingValueFMV} onChange={e => handleChange('totalBuildingValueFMV', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                          <Field label="Compound Wall Value"><input type="text" value={fields.compoundWallValueFMV} onChange={e => handleChange('compoundWallValueFMV', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                          <Field label="Depreciation Description" span={2}><textarea rows={2} value={fields.depreciationDescFMV} onChange={e => handleChange('depreciationDescFMV', e.target.value)} className={inputCls + ' resize-none'} disabled={isReadOnly} /></Field>
+                          <Field label="Total Building/Shed Components" span={2}><input type="text" value={fields.totalBuildingShedComponentsFMV} onChange={e => handleChange('totalBuildingShedComponentsFMV', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                        </div>
+                      </div>
+
+                      {/* ─── BUILDING/SHED COST (GUIDELINE VALUE) ─── */}
+                      <div className="border border-purple-200 rounded-xl p-4 bg-purple-50/30">
+                        <h4 className="text-xs font-black text-purple-800 uppercase tracking-wider mb-3">Building/Shed Cost (Guideline Value)</h4>
+                        <p className="text-[10px] font-bold text-neutral-400 uppercase mb-2">RCC Roof Structure</p>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm text-left">
+                            <thead className="bg-purple-100/50 border-b border-purple-200 text-purple-900 text-[10px] uppercase font-semibold">
+                              <tr>
+                                <th className="px-2 py-2">Sl</th><th className="px-2 py-2">Area particular</th><th className="px-2 py-2">Plinth area</th>
+                                <th className="px-2 py-2">Age</th><th className="px-2 py-2">Rate/sft.</th><th className="px-2 py-2">Replacement cost</th>
+                                <th className="px-2 py-2">Depreciation ({fields.rccDepreciationPercentGuideline}%)</th><th className="px-2 py-2">Net value</th>
+                                {!isReadOnly && <th className="px-2 py-2 w-8"></th>}
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-purple-100">
+                              {fields.rccRowsGuideline.map((row: BuildingCostRow, idx: number) => (
+                                <tr key={row.id}>
+                                  {(['sl','areaParticular','plinthArea','age','rateSft','replacementCost','depreciation','netValue'] as const).map(field => (
+                                    <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => { const r = [...fields.rccRowsGuideline]; r[idx] = {...r[idx], [field]: e.target.value}; handleChange('rccRowsGuideline', r); }} className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-purple-400" disabled={isReadOnly} /></td>
+                                  ))}
+                                  {!isReadOnly && <td className="px-1 py-1 text-center"><button onClick={() => handleChange('rccRowsGuideline', fields.rccRowsGuideline.filter((_: BuildingCostRow, i: number) => i !== idx))} className="text-red-400 hover:text-red-600 text-xs">&times;</button></td>}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        {!isReadOnly && <button type="button" onClick={() => handleChange('rccRowsGuideline', [...fields.rccRowsGuideline, { id: String(Date.now()), sl: '', areaParticular: '', plinthArea: '', age: '', rateSft: '', replacementCost: '', depreciation: '', netValue: '' }])} className="text-xs font-bold text-purple-700 hover:underline mt-2">+ Add RCC Row</button>}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                          <Field label="RCC Depreciation %"><input type="text" value={fields.rccDepreciationPercentGuideline} onChange={e => handleChange('rccDepreciationPercentGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                          <Field label="Total of RCC Roof Structure"><input type="text" value={fields.totalRccGuideline} onChange={e => handleChange('totalRccGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                        </div>
+
+                        <p className="text-[10px] font-bold text-neutral-400 uppercase mt-4 mb-2">Shed Structure</p>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm text-left">
+                            <thead className="bg-purple-100/50 border-b border-purple-200 text-purple-900 text-[10px] uppercase font-semibold">
+                              <tr>
+                                <th className="px-2 py-2">Sl</th><th className="px-2 py-2">Area particular</th><th className="px-2 py-2">Plinth area</th>
+                                <th className="px-2 py-2">Age</th><th className="px-2 py-2">Rate/sft.</th><th className="px-2 py-2">Replacement cost</th>
+                                <th className="px-2 py-2">Depreciation ({fields.shedDepreciationPercentGuideline}%)</th><th className="px-2 py-2">Net value</th>
+                                {!isReadOnly && <th className="px-2 py-2 w-8"></th>}
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-purple-100">
+                              {fields.shedRowsGuideline.map((row: BuildingCostRow, idx: number) => (
+                                <tr key={row.id}>
+                                  {(['sl','areaParticular','plinthArea','age','rateSft','replacementCost','depreciation','netValue'] as const).map(field => (
+                                    <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => { const r = [...fields.shedRowsGuideline]; r[idx] = {...r[idx], [field]: e.target.value}; handleChange('shedRowsGuideline', r); }} className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-purple-400" disabled={isReadOnly} /></td>
+                                  ))}
+                                  {!isReadOnly && <td className="px-1 py-1 text-center"><button onClick={() => handleChange('shedRowsGuideline', fields.shedRowsGuideline.filter((_: BuildingCostRow, i: number) => i !== idx))} className="text-red-400 hover:text-red-600 text-xs">&times;</button></td>}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        {!isReadOnly && <button type="button" onClick={() => handleChange('shedRowsGuideline', [...fields.shedRowsGuideline, { id: String(Date.now()), sl: '', areaParticular: '', plinthArea: '', age: '', rateSft: '', replacementCost: '', depreciation: '', netValue: '' }])} className="text-xs font-bold text-purple-700 hover:underline mt-2">+ Add Shed Row</button>}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                          <Field label="Shed Depreciation %"><input type="text" value={fields.shedDepreciationPercentGuideline} onChange={e => handleChange('shedDepreciationPercentGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                          <Field label="Total of Shed Structure"><input type="text" value={fields.totalShedGuideline} onChange={e => handleChange('totalShedGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                          <Field label="Total Guideline Building Value"><input type="text" value={fields.totalBuildingValueGuideline} onChange={e => handleChange('totalBuildingValueGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                          <Field label="Compound Wall Value"><input type="text" value={fields.compoundWallValueGuideline} onChange={e => handleChange('compoundWallValueGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                          <Field label="Depreciation Description" span={2}><textarea rows={2} value={fields.depreciationDescGuideline} onChange={e => handleChange('depreciationDescGuideline', e.target.value)} className={inputCls + ' resize-none'} disabled={isReadOnly} /></Field>
+                          <Field label="Total Guideline Building/Shed Components" span={2}><input type="text" value={fields.totalBuildingShedComponentsGuideline} onChange={e => handleChange('totalBuildingShedComponentsGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* ─── ABSTRACT OF VALUATION ─── */}
+                  <div className="border border-indigo-200 rounded-xl p-4 bg-indigo-50/30">
+                    <h4 className="text-xs font-black text-indigo-800 uppercase tracking-wider mb-3">Abstract of Valuation</h4>
+                    <p className="text-[10px] font-bold text-neutral-400 uppercase mb-2">Fair Market Present Value</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <Field label="Present Value of Plot"><input type="text" value={fields.presentValueOfPlot} onChange={e => handleChange('presentValueOfPlot', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Present Value of Buildings and Sheds"><input type="text" value={fields.presentValueOfBuildings} onChange={e => handleChange('presentValueOfBuildings', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Total Present Value"><input type="text" value={fields.totalPresentValue} onChange={e => handleChange('totalPresentValue', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Or Say"><input type="text" value={fields.totalPresentValueOrSay} onChange={e => handleChange('totalPresentValueOrSay', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Total Present Value in Words" span={2}><input type="text" value={fields.totalPresentValueInWords} onChange={e => handleChange('totalPresentValueInWords', e.target.value)} className={inputCls} placeholder="e.g. RUPEES EIGHTEEN CRORES FORTY FIVE LAKHS ONLY" disabled={isReadOnly} /></Field>
+                    </div>
+                    <p className="text-[10px] font-bold text-neutral-400 uppercase mt-4 mb-2">Book Value / Guideline Value</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <Field label="Book Value of Plot"><input type="text" value={fields.bookValueOfPlot} onChange={e => handleChange('bookValueOfPlot', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Book Value of Buildings and Sheds"><input type="text" value={fields.bookValueOfBuildings} onChange={e => handleChange('bookValueOfBuildings', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Total Book Value"><input type="text" value={fields.totalBookValue} onChange={e => handleChange('totalBookValue', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Or Say"><input type="text" value={fields.totalBookValueOrSay} onChange={e => handleChange('totalBookValueOrSay', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Total Book Value in Words" span={2}><input type="text" value={fields.totalBookValueInWords} onChange={e => handleChange('totalBookValueInWords', e.target.value)} className={inputCls} placeholder="e.g. RUPEES SEVENTEEN CRORES TWENTY LAKHS ONLY" disabled={isReadOnly} /></Field>
+                    </div>
+                  </div>
+
+                  {/* ─── REALISABLE / LIQUIDATION VALUE ─── */}
+                  <div className="border border-red-200 rounded-xl p-4 bg-red-50/30">
+                    <h4 className="text-xs font-black text-red-800 uppercase tracking-wider mb-3">Realisable Value / Liquidation Value</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <Field label="Realisable/Liquidation Value (Rs)"><input type="text" value={fields.realisableValueAmount} onChange={e => handleChange('realisableValueAmount', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Or Say"><input type="text" value={fields.realisableValueOrSay} onChange={e => handleChange('realisableValueOrSay', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Liquidation Value in Words" span={2}><input type="text" value={fields.realisableValueInWords} onChange={e => handleChange('realisableValueInWords', e.target.value)} className={inputCls} placeholder="e.g. RUPEES FORTEEN CRORES SEVENTY SIX LAKHS ONLY" disabled={isReadOnly} /></Field>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ══════════════════════════════════════════ */}
+              {/* VARIANT B: CUTTACK                        */}
+              {/* ══════════════════════════════════════════ */}
+              {fields.valuationVariant === 'cuttack' && (
+                <div className="space-y-8">
+
+                  {/* ─── GOVERNMENT GUIDELINE VALUE ─── */}
+                  <div className="border border-amber-200 rounded-xl p-4 bg-amber-50/30">
+                    <h4 className="text-xs font-black text-amber-800 uppercase tracking-wider mb-3">Government Guideline Value</h4>
+                    <Field label="Land Component Description" span={2}><textarea rows={3} value={fields.cuttackLandComponentDescGuideline || ''} onChange={e => handleChange('cuttackLandComponentDescGuideline', e.target.value)} className={inputCls + ' resize-none'} placeholder="e.g. Land Component - As per the Benchmark Rates furnished by SRO- Jagatpur, Dist- Cuttack..." disabled={isReadOnly} /></Field>
+                    <div className="overflow-x-auto mt-3">
+                      <table className="w-full text-sm text-left">
+                        <thead className="bg-amber-100/50 border-b border-amber-200 text-amber-900 text-[10px] uppercase font-semibold">
+                          <tr>
+                            <th className="px-2 py-2">Mouza</th><th className="px-2 py-2">Nature</th>
+                            <th className="px-2 py-2">Plot no</th><th className="px-2 py-2">Khata no</th><th className="px-2 py-2">Area</th>
+                            <th className="px-2 py-2">Rate per dec</th><th className="px-2 py-2">Amount</th>
+                            {!isReadOnly && <th className="px-2 py-2 w-8"></th>}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-amber-100">
+                          {fields.guidelinePlotRows.length === 0 && (
+                            <tr><td colSpan={8} className="px-4 py-4 text-center text-slate-400 italic text-xs">No rows added yet.</td></tr>
+                          )}
+                          {fields.guidelinePlotRows.map((row: GuidelinePlotRow, idx: number) => (
+                            <tr key={row.id} className="hover:bg-amber-50">
+                              {(['mouza','nature','plotNo','khataNo','area','ratePerDec','amount'] as const).map(field => (
+                                <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => { const r = [...fields.guidelinePlotRows]; r[idx] = {...r[idx], [field]: e.target.value}; handleChange('guidelinePlotRows', r); }} className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-amber-400" disabled={isReadOnly} /></td>
+                              ))}
+                              {!isReadOnly && <td className="px-1 py-1 text-center"><button onClick={() => handleChange('guidelinePlotRows', fields.guidelinePlotRows.filter((_: GuidelinePlotRow, i: number) => i !== idx))} className="text-red-400 hover:text-red-600 text-xs">&times;</button></td>}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {!isReadOnly && <button type="button" onClick={() => handleChange('guidelinePlotRows', [...fields.guidelinePlotRows, { id: String(Date.now()), mouza: '', nature: '', owner: '', plotNo: '', khataNo: '', area: '', ratePerDec: '', amount: '' }])} className="text-xs font-bold text-amber-700 hover:underline mt-2">+ Add Row</button>}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                      <Field label="Total Guideline Plot Value"><input type="text" value={fields.guidelinePlotTotal} onChange={e => handleChange('guidelinePlotTotal', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Compound Wall Depreciation"><input type="text" value={fields.cuttackCompoundWallGuideline} onChange={e => handleChange('cuttackCompoundWallGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Sheds/Buildings Depreciation"><input type="text" value={fields.cuttackShedsDepreciationGuideline} onChange={e => handleChange('cuttackShedsDepreciationGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Total Guideline Value for Land and Building"><input type="text" value={fields.cuttackTotalGuidelineLandBuilding} onChange={e => handleChange('cuttackTotalGuidelineLandBuilding', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Or Say"><input type="text" value={fields.cuttackGuidelineOrSay} onChange={e => handleChange('cuttackGuidelineOrSay', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Guideline Value in Words"><input type="text" value={fields.cuttackGuidelineInWords} onChange={e => handleChange('cuttackGuidelineInWords', e.target.value)} className={inputCls} placeholder="e.g. FIFTY SIX LAKHS RUPEES ONLY" disabled={isReadOnly} /></Field>
+                    </div>
+                  </div>
+
+                  {/* ─── PRESENT MARKET VALUE ─── */}
+                  <div className="border border-blue-200 rounded-xl p-4 bg-blue-50/30">
+                    <h4 className="text-xs font-black text-blue-800 uppercase tracking-wider mb-3">Present Market Value</h4>
+                    <Field label="Land Component Description" span={2}><textarea rows={3} value={fields.cuttackLandComponentDescPresent || ''} onChange={e => handleChange('cuttackLandComponentDescPresent', e.target.value)} className={inputCls + ' resize-none'} placeholder="e.g. LAND COMPONENT - As per the Benchmark Rates furnished by SRO- Jagatpur, Dist- Cuttack..." disabled={isReadOnly} /></Field>
+                    <div className="overflow-x-auto mt-3">
+                      <table className="w-full text-sm text-left">
+                        <thead className="bg-blue-100/50 border-b border-blue-200 text-blue-900 text-[10px] uppercase font-semibold">
+                          <tr>
+                            <th className="px-2 py-2">Mouza</th><th className="px-2 py-2">Nature</th>
+                            <th className="px-2 py-2">Plot no</th><th className="px-2 py-2">Khata no</th><th className="px-2 py-2">Area</th>
+                            <th className="px-2 py-2">Rate per dec</th><th className="px-2 py-2">Amount</th>
+                            {!isReadOnly && <th className="px-2 py-2 w-8"></th>}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-blue-100">
+                          {fields.presentPlotRows.length === 0 && (
+                            <tr><td colSpan={8} className="px-4 py-4 text-center text-slate-400 italic text-xs">No rows added yet.</td></tr>
+                          )}
+                          {fields.presentPlotRows.map((row: PresentPlotRow, idx: number) => (
+                            <tr key={row.id} className="hover:bg-blue-50">
+                              {(['mouza','nature','plotNo','khataNo','area','ratePerDec','amount'] as const).map(field => (
+                                <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => { const r = [...fields.presentPlotRows]; r[idx] = {...r[idx], [field]: e.target.value}; handleChange('presentPlotRows', r); }} className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-blue-400" disabled={isReadOnly} /></td>
+                              ))}
+                              {!isReadOnly && <td className="px-1 py-1 text-center"><button onClick={() => handleChange('presentPlotRows', fields.presentPlotRows.filter((_: PresentPlotRow, i: number) => i !== idx))} className="text-red-400 hover:text-red-600 text-xs">&times;</button></td>}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {!isReadOnly && <button type="button" onClick={() => handleChange('presentPlotRows', [...fields.presentPlotRows, { id: String(Date.now()), mouza: '', nature: '', owner: '', plotNo: '', khataNo: '', area: '', ratePerDec: '', amount: '' }])} className="text-xs font-bold text-blue-700 hover:underline mt-2">+ Add Row</button>}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                      <Field label="Total Present Market Value Plot"><input type="text" value={fields.presentPlotTotal} onChange={e => handleChange('presentPlotTotal', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Compound Wall Depreciation"><input type="text" value={fields.cuttackCompoundWallPresent} onChange={e => handleChange('cuttackCompoundWallPresent', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Sheds/Buildings Depreciation"><input type="text" value={fields.cuttackShedsDepreciationPresent} onChange={e => handleChange('cuttackShedsDepreciationPresent', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Total Present Value for Land and Building"><input type="text" value={fields.cuttackTotalPresentLandBuilding} onChange={e => handleChange('cuttackTotalPresentLandBuilding', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Or Say"><input type="text" value={fields.cuttackPresentOrSay} onChange={e => handleChange('cuttackPresentOrSay', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Present Value in Words"><input type="text" value={fields.cuttackPresentInWords} onChange={e => handleChange('cuttackPresentInWords', e.target.value)} className={inputCls} placeholder="e.g. SIXTY SEVEN LAKHS EIGHTY FIVE THOUSAND RUPEES ONLY" disabled={isReadOnly} /></Field>
+                    </div>
+                  </div>
+
+                  {/* ─── BUILDING/SHED COST ─── */}
+                  <div className="border border-emerald-200 rounded-xl p-4 bg-emerald-50/30">
+                    <h4 className="text-xs font-black text-emerald-800 uppercase tracking-wider mb-3">Building/Shed Cost</h4>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm text-left">
+                        <thead className="bg-emerald-100/50 border-b border-emerald-200 text-emerald-900 text-[10px] uppercase font-semibold">
+                          <tr>
+                            <th className="px-2 py-2">Sl</th><th className="px-2 py-2">Area particular</th><th className="px-2 py-2">Plinth area</th>
+                            <th className="px-2 py-2">Age</th><th className="px-2 py-2">Rate/sft.</th><th className="px-2 py-2">Replacement cost</th>
+                            <th className="px-2 py-2">Depreciation ({fields.cuttackBuildingDepreciationPercent}%)</th><th className="px-2 py-2">Net value</th>
+                            {!isReadOnly && <th className="px-2 py-2 w-8"></th>}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-emerald-100">
+                          {fields.cuttackBuildingRows.map((row: BuildingCostRow, idx: number) => (
+                            <tr key={row.id}>
+                              {(['sl','areaParticular','plinthArea','age','rateSft','replacementCost','depreciation','netValue'] as const).map(field => (
+                                <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => { const r = [...fields.cuttackBuildingRows]; r[idx] = {...r[idx], [field]: e.target.value}; handleChange('cuttackBuildingRows', r); }} className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-emerald-400" disabled={isReadOnly} /></td>
+                              ))}
+                              {!isReadOnly && <td className="px-1 py-1 text-center"><button onClick={() => handleChange('cuttackBuildingRows', fields.cuttackBuildingRows.filter((_: BuildingCostRow, i: number) => i !== idx))} className="text-red-400 hover:text-red-600 text-xs">&times;</button></td>}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {!isReadOnly && <button type="button" onClick={() => handleChange('cuttackBuildingRows', [...fields.cuttackBuildingRows, { id: String(Date.now()), sl: '', areaParticular: '', plinthArea: '', age: '', rateSft: '', replacementCost: '', depreciation: '', netValue: '' }])} className="text-xs font-bold text-emerald-700 hover:underline mt-2">+ Add Row</button>}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                      <Field label="Depreciation %"><input type="text" value={fields.cuttackBuildingDepreciationPercent} onChange={e => handleChange('cuttackBuildingDepreciationPercent', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Total"><input type="text" value={fields.cuttackBuildingTotal} onChange={e => handleChange('cuttackBuildingTotal', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Total Land and Building/Shed Components"><input type="text" value={fields.cuttackBuildingComponentsTotal} onChange={e => handleChange('cuttackBuildingComponentsTotal', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Or Say"><input type="text" value={fields.cuttackBuildingOrSay} onChange={e => handleChange('cuttackBuildingOrSay', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Building Value in Words" span={2}><input type="text" value={fields.cuttackBuildingInWords} onChange={e => handleChange('cuttackBuildingInWords', e.target.value)} className={inputCls} placeholder="e.g. SIXTEEN LAKHS SIXTY THREE THOUSAND RUPEES ONLY" disabled={isReadOnly} /></Field>
+                    </div>
+                  </div>
+
+                  {/* ─── REALISABLE / LIQUIDATION VALUE ─── */}
+                  <div className="border border-red-200 rounded-xl p-4 bg-red-50/30">
+                    <h4 className="text-xs font-black text-red-800 uppercase tracking-wider mb-3">Realisable Value / Liquidation Value</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <Field label="Realisable/Liquidation Value (Rs)"><input type="text" value={fields.realisableValueAmount} onChange={e => handleChange('realisableValueAmount', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Or Say"><input type="text" value={fields.realisableValueOrSay} onChange={e => handleChange('realisableValueOrSay', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Liquidation Value in Words" span={2}><input type="text" value={fields.realisableValueInWords} onChange={e => handleChange('realisableValueInWords', e.target.value)} className={inputCls} placeholder="e.g. RUPEES FIFTY FOUR LAKHS TWENTY EIGHT THOUSAND ONLY" disabled={isReadOnly} /></Field>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </Section>
           {/* ── Section 14: Photos & Maps ── */}
