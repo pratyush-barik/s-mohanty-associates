@@ -844,6 +844,35 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [projectId, fields, isReadOnly]);
 
+    useEffect(() => {
+    const calcTotal = (rows: any[]) => {
+      const sum = rows.reduce((acc, row) => {
+        const cleanAmount = (row.amount || '').replace(/[^0-9.]/g, '');
+        const val = parseFloat(cleanAmount);
+        return acc + (isNaN(val) ? 0 : val);
+      }, 0);
+      return sum > 0 ? `Rs. ${formatIndianCurrency(sum.toString())}` : '';
+    };
+
+    const newGuidelineTotal = calcTotal(fields.guidelinePlotRows || []);
+    const newPresentTotal = calcTotal(fields.presentPlotRows || []);
+
+    let updated = false;
+    const nextFields = { ...fields };
+    if (fields.guidelinePlotTotal !== newGuidelineTotal) {
+      nextFields.guidelinePlotTotal = newGuidelineTotal;
+      updated = true;
+    }
+    if (fields.presentPlotTotal !== newPresentTotal) {
+      nextFields.presentPlotTotal = newPresentTotal;
+      updated = true;
+    }
+    
+    if (updated) {
+      setFields(nextFields);
+    }
+  }, [fields.guidelinePlotRows, fields.presentPlotRows, fields.guidelinePlotTotal, fields.presentPlotTotal]);
+
   const handleChange = useCallback((field: string, value: any) => {
     setFields(prev => ({ ...prev, [field]: value }));
   }, []);
@@ -2843,7 +2872,7 @@ Our valuation is based on information obtained from the client and on data gathe
                       <button type="button" onClick={() => handleChange('guidelinePlotRows', [...fields.guidelinePlotRows, { id: String(Date.now()), mouza: '', nature: '', owner: '', plotNo: '', khataNo: '', area: '', ratePerDec: '', amount: '' }])} className="text-xs font-bold text-amber-700 hover:underline mt-2">+ Add Row</button>
                     )}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-                      <Field label="Total Guideline Plot Value"><input type="text" value={fields.guidelinePlotTotal} onChange={e => handleChange('guidelinePlotTotal', e.target.value)} className={inputCls} placeholder="e.g. Rs. 28,21,40,000" disabled={isReadOnly} /></Field>
+                      <Field label="Total Guideline Plot Value"><input type="text" value={fields.guidelinePlotTotal} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
                       <Field label="Discount %"><input type="text" value={fields.guidelineDiscountPercent} onChange={e => handleChange('guidelineDiscountPercent', e.target.value)} className={inputCls} placeholder="e.g. 40" disabled={isReadOnly} /></Field>
                       <Field label="Total Accessed Value (Post Discount)" span={2}><input type="text" value={fields.guidelineDiscountedTotal} onChange={e => handleChange('guidelineDiscountedTotal', e.target.value)} className={inputCls} placeholder="e.g. Rs. 16,92,84,000" disabled={isReadOnly} /></Field>
                     </div>
@@ -2882,7 +2911,7 @@ Our valuation is based on information obtained from the client and on data gathe
                       <button type="button" onClick={() => handleChange('presentPlotRows', [...fields.presentPlotRows, { id: String(Date.now()), mouza: '', nature: '', owner: '', plotNo: '', khataNo: '', area: '', ratePerDec: '', amount: '' }])} className="text-xs font-bold text-blue-700 hover:underline mt-2">+ Add Row</button>
                     )}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-                      <Field label="Total Fair Plot Value"><input type="text" value={fields.presentPlotTotal} onChange={e => handleChange('presentPlotTotal', e.target.value)} className={inputCls} placeholder="e.g. Rs. 30,22,42,500" disabled={isReadOnly} /></Field>
+                      <Field label="Total Fair Plot Value"><input type="text" value={fields.presentPlotTotal} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
                       <Field label="Discount %"><input type="text" value={fields.presentDiscountPercent} onChange={e => handleChange('presentDiscountPercent', e.target.value)} className={inputCls} placeholder="e.g. 40" disabled={isReadOnly} /></Field>
                       <Field label="Total Present Plot Value (Post Discount)" span={2}><input type="text" value={fields.presentDiscountedTotal} onChange={e => handleChange('presentDiscountedTotal', e.target.value)} className={inputCls} placeholder="e.g. Rs. 18,13,45,500" disabled={isReadOnly} /></Field>
                     </div>
@@ -3100,7 +3129,7 @@ Our valuation is based on information obtained from the client and on data gathe
                     </div>
                     {!isReadOnly && <button type="button" onClick={() => handleChange('guidelinePlotRows', [...fields.guidelinePlotRows, { id: String(Date.now()), mouza: '', nature: '', owner: '', plotNo: '', khataNo: '', area: '', ratePerDec: '', amount: '' }])} className="text-xs font-bold text-amber-700 hover:underline mt-2">+ Add Row</button>}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-                      <Field label="Total Guideline Plot Value"><input type="text" value={fields.guidelinePlotTotal} onChange={e => handleChange('guidelinePlotTotal', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Total Guideline Plot Value"><input type="text" value={fields.guidelinePlotTotal} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
                       <Field label="Compound Wall Depreciation"><input type="text" value={fields.cuttackCompoundWallGuideline} onChange={e => handleChange('cuttackCompoundWallGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
                       <Field label="Sheds/Buildings Depreciation"><input type="text" value={fields.cuttackShedsDepreciationGuideline} onChange={e => handleChange('cuttackShedsDepreciationGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
                       <Field label="Total Guideline Value for Land and Building"><input type="text" value={fields.cuttackTotalGuidelineLandBuilding} onChange={e => handleChange('cuttackTotalGuidelineLandBuilding', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
@@ -3140,7 +3169,7 @@ Our valuation is based on information obtained from the client and on data gathe
                     </div>
                     {!isReadOnly && <button type="button" onClick={() => handleChange('presentPlotRows', [...fields.presentPlotRows, { id: String(Date.now()), mouza: '', nature: '', owner: '', plotNo: '', khataNo: '', area: '', ratePerDec: '', amount: '' }])} className="text-xs font-bold text-blue-700 hover:underline mt-2">+ Add Row</button>}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-                      <Field label="Total Present Market Value Plot"><input type="text" value={fields.presentPlotTotal} onChange={e => handleChange('presentPlotTotal', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Total Present Market Value Plot"><input type="text" value={fields.presentPlotTotal} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
                       <Field label="Compound Wall Depreciation"><input type="text" value={fields.cuttackCompoundWallPresent} onChange={e => handleChange('cuttackCompoundWallPresent', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
                       <Field label="Sheds/Buildings Depreciation"><input type="text" value={fields.cuttackShedsDepreciationPresent} onChange={e => handleChange('cuttackShedsDepreciationPresent', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
                       <Field label="Total Present Value for Land and Building"><input type="text" value={fields.cuttackTotalPresentLandBuilding} onChange={e => handleChange('cuttackTotalPresentLandBuilding', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
