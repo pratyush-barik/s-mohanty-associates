@@ -1693,17 +1693,26 @@ Our valuation is based on information obtained from the client and on data gathe
         r.advanceCursor(4);
         if (fields.guidelinePlotRows && fields.guidelinePlotRows.length > 0) {
           const headers = ['Mouza', 'Nature', 'Owner', 'Plot no', 'Khata no', 'Area', 'Rate per dec', 'Amount'];
-          const rows = fields.guidelinePlotRows.map((row: GuidelinePlotRow) => [row.mouza, row.nature, row.owner, row.plotNo, row.khataNo, row.area, row.ratePerDec, row.amount]);
+          const rows: string[][] = fields.guidelinePlotRows.map((row: GuidelinePlotRow) => [row.mouza, row.nature, row.owner, row.plotNo, row.khataNo, row.area, row.ratePerDec, row.amount]);
+          if (fields.guidelinePlotTotal) {
+            rows.push([
+              '!!SPAN:6!!!!RIGHT!!TOTAL GUIDELINE PLOT VALUE', '', '', '', '', '',
+              '!!RIGHT!!Rs.', fields.guidelinePlotTotal.replace('Rs.', '').trim()
+            ]);
+          }
+          if (fields.guidelineDiscountedTotal) {
+            rows.push([
+              `!!SPAN:6!!!!RIGHT!!Total Accessed Value Post Discounted reduction of ${fields.guidelineDiscountPercent || 0}% on Total Guideline Value`, '', '', '', '', '',
+              '!!RIGHT!!Rs.', fields.guidelineDiscountedTotal.replace('Rs.', '').trim()
+            ]);
+          }
           r.drawDataTable(headers, rows);
-          r.advanceCursor(2);
+          r.advanceCursor(6);
+        } else {
+          if (fields.guidelinePlotTotal) r.drawTextBlock(`TOTAL GUIDELINE PLOT VALUE: ${fields.guidelinePlotTotal}`, { bold: true, align: 'right' });
+          if (fields.guidelineDiscountedTotal) r.drawTextBlock(`Total Accessed Value Post Discounted reduction of ${fields.guidelineDiscountPercent || 0}% on Total Guideline Value = ${fields.guidelineDiscountedTotal}`, { bold: true, align: 'right' });
+          r.advanceCursor(6);
         }
-        if (fields.guidelinePlotTotal) {
-          r.drawTextBlock(`TOTAL GUIDELINE PLOT VALUE: ${fields.guidelinePlotTotal}`, { bold: true, align: 'right' });
-        }
-        if (fields.guidelineDiscountedTotal) {
-          r.drawTextBlock(`Total Accessed Value Post Discounted reduction of ${fields.guidelineDiscountPercent}% on Total Guideline Value = ${fields.guidelineDiscountedTotal}`, { bold: true, align: 'right' });
-        }
-        r.advanceCursor(6);
 
         // ─── PRESENT MARKET VALUE ───
         r.drawTextBlock('PRESENT MARKET VALUE (POST DISCOUNTING ON FAIR MARKET VALUE)', { bold: true, fontSize: 11, underline: true });
@@ -1714,17 +1723,26 @@ Our valuation is based on information obtained from the client and on data gathe
         }
         if (fields.presentPlotRows && fields.presentPlotRows.length > 0) {
           const headers = ['Mouza', 'Nature', 'Owner', 'Plot no', 'Khata no', 'Area', 'Rate per dec', 'Amount'];
-          const rows = fields.presentPlotRows.map((row: PresentPlotRow) => [row.mouza, row.nature, row.owner, row.plotNo, row.khataNo, row.area, row.ratePerDec, row.amount]);
+          const rows: string[][] = fields.presentPlotRows.map((row: PresentPlotRow) => [row.mouza, row.nature, row.owner, row.plotNo, row.khataNo, row.area, row.ratePerDec, row.amount]);
+          if (fields.presentPlotTotal) {
+            rows.push([
+              '!!SPAN:6!!!!RIGHT!!TOTAL FAIR PLOT VALUE', '', '', '', '', '',
+              '!!RIGHT!!Rs.', fields.presentPlotTotal.replace('Rs.', '').trim()
+            ]);
+          }
+          if (fields.presentDiscountedTotal) {
+            rows.push([
+              `!!SPAN:6!!!!RIGHT!!Total Accessed Value Post Discounted reduction of ${fields.presentDiscountPercent || 0}% on Total Fair Market Value`, '', '', '', '', '',
+              '!!RIGHT!!Rs.', fields.presentDiscountedTotal.replace('Rs.', '').trim()
+            ]);
+          }
           r.drawDataTable(headers, rows);
-          r.advanceCursor(2);
+          r.advanceCursor(6);
+        } else {
+          if (fields.presentPlotTotal) r.drawTextBlock(`TOTAL FAIR PLOT VALUE: ${fields.presentPlotTotal}`, { bold: true, align: 'right' });
+          if (fields.presentDiscountedTotal) r.drawTextBlock(`Total Accessed Value Post Discounted reduction of ${fields.presentDiscountPercent || 0}% on Total Fair Market Value = ${fields.presentDiscountedTotal}`, { bold: true, align: 'right' });
+          r.advanceCursor(6);
         }
-        if (fields.presentPlotTotal) {
-          r.drawTextBlock(`TOTAL FAIR PLOT VALUE: ${fields.presentPlotTotal}`, { bold: true, align: 'right' });
-        }
-        if (fields.presentDiscountedTotal) {
-          r.drawTextBlock(`Total Present Plot Value = ${fields.presentDiscountedTotal}`, { bold: true, align: 'right' });
-        }
-        r.advanceCursor(6);
 
         // ─── BUILDING/SHED COST (FAIR MARKET VALUE) ───
         if (fields.hasBuildingCost) {
@@ -1875,12 +1893,23 @@ Our valuation is based on information obtained from the client and on data gathe
         }
         if (fields.guidelinePlotRows && fields.guidelinePlotRows.length > 0) {
           const headers = ['Mouza', 'Nature', 'Plot no', 'Khata no', 'Area', 'Rate per dec', 'Amount'];
-          const rows = fields.guidelinePlotRows.map((row: GuidelinePlotRow) => [row.mouza, row.nature, row.plotNo, row.khataNo, row.area, row.ratePerDec, row.amount]);
+          const rows: string[][] = fields.guidelinePlotRows.map((row: GuidelinePlotRow) => [row.mouza, row.nature, row.plotNo, row.khataNo, row.area, row.ratePerDec, row.amount]);
+          if (fields.guidelinePlotTotal) {
+            rows.push([
+              '!!SPAN:5!!!!RIGHT!!TOTAL GUIDELINE PLOT VALUE', '', '', '', '',
+              '!!RIGHT!!Rs.', fields.guidelinePlotTotal.replace('Rs.', '').trim()
+            ]);
+          }
+          if (fields.guidelineDiscountedTotal) {
+            rows.push([
+              `!!SPAN:5!!!!RIGHT!!Total Accessed Value Post Discounted reduction of ${fields.guidelineDiscountPercent || 0}% on Total Guideline Value`, '', '', '', '',
+              '!!RIGHT!!Rs.', fields.guidelineDiscountedTotal.replace('Rs.', '').trim()
+            ]);
+          }
           r.drawDataTable(headers, rows);
           r.advanceCursor(2);
-        }
-        if (fields.guidelinePlotTotal) {
-          r.drawTextBlock(`TOTAL GUIDELINE PLOT VALUE: ${fields.guidelinePlotTotal}`, { bold: true, align: 'right' });
+        } else {
+          if (fields.guidelinePlotTotal) r.drawTextBlock(`TOTAL GUIDELINE PLOT VALUE: ${fields.guidelinePlotTotal}`, { bold: true, align: 'right' });
         }
         if (fields.cuttackCompoundWallGuideline) {
           r.drawTextBlock(`Depreciation value of compound wall: ${fields.cuttackCompoundWallGuideline}`, { align: 'right' });
@@ -1908,12 +1937,23 @@ Our valuation is based on information obtained from the client and on data gathe
         }
         if (fields.presentPlotRows && fields.presentPlotRows.length > 0) {
           const headers = ['Mouza', 'Nature', 'Plot no', 'Khata no', 'Area', 'Rate per dec', 'Amount'];
-          const rows = fields.presentPlotRows.map((row: PresentPlotRow) => [row.mouza, row.nature, row.plotNo, row.khataNo, row.area, row.ratePerDec, row.amount]);
+          const rows: string[][] = fields.presentPlotRows.map((row: PresentPlotRow) => [row.mouza, row.nature, row.plotNo, row.khataNo, row.area, row.ratePerDec, row.amount]);
+          if (fields.presentPlotTotal) {
+            rows.push([
+              '!!SPAN:5!!!!RIGHT!!TOTAL PRESENT MARKET VALUE PLOT', '', '', '', '',
+              '!!RIGHT!!Rs.', fields.presentPlotTotal.replace('Rs.', '').trim()
+            ]);
+          }
+          if (fields.presentDiscountedTotal) {
+            rows.push([
+              `!!SPAN:5!!!!RIGHT!!Total Accessed Value Post Discounted reduction of ${fields.presentDiscountPercent || 0}% on Total Fair Market Value`, '', '', '', '',
+              '!!RIGHT!!Rs.', fields.presentDiscountedTotal.replace('Rs.', '').trim()
+            ]);
+          }
           r.drawDataTable(headers, rows);
           r.advanceCursor(2);
-        }
-        if (fields.presentPlotTotal) {
-          r.drawTextBlock(`TOTAL PRESENT MARKET VALUE PLOT: ${fields.presentPlotTotal}`, { bold: true, align: 'right' });
+        } else {
+          if (fields.presentPlotTotal) r.drawTextBlock(`TOTAL PRESENT MARKET VALUE PLOT: ${fields.presentPlotTotal}`, { bold: true, align: 'right' });
         }
         if (fields.cuttackCompoundWallPresent) {
           r.drawTextBlock(`Depreciation value of compound wall: ${fields.cuttackCompoundWallPresent}`, { align: 'right' });

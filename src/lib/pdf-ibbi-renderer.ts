@@ -1113,9 +1113,26 @@ export class PDFIBBIRenderer {
     
     for (const row of rows) {
       if (isFullWidth(row)) continue;
-      row.forEach((cell, i) => {
-        if (cell && cell.length > maxColChars[i]) maxColChars[i] = cell.length;
-      });
+      let i = 0;
+      while (i < numCols) {
+        let cellText = row[i] || '';
+        let colspan = 1;
+        if (cellText.startsWith('!!SPAN:')) {
+          const match = cellText.match(/^!!SPAN:(\d+)!!(.*)/);
+          if (match) {
+            colspan = parseInt(match[1]);
+            cellText = match[2];
+          }
+        }
+        if (cellText.startsWith('!!RIGHT!!')) {
+          cellText = cellText.substring(9);
+        }
+        
+        if (colspan === 1 && cellText.length > maxColChars[i]) {
+          maxColChars[i] = cellText.length;
+        }
+        i += colspan;
+      }
     }
 
     const totalChars = maxColChars.reduce((a, b) => a + b, 0);
@@ -1126,7 +1143,7 @@ export class PDFIBBIRenderer {
     const scale = CONTENT_W / widthSum;
     const finalWidths = colWidths.map(w => w * scale);
 
-    const fontSize = 10;
+    const fontSize = 8;
     const rowPadY = 3;
     const rowPadX = 3;
 
@@ -1166,13 +1183,33 @@ export class PDFIBBIRenderer {
       let rowH = 0;
       
       if (rowIsFull) {
-        const lines = this.wrapText(row[0], CONTENT_W - rowPadX * 2, fontSize);
+        let txt = row[0].replace(/^!!RIGHT!!/, '');
+        const lines = this.wrapText(txt, CONTENT_W - rowPadX * 2, fontSize);
         rowH = lines.length * fontSize * LINE_HEIGHT + rowPadY * 2;
       } else {
-        const cellHeights = row.map((cell, c) => {
-          const lines = this.wrapText(cell || '', finalWidths[c] - rowPadX * 2, fontSize);
-          return lines.length * fontSize * LINE_HEIGHT + rowPadY * 2;
-        });
+        const cellHeights: number[] = [];
+        for (let c = 0; c < numCols; c++) {
+          let cellText = row[c] || '';
+          let colspan = 1;
+          if (cellText.startsWith('!!SPAN:')) {
+            const match = cellText.match(/^!!SPAN:(\d+)!!(.*)/);
+            if (match) {
+              colspan = parseInt(match[1]);
+              cellText = match[2];
+            }
+          }
+          if (cellText.startsWith('!!RIGHT!!')) {
+            cellText = cellText.substring(9);
+          }
+          
+          let cellW = 0;
+          for (let i = 0; i < colspan && c + i < numCols; i++) {
+            cellW += finalWidths[c + i];
+          }
+          const lines = this.wrapText(cellText, cellW - rowPadX * 2, fontSize);
+          cellHeights.push(lines.length * fontSize * LINE_HEIGHT + rowPadY * 2);
+          c += (colspan - 1);
+        }
         rowH = Math.max(...cellHeights, fontSize * LINE_HEIGHT + rowPadY * 2);
       }
 
@@ -1180,11 +1217,43 @@ export class PDFIBBIRenderer {
 
       x = MARGIN_L;
       if (rowIsFull) {
-        this.drawCell(x, this.cursorY, CONTENT_W, rowH, row[0], { fontSize });
+        let txt = row[0];
+        let bold = false;
+        let align: 'left' | 'center' | 'right' = 'left';
+        if (txt.startsWith('!!RIGHT!!')) {
+          txt = txt.substring(9);
+          align = 'right';
+          bold = true;
+        }
+        this.drawCell(x, this.cursorY, CONTENT_W, rowH, txt, { fontSize, bold, align });
       } else {
         for (let c = 0; c < numCols; c++) {
-          this.drawCell(x, this.cursorY, finalWidths[c], rowH, row[c] || '', { fontSize });
-          x += finalWidths[c];
+          let cellText = row[c] || '';
+          let colspan = 1;
+          let bold = false;
+          let align: 'left' | 'center' | 'right' = 'left';
+
+          if (cellText.startsWith('!!SPAN:')) {
+            const match = cellText.match(/^!!SPAN:(\d+)!!(.*)/);
+            if (match) {
+              colspan = parseInt(match[1]);
+              cellText = match[2];
+            }
+          }
+          if (cellText.startsWith('!!RIGHT!!')) {
+            cellText = cellText.substring(9);
+            align = 'right';
+            bold = true;
+          }
+          
+          let cellW = 0;
+          for (let i = 0; i < colspan && c + i < numCols; i++) {
+            cellW += finalWidths[c + i];
+          }
+          
+          this.drawCell(x, this.cursorY, cellW, rowH, cellText, { fontSize, bold, align });
+          x += cellW;
+          c += (colspan - 1);
         }
       }
       this.cursorY += rowH;
