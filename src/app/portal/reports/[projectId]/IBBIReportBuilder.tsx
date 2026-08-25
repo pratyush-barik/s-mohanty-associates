@@ -851,11 +851,23 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
         const val = parseFloat(cleanAmount);
         return acc + (isNaN(val) ? 0 : val);
       }, 0);
-      return sum > 0 ? `Rs. ${formatIndianCurrency(sum.toString())}` : '';
+      return sum;
     };
 
-    const newGuidelineTotal = calcTotal(fields.guidelinePlotRows || []);
-    const newPresentTotal = calcTotal(fields.presentPlotRows || []);
+    const guidelineSum = calcTotal(fields.guidelinePlotRows || []);
+    const presentSum = calcTotal(fields.presentPlotRows || []);
+
+    const newGuidelineTotal = guidelineSum > 0 ? `Rs. ${formatIndianCurrency(guidelineSum.toString())}` : '';
+    const newPresentTotal = presentSum > 0 ? `Rs. ${formatIndianCurrency(presentSum.toString())}` : '';
+
+    const guidelineDiscPct = parseFloat(fields.guidelineDiscountPercent) || 0;
+    const presentDiscPct = parseFloat(fields.presentDiscountPercent) || 0;
+
+    const guidelineDiscounted = guidelineSum * (1 - (guidelineDiscPct / 100));
+    const presentDiscounted = presentSum * (1 - (presentDiscPct / 100));
+
+    const newGuidelineDiscountedTotal = guidelineDiscounted > 0 ? `Rs. ${formatIndianCurrency(Math.round(guidelineDiscounted).toString())}` : '';
+    const newPresentDiscountedTotal = presentDiscounted > 0 ? `Rs. ${formatIndianCurrency(Math.round(presentDiscounted).toString())}` : '';
 
     let updated = false;
     const nextFields = { ...fields };
@@ -867,11 +879,24 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       nextFields.presentPlotTotal = newPresentTotal;
       updated = true;
     }
+    if (fields.guidelineDiscountedTotal !== newGuidelineDiscountedTotal) {
+      nextFields.guidelineDiscountedTotal = newGuidelineDiscountedTotal;
+      updated = true;
+    }
+    if (fields.presentDiscountedTotal !== newPresentDiscountedTotal) {
+      nextFields.presentDiscountedTotal = newPresentDiscountedTotal;
+      updated = true;
+    }
     
     if (updated) {
       setFields(nextFields);
     }
-  }, [fields.guidelinePlotRows, fields.presentPlotRows, fields.guidelinePlotTotal, fields.presentPlotTotal]);
+  }, [
+    fields.guidelinePlotRows, fields.presentPlotRows, 
+    fields.guidelinePlotTotal, fields.presentPlotTotal,
+    fields.guidelineDiscountPercent, fields.presentDiscountPercent,
+    fields.guidelineDiscountedTotal, fields.presentDiscountedTotal
+  ]);
 
   const handleChange = useCallback((field: string, value: any) => {
     setFields(prev => ({ ...prev, [field]: value }));
@@ -2874,7 +2899,7 @@ Our valuation is based on information obtained from the client and on data gathe
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
                       <Field label="Total Guideline Plot Value"><input type="text" value={fields.guidelinePlotTotal} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
                       <Field label="Discount %"><input type="text" value={fields.guidelineDiscountPercent} onChange={e => handleChange('guidelineDiscountPercent', e.target.value)} className={inputCls} placeholder="e.g. 40" disabled={isReadOnly} /></Field>
-                      <Field label="Total Accessed Value (Post Discount)" span={2}><input type="text" value={fields.guidelineDiscountedTotal} onChange={e => handleChange('guidelineDiscountedTotal', e.target.value)} className={inputCls} placeholder="e.g. Rs. 16,92,84,000" disabled={isReadOnly} /></Field>
+                      <Field label={`Total Accessed Value Post Discounted reduction of ${fields.guidelineDiscountPercent || 0}% on Total Guideline Value`} span={2}><input type="text" value={fields.guidelineDiscountedTotal} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
                     </div>
                   </div>
 
@@ -2913,7 +2938,7 @@ Our valuation is based on information obtained from the client and on data gathe
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
                       <Field label="Total Fair Plot Value"><input type="text" value={fields.presentPlotTotal} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
                       <Field label="Discount %"><input type="text" value={fields.presentDiscountPercent} onChange={e => handleChange('presentDiscountPercent', e.target.value)} className={inputCls} placeholder="e.g. 40" disabled={isReadOnly} /></Field>
-                      <Field label="Total Present Plot Value (Post Discount)" span={2}><input type="text" value={fields.presentDiscountedTotal} onChange={e => handleChange('presentDiscountedTotal', e.target.value)} className={inputCls} placeholder="e.g. Rs. 18,13,45,500" disabled={isReadOnly} /></Field>
+                      <Field label={`Total Accessed Value Post Discounted reduction of ${fields.presentDiscountPercent || 0}% on Total Fair Market Value`} span={2}><input type="text" value={fields.presentDiscountedTotal} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
                     </div>
                   </div>
 
