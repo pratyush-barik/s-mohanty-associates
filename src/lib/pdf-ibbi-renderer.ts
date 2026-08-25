@@ -1107,8 +1107,9 @@ export class PDFIBBIRenderer {
     // Calculate column widths proportional to content
     const maxColChars = Array(numCols).fill(3);
     
+    // Increase minimum chars slightly to prevent tight wrapping on headers
     if (!isFullWidth(headers)) {
-      headers.forEach((h, i) => { if (h && h.length > maxColChars[i]) maxColChars[i] = h.length; });
+      headers.forEach((h, i) => { if (h && h.length + 2 > maxColChars[i]) maxColChars[i] = h.length + 2; });
     }
     
     for (const row of rows) {
@@ -1124,12 +1125,11 @@ export class PDFIBBIRenderer {
             cellText = match[2];
           }
         }
-        if (cellText.startsWith('!!RIGHT!!')) {
-          cellText = cellText.substring(9);
-        }
         
-        if (colspan === 1 && cellText.length > maxColChars[i]) {
-          maxColChars[i] = cellText.length;
+        cellText = cellText.replace(/^(!!RIGHT!!|!!CENTER!!|!!BOLD!!)+/g, '');
+        
+        if (colspan === 1 && cellText.length + 1 > maxColChars[i]) {
+          maxColChars[i] = cellText.length + 1;
         }
         i += colspan;
       }
@@ -1183,7 +1183,7 @@ export class PDFIBBIRenderer {
       let rowH = 0;
       
       if (rowIsFull) {
-        let txt = row[0].replace(/^!!RIGHT!!/, '');
+        let txt = row[0].replace(/^(!!RIGHT!!|!!CENTER!!|!!BOLD!!)+/g, '');
         const lines = this.wrapText(txt, CONTENT_W - rowPadX * 2, fontSize);
         rowH = lines.length * fontSize * LINE_HEIGHT + rowPadY * 2;
       } else {
@@ -1198,9 +1198,7 @@ export class PDFIBBIRenderer {
               cellText = match[2];
             }
           }
-          if (cellText.startsWith('!!RIGHT!!')) {
-            cellText = cellText.substring(9);
-          }
+          cellText = cellText.replace(/^(!!RIGHT!!|!!CENTER!!|!!BOLD!!)+/g, '');
           
           let cellW = 0;
           for (let i = 0; i < colspan && c + i < numCols; i++) {
@@ -1220,11 +1218,14 @@ export class PDFIBBIRenderer {
         let txt = row[0];
         let bold = false;
         let align: 'left' | 'center' | 'right' = 'left';
-        if (txt.startsWith('!!RIGHT!!')) {
-          txt = txt.substring(9);
-          align = 'right';
-          bold = true;
+        
+        while (txt.startsWith('!!')) {
+          if (txt.startsWith('!!RIGHT!!')) { align = 'right'; txt = txt.substring(9); }
+          else if (txt.startsWith('!!CENTER!!')) { align = 'center'; txt = txt.substring(10); }
+          else if (txt.startsWith('!!BOLD!!')) { bold = true; txt = txt.substring(8); }
+          else break;
         }
+        
         this.drawCell(x, this.cursorY, CONTENT_W, rowH, txt, { fontSize, bold, align });
       } else {
         for (let c = 0; c < numCols; c++) {
@@ -1240,10 +1241,12 @@ export class PDFIBBIRenderer {
               cellText = match[2];
             }
           }
-          if (cellText.startsWith('!!RIGHT!!')) {
-            cellText = cellText.substring(9);
-            align = 'right';
-            bold = true;
+          
+          while (cellText.startsWith('!!')) {
+            if (cellText.startsWith('!!RIGHT!!')) { align = 'right'; cellText = cellText.substring(9); }
+            else if (cellText.startsWith('!!CENTER!!')) { align = 'center'; cellText = cellText.substring(10); }
+            else if (cellText.startsWith('!!BOLD!!')) { bold = true; cellText = cellText.substring(8); }
+            else break;
           }
           
           let cellW = 0;

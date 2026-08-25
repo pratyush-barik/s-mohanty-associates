@@ -1696,14 +1696,14 @@ Our valuation is based on information obtained from the client and on data gathe
           const rows: string[][] = fields.guidelinePlotRows.map((row: GuidelinePlotRow) => [row.mouza, row.nature, row.owner, row.plotNo, row.khataNo, row.area, row.ratePerDec, row.amount]);
           if (fields.guidelinePlotTotal) {
             rows.push([
-              '!!SPAN:6!!!!RIGHT!!TOTAL GUIDELINE PLOT VALUE', '', '', '', '', '',
-              '!!RIGHT!!Rs.', fields.guidelinePlotTotal.replace('Rs.', '').trim()
+              '!!SPAN:7!!!!CENTER!!!!BOLD!!TOTAL GUIDELINE PLOT VALUE', '', '', '', '', '', '',
+              '!!BOLD!!' + fields.guidelinePlotTotal
             ]);
           }
           if (fields.guidelineDiscountedTotal) {
             rows.push([
-              `!!SPAN:6!!!!RIGHT!!Total Accessed Value Post Discounted reduction of ${fields.guidelineDiscountPercent || 0}% on Total Guideline Value`, '', '', '', '', '',
-              '!!RIGHT!!Rs.', fields.guidelineDiscountedTotal.replace('Rs.', '').trim()
+              `!!SPAN:7!!!!CENTER!!!!BOLD!!Total Accessed Value Post Discounted reduction of ${fields.guidelineDiscountPercent || 0}% on Total Guideline Value`, '', '', '', '', '', '',
+              '!!BOLD!!' + fields.guidelineDiscountedTotal
             ]);
           }
           r.drawDataTable(headers, rows);
@@ -1726,14 +1726,14 @@ Our valuation is based on information obtained from the client and on data gathe
           const rows: string[][] = fields.presentPlotRows.map((row: PresentPlotRow) => [row.mouza, row.nature, row.owner, row.plotNo, row.khataNo, row.area, row.ratePerDec, row.amount]);
           if (fields.presentPlotTotal) {
             rows.push([
-              '!!SPAN:6!!!!RIGHT!!TOTAL FAIR PLOT VALUE', '', '', '', '', '',
-              '!!RIGHT!!Rs.', fields.presentPlotTotal.replace('Rs.', '').trim()
+              '!!SPAN:7!!!!CENTER!!!!BOLD!!TOTAL FAIR PLOT VALUE', '', '', '', '', '', '',
+              '!!BOLD!!' + fields.presentPlotTotal
             ]);
           }
           if (fields.presentDiscountedTotal) {
             rows.push([
-              `!!SPAN:6!!!!RIGHT!!Total Accessed Value Post Discounted reduction of ${fields.presentDiscountPercent || 0}% on Total Fair Market Value`, '', '', '', '', '',
-              '!!RIGHT!!Rs.', fields.presentDiscountedTotal.replace('Rs.', '').trim()
+              `!!SPAN:7!!!!CENTER!!!!BOLD!!Total Accessed Value Post Discounted reduction of ${fields.presentDiscountPercent || 0}% on Total Fair Market Value`, '', '', '', '', '', '',
+              '!!BOLD!!' + fields.presentDiscountedTotal
             ]);
           }
           r.drawDataTable(headers, rows);
@@ -1896,14 +1896,14 @@ Our valuation is based on information obtained from the client and on data gathe
           const rows: string[][] = fields.guidelinePlotRows.map((row: GuidelinePlotRow) => [row.mouza, row.nature, row.plotNo, row.khataNo, row.area, row.ratePerDec, row.amount]);
           if (fields.guidelinePlotTotal) {
             rows.push([
-              '!!SPAN:5!!!!RIGHT!!TOTAL GUIDELINE PLOT VALUE', '', '', '', '',
-              '!!RIGHT!!Rs.', fields.guidelinePlotTotal.replace('Rs.', '').trim()
+              '!!SPAN:6!!!!CENTER!!!!BOLD!!TOTAL GUIDELINE PLOT VALUE', '', '', '', '', '',
+              '!!BOLD!!' + fields.guidelinePlotTotal
             ]);
           }
           if (fields.guidelineDiscountedTotal) {
             rows.push([
-              `!!SPAN:5!!!!RIGHT!!Total Accessed Value Post Discounted reduction of ${fields.guidelineDiscountPercent || 0}% on Total Guideline Value`, '', '', '', '',
-              '!!RIGHT!!Rs.', fields.guidelineDiscountedTotal.replace('Rs.', '').trim()
+              `!!SPAN:6!!!!CENTER!!!!BOLD!!Total Accessed Value Post Discounted reduction of ${fields.guidelineDiscountPercent || 0}% on Total Guideline Value`, '', '', '', '', '',
+              '!!BOLD!!' + fields.guidelineDiscountedTotal
             ]);
           }
           r.drawDataTable(headers, rows);
@@ -1940,14 +1940,14 @@ Our valuation is based on information obtained from the client and on data gathe
           const rows: string[][] = fields.presentPlotRows.map((row: PresentPlotRow) => [row.mouza, row.nature, row.plotNo, row.khataNo, row.area, row.ratePerDec, row.amount]);
           if (fields.presentPlotTotal) {
             rows.push([
-              '!!SPAN:5!!!!RIGHT!!TOTAL PRESENT MARKET VALUE PLOT', '', '', '', '',
-              '!!RIGHT!!Rs.', fields.presentPlotTotal.replace('Rs.', '').trim()
+              '!!SPAN:6!!!!CENTER!!!!BOLD!!TOTAL PRESENT MARKET VALUE PLOT', '', '', '', '', '',
+              '!!BOLD!!' + fields.presentPlotTotal
             ]);
           }
           if (fields.presentDiscountedTotal) {
             rows.push([
-              `!!SPAN:5!!!!RIGHT!!Total Accessed Value Post Discounted reduction of ${fields.presentDiscountPercent || 0}% on Total Fair Market Value`, '', '', '', '',
-              '!!RIGHT!!Rs.', fields.presentDiscountedTotal.replace('Rs.', '').trim()
+              `!!SPAN:6!!!!CENTER!!!!BOLD!!Total Accessed Value Post Discounted reduction of ${fields.presentDiscountPercent || 0}% on Total Fair Market Value`, '', '', '', '', '',
+              '!!BOLD!!' + fields.presentDiscountedTotal
             ]);
           }
           r.drawDataTable(headers, rows);
