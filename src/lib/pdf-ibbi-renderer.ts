@@ -1135,8 +1135,14 @@ export class PDFIBBIRenderer {
       }
     }
 
+    // Explicitly boost Mouza column to prevent wrapping due to long texts in other columns
+    if (headers[0] === 'Mouza') {
+      maxColChars[0] = Math.max(maxColChars[0], 12);
+    }
+
     const totalChars = maxColChars.reduce((a, b) => a + b, 0);
-    const colWidths = maxColChars.map(c => Math.max((c / totalChars) * CONTENT_W, 30));
+    // Increased absolute minimum width slightly from 30 to 35 to prevent single-word crushing
+    const colWidths = maxColChars.map(c => Math.max((c / totalChars) * CONTENT_W, 35));
 
     // Normalize widths to exactly fill CONTENT_W
     const widthSum = colWidths.reduce((a, b) => a + b, 0);
