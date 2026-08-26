@@ -469,8 +469,16 @@ export class PDFIBBIRenderer {
    * Matches the sample IBBI report table layout.
    * Advances cursor.
    */
-  drawSimpleRow(label: string, value: string): void {
-    const labelW = Math.round(CONTENT_W * 0.40);  // 40% for label
+  drawFullWidthRow(text: string, opts?: { bold?: boolean, align?: 'left' | 'center' | 'right' }): void {
+    const h = this.cellHeight(text, CONTENT_W, { bold: opts?.bold });
+    this.checkPageBreak(h);
+    this.drawCell(MARGIN_L, this.cursorY, CONTENT_W, h, text, {
+      bold: opts?.bold, align: opts?.align || 'left', vAlign: 'middle',
+    });
+    this.cursorY += h;
+  }
+
+  drawSimpleRow(label: string, value: string): void {    const labelW = Math.round(CONTENT_W * 0.40);  // 40% for label
     const valueW = CONTENT_W - labelW;             // 60% for value
 
     // Measure both sides to get max height

@@ -935,7 +935,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     const presentBldgVal = parseFloat(String(fields.presentValueOfBuildings || '').replace(/[^\d.]/g, '')) || 0;
     const totalPresentValNum = presentPlotVal + presentBldgVal;
     const newTotalPresentVal = fmt(totalPresentValNum);
-    const orSayPresentNum = Math.floor(totalPresentValNum / 100000) * 100000;
+    const orSayPresentNum = totalPresentValNum < 100000 ? totalPresentValNum : Math.floor(totalPresentValNum / 100000) * 100000;
     const newTotalPresentOrSay = fmt(orSayPresentNum);
     const newTotalPresentInWords = `TOTAL PRESENT VALUE IN WORDS - RUPEES ${rupeesInWords(orSayPresentNum).toUpperCase()} ONLY`;
 
@@ -1975,7 +1975,7 @@ Our valuation is based on information obtained from the client and on data gathe
           r.drawSimpleRow('Or Say', fields.totalPresentValueOrSay);
         }
         if (fields.totalPresentValueInWords) {
-          r.drawTextBlock(fields.totalPresentValueInWords, { bold: true, align: 'left' });
+          r.drawFullWidthRow(fields.totalPresentValueInWords, { bold: true });
         }
         r.advanceCursor(6);
 
