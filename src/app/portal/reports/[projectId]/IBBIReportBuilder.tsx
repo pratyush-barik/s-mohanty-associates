@@ -1894,7 +1894,7 @@ Our valuation is based on information obtained from the client and on data gathe
           r.advanceCursor(4);
           
           if (fields.depreciationDescFMV) {
-            r.drawTextBlock(fields.depreciationDescFMV);
+            r.drawTextBlock(`(${fields.depreciationDescFMV})`);
             r.advanceCursor(4);
           }
           if (fields.compoundWallValueFMV) {
@@ -1938,7 +1938,7 @@ Our valuation is based on information obtained from the client and on data gathe
           r.advanceCursor(4);
           
           if (fields.depreciationDescGuideline) {
-            r.drawTextBlock(fields.depreciationDescGuideline);
+            r.drawTextBlock(`(${fields.depreciationDescGuideline})`);
             r.advanceCursor(4);
           }
           if (fields.compoundWallValueGuideline) {
