@@ -1160,6 +1160,7 @@ export class PDFIBBIRenderer {
         }
         
         cellText = cellText.replace(/^(!!RIGHT!!|!!CENTER!!|!!BOLD!!)+/g, '');
+        cellText = cellText.replace(/^!!FONTSIZE:\d+!!/g, '');
         
         if (colspan === 1 && cellText.length + 1 > maxColChars[i]) {
           maxColChars[i] = cellText.length + 1;
@@ -1209,8 +1210,11 @@ export class PDFIBBIRenderer {
       if (rowIsFull) {
         let isBold = row[0].includes('!!BOLD!!');
         let txt = row[0].replace(/^(!!RIGHT!!|!!CENTER!!|!!BOLD!!)+/g, '');
-        const lines = this.wrapText(txt, CONTENT_W - CELL_PAD_X * 2, fontSize, isBold);
-        rowH = lines.length * fontSize * LINE_HEIGHT + CELL_PAD_Y * 2;
+        let cellFs = fontSize;
+        const fsMatch = txt.match(/^!!FONTSIZE:(\d+)!!/);
+        if (fsMatch) { cellFs = parseInt(fsMatch[1]); txt = txt.substring(fsMatch[0].length); }
+        const lines = this.wrapText(txt, CONTENT_W - CELL_PAD_X * 2, cellFs, isBold);
+        rowH = lines.length * cellFs * LINE_HEIGHT + CELL_PAD_Y * 2;
       } else {
         const cellHeights: number[] = [];
         for (let c = 0; c < numCols; c++) {
@@ -1228,13 +1232,16 @@ export class PDFIBBIRenderer {
             isBold = true;
           }
           cellText = cellText.replace(/^(!!RIGHT!!|!!CENTER!!|!!BOLD!!)+/g, '');
+          let cellFs = fontSize;
+          const fsMatch = cellText.match(/^!!FONTSIZE:(\d+)!!/);
+          if (fsMatch) { cellFs = parseInt(fsMatch[1]); cellText = cellText.substring(fsMatch[0].length); }
           
           let cellW = 0;
           for (let i = 0; i < colspan && c + i < numCols; i++) {
             cellW += finalWidths[c + i];
           }
-          const lines = this.wrapText(cellText, cellW - CELL_PAD_X * 2, fontSize, isBold);
-          cellHeights.push(lines.length * fontSize * LINE_HEIGHT + CELL_PAD_Y * 2);
+          const lines = this.wrapText(cellText, cellW - CELL_PAD_X * 2, cellFs, isBold);
+          cellHeights.push(lines.length * cellFs * LINE_HEIGHT + CELL_PAD_Y * 2);
           c += (colspan - 1);
         }
         rowH = Math.max(...cellHeights, fontSize * LINE_HEIGHT + CELL_PAD_Y * 2);
@@ -1280,6 +1287,7 @@ export class PDFIBBIRenderer {
         let txt = row[0];
         let bold = false;
         let align: 'left' | 'center' | 'right' = 'left';
+        let cellFs = fontSize;
         
         while (txt.startsWith('!!')) {
           if (txt.startsWith('!!RIGHT!!')) { align = 'right'; txt = txt.substring(9); }
@@ -1287,8 +1295,10 @@ export class PDFIBBIRenderer {
           else if (txt.startsWith('!!BOLD!!')) { bold = true; txt = txt.substring(8); }
           else break;
         }
+        const fsMatch2 = txt.match(/^!!FONTSIZE:(\d+)!!/);
+        if (fsMatch2) { cellFs = parseInt(fsMatch2[1]); txt = txt.substring(fsMatch2[0].length); }
         
-        this.drawCell(x, this.cursorY, CONTENT_W, rowH, txt, { fontSize, bold, align });
+        this.drawCell(x, this.cursorY, CONTENT_W, rowH, txt, { fontSize: cellFs, bold, align });
       } else {
         for (let c = 0; c < numCols; c++) {
           let cellText = row[c] || '';
@@ -1310,13 +1320,16 @@ export class PDFIBBIRenderer {
             else if (cellText.startsWith('!!BOLD!!')) { bold = true; cellText = cellText.substring(8); }
             else break;
           }
+          let cellFs2 = fontSize;
+          const fsMatch3 = cellText.match(/^!!FONTSIZE:(\d+)!!/);
+          if (fsMatch3) { cellFs2 = parseInt(fsMatch3[1]); cellText = cellText.substring(fsMatch3[0].length); }
           
           let cellW = 0;
           for (let i = 0; i < colspan && c + i < numCols; i++) {
             cellW += finalWidths[c + i];
           }
           
-          this.drawCell(x, this.cursorY, cellW, rowH, cellText, { fontSize, bold, align });
+          this.drawCell(x, this.cursorY, cellW, rowH, cellText, { fontSize: cellFs2, bold, align });
           x += cellW;
           c += (colspan - 1);
         }

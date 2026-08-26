@@ -1924,23 +1924,30 @@ Our valuation is based on information obtained from the client and on data gathe
                 '!!BOLD!!' + fields.totalShedFMV
               ]);
             }
+            if (fields.totalBuildingValueFMV) {
+              rows.push([
+                '!!SPAN:7!!!!BOLD!!TOTAL BUILDING VALUE', '', '', '', '', '', '',
+                '!!BOLD!!!!FONTSIZE:10!!' + fields.totalBuildingValueFMV
+              ]);
+            }
+            if (fields.depreciationDescFMV) {
+              rows.push([
+                '!!FONTSIZE:7!!(' + fields.depreciationDescFMV + ')', '', '', '', '', '', '', ''
+              ]);
+            }
+            if (fields.compoundWallValueFMV) {
+              rows.push([
+                '!!SPAN:7!!' + fields.compoundWallValueFMV, '', '', '', '', '', '',
+                '!!BOLD!!!!FONTSIZE:10!!' + (fields.compoundWallValueFMV.match(/Rs\.?\s*[\d,]+/i)?.[0] || '')
+              ]);
+            }
+            if (fields.totalBuildingShedComponentsFMV) {
+              rows.push([
+                '!!SPAN:7!!!!BOLD!!!!FONTSIZE:10!!Total BUILDING/SHED COMPONENTS', '', '', '', '', '', '',
+                '!!BOLD!!!!FONTSIZE:12!!' + fields.totalBuildingShedComponentsFMV
+              ]);
+            }
             r.drawDataTable(headers, rows);
-          }
-          r.advanceCursor(2);
-          if (fields.totalBuildingValueFMV) {
-            r.drawTextBlock(`TOTAL BUILDING VALUE: ${fields.totalBuildingValueFMV}`, { bold: true, align: 'right' });
-          }
-          r.advanceCursor(4);
-          
-          if (fields.depreciationDescFMV) {
-            r.drawTextBlock(`(${fields.depreciationDescFMV})`);
-            r.advanceCursor(4);
-          }
-          if (fields.compoundWallValueFMV) {
-            r.drawTextBlock(fields.compoundWallValueFMV, { align: 'left' });
-          }
-          if (fields.totalBuildingShedComponentsFMV) {
-            r.drawTextBlock(`TOTAL BUILDING/SHED COMPONENTS: ${fields.totalBuildingShedComponentsFMV}`, { bold: true, align: 'right' });
           }
           r.advanceCursor(6);
 
@@ -1972,23 +1979,30 @@ Our valuation is based on information obtained from the client and on data gathe
                 '!!BOLD!!' + fields.totalShedGuideline
               ]);
             }
+            if (fields.totalBuildingValueGuideline) {
+              rows.push([
+                '!!SPAN:7!!!!BOLD!!TOTAL BUILDING VALUE', '', '', '', '', '', '',
+                '!!BOLD!!!!FONTSIZE:10!!' + fields.totalBuildingValueGuideline
+              ]);
+            }
+            if (fields.depreciationDescGuideline) {
+              rows.push([
+                '!!FONTSIZE:7!!(' + fields.depreciationDescGuideline + ')', '', '', '', '', '', '', ''
+              ]);
+            }
+            if (fields.compoundWallValueGuideline) {
+              rows.push([
+                '!!SPAN:7!!' + fields.compoundWallValueGuideline, '', '', '', '', '', '',
+                '!!BOLD!!!!FONTSIZE:10!!' + (fields.compoundWallValueGuideline.match(/Rs\.?\s*[\d,]+/i)?.[0] || '')
+              ]);
+            }
+            if (fields.totalBuildingShedComponentsGuideline) {
+              rows.push([
+                '!!SPAN:7!!!!BOLD!!!!FONTSIZE:10!!Total BUILDING/SHED COMPONENTS', '', '', '', '', '', '',
+                '!!BOLD!!!!FONTSIZE:12!!' + fields.totalBuildingShedComponentsGuideline
+              ]);
+            }
             r.drawDataTable(headers, rows);
-          }
-          r.advanceCursor(2);
-          if (fields.totalBuildingValueGuideline) {
-            r.drawTextBlock(`TOTAL GUIDELINE BUILDING VALUE: ${fields.totalBuildingValueGuideline}`, { bold: true, align: 'right' });
-          }
-          r.advanceCursor(4);
-          
-          if (fields.depreciationDescGuideline) {
-            r.drawTextBlock(`(${fields.depreciationDescGuideline})`);
-            r.advanceCursor(4);
-          }
-          if (fields.compoundWallValueGuideline) {
-            r.drawTextBlock(fields.compoundWallValueGuideline, { align: 'left' });
-          }
-          if (fields.totalBuildingShedComponentsGuideline) {
-            r.drawTextBlock(`TOTAL GUIDELINE BUILDING/SHED COMPONENTS: ${fields.totalBuildingShedComponentsGuideline}`, { bold: true, align: 'right' });
           }
           r.advanceCursor(6);
         }
