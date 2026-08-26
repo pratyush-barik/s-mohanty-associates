@@ -947,6 +947,11 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     const newTotalBookOrSay = fmt(orSayBookNum);
     const newTotalBookInWords = `TOTAL BOOK VALUE IN WORDS - ${rupeesInWords(orSayBookNum).toUpperCase()}`;
 
+    const realisableNum = parseFloat(String(fields.realisableValueAmount || '').replace(/[^\d.]/g, '')) || 0;
+    const orSayRealisableNum = realisableNum < 100000 ? realisableNum : Math.floor(realisableNum / 100000) * 100000;
+    const newRealisableOrSay = fmt(orSayRealisableNum);
+    const newRealisableInWords = `TOTAL LIQUIDATION VALUE IN WORDS - ${rupeesInWords(orSayRealisableNum).toUpperCase()}`;
+
     const componentsFMV = totalBldgFMV + cwFmv;
     const newComponentsFMV = fmt(componentsFMV);
     
@@ -1007,6 +1012,9 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     if (fields.totalBookValue !== newTotalBookVal) { nextFields.totalBookValue = newTotalBookVal; updated = true; }
     if (fields.totalBookValueOrSay !== newTotalBookOrSay) { nextFields.totalBookValueOrSay = newTotalBookOrSay; updated = true; }
     if (fields.totalBookValueInWords !== newTotalBookInWords) { nextFields.totalBookValueInWords = newTotalBookInWords; updated = true; }
+
+    if (fields.realisableValueOrSay !== newRealisableOrSay) { nextFields.realisableValueOrSay = newRealisableOrSay; updated = true; }
+    if (fields.realisableValueInWords !== newRealisableInWords) { nextFields.realisableValueInWords = newRealisableInWords; updated = true; }
     
     if (fields.depreciationDescFMV !== newDepDescFMV) { nextFields.depreciationDescFMV = newDepDescFMV; updated = true; }
     if (fields.depreciationDescGuideline !== newDepDescGuideline) { nextFields.depreciationDescGuideline = newDepDescGuideline; updated = true; }
@@ -1029,6 +1037,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     fields.compoundWallLengthFMV, fields.compoundWallRateFMV,
     fields.presentValueOfPlot, fields.presentValueOfBuildings,
     fields.bookValueOfPlot, fields.bookValueOfBuildings,
+    fields.realisableValueAmount,
     fields.compoundWallLengthGuideline, fields.compoundWallRateGuideline,
     fields.cuttackCompoundWallLengthGuideline, fields.cuttackCompoundWallRateGuideline,
     fields.cuttackCompoundWallLengthPresent, fields.cuttackCompoundWallRatePresent,
@@ -2010,12 +2019,12 @@ Our valuation is based on information obtained from the client and on data gathe
           r.advanceCursor(4);
           r.drawTextBlock('The Realisable/Liquidation value of the property has been assumed @ 80% of Fair Market value keeping in view the present scenario i.e. location of plot, the present condition of plot & non availability of required documents in respect of the property & present condition of sheds & building & as the property is offered as distressed asset sale in open market place considering limited scope of purchasers in competitive open market.');
           r.advanceCursor(4);
-          r.drawTextBlock(`Realisable / Liquidation Value = ${fields.realisableValueAmount}`, { bold: true, align: 'right' });
+          r.drawSimpleRow('Realisable / Liquidation Value', 'Rs. ' + formatIndianCurrency(Math.round(parseFloat(String(fields.realisableValueAmount || '').replace(/[^\d.]/g, '')) || 0).toString()));
           if (fields.realisableValueOrSay) {
-            r.drawTextBlock(`Or Say = ${fields.realisableValueOrSay}`, { bold: true, align: 'right' });
+            r.drawSimpleRow('Or Say', fields.realisableValueOrSay);
           }
           if (fields.realisableValueInWords) {
-            r.drawTextBlock(`(${fields.realisableValueInWords})`, { bold: true, italic: true, align: 'right' });
+            r.drawFullWidthRow(fields.realisableValueInWords, { bold: true });
           }
           r.advanceCursor(6);
         }
@@ -2143,12 +2152,12 @@ Our valuation is based on information obtained from the client and on data gathe
           r.advanceCursor(4);
           r.drawTextBlock('The Realisable/Liquidation value of the property has been assumed @ 80% of Fair Market value keeping in view the present scenario i.e. location of plot, the present condition of plot & non availability of required documents in respect of the property & present condition of sheds & building & as the property is offered as distressed asset sale in open market place considering limited scope of purchasers in competitive open market.');
           r.advanceCursor(4);
-          r.drawTextBlock(`Realisable / Liquidation Value = ${fields.realisableValueAmount}`, { bold: true, align: 'right' });
+          r.drawSimpleRow('Realisable / Liquidation Value', 'Rs. ' + formatIndianCurrency(Math.round(parseFloat(String(fields.realisableValueAmount || '').replace(/[^\d.]/g, '')) || 0).toString()));
           if (fields.realisableValueOrSay) {
-            r.drawTextBlock(`Or Say = ${fields.realisableValueOrSay}`, { bold: true, align: 'right' });
+            r.drawSimpleRow('Or Say', fields.realisableValueOrSay);
           }
           if (fields.realisableValueInWords) {
-            r.drawTextBlock(`(${fields.realisableValueInWords})`, { bold: true, italic: true, align: 'right' });
+            r.drawFullWidthRow(fields.realisableValueInWords, { bold: true });
           }
           r.advanceCursor(6);
         }
@@ -3425,9 +3434,8 @@ Our valuation is based on information obtained from the client and on data gathe
                   <div className="border border-red-200 rounded-xl p-4 bg-red-50/30">
                     <h4 className="text-xs font-black text-red-800 uppercase tracking-wider mb-3">Realisable Value / Liquidation Value</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <Field label="Realisable/Liquidation Value (Rs)"><input type="text" value={fields.realisableValueAmount} onChange={e => handleChange('realisableValueAmount', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-                      <Field label="Or Say"><input type="text" value={fields.realisableValueOrSay} onChange={e => handleChange('realisableValueOrSay', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-                      <Field label="Liquidation Value in Words" span={2}><input type="text" value={fields.realisableValueInWords} onChange={e => handleChange('realisableValueInWords', e.target.value)} className={inputCls} placeholder="e.g. RUPEES FORTEEN CRORES SEVENTY SIX LAKHS ONLY" disabled={isReadOnly} /></Field>
+                      <Field label="Realisable/Liquidation Value (Rs)"><input type="text" value={fields.realisableValueAmount} onChange={e => handleChange('realisableValueAmount', e.target.value.replace(/[^\d.,]/g, ''))} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Or Say"><input type="text" value={fields.realisableValueOrSay || ''} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
                     </div>
                   </div>
                 </div>
