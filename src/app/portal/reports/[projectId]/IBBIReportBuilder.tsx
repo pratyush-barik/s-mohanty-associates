@@ -939,6 +939,14 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     const newTotalPresentOrSay = fmt(orSayPresentNum);
     const newTotalPresentInWords = `TOTAL PRESENT VALUE IN WORDS - ${rupeesInWords(orSayPresentNum).toUpperCase()}`;
 
+    const bookPlotVal = parseFloat(String(fields.bookValueOfPlot || '').replace(/[^\d.]/g, '')) || 0;
+    const bookBldgVal = parseFloat(String(fields.bookValueOfBuildings || '').replace(/[^\d.]/g, '')) || 0;
+    const totalBookValNum = bookPlotVal + bookBldgVal;
+    const newTotalBookVal = fmt(totalBookValNum);
+    const orSayBookNum = totalBookValNum < 100000 ? totalBookValNum : Math.floor(totalBookValNum / 100000) * 100000;
+    const newTotalBookOrSay = fmt(orSayBookNum);
+    const newTotalBookInWords = `TOTAL BOOK VALUE IN WORDS - ${rupeesInWords(orSayBookNum).toUpperCase()}`;
+
     const componentsFMV = totalBldgFMV + cwFmv;
     const newComponentsFMV = fmt(componentsFMV);
     
@@ -995,6 +1003,10 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     if (fields.totalPresentValue !== newTotalPresentVal) { nextFields.totalPresentValue = newTotalPresentVal; updated = true; }
     if (fields.totalPresentValueOrSay !== newTotalPresentOrSay) { nextFields.totalPresentValueOrSay = newTotalPresentOrSay; updated = true; }
     if (fields.totalPresentValueInWords !== newTotalPresentInWords) { nextFields.totalPresentValueInWords = newTotalPresentInWords; updated = true; }
+
+    if (fields.totalBookValue !== newTotalBookVal) { nextFields.totalBookValue = newTotalBookVal; updated = true; }
+    if (fields.totalBookValueOrSay !== newTotalBookOrSay) { nextFields.totalBookValueOrSay = newTotalBookOrSay; updated = true; }
+    if (fields.totalBookValueInWords !== newTotalBookInWords) { nextFields.totalBookValueInWords = newTotalBookInWords; updated = true; }
     
     if (fields.depreciationDescFMV !== newDepDescFMV) { nextFields.depreciationDescFMV = newDepDescFMV; updated = true; }
     if (fields.depreciationDescGuideline !== newDepDescGuideline) { nextFields.depreciationDescGuideline = newDepDescGuideline; updated = true; }
@@ -1016,6 +1028,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     fields.depreciationDescFMV, fields.depreciationDescGuideline,
     fields.compoundWallLengthFMV, fields.compoundWallRateFMV,
     fields.presentValueOfPlot, fields.presentValueOfBuildings,
+    fields.bookValueOfPlot, fields.bookValueOfBuildings,
     fields.compoundWallLengthGuideline, fields.compoundWallRateGuideline,
     fields.cuttackCompoundWallLengthGuideline, fields.cuttackCompoundWallRateGuideline,
     fields.cuttackCompoundWallLengthPresent, fields.cuttackCompoundWallRatePresent,
@@ -1980,14 +1993,14 @@ Our valuation is based on information obtained from the client and on data gathe
         r.advanceCursor(6);
 
         r.drawTextBlock('BOOK VALUE / GUIDELINE VALUE', { bold: true });
-        r.drawSimpleRow('Book Value of Plot', fields.bookValueOfPlot);
-        r.drawSimpleRow('Book Value of Buildings and Sheds', fields.bookValueOfBuildings);
+        r.drawSimpleRow('Book Value of Plot', 'Rs. ' + formatIndianCurrency(Math.round(parseFloat(String(fields.bookValueOfPlot || '').replace(/[^\d.]/g, '')) || 0).toString()));
+        r.drawSimpleRow('Book Value of Buildings and Sheds', 'Rs. ' + formatIndianCurrency(Math.round(parseFloat(String(fields.bookValueOfBuildings || '').replace(/[^\d.]/g, '')) || 0).toString()));
         r.drawSimpleRow('Total Book Value', fields.totalBookValue);
         if (fields.totalBookValueOrSay) {
-          r.drawTextBlock(`Or Say: ${fields.totalBookValueOrSay}`, { bold: true, align: 'right' });
+          r.drawSimpleRow('Or Say', fields.totalBookValueOrSay);
         }
         if (fields.totalBookValueInWords) {
-          r.drawTextBlock(`(${fields.totalBookValueInWords})`, { bold: true, italic: true, align: 'right' });
+          r.drawFullWidthRow(fields.totalBookValueInWords, { bold: true });
         }
         r.advanceCursor(6);
 
@@ -3401,11 +3414,10 @@ Our valuation is based on information obtained from the client and on data gathe
                     </div>
                     <p className="text-[10px] font-bold text-neutral-400 uppercase mt-4 mb-2">Book Value / Guideline Value</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <Field label="Book Value of Plot"><input type="text" value={fields.bookValueOfPlot} onChange={e => handleChange('bookValueOfPlot', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-                      <Field label="Book Value of Buildings and Sheds"><input type="text" value={fields.bookValueOfBuildings} onChange={e => handleChange('bookValueOfBuildings', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-                      <Field label="Total Book Value"><input type="text" value={fields.totalBookValue} onChange={e => handleChange('totalBookValue', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-                      <Field label="Or Say"><input type="text" value={fields.totalBookValueOrSay} onChange={e => handleChange('totalBookValueOrSay', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-                      <Field label="Total Book Value in Words" span={2}><input type="text" value={fields.totalBookValueInWords} onChange={e => handleChange('totalBookValueInWords', e.target.value)} className={inputCls} placeholder="e.g. RUPEES SEVENTEEN CRORES TWENTY LAKHS ONLY" disabled={isReadOnly} /></Field>
+                      <Field label="Book Value of Plot"><input type="text" value={fields.bookValueOfPlot} onChange={e => handleChange('bookValueOfPlot', e.target.value.replace(/[^\d.,]/g, ''))} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Book Value of Buildings and Sheds"><input type="text" value={fields.bookValueOfBuildings} onChange={e => handleChange('bookValueOfBuildings', e.target.value.replace(/[^\d.,]/g, ''))} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Total Book Value"><input type="text" value={fields.totalBookValue || ''} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
+                      <Field label="Or Say"><input type="text" value={fields.totalBookValueOrSay || ''} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
                     </div>
                   </div>
 
