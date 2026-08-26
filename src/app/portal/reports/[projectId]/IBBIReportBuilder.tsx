@@ -1903,24 +1903,28 @@ Our valuation is based on information obtained from the client and on data gathe
           r.drawTextBlock('RCC Roof Structure:', { bold: true });
           if (fields.rccRowsFMV && fields.rccRowsFMV.length > 0) {
             const headers = ['Sl', 'Area particular', 'Plinth area', 'Age', 'Rate/sft.', 'Replacement cost', `Depreciation (${String(fields.rccDepreciationPercentFMV || 0).replace(/%/g, '')}%)`, 'Net value'];
-            const rows = fields.rccRowsFMV.map((row: BuildingCostRow) => [row.sl, row.areaParticular, row.plinthArea, row.age, row.rateSft, row.replacementCost, row.depreciation, row.netValue]);
+            const rows: string[][] = fields.rccRowsFMV.map((row: BuildingCostRow) => [row.sl, row.areaParticular, row.plinthArea, row.age, row.rateSft, row.replacementCost, row.depreciation, row.netValue]);
+            if (fields.totalRccFMV) {
+              rows.push([
+                '!!SPAN:7!!!!CENTER!!!!BOLD!!TOTAL OF RCC ROOF STRUCTURE', '', '', '', '', '', '',
+                '!!BOLD!!' + fields.totalRccFMV
+              ]);
+            }
             r.drawDataTable(headers, rows);
-            r.advanceCursor(2);
-          }
-          if (fields.totalRccFMV) {
-            r.drawTextBlock(`TOTAL OF RCC ROOF STRUCTURE: ${fields.totalRccFMV}`, { bold: true, align: 'right' });
           }
           r.advanceCursor(4);
           
           r.drawTextBlock('Shed Structure:', { bold: true });
           if (fields.shedRowsFMV && fields.shedRowsFMV.length > 0) {
             const headers = ['Sl', 'Area particular', 'Plinth area', 'Age', 'Rate/sft.', 'Replacement cost', `Depreciation (${String(fields.shedDepreciationPercentFMV || 0).replace(/%/g, '')}%)`, 'Net value'];
-            const rows = fields.shedRowsFMV.map((row: BuildingCostRow) => [row.sl, row.areaParticular, row.plinthArea, row.age, row.rateSft, row.replacementCost, row.depreciation, row.netValue]);
+            const rows: string[][] = fields.shedRowsFMV.map((row: BuildingCostRow) => [row.sl, row.areaParticular, row.plinthArea, row.age, row.rateSft, row.replacementCost, row.depreciation, row.netValue]);
+            if (fields.totalShedFMV) {
+              rows.push([
+                '!!SPAN:7!!!!CENTER!!!!BOLD!!TOTAL OF SHED STRUCTURE', '', '', '', '', '', '',
+                '!!BOLD!!' + fields.totalShedFMV
+              ]);
+            }
             r.drawDataTable(headers, rows);
-            r.advanceCursor(2);
-          }
-          if (fields.totalShedFMV) {
-            r.drawTextBlock(`TOTAL OF SHED STRUCTURE: ${fields.totalShedFMV}`, { bold: true, align: 'right' });
           }
           r.advanceCursor(2);
           if (fields.totalBuildingValueFMV) {
@@ -1947,24 +1951,28 @@ Our valuation is based on information obtained from the client and on data gathe
           r.drawTextBlock('RCC Roof Structure:', { bold: true });
           if (fields.rccRowsGuideline && fields.rccRowsGuideline.length > 0) {
             const headers = ['Sl', 'Area particular', 'Plinth area', 'Age', 'Rate/sft.', 'Replacement cost', `Depreciation (${String(fields.rccDepreciationPercentGuideline || 0).replace(/%/g, '')}%)`, 'Net value'];
-            const rows = fields.rccRowsGuideline.map((row: BuildingCostRow) => [row.sl, row.areaParticular, row.plinthArea, row.age, row.rateSft, row.replacementCost, row.depreciation, row.netValue]);
+            const rows: string[][] = fields.rccRowsGuideline.map((row: BuildingCostRow) => [row.sl, row.areaParticular, row.plinthArea, row.age, row.rateSft, row.replacementCost, row.depreciation, row.netValue]);
+            if (fields.totalRccGuideline) {
+              rows.push([
+                '!!SPAN:7!!!!CENTER!!!!BOLD!!TOTAL OF RCC ROOF STRUCTURE', '', '', '', '', '', '',
+                '!!BOLD!!' + fields.totalRccGuideline
+              ]);
+            }
             r.drawDataTable(headers, rows);
-            r.advanceCursor(2);
-          }
-          if (fields.totalRccGuideline) {
-            r.drawTextBlock(`TOTAL OF RCC ROOF STRUCTURE: ${fields.totalRccGuideline}`, { bold: true, align: 'right' });
           }
           r.advanceCursor(4);
           
           r.drawTextBlock('Shed Structure:', { bold: true });
           if (fields.shedRowsGuideline && fields.shedRowsGuideline.length > 0) {
             const headers = ['Sl', 'Area particular', 'Plinth area', 'Age', 'Rate/sft.', 'Replacement cost', `Depreciation (${String(fields.shedDepreciationPercentGuideline || 0).replace(/%/g, '')}%)`, 'Net value'];
-            const rows = fields.shedRowsGuideline.map((row: BuildingCostRow) => [row.sl, row.areaParticular, row.plinthArea, row.age, row.rateSft, row.replacementCost, row.depreciation, row.netValue]);
+            const rows: string[][] = fields.shedRowsGuideline.map((row: BuildingCostRow) => [row.sl, row.areaParticular, row.plinthArea, row.age, row.rateSft, row.replacementCost, row.depreciation, row.netValue]);
+            if (fields.totalShedGuideline) {
+              rows.push([
+                '!!SPAN:7!!!!CENTER!!!!BOLD!!TOTAL OF SHED STRUCTURE', '', '', '', '', '', '',
+                '!!BOLD!!' + fields.totalShedGuideline
+              ]);
+            }
             r.drawDataTable(headers, rows);
-            r.advanceCursor(2);
-          }
-          if (fields.totalShedGuideline) {
-            r.drawTextBlock(`TOTAL OF SHED STRUCTURE: ${fields.totalShedGuideline}`, { bold: true, align: 'right' });
           }
           r.advanceCursor(2);
           if (fields.totalBuildingValueGuideline) {
