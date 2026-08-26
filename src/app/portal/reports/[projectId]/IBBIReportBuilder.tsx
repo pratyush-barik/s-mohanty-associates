@@ -845,14 +845,15 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
   }, [projectId, fields, isReadOnly]);
 
     useEffect(() => {
-    const calcTotal = (rows: any[]) => {
-      const sum = rows.reduce((acc, row) => {
-        const cleanAmount = (row.amount || '').replace(/[^0-9.]/g, '');
+    const calcTotalByField = (rows: any[], field: string) => {
+      return rows.reduce((acc, row) => {
+        const cleanAmount = String(row[field] || '').replace(/[^0-9.]/g, '');
         const val = parseFloat(cleanAmount);
         return acc + (isNaN(val) ? 0 : val);
       }, 0);
-      return sum;
     };
+
+    const calcTotal = (rows: any[]) => calcTotalByField(rows, 'amount');
 
     const guidelineSum = calcTotal(fields.guidelinePlotRows || []);
     const presentSum = calcTotal(fields.presentPlotRows || []);
@@ -868,6 +869,29 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
     const newGuidelineDiscountedTotal = guidelineDiscounted > 0 ? `Rs. ${formatIndianCurrency(Math.round(guidelineDiscounted).toString())}` : '';
     const newPresentDiscountedTotal = presentDiscounted > 0 ? `Rs. ${formatIndianCurrency(Math.round(presentDiscounted).toString())}` : '';
+
+    
+    const rccFMVSum = calcTotalByField(fields.rccRowsFMV || [], 'netValue');
+    const shedFMVSum = calcTotalByField(fields.shedRowsFMV || [], 'netValue');
+    const totalBldgFMV = rccFMVSum + shedFMVSum;
+    
+    const rccGuidelineSum = calcTotalByField(fields.rccRowsGuideline || [], 'netValue');
+    const shedGuidelineSum = calcTotalByField(fields.shedRowsGuideline || [], 'netValue');
+    const totalBldgGuideline = rccGuidelineSum + shedGuidelineSum;
+
+    const cuttackBldgSum = calcTotalByField(fields.cuttackBuildingRows || [], 'netValue');
+
+    const fmt = (val: number) => val > 0 ? `Rs. ${formatIndianCurrency(Math.round(val).toString())}` : '';
+
+    const newRccFMV = fmt(rccFMVSum);
+    const newShedFMV = fmt(shedFMVSum);
+    const newTotalBldgFMV = fmt(totalBldgFMV);
+    
+    const newRccGuideline = fmt(rccGuidelineSum);
+    const newShedGuideline = fmt(shedGuidelineSum);
+    const newTotalBldgGuideline = fmt(totalBldgGuideline);
+    
+    const newCuttackBldgTotal = fmt(cuttackBldgSum);
 
     let updated = false;
     const nextFields = { ...fields };
@@ -888,6 +912,17 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       updated = true;
     }
     
+
+    if (fields.totalRccFMV !== newRccFMV) { nextFields.totalRccFMV = newRccFMV; updated = true; }
+    if (fields.totalShedFMV !== newShedFMV) { nextFields.totalShedFMV = newShedFMV; updated = true; }
+    if (fields.totalBuildingValueFMV !== newTotalBldgFMV) { nextFields.totalBuildingValueFMV = newTotalBldgFMV; updated = true; }
+    
+    if (fields.totalRccGuideline !== newRccGuideline) { nextFields.totalRccGuideline = newRccGuideline; updated = true; }
+    if (fields.totalShedGuideline !== newShedGuideline) { nextFields.totalShedGuideline = newShedGuideline; updated = true; }
+    if (fields.totalBuildingValueGuideline !== newTotalBldgGuideline) { nextFields.totalBuildingValueGuideline = newTotalBldgGuideline; updated = true; }
+    
+    if (fields.cuttackBuildingTotal !== newCuttackBldgTotal) { nextFields.cuttackBuildingTotal = newCuttackBldgTotal; updated = true; }
+
     if (updated) {
       setFields(nextFields);
     }
@@ -895,7 +930,11 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     fields.guidelinePlotRows, fields.presentPlotRows, 
     fields.guidelinePlotTotal, fields.presentPlotTotal,
     fields.guidelineDiscountPercent, fields.presentDiscountPercent,
-    fields.guidelineDiscountedTotal, fields.presentDiscountedTotal
+    fields.guidelineDiscountedTotal, fields.presentDiscountedTotal,
+    fields.rccRowsFMV, fields.shedRowsFMV, fields.rccRowsGuideline, fields.shedRowsGuideline, fields.cuttackBuildingRows,
+    fields.totalRccFMV, fields.totalShedFMV, fields.totalBuildingValueFMV,
+    fields.totalRccGuideline, fields.totalShedGuideline, fields.totalBuildingValueGuideline,
+    fields.cuttackBuildingTotal
   ]);
 
   const handleChange = useCallback((field: string, value: any) => {
@@ -3064,7 +3103,7 @@ Our valuation is based on information obtained from the client and on data gathe
                             });
                             handleChange('rccRowsFMV', newRows);
                           }} className={inputCls} disabled={isReadOnly} /></Field>
-                          <Field label="Total of RCC Roof Structure"><input type="text" value={fields.totalRccFMV} onChange={e => handleChange('totalRccFMV', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                          <Field label="Total of RCC Roof Structure"><input type="text" value={fields.totalRccFMV} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
                         </div>
 
                         <p className="text-[10px] font-bold text-neutral-400 uppercase mt-4 mb-2">Shed Structure</p>
@@ -3123,8 +3162,8 @@ Our valuation is based on information obtained from the client and on data gathe
                             });
                             handleChange('shedRowsFMV', newRows);
                           }} className={inputCls} disabled={isReadOnly} /></Field>
-                          <Field label="Total of Shed Structure"><input type="text" value={fields.totalShedFMV} onChange={e => handleChange('totalShedFMV', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-                          <Field label="Total Building Value"><input type="text" value={fields.totalBuildingValueFMV} onChange={e => handleChange('totalBuildingValueFMV', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                          <Field label="Total of Shed Structure"><input type="text" value={fields.totalShedFMV} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
+                          <Field label="Total Building Value"><input type="text" value={fields.totalBuildingValueFMV} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
                           <Field label="Compound Wall Value"><input type="text" value={fields.compoundWallValueFMV} onChange={e => handleChange('compoundWallValueFMV', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
                           <Field label="Depreciation Description" span={2}><textarea rows={2} value={fields.depreciationDescFMV} onChange={e => handleChange('depreciationDescFMV', e.target.value)} className={inputCls + ' resize-none'} disabled={isReadOnly} /></Field>
                           <Field label="Total Building/Shed Components" span={2}><input type="text" value={fields.totalBuildingShedComponentsFMV} onChange={e => handleChange('totalBuildingShedComponentsFMV', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
@@ -3190,7 +3229,7 @@ Our valuation is based on information obtained from the client and on data gathe
                             });
                             handleChange('rccRowsGuideline', newRows);
                           }} className={inputCls} disabled={isReadOnly} /></Field>
-                          <Field label="Total of RCC Roof Structure"><input type="text" value={fields.totalRccGuideline} onChange={e => handleChange('totalRccGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                          <Field label="Total of RCC Roof Structure"><input type="text" value={fields.totalRccGuideline} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
                         </div>
 
                         <p className="text-[10px] font-bold text-neutral-400 uppercase mt-4 mb-2">Shed Structure</p>
@@ -3249,8 +3288,8 @@ Our valuation is based on information obtained from the client and on data gathe
                             });
                             handleChange('shedRowsGuideline', newRows);
                           }} className={inputCls} disabled={isReadOnly} /></Field>
-                          <Field label="Total of Shed Structure"><input type="text" value={fields.totalShedGuideline} onChange={e => handleChange('totalShedGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-                          <Field label="Total Guideline Building Value"><input type="text" value={fields.totalBuildingValueGuideline} onChange={e => handleChange('totalBuildingValueGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                          <Field label="Total of Shed Structure"><input type="text" value={fields.totalShedGuideline} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
+                          <Field label="Total Guideline Building Value"><input type="text" value={fields.totalBuildingValueGuideline} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
                           <Field label="Compound Wall Value"><input type="text" value={fields.compoundWallValueGuideline} onChange={e => handleChange('compoundWallValueGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
                           <Field label="Depreciation Description" span={2}><textarea rows={2} value={fields.depreciationDescGuideline} onChange={e => handleChange('depreciationDescGuideline', e.target.value)} className={inputCls + ' resize-none'} disabled={isReadOnly} /></Field>
                           <Field label="Total Guideline Building/Shed Components" span={2}><input type="text" value={fields.totalBuildingShedComponentsGuideline} onChange={e => handleChange('totalBuildingShedComponentsGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
@@ -3448,7 +3487,7 @@ Our valuation is based on information obtained from the client and on data gathe
                             });
                             handleChange('cuttackBuildingRows', newRows);
                           }} className={inputCls} disabled={isReadOnly} /></Field>
-                      <Field label="Total"><input type="text" value={fields.cuttackBuildingTotal} onChange={e => handleChange('cuttackBuildingTotal', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Total"><input type="text" value={fields.cuttackBuildingTotal} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
                       <Field label="Total Land and Building/Shed Components"><input type="text" value={fields.cuttackBuildingComponentsTotal} onChange={e => handleChange('cuttackBuildingComponentsTotal', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
                       <Field label="Or Say"><input type="text" value={fields.cuttackBuildingOrSay} onChange={e => handleChange('cuttackBuildingOrSay', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
                       <Field label="Building Value in Words" span={2}><input type="text" value={fields.cuttackBuildingInWords} onChange={e => handleChange('cuttackBuildingInWords', e.target.value)} className={inputCls} placeholder="e.g. SIXTEEN LAKHS SIXTY THREE THOUSAND RUPEES ONLY" disabled={isReadOnly} /></Field>
