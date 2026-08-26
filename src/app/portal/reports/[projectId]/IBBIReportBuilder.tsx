@@ -1705,7 +1705,7 @@ Our valuation is based on information obtained from the client and on data gathe
           }
           if (fields.guidelineDiscountedTotal) {
             rows.push([
-              `!!SPAN:7!!!!CENTER!!!!BOLD!!Total Accessed Value Post Discounted reduction of ${fields.guidelineDiscountPercent || 0}% on Total Guideline Value`, '', '', '', '', '', '',
+              `!!SPAN:7!!!!CENTER!!!!BOLD!!Total Accessed Value Post Discounted reduction of ${String(fields.guidelineDiscountPercent || 0).replace(/%/g, '')}% on Total Guideline Value`, '', '', '', '', '', '',
               '!!BOLD!!' + fields.guidelineDiscountedTotal
             ]);
           }
@@ -1713,7 +1713,7 @@ Our valuation is based on information obtained from the client and on data gathe
           r.advanceCursor(6);
         } else {
           if (fields.guidelinePlotTotal) r.drawTextBlock(`TOTAL GUIDELINE PLOT VALUE: ${fields.guidelinePlotTotal}`, { bold: true, align: 'right' });
-          if (fields.guidelineDiscountedTotal) r.drawTextBlock(`Total Accessed Value Post Discounted reduction of ${fields.guidelineDiscountPercent || 0}% on Total Guideline Value = ${fields.guidelineDiscountedTotal}`, { bold: true, align: 'right' });
+          if (fields.guidelineDiscountedTotal) r.drawTextBlock(`Total Accessed Value Post Discounted reduction of ${String(fields.guidelineDiscountPercent || 0).replace(/%/g, '')}% on Total Guideline Value = ${fields.guidelineDiscountedTotal}`, { bold: true, align: 'right' });
           r.advanceCursor(6);
         }
 
@@ -1735,7 +1735,7 @@ Our valuation is based on information obtained from the client and on data gathe
           }
           if (fields.presentDiscountedTotal) {
             rows.push([
-              `!!SPAN:7!!!!CENTER!!!!BOLD!!Total Present Plot Value Post Discounted reduction of ${fields.presentDiscountPercent || 0}% on Total FAIR Value`, '', '', '', '', '', '',
+              `!!SPAN:7!!!!CENTER!!!!BOLD!!Total Present Plot Value Post Discounted reduction of ${String(fields.presentDiscountPercent || 0).replace(/%/g, '')}% on Total FAIR Value`, '', '', '', '', '', '',
               '!!BOLD!!' + fields.presentDiscountedTotal
             ]);
           }
@@ -1743,7 +1743,7 @@ Our valuation is based on information obtained from the client and on data gathe
           r.advanceCursor(6);
         } else {
           if (fields.presentPlotTotal) r.drawTextBlock(`TOTAL FAIR PLOT VALUE: ${fields.presentPlotTotal}`, { bold: true, align: 'right' });
-          if (fields.presentDiscountedTotal) r.drawTextBlock(`Total Present Plot Value Post Discounted reduction of ${fields.presentDiscountPercent || 0}% on Total FAIR Value = ${fields.presentDiscountedTotal}`, { bold: true, align: 'right' });
+          if (fields.presentDiscountedTotal) r.drawTextBlock(`Total Present Plot Value Post Discounted reduction of ${String(fields.presentDiscountPercent || 0).replace(/%/g, '')}% on Total FAIR Value = ${fields.presentDiscountedTotal}`, { bold: true, align: 'right' });
           r.advanceCursor(6);
         }
 
@@ -1905,7 +1905,7 @@ Our valuation is based on information obtained from the client and on data gathe
           }
           if (fields.guidelineDiscountedTotal) {
             rows.push([
-              `!!SPAN:6!!!!CENTER!!!!BOLD!!Total Accessed Value Post Discounted reduction of ${fields.guidelineDiscountPercent || 0}% on Total Guideline Value`, '', '', '', '', '',
+              `!!SPAN:6!!!!CENTER!!!!BOLD!!Total Accessed Value Post Discounted reduction of ${String(fields.guidelineDiscountPercent || 0).replace(/%/g, '')}% on Total Guideline Value`, '', '', '', '', '',
               '!!BOLD!!' + fields.guidelineDiscountedTotal
             ]);
           }
@@ -1949,7 +1949,7 @@ Our valuation is based on information obtained from the client and on data gathe
           }
           if (fields.presentDiscountedTotal) {
             rows.push([
-              `!!SPAN:6!!!!CENTER!!!!BOLD!!Total Present Plot Value Post Discounted reduction of ${fields.presentDiscountPercent || 0}% on Total FAIR Value`, '', '', '', '', '',
+              `!!SPAN:6!!!!CENTER!!!!BOLD!!Total Present Plot Value Post Discounted reduction of ${String(fields.presentDiscountPercent || 0).replace(/%/g, '')}% on Total FAIR Value`, '', '', '', '', '',
               '!!BOLD!!' + fields.presentDiscountedTotal
             ]);
           }
@@ -2942,7 +2942,7 @@ Our valuation is based on information obtained from the client and on data gathe
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
                       <Field label="Total Guideline Plot Value"><input type="text" value={fields.guidelinePlotTotal} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
                       <Field label="Discount %"><input type="text" value={fields.guidelineDiscountPercent} onChange={e => handleChange('guidelineDiscountPercent', e.target.value)} className={inputCls} placeholder="e.g. 40" disabled={isReadOnly} /></Field>
-                      <Field label={`Total Accessed Value Post Discounted reduction of ${fields.guidelineDiscountPercent || 0}% on Total Guideline Value`} span={2}><input type="text" value={fields.guidelineDiscountedTotal} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
+                      <Field label={`Total Accessed Value Post Discounted reduction of ${String(fields.guidelineDiscountPercent || 0).replace(/%/g, '')}% on Total Guideline Value`} span={2}><input type="text" value={fields.guidelineDiscountedTotal} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
                     </div>
                   </div>
 
@@ -2981,7 +2981,7 @@ Our valuation is based on information obtained from the client and on data gathe
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
                       <Field label="Total Fair Plot Value"><input type="text" value={fields.presentPlotTotal} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
                       <Field label="Discount %"><input type="text" value={fields.presentDiscountPercent} onChange={e => handleChange('presentDiscountPercent', e.target.value)} className={inputCls} placeholder="e.g. 40" disabled={isReadOnly} /></Field>
-                      <Field label={`Total Present Plot Value Post Discounted reduction of ${fields.presentDiscountPercent || 0}% on Total FAIR Value`} span={2}><input type="text" value={fields.presentDiscountedTotal} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
+                      <Field label={`Total Present Plot Value Post Discounted reduction of ${String(fields.presentDiscountPercent || 0).replace(/%/g, '')}% on Total FAIR Value`} span={2}><input type="text" value={fields.presentDiscountedTotal} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
                     </div>
                   </div>
 
