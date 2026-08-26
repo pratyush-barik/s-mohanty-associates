@@ -469,6 +469,31 @@ export class PDFIBBIRenderer {
    * Matches the sample IBBI report table layout.
    * Advances cursor.
    */
+  drawCustomSplitRow(
+    col1: string, col2: string, 
+    col1Pct: number = 0.8, 
+    opts?: { col1Bold?: boolean, col2Bold?: boolean, col1Align?: 'left'|'center'|'right'|'justify', col2Align?: 'left'|'center'|'right'|'justify' }
+  ): void {
+    const col1W = Math.round(CONTENT_W * col1Pct);
+    const col2W = CONTENT_W - col1W;
+
+    const h1 = this.cellHeight(col1, col1W, { bold: opts?.col1Bold });
+    const h2 = this.cellHeight(col2, col2W, { bold: opts?.col2Bold });
+    const h = Math.max(h1, h2);
+
+    this.checkPageBreak(h);
+
+    this.drawCell(MARGIN_L, this.cursorY, col1W, h, col1, {
+      bold: opts?.col1Bold, vAlign: 'middle', align: opts?.col1Align as any || 'left'
+    });
+
+    this.drawCell(MARGIN_L + col1W, this.cursorY, col2W, h, col2, {
+      bold: opts?.col2Bold, vAlign: 'middle', align: opts?.col2Align as any || 'left'
+    });
+
+    this.cursorY += h;
+  }
+
   drawFullWidthRow(text: string, opts?: { bold?: boolean, align?: 'left' | 'center' | 'right' }): void {
     const h = this.cellHeight(text, CONTENT_W, { bold: opts?.bold });
     this.checkPageBreak(h);

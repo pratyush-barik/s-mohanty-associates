@@ -2015,13 +2015,13 @@ Our valuation is based on information obtained from the client and on data gathe
 
         // ─── REALISABLE / LIQUIDATION VALUE ───
         if (fields.realisableValueAmount) {
-          r.drawTextBlock('REALISABLE VALUE / LIQUIDATION VALUE', { bold: true, underline: true });
-          r.advanceCursor(4);
-          r.drawTextBlock('The Realisable/Liquidation value of the property has been assumed @ 80% of Fair Market value keeping in view the present scenario i.e. location of plot, the present condition of plot & non availability of required documents in respect of the property & present condition of sheds & building & as the property is offered as distressed asset sale in open market place considering limited scope of purchasers in competitive open market.');
-          r.advanceCursor(4);
-          r.drawSimpleRow('Realisable / Liquidation Value', 'Rs. ' + formatIndianCurrency(Math.round(parseFloat(String(fields.realisableValueAmount || '').replace(/[^\d.]/g, '')) || 0).toString()));
+          const defaultDesc = "FAIR MARKET VALUE REPRESENTS THE PRICE A PROPERTY WOULD BE SOLD IN AN OPEN MARKET BETWEEN KNOWLEDGEABLE, WILLING PARTIES, WHEREAS REALISABLE VALUE DEDUCTS THE ESTIMATED COSTS THAT WOULD BE INCURRED TO COMPLETE THE SALE FROM THAT MARKET VALUE, REFLECTING THE ACTUAL AMOUNT LIKELY OBTAINED AFTER SELLING EXPENSES ARE PAID IN NORMAL CIRCUMSTANCES. AS PER RBI GUIDELINES THE COSTS MAY INCLUE BUT NOT LIMITED TO TAXES, LEGAL CHARGES, MARKETING EXPENSES, TRANSACTIONS CHARGES AND COMMISSIONS. IF TRANSACTION IS TO BE CARRIED OUT UNDER FORCED OR DISTRESSED CONDITIONS THEN THE COMMERCIAL VIABILITY IS DRASTICALLTY AFFECTED OWING TO DISTRESS TRANCTION WITHIN STIPULATED TIME FRAME SET BY HONOUABLE COURTS AND EXISTING LEGAL AND BREACH OF CONTRACT RISK. SUCH A TRANSACTION WILL RESULT IN LACK OF DEMAND AND STRONG NEGOTIATION ON BUYERS FRONT HENCE WE ARRIVE AT REDUCTION OF 20% FURTHER TO THE PRESENT VALUE OF THE PROPERTY INORDER TO FACILIATE SALE  AND COMPLY WITH ALL THE LIQUIADATION CONDITIONS AND WITHIN FIXED TIMELINES SET FOR PROCESS COMPLETION";
+          const desc = fields.realisableValueDesc || defaultDesc;
+          
+          r.drawSectionHeader('REALISABLE VALUE / LIQUIDATION VALUE');
+          r.drawCustomSplitRow(desc, 'Rs. ' + formatIndianCurrency(Math.round(parseFloat(String(fields.realisableValueAmount || '').replace(/[^\d.]/g, '')) || 0).toString()), 0.77, { col1Bold: true, col2Bold: true, col1Align: 'justify', col2Align: 'left' });
           if (fields.realisableValueOrSay) {
-            r.drawSimpleRow('Or Say', fields.realisableValueOrSay);
+            r.drawCustomSplitRow('OR SAY', fields.realisableValueOrSay, 0.77, { col1Bold: true, col2Bold: true, col1Align: 'center', col2Align: 'left' });
           }
           if (fields.realisableValueInWords) {
             r.drawFullWidthRow(fields.realisableValueInWords, { bold: true });
@@ -2148,13 +2148,13 @@ Our valuation is based on information obtained from the client and on data gathe
 
         // ─── REALISABLE / LIQUIDATION VALUE ───
         if (fields.realisableValueAmount) {
-          r.drawTextBlock('REALISABLE VALUE / LIQUIDATION VALUE', { bold: true, underline: true });
-          r.advanceCursor(4);
-          r.drawTextBlock('The Realisable/Liquidation value of the property has been assumed @ 80% of Fair Market value keeping in view the present scenario i.e. location of plot, the present condition of plot & non availability of required documents in respect of the property & present condition of sheds & building & as the property is offered as distressed asset sale in open market place considering limited scope of purchasers in competitive open market.');
-          r.advanceCursor(4);
-          r.drawSimpleRow('Realisable / Liquidation Value', 'Rs. ' + formatIndianCurrency(Math.round(parseFloat(String(fields.realisableValueAmount || '').replace(/[^\d.]/g, '')) || 0).toString()));
+          const defaultDesc = "FAIR MARKET VALUE REPRESENTS THE PRICE A PROPERTY WOULD BE SOLD IN AN OPEN MARKET BETWEEN KNOWLEDGEABLE, WILLING PARTIES, WHEREAS REALISABLE VALUE DEDUCTS THE ESTIMATED COSTS THAT WOULD BE INCURRED TO COMPLETE THE SALE FROM THAT MARKET VALUE, REFLECTING THE ACTUAL AMOUNT LIKELY OBTAINED AFTER SELLING EXPENSES ARE PAID IN NORMAL CIRCUMSTANCES. AS PER RBI GUIDELINES THE COSTS MAY INCLUE BUT NOT LIMITED TO TAXES, LEGAL CHARGES, MARKETING EXPENSES, TRANSACTIONS CHARGES AND COMMISSIONS. IF TRANSACTION IS TO BE CARRIED OUT UNDER FORCED OR DISTRESSED CONDITIONS THEN THE COMMERCIAL VIABILITY IS DRASTICALLTY AFFECTED OWING TO DISTRESS TRANCTION WITHIN STIPULATED TIME FRAME SET BY HONOUABLE COURTS AND EXISTING LEGAL AND BREACH OF CONTRACT RISK. SUCH A TRANSACTION WILL RESULT IN LACK OF DEMAND AND STRONG NEGOTIATION ON BUYERS FRONT HENCE WE ARRIVE AT REDUCTION OF 20% FURTHER TO THE PRESENT VALUE OF THE PROPERTY INORDER TO FACILIATE SALE  AND COMPLY WITH ALL THE LIQUIADATION CONDITIONS AND WITHIN FIXED TIMELINES SET FOR PROCESS COMPLETION";
+          const desc = fields.realisableValueDesc || defaultDesc;
+          
+          r.drawSectionHeader('REALISABLE VALUE / LIQUIDATION VALUE');
+          r.drawCustomSplitRow(desc, 'Rs. ' + formatIndianCurrency(Math.round(parseFloat(String(fields.realisableValueAmount || '').replace(/[^\d.]/g, '')) || 0).toString()), 0.77, { col1Bold: true, col2Bold: true, col1Align: 'justify', col2Align: 'left' });
           if (fields.realisableValueOrSay) {
-            r.drawSimpleRow('Or Say', fields.realisableValueOrSay);
+            r.drawCustomSplitRow('OR SAY', fields.realisableValueOrSay, 0.77, { col1Bold: true, col2Bold: true, col1Align: 'center', col2Align: 'left' });
           }
           if (fields.realisableValueInWords) {
             r.drawFullWidthRow(fields.realisableValueInWords, { bold: true });
@@ -3433,6 +3433,11 @@ Our valuation is based on information obtained from the client and on data gathe
                   {/* ─── REALISABLE / LIQUIDATION VALUE ─── */}
                   <div className="border border-red-200 rounded-xl p-4 bg-red-50/30">
                     <h4 className="text-xs font-black text-red-800 uppercase tracking-wider mb-3">Realisable Value / Liquidation Value</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                      <Field label="Description Override (Optional)" span={2}>
+                        <textarea rows={4} value={fields.realisableValueDesc || ''} onChange={e => handleChange('realisableValueDesc', e.target.value)} className={inputCls + ' resize-none'} placeholder="Leave blank to use the default description..." disabled={isReadOnly} />
+                      </Field>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <Field label="Realisable/Liquidation Value (Rs)"><input type="text" value={fields.realisableValueAmount} onChange={e => handleChange('realisableValueAmount', e.target.value.replace(/[^\d.,]/g, ''))} className={inputCls} disabled={isReadOnly} /></Field>
                       <Field label="Or Say"><input type="text" value={fields.realisableValueOrSay || ''} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
@@ -3611,6 +3616,11 @@ Our valuation is based on information obtained from the client and on data gathe
                   {/* ─── REALISABLE / LIQUIDATION VALUE ─── */}
                   <div className="border border-red-200 rounded-xl p-4 bg-red-50/30">
                     <h4 className="text-xs font-black text-red-800 uppercase tracking-wider mb-3">Realisable Value / Liquidation Value</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                      <Field label="Description Override (Optional)" span={2}>
+                        <textarea rows={4} value={fields.realisableValueDesc || ''} onChange={e => handleChange('realisableValueDesc', e.target.value)} className={inputCls + ' resize-none'} placeholder="Leave blank to use the default description..." disabled={isReadOnly} />
+                      </Field>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <Field label="Realisable/Liquidation Value (Rs)"><input type="text" value={fields.realisableValueAmount} onChange={e => handleChange('realisableValueAmount', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
                       <Field label="Or Say"><input type="text" value={fields.realisableValueOrSay} onChange={e => handleChange('realisableValueOrSay', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
