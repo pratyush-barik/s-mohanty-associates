@@ -937,7 +937,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     const newTotalPresentVal = fmt(totalPresentValNum);
     const orSayPresentNum = totalPresentValNum < 100000 ? totalPresentValNum : Math.floor(totalPresentValNum / 100000) * 100000;
     const newTotalPresentOrSay = fmt(orSayPresentNum);
-    const newTotalPresentInWords = `TOTAL PRESENT VALUE IN WORDS - RUPEES ${rupeesInWords(orSayPresentNum).toUpperCase()} ONLY`;
+    const newTotalPresentInWords = `TOTAL PRESENT VALUE IN WORDS - ${rupeesInWords(orSayPresentNum).toUpperCase()}`;
 
     const componentsFMV = totalBldgFMV + cwFmv;
     const newComponentsFMV = fmt(componentsFMV);
