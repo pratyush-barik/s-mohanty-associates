@@ -291,6 +291,8 @@ interface IBBIFields {
   cuttackCompoundWallLengthGuideline: string;
   cuttackCompoundWallRateGuideline: string;
   cuttackShedsDepreciationGuideline: string;
+  cuttackShedsDepPctGuideline: string;
+  cuttackShedsDepAmtGuideline: string;
   cuttackTotalGuidelineLandBuilding: string;
   cuttackGuidelineOrSay: string;
   cuttackGuidelineInWords: string;
@@ -299,6 +301,8 @@ interface IBBIFields {
   cuttackCompoundWallLengthPresent: string;
   cuttackCompoundWallRatePresent: string;
   cuttackShedsDepreciationPresent: string;
+  cuttackShedsDepPctPresent: string;
+  cuttackShedsDepAmtPresent: string;
   cuttackTotalPresentLandBuilding: string;
   cuttackPresentOrSay: string;
   cuttackPresentInWords: string;
@@ -549,19 +553,23 @@ const DEFAULT_FIELDS: IBBIFields = {
   realisableValueOrSay: '',
   realisableValueInWords: '',
   // Cuttack variant extras
-  cuttackLandComponentDescGuideline: '',
+  cuttackLandComponentDescGuideline: 'As per the Benchmark Rates furnished by SRO- Jagatpur, Dist- Cuttack, the bench mark value of plot stands as under, which is treated as the latest govt. circle value.',
   cuttackCompoundWallGuideline: '',
   cuttackCompoundWallLengthGuideline: '',
   cuttackCompoundWallRateGuideline: '',
   cuttackShedsDepreciationGuideline: '',
+  cuttackShedsDepPctGuideline: '50',
+  cuttackShedsDepAmtGuideline: '',
   cuttackTotalGuidelineLandBuilding: '',
   cuttackGuidelineOrSay: '',
   cuttackGuidelineInWords: '',
-  cuttackLandComponentDescPresent: '',
+  cuttackLandComponentDescPresent: 'As per the Benchmark Rates furnished by SRO- Jagatpur, Dist- Cuttack, the bench mark value of plot stands as under, which is treated as the latest govt. circle value along with land development charges inclusive of backfilling, levelling,electric conduiting and Transformers.',
   cuttackCompoundWallPresent: '',
   cuttackCompoundWallLengthPresent: '',
   cuttackCompoundWallRatePresent: '',
   cuttackShedsDepreciationPresent: '',
+  cuttackShedsDepPctPresent: '50',
+  cuttackShedsDepAmtPresent: '',
   cuttackTotalPresentLandBuilding: '',
   cuttackPresentOrSay: '',
   cuttackPresentInWords: '',
@@ -968,6 +976,39 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     const newDepDescFMV = calcDesc(fields.rccDepreciationPercentFMV, fields.shedDepreciationPercentFMV);
     const newDepDescGuideline = calcDesc(fields.rccDepreciationPercentGuideline, fields.shedDepreciationPercentGuideline);
 
+
+    // ─── CUTTACK AUTO-CALCULATIONS ───
+    // Area sums for label renaming
+    const guidelineAreaSum = (fields.guidelinePlotRows || []).reduce((sum: number, row: any) => {
+      const m = String(row.area || '').match(/([\d.]+)/);
+      return sum + (m ? parseFloat(m[1]) || 0 : 0);
+    }, 0);
+    const presentAreaSum = (fields.presentPlotRows || []).reduce((sum: number, row: any) => {
+      const m = String(row.area || '').match(/([\d.]+)/);
+      return sum + (m ? parseFloat(m[1]) || 0 : 0);
+    }, 0);
+
+    // Cuttack: auto-calc Total Guideline Value for Land and Building
+    const cuttackGuidelinePlotNum = parseFloat(String(fields.guidelinePlotTotal || '').replace(/[^\d.]/g, '')) || 0;
+    const cuttackShedsDepAmtGuidelineNum = parseFloat(String(fields.cuttackShedsDepAmtGuideline || '').replace(/[^\d.]/g, '')) || 0;
+    const cwCuttackGuidelineNum = cwCuttackGuideline; // already computed above
+    const newCuttackTotalGuidelineLB = fmt(cuttackGuidelinePlotNum + cuttackShedsDepAmtGuidelineNum + cwCuttackGuidelineNum);
+
+    // Cuttack: auto-calc Total Present Value for Land and Building
+    const cuttackPresentPlotNum = parseFloat(String(fields.presentDiscountedTotal || fields.presentPlotTotal || '').replace(/[^\d.]/g, '')) || 0;
+    const cuttackShedsDepAmtPresentNum = parseFloat(String(fields.cuttackShedsDepAmtPresent || '').replace(/[^\d.]/g, '')) || 0;
+    const cwCuttackPresentNum = cwCuttackPresent; // already computed above
+    const newCuttackTotalPresentLB = fmt(cuttackPresentPlotNum + cuttackShedsDepAmtPresentNum + cwCuttackPresentNum);
+
+    // Cuttack: auto-calc Or Say with rounding
+    const cuttackGuidelineLBNum = cuttackGuidelinePlotNum + cuttackShedsDepAmtGuidelineNum + cwCuttackGuidelineNum;
+    const cuttackGuidelineOrSayNum = cuttackGuidelineLBNum < 100000 ? cuttackGuidelineLBNum : Math.floor(cuttackGuidelineLBNum / 100000) * 100000;
+    const newCuttackGuidelineOrSay = fmt(cuttackGuidelineOrSayNum);
+
+    const cuttackPresentLBNum = cuttackPresentPlotNum + cuttackShedsDepAmtPresentNum + cwCuttackPresentNum;
+    const cuttackPresentOrSayNum = cuttackPresentLBNum < 100000 ? cuttackPresentLBNum : Math.floor(cuttackPresentLBNum / 100000) * 100000;
+    const newCuttackPresentOrSay = fmt(cuttackPresentOrSayNum);
+
     let updated = false;
     const nextFields = { ...fields };
     if (fields.guidelinePlotTotal !== newGuidelineTotal) {
@@ -1018,6 +1059,12 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     
     if (fields.depreciationDescFMV !== newDepDescFMV) { nextFields.depreciationDescFMV = newDepDescFMV; updated = true; }
     if (fields.depreciationDescGuideline !== newDepDescGuideline) { nextFields.depreciationDescGuideline = newDepDescGuideline; updated = true; }
+    // Cuttack auto-calc updates
+    if (fields.cuttackTotalGuidelineLandBuilding !== newCuttackTotalGuidelineLB) { nextFields.cuttackTotalGuidelineLandBuilding = newCuttackTotalGuidelineLB; updated = true; }
+    if (fields.cuttackGuidelineOrSay !== newCuttackGuidelineOrSay) { nextFields.cuttackGuidelineOrSay = newCuttackGuidelineOrSay; updated = true; }
+    if (fields.cuttackTotalPresentLandBuilding !== newCuttackTotalPresentLB) { nextFields.cuttackTotalPresentLandBuilding = newCuttackTotalPresentLB; updated = true; }
+    if (fields.cuttackPresentOrSay !== newCuttackPresentOrSay) { nextFields.cuttackPresentOrSay = newCuttackPresentOrSay; updated = true; }
+
 
     if (updated) {
       setFields(nextFields);
@@ -1043,7 +1090,10 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     fields.cuttackCompoundWallLengthPresent, fields.cuttackCompoundWallRatePresent,
     fields.compoundWallValueFMV, fields.compoundWallValueGuideline,
     fields.totalBuildingShedComponentsFMV, fields.totalBuildingShedComponentsGuideline,
-    fields.cuttackCompoundWallGuideline, fields.cuttackCompoundWallPresent
+    fields.cuttackCompoundWallGuideline, fields.cuttackCompoundWallPresent,
+    fields.cuttackShedsDepAmtGuideline, fields.cuttackShedsDepAmtPresent,
+    fields.cuttackTotalGuidelineLandBuilding, fields.cuttackTotalPresentLandBuilding,
+    fields.cuttackGuidelineOrSay, fields.cuttackPresentOrSay
   ]);
 
   const handleChange = useCallback((field: string, value: any) => {
@@ -1860,7 +1910,7 @@ Our valuation is based on information obtained from the client and on data gathe
           r.drawDataTable(headers, rows);
           r.advanceCursor(6);
         } else {
-          if (fields.guidelinePlotTotal) r.drawTextBlock(`TOTAL GUIDELINE PLOT VALUE: ${fields.guidelinePlotTotal}`, { bold: true, align: 'right' });
+          if (fields.guidelinePlotTotal) r.drawTextBlock(`Total Guideline Plot Value FOR AC.${(fields.guidelinePlotRows || []).reduce((s: number, r: any) => { const m = String(r.area || '').match(/([\\d.]+)/); return s + (m ? parseFloat(m[1]) || 0 : 0); }, 0).toFixed(3)} dec: ${fields.guidelinePlotTotal}`, { bold: true, align: 'right' });
           if (fields.guidelineDiscountedTotal) r.drawTextBlock(`Total Accessed Value Post Discounted reduction of ${String(fields.guidelineDiscountPercent || 0).replace(/%/g, '')}% on Total Guideline Value = ${fields.guidelineDiscountedTotal}`, { bold: true, align: 'right' });
           r.advanceCursor(6);
         }
@@ -2069,7 +2119,7 @@ Our valuation is based on information obtained from the client and on data gathe
           const rows: string[][] = fields.guidelinePlotRows.map((row: GuidelinePlotRow) => [row.mouza, row.nature, row.plotNo, row.khataNo, row.area, row.ratePerDec, row.amount]);
           if (fields.guidelinePlotTotal) {
             rows.push([
-              '!!SPAN:6!!!!CENTER!!!!BOLD!!TOTAL GUIDELINE PLOT VALUE', '', '', '', '', '',
+              `!!SPAN:6!!!!CENTER!!!!BOLD!!Total Guideline Plot Value FOR AC.${(fields.guidelinePlotRows || []).reduce((s: number, r: any) => { const m = String(r.area || '').match(/([\d.]+)/); return s + (m ? parseFloat(m[1]) || 0 : 0); }, 0).toFixed(3)} dec`, '', '', '', '', '',
               '!!BOLD!!' + fields.guidelinePlotTotal
             ]);
           }
@@ -2087,8 +2137,8 @@ Our valuation is based on information obtained from the client and on data gathe
         if (fields.cuttackCompoundWallGuideline) {
           r.drawTextBlock(fields.cuttackCompoundWallGuideline, { align: 'left' });
         }
-        if (fields.cuttackShedsDepreciationGuideline) {
-          r.drawTextBlock(`Depreciation value of Sheds / Buildings: ${fields.cuttackShedsDepreciationGuideline}`, { align: 'right' });
+        if (fields.cuttackShedsDepPctGuideline || fields.cuttackShedsDepAmtGuideline) {
+          r.drawTextBlock(`Present depreciated market value of the available sheds and buildings, at its present status, assessed @ ${fields.cuttackShedsDepPctGuideline || 0}% of the present value | Rs. ${fields.cuttackShedsDepAmtGuideline || '0'}`, { align: 'left' });
         }
         if (fields.cuttackTotalGuidelineLandBuilding) {
           r.drawTextBlock(`TOTAL GUIDELINE VALUE FOR LAND AND BUILDING: ${fields.cuttackTotalGuidelineLandBuilding}`, { bold: true, align: 'right' });
@@ -2096,8 +2146,11 @@ Our valuation is based on information obtained from the client and on data gathe
         if (fields.cuttackGuidelineOrSay) {
           r.drawTextBlock(`Or Say: ${fields.cuttackGuidelineOrSay}`, { bold: true, align: 'right' });
         }
-        if (fields.cuttackGuidelineInWords) {
-          r.drawTextBlock(`(${fields.cuttackGuidelineInWords})`, { bold: true, italic: true, align: 'right' });
+        {
+          const orSayGuidelineNum = parseFloat(String(fields.cuttackGuidelineOrSay || '').replace(/[^\d.]/g, '')) || 0;
+          if (orSayGuidelineNum > 0) {
+            r.drawTextBlock(`GUIDELINE LAND & BUILDING VALUE - ${rupeesInWords(orSayGuidelineNum).toUpperCase()}`, { bold: true, italic: true });
+          }
         }
         r.advanceCursor(6);
 
@@ -2113,7 +2166,7 @@ Our valuation is based on information obtained from the client and on data gathe
           const rows: string[][] = fields.presentPlotRows.map((row: PresentPlotRow) => [row.mouza, row.nature, row.plotNo, row.khataNo, row.area, row.ratePerDec, row.amount]);
           if (fields.presentPlotTotal) {
             rows.push([
-              '!!SPAN:6!!!!CENTER!!!!BOLD!!TOTAL PRESENT MARKET VALUE PLOT', '', '', '', '', '',
+              `!!SPAN:6!!!!CENTER!!!!BOLD!!TOTAL PRESENT MARKET VALUE PLOT FOR AC.${(fields.presentPlotRows || []).reduce((s: number, r: any) => { const m = String(r.area || '').match(/([\d.]+)/); return s + (m ? parseFloat(m[1]) || 0 : 0); }, 0).toFixed(3)} dec`, '', '', '', '', '',
               '!!BOLD!!' + fields.presentPlotTotal
             ]);
           }
@@ -2126,13 +2179,13 @@ Our valuation is based on information obtained from the client and on data gathe
           r.drawDataTable(headers, rows);
           r.advanceCursor(2);
         } else {
-          if (fields.presentPlotTotal) r.drawTextBlock(`TOTAL PRESENT MARKET VALUE PLOT: ${fields.presentPlotTotal}`, { bold: true, align: 'right' });
+          if (fields.presentPlotTotal) r.drawTextBlock(`TOTAL PRESENT MARKET VALUE PLOT FOR AC.${(fields.presentPlotRows || []).reduce((s: number, r: any) => { const m = String(r.area || '').match(/([\\d.]+)/); return s + (m ? parseFloat(m[1]) || 0 : 0); }, 0).toFixed(3)} dec: ${fields.presentPlotTotal}`, { bold: true, align: 'right' });
         }
         if (fields.cuttackCompoundWallPresent) {
           r.drawTextBlock(fields.cuttackCompoundWallPresent, { align: 'left' });
         }
-        if (fields.cuttackShedsDepreciationPresent) {
-          r.drawTextBlock(`Depreciation value of Sheds / Buildings: ${fields.cuttackShedsDepreciationPresent}`, { align: 'right' });
+        if (fields.cuttackShedsDepPctPresent || fields.cuttackShedsDepAmtPresent) {
+          r.drawTextBlock(`Present depreciated market value of the available sheds and buildings, at its present status, assessed @ ${fields.cuttackShedsDepPctPresent || 0}% of the present value | Rs. ${fields.cuttackShedsDepAmtPresent || '0'}`, { align: 'left' });
         }
         if (fields.cuttackTotalPresentLandBuilding) {
           r.drawTextBlock(`TOTAL PRESENT VALUE FOR LAND AND BUILDING: ${fields.cuttackTotalPresentLandBuilding}`, { bold: true, align: 'right' });
@@ -2140,8 +2193,11 @@ Our valuation is based on information obtained from the client and on data gathe
         if (fields.cuttackPresentOrSay) {
           r.drawTextBlock(`Or Say: ${fields.cuttackPresentOrSay}`, { bold: true, align: 'right' });
         }
-        if (fields.cuttackPresentInWords) {
-          r.drawTextBlock(`(${fields.cuttackPresentInWords})`, { bold: true, italic: true, align: 'right' });
+        {
+          const orSayPresentNum = parseFloat(String(fields.cuttackPresentOrSay || '').replace(/[^\d.]/g, '')) || 0;
+          if (orSayPresentNum > 0) {
+            r.drawTextBlock(`PRESENT LAND & BUILDING VALUE - ${rupeesInWords(orSayPresentNum).toUpperCase()}`, { bold: true, italic: true });
+          }
         }
         r.advanceCursor(6);
 
@@ -3511,14 +3567,15 @@ Our valuation is based on information obtained from the client and on data gathe
                     </div>
                     {!isReadOnly && <button type="button" onClick={() => handleChange('guidelinePlotRows', [...fields.guidelinePlotRows, { id: String(Date.now()), mouza: '', nature: '', owner: '', plotNo: '', khataNo: '', area: '', ratePerDec: '', amount: '' }])} className="text-xs font-bold text-amber-700 hover:underline mt-2">+ Add Row</button>}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-                      <Field label="Total Guideline Plot Value"><input type="text" value={fields.guidelinePlotTotal} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
+                      <Field label={`Total Guideline Plot Value FOR AC.${(fields.guidelinePlotRows || []).reduce((s: number, r: any) => { const m = String(r.area || '').match(/([\d.]+)/); return s + (m ? parseFloat(m[1]) || 0 : 0); }, 0).toFixed(3)} dec`}><input type="text" value={fields.guidelinePlotTotal} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
                       <Field label="Compound Wall Length (rft)"><input type="text" value={fields.cuttackCompoundWallLengthGuideline} onChange={e => handleChange('cuttackCompoundWallLengthGuideline', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 3320" disabled={isReadOnly} /></Field>
                           <Field label="Compound Wall Rate (per rft)"><input type="text" value={fields.cuttackCompoundWallRateGuideline} onChange={e => handleChange('cuttackCompoundWallRateGuideline', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 600" disabled={isReadOnly} /></Field>
                           <Field label="Compound Wall Value (Guideline Value)" span={2}><textarea rows={2} value={fields.cuttackCompoundWallGuideline} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs resize-none cursor-not-allowed" readOnly disabled /></Field>
-                      <Field label="Sheds/Buildings Depreciation"><input type="text" value={fields.cuttackShedsDepreciationGuideline} onChange={e => handleChange('cuttackShedsDepreciationGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-                      <Field label="Total Guideline Value for Land and Building"><input type="text" value={fields.cuttackTotalGuidelineLandBuilding} onChange={e => handleChange('cuttackTotalGuidelineLandBuilding', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-                      <Field label="Or Say"><input type="text" value={fields.cuttackGuidelineOrSay} onChange={e => handleChange('cuttackGuidelineOrSay', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-                      <Field label="Guideline Value in Words"><input type="text" value={fields.cuttackGuidelineInWords} onChange={e => handleChange('cuttackGuidelineInWords', e.target.value)} className={inputCls} placeholder="e.g. FIFTY SIX LAKHS RUPEES ONLY" disabled={isReadOnly} /></Field>
+                      <Field label="Sheds/Buildings Depreciation %" ><input type="text" value={fields.cuttackShedsDepPctGuideline} onChange={e => handleChange('cuttackShedsDepPctGuideline', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 50" disabled={isReadOnly} /></Field>
+                      <Field label="Sheds/Buildings Dep. Amount (Rs.)"><input type="text" value={fields.cuttackShedsDepAmtGuideline} onChange={e => handleChange('cuttackShedsDepAmtGuideline', e.target.value.replace(/[^\d.,]/g, ''))} className={inputCls} placeholder="e.g. 16,63,000" disabled={isReadOnly} /></Field>
+                      <Field label="Sheds/Buildings Depreciation Text" span={2}><textarea rows={2} value={`Present depreciated market value of the available sheds and buildings, at its present status, assessed @ ${fields.cuttackShedsDepPctGuideline || 0}% of the present value | Rs. ${fields.cuttackShedsDepAmtGuideline || '0'}`} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs resize-none cursor-not-allowed" readOnly disabled /></Field>
+                      <Field label="Total Guideline Value for Land and Building"><input type="text" value={fields.cuttackTotalGuidelineLandBuilding} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
+                      <Field label="Or Say"><input type="text" value={fields.cuttackGuidelineOrSay} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
                     </div>
                   </div>
 
@@ -3559,14 +3616,15 @@ Our valuation is based on information obtained from the client and on data gathe
                     </div>
                     {!isReadOnly && <button type="button" onClick={() => handleChange('presentPlotRows', [...fields.presentPlotRows, { id: String(Date.now()), mouza: '', nature: '', owner: '', plotNo: '', khataNo: '', area: '', ratePerDec: '', amount: '' }])} className="text-xs font-bold text-blue-700 hover:underline mt-2">+ Add Row</button>}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-                      <Field label="Total Present Market Value Plot"><input type="text" value={fields.presentPlotTotal} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
+                      <Field label={`TOTAL PRESENT MARKET VALUE PLOT FOR AC.${(fields.presentPlotRows || []).reduce((s: number, r: any) => { const m = String(r.area || '').match(/([\d.]+)/); return s + (m ? parseFloat(m[1]) || 0 : 0); }, 0).toFixed(3)} dec`}><input type="text" value={fields.presentPlotTotal} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
                       <Field label="Compound Wall Length (rft)"><input type="text" value={fields.cuttackCompoundWallLengthPresent} onChange={e => handleChange('cuttackCompoundWallLengthPresent', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 3320" disabled={isReadOnly} /></Field>
                           <Field label="Compound Wall Rate (per rft)"><input type="text" value={fields.cuttackCompoundWallRatePresent} onChange={e => handleChange('cuttackCompoundWallRatePresent', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 600" disabled={isReadOnly} /></Field>
                           <Field label="Compound Wall Value (Fair Market Value)" span={2}><textarea rows={2} value={fields.cuttackCompoundWallPresent} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs resize-none cursor-not-allowed" readOnly disabled /></Field>
-                      <Field label="Sheds/Buildings Depreciation"><input type="text" value={fields.cuttackShedsDepreciationPresent} onChange={e => handleChange('cuttackShedsDepreciationPresent', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-                      <Field label="Total Present Value for Land and Building"><input type="text" value={fields.cuttackTotalPresentLandBuilding} onChange={e => handleChange('cuttackTotalPresentLandBuilding', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-                      <Field label="Or Say"><input type="text" value={fields.cuttackPresentOrSay} onChange={e => handleChange('cuttackPresentOrSay', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-                      <Field label="Present Value in Words"><input type="text" value={fields.cuttackPresentInWords} onChange={e => handleChange('cuttackPresentInWords', e.target.value)} className={inputCls} placeholder="e.g. SIXTY SEVEN LAKHS EIGHTY FIVE THOUSAND RUPEES ONLY" disabled={isReadOnly} /></Field>
+                      <Field label="Sheds/Buildings Depreciation %" ><input type="text" value={fields.cuttackShedsDepPctPresent} onChange={e => handleChange('cuttackShedsDepPctPresent', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 50" disabled={isReadOnly} /></Field>
+                      <Field label="Sheds/Buildings Dep. Amount (Rs.)"><input type="text" value={fields.cuttackShedsDepAmtPresent} onChange={e => handleChange('cuttackShedsDepAmtPresent', e.target.value.replace(/[^\d.,]/g, ''))} className={inputCls} placeholder="e.g. 16,63,000" disabled={isReadOnly} /></Field>
+                      <Field label="Sheds/Buildings Depreciation Text" span={2}><textarea rows={2} value={`Present depreciated market value of the available sheds and buildings, at its present status, assessed @ ${fields.cuttackShedsDepPctPresent || 0}% of the present value | Rs. ${fields.cuttackShedsDepAmtPresent || '0'}`} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs resize-none cursor-not-allowed" readOnly disabled /></Field>
+                      <Field label="Total Present Value for Land and Building"><input type="text" value={fields.cuttackTotalPresentLandBuilding} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
+                      <Field label="Or Say"><input type="text" value={fields.cuttackPresentOrSay} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
                     </div>
                   </div>
 
