@@ -931,6 +931,14 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     const newCwCuttackPresentFormatted = formatIndianCurrency(Math.round(cwCuttackPresent || 0).toString());
     const newCwCuttackPresentStr = `Present depreciated market value of the Compound wall,over the plot, ${fields.cuttackCompoundWallLengthPresent || 0} @ ${fields.cuttackCompoundWallRatePresent || 0}    |	 Rs. ${newCwCuttackPresentFormatted}`;
 
+    const presentPlotVal = parseFloat(String(fields.presentValueOfPlot || '').replace(/[^\d.]/g, '')) || 0;
+    const presentBldgVal = parseFloat(String(fields.presentValueOfBuildings || '').replace(/[^\d.]/g, '')) || 0;
+    const totalPresentValNum = presentPlotVal + presentBldgVal;
+    const newTotalPresentVal = fmt(totalPresentValNum);
+    const orSayPresentNum = Math.floor(totalPresentValNum / 100000) * 100000;
+    const newTotalPresentOrSay = fmt(orSayPresentNum);
+    const newTotalPresentInWords = `TOTAL PRESENT VALUE IN WORDS - RUPEES ${rupeesInWords(orSayPresentNum).toUpperCase()} ONLY`;
+
     const componentsFMV = totalBldgFMV + cwFmv;
     const newComponentsFMV = fmt(componentsFMV);
     
@@ -984,6 +992,10 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     if (fields.cuttackCompoundWallGuideline !== newCwCuttackGuidelineStr) { nextFields.cuttackCompoundWallGuideline = newCwCuttackGuidelineStr; updated = true; }
     if (fields.cuttackCompoundWallPresent !== newCwCuttackPresentStr) { nextFields.cuttackCompoundWallPresent = newCwCuttackPresentStr; updated = true; }
     
+    if (fields.totalPresentValue !== newTotalPresentVal) { nextFields.totalPresentValue = newTotalPresentVal; updated = true; }
+    if (fields.totalPresentValueOrSay !== newTotalPresentOrSay) { nextFields.totalPresentValueOrSay = newTotalPresentOrSay; updated = true; }
+    if (fields.totalPresentValueInWords !== newTotalPresentInWords) { nextFields.totalPresentValueInWords = newTotalPresentInWords; updated = true; }
+    
     if (fields.depreciationDescFMV !== newDepDescFMV) { nextFields.depreciationDescFMV = newDepDescFMV; updated = true; }
     if (fields.depreciationDescGuideline !== newDepDescGuideline) { nextFields.depreciationDescGuideline = newDepDescGuideline; updated = true; }
 
@@ -1003,6 +1015,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     fields.rccDepreciationPercentGuideline, fields.shedDepreciationPercentGuideline,
     fields.depreciationDescFMV, fields.depreciationDescGuideline,
     fields.compoundWallLengthFMV, fields.compoundWallRateFMV,
+    fields.presentValueOfPlot, fields.presentValueOfBuildings,
     fields.compoundWallLengthGuideline, fields.compoundWallRateGuideline,
     fields.cuttackCompoundWallLengthGuideline, fields.cuttackCompoundWallRateGuideline,
     fields.cuttackCompoundWallLengthPresent, fields.cuttackCompoundWallRatePresent,
@@ -1959,10 +1972,10 @@ Our valuation is based on information obtained from the client and on data gathe
         r.drawSimpleRow('Present Value of Buildings and Sheds', fields.presentValueOfBuildings);
         r.drawSimpleRow('Total Present Value', fields.totalPresentValue);
         if (fields.totalPresentValueOrSay) {
-          r.drawTextBlock(`Or Say: ${fields.totalPresentValueOrSay}`, { bold: true, align: 'right' });
+          r.drawSimpleRow('Or Say', fields.totalPresentValueOrSay);
         }
         if (fields.totalPresentValueInWords) {
-          r.drawTextBlock(`(${fields.totalPresentValueInWords})`, { bold: true, italic: true, align: 'right' });
+          r.drawTextBlock(fields.totalPresentValueInWords, { bold: true, align: 'left' });
         }
         r.advanceCursor(6);
 
@@ -3381,11 +3394,10 @@ Our valuation is based on information obtained from the client and on data gathe
                     <h4 className="text-xs font-black text-indigo-800 uppercase tracking-wider mb-3">Abstract of Valuation</h4>
                     <p className="text-[10px] font-bold text-neutral-400 uppercase mb-2">Fair Market Present Value</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <Field label="Present Value of Plot"><input type="text" value={fields.presentValueOfPlot} onChange={e => handleChange('presentValueOfPlot', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-                      <Field label="Present Value of Buildings and Sheds"><input type="text" value={fields.presentValueOfBuildings} onChange={e => handleChange('presentValueOfBuildings', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-                      <Field label="Total Present Value"><input type="text" value={fields.totalPresentValue} onChange={e => handleChange('totalPresentValue', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-                      <Field label="Or Say"><input type="text" value={fields.totalPresentValueOrSay} onChange={e => handleChange('totalPresentValueOrSay', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-                      <Field label="Total Present Value in Words" span={2}><input type="text" value={fields.totalPresentValueInWords} onChange={e => handleChange('totalPresentValueInWords', e.target.value)} className={inputCls} placeholder="e.g. RUPEES EIGHTEEN CRORES FORTY FIVE LAKHS ONLY" disabled={isReadOnly} /></Field>
+                      <Field label="Present Value of Plot"><input type="text" value={fields.presentValueOfPlot} onChange={e => handleChange('presentValueOfPlot', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Present Value of Buildings and Sheds"><input type="text" value={fields.presentValueOfBuildings} onChange={e => handleChange('presentValueOfBuildings', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Total Present Value"><input type="text" value={fields.totalPresentValue || ''} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
+                      <Field label="Or Say"><input type="text" value={fields.totalPresentValueOrSay || ''} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
                     </div>
                     <p className="text-[10px] font-bold text-neutral-400 uppercase mt-4 mb-2">Book Value / Guideline Value</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
