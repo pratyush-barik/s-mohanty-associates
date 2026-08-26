@@ -3010,9 +3010,24 @@ Our valuation is based on information obtained from the client and on data gathe
                             <tbody className="divide-y divide-emerald-100">
                               {fields.rccRowsFMV.map((row: BuildingCostRow, idx: number) => (
                                 <tr key={row.id}>
-                                  {(['sl','areaParticular','plinthArea','age','rateSft','replacementCost','depreciation','netValue'] as const).map(field => (
-                                    <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => { const r = [...fields.rccRowsFMV]; r[idx] = {...r[idx], [field]: e.target.value}; handleChange('rccRowsFMV', r); }} className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-emerald-400" disabled={isReadOnly} /></td>
-                                  ))}
+                                  {(['sl','areaParticular','plinthArea','age','rateSft','replacementCost','depreciation','netValue'] as const).map(field => {
+                                    if (field === 'depreciation') return <td key={field} className="px-1 py-1"><input type="text" value={row[field]} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></td>;
+                                    return (
+                                      <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => {
+                                        const val = e.target.value;
+                                        const r = [...fields.rccRowsFMV];
+                                        const newRow = { ...r[idx], [field]: val };
+                                        if (field === 'replacementCost') {
+                                          const repCost = parseFloat(val.replace(/[^\d.-]/g, '')) || 0;
+                                          const pct = parseFloat(fields.rccDepreciationPercentFMV) || 0;
+                                          const dep = repCost * (pct / 100);
+                                          newRow.depreciation = isNaN(dep) || !val ? '' : 'RS. ' + Math.round(dep).toLocaleString('en-IN');
+                                        }
+                                        r[idx] = newRow;
+                                        handleChange('rccRowsFMV', r);
+                                      }} className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-emerald-400" disabled={isReadOnly} /></td>
+                                    );
+                                  })}
                                   {!isReadOnly && <td className="px-1 py-1 text-center"><button onClick={() => handleChange('rccRowsFMV', fields.rccRowsFMV.filter((_: BuildingCostRow, i: number) => i !== idx))} className="text-red-400 hover:text-red-600 text-xs">&times;</button></td>}
                                 </tr>
                               ))}
@@ -3021,7 +3036,17 @@ Our valuation is based on information obtained from the client and on data gathe
                         </div>
                         {!isReadOnly && <button type="button" onClick={() => handleChange('rccRowsFMV', [...fields.rccRowsFMV, { id: String(Date.now()), sl: '', areaParticular: '', plinthArea: '', age: '', rateSft: '', replacementCost: '', depreciation: '', netValue: '' }])} className="text-xs font-bold text-emerald-700 hover:underline mt-2">+ Add RCC Row</button>}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                          <Field label="RCC Depreciation %"><input type="text" value={fields.rccDepreciationPercentFMV} onChange={e => handleChange('rccDepreciationPercentFMV', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                          <Field label="RCC Depreciation %"><input type="text" value={fields.rccDepreciationPercentFMV} onChange={e => {
+                            const val = e.target.value;
+                            handleChange('rccDepreciationPercentFMV', val);
+                            const pct = parseFloat(val) || 0;
+                            const newRows = fields.rccRowsFMV.map(row => {
+                              const repCost = parseFloat((row.replacementCost || '').replace(/[^\d.-]/g, '')) || 0;
+                              const dep = repCost * (pct / 100);
+                              return { ...row, depreciation: isNaN(dep) || !row.replacementCost ? '' : 'RS. ' + Math.round(dep).toLocaleString('en-IN') };
+                            });
+                            handleChange('rccRowsFMV', newRows);
+                          }} className={inputCls} disabled={isReadOnly} /></Field>
                           <Field label="Total of RCC Roof Structure"><input type="text" value={fields.totalRccFMV} onChange={e => handleChange('totalRccFMV', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
                         </div>
 
@@ -3039,9 +3064,24 @@ Our valuation is based on information obtained from the client and on data gathe
                             <tbody className="divide-y divide-emerald-100">
                               {fields.shedRowsFMV.map((row: BuildingCostRow, idx: number) => (
                                 <tr key={row.id}>
-                                  {(['sl','areaParticular','plinthArea','age','rateSft','replacementCost','depreciation','netValue'] as const).map(field => (
-                                    <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => { const r = [...fields.shedRowsFMV]; r[idx] = {...r[idx], [field]: e.target.value}; handleChange('shedRowsFMV', r); }} className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-emerald-400" disabled={isReadOnly} /></td>
-                                  ))}
+                                  {(['sl','areaParticular','plinthArea','age','rateSft','replacementCost','depreciation','netValue'] as const).map(field => {
+                                    if (field === 'depreciation') return <td key={field} className="px-1 py-1"><input type="text" value={row[field]} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></td>;
+                                    return (
+                                      <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => {
+                                        const val = e.target.value;
+                                        const r = [...fields.shedRowsFMV];
+                                        const newRow = { ...r[idx], [field]: val };
+                                        if (field === 'replacementCost') {
+                                          const repCost = parseFloat(val.replace(/[^\d.-]/g, '')) || 0;
+                                          const pct = parseFloat(fields.shedDepreciationPercentFMV) || 0;
+                                          const dep = repCost * (pct / 100);
+                                          newRow.depreciation = isNaN(dep) || !val ? '' : 'RS. ' + Math.round(dep).toLocaleString('en-IN');
+                                        }
+                                        r[idx] = newRow;
+                                        handleChange('shedRowsFMV', r);
+                                      }} className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-emerald-400" disabled={isReadOnly} /></td>
+                                    );
+                                  })}
                                   {!isReadOnly && <td className="px-1 py-1 text-center"><button onClick={() => handleChange('shedRowsFMV', fields.shedRowsFMV.filter((_: BuildingCostRow, i: number) => i !== idx))} className="text-red-400 hover:text-red-600 text-xs">&times;</button></td>}
                                 </tr>
                               ))}
@@ -3050,7 +3090,17 @@ Our valuation is based on information obtained from the client and on data gathe
                         </div>
                         {!isReadOnly && <button type="button" onClick={() => handleChange('shedRowsFMV', [...fields.shedRowsFMV, { id: String(Date.now()), sl: '', areaParticular: '', plinthArea: '', age: '', rateSft: '', replacementCost: '', depreciation: '', netValue: '' }])} className="text-xs font-bold text-emerald-700 hover:underline mt-2">+ Add Shed Row</button>}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                          <Field label="Shed Depreciation %"><input type="text" value={fields.shedDepreciationPercentFMV} onChange={e => handleChange('shedDepreciationPercentFMV', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                          <Field label="Shed Depreciation %"><input type="text" value={fields.shedDepreciationPercentFMV} onChange={e => {
+                            const val = e.target.value;
+                            handleChange('shedDepreciationPercentFMV', val);
+                            const pct = parseFloat(val) || 0;
+                            const newRows = fields.shedRowsFMV.map(row => {
+                              const repCost = parseFloat((row.replacementCost || '').replace(/[^\d.-]/g, '')) || 0;
+                              const dep = repCost * (pct / 100);
+                              return { ...row, depreciation: isNaN(dep) || !row.replacementCost ? '' : 'RS. ' + Math.round(dep).toLocaleString('en-IN') };
+                            });
+                            handleChange('shedRowsFMV', newRows);
+                          }} className={inputCls} disabled={isReadOnly} /></Field>
                           <Field label="Total of Shed Structure"><input type="text" value={fields.totalShedFMV} onChange={e => handleChange('totalShedFMV', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
                           <Field label="Total Building Value"><input type="text" value={fields.totalBuildingValueFMV} onChange={e => handleChange('totalBuildingValueFMV', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
                           <Field label="Compound Wall Value"><input type="text" value={fields.compoundWallValueFMV} onChange={e => handleChange('compoundWallValueFMV', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
@@ -3076,9 +3126,24 @@ Our valuation is based on information obtained from the client and on data gathe
                             <tbody className="divide-y divide-purple-100">
                               {fields.rccRowsGuideline.map((row: BuildingCostRow, idx: number) => (
                                 <tr key={row.id}>
-                                  {(['sl','areaParticular','plinthArea','age','rateSft','replacementCost','depreciation','netValue'] as const).map(field => (
-                                    <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => { const r = [...fields.rccRowsGuideline]; r[idx] = {...r[idx], [field]: e.target.value}; handleChange('rccRowsGuideline', r); }} className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-purple-400" disabled={isReadOnly} /></td>
-                                  ))}
+                                  {(['sl','areaParticular','plinthArea','age','rateSft','replacementCost','depreciation','netValue'] as const).map(field => {
+                                    if (field === 'depreciation') return <td key={field} className="px-1 py-1"><input type="text" value={row[field]} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></td>;
+                                    return (
+                                      <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => {
+                                        const val = e.target.value;
+                                        const r = [...fields.rccRowsGuideline];
+                                        const newRow = { ...r[idx], [field]: val };
+                                        if (field === 'replacementCost') {
+                                          const repCost = parseFloat(val.replace(/[^\d.-]/g, '')) || 0;
+                                          const pct = parseFloat(fields.rccDepreciationPercentGuideline) || 0;
+                                          const dep = repCost * (pct / 100);
+                                          newRow.depreciation = isNaN(dep) || !val ? '' : 'RS. ' + Math.round(dep).toLocaleString('en-IN');
+                                        }
+                                        r[idx] = newRow;
+                                        handleChange('rccRowsGuideline', r);
+                                      }} className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-purple-400" disabled={isReadOnly} /></td>
+                                    );
+                                  })}
                                   {!isReadOnly && <td className="px-1 py-1 text-center"><button onClick={() => handleChange('rccRowsGuideline', fields.rccRowsGuideline.filter((_: BuildingCostRow, i: number) => i !== idx))} className="text-red-400 hover:text-red-600 text-xs">&times;</button></td>}
                                 </tr>
                               ))}
@@ -3087,7 +3152,17 @@ Our valuation is based on information obtained from the client and on data gathe
                         </div>
                         {!isReadOnly && <button type="button" onClick={() => handleChange('rccRowsGuideline', [...fields.rccRowsGuideline, { id: String(Date.now()), sl: '', areaParticular: '', plinthArea: '', age: '', rateSft: '', replacementCost: '', depreciation: '', netValue: '' }])} className="text-xs font-bold text-purple-700 hover:underline mt-2">+ Add RCC Row</button>}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                          <Field label="RCC Depreciation %"><input type="text" value={fields.rccDepreciationPercentGuideline} onChange={e => handleChange('rccDepreciationPercentGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                          <Field label="RCC Depreciation %"><input type="text" value={fields.rccDepreciationPercentGuideline} onChange={e => {
+                            const val = e.target.value;
+                            handleChange('rccDepreciationPercentGuideline', val);
+                            const pct = parseFloat(val) || 0;
+                            const newRows = fields.rccRowsGuideline.map(row => {
+                              const repCost = parseFloat((row.replacementCost || '').replace(/[^\d.-]/g, '')) || 0;
+                              const dep = repCost * (pct / 100);
+                              return { ...row, depreciation: isNaN(dep) || !row.replacementCost ? '' : 'RS. ' + Math.round(dep).toLocaleString('en-IN') };
+                            });
+                            handleChange('rccRowsGuideline', newRows);
+                          }} className={inputCls} disabled={isReadOnly} /></Field>
                           <Field label="Total of RCC Roof Structure"><input type="text" value={fields.totalRccGuideline} onChange={e => handleChange('totalRccGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
                         </div>
 
@@ -3105,9 +3180,24 @@ Our valuation is based on information obtained from the client and on data gathe
                             <tbody className="divide-y divide-purple-100">
                               {fields.shedRowsGuideline.map((row: BuildingCostRow, idx: number) => (
                                 <tr key={row.id}>
-                                  {(['sl','areaParticular','plinthArea','age','rateSft','replacementCost','depreciation','netValue'] as const).map(field => (
-                                    <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => { const r = [...fields.shedRowsGuideline]; r[idx] = {...r[idx], [field]: e.target.value}; handleChange('shedRowsGuideline', r); }} className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-purple-400" disabled={isReadOnly} /></td>
-                                  ))}
+                                  {(['sl','areaParticular','plinthArea','age','rateSft','replacementCost','depreciation','netValue'] as const).map(field => {
+                                    if (field === 'depreciation') return <td key={field} className="px-1 py-1"><input type="text" value={row[field]} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></td>;
+                                    return (
+                                      <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => {
+                                        const val = e.target.value;
+                                        const r = [...fields.shedRowsGuideline];
+                                        const newRow = { ...r[idx], [field]: val };
+                                        if (field === 'replacementCost') {
+                                          const repCost = parseFloat(val.replace(/[^\d.-]/g, '')) || 0;
+                                          const pct = parseFloat(fields.shedDepreciationPercentGuideline) || 0;
+                                          const dep = repCost * (pct / 100);
+                                          newRow.depreciation = isNaN(dep) || !val ? '' : 'RS. ' + Math.round(dep).toLocaleString('en-IN');
+                                        }
+                                        r[idx] = newRow;
+                                        handleChange('shedRowsGuideline', r);
+                                      }} className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-purple-400" disabled={isReadOnly} /></td>
+                                    );
+                                  })}
                                   {!isReadOnly && <td className="px-1 py-1 text-center"><button onClick={() => handleChange('shedRowsGuideline', fields.shedRowsGuideline.filter((_: BuildingCostRow, i: number) => i !== idx))} className="text-red-400 hover:text-red-600 text-xs">&times;</button></td>}
                                 </tr>
                               ))}
@@ -3116,7 +3206,17 @@ Our valuation is based on information obtained from the client and on data gathe
                         </div>
                         {!isReadOnly && <button type="button" onClick={() => handleChange('shedRowsGuideline', [...fields.shedRowsGuideline, { id: String(Date.now()), sl: '', areaParticular: '', plinthArea: '', age: '', rateSft: '', replacementCost: '', depreciation: '', netValue: '' }])} className="text-xs font-bold text-purple-700 hover:underline mt-2">+ Add Shed Row</button>}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                          <Field label="Shed Depreciation %"><input type="text" value={fields.shedDepreciationPercentGuideline} onChange={e => handleChange('shedDepreciationPercentGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                          <Field label="Shed Depreciation %"><input type="text" value={fields.shedDepreciationPercentGuideline} onChange={e => {
+                            const val = e.target.value;
+                            handleChange('shedDepreciationPercentGuideline', val);
+                            const pct = parseFloat(val) || 0;
+                            const newRows = fields.shedRowsGuideline.map(row => {
+                              const repCost = parseFloat((row.replacementCost || '').replace(/[^\d.-]/g, '')) || 0;
+                              const dep = repCost * (pct / 100);
+                              return { ...row, depreciation: isNaN(dep) || !row.replacementCost ? '' : 'RS. ' + Math.round(dep).toLocaleString('en-IN') };
+                            });
+                            handleChange('shedRowsGuideline', newRows);
+                          }} className={inputCls} disabled={isReadOnly} /></Field>
                           <Field label="Total of Shed Structure"><input type="text" value={fields.totalShedGuideline} onChange={e => handleChange('totalShedGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
                           <Field label="Total Guideline Building Value"><input type="text" value={fields.totalBuildingValueGuideline} onChange={e => handleChange('totalBuildingValueGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
                           <Field label="Compound Wall Value"><input type="text" value={fields.compoundWallValueGuideline} onChange={e => handleChange('compoundWallValueGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
@@ -3262,9 +3362,24 @@ Our valuation is based on information obtained from the client and on data gathe
                         <tbody className="divide-y divide-emerald-100">
                           {fields.cuttackBuildingRows.map((row: BuildingCostRow, idx: number) => (
                             <tr key={row.id}>
-                              {(['sl','areaParticular','plinthArea','age','rateSft','replacementCost','depreciation','netValue'] as const).map(field => (
-                                <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => { const r = [...fields.cuttackBuildingRows]; r[idx] = {...r[idx], [field]: e.target.value}; handleChange('cuttackBuildingRows', r); }} className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-emerald-400" disabled={isReadOnly} /></td>
-                              ))}
+                              {(['sl','areaParticular','plinthArea','age','rateSft','replacementCost','depreciation','netValue'] as const).map(field => {
+                                if (field === 'depreciation') return <td key={field} className="px-1 py-1"><input type="text" value={row[field]} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></td>;
+                                return (
+                                  <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => {
+                                    const val = e.target.value;
+                                    const r = [...fields.cuttackBuildingRows];
+                                    const newRow = { ...r[idx], [field]: val };
+                                    if (field === 'replacementCost') {
+                                      const repCost = parseFloat(val.replace(/[^\d.-]/g, '')) || 0;
+                                      const pct = parseFloat(fields.cuttackBuildingDepreciationPercent) || 0;
+                                      const dep = repCost * (pct / 100);
+                                      newRow.depreciation = isNaN(dep) || !val ? '' : 'RS. ' + Math.round(dep).toLocaleString('en-IN');
+                                    }
+                                    r[idx] = newRow;
+                                    handleChange('cuttackBuildingRows', r);
+                                  }} className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-emerald-400" disabled={isReadOnly} /></td>
+                                );
+                              })}
                               {!isReadOnly && <td className="px-1 py-1 text-center"><button onClick={() => handleChange('cuttackBuildingRows', fields.cuttackBuildingRows.filter((_: BuildingCostRow, i: number) => i !== idx))} className="text-red-400 hover:text-red-600 text-xs">&times;</button></td>}
                             </tr>
                           ))}
@@ -3273,7 +3388,17 @@ Our valuation is based on information obtained from the client and on data gathe
                     </div>
                     {!isReadOnly && <button type="button" onClick={() => handleChange('cuttackBuildingRows', [...fields.cuttackBuildingRows, { id: String(Date.now()), sl: '', areaParticular: '', plinthArea: '', age: '', rateSft: '', replacementCost: '', depreciation: '', netValue: '' }])} className="text-xs font-bold text-emerald-700 hover:underline mt-2">+ Add Row</button>}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                      <Field label="Depreciation %"><input type="text" value={fields.cuttackBuildingDepreciationPercent} onChange={e => handleChange('cuttackBuildingDepreciationPercent', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Depreciation %"><input type="text" value={fields.cuttackBuildingDepreciationPercent} onChange={e => {
+                            const val = e.target.value;
+                            handleChange('cuttackBuildingDepreciationPercent', val);
+                            const pct = parseFloat(val) || 0;
+                            const newRows = fields.cuttackBuildingRows.map(row => {
+                              const repCost = parseFloat((row.replacementCost || '').replace(/[^\d.-]/g, '')) || 0;
+                              const dep = repCost * (pct / 100);
+                              return { ...row, depreciation: isNaN(dep) || !row.replacementCost ? '' : 'RS. ' + Math.round(dep).toLocaleString('en-IN') };
+                            });
+                            handleChange('cuttackBuildingRows', newRows);
+                          }} className={inputCls} disabled={isReadOnly} /></Field>
                       <Field label="Total"><input type="text" value={fields.cuttackBuildingTotal} onChange={e => handleChange('cuttackBuildingTotal', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
                       <Field label="Total Land and Building/Shed Components"><input type="text" value={fields.cuttackBuildingComponentsTotal} onChange={e => handleChange('cuttackBuildingComponentsTotal', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
                       <Field label="Or Say"><input type="text" value={fields.cuttackBuildingOrSay} onChange={e => handleChange('cuttackBuildingOrSay', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
