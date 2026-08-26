@@ -2928,7 +2928,13 @@ Our valuation is based on information obtained from the client and on data gathe
                           {fields.guidelinePlotRows.map((row: GuidelinePlotRow, idx: number) => (
                             <tr key={row.id} className="hover:bg-amber-50">
                               {(['mouza','nature','owner','plotNo','khataNo','area','ratePerDec','amount'] as const).map(field => (
-                                <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => { const r = [...fields.guidelinePlotRows]; r[idx] = {...r[idx], [field]: e.target.value}; handleChange('guidelinePlotRows', r); }} className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-amber-400" disabled={isReadOnly} /></td>
+                                <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => {
+                                  let val = e.target.value;
+                                  if (field === 'amount') val = val.replace(/[^\d.,]/g, '');
+                                  const r = [...fields.guidelinePlotRows];
+                                  r[idx] = {...r[idx], [field]: val};
+                                  handleChange('guidelinePlotRows', r);
+                                } } className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-guidelinePlotRows" disabled={isReadOnly} /></td>
                               ))}
                               {!isReadOnly && <td className="px-1 py-1 text-center"><button onClick={() => handleChange('guidelinePlotRows', fields.guidelinePlotRows.filter((_: GuidelinePlotRow, i: number) => i !== idx))} className="text-red-400 hover:text-red-600 text-xs">&times;</button></td>}
                             </tr>
@@ -2967,7 +2973,13 @@ Our valuation is based on information obtained from the client and on data gathe
                           {fields.presentPlotRows.map((row: PresentPlotRow, idx: number) => (
                             <tr key={row.id} className="hover:bg-blue-50">
                               {(['mouza','nature','owner','plotNo','khataNo','area','ratePerDec','amount'] as const).map(field => (
-                                <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => { const r = [...fields.presentPlotRows]; r[idx] = {...r[idx], [field]: e.target.value}; handleChange('presentPlotRows', r); }} className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-blue-400" disabled={isReadOnly} /></td>
+                                <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => {
+                                  let val = e.target.value;
+                                  if (field === 'amount') val = val.replace(/[^\d.,]/g, '');
+                                  const r = [...fields.presentPlotRows];
+                                  r[idx] = {...r[idx], [field]: val};
+                                  handleChange('presentPlotRows', r);
+                                } } className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-presentPlotRows" disabled={isReadOnly} /></td>
                               ))}
                               {!isReadOnly && <td className="px-1 py-1 text-center"><button onClick={() => handleChange('presentPlotRows', fields.presentPlotRows.filter((_: PresentPlotRow, i: number) => i !== idx))} className="text-red-400 hover:text-red-600 text-xs">&times;</button></td>}
                             </tr>
@@ -3014,7 +3026,12 @@ Our valuation is based on information obtained from the client and on data gathe
                                     if (field === 'depreciation') return <td key={field} className="px-1 py-1"><input type="text" value={row[field]} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></td>;
                                     return (
                                       <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => {
-                                        const val = e.target.value;
+                                        let val = e.target.value;
+                                        if (field === 'age') {
+                                          val = val.replace(/[^\d]/g, '');
+                                        } else if (['rateSft', 'replacementCost', 'netValue'].includes(field)) {
+                                          val = val.replace(/[^\d.,]/g, '');
+                                        }
                                         const r = [...fields.rccRowsFMV];
                                         const newRow = { ...r[idx], [field]: val };
                                         if (field === 'replacementCost') {
@@ -3068,7 +3085,12 @@ Our valuation is based on information obtained from the client and on data gathe
                                     if (field === 'depreciation') return <td key={field} className="px-1 py-1"><input type="text" value={row[field]} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></td>;
                                     return (
                                       <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => {
-                                        const val = e.target.value;
+                                        let val = e.target.value;
+                                        if (field === 'age') {
+                                          val = val.replace(/[^\d]/g, '');
+                                        } else if (['rateSft', 'replacementCost', 'netValue'].includes(field)) {
+                                          val = val.replace(/[^\d.,]/g, '');
+                                        }
                                         const r = [...fields.shedRowsFMV];
                                         const newRow = { ...r[idx], [field]: val };
                                         if (field === 'replacementCost') {
@@ -3130,7 +3152,12 @@ Our valuation is based on information obtained from the client and on data gathe
                                     if (field === 'depreciation') return <td key={field} className="px-1 py-1"><input type="text" value={row[field]} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></td>;
                                     return (
                                       <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => {
-                                        const val = e.target.value;
+                                        let val = e.target.value;
+                                        if (field === 'age') {
+                                          val = val.replace(/[^\d]/g, '');
+                                        } else if (['rateSft', 'replacementCost', 'netValue'].includes(field)) {
+                                          val = val.replace(/[^\d.,]/g, '');
+                                        }
                                         const r = [...fields.rccRowsGuideline];
                                         const newRow = { ...r[idx], [field]: val };
                                         if (field === 'replacementCost') {
@@ -3184,7 +3211,12 @@ Our valuation is based on information obtained from the client and on data gathe
                                     if (field === 'depreciation') return <td key={field} className="px-1 py-1"><input type="text" value={row[field]} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></td>;
                                     return (
                                       <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => {
-                                        const val = e.target.value;
+                                        let val = e.target.value;
+                                        if (field === 'age') {
+                                          val = val.replace(/[^\d]/g, '');
+                                        } else if (['rateSft', 'replacementCost', 'netValue'].includes(field)) {
+                                          val = val.replace(/[^\d.,]/g, '');
+                                        }
                                         const r = [...fields.shedRowsGuideline];
                                         const newRow = { ...r[idx], [field]: val };
                                         if (field === 'replacementCost') {
@@ -3287,7 +3319,13 @@ Our valuation is based on information obtained from the client and on data gathe
                           {fields.guidelinePlotRows.map((row: GuidelinePlotRow, idx: number) => (
                             <tr key={row.id} className="hover:bg-amber-50">
                               {(['mouza','nature','plotNo','khataNo','area','ratePerDec','amount'] as const).map(field => (
-                                <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => { const r = [...fields.guidelinePlotRows]; r[idx] = {...r[idx], [field]: e.target.value}; handleChange('guidelinePlotRows', r); }} className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-amber-400" disabled={isReadOnly} /></td>
+                                <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => {
+                                  let val = e.target.value;
+                                  if (field === 'amount') val = val.replace(/[^\d.,]/g, '');
+                                  const r = [...fields.guidelinePlotRows];
+                                  r[idx] = {...r[idx], [field]: val};
+                                  handleChange('guidelinePlotRows', r);
+                                } } className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-guidelinePlotRows" disabled={isReadOnly} /></td>
                               ))}
                               {!isReadOnly && <td className="px-1 py-1 text-center"><button onClick={() => handleChange('guidelinePlotRows', fields.guidelinePlotRows.filter((_: GuidelinePlotRow, i: number) => i !== idx))} className="text-red-400 hover:text-red-600 text-xs">&times;</button></td>}
                             </tr>
@@ -3327,7 +3365,13 @@ Our valuation is based on information obtained from the client and on data gathe
                           {fields.presentPlotRows.map((row: PresentPlotRow, idx: number) => (
                             <tr key={row.id} className="hover:bg-blue-50">
                               {(['mouza','nature','plotNo','khataNo','area','ratePerDec','amount'] as const).map(field => (
-                                <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => { const r = [...fields.presentPlotRows]; r[idx] = {...r[idx], [field]: e.target.value}; handleChange('presentPlotRows', r); }} className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-blue-400" disabled={isReadOnly} /></td>
+                                <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => {
+                                  let val = e.target.value;
+                                  if (field === 'amount') val = val.replace(/[^\d.,]/g, '');
+                                  const r = [...fields.presentPlotRows];
+                                  r[idx] = {...r[idx], [field]: val};
+                                  handleChange('presentPlotRows', r);
+                                } } className="w-full bg-transparent border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-presentPlotRows" disabled={isReadOnly} /></td>
                               ))}
                               {!isReadOnly && <td className="px-1 py-1 text-center"><button onClick={() => handleChange('presentPlotRows', fields.presentPlotRows.filter((_: PresentPlotRow, i: number) => i !== idx))} className="text-red-400 hover:text-red-600 text-xs">&times;</button></td>}
                             </tr>
@@ -3366,8 +3410,13 @@ Our valuation is based on information obtained from the client and on data gathe
                                 if (field === 'depreciation') return <td key={field} className="px-1 py-1"><input type="text" value={row[field]} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></td>;
                                 return (
                                   <td key={field} className="px-1 py-1"><input type="text" value={row[field]} onChange={e => {
-                                    const val = e.target.value;
-                                    const r = [...fields.cuttackBuildingRows];
+                                    let val = e.target.value;
+                                        if (field === 'age') {
+                                          val = val.replace(/[^\d]/g, '');
+                                        } else if (['rateSft', 'replacementCost', 'netValue'].includes(field)) {
+                                          val = val.replace(/[^\d.,]/g, '');
+                                        }
+                                        const r = [...fields.cuttackBuildingRows];
                                     const newRow = { ...r[idx], [field]: val };
                                     if (field === 'replacementCost') {
                                       const repCost = parseFloat(val.replace(/[^\d.-]/g, '')) || 0;
