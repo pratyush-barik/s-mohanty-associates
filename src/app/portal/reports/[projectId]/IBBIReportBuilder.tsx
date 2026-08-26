@@ -977,6 +977,13 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     
     if (fields.cuttackBuildingTotal !== newCuttackBldgTotal) { nextFields.cuttackBuildingTotal = newCuttackBldgTotal; updated = true; }
     
+    if (fields.totalBuildingShedComponentsFMV !== newComponentsFMV) { nextFields.totalBuildingShedComponentsFMV = newComponentsFMV; updated = true; }
+    if (fields.totalBuildingShedComponentsGuideline !== newComponentsGuideline) { nextFields.totalBuildingShedComponentsGuideline = newComponentsGuideline; updated = true; }
+    if (fields.compoundWallValueFMV !== newCwFmvStr) { nextFields.compoundWallValueFMV = newCwFmvStr; updated = true; }
+    if (fields.compoundWallValueGuideline !== newCwGuidelineStr) { nextFields.compoundWallValueGuideline = newCwGuidelineStr; updated = true; }
+    if (fields.cuttackCompoundWallGuideline !== newCwCuttackGuidelineStr) { nextFields.cuttackCompoundWallGuideline = newCwCuttackGuidelineStr; updated = true; }
+    if (fields.cuttackCompoundWallPresent !== newCwCuttackPresentStr) { nextFields.cuttackCompoundWallPresent = newCwCuttackPresentStr; updated = true; }
+    
     if (fields.depreciationDescFMV !== newDepDescFMV) { nextFields.depreciationDescFMV = newDepDescFMV; updated = true; }
     if (fields.depreciationDescGuideline !== newDepDescGuideline) { nextFields.depreciationDescGuideline = newDepDescGuideline; updated = true; }
 
