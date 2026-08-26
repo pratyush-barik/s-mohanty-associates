@@ -927,6 +927,12 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     const cwCuttackPresent = calcCW(fields.cuttackCompoundWallLengthPresent, fields.cuttackCompoundWallRatePresent);
     const newCwCuttackPresent = formatIndianCurrency(Math.round(cwCuttackPresent || 0).toString());
 
+    const componentsFMV = totalBldgFMV + cwFmv;
+    const newComponentsFMV = fmt(componentsFMV);
+    
+    const componentsGuideline = totalBldgGuideline + cwGuideline;
+    const newComponentsGuideline = fmt(componentsGuideline);
+
 
     const calcDesc = (rccStr: any, shedStr: any) => {
       const rccVal = parseFloat(String(rccStr || '').replace(/[^\d.]/g, '')) || 0;
@@ -990,6 +996,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     fields.cuttackCompoundWallLengthGuideline, fields.cuttackCompoundWallRateGuideline,
     fields.cuttackCompoundWallLengthPresent, fields.cuttackCompoundWallRatePresent,
     fields.compoundWallValueFMV, fields.compoundWallValueGuideline,
+    fields.totalBuildingShedComponentsFMV, fields.totalBuildingShedComponentsGuideline,
     fields.cuttackCompoundWallGuideline, fields.cuttackCompoundWallPresent
   ]);
 
@@ -3228,7 +3235,7 @@ Our valuation is based on information obtained from the client and on data gathe
                           <Field label="Compound Wall Rate (per rft)"><input type="text" value={fields.compoundWallRateFMV} onChange={e => handleChange('compoundWallRateFMV', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 600" disabled={isReadOnly} /></Field>
                           <Field label="Compound Wall Value"><input type="text" value={'Rs. ' + (fields.compoundWallValueFMV || '0')} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
                           <Field label="Depreciation Description" span={2}><textarea rows={2} value={fields.depreciationDescFMV} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs resize-none cursor-not-allowed" readOnly disabled /></Field>
-                          <Field label="Total Building/Shed Components" span={2}><input type="text" value={fields.totalBuildingShedComponentsFMV} onChange={e => handleChange('totalBuildingShedComponentsFMV', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                          <Field label="Total Building/Shed Components" span={2}><input type="text" value={fields.totalBuildingShedComponentsFMV} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
                         </div>
                       </div>
 
@@ -3356,7 +3363,7 @@ Our valuation is based on information obtained from the client and on data gathe
                           <Field label="Compound Wall Rate (per rft)"><input type="text" value={fields.compoundWallRateGuideline} onChange={e => handleChange('compoundWallRateGuideline', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 600" disabled={isReadOnly} /></Field>
                           <Field label="Compound Wall Value"><input type="text" value={'Rs. ' + (fields.compoundWallValueGuideline || '0')} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
                           <Field label="Depreciation Description" span={2}><textarea rows={2} value={fields.depreciationDescGuideline} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs resize-none cursor-not-allowed" readOnly disabled /></Field>
-                          <Field label="Total Guideline Building/Shed Components" span={2}><input type="text" value={fields.totalBuildingShedComponentsGuideline} onChange={e => handleChange('totalBuildingShedComponentsGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                          <Field label="Total Guideline Building/Shed Components" span={2}><input type="text" value={fields.totalBuildingShedComponentsGuideline} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
                         </div>
                       </div>
                     </>
