@@ -1150,19 +1150,19 @@ export class PDFIBBIRenderer {
     const finalWidths = colWidths.map(w => w * scale);
 
     const fontSize = 8;
-    const rowPadY = 3;
-    const rowPadX = 3;
+    
+    
 
     // Draw header row
     let headerH = 0;
     const headerIsFull = isFullWidth(headers);
     if (headerIsFull) {
-      const lines = this.wrapText(headers[0], CONTENT_W - rowPadX * 2, fontSize, true);
-      headerH = lines.length * fontSize * LINE_HEIGHT + rowPadY * 2;
+      const lines = this.wrapText(headers[0], CONTENT_W - CELL_PAD_X * 2, fontSize, true);
+      headerH = lines.length * fontSize * LINE_HEIGHT + CELL_PAD_Y * 2;
     } else {
       headerH = Math.max(...headers.map((h, i) => {
-        const lines = this.wrapText(h, finalWidths[i] - rowPadX * 2, fontSize, true);
-        return lines.length * fontSize * LINE_HEIGHT + rowPadY * 2;
+        const lines = this.wrapText(h, finalWidths[i] - CELL_PAD_X * 2, fontSize, true);
+        return lines.length * fontSize * LINE_HEIGHT + CELL_PAD_Y * 2;
       }));
     }
 
@@ -1174,14 +1174,16 @@ export class PDFIBBIRenderer {
       let rowH = 0;
       
       if (rowIsFull) {
+        let isBold = row[0].includes('!!BOLD!!');
         let txt = row[0].replace(/^(!!RIGHT!!|!!CENTER!!|!!BOLD!!)+/g, '');
-        const lines = this.wrapText(txt, CONTENT_W - rowPadX * 2, fontSize);
-        rowH = lines.length * fontSize * LINE_HEIGHT + rowPadY * 2;
+        const lines = this.wrapText(txt, CONTENT_W - CELL_PAD_X * 2, fontSize, isBold);
+        rowH = lines.length * fontSize * LINE_HEIGHT + CELL_PAD_Y * 2;
       } else {
         const cellHeights: number[] = [];
         for (let c = 0; c < numCols; c++) {
           let cellText = row[c] || '';
           let colspan = 1;
+          let isBold = false;
           if (cellText.startsWith('!!SPAN:')) {
             const match = cellText.match(/^!!SPAN:(\d+)!!(.*)/);
             if (match) {
@@ -1189,17 +1191,20 @@ export class PDFIBBIRenderer {
               cellText = match[2];
             }
           }
+          if (cellText.includes('!!BOLD!!')) {
+            isBold = true;
+          }
           cellText = cellText.replace(/^(!!RIGHT!!|!!CENTER!!|!!BOLD!!)+/g, '');
           
           let cellW = 0;
           for (let i = 0; i < colspan && c + i < numCols; i++) {
             cellW += finalWidths[c + i];
           }
-          const lines = this.wrapText(cellText, cellW - rowPadX * 2, fontSize);
-          cellHeights.push(lines.length * fontSize * LINE_HEIGHT + rowPadY * 2);
+          const lines = this.wrapText(cellText, cellW - CELL_PAD_X * 2, fontSize, isBold);
+          cellHeights.push(lines.length * fontSize * LINE_HEIGHT + CELL_PAD_Y * 2);
           c += (colspan - 1);
         }
-        rowH = Math.max(...cellHeights, fontSize * LINE_HEIGHT + rowPadY * 2);
+        rowH = Math.max(...cellHeights, fontSize * LINE_HEIGHT + CELL_PAD_Y * 2);
       }
       rowHeights.push(rowH);
       totalTableHeight += rowH;
