@@ -778,6 +778,8 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     annexures: Array.isArray(initialFields?.annexures) ? initialFields.annexures : DEFAULT_FIELDS.annexures,
     clientType: 'organisation',
     organisationTemplate: 'IBBI_IVS',
+    cuttackLandComponentDescGuideline: initialFields?.cuttackLandComponentDescGuideline || DEFAULT_FIELDS.cuttackLandComponentDescGuideline,
+    cuttackLandComponentDescPresent: initialFields?.cuttackLandComponentDescPresent || DEFAULT_FIELDS.cuttackLandComponentDescPresent,
   };
 
   const [fields, setFields] = useState<IBBIFields>(merged);
