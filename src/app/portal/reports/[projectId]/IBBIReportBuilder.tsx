@@ -1682,6 +1682,9 @@ Our valuation is based on information obtained from the client and on data gathe
       r.drawTextBlock('13.6 DETAILS OF VALUATION', { bold: true });
       tocPageMap['    13.6  Details of Valuation'] = r.getPageCount();
       r.advanceCursor(4);
+      
+      r.drawTextBlock('The detailed workings are shown in the following tables:');
+      r.advanceCursor(8);
 
       // ════════════════════════════════════════════════
       // VARIANT A: STANDARD (Bajrangbali, Angul, Satyabadi)
