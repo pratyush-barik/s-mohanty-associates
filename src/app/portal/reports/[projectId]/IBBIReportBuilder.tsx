@@ -1968,8 +1968,8 @@ Our valuation is based on information obtained from the client and on data gathe
         r.advanceCursor(4);
         
         r.drawTextBlock('FAIR MARKET PRESENT VALUE', { bold: true });
-        r.drawSimpleRow('Present Value of Plot', fields.presentValueOfPlot);
-        r.drawSimpleRow('Present Value of Buildings and Sheds', fields.presentValueOfBuildings);
+        r.drawSimpleRow('Present Value of Plot', 'Rs. ' + formatIndianCurrency(Math.round(parseFloat(String(fields.presentValueOfPlot || '').replace(/[^\d.]/g, '')) || 0).toString()));
+        r.drawSimpleRow('Present Value of Buildings and Sheds', 'Rs. ' + formatIndianCurrency(Math.round(parseFloat(String(fields.presentValueOfBuildings || '').replace(/[^\d.]/g, '')) || 0).toString()));
         r.drawSimpleRow('Total Present Value', fields.totalPresentValue);
         if (fields.totalPresentValueOrSay) {
           r.drawSimpleRow('Or Say', fields.totalPresentValueOrSay);
@@ -3394,8 +3394,8 @@ Our valuation is based on information obtained from the client and on data gathe
                     <h4 className="text-xs font-black text-indigo-800 uppercase tracking-wider mb-3">Abstract of Valuation</h4>
                     <p className="text-[10px] font-bold text-neutral-400 uppercase mb-2">Fair Market Present Value</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <Field label="Present Value of Plot"><input type="text" value={fields.presentValueOfPlot} onChange={e => handleChange('presentValueOfPlot', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} disabled={isReadOnly} /></Field>
-                      <Field label="Present Value of Buildings and Sheds"><input type="text" value={fields.presentValueOfBuildings} onChange={e => handleChange('presentValueOfBuildings', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Present Value of Plot"><input type="text" value={fields.presentValueOfPlot} onChange={e => handleChange('presentValueOfPlot', e.target.value.replace(/[^\d.,]/g, ''))} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Present Value of Buildings and Sheds"><input type="text" value={fields.presentValueOfBuildings} onChange={e => handleChange('presentValueOfBuildings', e.target.value.replace(/[^\d.,]/g, ''))} className={inputCls} disabled={isReadOnly} /></Field>
                       <Field label="Total Present Value"><input type="text" value={fields.totalPresentValue || ''} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
                       <Field label="Or Say"><input type="text" value={fields.totalPresentValueOrSay || ''} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
                     </div>
