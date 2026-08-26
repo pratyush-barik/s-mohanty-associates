@@ -1754,7 +1754,7 @@ Our valuation is based on information obtained from the client and on data gathe
           
           r.drawTextBlock('RCC Roof Structure:', { bold: true });
           if (fields.rccRowsFMV && fields.rccRowsFMV.length > 0) {
-            const headers = ['Sl', 'Area particular', 'Plinth area', 'Age', 'Rate/sft.', 'Replacement cost', `Depreciation (${fields.rccDepreciationPercentFMV}%)`, 'Net value'];
+            const headers = ['Sl', 'Area particular', 'Plinth area', 'Age', 'Rate/sft.', 'Replacement cost', `Depreciation (${String(fields.rccDepreciationPercentFMV || 0).replace(/%/g, '')}%)`, 'Net value'];
             const rows = fields.rccRowsFMV.map((row: BuildingCostRow) => [row.sl, row.areaParticular, row.plinthArea, row.age, row.rateSft, row.replacementCost, row.depreciation, row.netValue]);
             r.drawDataTable(headers, rows);
             r.advanceCursor(2);
@@ -1766,7 +1766,7 @@ Our valuation is based on information obtained from the client and on data gathe
           
           r.drawTextBlock('Shed Structure:', { bold: true });
           if (fields.shedRowsFMV && fields.shedRowsFMV.length > 0) {
-            const headers = ['Sl', 'Area particular', 'Plinth area', 'Age', 'Rate/sft.', 'Replacement cost', `Depreciation (${fields.shedDepreciationPercentFMV}%)`, 'Net value'];
+            const headers = ['Sl', 'Area particular', 'Plinth area', 'Age', 'Rate/sft.', 'Replacement cost', `Depreciation (${String(fields.shedDepreciationPercentFMV || 0).replace(/%/g, '')}%)`, 'Net value'];
             const rows = fields.shedRowsFMV.map((row: BuildingCostRow) => [row.sl, row.areaParticular, row.plinthArea, row.age, row.rateSft, row.replacementCost, row.depreciation, row.netValue]);
             r.drawDataTable(headers, rows);
             r.advanceCursor(2);
@@ -1798,7 +1798,7 @@ Our valuation is based on information obtained from the client and on data gathe
           
           r.drawTextBlock('RCC Roof Structure:', { bold: true });
           if (fields.rccRowsGuideline && fields.rccRowsGuideline.length > 0) {
-            const headers = ['Sl', 'Area particular', 'Plinth area', 'Age', 'Rate/sft.', 'Replacement cost', `Depreciation (${fields.rccDepreciationPercentGuideline}%)`, 'Net value'];
+            const headers = ['Sl', 'Area particular', 'Plinth area', 'Age', 'Rate/sft.', 'Replacement cost', `Depreciation (${String(fields.rccDepreciationPercentGuideline || 0).replace(/%/g, '')}%)`, 'Net value'];
             const rows = fields.rccRowsGuideline.map((row: BuildingCostRow) => [row.sl, row.areaParticular, row.plinthArea, row.age, row.rateSft, row.replacementCost, row.depreciation, row.netValue]);
             r.drawDataTable(headers, rows);
             r.advanceCursor(2);
@@ -1810,7 +1810,7 @@ Our valuation is based on information obtained from the client and on data gathe
           
           r.drawTextBlock('Shed Structure:', { bold: true });
           if (fields.shedRowsGuideline && fields.shedRowsGuideline.length > 0) {
-            const headers = ['Sl', 'Area particular', 'Plinth area', 'Age', 'Rate/sft.', 'Replacement cost', `Depreciation (${fields.shedDepreciationPercentGuideline}%)`, 'Net value'];
+            const headers = ['Sl', 'Area particular', 'Plinth area', 'Age', 'Rate/sft.', 'Replacement cost', `Depreciation (${String(fields.shedDepreciationPercentGuideline || 0).replace(/%/g, '')}%)`, 'Net value'];
             const rows = fields.shedRowsGuideline.map((row: BuildingCostRow) => [row.sl, row.areaParticular, row.plinthArea, row.age, row.rateSft, row.replacementCost, row.depreciation, row.netValue]);
             r.drawDataTable(headers, rows);
             r.advanceCursor(2);
@@ -1979,7 +1979,7 @@ Our valuation is based on information obtained from the client and on data gathe
         r.drawTextBlock('BUILDING/SHED COST', { bold: true, fontSize: 11, underline: true });
         r.advanceCursor(4);
         if (fields.cuttackBuildingRows && fields.cuttackBuildingRows.length > 0) {
-          const headers = ['Sl', 'Area particular', 'Plinth area', 'Age', 'Rate/sft.', 'Replacement cost', `Depreciation (${fields.cuttackBuildingDepreciationPercent}%)`, 'Net value'];
+          const headers = ['Sl', 'Area particular', 'Plinth area', 'Age', 'Rate/sft.', 'Replacement cost', `Depreciation (${String(fields.cuttackBuildingDepreciationPercent || 0).replace(/%/g, '')}%)`, 'Net value'];
           const rows = fields.cuttackBuildingRows.map((row: BuildingCostRow) => [row.sl, row.areaParticular, row.plinthArea, row.age, row.rateSft, row.replacementCost, row.depreciation, row.netValue]);
           r.drawDataTable(headers, rows);
           r.advanceCursor(2);
@@ -3003,7 +3003,7 @@ Our valuation is based on information obtained from the client and on data gathe
                               <tr>
                                 <th className="px-2 py-2">Sl</th><th className="px-2 py-2">Area particular</th><th className="px-2 py-2">Plinth area</th>
                                 <th className="px-2 py-2">Age</th><th className="px-2 py-2">Rate/sft.</th><th className="px-2 py-2">Replacement cost</th>
-                                <th className="px-2 py-2">Depreciation ({fields.rccDepreciationPercentFMV}%)</th><th className="px-2 py-2">Net value</th>
+                                <th className="px-2 py-2">Depreciation ({String(fields.rccDepreciationPercentFMV || 0).replace(/%/g, '')}%)</th><th className="px-2 py-2">Net value</th>
                                 {!isReadOnly && <th className="px-2 py-2 w-8"></th>}
                               </tr>
                             </thead>
@@ -3057,7 +3057,7 @@ Our valuation is based on information obtained from the client and on data gathe
                               <tr>
                                 <th className="px-2 py-2">Sl</th><th className="px-2 py-2">Area particular</th><th className="px-2 py-2">Plinth area</th>
                                 <th className="px-2 py-2">Age</th><th className="px-2 py-2">Rate/sft.</th><th className="px-2 py-2">Replacement cost</th>
-                                <th className="px-2 py-2">Depreciation ({fields.shedDepreciationPercentFMV}%)</th><th className="px-2 py-2">Net value</th>
+                                <th className="px-2 py-2">Depreciation ({String(fields.shedDepreciationPercentFMV || 0).replace(/%/g, '')}%)</th><th className="px-2 py-2">Net value</th>
                                 {!isReadOnly && <th className="px-2 py-2 w-8"></th>}
                               </tr>
                             </thead>
@@ -3119,7 +3119,7 @@ Our valuation is based on information obtained from the client and on data gathe
                               <tr>
                                 <th className="px-2 py-2">Sl</th><th className="px-2 py-2">Area particular</th><th className="px-2 py-2">Plinth area</th>
                                 <th className="px-2 py-2">Age</th><th className="px-2 py-2">Rate/sft.</th><th className="px-2 py-2">Replacement cost</th>
-                                <th className="px-2 py-2">Depreciation ({fields.rccDepreciationPercentGuideline}%)</th><th className="px-2 py-2">Net value</th>
+                                <th className="px-2 py-2">Depreciation ({String(fields.rccDepreciationPercentGuideline || 0).replace(/%/g, '')}%)</th><th className="px-2 py-2">Net value</th>
                                 {!isReadOnly && <th className="px-2 py-2 w-8"></th>}
                               </tr>
                             </thead>
@@ -3173,7 +3173,7 @@ Our valuation is based on information obtained from the client and on data gathe
                               <tr>
                                 <th className="px-2 py-2">Sl</th><th className="px-2 py-2">Area particular</th><th className="px-2 py-2">Plinth area</th>
                                 <th className="px-2 py-2">Age</th><th className="px-2 py-2">Rate/sft.</th><th className="px-2 py-2">Replacement cost</th>
-                                <th className="px-2 py-2">Depreciation ({fields.shedDepreciationPercentGuideline}%)</th><th className="px-2 py-2">Net value</th>
+                                <th className="px-2 py-2">Depreciation ({String(fields.shedDepreciationPercentGuideline || 0).replace(/%/g, '')}%)</th><th className="px-2 py-2">Net value</th>
                                 {!isReadOnly && <th className="px-2 py-2 w-8"></th>}
                               </tr>
                             </thead>
@@ -3355,7 +3355,7 @@ Our valuation is based on information obtained from the client and on data gathe
                           <tr>
                             <th className="px-2 py-2">Sl</th><th className="px-2 py-2">Area particular</th><th className="px-2 py-2">Plinth area</th>
                             <th className="px-2 py-2">Age</th><th className="px-2 py-2">Rate/sft.</th><th className="px-2 py-2">Replacement cost</th>
-                            <th className="px-2 py-2">Depreciation ({fields.cuttackBuildingDepreciationPercent}%)</th><th className="px-2 py-2">Net value</th>
+                            <th className="px-2 py-2">Depreciation ({String(fields.cuttackBuildingDepreciationPercent || 0).replace(/%/g, '')}%)</th><th className="px-2 py-2">Net value</th>
                             {!isReadOnly && <th className="px-2 py-2 w-8"></th>}
                           </tr>
                         </thead>
