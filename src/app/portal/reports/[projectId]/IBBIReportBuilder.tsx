@@ -254,6 +254,8 @@ interface IBBIFields {
   totalBuildingValueFMV: string;
   depreciationDescFMV: string;
   compoundWallValueFMV: string;
+  compoundWallLengthFMV: string;
+  compoundWallRateFMV: string;
   totalBuildingShedComponentsFMV: string;
   // Building/Shed Cost (Guideline Value)
   rccRowsGuideline: BuildingCostRow[];
@@ -265,6 +267,8 @@ interface IBBIFields {
   totalBuildingValueGuideline: string;
   depreciationDescGuideline: string;
   compoundWallValueGuideline: string;
+  compoundWallLengthGuideline: string;
+  compoundWallRateGuideline: string;
   totalBuildingShedComponentsGuideline: string;
   // Abstract of Valuation
   presentValueOfPlot: string;
@@ -284,12 +288,16 @@ interface IBBIFields {
   // Cuttack variant extras
   cuttackLandComponentDescGuideline: string;
   cuttackCompoundWallGuideline: string;
+  cuttackCompoundWallLengthGuideline: string;
+  cuttackCompoundWallRateGuideline: string;
   cuttackShedsDepreciationGuideline: string;
   cuttackTotalGuidelineLandBuilding: string;
   cuttackGuidelineOrSay: string;
   cuttackGuidelineInWords: string;
   cuttackLandComponentDescPresent: string;
   cuttackCompoundWallPresent: string;
+  cuttackCompoundWallLengthPresent: string;
+  cuttackCompoundWallRatePresent: string;
   cuttackShedsDepreciationPresent: string;
   cuttackTotalPresentLandBuilding: string;
   cuttackPresentOrSay: string;
@@ -509,6 +517,8 @@ const DEFAULT_FIELDS: IBBIFields = {
   totalBuildingValueFMV: '',
   depreciationDescFMV: 'Present depreciated market value of the available RCC buildings, at its present status, assessed @ 30% of the present value And @10% For Acc Roof Sheds',
   compoundWallValueFMV: '',
+  compoundWallLengthFMV: '',
+  compoundWallRateFMV: '',
   totalBuildingShedComponentsFMV: '',
   // Building/Shed Cost (Guideline Value)
   rccRowsGuideline: [],
@@ -520,6 +530,8 @@ const DEFAULT_FIELDS: IBBIFields = {
   totalBuildingValueGuideline: '',
   depreciationDescGuideline: 'Present depreciated market value of the available RCC buildings, at its present status, assessed @ 30% of the present value And @10% For Acc Roof Sheds',
   compoundWallValueGuideline: '',
+  compoundWallLengthGuideline: '',
+  compoundWallRateGuideline: '',
   totalBuildingShedComponentsGuideline: '',
   // Abstract of Valuation
   presentValueOfPlot: '',
@@ -539,12 +551,16 @@ const DEFAULT_FIELDS: IBBIFields = {
   // Cuttack variant extras
   cuttackLandComponentDescGuideline: '',
   cuttackCompoundWallGuideline: '',
+  cuttackCompoundWallLengthGuideline: '',
+  cuttackCompoundWallRateGuideline: '',
   cuttackShedsDepreciationGuideline: '',
   cuttackTotalGuidelineLandBuilding: '',
   cuttackGuidelineOrSay: '',
   cuttackGuidelineInWords: '',
   cuttackLandComponentDescPresent: '',
   cuttackCompoundWallPresent: '',
+  cuttackCompoundWallLengthPresent: '',
+  cuttackCompoundWallRatePresent: '',
   cuttackShedsDepreciationPresent: '',
   cuttackTotalPresentLandBuilding: '',
   cuttackPresentOrSay: '',
@@ -893,6 +909,25 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     
     const newCuttackBldgTotal = fmt(cuttackBldgSum);
 
+    const calcCW = (lenStr: any, rateStr: any) => {
+      const l = parseFloat(String(lenStr || '').replace(/[^\d.]/g, '')) || 0;
+      const r = parseFloat(String(rateStr || '').replace(/[^\d.]/g, '')) || 0;
+      return l * r;
+    };
+    
+    const cwFmv = calcCW(fields.compoundWallLengthFMV, fields.compoundWallRateFMV);
+    const newCwFmv = cwFmv > 0 ? formatIndianCurrency(Math.round(cwFmv).toString()) : '';
+    
+    const cwGuideline = calcCW(fields.compoundWallLengthGuideline, fields.compoundWallRateGuideline);
+    const newCwGuideline = cwGuideline > 0 ? formatIndianCurrency(Math.round(cwGuideline).toString()) : '';
+
+    const cwCuttackGuideline = calcCW(fields.cuttackCompoundWallLengthGuideline, fields.cuttackCompoundWallRateGuideline);
+    const newCwCuttackGuideline = cwCuttackGuideline > 0 ? formatIndianCurrency(Math.round(cwCuttackGuideline).toString()) : '';
+    
+    const cwCuttackPresent = calcCW(fields.cuttackCompoundWallLengthPresent, fields.cuttackCompoundWallRatePresent);
+    const newCwCuttackPresent = cwCuttackPresent > 0 ? formatIndianCurrency(Math.round(cwCuttackPresent).toString()) : '';
+
+
     const calcDesc = (rccStr: any, shedStr: any) => {
       const rccVal = parseFloat(String(rccStr || '').replace(/[^\d.]/g, '')) || 0;
       const shedVal = parseFloat(String(shedStr || '').replace(/[^\d.]/g, '')) || 0;
@@ -949,7 +984,13 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     fields.cuttackBuildingTotal,
     fields.rccDepreciationPercentFMV, fields.shedDepreciationPercentFMV,
     fields.rccDepreciationPercentGuideline, fields.shedDepreciationPercentGuideline,
-    fields.depreciationDescFMV, fields.depreciationDescGuideline
+    fields.depreciationDescFMV, fields.depreciationDescGuideline,
+    fields.compoundWallLengthFMV, fields.compoundWallRateFMV,
+    fields.compoundWallLengthGuideline, fields.compoundWallRateGuideline,
+    fields.cuttackCompoundWallLengthGuideline, fields.cuttackCompoundWallRateGuideline,
+    fields.cuttackCompoundWallLengthPresent, fields.cuttackCompoundWallRatePresent,
+    fields.compoundWallValueFMV, fields.compoundWallValueGuideline,
+    fields.cuttackCompoundWallGuideline, fields.cuttackCompoundWallPresent
   ]);
 
   const handleChange = useCallback((field: string, value: any) => {
@@ -1839,7 +1880,8 @@ Our valuation is based on information obtained from the client and on data gathe
             r.advanceCursor(4);
           }
           if (fields.compoundWallValueFMV) {
-            r.drawTextBlock(`Compound wall value (Assumed): ${fields.compoundWallValueFMV}`, { align: 'right' });
+            const label = `Present depreciated market value of the Compound wall,over the plot, ${fields.compoundWallLengthFMV || 0} rft @ Rs.${fields.compoundWallRateFMV || 0}.00 per rft`;
+            r.drawSimpleRow(label, `Rs. ${fields.compoundWallValueFMV}`);
           }
           if (fields.totalBuildingShedComponentsFMV) {
             r.drawTextBlock(`TOTAL BUILDING/SHED COMPONENTS: ${fields.totalBuildingShedComponentsFMV}`, { bold: true, align: 'right' });
@@ -1883,7 +1925,8 @@ Our valuation is based on information obtained from the client and on data gathe
             r.advanceCursor(4);
           }
           if (fields.compoundWallValueGuideline) {
-            r.drawTextBlock(`Compound wall value (Assumed): ${fields.compoundWallValueGuideline}`, { align: 'right' });
+            const label = `Present depreciated market value of the Compound wall,over the plot, ${fields.compoundWallLengthGuideline || 0} rft @ Rs.${fields.compoundWallRateGuideline || 0}.00 per rft`;
+            r.drawSimpleRow(label, `Rs. ${fields.compoundWallValueGuideline}`);
           }
           if (fields.totalBuildingShedComponentsGuideline) {
             r.drawTextBlock(`TOTAL GUIDELINE BUILDING/SHED COMPONENTS: ${fields.totalBuildingShedComponentsGuideline}`, { bold: true, align: 'right' });
@@ -3179,7 +3222,9 @@ Our valuation is based on information obtained from the client and on data gathe
                           }} className={inputCls} disabled={isReadOnly} /></Field>
                           <Field label="Total of Shed Structure"><input type="text" value={fields.totalShedFMV} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
                           <Field label="Total Building Value"><input type="text" value={fields.totalBuildingValueFMV} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
-                          <Field label="Compound Wall Value"><input type="text" value={fields.compoundWallValueFMV} onChange={e => handleChange('compoundWallValueFMV', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                          <Field label="Compound Wall Length (rft)"><input type="text" value={fields.compoundWallLengthFMV} onChange={e => handleChange('compoundWallLengthFMV', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 3320" disabled={isReadOnly} /></Field>
+                          <Field label="Compound Wall Rate (per rft)"><input type="text" value={fields.compoundWallRateFMV} onChange={e => handleChange('compoundWallRateFMV', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 600" disabled={isReadOnly} /></Field>
+                          <Field label="Compound Wall Value"><input type="text" value={fields.compoundWallValueFMV ? 'Rs. ' + fields.compoundWallValueFMV : ''} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
                           <Field label="Depreciation Description" span={2}><textarea rows={2} value={fields.depreciationDescFMV} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs resize-none cursor-not-allowed" readOnly disabled /></Field>
                           <Field label="Total Building/Shed Components" span={2}><input type="text" value={fields.totalBuildingShedComponentsFMV} onChange={e => handleChange('totalBuildingShedComponentsFMV', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
                         </div>
@@ -3305,7 +3350,9 @@ Our valuation is based on information obtained from the client and on data gathe
                           }} className={inputCls} disabled={isReadOnly} /></Field>
                           <Field label="Total of Shed Structure"><input type="text" value={fields.totalShedGuideline} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
                           <Field label="Total Guideline Building Value"><input type="text" value={fields.totalBuildingValueGuideline} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
-                          <Field label="Compound Wall Value"><input type="text" value={fields.compoundWallValueGuideline} onChange={e => handleChange('compoundWallValueGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                          <Field label="Compound Wall Length (rft)"><input type="text" value={fields.compoundWallLengthGuideline} onChange={e => handleChange('compoundWallLengthGuideline', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 3320" disabled={isReadOnly} /></Field>
+                          <Field label="Compound Wall Rate (per rft)"><input type="text" value={fields.compoundWallRateGuideline} onChange={e => handleChange('compoundWallRateGuideline', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 600" disabled={isReadOnly} /></Field>
+                          <Field label="Compound Wall Value"><input type="text" value={fields.compoundWallValueGuideline ? 'Rs. ' + fields.compoundWallValueGuideline : ''} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
                           <Field label="Depreciation Description" span={2}><textarea rows={2} value={fields.depreciationDescGuideline} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs resize-none cursor-not-allowed" readOnly disabled /></Field>
                           <Field label="Total Guideline Building/Shed Components" span={2}><input type="text" value={fields.totalBuildingShedComponentsGuideline} onChange={e => handleChange('totalBuildingShedComponentsGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
                         </div>
@@ -3390,7 +3437,9 @@ Our valuation is based on information obtained from the client and on data gathe
                     {!isReadOnly && <button type="button" onClick={() => handleChange('guidelinePlotRows', [...fields.guidelinePlotRows, { id: String(Date.now()), mouza: '', nature: '', owner: '', plotNo: '', khataNo: '', area: '', ratePerDec: '', amount: '' }])} className="text-xs font-bold text-amber-700 hover:underline mt-2">+ Add Row</button>}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
                       <Field label="Total Guideline Plot Value"><input type="text" value={fields.guidelinePlotTotal} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
-                      <Field label="Compound Wall Depreciation"><input type="text" value={fields.cuttackCompoundWallGuideline} onChange={e => handleChange('cuttackCompoundWallGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Compound Wall Length (rft)"><input type="text" value={fields.cuttackCompoundWallLengthGuideline} onChange={e => handleChange('cuttackCompoundWallLengthGuideline', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 3320" disabled={isReadOnly} /></Field>
+                          <Field label="Compound Wall Rate (per rft)"><input type="text" value={fields.cuttackCompoundWallRateGuideline} onChange={e => handleChange('cuttackCompoundWallRateGuideline', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 600" disabled={isReadOnly} /></Field>
+                          <Field label="Compound Wall Value"><input type="text" value={fields.cuttackCompoundWallGuideline ? 'Rs. ' + fields.cuttackCompoundWallGuideline : ''} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
                       <Field label="Sheds/Buildings Depreciation"><input type="text" value={fields.cuttackShedsDepreciationGuideline} onChange={e => handleChange('cuttackShedsDepreciationGuideline', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
                       <Field label="Total Guideline Value for Land and Building"><input type="text" value={fields.cuttackTotalGuidelineLandBuilding} onChange={e => handleChange('cuttackTotalGuidelineLandBuilding', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
                       <Field label="Or Say"><input type="text" value={fields.cuttackGuidelineOrSay} onChange={e => handleChange('cuttackGuidelineOrSay', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
@@ -3436,7 +3485,9 @@ Our valuation is based on information obtained from the client and on data gathe
                     {!isReadOnly && <button type="button" onClick={() => handleChange('presentPlotRows', [...fields.presentPlotRows, { id: String(Date.now()), mouza: '', nature: '', owner: '', plotNo: '', khataNo: '', area: '', ratePerDec: '', amount: '' }])} className="text-xs font-bold text-blue-700 hover:underline mt-2">+ Add Row</button>}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
                       <Field label="Total Present Market Value Plot"><input type="text" value={fields.presentPlotTotal} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
-                      <Field label="Compound Wall Depreciation"><input type="text" value={fields.cuttackCompoundWallPresent} onChange={e => handleChange('cuttackCompoundWallPresent', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Compound Wall Length (rft)"><input type="text" value={fields.cuttackCompoundWallLengthPresent} onChange={e => handleChange('cuttackCompoundWallLengthPresent', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 3320" disabled={isReadOnly} /></Field>
+                          <Field label="Compound Wall Rate (per rft)"><input type="text" value={fields.cuttackCompoundWallRatePresent} onChange={e => handleChange('cuttackCompoundWallRatePresent', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 600" disabled={isReadOnly} /></Field>
+                          <Field label="Compound Wall Value"><input type="text" value={fields.cuttackCompoundWallPresent ? 'Rs. ' + fields.cuttackCompoundWallPresent : ''} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
                       <Field label="Sheds/Buildings Depreciation"><input type="text" value={fields.cuttackShedsDepreciationPresent} onChange={e => handleChange('cuttackShedsDepreciationPresent', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
                       <Field label="Total Present Value for Land and Building"><input type="text" value={fields.cuttackTotalPresentLandBuilding} onChange={e => handleChange('cuttackTotalPresentLandBuilding', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
                       <Field label="Or Say"><input type="text" value={fields.cuttackPresentOrSay} onChange={e => handleChange('cuttackPresentOrSay', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
