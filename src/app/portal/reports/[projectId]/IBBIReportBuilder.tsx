@@ -1925,14 +1925,12 @@ Our valuation is based on information obtained from the client and on data gathe
               ]);
             }
             if (fields.totalBuildingValueFMV) {
+              const buildingLabelFMV = fields.depreciationDescFMV
+                ? 'TOTAL BUILDING VALUE\n (' + fields.depreciationDescFMV + ')'
+                : 'TOTAL BUILDING VALUE';
               rows.push([
-                '!!SPAN:7!!!!BOLD!!TOTAL BUILDING VALUE', '', '', '', '', '', '',
+                '!!SPAN:7!!!!BOLD!!' + buildingLabelFMV, '', '', '', '', '', '',
                 '!!BOLD!!!!FONTSIZE:10!!' + fields.totalBuildingValueFMV
-              ]);
-            }
-            if (fields.depreciationDescFMV) {
-              rows.push([
-                '!!FONTSIZE:7!!(' + fields.depreciationDescFMV + ')', '', '', '', '', '', '', ''
               ]);
             }
             if (fields.compoundWallValueFMV) {
@@ -1980,14 +1978,12 @@ Our valuation is based on information obtained from the client and on data gathe
               ]);
             }
             if (fields.totalBuildingValueGuideline) {
+              const buildingLabelGuideline = fields.depreciationDescGuideline
+                ? 'Total Guideline Building Value\n (' + fields.depreciationDescGuideline + ')'
+                : 'Total Guideline Building Value';
               rows.push([
-                '!!SPAN:7!!!!BOLD!!TOTAL BUILDING VALUE', '', '', '', '', '', '',
+                '!!SPAN:7!!!!BOLD!!' + buildingLabelGuideline, '', '', '', '', '', '',
                 '!!BOLD!!!!FONTSIZE:10!!' + fields.totalBuildingValueGuideline
-              ]);
-            }
-            if (fields.depreciationDescGuideline) {
-              rows.push([
-                '!!FONTSIZE:7!!(' + fields.depreciationDescGuideline + ')', '', '', '', '', '', '', ''
               ]);
             }
             if (fields.compoundWallValueGuideline) {
