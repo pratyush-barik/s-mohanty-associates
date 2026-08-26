@@ -2109,97 +2109,143 @@ Our valuation is based on information obtained from the client and on data gathe
       // ════════════════════════════════════════════════
       else {
         
-        // ─── GOVERNMENT GUIDELINE VALUE ───
-        r.drawTextBlock('GOVERNMENT GUIDELINE VALUE', { bold: true, fontSize: 11, underline: true });
-        r.advanceCursor(4);
-        if (fields.cuttackLandComponentDescGuideline) {
-          r.drawTextBlock(fields.cuttackLandComponentDescGuideline);
-          r.advanceCursor(4);
-        }
-        if (fields.guidelinePlotRows && fields.guidelinePlotRows.length > 0) {
-          const headers = ['Mouza', 'Nature', 'Plot no', 'Khata no', 'Area', 'Rate per dec', 'Amount'];
-          const rows: string[][] = fields.guidelinePlotRows.map((row: GuidelinePlotRow) => [row.mouza, row.nature, row.plotNo, row.khataNo, row.area, row.ratePerDec, row.amount]);
-          if (fields.guidelinePlotTotal) {
-            rows.push([
-              `!!SPAN:6!!!!CENTER!!!!BOLD!!Total Guideline Plot Value FOR AC.${(fields.guidelinePlotRows || []).reduce((s: number, r: any) => { const m = String(r.area || '').match(/([\d.]+)/); return s + (m ? parseFloat(m[1]) || 0 : 0); }, 0).toFixed(3)} dec`, '', '', '', '', '',
-              '!!BOLD!!' + fields.guidelinePlotTotal
-            ]);
-          }
-          if (fields.guidelineDiscountedTotal) {
-            rows.push([
-              `!!SPAN:6!!!!CENTER!!!!BOLD!!Total Accessed Value Post Discounted reduction of ${String(fields.guidelineDiscountPercent || 0).replace(/%/g, '')}% on Total Guideline Value`, '', '', '', '', '',
-              '!!BOLD!!' + fields.guidelineDiscountedTotal
-            ]);
-          }
-          r.drawDataTable(headers, rows);
-          r.advanceCursor(2);
-        } else {
-          if (fields.guidelinePlotTotal) r.drawTextBlock(`TOTAL GUIDELINE PLOT VALUE: ${fields.guidelinePlotTotal}`, { bold: true, align: 'right' });
-        }
-        if (fields.cuttackCompoundWallGuideline) {
-          r.drawTextBlock(fields.cuttackCompoundWallGuideline, { align: 'left' });
-        }
-        if (fields.cuttackShedsDepPctGuideline || fields.cuttackShedsDepAmtGuideline) {
-          r.drawTextBlock(`Present depreciated market value of the available sheds and buildings, at its present status, assessed @ ${fields.cuttackShedsDepPctGuideline || 0}% of the present value | Rs. ${formatIndianCurrency(String(fields.cuttackShedsDepAmtGuideline || '0').replace(/[^\d.]/g, ''))}`, { align: 'left' });
-        }
-        if (fields.cuttackTotalGuidelineLandBuilding) {
-          r.drawTextBlock(`TOTAL GUIDELINE VALUE FOR LAND AND BUILDING: ${fields.cuttackTotalGuidelineLandBuilding}`, { bold: true, align: 'right' });
-        }
-        if (fields.cuttackGuidelineOrSay) {
-          r.drawTextBlock(`Or Say: ${fields.cuttackGuidelineOrSay}`, { bold: true, align: 'right' });
-        }
+        // ─── GOVERNMENT GUIDELINE VALUE (unified table) ───
         {
+          const guidelineTableHeaders = ['GOVERNMENT GUIDELINE VALUE', '', '', '', '', '', ''];
+          const guidelineTableRows: string[][] = [];
+
+          // Row 1: Land Component Description (full-width)
+          if (fields.cuttackLandComponentDescGuideline) {
+            guidelineTableRows.push(['Land Component - ' + fields.cuttackLandComponentDescGuideline, '', '', '', '', '', '']);
+          }
+
+          // Row 2: Column sub-headers
+          guidelineTableRows.push(['!!BOLD!!Mouza', '!!BOLD!!Nature', '!!BOLD!!Plot no', '!!BOLD!!Khata no', '!!BOLD!!Area', '!!BOLD!!Rate per dec', '!!BOLD!!Amount']);
+
+          // Data rows
+          if (fields.guidelinePlotRows && fields.guidelinePlotRows.length > 0) {
+            for (const row of fields.guidelinePlotRows as GuidelinePlotRow[]) {
+              guidelineTableRows.push([row.mouza, row.nature, row.plotNo, row.khataNo, row.area, row.ratePerDec, row.amount]);
+            }
+          }
+
+          // Total Guideline Plot Value
+          const guidelineAreaSum = (fields.guidelinePlotRows || []).reduce((s: number, rw: any) => { const m = String(rw.area || '').match(/([\d.]+)/); return s + (m ? parseFloat(m[1]) || 0 : 0); }, 0);
+          guidelineTableRows.push([
+            `!!SPAN:6!!!!BOLD!!TOTAL GUIDELINE PLOT VALUE FOR AC.${guidelineAreaSum.toFixed(3)} dec`, '', '', '', '', '',
+            '!!BOLD!!' + (fields.guidelinePlotTotal || '')
+          ]);
+
+          // Compound Wall row (text | Rs. amount) — split at pipe
+          if (fields.cuttackCompoundWallGuideline) {
+            const cwParts = String(fields.cuttackCompoundWallGuideline).split(/\|\s*/);
+            const cwText = (cwParts[0] || '').trim();
+            const cwAmt = (cwParts[1] || '').trim();
+            guidelineTableRows.push([
+              '!!SPAN:6!!' + cwText, '', '', '', '', '',
+              cwAmt
+            ]);
+          }
+
+          // Sheds/Buildings Depreciation row (text | Rs. amount)
+          if (fields.cuttackShedsDepPctGuideline || fields.cuttackShedsDepAmtGuideline) {
+            guidelineTableRows.push([
+              `!!SPAN:6!!Present depreciated market value of the available sheds and buildings, at its present status, assessed @ ${fields.cuttackShedsDepPctGuideline || 0}% of the present value`, '', '', '', '', '',
+              'Rs. ' + formatIndianCurrency(String(fields.cuttackShedsDepAmtGuideline || '0').replace(/[^\d.]/g, ''))
+            ]);
+          }
+
+          // TOTAL GUIDELINE VALUE FOR LAND AND BUILDING (same font size as data = 8pt default, bold)
+          guidelineTableRows.push([
+            '!!SPAN:6!!!!BOLD!!TOTAL GUIDELINE VALUE FOR LAND AND BUILDING', '', '', '', '', '',
+            '!!BOLD!!' + (fields.cuttackTotalGuidelineLandBuilding || '')
+          ]);
+
+          // Or Say (font size = 10pt)
+          guidelineTableRows.push([
+            '!!SPAN:6!!!!BOLD!!!!FONTSIZE:10!!Or Say', '', '', '', '', '',
+            '!!BOLD!!!!FONTSIZE:10!!' + (fields.cuttackGuidelineOrSay || '')
+          ]);
+
+          // GUIDELINE LAND & BUILDING VALUE in words (full-width, font size = 10pt, bold+italic)
           const orSayGuidelineNum = parseFloat(String(fields.cuttackGuidelineOrSay || '').replace(/[^\d.]/g, '')) || 0;
           if (orSayGuidelineNum > 0) {
-            r.drawTextBlock(`GUIDELINE LAND & BUILDING VALUE - ${rupeesInWords(orSayGuidelineNum).toUpperCase()}`, { bold: true, italic: true });
+            guidelineTableRows.push([
+              `!!BOLD!!!!FONTSIZE:10!!GUIDELINE LAND & BUILDING VALUE - ${rupeesInWords(orSayGuidelineNum).toUpperCase()}`, '', '', '', '', '', ''
+            ]);
           }
+
+          r.drawDataTable(guidelineTableHeaders, guidelineTableRows);
         }
         r.advanceCursor(6);
 
-        // ─── PRESENT MARKET VALUE ───
-        r.drawTextBlock('PRESENT MARKET VALUE', { bold: true, fontSize: 11, underline: true });
-        r.advanceCursor(4);
-        if (fields.cuttackLandComponentDescPresent) {
-          r.drawTextBlock(fields.cuttackLandComponentDescPresent);
-          r.advanceCursor(4);
-        }
-        if (fields.presentPlotRows && fields.presentPlotRows.length > 0) {
-          const headers = ['Mouza', 'Nature', 'Plot no', 'Khata no', 'Area', 'Rate per dec', 'Amount'];
-          const rows: string[][] = fields.presentPlotRows.map((row: PresentPlotRow) => [row.mouza, row.nature, row.plotNo, row.khataNo, row.area, row.ratePerDec, row.amount]);
-          if (fields.presentPlotTotal) {
-            rows.push([
-              `!!SPAN:6!!!!CENTER!!!!BOLD!!TOTAL PRESENT MARKET VALUE PLOT FOR AC.${(fields.presentPlotRows || []).reduce((s: number, r: any) => { const m = String(r.area || '').match(/([\d.]+)/); return s + (m ? parseFloat(m[1]) || 0 : 0); }, 0).toFixed(3)} dec`, '', '', '', '', '',
-              '!!BOLD!!' + fields.presentPlotTotal
-            ]);
-          }
-          if (fields.presentDiscountedTotal) {
-            rows.push([
-              `!!SPAN:6!!!!CENTER!!!!BOLD!!Total Present Plot Value Post Discounted reduction of ${String(fields.presentDiscountPercent || 0).replace(/%/g, '')}% on Total FAIR Value`, '', '', '', '', '',
-              '!!BOLD!!' + fields.presentDiscountedTotal
-            ]);
-          }
-          r.drawDataTable(headers, rows);
-          r.advanceCursor(2);
-        } else {
-          if (fields.presentPlotTotal) r.drawTextBlock(`TOTAL PRESENT MARKET VALUE PLOT FOR AC.${(fields.presentPlotRows || []).reduce((s: number, r: any) => { const m = String(r.area || '').match(/([\\d.]+)/); return s + (m ? parseFloat(m[1]) || 0 : 0); }, 0).toFixed(3)} dec: ${fields.presentPlotTotal}`, { bold: true, align: 'right' });
-        }
-        if (fields.cuttackCompoundWallPresent) {
-          r.drawTextBlock(fields.cuttackCompoundWallPresent, { align: 'left' });
-        }
-        if (fields.cuttackShedsDepPctPresent || fields.cuttackShedsDepAmtPresent) {
-          r.drawTextBlock(`Present depreciated market value of the available sheds and buildings, at its present status, assessed @ ${fields.cuttackShedsDepPctPresent || 0}% of the present value | Rs. ${formatIndianCurrency(String(fields.cuttackShedsDepAmtPresent || '0').replace(/[^\d.]/g, ''))}`, { align: 'left' });
-        }
-        if (fields.cuttackTotalPresentLandBuilding) {
-          r.drawTextBlock(`TOTAL PRESENT VALUE FOR LAND AND BUILDING: ${fields.cuttackTotalPresentLandBuilding}`, { bold: true, align: 'right' });
-        }
-        if (fields.cuttackPresentOrSay) {
-          r.drawTextBlock(`Or Say: ${fields.cuttackPresentOrSay}`, { bold: true, align: 'right' });
-        }
+        // ─── PRESENT MARKET VALUE (unified table) ───
         {
+          const presentTableHeaders = ['PRESENT MARKET VALUE', '', '', '', '', '', ''];
+          const presentTableRows: string[][] = [];
+
+          // Row 1: Land Component Description (full-width)
+          if (fields.cuttackLandComponentDescPresent) {
+            presentTableRows.push(['Land Component - ' + fields.cuttackLandComponentDescPresent, '', '', '', '', '', '']);
+          }
+
+          // Row 2: Column sub-headers
+          presentTableRows.push(['!!BOLD!!Mouza', '!!BOLD!!Nature', '!!BOLD!!Plot no', '!!BOLD!!Khata no', '!!BOLD!!Area', '!!BOLD!!Rate per dec', '!!BOLD!!Amount']);
+
+          // Data rows
+          if (fields.presentPlotRows && fields.presentPlotRows.length > 0) {
+            for (const row of fields.presentPlotRows as PresentPlotRow[]) {
+              presentTableRows.push([row.mouza, row.nature, row.plotNo, row.khataNo, row.area, row.ratePerDec, row.amount]);
+            }
+          }
+
+          // Total Present Market Value Plot
+          const presentAreaSum = (fields.presentPlotRows || []).reduce((s: number, rw: any) => { const m = String(rw.area || '').match(/([\d.]+)/); return s + (m ? parseFloat(m[1]) || 0 : 0); }, 0);
+          presentTableRows.push([
+            `!!SPAN:6!!!!BOLD!!TOTAL PRESENT MARKET VALUE PLOT FOR AC.${presentAreaSum.toFixed(3)} dec`, '', '', '', '', '',
+            '!!BOLD!!' + (fields.presentPlotTotal || '')
+          ]);
+
+          // Compound Wall row (text | Rs. amount)
+          if (fields.cuttackCompoundWallPresent) {
+            const cwParts = String(fields.cuttackCompoundWallPresent).split(/\|\s*/);
+            const cwText = (cwParts[0] || '').trim();
+            const cwAmt = (cwParts[1] || '').trim();
+            presentTableRows.push([
+              '!!SPAN:6!!' + cwText, '', '', '', '', '',
+              cwAmt
+            ]);
+          }
+
+          // Sheds/Buildings Depreciation row (text | Rs. amount)
+          if (fields.cuttackShedsDepPctPresent || fields.cuttackShedsDepAmtPresent) {
+            presentTableRows.push([
+              `!!SPAN:6!!Present depreciated market value of the available sheds and buildings, at its present status, assessed @ ${fields.cuttackShedsDepPctPresent || 0}% of the present value`, '', '', '', '', '',
+              'Rs. ' + formatIndianCurrency(String(fields.cuttackShedsDepAmtPresent || '0').replace(/[^\d.]/g, ''))
+            ]);
+          }
+
+          // TOTAL PRESENT VALUE FOR LAND AND BUILDING (bold, default font size)
+          presentTableRows.push([
+            '!!SPAN:6!!!!BOLD!!TOTAL PRESENT VALUE FOR LAND AND BUILDING', '', '', '', '', '',
+            '!!BOLD!!' + (fields.cuttackTotalPresentLandBuilding || '')
+          ]);
+
+          // Or Say (font size = 10pt)
+          presentTableRows.push([
+            '!!SPAN:6!!!!BOLD!!!!FONTSIZE:10!!Or Say', '', '', '', '', '',
+            '!!BOLD!!!!FONTSIZE:10!!' + (fields.cuttackPresentOrSay || '')
+          ]);
+
+          // PRESENT LAND & BUILDING VALUE in words (full-width, font size = 10pt, bold)
           const orSayPresentNum = parseFloat(String(fields.cuttackPresentOrSay || '').replace(/[^\d.]/g, '')) || 0;
           if (orSayPresentNum > 0) {
-            r.drawTextBlock(`PRESENT LAND & BUILDING VALUE - ${rupeesInWords(orSayPresentNum).toUpperCase()}`, { bold: true, italic: true });
+            presentTableRows.push([
+              `!!BOLD!!!!FONTSIZE:10!!PRESENT LAND & BUILDING VALUE - ${rupeesInWords(orSayPresentNum).toUpperCase()}`, '', '', '', '', '', ''
+            ]);
           }
+
+          r.drawDataTable(presentTableHeaders, presentTableRows);
         }
         r.advanceCursor(6);
 
