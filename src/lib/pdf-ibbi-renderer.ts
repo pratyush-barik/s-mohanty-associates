@@ -1166,24 +1166,9 @@ export class PDFIBBIRenderer {
       }));
     }
 
-    this.checkPageBreak(headerH + 40);
-
-    let x = MARGIN_L;
-    if (headerIsFull) {
-      this.drawCell(x, this.cursorY, CONTENT_W, headerH, headers[0], {
-        bold: true, fontSize, fillColor: LBL_BG, bgOpacity: 0.6,
-      });
-    } else {
-      for (let c = 0; c < numCols; c++) {
-        this.drawCell(x, this.cursorY, finalWidths[c], headerH, headers[c], {
-          bold: true, fontSize, fillColor: LBL_BG, bgOpacity: 0.6,
-        });
-        x += finalWidths[c];
-      }
-    }
-    this.cursorY += headerH;
-
-    // Draw data rows
+    // Pre-calculate all row heights to determine if entire table fits on current page
+    let totalTableHeight = headerH;
+    const rowHeights: number[] = [];
     for (const row of rows) {
       const rowIsFull = isFullWidth(row);
       let rowH = 0;
@@ -1216,6 +1201,39 @@ export class PDFIBBIRenderer {
         }
         rowH = Math.max(...cellHeights, fontSize * LINE_HEIGHT + rowPadY * 2);
       }
+      rowHeights.push(rowH);
+      totalTableHeight += rowH;
+    }
+
+    const availableSpace = PAGE_H - MARGIN_B - this.cursorY;
+    const maxPageSpace = PAGE_H - MARGIN_T - MARGIN_B;
+
+    if (totalTableHeight > availableSpace && totalTableHeight <= maxPageSpace) {
+      this.addPage();
+    } else if (totalTableHeight > maxPageSpace) {
+      this.checkPageBreak(headerH + 40);
+    }
+
+    let x = MARGIN_L;
+    if (headerIsFull) {
+      this.drawCell(x, this.cursorY, CONTENT_W, headerH, headers[0], {
+        bold: true, fontSize, fillColor: LBL_BG, bgOpacity: 0.6,
+      });
+    } else {
+      for (let c = 0; c < numCols; c++) {
+        this.drawCell(x, this.cursorY, finalWidths[c], headerH, headers[c], {
+          bold: true, fontSize, fillColor: LBL_BG, bgOpacity: 0.6,
+        });
+        x += finalWidths[c];
+      }
+    }
+    this.cursorY += headerH;
+
+    // Draw data rows
+    let rowIndex = 0;
+    for (const row of rows) {
+      const rowIsFull = isFullWidth(row);
+      const rowH = rowHeights[rowIndex++];
 
       this.checkPageBreak(rowH);
 
