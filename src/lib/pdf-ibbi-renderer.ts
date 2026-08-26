@@ -17,8 +17,8 @@ function hexToRgb(hex: string) {
 // ─── Constants ──────────────────────────────────────────────────────
 const PAGE_W = 595.28;   // A4 width in points
 const PAGE_H = 841.89;   // A4 height in points
-const MARGIN_T = 84;  // Top margin (matches letterhead header)
-const MARGIN_B = 80;  // Bottom margin (matches letterhead footer)
+const MARGIN_T = 102;  // Top margin (matches letterhead header — same as IT renderer)
+const MARGIN_B = 85;  // Bottom margin (matches letterhead footer — same as IT renderer)
 const MARGIN_L = 54;  // Left margin
 const MARGIN_R = 54;  // Right margin
 const CONTENT_W = PAGE_W - MARGIN_L - MARGIN_R; // Usable width
