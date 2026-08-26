@@ -3434,7 +3434,7 @@ Our valuation is based on information obtained from the client and on data gathe
                   <div className="border border-red-200 rounded-xl p-4 bg-red-50/30">
                     <h4 className="text-xs font-black text-red-800 uppercase tracking-wider mb-3">Realisable Value / Liquidation Value</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                      <Field label="Description Override (Optional)" span={2}>
+                      <Field label="Description of Realisable Value / Liquidation Value (Optional)" span={2}>
                         <textarea rows={4} value={fields.realisableValueDesc || ''} onChange={e => handleChange('realisableValueDesc', e.target.value)} className={inputCls + ' resize-none'} placeholder="Leave blank to use the default description..." disabled={isReadOnly} />
                       </Field>
                     </div>
@@ -3617,7 +3617,7 @@ Our valuation is based on information obtained from the client and on data gathe
                   <div className="border border-red-200 rounded-xl p-4 bg-red-50/30">
                     <h4 className="text-xs font-black text-red-800 uppercase tracking-wider mb-3">Realisable Value / Liquidation Value</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                      <Field label="Description Override (Optional)" span={2}>
+                      <Field label="Description of Realisable Value / Liquidation Value (Optional)" span={2}>
                         <textarea rows={4} value={fields.realisableValueDesc || ''} onChange={e => handleChange('realisableValueDesc', e.target.value)} className={inputCls + ' resize-none'} placeholder="Leave blank to use the default description..." disabled={isReadOnly} />
                       </Field>
                     </div>
