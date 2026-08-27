@@ -4475,16 +4475,6 @@ Our valuation is based on information obtained from the client and on data gathe
           {/* ── Conclusion Section ── */}
           <Section title="Conclusion" id="section-conclusion">
             <div className="space-y-4">
-              <Field label="Type of Property Description (max 8 words)">
-                <input
-                  type="text"
-                  value={fields.typeOfPropertyDescription || ''}
-                  onChange={e => handleChange('typeOfPropertyDescription', e.target.value)}
-                  className={inputCls}
-                  placeholder="e.g. Patch of Industrial Unit"
-                  disabled={isReadOnly}
-                />
-              </Field>
               <Field label="Conclusion Description (Overrides the hardcoded two paragraphs)">
                 <textarea
                   value={fields.conclusionDescription || ''}
@@ -4493,6 +4483,16 @@ Our valuation is based on information obtained from the client and on data gathe
                   placeholder="Leave empty to use standard hardcoded paragraphs..."
                   disabled={isReadOnly}
                   rows={4}
+                />
+              </Field>
+              <Field label="Type of Property Description (max 8 words)">
+                <input
+                  type="text"
+                  value={fields.typeOfPropertyDescription || ''}
+                  onChange={e => handleChange('typeOfPropertyDescription', e.target.value)}
+                  className={inputCls}
+                  placeholder="e.g. Patch of Industrial Unit"
+                  disabled={isReadOnly}
                 />
               </Field>
 
