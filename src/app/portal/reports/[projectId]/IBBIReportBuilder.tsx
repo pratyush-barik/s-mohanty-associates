@@ -2697,7 +2697,7 @@ Our valuation is based on information obtained from the client and on data gathe
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       if (propImageBytes.length > 0) {
         r.newPage();
-        r.drawCenteredTitle('PROPERTY PHOTOGRAPHS');
+        r.drawSectionHeader('PROPERTY PHOTOGRAPHS');
       tocPageMap['PROPERTY PHOTOGRAPHS'] = r.getPageCount();
         r.advanceCursor(6);
 
