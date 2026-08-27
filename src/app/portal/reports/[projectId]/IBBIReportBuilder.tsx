@@ -346,6 +346,7 @@ interface IBBIFields {
   assumptionEBullet1: string;
   assumptionEBullet2: string;
   assumptionF: string;
+  customAssumptions: { text: string }[];
 
   // ── Remarks ──
   representativeName: string;
@@ -633,6 +634,7 @@ const DEFAULT_FIELDS: IBBIFields = {
   assumptionEBullet1: "The information provided by the owner's or their representative appointed /its affiliates subsidiaries during the visits.",
   assumptionEBullet2: 'Recent data on the industry segments and market projections.',
   assumptionF: 'The value assessed is my best opinion under the current circumstances and market scenario and is not a guarantee. Real estate prices are subject to wide fluctuations and the valuation need to be reviewed at suitable regular intervals.',
+  customAssumptions: [],
 
   representativeName: '',
   representativeFatherName: '',
@@ -2504,19 +2506,19 @@ Our valuation is based on information obtained from the client and on data gathe
       tocPageMap['15. ASSUMPTIONS & LIMITATIONS'] = r.getPageCount();
       r.advanceCursor(4);
 
-      // Intro paragraph (overridable)
+      // Intro paragraph (overridable) — no indent, flush with left margin
       const assumptionIntroText = fields.assumptionsIntro || 'For this report we have carried out analysis and assessments of the market(s) under consideration and the demand-supply for the residential and commercial sectors in general.\nThis report is not based on comprehensive market research of the overall market for all possible situations. We have covered specific market and situations, which are highlighted in the report. The opinions expressed in the report are subject to the limitations mentioned in this para.';
       const introParts = assumptionIntroText.split('\n');
       for (const part of introParts) {
         if (part.trim()) {
-          r.drawTextBlock(part.trim(), { indent: 20 });
+          r.drawTextBlock(part.trim(), { indent: 25 });
           r.advanceCursor(2);
         }
       }
 
-      // a. Value assessment basis
+      // a. Value assessment basis — hanging indent: label at left, text aligned with intro
       const aText = fields.assumptionA || 'It should be noted that value assessments are based upon the facts and evidence available at the date of assessment. Changes in socio-economic and political conditions could result in a substantially different situation that the value assessments be periodically reviewed.';
-      r.drawTextBlock('a.  ' + aText, { indent: 20 });
+      r.drawLetterBullet('a.', aText, { labelIndent: 2, textIndent: 25 });
       r.advanceCursor(2);
 
       // b. Purpose & exclusive use (auto-derived from Appointed By & Owner Name)
@@ -2524,34 +2526,54 @@ Our valuation is based on information obtained from the client and on data gathe
       const ownerVal = fields.applicantName || fields.ownerName || '________';
       const defaultBText = `The report is only for the purpose of assessing fair market value of the Plot as per detail provided by the client and for the exclusive use of ${appointedByVal} on behalf of ${ownerVal}, and should not be used by any other person or for any other purpose. Report provided is limited to opinion of value and do not constitute an audit, a due diligence and tax related services. Through this report we do not express and opinion on the financial information of the business of any party, including the owners and its affiliates and subsidiaries. The report is prepared solely for the purpose stated, and should not be used for any other purpose.`;
       const bText = fields.assumptionB || defaultBText;
-      r.drawTextBlock('b.  ' + bText, { indent: 20 });
+      r.drawLetterBullet('b.', bText, { labelIndent: 2, textIndent: 25 });
       r.advanceCursor(2);
 
       // c. Title investigation
       const cText = fields.assumptionC || 'No investigation of the title of the assets has been made and owners claims to the assets are assumed to be valid. It is, assumed that the property is free from all encumbrance.';
-      r.drawTextBlock('c.  ' + cText, { indent: 20 });
+      r.drawLetterBullet('c.', cText, { labelIndent: 2, textIndent: 25 });
       r.advanceCursor(2);
 
       // d. Tax liability
       const dText = fields.assumptionD || 'It is also assumed, that there is no liability of outstanding on the owners taxation or any other expense towards statutory compliance for realization.';
-      r.drawTextBlock('d.  ' + dText, { indent: 20 });
+      r.drawLetterBullet('d.', dText, { labelIndent: 2, textIndent: 25 });
       r.advanceCursor(2);
 
       // e. Information relied upon
       const eText = fields.assumptionE || 'In the preparations of the report, we have relied on the following information:';
-      r.drawTextBlock('e.  ' + eText, { indent: 20 });
+      r.drawLetterBullet('e.', eText, { labelIndent: 2, textIndent: 25 });
       r.advanceCursor(1);
       const eBullet1 = fields.assumptionEBullet1 || "The information provided by the owner's or their representative appointed /its affiliates subsidiaries during the visits.";
       const eBullet2 = fields.assumptionEBullet2 || 'Recent data on the industry segments and market projections.';
-      r.drawTextBlock('\u2022  ' + eBullet1, { indent: 35 });
+      r.drawLetterBullet('\u2022', eBullet1, { labelIndent: 35, textIndent: 48 });
       r.advanceCursor(1);
-      r.drawTextBlock('\u2022  ' + eBullet2, { indent: 35 });
+      r.drawLetterBullet('\u2022', eBullet2, { labelIndent: 35, textIndent: 48 });
       r.advanceCursor(2);
 
       // f. Valuer's opinion
       const fText = fields.assumptionF || 'The value assessed is my best opinion under the current circumstances and market scenario and is not a guarantee. Real estate prices are subject to wide fluctuations and the valuation need to be reviewed at suitable regular intervals.';
-      r.drawTextBlock('f.  ' + fText, { indent: 20 });
-      r.advanceCursor(8);
+      r.drawLetterBullet('f.', fText, { labelIndent: 2, textIndent: 25 });
+      r.advanceCursor(2);
+
+      // Custom bullet points (g, h, i, ...)
+      if (fields.customAssumptions && fields.customAssumptions.length > 0) {
+        for (let ci = 0; ci < fields.customAssumptions.length; ci++) {
+          const cItem = fields.customAssumptions[ci];
+          if (!cItem.text || !cItem.text.trim()) continue;
+          const baseIdx = ci + 6; // starts after f (index 5)
+          let bulletLabel: string;
+          if (baseIdx < 26) {
+            bulletLabel = String.fromCharCode(97 + baseIdx) + '.';
+          } else {
+            const first = Math.floor((baseIdx - 26) / 26);
+            const second = (baseIdx - 26) % 26;
+            bulletLabel = String.fromCharCode(97 + first) + String.fromCharCode(97 + second) + '.';
+          }
+          r.drawLetterBullet(bulletLabel, cItem.text.trim(), { labelIndent: 2, textIndent: 25 });
+          r.advanceCursor(2);
+        }
+      }
+      r.advanceCursor(6);
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       //  CONCLUSION
@@ -4326,6 +4348,66 @@ Our valuation is based on information obtained from the client and on data gathe
                   rows={2}
                 />
               </Field>
+
+              {/* Dynamic custom bullet points (g, h, i, ...) */}
+              {fields.customAssumptions && fields.customAssumptions.map((item: { text: string }, idx: number) => {
+                // Generate label: g=0, h=1, ... z=19, aa=20, ab=21, ...
+                const baseIdx = idx + 6; // starts after f (index 5)
+                let label: string;
+                if (baseIdx < 26) {
+                  label = String.fromCharCode(97 + baseIdx); // g, h, i, ...
+                } else {
+                  const first = Math.floor((baseIdx - 26) / 26);
+                  const second = (baseIdx - 26) % 26;
+                  label = String.fromCharCode(97 + first) + String.fromCharCode(97 + second); // aa, ab, ...
+                }
+                return (
+                  <div key={idx} className="relative group">
+                    <Field label={`${label}. Custom Bullet Point`}>
+                      <div className="flex items-start gap-2">
+                        <textarea
+                          value={item.text}
+                          onChange={e => {
+                            const arr = [...fields.customAssumptions];
+                            arr[idx] = { text: e.target.value };
+                            handleChange('customAssumptions', arr);
+                          }}
+                          className={inputCls + ' min-h-[60px] flex-1'}
+                          disabled={isReadOnly}
+                          rows={2}
+                          placeholder={`Enter bullet point ${label}...`}
+                        />
+                        {!isReadOnly && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const arr = fields.customAssumptions.filter((_: { text: string }, i: number) => i !== idx);
+                              handleChange('customAssumptions', arr);
+                            }}
+                            className="mt-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold hover:bg-red-600 transition-colors flex-shrink-0"
+                            title="Remove this bullet point"
+                          >&times;</button>
+                        )}
+                      </div>
+                    </Field>
+                  </div>
+                );
+              })}
+
+              {/* Add Bullet button */}
+              {!isReadOnly && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const arr = [...(fields.customAssumptions || []), { text: '' }];
+                    handleChange('customAssumptions', arr);
+                  }}
+                  className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-[#b8860b] text-[#b8860b] text-xs font-semibold hover:bg-[#b8860b]/5 transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                  Add Bullet Point
+                </button>
+              )}
             </div>
           </Section>
 

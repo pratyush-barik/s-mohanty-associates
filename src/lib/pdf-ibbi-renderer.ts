@@ -844,6 +844,38 @@ export class PDFIBBIRenderer {
   }
 
   /**
+   * Draw a bullet point with a hanging indent.
+   * The label (e.g. "a.", "b.") is drawn on the left, and the text wraps
+   * at a consistent indent so continuation lines align with the first line of text.
+   * Advances cursor.
+   */
+  drawLetterBullet(label: string, text: string, opts?: DrawTextOptions & { labelIndent?: number; textIndent?: number }): void {
+    const fontSize = opts?.fontSize || FONT_SIZE;
+    const lineH = fontSize * LINE_HEIGHT;
+    const labelIndent = opts?.labelIndent ?? 0;
+    const textIndent = opts?.textIndent ?? 25;
+    const maxTextWidth = (opts?.maxWidth || CONTENT_W) - textIndent;
+    const lines = this.wrapText(text, maxTextWidth, fontSize, opts?.bold, opts?.italic);
+    const totalH = lines.length * lineH;
+
+    this.checkPageBreak(totalH);
+
+    // Draw the label (e.g. "a.") on the left
+    this.drawTextAt(label, MARGIN_L + labelIndent, this.cursorY, {
+      fontSize, bold: false,
+    });
+
+    // Draw all text lines at the text indent position
+    for (let i = 0; i < lines.length; i++) {
+      this.drawTextAt(lines[i], MARGIN_L + textIndent, this.cursorY + i * lineH, {
+        ...opts, maxWidth: maxTextWidth,
+      });
+    }
+
+    this.cursorY += totalH;
+  }
+
+  /**
    * Draw a rich text block with mixed bold/regular segments.
    * Advances cursor.
    */
