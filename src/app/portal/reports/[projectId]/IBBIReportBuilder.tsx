@@ -2581,19 +2581,22 @@ Our valuation is based on information obtained from the client and on data gathe
       r.advanceCursor(4);
       
       const orSayFmvNum = parseFloat(String(fields.totalPresentValueOrSay || '').replace(/[^\d.]/g, '')) || fmvVal;
-      r.drawTextBlock(`Present Market Value is INR. ${fields.totalPresentValueOrSay || formatIndianCurrency(fmvVal)}. (${rupeesInWords(orSayFmvNum).toUpperCase()}).`, { bold: true });
-      r.advanceCursor(2);
+      r.drawTextBlock(`Present Market Value is INR. ${fields.totalPresentValueOrSay || formatIndianCurrency(fmvVal)}.`, { bold: true });
+      r.drawTextBlock(`(${rupeesInWords(orSayFmvNum).toUpperCase()}).`, { bold: true });
+      r.advanceCursor(4);
       
       if (fields.realisableValueOrSay || fields.realisableValueTotal) {
         const orSayRealNum = parseFloat(String(fields.realisableValueOrSay || '').replace(/[^\d.]/g, '')) || realVal;
-        r.drawTextBlock(`Realisable value is INR. ${fields.realisableValueOrSay || formatIndianCurrency(realVal)}. (${rupeesInWords(orSayRealNum).toUpperCase()}).`, { bold: true });
-        r.advanceCursor(2);
+        r.drawTextBlock(`Realisable value is INR. ${fields.realisableValueOrSay || formatIndianCurrency(realVal)}.`, { bold: true });
+        r.drawTextBlock(`(${rupeesInWords(orSayRealNum).toUpperCase()}).`, { bold: true });
+        r.advanceCursor(4);
       }
       
       if (fields.totalBookValueOrSay || fields.bookValueTotal) {
         const orSayGuideNum = parseFloat(String(fields.totalBookValueOrSay || '').replace(/[^\d.]/g, '')) || guideVal;
-        r.drawTextBlock(`Govt Guideline Value is INR. ${fields.totalBookValueOrSay || formatIndianCurrency(guideVal)}. (${rupeesInWords(orSayGuideNum).toUpperCase()}).`, { bold: true });
-        r.advanceCursor(2);
+        r.drawTextBlock(`Govt Guideline Value is INR. ${fields.totalBookValueOrSay || formatIndianCurrency(guideVal)}.`, { bold: true });
+        r.drawTextBlock(`(${rupeesInWords(orSayGuideNum).toUpperCase()}).`, { bold: true });
+        r.advanceCursor(4);
       }
       r.advanceCursor(8);
 
