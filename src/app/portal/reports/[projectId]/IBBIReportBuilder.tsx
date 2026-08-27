@@ -3004,6 +3004,17 @@ Our valuation is based on information obtained from the client and on data gathe
               <Field label="Appointment Date">
                 <input type="date" value={fields.appointmentDate || ''} onChange={e => handleChange('appointmentDate', e.target.value)} className={inputCls} disabled={isReadOnly} />
               </Field>
+
+              <div className="col-span-2 border-t border-gray-200 pt-3 mt-1">
+                <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest mb-2">Valuation Certificate Table</p>
+              </div>
+
+              <Field label="Client Name (from Section 4)" span={2}>
+                <input type="text" value={fields.applicantName || fields.ownerName || ''} className={inputCls + ' bg-gray-100'} disabled />
+              </Field>
+              <Field label="Property Address (from Section 4)" span={2}>
+                <input type="text" value={fields.propertyAddress || ''} className={inputCls + ' bg-gray-100'} disabled />
+              </Field>
               <Field label="Purpose of Valuation">
                 <input type="text" value={fields.purposeOfValuation || ''} onChange={e => handleChange('purposeOfValuation', e.target.value)} className={inputCls} placeholder="Access of Fair Market Value for Auction purpose" disabled={isReadOnly} />
               </Field>
@@ -3025,28 +3036,17 @@ Our valuation is based on information obtained from the client and on data gathe
               <Field label="Owner Contact Details">
                 <input type="text" value={fields.ownerContactDetails || ''} onChange={e => handleChange('ownerContactDetails', e.target.value)} className={inputCls} placeholder="e.g. 9876543210, owner@email.com" disabled={isReadOnly} />
               </Field>
-              <Field label="Valuation Method">
-                <input type="text" value={fields.valuationMethod || ''} onChange={e => handleChange('valuationMethod', e.target.value)} className={inputCls} placeholder="Sale Comparison Method coupled with Replacement Cost Approach" disabled={isReadOnly} />
-              </Field>
-              <Field label="Description" span={2}>
+              <Field label="Description">
                 <input type="text" value={fields.certDescription || ''} onChange={e => handleChange('certDescription', e.target.value)} className={inputCls} placeholder="e.g. Vacant Land, Residential House, etc." disabled={isReadOnly} />
-              </Field>
-              <Field label="Status of Plot" span={2}>
-                <input type="text" value={fields.certStatusOfPlot || ''} onChange={e => handleChange('certStatusOfPlot', e.target.value)} className={inputCls} placeholder="e.g. Converted to Homestead (Vacant)" disabled={isReadOnly} />
-              </Field>
-
-              {/* Read-only references from other sections */}
-              <div className="col-span-2 border-t border-gray-200 pt-3 mt-1">
-                <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest mb-2">Valuation Certificate Table</p>
-              </div>
-              <Field label="Client Name (from Section 4)" span={2}>
-                <input type="text" value={fields.applicantName || fields.ownerName || ''} className={inputCls + ' bg-gray-100'} disabled />
-              </Field>
-              <Field label="Property Address (from Section 4)">
-                <input type="text" value={fields.propertyAddress || ''} className={inputCls + ' bg-gray-100'} disabled />
               </Field>
               <Field label="Area / Extent of Site (from Section 4)">
                 <input type="text" value={fields.extentOfSite || 'N/A'} className={inputCls + ' bg-gray-100'} disabled />
+              </Field>
+              <Field label="Status of Plot">
+                <input type="text" value={fields.certStatusOfPlot || ''} onChange={e => handleChange('certStatusOfPlot', e.target.value)} className={inputCls} placeholder="e.g. Converted to Homestead (Vacant)" disabled={isReadOnly} />
+              </Field>
+              <Field label="Valuation Method">
+                <input type="text" value={fields.valuationMethod || ''} onChange={e => handleChange('valuationMethod', e.target.value)} className={inputCls} placeholder="Sale Comparison Method coupled with Replacement Cost Approach" disabled={isReadOnly} />
               </Field>
               <Field label="Valuation Date (from Section 1)">
                 <input type="text" value={fields.dateOfValuation || ''} className={inputCls + ' bg-gray-100'} disabled />
