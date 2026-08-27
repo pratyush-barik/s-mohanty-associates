@@ -351,6 +351,7 @@ interface IBBIFields {
   conclusionPlace: string;
   customAssumptions: { text: string; label?: string }[];
   declarationDescription: string;
+  customDeclarations: { text: string; label?: string }[];
 
   // ── Remarks ──
   representativeName: string;
@@ -643,6 +644,7 @@ const DEFAULT_FIELDS: IBBIFields = {
   conclusionPlace: 'Bhubaneswar',
   customAssumptions: [],
   declarationDescription: '',
+  customDeclarations: [],
 
   representativeName: '',
   representativeFatherName: '',
@@ -2659,6 +2661,13 @@ Our valuation is based on information obtained from the client and on data gathe
       r.drawSectionHeader('DECLARATION AND UNDERTAKING');
       tocPageMap['DECLARATION AND UNDERTAKING'] = r.getPageCount();
       r.advanceCursor(6);
+      // Helper to format date as DD.MM.YYYY
+      const fmtDateDDMMYYYY = (d: string) => {
+        if (!d) return '________';
+        const parts = d.split('-');
+        if (parts.length === 3) return `${parts[2]}.${parts[1]}.${parts[0]}`;
+        return d;
+      };
       if (fields.declarationDescription) {
         const parts = fields.declarationDescription.split('\n');
         for (const part of parts) {
@@ -2669,15 +2678,20 @@ Our valuation is based on information obtained from the client and on data gathe
         }
         r.advanceCursor(5);
       } else {
-        r.drawTextBlock(`I ${fields.representativeName ? 'Mr. ' + fields.representativeName : 'Mr. ________'}${fields.representativeFatherName ? ', S/o: ' + fields.representativeFatherName : ''} do hereby solemnly affirm and state that:`, { bold: true });
+        // Intro paragraph with bold name
+        r.drawTextBlock(`I ${fields.representativeName ? 'Mr. ' + fields.representativeName : 'Mr. ________'}${fields.representativeFatherName ? ', S/o: Mr ' + fields.representativeFatherName : ''} do hereby solemnly affirm and state that:`, { indent: 25 });
         r.advanceCursor(4);
+
+        // 20 clauses with letter bullets a-t
+        const valDateFormatted = fmtDateDDMMYYYY(fields.dateOfValuation);
+        const inspDateFormatted = fmtDateDDMMYYYY(fields.dateOfInspection);
         const declarations = [
           'I am citizen of India.',
           'I will not undertake valuation of any assets in which I have a direct or indirect interest or become so interested at any time during a period of three years prior to my appointments as valuer or three years after the valuation of assets was conducted by me.',
-          `The information furnished in my valuation report dated ${fields.dateOfValuation || '________'} is true & correct to the best of my knowledge & belief & I have made an impartial & true valuation of the property.`,
-          `I have personally inspected the property on ${fields.dateOfInspection || '________'}. The work is not sub-contracted to any other valuer & carried out by myself.`,
-          'I have not been removed from service/employment earlier.',
-          'I have not been convicted of any offence & sentenced to a term of imprisonment.',
+          `The information furnished in my valuation report dated ${valDateFormatted} is true & correct to the best of my knowledge & belief & I have made an impartial & true valuation of the property.`,
+          `I have personally inspected the property on ${inspDateFormatted}. The work is not sub-contracted to any other valuer & carried out by myself.`,
+          'I have not been removed from service/employement earlier.',
+          'I have not been convicted of any offence & sentenced to a term of imprisonment',
           'I have not been declared to be unsound mind.',
           'I have not been found guilty of misconduct in my professional capacity.',
           'I am not an undischarged bankrupt, or have not applied to be adjudicated as a bankrupt.',
@@ -2685,24 +2699,44 @@ Our valuation is based on information obtained from the client and on data gathe
           'I have not been levied a penalty under section 271J of Income-Tax Act, 1961 (43 of 1961) and time limit for filing appeal before commissioner of Income Tax (Appeals) or Income-Tax Appellate Tribunal, as the case may be has expired, or such penalty has been confirmed by Income-Tax Appellate Tribunal, and five years have not elapsed after levy of such penalty.',
           'I have not been convicted of an offence connected with any proceeding under the Income-Tax Act 1961, wealth Tax Act 1957 or Gift Tax Act 1958.',
           'My PAN Card number as applicable is AOVPP5837R.',
-          'I have not concealed or suppressed any material information, facts and records and I have made a complete and full disclosure.',
+          'I have not concealed or suppressed any material information, facts and records and I have made a complete and full disclosure',
           'I have read the International Valuation Standards (IVS) & the report submitted to the Bank for the respective asset class is in conformity to the "Standards" enshrined for valuation in the IVS in "General Standards" & "Asset Standards" as applicable.',
           'I abide by the Model Code of Conduct for empanelment of valuer in the Bank.',
-          'I am not registered under Section 34 AB of the Wealth Tax Act, 1957.',
-          'I am valuer registered with Insolvency & Bankruptcy Board of India (IBBI).',
-          'I am the authorized official of the firm who is competent to sign this valuation report.',
+          'I am not registered under Section 34 AB of the Wealth Tax Act,1957.',
+          'I am valuer registered with Insolvency & Bankruptcy Board of India (IBBI)',
+          'I am the authorized official of the firm who is competent to sign this valuation report',
           'Further, I hereby provide the following information.',
         ];
         for (let i = 0; i < declarations.length; i++) {
-          r.drawTextBlock(declarations[i]);
-          r.advanceCursor(3);
+          const letter = String.fromCharCode(97 + i); // a, b, c, ..., t
+          r.drawLetterBullet(letter + '.', declarations[i], { labelIndent: 2, textIndent: 25 });
+          r.advanceCursor(2);
+        }
+
+        // Custom declaration bullets (u, v, ..., z, aa, ab, ...)
+        if (fields.customDeclarations && fields.customDeclarations.length > 0) {
+          for (let ci = 0; ci < fields.customDeclarations.length; ci++) {
+            const cItem = fields.customDeclarations[ci];
+            if (!cItem.text || !cItem.text.trim()) continue;
+            const baseIdx = ci + 20; // starts after t (index 19)
+            let bulletLabel: string;
+            if (baseIdx < 26) {
+              bulletLabel = String.fromCharCode(97 + baseIdx) + '.';
+            } else {
+              const first = Math.floor((baseIdx - 26) / 26);
+              const second = (baseIdx - 26) % 26;
+              bulletLabel = String.fromCharCode(97 + first) + String.fromCharCode(97 + second) + '.';
+            }
+            r.drawLetterBullet(bulletLabel, cItem.text.trim(), { labelIndent: 2, textIndent: 25 });
+            r.advanceCursor(2);
+          }
         }
         r.advanceCursor(8);
       }
 
       // Declaration signature
       r.drawSignatureBlock([
-        { text: `Date: ${fields.dateOfValuation || '________'}` },
+        { text: `Date  :  ${fmtDateDDMMYYYY(fields.dateOfValuation)}` },
         { text: 'Signature & Seal of Valuer' },
         { text: 'Place: Bhubaneswar' },
         { text: `Name of the Valuer - ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications.toUpperCase() : ''}`, bold: true },
@@ -4568,6 +4602,101 @@ Our valuation is based on information obtained from the client and on data gathe
                 <Field label="Registered Office Telephone">
                   <input type="text" value={fields.registeredOfficeTel} onChange={e => handleChange('registeredOfficeTel', e.target.value)} className={inputCls} disabled={isReadOnly} />
                 </Field>
+              </div>
+
+              {/* Dynamic custom declaration bullet points (u, v, ...) */}
+              <div className="mt-4 space-y-3">
+                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Custom Declaration Bullets</p>
+                {fields.customDeclarations && fields.customDeclarations.map((item: { text: string; label?: string }, idx: number) => {
+                  const baseIdx = idx + 20; // starts after t (index 19)
+                  let letterLabel: string;
+                  if (baseIdx < 26) {
+                    letterLabel = String.fromCharCode(97 + baseIdx); // u, v, w, x, y, z
+                  } else {
+                    const first = Math.floor((baseIdx - 26) / 26);
+                    const second = (baseIdx - 26) % 26;
+                    letterLabel = String.fromCharCode(97 + first) + String.fromCharCode(97 + second); // aa, ab, ...
+                  }
+                  const displayName = item.label || 'Custom Declaration';
+                  return (
+                    <div key={idx} className="relative group">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-[10px] font-bold text-[#495057] uppercase tracking-wider">
+                          {letterLabel}. {displayName}
+                        </p>
+                        {!isReadOnly && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const el = document.getElementById(`edit-decl-label-${idx}`);
+                              if (el) el.classList.toggle('hidden');
+                            }}
+                            className="text-[#b8860b]/60 hover:text-[#b8860b] transition-colors"
+                            title="Edit field name"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                      <div id={`edit-decl-label-${idx}`} className="hidden mb-2">
+                        <input
+                          type="text"
+                          value={item.label || ''}
+                          onChange={e => {
+                            const arr = [...fields.customDeclarations];
+                            arr[idx] = { ...arr[idx], label: e.target.value };
+                            handleChange('customDeclarations', arr);
+                          }}
+                          className={inputCls + ' text-xs'}
+                          placeholder="Enter a descriptive name for this bullet..."
+                          disabled={isReadOnly}
+                        />
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <textarea
+                          value={item.text}
+                          onChange={e => {
+                            const arr = [...fields.customDeclarations];
+                            arr[idx] = { ...arr[idx], text: e.target.value };
+                            handleChange('customDeclarations', arr);
+                          }}
+                          className={inputCls + ' min-h-[60px] flex-1'}
+                          disabled={isReadOnly}
+                          rows={2}
+                          placeholder={`Enter declaration bullet ${letterLabel}...`}
+                        />
+                        {!isReadOnly && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const arr = fields.customDeclarations.filter((_: { text: string; label?: string }, i: number) => i !== idx);
+                              handleChange('customDeclarations', arr);
+                            }}
+                            className="mt-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold hover:bg-red-600 transition-colors flex-shrink-0"
+                            title="Remove this bullet point"
+                          >&times;</button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Add Bullet button */}
+                {!isReadOnly && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const arr = [...(fields.customDeclarations || []), { text: '', label: '' }];
+                      handleChange('customDeclarations', arr);
+                    }}
+                    className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-[#b8860b] text-[#b8860b] text-xs font-semibold hover:bg-[#b8860b]/5 transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                    Add Declaration Bullet
+                  </button>
+                )}
               </div>
             </div>
           </Section>
