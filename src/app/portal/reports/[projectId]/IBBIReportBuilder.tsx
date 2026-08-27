@@ -346,7 +346,9 @@ interface IBBIFields {
   assumptionEBullet1: string;
   assumptionEBullet2: string;
   assumptionF: string;
-  conclusionPropertyDescription: string;
+  typeOfPropertyDescription: string;
+  conclusionDescription: string;
+  conclusionPlace: string;
   customAssumptions: { text: string; label?: string }[];
 
   // ── Remarks ──
@@ -635,7 +637,9 @@ const DEFAULT_FIELDS: IBBIFields = {
   assumptionEBullet1: "The information provided by the owner's or their representative appointed /its affiliates subsidiaries during the visits.",
   assumptionEBullet2: 'Recent data on the industry segments and market projections.',
   assumptionF: 'The value assessed is my best opinion under the current circumstances and market scenario and is not a guarantee. Real estate prices are subject to wide fluctuations and the valuation need to be reviewed at suitable regular intervals.',
-  conclusionPropertyDescription: '',
+  typeOfPropertyDescription: '',
+  conclusionDescription: '',
+  conclusionPlace: 'Bhubaneswar',
   customAssumptions: [],
 
   representativeName: '',
@@ -2570,15 +2574,24 @@ Our valuation is based on information obtained from the client and on data gathe
       const fmvVal = parseFloat(fields.fairMarketValueTotal) || 0;
       const realVal = parseFloat(fields.realisableValueTotal) || 0;
       const guideVal = parseFloat(fields.bookValueTotal) || 0;
-      r.drawTextBlock('The present market value of a property is the price which a willing buyer will pay to a willing seller considering the risks involved at the reality and authenticity of the property, including thorough investigation about its genuineness of existence and all that required. Liquidation value of the assets in present consideration, is estimated in a reasonable manner and judiciously on the basis of facts and circumstances observed by us & estimation of benefits, subject to its propriety, on above consideration .It will of course vary from professionals opinion and  case to case, place to place, location to location and for different characteristics too. We assess it accordingly, based on the above considerations.');
-      r.advanceCursor(6);
-      
-      const propDesc = fields.conclusionPropertyDescription || coverDesc || '________';
+      const propDesc = fields.typeOfPropertyDescription || coverDesc || '________';
       const address = fields.propertyAddress || certAddress || '________';
       const owner = fields.applicantName || fields.ownerName || certOwner || '________';
-      
-      r.drawTextBlock(`After considering various important factor discussed above, we are of the opinion that the fair market Value of ${propDesc} as per the current date at ${address}, currently owned by ${owner} is`);
-      r.advanceCursor(4);
+
+      if (fields.conclusionDescription) {
+        const parts = fields.conclusionDescription.split('\n');
+        for (const part of parts) {
+          if (part.trim()) {
+            r.drawTextBlock(part.trim());
+            r.advanceCursor(4);
+          }
+        }
+      } else {
+        r.drawTextBlock('The present market value of a property is the price which a willing buyer will pay to a willing seller considering the risks involved at the reality and authenticity of the property, including thorough investigation about its genuineness of existence and all that required. Liquidation value of the assets in present consideration, is estimated in a reasonable manner and judiciously on the basis of facts and circumstances observed by us & estimation of benefits, subject to its propriety, on above consideration .It will of course vary from professionals opinion and  case to case, place to place, location to location and for different characteristics too. We assess it accordingly, based on the above considerations.');
+        r.advanceCursor(6);
+        r.drawTextBlock(`After considering various important factor discussed above, we are of the opinion that the fair market Value of ${propDesc} as per the current date at ${address}, currently owned by ${owner} is`);
+        r.advanceCursor(4);
+      }
       
       const orSayFmvNum = parseFloat(String(fields.totalPresentValueOrSay || '').replace(/[^\d.]/g, '')) || fmvVal;
       r.drawTextBlock(`Present Market Value is INR. ${fields.totalPresentValueOrSay || formatIndianCurrency(fmvVal)}.`, { bold: true });
@@ -2604,7 +2617,7 @@ Our valuation is based on information obtained from the client and on data gathe
       r.drawSplitSignatureBlock(
         [
           { text: `Date   : ${fields.dateOfValuation || '________'}`, bold: true },
-          { text: `Place:  Bhubaneswar`, bold: true },
+          { text: `Place:  ${fields.conclusionPlace || 'Bhubaneswar'}`, bold: true },
         ],
         [
           { text: 'Signature & Seal of Valuer', bold: true },
@@ -4447,16 +4460,64 @@ Our valuation is based on information obtained from the client and on data gathe
           {/* ── Conclusion Section ── */}
           <Section title="Conclusion" id="section-conclusion">
             <div className="space-y-4">
-              <Field label="Conclusion Property Description">
+              <Field label="Type of Property Description (max 8 words)">
                 <input
                   type="text"
-                  value={fields.conclusionPropertyDescription || ''}
-                  onChange={e => handleChange('conclusionPropertyDescription', e.target.value)}
+                  value={fields.typeOfPropertyDescription || ''}
+                  onChange={e => handleChange('typeOfPropertyDescription', e.target.value)}
                   className={inputCls}
                   placeholder="e.g. Patch of Industrial Unit"
                   disabled={isReadOnly}
                 />
               </Field>
+              <Field label="Conclusion Description (Overrides the hardcoded two paragraphs)">
+                <textarea
+                  value={fields.conclusionDescription || ''}
+                  onChange={e => handleChange('conclusionDescription', e.target.value)}
+                  className={inputCls + ' min-h-[120px]'}
+                  placeholder="Leave empty to use standard hardcoded paragraphs..."
+                  disabled={isReadOnly}
+                  rows={4}
+                />
+              </Field>
+
+              <div className="p-4 bg-[#f8f9fa] border border-[#e9ecef] rounded-xl space-y-4">
+                <h4 className="text-xs font-bold text-[#b8860b] uppercase tracking-wider mb-2">Read-only References</h4>
+                <Field label="Site Address">
+                  <input type="text" value={fields.propertyAddress || fields.certAddress || ''} disabled className={inputCls + ' bg-gray-100'} />
+                </Field>
+                <Field label="Applicant / Owner Name(s)">
+                  <input type="text" value={fields.applicantName || fields.ownerName || fields.certOwner || ''} disabled className={inputCls + ' bg-gray-100'} />
+                </Field>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Field label="Present Value">
+                    <input type="text" value={fields.totalPresentValueOrSay || (parseFloat(fields.fairMarketValueTotal) || 0).toString()} disabled className={inputCls + ' bg-gray-100'} />
+                  </Field>
+                  <Field label="Realisable Value">
+                    <input type="text" value={fields.realisableValueOrSay || (parseFloat(fields.realisableValueTotal) || 0).toString()} disabled className={inputCls + ' bg-gray-100'} />
+                  </Field>
+                  <Field label="Guideline Value">
+                    <input type="text" value={fields.totalBookValueOrSay || (parseFloat(fields.bookValueTotal) || 0).toString()} disabled className={inputCls + ' bg-gray-100'} />
+                  </Field>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Field label="Date of Valuation Report">
+                    <input type="date" value={fields.dateOfValuation || ''} disabled className={inputCls + ' bg-gray-100'} />
+                  </Field>
+                  <Field label="Place (Editable)">
+                    <input
+                      type="text"
+                      value={fields.conclusionPlace || ''}
+                      onChange={e => handleChange('conclusionPlace', e.target.value)}
+                      className={inputCls}
+                      disabled={isReadOnly}
+                    />
+                  </Field>
+                </div>
+                <Field label="Representative Name">
+                  <input type="text" value={fields.representativeName || ''} disabled className={inputCls + ' bg-gray-100'} />
+                </Field>
+              </div>
             </div>
           </Section>
 
