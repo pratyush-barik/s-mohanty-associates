@@ -2282,8 +2282,11 @@ Our valuation is based on information obtained from the client and on data gathe
           if (fields.realisableValueOrSay) {
             r.drawCustomSplitRow('OR SAY', fields.realisableValueOrSay, 0.77, { col1Bold: true, col2Bold: true, col1Align: 'center', col2Align: 'left' });
           }
-          if (fields.realisableValueInWords) {
-            r.drawFullWidthRow(fields.realisableValueInWords, { bold: true });
+          {
+            const orSayLiqNum = parseFloat(String(fields.realisableValueOrSay || '').replace(/[^\d.]/g, '')) || 0;
+            if (orSayLiqNum > 0) {
+              r.drawFullWidthRow(`LIQUIDATION VALUE - ${rupeesInWords(orSayLiqNum).toUpperCase()}`, { bold: true });
+            }
           }
           r.advanceCursor(6);
         }
@@ -3751,8 +3754,7 @@ Our valuation is based on information obtained from the client and on data gathe
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <Field label="Realisable/Liquidation Value (Rs)"><input type="text" value={fields.realisableValueAmount} onChange={e => handleChange('realisableValueAmount', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-                      <Field label="Or Say"><input type="text" value={fields.realisableValueOrSay} onChange={e => handleChange('realisableValueOrSay', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-                      <Field label="Liquidation Value in Words" span={2}><input type="text" value={fields.realisableValueInWords} onChange={e => handleChange('realisableValueInWords', e.target.value)} className={inputCls} placeholder="e.g. RUPEES FIFTY FOUR LAKHS TWENTY EIGHT THOUSAND ONLY" disabled={isReadOnly} /></Field>
+                      <Field label="Or Say"><input type="text" value={fields.realisableValueOrSay} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
                     </div>
                   </div>
                 </div>
