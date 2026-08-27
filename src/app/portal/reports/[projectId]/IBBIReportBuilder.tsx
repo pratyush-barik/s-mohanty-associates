@@ -2255,26 +2255,54 @@ Our valuation is based on information obtained from the client and on data gathe
         }
         r.advanceCursor(6);
 
-        // ─── BUILDING/SHED COST ───
-        r.drawTextBlock('BUILDING/SHED COST', { bold: true, fontSize: 11, underline: true });
-        r.advanceCursor(4);
-        if (fields.cuttackBuildingRows && fields.cuttackBuildingRows.length > 0) {
-          const headers = ['Sl', 'Area particular', 'Plinth area', 'Age', 'Rate/sft.', 'Replacement cost', `Depreciation (${String(fields.cuttackBuildingDepreciationPercent || 0).replace(/%/g, '')}%)`, 'Net value'];
-          const rows = fields.cuttackBuildingRows.map((row: BuildingCostRow) => [row.sl, row.areaParticular, row.plinthArea, row.age, row.rateSft, row.replacementCost, row.depreciation, row.netValue]);
-          r.drawDataTable(headers, rows);
-          r.advanceCursor(2);
-        }
-        if (fields.cuttackBuildingTotal) {
-          r.drawTextBlock(`TOTAL: ${fields.cuttackBuildingTotal}`, { bold: true, align: 'right' });
-        }
-        if (fields.cuttackBuildingComponentsTotal) {
-          r.drawTextBlock(`TOTAL LAND AND BUILDING/SHED COMPONENTS: Rs. ${formatIndianCurrency(String(fields.cuttackBuildingComponentsTotal || '0').replace(/[^\d.]/g, ''))}`, { bold: true, align: 'right' });
-        }
-        if (fields.cuttackBuildingOrSay) {
-          r.drawTextBlock(`Or Say: ${fields.cuttackBuildingOrSay}`, { bold: true, align: 'right' });
-        }
-        if (fields.cuttackBuildingInWords) {
-          r.drawTextBlock(`(${fields.cuttackBuildingInWords})`, { bold: true, italic: true, align: 'right' });
+        // ─── BUILDING/SHED COST (unified table) ───
+        {
+          const bldgHeaders = ['BUILDING/SHED COST', '', '', '', '', '', '', ''];
+          const bldgRows: string[][] = [];
+
+          // Column sub-headers
+          bldgRows.push(['!!BOLD!!Sl', '!!BOLD!!Area particular', '!!BOLD!!Plinth area', '!!BOLD!!Age', '!!BOLD!!Rate/sft.', '!!BOLD!!Replacement cost', `!!BOLD!!Depreciation (${String(fields.cuttackBuildingDepreciationPercent || 0).replace(/%/g, '')}%)`, '!!BOLD!!Net value']);
+
+          // Data rows
+          if (fields.cuttackBuildingRows && fields.cuttackBuildingRows.length > 0) {
+            for (const row of fields.cuttackBuildingRows as BuildingCostRow[]) {
+              bldgRows.push([row.sl, row.areaParticular, row.plinthArea, row.age, row.rateSft, row.replacementCost, row.depreciation, row.netValue]);
+            }
+          }
+
+          // Total row
+          if (fields.cuttackBuildingTotal) {
+            bldgRows.push([
+              '!!SPAN:7!!!!BOLD!!Total', '', '', '', '', '', '',
+              '!!BOLD!!' + fields.cuttackBuildingTotal
+            ]);
+          }
+
+          // Total Land and Building/Shed Components row
+          if (fields.cuttackBuildingComponentsTotal) {
+            bldgRows.push([
+              '!!SPAN:7!!!!BOLD!!Total LAND AND BUILDING/SHED COMPONENTS', '', '', '', '', '', '',
+              '!!BOLD!!Rs. ' + formatIndianCurrency(String(fields.cuttackBuildingComponentsTotal || '0').replace(/[^\d.]/g, ''))
+            ]);
+          }
+
+          // Or Say row
+          if (fields.cuttackBuildingOrSay) {
+            bldgRows.push([
+              '!!SPAN:7!!!!CENTER!!!!BOLD!!OR SAY', '', '', '', '', '', '',
+              '!!BOLD!!' + fields.cuttackBuildingOrSay
+            ]);
+          }
+
+          // PRESENT BUILDING VALUE in words (full-width, bold)
+          const bldgOrSayNum = parseFloat(String(fields.cuttackBuildingOrSay || '').replace(/[^\d.]/g, '')) || 0;
+          if (bldgOrSayNum > 0) {
+            bldgRows.push([
+              `!!BOLD!!PRESENT BUILDING VALUE - ${rupeesInWords(bldgOrSayNum).toUpperCase()}`, '', '', '', '', '', '', ''
+            ]);
+          }
+
+          r.drawDataTable(bldgHeaders, bldgRows);
         }
         r.advanceCursor(6);
 
@@ -3746,7 +3774,6 @@ Our valuation is based on information obtained from the client and on data gathe
                       <Field label="Total"><input type="text" value={fields.cuttackBuildingTotal} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
                       <Field label="Total Land and Building/Shed Components (Rs)"><input type="text" value={fields.cuttackBuildingComponentsTotal} onChange={e => handleChange('cuttackBuildingComponentsTotal', formatIndianCurrency(e.target.value.replace(/[^\d.]/g, '')))} className={inputCls} disabled={isReadOnly} /></Field>
                       <Field label="Or Say"><input type="text" value={fields.cuttackBuildingOrSay} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
-                      <Field label="Building Value in Words" span={2}><input type="text" value={fields.cuttackBuildingInWords} onChange={e => handleChange('cuttackBuildingInWords', e.target.value)} className={inputCls} placeholder="e.g. SIXTEEN LAKHS SIXTY THREE THOUSAND RUPEES ONLY" disabled={isReadOnly} /></Field>
                     </div>
                   </div>
 
