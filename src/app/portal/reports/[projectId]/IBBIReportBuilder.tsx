@@ -3829,7 +3829,7 @@ Our valuation is based on information obtained from the client and on data gathe
             </div>
           </Section>
           {/* ── Section 14: Photos & Maps ── */}
-          <Section title="Property Photographs, Sketch & Location Maps" number={14}>
+          <Section title="Photos & Maps" number={14}>
             {/* Location Map with GPS Co-ordinate */}
             <div className="mb-6 space-y-4">
               <div className="flex items-center justify-between mb-2">
