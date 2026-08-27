@@ -163,13 +163,16 @@ export default function BuilderSelector({
   const initialBuilder = builderQuery || searchParams.get("builder");
 
   const resolveBuilderType = (fields: any, queryParam?: string | null): BuilderType => {
-    if (queryParam === "INCOME_TAX") return "income_tax";
-    if (queryParam === "IBBI_IVS") return "ibbi";
     if (fields?.organisationTemplate === "INCOME_TAX") return "income_tax";
     if (fields?.organisationTemplate === "IBBI_IVS") return "ibbi";
     if (fields?.clientType === "organisation" && fields?.organisationTemplate) {
       return "bank";
     }
+    if (fields?.clientType === "individual") {
+      return "general";
+    }
+    if (queryParam === "INCOME_TAX") return "income_tax";
+    if (queryParam === "IBBI_IVS") return "ibbi";
     return "general";
   };
 
@@ -228,13 +231,32 @@ export default function BuilderSelector({
     }
   };
 
-  // Find bank specific builder if available
+  // Find bank specific builder if available with fallback and normalization
   const SelectedBankBuilder = useMemo(() => {
     if (activeBuilder !== "bank") return null;
-    const org = activeFields?.organisationTemplate || "";
-    const sub = activeFields?.organisationSubTemplate || "";
+    const org = (activeFields?.organisationTemplate || "").trim();
+    const sub = (activeFields?.organisationSubTemplate || "").trim();
     const fullKey = sub ? `${org}::${sub}` : org;
-    return BANK_BUILDER_MAP[fullKey] || BANK_BUILDER_MAP[org] || BankReportBuilder;
+
+    if (BANK_BUILDER_MAP[fullKey]) return BANK_BUILDER_MAP[fullKey];
+    if (BANK_BUILDER_MAP[org]) return BANK_BUILDER_MAP[org];
+
+    const cleanFullKey = fullKey.toUpperCase().replace(/\s+/g, " ");
+    const cleanOrg = org.toUpperCase().replace(/\s+/g, " ");
+
+    const matchKey =
+      Object.keys(BANK_BUILDER_MAP).find(
+        (k) => k.toUpperCase().replace(/\s+/g, " ") === cleanFullKey
+      ) ||
+      Object.keys(BANK_BUILDER_MAP).find(
+        (k) => k.toUpperCase().replace(/\s+/g, " ") === cleanOrg
+      );
+
+    if (matchKey && BANK_BUILDER_MAP[matchKey]) {
+      return BANK_BUILDER_MAP[matchKey];
+    }
+
+    return BankReportBuilder;
   }, [activeBuilder, activeFields?.organisationTemplate, activeFields?.organisationSubTemplate]);
 
   if (activeBuilder === "income_tax") {

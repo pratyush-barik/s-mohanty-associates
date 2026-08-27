@@ -580,9 +580,12 @@ export default function BankReportBuilder({
     }
   }, [projectId]);
 
+  const isManagerOrOwner = userRole === 'MANAGER' || userRole === 'OWNER';
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
   const bypassUnloadRef = useRef(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [showReworkModal, setShowReworkModal] = useState(false);
+  const [reworkComment, setReworkComment] = useState('');
   const isInitialMount = useRef(true);
   const debouncedSaveTimer = useRef<NodeJS.Timeout | null>(null);
 
@@ -1324,9 +1327,6 @@ export default function BankReportBuilder({
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `Valuation-Report-${fields.refNo || projectId}.pdf`;
-      document.body.appendChild(link);
-      link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (err: any) {
@@ -1335,6 +1335,83 @@ export default function BankReportBuilder({
       setLoading(false);
       setLoadingText('Loading...');
     }
+  };
+
+  const handleFinalize = async () => {
+    if (!Array.isArray(fields.propertyImages) || fields.propertyImages.length < 2) {
+      setMessage({ type: 'error', text: 'Please upload at least 2 property photographs before finalizing.' });
+      return;
+    }
+    if (!confirm('Finalize this report and share it with the client? This will generate the official PDF and delete temporary draft images.')) return;
+    setLoading(true);
+    setMessage({ type: 'success', text: 'Generating final PDF...' });
+    try {
+      await saveReportDraft(projectId, fields);
+      const pdfBlob = await handleGeneratePDF();
+      if (pdfBlob) {
+        const pdfFileName = `${projectId}-report-${Date.now()}.pdf`;
+        const pdfPath = `reports/pdfs/${pdfFileName}`;
+        const { error: uploadErr } = await supabaseBrowser.storage
+          .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+          .upload(pdfPath, pdfBlob, { contentType: 'application/pdf' });
+        if (!uploadErr) {
+          const { data: urlData } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(pdfPath);
+          try {
+            const { data: files } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).list(`temp-photos/${projectId}`);
+            if (files && files.length > 0) {
+              const paths = files.map(f => `temp-photos/${projectId}/${f.name}`);
+              await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).remove(paths);
+            }
+          } catch (err) { console.error('Failed to cleanup temp photos:', err); }
+          const finalFields = { ...fields, propertyImages: [] };
+          await saveReportDraft(projectId, finalFields);
+          const { finalizeReport } = await import('@/app/actions/project');
+          const res = await finalizeReport(projectId, urlData.publicUrl);
+          if (res.error) setMessage({ type: 'error', text: res.error });
+          else { setFields(finalFields); setMessage({ type: 'success', text: 'Project Finalized Successfully! PDF is now available to the client.' }); }
+        } else {
+          setMessage({ type: 'error', text: 'Failed to upload PDF.' });
+        }
+      }
+    } catch (err: any) {
+      setMessage({ type: 'error', text: 'PDF Error: ' + (err?.message || String(err)) });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReworkClick = () => {
+    setShowReworkModal(true);
+  };
+
+  const submitRework = async () => {
+    if (!reworkComment.trim()) {
+      setMessage({ type: 'error', text: 'Please provide a comment for rework.' });
+      return;
+    }
+    setLoading(true);
+    const { sendReportForRework } = await import('@/app/actions/project');
+    const res = await sendReportForRework(projectId, reworkComment);
+    if (res.error) setMessage({ type: 'error', text: res.error });
+    else {
+      setMessage({ type: 'success', text: 'Report sent for rework.' });
+      setShowReworkModal(false);
+      router.refresh();
+    }
+    setLoading(false);
+  };
+
+  const handleCancelSubmission = async () => {
+    if (!confirm('Cancel this submission and return to drafting?')) return;
+    setLoading(true);
+    const { cancelReportSubmission } = await import('@/app/actions/project');
+    const res = await cancelReportSubmission(projectId);
+    if (res.error) setMessage({ type: 'error', text: res.error });
+    else {
+      setMessage({ type: 'success', text: 'Submission cancelled. You can now edit the report.' });
+      router.refresh();
+    }
+    setLoading(false);
   };
 
   const renderExtraField = (ef: ExtraFieldConfig) => {
@@ -1872,23 +1949,37 @@ export default function BankReportBuilder({
         {!isSectionHidden('section-11') && (
           <Section title="Property Photographs" number={isApartmentFlat ? 10 : 11}>
             <div className="space-y-4">
-              <div className="flex gap-2">
-                <label className="btn-primary text-xs cursor-pointer inline-flex items-center gap-1.5">
+              <div className="flex flex-wrap items-center gap-3">
+                <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
                   <span>📸 Upload Photos</span>
                   <input type="file" multiple accept="image/*" onChange={e => handleFileUpload(e, 'propertyImages')} className="hidden" disabled={uploading || isReadOnly} />
                 </label>
-                <button type="button" onClick={() => openBucketPicker('propertyImages')} className="btn-secondary text-xs" disabled={isReadOnly}>
-                  Pick from Bucket ({bucketImages.length})
-                </button>
+                {bucketImages.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => openBucketPicker('propertyImages')}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-sm font-medium hover:bg-[#1e3a5f]/5 transition-colors"
+                    disabled={isReadOnly}
+                  >
+                    Pick from Bucket ({bucketImages.length})
+                  </button>
+                )}
+                <span className="text-xs text-[#6c757d]">Max size: 5MB per photograph</span>
               </div>
-              {uploadError && <p className="text-xs text-red-600">{uploadError}</p>}
+              <div className={`text-xs font-semibold ${
+                (Array.isArray(fields.propertyImages) ? fields.propertyImages.length : 0) < 2 ? 'text-amber-600' : 'text-green-600'
+              }`}>
+                {Array.isArray(fields.propertyImages) ? fields.propertyImages.length : 0} / 2 minimum uploaded
+                {(Array.isArray(fields.propertyImages) ? fields.propertyImages.length : 0) < 2 && ' — At least 2 photographs are required to submit.'}
+              </div>
+              {uploadError && <p className="text-xs text-red-600 font-semibold">{uploadError}</p>}
               {Array.isArray(fields.propertyImages) && fields.propertyImages.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {fields.propertyImages.map((img, idx) => (
                     <div key={idx} className="relative group border rounded-xl overflow-hidden shadow-sm aspect-video bg-slate-100">
                       <img src={img} alt={`Property ${idx + 1}`} className="w-full h-full object-cover" />
                       {!isReadOnly && (
-                        <button type="button" onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-80 hover:opacity-100">✕</button>
+                        <button type="button" onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-80 hover:opacity-100 shadow">✕</button>
                       )}
                     </div>
                   ))}
@@ -1904,14 +1995,21 @@ export default function BankReportBuilder({
         {!isSectionHidden('section-12') && (
           <Section title="Sketch Maps" number={isApartmentFlat ? 11 : 12}>
             <div className="space-y-4">
-              <div className="flex gap-2">
-                <label className="btn-primary text-xs cursor-pointer inline-flex items-center gap-1.5">
+              <div className="flex flex-wrap items-center gap-3">
+                <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
                   <span>🗺️ Upload Sketch Map</span>
                   <input type="file" multiple accept="image/*" onChange={e => handleFileUpload(e, 'sketchMapImages')} className="hidden" disabled={uploading || isReadOnly} />
                 </label>
-                <button type="button" onClick={() => openBucketPicker('sketchMapImages')} className="btn-secondary text-xs" disabled={isReadOnly}>
-                  Pick from Bucket
-                </button>
+                {bucketImages.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => openBucketPicker('sketchMapImages')}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-sm font-medium hover:bg-[#1e3a5f]/5 transition-colors"
+                    disabled={isReadOnly}
+                  >
+                    Pick from Bucket
+                  </button>
+                )}
               </div>
               {Array.isArray(fields.sketchMapImages) && fields.sketchMapImages.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -1919,7 +2017,7 @@ export default function BankReportBuilder({
                     <div key={idx} className="relative group border rounded-xl overflow-hidden shadow-sm aspect-video bg-slate-100">
                       <img src={img} alt={`Sketch ${idx + 1}`} className="w-full h-full object-contain" />
                       {!isReadOnly && (
-                        <button type="button" onClick={() => removeSketchMap(idx)} className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-80 hover:opacity-100">✕</button>
+                        <button type="button" onClick={() => removeSketchMap(idx)} className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-80 hover:opacity-100 shadow">✕</button>
                       )}
                     </div>
                   ))}
@@ -1943,20 +2041,27 @@ export default function BankReportBuilder({
                   <input className={inputCls} value={fields.longitude} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 85.8245" />
                 </Field>
               </div>
-              <div className="flex gap-2">
-                <label className="btn-primary text-xs cursor-pointer inline-flex items-center gap-1.5">
+              <div className="flex flex-wrap items-center gap-3">
+                <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
                   <span>📍 Upload Location Map</span>
                   <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'locationMapImage')} className="hidden" disabled={uploading || isReadOnly} />
                 </label>
-                <button type="button" onClick={() => openBucketPicker('locationMapImage')} className="btn-secondary text-xs" disabled={isReadOnly}>
-                  Pick from Bucket
-                </button>
+                {bucketImages.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => openBucketPicker('locationMapImage')}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-sm font-medium hover:bg-[#1e3a5f]/5 transition-colors"
+                    disabled={isReadOnly}
+                  >
+                    Pick from Bucket
+                  </button>
+                )}
               </div>
               {fields.locationMapImage ? (
                 <div className="relative group border rounded-xl overflow-hidden shadow-sm max-w-sm aspect-video bg-slate-100">
                   <img src={fields.locationMapImage} alt="Location Map" className="w-full h-full object-contain" />
                   {!isReadOnly && (
-                    <button type="button" onClick={() => handleChange('locationMapImage', '')} className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-80 hover:opacity-100">✕</button>
+                    <button type="button" onClick={() => handleChange('locationMapImage', '')} className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-80 hover:opacity-100 shadow">✕</button>
                   )}
                 </div>
               ) : (
@@ -1968,50 +2073,111 @@ export default function BankReportBuilder({
 
         {/* ── Action Buttons Footer ── */}
         <div className="p-6 bg-white border border-[#dee2e6] rounded-2xl shadow-md flex flex-wrap items-center justify-between gap-4 sticky bottom-4 z-40">
+          {status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE' && (
+            <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 font-semibold mb-2">
+              <span>⏳ Currently Under Manager Review.</span>
+              <button
+                type="button"
+                onClick={handleCancelSubmission}
+                disabled={loading}
+                className="px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg text-xs font-bold transition-colors"
+              >
+                ↩️ Cancel Submission (Pull back to Draft)
+              </button>
+            </div>
+          )}
+
           <div className="flex items-center gap-3">
-            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${autoSaveStatus === 'saving' ? 'bg-amber-100 text-amber-800' : autoSaveStatus === 'saved' ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-600'}`}>
-              {autoSaveStatus === 'saving' ? 'Saving draft...' : autoSaveStatus === 'saved' ? 'Draft saved' : 'Ready'}
-            </span>
+            {!isReadOnly && (
+              <>
+                {autoSaveStatus === 'saving' && (
+                  <span className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full flex items-center gap-1.5 animate-pulse">
+                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                    Auto-saving...
+                  </span>
+                )}
+                {autoSaveStatus === 'saved' && (
+                  <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    ✓ Auto-saved
+                  </span>
+                )}
+                {autoSaveStatus === 'error' && (
+                  <span className="text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                    ⚠️ Auto-save failed
+                  </span>
+                )}
+              </>
+            )}
             {message && (
-              <span className={`text-xs font-semibold px-3 py-1 rounded-lg ${message.type === 'error' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+              <span className={`text-xs font-semibold px-3 py-1.5 rounded-lg ${message.type === 'error' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
                 {message.text}
               </span>
             )}
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={handleSaveDraft}
-              disabled={loading || isReadOnly}
-              className="btn-secondary text-xs"
-            >
-              Save Draft
-            </button>
+
+          <div className="flex flex-wrap items-center gap-3">
+            {!isReadOnly && (
+              <>
+                <button
+                  type="button"
+                  onClick={handleSaveDraft}
+                  disabled={loading}
+                  className="px-6 py-3 rounded-xl border-2 border-[#b8860b] text-[#b8860b] font-semibold text-sm hover:bg-[#b8860b]/5 transition-all disabled:opacity-50"
+                >
+                  {loading ? '⏳ Saving...' : '💾 Save Draft'}
+                </button>
+                {userRole === 'REPORT_EMPLOYEE' && (
+                  <button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={loading}
+                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold text-sm hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+                  >
+                    {loading ? '⏳ Submitting...' : '📤 Submit to Manager'}
+                  </button>
+                )}
+              </>
+            )}
+
             <button
               type="button"
               onClick={handlePreviewPDF}
               disabled={loading}
-              className="btn-secondary text-xs"
+              className="px-6 py-3 rounded-xl border-2 border-gray-400 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-all disabled:opacity-50"
             >
-              Preview PDF
+              👁️ Preview PDF
             </button>
+
             <button
               type="button"
               onClick={handleDownloadPDF}
               disabled={loading}
-              className="btn-primary text-xs"
+              className="px-6 py-3 rounded-xl border-2 border-gray-400 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-all disabled:opacity-50"
             >
-              Download PDF
+              📥 Download PDF
             </button>
-            {!isReadOnly && (
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={loading}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-lg shadow-sm transition-all"
-              >
-                Submit for Verification
-              </button>
+
+            {status === 'MANAGER_REVIEW' && isManagerOrOwner && (
+              <>
+                <button
+                  type="button"
+                  onClick={handleReworkClick}
+                  disabled={loading}
+                  className="px-6 py-3 rounded-xl border-2 border-red-500 text-red-600 font-semibold text-sm hover:bg-red-50 transition-all disabled:opacity-50"
+                >
+                  ❌ Send for Rework
+                </button>
+                <button
+                  type="button"
+                  onClick={handleFinalize}
+                  disabled={loading}
+                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold text-sm hover:from-green-700 hover:to-green-800 shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+                >
+                  ✅ Finalize & Share to Client
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -2019,6 +2185,45 @@ export default function BankReportBuilder({
 
       {/* ── Floating Navigator ── */}
       <FloatingNavigator isApartmentFlat={isApartmentFlat} annexureEnabled={fields.annexureEnabled} hiddenSections={config?.hiddenSections} />
+
+      {/* ── Rework Modal ── */}
+      {showReworkModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-[#e9ecef] bg-[#f8f9fa]">
+              <h2 className="text-xl font-bold text-[#0f2038]" style={{ fontFamily: 'var(--font-heading)' }}>
+                Send for Rework
+              </h2>
+              <p className="text-xs text-[#6c757d] mt-1">Please provide specific feedback for the report agent.</p>
+            </div>
+            <div className="p-6">
+              <textarea
+                value={reworkComment}
+                onChange={(e) => setReworkComment(e.target.value)}
+                placeholder="List the changes required..."
+                className="w-full min-h-[150px] p-4 text-sm rounded-xl border border-[#dee2e6] bg-[#f8f9fa] focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500 resize-y"
+                autoFocus
+              />
+            </div>
+            <div className="p-4 border-t border-[#e9ecef] bg-[#f8f9fa] flex justify-end gap-3">
+              <button
+                onClick={() => { setShowReworkModal(false); setReworkComment(''); }}
+                className="px-5 py-2.5 rounded-xl border border-[#dee2e6] text-sm font-semibold text-[#495057] hover:bg-white transition-colors"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitRework}
+                disabled={loading || !reworkComment.trim()}
+                className="px-5 py-2.5 rounded-xl bg-red-600 text-white text-sm font-bold hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {loading ? 'Sending...' : 'Confirm Rework'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Bucket Picker Modal ── */}
       {bucketPickerOpen && (
@@ -2055,8 +2260,8 @@ export default function BankReportBuilder({
               })}
             </div>
             <div className="flex justify-end gap-2 border-t pt-3">
-              <button onClick={() => setBucketPickerOpen(false)} className="btn-secondary text-xs">Cancel</button>
-              <button onClick={handleBucketConfirm} className="btn-primary text-xs">
+              <button onClick={() => setBucketPickerOpen(false)} className="px-4 py-2 rounded-lg border border-[#dee2e6] text-xs font-semibold text-[#495057] hover:bg-slate-50 transition-colors">Cancel</button>
+              <button onClick={handleBucketConfirm} className="px-4 py-2 rounded-lg bg-[#b8860b] text-white text-xs font-bold hover:bg-[#9a6f08] transition-colors">
                 Add Selected ({bucketSelected.size})
               </button>
             </div>
