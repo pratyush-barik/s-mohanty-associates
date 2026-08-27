@@ -3031,7 +3031,7 @@ Our valuation is based on information obtained from the client and on data gathe
 
               {/* Read-only references from other sections */}
               <div className="col-span-2 border-t border-gray-200 pt-3 mt-1">
-                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-2">Read-only References (from other sections) <span className="inline-block px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-semibold ml-1">AUTO</span></p>
+                <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest mb-2">Valuation Certificate Table</p>
               </div>
               <Field label="Client Name (from Section 4)" span={2}>
                 <input type="text" value={fields.applicantName || fields.ownerName || ''} className={inputCls + ' bg-gray-100'} disabled />
