@@ -2577,22 +2577,22 @@ Our valuation is based on information obtained from the client and on data gathe
       const address = fields.propertyAddress || certAddress || '________';
       const owner = fields.applicantName || fields.ownerName || certOwner || '________';
       
-      r.drawTextBlock(`After considering various important factor discussed above, we are of the opinion that the fair market Value of ${propDesc} as per the current date at ${address}, currently owned by ${owner}`);
+      r.drawTextBlock(`After considering various important factor discussed above, we are of the opinion that the fair market Value of ${propDesc} as per the current date at ${address}, currently owned by ${owner} is`);
       r.advanceCursor(4);
       
       const orSayFmvNum = parseFloat(String(fields.totalPresentValueOrSay || '').replace(/[^\d.]/g, '')) || fmvVal;
-      r.drawTextBlock(`Present Market Value is INR. ${fields.totalPresentValueOrSay || formatIndianCurrency(fmvVal)}. (RUPEES ${rupeesInWords(orSayFmvNum).toUpperCase()} ONLY).`, { bold: true });
+      r.drawTextBlock(`Present Market Value is INR. ${fields.totalPresentValueOrSay || formatIndianCurrency(fmvVal)}. (${rupeesInWords(orSayFmvNum).toUpperCase()}).`, { bold: true });
       r.advanceCursor(2);
       
       if (fields.realisableValueOrSay || fields.realisableValueTotal) {
         const orSayRealNum = parseFloat(String(fields.realisableValueOrSay || '').replace(/[^\d.]/g, '')) || realVal;
-        r.drawTextBlock(`Realisable value is INR. ${fields.realisableValueOrSay || formatIndianCurrency(realVal)}. (RUPEES ${rupeesInWords(orSayRealNum).toUpperCase()} ONLY).`, { bold: true });
+        r.drawTextBlock(`Realisable value is INR. ${fields.realisableValueOrSay || formatIndianCurrency(realVal)}. (${rupeesInWords(orSayRealNum).toUpperCase()}).`, { bold: true });
         r.advanceCursor(2);
       }
       
       if (fields.totalBookValueOrSay || fields.bookValueTotal) {
         const orSayGuideNum = parseFloat(String(fields.totalBookValueOrSay || '').replace(/[^\d.]/g, '')) || guideVal;
-        r.drawTextBlock(`Govt Guideline Value is INR. ${fields.totalBookValueOrSay || formatIndianCurrency(guideVal)}. (RUPEES ${rupeesInWords(orSayGuideNum).toUpperCase()} ONLY).`, { bold: true });
+        r.drawTextBlock(`Govt Guideline Value is INR. ${fields.totalBookValueOrSay || formatIndianCurrency(guideVal)}. (${rupeesInWords(orSayGuideNum).toUpperCase()}).`, { bold: true });
         r.advanceCursor(2);
       }
       r.advanceCursor(8);
