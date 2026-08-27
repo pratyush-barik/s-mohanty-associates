@@ -2378,7 +2378,33 @@ Our valuation is based on information obtained from the client and on data gathe
         r.drawSimpleRow('Latitude', fields.latitude || 'N/A');
         r.drawSimpleRow('Longitude', fields.longitude || 'N/A');
       }
-      r.drawTextBlock('Site location maps and photographs are enclosed herewith at the end of this report.');
+      r.advanceCursor(4);
+
+      // ── Location Map (inside Section 14) ──
+      if (locationBytes && locationBytes.length > 0) {
+        r.checkPageBreak(300);
+        r.drawCenteredTitle('LOCATION MAP');
+        r.advanceCursor(4);
+        await r.drawImageBlock(locationBytes, { maxWidth: 450, maxHeight: 450, centered: true });
+        if (fields.latitude || fields.longitude) {
+          r.drawTextBlock(`Lat: ${fields.latitude || 'N/A'}, Long: ${fields.longitude || 'N/A'}`, { bold: true, align: 'center' });
+        }
+        r.advanceCursor(4);
+      }
+
+      // ── Sketch Maps (inside Section 14) ──
+      if (sketchBytesList && sketchBytesList.length > 0) {
+        for (let i = 0; i < sketchBytesList.length; i++) {
+          const sBytes = sketchBytesList[i];
+          if (sBytes) {
+            r.checkPageBreak(300);
+            r.drawCenteredTitle(`SKETCH MAP${sketchBytesList.length > 1 ? ` ${i + 1}` : ''}`);
+            r.advanceCursor(4);
+            await r.drawImageBlock(sBytes, { maxWidth: 450, maxHeight: 450, centered: true });
+            r.advanceCursor(4);
+          }
+        }
+      }
       r.advanceCursor(8);
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2516,30 +2542,7 @@ Our valuation is based on information obtained from the client and on data gathe
         }
       }
 
-      // ── Sketch Maps ──
-      if (sketchBytesList && sketchBytesList.length > 0) {
-        for (let i = 0; i < sketchBytesList.length; i++) {
-          const sBytes = sketchBytesList[i];
-          if (sBytes) {
-            r.checkPageBreak(300);
-            r.drawCenteredTitle(`SKETCH MAP${sketchBytesList.length > 1 ? ` ${i + 1}` : ''}`);
-            r.advanceCursor(4);
-            await r.drawImageBlock(sBytes, { maxWidth: 450, maxHeight: 450, centered: true });
-            r.advanceCursor(4);
-          }
-        }
-      }
 
-      // ── Location Map ──
-      if (locationBytes && locationBytes.length > 0) {
-        r.checkPageBreak(300);
-        r.drawCenteredTitle('LOCATION MAP');
-        r.advanceCursor(4);
-        await r.drawImageBlock(locationBytes, { maxWidth: 450, maxHeight: 450, centered: true });
-        if (fields.latitude || fields.longitude) {
-          r.drawTextBlock(`Lat: ${fields.latitude || 'N/A'}, Long: ${fields.longitude || 'N/A'}`, { bold: true, align: 'center' });
-        }
-      }
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       //  ANNEXURES
