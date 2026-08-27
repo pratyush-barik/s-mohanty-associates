@@ -845,6 +845,10 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [editingMapKey, setEditingMapKey] = useState<string | null>(null);
+  const [editTempValue, setEditTempValue] = useState('');
+  const [editOriginalValue, setEditOriginalValue] = useState('');
+  const [editError, setEditError] = useState<string | null>(null);
 
   // Bucket Picker State
   const [bucketPickerOpen, setBucketPickerOpen] = useState(false);
@@ -4020,29 +4024,72 @@ Our valuation is based on information obtained from the client and on data gathe
                   <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest">
                     {(fields as any)[titleField] || defaultTitle}
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const el = document.getElementById(`edit-title-${key}`);
-                      if (el) el.classList.toggle('hidden');
-                    }}
-                    className="text-[#b8860b]/60 hover:text-[#b8860b] transition-colors"
-                    title="Edit heading"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
-                  </button>
+                  {!isReadOnly && editingMapKey !== key && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentVal = (fields as any)[titleField] || defaultTitle;
+                        setEditingMapKey(key);
+                        setEditTempValue(currentVal);
+                        setEditOriginalValue(currentVal);
+                        setEditError(null);
+                      }}
+                      className="text-[#b8860b]/60 hover:text-[#b8860b] transition-colors"
+                      title="Edit heading"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
-                <div id={`edit-title-${key}`} className="hidden mb-2">
-                  <input
-                    type="text"
-                    value={(fields as any)[titleField] || defaultTitle}
-                    onChange={e => handleChange(titleField, e.target.value)}
-                    className={inputCls + ' text-xs font-bold uppercase'}
-                    disabled={isReadOnly}
-                  />
-                </div>
+                {editingMapKey === key && (
+                  <div className="mb-2 space-y-2">
+                    <input
+                      type="text"
+                      value={editTempValue}
+                      onChange={e => { setEditTempValue(e.target.value); setEditError(null); }}
+                      className={inputCls + ' text-xs font-bold uppercase'}
+                      placeholder={`Enter heading name...`}
+                      autoFocus
+                    />
+                    {editError && (
+                      <p className="text-xs font-semibold text-red-500">{editError}</p>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!editTempValue.trim()) {
+                            setEditError(`Heading cannot be empty — please enter a valid title or discard changes.`);
+                            return;
+                          }
+                          handleChange(titleField, editTempValue.trim());
+                          setEditingMapKey(null);
+                          setEditTempValue('');
+                          setEditError(null);
+                        }}
+                        className="inline-flex items-center gap-1 px-3 py-1 rounded-md bg-green-600 text-white text-xs font-semibold hover:bg-green-700 transition-colors"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                        Accept
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleChange(titleField, editOriginalValue);
+                          setEditingMapKey(null);
+                          setEditTempValue('');
+                          setEditError(null);
+                        }}
+                        className="inline-flex items-center gap-1 px-3 py-1 rounded-md bg-red-500 text-white text-xs font-semibold hover:bg-red-600 transition-colors"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                        Discard
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <p className="text-xs text-[#6c757d] italic">{hint}</p>
                 {(fields as any)[imageField] ? (
                   <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] max-w-lg">
