@@ -35,4 +35,4 @@ This version has breaking changes — APIs, conventions, and file structure may 
 ### File Structure
 - Server actions: `src/app/actions/project.ts`, `src/app/actions/service.ts`, `src/app/actions/enquiry.ts`
 - Portal pages: `src/app/portal/` with role-based dashboards (`owner/`, `manager/`, `field-agent/`, `report-agent/`)
-- Key components: `ChatInterface.tsx` (client-side enquiry chat), `ProjectChat.tsx` (employee-side project chat), `RequestsDashboard.tsx`, `EnquiryList.tsx`, `GeneralReportBuilder.tsx`, `IBBIReportBuilder.tsx`
+- Key components: `ChatInterface.tsx` (client-side enquiry chat), `ProjectChat.tsx` (employee-side project chat), `RequestsDashboard.tsx`, `EnquiryList.tsx`, `GeneralReportBuilder.tsx`, `IBBIReportBuilder.tsx`, `IncomeTaxReportBuilder.tsx`, `BankReportBuilder.tsx`, `BuilderSelector.tsx`, and `banks/` directory (57 bank builders)
