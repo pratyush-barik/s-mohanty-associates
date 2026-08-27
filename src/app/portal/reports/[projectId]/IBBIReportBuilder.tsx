@@ -350,6 +350,7 @@ interface IBBIFields {
   conclusionDescription: string;
   conclusionPlace: string;
   customAssumptions: { text: string; label?: string }[];
+  declarationDescription: string;
 
   // ── Remarks ──
   representativeName: string;
@@ -641,6 +642,7 @@ const DEFAULT_FIELDS: IBBIFields = {
   conclusionDescription: '',
   conclusionPlace: 'Bhubaneswar',
   customAssumptions: [],
+  declarationDescription: '',
 
   representativeName: '',
   representativeFatherName: '',
@@ -724,6 +726,7 @@ const FloatingNavigator = ({ annexureEnabled }: { annexureEnabled: boolean }) =>
     { id: 'section-14', title: '14. Photos/Maps' },
     { id: 'section-15', title: '15. Assumptions' },
     { id: 'section-conclusion', title: 'Conclusion' },
+    { id: 'section-declaration', title: 'Declaration' },
     ...(annexureEnabled ? [{ id: 'section-annexure', title: 'Annexures' }] : []),
   ];
 
@@ -2654,35 +2657,46 @@ Our valuation is based on information obtained from the client and on data gathe
       r.drawSectionHeader('DECLARATION AND UNDERTAKING');
       tocPageMap['DECLARATION AND UNDERTAKING'] = r.getPageCount();
       r.advanceCursor(6);
-      r.drawTextBlock(`I ${fields.representativeName ? 'Mr. ' + fields.representativeName : 'Mr. ________'}${fields.representativeFatherName ? ', S/o: ' + fields.representativeFatherName : ''} do hereby solemnly affirm and state that:`, { bold: true });
-      r.advanceCursor(4);
-      const declarations = [
-        'I am citizen of India.',
-        'I will not undertake valuation of any assets in which I have a direct or indirect interest or become so interested at any time during a period of three years prior to my appointments as valuer or three years after the valuation of assets was conducted by me.',
-        `The information furnished in my valuation report dated ${fields.dateOfValuation || '________'} is true & correct to the best of my knowledge & belief & I have made an impartial & true valuation of the property.`,
-        `I have personally inspected the property on ${fields.dateOfInspection || '________'}. The work is not sub-contracted to any other valuer & carried out by myself.`,
-        'I have not been removed from service/employment earlier.',
-        'I have not been convicted of any offence & sentenced to a term of imprisonment.',
-        'I have not been declared to be unsound mind.',
-        'I have not been found guilty of misconduct in my professional capacity.',
-        'I am not an undischarged bankrupt, or have not applied to be adjudicated as a bankrupt.',
-        'I have not undischarged insolvent.',
-        'I have not been levied a penalty under section 271J of Income-Tax Act, 1961 (43 of 1961) and time limit for filing appeal before commissioner of Income Tax (Appeals) or Income-Tax Appellate Tribunal, as the case may be has expired, or such penalty has been confirmed by Income-Tax Appellate Tribunal, and five years have not elapsed after levy of such penalty.',
-        'I have not been convicted of an offence connected with any proceeding under the Income-Tax Act 1961, wealth Tax Act 1957 or Gift Tax Act 1958.',
-        'My PAN Card number as applicable is AOVPP5837R.',
-        'I have not concealed or suppressed any material information, facts and records and I have made a complete and full disclosure.',
-        'I have read the International Valuation Standards (IVS) & the report submitted to the Bank for the respective asset class is in conformity to the "Standards" enshrined for valuation in the IVS in "General Standards" & "Asset Standards" as applicable.',
-        'I abide by the Model Code of Conduct for empanelment of valuer in the Bank.',
-        'I am not registered under Section 34 AB of the Wealth Tax Act, 1957.',
-        'I am valuer registered with Insolvency & Bankruptcy Board of India (IBBI).',
-        'I am the authorized official of the firm who is competent to sign this valuation report.',
-        'Further, I hereby provide the following information.',
-      ];
-      for (let i = 0; i < declarations.length; i++) {
-        r.drawTextBlock(declarations[i]);
-        r.advanceCursor(3);
+      if (fields.declarationDescription) {
+        const parts = fields.declarationDescription.split('\n');
+        for (const part of parts) {
+          if (part.trim()) {
+            r.drawTextBlock(part.trim());
+            r.advanceCursor(3);
+          }
+        }
+        r.advanceCursor(5);
+      } else {
+        r.drawTextBlock(`I ${fields.representativeName ? 'Mr. ' + fields.representativeName : 'Mr. ________'}${fields.representativeFatherName ? ', S/o: ' + fields.representativeFatherName : ''} do hereby solemnly affirm and state that:`, { bold: true });
+        r.advanceCursor(4);
+        const declarations = [
+          'I am citizen of India.',
+          'I will not undertake valuation of any assets in which I have a direct or indirect interest or become so interested at any time during a period of three years prior to my appointments as valuer or three years after the valuation of assets was conducted by me.',
+          `The information furnished in my valuation report dated ${fields.dateOfValuation || '________'} is true & correct to the best of my knowledge & belief & I have made an impartial & true valuation of the property.`,
+          `I have personally inspected the property on ${fields.dateOfInspection || '________'}. The work is not sub-contracted to any other valuer & carried out by myself.`,
+          'I have not been removed from service/employment earlier.',
+          'I have not been convicted of any offence & sentenced to a term of imprisonment.',
+          'I have not been declared to be unsound mind.',
+          'I have not been found guilty of misconduct in my professional capacity.',
+          'I am not an undischarged bankrupt, or have not applied to be adjudicated as a bankrupt.',
+          'I have not undischarged insolvent.',
+          'I have not been levied a penalty under section 271J of Income-Tax Act, 1961 (43 of 1961) and time limit for filing appeal before commissioner of Income Tax (Appeals) or Income-Tax Appellate Tribunal, as the case may be has expired, or such penalty has been confirmed by Income-Tax Appellate Tribunal, and five years have not elapsed after levy of such penalty.',
+          'I have not been convicted of an offence connected with any proceeding under the Income-Tax Act 1961, wealth Tax Act 1957 or Gift Tax Act 1958.',
+          'My PAN Card number as applicable is AOVPP5837R.',
+          'I have not concealed or suppressed any material information, facts and records and I have made a complete and full disclosure.',
+          'I have read the International Valuation Standards (IVS) & the report submitted to the Bank for the respective asset class is in conformity to the "Standards" enshrined for valuation in the IVS in "General Standards" & "Asset Standards" as applicable.',
+          'I abide by the Model Code of Conduct for empanelment of valuer in the Bank.',
+          'I am not registered under Section 34 AB of the Wealth Tax Act, 1957.',
+          'I am valuer registered with Insolvency & Bankruptcy Board of India (IBBI).',
+          'I am the authorized official of the firm who is competent to sign this valuation report.',
+          'Further, I hereby provide the following information.',
+        ];
+        for (let i = 0; i < declarations.length; i++) {
+          r.drawTextBlock(declarations[i]);
+          r.advanceCursor(3);
+        }
+        r.advanceCursor(8);
       }
-      r.advanceCursor(8);
 
       // Declaration signature
       r.drawSignatureBlock([
@@ -2926,9 +2940,9 @@ Our valuation is based on information obtained from the client and on data gathe
         )}
 
           {/* ── Section 1: Objective & Dates ── */}
-          <Section title="Objective & Declarations" number={1}>
+          <Section title="Objective" number={1}>
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
-              <p className="text-xs text-blue-800">Fill the dates, representative details, and certificate fields below. Section 1 (Objective), Section 2 (Scope), and Section 3 (Basis) use <strong>standard IBBI-IVS text by default</strong>. You can override any sub-section text below.</p>
+              <p className="text-xs text-blue-800">Fill the dates and reference fields below. Section 1 (Objective), Section 2 (Scope), and Section 3 (Basis) use <strong>standard IBBI-IVS text by default</strong>. You can override any sub-section text below.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Date of Inspection">
@@ -2940,25 +2954,6 @@ Our valuation is based on information obtained from the client and on data gathe
               <Field label="Reference No">
                 <input type="text" value={fields.refNo} onChange={e => handleChange('refNo', e.target.value)} className={inputCls} disabled={isReadOnly} />
               </Field>
-              <Field label="Representative Name (for Declaration)">
-                <input type="text" value={fields.representativeName} onChange={e => handleChange('representativeName', e.target.value)} className={inputCls} placeholder="Name of inspecting representative" disabled={isReadOnly} />
-              </Field>
-              <Field label="Representative's Father's Name">
-                <input type="text" value={fields.representativeFatherName} onChange={e => handleChange('representativeFatherName', e.target.value)} className={inputCls} placeholder="Father's name of representative" disabled={isReadOnly} />
-              </Field>
-              <Field label="Valuer Qualifications (Appears next to name)">
-                <input type="text" value={fields.valuerQualifications} onChange={e => handleChange('valuerQualifications', e.target.value)} className={inputCls} placeholder="e.g. , (B.TECH, Civil) FIIV, AIV" disabled={isReadOnly} />
-              </Field>
-              <Field label="Additional Valuer Details (Each line will appear centered below)" span={2}>
-                <textarea rows={3} value={fields.valuerAdditionalDetails} onChange={e => handleChange('valuerAdditionalDetails', e.target.value)} className={inputCls + ' resize-none'} placeholder="e.g.\nRegistered Valuer, IBBI Govt. of India (Regd. No.-...)\nM.SC(Real Estate Valuation)..." disabled={isReadOnly} />
-              </Field>
-              <Field label="Registered Office Address">
-                <input type="text" value={fields.registeredOfficeAddress} onChange={e => handleChange('registeredOfficeAddress', e.target.value)} className={inputCls} placeholder="e.g. AL 71 OSHB COLONY VSS NAGAR BHUBANESWAR 751007" disabled={isReadOnly} />
-              </Field>
-              <Field label="Registered Office Telephone">
-                <input type="text" value={fields.registeredOfficeTel} onChange={e => handleChange('registeredOfficeTel', e.target.value)} className={inputCls} placeholder="e.g. (0674)3594365" disabled={isReadOnly} />
-              </Field>
-
             </div>
 
             {/* Sub-section text overrides */}
@@ -4531,6 +4526,42 @@ Our valuation is based on information obtained from the client and on data gathe
                 </div>
                 <Field label="Representative Name">
                   <input type="text" value={fields.representativeName || ''} disabled className={inputCls + ' bg-gray-100'} />
+                </Field>
+              </div>
+            </div>
+          </Section>
+
+          {/* ── Declaration & Undertaking Section ── */}
+          <Section title="Declaration and Undertaking" id="section-declaration">
+            <div className="space-y-4">
+              <Field label="Declaration and Undertaking Description (Overrides hardcoded text)">
+                <textarea
+                  value={fields.declarationDescription || ''}
+                  onChange={e => handleChange('declarationDescription', e.target.value)}
+                  className={inputCls + ' min-h-[120px]'}
+                  placeholder="Leave empty to use standard hardcoded 16 clauses..."
+                  disabled={isReadOnly}
+                  rows={6}
+                />
+              </Field>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="Representative Name (for Declaration)">
+                  <input type="text" value={fields.representativeName} onChange={e => handleChange('representativeName', e.target.value)} className={inputCls} disabled={isReadOnly} />
+                </Field>
+                <Field label="Representative's Father's Name">
+                  <input type="text" value={fields.representativeFatherName} onChange={e => handleChange('representativeFatherName', e.target.value)} className={inputCls} disabled={isReadOnly} />
+                </Field>
+                <Field label="Valuer Qualifications (Appears next to name)">
+                  <input type="text" value={fields.valuerQualifications} onChange={e => handleChange('valuerQualifications', e.target.value)} className={inputCls} disabled={isReadOnly} />
+                </Field>
+                <Field label="Additional Valuer Details (Each line will appear centered below)" span={2}>
+                  <textarea rows={3} value={fields.valuerAdditionalDetails} onChange={e => handleChange('valuerAdditionalDetails', e.target.value)} className={inputCls} disabled={isReadOnly} />
+                </Field>
+                <Field label="Registered Office Address">
+                  <textarea rows={2} value={fields.registeredOfficeAddress} onChange={e => handleChange('registeredOfficeAddress', e.target.value)} className={inputCls} disabled={isReadOnly} />
+                </Field>
+                <Field label="Registered Office Telephone">
+                  <input type="text" value={fields.registeredOfficeTel} onChange={e => handleChange('registeredOfficeTel', e.target.value)} className={inputCls} disabled={isReadOnly} />
                 </Field>
               </div>
             </div>
