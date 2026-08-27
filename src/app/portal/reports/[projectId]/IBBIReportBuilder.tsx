@@ -1660,6 +1660,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
       // Certificate introductory paragraph
       const certOwner = fields.applicantName || fields.ownerName || '________';
+      const certCurrentOwner = fields.certCurrentOwner || certOwner;
       const certAddress = fields.propertyAddress || fields.ownerAddress || '________';
       const certDate = fields.dateOfInspection || '________';
       const coverDesc = fields.propertyType || 'Property';
@@ -1673,7 +1674,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       const caseRefText = caseRef1 ? `, vide Reference ${caseRef1}${caseRef2 ? ' ' + caseRef2 : ''}` : '';
 
       r.drawTextBlock(
-        `${appointedByText}${appointmentDateText} for carrying out Valuation of Immovable assets${casePartiesText}${caseRefText}, to assess the fair market and thereby deriving liquidation value of ${coverDesc} at ${certAddress}, currently owned by ${certOwner}, inspected on ${certDate}.`
+        `${appointedByText}${appointmentDateText} for carrying out Valuation of Immovable assets${casePartiesText}${caseRefText}, to assess the fair market and thereby deriving liquidation value of ${coverDesc} at ${certAddress}, currently owned by ${certCurrentOwner}, inspected on ${certDate}.`
 ,
         { fontSize: 10 }
       );
@@ -1685,7 +1686,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.drawSimpleRow('CLIENT NAME', certOwner.toUpperCase());
       r.drawSimpleRow('PROPERTY ADDRESS', certAddress.toUpperCase());
       r.drawSimpleRow('PURPOSE OF VALUATION', (fields.purposeOfValuation || 'ACCESS OF FAIR MARKET VALUE').toUpperCase());
-      r.drawSimpleRow('CURRENT OWNER, CONTACT DETAILS', `${certOwner.toUpperCase()}${fields.ownerContactDetails ? '\n' + fields.ownerContactDetails : ''}`);
+      r.drawSimpleRow('CURRENT OWNER, CONTACT DETAILS', `${certCurrentOwner.toUpperCase()}${fields.ownerContactDetails ? '\n' + fields.ownerContactDetails : ''}`);
       r.drawSimpleRow('DESCRIPTION', (fields.certificateDescription || coverDesc).toUpperCase());
       r.drawSimpleRow('AREA', fields.extentOfSite || 'N/A');
       r.drawSimpleRow('STATUS OF PLOT', `${fields.conversionStatus || fields.currentUsage || 'N/A'} (${fields.occupancyStatus || 'N/A'})`);
@@ -1729,8 +1730,8 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
       // Introductory paragraph for Section 1 (from sample)
       const objParagraph = fields.appointedBy
-        ? `Pursuant to request from ${certOwner}, represented through ${fields.representativeName ? 'Mr. ' + fields.representativeName : 'its authorized representative'}${caseRefText}, to assess the fair market value of ${coverDesc} at ${certAddress}, currently owned by ${certOwner}, inspected on ${certDate}.`
-        : `To assess the fair market value of ${coverDesc} at ${certAddress}, currently owned by ${certOwner}, inspected on ${certDate}.`;
+        ? `Pursuant to request from ${certOwner}, represented through ${fields.representativeName ? 'Mr. ' + fields.representativeName : 'its authorized representative'}${caseRefText}, to assess the fair market value of ${coverDesc} at ${certAddress}, currently owned by ${certCurrentOwner}, inspected on ${certDate}.`
+        : `To assess the fair market value of ${coverDesc} at ${certAddress}, currently owned by ${certCurrentOwner}, inspected on ${certDate}.`;
       r.drawTextBlock(objParagraph);
       r.advanceCursor(6);
 
@@ -3002,6 +3003,21 @@ Our valuation is based on information obtained from the client and on data gathe
               </Field>
               <Field label="Purpose of Valuation">
                 <input type="text" value={fields.purposeOfValuation || ''} onChange={e => handleChange('purposeOfValuation', e.target.value)} className={inputCls} placeholder="Access of Fair Market Value for Auction purpose" disabled={isReadOnly} />
+              </Field>
+              <Field label="CURRENT OWNER(s)">
+                <div className="flex flex-col gap-1">
+                  <input
+                    type="text"
+                    value={fields.certCurrentOwner || ''}
+                    onChange={e => handleChange('certCurrentOwner', e.target.value)}
+                    className={inputCls}
+                    placeholder={fields.applicantName || fields.ownerName || ''}
+                    disabled={isReadOnly}
+                  />
+                  {!fields.certCurrentOwner && (
+                    <span className="text-[10px] text-red-500 font-medium">hardcoded as default by client name</span>
+                  )}
+                </div>
               </Field>
               <Field label="Owner Contact Details">
                 <input type="text" value={fields.ownerContactDetails || ''} onChange={e => handleChange('ownerContactDetails', e.target.value)} className={inputCls} placeholder="e.g. 9876543210, owner@email.com" disabled={isReadOnly} />
