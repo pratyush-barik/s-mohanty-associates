@@ -982,11 +982,11 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     // ─── CUTTACK AUTO-CALCULATIONS ───
     // Area sums for label renaming
     const guidelineAreaSum = (fields.guidelinePlotRows || []).reduce((sum: number, row: any) => {
-      const m = String(row.area || '').match(/([\d.]+)/);
+      const m = String(row.area || '').match(/(\d+\.?\d*)/);
       return sum + (m ? parseFloat(m[1]) || 0 : 0);
     }, 0);
     const presentAreaSum = (fields.presentPlotRows || []).reduce((sum: number, row: any) => {
-      const m = String(row.area || '').match(/([\d.]+)/);
+      const m = String(row.area || '').match(/(\d+\.?\d*)/);
       return sum + (m ? parseFloat(m[1]) || 0 : 0);
     }, 0);
 
@@ -2136,7 +2136,7 @@ Our valuation is based on information obtained from the client and on data gathe
           }
 
           // Total Guideline Plot Value
-          const guidelineAreaSum = (fields.guidelinePlotRows || []).reduce((s: number, rw: any) => { const m = String(rw.area || '').match(/([\d.]+)/); return s + (m ? parseFloat(m[1]) || 0 : 0); }, 0);
+          const guidelineAreaSum = (fields.guidelinePlotRows || []).reduce((s: number, rw: any) => { const m = String(rw.area || '').match(/(\d+\.?\d*)/); return s + (m ? parseFloat(m[1]) || 0 : 0); }, 0);
           guidelineTableRows.push([
             `!!SPAN:6!!!!BOLD!!TOTAL GUIDELINE PLOT VALUE FOR AC.${guidelineAreaSum.toFixed(3)} dec`, '', '', '', '', '',
             '!!BOLD!!' + (fields.guidelinePlotTotal || '')
@@ -2206,7 +2206,7 @@ Our valuation is based on information obtained from the client and on data gathe
           }
 
           // Total Present Market Value Plot
-          const presentAreaSum = (fields.presentPlotRows || []).reduce((s: number, rw: any) => { const m = String(rw.area || '').match(/([\d.]+)/); return s + (m ? parseFloat(m[1]) || 0 : 0); }, 0);
+          const presentAreaSum = (fields.presentPlotRows || []).reduce((s: number, rw: any) => { const m = String(rw.area || '').match(/(\d+\.?\d*)/); return s + (m ? parseFloat(m[1]) || 0 : 0); }, 0);
           presentTableRows.push([
             `!!SPAN:6!!!!BOLD!!TOTAL PRESENT MARKET VALUE PLOT FOR AC.${presentAreaSum.toFixed(3)} dec`, '', '', '', '', '',
             '!!BOLD!!' + (fields.presentPlotTotal || '')
@@ -3652,7 +3652,7 @@ Our valuation is based on information obtained from the client and on data gathe
                     </div>
                     {!isReadOnly && <button type="button" onClick={() => handleChange('guidelinePlotRows', [...fields.guidelinePlotRows, { id: String(Date.now()), mouza: '', nature: '', owner: '', plotNo: '', khataNo: '', area: '', ratePerDec: '', amount: '' }])} className="text-xs font-bold text-amber-700 hover:underline mt-2">+ Add Row</button>}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-                      <Field label={`Total Guideline Plot Value FOR AC.${(fields.guidelinePlotRows || []).reduce((s: number, r: any) => { const m = String(r.area || '').match(/([\d.]+)/); return s + (m ? parseFloat(m[1]) || 0 : 0); }, 0).toFixed(3)} dec`}><input type="text" value={fields.guidelinePlotTotal} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
+                      <Field label={`Total Guideline Plot Value FOR AC.${(fields.guidelinePlotRows || []).reduce((s: number, r: any) => { const m = String(r.area || '').match(/(\d+\.?\d*)/); return s + (m ? parseFloat(m[1]) || 0 : 0); }, 0).toFixed(3)} dec`}><input type="text" value={fields.guidelinePlotTotal} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
                       <Field label="Compound Wall Length (rft)"><input type="text" value={fields.cuttackCompoundWallLengthGuideline} onChange={e => handleChange('cuttackCompoundWallLengthGuideline', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 3320" disabled={isReadOnly} /></Field>
                           <Field label="Compound Wall Rate (per rft)"><input type="text" value={fields.cuttackCompoundWallRateGuideline} onChange={e => handleChange('cuttackCompoundWallRateGuideline', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 600" disabled={isReadOnly} /></Field>
                           <Field label="Compound Wall Value (Guideline Value)" span={2}><textarea rows={2} value={fields.cuttackCompoundWallGuideline} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs resize-none cursor-not-allowed" readOnly disabled /></Field>
@@ -3701,7 +3701,7 @@ Our valuation is based on information obtained from the client and on data gathe
                     </div>
                     {!isReadOnly && <button type="button" onClick={() => handleChange('presentPlotRows', [...fields.presentPlotRows, { id: String(Date.now()), mouza: '', nature: '', owner: '', plotNo: '', khataNo: '', area: '', ratePerDec: '', amount: '' }])} className="text-xs font-bold text-blue-700 hover:underline mt-2">+ Add Row</button>}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-                      <Field label={`TOTAL PRESENT MARKET VALUE PLOT FOR AC.${(fields.presentPlotRows || []).reduce((s: number, r: any) => { const m = String(r.area || '').match(/([\d.]+)/); return s + (m ? parseFloat(m[1]) || 0 : 0); }, 0).toFixed(3)} dec`}><input type="text" value={fields.presentPlotTotal} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
+                      <Field label={`TOTAL PRESENT MARKET VALUE PLOT FOR AC.${(fields.presentPlotRows || []).reduce((s: number, r: any) => { const m = String(r.area || '').match(/(\d+\.?\d*)/); return s + (m ? parseFloat(m[1]) || 0 : 0); }, 0).toFixed(3)} dec`}><input type="text" value={fields.presentPlotTotal} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
                       <Field label="Compound Wall Length (rft)"><input type="text" value={fields.cuttackCompoundWallLengthPresent} onChange={e => handleChange('cuttackCompoundWallLengthPresent', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 3320" disabled={isReadOnly} /></Field>
                           <Field label="Compound Wall Rate (per rft)"><input type="text" value={fields.cuttackCompoundWallRatePresent} onChange={e => handleChange('cuttackCompoundWallRatePresent', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 600" disabled={isReadOnly} /></Field>
                           <Field label="Compound Wall Value (Fair Market Value)" span={2}><textarea rows={2} value={fields.cuttackCompoundWallPresent} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs resize-none cursor-not-allowed" readOnly disabled /></Field>
