@@ -336,6 +336,17 @@ interface IBBIFields {
   rorPattaImage: string;
   rorPattaTitle: string;
 
+  // ── Section 15: Assumptions & Limitations ──
+  assumptionsIntro: string;
+  assumptionA: string;
+  assumptionB: string;
+  assumptionC: string;
+  assumptionD: string;
+  assumptionE: string;
+  assumptionEBullet1: string;
+  assumptionEBullet2: string;
+  assumptionF: string;
+
   // ── Remarks ──
   representativeName: string;
   representativeFatherName: string;
@@ -613,6 +624,16 @@ const DEFAULT_FIELDS: IBBIFields = {
   rorPattaImage: '',
   rorPattaTitle: 'ROR/PATTA',
 
+  assumptionsIntro: 'For this report we have carried out analysis and assessments of the market(s) under consideration and the demand-supply for the residential and commercial sectors in general.\nThis report is not based on comprehensive market research of the overall market for all possible situations. We have covered specific market and situations, which are highlighted in the report. The opinions expressed in the report are subject to the limitations mentioned in this para.',
+  assumptionA: 'It should be noted that value assessments are based upon the facts and evidence available at the date of assessment. Changes in socio-economic and political conditions could result in a substantially different situation that the value assessments be periodically reviewed.',
+  assumptionB: '',
+  assumptionC: 'No investigation of the title of the assets has been made and owners claims to the assets are assumed to be valid. It is, assumed that the property is free from all encumbrance.',
+  assumptionD: 'It is also assumed, that there is no liability of outstanding on the owners taxation or any other expense towards statutory compliance for realization.',
+  assumptionE: 'In the preparations of the report, we have relied on the following information:',
+  assumptionEBullet1: "The information provided by the owner's or their representative appointed /its affiliates subsidiaries during the visits.",
+  assumptionEBullet2: 'Recent data on the industry segments and market projections.',
+  assumptionF: 'The value assessed is my best opinion under the current circumstances and market scenario and is not a guarantee. Real estate prices are subject to wide fluctuations and the valuation need to be reviewed at suitable regular intervals.',
+
   representativeName: '',
   representativeFatherName: '',
   valuerQualifications: '',
@@ -692,6 +713,7 @@ const FloatingNavigator = ({ annexureEnabled }: { annexureEnabled: boolean }) =>
     { id: 'section-12', title: '12. Engineering' },
     { id: 'section-13', title: '13. Valuation' },
     { id: 'section-14', title: '14. Photos/Maps' },
+    { id: 'section-15', title: '15. Assumptions' },
     ...(annexureEnabled ? [{ id: 'section-annexure', title: 'Annexures' }] : []),
   ];
 
@@ -2476,28 +2498,59 @@ Our valuation is based on information obtained from the client and on data gathe
       r.advanceCursor(8);
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-      //  SECTION 15: ASSUMPTION & LIMITATION (matches sample)
+      //  SECTION 15: ASSUMPTIONS & LIMITATIONS
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       r.drawSectionHeader('15. ASSUMPTION & LIMITATION.');
       tocPageMap['15. ASSUMPTIONS & LIMITATIONS'] = r.getPageCount();
       r.advanceCursor(4);
-      r.drawTextBlock('For this report we have carried out analysis and assessments of the market(s) under consideration and the demand-supply for the residential and commercial sectors in general.');
-      r.advanceCursor(4);
-      r.drawTextBlock('This report is not based on comprehensive market research of the overall market for all possible situations. We have covered specific market and situations, which are highlighted in the report. The opinions expressed in the report are subject to the limitations mentioned in this para.');
-      r.advanceCursor(4);
-      r.drawTextBlock('It should be noted that value assessments are based upon the facts and evidence available at the date of assessment. Changes in socio-economic and political conditions could result in a substantially different situation that the value assessments be periodically reviewed.');
-      r.advanceCursor(4);
-      r.drawTextBlock(`The report is only for the purpose of assessing fair market value of the property as per detail provided by the client and for the exclusive use of ${certOwner}, and should not be used by any other person or for any other purpose. Report provided is limited to opinion of value and do not constitute an audit, a due diligence and tax related services. Through this report we do not express an opinion on the financial information of the business of any party, including the owners and its affiliates and subsidiaries. The report is prepared solely for the purpose stated, and should not be used for any other purpose.`);
-      r.advanceCursor(4);
-      r.drawTextBlock('No investigation of the title of the assets has been made and owners claims to the assets are assumed to be valid. It is assumed that the property is free from all encumbrance.');
-      r.advanceCursor(4);
-      r.drawTextBlock('It is also assumed, that there is no liability of outstanding on the owners taxation or any other expense towards statutory compliance for realization.');
-      r.advanceCursor(4);
-      r.drawTextBlock('In the preparations of the report, we have relied on the following information:');
-      r.drawTextBlock('\u2022 The information provided by the owner\'s or their representative appointed / its affiliates subsidiaries during the visits.');
-      r.drawTextBlock('\u2022 Recent data on the industry segments and market projections.');
-      r.advanceCursor(4);
-      r.drawTextBlock('The value assessed is my best opinion under the current circumstances and market scenario and is not a guarantee. Real estate prices are subject to wide fluctuations and the valuation need to be reviewed at suitable regular intervals.');
+
+      // Intro paragraph (overridable)
+      const assumptionIntroText = fields.assumptionsIntro || 'For this report we have carried out analysis and assessments of the market(s) under consideration and the demand-supply for the residential and commercial sectors in general.\nThis report is not based on comprehensive market research of the overall market for all possible situations. We have covered specific market and situations, which are highlighted in the report. The opinions expressed in the report are subject to the limitations mentioned in this para.';
+      const introParts = assumptionIntroText.split('\n');
+      for (const part of introParts) {
+        if (part.trim()) {
+          r.drawTextBlock(part.trim(), { indent: 20 });
+          r.advanceCursor(2);
+        }
+      }
+
+      // a. Value assessment basis
+      const aText = fields.assumptionA || 'It should be noted that value assessments are based upon the facts and evidence available at the date of assessment. Changes in socio-economic and political conditions could result in a substantially different situation that the value assessments be periodically reviewed.';
+      r.drawTextBlock('a.  ' + aText, { indent: 20 });
+      r.advanceCursor(2);
+
+      // b. Purpose & exclusive use (auto-derived from Appointed By & Owner Name)
+      const appointedByVal = fields.appointedBy || '________';
+      const ownerVal = fields.applicantName || fields.ownerName || '________';
+      const defaultBText = `The report is only for the purpose of assessing fair market value of the Plot as per detail provided by the client and for the exclusive use of ${appointedByVal} on behalf of ${ownerVal}, and should not be used by any other person or for any other purpose. Report provided is limited to opinion of value and do not constitute an audit, a due diligence and tax related services. Through this report we do not express and opinion on the financial information of the business of any party, including the owners and its affiliates and subsidiaries. The report is prepared solely for the purpose stated, and should not be used for any other purpose.`;
+      const bText = fields.assumptionB || defaultBText;
+      r.drawTextBlock('b.  ' + bText, { indent: 20 });
+      r.advanceCursor(2);
+
+      // c. Title investigation
+      const cText = fields.assumptionC || 'No investigation of the title of the assets has been made and owners claims to the assets are assumed to be valid. It is, assumed that the property is free from all encumbrance.';
+      r.drawTextBlock('c.  ' + cText, { indent: 20 });
+      r.advanceCursor(2);
+
+      // d. Tax liability
+      const dText = fields.assumptionD || 'It is also assumed, that there is no liability of outstanding on the owners taxation or any other expense towards statutory compliance for realization.';
+      r.drawTextBlock('d.  ' + dText, { indent: 20 });
+      r.advanceCursor(2);
+
+      // e. Information relied upon
+      const eText = fields.assumptionE || 'In the preparations of the report, we have relied on the following information:';
+      r.drawTextBlock('e.  ' + eText, { indent: 20 });
+      r.advanceCursor(1);
+      const eBullet1 = fields.assumptionEBullet1 || "The information provided by the owner's or their representative appointed /its affiliates subsidiaries during the visits.";
+      const eBullet2 = fields.assumptionEBullet2 || 'Recent data on the industry segments and market projections.';
+      r.drawTextBlock('\u2022  ' + eBullet1, { indent: 35 });
+      r.advanceCursor(1);
+      r.drawTextBlock('\u2022  ' + eBullet2, { indent: 35 });
+      r.advanceCursor(2);
+
+      // f. Valuer's opinion
+      const fText = fields.assumptionF || 'The value assessed is my best opinion under the current circumstances and market scenario and is not a guarantee. Real estate prices are subject to wide fluctuations and the valuation need to be reviewed at suitable regular intervals.';
+      r.drawTextBlock('f.  ' + fText, { indent: 20 });
       r.advanceCursor(8);
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -4168,6 +4221,112 @@ Our valuation is based on information obtained from the client and on data gathe
             </div>
 
 
+          </Section>
+
+          {/* ── Section 15: Assumptions & Limitations ── */}
+          <Section title="Assumptions & Limitations" number={15}>
+            <div id="section-15" className="space-y-5">
+              <p className="text-xs text-[#6c757d] italic mb-3">
+                These texts are pre-filled with standard content. Edit any field below to override the default text in the PDF report.
+              </p>
+
+              {/* Intro Paragraph */}
+              <Field label="Introductory Paragraph">
+                <textarea
+                  value={fields.assumptionsIntro}
+                  onChange={e => handleChange('assumptionsIntro', e.target.value)}
+                  className={inputCls + ' min-h-[80px]'}
+                  disabled={isReadOnly}
+                  rows={3}
+                />
+              </Field>
+
+              {/* a. Value assessment basis */}
+              <Field label="a. Value Assessment Basis">
+                <textarea
+                  value={fields.assumptionA}
+                  onChange={e => handleChange('assumptionA', e.target.value)}
+                  className={inputCls + ' min-h-[60px]'}
+                  disabled={isReadOnly}
+                  rows={2}
+                />
+              </Field>
+
+              {/* b. Purpose & exclusive use (auto-derived) */}
+              <Field label="b. Purpose & Exclusive Use (auto-derived from Appointed By & Owner Name)">
+                <textarea
+                  value={fields.assumptionB || `The report is only for the purpose of assessing fair market value of the Plot as per detail provided by the client and for the exclusive use of ${fields.appointedBy || '________'} on behalf of ${fields.applicantName || fields.ownerName || '________'}, and should not be used by any other person or for any other purpose. Report provided is limited to opinion of value and do not constitute an audit, a due diligence and tax related services. Through this report we do not express and opinion on the financial information of the business of any party, including the owners and its affiliates and subsidiaries. The report is prepared solely for the purpose stated, and should not be used for any other purpose.`}
+                  onChange={e => handleChange('assumptionB', e.target.value)}
+                  className={inputCls + ' min-h-[100px]'}
+                  disabled={isReadOnly}
+                  rows={4}
+                />
+              </Field>
+
+              {/* c. Title investigation */}
+              <Field label="c. Title Investigation">
+                <textarea
+                  value={fields.assumptionC}
+                  onChange={e => handleChange('assumptionC', e.target.value)}
+                  className={inputCls + ' min-h-[60px]'}
+                  disabled={isReadOnly}
+                  rows={2}
+                />
+              </Field>
+
+              {/* d. Tax liability */}
+              <Field label="d. Tax / Statutory Compliance">
+                <textarea
+                  value={fields.assumptionD}
+                  onChange={e => handleChange('assumptionD', e.target.value)}
+                  className={inputCls + ' min-h-[60px]'}
+                  disabled={isReadOnly}
+                  rows={2}
+                />
+              </Field>
+
+              {/* e. Information relied upon */}
+              <Field label="e. Information Relied Upon (header)">
+                <textarea
+                  value={fields.assumptionE}
+                  onChange={e => handleChange('assumptionE', e.target.value)}
+                  className={inputCls}
+                  disabled={isReadOnly}
+                  rows={1}
+                />
+              </Field>
+              <div className="pl-6 space-y-2">
+                <Field label="• Bullet 1">
+                  <textarea
+                    value={fields.assumptionEBullet1}
+                    onChange={e => handleChange('assumptionEBullet1', e.target.value)}
+                    className={inputCls}
+                    disabled={isReadOnly}
+                    rows={1}
+                  />
+                </Field>
+                <Field label="• Bullet 2">
+                  <textarea
+                    value={fields.assumptionEBullet2}
+                    onChange={e => handleChange('assumptionEBullet2', e.target.value)}
+                    className={inputCls}
+                    disabled={isReadOnly}
+                    rows={1}
+                  />
+                </Field>
+              </div>
+
+              {/* f. Valuer's opinion */}
+              <Field label="f. Valuer's Opinion & Disclaimer">
+                <textarea
+                  value={fields.assumptionF}
+                  onChange={e => handleChange('assumptionF', e.target.value)}
+                  className={inputCls + ' min-h-[60px]'}
+                  disabled={isReadOnly}
+                  rows={2}
+                />
+              </Field>
+            </div>
           </Section>
 
           {/* ── Annexure Section ── */}

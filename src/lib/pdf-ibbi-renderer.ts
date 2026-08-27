@@ -55,6 +55,7 @@ interface DrawTextOptions {
   align?: 'left' | 'center' | 'right';
   maxWidth?: number;
   underline?: boolean;
+  indent?: number;
 }
 
 export class PDFIBBIRenderer {
@@ -825,7 +826,8 @@ export class PDFIBBIRenderer {
    */
   drawTextBlock(text: string, opts?: DrawTextOptions): void {
     const fontSize = opts?.fontSize || FONT_SIZE;
-    const maxWidth = opts?.maxWidth || CONTENT_W;
+    const indent = opts?.indent || 0;
+    const maxWidth = (opts?.maxWidth || CONTENT_W) - indent;
     const lineH = fontSize * LINE_HEIGHT;
     const lines = this.wrapText(text, maxWidth, fontSize, opts?.bold, opts?.italic);
     const totalH = lines.length * lineH;
@@ -833,8 +835,8 @@ export class PDFIBBIRenderer {
     this.checkPageBreak(totalH);
 
     for (let i = 0; i < lines.length; i++) {
-      this.drawTextAt(lines[i], MARGIN_L, this.cursorY + i * lineH, {
-        ...opts, maxWidth: CONTENT_W,
+      this.drawTextAt(lines[i], MARGIN_L + indent, this.cursorY + i * lineH, {
+        ...opts, maxWidth: maxWidth,
       });
     }
 
