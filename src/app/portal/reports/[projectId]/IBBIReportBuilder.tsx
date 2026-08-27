@@ -2419,10 +2419,10 @@ Our valuation is based on information obtained from the client and on data gathe
 
       // ── Location Map (inside Section 14) ──
       if (locationBytes && locationBytes.length > 0) {
-        r.checkPageBreak(300);
-        r.drawCenteredTitle('LOCATION MAP');
-        r.advanceCursor(4);
-        await r.drawImageBlock(locationBytes, { maxWidth: 450, maxHeight: 450, centered: true });
+        r.checkPageBreak(320);
+        r.drawTextBlock('LOCATION MAP', { bold: true, underline: true });
+        r.advanceCursor(2);
+        await r.drawImageBlock(locationBytes, { maxWidth: 500, maxHeight: 500, centered: true });
         if (fields.latitude || fields.longitude) {
           r.drawTextBlock(`Lat: ${fields.latitude || 'N/A'}, Long: ${fields.longitude || 'N/A'}`, { bold: true, align: 'center' });
         }
@@ -2431,46 +2431,46 @@ Our valuation is based on information obtained from the client and on data gathe
 
       // ── Mouza Map (inside Section 14) ──
       if (mouzaMapBytes && mouzaMapBytes.length > 0) {
-        r.checkPageBreak(300);
-        r.drawCenteredTitle(fields.mouzaMapTitle || 'MOUZA MAP SUPERIMPOSED OVER SATELLITE MAP');
-        r.advanceCursor(4);
-        await r.drawImageBlock(mouzaMapBytes, { maxWidth: 450, maxHeight: 450, centered: true });
+        r.checkPageBreak(320);
+        r.drawTextBlock(fields.mouzaMapTitle || 'MOUZA MAP SUPERIMPOSED OVER SATELLITE MAP', { bold: true, underline: true });
+        r.advanceCursor(2);
+        await r.drawImageBlock(mouzaMapBytes, { maxWidth: 500, maxHeight: 500, centered: true });
         r.advanceCursor(4);
       }
 
       // ── Revenue Map (inside Section 14) ──
       if (revenueMapBytes && revenueMapBytes.length > 0) {
-        r.checkPageBreak(300);
-        r.drawCenteredTitle(fields.revenueMapTitle || 'REVENUE MAP');
-        r.advanceCursor(4);
-        await r.drawImageBlock(revenueMapBytes, { maxWidth: 450, maxHeight: 450, centered: true });
+        r.checkPageBreak(320);
+        r.drawTextBlock(fields.revenueMapTitle || 'REVENUE MAP', { bold: true, underline: true });
+        r.advanceCursor(2);
+        await r.drawImageBlock(revenueMapBytes, { maxWidth: 500, maxHeight: 500, centered: true });
         r.advanceCursor(4);
       }
 
       // ── CDP Map (inside Section 14) ──
       if (cdpMapBytes && cdpMapBytes.length > 0) {
-        r.checkPageBreak(300);
-        r.drawCenteredTitle(fields.cdpMapTitle || 'CDP MAP');
-        r.advanceCursor(4);
-        await r.drawImageBlock(cdpMapBytes, { maxWidth: 450, maxHeight: 450, centered: true });
+        r.checkPageBreak(320);
+        r.drawTextBlock(fields.cdpMapTitle || 'CDP MAP', { bold: true, underline: true });
+        r.advanceCursor(2);
+        await r.drawImageBlock(cdpMapBytes, { maxWidth: 500, maxHeight: 500, centered: true });
         r.advanceCursor(4);
       }
 
       // ── Govt Guideline Value (inside Section 14) ──
       if (guidelineValueBytes && guidelineValueBytes.length > 0) {
-        r.checkPageBreak(300);
-        r.drawCenteredTitle(fields.guidelineValueTitle || 'GOVT GUIDELINE VALUE');
-        r.advanceCursor(4);
-        await r.drawImageBlock(guidelineValueBytes, { maxWidth: 450, maxHeight: 450, centered: true });
+        r.checkPageBreak(320);
+        r.drawTextBlock(fields.guidelineValueTitle || 'GOVT GUIDELINE VALUE', { bold: true, underline: true });
+        r.advanceCursor(2);
+        await r.drawImageBlock(guidelineValueBytes, { maxWidth: 500, maxHeight: 500, centered: true });
         r.advanceCursor(4);
       }
 
       // ── ROR/PATTA (inside Section 14) ──
       if (rorPattaBytes && rorPattaBytes.length > 0) {
-        r.checkPageBreak(300);
-        r.drawCenteredTitle(fields.rorPattaTitle || 'ROR/PATTA');
-        r.advanceCursor(4);
-        await r.drawImageBlock(rorPattaBytes, { maxWidth: 450, maxHeight: 450, centered: true });
+        r.checkPageBreak(320);
+        r.drawTextBlock(fields.rorPattaTitle || 'ROR/PATTA', { bold: true, underline: true });
+        r.advanceCursor(2);
+        await r.drawImageBlock(rorPattaBytes, { maxWidth: 500, maxHeight: 500, centered: true });
         r.advanceCursor(4);
       }
       r.advanceCursor(8);
@@ -2600,10 +2600,10 @@ Our valuation is based on information obtained from the client and on data gathe
 
         for (let i = 0; i < propImageBytes.length; i += 2) {
           const name1 = fields.propertyImageNames?.[i] || '';
-          const caption1 = name1 ? `Figure ${i + 1} - ${name1.toUpperCase()}` : `Figure ${i + 1}`;
+          const caption1 = name1 ? `PHOTO ${i + 1} - ${name1.toUpperCase()}` : `PHOTO ${i + 1}`;
           const img2 = i + 1 < propImageBytes.length ? propImageBytes[i + 1] : null;
           const name2 = fields.propertyImageNames?.[i + 1] || '';
-          const caption2 = name2 ? `Figure ${i + 2} - ${name2.toUpperCase()}` : `Figure ${i + 2}`;
+          const caption2 = name2 ? `PHOTO ${i + 2} - ${name2.toUpperCase()}` : `PHOTO ${i + 2}`;
 
           await r.drawImagePair(propImageBytes[i], caption1, img2, caption2);
           r.advanceCursor(2);
@@ -4150,7 +4150,7 @@ Our valuation is based on information obtained from the client and on data gathe
                       )}
                       <input
                         type="text"
-                        placeholder={`Caption for Figure ${i + 1}`}
+                        placeholder={`Caption for Photo ${i + 1}`}
                         value={fields.propertyImageNames?.[i] || ''}
                         onChange={e => {
                           const names = [...(fields.propertyImageNames || [])];
