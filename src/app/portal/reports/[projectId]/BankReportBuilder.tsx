@@ -1006,111 +1006,140 @@ export default function BankReportBuilder({
       r.drawCenteredTitle(titleText);
       r.advanceCursor(8);
 
+      const drawExtraPDFFields = (secId: string) => {
+        if (config?.extraFields?.[secId]) {
+          for (const ef of config.extraFields[secId]) {
+            const val = fields[ef.key] !== undefined ? fields[ef.key] : (ef.default || '');
+            if (val !== '' && val !== null && val !== undefined) {
+              r.drawSimpleRow(ef.label, String(val));
+            }
+          }
+        }
+      };
+
       // ── General Details ──
-      r.drawSectionHeader('GENERAL DETAILS');
-      r.drawOptionRow('Type of property', ['Residential', 'Commercial', 'Residential cum Commercial', 'Industrial', 'Vacant Plot'], fields.propertyType);
-      r.drawSimpleRow(config?.fieldLabels?.ownerName || 'Name of the Customer(s)', `"${fields.ownerName || 'N/A'}"`);
-      
-      if (fields.annexureEnabled && fields.annexures.length > 0 && !fields.annexureRefShowAlso) {
-        const linkedAnn = fields.annexureRef
-          ? fields.annexures.find(a => a.id === fields.annexureRef)
-          : (fields.annexures.find(a => a.parsedData) || fields.annexures[0]);
-        const annexureTitle = linkedAnn ? (linkedAnn.title || `Annexure ${linkedAnn.label}`) : 'Annexure';
-        r.drawSimpleRow(config?.fieldLabels?.ownerAddress || 'Property Address', `Refer to annexure ${annexureTitle}`);
-      } else {
-        r.drawSimpleRow(config?.fieldLabels?.ownerAddress || 'Property Address', getFullAddress());
-        r.drawSimpleRow('Landmark', fields.landmark || '');
-      }
-      const loanAppLabel = fields.loanApplicationType ? `${fields.loanApplicationType} Application number` : (config?.fieldLabels?.loanApplicationNo || 'Application number');
-      r.drawSimpleRow(loanAppLabel, fields.loanApplicationNo);
-      r.drawSimpleRow(config?.fieldLabels?.documentHolderName || 'Name of Document holder', fields.documentHolderName || fields.ownerName);
+      if (!isSectionHidden('section-1')) {
+        r.drawSectionHeader('GENERAL DETAILS');
+        r.drawOptionRow('Type of property', ['Residential', 'Commercial', 'Residential cum Commercial', 'Industrial', 'Vacant Plot'], fields.propertyType);
+        r.drawSimpleRow(config?.fieldLabels?.ownerName || 'Name of the Customer(s)', `"${fields.ownerName || 'N/A'}"`);
+        
+        if (fields.annexureEnabled && fields.annexures.length > 0 && !fields.annexureRefShowAlso) {
+          const linkedAnn = fields.annexureRef
+            ? fields.annexures.find(a => a.id === fields.annexureRef)
+            : (fields.annexures.find(a => a.parsedData) || fields.annexures[0]);
+          const annexureTitle = linkedAnn ? (linkedAnn.title || `Annexure ${linkedAnn.label}`) : 'Annexure';
+          r.drawSimpleRow(config?.fieldLabels?.ownerAddress || 'Property Address', `Refer to annexure ${annexureTitle}`);
+        } else {
+          r.drawSimpleRow(config?.fieldLabels?.ownerAddress || 'Property Address', getFullAddress());
+          r.drawSimpleRow('Landmark', fields.landmark || '');
+        }
+        const loanAppLabel = fields.loanApplicationType ? `${fields.loanApplicationType} Application number` : (config?.fieldLabels?.loanApplicationNo || 'Application number');
+        r.drawSimpleRow(loanAppLabel, fields.loanApplicationNo);
+        r.drawSimpleRow(config?.fieldLabels?.documentHolderName || 'Name of Document holder', fields.documentHolderName || fields.ownerName);
 
-      if (fields.legalAnnexureEnabled && fields.annexures.length > 0 && !fields.legalAnnexureRefShowAlso) {
-        const linkedAnn = fields.legalAnnexureRef
-          ? fields.annexures.find(a => a.id === fields.legalAnnexureRef)
-          : (fields.annexures.find(a => a.parsedData) || fields.annexures[0]);
-        const annexureTitle = linkedAnn ? (linkedAnn.title || `Annexure ${linkedAnn.label}`) : 'Annexure';
-        r.drawSimpleRow('Legal address of property ( Hissa No / Survey no / khasra No : - )', `Refer to annexure ${annexureTitle}`);
-      } else {
-        r.drawSimpleRow('Legal address of property ( Hissa No / Survey no / khasra No : - )', getLegalFullAddress() || '');
-      }
+        if (fields.legalAnnexureEnabled && fields.annexures.length > 0 && !fields.legalAnnexureRefShowAlso) {
+          const linkedAnn = fields.legalAnnexureRef
+            ? fields.annexures.find(a => a.id === fields.legalAnnexureRef)
+            : (fields.annexures.find(a => a.parsedData) || fields.annexures[0]);
+          const annexureTitle = linkedAnn ? (linkedAnn.title || `Annexure ${linkedAnn.label}`) : 'Annexure';
+          r.drawSimpleRow('Legal address of property ( Hissa No / Survey no / khasra No : - )', `Refer to annexure ${annexureTitle}`);
+        } else {
+          r.drawSimpleRow('Legal address of property ( Hissa No / Survey no / khasra No : - )', getLegalFullAddress() || '');
+        }
 
-      r.drawSimpleRow('Date of Inspection', fields.dateOfInspection);
-      r.drawSimpleRow('Date of Valuation Report', fields.dateOfValuation);
-      
-      const fullBankText = fields.organisationSubTemplate ? `${fields.bankName || fields.organisationTemplate} (${fields.organisationSubTemplate})` : (fields.bankName || fields.organisationTemplate);
-      r.drawSimpleRow('Name of Bank / Institution', fullBankText || 'N/A');
-      r.drawSimpleRow('Branch Name', fields.branchName || 'N/A');
-      r.advanceCursor(8);
+        r.drawSimpleRow('Date of Inspection', fields.dateOfInspection);
+        r.drawSimpleRow('Date of Valuation Report', fields.dateOfValuation);
+        
+        const fullBankText = fields.organisationSubTemplate ? `${fields.bankName || fields.organisationTemplate} (${fields.organisationSubTemplate})` : (fields.bankName || fields.organisationTemplate);
+        r.drawSimpleRow('Name of Bank / Institution', fullBankText || 'N/A');
+        r.drawSimpleRow('Branch Name', fields.branchName || 'N/A');
+        drawExtraPDFFields('section-1');
+        r.advanceCursor(8);
+      }
 
       // ── Surrounding Locality Details ──
-      r.drawSectionHeader('SURROUNDING LOCALITY DETAILS');
-      r.drawSimpleRow('Ward No / Municipal Land No', fields.wardNo);
-      r.drawOptionRow('Vicinity', ['Slum', 'Residential', 'Commercial', 'Mixed', 'Industrial'], fields.vicinity);
-      r.drawOptionRow('Locality Type', ['Elite/Posh/High Class', 'Upper Middle Class', 'Middle Class', 'Lower Middle Class'], fields.classOfLocality);
-      r.drawOptionRow('Approach Road Width', ['>=60 Feet Road', '60-40 Feet Road', '40-20 Feet Road', '<20 Feet Road'], fields.approachRoadWidth);
-      r.drawOptionRow('Plot Demarcated at Site', ['Yes', 'No'], fields.plotDemarcated);
-      r.drawProximityRow('Proximity to Civic Amenities',
-        ['Nearest Railway Station', 'Nearest Bus Stop', 'Nearest Hospital'],
-        [`1. ${fields.railwayStationName || 'Railway Station'}${fields.distanceRailwayStation ? ' — ' + fields.distanceRailwayStation + ' km' : ''}`, `2. ${fields.busStopName || 'Bus Stop'}${fields.distanceBusStop ? ' — ' + fields.distanceBusStop + ' km' : ''}`, `3. ${fields.hospitalName || 'Hospital'}${fields.distanceHospital ? ' — ' + fields.distanceHospital + ' km' : ''}`]
-      );
-      r.drawOptionRow('Property Identification', ['Easy to Identify', 'Identification by documents', 'Additional documents required', 'Difficult to identify'], fields.propertyIdentification);
-      r.drawOptionRow('Proximity to Facilities', ['<1 Km', '1-3 Kms', '3-5 Kms', '>5 Kms'], fields.proximityToFacilities);
-      r.drawProximityRow('Landmark Details',
-        ['Nearest Railway Station', 'Nearest Bus Stop', 'Nearest Hospital', 'Nearest Landmark'],
-        [`1. ${fields.landmarkRailway || 'N/A'}`, `2. ${fields.landmarkBusStop || 'N/A'}`, `3. ${fields.landmarkHospital || 'N/A'}`, `4. ${fields.landmarkNearest || fields.landmark || 'N/A'}`]
-      );
-      r.advanceCursor(8);
+      if (!isSectionHidden('section-2')) {
+        r.drawSectionHeader('SURROUNDING LOCALITY DETAILS');
+        r.drawSimpleRow('Ward No / Municipal Land No', fields.wardNo);
+        r.drawOptionRow('Vicinity', ['Slum', 'Residential', 'Commercial', 'Mixed', 'Industrial'], fields.vicinity);
+        r.drawOptionRow('Locality Type', ['Elite/Posh/High Class', 'Upper Middle Class', 'Middle Class', 'Lower Middle Class'], fields.classOfLocality);
+        r.drawOptionRow('Approach Road Width', ['>=60 Feet Road', '60-40 Feet Road', '40-20 Feet Road', '<20 Feet Road'], fields.approachRoadWidth);
+        r.drawOptionRow('Plot Demarcated at Site', ['Yes', 'No'], fields.plotDemarcated);
+        r.drawProximityRow('Proximity to Civic Amenities',
+          ['Nearest Railway Station', 'Nearest Bus Stop', 'Nearest Hospital'],
+          [`1. ${fields.railwayStationName || 'Railway Station'}${fields.distanceRailwayStation ? ' — ' + fields.distanceRailwayStation + ' km' : ''}`, `2. ${fields.busStopName || 'Bus Stop'}${fields.distanceBusStop ? ' — ' + fields.distanceBusStop + ' km' : ''}`, `3. ${fields.hospitalName || 'Hospital'}${fields.distanceHospital ? ' — ' + fields.distanceHospital + ' km' : ''}`]
+        );
+        r.drawOptionRow('Property Identification', ['Easy to Identify', 'Identification by documents', 'Additional documents required', 'Difficult to identify'], fields.propertyIdentification);
+        r.drawOptionRow('Proximity to Facilities', ['<1 Km', '1-3 Kms', '3-5 Kms', '>5 Kms'], fields.proximityToFacilities);
+        r.drawProximityRow('Landmark Details',
+          ['Nearest Railway Station', 'Nearest Bus Stop', 'Nearest Hospital', 'Nearest Landmark'],
+          [`1. ${fields.landmarkRailway || 'N/A'}`, `2. ${fields.landmarkBusStop || 'N/A'}`, `3. ${fields.landmarkHospital || 'N/A'}`, `4. ${fields.landmarkNearest || fields.landmark || 'N/A'}`]
+        );
+        drawExtraPDFFields('section-2');
+        r.advanceCursor(8);
+      }
 
       // ── Property Details ──
-      r.drawSectionHeader('PROPERTY DETAILS');
-      r.drawSimpleRow('Type of Usage of Entire Property', fields.usageType);
-      r.drawSimpleRow('Additional Amenities', fields.additionalAmenities || 'N/A');
-      r.drawOptionRow('Legal Status of Property', ['Freehold', 'Lease hold >30 yrs.', 'Lease hold 15-30 yrs.', 'Lease hold <15 yrs.'], fields.legalStatus);
-      r.advanceCursor(8);
+      if (!isSectionHidden('section-3')) {
+        r.drawSectionHeader('PROPERTY DETAILS');
+        r.drawSimpleRow('Type of Usage of Entire Property', fields.usageType);
+        r.drawSimpleRow('Additional Amenities', fields.additionalAmenities || 'N/A');
+        r.drawOptionRow('Legal Status of Property', ['Freehold', 'Lease hold >30 yrs.', 'Lease hold 15-30 yrs.', 'Lease hold <15 yrs.'], fields.legalStatus);
+        drawExtraPDFFields('section-3');
+        r.advanceCursor(8);
+      }
 
       // ── Subject Property Details ──
-      r.drawSectionHeader('SUBJECT PROPERTY DETAILS');
-      r.drawSimpleRow('Type of Premises', fields.premisesType);
-      r.drawSimpleRow('Occupied by / Vacant', fields.occupiedBy);
-      r.drawSimpleRow('Is Property Rented', fields.isPropertyRented);
-      r.drawSimpleRow('If Rented, List of Occupants', fields.rentedOccupants);
-      r.drawOptionRow('Property Taxation / Maintenance', ['Low', 'Average', 'High', 'Very High'], fields.propertyTaxation);
-      r.drawSimpleRow('Boundary (As per Sketch Map)', `N: ${fields.boundaryNorth || '-'}  |  E: ${fields.boundaryEast || '-'}  |  S: ${fields.boundarySouth || '-'}  |  W: ${fields.boundaryWest || '-'}`);
-      r.drawSimpleRow('Boundary (At Site)', `N: ${fields.buildingBoundaryNorth || '-'}  |  E: ${fields.buildingBoundaryEast || '-'}  |  S: ${fields.buildingBoundarySouth || '-'}  |  W: ${fields.buildingBoundaryWest || '-'}`);
-      r.advanceCursor(8);
+      if (!isSectionHidden('section-4')) {
+        r.drawSectionHeader('SUBJECT PROPERTY DETAILS');
+        r.drawSimpleRow('Type of Premises', fields.premisesType);
+        r.drawSimpleRow('Occupied by / Vacant', fields.occupiedBy);
+        r.drawSimpleRow('Is Property Rented', fields.isPropertyRented);
+        r.drawSimpleRow('If Rented, List of Occupants', fields.rentedOccupants);
+        r.drawOptionRow('Property Taxation / Maintenance', ['Low', 'Average', 'High', 'Very High'], fields.propertyTaxation);
+        r.drawSimpleRow('Boundary (As per Sketch Map)', `N: ${fields.boundaryNorth || '-'}  |  E: ${fields.boundaryEast || '-'}  |  S: ${fields.boundarySouth || '-'}  |  W: ${fields.boundaryWest || '-'}`);
+        r.drawSimpleRow('Boundary (At Site)', `N: ${fields.buildingBoundaryNorth || '-'}  |  E: ${fields.buildingBoundaryEast || '-'}  |  S: ${fields.buildingBoundarySouth || '-'}  |  W: ${fields.buildingBoundaryWest || '-'}`);
+        drawExtraPDFFields('section-4');
+        r.advanceCursor(8);
+      }
 
       // ── Structural Details ──
-      r.drawSectionHeader('STRUCTURAL DETAILS');
-      r.drawOptionRow('Type of Structure', ['RCC', 'Load Bearing', 'Steel Structure', 'Composite Structure', 'Industrial Shed', 'A/C Sheet', 'G/I Sheet', 'Asbestos Roofing'], fields.structureType);
-      r.drawSimpleRow('No. of Floors', fields.numberOfFloors);
-      r.drawSimpleRow('No. of Wings', fields.numberOfWings);
-      r.drawSimpleRow('No. of Units on Each Floor', fields.unitsPerFloor);
-      r.drawSimpleRow('Internal Composition', fields.internalComposition);
-      r.drawSimpleRow('No. of Lifts', fields.numberOfLifts);
-      r.drawAgeOptionRow('Age of Property', ['1-10 years', '11-25 years', '26-50 years', '>50 years'], fields.ageOfProperty, fields.ageOfPropertyActual);
-      r.drawSimpleRow('Estimated Future Life', fields.estimatedFutureLife);
-      r.drawSimpleRow('Exteriors', fields.exteriors);
-      r.drawOptionRow('Quality of Construction', ['Very Good', 'Good', 'Average', 'Poor'], fields.qualityOfConstruction);
-      r.drawSimpleRow('Common Areas Remarks', fields.commonAreasRemarks);
-      r.drawSimpleRow('Other Observations', fields.otherObservations);
-      r.drawSimpleRow('Flooring & Finishing', fields.flooringType);
-      r.drawSimpleRow('Roofing & Terracing', fields.roofType);
-      r.drawSimpleRow('Quality of Fixtures', fields.qualityOfFixtures);
-      r.advanceCursor(8);
+      if (!isSectionHidden('section-5')) {
+        r.drawSectionHeader('STRUCTURAL DETAILS');
+        r.drawOptionRow('Type of Structure', ['RCC', 'Load Bearing', 'Steel Structure', 'Composite Structure', 'Industrial Shed', 'A/C Sheet', 'G/I Sheet', 'Asbestos Roofing'], fields.structureType);
+        r.drawSimpleRow('No. of Floors', fields.numberOfFloors);
+        r.drawSimpleRow('No. of Wings', fields.numberOfWings);
+        r.drawSimpleRow('No. of Units on Each Floor', fields.unitsPerFloor);
+        r.drawSimpleRow('Internal Composition', fields.internalComposition);
+        r.drawSimpleRow('No. of Lifts', fields.numberOfLifts);
+        r.drawAgeOptionRow('Age of Property', ['1-10 years', '11-25 years', '26-50 years', '>50 years'], fields.ageOfProperty, fields.ageOfPropertyActual);
+        r.drawSimpleRow('Estimated Future Life', fields.estimatedFutureLife);
+        r.drawSimpleRow('Exteriors', fields.exteriors);
+        r.drawOptionRow('Quality of Construction', ['Very Good', 'Good', 'Average', 'Poor'], fields.qualityOfConstruction);
+        r.drawSimpleRow('Common Areas Remarks', fields.commonAreasRemarks);
+        r.drawSimpleRow('Other Observations', fields.otherObservations);
+        r.drawSimpleRow('Flooring & Finishing', fields.flooringType);
+        r.drawSimpleRow('Roofing & Terracing', fields.roofType);
+        r.drawSimpleRow('Quality of Fixtures', fields.qualityOfFixtures);
+        drawExtraPDFFields('section-5');
+        r.advanceCursor(8);
+      }
 
       // ── Plan Approvals ──
-      r.drawSectionHeader('PLAN APPROVALS');
-      r.drawOptionRow('Construction as per Approved Plans', ['Yes', 'No'], fields.constructionApproved);
-      r.drawSimpleRow('Details of Approved Plan', fields.approvalDetails);
-      r.drawSimpleRow('Construction Permission No. & Date', fields.constructionPermission || 'Not mentioned');
-      r.drawSimpleRow('Violations / Risk of Demolition', fields.violationsObserved);
-      r.drawSimpleRow('Conforms to Local Byelaws', fields.conformsToByelaws);
-      r.drawSimpleRow('Other Documents Verified', fields.documentsVerified);
-      r.advanceCursor(8);
+      if (!isSectionHidden('section-6')) {
+        r.drawSectionHeader('PLAN APPROVALS');
+        r.drawOptionRow('Construction as per Approved Plans', ['Yes', 'No'], fields.constructionApproved);
+        r.drawSimpleRow('Details of Approved Plan', fields.approvalDetails);
+        r.drawSimpleRow('Construction Permission No. & Date', fields.constructionPermission || 'Not mentioned');
+        r.drawSimpleRow('Violations / Risk of Demolition', fields.violationsObserved);
+        r.drawSimpleRow('Conforms to Local Byelaws', fields.conformsToByelaws);
+        r.drawSimpleRow('Other Documents Verified', fields.documentsVerified);
+        drawExtraPDFFields('section-6');
+        r.advanceCursor(8);
+      }
 
       // ── Land Valuation ──
-      if (!isApartmentFlat && !config?.hiddenSections?.includes('section-8')) {
+      if (!isApartmentFlat && !isSectionHidden('section-8')) {
         r.drawSectionHeader('VALUATION \u2014 Land');
         r.drawSimpleRow('Land Area', `${fields.landArea || '0'} ${fields.landAreaUnit}`);
         r.drawSimpleRow('Current Govt. Approved Rates for Land', `Rs.${fields.govtLandRate || fields.guidelineValue || 'N/A'}/- Per ${fields.landAreaUnit}`);
@@ -1118,51 +1147,70 @@ export default function BankReportBuilder({
         r.drawSimpleRow('Land Value', `${fields.landArea || '0'} ${fields.landAreaUnit} \u00D7 Rs.${fields.landRatePerUnit || '0'}/- = Rs.${formatIndianCurrency(landValue)}/-`);
         r.drawSimpleRow('Actual BUA of Premises', `${formatIndianCurrency(totalPlinthArea)} ${fields.floorAreaUnit || 'Sqft'}`);
         if (fields.buaAsPerApprovals) r.drawSimpleRow('BUA as per Approvals', fields.buaAsPerApprovals);
+        drawExtraPDFFields('section-8');
         r.advanceCursor(8);
       }
 
       // ── Building / Apartment Valuation Table ──
-      r.drawCenteredTitle(isApartmentFlat ? 'VALUATION OF APARTMENT/FLAT (After Depreciation)' : 'VALUATION OF BUILDING (After Depreciation)');
-      r.advanceCursor(4);
-      const unit = fields.floorAreaUnit || fields.landAreaUnit || 'Sqft';
-      r.drawFloorTable(
-        ['Floor', `Area (${unit})`, `Rate (Rs./${unit})`, 'Estimated (Rs.)', 'Life (Yr)', 'Age (Yr)', 'Dep%', 'Net Value (Rs.)'],
-        floorValuations.map(f => ({
-          name: f.name,
-          area: formatIndianCurrency(f.area),
-          rate: `Rs.${formatIndianCurrency(f.rate)}`,
-          estimated: `Rs.${formatIndianCurrency(f.estimated)}`,
-          life: String(f.lifeYears),
-          age: String(f.ageYears),
-          dep: `${f.depPct}%`,
-          netValue: `Rs.${formatIndianCurrency(f.netValue)}`,
-        })),
-        'Total Building Value',
-        `Rs.${formatIndianCurrency(totalBuildingValue)}`,
-      );
-      r.advanceCursor(8);
+      if (!isSectionHidden('section-7')) {
+        r.drawCenteredTitle(isApartmentFlat ? 'VALUATION OF APARTMENT/FLAT (After Depreciation)' : 'VALUATION OF BUILDING (After Depreciation)');
+        r.advanceCursor(4);
+        const unit = fields.floorAreaUnit || fields.landAreaUnit || 'Sqft';
+        r.drawFloorTable(
+          ['Floor', `Area (${unit})`, `Rate (Rs./${unit})`, 'Estimated (Rs.)', 'Life (Yr)', 'Age (Yr)', 'Dep%', 'Net Value (Rs.)'],
+          floorValuations.map(f => ({
+            name: f.name,
+            area: formatIndianCurrency(f.area),
+            rate: `Rs.${formatIndianCurrency(f.rate)}`,
+            estimated: `Rs.${formatIndianCurrency(f.estimated)}`,
+            life: String(f.lifeYears),
+            age: String(f.ageYears),
+            dep: `${f.depPct}%`,
+            netValue: `Rs.${formatIndianCurrency(f.netValue)}`,
+          })),
+          'Total Building Value',
+          `Rs.${formatIndianCurrency(totalBuildingValue)}`,
+        );
+        drawExtraPDFFields('section-7');
+        r.advanceCursor(8);
+      }
+
+      // ── Extra Custom Bank Sections ──
+      if (config?.extraSections) {
+        for (const sec of config.extraSections) {
+          r.drawSectionHeader(sec.title.toUpperCase());
+          drawExtraPDFFields(sec.id);
+          r.advanceCursor(8);
+        }
+      }
 
       // ── Abstract of Valuation ──
-      r.drawSectionHeader('ABSTRACT OF VALUATION');
-      r.drawSimpleRow(
-        isApartmentFlat ? 'Market Value (Apartment/Flat)' : 'Market Value (Land + Building)',
-        `Rs.${formatIndianCurrency(totalPropertyValue)}/- (${rupeesInWords(totalPropertyValue)})`
-      );
-      r.drawSimpleRow(`Realizable Value (${fields.realizablePct || '90'}%)`, `Rs.${formatIndianCurrency(realizableValue)}/-`);
-      r.drawSimpleRow(`Forced Sale / Distress Value (${fields.distressPct || '80'}%)`, `Rs.${formatIndianCurrency(distressValue)}/- (${rupeesInWords(distressValue)})`);
-      r.drawOptionRow('Marketability', ['Excellent', 'Very Good', 'Good', 'Difficult'], fields.marketability);
-      r.drawOptionRow('Valuation Result', ['Positive', 'Negative'], fields.valuationResult);
-      r.drawSimpleRow('Replacement Cost / Insurance Value', fields.replacementCost ? `Rs.${formatIndianCurrency(fields.replacementCost)}/-` : 'N/A');
-      r.drawSimpleRow('Deviations in Property', fields.deviations);
-      if (fields.guidelineValue) r.drawSimpleRow('Govt./Guideline Value', `Rs.${formatIndianCurrency(fields.guidelineValue)}/-`);
-      r.advanceCursor(8);
+      if (!isSectionHidden('section-9')) {
+        r.drawSectionHeader('ABSTRACT OF VALUATION');
+        r.drawSimpleRow(
+          isApartmentFlat ? 'Market Value (Apartment/Flat)' : 'Market Value (Land + Building)',
+          `Rs.${formatIndianCurrency(totalPropertyValue)}/- (${rupeesInWords(totalPropertyValue)})`
+        );
+        r.drawSimpleRow(`Realizable Value (${fields.realizablePct || '90'}%)`, `Rs.${formatIndianCurrency(realizableValue)}/-`);
+        r.drawSimpleRow(`Forced Sale / Distress Value (${fields.distressPct || '80'}%)`, `Rs.${formatIndianCurrency(distressValue)}/- (${rupeesInWords(distressValue)})`);
+        r.drawOptionRow('Marketability', ['Excellent', 'Very Good', 'Good', 'Difficult'], fields.marketability);
+        r.drawOptionRow('Valuation Result', ['Positive', 'Negative'], fields.valuationResult);
+        r.drawSimpleRow('Replacement Cost / Insurance Value', fields.replacementCost ? `Rs.${formatIndianCurrency(fields.replacementCost)}/-` : 'N/A');
+        r.drawSimpleRow('Deviations in Property', fields.deviations);
+        if (fields.guidelineValue) r.drawSimpleRow('Govt./Guideline Value', `Rs.${formatIndianCurrency(fields.guidelineValue)}/-`);
+        drawExtraPDFFields('section-9');
+        r.advanceCursor(8);
+      }
 
       // ── Remarks ──
-      r.drawSectionHeader('REMARKS, DEMARCATION & POSSESSION');
-      r.drawSimpleRow('Demarcation', fields.demarcation);
-      r.drawSimpleRow('Possession', fields.possession);
-      r.drawSimpleRow('Remarks / Observations', fields.remarks);
-      r.advanceCursor(8);
+      if (!isSectionHidden('section-10')) {
+        r.drawSectionHeader('REMARKS, DEMARCATION & POSSESSION');
+        r.drawSimpleRow('Demarcation', fields.demarcation);
+        r.drawSimpleRow('Possession', fields.possession);
+        r.drawSimpleRow('Remarks / Observations', fields.remarks);
+        drawExtraPDFFields('section-10');
+        r.advanceCursor(8);
+      }
 
       // ── Declaration ──
       r.drawTextBlock('Declaration:', { bold: true, fontSize: 14 });
