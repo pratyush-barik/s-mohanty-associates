@@ -392,7 +392,9 @@ Outstanding items in **priority order**:
 - `latest` — feat(pdf): convert drawSimpleRow from single-column to two-column table layout (Label | Value) matching sample IBBI reports
 
 
-- `latest` - feat(BankBuilders): implement scalable OOP-style Bank Report Builder architecture with BaseReportFields master interface, PDFBankRenderer base class, config-driven BankReportBuilder, dynamic lazy-loading in BuilderSelector, and 57 bank/sub-template stubs
+- `978d6fa` — fix(BankReportBuilder): add dynamic extra fields rendering and hidden section checks to PDF generation engine
+- `cb3cf79` — fix(BankReportBuilder): replace unstyled button classes with explicit Tailwind styling, add full manager actions & rework modal, and improve BuilderSelector routing priority
+- `8f7b866` — feat(BankBuilders): implement scalable OOP-style Bank Report Builder architecture with BaseReportFields master interface, PDFBankRenderer base class, config-driven BankReportBuilder, dynamic lazy-loading in BuilderSelector, and 57 bank/sub-template stubs
 - `latest` - fix(IBBI): unmerge sections 8-9 and 10-11 in the floating sidebar panel
 - `latest` - feat(IBBI): add dynamic plinth area table with dropdown options (Section 12)
 - `latest` - feat(IBBI): add Total life of building and Floor details table to Section 12 Engineering Aspects
