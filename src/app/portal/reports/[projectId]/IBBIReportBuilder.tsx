@@ -316,6 +316,7 @@ interface IBBIFields {
   // ── Section 14: Site Location ──
   latitude: string;
   longitude: string;
+  locationSearchQuery: string;
 
   // ── Photos & Maps ──
   propertyImages: string[];
@@ -582,6 +583,7 @@ const DEFAULT_FIELDS: IBBIFields = {
 
   latitude: '',
   longitude: '',
+  locationSearchQuery: '',
 
   propertyImages: [],
   propertyImageNames: [],
@@ -758,6 +760,38 @@ interface IBBIReportBuilderProps {
   };
   onReset?: () => void;
 }
+
+const cleanAddressForMap = (rawAddr: string): string => {
+  if (!rawAddr || !rawAddr.trim()) return '';
+  let str = rawAddr.trim();
+  str = str.replace(/\([^)]*\)/gi, '');
+  str = str.replace(/\bAREA-?[^,]+/gi, '');
+  str = str.replace(/\bKISSAM:?[^,]+/gi, '');
+  str = str.replace(/\b(KHATA|PLOT|SURVEY|STREET|WARD)\s*NO:?[^,]+/gi, '');
+  str = str.replace(/^(MR|MRS|DR|MS|M\/S)\.?[^,]+,?\s*/gi, '');
+  str = str.replace(/^[A-Z\s.&]+\s*&\s*OTHERS,?\s*/gi, '');
+  str = str.replace(/\b(AT\/PO|PS|DIST|THANA|TAHASIL|MOUZA):?\s*/gi, '');
+  str = str.replace(/\b\d+([\/\-]\d+)*\b/g, '');
+  str = str
+    .replace(/["';]/g, '')
+    .replace(/\s*,\s*/g, ', ')
+    .replace(/(,\s*)+/g, ', ')
+    .replace(/^[\s,.-]+|[\s,.-]+$/g, '')
+    .trim();
+  return str;
+};
+
+const getIBBILocationAddress = (fields: IBBIFields): string => {
+  if (fields.propertyAddress && fields.propertyAddress.trim()) {
+    const cleaned = cleanAddressForMap(fields.propertyAddress);
+    if (cleaned) return cleaned;
+  }
+  if (fields.ownerAddress && fields.ownerAddress.trim()) {
+    const cleaned = cleanAddressForMap(fields.ownerAddress);
+    if (cleaned) return cleaned;
+  }
+  return '';
+};
 
 export default function IBBIReportBuilder({ projectId, projectCode, initialFields, status, userRole = 'REPORT_EMPLOYEE', bucketImages = [], prefill, onReset }: IBBIReportBuilderProps) {
   const router = useRouter();
@@ -3796,6 +3830,116 @@ Our valuation is based on information obtained from the client and on data gathe
           </Section>
           {/* ── Section 14: Photos & Maps ── */}
           <Section title="Property Photographs, Sketch & Location Maps" number={14}>
+            {/* Location Map with GPS Co-ordinate */}
+            <div className="mb-6 space-y-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest">Location Map with GPS Co-ordinate</p>
+              </div>
+              {/* Live Google Maps Embed */}
+              {(() => {
+                const defaultAddr = getIBBILocationAddress(fields);
+                const activeAddr = fields.locationSearchQuery !== undefined && fields.locationSearchQuery !== '' ? fields.locationSearchQuery : defaultAddr;
+                const mapQuery = fields.latitude && fields.longitude
+                  ? `${fields.latitude.trim()},${fields.longitude.trim()}`
+                  : activeAddr;
+                const encodedQuery = encodeURIComponent(mapQuery);
+                const hasQuery = mapQuery.trim().length > 0;
+                const googleMapsUrl = fields.latitude && fields.longitude
+                  ? `https://www.google.com/maps?q=${fields.latitude.trim()},${fields.longitude.trim()}&z=15&t=k`
+                  : `https://www.google.com/maps/search/${encodedQuery}`;
+                return (
+                  <div className="space-y-3">
+                    <Field label="Google Maps Location Address / Search Query (Auto-derived from Property Address)">
+                      <input
+                        className={inputCls}
+                        value={activeAddr}
+                        onChange={e => handleChange('locationSearchQuery', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="e.g. BANIKIA, CUTTACK, ODISHA"
+                      />
+                    </Field>
+                    {hasQuery ? (
+                      <div className="rounded-xl overflow-hidden border border-[#c8d6e5] shadow-sm">
+                        <div className="bg-[#d5e8f5] px-4 py-2 flex items-center justify-between">
+                          <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider">
+                            Live Map Preview (Property Legal Location)
+                          </span>
+                          <a
+                            href={googleMapsUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs font-semibold text-[#b8860b] hover:underline"
+                          >
+                            Open in Google Maps ↗
+                          </a>
+                        </div>
+                        <iframe
+                          src={`https://maps.google.com/maps?q=${encodedQuery}&t=k&z=16&output=embed`}
+                          width="100%"
+                          height="300"
+                          style={{ border: 0 }}
+                          allowFullScreen
+                          loading="lazy"
+                          referrerPolicy="no-referrer-when-downgrade"
+                          title="Property Location Map"
+                        />
+                        {fields.latitude && fields.longitude && (
+                          <div className="bg-[#0a1628] text-[#f0c040] px-4 py-2 text-xs font-bold text-center">
+                            Latitude: {fields.latitude}, Longitude: {fields.longitude}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="p-6 rounded-xl bg-[#f8f9fa] border border-[#dee2e6] text-center text-sm text-[#6c757d]">
+                        <p className="font-semibold mb-1">No address found.</p>
+                        <p>Type the location address above or enter Lat/Long to load the live map.</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
+              {/* Screenshot upload for PDF */}
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-[#495057] uppercase tracking-wider">
+                  Screenshot for PDF Report
+                </p>
+                <p className="text-xs text-[#6c757d]">
+                  To include a map in the PDF, open Google Maps via the link above, take a satellite screenshot with the pin visible, and upload it below.
+                </p>
+                {fields.locationMapImage ? (
+                  <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] max-w-lg">
+                    <img src={fields.locationMapImage ? encodeURI(fields.locationMapImage) : ''} alt="Location Map Screenshot" className="w-full object-contain" />
+                    {!isReadOnly && (
+                      <button type="button" onClick={() => handleChange('locationMapImage', '')} className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">Remove</button>
+                    )}
+                    <div className="absolute bottom-0 left-0 right-0 bg-green-600/90 text-white text-center text-xs py-1 font-semibold">
+                      ✅ Screenshot uploaded — will appear in PDF
+                    </div>
+                  </div>
+                ) : (
+                  !isReadOnly && (
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+                        {uploading ? 'Uploading...' : 'Upload Map Screenshot for PDF'}
+                        <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'locationMapImage')} disabled={uploading} />
+                      </label>
+                    </div>
+                  )
+                )}
+              </div>
+
+              {/* Lat/Long inputs */}
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Latitude">
+                  <input className={inputCls} value={fields.latitude} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 19.976652" />
+                </Field>
+                <Field label="Longitude">
+                  <input className={inputCls} value={fields.longitude} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 86.240795" />
+                </Field>
+              </div>
+            </div>
+
             {/* Property Photos */}
             <div>
               <p className="text-xs font-bold text-[#495057] uppercase tracking-wider mb-2">Property Photographs</p>
@@ -3884,32 +4028,6 @@ Our valuation is based on information obtained from the client and on data gathe
               )}
             </div>
 
-            {/* Location Map */}
-            <div className="mt-6">
-              <p className="text-xs font-bold text-[#495057] uppercase tracking-wider mb-2">Location Map</p>
-              {fields.locationMapImage ? (
-                <div className="relative group rounded-lg overflow-hidden border border-slate-200 max-w-lg">
-                  <img src={fields.locationMapImage} alt="Location Map" className="w-full max-h-48 object-contain" />
-                  {!isReadOnly && (
-                    <button onClick={() => handleChange('locationMapImage', '')} className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">Remove</button>
-                  )}
-                </div>
-              ) : (
-                !isReadOnly && (
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-                      {uploading ? 'Uploading...' : 'Upload Location Map'}
-                      <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'locationMapImage')} disabled={uploading} />
-                    </label>
-                  </div>
-                )
-              )}
-            </div>
-            {/* Lat/Long */}
-            <div className="grid grid-cols-2 gap-4 mt-6">
-              <Field label="Latitude"><input type="text" value={fields.latitude} onChange={e => handleChange('latitude', e.target.value)} className={inputCls} placeholder="e.g. 20.2961" disabled={isReadOnly} /></Field>
-              <Field label="Longitude"><input type="text" value={fields.longitude} onChange={e => handleChange('longitude', e.target.value)} className={inputCls} placeholder="e.g. 85.8245" disabled={isReadOnly} /></Field>
-            </div>
           </Section>
 
           {/* ── Annexure Section ── */}
