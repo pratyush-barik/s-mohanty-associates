@@ -368,6 +368,8 @@ interface IBBIFields {
   // ── Valuation Certificate (dedicated) ──
   certificateDescription?: string;
   ownerContactDetails?: string;
+  certCurrentOwner?: string;
+  certStatusOfPlot?: string;
   caseParties?: string;
   caseReferenceNo2?: string;
   appointedByDesignation?: string;
@@ -1689,7 +1691,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.drawSimpleRow('CURRENT OWNER, CONTACT DETAILS', `${certCurrentOwner.toUpperCase()}${fields.ownerContactDetails ? '\n' + fields.ownerContactDetails : ''}`);
       r.drawSimpleRow('DESCRIPTION', coverDesc.toUpperCase());
       r.drawSimpleRow('AREA', fields.extentOfSite || 'N/A');
-      r.drawSimpleRow('STATUS OF PLOT', `${fields.conversionStatus || fields.currentUsage || 'N/A'} (${fields.occupancyStatus || 'N/A'})`);
+      r.drawSimpleRow('STATUS OF PLOT', fields.certStatusOfPlot || '');
       r.drawSimpleRow('VALUATION METHOD', (fields.valuationMethod || 'Sale Comparison Method').toUpperCase());
       r.drawSimpleRow('VALUATION DATE', fields.dateOfValuation || 'N/A');
       r.drawSimpleRow('PRESENT VALUE (in Rs)', `Rs.${formatIndianCurrency(fields.fairMarketValueTotal || fields.presentMarketValueTotal || '0')}/-`);
@@ -3028,6 +3030,9 @@ Our valuation is based on information obtained from the client and on data gathe
               <Field label="Description" span={2}>
                 <input type="text" value={fields.propertyType || ''} onChange={e => handleChange('propertyType', e.target.value)} className={inputCls} placeholder="e.g. Vacant Land, Residential House, etc." disabled={isReadOnly} />
               </Field>
+              <Field label="Status of Plot" span={2}>
+                <input type="text" value={fields.certStatusOfPlot || ''} onChange={e => handleChange('certStatusOfPlot', e.target.value)} className={inputCls} placeholder="e.g. Converted to Homestead (Vacant)" disabled={isReadOnly} />
+              </Field>
 
               {/* Read-only references from other sections */}
               <div className="col-span-2 border-t border-gray-200 pt-3 mt-1">
@@ -3041,9 +3046,6 @@ Our valuation is based on information obtained from the client and on data gathe
               </Field>
               <Field label="Area / Extent of Site (from Section 4)">
                 <input type="text" value={fields.extentOfSite || 'N/A'} className={inputCls + ' bg-gray-100'} disabled />
-              </Field>
-              <Field label="Status of Plot (from Section 4)">
-                <input type="text" value={`${fields.conversionStatus || fields.currentUsage || 'N/A'} (${fields.occupancyStatus || 'N/A'})`} className={inputCls + ' bg-gray-100'} disabled />
               </Field>
               <Field label="Valuation Date (from Section 1)">
                 <input type="text" value={fields.dateOfValuation || ''} className={inputCls + ' bg-gray-100'} disabled />
