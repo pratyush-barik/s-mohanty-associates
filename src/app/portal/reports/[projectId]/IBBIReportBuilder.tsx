@@ -1687,7 +1687,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.drawSimpleRow('PROPERTY ADDRESS', certAddress.toUpperCase());
       r.drawSimpleRow('PURPOSE OF VALUATION', (fields.purposeOfValuation || 'ACCESS OF FAIR MARKET VALUE').toUpperCase());
       r.drawSimpleRow('CURRENT OWNER, CONTACT DETAILS', `${certCurrentOwner.toUpperCase()}${fields.ownerContactDetails ? '\n' + fields.ownerContactDetails : ''}`);
-      r.drawSimpleRow('DESCRIPTION', (fields.certificateDescription || coverDesc).toUpperCase());
+      r.drawSimpleRow('DESCRIPTION', coverDesc.toUpperCase());
       r.drawSimpleRow('AREA', fields.extentOfSite || 'N/A');
       r.drawSimpleRow('STATUS OF PLOT', `${fields.conversionStatus || fields.currentUsage || 'N/A'} (${fields.occupancyStatus || 'N/A'})`);
       r.drawSimpleRow('VALUATION METHOD', (fields.valuationMethod || 'Sale Comparison Method').toUpperCase());
@@ -3025,8 +3025,8 @@ Our valuation is based on information obtained from the client and on data gathe
               <Field label="Valuation Method">
                 <input type="text" value={fields.valuationMethod || ''} onChange={e => handleChange('valuationMethod', e.target.value)} className={inputCls} placeholder="Sale Comparison Method coupled with Replacement Cost Approach" disabled={isReadOnly} />
               </Field>
-              <Field label="Certificate Description (detailed property description)" span={2}>
-                <textarea rows={3} value={fields.certificateDescription || ''} onChange={e => handleChange('certificateDescription', e.target.value)} className={inputCls + ' resize-none'} placeholder="e.g. This IDCO Plot close to NH-16, Cuttack-Chandabali Road, approx 1 KM" disabled={isReadOnly} />
+              <Field label="Description" span={2}>
+                <input type="text" value={fields.propertyType || ''} onChange={e => handleChange('propertyType', e.target.value)} className={inputCls} placeholder="e.g. Vacant Land, Residential House, etc." disabled={isReadOnly} />
               </Field>
 
               {/* Read-only references from other sections */}
@@ -3044,9 +3044,6 @@ Our valuation is based on information obtained from the client and on data gathe
               </Field>
               <Field label="Status of Plot (from Section 4)">
                 <input type="text" value={`${fields.conversionStatus || fields.currentUsage || 'N/A'} (${fields.occupancyStatus || 'N/A'})`} className={inputCls + ' bg-gray-100'} disabled />
-              </Field>
-              <Field label="Description / Type of Property (from Section 4)">
-                <input type="text" value={fields.propertyType || ''} className={inputCls + ' bg-gray-100'} disabled />
               </Field>
               <Field label="Valuation Date (from Section 1)">
                 <input type="text" value={fields.dateOfValuation || ''} className={inputCls + ' bg-gray-100'} disabled />
