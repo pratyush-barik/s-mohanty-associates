@@ -101,7 +101,13 @@ The core business logic is **100% complete**.
      - **Annexure I: General Principles and Limiting Conditions** — boilerplate page covering Confidentiality, Use of Report, Source of Information, Legal Title, Town Planning, Leases, Development Agreements, Site Surveys, Structural Surveys.
      - **Annexure II: General Assumptions** — boilerplate page with 6 standard assumption paragraphs.
      - Signature blocks on Conclusion, Declaration, and Annexure II pages.
-   - **C. Income Tax / Capital Gains (`IncomeTaxReportBuilder.tsx`)**: A specialized builder for IT/Capital Gains valuations (when `organisationTemplate === 'INCOME_TAX_CAPITAL_GAINS'`), featuring custom fields for retro-valuation, indexation, and specific statutory sections under IT rules.
+   - **C. Income Tax / Capital Gains (`IncomeTaxReportBuilder.tsx`)**: A specialized builder for IT/Capital Gains valuations (when `organisationTemplate === 'INCOME_TAX'` or `'INCOME_TAX_CAPITAL_GAINS'`), featuring custom fields for retro-valuation, indexation, and specific statutory sections under IT rules.
+   - **D. Bank & Financial Institution Builders (`BankReportBuilder.tsx` + `banks/`)**: An extensible OOP-style configuration hierarchy for 60+ banks and financial institutions (SBI, HDFC, ICICI, Axis, LIC Housing Finance, DCB, Kotak, Aditya Birla, PNB, etc.):
+     - **Base Form Component (`BankReportBuilder.tsx`)**: Configurable clone of GeneralReportBuilder accepting a `BankConfig` delta object. Supports field label renames, section/field hiding, injecting extra fields, custom sections, and custom PDF renderers.
+     - **Master Types (`src/lib/bank-fields.ts`)**: `BaseReportFields` (~50 core valuation fields) + `BankConfig` delta types.
+     - **Base PDF Renderer (`src/lib/pdf-bank-renderer.ts`)**: Extends `PDFGeneralRenderer`, allowing bank-specific PDF renderers to subclass and override table/section drawing logic.
+     - **Dynamic Router (`BuilderSelector.tsx`)**: Next.js `dynamic()` lazy-loading map for all 57 bank and sub-template builders in `src/app/portal/reports/[projectId]/banks/`. Loads only the selected bank's JavaScript bundle with zero overhead.
+     - **Per-Bank Stubs**: 57 bank and sub-template files organized alphabetically in `banks/` directory, ready to be customized per bank.
 
    **Shared Design Decisions across ReportBuilders:**
 
@@ -386,7 +392,7 @@ Outstanding items in **priority order**:
 - `latest` — feat(pdf): convert drawSimpleRow from single-column to two-column table layout (Label | Value) matching sample IBBI reports
 
 
-### Recent Updates
+- `latest` - feat(BankBuilders): implement scalable OOP-style Bank Report Builder architecture with BaseReportFields master interface, PDFBankRenderer base class, config-driven BankReportBuilder, dynamic lazy-loading in BuilderSelector, and 57 bank/sub-template stubs
 - `latest` - fix(IBBI): unmerge sections 8-9 and 10-11 in the floating sidebar panel
 - `latest` - feat(IBBI): add dynamic plinth area table with dropdown options (Section 12)
 - `latest` - feat(IBBI): add Total life of building and Floor details table to Section 12 Engineering Aspects

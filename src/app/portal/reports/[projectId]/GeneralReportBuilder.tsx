@@ -759,7 +759,7 @@ interface GeneralReportBuilderProps {
     contactEmail?: string;
   };
   onWizardComplete?: () => void;
-  onNavigateToBuilder?: (target: 'ibbi' | 'income_tax', updatedFields: any) => void;
+  onNavigateToBuilder?: (target: 'ibbi' | 'income_tax' | 'bank', updatedFields: any) => void;
   onResetWizard?: () => void;
 }
 
@@ -990,6 +990,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     const updatedFields = { ...fields, ...updates };
     
     const isSpecialTemplate = ['INCOME_TAX', 'IBBI_IVS'].includes(updatedFields.organisationTemplate || '');
+    const isBankTemplate = updatedFields.clientType === 'organisation' && updatedFields.organisationTemplate && !isSpecialTemplate;
     
     if (isSpecialTemplate) {
       if (onNavigateToBuilder) {
@@ -1000,6 +1001,8 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
         bypassUnloadRef.current = true;
         window.location.href = `${window.location.pathname}?builder=${builderParam}`;
       }
+    } else if (isBankTemplate && onNavigateToBuilder) {
+      onNavigateToBuilder('bank', updatedFields);
     } else {
       // For general templates, update local state and show the form
       setFields(updatedFields);
