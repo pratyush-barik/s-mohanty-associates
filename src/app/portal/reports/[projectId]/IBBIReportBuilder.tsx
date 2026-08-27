@@ -1756,6 +1756,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.advanceCursor(8);
 
       // ── 2. SCOPE OF ENQUIRIES ──
+      r.newPage();
       r.drawSectionHeader('2. SCOPE OF ENQUIRIES AND INVESTIGATION:');
       tocPageMap['2.  SCOPE OF ENQUIRIES AND INVESTIGATION'] = r.getPageCount();
       r.drawTextBlock('2.1 SITE INSPECTION', { bold: true });
@@ -1775,6 +1776,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.advanceCursor(8);
 
       // ── 3. BASIS OF VALUATION ──
+      r.newPage();
       r.drawSectionHeader('3. BASIS OF VALUATION:');
       tocPageMap['3.  BASIS OF VALUATION'] = r.getPageCount();
       const basis3Default = `The basis of valuation of industries depends on various factors such as the purpose of valuation, statutory requirements, business drivers, macro and micro economic environment, government policies as applicable to the asset being valued. The purpose of the valuation is a critical first step in the process as it dictates the "basis of value" or "standard of value" to be applied, which, in turn, impacts the selection of approaches, inputs and assumptions considered in the valuation.
@@ -1795,6 +1797,7 @@ Our valuation is based on information obtained from the client and on data gathe
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
       // ── 4. BRIEF DESCRIPTION ──
+      r.newPage();
       r.drawSectionHeader('4. BRIEF DESCRIPTION OF THE PROPERTY');
       tocPageMap['4.  BRIEF DESCRIPTION OF THE PROPERTY'] = r.getPageCount();
       // Introductory prose paragraph (matches sample format)
@@ -1827,6 +1830,7 @@ Our valuation is based on information obtained from the client and on data gathe
       r.advanceCursor(8);
 
       // ── 5. TOWN PLANNING ──
+      r.newPage();
       r.drawSectionHeader('5. TOWN PLANNING PARAMETERS:');
       tocPageMap['5.  TOWN PLANNING PARAMETERS'] = r.getPageCount();
       r.drawSimpleRow('5.1   Master plan provision, related to property in terms of land use.', fields.masterPlanProvision);
@@ -1841,6 +1845,7 @@ Our valuation is based on information obtained from the client and on data gathe
       r.advanceCursor(8);
 
       // ── 6. LEGAL ASPECTS ──
+      r.newPage();
       r.drawSectionHeader('6. DOCUMENT DETAILS AND LEGAL ASPECTS OF THE PROPERTY:');
       tocPageMap['6.  DOCUMENT DETAILS AND LEGAL ASPECTS'] = r.getPageCount();
       r.drawSimpleRow('6.1   Ownership documents', fields.ownershipDocuments);
@@ -1857,6 +1862,7 @@ Our valuation is based on information obtained from the client and on data gathe
       r.advanceCursor(8);
 
       // ── 7. INFRASTRUCTURE ──
+      r.newPage();
       r.drawSectionHeader('7. FUNCTIONAL AND INFRASTRUCTURE ASPECTS OF THE PROPERTY:');
       tocPageMap['7.  FUNCTIONAL AND INFRASTRUCTURE ASPECTS'] = r.getPageCount();
       r.drawTextBlock('Description of aqua infrastructure availability in terms of', { bold: true, fontSize: 10 });
@@ -1877,6 +1883,7 @@ Our valuation is based on information obtained from the client and on data gathe
       r.advanceCursor(8);
 
       // ── 8. SOCIO-CULTURAL ──
+      r.newPage();
       r.drawSectionHeader('8. SOCIO-CULTURAL ASPECTS OF THE PROPERTY:');
       tocPageMap['8.  SOCIO-CULTURAL ASPECTS'] = r.getPageCount();
       r.drawSimpleRow('8.1   Descriptive account of location of property, in terms of social structure of area, population, social satisfaction, regional origin, economic level, location of slum, squatter settlements nearby, etc.', fields.socialStructure);
@@ -1884,6 +1891,7 @@ Our valuation is based on information obtained from the client and on data gathe
       r.advanceCursor(8);
 
       // ── 9. ENVIRONMENTAL ──
+      r.newPage();
       r.drawSectionHeader('9. ENVIRONMENTAL FACTORS AFFECTING THE PROPERTY:');
       tocPageMap['9.  ENVIRONMENTAL FACTORS'] = r.getPageCount();
       r.drawSimpleRow('9.1   Use of environmental friendly building material green building techniques if any', fields.ecoMaterials);
@@ -1893,6 +1901,7 @@ Our valuation is based on information obtained from the client and on data gathe
       r.advanceCursor(8);
 
       // ── 10. MARKETABILITY ──
+      r.newPage();
       r.drawSectionHeader('10. MARKETABILITY OF THE PROPERTY:');
       r.drawTextBlock('Marketability of the property in terms of', { bold: true, fontSize: 10 });
       tocPageMap['10. MARKETABILITY OF THE PROPERTY'] = r.getPageCount();
@@ -1904,12 +1913,14 @@ Our valuation is based on information obtained from the client and on data gathe
       r.advanceCursor(8);
 
       // ── 11. ARCHITECTURAL ──
+      r.newPage();
       r.drawSectionHeader('11. ARCHITECTURAL ASPECTS OF THE PROPERTY:');
       tocPageMap['11. ARCHITECTURAL ASPECTS OF THE PROPERTY'] = r.getPageCount();
       r.drawSimpleRow('11.1  Descriptive account on whether, building is modern, old fashioned, plain looking or decorative, heritage, landscape element, etc', fields.architecturalAspects);
       r.advanceCursor(8);
 
       // ── 12. ENGINEERING ──
+      r.newPage();
       r.drawSectionHeader('12. ENGINEERING ASPECTS OF THE PROPERTY:');
       tocPageMap['12. ENGINEERING ASPECTS OF THE PROPERTY'] = r.getPageCount();
       r.drawSimpleRow('01  Type of construction', fields.constructionType);
@@ -1959,6 +1970,7 @@ Our valuation is based on information obtained from the client and on data gathe
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       //  SECTION 13: VALUATION (with sub-sections 13.1-13.6)
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      r.newPage();
       r.drawSectionHeader('13. VALUATION APPROACHES & METHODOLOGY ADOPTED');
       tocPageMap['13. VALUATION APPROACHES & METHODOLOGY'] = r.getPageCount();
       r.advanceCursor(4);
@@ -2441,6 +2453,7 @@ Our valuation is based on information obtained from the client and on data gathe
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       //  SECTION 14: SITE LOCATION (reference)
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      r.newPage();
       r.drawSectionHeader('14. SITE LOCATION:');
       tocPageMap['14. SITE LOCATION'] = r.getPageCount();
       if (fields.latitude || fields.longitude) {
@@ -2492,6 +2505,7 @@ Our valuation is based on information obtained from the client and on data gathe
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       //  SECTION 15: ASSUMPTIONS & LIMITATIONS
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      r.newPage();
       r.drawSectionHeader('15. ASSUMPTION & LIMITATION.');
       tocPageMap['15. ASSUMPTIONS & LIMITATIONS'] = r.getPageCount();
       r.advanceCursor(4);
@@ -2568,6 +2582,7 @@ Our valuation is based on information obtained from the client and on data gathe
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       //  CONCLUSION
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      r.newPage();
       r.drawSectionHeader('CONCLUSION');
       tocPageMap['CONCLUSION'] = r.getPageCount();
       r.advanceCursor(4);
