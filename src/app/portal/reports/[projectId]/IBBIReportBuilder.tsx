@@ -713,6 +713,8 @@ const FloatingNavigator = ({ annexureEnabled }: { annexureEnabled: boolean }) =>
 
   const NAV_SECTIONS = [
     { id: 'section-1', title: '1. Objective' },
+    { id: 'section-2', title: '2. Scope' },
+    { id: 'section-3', title: '3. Basis-of-Val.' },
     { id: 'section-4', title: '4. Description' },
     { id: 'section-5', title: '5. Town Planning' },
     { id: 'section-6', title: '6. Legal Aspects' },
@@ -2985,9 +2987,11 @@ Our valuation is based on information obtained from the client and on data gathe
               </div>
             </div>
 
-            {/* Section 2 sub-section text overrides */}
-            <div className="mt-6">
-              <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-3">Section 2: Scope of Enquiries <span className="inline-block px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-semibold ml-1">OPTIONAL</span></p>
+          </Section>
+
+          {/* ── Section 2: Scope ── */}
+          <Section title="SCOPE OF ENQUIRIES AND INVESTIGATION" number={2} id="section-2">
+            <div className="mt-2">
               <p className="text-xs text-gray-500 mb-3">Leave blank to use standard IBBI-IVS default text. Fill to override.</p>
               <div className="grid grid-cols-1 gap-4">
                 <Field label="2.1 Site Inspection" span={2}>
@@ -3007,10 +3011,11 @@ Our valuation is based on information obtained from the client and on data gathe
                 </Field>
               </div>
             </div>
+          </Section>
 
-            {/* Section 3 text override */}
-            <div className="mt-6">
-              <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-3">Section 3: Basis of Valuation <span className="inline-block px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-semibold ml-1">OPTIONAL</span></p>
+          {/* ── Section 3: Basis ── */}
+          <Section title="BASIS OF VALUATION" number={3} id="section-3">
+            <div className="mt-2">
               <p className="text-xs text-gray-500 mb-3">Leave blank to use standard IBBI-IVS default text. Fill to override.</p>
               <div className="grid grid-cols-1 gap-4">
                 <Field label="3. Basis of Valuation (use double line-breaks to separate paragraphs)" span={2}>
