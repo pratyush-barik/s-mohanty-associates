@@ -346,6 +346,7 @@ interface IBBIFields {
   assumptionEBullet1: string;
   assumptionEBullet2: string;
   assumptionF: string;
+  conclusionPropertyDescription: string;
   customAssumptions: { text: string; label?: string }[];
 
   // ── Remarks ──
@@ -634,6 +635,7 @@ const DEFAULT_FIELDS: IBBIFields = {
   assumptionEBullet1: "The information provided by the owner's or their representative appointed /its affiliates subsidiaries during the visits.",
   assumptionEBullet2: 'Recent data on the industry segments and market projections.',
   assumptionF: 'The value assessed is my best opinion under the current circumstances and market scenario and is not a guarantee. Real estate prices are subject to wide fluctuations and the valuation need to be reviewed at suitable regular intervals.',
+  conclusionPropertyDescription: '',
   customAssumptions: [],
 
   representativeName: '',
@@ -665,17 +667,18 @@ const DEFAULT_FIELDS: IBBIFields = {
 };
 
 // ─── UI Sub-Components ─────────────────────────────────────────────
-function Section({ title, number, children, defaultOpen = true }: { title: string; number: number | string; children: React.ReactNode; defaultOpen?: boolean }) {
+function Section({ title, number, id, children, defaultOpen = true }: { title: string; number?: number | string; id?: string; children: React.ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
+  const secId = id || `section-${number}`;
   return (
-    <div id={`section-${number}`} className="card border border-[#e9ecef] overflow-hidden scroll-mt-24">
+    <div id={secId} className="card border border-[#e9ecef] overflow-hidden scroll-mt-24">
       <button
         type="button"
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#0a1628] to-[#162d4a] text-white hover:from-[#0f1e35] hover:to-[#1e3a5f] transition-all"
       >
         <div className="flex items-center gap-3">
-          <span className="w-8 h-8 rounded-lg bg-[#b8860b] flex items-center justify-center text-sm font-bold">{number}</span>
+          {number && <span className="w-8 h-8 rounded-lg bg-[#b8860b] flex items-center justify-center text-sm font-bold">{number}</span>}
           <span className="font-semibold text-sm">{title}</span>
         </div>
         <svg className={`w-5 h-5 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -716,6 +719,7 @@ const FloatingNavigator = ({ annexureEnabled }: { annexureEnabled: boolean }) =>
     { id: 'section-13', title: '13. Valuation' },
     { id: 'section-14', title: '14. Photos/Maps' },
     { id: 'section-15', title: '15. Assumptions' },
+    { id: 'section-conclusion', title: 'Conclusion' },
     ...(annexureEnabled ? [{ id: 'section-annexure', title: 'Annexures' }] : []),
   ];
 
@@ -2566,18 +2570,29 @@ Our valuation is based on information obtained from the client and on data gathe
       const fmvVal = parseFloat(fields.fairMarketValueTotal) || 0;
       const realVal = parseFloat(fields.realisableValueTotal) || 0;
       const guideVal = parseFloat(fields.bookValueTotal) || 0;
-      r.drawTextBlock('The present market value of a property is the price which a willing buyer will pay to a willing seller considering the risks involved at the reality and authenticity of the property, including thorough investigation about its genuineness of existence and all that required. Liquidation value of the assets in present consideration, is estimated in a reasonable manner and judiciously on the basis of facts and circumstances observed by us & estimation of benefits, subject to its propriety, on above consideration. It will of course vary from professionals opinion and case to case, place to place, location to location and for different characteristics too. We assess it accordingly, based on the above considerations.');
+      r.drawTextBlock('The present market value of a property is the price which a willing buyer will pay to a willing seller considering the risks involved at the reality and authenticity of the property, including thorough investigation about its genuineness of existence and all that required. Liquidation value of the assets in present consideration, is estimated in a reasonable manner and judiciously on the basis of facts and circumstances observed by us & estimation of benefits, subject to its propriety, on above consideration .It will of course vary from professionals opinion and  case to case, place to place, location to location and for different characteristics too. We assess it accordingly, based on the above considerations.');
       r.advanceCursor(6);
-      r.drawTextBlock(`After considering various important factor discussed above, we are of the opinion that the fair market Value of ${coverDesc} as per the current date at ${certAddress}, currently owned by ${certOwner}`);
+      
+      const propDesc = fields.conclusionPropertyDescription || coverDesc || '________';
+      const address = fields.propertyAddress || certAddress || '________';
+      const owner = fields.applicantName || fields.ownerName || certOwner || '________';
+      
+      r.drawTextBlock(`After considering various important factor discussed above, we are of the opinion that the fair market Value of ${propDesc} as per the current date at ${address}, currently owned by ${owner}`);
       r.advanceCursor(4);
-      r.drawTextBlock(`Present Market Value is INR. ${formatIndianCurrency(fields.fairMarketValueTotal || '0')}. (${rupeesInWords(fmvVal).toUpperCase()}).`, { bold: true });
+      
+      const orSayFmvNum = parseFloat(String(fields.totalPresentValueOrSay || '').replace(/[^\d.]/g, '')) || fmvVal;
+      r.drawTextBlock(`Present Market Value is INR. ${fields.totalPresentValueOrSay || formatIndianCurrency(fmvVal)}. (RUPEES ${rupeesInWords(orSayFmvNum).toUpperCase()} ONLY).`, { bold: true });
       r.advanceCursor(2);
-      if (fields.realisableValueTotal) {
-        r.drawTextBlock(`Realisable value is INR. ${formatIndianCurrency(fields.realisableValueTotal || '0')}. (${rupeesInWords(realVal).toUpperCase()}).`, { bold: true });
+      
+      if (fields.realisableValueOrSay || fields.realisableValueTotal) {
+        const orSayRealNum = parseFloat(String(fields.realisableValueOrSay || '').replace(/[^\d.]/g, '')) || realVal;
+        r.drawTextBlock(`Realisable value is INR. ${fields.realisableValueOrSay || formatIndianCurrency(realVal)}. (RUPEES ${rupeesInWords(orSayRealNum).toUpperCase()} ONLY).`, { bold: true });
         r.advanceCursor(2);
       }
-      if (fields.bookValueTotal) {
-        r.drawTextBlock(`Govt Guideline Value is INR. ${formatIndianCurrency(fields.bookValueTotal || '0')}. (${rupeesInWords(guideVal).toUpperCase()}).`, { bold: true });
+      
+      if (fields.totalBookValueOrSay || fields.bookValueTotal) {
+        const orSayGuideNum = parseFloat(String(fields.totalBookValueOrSay || '').replace(/[^\d.]/g, '')) || guideVal;
+        r.drawTextBlock(`Govt Guideline Value is INR. ${fields.totalBookValueOrSay || formatIndianCurrency(guideVal)}. (RUPEES ${rupeesInWords(orSayGuideNum).toUpperCase()} ONLY).`, { bold: true });
         r.advanceCursor(2);
       }
       r.advanceCursor(8);
@@ -2585,12 +2600,12 @@ Our valuation is based on information obtained from the client and on data gathe
       // Conclusion signature (Place on left, Signature + Name on right)
       r.drawSplitSignatureBlock(
         [
-          { text: `Date: ${fields.dateOfValuation || '________'}` },
-          { text: `Place - Bhubaneswar`, bold: true },
+          { text: `Date   : ${fields.dateOfValuation || '________'}`, bold: true },
+          { text: `Place:  Bhubaneswar`, bold: true },
         ],
         [
-          { text: 'Signature & Seal of Valuer', italic: true },
-          { text: `Name of the Valuer - ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}`, bold: true },
+          { text: 'Signature & Seal of Valuer', bold: true },
+          { text: `Name of the Valuer – ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}`, bold: true },
         ]
       );
 
@@ -4423,6 +4438,22 @@ Our valuation is based on information obtained from the client and on data gathe
                   Add Bullet Point
                 </button>
               )}
+            </div>
+          </Section>
+
+          {/* ── Conclusion Section ── */}
+          <Section title="Conclusion" id="section-conclusion">
+            <div className="space-y-4">
+              <Field label="Conclusion Property Description">
+                <input
+                  type="text"
+                  value={fields.conclusionPropertyDescription || ''}
+                  onChange={e => handleChange('conclusionPropertyDescription', e.target.value)}
+                  className={inputCls}
+                  placeholder="e.g. Patch of Industrial Unit"
+                  disabled={isReadOnly}
+                />
+              </Field>
             </div>
           </Section>
 
