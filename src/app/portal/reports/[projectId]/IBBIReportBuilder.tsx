@@ -2443,10 +2443,7 @@ Our valuation is based on information obtained from the client and on data gathe
 
       // ── Location Map (inside Section 14) ──
       if (locationBytes && locationBytes.length > 0) {
-        r.checkPageBreak(320);
-        r.drawTextBlock('LOCATION MAP', { bold: true, underline: true });
-        r.advanceCursor(2);
-        await r.drawImageBlock(locationBytes, { maxWidth: 500, maxHeight: 500, centered: true });
+        await r.drawTitledImageBlock('LOCATION MAP', locationBytes, { bold: true, underline: true }, { maxWidth: 500, maxHeight: 500, centered: true });
         if (fields.latitude || fields.longitude) {
           r.drawTextBlock(`Lat: ${fields.latitude || 'N/A'}, Long: ${fields.longitude || 'N/A'}`, { bold: true, align: 'center' });
         }
@@ -2455,46 +2452,31 @@ Our valuation is based on information obtained from the client and on data gathe
 
       // ── Mouza Map (inside Section 14) ──
       if (mouzaMapBytes && mouzaMapBytes.length > 0) {
-        r.checkPageBreak(320);
-        r.drawTextBlock(fields.mouzaMapTitle || 'MOUZA MAP SUPERIMPOSED OVER SATELLITE MAP', { bold: true, underline: true });
-        r.advanceCursor(2);
-        await r.drawImageBlock(mouzaMapBytes, { maxWidth: 500, maxHeight: 500, centered: true });
+        await r.drawTitledImageBlock(fields.mouzaMapTitle || 'MOUZA MAP SUPERIMPOSED OVER SATELLITE MAP', mouzaMapBytes, { bold: true, underline: true }, { maxWidth: 500, maxHeight: 500, centered: true });
         r.advanceCursor(4);
       }
 
       // ── Revenue Map (inside Section 14) ──
       if (revenueMapBytes && revenueMapBytes.length > 0) {
-        r.checkPageBreak(320);
-        r.drawTextBlock(fields.revenueMapTitle || 'REVENUE MAP', { bold: true, underline: true });
-        r.advanceCursor(2);
-        await r.drawImageBlock(revenueMapBytes, { maxWidth: 500, maxHeight: 500, centered: true });
+        await r.drawTitledImageBlock(fields.revenueMapTitle || 'REVENUE MAP', revenueMapBytes, { bold: true, underline: true }, { maxWidth: 500, maxHeight: 500, centered: true });
         r.advanceCursor(4);
       }
 
       // ── CDP Map (inside Section 14) ──
       if (cdpMapBytes && cdpMapBytes.length > 0) {
-        r.checkPageBreak(320);
-        r.drawTextBlock(fields.cdpMapTitle || 'CDP MAP', { bold: true, underline: true });
-        r.advanceCursor(2);
-        await r.drawImageBlock(cdpMapBytes, { maxWidth: 500, maxHeight: 500, centered: true });
+        await r.drawTitledImageBlock(fields.cdpMapTitle || 'CDP MAP', cdpMapBytes, { bold: true, underline: true }, { maxWidth: 500, maxHeight: 500, centered: true });
         r.advanceCursor(4);
       }
 
       // ── Govt Guideline Value (inside Section 14) ──
       if (guidelineValueBytes && guidelineValueBytes.length > 0) {
-        r.checkPageBreak(320);
-        r.drawTextBlock(fields.guidelineValueTitle || 'GOVT GUIDELINE VALUE', { bold: true, underline: true });
-        r.advanceCursor(2);
-        await r.drawImageBlock(guidelineValueBytes, { maxWidth: 500, maxHeight: 500, centered: true });
+        await r.drawTitledImageBlock(fields.guidelineValueTitle || 'GOVT GUIDELINE VALUE', guidelineValueBytes, { bold: true, underline: true }, { maxWidth: 500, maxHeight: 500, centered: true });
         r.advanceCursor(4);
       }
 
       // ── ROR/PATTA (inside Section 14) ──
       if (rorPattaBytes && rorPattaBytes.length > 0) {
-        r.checkPageBreak(320);
-        r.drawTextBlock(fields.rorPattaTitle || 'ROR/PATTA', { bold: true, underline: true });
-        r.advanceCursor(2);
-        await r.drawImageBlock(rorPattaBytes, { maxWidth: 500, maxHeight: 500, centered: true });
+        await r.drawTitledImageBlock(fields.rorPattaTitle || 'ROR/PATTA', rorPattaBytes, { bold: true, underline: true }, { maxWidth: 500, maxHeight: 500, centered: true });
         r.advanceCursor(4);
       }
       r.advanceCursor(8);

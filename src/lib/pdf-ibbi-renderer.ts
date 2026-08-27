@@ -1036,6 +1036,72 @@ export class PDFIBBIRenderer {
    * Embed an image (PNG or JPEG bytes) and draw it.
    * Returns the embedded image for reuse, or null on failure.
    */
+  /**
+   * Draw a title + image as a single atomic block.
+   * Both heading and image are guaranteed to be on the same page.
+   * If they don't fit together, a page break occurs BEFORE the title.
+   */
+  async drawTitledImageBlock(
+    title: string,
+    imageBytes: Uint8Array,
+    titleOpts?: DrawTextOptions,
+    imageOpts?: {
+      maxWidth?: number;
+      maxHeight?: number;
+      centered?: boolean;
+    }
+  ): Promise<void> {
+    if (!imageBytes || imageBytes.length === 0) return;
+
+    // 1. Embed image to get actual dimensions
+    let img: PDFImage;
+    try {
+      try {
+        img = await this.doc.embedPng(imageBytes);
+      } catch {
+        img = await this.doc.embedJpg(imageBytes);
+      }
+    } catch {
+      return;
+    }
+
+    // 2. Calculate scaled image dimensions
+    const maxW = imageOpts?.maxWidth || CONTENT_W * 0.85;
+    const maxH = imageOpts?.maxHeight || 400;
+    let w = img.width;
+    let h = img.height;
+    if (w > maxW) { h = h * (maxW / w); w = maxW; }
+    if (h > maxH) { w = w * (maxH / h); h = maxH; }
+
+    // 3. Calculate title height
+    const fontSize = titleOpts?.fontSize || FONT_SIZE;
+    const indent = titleOpts?.indent || 0;
+    const titleMaxW = (titleOpts?.maxWidth || CONTENT_W) - indent;
+    const lineH = fontSize * LINE_HEIGHT;
+    const titleLines = this.wrapText(title, titleMaxW, fontSize, titleOpts?.bold, titleOpts?.italic);
+    const titleH = titleLines.length * lineH;
+
+    // 4. Combined height: title + spacing + image + padding
+    const totalH = titleH + 4 + h + 8;
+
+    // 5. Single page break check for the entire block
+    this.checkPageBreak(totalH);
+
+    // 6. Draw the title
+    for (let i = 0; i < titleLines.length; i++) {
+      this.drawTextAt(titleLines[i], MARGIN_L + indent, this.cursorY + i * lineH, {
+        ...titleOpts, maxWidth: titleMaxW,
+      });
+    }
+    this.cursorY += titleH + 4;
+
+    // 7. Draw the image
+    const x = imageOpts?.centered ? MARGIN_L + (CONTENT_W - w) / 2 : MARGIN_L;
+    const pY = this.pdfY(this.cursorY) - h;
+    this.page.drawImage(img, { x, y: pY, width: w, height: h });
+    this.cursorY += h + 4;
+  }
+
   async drawImageBlock(
     imageBytes: Uint8Array,
     opts?: {
