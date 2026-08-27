@@ -346,7 +346,7 @@ interface IBBIFields {
   assumptionEBullet1: string;
   assumptionEBullet2: string;
   assumptionF: string;
-  customAssumptions: { text: string }[];
+  customAssumptions: { text: string; label?: string }[];
 
   // ── Remarks ──
   representativeName: string;
@@ -4350,46 +4350,79 @@ Our valuation is based on information obtained from the client and on data gathe
               </Field>
 
               {/* Dynamic custom bullet points (g, h, i, ...) */}
-              {fields.customAssumptions && fields.customAssumptions.map((item: { text: string }, idx: number) => {
+              {fields.customAssumptions && fields.customAssumptions.map((item: { text: string; label?: string }, idx: number) => {
                 // Generate label: g=0, h=1, ... z=19, aa=20, ab=21, ...
                 const baseIdx = idx + 6; // starts after f (index 5)
-                let label: string;
+                let letterLabel: string;
                 if (baseIdx < 26) {
-                  label = String.fromCharCode(97 + baseIdx); // g, h, i, ...
+                  letterLabel = String.fromCharCode(97 + baseIdx); // g, h, i, ...
                 } else {
                   const first = Math.floor((baseIdx - 26) / 26);
                   const second = (baseIdx - 26) % 26;
-                  label = String.fromCharCode(97 + first) + String.fromCharCode(97 + second); // aa, ab, ...
+                  letterLabel = String.fromCharCode(97 + first) + String.fromCharCode(97 + second); // aa, ab, ...
                 }
+                const displayName = item.label || 'Custom Bullet Point';
                 return (
                   <div key={idx} className="relative group">
-                    <Field label={`${label}. Custom Bullet Point`}>
-                      <div className="flex items-start gap-2">
-                        <textarea
-                          value={item.text}
-                          onChange={e => {
-                            const arr = [...fields.customAssumptions];
-                            arr[idx] = { text: e.target.value };
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="text-[10px] font-bold text-[#495057] uppercase tracking-wider">
+                        {letterLabel}. {displayName}
+                      </p>
+                      {!isReadOnly && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const el = document.getElementById(`edit-bullet-label-${idx}`);
+                            if (el) el.classList.toggle('hidden');
+                          }}
+                          className="text-[#b8860b]/60 hover:text-[#b8860b] transition-colors"
+                          title="Edit field name"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                    <div id={`edit-bullet-label-${idx}`} className="hidden mb-2">
+                      <input
+                        type="text"
+                        value={item.label || ''}
+                        onChange={e => {
+                          const arr = [...fields.customAssumptions];
+                          arr[idx] = { ...arr[idx], label: e.target.value };
+                          handleChange('customAssumptions', arr);
+                        }}
+                        className={inputCls + ' text-xs'}
+                        placeholder="Enter a descriptive name for this bullet..."
+                        disabled={isReadOnly}
+                      />
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <textarea
+                        value={item.text}
+                        onChange={e => {
+                          const arr = [...fields.customAssumptions];
+                          arr[idx] = { ...arr[idx], text: e.target.value };
+                          handleChange('customAssumptions', arr);
+                        }}
+                        className={inputCls + ' min-h-[60px] flex-1'}
+                        disabled={isReadOnly}
+                        rows={2}
+                        placeholder={`Enter bullet point ${letterLabel}...`}
+                      />
+                      {!isReadOnly && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const arr = fields.customAssumptions.filter((_: { text: string; label?: string }, i: number) => i !== idx);
                             handleChange('customAssumptions', arr);
                           }}
-                          className={inputCls + ' min-h-[60px] flex-1'}
-                          disabled={isReadOnly}
-                          rows={2}
-                          placeholder={`Enter bullet point ${label}...`}
-                        />
-                        {!isReadOnly && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const arr = fields.customAssumptions.filter((_: { text: string }, i: number) => i !== idx);
-                              handleChange('customAssumptions', arr);
-                            }}
-                            className="mt-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold hover:bg-red-600 transition-colors flex-shrink-0"
-                            title="Remove this bullet point"
-                          >&times;</button>
-                        )}
-                      </div>
-                    </Field>
+                          className="mt-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold hover:bg-red-600 transition-colors flex-shrink-0"
+                          title="Remove this bullet point"
+                        >&times;</button>
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -4399,7 +4432,7 @@ Our valuation is based on information obtained from the client and on data gathe
                 <button
                   type="button"
                   onClick={() => {
-                    const arr = [...(fields.customAssumptions || []), { text: '' }];
+                    const arr = [...(fields.customAssumptions || []), { text: '', label: '' }];
                     handleChange('customAssumptions', arr);
                   }}
                   className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-[#b8860b] text-[#b8860b] text-xs font-semibold hover:bg-[#b8860b]/5 transition-colors"
