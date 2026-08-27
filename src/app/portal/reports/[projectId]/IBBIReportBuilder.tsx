@@ -2977,7 +2977,7 @@ Our valuation is based on information obtained from the client and on data gathe
         )}
 
           {/* ── Valuation Certificate Details ── */}
-          <Section title="Certificate Detail" id="section-certificate">
+          <Section title="Certificate Details" id="section-certificate">
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
               <p className="text-xs text-amber-800">These fields populate the <strong>Valuation Certificate</strong> page in the PDF. Fields marked <span className="inline-block px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-semibold">AUTO</span> are auto-filled from other sections but can be overridden.</p>
             </div>
