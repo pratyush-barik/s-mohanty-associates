@@ -714,6 +714,7 @@ const FloatingNavigator = ({ annexureEnabled }: { annexureEnabled: boolean }) =>
   const [activeId, setActiveId] = useState<string>('');
 
   const NAV_SECTIONS = [
+    { id: 'section-certificate', title: 'Certificate Detail' },
     { id: 'section-1', title: '1. Objective' },
     { id: 'section-2', title: '2. Scope' },
     { id: 'section-3', title: '3. Basis-of-Val.' },
@@ -2975,6 +2976,78 @@ Our valuation is based on information obtained from the client and on data gathe
           </div>
         )}
 
+          {/* ── Valuation Certificate Details ── */}
+          <Section title="Certificate Detail" id="section-certificate">
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+              <p className="text-xs text-amber-800">These fields populate the <strong>Valuation Certificate</strong> page in the PDF. Fields marked <span className="inline-block px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-semibold">AUTO</span> are auto-filled from other sections but can be overridden.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Case Parties (in the matter of...)" span={2}>
+                <input type="text" value={fields.caseParties || ''} onChange={e => handleChange('caseParties', e.target.value)} className={inputCls} placeholder="e.g. Noida Infratech Two Pvt Ltd vs Falcony Consultancy Pvt Ltd" disabled={isReadOnly} />
+              </Field>
+              <Field label="Case Reference No (Primary)">
+                <input type="text" value={fields.caseReferenceNo || ''} onChange={e => handleChange('caseReferenceNo', e.target.value)} className={inputCls} placeholder="e.g. C.P.(IB) No. 300/KB/2017" disabled={isReadOnly} />
+              </Field>
+              <Field label="Case Reference No (Secondary)">
+                <input type="text" value={fields.caseReferenceNo2 || ''} onChange={e => handleChange('caseReferenceNo2', e.target.value)} className={inputCls} placeholder="e.g. T.P. (IB) No 112/CTB/2019" disabled={isReadOnly} />
+              </Field>
+              <Field label="Appointed By">
+                <input type="text" value={fields.appointedBy || ''} onChange={e => handleChange('appointedBy', e.target.value)} className={inputCls} placeholder="e.g. CA Sonu Jain" disabled={isReadOnly} />
+              </Field>
+              <Field label="Appointee Designation">
+                <input type="text" value={fields.appointedByDesignation || ''} onChange={e => handleChange('appointedByDesignation', e.target.value)} className={inputCls} placeholder="e.g. an Insolvency Professional" disabled={isReadOnly} />
+              </Field>
+              <Field label="Appointment Date">
+                <input type="date" value={fields.appointmentDate || ''} onChange={e => handleChange('appointmentDate', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
+              <Field label="Purpose of Valuation">
+                <input type="text" value={fields.purposeOfValuation || ''} onChange={e => handleChange('purposeOfValuation', e.target.value)} className={inputCls} placeholder="Access of Fair Market Value for Auction purpose" disabled={isReadOnly} />
+              </Field>
+              <Field label="Owner Contact Details">
+                <input type="text" value={fields.ownerContactDetails || ''} onChange={e => handleChange('ownerContactDetails', e.target.value)} className={inputCls} placeholder="e.g. 9876543210, owner@email.com" disabled={isReadOnly} />
+              </Field>
+              <Field label="Valuation Method">
+                <input type="text" value={fields.valuationMethod || ''} onChange={e => handleChange('valuationMethod', e.target.value)} className={inputCls} placeholder="Sale Comparison Method coupled with Replacement Cost Approach" disabled={isReadOnly} />
+              </Field>
+              <Field label="Certificate Description (detailed property description)" span={2}>
+                <textarea rows={3} value={fields.certificateDescription || ''} onChange={e => handleChange('certificateDescription', e.target.value)} className={inputCls + ' resize-none'} placeholder="e.g. This IDCO Plot close to NH-16, Cuttack-Chandabali Road, approx 1 KM" disabled={isReadOnly} />
+              </Field>
+
+              {/* Read-only references from other sections */}
+              <div className="col-span-2 border-t border-gray-200 pt-3 mt-1">
+                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-2">Read-only References (from other sections) <span className="inline-block px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-semibold ml-1">AUTO</span></p>
+              </div>
+              <Field label="Client Name (from Section 4)" span={2}>
+                <input type="text" value={fields.applicantName || fields.ownerName || ''} className={inputCls + ' bg-gray-100'} disabled />
+              </Field>
+              <Field label="Property Address (from Section 4)">
+                <input type="text" value={fields.propertyAddress || ''} className={inputCls + ' bg-gray-100'} disabled />
+              </Field>
+              <Field label="Area / Extent of Site (from Section 4)">
+                <input type="text" value={fields.extentOfSite || 'N/A'} className={inputCls + ' bg-gray-100'} disabled />
+              </Field>
+              <Field label="Status of Plot (from Section 4)">
+                <input type="text" value={`${fields.conversionStatus || fields.currentUsage || 'N/A'} (${fields.occupancyStatus || 'N/A'})`} className={inputCls + ' bg-gray-100'} disabled />
+              </Field>
+              <Field label="Description / Type of Property (from Section 4)">
+                <input type="text" value={fields.propertyType || ''} className={inputCls + ' bg-gray-100'} disabled />
+              </Field>
+              <Field label="Valuation Date (from Section 1)">
+                <input type="text" value={fields.dateOfValuation || ''} className={inputCls + ' bg-gray-100'} disabled />
+              </Field>
+              <Field label="Present Value (from Section 13)">
+                <input type="text" value={fields.fairMarketValueTotal || fields.presentMarketValueTotal || '0'} className={inputCls + ' bg-gray-100'} disabled />
+              </Field>
+              <Field label="Valuers Details (from Declaration)" span={2}>
+                <textarea rows={2} value={[
+                  fields.representativeName ? `${fields.representativeName}${fields.valuerQualifications ? ' ' + fields.valuerQualifications : ''}` : '',
+                  fields.valuerAdditionalDetails || '',
+                  fields.registeredOfficeAddress || '',
+                ].filter(Boolean).join('\n')} className={inputCls + ' bg-gray-100 resize-none'} disabled />
+              </Field>
+            </div>
+          </Section>
+
           {/* ── Section 1: Objective & Dates ── */}
           <Section title="Objective" number={1}>
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
@@ -3056,57 +3129,6 @@ Our valuation is based on information obtained from the client and on data gathe
                   <textarea rows={5} value={fields.basis3 || ''} onChange={e => handleChange('basis3', e.target.value)} className={inputCls + ' resize-none'} placeholder="Default: The basis of valuation of industries depends on various factors such as the purpose of valuation, statutory requirements, business drivers... (3 paragraphs covering: basis of value, fair value & liquidation value per IBBI Regulations 2016, and reliance on client information). Leave blank to use full default text." disabled={isReadOnly} />
                 </Field>
               </div>
-            </div>
-          </Section>
-
-          {/* ── Valuation Certificate ── */}
-          <Section title="📜 Valuation Certificate Details" number={0}>
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
-              <p className="text-xs text-amber-800">These fields populate the <strong>Valuation Certificate</strong> page in the PDF. Fields marked <span className="inline-block px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-semibold">AUTO</span> are auto-filled from other sections but can be overridden.</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Case Parties (in the matter of...)" span={2}>
-                <input type="text" value={fields.caseParties || ''} onChange={e => handleChange('caseParties', e.target.value)} className={inputCls} placeholder="e.g. Noida Infratech Two Pvt Ltd vs Falcony Consultancy Pvt Ltd" disabled={isReadOnly} />
-              </Field>
-              <Field label="Case Reference No (Primary)">
-                <input type="text" value={fields.caseReferenceNo || ''} onChange={e => handleChange('caseReferenceNo', e.target.value)} className={inputCls} placeholder="e.g. C.P.(IB) No. 300/KB/2017" disabled={isReadOnly} />
-              </Field>
-              <Field label="Case Reference No (Secondary)">
-                <input type="text" value={fields.caseReferenceNo2 || ''} onChange={e => handleChange('caseReferenceNo2', e.target.value)} className={inputCls} placeholder="e.g. T.P. (IB) No 112/CTB/2019" disabled={isReadOnly} />
-              </Field>
-              <Field label="Appointed By">
-                <input type="text" value={fields.appointedBy || ''} onChange={e => handleChange('appointedBy', e.target.value)} className={inputCls} placeholder="e.g. CA Sonu Jain" disabled={isReadOnly} />
-              </Field>
-              <Field label="Appointee Designation">
-                <input type="text" value={fields.appointedByDesignation || ''} onChange={e => handleChange('appointedByDesignation', e.target.value)} className={inputCls} placeholder="e.g. an Insolvency Professional" disabled={isReadOnly} />
-              </Field>
-              <Field label="Appointment Date">
-                <input type="date" value={fields.appointmentDate || ''} onChange={e => handleChange('appointmentDate', e.target.value)} className={inputCls} disabled={isReadOnly} />
-              </Field>
-              <Field label="Purpose of Valuation">
-                <input type="text" value={fields.purposeOfValuation || ''} onChange={e => handleChange('purposeOfValuation', e.target.value)} className={inputCls} placeholder="Access of Fair Market Value for Auction purpose" disabled={isReadOnly} />
-              </Field>
-
-              {/* Auto-filled fields with override */}
-              <div className="col-span-2 border-t border-gray-200 pt-3 mt-1">
-                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-2">Certificate Table Fields <span className="inline-block px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-semibold ml-1">AUTO-FILLED</span></p>
-              </div>
-
-              <Field label="Client Name" span={2}>
-                <div className="flex items-center gap-2">
-                  <input type="text" value={fields.applicantName || fields.ownerName || ''} className={inputCls + ' bg-blue-50 opacity-70'} disabled={true} />
-                  <span className="text-[10px] text-blue-600 whitespace-nowrap">← from Owner Name</span>
-                </div>
-              </Field>
-              <Field label="Owner Contact Details">
-                <input type="text" value={fields.ownerContactDetails || ''} onChange={e => handleChange('ownerContactDetails', e.target.value)} className={inputCls} placeholder="e.g. 9876543210, owner@email.com" disabled={isReadOnly} />
-              </Field>
-              <Field label="Valuation Method">
-                <input type="text" value={fields.valuationMethod || ''} onChange={e => handleChange('valuationMethod', e.target.value)} className={inputCls} placeholder="Sale Comparison Method coupled with..." disabled={isReadOnly} />
-              </Field>
-              <Field label="Certificate Description (detailed property description)" span={2}>
-                <textarea rows={3} value={fields.certificateDescription || ''} onChange={e => handleChange('certificateDescription', e.target.value)} className={inputCls + ' resize-none'} placeholder="e.g. This IDCO Plot close to NH-16, Cuttack-Chandabali Road, approx 1 KM" disabled={isReadOnly} />
-              </Field>
             </div>
           </Section>
 
