@@ -1040,6 +1040,12 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     if (fields.totalBuildingValueGuideline !== newTotalBldgGuideline) { nextFields.totalBuildingValueGuideline = newTotalBldgGuideline; updated = true; }
     
     if (fields.cuttackBuildingTotal !== newCuttackBldgTotal) { nextFields.cuttackBuildingTotal = newCuttackBldgTotal; updated = true; }
+
+    // Cuttack Building/Shed: auto-calc Or Say from Total Components
+    const cuttackBldgComponentsNum = parseFloat(String(fields.cuttackBuildingComponentsTotal || '').replace(/[^\d.]/g, '')) || 0;
+    const cuttackBldgOrSayNum = cuttackBldgComponentsNum < 100000 ? cuttackBldgComponentsNum : Math.floor(cuttackBldgComponentsNum / 100000) * 100000;
+    const newCuttackBldgOrSay = fmt(cuttackBldgOrSayNum);
+    if (fields.cuttackBuildingOrSay !== newCuttackBldgOrSay) { nextFields.cuttackBuildingOrSay = newCuttackBldgOrSay; updated = true; }
     
     if (fields.totalBuildingShedComponentsFMV !== newComponentsFMV) { nextFields.totalBuildingShedComponentsFMV = newComponentsFMV; updated = true; }
     if (fields.totalBuildingShedComponentsGuideline !== newComponentsGuideline) { nextFields.totalBuildingShedComponentsGuideline = newComponentsGuideline; updated = true; }
@@ -1079,7 +1085,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     fields.rccRowsFMV, fields.shedRowsFMV, fields.rccRowsGuideline, fields.shedRowsGuideline, fields.cuttackBuildingRows,
     fields.totalRccFMV, fields.totalShedFMV, fields.totalBuildingValueFMV,
     fields.totalRccGuideline, fields.totalShedGuideline, fields.totalBuildingValueGuideline,
-    fields.cuttackBuildingTotal,
+    fields.cuttackBuildingTotal, fields.cuttackBuildingComponentsTotal, fields.cuttackBuildingOrSay,
     fields.rccDepreciationPercentFMV, fields.shedDepreciationPercentFMV,
     fields.rccDepreciationPercentGuideline, fields.shedDepreciationPercentGuideline,
     fields.depreciationDescFMV, fields.depreciationDescGuideline,
@@ -2262,7 +2268,7 @@ Our valuation is based on information obtained from the client and on data gathe
           r.drawTextBlock(`TOTAL: ${fields.cuttackBuildingTotal}`, { bold: true, align: 'right' });
         }
         if (fields.cuttackBuildingComponentsTotal) {
-          r.drawTextBlock(`TOTAL LAND AND BUILDING/SHED COMPONENTS: ${fields.cuttackBuildingComponentsTotal}`, { bold: true, align: 'right' });
+          r.drawTextBlock(`TOTAL LAND AND BUILDING/SHED COMPONENTS: Rs. ${formatIndianCurrency(String(fields.cuttackBuildingComponentsTotal || '0').replace(/[^\d.]/g, ''))}`, { bold: true, align: 'right' });
         }
         if (fields.cuttackBuildingOrSay) {
           r.drawTextBlock(`Or Say: ${fields.cuttackBuildingOrSay}`, { bold: true, align: 'right' });
@@ -3738,8 +3744,8 @@ Our valuation is based on information obtained from the client and on data gathe
                             handleChange('cuttackBuildingRows', newRows);
                           }} className={inputCls} disabled={isReadOnly} /></Field>
                       <Field label="Total"><input type="text" value={fields.cuttackBuildingTotal} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
-                      <Field label="Total Land and Building/Shed Components"><input type="text" value={fields.cuttackBuildingComponentsTotal} onChange={e => handleChange('cuttackBuildingComponentsTotal', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
-                      <Field label="Or Say"><input type="text" value={fields.cuttackBuildingOrSay} onChange={e => handleChange('cuttackBuildingOrSay', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Total Land and Building/Shed Components (Rs)"><input type="text" value={fields.cuttackBuildingComponentsTotal} onChange={e => handleChange('cuttackBuildingComponentsTotal', formatIndianCurrency(e.target.value.replace(/[^\d.]/g, '')))} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Or Say"><input type="text" value={fields.cuttackBuildingOrSay} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
                       <Field label="Building Value in Words" span={2}><input type="text" value={fields.cuttackBuildingInWords} onChange={e => handleChange('cuttackBuildingInWords', e.target.value)} className={inputCls} placeholder="e.g. SIXTEEN LAKHS SIXTY THREE THOUSAND RUPEES ONLY" disabled={isReadOnly} /></Field>
                     </div>
                   </div>
