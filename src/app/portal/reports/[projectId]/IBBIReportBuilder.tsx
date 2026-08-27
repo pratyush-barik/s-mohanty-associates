@@ -714,7 +714,7 @@ const FloatingNavigator = ({ annexureEnabled }: { annexureEnabled: boolean }) =>
   const [activeId, setActiveId] = useState<string>('');
 
   const NAV_SECTIONS = [
-    { id: 'section-certificate', title: 'Certificate Detail' },
+    { id: 'section-certificate', title: 'Certificate Details' },
     { id: 'section-1', title: '1. Objective' },
     { id: 'section-2', title: '2. Scope' },
     { id: 'section-3', title: '3. Basis-of-Val.' },
