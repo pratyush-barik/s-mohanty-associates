@@ -3978,7 +3978,7 @@ Our valuation is based on information obtained from the client and on data gathe
                   <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] max-w-lg">
                     <img src={fields.locationMapImage ? encodeURI(fields.locationMapImage) : ''} alt="Location Map Screenshot" className="w-full object-contain" />
                     {!isReadOnly && (
-                      <button type="button" onClick={() => handleChange('locationMapImage', '')} className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">Remove</button>
+                      <button type="button" onClick={() => handleChange('locationMapImage', '')} className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity">&times;</button>
                     )}
                     <div className="absolute bottom-0 left-0 right-0 bg-green-600/90 text-white text-center text-xs py-1 font-semibold">
                       ✅ Screenshot uploaded — will appear in PDF
@@ -4048,7 +4048,7 @@ Our valuation is based on information obtained from the client and on data gathe
                   <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] max-w-lg">
                     <img src={encodeURI((fields as any)[imageField])} alt={defaultTitle} className="w-full max-h-48 object-contain bg-[#f8f9fa]" />
                     {!isReadOnly && (
-                      <button type="button" onClick={() => handleChange(imageField, '')} className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">Remove</button>
+                      <button type="button" onClick={() => handleChange(imageField, '')} className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity">&times;</button>
                     )}
                     <div className="absolute bottom-0 left-0 right-0 bg-green-600/90 text-white text-center text-xs py-1 font-semibold">
                       ✅ Uploaded — will appear in PDF
