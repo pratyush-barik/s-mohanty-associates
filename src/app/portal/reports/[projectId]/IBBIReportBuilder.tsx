@@ -1674,7 +1674,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       const caseRefText = caseRef1 ? `, vide Reference ${caseRef1}${caseRef2 ? ' ' + caseRef2 : ''}` : '';
 
       r.drawTextBlock(
-        `${appointedByText}${appointmentDateText} for carrying out Valuation of Immovable assets${casePartiesText}${caseRefText}, to assess the fair market and thereby deriving liquidation value of ${coverDesc} at ${certAddress}, currently owned by ${certCurrentOwner}, inspected on ${certDate}.`
+        `${appointedByText}${appointmentDateText} for carrying out Valuation of Immovable assets${casePartiesText}${caseRefText}, to assess the fair market and thereby deriving liquidation value of ${coverDesc} at ${certAddress}, currently owned by ${certOwner}, inspected on ${certDate}.`
 ,
         { fontSize: 10 }
       );
@@ -1730,8 +1730,8 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
       // Introductory paragraph for Section 1 (from sample)
       const objParagraph = fields.appointedBy
-        ? `Pursuant to request from ${certOwner}, represented through ${fields.representativeName ? 'Mr. ' + fields.representativeName : 'its authorized representative'}${caseRefText}, to assess the fair market value of ${coverDesc} at ${certAddress}, currently owned by ${certCurrentOwner}, inspected on ${certDate}.`
-        : `To assess the fair market value of ${coverDesc} at ${certAddress}, currently owned by ${certCurrentOwner}, inspected on ${certDate}.`;
+        ? `Pursuant to request from ${certOwner}, represented through ${fields.representativeName ? 'Mr. ' + fields.representativeName : 'its authorized representative'}${caseRefText}, to assess the fair market value of ${coverDesc} at ${certAddress}, currently owned by ${certOwner}, inspected on ${certDate}.`
+        : `To assess the fair market value of ${coverDesc} at ${certAddress}, currently owned by ${certOwner}, inspected on ${certDate}.`;
       r.drawTextBlock(objParagraph);
       r.advanceCursor(6);
 
