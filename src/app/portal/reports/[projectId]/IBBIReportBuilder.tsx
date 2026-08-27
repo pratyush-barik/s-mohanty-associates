@@ -4007,9 +4007,67 @@ Our valuation is based on information obtained from the client and on data gathe
               </div>
             </div>
 
+            {/* ── Map Sub-headings with Editable Titles ── */}
+            {([
+              { key: 'mouzaMap', imageField: 'mouzaMapImage' as const, titleField: 'mouzaMapTitle' as const, defaultTitle: 'MOUZA MAP SUPERIMPOSED OVER SATELLITE MAP', hint: 'Upload a mouza/cadastral map overlaid on satellite imagery showing plot boundaries, surrounding plots, roads, and landmarks.' },
+              { key: 'revenueMap', imageField: 'revenueMapImage' as const, titleField: 'revenueMapTitle' as const, defaultTitle: 'REVENUE MAP', hint: 'Upload the revenue/cadastral map from the tehsil/revenue office showing the plot demarcation.' },
+              { key: 'cdpMap', imageField: 'cdpMapImage' as const, titleField: 'cdpMapTitle' as const, defaultTitle: 'CDP MAP', hint: 'Upload the Comprehensive Development Plan (CDP) map showing zoning and land use classification.' },
+              { key: 'guidelineValue', imageField: 'guidelineValueImage' as const, titleField: 'guidelineValueTitle' as const, defaultTitle: 'GOVT GUIDELINE VALUE', hint: 'Upload the government guideline/benchmark value document or screenshot from the SRO.' },
+              { key: 'rorPatta', imageField: 'rorPattaImage' as const, titleField: 'rorPattaTitle' as const, defaultTitle: 'ROR/PATTA', hint: 'Upload the Record of Rights (ROR) / Patta document image.' },
+            ] as const).map(({ key, imageField, titleField, defaultTitle, hint }) => (
+              <div key={key} className="mt-6 space-y-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest">
+                    {(fields as any)[titleField] || defaultTitle}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const el = document.getElementById(`edit-title-${key}`);
+                      if (el) el.classList.toggle('hidden');
+                    }}
+                    className="text-[#b8860b]/60 hover:text-[#b8860b] transition-colors"
+                    title="Edit heading"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                  </button>
+                </div>
+                <div id={`edit-title-${key}`} className="hidden mb-2">
+                  <input
+                    type="text"
+                    value={(fields as any)[titleField] || defaultTitle}
+                    onChange={e => handleChange(titleField, e.target.value)}
+                    className={inputCls + ' text-xs font-bold uppercase'}
+                    disabled={isReadOnly}
+                  />
+                </div>
+                <p className="text-xs text-[#6c757d] italic">{hint}</p>
+                {(fields as any)[imageField] ? (
+                  <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] max-w-lg">
+                    <img src={encodeURI((fields as any)[imageField])} alt={defaultTitle} className="w-full max-h-48 object-contain bg-[#f8f9fa]" />
+                    {!isReadOnly && (
+                      <button type="button" onClick={() => handleChange(imageField, '')} className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">Remove</button>
+                    )}
+                    <div className="absolute bottom-0 left-0 right-0 bg-green-600/90 text-white text-center text-xs py-1 font-semibold">
+                      ✅ Uploaded — will appear in PDF
+                    </div>
+                  </div>
+                ) : (
+                  !isReadOnly && (
+                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+                      {uploading ? 'Uploading...' : `Upload ${defaultTitle.charAt(0) + defaultTitle.slice(1).toLowerCase()}`}
+                      <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, imageField)} disabled={uploading} />
+                    </label>
+                  )
+                )}
+              </div>
+            ))}
+
             {/* Property Photos */}
             <div>
-              <p className="text-xs font-bold text-[#495057] uppercase tracking-wider mb-2">Property Photographs</p>
+              <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest mb-2">Property Photographs</p>
               {!isReadOnly && (
                 <div className="space-y-3 mb-4">
                   <div className="flex items-center gap-3">
@@ -4062,63 +4120,6 @@ Our valuation is based on information obtained from the client and on data gathe
               )}
             </div>
 
-            {/* ── Map Sub-headings with Editable Titles ── */}
-            {([
-              { key: 'mouzaMap', imageField: 'mouzaMapImage' as const, titleField: 'mouzaMapTitle' as const, defaultTitle: 'MOUZA MAP SUPERIMPOSED OVER SATELLITE MAP', hint: 'Upload a mouza/cadastral map overlaid on satellite imagery showing plot boundaries, surrounding plots, roads, and landmarks.' },
-              { key: 'revenueMap', imageField: 'revenueMapImage' as const, titleField: 'revenueMapTitle' as const, defaultTitle: 'REVENUE MAP', hint: 'Upload the revenue/cadastral map from the tehsil/revenue office showing the plot demarcation.' },
-              { key: 'cdpMap', imageField: 'cdpMapImage' as const, titleField: 'cdpMapTitle' as const, defaultTitle: 'CDP MAP', hint: 'Upload the Comprehensive Development Plan (CDP) map showing zoning and land use classification.' },
-              { key: 'guidelineValue', imageField: 'guidelineValueImage' as const, titleField: 'guidelineValueTitle' as const, defaultTitle: 'GOVT GUIDELINE VALUE', hint: 'Upload the government guideline/benchmark value document or screenshot from the SRO.' },
-              { key: 'rorPatta', imageField: 'rorPattaImage' as const, titleField: 'rorPattaTitle' as const, defaultTitle: 'ROR/PATTA', hint: 'Upload the Record of Rights (ROR) / Patta document image.' },
-            ] as const).map(({ key, imageField, titleField, defaultTitle, hint }) => (
-              <div key={key} className="mt-6 space-y-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest">
-                    {(fields as any)[titleField] || defaultTitle}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const el = document.getElementById(`edit-title-${key}`);
-                      if (el) el.classList.toggle('hidden');
-                    }}
-                    className="text-[#b8860b]/60 hover:text-[#b8860b] transition-colors"
-                    title="Edit heading"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
-                  </button>
-                </div>
-                <div id={`edit-title-${key}`} className="hidden mb-2">
-                  <input
-                    type="text"
-                    value={(fields as any)[titleField] || defaultTitle}
-                    onChange={e => handleChange(titleField, e.target.value)}
-                    className={inputCls + ' text-xs font-bold uppercase'}
-                    disabled={isReadOnly}
-                  />
-                </div>
-                <p className="text-xs text-[#6c757d] italic">{hint}</p>
-                {(fields as any)[imageField] ? (
-                  <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] max-w-lg">
-                    <img src={encodeURI((fields as any)[imageField])} alt={defaultTitle} className="w-full object-contain" />
-                    {!isReadOnly && (
-                      <button type="button" onClick={() => handleChange(imageField, '')} className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">Remove</button>
-                    )}
-                    <div className="absolute bottom-0 left-0 right-0 bg-green-600/90 text-white text-center text-xs py-1 font-semibold">
-                      ✅ Uploaded — will appear in PDF
-                    </div>
-                  </div>
-                ) : (
-                  !isReadOnly && (
-                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-                      {uploading ? 'Uploading...' : `Upload ${defaultTitle.charAt(0) + defaultTitle.slice(1).toLowerCase()}`}
-                      <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, imageField)} disabled={uploading} />
-                    </label>
-                  )
-                )}
-              </div>
-            ))}
 
           </Section>
 
