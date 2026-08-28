@@ -4431,6 +4431,7 @@ Our valuation is based on information obtained from the client and on data gathe
               onOpenBucketPicker={() => openBucketPicker('propertyImages')}
               sectionNumber={14}
               sectionId="section-14-photos"
+              withoutSectionWrapper={true}
             />
 
 

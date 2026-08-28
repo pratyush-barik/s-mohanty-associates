@@ -2663,6 +2663,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               onOpenBucketPicker={() => openBucketPicker('propertyImages')}
               sectionNumber="Appx"
               sectionId="subsection-photos-grid"
+              withoutSectionWrapper={true}
             />
 
 {/* Location Map */}

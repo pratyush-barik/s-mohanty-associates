@@ -344,6 +344,8 @@ export function ReportActionBar({
   );
 }
 
+export const DEFAULT_PHOTO_LABEL = 'Site Picture';
+
 // ─── Standard Photographs Section (Boxed UI with Drag & Drop Reordering) ───
 export function BasePhotographsSection({
   propertyImages = [],
@@ -358,6 +360,7 @@ export function BasePhotographsSection({
   onOpenBucketPicker,
   sectionNumber = 11,
   sectionId = 'section-11',
+  withoutSectionWrapper = false,
 }: {
   propertyImages: string[];
   propertyImageNames: string[];
@@ -371,6 +374,7 @@ export function BasePhotographsSection({
   onOpenBucketPicker?: () => void;
   sectionNumber?: number | string;
   sectionId?: string;
+  withoutSectionWrapper?: boolean;
 }) {
   const validPhotos = propertyImages.filter(Boolean);
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
@@ -418,124 +422,132 @@ export function BasePhotographsSection({
     }
   };
 
+  const content = (
+    <div className="space-y-6">
+      {/* Uploaded Photo Slots Grid: 2 slots per row */}
+      {validPhotos.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {propertyImages.map((url, idx) => {
+            if (!url) return null;
+            const currentLabel =
+              propertyImageNames?.[idx] !== undefined && propertyImageNames[idx] !== ''
+                ? propertyImageNames[idx]
+                : DEFAULT_PHOTO_LABEL;
+
+            const isDragging = draggedIdx === idx;
+            const isDragOver = dragOverIdx === idx;
+
+            return (
+              <div
+                key={idx}
+                draggable={!isReadOnly}
+                onDragStart={() => handleDragStart(idx)}
+                onDragOver={(e) => handleDragOver(e, idx)}
+                onDragLeave={handleDragLeave}
+                onDrop={() => handleDrop(idx)}
+                onDragEnd={() => {
+                  setDraggedIdx(null);
+                  setDragOverIdx(null);
+                }}
+                className={`p-4 border rounded-2xl bg-white space-y-3 transition-all duration-200 ${
+                  isDragging ? 'opacity-40 scale-[0.98]' : 'opacity-100'
+                } ${
+                  isDragOver
+                    ? 'border-2 border-dashed border-[#b8860b] ring-2 ring-[#b8860b]/20 shadow-md'
+                    : 'border-[#dee2e6] shadow-xs hover:border-slate-300'
+                }`}
+              >
+                {/* Header: Drag Handle + Editable Label Input (First order) on Left, Remove Cross on Right */}
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    {!isReadOnly && (
+                      <span
+                        className="text-slate-400 hover:text-slate-600 cursor-grab active:cursor-grabbing select-none text-base font-bold px-0.5"
+                        title="Drag to reorder photograph"
+                      >
+                        ⠿
+                      </span>
+                    )}
+                    <input
+                      type="text"
+                      placeholder="Photo Label"
+                      value={propertyImageNames?.[idx] !== undefined && propertyImageNames[idx] !== '' ? propertyImageNames[idx] : DEFAULT_PHOTO_LABEL}
+                      disabled={isReadOnly}
+                      onChange={(e) => onImageNameChange(idx, e.target.value)}
+                      className="text-xs font-bold text-slate-800 bg-white border border-[#dee2e6] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#b8860b] w-full max-w-sm"
+                    />
+                  </div>
+                  {!isReadOnly && (
+                    <button
+                      type="button"
+                      onClick={() => onRemoveImage(idx)}
+                      className="w-7 h-7 flex items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors text-xs font-bold shrink-0 shadow-2xs cursor-pointer"
+                      title="Remove Photo"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+
+                {/* Body: Uploaded Photo Preview */}
+                <div className="relative rounded-xl overflow-hidden border border-[#dee2e6] bg-slate-100 h-52 flex items-center justify-center cursor-grab active:cursor-grabbing">
+                  <img src={url} alt={currentLabel} className="w-full h-full object-cover pointer-events-none" />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Upload & Actions Bar */}
+      {!isReadOnly && (
+        <div className={`flex flex-wrap items-center justify-between gap-3 ${validPhotos.length > 0 ? 'pt-3 border-t border-slate-100' : ''}`}>
+          <div className="flex flex-wrap items-center gap-3">
+            {/* 1. Local Device Upload */}
+            <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+              {uploading ? '⏳ Uploading...' : 'Add Property Images'}
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={onUploadImages}
+                disabled={uploading}
+              />
+            </label>
+
+            {/* 2. Cloud Storage Bucket Pick */}
+            {onOpenBucketPicker && bucketCount > 0 && (
+              <button
+                type="button"
+                onClick={onOpenBucketPicker}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-sm font-medium hover:bg-[#1e3a5f]/5 transition-colors"
+              >
+                Pick from Bucket ({bucketCount})
+              </button>
+            )}
+          </div>
+
+          <div
+            className={`text-xs font-semibold ${
+              validPhotos.length < 2 ? 'text-amber-600' : 'text-green-600'
+            }`}
+          >
+            {validPhotos.length} / 2 minimum uploaded
+            {validPhotos.length < 2 && ' — At least 2 photographs are required to submit.'}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  if (withoutSectionWrapper) {
+    return content;
+  }
+
   return (
     <Section title="Photographs" number={sectionNumber} id={sectionId} defaultOpen={false}>
-      <div className="space-y-6">
-        {/* Uploaded Photo Slots Grid: 2 slots per row */}
-        {validPhotos.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {propertyImages.map((url, idx) => {
-              if (!url) return null;
-              const currentLabel =
-                propertyImageNames?.[idx] !== undefined && propertyImageNames[idx] !== ''
-                  ? propertyImageNames[idx]
-                  : DEFAULT_PHOTO_LABEL;
-
-              const isDragging = draggedIdx === idx;
-              const isDragOver = dragOverIdx === idx;
-
-              return (
-                <div
-                  key={idx}
-                  draggable={!isReadOnly}
-                  onDragStart={() => handleDragStart(idx)}
-                  onDragOver={(e) => handleDragOver(e, idx)}
-                  onDragLeave={handleDragLeave}
-                  onDrop={() => handleDrop(idx)}
-                  onDragEnd={() => {
-                    setDraggedIdx(null);
-                    setDragOverIdx(null);
-                  }}
-                  className={`p-4 border rounded-2xl bg-white space-y-3 transition-all duration-200 ${
-                    isDragging ? 'opacity-40 scale-[0.98]' : 'opacity-100'
-                  } ${
-                    isDragOver
-                      ? 'border-2 border-dashed border-[#b8860b] ring-2 ring-[#b8860b]/20 shadow-md'
-                      : 'border-[#dee2e6] shadow-xs hover:border-slate-300'
-                  }`}
-                >
-                  {/* Header: Drag Handle + Editable Label Input (First order) on Left, Remove Cross on Right */}
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      {!isReadOnly && (
-                        <span
-                          className="text-slate-400 hover:text-slate-600 cursor-grab active:cursor-grabbing select-none text-base font-bold px-0.5"
-                          title="Drag to reorder photograph"
-                        >
-                          ⠿
-                        </span>
-                      )}
-                      <input
-                        type="text"
-                        placeholder="Photo Label"
-                        value={propertyImageNames?.[idx] !== undefined && propertyImageNames[idx] !== '' ? propertyImageNames[idx] : DEFAULT_PHOTO_LABEL}
-                        disabled={isReadOnly}
-                        onChange={(e) => onImageNameChange(idx, e.target.value)}
-                        className="text-xs font-bold text-slate-800 bg-white border border-[#dee2e6] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#b8860b] w-full max-w-sm"
-                      />
-                    </div>
-                    {!isReadOnly && (
-                      <button
-                        type="button"
-                        onClick={() => onRemoveImage(idx)}
-                        className="w-7 h-7 flex items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors text-xs font-bold shrink-0 shadow-2xs cursor-pointer"
-                        title="Remove Photo"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Body: Uploaded Photo Preview */}
-                  <div className="relative rounded-xl overflow-hidden border border-[#dee2e6] bg-slate-100 h-52 flex items-center justify-center cursor-grab active:cursor-grabbing">
-                    <img src={url} alt={currentLabel} className="w-full h-full object-cover pointer-events-none" />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Upload & Actions Bar */}
-        {!isReadOnly && (
-          <div className={`flex flex-wrap items-center justify-between gap-3 ${validPhotos.length > 0 ? 'pt-3 border-t border-slate-100' : ''}`}>
-            <div className="flex flex-wrap items-center gap-3">
-              {/* 1. Local Device Upload */}
-              <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-                {uploading ? '⏳ Uploading...' : 'Add Property Images'}
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                  onChange={onUploadImages}
-                  disabled={uploading}
-                />
-              </label>
-
-              {/* 2. Cloud Storage Bucket Pick */}
-              {onOpenBucketPicker && bucketCount > 0 && (
-                <button
-                  type="button"
-                  onClick={onOpenBucketPicker}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-sm font-medium hover:bg-[#1e3a5f]/5 transition-colors"
-                >
-                  Pick from Bucket ({bucketCount})
-                </button>
-              )}
-            </div>
-
-            <div
-              className={`text-xs font-semibold ${
-                validPhotos.length < 2 ? 'text-amber-600' : 'text-green-600'
-              }`}
-            >
-              {validPhotos.length} / 2 minimum uploaded
-              {validPhotos.length < 2 && ' — At least 2 photographs are required to submit.'}
-            </div>
-          </div>
-        )}
-      </div>
+      {content}
     </Section>
   );
 }
