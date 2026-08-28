@@ -344,14 +344,7 @@ export function ReportActionBar({
   );
 }
 
-const DEFAULT_SLOT_LABELS = [
-  'Approach Road Pic',
-  'External Pic',
-  'Internal Pic',
-  'Selfie with Client / Customer Representative',
-  'Site Work Pic 1',
-  'Site Work Pic 2',
-];
+const DEFAULT_PHOTO_LABEL = 'Site Picture';
 
 // ─── Standard Photographs Section (Boxed UI only for uploaded photos) ───
 export function BasePhotographsSection({
@@ -392,7 +385,7 @@ export function BasePhotographsSection({
               const currentLabel =
                 propertyImageNames?.[idx] !== undefined && propertyImageNames[idx] !== ''
                   ? propertyImageNames[idx]
-                  : (DEFAULT_SLOT_LABELS[idx] || `Site Pic ${idx + 1}`);
+                  : DEFAULT_PHOTO_LABEL;
 
               return (
                 <div
@@ -407,8 +400,8 @@ export function BasePhotographsSection({
                     <div className="flex items-center gap-2">
                       <input
                         type="text"
-                        placeholder={`Photo ${idx + 1} Label`}
-                        value={propertyImageNames?.[idx] !== undefined ? propertyImageNames[idx] : (DEFAULT_SLOT_LABELS[idx] || `Site Pic ${idx + 1}`)}
+                        placeholder="Photo Label"
+                        value={propertyImageNames?.[idx] !== undefined && propertyImageNames[idx] !== '' ? propertyImageNames[idx] : DEFAULT_PHOTO_LABEL}
                         disabled={isReadOnly}
                         onChange={(e) => onImageNameChange(idx, e.target.value)}
                         className="text-xs font-bold text-slate-800 bg-white border border-[#dee2e6] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#b8860b] min-w-[140px] max-w-[220px]"
