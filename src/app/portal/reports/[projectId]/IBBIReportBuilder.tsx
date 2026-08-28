@@ -2827,7 +2827,12 @@ Our valuation is based on information obtained from the client and on data gathe
             r.drawTextBlock(line, { bold: true, fontSize: 10 });
             r.advanceCursor(2);
           } else {
-            r.drawTextBlock(line, { align: 'justify' });
+            const match = line.match(/^(\d+\.)\s*(.*)$/);
+            if (match) {
+              r.drawLetterBullet(match[1], match[2], { labelIndent: 2, textIndent: 20 });
+            } else {
+              r.drawTextBlock(line, { align: 'justify' });
+            }
             r.advanceCursor(4);
           }
         }
