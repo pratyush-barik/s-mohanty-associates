@@ -294,7 +294,7 @@ function Field({ label, children, span = 1 }: { label: string; children: React.R
 const inputCls = "w-full px-3 py-2.5 rounded-lg border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] disabled:bg-[#f1f3f5] disabled:text-[#6c757d]";
 const selectCls = inputCls;
 
-const FloatingNavigator = ({ isApartmentFlat, annexureEnabled, hiddenSections = [] }: { isApartmentFlat: boolean; annexureEnabled: boolean; hiddenSections?: string[] }) => {
+const FloatingNavigator = ({ isApartmentFlat, annexureEnabled, hiddenSections = [], extraSections = [] }: { isApartmentFlat: boolean; annexureEnabled: boolean; hiddenSections?: string[]; extraSections?: any[] }) => {
   const [activeId, setActiveId] = useState<string>('');
 
   const ALL_SECTIONS = [
@@ -310,6 +310,7 @@ const FloatingNavigator = ({ isApartmentFlat, annexureEnabled, hiddenSections = 
     { id: `section-${isApartmentFlat ? 8 : 9}`, title: 'Valuation Abstract' },
     { id: `section-${isApartmentFlat ? 9 : 10}`, title: 'Remarks' },
     { id: `section-${isApartmentFlat ? 10 : 11}`, title: 'Certificate' },
+    ...(extraSections || []).map((es, idx) => ({ id: es.id || `extra-section-${idx}`, title: es.title })),
     { id: `section-${isApartmentFlat ? 11 : 12}`, title: 'Photographs' },
     { id: `section-${isApartmentFlat ? 12 : 13}`, title: 'Sketch Maps' },
     { id: `section-${isApartmentFlat ? 13 : 14}`, title: 'Location Map' },
