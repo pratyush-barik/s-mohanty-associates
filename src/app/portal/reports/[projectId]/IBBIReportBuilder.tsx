@@ -3105,7 +3105,7 @@ Our valuation is based on information obtained from the client and on data gathe
               <Field label="Appointed By">
                 <input type="text" value={fields.appointedBy || ''} onChange={e => handleChange('appointedBy', e.target.value)} className={inputCls} placeholder="e.g. CA Sonu Jain" disabled={isReadOnly} />
               </Field>
-              <Field label="Appointee Designation">
+              <Field label="Appointee Designation (if applicable)">
                 <input type="text" value={fields.appointedByDesignation || ''} onChange={e => handleChange('appointedByDesignation', e.target.value)} className={inputCls} placeholder="e.g. an Insolvency Professional" disabled={isReadOnly} />
               </Field>
               <Field label="Date of Appointment">
