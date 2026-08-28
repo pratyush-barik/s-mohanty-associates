@@ -3104,8 +3104,14 @@ Our valuation is based on information obtained from the client and on data gathe
               <Field label="Appointed By">
                 <input type="text" value={fields.appointedBy || ''} onChange={e => handleChange('appointedBy', e.target.value)} className={inputCls} placeholder="e.g. CA Sonu Jain" disabled={isReadOnly} />
               </Field>
-              <Field label="Appointment Date">
+              <Field label="Date of Appointment">
                 <input type="date" value={fields.appointmentDate || ''} onChange={e => handleChange('appointmentDate', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
+              <Field label="Date of Valuation Report">
+                <input type="date" value={fields.dateOfValuation || ''} onChange={e => handleChange('dateOfValuation', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
+              <Field label="Date of Inspection">
+                <input type="date" value={fields.dateOfInspection || ''} onChange={e => handleChange('dateOfInspection', e.target.value)} className={inputCls} disabled={isReadOnly} />
               </Field>
               <Field label="Case Parties (in the matter of...)" span={2}>
                 <input type="text" value={fields.caseParties || ''} onChange={e => handleChange('caseParties', e.target.value)} className={inputCls} placeholder="e.g. Noida Infratech Two Pvt Ltd vs Falcony Consultancy Pvt Ltd" disabled={isReadOnly} />
@@ -3163,9 +3169,7 @@ Our valuation is based on information obtained from the client and on data gathe
               <Field label="Valuation Method">
                 <input type="text" value={fields.valuationMethod || ''} onChange={e => handleChange('valuationMethod', e.target.value)} className={inputCls} placeholder="Sale Comparison Method coupled with Replacement Cost Approach" disabled={isReadOnly} />
               </Field>
-              <Field label="Valuation Date (from Section 1)">
-                <input type="text" value={fields.dateOfValuation || ''} className={inputCls + ' bg-gray-100'} disabled />
-              </Field>
+
               <Field label="Present Market Value (from Section Conclusion)">
                 <input type="text" value={(fields.valuationVariant === 'cuttack' ? fields.cuttackPresentOrSay : fields.totalPresentValueOrSay) || fields.fairMarketValueTotal || ''} className={inputCls + ' bg-gray-100'} disabled />
               </Field>
