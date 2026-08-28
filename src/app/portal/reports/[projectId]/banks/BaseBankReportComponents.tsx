@@ -417,8 +417,8 @@ export function BasePhotographsSection({
                         <button
                           type="button"
                           onClick={() => onRemoveImage(idx)}
-                          className="w-7 h-7 flex items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors text-xs font-bold shrink-0 shadow-2xs cursor-pointer"
-                          title="Remove Photo and Entry"
+                          className="w-7 h-7 flex items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors text-xs font-bold shrink-0 shadow-2xs cursor-pointer"
+                          title="Remove Photo"
                         >
                           ✕
                         </button>
@@ -427,18 +427,8 @@ export function BasePhotographsSection({
                   </div>
 
                   {/* Body: Uploaded Photo Preview */}
-                  <div className="relative group rounded-xl overflow-hidden border border-[#dee2e6] bg-slate-100 h-52 flex items-center justify-center">
+                  <div className="relative rounded-xl overflow-hidden border border-[#dee2e6] bg-slate-100 h-52 flex items-center justify-center">
                     <img src={url} alt={currentLabel} className="w-full h-full object-cover" />
-                    {!isReadOnly && (
-                      <button
-                        type="button"
-                        onClick={() => onRemoveImage(idx)}
-                        className="absolute top-2 right-2 bg-red-600/90 hover:bg-red-700 text-white w-7 h-7 rounded-full transition-all flex items-center justify-center text-xs font-bold shadow-md cursor-pointer"
-                        title="Remove Photo and Entry"
-                      >
-                        ✕
-                      </button>
-                    )}
                   </div>
                 </div>
               );
