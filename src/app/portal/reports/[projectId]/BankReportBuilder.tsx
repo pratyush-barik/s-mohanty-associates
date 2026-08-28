@@ -1843,61 +1843,61 @@ export default function BankReportBuilder({
           <Section title="Floor-wise Area & Building Valuation" number={7}>
             <div className="space-y-4">
               <div className="overflow-x-auto">
-                <table className="w-full text-xs text-left border border-[#dee2e6] rounded-lg overflow-hidden">
-                  <thead className="bg-[#0f2038] text-white uppercase text-[10px] tracking-wider">
-                    <tr>
-                      <th className="p-2.5">Floor</th>
-                      <th className="p-2.5">Area (Sqft)</th>
-                      <th className="p-2.5">Rate (Rs/Sqft)</th>
-                      <th className="p-2.5">Est. Cost (Rs)</th>
-                      <th className="p-2.5">Life (Yrs)</th>
-                      <th className="p-2.5">Age (Yrs)</th>
-                      <th className="p-2.5">Dep %</th>
-                      <th className="p-2.5">Net Value (Rs)</th>
-                      {!isReadOnly && <th className="p-2.5 w-10"></th>}
+                <table className="w-full text-sm border-collapse">
+                  <thead>
+                    <tr className="bg-[#0a1628] text-white">
+                      <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider">Floor</th>
+                      <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">Area (Sqft)</th>
+                      <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">Rate (Rs/Sqft)</th>
+                      <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">Est. Cost (Rs)</th>
+                      <th className="px-3 py-2.5 text-center font-semibold text-xs uppercase tracking-wider">Life (Yrs)</th>
+                      <th className="px-3 py-2.5 text-center font-semibold text-xs uppercase tracking-wider">Age (Yrs)</th>
+                      <th className="px-3 py-2.5 text-center font-semibold text-xs uppercase tracking-wider">Dep %</th>
+                      <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">Net Value (Rs)</th>
+                      {!isReadOnly && <th className="px-3 py-2.5 w-10"></th>}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#e9ecef]">
+                  <tbody>
                     {floorValuations.map((f, idx) => (
-                      <tr key={f.id} className="hover:bg-slate-50">
-                        <td className="p-2">
-                          <input className="w-full p-1 border rounded text-xs" value={f.name} onChange={e => updateFloor(f.id, 'name', e.target.value)} disabled={isReadOnly} />
+                      <tr key={f.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-[#f8f9fa]'}>
+                        <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                          <input className={inputCls + ' !py-1.5 text-xs font-bold text-[#0f2038]'} value={f.name} onChange={e => updateFloor(f.id, 'name', e.target.value)} disabled={isReadOnly} />
                         </td>
-                        <td className="p-2">
-                          <input className="w-full p-1 border rounded text-xs" value={f.area} onChange={e => updateFloor(f.id, 'area', e.target.value)} disabled={isReadOnly} placeholder="0" />
+                        <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                          <input className={inputCls + ' !py-1.5 text-xs text-right'} value={f.area} onChange={e => updateFloor(f.id, 'area', e.target.value)} disabled={isReadOnly} placeholder="0" />
                         </td>
-                        <td className="p-2">
-                          <input className="w-full p-1 border rounded text-xs" value={f.rate} onChange={e => updateFloor(f.id, 'rate', e.target.value)} disabled={isReadOnly} placeholder="0" />
+                        <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                          <input className={inputCls + ' !py-1.5 text-xs text-right'} value={f.rate} onChange={e => updateFloor(f.id, 'rate', e.target.value)} disabled={isReadOnly} placeholder="0" />
                         </td>
-                        <td className="p-2 font-mono font-semibold text-[#0f2038]">
+                        <td className="px-2 py-1.5 border-b border-[#e9ecef] text-right font-mono font-semibold text-[#0f2038] text-xs">
                           Rs. {formatIndianCurrency(f.estimated)}
                         </td>
-                        <td className="p-2">
-                          <input className="w-full p-1 border rounded text-xs" value={f.lifeYears} onChange={e => updateFloor(f.id, 'lifeYears', e.target.value)} disabled={isReadOnly} placeholder="60" />
+                        <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                          <input className={inputCls + ' !py-1.5 text-xs text-center'} value={f.lifeYears} onChange={e => updateFloor(f.id, 'lifeYears', e.target.value)} disabled={isReadOnly} placeholder="60" />
                         </td>
-                        <td className="p-2">
-                          <input className="w-full p-1 border rounded text-xs" value={f.ageYears} onChange={e => updateFloor(f.id, 'ageYears', e.target.value)} disabled={isReadOnly} placeholder="0" />
+                        <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                          <input className={inputCls + ' !py-1.5 text-xs text-center'} value={f.ageYears} onChange={e => updateFloor(f.id, 'ageYears', e.target.value)} disabled={isReadOnly} placeholder="0" />
                         </td>
-                        <td className="p-2">
-                          <input className="w-full p-1 border rounded text-xs" value={f.depreciationPct} onChange={e => updateFloor(f.id, 'depreciationPct', e.target.value)} disabled={isReadOnly} placeholder={`${f.depPct}%`} />
+                        <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                          <input className={inputCls + ' !py-1.5 text-xs text-center font-bold text-[#b8860b]'} value={f.depreciationPct} onChange={e => updateFloor(f.id, 'depreciationPct', e.target.value)} disabled={isReadOnly} placeholder={`${f.depPct}%`} />
                         </td>
-                        <td className="p-2 font-mono font-bold text-[#b8860b]">
+                        <td className="px-2 py-1.5 border-b border-[#e9ecef] text-right font-mono font-bold text-[#0f2038] text-xs">
                           Rs. {formatIndianCurrency(f.netValue)}
                         </td>
                         {!isReadOnly && (
-                          <td className="p-2 text-center">
+                          <td className="px-2 py-1.5 border-b border-[#e9ecef] text-center">
                             {fields.floors.length > 1 && (
-                              <button type="button" onClick={() => removeFloor(f.id)} className="text-red-500 hover:text-red-700 font-bold text-sm">✕</button>
+                              <button type="button" onClick={() => removeFloor(f.id)} className="text-red-400 hover:text-red-600 text-lg leading-none" title="Remove Floor">&times;</button>
                             )}
                           </td>
                         )}
                       </tr>
                     ))}
                   </tbody>
-                  <tfoot className="bg-[#f8f9fa] font-bold text-xs border-t-2 border-[#0f2038]">
-                    <tr>
-                      <td className="p-2.5" colSpan={7}>Total Building Value</td>
-                      <td className="p-2.5 font-mono text-[#b8860b] text-sm" colSpan={2}>
+                  <tfoot>
+                    <tr className="bg-[#f0ead6] font-bold text-[#0f2038]">
+                      <td className="px-3 py-2.5 text-xs uppercase tracking-wider" colSpan={7}>Total Building Value</td>
+                      <td className="px-3 py-2.5 text-right font-mono text-[#b8860b] text-sm" colSpan={2}>
                         Rs. {formatIndianCurrency(totalBuildingValue)}
                       </td>
                     </tr>
@@ -1905,8 +1905,12 @@ export default function BankReportBuilder({
                 </table>
               </div>
               {!isReadOnly && (
-                <button type="button" onClick={addFloor} className="text-xs bg-slate-100 hover:bg-slate-200 text-[#0f2038] font-bold px-3 py-1.5 rounded border border-slate-300 transition-colors">
-                  + Add Floor
+                <button
+                  type="button"
+                  onClick={addFloor}
+                  className="text-sm text-[#b8860b] hover:text-[#96700a] font-semibold flex items-center gap-1.5 pt-1"
+                >
+                  <span className="text-lg leading-none">+</span> Add Floor
                 </button>
               )}
               {renderExtraFields('section-7')}
