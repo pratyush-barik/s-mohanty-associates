@@ -294,30 +294,8 @@ function Field({ label, children, span = 1 }: { label: string; children: React.R
 const inputCls = "w-full px-3 py-2.5 rounded-lg border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] disabled:bg-[#f1f3f5] disabled:text-[#6c757d]";
 const selectCls = inputCls;
 
-const FloatingNavigator = ({ isApartmentFlat, annexureEnabled, hiddenSections = [], extraSections = [] }: { isApartmentFlat: boolean; annexureEnabled: boolean; hiddenSections?: string[]; extraSections?: any[] }) => {
+const FloatingNavigator = ({ sections }: { sections: { id: string; title: string; special?: boolean }[] }) => {
   const [activeId, setActiveId] = useState<string>('');
-
-  const ALL_SECTIONS = [
-    { id: 'section-1', title: 'General Details' },
-    { id: 'section-2', title: 'Locality Details' },
-    { id: 'section-3', title: 'Property Details' },
-    { id: 'section-4', title: 'Subject Property' },
-    { id: 'section-5', title: 'Structural Details' },
-    { id: 'section-6', title: 'Plan Approvals' },
-    { id: 'layout-config', title: 'Layout Structure', special: true },
-    { id: 'section-7', title: 'Area Valuation' },
-    ...(isApartmentFlat ? [] : [{ id: 'section-8', title: 'Land Valuation' }]),
-    { id: `section-${isApartmentFlat ? 8 : 9}`, title: 'Valuation Abstract' },
-    { id: `section-${isApartmentFlat ? 9 : 10}`, title: 'Remarks' },
-    { id: `section-${isApartmentFlat ? 10 : 11}`, title: 'Certificate' },
-    ...(extraSections || []).map((es, idx) => ({ id: es.id || `extra-section-${idx}`, title: es.title })),
-    { id: `section-${isApartmentFlat ? 11 : 12}`, title: 'Photographs' },
-    { id: `section-${isApartmentFlat ? 12 : 13}`, title: 'Sketch Maps' },
-    { id: `section-${isApartmentFlat ? 13 : 14}`, title: 'Location Map' },
-    ...(annexureEnabled ? [{ id: `section-${isApartmentFlat ? 14 : 15}`, title: 'Annexure' }] : []),
-  ];
-
-  const NAV_SECTIONS = ALL_SECTIONS.filter(sec => !hiddenSections.includes(sec.id));
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -331,13 +309,13 @@ const FloatingNavigator = ({ isApartmentFlat, annexureEnabled, hiddenSections = 
       { rootMargin: '-10% 0px -80% 0px' }
     );
 
-    NAV_SECTIONS.forEach(sec => {
+    sections.forEach(sec => {
       const el = document.getElementById(sec.id);
       if (el) observer.observe(el);
     });
 
     return () => observer.disconnect();
-  }, [isApartmentFlat, annexureEnabled, hiddenSections]);
+  }, [sections]);
 
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -346,7 +324,7 @@ const FloatingNavigator = ({ isApartmentFlat, annexureEnabled, hiddenSections = 
   return (
     <div className="hidden xl:flex flex-col gap-0 bg-white/80 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2 rounded-2xl w-[160px] sticky top-24 shrink-0 z-40">
       <div className="text-[10px] font-black text-neutral-400 mb-1 px-2 uppercase tracking-widest">Sections</div>
-      {NAV_SECTIONS.map((sec: any) => {
+      {sections.map((sec) => {
         const isActive = activeId === sec.id;
         const isSpecial = sec.special;
         return (
@@ -354,19 +332,17 @@ const FloatingNavigator = ({ isApartmentFlat, annexureEnabled, hiddenSections = 
             key={sec.id}
             type="button"
             onClick={() => scrollTo(sec.id)}
-            className={`text-left py-1 px-2.5 rounded-lg transition-all flex flex-col justify-center ${
-              isSpecial
-                ? isActive ? 'bg-blue-600 text-white shadow-md my-1' : 'bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white border border-blue-100 my-1'
-                : !sec.indent
-                  ? 'my-1 font-extrabold bg-indigo-50 text-indigo-800 border border-indigo-100 shadow-sm'
-                  : 'pl-3.5 text-slate-600 hover:bg-[#b8860b]/10 hover:text-[#b8860b]'
-            } ${
-              !isSpecial && isActive
-                ? '!bg-[#b8860b] !text-white !border-[#b8860b] shadow-md'
-                : ''
+            className={`text-left py-1 px-2.5 rounded-lg transition-all flex flex-col justify-center my-0.5 ${
+              isActive
+                ? isSpecial
+                  ? '!bg-purple-600 !text-white !border-purple-600 shadow-md font-bold'
+                  : '!bg-[#b8860b] !text-white !border-[#b8860b] shadow-md font-bold'
+                : isSpecial
+                  ? 'text-purple-600 hover:bg-purple-50 font-bold border border-purple-200'
+                  : 'text-slate-600 hover:bg-[#b8860b]/10 hover:text-[#b8860b]'
             }`}
           >
-            <span className={`leading-tight truncate w-full ${sec.indent ? 'text-[11px] font-bold' : 'text-[11.5px]'}`}>
+            <span className="text-[11.5px] leading-tight truncate w-full">
               {sec.title}
             </span>
           </button>
@@ -2358,7 +2334,29 @@ export default function BankReportBuilder({
       </div>
 
       {/* ── Floating Navigator ── */}
-      <FloatingNavigator isApartmentFlat={isApartmentFlat} annexureEnabled={fields.annexureEnabled} hiddenSections={config?.hiddenSections} extraSections={config?.extraSections} />
+      <FloatingNavigator
+        sections={
+          config?.navSections || [
+            { id: 'section-1', title: 'General Details' },
+            { id: 'section-2', title: 'Locality Details' },
+            { id: 'section-3', title: 'Property Details' },
+            { id: 'section-4', title: 'Subject Property' },
+            { id: 'section-5', title: 'Structural Details' },
+            { id: 'section-6', title: 'Plan Approvals' },
+            { id: 'layout-config', title: 'Layout Structure', special: true },
+            { id: 'section-7', title: 'Area Valuation' },
+            ...(isApartmentFlat ? [] : [{ id: 'section-8', title: 'Land Valuation' }]),
+            { id: `section-${isApartmentFlat ? 8 : 9}`, title: 'Valuation Abstract' },
+            { id: `section-${isApartmentFlat ? 9 : 10}`, title: 'Remarks' },
+            { id: `section-${isApartmentFlat ? 10 : 11}`, title: 'Certificate' },
+            ...(config?.extraSections || []).map((es, idx) => ({ id: es.id || `extra-section-${idx}`, title: es.title })),
+            { id: `section-${isApartmentFlat ? 11 : 12}`, title: 'Photographs' },
+            { id: `section-${isApartmentFlat ? 12 : 13}`, title: 'Sketch Maps' },
+            { id: `section-${isApartmentFlat ? 13 : 14}`, title: 'Location Map' },
+            ...(fields.annexureEnabled ? [{ id: `section-${isApartmentFlat ? 14 : 15}`, title: 'Annexure' }] : []),
+          ].filter(sec => !(config?.hiddenSections || []).includes(sec.id))
+        }
+      />
 
       {/* ── Rework Modal ── */}
       {showReworkModal && (

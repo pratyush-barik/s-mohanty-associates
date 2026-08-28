@@ -288,6 +288,8 @@ export interface BankConfig {
   extraFields?: Record<string, ExtraFieldConfig[]>;
   /** Entirely new sections added to the form */
   extraSections?: SectionConfig[];
+  /** Custom Nav Sections for FloatingNavigator */
+  navSections?: { id: string; title: string }[];
   /** Bank-specific validation rules added on top of base validation */
   validationRules?: ValidationRule[];
 

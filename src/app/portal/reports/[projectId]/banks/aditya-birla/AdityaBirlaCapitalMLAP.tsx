@@ -51,6 +51,22 @@ export const ADITYA_BIRLA_CAPITAL_MLAP_CONFIG: BankConfig = {
     loanApplicationNo: 'Application No.',
   },
 
+  // ── Exact Nav Bar Sections for this Bank ──
+  navSections: [
+    { id: 'section-1', title: 'Basic Details' },
+    { id: 'section-2', title: 'Location Details' },
+    { id: 'section-3', title: 'Property Detailings' },
+    { id: 'section-4', title: 'Documentation' },
+    { id: 'section-accommodation', title: 'Accommodation' },
+    { id: 'section-bua', title: 'Build Up Details' },
+    { id: 'section-7', title: 'Valuation Analysis' },
+    { id: 'section-8', title: 'Boundary Details' },
+    { id: 'section-9', title: 'Remarks' },
+    { id: 'section-11', title: 'Photographs' },
+    { id: 'section-12', title: 'Maps & Sketches' },
+    { id: 'section-13', title: 'Location Map' },
+  ],
+
   // ── Extra Fields in Standard Sections ──
   extraFields: {
     'section-1': [
