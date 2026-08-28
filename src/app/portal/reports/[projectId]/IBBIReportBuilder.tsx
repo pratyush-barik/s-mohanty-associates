@@ -2698,7 +2698,7 @@ Our valuation is based on information obtained from the client and on data gathe
         // 20 clauses with letter bullets a-t
         const valDateFormatted = fmtDateDDMMYYYY(fields.dateOfValuation);
         const inspDateFormatted = fmtDateDDMMYYYY(fields.dateOfInspection);
-        const declarations = [
+        const rawDeclarations = [
           'I am citizen of India.',
           'I will not undertake valuation of any assets in which I have a direct or indirect interest or become so interested at any time during a period of three years prior to my appointments as valuer or three years after the valuation of assets was conducted by me.',
           `The information furnished in my valuation report dated ${valDateFormatted} is true & correct to the best of my knowledge & belief & I have made an impartial & true valuation of the property.`,
@@ -2720,8 +2720,13 @@ Our valuation is based on information obtained from the client and on data gathe
           'I am the authorized official of the firm who is competent to sign this valuation report',
           'Further, I hereby provide the following information.',
         ];
+
+        const declarations = fields.panCardNumber 
+          ? rawDeclarations 
+          : rawDeclarations.filter(d => !d.includes('My PAN Card number'));
+
         for (let i = 0; i < declarations.length; i++) {
-          const letter = String.fromCharCode(97 + i); // a, b, c, ..., t
+          const letter = String.fromCharCode(97 + i); // a, b, c, ..., t/s
           if (declarations[i].includes('My PAN Card number')) {
             const panVal = fields.panCardNumber ? fields.panCardNumber.toUpperCase() : '[PAN Card Number]';
             (r as any).drawRichLetterBullet(letter + '.', [
@@ -2740,7 +2745,7 @@ Our valuation is based on information obtained from the client and on data gathe
           for (let ci = 0; ci < fields.customDeclarations.length; ci++) {
             const cItem = fields.customDeclarations[ci];
             if (!cItem.text || !cItem.text.trim()) continue;
-            const baseIdx = ci + 20; // starts after t (index 19)
+            const baseIdx = ci + declarations.length; // starts after the default items
             let bulletLabel: string;
             if (baseIdx < 26) {
               bulletLabel = String.fromCharCode(97 + baseIdx) + '.';
@@ -4683,7 +4688,7 @@ Our valuation is based on information obtained from the client and on data gathe
               <div className="mt-4 space-y-3">
                 <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Custom Declaration Bullets</p>
                 {fields.customDeclarations && fields.customDeclarations.map((item: { text: string; label?: string }, idx: number) => {
-                  const baseIdx = idx + 20; // starts after t (index 19)
+                  const baseIdx = idx + (fields.panCardNumber ? 20 : 19); // starts after the default items
                   let letterLabel: string;
                   if (baseIdx < 26) {
                     letterLabel = String.fromCharCode(97 + baseIdx); // u, v, w, x, y, z
