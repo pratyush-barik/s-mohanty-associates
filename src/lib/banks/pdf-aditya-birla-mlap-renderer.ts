@@ -22,17 +22,18 @@ const MARGIN_L = 36;     // Left margin (compact for wide tables)
 const MARGIN_R = 36;     // Right margin
 const CONTENT_W = PAGE_W - MARGIN_L - MARGIN_R; // 523.28pt
 
-const FONT_SIZE = 9;
-const FONT_SIZE_HEADER = 10;
-const FONT_SIZE_TITLE = 11;
+const FONT_SIZE = 9.5;
+const FONT_SIZE_HEADER = 11;
+const FONT_SIZE_TITLE = 13;
 const LINE_HEIGHT = 1.25;
 const BORDER_W = 0.5;
 
-const BG_HEADER_DARK = '#1C2833';   // Dark header for main title
-const BG_SECTION_HEADER = '#2C3E50'; // Section header
-const BG_SUB_HEADER = '#D6EAF8';     // Light blue table header
-const BG_YELLOW = '#FEF9E7';         // Soft yellow for valuation cells
-const BG_ALT_ROW = '#F8F9F9';        // Alternating row background
+// Transparent color palette referenced from General Base (50% opacity for watermark visibility)
+const BG_HEADER_DARK = '#DBE6F0';   // Soft Blue Banner
+const BG_SECTION_HEADER = '#DBE6F0'; // Soft Blue Section Header
+const BG_SUB_HEADER = '#DDE9F6';     // Ice Blue Table Header
+const BG_YELLOW = '#FEF9E7';         // Soft Transparent Golden-Yellow for Valuation Highlights
+const BG_ALT_ROW = '#DBE6F0';        // Soft Blue Label Fill
 
 export interface MLAPReportFields {
   // Basic Details
@@ -175,9 +176,9 @@ export class PDFAdityaBirlaMLAPRenderer {
 
   async init(letterheadBytes?: Uint8Array): Promise<void> {
     this.doc = await PDFDocument.create();
-    this.fontRegular = await this.doc.embedFont(StandardFonts.Helvetica);
-    this.fontBold = await this.doc.embedFont(StandardFonts.HelveticaBold);
-    this.fontItalic = await this.doc.embedFont(StandardFonts.HelveticaOblique);
+    this.fontRegular = await this.doc.embedFont(StandardFonts.TimesRoman);
+    this.fontBold = await this.doc.embedFont(StandardFonts.TimesRomanBold);
+    this.fontItalic = await this.doc.embedFont(StandardFonts.TimesRomanItalic);
 
     if (letterheadBytes && letterheadBytes.length > 0) {
       try {
@@ -257,9 +258,7 @@ export class PDFAdityaBirlaMLAPRenderer {
     }
     if (cur) lines.push(cur);
     return lines.length ? lines : [''];
-  }
-
-  /** Render Title Banner */
+  }  /** Render Title Banner */
   drawMainHeader(title: string): void {
     this.checkPageBreak(24);
     const h = 20;
@@ -271,6 +270,9 @@ export class PDFAdityaBirlaMLAPRenderer {
       width: CONTENT_W,
       height: h,
       color: hexToRgb(BG_HEADER_DARK),
+      opacity: 0.5,
+      borderColor: rgb(0, 0, 0),
+      borderWidth: BORDER_W,
     });
 
     const font = this.fontBold;
@@ -281,7 +283,7 @@ export class PDFAdityaBirlaMLAPRenderer {
       y: y - h + 5.5,
       size: FONT_SIZE_TITLE,
       font,
-      color: rgb(1, 1, 1),
+      color: rgb(0, 0, 0),
     });
 
     this.cursorY += h;
@@ -299,6 +301,7 @@ export class PDFAdityaBirlaMLAPRenderer {
       width: CONTENT_W,
       height: h,
       color: hexToRgb(BG_SUB_HEADER),
+      opacity: 0.5,
       borderColor: rgb(0, 0, 0),
       borderWidth: BORDER_W,
     });
@@ -311,7 +314,7 @@ export class PDFAdityaBirlaMLAPRenderer {
       y: y - h + 4.5,
       size: FONT_SIZE_HEADER,
       font,
-      color: hexToRgb(BG_SECTION_HEADER),
+      color: rgb(0, 0, 0),
     });
 
     this.cursorY += h;
@@ -343,13 +346,14 @@ export class PDFAdityaBirlaMLAPRenderer {
       const c = cols[i];
       const cw = colWrapped[i];
 
-      // Draw Label Cell
+      // Draw Label Cell (with 50% opacity soft blue background)
       this.page.drawRectangle({
         x: curX,
         y: y - rowH,
         width: c.labelWidth,
         height: rowH,
         color: hexToRgb(BG_ALT_ROW),
+        opacity: 0.5,
         borderColor: rgb(0, 0, 0),
         borderWidth: BORDER_W,
       });
@@ -367,16 +371,28 @@ export class PDFAdityaBirlaMLAPRenderer {
       }
       curX += c.labelWidth;
 
-      // Draw Value Cell
-      this.page.drawRectangle({
-        x: curX,
-        y: y - rowH,
-        width: c.valueWidth,
-        height: rowH,
-        color: c.highlight ? hexToRgb(BG_YELLOW) : rgb(1, 1, 1),
-        borderColor: rgb(0, 0, 0),
-        borderWidth: BORDER_W,
-      });
+      // Draw Value Cell (with 50% opacity yellow highlight or transparent)
+      if (c.highlight) {
+        this.page.drawRectangle({
+          x: curX,
+          y: y - rowH,
+          width: c.valueWidth,
+          height: rowH,
+          color: hexToRgb(BG_YELLOW),
+          opacity: 0.5,
+          borderColor: rgb(0, 0, 0),
+          borderWidth: BORDER_W,
+        });
+      } else {
+        this.page.drawRectangle({
+          x: curX,
+          y: y - rowH,
+          width: c.valueWidth,
+          height: rowH,
+          borderColor: rgb(0, 0, 0),
+          borderWidth: BORDER_W,
+        });
+      }
 
       lineY = y - pad - fontSize;
       for (const line of cw.valueLines) {
@@ -384,7 +400,7 @@ export class PDFAdityaBirlaMLAPRenderer {
           x: curX + pad,
           y: lineY,
           size: fontSize,
-          font: this.fontRegular,
+          font: c.highlight ? this.fontBold : this.fontRegular,
           color: rgb(0, 0, 0),
         });
         lineY -= fontSize * LINE_HEIGHT;
@@ -421,6 +437,7 @@ export class PDFAdityaBirlaMLAPRenderer {
         width: colWidths[i],
         height: headerH,
         color: hexToRgb(BG_SUB_HEADER),
+        opacity: 0.5,
         borderColor: rgb(0, 0, 0),
         borderWidth: BORDER_W,
       });
@@ -432,7 +449,7 @@ export class PDFAdityaBirlaMLAPRenderer {
           y: lineY,
           size: fontSize,
           font: this.fontBold,
-          color: hexToRgb(BG_SECTION_HEADER),
+          color: rgb(0, 0, 0),
         });
         lineY -= fontSize * LINE_HEIGHT;
       }
@@ -458,15 +475,27 @@ export class PDFAdityaBirlaMLAPRenderer {
 
       for (let i = 0; i < row.length; i++) {
         const isHighlight = highlightedCols.includes(i);
-        this.page.drawRectangle({
-          x: curX,
-          y: y - rowH,
-          width: colWidths[i],
-          height: rowH,
-          color: isHighlight ? hexToRgb(BG_YELLOW) : rgb(1, 1, 1),
-          borderColor: rgb(0, 0, 0),
-          borderWidth: BORDER_W,
-        });
+        if (isHighlight) {
+          this.page.drawRectangle({
+            x: curX,
+            y: y - rowH,
+            width: colWidths[i],
+            height: rowH,
+            color: hexToRgb(BG_YELLOW),
+            opacity: 0.5,
+            borderColor: rgb(0, 0, 0),
+            borderWidth: BORDER_W,
+          });
+        } else {
+          this.page.drawRectangle({
+            x: curX,
+            y: y - rowH,
+            width: colWidths[i],
+            height: rowH,
+            borderColor: rgb(0, 0, 0),
+            borderWidth: BORDER_W,
+          });
+        }
 
         let lineY = y - pad - fontSize;
         for (const line of rowWrapped[i]) {
@@ -501,7 +530,18 @@ export class PDFAdityaBirlaMLAPRenderer {
       y: y - totalH,
       width: CONTENT_W,
       height: totalH,
-      color: rgb(1, 1, 1),
+      borderColor: rgb(0, 0, 0),
+      borderWidth: BORDER_W,
+    });
+
+    // Label banner (with 50% opacity soft blue background)
+    this.page.drawRectangle({
+      x: MARGIN_L,
+      y: y - 16,
+      width: CONTENT_W,
+      height: 16,
+      color: hexToRgb(BG_SUB_HEADER),
+      opacity: 0.5,
       borderColor: rgb(0, 0, 0),
       borderWidth: BORDER_W,
     });
@@ -509,7 +549,7 @@ export class PDFAdityaBirlaMLAPRenderer {
     // Label
     this.page.drawText(label, {
       x: MARGIN_L + pad,
-      y: y - pad - fontSize,
+      y: y - pad - fontSize + 1,
       size: fontSize,
       font: this.fontBold,
       color: rgb(0, 0, 0),
