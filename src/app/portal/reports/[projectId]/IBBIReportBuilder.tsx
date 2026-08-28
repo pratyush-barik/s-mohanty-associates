@@ -2764,7 +2764,7 @@ Our valuation is based on information obtained from the client and on data gathe
         ],
         [
           { text: 'Signature & Seal of Valuer' },
-          { text: `Name of the Valuer - ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications.toUpperCase() : ''}`, bold: true },
+          { text: `Name of the Valuer - ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}`, bold: true },
         ]
       );
 
@@ -3004,6 +3004,9 @@ Our valuation is based on information obtained from the client and on data gathe
           {/* ── Valuation Report Cover ── */}
           <Section title="Valuation Report Cover" id="section-cover">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="Valuer Qualifications (Appears next to name)">
+                  <input type="text" value={fields.valuerQualifications} onChange={e => handleChange('valuerQualifications', e.target.value)} className={inputCls} disabled={isReadOnly} />
+                </Field>
                 <Field label="Additional Valuer Details (Each line will appear centered below)" span={2}>
                   <textarea rows={3} value={fields.valuerAdditionalDetails || ''} onChange={e => handleChange('valuerAdditionalDetails', e.target.value)} className={inputCls} disabled={isReadOnly} />
                 </Field>
@@ -4660,9 +4663,6 @@ Our valuation is based on information obtained from the client and on data gathe
                 </Field>
                 <Field label="Representative's Father's Name">
                   <input type="text" value={fields.representativeFatherName} onChange={e => handleChange('representativeFatherName', e.target.value)} className={inputCls} disabled={isReadOnly} />
-                </Field>
-                <Field label="Valuer Qualifications (Appears next to name)">
-                  <input type="text" value={fields.valuerQualifications} onChange={e => handleChange('valuerQualifications', e.target.value)} className={inputCls} disabled={isReadOnly} />
                 </Field>
                 <Field label="Date of Inspection">
                   <input type="date" value={fields.dateOfInspection || ''} className={inputCls + ' bg-gray-100 cursor-not-allowed'} disabled />
