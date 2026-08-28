@@ -40,6 +40,18 @@ export function getFloorName(index: number): string {
   return `${numberToOrdinalWord(index)} Floor`;
 }
 
+// ─── Assigned Field Engineers Formatter ──────────────────────────────
+export function formatAssignedEngineers(fieldEmployees?: Array<{ name: string; [key: string]: any }>): string {
+  if (!fieldEmployees || !Array.isArray(fieldEmployees) || fieldEmployees.length === 0) {
+    return '';
+  }
+  const names = fieldEmployees.map(e => e.name?.trim()).filter(Boolean);
+  if (names.length === 0) return '';
+  if (names.length === 1) return names[0];
+  if (names.length === 2) return `${names[0]} and ${names[1]}`;
+  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+}
+
 // ─── Standard Input & Select Classes ─────────────────────────────────
 export const inputCls = "w-full px-3 py-2.5 rounded-lg border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] disabled:bg-[#f1f3f5] disabled:text-[#6c757d] transition-all";
 export const selectCls = inputCls;
@@ -327,6 +339,510 @@ export function ReportActionBar({
         >
           📥 Download PDF
         </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Standard Photographs Section (Derived from General, 2 photos per row) ───
+export function BasePhotographsSection({
+  propertyImages = [],
+  propertyImageNames = [],
+  isReadOnly = false,
+  uploading = false,
+  bucketCount = 0,
+  onImageNameChange,
+  onRemoveImage,
+  onUploadImages,
+  onOpenBucketPicker,
+  sectionNumber = 11,
+  sectionId = 'section-11',
+}: {
+  propertyImages: string[];
+  propertyImageNames: string[];
+  isReadOnly?: boolean;
+  uploading?: boolean;
+  bucketCount?: number;
+  onImageNameChange: (index: number, name: string) => void;
+  onRemoveImage: (index: number) => void;
+  onUploadImages: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onOpenBucketPicker?: () => void;
+  sectionNumber?: number | string;
+  sectionId?: string;
+}) {
+  return (
+    <Section title="Photographs" number={sectionNumber} id={sectionId} defaultOpen={false}>
+      <div className="space-y-4">
+        {/* Photo Grid: 2 photos per row (2-column layout on md+ screens) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {propertyImages.map((url, idx) => (
+            <div key={idx} className="flex flex-col border border-[#dee2e6] rounded-2xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow">
+              <div className="relative group w-full h-56 bg-slate-100 flex items-center justify-center">
+                <img src={url} alt={`Property Photo ${idx + 1}`} className="w-full h-full object-cover" />
+                {!isReadOnly && (
+                  <button
+                    type="button"
+                    onClick={() => onRemoveImage(idx)}
+                    className="absolute top-2 right-2 bg-red-600/90 text-white w-7 h-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm shadow-md hover:bg-red-700 cursor-pointer"
+                    title="Remove Photo"
+                  >
+                    &times;
+                  </button>
+                )}
+                <span className="absolute bottom-2 left-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-md backdrop-blur-xs font-semibold">
+                  Photo {idx + 1}
+                </span>
+              </div>
+              <div className="p-3 bg-gray-50 border-t border-[#e9ecef]">
+                <input
+                  type="text"
+                  placeholder={`Photo ${idx + 1} Label / Description`}
+                  value={propertyImageNames?.[idx] || ''}
+                  disabled={isReadOnly}
+                  onChange={(e) => onImageNameChange(idx, e.target.value)}
+                  className="w-full text-xs px-3 py-2 border border-[#dee2e6] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 font-medium"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {propertyImages.length === 0 && (
+          <div className="p-8 border-2 border-dashed border-gray-200 rounded-2xl text-center text-sm text-gray-500">
+            <span className="text-3xl block mb-2">📷</span>
+            No photographs uploaded yet.
+          </div>
+        )}
+
+        {!isReadOnly && (
+          <div className="pt-2 flex flex-wrap items-center gap-3">
+            <label className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-bold cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+              {uploading ? '⏳ Uploading...' : '📁 Upload Photographs'}
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={onUploadImages}
+                disabled={uploading}
+              />
+            </label>
+
+            {onOpenBucketPicker && bucketCount > 0 && (
+              <button
+                type="button"
+                onClick={onOpenBucketPicker}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[#1e3a5f] text-[#1e3a5f] text-xs font-bold hover:bg-[#1e3a5f]/5 transition-colors"
+              >
+                📸 Pick from Bucket ({bucketCount})
+              </button>
+            )}
+
+            <span className="text-xs text-[#6c757d]">
+              {propertyImages.length < 2 ? (
+                <span className="text-amber-600 font-semibold">⚠️ {propertyImages.length}/2 minimum uploaded</span>
+              ) : (
+                <span className="text-green-600 font-semibold">✅ {propertyImages.length} uploaded</span>
+              )}
+            </span>
+          </div>
+        )}
+      </div>
+    </Section>
+  );
+}
+
+// ─── Standard Maps & Documents Section (Derived from General) ─────────
+export function BaseMapsSection({
+  locationMapImage = '',
+  latitude = '',
+  longitude = '',
+  propertyAddress = '',
+  sketchMapImages = [],
+  mouzaMapImage = '',
+  cadastralMapImage = '',
+  isReadOnly = false,
+  uploading = false,
+  bucketCount = 0,
+  onLocationMapUpload,
+  onLocationMapRemove,
+  onSketchMapUpload,
+  onSketchMapRemove,
+  onMouzaMapUpload,
+  onMouzaMapRemove,
+  onCadastralMapUpload,
+  onCadastralMapRemove,
+  onOpenBucketPicker,
+  sectionNumber = 10,
+  sectionId = 'section-10',
+}: {
+  locationMapImage?: string;
+  latitude?: string;
+  longitude?: string;
+  propertyAddress?: string;
+  sketchMapImages?: string[];
+  mouzaMapImage?: string;
+  cadastralMapImage?: string;
+  isReadOnly?: boolean;
+  uploading?: boolean;
+  bucketCount?: number;
+  onLocationMapUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onLocationMapRemove: () => void;
+  onSketchMapUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSketchMapRemove: (index: number) => void;
+  onMouzaMapUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onMouzaMapRemove?: () => void;
+  onCadastralMapUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onCadastralMapRemove?: () => void;
+  onOpenBucketPicker?: (mode: 'sketchMapImages' | 'locationMapImage') => void;
+  sectionNumber?: number | string;
+  sectionId?: string;
+}) {
+  const mapQuery = latitude && longitude
+    ? `${latitude.trim()},${longitude.trim()}`
+    : propertyAddress.trim();
+  const encodedQuery = encodeURIComponent(mapQuery);
+  const hasQuery = mapQuery.length > 0;
+  const googleMapsUrl = latitude && longitude
+    ? `https://www.google.com/maps?q=${latitude.trim()},${longitude.trim()}&z=15&t=k`
+    : `https://www.google.com/maps/search/${encodedQuery}`;
+
+  return (
+    <Section title="Maps & Documents" number={sectionNumber} id={sectionId} defaultOpen={false}>
+      <div className="space-y-6">
+        {/* 1. Live Google Map Preview */}
+        <div>
+          <h4 className="text-xs font-bold text-[#495057] uppercase tracking-wider mb-2">Live Map & Location</h4>
+          {hasQuery ? (
+            <div className="rounded-2xl overflow-hidden border border-[#c8d6e5] shadow-sm">
+              <div className="bg-[#d5e8f5] px-4 py-2 flex items-center justify-between">
+                <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider">
+                  Live Satellite Preview
+                </span>
+                <a
+                  href={googleMapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-semibold text-[#b8860b] hover:underline"
+                >
+                  Open in Google Maps &#x2197;
+                </a>
+              </div>
+              <iframe
+                src={`https://maps.google.com/maps?q=${encodedQuery}&t=k&z=16&output=embed`}
+                width="100%"
+                height="320"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Property Location Map"
+              />
+            </div>
+          ) : (
+            <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 text-center text-xs text-gray-500">
+              Enter Property Address or Coordinates in Section 2 to view live satellite map.
+            </div>
+          )}
+        </div>
+
+        {/* 2. Map Screenshot for PDF */}
+        <div className="space-y-2">
+          <h4 className="text-xs font-bold text-[#495057] uppercase tracking-wider">Location Map Screenshot (For PDF)</h4>
+          {locationMapImage ? (
+            <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] max-w-md">
+              <img src={locationMapImage} alt="Location Map" className="w-full h-44 object-cover" />
+              {!isReadOnly && (
+                <button
+                  type="button"
+                  onClick={onLocationMapRemove}
+                  className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+          ) : (
+            !isReadOnly && (
+              <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-bold cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+                {uploading ? '⏳ Uploading...' : '📁 Upload Map Screenshot'}
+                <input type="file" accept="image/*" className="hidden" onChange={onLocationMapUpload} disabled={uploading} />
+              </label>
+            )
+          )}
+        </div>
+
+        {/* 3. Sketch Maps */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-bold text-[#495057] uppercase tracking-wider">Sketch Maps</h4>
+            {!isReadOnly && (
+              <div className="flex items-center gap-2">
+                <label className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#b8860b] text-[#b8860b] text-xs font-bold cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+                  {uploading ? '⏳...' : '+ Upload Sketch'}
+                  <input type="file" accept="image/*" multiple className="hidden" onChange={onSketchMapUpload} disabled={uploading} />
+                </label>
+                {onOpenBucketPicker && bucketCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenBucketPicker('sketchMapImages')}
+                    className="px-3 py-1.5 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-xs font-bold hover:bg-[#1e3a5f]/5 transition-colors"
+                  >
+                    Pick from Bucket
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+          {sketchMapImages.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {sketchMapImages.map((url, idx) => (
+                <div key={idx} className="relative group rounded-xl overflow-hidden border border-[#e9ecef] bg-slate-50">
+                  <img src={url} alt={`Sketch Map ${idx + 1}`} className="w-full h-36 object-contain" />
+                  {!isReadOnly && (
+                    <button
+                      type="button"
+                      onClick={() => onSketchMapRemove(idx)}
+                      className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-4 border border-dashed rounded-xl text-center text-xs text-gray-500">
+              No sketch maps uploaded yet.
+            </div>
+          )}
+        </div>
+
+        {/* 4. Optional Mouza & Cadastral Maps */}
+        {(onMouzaMapUpload || onCadastralMapUpload) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            {onMouzaMapUpload && (
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold text-[#495057] uppercase tracking-wider">Mouza Map</h4>
+                {mouzaMapImage ? (
+                  <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] bg-slate-50">
+                    <img src={mouzaMapImage} alt="Mouza Map" className="w-full h-36 object-contain" />
+                    {!isReadOnly && onMouzaMapRemove && (
+                      <button
+                        type="button"
+                        onClick={onMouzaMapRemove}
+                        className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  !isReadOnly && (
+                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-bold cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+                      {uploading ? '⏳...' : '📁 Upload Mouza Map'}
+                      <input type="file" accept="image/*" className="hidden" onChange={onMouzaMapUpload} disabled={uploading} />
+                    </label>
+                  )
+                )}
+              </div>
+            )}
+
+            {onCadastralMapUpload && (
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold text-[#495057] uppercase tracking-wider">Cadastral Map</h4>
+                {cadastralMapImage ? (
+                  <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] bg-slate-50">
+                    <img src={cadastralMapImage} alt="Cadastral Map" className="w-full h-36 object-contain" />
+                    {!isReadOnly && onCadastralMapRemove && (
+                      <button
+                        type="button"
+                        onClick={onCadastralMapRemove}
+                        className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  !isReadOnly && (
+                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-bold cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+                      {uploading ? '⏳...' : '📁 Upload Cadastral Map'}
+                      <input type="file" accept="image/*" className="hidden" onChange={onCadastralMapUpload} disabled={uploading} />
+                    </label>
+                  )
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </Section>
+  );
+}
+
+// ─── Standard Photo Bucket Picker Modal ───────────────────────────────
+export function BasePhotoBucketModal({
+  isOpen,
+  bucketImages = [],
+  mode,
+  onClose,
+  onConfirm,
+  onDeleteImage,
+}: {
+  isOpen: boolean;
+  bucketImages: any[];
+  mode: 'propertyImages' | 'sketchMapImages' | 'locationMapImage';
+  onClose: () => void;
+  onConfirm: (selectedUrls: string[]) => void;
+  onDeleteImage?: (img: any) => Promise<void>;
+}) {
+  const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  if (!isOpen) return null;
+
+  const toggleSelect = (id: string, url: string) => {
+    if (mode === 'locationMapImage') {
+      onConfirm([url]);
+      onClose();
+      return;
+    }
+    const next = new Set(selectedIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelectedIds(next);
+  };
+
+  const handleConfirmSelection = () => {
+    const urls = bucketImages
+      .filter((img) => selectedIds.has(img.id))
+      .map((img) => img.url);
+    onConfirm(urls);
+    onClose();
+  };
+
+  const uniqueAgents = Array.from(new Set(bucketImages.map((img) => img.employee?.employeeId).filter(Boolean)));
+
+  return (
+    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="p-5 border-b border-[#e9ecef] bg-[#f8f9fa] flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-bold text-[#0f2038] flex items-center gap-2">
+              📸 Pick from Photo Bucket
+            </h2>
+            <p className="text-xs text-[#6c757d] mt-1">
+              {mode === 'propertyImages'
+                ? 'Select photos to add to the valuation report'
+                : 'Select images to add as sketch maps'}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-500 font-bold"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
+          {bucketImages.length > 0 ? (
+            selectedAgent === null && uniqueAgents.length > 1 ? (
+              <div className="space-y-4">
+                <p className="text-sm font-semibold text-[#495057]">Select a Field Engineer to view their photos:</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {uniqueAgents.map((empId) => {
+                    const agentImages = bucketImages.filter((img) => img.employee?.employeeId === empId);
+                    const agentName = agentImages[0]?.employee?.name || empId;
+                    return (
+                      <div
+                        key={empId}
+                        onClick={() => setSelectedAgent(empId)}
+                        className="p-4 rounded-xl border border-gray-200 bg-white hover:border-[#b8860b] cursor-pointer shadow-sm"
+                      >
+                        <p className="font-bold text-sm text-[#0f2038]">{agentName}</p>
+                        <p className="text-xs text-gray-500 mt-1">{agentImages.length} photos uploaded</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {uniqueAgents.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedAgent(null)}
+                    className="text-xs font-bold text-[#b8860b] hover:underline mb-2 block"
+                  >
+                    &larr; Back to all Engineers
+                  </button>
+                )}
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  {(selectedAgent ? bucketImages.filter((img) => img.employee?.employeeId === selectedAgent) : bucketImages).map((img) => {
+                    const isSel = selectedIds.has(img.id);
+                    return (
+                      <div
+                        key={img.id}
+                        onClick={() => toggleSelect(img.id, img.url)}
+                        className={`relative group aspect-square rounded-xl overflow-hidden border-2 cursor-pointer transition-all ${
+                          isSel ? 'border-[#b8860b] ring-2 ring-[#b8860b]/40 shadow-md' : 'border-gray-200 hover:border-gray-400'
+                        }`}
+                      >
+                        <img src={img.url} alt={img.fileName || 'Bucket image'} className="w-full h-full object-cover" />
+                        {isSel && (
+                          <div className="absolute top-1.5 right-1.5 bg-[#b8860b] text-white rounded-full w-5 h-5 text-xs flex items-center justify-center font-bold">
+                            ✓
+                          </div>
+                        )}
+                        {onDeleteImage && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (confirm('Delete this photo from bucket?')) onDeleteImage(img);
+                            }}
+                            className="absolute top-1.5 left-1.5 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )
+          ) : (
+            <div className="text-center py-12 text-gray-500">
+              <span className="text-4xl block mb-2">📷</span>
+              No photos found in project bucket.
+            </div>
+          )}
+        </div>
+
+        <div className="p-4 border-t border-[#e9ecef] bg-white flex justify-between items-center">
+          <span className="text-xs text-gray-500 font-semibold">{selectedIds.size} photo(s) selected</span>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-xl border border-[#dee2e6] text-xs font-semibold text-[#495057] hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmSelection}
+              disabled={selectedIds.size === 0}
+              className="px-5 py-2 rounded-xl bg-[#b8860b] text-white text-xs font-bold hover:bg-[#96700a] disabled:opacity-50"
+            >
+              Add Selected ({selectedIds.size})
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

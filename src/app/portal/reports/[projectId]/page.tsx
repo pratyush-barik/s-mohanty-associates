@@ -142,6 +142,7 @@ export default async function ReportEditorPage({ params, searchParams }: { param
                 propertyAddress: serviceRequest?.propertyAddress,
                 propertyType: serviceRequest?.propertyType,
                 purpose: serviceRequest?.purpose,
+                fieldEmployees: project.fieldEmployees || [],
               }}
             />
         </div>
