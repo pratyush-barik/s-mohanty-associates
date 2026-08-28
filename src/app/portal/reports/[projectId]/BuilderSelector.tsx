@@ -176,32 +176,18 @@ export default function BuilderSelector({
   };
 
   const [activeFields, setActiveFields] = useState(initialFields);
-  const [activeBuilder, setActiveBuilder] = useState<BuilderType>(resolveBuilderType(initialFields, initialBuilder));
+  const [activeBuilder, setActiveBuilder] = useState<BuilderType>(() => resolveBuilderType(initialFields, initialBuilder));
   const [resetKey, setResetKey] = useState(0);
 
-  // Prevents the sync useEffect from overriding activeBuilder during transitions
-  // (navigateToBuilder / handleReset). The ref is set true before state changes
-  // and cleared after a safe delay so the effect doesn't race the DB write.
-  const suppressSyncRef = useRef(false);
-  const suppressSyncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const setSuppressSync = (value: boolean, durationMs = 3000) => {
-    if (suppressSyncTimerRef.current) clearTimeout(suppressSyncTimerRef.current);
-    suppressSyncRef.current = value;
-    if (value) {
-      suppressSyncTimerRef.current = setTimeout(() => {
-        suppressSyncRef.current = false;
-      }, durationMs);
-    }
-  };
-
+  // Only re-sync if the project itself changes (e.g. user navigated to another project page)
+  const lastProjectIdRef = useRef(projectId);
   useEffect(() => {
-    // Only sync from server prop when we are NOT in a local transition
-    if (suppressSyncRef.current) return;
-    setActiveFields(initialFields);
-    const builderFromQuery = builderQuery || searchParams.get("builder");
-    setActiveBuilder(resolveBuilderType(initialFields, builderFromQuery));
-  }, [initialFields, builderQuery, searchParams]);
+    if (lastProjectIdRef.current !== projectId) {
+      lastProjectIdRef.current = projectId;
+      setActiveFields(initialFields);
+      setActiveBuilder(resolveBuilderType(initialFields, builderQuery || searchParams.get("builder")));
+    }
+  }, [projectId, initialFields, builderQuery, searchParams]);
 
   // Lock browser back & forward buttons
   useEffect(() => {
@@ -220,32 +206,21 @@ export default function BuilderSelector({
   }, []);
 
   const navigateToBuilder = (target: BuilderType, updatedFields: any) => {
-    // Suppress sync for 4 s so the useEffect cannot revert our change
-    // before the async DB write finishes and server re-hydrates initialFields
-    setSuppressSync(true, 4000);
     setActiveFields(updatedFields);
     setActiveBuilder(target);
     const url =
       target === "general" || target === "bank"
         ? window.location.pathname
         : window.location.pathname + "?builder=" + (target === "ibbi" ? "IBBI_IVS" : "INCOME_TAX");
-    // Use replaceState (NOT router.replace) to avoid triggering a server re-fetch
     window.history.replaceState(null, "", url);
     saveReportDraft(projectId, updatedFields).catch((e) => console.error("Save draft in background failed:", e));
   };
 
   const handleReset = async () => {
     const clearedFields = { clientType: "", organisationTemplate: "", institutionCategory: "", organisationSubTemplate: "" };
-    // Suppress sync for 5 s to allow DB write to commit before server re-hydration
-    setSuppressSync(true, 5000);
     setActiveFields(clearedFields);
     setActiveBuilder("general");
     setResetKey((prev) => prev + 1);
-
-    // Use window.history.replaceState instead of router.replace to avoid
-    // triggering a Next.js server re-fetch before the DB clear commits.
-    // This prevents initialFields from coming back with stale INCOME_TAX/IBBI data
-    // and causing the useEffect to re-set the builder.
     window.history.replaceState(null, "", window.location.pathname);
 
     try {
