@@ -128,7 +128,7 @@ export function FloatingNavigator({ sections }: { sections: NavItem[] }) {
 export function ActiveConfigBanner({
   bankName,
   formatName,
-  category = 'Bank & FIS',
+  category,
   serviceType,
   subjectType,
   onResetWizard,

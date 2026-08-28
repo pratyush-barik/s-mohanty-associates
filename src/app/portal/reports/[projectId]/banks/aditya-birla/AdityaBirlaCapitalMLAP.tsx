@@ -61,7 +61,7 @@ const DEFAULT_BUA_ROWS: BuaRow[] = [
   { floor: 'Third Floor', asPerSite: 'NA', asPerPlan: 'NA', percentageDeviation: 'NA' },
 ];
 
-// ── Bank Specific Nav Sections (No hidden fields, only what exists) ──
+// ── Bank Specific Nav Sections (11 exact sections) ──
 const NAV_SECTIONS: NavItem[] = [
   { id: 'section-1', title: 'Basic Details' },
   { id: 'section-2', title: 'Location Details' },
@@ -195,10 +195,12 @@ export default function AdityaBirlaCapitalMLAP({
     propertyImageNames: initialFields?.propertyImageNames || ['Approach Road Pic', 'External Pic', 'Internal Pic', 'Selfie with Client / Customer Representative', 'Site Work Pic 1', 'Site Work Pic 2'],
 
     reworkNotes: initialFields?.reworkNotes || '',
-    clientType: 'organisation',
-    organisationTemplate: 'ADITYA BIRLA CAPITAL LTD',
-    organisationSubTemplate: 'MLAP',
-    institutionCategory: 'Bank & FIS',
+    clientType: initialFields?.clientType || 'organisation',
+    organisationTemplate: initialFields?.organisationTemplate || 'ADITYA BIRLA CAPITAL LTD',
+    organisationSubTemplate: initialFields?.organisationSubTemplate || 'MLAP',
+    institutionCategory: initialFields?.institutionCategory || '',
+    serviceType: initialFields?.serviceType || prefill?.purpose || '',
+    subjectType: initialFields?.subjectType || prefill?.propertyType || '',
   }));
 
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
@@ -669,11 +671,11 @@ export default function AdityaBirlaCapitalMLAP({
 
         {/* Standard Active Configuration Top Banner */}
         <ActiveConfigBanner
-          bankName="ADITYA BIRLA CAPITAL LTD"
-          formatName="MLAP"
-          category="Bank & FIS"
-          serviceType={fields.serviceType || 'Valuation of Immovable Property'}
-          subjectType={fields.subjectType || 'Land & Building'}
+          bankName={fields.organisationTemplate || 'ADITYA BIRLA CAPITAL LTD'}
+          formatName={fields.organisationSubTemplate || undefined}
+          category={fields.institutionCategory || undefined}
+          serviceType={fields.serviceType || prefill?.purpose || undefined}
+          subjectType={fields.subjectType || prefill?.propertyType || undefined}
           onResetWizard={onResetWizard}
         />
 
