@@ -352,7 +352,7 @@ export default function AdityaBirlaCapitalMLAP({
   const generatePDFBytes = async (): Promise<Uint8Array> => {
     let letterheadBytes: Uint8Array | null = null;
     try {
-      const res = await fetch('/letterhead_header.png');
+      const res = await fetch('/templates/letterhead.png');
       if (res.ok) letterheadBytes = new Uint8Array(await res.arrayBuffer());
     } catch { /* ignore */ }
 
