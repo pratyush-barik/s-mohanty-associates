@@ -3182,11 +3182,7 @@ Our valuation is based on information obtained from the client and on data gathe
               <p className="text-xs text-blue-800">Fill the dates and reference fields below. Section 1 (Objective), Section 2 (Scope), and Section 3 (Basis) use <strong>standard IBBI-IVS text by default</strong>. You can override any sub-section text below.</p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <Field label="Appointed By">
-                <input type="text" value={fields.appointedBy || ''} onChange={e => handleChange('appointedBy', e.target.value)} className={inputCls} placeholder="e.g. CA Sonu Jain" disabled={isReadOnly} />
-              </Field>
-            </div>
+
             
             {/* Sub-section text overrides */}
             <div className="mt-6">
@@ -3194,7 +3190,7 @@ Our valuation is based on information obtained from the client and on data gathe
               <p className="text-xs text-gray-500 mb-3">Leave blank to use standard IBBI-IVS default text. Fill to override with your own custom text.</p>
               <div className="grid grid-cols-1 gap-4">
                 <Field label="Introduction of Objective" span={2}>
-                  <textarea rows={3} value={fields.objectiveIntro || ''} onChange={e => handleChange('objectiveIntro', e.target.value)} className={inputCls + ' resize-none'} placeholder="e.g. Pursuant to request from [Owner], represented through [Representative]..." disabled={isReadOnly} />
+                  <textarea rows={3} value={fields.objectiveIntro || ''} onChange={e => handleChange('objectiveIntro', e.target.value)} className={inputCls + ' resize-none'} placeholder="Default: Pursuant to request from [Owner], represented through its authorized representative, to assess the fair market value of Property..." disabled={isReadOnly} />
                 </Field>
                 <Field label="1.1 Valuation Standard" span={2}>
                   <textarea rows={2} value={fields.objective1_1 || ''} onChange={e => handleChange('objective1_1', e.target.value)} className={inputCls + ' resize-none'} placeholder="Default: The entire valuation exercise has been carried out in accordance of Standard procedures laid down as per the International Valuation Standards." disabled={isReadOnly} />
