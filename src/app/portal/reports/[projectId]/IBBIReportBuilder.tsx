@@ -2711,7 +2711,7 @@ Our valuation is based on information obtained from the client and on data gathe
           'I have not undischarged insolvent.',
           'I have not been levied a penalty under section 271J of Income-Tax Act, 1961 (43 of 1961) and time limit for filing appeal before commissioner of Income Tax (Appeals) or Income-Tax Appellate Tribunal, as the case may be has expired, or such penalty has been confirmed by Income-Tax Appellate Tribunal, and five years have not elapsed after levy of such penalty.',
           'I have not been convicted of an offence connected with any proceeding under the Income-Tax Act 1961, wealth Tax Act 1957 or Gift Tax Act 1958.',
-          'My PAN Card number as applicable is AOVPP5837R.',
+          'My PAN Card number as applicable is [PAN Card Number].',
           'I have not concealed or suppressed any material information, facts and records and I have made a complete and full disclosure',
           'I have read the International Valuation Standards (IVS) & the report submitted to the Bank for the respective asset class is in conformity to the "Standards" enshrined for valuation in the IVS in "General Standards" & "Asset Standards" as applicable.',
           'I abide by the Model Code of Conduct for empanelment of valuer in the Bank.',
@@ -2723,7 +2723,7 @@ Our valuation is based on information obtained from the client and on data gathe
         for (let i = 0; i < declarations.length; i++) {
           const letter = String.fromCharCode(97 + i); // a, b, c, ..., t
           if (declarations[i].includes('My PAN Card number')) {
-            const panVal = fields.panCardNumber ? fields.panCardNumber.toUpperCase() : 'AOVPP5837R';
+            const panVal = fields.panCardNumber ? fields.panCardNumber.toUpperCase() : '[PAN Card Number]';
             (r as any).drawRichLetterBullet(letter + '.', [
               { text: 'My PAN Card number as applicable is ' },
               { text: panVal, bold: true },
@@ -4661,10 +4661,10 @@ Our valuation is based on information obtained from the client and on data gathe
                   <input type="text" value={fields.valuerQualifications} onChange={e => handleChange('valuerQualifications', e.target.value)} className={inputCls} disabled={isReadOnly} />
                 </Field>
                 <Field label="Date of Inspection">
-                  <input type="date" value={fields.dateOfInspection || ''} onChange={e => handleChange('dateOfInspection', e.target.value)} className={inputCls} disabled={isReadOnly} />
+                  <input type="date" value={fields.dateOfInspection || ''} className={inputCls + ' bg-gray-100 cursor-not-allowed'} disabled />
                 </Field>
                 <Field label="Date of Valuation Report">
-                  <input type="date" value={fields.dateOfValuation || ''} onChange={e => handleChange('dateOfValuation', e.target.value)} className={inputCls} disabled={isReadOnly} />
+                  <input type="date" value={fields.dateOfValuation || ''} className={inputCls + ' bg-gray-100 cursor-not-allowed'} disabled />
                 </Field>
                 <Field label="PAN Card Number">
                   <input type="text" value={fields.panCardNumber || ''} onChange={e => handleChange('panCardNumber', e.target.value.toUpperCase())} className={inputCls + ' uppercase'} placeholder="e.g. AOVPP5837R" disabled={isReadOnly} />
