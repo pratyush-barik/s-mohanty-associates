@@ -2040,13 +2040,38 @@ export default function BankReportBuilder({
               </div>
               {uploadError && <p className="text-xs text-red-600 font-semibold">{uploadError}</p>}
               {Array.isArray(fields.propertyImages) && fields.propertyImages.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {fields.propertyImages.map((img, idx) => (
-                    <div key={idx} className="relative group border rounded-xl overflow-hidden shadow-sm aspect-video bg-slate-100">
-                      <img src={img} alt={`Property ${idx + 1}`} className="w-full h-full object-cover" />
-                      {!isReadOnly && (
-                        <button type="button" onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-80 hover:opacity-100 shadow">✕</button>
-                      )}
+                    <div key={idx} className="flex flex-col border border-[#e9ecef] rounded-xl overflow-hidden bg-white shadow-sm">
+                      <div className="relative group w-full h-36 bg-slate-100">
+                        <img src={img} alt={`Property ${idx + 1}`} className="w-full h-full object-cover" />
+                        {!isReadOnly && (
+                          <button
+                            type="button"
+                            onClick={() => removeImage(idx)}
+                            className="absolute top-2 right-2 bg-red-500 text-white w-6 h-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-xs shadow-md cursor-pointer"
+                          >
+                            &times;
+                          </button>
+                        )}
+                      </div>
+                      <div className="p-2 bg-gray-50 border-t border-[#e9ecef]">
+                        <input
+                          type="text"
+                          placeholder={`Photo ${idx + 1} Caption / Name`}
+                          value={fields.propertyImageNames?.[idx] || ''}
+                          disabled={isReadOnly}
+                          onChange={(e) => {
+                            const newNames = [...(fields.propertyImageNames || [])];
+                            while (newNames.length <= idx) {
+                              newNames.push('');
+                            }
+                            newNames[idx] = e.target.value;
+                            handleChange('propertyImageNames', newNames);
+                          }}
+                          className="w-full text-xs p-1.5 border border-[#dee2e6] rounded bg-white focus:outline-none focus:ring-1 focus:ring-[#b8860b] font-medium"
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -2057,40 +2082,107 @@ export default function BankReportBuilder({
           </Section>
         )}
 
-        {/* ── Section 12: Sketch Maps ── */}
+        {/* ── Section 12: Sketch Maps & Mouza/Cadastral Maps ── */}
         {!isSectionHidden('section-12') && (
-          <Section title="Sketch Maps" number={isApartmentFlat ? 11 : 12}>
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center gap-3">
-                <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-                  <span>🗺️ Upload Sketch Map</span>
-                  <input type="file" multiple accept="image/*" onChange={e => handleFileUpload(e, 'sketchMapImages')} className="hidden" disabled={uploading || isReadOnly} />
-                </label>
-                {bucketImages.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => openBucketPicker('sketchMapImages')}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-sm font-medium hover:bg-[#1e3a5f]/5 transition-colors"
-                    disabled={isReadOnly}
-                  >
-                    Pick from Bucket
-                  </button>
-                )}
-              </div>
-              {Array.isArray(fields.sketchMapImages) && fields.sketchMapImages.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {fields.sketchMapImages.map((img, idx) => (
-                    <div key={idx} className="relative group border rounded-xl overflow-hidden shadow-sm aspect-video bg-slate-100">
-                      <img src={img} alt={`Sketch ${idx + 1}`} className="w-full h-full object-contain" />
+          <Section title="Maps & Sketches" number={isApartmentFlat ? 11 : 12}>
+            <div className="space-y-6">
+              {/* Mouza & Cadastral Upload Slots */}
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="p-4 border border-[#dee2e6] rounded-xl bg-slate-50 space-y-3">
+                  <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Mouza Map (Bhulekh)</h4>
+                  {fields.mouzaMapImage ? (
+                    <div className="relative group rounded-lg overflow-hidden border border-[#dee2e6] aspect-video bg-white">
+                      <img src={fields.mouzaMapImage} alt="Mouza Map" className="w-full h-full object-contain" />
                       {!isReadOnly && (
-                        <button type="button" onClick={() => removeSketchMap(idx)} className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-80 hover:opacity-100 shadow">✕</button>
+                        <button type="button" onClick={() => handleChange('mouzaMapImage', '')} className="absolute top-2 right-2 bg-red-600 text-white rounded p-1 text-[10px] font-bold">Remove</button>
                       )}
                     </div>
-                  ))}
+                  ) : (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-xs font-semibold cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+                        <span>🗺️ Upload Mouza Map</span>
+                        <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'mouzaMapImage')} className="hidden" disabled={uploading || isReadOnly} />
+                      </label>
+                      {bucketImages.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => openBucketPicker('mouzaMapImage')}
+                          className="px-3 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-xs font-semibold hover:bg-[#1e3a5f]/5"
+                          disabled={isReadOnly}
+                        >
+                          Pick from Bucket
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <p className="text-xs text-slate-400 italic">No sketch maps uploaded yet.</p>
-              )}
+
+                <div className="p-4 border border-[#dee2e6] rounded-xl bg-slate-50 space-y-3">
+                  <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Cadastral Satellite Map</h4>
+                  {fields.cadastralMapImage ? (
+                    <div className="relative group rounded-lg overflow-hidden border border-[#dee2e6] aspect-video bg-white">
+                      <img src={fields.cadastralMapImage} alt="Cadastral Map" className="w-full h-full object-contain" />
+                      {!isReadOnly && (
+                        <button type="button" onClick={() => handleChange('cadastralMapImage', '')} className="absolute top-2 right-2 bg-red-600 text-white rounded p-1 text-[10px] font-bold">Remove</button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-xs font-semibold cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+                        <span>🗺️ Upload Cadastral Map</span>
+                        <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'cadastralMapImage')} className="hidden" disabled={uploading || isReadOnly} />
+                      </label>
+                      {bucketImages.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => openBucketPicker('cadastralMapImage')}
+                          className="px-3 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-xs font-semibold hover:bg-[#1e3a5f]/5"
+                          disabled={isReadOnly}
+                        >
+                          Pick from Bucket
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Amin Sketch Maps */}
+              <div className="space-y-3 pt-2">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Amin Hand-Drawn Sketch Maps</h4>
+                  <div className="flex items-center gap-2">
+                    <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#b8860b] text-[#b8860b] text-xs font-semibold cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+                      <span>+ Add Sketch Map</span>
+                      <input type="file" multiple accept="image/*" onChange={e => handleFileUpload(e, 'sketchMapImages')} className="hidden" disabled={uploading || isReadOnly} />
+                    </label>
+                    {bucketImages.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => openBucketPicker('sketchMapImages')}
+                        className="px-3 py-1.5 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-xs font-semibold hover:bg-[#1e3a5f]/5"
+                        disabled={isReadOnly}
+                      >
+                        Pick from Bucket
+                      </button>
+                    )}
+                  </div>
+                </div>
+                {Array.isArray(fields.sketchMapImages) && fields.sketchMapImages.length > 0 ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {fields.sketchMapImages.map((img, idx) => (
+                      <div key={idx} className="relative group border rounded-xl overflow-hidden shadow-sm aspect-video bg-slate-100">
+                        <img src={img} alt={`Sketch ${idx + 1}`} className="w-full h-full object-contain" />
+                        {!isReadOnly && (
+                          <button type="button" onClick={() => removeSketchMap(idx)} className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-80 hover:opacity-100 shadow">✕</button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-400 italic">No sketch maps uploaded yet.</p>
+                )}
+              </div>
             </div>
           </Section>
         )}
@@ -2250,7 +2342,7 @@ export default function BankReportBuilder({
       </div>
 
       {/* ── Floating Navigator ── */}
-      <FloatingNavigator isApartmentFlat={isApartmentFlat} annexureEnabled={fields.annexureEnabled} hiddenSections={config?.hiddenSections} />
+      <FloatingNavigator isApartmentFlat={isApartmentFlat} annexureEnabled={fields.annexureEnabled} hiddenSections={config?.hiddenSections} extraSections={config?.extraSections} />
 
       {/* ── Rework Modal ── */}
       {showReworkModal && (
