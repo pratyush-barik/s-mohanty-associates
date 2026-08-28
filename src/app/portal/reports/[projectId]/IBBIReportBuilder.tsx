@@ -1700,7 +1700,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.drawSimpleRow('STATUS OF PLOT', fields.certStatusOfPlot || '');
       r.drawSimpleRow('VALUATION METHOD', (fields.valuationMethod || 'Sale Comparison Method').toUpperCase());
       r.drawSimpleRow('VALUATION DATE', fields.dateOfValuation || 'N/A');
-      const presentValueFinalNumStr = String((fields.valuationFormat === 'cuttack' ? fields.cuttackPresentOrSay : fields.totalPresentValueOrSay) || (parseFloat(fields.fairMarketValueTotal) || 0)).replace(/[^\d.]/g, '');
+      const presentValueFinalNumStr = String((fields.valuationVariant === 'cuttack' ? fields.cuttackPresentOrSay : fields.totalPresentValueOrSay) || (parseFloat(fields.fairMarketValueTotal) || 0)).replace(/[^\d.]/g, '');
       r.drawSimpleRow('PRESENT MARKET VALUE (Rs)', `Rs. ${formatIndianCurrency(presentValueFinalNumStr)}/-`);
       r.drawSimpleRow('VALUERS DETAILS', [
           fields.representativeName ? `${fields.representativeName.toUpperCase()}${fields.valuerQualifications ? ' ' + fields.valuerQualifications : ''}` : '',
@@ -3058,7 +3058,7 @@ Our valuation is based on information obtained from the client and on data gathe
                 <input type="text" value={fields.dateOfValuation || ''} className={inputCls + ' bg-gray-100'} disabled />
               </Field>
               <Field label="Present Market Value (from Section Conclusion)">
-                <input type="text" value={(fields.valuationFormat === 'cuttack' ? fields.cuttackPresentOrSay : fields.totalPresentValueOrSay) || (parseFloat(fields.fairMarketValueTotal) || 0).toString()} className={inputCls + ' bg-gray-100'} disabled />
+                <input type="text" value={(fields.valuationVariant === 'cuttack' ? fields.cuttackPresentOrSay : fields.totalPresentValueOrSay) || (parseFloat(fields.fairMarketValueTotal) || 0).toString()} className={inputCls + ' bg-gray-100'} disabled />
               </Field>
               <Field label="Valuers Details (from Declaration)" span={2}>
                 <textarea rows={2} value={[
@@ -4584,13 +4584,13 @@ Our valuation is based on information obtained from the client and on data gathe
                 </Field>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Field label="Present Value">
-                    <input type="text" value={(fields.valuationFormat === 'cuttack' ? fields.cuttackPresentOrSay : fields.totalPresentValueOrSay) || (parseFloat(fields.fairMarketValueTotal) || 0).toString()} disabled className={inputCls + ' bg-gray-100'} />
+                    <input type="text" value={(fields.valuationVariant === 'cuttack' ? fields.cuttackPresentOrSay : fields.totalPresentValueOrSay) || (parseFloat(fields.fairMarketValueTotal) || 0).toString()} disabled className={inputCls + ' bg-gray-100'} />
                   </Field>
                   <Field label="Realisable Value">
                     <input type="text" value={fields.realisableValueOrSay || (parseFloat(fields.realisableValueTotal) || 0).toString()} disabled className={inputCls + ' bg-gray-100'} />
                   </Field>
                   <Field label="Guideline Value">
-                    <input type="text" value={(fields.valuationFormat === 'cuttack' ? fields.cuttackGuidelineOrSay : fields.totalBookValueOrSay) || (parseFloat(fields.bookValueTotal) || 0).toString()} disabled className={inputCls + ' bg-gray-100'} />
+                    <input type="text" value={(fields.valuationVariant === 'cuttack' ? fields.cuttackGuidelineOrSay : fields.totalBookValueOrSay) || (parseFloat(fields.bookValueTotal) || 0).toString()} disabled className={inputCls + ' bg-gray-100'} />
                   </Field>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
