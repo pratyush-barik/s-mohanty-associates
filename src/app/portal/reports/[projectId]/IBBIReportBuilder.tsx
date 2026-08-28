@@ -416,6 +416,7 @@ interface IBBIFields {
   scope2_3?: string;
   scope2_4?: string;
   scope2_5?: string;
+  objectiveIntro?: string;
   objective1_1?: string;
   objective1_2?: string;
   objective1_3?: string;
@@ -700,6 +701,7 @@ const DEFAULT_FIELDS: IBBIFields = {
   scope2_3: '',
   scope2_4: '',
   scope2_5: '',
+  objectiveIntro: '',
   objective1_1: '',
   objective1_2: '',
   objective1_3: '',
@@ -1774,11 +1776,10 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       tocPageMap['1.  OBJECTIVE'] = r.getPageCount();
 
       // Introductory paragraph for Section 1 (from sample)
-      const objParagraph = fields.appointedBy
-        ? `Pursuant to request from ${certOwner}, represented through ${fields.representativeName ? 'Mr. ' + fields.representativeName : 'its authorized representative'}${caseRefText}, to assess the fair market value of ${coverDesc} at ${certAddress}, currently owned by ${certOwner}, inspected on ${certDate}.`
-        : `To assess the fair market value of ${coverDesc} at ${certAddress}, currently owned by ${certOwner}, inspected on ${certDate}.`;
-      r.drawTextBlock(objParagraph);
-      r.advanceCursor(6);
+      if (fields.objectiveIntro && fields.objectiveIntro.trim()) {
+        r.drawTextBlock(fields.objectiveIntro);
+        r.advanceCursor(6);
+      }
 
       r.drawTextBlock('1.1 VALUATION STANDARD', { bold: true });
       tocPageMap['    1.1  Valuation Standard'] = r.getPageCount();
@@ -3203,6 +3204,9 @@ Our valuation is based on information obtained from the client and on data gathe
               <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-3">Section 1 Sub-section Text Overrides <span className="inline-block px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-semibold ml-1">OPTIONAL</span></p>
               <p className="text-xs text-gray-500 mb-3">Leave blank to use standard IBBI-IVS default text. Fill to override with your own custom text.</p>
               <div className="grid grid-cols-1 gap-4">
+                <Field label="Introduction of Objective" span={2}>
+                  <textarea rows={3} value={fields.objectiveIntro || ''} onChange={e => handleChange('objectiveIntro', e.target.value)} className={inputCls + ' resize-none'} placeholder="e.g. Pursuant to request from [Owner], represented through [Representative]..." disabled={isReadOnly} />
+                </Field>
                 <Field label="1.1 Valuation Standard" span={2}>
                   <textarea rows={2} value={fields.objective1_1 || ''} onChange={e => handleChange('objective1_1', e.target.value)} className={inputCls + ' resize-none'} placeholder="Default: The entire valuation exercise has been carried out in accordance of Standard procedures laid down as per the International Valuation Standards." disabled={isReadOnly} />
                 </Field>
