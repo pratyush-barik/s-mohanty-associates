@@ -51,11 +51,11 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   'AXIS BANK::SBB': dynamic(() => import('./banks/axis/AxisSBB')),
   'AXIS BANK::SME': dynamic(() => import('./banks/axis/AxisSME')),
   'AXIS BANK': dynamic(() => import('./banks/axis/AxisHLLAP')),
-  'AXIS FINANCE LTD': dynamic(() => import('./banks/axis/AxisFinance')),
+  'AXIS FINANCE LTD': dynamic(() => import('./banks/axis-finance/AxisFinance')),
 
   // Bajaj & Bandhan
-  'BAJAJ HOUSING FINANCE LTD::HL-LAP': dynamic(() => import('./banks/bajaj/BajajHousingHLLAP')),
-  'BAJAJ HOUSING FINANCE LTD': dynamic(() => import('./banks/bajaj/BajajHousingHLLAP')),
+  'BAJAJ HOUSING FINANCE LTD::HL-LAP': dynamic(() => import('./banks/bajaj-housing/BajajHousingHLLAP')),
+  'BAJAJ HOUSING FINANCE LTD': dynamic(() => import('./banks/bajaj-housing/BajajHousingHLLAP')),
   'BANDHAN BANK::HL-LAP': dynamic(() => import('./banks/bandhan/BandhanHLLAP')),
   'BANDHAN BANK::SME': dynamic(() => import('./banks/bandhan/BandhanSME')),
   'BANDHAN BANK': dynamic(() => import('./banks/bandhan/BandhanHLLAP')),
@@ -137,7 +137,7 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   // Tata, UCO, Ujjivan, UBI, Unity, Utkarsh, Varthana, Vistaar, Yes
   'TATA CAPITAL LTD::SME-BLG': dynamic(() => import('./banks/tata/TataCapitalSMEBLG')),
   'TATA CAPITAL LTD': dynamic(() => import('./banks/tata/TataCapitalSMEBLG')),
-  'TATA HOUSING FINANCE LTD': dynamic(() => import('./banks/tata/TataHousingFinance')),
+  'TATA HOUSING FINANCE LTD': dynamic(() => import('./banks/tata-housing/TataHousingFinance')),
   'UCO BANK': dynamic(() => import('./banks/uco/UCOBank')),
   'UJJIVAN SMALL FINANCE BANK': dynamic(() => import('./banks/ujjivan/UjjivanSmallFinanceBank')),
   'UNION BANK OF INDIA-UBI': dynamic(() => import('./banks/union-bank/UnionBankOfIndia')),
