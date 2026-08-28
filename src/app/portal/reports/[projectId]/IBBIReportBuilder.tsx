@@ -4583,13 +4583,13 @@ Our valuation is based on information obtained from the client and on data gathe
                 </Field>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Field label="Present Value">
-                    <input type="text" value={fields.totalPresentValueOrSay || (parseFloat(fields.fairMarketValueTotal) || 0).toString()} disabled className={inputCls + ' bg-gray-100'} />
+                    <input type="text" value={(fields.valuationFormat === 'cuttack' ? fields.cuttackPresentOrSay : fields.totalPresentValueOrSay) || (parseFloat(fields.fairMarketValueTotal) || 0).toString()} disabled className={inputCls + ' bg-gray-100'} />
                   </Field>
                   <Field label="Realisable Value">
                     <input type="text" value={fields.realisableValueOrSay || (parseFloat(fields.realisableValueTotal) || 0).toString()} disabled className={inputCls + ' bg-gray-100'} />
                   </Field>
                   <Field label="Guideline Value">
-                    <input type="text" value={fields.totalBookValueOrSay || (parseFloat(fields.bookValueTotal) || 0).toString()} disabled className={inputCls + ' bg-gray-100'} />
+                    <input type="text" value={(fields.valuationFormat === 'cuttack' ? fields.cuttackGuidelineOrSay : fields.totalBookValueOrSay) || (parseFloat(fields.bookValueTotal) || 0).toString()} disabled className={inputCls + ' bg-gray-100'} />
                   </Field>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
