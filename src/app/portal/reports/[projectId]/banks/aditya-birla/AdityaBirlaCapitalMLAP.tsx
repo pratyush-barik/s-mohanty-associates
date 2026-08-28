@@ -305,15 +305,21 @@ export default function AdityaBirlaCapitalMLAP({
     if (!file) return;
     setUploadingTarget(targetKey);
     try {
+      if (file.size > 5 * 1024 * 1024) {
+        alert(`${file.name} exceeds 5MB size limit.`);
+        return;
+      }
       const ext = file.name.split('.').pop();
-      const path = `reports/${projectId}/${targetKey}_${Date.now()}.${ext}`;
-      const { data, error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.PROJECT_FILES).upload(path, file);
+      const fileName = `${projectId}-${targetKey}-${Date.now()}.${ext}`;
+      const filePath = `temp-photos/${projectId}/${fileName}`;
+      const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(filePath, file);
       if (error) throw error;
-      const { data: publicUrlData } = supabaseBrowser.storage.from(STORAGE_BUCKETS.PROJECT_FILES).getPublicUrl(data.path);
+      const { data: publicUrlData } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
       handleChange(targetKey, publicUrlData.publicUrl);
     } catch (err: any) {
       alert(`Image upload failed: ${err.message}`);
     } finally {
+      e.target.value = '';
       setUploadingTarget(null);
     }
   };
@@ -326,18 +332,27 @@ export default function AdityaBirlaCapitalMLAP({
       const newUrls: string[] = [...(fields.propertyImages || [])];
       for (let i = 0; i < fileList.length; i++) {
         const file = fileList[i];
-        const ext = file.name.split('.').pop();
-        const path = `reports/${projectId}/photo_${Date.now()}_${i}.${ext}`;
-        const { data, error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.PROJECT_FILES).upload(path, file);
-        if (!error && data) {
-          const { data: publicUrlData } = supabaseBrowser.storage.from(STORAGE_BUCKETS.PROJECT_FILES).getPublicUrl(data.path);
-          newUrls.push(publicUrlData.publicUrl);
+        if (file.size > 5 * 1024 * 1024) {
+          alert(`${file.name} exceeds 5MB size limit.`);
+          continue;
         }
+        const ext = file.name.split('.').pop();
+        const fileName = `${projectId}-photo-${Date.now()}-${i}.${ext}`;
+        const filePath = `temp-photos/${projectId}/${fileName}`;
+        const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(filePath, file);
+        if (error) {
+          console.error(`Upload error for ${file.name}:`, error);
+          alert(`Failed to upload ${file.name}: ${error.message}`);
+          continue;
+        }
+        const { data: publicUrlData } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
+        newUrls.push(publicUrlData.publicUrl);
       }
       handleChange('propertyImages', newUrls);
     } catch (err: any) {
       alert(`Photo upload failed: ${err.message}`);
     } finally {
+      e.target.value = '';
       setUploadingTarget(null);
     }
   };
@@ -350,18 +365,27 @@ export default function AdityaBirlaCapitalMLAP({
       const newUrls: string[] = [...(fields.sketchMapImages || [])];
       for (let i = 0; i < fileList.length; i++) {
         const file = fileList[i];
-        const ext = file.name.split('.').pop();
-        const path = `reports/${projectId}/sketch_${Date.now()}_${i}.${ext}`;
-        const { data, error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.PROJECT_FILES).upload(path, file);
-        if (!error && data) {
-          const { data: publicUrlData } = supabaseBrowser.storage.from(STORAGE_BUCKETS.PROJECT_FILES).getPublicUrl(data.path);
-          newUrls.push(publicUrlData.publicUrl);
+        if (file.size > 5 * 1024 * 1024) {
+          alert(`${file.name} exceeds 5MB size limit.`);
+          continue;
         }
+        const ext = file.name.split('.').pop();
+        const fileName = `${projectId}-sketch-${Date.now()}-${i}.${ext}`;
+        const filePath = `temp-photos/${projectId}/${fileName}`;
+        const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(filePath, file);
+        if (error) {
+          console.error(`Upload error for ${file.name}:`, error);
+          alert(`Failed to upload ${file.name}: ${error.message}`);
+          continue;
+        }
+        const { data: publicUrlData } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
+        newUrls.push(publicUrlData.publicUrl);
       }
       handleChange('sketchMapImages', newUrls);
     } catch (err: any) {
       alert(`Sketch upload failed: ${err.message}`);
     } finally {
+      e.target.value = '';
       setUploadingTarget(null);
     }
   };
