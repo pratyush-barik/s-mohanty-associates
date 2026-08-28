@@ -2757,12 +2757,16 @@ Our valuation is based on information obtained from the client and on data gathe
       }
 
       // Declaration signature
-      r.drawSignatureBlock([
-        { text: `Date  :  ${fmtDateDDMMYYYY(fields.dateOfValuation)}` },
-        { text: 'Signature & Seal of Valuer' },
-        { text: 'Place: Bhubaneswar' },
-        { text: `Name of the Valuer - ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications.toUpperCase() : ''}`, bold: true },
-      ]);
+      r.drawSplitSignatureBlock(
+        [
+          { text: `Date  :  ${fmtDateDDMMYYYY(fields.dateOfValuation)}` },
+          { text: 'Place: Bhubaneswar' },
+        ],
+        [
+          { text: 'Signature & Seal of Valuer' },
+          { text: `Name of the Valuer - ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications.toUpperCase() : ''}`, bold: true },
+        ]
+      );
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       //  PROPERTY PHOTOGRAPHS
