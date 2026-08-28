@@ -294,33 +294,4 @@ export function ReportActionBar({
   );
 }
 
-// ─── Standard PDF Preview Modal ──────────────────────────────────────
-export function PDFPreviewModal({
-  title,
-  pdfUrl,
-  onClose,
-}: {
-  title: string;
-  pdfUrl: string | null;
-  onClose: () => void;
-}) {
-  if (!pdfUrl) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden shadow-2xl">
-        <div className="p-4 bg-slate-900 text-white flex items-center justify-between">
-          <h3 className="text-sm font-bold tracking-wider uppercase">{title} - PDF Preview</h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-3 py-1 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700 transition-colors"
-          >
-            ✕ Close
-          </button>
-        </div>
-        <iframe src={pdfUrl} className="flex-1 w-full h-full border-0" />
-      </div>
-    </div>
-  );
-}

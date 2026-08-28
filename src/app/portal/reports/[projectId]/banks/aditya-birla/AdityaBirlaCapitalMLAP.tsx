@@ -14,7 +14,6 @@ import {
   FloatingNavigator,
   ActiveConfigBanner,
   ReportActionBar,
-  PDFPreviewModal,
   NavItem,
 } from '../BaseBankReportComponents';
 
@@ -206,7 +205,6 @@ export default function AdityaBirlaCapitalMLAP({
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
-  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
   const [uploadingTarget, setUploadingTarget] = useState<string | null>(null);
 
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
@@ -594,14 +592,41 @@ export default function AdityaBirlaCapitalMLAP({
   };
 
   const handlePreviewPDF = async () => {
+    // Open a blank tab synchronously in the click handler to bypass browser pop-up blockers
+    const previewWindow = window.open('', '_blank');
+    if (previewWindow) {
+      previewWindow.document.write(`
+        <html>
+          <head><title>Generating PDF Preview...</title></head>
+          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f8f9fa; color: #495057;">
+            <div style="text-align: center;">
+              <div style="border: 4px solid #dee2e6; border-top: 4px solid #b8860b; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px;"></div>
+              <p style="font-size: 16px; font-weight: 600; margin: 0;">Generating PDF Preview...</p>
+              <p style="font-size: 12px; color: #6c757d; margin: 8px 0 0;">Please wait while the document compiles.</p>
+            </div>
+            <style>
+              @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            </style>
+          </body>
+        </html>
+      `);
+      previewWindow.document.close();
+    }
+
     setLoading(true);
     try {
       const pdfBytes = await generatePDFBytes();
       const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      setPdfPreviewUrl(url);
+      if (blob && previewWindow) {
+        const url = URL.createObjectURL(blob);
+        previewWindow.location.href = url;
+      } else if (previewWindow) {
+        previewWindow.close();
+        setMessage({ type: 'error', text: 'Failed to generate PDF preview.' });
+      }
     } catch (err: any) {
-      alert(`PDF Preview Failed: ${err.message}`);
+      if (previewWindow) previewWindow.close();
+      setMessage({ type: 'error', text: 'PDF Error: ' + (err?.message || String(err)) });
     } finally {
       setLoading(false);
     }
@@ -1435,16 +1460,6 @@ export default function AdityaBirlaCapitalMLAP({
 
       {/* ── Right Column: Dynamic Floating Navigator drawn from this bank's exact sections ── */}
       <FloatingNavigator sections={NAV_SECTIONS} />
-
-      {/* ── PDF Preview Modal ── */}
-      <PDFPreviewModal
-        title="Aditya Birla Capital Ltd (MLAP)"
-        pdfUrl={pdfPreviewUrl}
-        onClose={() => {
-          if (pdfPreviewUrl) URL.revokeObjectURL(pdfPreviewUrl);
-          setPdfPreviewUrl(null);
-        }}
-      />
 
     </div>
   );
