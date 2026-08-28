@@ -17,7 +17,7 @@ function hexToRgb(hex: string) {
 // ─── Constants ──────────────────────────────────────────────────────
 const PAGE_W = 595.28;   // A4 width in points
 const PAGE_H = 841.89;   // A4 height in points
-const MARGIN_T = 84;  // Top margin (matches letterhead header)
+const MARGIN_T = 108;  // Top margin — must clear the letterhead header (logo + tagline row). Increased from 84 to match actual header height and prevent per-page overlap.
 const MARGIN_B = 80;  // Bottom margin (matches letterhead footer)
 const MARGIN_L = 54;  // Left margin
 const MARGIN_R = 54;  // Right margin

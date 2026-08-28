@@ -1513,7 +1513,6 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       // ── Title block ──
       let titleText = 'VALUATION REPORT';
 
-      r.advanceCursor(14);
       r.drawTextBlock('To', { bold: true });
       r.drawTextBlock(fields.to || '________', { bold: true });
       r.drawRichTextBlock([{ text: 'Date of valuation report: ' }, { text: fmtDate(fields.dateOfValuation), bold: true }]);
