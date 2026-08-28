@@ -342,6 +342,40 @@ export default function AdityaBirlaCapitalMLAP({
     }
   };
 
+  const handleUploadSingleSlotPhoto = async (slotIdx: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingTarget(`photo-${slotIdx}`);
+    try {
+      const ext = file.name.split('.').pop();
+      const path = `reports/${projectId}/photo_${slotIdx}_${Date.now()}.${ext}`;
+      const { data, error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.PROJECT_FILES).upload(path, file);
+      if (error) throw error;
+      const { data: publicUrlData } = supabaseBrowser.storage.from(STORAGE_BUCKETS.PROJECT_FILES).getPublicUrl(data.path);
+
+      const updatedImgs = [...(fields.propertyImages || [])];
+      while (updatedImgs.length <= slotIdx) {
+        updatedImgs.push('');
+      }
+      updatedImgs[slotIdx] = publicUrlData.publicUrl;
+      handleChange('propertyImages', updatedImgs);
+    } catch (err: any) {
+      alert(`Photo upload failed: ${err.message}`);
+    } finally {
+      setUploadingTarget(null);
+    }
+  };
+
+  const handleAddPhotoSlot = () => {
+    const currentImgs = [...(fields.propertyImages || [])];
+    const currentLabels = [...(fields.propertyImageNames || [])];
+    const nextIdx = Math.max(6, currentImgs.length, currentLabels.length);
+    currentLabels.push(`Site Pic ${nextIdx + 1}`);
+    currentImgs.push('');
+    handleChange('propertyImageNames', currentLabels);
+    handleChange('propertyImages', currentImgs);
+  };
+
   const handleUploadMultipleSketches = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files;
     if (!fileList || fileList.length === 0) return;
@@ -1360,6 +1394,7 @@ export default function AdityaBirlaCapitalMLAP({
           propertyImageNames={fields.propertyImageNames || []}
           isReadOnly={isReadOnly}
           uploading={uploadingTarget === 'photos'}
+          uploadingSlot={uploadingTarget?.startsWith('photo-') ? parseInt(uploadingTarget.replace('photo-', ''), 10) : null}
           bucketCount={bucketImages?.length || 0}
           onImageNameChange={(idx, name) => {
             const updatedNames = [...(fields.propertyImageNames || [])];
@@ -1376,6 +1411,8 @@ export default function AdityaBirlaCapitalMLAP({
             handleChange('propertyImageNames', updatedNames);
           }}
           onUploadImages={handleUploadMultiplePhotos}
+          onUploadSingleSlot={handleUploadSingleSlotPhoto}
+          onAddSlot={handleAddPhotoSlot}
           onOpenBucketPicker={() => {
             setBucketPickerMode('propertyImages');
             setBucketPickerOpen(true);

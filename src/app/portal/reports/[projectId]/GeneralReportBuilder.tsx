@@ -9,7 +9,7 @@ import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
 import { PDFGeneralRenderer } from '@/lib/pdf-general-renderer';
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
-import { getFloorName } from './banks/BaseBankReportComponents';
+import { getFloorName, BasePhotographsSection } from './banks/BaseBankReportComponents';
 // @ts-ignore
 import * as XLSX from 'xlsx';
 
@@ -3396,71 +3396,26 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       </Section>
 
       {(!isReadOnly || (Array.isArray(fields.propertyImages) && fields.propertyImages.length > 0)) && (
-        <Section title="Property Photographs" number={isApartmentFlat ? 11 : 12} defaultOpen={false}>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-            {Array.isArray(fields.propertyImages) && fields.propertyImages.map((url: string, idx: number) => (
-              <div key={idx} className="flex flex-col border border-[#e9ecef] rounded-xl overflow-hidden bg-white shadow-sm">
-                <div className="relative group w-full h-36">
-                  <img src={url} alt={`Property ${idx + 1}`} className="w-full h-full object-cover" />
-                  {!isReadOnly && (
-                    <button
-                      onClick={() => removeImage(idx)}
-                      className="absolute top-2 right-2 bg-red-500 text-white w-6 h-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-xs shadow-md cursor-pointer"
-                    >&times;</button>
-                  )}
-                </div>
-                <div className="p-2 bg-gray-50 border-t border-[#e9ecef]">
-                  <input
-                    type="text"
-                    placeholder={`Photo ${idx + 1} Name`}
-                    value={fields.propertyImageNames?.[idx] || ''}
-                    disabled={isReadOnly}
-                    onChange={(e) => {
-                      const newNames = [...(fields.propertyImageNames || [])];
-                      while (newNames.length <= idx) {
-                        newNames.push('');
-                      }
-                      newNames[idx] = e.target.value;
-                      handleChange('propertyImageNames', newNames);
-                    }}
-                    className="w-full text-xs p-1.5 border border-[#dee2e6] rounded bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-          {!isReadOnly && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-                  {uploading ? 'Uploading...' : 'Add Property Images'}
-                  <input type="file" accept="image/*" multiple className="hidden" onChange={e => handleFileUpload(e, 'propertyImages')} disabled={uploading} />
-                </label>
-                {bucketImages.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => openBucketPicker('propertyImages')}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-sm font-medium hover:bg-[#1e3a5f]/5 transition-colors"
-                  >
-                    Pick from Bucket ({bucketImages.length})
-                  </button>
-                )}
-                <span className="text-xs text-[#6c757d]">Max size: 5MB per photograph</span>
-              </div>
-              <div className={`text-xs font-semibold ${
-                (Array.isArray(fields.propertyImages) ? fields.propertyImages.length : 0) < 2 ? 'text-amber-600' : 'text-green-600'
-              }`}>
-                {Array.isArray(fields.propertyImages) ? fields.propertyImages.length : 0} / 2 minimum uploaded
-                {(Array.isArray(fields.propertyImages) ? fields.propertyImages.length : 0) < 2 && ' — At least 2 photographs are required to submit.'}
-              </div>
-              {uploadError && (
-                <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold">
-                  {uploadError}
-                </div>
-              )}
-            </div>
-          )}
-        </Section>
+        <BasePhotographsSection
+          propertyImages={fields.propertyImages || []}
+          propertyImageNames={fields.propertyImageNames || []}
+          isReadOnly={isReadOnly}
+          uploading={uploading}
+          bucketCount={bucketImages?.length || 0}
+          onImageNameChange={(idx, name) => {
+            const updatedNames = [...(fields.propertyImageNames || [])];
+            while (updatedNames.length <= idx) {
+              updatedNames.push('');
+            }
+            updatedNames[idx] = name;
+            handleChange('propertyImageNames', updatedNames);
+          }}
+          onRemoveImage={removeImage}
+          onUploadImages={(e) => handleFileUpload(e, 'propertyImages')}
+          onOpenBucketPicker={() => openBucketPicker('propertyImages')}
+          sectionNumber={isApartmentFlat ? 11 : 12}
+          sectionId="section-12"
+        />
       )}
 
       {/* ── Section 13: Sketch Maps ── */}
