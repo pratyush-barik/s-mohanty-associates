@@ -1057,7 +1057,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     const totalPresentValNum = presentPlotVal + presentBldgVal;
     const newTotalPresentVal = fmt(totalPresentValNum);
     const orSayPresentNum = totalPresentValNum < 100000 ? totalPresentValNum : Math.floor(totalPresentValNum / 100000) * 100000;
-    const newTotalPresentOrSay = fmt(orSayPresentNum);
+    const newTotalPresentOrSay = orSayPresentNum > 0 ? fmt(orSayPresentNum) : '';
     const newTotalPresentInWords = `TOTAL PRESENT VALUE IN WORDS - ${rupeesInWords(orSayPresentNum).toUpperCase()}`;
 
     const bookPlotVal = parseFloat(String(newGuidelineDiscountedTotal || '').replace(/[^\d.]/g, '')) || 0;
@@ -1065,12 +1065,12 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     const totalBookValNum = bookPlotVal + bookBldgVal;
     const newTotalBookVal = fmt(totalBookValNum);
     const orSayBookNum = totalBookValNum < 100000 ? totalBookValNum : Math.floor(totalBookValNum / 100000) * 100000;
-    const newTotalBookOrSay = fmt(orSayBookNum);
+    const newTotalBookOrSay = orSayBookNum > 0 ? fmt(orSayBookNum) : '';
     const newTotalBookInWords = `TOTAL BOOK VALUE IN WORDS - ${rupeesInWords(orSayBookNum).toUpperCase()}`;
 
     const realisableNum = parseFloat(String(fields.realisableValueAmount || '').replace(/[^\d.]/g, '')) || 0;
     const orSayRealisableNum = realisableNum < 100000 ? realisableNum : Math.floor(realisableNum / 100000) * 100000;
-    const newRealisableOrSay = fmt(orSayRealisableNum);
+    const newRealisableOrSay = orSayRealisableNum > 0 ? fmt(orSayRealisableNum) : '';
     const newRealisableInWords = `TOTAL LIQUIDATION VALUE IN WORDS - ${rupeesInWords(orSayRealisableNum).toUpperCase()}`;
 
 
@@ -3059,10 +3059,10 @@ Our valuation is based on information obtained from the client and on data gathe
                 <input type="text" value={fields.dateOfValuation || ''} className={inputCls + ' bg-gray-100'} disabled />
               </Field>
               <Field label="Present Market Value (from Section Conclusion)">
-                <input type="text" value={(fields.valuationVariant === 'cuttack' ? fields.cuttackPresentOrSay : fields.totalPresentValueOrSay) || (parseFloat(fields.fairMarketValueTotal) || 0).toString()} className={inputCls + ' bg-gray-100'} disabled />
+                <input type="text" value={(fields.valuationVariant === 'cuttack' ? fields.cuttackPresentOrSay : fields.totalPresentValueOrSay) || fields.fairMarketValueTotal || ''} className={inputCls + ' bg-gray-100'} disabled />
               </Field>
               <Field label="Realisable Value (from Section Conclusion)">
-                <input type="text" value={fields.realisableValueOrSay || (parseFloat(fields.realisableValueTotal) || 0).toString()} className={inputCls + ' bg-gray-100'} disabled />
+                <input type="text" value={fields.realisableValueOrSay || fields.realisableValueTotal || ''} className={inputCls + ' bg-gray-100'} disabled />
               </Field>
               <Field label="Valuers Details (from Declaration)" span={2}>
                 <textarea rows={2} value={[
@@ -4588,13 +4588,13 @@ Our valuation is based on information obtained from the client and on data gathe
                 </Field>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Field label="Present Value">
-                    <input type="text" value={(fields.valuationVariant === 'cuttack' ? fields.cuttackPresentOrSay : fields.totalPresentValueOrSay) || (parseFloat(fields.fairMarketValueTotal) || 0).toString()} disabled className={inputCls + ' bg-gray-100'} />
+                    <input type="text" value={(fields.valuationVariant === 'cuttack' ? fields.cuttackPresentOrSay : fields.totalPresentValueOrSay) || fields.fairMarketValueTotal || ''} disabled className={inputCls + ' bg-gray-100'} />
                   </Field>
                   <Field label="Realisable Value">
-                    <input type="text" value={fields.realisableValueOrSay || (parseFloat(fields.realisableValueTotal) || 0).toString()} disabled className={inputCls + ' bg-gray-100'} />
+                    <input type="text" value={fields.realisableValueOrSay || fields.realisableValueTotal || ''} disabled className={inputCls + ' bg-gray-100'} />
                   </Field>
                   <Field label="Guideline Value">
-                    <input type="text" value={(fields.valuationVariant === 'cuttack' ? fields.cuttackGuidelineOrSay : fields.totalBookValueOrSay) || (parseFloat(fields.bookValueTotal) || 0).toString()} disabled className={inputCls + ' bg-gray-100'} />
+                    <input type="text" value={(fields.valuationVariant === 'cuttack' ? fields.cuttackGuidelineOrSay : fields.totalBookValueOrSay) || fields.bookValueTotal || ''} disabled className={inputCls + ' bg-gray-100'} />
                   </Field>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
