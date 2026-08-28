@@ -1244,11 +1244,11 @@ export default function BankReportBuilder({
         r.advanceCursor(8);
 
         for (let i = 0; i < propImageBytes.length; i += 2) {
-          const name1 = fields.propertyImageNames?.[i] || '';
-          const caption1 = name1 ? `Figure ${i + 1}: ${name1}` : `Figure ${i + 1}`;
+          const name1 = fields.propertyImageNames?.[i] || 'Site Picture';
+          const caption1 = name1;
           const img2 = i + 1 < propImageBytes.length ? propImageBytes[i + 1] : null;
-          const name2 = fields.propertyImageNames?.[i + 1] || '';
-          const caption2 = name2 ? `Figure ${i + 2}: ${name2}` : `Figure ${i + 2}`;
+          const name2 = fields.propertyImageNames?.[i + 1] || 'Site Picture';
+          const caption2 = name2;
 
           await r.drawImagePair(propImageBytes[i], caption1, img2, caption2);
           r.advanceCursor(4);

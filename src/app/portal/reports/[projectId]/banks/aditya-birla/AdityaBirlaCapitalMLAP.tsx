@@ -189,7 +189,7 @@ export default function AdityaBirlaCapitalMLAP({
     cadastralMapImage: initialFields?.cadastralMapImage || '',
     sketchMapImages: initialFields?.sketchMapImages || [],
     propertyImages: initialFields?.propertyImages || [],
-    propertyImageNames: initialFields?.propertyImageNames || ['Approach Road Pic', 'External Pic', 'Internal Pic', 'Selfie with Client / Customer Representative', 'Site Work Pic 1', 'Site Work Pic 2'],
+    propertyImageNames: initialFields?.propertyImageNames || [],
 
     reworkNotes: initialFields?.reworkNotes || '',
     clientType: initialFields?.clientType || 'organisation',
@@ -581,7 +581,7 @@ export default function AdityaBirlaCapitalMLAP({
 
     // 10. Remarks
     r.drawRemarksBox('Remarks', fields.remarks || 'N/A');
-    r.drawKeyValueRow([{ label: 'Name of the Engineer Visited', value: fields.engineerVisitedName || 'Mr. Kundan Singh', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
+    r.drawKeyValueRow([{ label: 'Name of the Engineer Visited', value: fields.engineerVisitedName || '', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
 
     // 11. Location Map
     let imgPointer = (fields.propertyImages || []).length;
@@ -595,7 +595,7 @@ export default function AdityaBirlaCapitalMLAP({
     if (locMapBytes) {
       r.checkPageBreak(300);
       r.drawSectionHeader('Location Map');
-      await r.drawImageSection(locMapBytes, `Latitude: -${fields.latitude || '21.636778'}, Longitude: ${fields.longitude || '85.628000'}`);
+      await r.drawImageSection(locMapBytes, `Latitude: ${fields.latitude || ''}, Longitude: ${fields.longitude || ''}`);
     }
 
     // 12. Photographs Grid
@@ -603,7 +603,7 @@ export default function AdityaBirlaCapitalMLAP({
     if (propImgs.length > 0) {
       const photos = propImgs.map((imgUrl: string, idx: number) => ({
         bytes: imageResults[idx],
-        label: fields.propertyImageNames?.[idx] || (idx === 0 ? 'Approach Road Pic' : idx === 1 ? 'External Pic' : idx === 2 ? 'Internal Pic' : idx === 3 ? 'Selfie with Client / Customer Representative' : `Photo ${idx + 1}`),
+        label: fields.propertyImageNames?.[idx] || 'Site Picture',
       })).filter((p: any) => p.bytes && p.bytes.length > 0);
 
       await r.drawPhotoGrid(photos);
