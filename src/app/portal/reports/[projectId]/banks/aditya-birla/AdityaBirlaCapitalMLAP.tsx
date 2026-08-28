@@ -236,6 +236,31 @@ export default function AdityaBirlaCapitalMLAP({
     setFields(prev => ({ ...prev, [key]: val }));
   };
 
+  // ── Floor Table Helpers ──
+  const addAccommodationRow = () => {
+    const nextIdx = (fields.accommodationRows || []).length + 1;
+    const newFloorName = `Floor ${nextIdx}`;
+    const newRow: AccomRow = { floor: newFloorName, drawingRoom: '', bedroom: '', diningRoom: '', kitchen: '', bathroom: '', balcony: '' };
+    handleChange('accommodationRows', [...(fields.accommodationRows || DEFAULT_ACCOM_ROWS), newRow]);
+  };
+
+  const removeAccommodationRow = (idx: number) => {
+    const updated = (fields.accommodationRows || DEFAULT_ACCOM_ROWS).filter((_, i) => i !== idx);
+    handleChange('accommodationRows', updated);
+  };
+
+  const addBuaRow = () => {
+    const nextIdx = (fields.buaRows || []).length + 1;
+    const newFloorName = `Floor ${nextIdx}`;
+    const newRow: BuaRow = { floor: newFloorName, asPerSite: '', asPerPlan: 'NA', percentageDeviation: 'NA' };
+    handleChange('buaRows', [...(fields.buaRows || DEFAULT_BUA_ROWS), newRow]);
+  };
+
+  const removeBuaRow = (idx: number) => {
+    const updated = (fields.buaRows || DEFAULT_BUA_ROWS).filter((_, i) => i !== idx);
+    handleChange('buaRows', updated);
+  };
+
   // ── Auto-Calculated Valuation Totals ──
   const plotSqft = parseFloat(fields.plotAreaDocs || '0') || 0;
   const landRate = parseFloat(fields.landRate || '0') || 0;
@@ -998,174 +1023,272 @@ export default function AdityaBirlaCapitalMLAP({
 
         {/* ═══ SECTION 5: ACCOMMODATION DETAILS ═══ */}
         <Section title="Accommodation Details" number={5}>
-          <div className="overflow-x-auto border border-[#dee2e6] rounded-xl">
-            <table className="w-full text-xs text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-100 border-b text-slate-700 font-bold uppercase">
-                  <th className="p-3 border-r">Unit Details / Floor</th>
-                  <th className="p-3 border-r">Drawing Room</th>
-                  <th className="p-3 border-r">Bedroom</th>
-                  <th className="p-3 border-r">Dining Room</th>
-                  <th className="p-3 border-r">Kitchen</th>
-                  <th className="p-3 border-r">Bathroom</th>
-                  <th className="p-3">Balcony</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(fields.accommodationRows || DEFAULT_ACCOM_ROWS).map((row, idx) => (
-                  <tr key={idx} className="border-b last:border-b-0 hover:bg-slate-50">
-                    <td className="p-3 border-r font-bold bg-slate-50/70">{row.floor}</td>
-                    {(['drawingRoom', 'bedroom', 'diningRoom', 'kitchen', 'bathroom', 'balcony'] as (keyof AccomRow)[]).map((colKey, cIdx) => (
-                      <td key={colKey} className={`p-1.5 ${cIdx < 5 ? 'border-r' : ''}`}>
+          <div className="space-y-3">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="bg-[#0a1628] text-white">
+                    <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider">Unit Details / Floor</th>
+                    <th className="px-3 py-2.5 text-center font-semibold text-xs uppercase tracking-wider">Drawing Room</th>
+                    <th className="px-3 py-2.5 text-center font-semibold text-xs uppercase tracking-wider">Bedroom</th>
+                    <th className="px-3 py-2.5 text-center font-semibold text-xs uppercase tracking-wider">Dining Room</th>
+                    <th className="px-3 py-2.5 text-center font-semibold text-xs uppercase tracking-wider">Kitchen</th>
+                    <th className="px-3 py-2.5 text-center font-semibold text-xs uppercase tracking-wider">Bathroom</th>
+                    <th className="px-3 py-2.5 text-center font-semibold text-xs uppercase tracking-wider">Balcony</th>
+                    {!isReadOnly && <th className="px-3 py-2.5 w-10"></th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {(fields.accommodationRows || DEFAULT_ACCOM_ROWS).map((row, idx) => (
+                    <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-[#f8f9fa]'}>
+                      <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                         <input
-                          type="text"
-                          value={row[colKey] || ''}
-                          disabled={isReadOnly}
+                          className={inputCls + ' !py-1.5 text-xs font-bold text-[#0f2038]'}
+                          value={row.floor || ''}
                           onChange={e => {
                             const updated = [...(fields.accommodationRows || DEFAULT_ACCOM_ROWS)];
-                            updated[idx] = { ...updated[idx], [colKey]: e.target.value };
+                            updated[idx] = { ...updated[idx], floor: e.target.value };
                             handleChange('accommodationRows', updated);
                           }}
-                          className="w-full p-2 text-xs bg-transparent border border-transparent focus:border-[#b8860b] focus:bg-white rounded transition-all"
+                          disabled={isReadOnly}
                         />
                       </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      {(['drawingRoom', 'bedroom', 'diningRoom', 'kitchen', 'bathroom', 'balcony'] as (keyof AccomRow)[]).map((colKey) => (
+                        <td key={colKey} className="px-2 py-1.5 border-b border-[#e9ecef]">
+                          <input
+                            type="text"
+                            value={row[colKey] || ''}
+                            disabled={isReadOnly}
+                            onChange={e => {
+                              const updated = [...(fields.accommodationRows || DEFAULT_ACCOM_ROWS)];
+                              updated[idx] = { ...updated[idx], [colKey]: e.target.value };
+                              handleChange('accommodationRows', updated);
+                            }}
+                            className={inputCls + ' !py-1.5 text-xs text-center'}
+                            placeholder="NA"
+                          />
+                        </td>
+                      ))}
+                      {!isReadOnly && (
+                        <td className="px-2 py-1.5 border-b border-[#e9ecef] text-center">
+                          <button
+                            type="button"
+                            onClick={() => removeAccommodationRow(idx)}
+                            className="text-red-400 hover:text-red-600 text-lg leading-none"
+                            title="Remove Floor"
+                          >
+                            &times;
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {!isReadOnly && (
+              <button
+                type="button"
+                onClick={addAccommodationRow}
+                className="text-sm text-[#b8860b] hover:text-[#96700a] font-semibold flex items-center gap-1.5 pt-1"
+              >
+                <span className="text-lg leading-none">+</span> Add Unit / Floor
+              </button>
+            )}
           </div>
         </Section>
 
         {/* ═══ SECTION 6: BUILD UP DETAILS ═══ */}
         <Section title="Build Up Details" number={6}>
-          <div className="overflow-x-auto border border-[#dee2e6] rounded-xl">
-            <table className="w-full text-xs text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-100 border-b text-slate-700 font-bold uppercase">
-                  <th className="p-3 border-r">Floor</th>
-                  <th className="p-3 border-r">As per site</th>
-                  <th className="p-3 border-r">As per Plan/Allowed</th>
-                  <th className="p-3">Percentage Deviation</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(fields.buaRows || DEFAULT_BUA_ROWS).map((row, idx) => (
-                  <tr key={idx} className="border-b last:border-b-0 hover:bg-slate-50">
-                    <td className="p-3 border-r font-bold bg-slate-50/70">{row.floor}</td>
-                    {(['asPerSite', 'asPerPlan', 'percentageDeviation'] as (keyof BuaRow)[]).map((colKey, cIdx) => (
-                      <td key={colKey} className={`p-1.5 ${cIdx < 2 ? 'border-r' : ''}`}>
+          <div className="space-y-3">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="bg-[#0a1628] text-white">
+                    <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider">Floor</th>
+                    <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider">As per site</th>
+                    <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider">As per Plan / Allowed</th>
+                    <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider">Percentage Deviation</th>
+                    {!isReadOnly && <th className="px-3 py-2.5 w-10"></th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {(fields.buaRows || DEFAULT_BUA_ROWS).map((row, idx) => (
+                    <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-[#f8f9fa]'}>
+                      <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                        <input
+                          className={inputCls + ' !py-1.5 text-xs font-bold text-[#0f2038]'}
+                          value={row.floor || ''}
+                          onChange={e => {
+                            const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
+                            updated[idx] = { ...updated[idx], floor: e.target.value };
+                            handleChange('buaRows', updated);
+                          }}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                         <input
                           type="text"
-                          value={row[colKey] || ''}
+                          value={row.asPerSite || ''}
                           disabled={isReadOnly}
                           onChange={e => {
                             const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
-                            updated[idx] = { ...updated[idx], [colKey]: e.target.value };
+                            updated[idx] = { ...updated[idx], asPerSite: e.target.value };
                             handleChange('buaRows', updated);
                           }}
-                          className="w-full p-2 text-xs bg-transparent border border-transparent focus:border-[#b8860b] focus:bg-white rounded transition-all"
+                          className={inputCls + ' !py-1.5 text-xs'}
+                          placeholder="e.g. RCC-1441sqft"
                         />
                       </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                        <input
+                          type="text"
+                          value={row.asPerPlan || ''}
+                          disabled={isReadOnly}
+                          onChange={e => {
+                            const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
+                            updated[idx] = { ...updated[idx], asPerPlan: e.target.value };
+                            handleChange('buaRows', updated);
+                          }}
+                          className={inputCls + ' !py-1.5 text-xs'}
+                          placeholder="NA"
+                        />
+                      </td>
+                      <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                        <input
+                          type="text"
+                          value={row.percentageDeviation || ''}
+                          disabled={isReadOnly}
+                          onChange={e => {
+                            const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
+                            updated[idx] = { ...updated[idx], percentageDeviation: e.target.value };
+                            handleChange('buaRows', updated);
+                          }}
+                          className={inputCls + ' !py-1.5 text-xs'}
+                          placeholder="NA"
+                        />
+                      </td>
+                      {!isReadOnly && (
+                        <td className="px-2 py-1.5 border-b border-[#e9ecef] text-center">
+                          <button
+                            type="button"
+                            onClick={() => removeBuaRow(idx)}
+                            className="text-red-400 hover:text-red-600 text-lg leading-none"
+                            title="Remove Floor"
+                          >
+                            &times;
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {!isReadOnly && (
+              <button
+                type="button"
+                onClick={addBuaRow}
+                className="text-sm text-[#b8860b] hover:text-[#96700a] font-semibold flex items-center gap-1.5 pt-1"
+              >
+                <span className="text-lg leading-none">+</span> Add Floor Details
+              </button>
+            )}
           </div>
         </Section>
 
         {/* ═══ SECTION 7: VALUATION & RATE ANALYSIS ═══ */}
         <Section title="Valuation & Rate Analysis" number={7}>
-          <div className="overflow-x-auto border border-[#dee2e6] rounded-xl">
-            <table className="w-full text-xs text-left border-collapse">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
               <thead>
-                <tr className="bg-slate-100 border-b text-slate-700 font-bold uppercase">
-                  <th className="p-3 border-r">Detailings</th>
-                  <th className="p-3 border-r">Area in Sqft</th>
-                  <th className="p-3 border-r">Rate / Sqft (Rs.)</th>
-                  <th className="p-3">Value (Rs.)</th>
+                <tr className="bg-[#0a1628] text-white">
+                  <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider">Detailings</th>
+                  <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">Area in Sqft</th>
+                  <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">Rate / Sqft (Rs.)</th>
+                  <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">Value (Rs.)</th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b">
-                  <td className="p-3 border-r font-medium">Plot Area (As per Documents)</td>
-                  <td className="p-2 border-r">
-                    <input type="number" value={fields.plotAreaDocs || ''} onChange={e => handleChange('plotAreaDocs', e.target.value)} disabled={isReadOnly} className="w-28 p-1.5 text-xs border border-[#dee2e6] rounded" />
+                <tr className="bg-white">
+                  <td className="px-3 py-2 border-b border-[#e9ecef] font-medium text-xs">Plot Area (As per Documents)</td>
+                  <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                    <input type="number" value={fields.plotAreaDocs || ''} onChange={e => handleChange('plotAreaDocs', e.target.value)} disabled={isReadOnly} className={inputCls + ' !py-1.5 text-xs text-right'} />
                   </td>
-                  <td className="p-2 border-r">
-                    <input type="number" value={fields.landRate || ''} onChange={e => handleChange('landRate', e.target.value)} disabled={isReadOnly} className="w-28 p-1.5 text-xs border border-[#dee2e6] rounded" />
+                  <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                    <input type="number" value={fields.landRate || ''} onChange={e => handleChange('landRate', e.target.value)} disabled={isReadOnly} className={inputCls + ' !py-1.5 text-xs text-right'} />
                   </td>
-                  <td className="p-3 font-bold bg-amber-50 text-amber-900">
-                    Rs. {formatIndianCurrency(landTotalVal)}
-                  </td>
-                </tr>
-                <tr className="border-b">
-                  <td className="p-3 border-r font-medium">Plot Area (As per Physical)</td>
-                  <td className="p-2 border-r">
-                    <input type="text" value={fields.plotAreaPhysical || ''} onChange={e => handleChange('plotAreaPhysical', e.target.value)} disabled={isReadOnly} className="w-28 p-1.5 text-xs border border-[#dee2e6] rounded" />
-                  </td>
-                  <td className="p-3 border-r text-slate-400">-</td>
-                  <td className="p-3 text-slate-400">-</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="p-3 border-r font-medium">Plot Area (Considered For Valuation)</td>
-                  <td className="p-2 border-r">
-                    <input type="text" value={fields.plotAreaConsidered || ''} onChange={e => handleChange('plotAreaConsidered', e.target.value)} disabled={isReadOnly} className="w-28 p-1.5 text-xs border border-[#dee2e6] rounded" />
-                  </td>
-                  <td className="p-3 border-r text-slate-400">-</td>
-                  <td className="p-3 text-slate-400">-</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="p-3 border-r font-medium">Build Up Area (As per Plan/Document)</td>
-                  <td className="p-2 border-r" colSpan={3}>
-                    <input type="text" value={fields.buaPlan || ''} onChange={e => handleChange('buaPlan', e.target.value)} disabled={isReadOnly} className="w-full p-1.5 text-xs border border-[#dee2e6] rounded" />
+                  <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-bold text-xs bg-amber-50/50 text-[#0f2038]">
+                    &#8377;{formatIndianCurrency(landTotalVal)}
                   </td>
                 </tr>
-                <tr className="border-b">
-                  <td className="p-3 border-r font-medium">Build Up Area (As per Actual) GF RCC on 100% comp</td>
-                  <td className="p-2 border-r">
-                    <input type="number" value={fields.buaActual || ''} onChange={e => handleChange('buaActual', e.target.value)} disabled={isReadOnly} className="w-28 p-1.5 text-xs border border-[#dee2e6] rounded" />
+                <tr className="bg-[#f8f9fa]">
+                  <td className="px-3 py-2 border-b border-[#e9ecef] font-medium text-xs">Plot Area (As per Physical)</td>
+                  <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                    <input type="text" value={fields.plotAreaPhysical || ''} onChange={e => handleChange('plotAreaPhysical', e.target.value)} disabled={isReadOnly} className={inputCls + ' !py-1.5 text-xs text-right'} />
                   </td>
-                  <td className="p-2 border-r">
-                    <input type="number" value={fields.buaActualRate || ''} onChange={e => handleChange('buaActualRate', e.target.value)} disabled={isReadOnly} className="w-28 p-1.5 text-xs border border-[#dee2e6] rounded" />
+                  <td className="px-3 py-2 border-b border-[#e9ecef] text-right text-xs text-slate-400">-</td>
+                  <td className="px-3 py-2 border-b border-[#e9ecef] text-right text-xs text-slate-400">-</td>
+                </tr>
+                <tr className="bg-white">
+                  <td className="px-3 py-2 border-b border-[#e9ecef] font-medium text-xs">Plot Area (Considered For Valuation)</td>
+                  <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                    <input type="text" value={fields.plotAreaConsidered || ''} onChange={e => handleChange('plotAreaConsidered', e.target.value)} disabled={isReadOnly} className={inputCls + ' !py-1.5 text-xs text-right'} />
                   </td>
-                  <td className="p-3 font-bold bg-amber-50 text-amber-900">
-                    Rs. {formatIndianCurrency(bua100TotalVal)}
+                  <td className="px-3 py-2 border-b border-[#e9ecef] text-right text-xs text-slate-400">-</td>
+                  <td className="px-3 py-2 border-b border-[#e9ecef] text-right text-xs text-slate-400">-</td>
+                </tr>
+                <tr className="bg-[#f8f9fa]">
+                  <td className="px-3 py-2 border-b border-[#e9ecef] font-medium text-xs">Build Up Area (As per Plan/Document)</td>
+                  <td className="px-2 py-1.5 border-b border-[#e9ecef]" colSpan={3}>
+                    <input type="text" value={fields.buaPlan || ''} onChange={e => handleChange('buaPlan', e.target.value)} disabled={isReadOnly} className={inputCls + ' !py-1.5 text-xs'} />
                   </td>
                 </tr>
-                <tr className="border-b">
-                  <td className="p-3 border-r font-medium">Build Up Area (Considered for Valuation) as on date</td>
-                  <td className="p-2 border-r">
-                    <input type="number" value={fields.buaConsidered || ''} onChange={e => handleChange('buaConsidered', e.target.value)} disabled={isReadOnly} className="w-28 p-1.5 text-xs border border-[#dee2e6] rounded" />
+                <tr className="bg-white">
+                  <td className="px-3 py-2 border-b border-[#e9ecef] font-medium text-xs">Build Up Area (As per Actual) GF RCC on 100% comp</td>
+                  <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                    <input type="number" value={fields.buaActual || ''} onChange={e => handleChange('buaActual', e.target.value)} disabled={isReadOnly} className={inputCls + ' !py-1.5 text-xs text-right'} />
                   </td>
-                  <td className="p-2 border-r">
-                    <input type="number" value={fields.buaConsideredRate || ''} onChange={e => handleChange('buaConsideredRate', e.target.value)} disabled={isReadOnly} className="w-28 p-1.5 text-xs border border-[#dee2e6] rounded" />
+                  <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                    <input type="number" value={fields.buaActualRate || ''} onChange={e => handleChange('buaActualRate', e.target.value)} disabled={isReadOnly} className={inputCls + ' !py-1.5 text-xs text-right'} />
                   </td>
-                  <td className="p-3 font-bold bg-amber-50 text-amber-900">
-                    Rs. {formatIndianCurrency(buaConsTotalVal)}
+                  <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-bold text-xs bg-amber-50/50 text-[#0f2038]">
+                    &#8377;{formatIndianCurrency(bua100TotalVal)}
                   </td>
                 </tr>
-                <tr className="border-b">
-                  <td className="p-3 border-r font-medium">Amenities (like parking etc in unit or lumpsum value)</td>
-                  <td className="p-3 border-r" colSpan={2}></td>
-                  <td className="p-2">
-                    <input type="number" value={fields.amenitiesValue || '0'} onChange={e => handleChange('amenitiesValue', e.target.value)} disabled={isReadOnly} className="w-32 p-1.5 text-xs border border-[#dee2e6] rounded" />
+                <tr className="bg-[#f8f9fa]">
+                  <td className="px-3 py-2 border-b border-[#e9ecef] font-medium text-xs">Build Up Area (Considered for Valuation) as on date</td>
+                  <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                    <input type="number" value={fields.buaConsidered || ''} onChange={e => handleChange('buaConsidered', e.target.value)} disabled={isReadOnly} className={inputCls + ' !py-1.5 text-xs text-right'} />
+                  </td>
+                  <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                    <input type="number" value={fields.buaConsideredRate || ''} onChange={e => handleChange('buaConsideredRate', e.target.value)} disabled={isReadOnly} className={inputCls + ' !py-1.5 text-xs text-right'} />
+                  </td>
+                  <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-bold text-xs bg-amber-50/50 text-[#0f2038]">
+                    &#8377;{formatIndianCurrency(buaConsTotalVal)}
+                  </td>
+                </tr>
+                <tr className="bg-white">
+                  <td className="px-3 py-2 border-b border-[#e9ecef] font-medium text-xs">Amenities (like parking etc in unit or lumpsum value)</td>
+                  <td className="px-3 py-2 border-b border-[#e9ecef]" colSpan={2}></td>
+                  <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                    <input type="number" value={fields.amenitiesValue || '0'} onChange={e => handleChange('amenitiesValue', e.target.value)} disabled={isReadOnly} className={inputCls + ' !py-1.5 text-xs text-right'} />
                   </td>
                 </tr>
 
-                {/* Totals */}
-                <tr className="border-t-2 border-slate-700 bg-slate-900 text-white font-bold">
-                  <td className="p-3.5 border-r" colSpan={3}>TOTAL VALUE</td>
-                  <td className="p-3.5 text-sm text-amber-400">Rs. {formatIndianCurrency(totalVal)}</td>
+                {/* Abstract Totals matching General styling */}
+                <tr className="bg-[#f0ead6] font-bold text-[#0f2038]">
+                  <td className="px-3 py-3 text-sm uppercase tracking-wider" colSpan={3}>TOTAL FAIR MARKET VALUE</td>
+                  <td className="px-3 py-3 text-right text-base text-[#b8860b]">&#8377;{formatIndianCurrency(totalVal)}</td>
                 </tr>
-                <tr className="bg-slate-800 text-white font-bold border-t border-slate-700">
-                  <td className="p-3 border-r" colSpan={3}>REALIZABLE VALUE (90%)</td>
-                  <td className="p-3 text-sm text-emerald-400">Rs. {formatIndianCurrency(realizableVal)}</td>
+                <tr className="bg-white font-semibold">
+                  <td className="px-3 py-2.5 border-b border-[#e9ecef] text-xs" colSpan={3}>Realizable Value (90%)</td>
+                  <td className="px-3 py-2.5 border-b border-[#e9ecef] text-right text-sm text-green-700">&#8377;{formatIndianCurrency(realizableVal)}</td>
                 </tr>
-                <tr className="bg-slate-800 text-white font-bold border-t border-slate-700">
-                  <td className="p-3 border-r" colSpan={3}>DISTRESS VALUE (80%)</td>
-                  <td className="p-3 text-sm text-rose-400">Rs. {formatIndianCurrency(distressVal)}</td>
+                <tr className="bg-white font-semibold">
+                  <td className="px-3 py-2.5 border-b border-[#e9ecef] text-xs" colSpan={3}>Distress / Forced Sale Value (80%)</td>
+                  <td className="px-3 py-2.5 border-b border-[#e9ecef] text-right text-sm text-orange-700">&#8377;{formatIndianCurrency(distressVal)}</td>
                 </tr>
               </tbody>
             </table>
@@ -1175,38 +1298,38 @@ export default function AdityaBirlaCapitalMLAP({
         {/* ═══ SECTION 8: BOUNDARY DETAILS ═══ */}
         <Section title="Boundary Details (4-Way Comparison)" number={8}>
           <div className="space-y-4">
-            <div className="overflow-x-auto border border-[#dee2e6] rounded-xl">
-              <table className="w-full text-xs text-left border-collapse">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm border-collapse">
                 <thead>
-                  <tr className="bg-slate-100 border-b text-slate-700 font-bold uppercase">
-                    <th className="p-3 border-r">Detailings</th>
-                    <th className="p-3 border-r">North</th>
-                    <th className="p-3 border-r">South</th>
-                    <th className="p-3 border-r">East</th>
-                    <th className="p-3">West</th>
+                  <tr className="bg-[#0a1628] text-white">
+                    <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider">Detailings</th>
+                    <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider">North</th>
+                    <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider">South</th>
+                    <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider">East</th>
+                    <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider">West</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="border-b">
-                    <td className="p-3 border-r font-bold bg-slate-50/70">As per Sketch map</td>
-                    <td className="p-2 border-r"><input type="text" value={fields.boundarySketchNorth || ''} onChange={e => handleChange('boundarySketchNorth', e.target.value)} disabled={isReadOnly} className={inputCls} /></td>
-                    <td className="p-2 border-r"><input type="text" value={fields.boundarySketchSouth || ''} onChange={e => handleChange('boundarySketchSouth', e.target.value)} disabled={isReadOnly} className={inputCls} /></td>
-                    <td className="p-2 border-r"><input type="text" value={fields.boundarySketchEast || ''} onChange={e => handleChange('boundarySketchEast', e.target.value)} disabled={isReadOnly} className={inputCls} /></td>
-                    <td className="p-2"><input type="text" value={fields.boundarySketchWest || ''} onChange={e => handleChange('boundarySketchWest', e.target.value)} disabled={isReadOnly} className={inputCls} /></td>
+                  <tr className="bg-white">
+                    <td className="px-3 py-2 border-b border-[#e9ecef] font-bold text-xs text-[#0f2038]">As per Sketch map</td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]"><input type="text" value={fields.boundarySketchNorth || ''} onChange={e => handleChange('boundarySketchNorth', e.target.value)} disabled={isReadOnly} className={inputCls + ' !py-1.5 text-xs'} /></td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]"><input type="text" value={fields.boundarySketchSouth || ''} onChange={e => handleChange('boundarySketchSouth', e.target.value)} disabled={isReadOnly} className={inputCls + ' !py-1.5 text-xs'} /></td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]"><input type="text" value={fields.boundarySketchEast || ''} onChange={e => handleChange('boundarySketchEast', e.target.value)} disabled={isReadOnly} className={inputCls + ' !py-1.5 text-xs'} /></td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]"><input type="text" value={fields.boundarySketchWest || ''} onChange={e => handleChange('boundarySketchWest', e.target.value)} disabled={isReadOnly} className={inputCls + ' !py-1.5 text-xs'} /></td>
                   </tr>
-                  <tr className="border-b">
-                    <td className="p-3 border-r font-bold bg-slate-50/70">As per Mouza Map</td>
-                    <td className="p-2 border-r"><input type="text" value={fields.boundaryMouzaNorth || ''} onChange={e => handleChange('boundaryMouzaNorth', e.target.value)} disabled={isReadOnly} className={inputCls} /></td>
-                    <td className="p-2 border-r"><input type="text" value={fields.boundaryMouzaSouth || ''} onChange={e => handleChange('boundaryMouzaSouth', e.target.value)} disabled={isReadOnly} className={inputCls} /></td>
-                    <td className="p-2 border-r"><input type="text" value={fields.boundaryMouzaEast || ''} onChange={e => handleChange('boundaryMouzaEast', e.target.value)} disabled={isReadOnly} className={inputCls} /></td>
-                    <td className="p-2"><input type="text" value={fields.boundaryMouzaWest || ''} onChange={e => handleChange('boundaryMouzaWest', e.target.value)} disabled={isReadOnly} className={inputCls} /></td>
+                  <tr className="bg-[#f8f9fa]">
+                    <td className="px-3 py-2 border-b border-[#e9ecef] font-bold text-xs text-[#0f2038]">As per Mouza Map</td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]"><input type="text" value={fields.boundaryMouzaNorth || ''} onChange={e => handleChange('boundaryMouzaNorth', e.target.value)} disabled={isReadOnly} className={inputCls + ' !py-1.5 text-xs'} /></td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]"><input type="text" value={fields.boundaryMouzaSouth || ''} onChange={e => handleChange('boundaryMouzaSouth', e.target.value)} disabled={isReadOnly} className={inputCls + ' !py-1.5 text-xs'} /></td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]"><input type="text" value={fields.boundaryMouzaEast || ''} onChange={e => handleChange('boundaryMouzaEast', e.target.value)} disabled={isReadOnly} className={inputCls + ' !py-1.5 text-xs'} /></td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]"><input type="text" value={fields.boundaryMouzaWest || ''} onChange={e => handleChange('boundaryMouzaWest', e.target.value)} disabled={isReadOnly} className={inputCls + ' !py-1.5 text-xs'} /></td>
                   </tr>
-                  <tr className="border-b">
-                    <td className="p-3 border-r font-bold bg-slate-50/70">As per actual site</td>
-                    <td className="p-2 border-r"><input type="text" value={fields.boundaryActualNorth || ''} onChange={e => handleChange('boundaryActualNorth', e.target.value)} disabled={isReadOnly} className={inputCls} /></td>
-                    <td className="p-2 border-r"><input type="text" value={fields.boundaryActualSouth || ''} onChange={e => handleChange('boundaryActualSouth', e.target.value)} disabled={isReadOnly} className={inputCls} /></td>
-                    <td className="p-2 border-r"><input type="text" value={fields.boundaryActualEast || ''} onChange={e => handleChange('boundaryActualEast', e.target.value)} disabled={isReadOnly} className={inputCls} /></td>
-                    <td className="p-2"><input type="text" value={fields.boundaryActualWest || ''} onChange={e => handleChange('boundaryActualWest', e.target.value)} disabled={isReadOnly} className={inputCls} /></td>
+                  <tr className="bg-white">
+                    <td className="px-3 py-2 border-b border-[#e9ecef] font-bold text-xs text-[#0f2038]">As per actual site</td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]"><input type="text" value={fields.boundaryActualNorth || ''} onChange={e => handleChange('boundaryActualNorth', e.target.value)} disabled={isReadOnly} className={inputCls + ' !py-1.5 text-xs'} /></td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]"><input type="text" value={fields.boundaryActualSouth || ''} onChange={e => handleChange('boundaryActualSouth', e.target.value)} disabled={isReadOnly} className={inputCls + ' !py-1.5 text-xs'} /></td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]"><input type="text" value={fields.boundaryActualEast || ''} onChange={e => handleChange('boundaryActualEast', e.target.value)} disabled={isReadOnly} className={inputCls + ' !py-1.5 text-xs'} /></td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]"><input type="text" value={fields.boundaryActualWest || ''} onChange={e => handleChange('boundaryActualWest', e.target.value)} disabled={isReadOnly} className={inputCls + ' !py-1.5 text-xs'} /></td>
                   </tr>
                 </tbody>
               </table>
@@ -1237,7 +1360,7 @@ export default function AdityaBirlaCapitalMLAP({
               <div className="p-4 border border-[#dee2e6] rounded-xl bg-slate-50 space-y-3">
                 <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">1. Location Map (Satellite)</h3>
                 {fields.locationMapImage ? (
-                  <div className="relative group rounded-lg overflow-hidden border">
+                  <div className="relative group rounded-lg overflow-hidden border border-[#dee2e6]">
                     <img src={fields.locationMapImage} alt="Location Map" className="w-full h-36 object-cover" />
                     {!isReadOnly && (
                       <button type="button" onClick={() => handleChange('locationMapImage', '')} className="absolute top-2 right-2 bg-red-600 text-white rounded p-1 text-[10px] font-bold">Remove</button>
@@ -1255,7 +1378,7 @@ export default function AdityaBirlaCapitalMLAP({
               <div className="p-4 border border-[#dee2e6] rounded-xl bg-slate-50 space-y-3">
                 <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">2. Mouza Map (Bhulekh)</h3>
                 {fields.mouzaMapImage ? (
-                  <div className="relative group rounded-lg overflow-hidden border">
+                  <div className="relative group rounded-lg overflow-hidden border border-[#dee2e6]">
                     <img src={fields.mouzaMapImage} alt="Mouza Map" className="w-full h-36 object-cover" />
                     {!isReadOnly && (
                       <button type="button" onClick={() => handleChange('mouzaMapImage', '')} className="absolute top-2 right-2 bg-red-600 text-white rounded p-1 text-[10px] font-bold">Remove</button>
@@ -1273,7 +1396,7 @@ export default function AdityaBirlaCapitalMLAP({
               <div className="p-4 border border-[#dee2e6] rounded-xl bg-slate-50 space-y-3">
                 <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">3. Cadastral Map</h3>
                 {fields.cadastralMapImage ? (
-                  <div className="relative group rounded-lg overflow-hidden border">
+                  <div className="relative group rounded-lg overflow-hidden border border-[#dee2e6]">
                     <img src={fields.cadastralMapImage} alt="Cadastral Map" className="w-full h-36 object-cover" />
                     {!isReadOnly && (
                       <button type="button" onClick={() => handleChange('cadastralMapImage', '')} className="absolute top-2 right-2 bg-red-600 text-white rounded p-1 text-[10px] font-bold">Remove</button>
