@@ -35,8 +35,8 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   'ADITYA BIRLA CAPITAL LTD::STSL': dynamic(() => import('./banks/aditya-birla/AdityaBirlaCapitalSTSL')),
   'ADITYA BIRLA CAPITAL LTD::MLAP': dynamic(() => import('./banks/aditya-birla/AdityaBirlaCapitalMLAP')),
   'ADITYA BIRLA CAPITAL LTD': dynamic(() => import('./banks/aditya-birla/AdityaBirlaCapitalSTSL')),
-  'ADITYA BIRLA HOUSING FINANCE LTD::HL-LAP': dynamic(() => import('./banks/aditya-birla/AdityaBirlaHousingHLLAP')),
-  'ADITYA BIRLA HOUSING FINANCE LTD': dynamic(() => import('./banks/aditya-birla/AdityaBirlaHousingHLLAP')),
+  'ADITYA BIRLA HOUSING FINANCE LTD::HL-LAP': dynamic(() => import('./banks/aditya-birla-housing/AdityaBirlaHousingHLLAP')),
+  'ADITYA BIRLA HOUSING FINANCE LTD': dynamic(() => import('./banks/aditya-birla-housing/AdityaBirlaHousingHLLAP')),
 
   // Annapurna, Arka, Arthan, AU, Ave
   'ANNAPURNA MICRO FINANCE LTD': dynamic(() => import('./banks/annapurna/AnnapurnaMicro')),
