@@ -402,6 +402,7 @@ interface IBBIFields {
   certificateDescription?: string;
   ownerContactDetails?: string;
   certCurrentOwner?: string;
+  valuationCertificateIntro?: string;
   certStatusOfPlot?: string;
   certDescription?: string;
   certArea?: string;
@@ -702,6 +703,7 @@ const DEFAULT_FIELDS: IBBIFields = {
   scope2_4: '',
   scope2_5: '',
   objectiveIntro: '',
+  valuationCertificateIntro: '',
   objective1_1: '',
   objective1_2: '',
   objective1_3: '',
@@ -1710,20 +1712,9 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       const certAddress = fields.propertyAddress || fields.ownerAddress || '________';
       const certDate = fields.dateOfInspection || '________';
       const coverDesc = fields.propertyType || 'Property';
-      const appointedByName = fields.appointedBy || '';
-      const appointedByDesg = fields.appointedByDesignation ? ` (${fields.appointedByDesignation})` : '';
-      const appointedByText = appointedByName ? `Pursuant to Letter of Appointment from ${appointedByName}${appointedByDesg}` : 'Pursuant to Letter of Appointment';
-      const appointmentDateText = fields.appointmentDate ? ` on ${fields.appointmentDate}` : '';
-      const casePartiesText = fields.caseParties ? ` in the matter of ${fields.caseParties}` : '';
-      const caseRef1 = fields.caseReferenceNo || '';
-      const caseRef2 = fields.caseReferenceNo2 || '';
-      const caseRefText = caseRef1 ? `, vide Reference ${caseRef1}${caseRef2 ? ' ' + caseRef2 : ''}` : '';
-
-      r.drawTextBlock(
-        `${appointedByText}${appointmentDateText} for carrying out Valuation of Immovable assets${casePartiesText}${caseRefText}, to assess the fair market and thereby deriving liquidation value of ${coverDesc} at ${certAddress}, currently owned by ${certOwner}, inspected on ${certDate}.`
-,
-        { fontSize: 10 }
-      );
+      if (fields.valuationCertificateIntro && fields.valuationCertificateIntro.trim()) {
+        r.drawTextBlock(fields.valuationCertificateIntro, { fontSize: 10, align: 'justify' });
+      }
       r.advanceCursor(3);
       r.drawTextBlock('The Valuation Certificate is to be used in conjunction with the Detailed Valuation Report Enclosed herewith based on the information and particulars furnished and actual observation, Valuation methodology, assumption, limitations, Disclaimer and bases of valuation stated herein and should not be referred in Isolation.', { fontSize: 10 });
       r.advanceCursor(4);
@@ -3099,6 +3090,9 @@ Our valuation is based on information obtained from the client and on data gathe
               <p className="text-xs text-amber-800">These fields populate the <strong>Valuation Certificate</strong> page in the PDF. Fields marked <span className="inline-block px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-semibold">AUTO</span> are auto-filled from other sections but can be overridden.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Introduction of Valuation Certificate" span={2}>
+                <textarea rows={3} value={fields.valuationCertificateIntro || ''} onChange={e => handleChange('valuationCertificateIntro', e.target.value)} className={inputCls + ' resize-none'} placeholder="Enter the introduction paragraph for the Valuation Certificate here..." disabled={isReadOnly} />
+              </Field>
               <Field label="Reference No">
                 <input type="text" value={fields.refNo || ''} onChange={e => handleChange('refNo', e.target.value)} className={inputCls} disabled={isReadOnly} />
               </Field>
