@@ -7,7 +7,7 @@ import { formatIndianCurrency } from '@/lib/numberToWords';
 export const ADITYA_BIRLA_CAPITAL_MLAP_CONFIG: BankConfig = {
   bankId: 'ADITYA BIRLA CAPITAL LTD',
   subTemplateId: 'MLAP',
-  displayName: 'Aditya Birla Capital Ltd — MLAP',
+  displayName: 'Aditya Birla Capital Ltd ï¿½ MLAP',
   fieldLabels: {
     ownerName: 'Client Name',
     ownerAddress: 'Address as per Document',
@@ -140,18 +140,18 @@ export const ADITYA_BIRLA_CAPITAL_MLAP_CONFIG: BankConfig = {
 
     // -- Section 8: Boundary Details --
     'section-8': [
-      { key: 'boundarySketchNorth', label: 'Sketch Map — North', default: 'Deepak Behera & Bibhu Ranjan Palei' },
-      { key: 'boundarySketchSouth', label: 'Sketch Map — South', default: 'Road' },
-      { key: 'boundarySketchEast', label: 'Sketch Map — East', default: 'Sonali Sethi' },
-      { key: 'boundarySketchWest', label: 'Sketch Map — West', default: 'Archana Debarchana Sethi' },
-      { key: 'boundaryMouzaNorth', label: 'Mouza Map — North', default: 'Plot no-165' },
-      { key: 'boundaryMouzaSouth', label: 'Mouza Map — South', default: 'Plot no-168' },
-      { key: 'boundaryMouzaEast', label: 'Mouza Map — East', default: 'Plot no-164/856' },
-      { key: 'boundaryMouzaWest', label: 'Mouza Map — West', default: 'Plot no-167' },
-      { key: 'boundaryActualNorth', label: 'Actual Site — North', default: "Other's building" },
-      { key: 'boundaryActualSouth', label: 'Actual Site — South', default: '15 feet wide Road' },
-      { key: 'boundaryActualEast', label: 'Actual Site — East', default: "Other's vacant land" },
-      { key: 'boundaryActualWest', label: 'Actual Site — West', default: "Other's vacant land" },
+      { key: 'boundarySketchNorth', label: 'Sketch Map ï¿½ North', default: 'Deepak Behera & Bibhu Ranjan Palei' },
+      { key: 'boundarySketchSouth', label: 'Sketch Map ï¿½ South', default: 'Road' },
+      { key: 'boundarySketchEast', label: 'Sketch Map ï¿½ East', default: 'Sonali Sethi' },
+      { key: 'boundarySketchWest', label: 'Sketch Map ï¿½ West', default: 'Archana Debarchana Sethi' },
+      { key: 'boundaryMouzaNorth', label: 'Mouza Map ï¿½ North', default: 'Plot no-165' },
+      { key: 'boundaryMouzaSouth', label: 'Mouza Map ï¿½ South', default: 'Plot no-168' },
+      { key: 'boundaryMouzaEast', label: 'Mouza Map ï¿½ East', default: 'Plot no-164/856' },
+      { key: 'boundaryMouzaWest', label: 'Mouza Map ï¿½ West', default: 'Plot no-167' },
+      { key: 'boundaryActualNorth', label: 'Actual Site ï¿½ North', default: "Other's building" },
+      { key: 'boundaryActualSouth', label: 'Actual Site ï¿½ South', default: '15 feet wide Road' },
+      { key: 'boundaryActualEast', label: 'Actual Site ï¿½ East', default: "Other's vacant land" },
+      { key: 'boundaryActualWest', label: 'Actual Site ï¿½ West', default: "Other's vacant land" },
       { key: 'boundariesMatching', label: 'Boundaries Matching Status', default: 'Yes (Boundary matching as per sketch map)' },
     ],
 

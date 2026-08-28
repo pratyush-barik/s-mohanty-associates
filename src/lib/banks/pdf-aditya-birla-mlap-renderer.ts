@@ -1,5 +1,5 @@
 /**
- * PDFAdityaBirlaMLAPRenderer — Dedicated PDF renderer for Aditya Birla Capital Ltd (MLAP).
+ * PDFAdityaBirlaMLAPRenderer ï¿½ Dedicated PDF renderer for Aditya Birla Capital Ltd (MLAP).
  * Matches the official Excel-to-PDF template structure.
  */
 
