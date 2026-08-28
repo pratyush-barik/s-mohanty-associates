@@ -996,12 +996,21 @@ export default function BankReportBuilder({
       const r = config?.getPDFRenderer ? config.getPDFRenderer() : new PDFBankRenderer();
       await r.init(letterheadBytes || undefined);
 
+      // Date formatter: YYYY-MM-DD → DD/MM/YYYY
+      const fmtDate = (d: string) => {
+        if (!d || !d.trim()) return '________';
+        const t = d.trim();
+        if (/^\d{4}-\d{2}-\d{2}$/.test(t)) { const [y,m,dd] = t.split('-'); return `${dd}/${m}/${y}`; }
+        return t;
+      };
+
       let titleText = 'VALUATION REPORT';
 
+      r.advanceCursor(14);
       r.drawTextBlock('To', { bold: true });
       r.drawTextBlock(fields.to || '________', { bold: true });
-      r.drawRichTextBlock([{ text: 'Date of valuation report: -' }, { text: fields.dateOfValuation || '________', bold: true }]);
-      r.drawRichTextBlock([{ text: 'Ref: -' }, { text: fields.refNo || '________', bold: true }]);
+      r.drawRichTextBlock([{ text: 'Date of valuation report: ' }, { text: fmtDate(fields.dateOfValuation), bold: true }]);
+      r.drawRichTextBlock([{ text: 'Ref: ' }, { text: fields.refNo || '________', bold: true }]);
       r.advanceCursor(6);
       r.drawCenteredTitle(titleText);
       r.advanceCursor(8);
@@ -1047,8 +1056,8 @@ export default function BankReportBuilder({
           r.drawSimpleRow('Legal address of property ( Hissa No / Survey no / khasra No : - )', getLegalFullAddress() || '');
         }
 
-        r.drawSimpleRow('Date of Inspection', fields.dateOfInspection);
-        r.drawSimpleRow('Date of Valuation Report', fields.dateOfValuation);
+        r.drawSimpleRow('Date of Inspection', fmtDate(fields.dateOfInspection));
+        r.drawSimpleRow('Date of Valuation Report', fmtDate(fields.dateOfValuation));
         
         const fullBankText = fields.organisationSubTemplate ? `${fields.bankName || fields.organisationTemplate} (${fields.organisationSubTemplate})` : (fields.bankName || fields.organisationTemplate);
         r.drawSimpleRow('Name of Bank / Institution', fullBankText || 'N/A');
@@ -1217,7 +1226,7 @@ export default function BankReportBuilder({
       r.advanceCursor(2);
       r.drawTextBlock('I hereby declare that:');
       r.advanceCursor(2);
-      r.drawTextBlock(`\u2022 I have deputed my representative ${fields.representativeName ? 'Mr. ' + fields.representativeName : '______'}${fields.representativeFatherName ? ', S/o: ' + fields.representativeFatherName : ''} to inspect the property on ${fields.dateOfInspection || '______'}.`);
+      r.drawTextBlock(`\u2022 I have deputed my representative ${fields.representativeName ? 'Mr. ' + fields.representativeName : '______'}${fields.representativeFatherName ? ', S/o: ' + fields.representativeFatherName : ''} to inspect the property on ${fmtDate(fields.dateOfInspection)}.`);
       r.drawTextBlock('\u2022 I have no direct or indirect interest in the property valued.');
       r.drawTextBlock('\u2022 The information furnished is true and correct to the best of my knowledge and belief.');
       r.advanceCursor(10);

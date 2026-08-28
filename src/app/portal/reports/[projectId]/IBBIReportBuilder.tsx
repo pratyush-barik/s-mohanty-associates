@@ -1594,6 +1594,14 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       const r = new PDFIBBIRenderer();
       await r.init(letterheadBytes || undefined);
 
+      // Date formatter: YYYY-MM-DD → DD.MM.YYYY (used throughout PDF generation)
+      const fmtDateDDMMYYYY = (d: string) => {
+        if (!d) return '________';
+        const parts = d.split('-');
+        if (parts.length === 3) return `${parts[2]}.${parts[1]}.${parts[0]}`;
+        return d;
+      };
+
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       //  COVER PAGE
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1698,7 +1706,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.newPage();
       r.drawSplitLine(
         `Ref: ${fields.refNo || '________'}`,
-        `Date: ${fields.dateOfValuation || '________'}`
+        `Date: ${fmtDateDDMMYYYY(fields.dateOfValuation)}`
       );
       r.advanceCursor(4);
       r.checkPageBreak(200);
@@ -1710,7 +1718,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       const certOwner = fields.applicantName || fields.ownerName || '________';
       const certCurrentOwner = fields.certCurrentOwner || certOwner;
       const certAddress = fields.propertyAddress || fields.ownerAddress || '________';
-      const certDate = fields.dateOfInspection || '________';
+      const certDate = fmtDateDDMMYYYY(fields.dateOfInspection);
       const coverDesc = fields.propertyType || 'Property';
       if (fields.valuationCertificateIntro && fields.valuationCertificateIntro.trim()) {
         r.drawTextBlock(fields.valuationCertificateIntro, { fontSize: 10, align: 'justify' });
@@ -1728,7 +1736,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.drawSimpleRow('AREA', fields.certArea || '');
       r.drawSimpleRow('STATUS OF PLOT', fields.certStatusOfPlot || '');
       r.drawSimpleRow('VALUATION METHOD', (fields.valuationMethod || 'Sale Comparison Method').toUpperCase());
-      r.drawSimpleRow('VALUATION DATE', fields.dateOfValuation || 'N/A');
+      r.drawSimpleRow('VALUATION DATE', fmtDateDDMMYYYY(fields.dateOfValuation) || 'N/A');
       const presentValueFinalNumStr = String((fields.valuationVariant === 'cuttack' ? fields.cuttackPresentOrSay : fields.totalPresentValueOrSay) || (parseFloat(fields.fairMarketValueTotal) || 0)).replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '');
       r.drawSimpleRow('PRESENT MARKET VALUE (Rs)', `Rs. ${formatIndianCurrency(presentValueFinalNumStr)}/-`);
       r.drawSimpleRow('VALUERS DETAILS', [
@@ -1806,7 +1814,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.drawSectionHeader('2. SCOPE OF ENQUIRIES AND INVESTIGATION:');
       tocPageMap['2.  SCOPE OF ENQUIRIES AND INVESTIGATION'] = r.getPageCount();
       r.drawTextBlock('2.1 SITE INSPECTION', { bold: true });
-      r.drawTextBlock(fields.scope2_1 || `Site inspection was carried out on ${fields.dateOfInspection || '________'}.`);
+      r.drawTextBlock(fields.scope2_1 || `Site inspection was carried out on ${fmtDateDDMMYYYY(fields.dateOfInspection)}.`);
       r.advanceCursor(4);
       r.drawTextBlock('2.2 ENQUIRIES', { bold: true });
       r.drawTextBlock(fields.scope2_2 || 'Enquiries were made with local people, real estate agents, and brokers to assess the prevailing market conditions.');
@@ -2677,7 +2685,7 @@ Our valuation is based on information obtained from the client and on data gathe
       // Conclusion signature (Place on left, Signature + Name on right)
       r.drawSplitSignatureBlock(
         [
-          { text: `Date   : ${fields.dateOfValuation || '________'}`, bold: true },
+          { text: `Date   : ${fmtDateDDMMYYYY(fields.dateOfValuation)}`, bold: true },
           { text: `Place:  ${fields.conclusionPlace || 'Bhubaneswar'}`, bold: true },
         ],
         [
@@ -2700,13 +2708,6 @@ Our valuation is based on information obtained from the client and on data gathe
       r.drawSectionHeader('DECLARATION AND UNDERTAKING');
       tocPageMap['DECLARATION AND UNDERTAKING'] = r.getPageCount();
       r.advanceCursor(6);
-      // Helper to format date as DD.MM.YYYY
-      const fmtDateDDMMYYYY = (d: string) => {
-        if (!d) return '________';
-        const parts = d.split('-');
-        if (parts.length === 3) return `${parts[2]}.${parts[1]}.${parts[0]}`;
-        return d;
-      };
       if (fields.declarationDescription) {
         const parts = fields.declarationDescription.split('\n');
         for (const part of parts) {
@@ -2926,7 +2927,7 @@ Our valuation is based on information obtained from the client and on data gathe
 
       // Annexure II signature
       r.drawSignatureBlock([
-        { text: `Date: ${fields.dateOfValuation || '________'}` },
+        { text: `Date: ${fmtDateDDMMYYYY(fields.dateOfValuation)}` },
         { text: 'Signature & Seal of Valuer' },
         { text: 'Place: Bhubaneswar' },
         { text: `Name of the Valuer - ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications.toUpperCase() : ''}`, bold: true },
