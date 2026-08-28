@@ -371,6 +371,7 @@ interface IBBIFields {
   certCurrentOwner?: string;
   certStatusOfPlot?: string;
   certDescription?: string;
+  certArea?: string;
   caseParties?: string;
   caseReferenceNo2?: string;
   appointedByDesignation?: string;
@@ -1696,7 +1697,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.drawSimpleRow('PURPOSE OF VALUATION', (fields.purposeOfValuation || 'ACCESS OF FAIR MARKET VALUE').toUpperCase());
       r.drawSimpleRow('CURRENT OWNER, CONTACT DETAILS', `${certCurrentOwner.toUpperCase()}${fields.ownerContactDetails ? '\n' + fields.ownerContactDetails : ''}`);
       r.drawSimpleRow('DESCRIPTION', (fields.certDescription || '').toUpperCase());
-      r.drawSimpleRow('AREA', fields.extentOfSite || 'N/A');
+      r.drawSimpleRow('AREA', fields.certArea || '');
       r.drawSimpleRow('STATUS OF PLOT', fields.certStatusOfPlot || '');
       r.drawSimpleRow('VALUATION METHOD', (fields.valuationMethod || 'Sale Comparison Method').toUpperCase());
       r.drawSimpleRow('VALUATION DATE', fields.dateOfValuation || 'N/A');
@@ -3045,8 +3046,8 @@ Our valuation is based on information obtained from the client and on data gathe
               <Field label="Description">
                 <input type="text" value={fields.certDescription || ''} onChange={e => handleChange('certDescription', e.target.value)} className={inputCls} placeholder="e.g. Vacant Land, Residential House, etc." disabled={isReadOnly} />
               </Field>
-              <Field label="Area / Extent of Site (from Section 4)">
-                <input type="text" value={fields.extentOfSite || 'N/A'} className={inputCls + ' bg-gray-100'} disabled />
+              <Field label="Area / Extent of Site">
+                <input type="text" value={fields.certArea || ''} onChange={e => handleChange('certArea', e.target.value)} className={inputCls} placeholder="e.g. Ac. 0.000 Dec" disabled={isReadOnly} />
               </Field>
               <Field label="Status of Plot">
                 <input type="text" value={fields.certStatusOfPlot || ''} onChange={e => handleChange('certStatusOfPlot', e.target.value)} className={inputCls} placeholder="e.g. Converted to Homestead (Vacant)" disabled={isReadOnly} />
@@ -3275,8 +3276,8 @@ Our valuation is based on information obtained from the client and on data gathe
                   <option value="Government Allotted">Government Allotted</option>
                 </select>
               </Field>
-              <Field label="Extent of Site (Acres/Dec/Sqft)">
-                <input type="text" value={fields.extentOfSite} onChange={e => handleChange('extentOfSite', e.target.value)} className={inputCls} placeholder="e.g. 0.45 Acres" disabled={isReadOnly} />
+              <Field label="Extent of Site">
+                <input type="text" value={fields.extentOfSite || ''} onChange={e => handleChange('extentOfSite', e.target.value)} className={inputCls} placeholder="e.g. 0.45 Acres" disabled={isReadOnly} />
               </Field>
               <Field label="Occupancy Status">
                 <select value={fields.occupancyStatus} onChange={e => handleChange('occupancyStatus', e.target.value)} className={selectCls} disabled={isReadOnly}>
