@@ -2343,7 +2343,6 @@ export default function BankReportBuilder({
             { id: 'section-4', title: 'Subject Property' },
             { id: 'section-5', title: 'Structural Details' },
             { id: 'section-6', title: 'Plan Approvals' },
-            { id: 'layout-config', title: 'Layout Structure', special: true },
             { id: 'section-7', title: 'Area Valuation' },
             ...(isApartmentFlat ? [] : [{ id: 'section-8', title: 'Land Valuation' }]),
             { id: `section-${isApartmentFlat ? 8 : 9}`, title: 'Valuation Abstract' },

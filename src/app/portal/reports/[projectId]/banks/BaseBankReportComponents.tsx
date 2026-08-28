@@ -69,7 +69,6 @@ export function Field({
 export interface NavItem {
   id: string;
   title: string;
-  special?: boolean;
 }
 
 export function FloatingNavigator({ sections }: { sections: NavItem[] }) {
@@ -104,7 +103,6 @@ export function FloatingNavigator({ sections }: { sections: NavItem[] }) {
       <div className="text-[10px] font-black text-neutral-400 mb-1 px-2 uppercase tracking-widest">Sections</div>
       {sections.map((sec) => {
         const isActive = activeId === sec.id;
-        const isSpecial = sec.special;
         return (
           <button
             key={sec.id}
@@ -112,12 +110,8 @@ export function FloatingNavigator({ sections }: { sections: NavItem[] }) {
             onClick={() => scrollTo(sec.id)}
             className={`text-left py-1 px-2.5 rounded-lg transition-all flex flex-col justify-center my-0.5 ${
               isActive
-                ? isSpecial
-                  ? '!bg-purple-600 !text-white !border-purple-600 shadow-md font-bold'
-                  : '!bg-[#b8860b] !text-white !border-[#b8860b] shadow-md font-bold'
-                : isSpecial
-                  ? 'text-purple-600 hover:bg-purple-50 font-bold border border-purple-200'
-                  : 'text-slate-600 hover:bg-[#b8860b]/10 hover:text-[#b8860b]'
+                ? '!bg-[#b8860b] !text-white !border-[#b8860b] shadow-md font-bold'
+                : 'text-slate-600 hover:bg-[#b8860b]/10 hover:text-[#b8860b]'
             }`}
           >
             <span className="text-[11.5px] leading-tight truncate w-full">
