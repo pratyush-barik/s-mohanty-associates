@@ -1712,7 +1712,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
       // Certificate closing + realisable value
       const certValue = fields.fairMarketValueTotal || fields.presentMarketValueTotal || '0';
-      const realValue = fields.realisableValueTotal || '0';
+      const realValue = String(fields.realisableValueOrSay || (parseFloat(fields.realisableValueTotal) || 0)).replace(/[^\d.]/g, '');
       r.drawTextBlock(`After considering various important factors discussed above, we are of the opinion that the Realisable value of the property is INR. ${formatIndianCurrency(realValue)} (${rupeesInWords(parseFloat(realValue) || 0)}).`, { fontSize: 10 });
       r.advanceCursor(6);
 
@@ -3060,6 +3060,9 @@ Our valuation is based on information obtained from the client and on data gathe
               </Field>
               <Field label="Present Market Value (from Section Conclusion)">
                 <input type="text" value={(fields.valuationVariant === 'cuttack' ? fields.cuttackPresentOrSay : fields.totalPresentValueOrSay) || (parseFloat(fields.fairMarketValueTotal) || 0).toString()} className={inputCls + ' bg-gray-100'} disabled />
+              </Field>
+              <Field label="Realisable Value (from Section Conclusion)">
+                <input type="text" value={fields.realisableValueOrSay || (parseFloat(fields.realisableValueTotal) || 0).toString()} className={inputCls + ' bg-gray-100'} disabled />
               </Field>
               <Field label="Valuers Details (from Declaration)" span={2}>
                 <textarea rows={2} value={[
