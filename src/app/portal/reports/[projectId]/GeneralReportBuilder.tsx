@@ -9,6 +9,7 @@ import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
 import { PDFGeneralRenderer } from '@/lib/pdf-general-renderer';
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
+import { getFloorName } from './banks/BaseBankReportComponents';
 // @ts-ignore
 import * as XLSX from 'xlsx';
 
@@ -1167,7 +1168,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
   // ── Floor helpers ──
   const addFloor = () => {
     handleChange('floors', [...fields.floors, {
-      id: String(Date.now()), name: `Floor ${fields.floors.length}`, area: '', rate: '',
+      id: String(Date.now()), name: getFloorName(fields.floors.length), area: '', rate: '',
       yearBuilt: '', lifeYears: '60', ageYears: '', depreciationPct: '',
     }]);
   };

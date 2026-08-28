@@ -2,6 +2,44 @@
 
 import React, { useState, useEffect } from 'react';
 
+// ─── Dynamic Floor Naming (Pure Algorithmic Ordinal Generator) ───────────
+const ORDINALS_MAP: Record<number, string> = {
+  1: 'First', 2: 'Second', 3: 'Third', 4: 'Fourth', 5: 'Fifth',
+  6: 'Sixth', 7: 'Seventh', 8: 'Eighth', 9: 'Ninth', 10: 'Tenth',
+  11: 'Eleventh', 12: 'Twelfth', 13: 'Thirteenth', 14: 'Fourteenth', 15: 'Fifteenth',
+  16: 'Sixteenth', 17: 'Seventeenth', 18: 'Eighteenth', 19: 'Nineteenth', 20: 'Twentieth',
+  30: 'Thirtieth', 40: 'Fortieth', 50: 'Fiftieth', 60: 'Sixtieth', 70: 'Seventieth',
+  80: 'Eightieth', 90: 'Ninetieth',
+};
+
+const TENS_WORDS = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+const ONES_WORDS = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+
+export function numberToOrdinalWord(num: number): string {
+  if (num <= 0) return 'Ground';
+  if (ORDINALS_MAP[num]) return ORDINALS_MAP[num];
+
+  if (num < 100) {
+    const tens = Math.floor(num / 10);
+    const units = num % 10;
+    return `${TENS_WORDS[tens]} ${ORDINALS_MAP[units] || `${units}th`}`;
+  }
+
+  if (num < 1000) {
+    const hundreds = Math.floor(num / 100);
+    const remainder = num % 100;
+    if (remainder === 0) return `${ONES_WORDS[hundreds]} Hundredth`;
+    return `${ONES_WORDS[hundreds]} Hundred ${numberToOrdinalWord(remainder)}`;
+  }
+
+  return `${num}th`;
+}
+
+export function getFloorName(index: number): string {
+  if (index <= 0) return 'Ground Floor';
+  return `${numberToOrdinalWord(index)} Floor`;
+}
+
 // ─── Standard Input & Select Classes ─────────────────────────────────
 export const inputCls = "w-full px-3 py-2.5 rounded-lg border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] disabled:bg-[#f1f3f5] disabled:text-[#6c757d] transition-all";
 export const selectCls = inputCls;

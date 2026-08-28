@@ -15,6 +15,7 @@ import {
   ActiveConfigBanner,
   ReportActionBar,
   NavItem,
+  getFloorName,
 } from '../BaseBankReportComponents';
 
 export interface AdityaBirlaCapitalMLAPProps {
@@ -47,17 +48,10 @@ interface BuaRow {
 
 const DEFAULT_ACCOM_ROWS: AccomRow[] = [
   { floor: 'Ground Floor', drawingRoom: '', bedroom: '2', diningRoom: '', kitchen: '1', bathroom: '', balcony: '' },
-  { floor: 'First Floor', drawingRoom: 'NA', bedroom: 'NA', diningRoom: 'NA', kitchen: 'NA', bathroom: 'NA', balcony: 'NA' },
-  { floor: 'Second Floor', drawingRoom: 'NA', bedroom: 'NA', diningRoom: 'NA', kitchen: 'NA', bathroom: 'NA', balcony: 'NA' },
-  { floor: 'Third Floor', drawingRoom: 'NA', bedroom: 'NA', diningRoom: 'NA', kitchen: 'NA', bathroom: 'NA', balcony: 'NA' },
-  { floor: 'Forth Floor', drawingRoom: 'NA', bedroom: 'NA', diningRoom: 'NA', kitchen: 'NA', bathroom: 'NA', balcony: 'NA' },
 ];
 
 const DEFAULT_BUA_ROWS: BuaRow[] = [
   { floor: 'Ground Floor', asPerSite: 'RCC-1441sqft', asPerPlan: 'NA', percentageDeviation: 'NA' },
-  { floor: 'First Floor', asPerSite: 'NA', asPerPlan: 'NA', percentageDeviation: 'NA' },
-  { floor: 'Second Floor', asPerSite: 'NA', asPerPlan: 'NA', percentageDeviation: 'NA' },
-  { floor: 'Third Floor', asPerSite: 'NA', asPerPlan: 'NA', percentageDeviation: 'NA' },
 ];
 
 // ── Bank Specific Nav Sections (11 exact sections) ──
@@ -215,9 +209,17 @@ export default function AdityaBirlaCapitalMLAP({
 
   // ── Dynamic Row Handlers ──
   const addAccommodationRow = () => {
-    const nextIdx = (fields.accommodationRows || []).length + 1;
-    const newRow: AccomRow = { floor: `Floor ${nextIdx}`, drawingRoom: '', bedroom: '', diningRoom: '', kitchen: '', bathroom: '', balcony: '' };
-    handleChange('accommodationRows', [...(fields.accommodationRows || DEFAULT_ACCOM_ROWS), newRow]);
+    const currentList = fields.accommodationRows || DEFAULT_ACCOM_ROWS;
+    const newRow: AccomRow = {
+      floor: getFloorName(currentList.length),
+      drawingRoom: '',
+      bedroom: '',
+      diningRoom: '',
+      kitchen: '',
+      bathroom: '',
+      balcony: '',
+    };
+    handleChange('accommodationRows', [...currentList, newRow]);
   };
 
   const removeAccommodationRow = (idx: number) => {
@@ -226,9 +228,14 @@ export default function AdityaBirlaCapitalMLAP({
   };
 
   const addBuaRow = () => {
-    const nextIdx = (fields.buaRows || []).length + 1;
-    const newRow: BuaRow = { floor: `Floor ${nextIdx}`, asPerSite: '', asPerPlan: 'NA', percentageDeviation: 'NA' };
-    handleChange('buaRows', [...(fields.buaRows || DEFAULT_BUA_ROWS), newRow]);
+    const currentList = fields.buaRows || DEFAULT_BUA_ROWS;
+    const newRow: BuaRow = {
+      floor: getFloorName(currentList.length),
+      asPerSite: '',
+      asPerPlan: 'NA',
+      percentageDeviation: 'NA',
+    };
+    handleChange('buaRows', [...currentList, newRow]);
   };
 
   const removeBuaRow = (idx: number) => {
