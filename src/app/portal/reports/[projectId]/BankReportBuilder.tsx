@@ -2353,7 +2353,7 @@ export default function BankReportBuilder({
             { id: `section-${isApartmentFlat ? 12 : 13}`, title: 'Sketch Maps' },
             { id: `section-${isApartmentFlat ? 13 : 14}`, title: 'Location Map' },
             ...(fields.annexureEnabled ? [{ id: `section-${isApartmentFlat ? 14 : 15}`, title: 'Annexure' }] : []),
-          ].filter(sec => !(config?.hiddenSections || []).includes(sec.id))
+          ]
         }
       />
 

@@ -276,10 +276,6 @@ export interface BankConfig {
   displayName: string;
 
   // ── Form Delta (all optional) ──
-  /** Section IDs to hide entirely (e.g. ['section-8'] to remove Land Valuation) */
-  hiddenSections?: string[];
-  /** Base field keys to hide from the form (e.g. ['loanApplicationNo', 'documentHolderName']) */
-  hiddenFields?: string[];
   /** Label overrides: base field key → new label text */
   fieldLabels?: Record<string, string>;
   /** Default value overrides merged into the base defaults */
