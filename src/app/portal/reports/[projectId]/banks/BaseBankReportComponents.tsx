@@ -399,19 +399,31 @@ export function BasePhotographsSection({
                   key={idx}
                   className="p-4 border border-[#dee2e6] rounded-2xl bg-white space-y-3 shadow-xs hover:border-slate-300 transition-all"
                 >
-                  {/* Header: SLOT X on left, Label Input on right */}
-                  <div className="flex items-center justify-between gap-3">
+                  {/* Header: SLOT X on left, Label Input + Remove Cross on right */}
+                  <div className="flex items-center justify-between gap-2">
                     <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider">
                       SLOT {idx + 1}
                     </span>
-                    <input
-                      type="text"
-                      placeholder={`Photo ${idx + 1} Label`}
-                      value={propertyImageNames?.[idx] !== undefined ? propertyImageNames[idx] : (DEFAULT_SLOT_LABELS[idx] || `Site Pic ${idx + 1}`)}
-                      disabled={isReadOnly}
-                      onChange={(e) => onImageNameChange(idx, e.target.value)}
-                      className="text-xs font-bold text-slate-800 bg-white border border-[#dee2e6] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#b8860b] min-w-[160px] max-w-[240px]"
-                    />
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        placeholder={`Photo ${idx + 1} Label`}
+                        value={propertyImageNames?.[idx] !== undefined ? propertyImageNames[idx] : (DEFAULT_SLOT_LABELS[idx] || `Site Pic ${idx + 1}`)}
+                        disabled={isReadOnly}
+                        onChange={(e) => onImageNameChange(idx, e.target.value)}
+                        className="text-xs font-bold text-slate-800 bg-white border border-[#dee2e6] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#b8860b] min-w-[140px] max-w-[220px]"
+                      />
+                      {!isReadOnly && (
+                        <button
+                          type="button"
+                          onClick={() => onRemoveImage(idx)}
+                          className="w-7 h-7 flex items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors text-xs font-bold shrink-0 shadow-2xs cursor-pointer"
+                          title="Remove Photo and Entry"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Body: Uploaded Photo Preview */}
@@ -421,10 +433,10 @@ export function BasePhotographsSection({
                       <button
                         type="button"
                         onClick={() => onRemoveImage(idx)}
-                        className="absolute top-2 right-2 bg-red-600/90 hover:bg-red-700 text-white w-7 h-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm shadow-md cursor-pointer"
-                        title="Remove Photo"
+                        className="absolute top-2 right-2 bg-red-600/90 hover:bg-red-700 text-white w-7 h-7 rounded-full transition-all flex items-center justify-center text-xs font-bold shadow-md cursor-pointer"
+                        title="Remove Photo and Entry"
                       >
-                        &times;
+                        ✕
                       </button>
                     )}
                   </div>
