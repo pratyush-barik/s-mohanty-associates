@@ -1700,7 +1700,8 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.drawSimpleRow('STATUS OF PLOT', fields.certStatusOfPlot || '');
       r.drawSimpleRow('VALUATION METHOD', (fields.valuationMethod || 'Sale Comparison Method').toUpperCase());
       r.drawSimpleRow('VALUATION DATE', fields.dateOfValuation || 'N/A');
-      r.drawSimpleRow('PRESENT VALUE (in Rs)', `Rs.${formatIndianCurrency(fields.fairMarketValueTotal || fields.presentMarketValueTotal || '0')}/-`);
+      const presentValueFinalNumStr = String((fields.valuationFormat === 'cuttack' ? fields.cuttackPresentOrSay : fields.totalPresentValueOrSay) || (parseFloat(fields.fairMarketValueTotal) || 0)).replace(/[^\d.]/g, '');
+      r.drawSimpleRow('PRESENT MARKET VALUE (Rs)', `Rs. ${formatIndianCurrency(presentValueFinalNumStr)}/-`);
       r.drawSimpleRow('VALUERS DETAILS', [
           fields.representativeName ? `${fields.representativeName.toUpperCase()}${fields.valuerQualifications ? ' ' + fields.valuerQualifications : ''}` : '',
           fields.valuerAdditionalDetails || '',
@@ -3056,8 +3057,8 @@ Our valuation is based on information obtained from the client and on data gathe
               <Field label="Valuation Date (from Section 1)">
                 <input type="text" value={fields.dateOfValuation || ''} className={inputCls + ' bg-gray-100'} disabled />
               </Field>
-              <Field label="Present Value (from Section 13)">
-                <input type="text" value={fields.fairMarketValueTotal || fields.presentMarketValueTotal || '0'} className={inputCls + ' bg-gray-100'} disabled />
+              <Field label="Present Market Value (from Section Conclusion)">
+                <input type="text" value={(fields.valuationFormat === 'cuttack' ? fields.cuttackPresentOrSay : fields.totalPresentValueOrSay) || (parseFloat(fields.fairMarketValueTotal) || 0).toString()} className={inputCls + ' bg-gray-100'} disabled />
               </Field>
               <Field label="Valuers Details (from Declaration)" span={2}>
                 <textarea rows={2} value={[
