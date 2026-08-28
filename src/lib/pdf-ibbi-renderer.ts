@@ -849,6 +849,26 @@ export class PDFIBBIRenderer {
    * at a consistent indent so continuation lines align with the first line of text.
    * Advances cursor.
    */
+
+  /**
+   * Draw a letter bullet with rich text segments.
+   * Advances cursor.
+   */
+  drawRichLetterBullet(label: string, segments: TextSegment[], opts?: { labelIndent?: number; textIndent?: number; fontSize?: number }): void {
+    const fontSize = opts?.fontSize || FONT_SIZE;
+    const labelIndent = opts?.labelIndent ?? 0;
+    const textIndent = opts?.textIndent ?? 25;
+    const maxWidth = (CONTENT_W) - textIndent;
+    
+    const h = this.measureRichTextHeight(segments, maxWidth, fontSize);
+    this.checkPageBreak(h);
+
+    this.drawTextAt(label, MARGIN_L + labelIndent, this.cursorY, { fontSize, bold: false });
+    const consumed = this.drawRichTextAt(segments, MARGIN_L + textIndent, this.cursorY, maxWidth, fontSize);
+    
+    this.cursorY += consumed;
+  }
+
   drawLetterBullet(label: string, text: string, opts?: DrawTextOptions & { labelIndent?: number; textIndent?: number }): void {
     const fontSize = opts?.fontSize || FONT_SIZE;
     const lineH = fontSize * LINE_HEIGHT;

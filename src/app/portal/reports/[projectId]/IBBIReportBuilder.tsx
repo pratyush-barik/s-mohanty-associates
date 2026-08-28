@@ -2722,7 +2722,16 @@ Our valuation is based on information obtained from the client and on data gathe
         ];
         for (let i = 0; i < declarations.length; i++) {
           const letter = String.fromCharCode(97 + i); // a, b, c, ..., t
-          r.drawLetterBullet(letter + '.', declarations[i], { labelIndent: 2, textIndent: 25 });
+          if (declarations[i].includes('My PAN Card number')) {
+            const panVal = fields.panCardNumber ? fields.panCardNumber.toUpperCase() : 'AOVPP5837R';
+            (r as any).drawRichLetterBullet(letter + '.', [
+              { text: 'My PAN Card number as applicable is ' },
+              { text: panVal, bold: true },
+              { text: '.' }
+            ], { labelIndent: 2, textIndent: 25 });
+          } else {
+            r.drawLetterBullet(letter + '.', declarations[i], { labelIndent: 2, textIndent: 25 });
+          }
           r.advanceCursor(2);
         }
 
@@ -3096,14 +3105,8 @@ Our valuation is based on information obtained from the client and on data gathe
               <p className="text-xs text-blue-800">Fill the dates and reference fields below. Section 1 (Objective), Section 2 (Scope), and Section 3 (Basis) use <strong>standard IBBI-IVS text by default</strong>. You can override any sub-section text below.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Date of Inspection">
-                <input type="date" value={fields.dateOfInspection} onChange={e => handleChange('dateOfInspection', e.target.value)} className={inputCls} disabled={isReadOnly} />
-              </Field>
-              <Field label="Date of Valuation Report">
-                <input type="date" value={fields.dateOfValuation} onChange={e => handleChange('dateOfValuation', e.target.value)} className={inputCls} disabled={isReadOnly} />
-              </Field>
               <Field label="Reference No">
-                <input type="text" value={fields.refNo} onChange={e => handleChange('refNo', e.target.value)} className={inputCls} disabled={isReadOnly} />
+                <input type="text" value={fields.refNo || ''} onChange={e => handleChange('refNo', e.target.value)} className={inputCls} disabled={isReadOnly} />
               </Field>
             </div>
 
@@ -4656,6 +4659,15 @@ Our valuation is based on information obtained from the client and on data gathe
                 </Field>
                 <Field label="Valuer Qualifications (Appears next to name)">
                   <input type="text" value={fields.valuerQualifications} onChange={e => handleChange('valuerQualifications', e.target.value)} className={inputCls} disabled={isReadOnly} />
+                </Field>
+                <Field label="Date of Inspection">
+                  <input type="date" value={fields.dateOfInspection || ''} onChange={e => handleChange('dateOfInspection', e.target.value)} className={inputCls} disabled={isReadOnly} />
+                </Field>
+                <Field label="Date of Valuation Report">
+                  <input type="date" value={fields.dateOfValuation || ''} onChange={e => handleChange('dateOfValuation', e.target.value)} className={inputCls} disabled={isReadOnly} />
+                </Field>
+                <Field label="PAN Card Number">
+                  <input type="text" value={fields.panCardNumber || ''} onChange={e => handleChange('panCardNumber', e.target.value.toUpperCase())} className={inputCls + ' uppercase'} placeholder="e.g. AOVPP5837R" disabled={isReadOnly} />
                 </Field>
 
               </div>
