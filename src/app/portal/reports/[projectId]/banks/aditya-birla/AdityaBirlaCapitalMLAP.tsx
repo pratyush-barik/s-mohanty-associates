@@ -47,11 +47,11 @@ interface BuaRow {
 }
 
 const DEFAULT_ACCOM_ROWS: AccomRow[] = [
-  { floor: 'Ground Floor', drawingRoom: '', bedroom: '2', diningRoom: '', kitchen: '1', bathroom: '', balcony: '' },
+  { floor: 'Ground Floor', drawingRoom: '', bedroom: '', diningRoom: '', kitchen: '', bathroom: '', balcony: '' },
 ];
 
 const DEFAULT_BUA_ROWS: BuaRow[] = [
-  { floor: 'Ground Floor', asPerSite: 'RCC-1441sqft', asPerPlan: 'NA', percentageDeviation: 'NA' },
+  { floor: 'Ground Floor', asPerSite: '', asPerPlan: 'NA', percentageDeviation: 'NA' },
 ];
 
 // ── Bank Specific Nav Sections (11 exact sections) ──
@@ -81,7 +81,7 @@ export default function AdityaBirlaCapitalMLAP({
 }: AdityaBirlaCapitalMLAPProps) {
   const router = useRouter();
 
-  // Initialize fields with bank defaults
+  // Initialize fields cleanly: dynamic prefill from project, standard dropdown defaults, blank case inputs
   const [fields, setFields] = useState<MLAPReportFields>(() => ({
     // Basic Details
     clientName: initialFields?.clientName || initialFields?.ownerName || prefill?.contactName || '',
@@ -90,27 +90,27 @@ export default function AdityaBirlaCapitalMLAP({
     valuerName: initialFields?.valuerName || 'Er. Satyajit Mohanty',
     dateOfInspection: initialFields?.dateOfInspection || new Date().toISOString().split('T')[0],
     dateOfValuation: initialFields?.dateOfValuation || new Date().toISOString().split('T')[0],
-    loanApplicationNo: initialFields?.loanApplicationNo || initialFields?.caseReferenceNumber || 'MLAP00000053145',
-    propertyOwnerName: initialFields?.propertyOwnerName || 'MANASI BEHERA, W/O- GUPTA GANJAN BEHERA',
+    loanApplicationNo: initialFields?.loanApplicationNo || initialFields?.caseReferenceNumber || '',
+    propertyOwnerName: initialFields?.propertyOwnerName || prefill?.contactName || '',
 
     // Location Details
-    propertyAddressAsDocs: initialFields?.propertyAddressAsDocs || 'Khata No - 115/442, Plot No -166/833 (AC.0.060Decs, Agri) ,Mouza-Gobindpur, Tahasil/PS-Sadar, Dist-Keonjhar,Pin-758014',
-    propertyAddressAsVisit: initialFields?.propertyAddressAsVisit || 'Khata No - 115/442, Plot No -166/833 (AC.0.060Decs, Agri) ,Mouza-Gobindpur, Tahasil/PS-Sadar, Dist-Keonjhar,Pin-758014',
+    propertyAddressAsDocs: initialFields?.propertyAddressAsDocs || prefill?.propertyAddress || '',
+    propertyAddressAsVisit: initialFields?.propertyAddressAsVisit || prefill?.propertyAddress || '',
     addressMatching: initialFields?.addressMatching || 'Yes (As per documents)',
-    latitude: initialFields?.latitude || '21.636778',
-    longitude: initialFields?.longitude || '85.628000',
-    mainLocality: initialFields?.mainLocality || 'Gobindpur,Sadar',
-    subLocality: initialFields?.subLocality || 'Sadar,Keonjhar',
+    latitude: initialFields?.latitude || '',
+    longitude: initialFields?.longitude || '',
+    mainLocality: initialFields?.mainLocality || '',
+    subLocality: initialFields?.subLocality || '',
     localityType: initialFields?.localityType || 'Residential',
-    landmark: initialFields?.landmark || 'Near Shiva Temple',
+    landmark: initialFields?.landmark || '',
     localityOccupancy: initialFields?.localityOccupancy || 'Fully Occupied',
     populationDensity: initialFields?.populationDensity || 'Moderate',
-    distanceFromBranch: initialFields?.distanceFromBranch || '2-Kms',
-    distanceFromCityCenter: initialFields?.distanceFromCityCenter || '2-Kms from Keonjhar market area',
-    distanceBusStop: initialFields?.distanceBusStop || '2-Km from Labanya Bus Stand Kendujhar',
-    distanceRailwayStation: initialFields?.distanceRailwayStation || '4-Kms from Keonjhar Railway Station',
-    amenitiesAvailability: initialFields?.amenitiesAvailability || '1-2 Kms',
-    approachRoadWidth: initialFields?.approachRoadWidth || '10 feet wide Road',
+    distanceFromBranch: initialFields?.distanceFromBranch || '',
+    distanceFromCityCenter: initialFields?.distanceFromCityCenter || '',
+    distanceBusStop: initialFields?.distanceBusStop || '',
+    distanceRailwayStation: initialFields?.distanceRailwayStation || '',
+    amenitiesAvailability: initialFields?.amenitiesAvailability || '',
+    approachRoadWidth: initialFields?.approachRoadWidth || '',
     valuedBefore: initialFields?.valuedBefore || 'No',
     valuedBeforeDate: initialFields?.valuedBeforeDate || 'NA',
     landLocked: initialFields?.landLocked || 'No',
@@ -122,12 +122,12 @@ export default function AdityaBirlaCapitalMLAP({
     occupantRelation: initialFields?.occupantRelation || 'NA',
     plotDemarcated: initialFields?.plotDemarcated || 'No',
     propertyIdentification: initialFields?.propertyIdentification || 'Yes',
-    propertyType: initialFields?.propertyType || 'Residential',
+    propertyType: initialFields?.propertyType || prefill?.propertyType || 'Residential',
     propertySubType: initialFields?.propertySubType || 'Single / Multi-units building - R',
     propertyHolding: initialFields?.propertyHolding || 'Freehold',
     propertyJurisdiction: initialFields?.propertyJurisdiction || 'Gram Panchayat',
     marketability: initialFields?.marketability || 'Average',
-    ageOfPropertyActual: initialFields?.ageOfPropertyActual || '0-Years',
+    ageOfPropertyActual: initialFields?.ageOfPropertyActual || '',
     estimatedFutureLife: initialFields?.estimatedFutureLife || '60-Years',
     qualityOfConstruction: initialFields?.qualityOfConstruction || 'Average',
     structureType: initialFields?.structureType || 'RCC',
@@ -135,8 +135,8 @@ export default function AdityaBirlaCapitalMLAP({
     dimensionDepth: initialFields?.dimensionDepth || 'NA',
     cautiousLocations: initialFields?.cautiousLocations || 'NA',
     flatConfigurationType: initialFields?.flatConfigurationType || 'NA',
-    percentageCompletion: initialFields?.percentageCompletion || '65%',
-    percentageRecommendation: initialFields?.percentageRecommendation || '70%',
+    percentageCompletion: initialFields?.percentageCompletion || '',
+    percentageRecommendation: initialFields?.percentageRecommendation || '',
 
     // Documentation
     documentsProvided: initialFields?.documentsProvided || 'Copy of Sale deed, ROR & Sketch map',
@@ -148,36 +148,36 @@ export default function AdityaBirlaCapitalMLAP({
     buaRows: initialFields?.buaRows || DEFAULT_BUA_ROWS,
 
     // Valuation
-    plotAreaDocs: initialFields?.plotAreaDocs || '2613',
-    plotAreaPhysical: initialFields?.plotAreaPhysical || '2613',
-    plotAreaConsidered: initialFields?.plotAreaConsidered || '2613',
-    landRate: initialFields?.landRate || '800',
+    plotAreaDocs: initialFields?.plotAreaDocs || '',
+    plotAreaPhysical: initialFields?.plotAreaPhysical || '',
+    plotAreaConsidered: initialFields?.plotAreaConsidered || '',
+    landRate: initialFields?.landRate || '',
     buaPlan: initialFields?.buaPlan || 'Plan is not provided',
-    buaActual: initialFields?.buaActual || '1441',
-    buaActualRate: initialFields?.buaActualRate || '1500',
-    buaConsidered: initialFields?.buaConsidered || '1441',
-    buaConsideredRate: initialFields?.buaConsideredRate || '975',
+    buaActual: initialFields?.buaActual || '',
+    buaActualRate: initialFields?.buaActualRate || '',
+    buaConsidered: initialFields?.buaConsidered || '',
+    buaConsideredRate: initialFields?.buaConsideredRate || '',
     superBua: initialFields?.superBua || 'NA',
     amenitiesValue: initialFields?.amenitiesValue || '0',
 
     // Boundaries
-    boundarySketchNorth: initialFields?.boundarySketchNorth || 'Deepak Behera & Bibhu Ranjan Palei',
-    boundarySketchSouth: initialFields?.boundarySketchSouth || 'Road',
-    boundarySketchEast: initialFields?.boundarySketchEast || 'Sonali Sethi',
-    boundarySketchWest: initialFields?.boundarySketchWest || 'Archana Debarchana Sethi',
-    boundaryMouzaNorth: initialFields?.boundaryMouzaNorth || 'Plot no-165',
-    boundaryMouzaSouth: initialFields?.boundaryMouzaSouth || 'Plot no-168',
-    boundaryMouzaEast: initialFields?.boundaryMouzaEast || 'Plot no-164/856',
-    boundaryMouzaWest: initialFields?.boundaryMouzaWest || 'Plot no-167',
-    boundaryActualNorth: initialFields?.boundaryActualNorth || "Other's building",
-    boundaryActualSouth: initialFields?.boundaryActualSouth || '15 feet wide Road',
-    boundaryActualEast: initialFields?.boundaryActualEast || "Other's vacant land",
-    boundaryActualWest: initialFields?.boundaryActualWest || "Other's vacant land",
+    boundarySketchNorth: initialFields?.boundarySketchNorth || '',
+    boundarySketchSouth: initialFields?.boundarySketchSouth || '',
+    boundarySketchEast: initialFields?.boundarySketchEast || '',
+    boundarySketchWest: initialFields?.boundarySketchWest || '',
+    boundaryMouzaNorth: initialFields?.boundaryMouzaNorth || '',
+    boundaryMouzaSouth: initialFields?.boundaryMouzaSouth || '',
+    boundaryMouzaEast: initialFields?.boundaryMouzaEast || '',
+    boundaryMouzaWest: initialFields?.boundaryMouzaWest || '',
+    boundaryActualNorth: initialFields?.boundaryActualNorth || '',
+    boundaryActualSouth: initialFields?.boundaryActualSouth || '',
+    boundaryActualEast: initialFields?.boundaryActualEast || '',
+    boundaryActualWest: initialFields?.boundaryActualWest || '',
     boundariesMatching: initialFields?.boundariesMatching || 'Yes (Boundary matching as per sketch map)',
 
     // Remarks & Signoff
-    remarks: initialFields?.remarks || 'Subject property is a single storied under construction building having land extent of 2613sqft, having measured BUA 1441sqft. This Property is accessible with 15-feet wide road. All civic amenities are present within 1-2 Kms from the property. Surrounding habitation is 50%. The property is coming under Mandua GP limit. At present, GF RCC roof slab completed & stages of construction is about 65%. Valuation has been done for land & measured BUA of single storied under construction building. Note-This land is not converted to homestead & present nature in agri. Customer has submitted homestead conversion receipt vide OLR Case no- 81/2025, dated-05/02/2025. Boundary details are not mentioned in sale deed. Customer has submitted Amin sketch map for the identification & access road. Report is released basing upon the sketch map. Bank to check the authenticity of the sketch map.',
-    engineerVisitedName: initialFields?.engineerVisitedName || 'Mr. Kundan Singh',
+    remarks: initialFields?.remarks || '',
+    engineerVisitedName: initialFields?.engineerVisitedName || '',
 
     // Maps & Images
     locationMapImage: initialFields?.locationMapImage || '',
