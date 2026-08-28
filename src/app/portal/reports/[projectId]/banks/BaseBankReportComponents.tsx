@@ -353,19 +353,16 @@ const DEFAULT_SLOT_LABELS = [
   'Site Work Pic 2',
 ];
 
-// ─── Standard Photographs Section (Slot container design with General-style add more) ───
+// ─── Standard Photographs Section (Boxed UI only for uploaded photos) ───
 export function BasePhotographsSection({
   propertyImages = [],
   propertyImageNames = [],
   isReadOnly = false,
   uploading = false,
-  uploadingSlot,
   bucketCount = 0,
   onImageNameChange,
   onRemoveImage,
   onUploadImages,
-  onUploadSingleSlot,
-  onAddSlot,
   onOpenBucketPicker,
   sectionNumber = 11,
   sectionId = 'section-11',
@@ -374,59 +371,52 @@ export function BasePhotographsSection({
   propertyImageNames: string[];
   isReadOnly?: boolean;
   uploading?: boolean;
-  uploadingSlot?: number | null;
   bucketCount?: number;
   onImageNameChange: (index: number, name: string) => void;
   onRemoveImage: (index: number) => void;
   onUploadImages: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onUploadSingleSlot?: (index: number, e: React.ChangeEvent<HTMLInputElement>) => void;
-  onAddSlot?: () => void;
   onOpenBucketPicker?: () => void;
   sectionNumber?: number | string;
   sectionId?: string;
 }) {
-  const totalSlotsCount = Math.max(6, propertyImages.length, propertyImageNames.length);
-  const slots = Array.from({ length: totalSlotsCount }, (_, idx) => idx);
-  const validPhotoCount = propertyImages.filter(Boolean).length;
+  const validPhotos = propertyImages.filter(Boolean);
 
   return (
     <Section title="Photographs" number={sectionNumber} id={sectionId} defaultOpen={false}>
       <div className="space-y-6">
-        {/* Photo Grid: 2 slots per row on desktop */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {slots.map((idx) => {
-            const currentImg = propertyImages[idx];
-            const currentLabel =
-              propertyImageNames?.[idx] !== undefined && propertyImageNames[idx] !== ''
-                ? propertyImageNames[idx]
-                : (DEFAULT_SLOT_LABELS[idx] || `Site Pic ${idx + 1}`);
+        {/* Uploaded Photo Slots Grid: 2 slots per row */}
+        {validPhotos.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {propertyImages.map((url, idx) => {
+              if (!url) return null;
+              const currentLabel =
+                propertyImageNames?.[idx] !== undefined && propertyImageNames[idx] !== ''
+                  ? propertyImageNames[idx]
+                  : (DEFAULT_SLOT_LABELS[idx] || `Site Pic ${idx + 1}`);
 
-            if (isReadOnly && !currentImg) return null;
+              return (
+                <div
+                  key={idx}
+                  className="p-4 border border-[#dee2e6] rounded-2xl bg-white space-y-3 shadow-xs hover:border-slate-300 transition-all"
+                >
+                  {/* Header: SLOT X on left, Label Input on right */}
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider">
+                      SLOT {idx + 1}
+                    </span>
+                    <input
+                      type="text"
+                      placeholder={`Photo ${idx + 1} Label`}
+                      value={propertyImageNames?.[idx] !== undefined ? propertyImageNames[idx] : (DEFAULT_SLOT_LABELS[idx] || `Site Pic ${idx + 1}`)}
+                      disabled={isReadOnly}
+                      onChange={(e) => onImageNameChange(idx, e.target.value)}
+                      className="text-xs font-bold text-slate-800 bg-white border border-[#dee2e6] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#b8860b] min-w-[160px] max-w-[240px]"
+                    />
+                  </div>
 
-            return (
-              <div
-                key={idx}
-                className="p-4 border border-[#dee2e6] rounded-2xl bg-white space-y-3 shadow-xs hover:border-slate-300 transition-all"
-              >
-                {/* Header: SLOT X on left, Label Input on right */}
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider">
-                    SLOT {idx + 1}
-                  </span>
-                  <input
-                    type="text"
-                    placeholder={`Photo ${idx + 1} Label`}
-                    value={propertyImageNames?.[idx] !== undefined ? propertyImageNames[idx] : (DEFAULT_SLOT_LABELS[idx] || `Site Pic ${idx + 1}`)}
-                    disabled={isReadOnly}
-                    onChange={(e) => onImageNameChange(idx, e.target.value)}
-                    className="text-xs font-bold text-slate-800 bg-white border border-[#dee2e6] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#b8860b] min-w-[160px] max-w-[240px]"
-                  />
-                </div>
-
-                {/* Body: Upload Dropzone or Photo Preview */}
-                {currentImg ? (
+                  {/* Body: Uploaded Photo Preview */}
                   <div className="relative group rounded-xl overflow-hidden border border-[#dee2e6] bg-slate-100 h-52 flex items-center justify-center">
-                    <img src={currentImg} alt={currentLabel} className="w-full h-full object-cover" />
+                    <img src={url} alt={currentLabel} className="w-full h-full object-cover" />
                     {!isReadOnly && (
                       <button
                         type="button"
@@ -438,31 +428,17 @@ export function BasePhotographsSection({
                       </button>
                     )}
                   </div>
-                ) : (
-                  !isReadOnly && (
-                    <label className="flex flex-col items-center justify-center h-52 border-2 border-dashed border-[#c8d6e5] rounded-xl bg-[#f8fbfe] hover:bg-[#f0f7fd] hover:border-[#b8860b]/60 cursor-pointer transition-all">
-                      <span className="text-xs text-slate-600 font-semibold">
-                        {uploadingSlot === idx ? '⏳ Uploading...' : `Upload ${currentLabel}`}
-                      </span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => onUploadSingleSlot ? onUploadSingleSlot(idx, e) : onUploadImages(e)}
-                        disabled={uploading}
-                      />
-                    </label>
-                  )
-                )}
-              </div>
-            );
-          })}
-        </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
-        {/* Bottom Upload & Actions Bar matching General style */}
+        {/* Upload & Actions Bar */}
         {!isReadOnly && (
-          <div className="pt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100">
+          <div className={`flex flex-wrap items-center justify-between gap-3 ${validPhotos.length > 0 ? 'pt-3 border-t border-slate-100' : ''}`}>
             <div className="flex flex-wrap items-center gap-3">
+              {/* 1. Local Device Upload */}
               <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
                 {uploading ? '⏳ Uploading...' : 'Add Property Images'}
                 <input
@@ -475,6 +451,7 @@ export function BasePhotographsSection({
                 />
               </label>
 
+              {/* 2. Cloud Storage Bucket Pick */}
               {onOpenBucketPicker && bucketCount > 0 && (
                 <button
                   type="button"
@@ -484,25 +461,15 @@ export function BasePhotographsSection({
                   Pick from Bucket ({bucketCount})
                 </button>
               )}
-
-              {onAddSlot && (
-                <button
-                  type="button"
-                  onClick={onAddSlot}
-                  className="text-sm text-[#b8860b] hover:text-[#96700a] font-semibold flex items-center gap-1"
-                >
-                  <span className="text-lg">+</span> Add Photo Slot
-                </button>
-              )}
             </div>
 
             <div
               className={`text-xs font-semibold ${
-                validPhotoCount < 2 ? 'text-amber-600' : 'text-green-600'
+                validPhotos.length < 2 ? 'text-amber-600' : 'text-green-600'
               }`}
             >
-              {validPhotoCount} / 2 minimum uploaded
-              {validPhotoCount < 2 && ' — At least 2 photographs are required to submit.'}
+              {validPhotos.length} / 2 minimum uploaded
+              {validPhotos.length < 2 && ' — At least 2 photographs are required to submit.'}
             </div>
           </div>
         )}
