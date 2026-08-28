@@ -1553,16 +1553,32 @@ export default function BankReportBuilder({
             <div className="flex flex-wrap gap-2">
               <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                Organisation / Bank
+                {fields.clientType === 'organisation' ? 'Organisation / Bank' : 'Individual'}
               </span>
+              {(fields.institutionCategory || fields.clientType === 'organisation') && (
+                <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-500"></span>
+                  {fields.institutionCategory || 'Bank & FIS'}
+                </span>
+              )}
               <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
                 <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
                 {config?.displayName || fields.bankName || fields.organisationTemplate || 'Bank Report'}
               </span>
               {fields.organisationSubTemplate && (
                 <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-500"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-teal-500"></span>
                   Format: {fields.organisationSubTemplate}
+                </span>
+              )}
+              {fields.serviceType && (
+                <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
+                  Service: {(fields.serviceType || '').replace(/_/g, ' ')}
+                </span>
+              )}
+              {fields.subjectType && (
+                <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
+                  Subject: {(fields.subjectType || '').replace(/_/g, ' ')}
                 </span>
               )}
             </div>
