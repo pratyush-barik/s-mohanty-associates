@@ -3117,15 +3117,9 @@ Our valuation is based on information obtained from the client and on data gathe
               <Field label="Date of Inspection">
                 <input type="date" value={fields.dateOfInspection || ''} onChange={e => handleChange('dateOfInspection', e.target.value)} className={inputCls} disabled={isReadOnly} />
               </Field>
-              <Field label="Case Parties (in the matter of...)" span={2}>
-                <input type="text" value={fields.caseParties || ''} onChange={e => handleChange('caseParties', e.target.value)} className={inputCls} placeholder="e.g. Noida Infratech Two Pvt Ltd vs Falcony Consultancy Pvt Ltd" disabled={isReadOnly} />
-              </Field>
-              <Field label="Case Reference No (Primary)">
-                <input type="text" value={fields.caseReferenceNo || ''} onChange={e => handleChange('caseReferenceNo', e.target.value)} className={inputCls} placeholder="e.g. C.P.(IB) No. 300/KB/2017" disabled={isReadOnly} />
-              </Field>
-              <Field label="Case Reference No (Secondary)">
-                <input type="text" value={fields.caseReferenceNo2 || ''} onChange={e => handleChange('caseReferenceNo2', e.target.value)} className={inputCls} placeholder="e.g. T.P. (IB) No 112/CTB/2019" disabled={isReadOnly} />
-              </Field>
+
+
+
 
 
               <div className="col-span-2 border-t border-gray-200 pt-3 mt-1">
