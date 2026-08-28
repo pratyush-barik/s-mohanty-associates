@@ -718,6 +718,7 @@ const FloatingNavigator = ({ annexureEnabled }: { annexureEnabled: boolean }) =>
   const [activeId, setActiveId] = useState<string>('');
 
   const NAV_SECTIONS = [
+    { id: 'section-cover', title: 'Report Cover' },
     { id: 'section-certificate', title: 'Certificate Details' },
     { id: 'section-1', title: '1. Objective' },
     { id: 'section-2', title: '2. Scope' },
@@ -2987,6 +2988,21 @@ Our valuation is based on information obtained from the client and on data gathe
           </div>
         )}
 
+          {/* ── Valuation Report Cover ── */}
+          <Section title="Valuation Report Cover" id="section-cover">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="Additional Valuer Details (Each line will appear centered below)" span={2}>
+                  <textarea rows={3} value={fields.valuerAdditionalDetails || ''} onChange={e => handleChange('valuerAdditionalDetails', e.target.value)} className={inputCls} disabled={isReadOnly} />
+                </Field>
+                <Field label="Registered Office Address">
+                  <textarea rows={2} value={fields.registeredOfficeAddress || ''} onChange={e => handleChange('registeredOfficeAddress', e.target.value)} className={inputCls} disabled={isReadOnly} />
+                </Field>
+                <Field label="Registered Office Telephone">
+                  <input type="text" value={fields.registeredOfficeTel || ''} onChange={e => handleChange('registeredOfficeTel', e.target.value)} className={inputCls} disabled={isReadOnly} />
+                </Field>
+            </div>
+          </Section>
+
           {/* ── Valuation Certificate Details ── */}
           <Section title="Valuation Certificate Details" id="section-certificate">
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
@@ -4641,15 +4657,7 @@ Our valuation is based on information obtained from the client and on data gathe
                 <Field label="Valuer Qualifications (Appears next to name)">
                   <input type="text" value={fields.valuerQualifications} onChange={e => handleChange('valuerQualifications', e.target.value)} className={inputCls} disabled={isReadOnly} />
                 </Field>
-                <Field label="Additional Valuer Details (Each line will appear centered below)" span={2}>
-                  <textarea rows={3} value={fields.valuerAdditionalDetails} onChange={e => handleChange('valuerAdditionalDetails', e.target.value)} className={inputCls} disabled={isReadOnly} />
-                </Field>
-                <Field label="Registered Office Address">
-                  <textarea rows={2} value={fields.registeredOfficeAddress} onChange={e => handleChange('registeredOfficeAddress', e.target.value)} className={inputCls} disabled={isReadOnly} />
-                </Field>
-                <Field label="Registered Office Telephone">
-                  <input type="text" value={fields.registeredOfficeTel} onChange={e => handleChange('registeredOfficeTel', e.target.value)} className={inputCls} disabled={isReadOnly} />
-                </Field>
+
               </div>
 
               {/* Dynamic custom declaration bullet points (u, v, ...) */}
