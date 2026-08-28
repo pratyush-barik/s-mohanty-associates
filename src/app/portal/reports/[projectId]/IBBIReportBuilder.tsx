@@ -3105,6 +3105,9 @@ Our valuation is based on information obtained from the client and on data gathe
               <Field label="Appointed By">
                 <input type="text" value={fields.appointedBy || ''} onChange={e => handleChange('appointedBy', e.target.value)} className={inputCls} placeholder="e.g. CA Sonu Jain" disabled={isReadOnly} />
               </Field>
+              <Field label="Appointee Designation">
+                <input type="text" value={fields.appointedByDesignation || ''} onChange={e => handleChange('appointedByDesignation', e.target.value)} className={inputCls} placeholder="e.g. an Insolvency Professional" disabled={isReadOnly} />
+              </Field>
               <Field label="Date of Appointment">
                 <input type="date" value={fields.appointmentDate || ''} onChange={e => handleChange('appointmentDate', e.target.value)} className={inputCls} disabled={isReadOnly} />
               </Field>
@@ -3123,9 +3126,7 @@ Our valuation is based on information obtained from the client and on data gathe
               <Field label="Case Reference No (Secondary)">
                 <input type="text" value={fields.caseReferenceNo2 || ''} onChange={e => handleChange('caseReferenceNo2', e.target.value)} className={inputCls} placeholder="e.g. T.P. (IB) No 112/CTB/2019" disabled={isReadOnly} />
               </Field>
-              <Field label="Appointee Designation">
-                <input type="text" value={fields.appointedByDesignation || ''} onChange={e => handleChange('appointedByDesignation', e.target.value)} className={inputCls} placeholder="e.g. an Insolvency Professional" disabled={isReadOnly} />
-              </Field>
+
 
               <div className="col-span-2 border-t border-gray-200 pt-3 mt-1">
                 <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest mb-2">Valuation Certificate Table</p>
