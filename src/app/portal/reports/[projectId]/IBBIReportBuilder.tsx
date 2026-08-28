@@ -4934,7 +4934,7 @@ Our valuation is based on information obtained from the client and on data gathe
             </div>
           </Section>
 
-      <div className="flex flex-wrap gap-4 pt-4 items-center w-full">
+      <div className="p-6 bg-white border border-[#dee2e6] rounded-2xl shadow-md flex flex-wrap items-center justify-between gap-4 sticky bottom-4 z-40">
         {status === 'COMPLETED' && (
           <div className="w-full p-4 rounded-xl bg-green-50 border border-green-200 text-green-800 font-bold flex items-center gap-2">
             <span>✅</span> Verified and Completed (Pushed to storage for client download)
@@ -4954,79 +4954,93 @@ Our valuation is based on information obtained from the client and on data gathe
           </div>
         )}
 
-        {!isReadOnly && (
-          <>
-            {autoSaveStatus === 'saving' && (
-              <span className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full flex items-center gap-1.5 animate-pulse">
-                <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
-                Auto-saving...
-              </span>
-            )}
-            {autoSaveStatus === 'saved' && (
-              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                ✓ Auto-saved
-              </span>
-            )}
-            {autoSaveStatus === 'error' && (
-              <span className="text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-full flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-rose-500"></span>
-                ⚠️ Auto-save failed
-              </span>
-            )}
-            <button
-              onClick={handleSaveDraft}
-              disabled={loading}
-              className="px-6 py-3 rounded-xl border-2 border-[#b8860b] text-[#b8860b] font-semibold text-sm hover:bg-[#b8860b]/5 transition-all disabled:opacity-50 flex items-center gap-2"
-            >
-              {loading ? '⏳ Saving...' : '💾 Save Draft'}
-            </button>
-            {userRole === 'REPORT_EMPLOYEE' && (
+        <div className="flex items-center gap-3">
+          {!isReadOnly && (
+            <>
+              {autoSaveStatus === 'saving' && (
+                <span className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full flex items-center gap-1.5 animate-pulse">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                  Auto-saving...
+                </span>
+              )}
+              {autoSaveStatus === 'saved' && (
+                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  ✓ Auto-saved
+                </span>
+              )}
+              {autoSaveStatus === 'error' && (
+                <span className="text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                  ⚠️ Auto-save failed
+                </span>
+              )}
+            </>
+          )}
+          {message && (
+            <span className={`text-xs font-semibold px-3 py-1.5 rounded-lg ${message.type === 'error' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+              {message.text}
+            </span>
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          {!isReadOnly && (
+            <>
               <button
-                onClick={handleSubmit}
+                onClick={handleSaveDraft}
                 disabled={loading}
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold text-sm hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all disabled:opacity-50 flex items-center gap-2"
+                className="px-6 py-2.5 rounded-full border-2 border-[#b8860b] text-[#b8860b] font-bold text-sm hover:bg-[#b8860b]/5 transition-all disabled:opacity-50 flex items-center gap-2"
               >
-                {loading ? '⏳ Submitting...' : '📤 Submit to Manager'}
+                {loading ? '⏳ Saving...' : '💾 Save Draft'}
               </button>
-            )}
-          </>
-        )}
+              {userRole === 'REPORT_EMPLOYEE' && (
+                <button
+                  onClick={handleSubmit}
+                  disabled={loading}
+                  className="px-6 py-2.5 rounded-full bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex items-center gap-2"
+                >
+                  {loading ? '⏳ Submitting...' : '📤 Submit to Manager'}
+                </button>
+              )}
+            </>
+          )}
 
-        <button
-          onClick={handlePreviewPDF}
-          disabled={loading}
-          className="px-6 py-3 rounded-xl border-2 border-gray-400 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center gap-2"
-        >
-          👁️ Preview PDF
-        </button>
+          <button
+            onClick={handlePreviewPDF}
+            disabled={loading}
+            className="px-6 py-2.5 rounded-full border border-gray-400 text-gray-700 font-bold text-sm hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center gap-2"
+          >
+            👁️ Preview PDF
+          </button>
 
-        <button
-          onClick={handleDownloadPDF}
-          disabled={loading}
-          className="px-6 py-3 rounded-xl border-2 border-gray-400 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center gap-2"
-        >
-          📥 Download PDF
-        </button>
+          <button
+            onClick={handleDownloadPDF}
+            disabled={loading}
+            className="px-6 py-2.5 rounded-full border border-gray-400 text-gray-700 font-bold text-sm hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center gap-2"
+          >
+            📥 Download PDF
+          </button>
 
-        {status === 'MANAGER_REVIEW' && isManagerOrOwner && (
-          <>
-            <button
-              onClick={handleReworkClick}
-              disabled={loading}
-              className="px-6 py-3 rounded-xl border-2 border-red-500 text-red-600 font-semibold text-sm hover:bg-red-50 transition-all disabled:opacity-50 flex items-center gap-2"
-            >
-              ❌ Send for Rework
-            </button>
-            <button
-              onClick={handleFinalize}
-              disabled={loading}
-              className="px-6 py-3 rounded-xl bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold text-sm hover:from-green-700 hover:to-green-800 shadow-lg hover:shadow-xl transition-all disabled:opacity-50 flex items-center gap-2"
-            >
-              ✅ Finalize & Share to Client
-            </button>
-          </>
-        )}
+          {status === 'MANAGER_REVIEW' && isManagerOrOwner && (
+            <>
+              <button
+                onClick={handleReworkClick}
+                disabled={loading}
+                className="px-6 py-2.5 rounded-full border-2 border-red-500 text-red-600 font-bold text-sm hover:bg-red-50 transition-all disabled:opacity-50 flex items-center gap-2"
+              >
+                ❌ Send for Rework
+              </button>
+              <button
+                onClick={handleFinalize}
+                disabled={loading}
+                className="px-6 py-2.5 rounded-full bg-green-600 text-white font-bold text-sm hover:bg-green-700 shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex items-center gap-2"
+              >
+                ✅ Finalize & Share to Client
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       </div>

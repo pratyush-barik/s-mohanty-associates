@@ -1542,7 +1542,7 @@ export default function BankReportBuilder({
         <div className="p-4 bg-white border border-[#dee2e6] flex flex-row items-center justify-between gap-4 shadow-md rounded-2xl sticky top-2 z-50">
           <div className="flex items-center gap-4">
             <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider leading-tight min-w-[90px] select-none">
-              Active<br />Bank Format
+              Active<br />Configuration
             </div>
             <div className="flex flex-wrap gap-2">
               <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
@@ -1566,7 +1566,7 @@ export default function BankReportBuilder({
             onClick={handleReset}
             className="text-xs text-[#b8860b] hover:text-[#8a6507] hover:underline font-bold transition-colors shrink-0 pr-2 uppercase"
           >
-            Change Bank / Format
+            Change Parameters
           </button>
         </div>
 
@@ -2180,7 +2180,7 @@ export default function BankReportBuilder({
                   type="button"
                   onClick={handleSaveDraft}
                   disabled={loading}
-                  className="px-6 py-3 rounded-xl border-2 border-[#b8860b] text-[#b8860b] font-semibold text-sm hover:bg-[#b8860b]/5 transition-all disabled:opacity-50"
+                  className="px-6 py-2.5 rounded-full border-2 border-[#b8860b] text-[#b8860b] font-bold text-sm hover:bg-[#b8860b]/5 transition-all disabled:opacity-50 flex items-center gap-2"
                 >
                   {loading ? '⏳ Saving...' : '💾 Save Draft'}
                 </button>
@@ -2189,7 +2189,7 @@ export default function BankReportBuilder({
                     type="button"
                     onClick={handleSubmit}
                     disabled={loading}
-                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold text-sm hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+                    className="px-6 py-2.5 rounded-full bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex items-center gap-2"
                   >
                     {loading ? '⏳ Submitting...' : '📤 Submit to Manager'}
                   </button>
@@ -2201,7 +2201,7 @@ export default function BankReportBuilder({
               type="button"
               onClick={handlePreviewPDF}
               disabled={loading}
-              className="px-6 py-3 rounded-xl border-2 border-gray-400 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-all disabled:opacity-50"
+              className="px-6 py-2.5 rounded-full border border-gray-400 text-gray-700 font-bold text-sm hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center gap-2"
             >
               👁️ Preview PDF
             </button>
@@ -2210,7 +2210,7 @@ export default function BankReportBuilder({
               type="button"
               onClick={handleDownloadPDF}
               disabled={loading}
-              className="px-6 py-3 rounded-xl border-2 border-gray-400 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-all disabled:opacity-50"
+              className="px-6 py-2.5 rounded-full border border-gray-400 text-gray-700 font-bold text-sm hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center gap-2"
             >
               📥 Download PDF
             </button>
@@ -2221,7 +2221,7 @@ export default function BankReportBuilder({
                   type="button"
                   onClick={handleReworkClick}
                   disabled={loading}
-                  className="px-6 py-3 rounded-xl border-2 border-red-500 text-red-600 font-semibold text-sm hover:bg-red-50 transition-all disabled:opacity-50"
+                  className="px-6 py-2.5 rounded-full border-2 border-red-500 text-red-600 font-bold text-sm hover:bg-red-50 transition-all disabled:opacity-50 flex items-center gap-2"
                 >
                   ❌ Send for Rework
                 </button>
@@ -2229,7 +2229,7 @@ export default function BankReportBuilder({
                   type="button"
                   onClick={handleFinalize}
                   disabled={loading}
-                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold text-sm hover:from-green-700 hover:to-green-800 shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+                  className="px-6 py-2.5 rounded-full bg-green-600 text-white font-bold text-sm hover:bg-green-700 shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex items-center gap-2"
                 >
                   ✅ Finalize & Share to Client
                 </button>
