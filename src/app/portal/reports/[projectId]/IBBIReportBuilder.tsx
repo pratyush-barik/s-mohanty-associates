@@ -3098,6 +3098,9 @@ Our valuation is based on information obtained from the client and on data gathe
               <p className="text-xs text-amber-800">These fields populate the <strong>Valuation Certificate</strong> page in the PDF. Fields marked <span className="inline-block px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-semibold">AUTO</span> are auto-filled from other sections but can be overridden.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Reference No">
+                <input type="text" value={fields.refNo || ''} onChange={e => handleChange('refNo', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
               <Field label="Appointed By">
                 <input type="text" value={fields.appointedBy || ''} onChange={e => handleChange('appointedBy', e.target.value)} className={inputCls} placeholder="e.g. CA Sonu Jain" disabled={isReadOnly} />
               </Field>
@@ -3184,12 +3187,6 @@ Our valuation is based on information obtained from the client and on data gathe
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
               <p className="text-xs text-blue-800">Fill the dates and reference fields below. Section 1 (Objective), Section 2 (Scope), and Section 3 (Basis) use <strong>standard IBBI-IVS text by default</strong>. You can override any sub-section text below.</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Reference No">
-                <input type="text" value={fields.refNo || ''} onChange={e => handleChange('refNo', e.target.value)} className={inputCls} disabled={isReadOnly} />
-              </Field>
-            </div>
-
             {/* Sub-section text overrides */}
             <div className="mt-6">
               <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-3">Section 1 Sub-section Text Overrides <span className="inline-block px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-semibold ml-1">OPTIONAL</span></p>
