@@ -3091,7 +3091,7 @@ Our valuation is based on information obtained from the client and on data gathe
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Introduction of Valuation Certificate" span={2}>
-                <textarea rows={3} value={fields.valuationCertificateIntro || ''} onChange={e => handleChange('valuationCertificateIntro', e.target.value)} className={inputCls + ' resize-none'} placeholder="Enter the introduction paragraph for the Valuation Certificate here..." disabled={isReadOnly} />
+                <textarea required rows={3} value={fields.valuationCertificateIntro || ''} onChange={e => handleChange('valuationCertificateIntro', e.target.value)} className={inputCls + ' resize-none'} placeholder="Enter the introduction paragraph for the Valuation Certificate here..." disabled={isReadOnly} />
               </Field>
               <Field label="Reference No">
                 <input type="text" value={fields.refNo || ''} onChange={e => handleChange('refNo', e.target.value)} className={inputCls} disabled={isReadOnly} />
@@ -3186,12 +3186,14 @@ Our valuation is based on information obtained from the client and on data gathe
             
             {/* Sub-section text overrides */}
             <div className="mt-6">
-              <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-3">Section 1 Sub-section Text Overrides <span className="inline-block px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-semibold ml-1">OPTIONAL</span></p>
-              <p className="text-xs text-gray-500 mb-3">Leave blank to use standard IBBI-IVS default text. Fill to override with your own custom text.</p>
               <div className="grid grid-cols-1 gap-4">
                 <Field label="Introduction of Objective" span={2}>
-                  <textarea rows={3} value={fields.objectiveIntro || ''} onChange={e => handleChange('objectiveIntro', e.target.value)} className={inputCls + ' resize-none'} placeholder="Default: Pursuant to request from [Owner], represented through its authorized representative, to assess the fair market value of Property..." disabled={isReadOnly} />
+                  <textarea required rows={3} value={fields.objectiveIntro || ''} onChange={e => handleChange('objectiveIntro', e.target.value)} className={inputCls + ' resize-none'} placeholder="Default: Pursuant to request from [Owner], represented through its authorized representative, to assess the fair market value of Property..." disabled={isReadOnly} />
                 </Field>
+                <div className="mt-4 mb-2">
+                  <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-2">Section 1 Sub-section Text Overrides <span className="inline-block px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-semibold ml-1">OPTIONAL</span></p>
+                  <p className="text-xs text-gray-500">Leave blank to use standard IBBI-IVS default text. Fill to override with your own custom text.</p>
+                </div>
                 <Field label="1.1 Valuation Standard" span={2}>
                   <textarea rows={2} value={fields.objective1_1 || ''} onChange={e => handleChange('objective1_1', e.target.value)} className={inputCls + ' resize-none'} placeholder="Default: The entire valuation exercise has been carried out in accordance of Standard procedures laid down as per the International Valuation Standards." disabled={isReadOnly} />
                 </Field>
