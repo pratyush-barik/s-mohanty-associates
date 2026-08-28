@@ -4484,6 +4484,13 @@ Our valuation is based on information obtained from the client and on data gathe
                 />
               </Field>
 
+              <Field label="Appointed By (from Section 1)">
+                <input type="text" value={fields.appointedBy || ''} className={inputCls + ' bg-gray-100'} disabled />
+              </Field>
+              <Field label="Applicant / Owner Name(s) (from Section 4)">
+                <input type="text" value={fields.applicantName || fields.ownerName || ''} className={inputCls + ' bg-gray-100'} disabled />
+              </Field>
+
               {/* b. Purpose & exclusive use (auto-derived) */}
               <Field label="b. Purpose & Exclusive Use (auto-derived from Appointed By & Owner Name)">
                 <textarea
