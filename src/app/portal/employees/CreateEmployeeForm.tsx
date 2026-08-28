@@ -53,8 +53,8 @@ export default function CreateEmployeeForm({ currentUserRole }: CreateEmployeeFo
             <p className="text-sm font-bold text-[#0f2038]">Create New Employee</p>
             <p className="text-xs text-[#6c757d]">
               {currentUserRole === 'OWNER' 
-                ? 'Add a manager, field agent, or report staff member' 
-                : 'Add a field agent or report staff member'
+                ? 'Add a manager, field engineer, or report analyst member' 
+                : 'Add a field engineer or report analyst member'
               }
             </p>
           </div>
@@ -146,7 +146,7 @@ export default function CreateEmployeeForm({ currentUserRole }: CreateEmployeeFo
                 >
                   <option value="">Select role</option>
                   {currentUserRole === 'OWNER' && <option value="MANAGER">Manager</option>}
-                  <option value="FIELD_EMPLOYEE">Field Inspector</option>
+                  <option value="FIELD_EMPLOYEE">Field Engineer</option>
                   <option value="REPORT_EMPLOYEE">Report Analyst</option>
                 </select>
               </div>

@@ -116,14 +116,14 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               detail: project.manager?.name ? `Overseer: ${project.manager.name}` : 'Awaiting overseer',
             },
             {
-              label: 'Field Agent Assigned',
+              label: 'Field Engineer Assigned',
               isCompleted: project.fieldEmployees.length > 0,
               detail: project.fieldEmployees.length > 0 ? `Inspector: ${project.fieldEmployees.map(e => e.name).join(', ')}` : 'Awaiting inspector',
             },
             {
-              label: 'Field Agent Deployed',
+              label: 'Field Engineer Deployed',
               isCompleted: ['INSPECTION_IN_PROGRESS', 'INSPECTION_COMPLETED', 'REPORT_DRAFTING', 'MANAGER_REVIEW', 'COMPLETED'].includes(project.status),
-              detail: ['INSPECTION_IN_PROGRESS', 'INSPECTION_COMPLETED', 'REPORT_DRAFTING', 'MANAGER_REVIEW', 'COMPLETED'].includes(project.status) ? 'Agent on site' : 'Pending trip',
+              detail: ['INSPECTION_IN_PROGRESS', 'INSPECTION_COMPLETED', 'REPORT_DRAFTING', 'MANAGER_REVIEW', 'COMPLETED'].includes(project.status) ? 'Engineer on site' : 'Pending trip',
             },
             {
               label: 'Field Work Completed',
@@ -131,7 +131,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               detail: ['INSPECTION_COMPLETED', 'REPORT_DRAFTING', 'MANAGER_REVIEW', 'COMPLETED'].includes(project.status) ? 'Data gathered' : 'Awaiting site survey',
             },
             {
-              label: 'Report Agent Assigned',
+              label: 'Report Analyst Assigned',
               isCompleted: !!project.reportEmployeeId,
               detail: project.reportEmployee?.name ? `Analyst: ${project.reportEmployee.name}` : 'Awaiting analyst',
             },

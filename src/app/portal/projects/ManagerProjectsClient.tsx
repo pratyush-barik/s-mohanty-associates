@@ -185,8 +185,8 @@ export default function ManagerProjectsClient({
                 <th className="px-6 py-3 font-medium text-[#6c757d]">Client</th>
                 <th className="px-6 py-3 font-medium text-[#6c757d]">Source</th>
                 <th className="px-6 py-3 font-medium text-[#6c757d]">Status</th>
-                <th className="px-6 py-3 font-medium text-[#6c757d]">Field Agent</th>
-                <th className="px-6 py-3 font-medium text-[#6c757d]">Report Agent</th>
+                <th className="px-6 py-3 font-medium text-[#6c757d]">Field Engineer</th>
+                <th className="px-6 py-3 font-medium text-[#6c757d]">Report Analyst</th>
                 <th className="px-6 py-3 font-medium text-[#6c757d]">Actions</th>
               </tr>
             </thead>

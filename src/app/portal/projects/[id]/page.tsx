@@ -215,7 +215,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
             <div className="text-sm text-red-800 bg-white/70 p-4 rounded-lg border border-red-100 whitespace-pre-wrap">
               {project.messages[0].content.replace('**Rework Request:** ', '')}
             </div>
-            <p className="text-xs text-red-600 mt-3">Please review their request and either update the report yourself or send it back to the Report Agent.</p>
+            <p className="text-xs text-red-600 mt-3">Please review their request and either update the report yourself or send it back to the Report Analyst.</p>
           </div>
         )}
 
@@ -240,13 +240,14 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
           
           <hr className="my-6 border-[#e9ecef]" />
           
-          <div className="space-y-4">
+          <div className="space-y-3">
+
             <div className="flex flex-col sm:flex-row sm:items-center justify-between py-1 border-b border-[#f1f3f5]">
               <span className="text-xs font-bold text-[#6c757d] uppercase tracking-wider">Assigned Manager</span>
               {project.manager ? (
                 <div className="text-right">
                   <p className="text-sm font-semibold text-[#0f2038]">{project.manager.name}</p>
-                  <p className="text-xs text-gray-500">Manager ID: {project.manager.employeeId || 'N/A'} | Phone: {project.manager.mobile || 'N/A'}</p>
+                  <p className="text-xs text-gray-500">ID: {project.manager.employeeId || 'N/A'} | Phone: {project.manager.mobile || 'N/A'}</p>
                 </div>
               ) : (
                 <span className="text-xs text-gray-400 font-semibold italic">Not Assigned</span>
@@ -254,13 +255,13 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between py-1 border-b border-[#f1f3f5]">
-              <span className="text-xs font-bold text-[#6c757d] uppercase tracking-wider">Field Agents (Inspectors)</span>
+              <span className="text-xs font-bold text-[#6c757d] uppercase tracking-wider">Field Engineers (Inspectors)</span>
               {project.fieldEmployees.length > 0 ? (
                 <div className="text-right space-y-1">
                   {project.fieldEmployees.map(emp => (
                     <div key={emp.id} className="text-xs">
                       <span className="font-semibold text-[#0f2038]">{emp.name}</span>
-                      <span className="text-gray-500"> (Agent ID: {emp.employeeId || 'N/A'} | Phone: {emp.mobile || 'N/A'})</span>
+                      <span className="text-gray-500"> (Engineer ID: {emp.employeeId || 'N/A'} | Phone: {emp.mobile || 'N/A'})</span>
                     </div>
                   ))}
                 </div>
@@ -270,11 +271,11 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between py-1 border-b border-[#f1f3f5]">
-              <span className="text-xs font-bold text-[#6c757d] uppercase tracking-wider">Assigned Report Agent</span>
+              <span className="text-xs font-bold text-[#6c757d] uppercase tracking-wider">Assigned Report Analyst</span>
               {project.reportEmployee ? (
                 <div className="text-right">
                   <p className="text-sm font-semibold text-[#0f2038]">{project.reportEmployee.name}</p>
-                  <p className="text-xs text-gray-500">Agent ID: {project.reportEmployee.employeeId || 'N/A'} | Phone: {project.reportEmployee.mobile || 'N/A'}</p>
+                  <p className="text-xs text-gray-500">Analyst ID: {project.reportEmployee.employeeId || 'N/A'} | Phone: {project.reportEmployee.mobile || 'N/A'}</p>
                 </div>
               ) : (
                 <span className="text-xs text-gray-400 font-semibold italic">Not Assigned</span>

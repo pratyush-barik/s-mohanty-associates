@@ -196,15 +196,15 @@ export default function AssignTeamForm({
         </h3>
 
         <div className="grid sm:grid-cols-2 gap-6 mb-5">
-          {/* Field Agents Section */}
+          {/* Field Engineers Section */}
           <div className="space-y-3">
             <label className="block text-sm font-medium text-[#343a40]">
-              Field Agents (Inspection)
+              Field Engineers (Inspection)
             </label>
             
             <div className="space-y-2">
               {fieldIds.length === 0 ? (
-                <p className="text-xs text-[#6c757d] italic">No field agents assigned.</p>
+                <p className="text-xs text-[#6c757d] italic">No field engineers assigned.</p>
               ) : (
                 fieldIds.map((id, index) => (
                   <div key={id} className="flex items-center justify-between p-3 rounded-xl border border-[#dee2e6] bg-white text-sm">
@@ -237,14 +237,14 @@ export default function AssignTeamForm({
               onClick={() => setActiveModal('ADD_FIELD')}
               className="w-full py-2.5 border border-dashed border-[#b8860b]/40 rounded-xl text-xs font-semibold text-[#b8860b] hover:bg-[#b8860b]/10 hover:border-[#b8860b] transition-all"
             >
-              + Add Field Agent
+              + Add Field Engineer
             </button>
           </div>
 
-          {/* Report Staff Section */}
+          {/* Report Analysts Section */}
           <div className="space-y-3">
             <label className="block text-sm font-medium text-[#343a40]">
-              Report Staff (Valuation)
+              Report Analysts (Valuation)
             </label>
 
             {!reportId ? (
@@ -252,7 +252,7 @@ export default function AssignTeamForm({
                 onClick={() => setActiveModal('REPLACE_REPORT')}
                 className="w-full py-2.5 border border-dashed border-[#b8860b]/40 rounded-xl text-xs font-semibold text-[#b8860b] hover:bg-[#b8860b]/10 hover:border-[#b8860b] transition-all"
               >
-                + Assign Report Staff
+                + Assign Report Analyst
               </button>
             ) : (
               <div className="space-y-3">
@@ -276,16 +276,16 @@ export default function AssignTeamForm({
                   </div>
                 </div>
 
-                {/* Inline warning prompts for report agent actions */}
+                {/* Inline warning prompts for report analyst actions */}
                 {reportId !== (currentReportId || '') && (
                   <div className="p-3.5 bg-amber-50/70 border border-amber-200 rounded-xl text-xs text-amber-800 space-y-1">
                     {reportId === '' ? (
                       <p>
-                        ⚠️ <strong>Warning:</strong> Removing the Report Agent will permanently <strong>delete</strong> all draft valuation reports saved for this project.
+                        ⚠️ <strong>Warning:</strong> Removing the Report Analyst will permanently <strong>delete</strong> all draft valuation reports saved for this project.
                       </p>
                     ) : (
                       <p>
-                        ℹ️ <strong>Notice:</strong> Replacing the Report Agent will automatically <strong>transfer</strong> all saved draft data to the newly assigned agent.
+                        ℹ️ <strong>Notice:</strong> Replacing the Report Analyst will automatically <strong>transfer</strong> all saved draft data to the newly assigned analyst.
                       </p>
                     )}
                   </div>
@@ -310,7 +310,7 @@ export default function AssignTeamForm({
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[80vh]">
             <div className="p-6 border-b border-[#e9ecef] flex justify-between items-center bg-[#f8f9fa]">
               <h2 className="text-xl font-bold text-[#0f2038]" style={{ fontFamily: 'var(--font-heading)' }}>
-                {activeModal === 'ADD_FIELD' ? 'Add Field Agent' : activeModal === 'REPLACE_FIELD' ? 'Replace Field Agent' : 'Select Report Staff'}
+                {activeModal === 'ADD_FIELD' ? 'Add Field Engineer' : activeModal === 'REPLACE_FIELD' ? 'Replace Field Engineer' : 'Select Report Analyst'}
               </h2>
               <button 
                 onClick={() => { setActiveModal(null); setSearchQuery(''); setModalError(null); setReplaceTargetIndex(null); }}

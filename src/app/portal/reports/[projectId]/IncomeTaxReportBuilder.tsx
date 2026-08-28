@@ -3050,7 +3050,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
             <div className="p-5 border-b border-[#e9ecef] bg-[#f8f9fa] flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-bold text-[#0f2038]">📸 Pick from Field Agent Bucket</h2>
+                <h2 className="text-lg font-bold text-[#0f2038]">📸 Pick from Field Engineer Bucket</h2>
                 <p className="text-xs text-[#6c757d] mt-1">
                   {bucketPickerMode === 'propertyImages' 
                     ? 'Select multiple photos' 
@@ -3133,7 +3133,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
             <div className="p-6 border-b border-[#e9ecef] bg-[#f8f9fa]">
               <h2 className="text-xl font-bold text-[#0f2038]">Send for Rework</h2>
-              <p className="text-xs text-[#6c757d] mt-1">Please provide specific feedback for the report agent.</p>
+              <p className="text-xs text-[#6c757d] mt-1">Please provide specific feedback for the report analyst.</p>
             </div>
             <div className="p-6">
               <textarea

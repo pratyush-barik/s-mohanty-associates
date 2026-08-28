@@ -24,7 +24,7 @@ interface EmployeeDashboardProps {
 const roleLabels: Record<string, string> = {
   OWNER: 'Owner',
   MANAGER: 'Manager',
-  FIELD_EMPLOYEE: 'Field Inspector',
+  FIELD_EMPLOYEE: 'Field Engineer',
   REPORT_EMPLOYEE: 'Report Analyst',
 };
 
@@ -314,7 +314,7 @@ export default function EmployeeDashboard({ employees: initialEmployees, current
                     className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 bg-white"
                   >
                     {currentUserRole === 'OWNER' && <option value="MANAGER">Manager</option>}
-                    <option value="FIELD_EMPLOYEE">Field Inspector</option>
+                    <option value="FIELD_EMPLOYEE">Field Engineer</option>
                     <option value="REPORT_EMPLOYEE">Report Analyst</option>
                   </select>
                 </div>

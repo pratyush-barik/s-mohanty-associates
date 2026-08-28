@@ -2361,7 +2361,7 @@ export default function BankReportBuilder({
               <h2 className="text-xl font-bold text-[#0f2038]" style={{ fontFamily: 'var(--font-heading)' }}>
                 Send for Rework
               </h2>
-              <p className="text-xs text-[#6c757d] mt-1">Please provide specific feedback for the report agent.</p>
+              <p className="text-xs text-[#6c757d] mt-1">Please provide specific feedback for the report analyst.</p>
             </div>
             <div className="p-6">
               <textarea

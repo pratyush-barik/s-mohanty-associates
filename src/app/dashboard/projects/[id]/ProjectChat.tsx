@@ -152,7 +152,7 @@ export default function ProjectChat({ projectId, messages: initialMessages, curr
     CLIENT: 'Client',
     OWNER: 'Owner',
     MANAGER: 'Manager',
-    FIELD_EMPLOYEE: 'Field Inspector',
+    FIELD_EMPLOYEE: 'Field Engineer',
     REPORT_EMPLOYEE: 'Report Analyst',
   };
 

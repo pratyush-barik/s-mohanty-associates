@@ -18,7 +18,7 @@ export default function ManagerVerificationView({ projectId, projectCode, report
   const reportRef = useRef<HTMLDivElement>(null);
 
   const handleRework = async () => {
-    if (!confirm('Are you sure you want to send this back to the Report Agent?')) return;
+    if (!confirm('Are you sure you want to send this back to the Report Analyst?')) return;
     setLoading(true);
     setActionMessage(null);
     const res = await sendReportForRework(projectId);

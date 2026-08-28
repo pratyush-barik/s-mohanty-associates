@@ -110,7 +110,7 @@ export default async function ProjectsPage() {
                   )}
                   {project.fieldEmployees && project.fieldEmployees.length > 0 && (
                     <div className="text-right">
-                      <p className="text-xs text-[#adb5bd]">Field Agent</p>
+                      <p className="text-xs text-[#adb5bd]">Field Engineer</p>
                       <p className="text-sm font-medium text-[#0f2038]">{project.fieldEmployees.map(e => e.name).join(', ')}</p>
                     </div>
                   )}

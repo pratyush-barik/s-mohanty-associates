@@ -11,8 +11,8 @@ const employeeRoles = ['OWNER', 'MANAGER', 'FIELD_EMPLOYEE', 'REPORT_EMPLOYEE'];
 const roleLabels: Record<string, string> = {
   OWNER: 'Owner',
   MANAGER: 'Manager',
-  FIELD_EMPLOYEE: 'Field Agent',
-  REPORT_EMPLOYEE: 'Report Staff',
+  FIELD_EMPLOYEE: 'Field Engineer',
+  REPORT_EMPLOYEE: 'Report Analyst',
 };
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {

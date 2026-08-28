@@ -161,8 +161,8 @@ export default function AllProjectsClient({ projects }: { projects: ProjectType[
                   <th className="px-5 py-3 font-medium text-[#6c757d] whitespace-nowrap">Source</th>
                   <th className="px-5 py-3 font-medium text-[#6c757d] whitespace-nowrap">Status</th>
                   <th className="px-5 py-3 font-medium text-[#6c757d] whitespace-nowrap">Assigned Manager</th>
-                  <th className="px-5 py-3 font-medium text-[#6c757d] whitespace-nowrap">Field Agent</th>
-                  <th className="px-5 py-3 font-medium text-[#6c757d] whitespace-nowrap">Report Agent</th>
+                  <th className="px-5 py-3 font-medium text-[#6c757d] whitespace-nowrap">Field Engineer</th>
+                  <th className="px-5 py-3 font-medium text-[#6c757d] whitespace-nowrap">Report Analyst</th>
                   <th className="px-5 py-3 font-medium text-[#6c757d] whitespace-nowrap">Created</th>
                   <th className="px-5 py-3 font-medium text-[#6c757d] whitespace-nowrap">Actions</th>
                 </tr>

@@ -13,7 +13,7 @@ export default function ReportDraftSection({ children }: { children: React.React
       >
         <div className="flex items-center gap-3">
           <span className="w-8 h-8 rounded-lg bg-[#b8860b] flex items-center justify-center text-sm font-bold">📋</span>
-          <span className="font-semibold text-sm">Report Draft sent by Report Agent</span>
+          <span className="font-semibold text-sm">Report Draft sent by Report Analyst</span>
         </div>
         <svg className={`w-5 h-5 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />

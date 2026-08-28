@@ -6,7 +6,7 @@ import ChangePasswordForm from '@/components/ChangePasswordForm';
 const roleLabels: Record<string, string> = {
   OWNER: 'Owner',
   MANAGER: 'Manager',
-  FIELD_EMPLOYEE: 'Field Inspector',
+  FIELD_EMPLOYEE: 'Field Engineer',
   REPORT_EMPLOYEE: 'Report Analyst',
 };
 

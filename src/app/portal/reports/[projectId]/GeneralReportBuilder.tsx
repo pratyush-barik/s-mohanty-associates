@@ -3818,7 +3818,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
               <h2 className="text-xl font-bold text-[#0f2038]" style={{ fontFamily: 'var(--font-heading)' }}>
                 Send for Rework
               </h2>
-              <p className="text-xs text-[#6c757d] mt-1">Please provide specific feedback for the report agent.</p>
+              <p className="text-xs text-[#6c757d] mt-1">Please provide specific feedback for the report analyst.</p>
             </div>
             <div className="p-6">
               <textarea
@@ -3879,7 +3879,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                 bucketPickerAgent === null ? (
                   // Agent Selection View
                   <div className="space-y-4">
-                    <p className="text-sm font-semibold text-[#495057] mb-2">Select a Field Agent to view their uploaded photos:</p>
+                    <p className="text-sm font-semibold text-[#495057] mb-2">Select a Field Engineer to view their uploaded photos:</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {Array.from(new Set(localBucketImages.map(img => img.employee.employeeId))).map(empId => {
                         const agentImages = localBucketImages.filter(img => img.employee.employeeId === empId);
@@ -3979,7 +3979,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                 <div className="text-center py-12">
                   <div className="text-4xl mb-3">📷</div>
                   <p className="text-sm font-medium text-[#6c757d]">No photos in the bucket yet.</p>
-                  <p className="text-xs text-[#adb5bd] mt-1">Field agents or editors can upload photos to this project bucket.</p>
+                  <p className="text-xs text-[#adb5bd] mt-1">Field engineers or editors can upload photos to this project bucket.</p>
                 </div>
               )}
             </div>

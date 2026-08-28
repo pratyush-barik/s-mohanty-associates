@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 
 const roleLabels: Record<string, string> = {
-  OWNER: 'Owner', MANAGER: 'Manager', FIELD_EMPLOYEE: 'Field Inspector', REPORT_EMPLOYEE: 'Report Analyst',
+  OWNER: 'Owner', MANAGER: 'Manager', FIELD_EMPLOYEE: 'Field Engineer', REPORT_EMPLOYEE: 'Report Analyst',
 };
 
 const statusColors: Record<string, string> = {

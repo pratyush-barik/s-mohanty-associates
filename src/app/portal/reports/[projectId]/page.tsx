@@ -87,7 +87,7 @@ export default async function ReportEditorPage({ params, searchParams }: { param
             <p className="text-xs text-[#6c757d] mt-1">{serviceRequest?.propertyAddress}</p>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1.5">Field Agent & Phone</p>
+            <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1.5">Field Engineer & Phone</p>
             {project.fieldEmployees.length > 0 ? (
               <div className="space-y-2">
                 {project.fieldEmployees.map((emp) => (
