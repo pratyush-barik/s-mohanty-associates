@@ -3009,6 +3009,12 @@ Our valuation is based on information obtained from the client and on data gathe
               <p className="text-xs text-amber-800">These fields populate the <strong>Valuation Certificate</strong> page in the PDF. Fields marked <span className="inline-block px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-semibold">AUTO</span> are auto-filled from other sections but can be overridden.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Appointed By">
+                <input type="text" value={fields.appointedBy || ''} onChange={e => handleChange('appointedBy', e.target.value)} className={inputCls} placeholder="e.g. CA Sonu Jain" disabled={isReadOnly} />
+              </Field>
+              <Field label="Appointment Date">
+                <input type="date" value={fields.appointmentDate || ''} onChange={e => handleChange('appointmentDate', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
               <Field label="Case Parties (in the matter of...)" span={2}>
                 <input type="text" value={fields.caseParties || ''} onChange={e => handleChange('caseParties', e.target.value)} className={inputCls} placeholder="e.g. Noida Infratech Two Pvt Ltd vs Falcony Consultancy Pvt Ltd" disabled={isReadOnly} />
               </Field>
@@ -3018,14 +3024,8 @@ Our valuation is based on information obtained from the client and on data gathe
               <Field label="Case Reference No (Secondary)">
                 <input type="text" value={fields.caseReferenceNo2 || ''} onChange={e => handleChange('caseReferenceNo2', e.target.value)} className={inputCls} placeholder="e.g. T.P. (IB) No 112/CTB/2019" disabled={isReadOnly} />
               </Field>
-              <Field label="Appointed By">
-                <input type="text" value={fields.appointedBy || ''} onChange={e => handleChange('appointedBy', e.target.value)} className={inputCls} placeholder="e.g. CA Sonu Jain" disabled={isReadOnly} />
-              </Field>
               <Field label="Appointee Designation">
                 <input type="text" value={fields.appointedByDesignation || ''} onChange={e => handleChange('appointedByDesignation', e.target.value)} className={inputCls} placeholder="e.g. an Insolvency Professional" disabled={isReadOnly} />
-              </Field>
-              <Field label="Appointment Date">
-                <input type="date" value={fields.appointmentDate || ''} onChange={e => handleChange('appointmentDate', e.target.value)} className={inputCls} disabled={isReadOnly} />
               </Field>
 
               <div className="col-span-2 border-t border-gray-200 pt-3 mt-1">
