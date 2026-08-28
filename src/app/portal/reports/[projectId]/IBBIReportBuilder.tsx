@@ -22,6 +22,7 @@ import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
 import { PDFIBBIRenderer } from '@/lib/pdf-ibbi-renderer';
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
+import { BasePhotographsSection } from './banks/BaseBankReportComponents';
 // @ts-ignore
 import * as XLSX from 'xlsx';
 
@@ -4407,59 +4408,30 @@ Our valuation is based on information obtained from the client and on data gathe
             ))}
 
             {/* Property Photos */}
-            <div>
-              <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest mb-2">Property Photographs</p>
-              {!isReadOnly && (
-                <div className="space-y-3 mb-4">
-                  <div className="flex items-center gap-3">
-                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-                      {uploading ? 'Uploading...' : 'Add Property Images'}
-                      <input type="file" accept="image/*" multiple className="hidden" onChange={e => handleFileUpload(e, 'propertyImages')} disabled={uploading} />
-                    </label>
-                    {bucketImages && bucketImages.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => openBucketPicker('propertyImages')}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-sm font-medium hover:bg-[#1e3a5f]/5 transition-colors"
-                      >
-                        Pick from Bucket ({bucketImages.length})
-                      </button>
-                    )}
-                    <span className="text-xs text-[#6c757d]">Max size: 5MB per photograph</span>
-                  </div>
-                  {uploadError && (
-                    <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold">
-                      ⚠️ {uploadError}
-                    </div>
-                  )}
-                </div>
-              )}
-              {fields.propertyImages.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {fields.propertyImages.map((url: string, i: number) => (
-                    <div key={i} className="relative group rounded-lg overflow-hidden border border-slate-200">
-                      <img src={url} alt={`Property ${i + 1}`} className="w-full h-24 object-cover" />
-                      {!isReadOnly && (
-                        <button onClick={() => removeImage(i)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">&times;</button>
-                      )}
-                      <input
-                        type="text"
-                        placeholder={`Caption for Photo ${i + 1}`}
-                        value={fields.propertyImageNames?.[i] || ''}
-                        onChange={e => {
-                          const names = [...(fields.propertyImageNames || [])];
-                          while (names.length <= i) names.push('');
-                          names[i] = e.target.value;
-                          handleChange('propertyImageNames', names);
-                        }}
-                        disabled={isReadOnly}
-                        className="w-full text-xs px-2 py-1 border-t border-slate-200 bg-slate-50 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#b8860b]/40"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <BasePhotographsSection
+              propertyImages={fields.propertyImages || []}
+              propertyImageNames={fields.propertyImageNames || []}
+              isReadOnly={isReadOnly}
+              uploading={uploading}
+              bucketCount={bucketImages?.length || 0}
+              onImageNameChange={(idx, name) => {
+                const updatedNames = [...(fields.propertyImageNames || [])];
+                while (updatedNames.length <= idx) {
+                  updatedNames.push('');
+                }
+                updatedNames[idx] = name;
+                handleChange('propertyImageNames', updatedNames);
+              }}
+              onRemoveImage={removeImage}
+              onReorderImages={(newImages, newNames) => {
+                handleChange('propertyImages', newImages);
+                handleChange('propertyImageNames', newNames);
+              }}
+              onUploadImages={(e) => handleFileUpload(e, 'propertyImages')}
+              onOpenBucketPicker={() => openBucketPicker('propertyImages')}
+              sectionNumber={14}
+              sectionId="section-14-photos"
+            />
 
 
           </Section>

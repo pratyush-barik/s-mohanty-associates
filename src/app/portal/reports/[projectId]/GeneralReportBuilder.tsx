@@ -3411,6 +3411,10 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
             handleChange('propertyImageNames', updatedNames);
           }}
           onRemoveImage={removeImage}
+          onReorderImages={(newImages, newNames) => {
+            handleChange('propertyImages', newImages);
+            handleChange('propertyImageNames', newNames);
+          }}
           onUploadImages={(e) => handleFileUpload(e, 'propertyImages')}
           onOpenBucketPicker={() => openBucketPicker('propertyImages')}
           sectionNumber={isApartmentFlat ? 11 : 12}

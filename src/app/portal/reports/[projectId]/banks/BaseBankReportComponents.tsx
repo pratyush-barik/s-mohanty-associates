@@ -344,9 +344,7 @@ export function ReportActionBar({
   );
 }
 
-const DEFAULT_PHOTO_LABEL = 'Site Picture';
-
-// ─── Standard Photographs Section (Boxed UI only for uploaded photos) ───
+// ─── Standard Photographs Section (Boxed UI with Drag & Drop Reordering) ───
 export function BasePhotographsSection({
   propertyImages = [],
   propertyImageNames = [],
@@ -355,6 +353,7 @@ export function BasePhotographsSection({
   bucketCount = 0,
   onImageNameChange,
   onRemoveImage,
+  onReorderImages,
   onUploadImages,
   onOpenBucketPicker,
   sectionNumber = 11,
@@ -367,12 +366,57 @@ export function BasePhotographsSection({
   bucketCount?: number;
   onImageNameChange: (index: number, name: string) => void;
   onRemoveImage: (index: number) => void;
+  onReorderImages?: (newImages: string[], newNames: string[]) => void;
   onUploadImages: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onOpenBucketPicker?: () => void;
   sectionNumber?: number | string;
   sectionId?: string;
 }) {
   const validPhotos = propertyImages.filter(Boolean);
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+
+  const handleDragStart = (idx: number) => {
+    if (isReadOnly) return;
+    setDraggedIdx(idx);
+  };
+
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    if (draggedIdx === null || draggedIdx === idx) return;
+    setDragOverIdx(idx);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIdx(null);
+  };
+
+  const handleDrop = (targetIdx: number) => {
+    if (draggedIdx === null || draggedIdx === targetIdx) {
+      setDraggedIdx(null);
+      setDragOverIdx(null);
+      return;
+    }
+
+    const reorderedImages = [...propertyImages];
+    const reorderedNames = [...(propertyImageNames || [])];
+    while (reorderedNames.length < reorderedImages.length) {
+      reorderedNames.push(DEFAULT_PHOTO_LABEL);
+    }
+
+    const [movedImg] = reorderedImages.splice(draggedIdx, 1);
+    const [movedName] = reorderedNames.splice(draggedIdx, 1);
+
+    reorderedImages.splice(targetIdx, 0, movedImg);
+    reorderedNames.splice(targetIdx, 0, movedName);
+
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+
+    if (onReorderImages) {
+      onReorderImages(reorderedImages, reorderedNames);
+    }
+  };
 
   return (
     <Section title="Photographs" number={sectionNumber} id={sectionId} defaultOpen={false}>
@@ -387,41 +431,64 @@ export function BasePhotographsSection({
                   ? propertyImageNames[idx]
                   : DEFAULT_PHOTO_LABEL;
 
+              const isDragging = draggedIdx === idx;
+              const isDragOver = dragOverIdx === idx;
+
               return (
                 <div
                   key={idx}
-                  className="p-4 border border-[#dee2e6] rounded-2xl bg-white space-y-3 shadow-xs hover:border-slate-300 transition-all"
+                  draggable={!isReadOnly}
+                  onDragStart={() => handleDragStart(idx)}
+                  onDragOver={(e) => handleDragOver(e, idx)}
+                  onDragLeave={handleDragLeave}
+                  onDrop={() => handleDrop(idx)}
+                  onDragEnd={() => {
+                    setDraggedIdx(null);
+                    setDragOverIdx(null);
+                  }}
+                  className={`p-4 border rounded-2xl bg-white space-y-3 transition-all duration-200 ${
+                    isDragging ? 'opacity-40 scale-[0.98]' : 'opacity-100'
+                  } ${
+                    isDragOver
+                      ? 'border-2 border-dashed border-[#b8860b] ring-2 ring-[#b8860b]/20 shadow-md'
+                      : 'border-[#dee2e6] shadow-xs hover:border-slate-300'
+                  }`}
                 >
-                  {/* Header: SLOT X on left, Label Input + Remove Cross on right */}
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider">
-                      SLOT {idx + 1}
-                    </span>
-                    <div className="flex items-center gap-2">
+                  {/* Header: Drag Handle + Editable Label Input (First order) on Left, Remove Cross on Right */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      {!isReadOnly && (
+                        <span
+                          className="text-slate-400 hover:text-slate-600 cursor-grab active:cursor-grabbing select-none text-base font-bold px-0.5"
+                          title="Drag to reorder photograph"
+                        >
+                          ⠿
+                        </span>
+                      )}
                       <input
                         type="text"
                         placeholder="Photo Label"
                         value={propertyImageNames?.[idx] !== undefined && propertyImageNames[idx] !== '' ? propertyImageNames[idx] : DEFAULT_PHOTO_LABEL}
                         disabled={isReadOnly}
                         onChange={(e) => onImageNameChange(idx, e.target.value)}
-                        className="text-xs font-bold text-slate-800 bg-white border border-[#dee2e6] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#b8860b] min-w-[140px] max-w-[220px]"
+                        className="text-xs font-bold text-slate-800 bg-white border border-[#dee2e6] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#b8860b] w-full max-w-sm"
                       />
-                      {!isReadOnly && (
-                        <button
-                          type="button"
-                          onClick={() => onRemoveImage(idx)}
-                          className="w-7 h-7 flex items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors text-xs font-bold shrink-0 shadow-2xs cursor-pointer"
-                          title="Remove Photo"
-                        >
-                          ✕
-                        </button>
-                      )}
                     </div>
+                    {!isReadOnly && (
+                      <button
+                        type="button"
+                        onClick={() => onRemoveImage(idx)}
+                        className="w-7 h-7 flex items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors text-xs font-bold shrink-0 shadow-2xs cursor-pointer"
+                        title="Remove Photo"
+                      >
+                        ✕
+                      </button>
+                    )}
                   </div>
 
                   {/* Body: Uploaded Photo Preview */}
-                  <div className="relative rounded-xl overflow-hidden border border-[#dee2e6] bg-slate-100 h-52 flex items-center justify-center">
-                    <img src={url} alt={currentLabel} className="w-full h-full object-cover" />
+                  <div className="relative rounded-xl overflow-hidden border border-[#dee2e6] bg-slate-100 h-52 flex items-center justify-center cursor-grab active:cursor-grabbing">
+                    <img src={url} alt={currentLabel} className="w-full h-full object-cover pointer-events-none" />
                   </div>
                 </div>
               );

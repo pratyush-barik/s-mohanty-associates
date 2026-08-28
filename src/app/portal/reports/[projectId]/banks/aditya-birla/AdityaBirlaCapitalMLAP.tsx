@@ -1399,6 +1399,10 @@ export default function AdityaBirlaCapitalMLAP({
             handleChange('propertyImages', updatedImgs);
             handleChange('propertyImageNames', updatedNames);
           }}
+          onReorderImages={(newImages, newNames) => {
+            handleChange('propertyImages', newImages);
+            handleChange('propertyImageNames', newNames);
+          }}
           onUploadImages={handleUploadMultiplePhotos}
           onOpenBucketPicker={() => {
             setBucketPickerMode('propertyImages');

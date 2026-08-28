@@ -7,6 +7,7 @@ import { SERVICES_LIST } from './constants';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { generateIncomeTaxPDF } from '@/lib/pdf-it-renderer';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
+import { BasePhotographsSection } from './banks/BaseBankReportComponents';
 import * as XLSX from 'xlsx';
 
 // ─── Types ─────────────────────────────────────────────────────────
@@ -2639,32 +2640,30 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
 
           <SubSection id="subsection-photos" title="Appendices: Photos & Maps" defaultOpen={false}>
 {/* Property Photographs */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest">Property Photographs</p>
-              {bucketImages.length > 0 && !isReadOnly && (
-                <button type="button" onClick={() => openBucketPicker('propertyImages')} className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1">
-                  Pick from Bucket ({bucketImages.length})
-                </button>
-              )}
-            </div>
-            {!isReadOnly && (
-              <input type="file" accept="image/*" multiple onChange={e => handleFileUpload(e, 'propertyImages')} disabled={uploading}
-                className="block w-full text-sm text-[#6c757d] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#b8860b]/10 file:text-[#b8860b] hover:file:bg-[#b8860b]/20 mb-3" />
-            )}
-            {fields.propertyImages.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {fields.propertyImages.map((url, idx) => (
-                  <div key={idx} className="relative group rounded-lg overflow-hidden border border-[#e9ecef]">
-                    <img src={url ? encodeURI(url) : ''} alt={`Photo ${idx + 1}`} className="w-full h-32 object-cover" />
-                    {!isReadOnly && (
-                      <button type="button" onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">×</button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+            <BasePhotographsSection
+              propertyImages={fields.propertyImages || []}
+              propertyImageNames={(fields as any).propertyImageNames || []}
+              isReadOnly={isReadOnly}
+              uploading={uploading}
+              bucketCount={bucketImages?.length || 0}
+              onImageNameChange={(idx, name) => {
+                const updatedNames = [...((fields as any).propertyImageNames || [])];
+                while (updatedNames.length <= idx) {
+                  updatedNames.push('');
+                }
+                updatedNames[idx] = name;
+                handleChange('propertyImageNames' as any, updatedNames);
+              }}
+              onRemoveImage={removeImage}
+              onReorderImages={(newImages, newNames) => {
+                handleChange('propertyImages', newImages);
+                handleChange('propertyImageNames' as any, newNames);
+              }}
+              onUploadImages={(e) => handleFileUpload(e, 'propertyImages')}
+              onOpenBucketPicker={() => openBucketPicker('propertyImages')}
+              sectionNumber="Appx"
+              sectionId="subsection-photos-grid"
+            />
 
 {/* Location Map */}
           <div className="mb-6 space-y-4">
