@@ -1,172 +1,381 @@
 'use client';
-import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
-import { BankConfig } from '@/lib/bank-fields';
-import { PDFAdityaBirlaMLAPRenderer } from '@/lib/banks/pdf-aditya-birla-mlap-renderer';
+
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
+import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { formatIndianCurrency } from '@/lib/numberToWords';
+import { PDFAdityaBirlaMLAPRenderer, MLAPReportFields } from '@/lib/banks/pdf-aditya-birla-mlap-renderer';
 
-export const ADITYA_BIRLA_CAPITAL_MLAP_CONFIG: BankConfig = {
-  bankId: 'ADITYA BIRLA CAPITAL LTD',
-  subTemplateId: 'MLAP',
-  displayName: 'Aditya Birla Capital Ltd � MLAP',
-  fieldLabels: {
-    ownerName: 'Client Name',
-    ownerAddress: 'Address as per Document',
-    branchName: 'Vertical',
-    loanApplicationNo: 'Application No.',
-  },
-  extraFields: {
-    // -- Section 1: Basic Details --
-    'section-1': [
-      { key: 'propertyOwnerName', label: 'Name of Property Owner (with S/O, W/O)', span: 2 },
-      { key: 'initiationDate', label: 'Initiation Date', type: 'date' },
-      { key: 'valuerName', label: 'Name of the Valuer', default: 'Er. Satyajit Mohanty' },
-    ],
+export interface AdityaBirlaCapitalMLAPProps {
+  projectId: string;
+  projectCode: string;
+  initialFields: any;
+  status: string;
+  userRole: string;
+  bucketImages: any[];
+  prefill?: any;
+  onResetWizard?: () => void;
+}
 
-    // -- Section 2: Location Details --
-    'section-2': [
-      { key: 'propertyAddressAsDocs', label: 'Address as per Document (Khata, Plot, Mouza, Tahasil, Dist, Pin)', type: 'textarea', span: 2 },
-      { key: 'propertyAddressAsVisit', label: 'Address as per Physical / Site Visit', type: 'textarea', span: 2 },
-      { 
-        key: 'addressMatching', 
-        label: 'Address Matching', 
-        type: 'select', 
-        options: ['Yes (As per documents)', 'No (Discrepancy observed)', 'Partially Matching'],
-        default: 'Yes (As per documents)' 
+interface AccomRow {
+  floor: string;
+  drawingRoom: string;
+  bedroom: string;
+  diningRoom: string;
+  kitchen: string;
+  bathroom: string;
+  balcony: string;
+}
+
+interface BuaRow {
+  floor: string;
+  asPerSite: string;
+  asPerPlan: string;
+  percentageDeviation: string;
+}
+
+const DEFAULT_ACCOM_ROWS: AccomRow[] = [
+  { floor: 'Ground Floor', drawingRoom: '', bedroom: '2', diningRoom: '', kitchen: '1', bathroom: '', balcony: '' },
+  { floor: 'First Floor', drawingRoom: 'NA', bedroom: 'NA', diningRoom: 'NA', kitchen: 'NA', bathroom: 'NA', balcony: 'NA' },
+  { floor: 'Second Floor', drawingRoom: 'NA', bedroom: 'NA', diningRoom: 'NA', kitchen: 'NA', bathroom: 'NA', balcony: 'NA' },
+  { floor: 'Third Floor', drawingRoom: 'NA', bedroom: 'NA', diningRoom: 'NA', kitchen: 'NA', bathroom: 'NA', balcony: 'NA' },
+  { floor: 'Forth Floor', drawingRoom: 'NA', bedroom: 'NA', diningRoom: 'NA', kitchen: 'NA', bathroom: 'NA', balcony: 'NA' },
+];
+
+const DEFAULT_BUA_ROWS: BuaRow[] = [
+  { floor: 'Ground Floor', asPerSite: 'RCC-1441sqft', asPerPlan: 'NA', percentageDeviation: 'NA' },
+  { floor: 'First Floor', asPerSite: 'NA', asPerPlan: 'NA', percentageDeviation: 'NA' },
+  { floor: 'Second Floor', asPerSite: 'NA', asPerPlan: 'NA', percentageDeviation: 'NA' },
+  { floor: 'Third Floor', asPerSite: 'NA', asPerPlan: 'NA', percentageDeviation: 'NA' },
+];
+
+export default function AdityaBirlaCapitalMLAP({
+  projectId,
+  projectCode,
+  initialFields,
+  status,
+  userRole,
+  bucketImages = [],
+  prefill,
+  onResetWizard,
+}: AdityaBirlaCapitalMLAPProps) {
+  const router = useRouter();
+
+  // Initialize fields
+  const [fields, setFields] = useState<MLAPReportFields>(() => ({
+    // Basic Details
+    clientName: initialFields?.clientName || initialFields?.ownerName || prefill?.contactName || '',
+    ownerName: initialFields?.ownerName || initialFields?.clientName || prefill?.contactName || '',
+    initiationDate: initialFields?.initiationDate || new Date().toISOString().split('T')[0],
+    valuerName: initialFields?.valuerName || 'Er. Satyajit Mohanty',
+    dateOfInspection: initialFields?.dateOfInspection || new Date().toISOString().split('T')[0],
+    dateOfValuation: initialFields?.dateOfValuation || new Date().toISOString().split('T')[0],
+    loanApplicationNo: initialFields?.loanApplicationNo || initialFields?.caseReferenceNumber || 'MLAP00000053145',
+    propertyOwnerName: initialFields?.propertyOwnerName || 'MANASI BEHERA, W/O- GUPTA GANJAN BEHERA',
+
+    // Location Details
+    propertyAddressAsDocs: initialFields?.propertyAddressAsDocs || 'Khata No - 115/442, Plot No -166/833 (AC.0.060Decs, Agri) ,Mouza-Gobindpur, Tahasil/PS-Sadar, Dist-Keonjhar,Pin-758014',
+    propertyAddressAsVisit: initialFields?.propertyAddressAsVisit || 'Khata No - 115/442, Plot No -166/833 (AC.0.060Decs, Agri) ,Mouza-Gobindpur, Tahasil/PS-Sadar, Dist-Keonjhar,Pin-758014',
+    addressMatching: initialFields?.addressMatching || 'Yes (As per documents)',
+    latitude: initialFields?.latitude || '21.636778',
+    longitude: initialFields?.longitude || '85.628000',
+    mainLocality: initialFields?.mainLocality || 'Gobindpur,Sadar',
+    subLocality: initialFields?.subLocality || 'Sadar,Keonjhar',
+    localityType: initialFields?.localityType || 'Residential',
+    landmark: initialFields?.landmark || 'Near Shiva Temple',
+    localityOccupancy: initialFields?.localityOccupancy || 'Fully Occupied',
+    populationDensity: initialFields?.populationDensity || 'Moderate',
+    distanceFromBranch: initialFields?.distanceFromBranch || '2-Kms',
+    distanceFromCityCenter: initialFields?.distanceFromCityCenter || '2-Kms from Keonjhar market area',
+    distanceBusStop: initialFields?.distanceBusStop || '2-Km from Labanya Bus Stand Kendujhar',
+    distanceRailwayStation: initialFields?.distanceRailwayStation || '4-Kms from Keonjhar Railway Station',
+    amenitiesAvailability: initialFields?.amenitiesAvailability || '1-2 Kms',
+    approachRoadWidth: initialFields?.approachRoadWidth || '10 feet wide Road',
+    valuedBefore: initialFields?.valuedBefore || 'No',
+    valuedBeforeDate: initialFields?.valuedBeforeDate || 'NA',
+    landLocked: initialFields?.landLocked || 'No',
+    otherEncumbranceFeatures: initialFields?.otherEncumbranceFeatures || 'No',
+
+    // Property Detailings
+    occupiedBy: initialFields?.occupiedBy || 'Vacant',
+    occupantName: initialFields?.occupantName || 'NA',
+    occupantRelation: initialFields?.occupantRelation || 'NA',
+    plotDemarcated: initialFields?.plotDemarcated || 'No',
+    propertyIdentification: initialFields?.propertyIdentification || 'Yes',
+    propertyType: initialFields?.propertyType || 'Residential',
+    propertySubType: initialFields?.propertySubType || 'Single / Multi-units building - R',
+    propertyHolding: initialFields?.propertyHolding || 'Freehold',
+    propertyJurisdiction: initialFields?.propertyJurisdiction || 'Gram Panchayat',
+    marketability: initialFields?.marketability || 'Average',
+    ageOfPropertyActual: initialFields?.ageOfPropertyActual || '0-Years',
+    estimatedFutureLife: initialFields?.estimatedFutureLife || '60-Years',
+    qualityOfConstruction: initialFields?.qualityOfConstruction || 'Average',
+    structureType: initialFields?.structureType || 'RCC',
+    dimensionWidth: initialFields?.dimensionWidth || 'NA',
+    dimensionDepth: initialFields?.dimensionDepth || 'NA',
+    cautiousLocations: initialFields?.cautiousLocations || 'NA',
+    flatConfigurationType: initialFields?.flatConfigurationType || 'NA',
+    percentageCompletion: initialFields?.percentageCompletion || '65%',
+    percentageRecommendation: initialFields?.percentageRecommendation || '70%',
+
+    // Documentation
+    documentsProvided: initialFields?.documentsProvided || 'Copy of Sale deed, ROR & Sketch map',
+    sanctionPlanDetails: initialFields?.sanctionPlanDetails || 'Plan is not provided',
+    utilityBills: initialFields?.utilityBills || 'NA',
+
+    // Accommodations
+    accommodationRows: initialFields?.accommodationRows || DEFAULT_ACCOM_ROWS,
+    buaRows: initialFields?.buaRows || DEFAULT_BUA_ROWS,
+
+    // Valuation
+    plotAreaDocs: initialFields?.plotAreaDocs || '2613',
+    plotAreaPhysical: initialFields?.plotAreaPhysical || '2613',
+    plotAreaConsidered: initialFields?.plotAreaConsidered || '2613',
+    landRate: initialFields?.landRate || '800',
+    buaPlan: initialFields?.buaPlan || 'Plan is not provided',
+    buaActual: initialFields?.buaActual || '1441',
+    buaActualRate: initialFields?.buaActualRate || '1500',
+    buaConsidered: initialFields?.buaConsidered || '1441',
+    buaConsideredRate: initialFields?.buaConsideredRate || '975',
+    superBua: initialFields?.superBua || 'NA',
+    amenitiesValue: initialFields?.amenitiesValue || '0',
+
+    // Boundaries
+    boundarySketchNorth: initialFields?.boundarySketchNorth || 'Deepak Behera & Bibhu Ranjan Palei',
+    boundarySketchSouth: initialFields?.boundarySketchSouth || 'Road',
+    boundarySketchEast: initialFields?.boundarySketchEast || 'Sonali Sethi',
+    boundarySketchWest: initialFields?.boundarySketchWest || 'Archana Debarchana Sethi',
+    boundaryMouzaNorth: initialFields?.boundaryMouzaNorth || 'Plot no-165',
+    boundaryMouzaSouth: initialFields?.boundaryMouzaSouth || 'Plot no-168',
+    boundaryMouzaEast: initialFields?.boundaryMouzaEast || 'Plot no-164/856',
+    boundaryMouzaWest: initialFields?.boundaryMouzaWest || 'Plot no-167',
+    boundaryActualNorth: initialFields?.boundaryActualNorth || "Other's building",
+    boundaryActualSouth: initialFields?.boundaryActualSouth || '15 feet wide Road',
+    boundaryActualEast: initialFields?.boundaryActualEast || "Other's vacant land",
+    boundaryActualWest: initialFields?.boundaryActualWest || "Other's vacant land",
+    boundariesMatching: initialFields?.boundariesMatching || 'Yes (Boundary matching as per sketch map)',
+
+    // Remarks & Engineer
+    remarks: initialFields?.remarks || 'Subject property is a single storied under construction building having land extent of 2613sqft, having measured BUA 1441sqft. This Property is accessible with 15-feet wide road. All civic amenities are present within 1-2 Kms from the property. Surrounding habitation is 50%. The property is coming under Mandua GP limit. At present, GF RCC roof slab completed & stages of construction is about 65%. Valuation has been done for land & measured BUA of single storied under construction building. Note-This land is not converted to homestead & present nature in agri. Customer has submitted homestead conversion receipt vide OLR Case no- 81/2025, dated-05/02/2025. Boundary details are not mentioned in sale deed. Customer has submitted Amin sketch map for the identification & access road. Report is released basing upon the sketch map. Bank to check the authenticity of the sketch map.',
+    engineerVisitedName: initialFields?.engineerVisitedName || 'Mr. Kundan Singh',
+
+    // Maps & Images
+    locationMapImage: initialFields?.locationMapImage || '',
+    mouzaMapImage: initialFields?.mouzaMapImage || '',
+    cadastralMapImage: initialFields?.cadastralMapImage || '',
+    sketchMapImages: initialFields?.sketchMapImages || [],
+    propertyImages: initialFields?.propertyImages || [],
+    propertyImageNames: initialFields?.propertyImageNames || ['Approach Road Pic', 'External Pic', 'Internal Pic', 'Selfie with Client / Customer Representative', 'Site Work Pic 1', 'Site Work Pic 2'],
+
+    reworkNotes: initialFields?.reworkNotes || '',
+    clientType: 'organisation',
+    organisationTemplate: 'ADITYA BIRLA CAPITAL LTD',
+    organisationSubTemplate: 'MLAP',
+    institutionCategory: 'Bank & FIS',
+  }));
+
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [showReworkModal, setShowReworkModal] = useState(false);
+  const [reworkComment, setReworkComment] = useState('');
+  const [activeSectionId, setActiveSectionId] = useState('section-1');
+  const [uploadingTarget, setUploadingTarget] = useState<string | null>(null);
+
+  const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
+  const isManagerOrOwner = ['MANAGER', 'OWNER'].includes(userRole);
+
+  const handleChange = (key: keyof MLAPReportFields, val: any) => {
+    setFields(prev => ({ ...prev, [key]: val }));
+  };
+
+  // ── Auto-Calculated Valuation Totals ──
+  const plotSqft = parseFloat(fields.plotAreaDocs || '0') || 0;
+  const landRate = parseFloat(fields.landRate || '0') || 0;
+  const landTotalVal = plotSqft * landRate;
+
+  const buaSqft = parseFloat(fields.buaActual || '0') || 0;
+  const bua100Rate = parseFloat(fields.buaActualRate || '0') || 0;
+  const bua100TotalVal = buaSqft * bua100Rate;
+
+  const buaConsRate = parseFloat(fields.buaConsideredRate || '0') || 0;
+  const buaConsTotalVal = buaSqft * buaConsRate;
+
+  const amenitiesVal = parseFloat(fields.amenitiesValue || '0') || 0;
+  const totalVal = landTotalVal + buaConsTotalVal + amenitiesVal;
+  const realizableVal = totalVal * 0.9;
+  const distressVal = totalVal * 0.8;
+
+  // ── Autosave Effect ──
+  const debouncedTimer = useRef<NodeJS.Timeout | null>(null);
+  const isInitialMount = useRef(true);
+
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    if (isReadOnly) return;
+
+    setAutoSaveStatus('saving');
+    if (debouncedTimer.current) clearTimeout(debouncedTimer.current);
+
+    debouncedTimer.current = setTimeout(async () => {
+      try {
+        const res = await saveReportDraft(projectId, fields);
+        if (res && 'error' in res && res.error) {
+          setAutoSaveStatus('error');
+        } else {
+          setAutoSaveStatus('saved');
+        }
+      } catch (err) {
+        console.error('Auto-save error:', err);
+        setAutoSaveStatus('error');
+      }
+    }, 1200);
+
+    return () => {
+      if (debouncedTimer.current) clearTimeout(debouncedTimer.current);
+    };
+  }, [fields, projectId, isReadOnly]);
+
+  // ── Section Observer for Floating Navigator ──
+  const SECTIONS = useMemo(() => [
+    { id: 'section-1', title: '1. Basic Details' },
+    { id: 'section-2', title: '2. Location & Distances' },
+    { id: 'section-3', title: '3. Property Detailings' },
+    { id: 'section-4', title: '4. Documentation' },
+    { id: 'section-5', title: '5. Accommodation' },
+    { id: 'section-6', title: '6. Build Up Details' },
+    { id: 'section-7', title: '7. Valuation Analysis' },
+    { id: 'section-8', title: '8. Boundary Comparison' },
+    { id: 'section-9', title: '9. Remarks & Signoff' },
+    { id: 'section-10', title: '10. Maps (Mouza/Cadastral)' },
+    { id: 'section-11', title: '11. Photographs (2x3)' },
+  ], []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) setActiveSectionId(e.target.id);
+        });
       },
-      { key: 'mainLocality', label: 'Main Locality (e.g. Gobindpur, Sadar)' },
-      { key: 'subLocality', label: 'Sub Locality (e.g. Sadar, Keonjhar)' },
-      { 
-        key: 'localityType', 
-        label: 'Locality Type', 
-        type: 'select', 
-        options: ['Residential', 'Commercial', 'Industrial', 'Institutional', 'Agriculture', 'Residential cum commercial'],
-        default: 'Residential' 
-      },
-      { 
-        key: 'localityOccupancy', 
-        label: 'Occupancy of Locality', 
-        type: 'select', 
-        options: ['Fully Occupied', 'Moderately Occupied', 'Sparsely Occupied'],
-        default: 'Fully Occupied' 
-      },
-      { 
-        key: 'populationDensity', 
-        label: 'Population Density', 
-        type: 'select', 
-        options: ['High', 'Moderate', 'Low'],
-        default: 'Moderate' 
-      },
-      { key: 'distanceFromBranch', label: 'Distance from ABCL Branch', default: '2-Kms' },
-      { key: 'distanceFromCityCenter', label: 'Distance from City Center', default: '2-Kms from market area' },
-      { key: 'amenitiesAvailability', label: 'Availability of Amenities (school, market etc)', default: '1-2 Kms' },
-      { key: 'approachRoadWidth', label: 'Approach Road Width (e.g. 10 feet wide Road)', default: '10 feet wide Road' },
-      { key: 'valuedBefore', label: 'Has Valuator Done Valuation for this property before?', type: 'yesno', default: 'No' },
-      { key: 'valuedBeforeDate', label: 'If Yes When?', default: 'NA' },
-      { key: 'landLocked', label: 'Land Locked', type: 'yesno', default: 'No' },
-      { key: 'otherEncumbranceFeatures', label: 'Any other features (Court notice / other financier board / etc.)', type: 'yesno', default: 'No' },
-    ],
+      { rootMargin: '-10% 0px -75% 0px' }
+    );
+    SECTIONS.forEach(s => {
+      const el = document.getElementById(s.id);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, [SECTIONS]);
 
-    // -- Section 3: Property Detailings --
-    'section-3': [
-      { key: 'occupiedBy', label: 'Occupancy Status', type: 'select', options: ['Vacant', 'Self Occupied', 'Tenanted', 'Under Construction'], default: 'Vacant' },
-      { key: 'occupantName', label: 'Occupied By (Name)', default: 'NA' },
-      { key: 'occupantRelation', label: 'Relationship of Occupant with Client', default: 'NA' },
-      { key: 'plotDemarcated', label: 'Property Demarcation (yes/no)', type: 'yesno', default: 'No' },
-      { key: 'propertyIdentification', label: 'Property Identification (yes/no)', type: 'yesno', default: 'Yes' },
-      { key: 'propertySubType', label: 'Property Sub Type (e.g. Single / Multi-units building - R, Flat)', default: 'Single / Multi-units building - R' },
-      { key: 'propertyHolding', label: 'Property Holding', type: 'select', options: ['Freehold', 'Leasehold', 'Government Grant'], default: 'Freehold' },
-      { 
-        key: 'propertyJurisdiction', 
-        label: 'Property situated in Limits', 
-        type: 'select', 
-        options: ['Gram Panchayat', 'Municipal Corporation', 'Municipality', 'Development Authority / BDA', 'NAC'],
-        default: 'Gram Panchayat' 
-      },
-      { key: 'marketability', label: 'Marketability', type: 'select', options: ['Good', 'Average', 'Poor'], default: 'Average' },
-      { key: 'ageOfPropertyActual', label: 'Property Age', default: '0-Years' },
-      { key: 'estimatedFutureLife', label: 'Residual Age', default: '60-Years' },
-      { key: 'qualityOfConstruction', label: 'Construction Quality', type: 'select', options: ['Good', 'Average', 'Poor'], default: 'Average' },
-      { key: 'structureType', label: 'Structure Type', type: 'select', options: ['RCC', 'Load Bearing', 'Steel Structure', 'Semi-Pucca'], default: 'RCC' },
-      { key: 'dimensionWidth', label: 'Width (Facing Road Side) in feet', default: 'NA' },
-      { key: 'dimensionDepth', label: 'Depth (in feet)', default: 'NA' },
-      { key: 'cautiousLocations', label: 'Cautious Locations', default: 'NA' },
-      { key: 'flatConfigurationType', label: 'If Flat, Configuration Type (1BHK/2BHK/3BHK)', default: 'NA' },
-      { key: 'percentageCompletion', label: 'Percentage Completion of Property (e.g. 65%)', default: '65%' },
-      { key: 'percentageRecommendation', label: 'Percentage Recommendation of Property (e.g. 70%)', default: '70%' },
-    ],
+  const scrollToSection = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
-    // -- Section 4: Documentation --
-    'section-4': [
-      { key: 'documentsProvided', label: 'Documents Provided', default: 'Copy of Sale deed, ROR & Sketch map' },
-      { key: 'sanctionPlanDetails', label: 'Sanction Plan details if provided', default: 'Plan is not provided' },
-      { key: 'utilityBills', label: 'Utility Bills (Water bill, electricity bill)', default: 'NA' },
-    ],
+  // ── Image Upload Helper ──
+  const handleUploadSingleImage = async (e: React.ChangeEvent<HTMLInputElement>, targetKey: 'locationMapImage' | 'mouzaMapImage' | 'cadastralMapImage') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingTarget(targetKey);
+    try {
+      const ext = file.name.split('.').pop();
+      const path = `reports/${projectId}/${targetKey}_${Date.now()}.${ext}`;
+      const { data, error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.PROJECT_FILES).upload(path, file);
+      if (error) throw error;
+      const { data: publicUrlData } = supabaseBrowser.storage.from(STORAGE_BUCKETS.PROJECT_FILES).getPublicUrl(data.path);
+      handleChange(targetKey, publicUrlData.publicUrl);
+    } catch (err: any) {
+      alert(`Image upload failed: ${err.message}`);
+    } finally {
+      setUploadingTarget(null);
+    }
+  };
 
-    // -- Section 5: Accommodation Details --
-    'section-5': [
-      { key: 'groundFloorRooms', label: 'Ground Floor Rooms (e.g. 2 Bed, 1 Kitchen)', default: '2 Bedroom, 1 Kitchen' },
-      { key: 'firstFloorRooms', label: 'First Floor Rooms', default: 'NA' },
-      { key: 'secondFloorRooms', label: 'Second Floor Rooms', default: 'NA' },
-      { key: 'thirdFloorRooms', label: 'Third Floor Rooms', default: 'NA' },
-      { key: 'forthFloorRooms', label: 'Forth Floor Rooms', default: 'NA' },
-    ],
+  const handleUploadPhoto = async (e: React.ChangeEvent<HTMLInputElement>, slotIdx: number) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingTarget(`photo-${slotIdx}`);
+    try {
+      const ext = file.name.split('.').pop();
+      const path = `reports/${projectId}/photo_${slotIdx}_${Date.now()}.${ext}`;
+      const { data, error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.PROJECT_FILES).upload(path, file);
+      if (error) throw error;
+      const { data: publicUrlData } = supabaseBrowser.storage.from(STORAGE_BUCKETS.PROJECT_FILES).getPublicUrl(data.path);
 
-    // -- Section 6: Build Up Details --
-    'section-6': [
-      { key: 'buaGFSite', label: 'Ground Floor BUA as per Site', default: 'RCC-1441sqft' },
-      { key: 'buaGFPlan', label: 'Ground Floor BUA as per Plan/Allowed', default: 'NA' },
-      { key: 'buaGFDeviation', label: 'Ground Floor Percentage Deviation', default: 'NA' },
-      { key: 'buaFFSite', label: 'First Floor BUA as per Site', default: 'NA' },
-      { key: 'buaFFPlan', label: 'First Floor BUA as per Plan/Allowed', default: 'NA' },
-      { key: 'buaFFDeviation', label: 'First Floor Percentage Deviation', default: 'NA' },
-    ],
+      const updatedImgs = [...(fields.propertyImages || [])];
+      updatedImgs[slotIdx] = publicUrlData.publicUrl;
+      handleChange('propertyImages', updatedImgs);
+    } catch (err: any) {
+      alert(`Photo upload failed: ${err.message}`);
+    } finally {
+      setUploadingTarget(null);
+    }
+  };
 
-    // -- Section 7: Valuation --
-    'section-7': [
-      { key: 'plotAreaDocs', label: 'Plot Area (As per Documents) in Sqft', default: '2613' },
-      { key: 'plotAreaPhysical', label: 'Plot Area (As per Physical) in Sqft', default: '2613' },
-      { key: 'plotAreaConsidered', label: 'Plot Area (Considered For Valuation) in Sqft', default: '2613' },
-      { key: 'landRatePerSqft', label: 'Land Rate / Sqft (?)', default: '800' },
-      { key: 'buaPlan', label: 'Build Up Area (As per Plan/Document)', default: 'Plan is not provided' },
-      { key: 'buaActual', label: 'Build Up Area (As per Actual) in Sqft', default: '1441' },
-      { key: 'buaRate100Pct', label: 'BUA Rate / Sqft (on 100% completion) (?)', default: '1500' },
-      { key: 'buaConsidered', label: 'Build Up Area (Considered for Valuation) in Sqft', default: '1441' },
-      { key: 'buaRateConsidered', label: 'BUA Considered Rate / Sqft (as on date) (?)', default: '975' },
-      { key: 'superBua', label: 'Super Build Up Area (In case of Composite)', default: 'NA' },
-      { key: 'amenitiesValue', label: 'Amenities (Parking / Lumpsum value) (?)', default: '0' },
-      { key: 'realizablePct', label: 'Realizable Value Percentage (%)', default: '90' },
-      { key: 'distressPct', label: 'Distress Value Percentage (%)', default: '80' },
-    ],
+  const handleUploadSketchMap = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingTarget('sketch');
+    try {
+      const ext = file.name.split('.').pop();
+      const path = `reports/${projectId}/sketch_${Date.now()}.${ext}`;
+      const { data, error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.PROJECT_FILES).upload(path, file);
+      if (error) throw error;
+      const { data: publicUrlData } = supabaseBrowser.storage.from(STORAGE_BUCKETS.PROJECT_FILES).getPublicUrl(data.path);
 
-    // -- Section 8: Boundary Details --
-    'section-8': [
-      { key: 'boundarySketchNorth', label: 'Sketch Map � North', default: 'Deepak Behera & Bibhu Ranjan Palei' },
-      { key: 'boundarySketchSouth', label: 'Sketch Map � South', default: 'Road' },
-      { key: 'boundarySketchEast', label: 'Sketch Map � East', default: 'Sonali Sethi' },
-      { key: 'boundarySketchWest', label: 'Sketch Map � West', default: 'Archana Debarchana Sethi' },
-      { key: 'boundaryMouzaNorth', label: 'Mouza Map � North', default: 'Plot no-165' },
-      { key: 'boundaryMouzaSouth', label: 'Mouza Map � South', default: 'Plot no-168' },
-      { key: 'boundaryMouzaEast', label: 'Mouza Map � East', default: 'Plot no-164/856' },
-      { key: 'boundaryMouzaWest', label: 'Mouza Map � West', default: 'Plot no-167' },
-      { key: 'boundaryActualNorth', label: 'Actual Site � North', default: "Other's building" },
-      { key: 'boundaryActualSouth', label: 'Actual Site � South', default: '15 feet wide Road' },
-      { key: 'boundaryActualEast', label: 'Actual Site � East', default: "Other's vacant land" },
-      { key: 'boundaryActualWest', label: 'Actual Site � West', default: "Other's vacant land" },
-      { key: 'boundariesMatching', label: 'Boundaries Matching Status', default: 'Yes (Boundary matching as per sketch map)' },
-    ],
+      const updatedSketches = [...(fields.sketchMapImages || []), publicUrlData.publicUrl];
+      handleChange('sketchMapImages', updatedSketches);
+    } catch (err: any) {
+      alert(`Sketch upload failed: ${err.message}`);
+    } finally {
+      setUploadingTarget(null);
+    }
+  };
 
-    // -- Section 9: Remarks & Visited Engineer --
-    'section-9': [
-      { key: 'engineerVisitedName', label: 'Name of the Engineer Visited', default: 'Mr. Kundan Singh' },
-    ],
-  },
-  defaultValues: {
-    purpose: 'Mortgage Loan Against Property (MLAP)',
-    branchName: 'MLAP',
-  },
+  // ── PDF Generation ──
+  const generatePDFBytes = async (): Promise<Uint8Array> => {
+    // 1. Fetch Letterhead
+    let letterheadBytes: Uint8Array | null = null;
+    try {
+      const res = await fetch('/letterhead_header.png');
+      if (res.ok) letterheadBytes = new Uint8Array(await res.arrayBuffer());
+    } catch { /* ignore */ }
 
-  // -- Custom PDF Generator matching Excel structure 1:1 --
-  generateCustomPDF: async (fields, letterheadBytes, imageResults, fmtDate) => {
+    // 2. Fetch All Image Bytes
+    const allUrls: string[] = [
+      ...(fields.propertyImages || []),
+      ...(fields.sketchMapImages || []),
+      fields.locationMapImage || '',
+      fields.mouzaMapImage || '',
+      fields.cadastralMapImage || '',
+    ].filter(Boolean);
+
+    const imageResults = await Promise.all(
+      allUrls.map(async url => {
+        try {
+          const res = await fetch(url);
+          if (res.ok) return new Uint8Array(await res.arrayBuffer());
+          return null;
+        } catch {
+          return null;
+        }
+      })
+    );
+
+    const fmtDate = (d: string) => {
+      if (!d) return '________';
+      if (/^\d{4}-\d{2}-\d{2}$/.test(d)) {
+        const [y, m, dd] = d.split('-');
+        return `${dd}-${m}-${y}`;
+      }
+      return d;
+    };
+
     const r = new PDFAdityaBirlaMLAPRenderer();
     await r.init(letterheadBytes || undefined);
 
@@ -175,40 +384,40 @@ export const ADITYA_BIRLA_CAPITAL_MLAP_CONFIG: BankConfig = {
     const W_LABEL_4COL = 120;
     const W_VAL_4COL = 141.64;
 
-    // -- 1. Main Header --
+    // ── 1. Main Title Header ──
     r.drawMainHeader('Aditya Birla Capital Ltd (MLAP)');
 
-    // -- 2. Basic Details --
+    // ── 2. Basic Details ──
     r.drawSectionHeader('Basic Details');
     r.drawKeyValueRow([
       { label: 'Client Name', value: fields.ownerName || fields.clientName || 'N/A', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
-      { label: 'Initiation Date', value: fmtDate(fields.initiationDate || fields.dateOfInspection), labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
+      { label: 'Initiation Date', value: fmtDate(fields.initiationDate || fields.dateOfInspection || ''), labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
     ]);
     r.drawKeyValueRow([
       { label: 'Valuer Name', value: fields.valuerName || 'Er. Satyajit Mohanty', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
-      { label: 'Visit Date', value: fmtDate(fields.dateOfInspection), labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
+      { label: 'Visit Date', value: fmtDate(fields.dateOfInspection || ''), labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
     ]);
     r.drawKeyValueRow([
-      { label: 'Application No.', value: fields.loanApplicationNo || fields.caseReferenceNumber || 'N/A', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
-      { label: 'Report Date', value: fmtDate(fields.dateOfValuation), labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
+      { label: 'Application No.', value: fields.loanApplicationNo || 'N/A', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
+      { label: 'Report Date', value: fmtDate(fields.dateOfValuation || ''), labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
     ]);
     r.drawKeyValueRow([
-      { label: 'Name of Property Owner', value: fields.propertyOwnerName || fields.ownerName || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL },
+      { label: 'Name of Property Owner', value: fields.propertyOwnerName || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL },
     ]);
 
-    // -- 3. Location Details --
+    // ── 3. Location Details ──
     r.drawSectionHeader('Location Details');
-    r.drawKeyValueRow([{ label: 'Address as per Document', value: fields.propertyAddressAsDocs || fields.ownerAddress || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
-    r.drawKeyValueRow([{ label: 'Address as per Physical', value: fields.propertyAddressAsVisit || fields.ownerAddress || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
+    r.drawKeyValueRow([{ label: 'Address as per Document', value: fields.propertyAddressAsDocs || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
+    r.drawKeyValueRow([{ label: 'Address as per Physical', value: fields.propertyAddressAsVisit || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
     r.drawKeyValueRow([{ label: 'Address matching', value: fields.addressMatching || 'Yes (As per documents)', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
     r.drawKeyValueRow([{ label: 'Co-Ordinates', value: `Lat:-${fields.latitude || '21.636778'},Long:- ${fields.longitude || '85.628000'}`, labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
 
     r.drawKeyValueRow([
-      { label: 'Main Locality', value: fields.mainLocality || fields.city || 'N/A', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
+      { label: 'Main Locality', value: fields.mainLocality || 'N/A', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
       { label: 'Sub Locality', value: fields.subLocality || 'N/A', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
     ]);
     r.drawKeyValueRow([
-      { label: 'Locality Type', value: fields.localityType || fields.propertyType || 'Residential', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
+      { label: 'Locality Type', value: fields.localityType || 'Residential', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
       { label: 'Landmark', value: fields.landmark || 'N/A', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
     ]);
     r.drawKeyValueRow([
@@ -228,7 +437,7 @@ export const ADITYA_BIRLA_CAPITAL_MLAP_CONFIG: BankConfig = {
     r.drawKeyValueRow([{ label: 'Land Locked', value: fields.landLocked || 'No', labelWidth: 350, valueWidth: 173.28, highlight: true }]);
     r.drawKeyValueRow([{ label: 'Any other features like board of other financier indicating mortgage, notice of Court/any authority which may affect the title', value: fields.otherEncumbranceFeatures || 'No', labelWidth: 350, valueWidth: 173.28, highlight: true }]);
 
-    // -- 4. Property Detailings --
+    // ── 4. Property Detailings ──
     r.drawSectionHeader('Property Detailings');
     r.drawKeyValueRow([{ label: 'Occupancy', value: fields.occupiedBy || 'Vacant', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
     r.drawKeyValueRow([{ label: 'Occupied By', value: fields.occupantName || 'NA', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
@@ -253,116 +462,95 @@ export const ADITYA_BIRLA_CAPITAL_MLAP_CONFIG: BankConfig = {
     r.drawKeyValueRow([{ label: 'Percentage Completion of Property', value: fields.percentageCompletion || '65%', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
     r.drawKeyValueRow([{ label: 'Percentage Recommendation of Property', value: fields.percentageRecommendation || '70%', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
 
-    // -- 5. Documentation --
+    // ── 5. Documentation ──
     r.drawSectionHeader('Documentation');
     r.drawKeyValueRow([{ label: 'Documents Provided', value: fields.documentsProvided || 'Copy of Sale deed, ROR & Sketch map', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
     r.drawKeyValueRow([{ label: 'Sanction Plan details if provided', value: fields.sanctionPlanDetails || 'Plan is not provided', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
     r.drawKeyValueRow([{ label: 'Utility Bills (Water bill, electricity bill)', value: fields.utilityBills || 'NA', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
 
-    // -- 6. Accommodation Details --
+    // ── 6. Accommodation Details ──
     r.drawSectionHeader('Accomodation Details');
     const accomCols = [80, 70, 70, 70, 70, 80, 83.28];
+    const accomRows = (fields.accommodationRows || DEFAULT_ACCOM_ROWS).map(r => [
+      r.floor, r.drawingRoom || '', r.bedroom || '', r.diningRoom || '', r.kitchen || '', r.bathroom || '', r.balcony || ''
+    ]);
     r.drawTable(
       ['Unit Details', 'Drawing Room', 'Bedroom', 'Dining Room', 'Kitchen', 'Bathroom', 'Balcony'],
-      [
-        ['Ground Floor', fields.groundFloorDrawing || '', fields.groundFloorBed || '2', fields.groundFloorDining || '', fields.groundFloorKitchen || '1', fields.groundFloorBath || '', fields.groundFloorBalcony || ''],
-        ['First Floor', fields.firstFloorDrawing || 'NA', fields.firstFloorBed || 'NA', fields.firstFloorDining || 'NA', fields.firstFloorKitchen || 'NA', fields.firstFloorBath || 'NA', fields.firstFloorBalcony || 'NA'],
-        ['Second Floor', 'NA', 'NA', 'NA', 'NA', 'NA', 'NA'],
-        ['Third Floor', 'NA', 'NA', 'NA', 'NA', 'NA', 'NA'],
-        ['Forth Floor', 'NA', 'NA', 'NA', 'NA', 'NA', 'NA'],
-      ],
+      accomRows,
       accomCols
     );
 
-    // -- 7. Build Up Details --
+    // ── 7. Build Up Details ──
     r.drawSectionHeader('Build Up Details');
     const buaCols = [110, 140, 140, 133.28];
+    const buaRowsData = (fields.buaRows || DEFAULT_BUA_ROWS).map(r => [
+      r.floor, r.asPerSite || 'NA', r.asPerPlan || 'NA', r.percentageDeviation || 'NA'
+    ]);
     r.drawTable(
       ['Floor', 'As per site', 'As per Plan/Allowed', 'Percentage Deviation'],
-      [
-        ['Ground Floor', fields.buaGFSite || 'RCC-1441sqft', fields.buaGFPlan || 'NA', fields.buaGFDeviation || 'NA'],
-        ['First Floor', fields.buaFFSite || 'NA', fields.buaFFPlan || 'NA', fields.buaFFDeviation || 'NA'],
-        ['Second Floor', 'NA', 'NA', 'NA'],
-        ['Third Floor', 'NA', 'NA', 'NA'],
-      ],
+      buaRowsData,
       buaCols
     );
 
-    // -- 8. Valuation --
+    // ── 8. Valuation Analysis ──
     r.drawSectionHeader('Valuation');
     const valCols = [240, 95, 95, 93.28];
-    const plotSqft = parseFloat(fields.plotAreaDocs || '2613') || 0;
-    const landRate = parseFloat(fields.landRatePerSqft || '800') || 0;
-    const landVal = plotSqft * landRate;
-
-    const buaSqft = parseFloat(fields.buaActual || '1441') || 0;
-    const bua100Rate = parseFloat(fields.buaRate100Pct || '1500') || 0;
-    const bua100Val = buaSqft * bua100Rate;
-
-    const buaConsRate = parseFloat(fields.buaRateConsidered || '975') || 0;
-    const buaConsVal = buaSqft * buaConsRate;
-
-    const totalVal = landVal + buaConsVal;
-    const realVal = totalVal * 0.9;
-    const distVal = totalVal * 0.8;
-
     r.drawTable(
       ['Detailings', 'Area in Sqft', 'Rate/sqft', 'Value'],
       [
-        ['Plot Area (As per Documents)', String(plotSqft), String(landRate), `Rs. ${formatIndianCurrency(landVal)}`],
+        ['Plot Area (As per Documents)', String(plotSqft), String(landRate), `Rs. ${formatIndianCurrency(landTotalVal)}`],
         ['Plot Area (As per Physical)', fields.plotAreaPhysical || String(plotSqft), '-', '-'],
         ['Plot Area (Considered For Valuation)', fields.plotAreaConsidered || String(plotSqft), '-', '-'],
         ['Build Up Area (As per Plan/Document)', fields.buaPlan || 'Plan is not provided', '-', '-'],
-        ['Build Up Area (As per Actual) GF RCC on 100% comp', String(buaSqft), String(bua100Rate), `Rs. ${formatIndianCurrency(bua100Val)}`],
-        ['Build Up Area (Considered for Valuation) as on date', String(buaSqft), String(buaConsRate), `Rs. ${formatIndianCurrency(buaConsVal)}`],
+        ['Build Up Area (As per Actual) GF RCC on 100% comp', String(buaSqft), String(bua100Rate), `Rs. ${formatIndianCurrency(bua100TotalVal)}`],
+        ['Build Up Area (Considered for Valuation) as on date', String(buaSqft), String(buaConsRate), `Rs. ${formatIndianCurrency(buaConsTotalVal)}`],
         ['Super Build Up Area (In case of Composite)', fields.superBua || '-', '-', '-'],
-        ['Amenities (like parking etc in unit or lumpsum value)', fields.amenitiesValue || '-', '-', '-'],
+        ['Amenities (like parking etc in unit or lumpsum value)', String(amenitiesVal), '-', `Rs. ${formatIndianCurrency(amenitiesVal)}`],
         ['Total Value', '', '', `Rs. ${formatIndianCurrency(totalVal)}`],
-        ['Realizable Value(90%)', '', '', `Rs. ${formatIndianCurrency(realVal)}`],
-        ['Distress Value(80%)', '', '', `Rs. ${formatIndianCurrency(distVal)}`],
+        ['Realizable Value(90%)', '', '', `Rs. ${formatIndianCurrency(realizableVal)}`],
+        ['Distress Value(80%)', '', '', `Rs. ${formatIndianCurrency(distressVal)}`],
       ],
       valCols,
-      [3] // Highlight Value column
+      [3]
     );
 
-    // -- 9. Boundary Details --
+    // ── 9. Boundary Details ──
     r.drawSectionHeader('Boundary Details');
     const boundCols = [103.28, 105, 105, 105, 105];
     r.drawTable(
       ['Detailings', 'North', 'South', 'East', 'West'],
       [
-        ['As per Sketch map', fields.boundarySketchNorth || 'Deepak Behera', fields.boundarySketchSouth || 'Road', fields.boundarySketchEast || 'Sonali Sethi', fields.boundarySketchWest || 'Archana Sethi'],
-        ['As per Mouza Map', fields.boundaryMouzaNorth || 'Plot no-165', fields.boundaryMouzaSouth || 'Plot no-168', fields.boundaryMouzaEast || 'Plot no-164/856', fields.boundaryMouzaWest || 'Plot no-167'],
-        ['As per actual', fields.boundaryActualNorth || "Other's building", fields.boundaryActualSouth || '15 feet wide Road', fields.boundaryActualEast || "Other's vacant land", fields.boundaryActualWest || "Other's vacant land"],
+        ['As per Sketch map', fields.boundarySketchNorth || '', fields.boundarySketchSouth || '', fields.boundarySketchEast || '', fields.boundarySketchWest || ''],
+        ['As per Mouza Map', fields.boundaryMouzaNorth || '', fields.boundaryMouzaSouth || '', fields.boundaryMouzaEast || '', fields.boundaryMouzaWest || ''],
+        ['As per actual', fields.boundaryActualNorth || '', fields.boundaryActualSouth || '', fields.boundaryActualEast || '', fields.boundaryActualWest || ''],
       ],
       boundCols
     );
     r.drawKeyValueRow([{ label: 'Boundaries Matching', value: fields.boundariesMatching || 'Yes (Boundary matching as per sketch map)', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
 
-    // -- 10. Remarks --
-    r.drawRemarksBox(
-      'Remarks',
-      fields.remarks ||
-        'Subject property is a single storied under construction building having land extent of 2613sqft, having measured BUA 1441sqft. This Property is accessible with 15-feet wide road. All civic amenities are present within 1-2 Kms from the property. Surrounding habitation is 50%. The property is coming under Mandua GP limit. At present, GF RCC roof slab completed & stages of construction is about 65%. Valuation has been done for land & measured BUA of single storied under construction building. Note-This land is not converted to homestead & present nature in agri. Customer has submitted homestead conversion receipt vide OLR Case no- 81/2025, dated-05/02/2025. Boundary details are not mentioned in sale deed. Customer has submitted Amin sketch map for the identification & access road. Report is released basing upon the sketch map. Bank to check the authenticity of the sketch map.'
-    );
+    // ── 10. Remarks ──
+    r.drawRemarksBox('Remarks', fields.remarks || 'N/A');
     r.drawKeyValueRow([{ label: 'Name of the Engineer Visited', value: fields.engineerVisitedName || 'Mr. Kundan Singh', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
 
-    // -- 11. Location Map --
-    let imgIdx = (fields.propertyImages || []).length;
-    const sketchBytesList = fields.sketchMapImages?.length ? imageResults.slice(imgIdx, imgIdx + fields.sketchMapImages.length) : null;
-    if (fields.sketchMapImages?.length) imgIdx += fields.sketchMapImages.length;
-    const locationBytes = fields.locationMapImage ? imageResults[imgIdx++] : null;
+    // ── 11. Location Map ──
+    let imgPointer = (fields.propertyImages || []).length;
+    const sketchImgs = fields.sketchMapImages || [];
+    const sketchBytes = imageResults.slice(imgPointer, imgPointer + sketchImgs.length);
+    imgPointer += sketchImgs.length;
+    const locMapBytes = fields.locationMapImage ? imageResults[imgPointer++] : null;
+    const mouzaMapBytes = fields.mouzaMapImage ? imageResults[imgPointer++] : null;
+    const cadastralMapBytes = fields.cadastralMapImage ? imageResults[imgPointer++] : null;
 
-    if (locationBytes) {
+    if (locMapBytes) {
       r.checkPageBreak(300);
       r.drawSectionHeader('Location Map');
-      await r.drawImageSection(locationBytes, `Latitude: -${fields.latitude || '21.636778'}, Longitude: ${fields.longitude || '85.628000'}`);
+      await r.drawImageSection(locMapBytes, `Latitude: -${fields.latitude || '21.636778'}, Longitude: ${fields.longitude || '85.628000'}`);
     }
 
-    // -- 12. Photographs Grid --
-    const propertyImgs = fields.propertyImages || [];
-    if (propertyImgs.length > 0) {
-      const photos = propertyImgs.map((imgUrl: string, idx: number) => ({
+    // ── 12. Photographs Grid ──
+    const propImgs = fields.propertyImages || [];
+    if (propImgs.length > 0) {
+      const photos = propImgs.map((imgUrl: string, idx: number) => ({
         bytes: imageResults[idx],
         label: fields.propertyImageNames?.[idx] || (idx === 0 ? 'Approach Road Pic' : idx === 1 ? 'External Pic' : idx === 2 ? 'Internal Pic' : idx === 3 ? 'Selfie with Client / Customer Representative' : `Photo ${idx + 1}`),
       })).filter((p: any) => p.bytes && p.bytes.length > 0);
@@ -370,21 +558,1024 @@ export const ADITYA_BIRLA_CAPITAL_MLAP_CONFIG: BankConfig = {
       await r.drawPhotoGrid(photos);
     }
 
-    // -- 13. Sketch / Mouza Maps --
-    if (sketchBytesList && sketchBytesList.length > 0) {
-      for (let i = 0; i < sketchBytesList.length; i++) {
-        if (sketchBytesList[i]) {
+    // ── 13. Mouza & Cadastral & Sketch Maps ──
+    if (mouzaMapBytes) {
+      r.checkPageBreak(300);
+      r.drawSectionHeader('MOUZA MAP');
+      await r.drawImageSection(mouzaMapBytes, 'Mouza Map (Bhulekh Plot Detail)');
+    }
+
+    if (cadastralMapBytes) {
+      r.checkPageBreak(300);
+      r.drawSectionHeader('CADASTRAL MAP');
+      await r.drawImageSection(cadastralMapBytes, 'Cadastral Satellite Plot Boundary Map');
+    }
+
+    if (sketchBytes && sketchBytes.length > 0) {
+      for (let i = 0; i < sketchBytes.length; i++) {
+        if (sketchBytes[i]) {
           r.checkPageBreak(300);
-          r.drawSectionHeader(i === 0 ? 'MOUZA MAP / CADASTRAL MAP' : `MAP / PLAN ${i + 1}`);
-          await r.drawImageSection(sketchBytesList[i], `Map Document ${i + 1}`);
+          r.drawSectionHeader(i === 0 ? 'AMIN HAND-DRAWN SKETCH MAP' : `SKETCH MAP ${i + 1}`);
+          await r.drawImageSection(sketchBytes[i], `Hand-Drawn Sketch Map ${i + 1}`);
         }
       }
     }
 
     return await r.save();
-  },
-};
+  };
 
-export default function AdityaBirlaCapitalMLAP(props: BankReportBuilderProps) {
-  return <BankReportBuilder config={ADITYA_BIRLA_CAPITAL_MLAP_CONFIG} {...props} />;
+  const handlePreviewPDF = async () => {
+    setLoading(true);
+    try {
+      const pdfBytes = await generatePDFBytes();
+      const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      setPdfPreviewUrl(url);
+      setShowPreviewModal(true);
+    } catch (err: any) {
+      alert(`PDF Preview Failed: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    setLoading(true);
+    try {
+      const pdfBytes = await generatePDFBytes();
+      const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Aditya_Birla_MLAP_Valuation_${projectCode || 'Report'}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      alert(`PDF Download Failed: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    setLoading(true);
+    try {
+      const res = await saveReportDraft(projectId, fields);
+      if (res && 'error' in res && res.error) {
+        setMessage({ text: res.error, type: 'error' });
+      } else {
+        setMessage({ text: 'Draft saved successfully!', type: 'success' });
+        setAutoSaveStatus('saved');
+      }
+    } catch (err: any) {
+      setMessage({ text: err.message || 'Failed to save draft.', type: 'error' });
+    } finally {
+      setLoading(false);
+      setTimeout(() => setMessage(null), 3000);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!confirm('Are you sure you want to submit this report for Manager verification?')) return;
+    setLoading(true);
+    try {
+      await saveReportDraft(projectId, fields);
+      const res = await submitReportForVerification(projectId);
+      if (res && 'error' in res && res.error) {
+        alert(res.error);
+      } else {
+        alert('Report submitted for Manager Review!');
+        router.refresh();
+      }
+    } catch (err: any) {
+      alert(`Submit failed: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const inputCls = "w-full p-2.5 text-xs bg-[#f8f9fa] border border-[#dee2e6] rounded-xl focus:border-[#b8860b] focus:bg-white focus:outline-none transition-all";
+  const labelCls = "block text-[11px] font-bold text-[#495057] uppercase tracking-wider mb-1";
+
+  return (
+    <div className="flex gap-6 items-start w-full">
+      {/* ── Main Form Column ── */}
+      <div className="flex-1 min-w-0 space-y-6">
+
+        {/* Top Active Configuration Bar */}
+        <div className="p-4 bg-white border border-[#dee2e6] flex flex-row items-center justify-between gap-4 shadow-md rounded-2xl sticky top-2 z-50">
+          <div className="flex items-center gap-4">
+            <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider leading-tight min-w-[90px] select-none">
+              Active<br />Configuration
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                Organisation / Bank
+              </span>
+              <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                Aditya Birla Capital Ltd - MLAP
+              </span>
+              <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-500"></span>
+                Format: MLAP
+              </span>
+            </div>
+          </div>
+          {onResetWizard && (
+            <button
+              type="button"
+              onClick={onResetWizard}
+              className="text-xs text-[#b8860b] hover:text-[#8a6507] hover:underline font-bold transition-colors shrink-0 pr-2 uppercase"
+            >
+              Change Parameters
+            </button>
+          )}
+        </div>
+
+        {/* ═══ SECTION 1: BASIC DETAILS ═══ */}
+        <div id="section-1" className="card p-6 bg-white border border-[#dee2e6] rounded-2xl shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b pb-3">
+            <h2 className="text-sm font-black text-[#0f2038] uppercase tracking-wider flex items-center gap-2">
+              <span className="w-6 h-6 rounded-lg bg-[#0f2038] text-white flex items-center justify-center text-xs">1</span>
+              Basic Details
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className={labelCls}>Client Name</label>
+              <input type="text" value={fields.ownerName || ''} onChange={e => handleChange('ownerName', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Initiation Date</label>
+              <input type="date" value={fields.initiationDate || ''} onChange={e => handleChange('initiationDate', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Valuer Name</label>
+              <input type="text" value={fields.valuerName || 'Er. Satyajit Mohanty'} onChange={e => handleChange('valuerName', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Visit Date (Date of Inspection)</label>
+              <input type="date" value={fields.dateOfInspection || ''} onChange={e => handleChange('dateOfInspection', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Application No. (Case Ref No)</label>
+              <input type="text" value={fields.loanApplicationNo || ''} onChange={e => handleChange('loanApplicationNo', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Report Date (Date of Valuation)</label>
+              <input type="date" value={fields.dateOfValuation || ''} onChange={e => handleChange('dateOfValuation', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </div>
+            <div className="md:col-span-2">
+              <label className={labelCls}>Name of Property Owner (with S/O, W/O)</label>
+              <input type="text" value={fields.propertyOwnerName || ''} onChange={e => handleChange('propertyOwnerName', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </div>
+          </div>
+        </div>
+
+        {/* ═══ SECTION 2: LOCATION DETAILS & DISTANCES ═══ */}
+        <div id="section-2" className="card p-6 bg-white border border-[#dee2e6] rounded-2xl shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b pb-3">
+            <h2 className="text-sm font-black text-[#0f2038] uppercase tracking-wider flex items-center gap-2">
+              <span className="w-6 h-6 rounded-lg bg-[#0f2038] text-white flex items-center justify-center text-xs">2</span>
+              Location Details & Distance Matrix
+            </h2>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label className={labelCls}>Address as per Document (Khata, Plot, Mouza, Tahasil, Dist, Pin)</label>
+              <textarea rows={2} value={fields.propertyAddressAsDocs || ''} onChange={e => handleChange('propertyAddressAsDocs', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Address as per Physical / Site Visit</label>
+              <textarea rows={2} value={fields.propertyAddressAsVisit || ''} onChange={e => handleChange('propertyAddressAsVisit', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className={labelCls}>Address Matching</label>
+                <select value={fields.addressMatching || 'Yes (As per documents)'} onChange={e => handleChange('addressMatching', e.target.value)} disabled={isReadOnly} className={inputCls}>
+                  <option value="Yes (As per documents)">Yes (As per documents)</option>
+                  <option value="No (Discrepancy observed)">No (Discrepancy observed)</option>
+                  <option value="Partially Matching">Partially Matching</option>
+                </select>
+              </div>
+              <div>
+                <label className={labelCls}>Latitude</label>
+                <input type="text" value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 21.636778" />
+              </div>
+              <div>
+                <label className={labelCls}>Longitude</label>
+                <input type="text" value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 85.628000" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className={labelCls}>Main Locality</label>
+                <input type="text" value={fields.mainLocality || ''} onChange={e => handleChange('mainLocality', e.target.value)} disabled={isReadOnly} className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Sub Locality</label>
+                <input type="text" value={fields.subLocality || ''} onChange={e => handleChange('subLocality', e.target.value)} disabled={isReadOnly} className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Locality Type</label>
+                <select value={fields.localityType || 'Residential'} onChange={e => handleChange('localityType', e.target.value)} disabled={isReadOnly} className={inputCls}>
+                  <option value="Residential">Residential</option>
+                  <option value="Commercial">Commercial</option>
+                  <option value="Industrial">Industrial</option>
+                  <option value="Institutional">Institutional</option>
+                  <option value="Agriculture">Agriculture</option>
+                  <option value="Residential cum commercial">Residential cum commercial</option>
+                </select>
+              </div>
+              <div>
+                <label className={labelCls}>Landmark</label>
+                <input type="text" value={fields.landmark || ''} onChange={e => handleChange('landmark', e.target.value)} disabled={isReadOnly} className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Occupancy of Locality</label>
+                <select value={fields.localityOccupancy || 'Fully Occupied'} onChange={e => handleChange('localityOccupancy', e.target.value)} disabled={isReadOnly} className={inputCls}>
+                  <option value="Fully Occupied">Fully Occupied</option>
+                  <option value="Moderately Occupied">Moderately Occupied</option>
+                  <option value="Sparsely Occupied">Sparsely Occupied</option>
+                </select>
+              </div>
+              <div>
+                <label className={labelCls}>Population Density</label>
+                <select value={fields.populationDensity || 'Moderate'} onChange={e => handleChange('populationDensity', e.target.value)} disabled={isReadOnly} className={inputCls}>
+                  <option value="High">High</option>
+                  <option value="Moderate">Moderate</option>
+                  <option value="Low">Low</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Distance Matrix */}
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Distance & Infrastructure Matrix</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className={labelCls}>Distance from ABCL Branch</label>
+                  <input type="text" value={fields.distanceFromBranch || ''} onChange={e => handleChange('distanceFromBranch', e.target.value)} disabled={isReadOnly} className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Distance from City Center / Market</label>
+                  <input type="text" value={fields.distanceFromCityCenter || ''} onChange={e => handleChange('distanceFromCityCenter', e.target.value)} disabled={isReadOnly} className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Distance from Bus Stand</label>
+                  <input type="text" value={fields.distanceBusStop || ''} onChange={e => handleChange('distanceBusStop', e.target.value)} disabled={isReadOnly} className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Distance from Nearest Railway Station</label>
+                  <input type="text" value={fields.distanceRailwayStation || ''} onChange={e => handleChange('distanceRailwayStation', e.target.value)} disabled={isReadOnly} className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Availability of Amenities (School/Market)</label>
+                  <input type="text" value={fields.amenitiesAvailability || ''} onChange={e => handleChange('amenitiesAvailability', e.target.value)} disabled={isReadOnly} className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Approach Road Width</label>
+                  <input type="text" value={fields.approachRoadWidth || ''} onChange={e => handleChange('approachRoadWidth', e.target.value)} disabled={isReadOnly} className={inputCls} />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className={labelCls}>Has Valuator Done Valuation Before?</label>
+                <select value={fields.valuedBefore || 'No'} onChange={e => handleChange('valuedBefore', e.target.value)} disabled={isReadOnly} className={inputCls}>
+                  <option value="No">No</option>
+                  <option value="Yes">Yes</option>
+                </select>
+              </div>
+              <div>
+                <label className={labelCls}>If Yes When?</label>
+                <input type="text" value={fields.valuedBeforeDate || 'NA'} onChange={e => handleChange('valuedBeforeDate', e.target.value)} disabled={isReadOnly} className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Land Locked</label>
+                <select value={fields.landLocked || 'No'} onChange={e => handleChange('landLocked', e.target.value)} disabled={isReadOnly} className={inputCls}>
+                  <option value="No">No</option>
+                  <option value="Yes">Yes</option>
+                </select>
+              </div>
+              <div>
+                <label className={labelCls}>Encumbrance / Court Notice / Other Financier Board</label>
+                <select value={fields.otherEncumbranceFeatures || 'No'} onChange={e => handleChange('otherEncumbranceFeatures', e.target.value)} disabled={isReadOnly} className={inputCls}>
+                  <option value="No">No</option>
+                  <option value="Yes">Yes</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ═══ SECTION 3: PROPERTY DETAILING ═══ */}
+        <div id="section-3" className="card p-6 bg-white border border-[#dee2e6] rounded-2xl shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b pb-3">
+            <h2 className="text-sm font-black text-[#0f2038] uppercase tracking-wider flex items-center gap-2">
+              <span className="w-6 h-6 rounded-lg bg-[#0f2038] text-white flex items-center justify-center text-xs">3</span>
+              Property Detailings
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className={labelCls}>Occupancy Status</label>
+              <select value={fields.occupiedBy || 'Vacant'} onChange={e => handleChange('occupiedBy', e.target.value)} disabled={isReadOnly} className={inputCls}>
+                <option value="Vacant">Vacant</option>
+                <option value="Self Occupied">Self Occupied</option>
+                <option value="Tenanted">Tenanted</option>
+                <option value="Under Construction">Under Construction</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Occupied By</label>
+              <input type="text" value={fields.occupantName || 'NA'} onChange={e => handleChange('occupantName', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Relation with Client</label>
+              <input type="text" value={fields.occupantRelation || 'NA'} onChange={e => handleChange('occupantRelation', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </div>
+
+            <div>
+              <label className={labelCls}>Property Demarcation</label>
+              <select value={fields.plotDemarcated || 'No'} onChange={e => handleChange('plotDemarcated', e.target.value)} disabled={isReadOnly} className={inputCls}>
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Property Identification</label>
+              <select value={fields.propertyIdentification || 'Yes'} onChange={e => handleChange('propertyIdentification', e.target.value)} disabled={isReadOnly} className={inputCls}>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Property Holding</label>
+              <select value={fields.propertyHolding || 'Freehold'} onChange={e => handleChange('propertyHolding', e.target.value)} disabled={isReadOnly} className={inputCls}>
+                <option value="Freehold">Freehold</option>
+                <option value="Leasehold">Leasehold</option>
+              </select>
+            </div>
+
+            <div>
+              <label className={labelCls}>Property Type</label>
+              <input type="text" value={fields.propertyType || 'Residential'} onChange={e => handleChange('propertyType', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Property Sub Type</label>
+              <input type="text" value={fields.propertySubType || 'Single / Multi-units building - R'} onChange={e => handleChange('propertySubType', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Situated In Limits</label>
+              <select value={fields.propertyJurisdiction || 'Gram Panchayat'} onChange={e => handleChange('propertyJurisdiction', e.target.value)} disabled={isReadOnly} className={inputCls}>
+                <option value="Gram Panchayat">Gram Panchayat</option>
+                <option value="Municipal Corporation">Municipal Corporation</option>
+                <option value="Municipality">Municipality</option>
+                <option value="Development Authority / BDA">Development Authority / BDA</option>
+                <option value="NAC">NAC</option>
+              </select>
+            </div>
+
+            <div>
+              <label className={labelCls}>Marketability</label>
+              <select value={fields.marketability || 'Average'} onChange={e => handleChange('marketability', e.target.value)} disabled={isReadOnly} className={inputCls}>
+                <option value="Good">Good</option>
+                <option value="Average">Average</option>
+                <option value="Poor">Poor</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Property Age</label>
+              <input type="text" value={fields.ageOfPropertyActual || '0-Years'} onChange={e => handleChange('ageOfPropertyActual', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Residual Age</label>
+              <input type="text" value={fields.estimatedFutureLife || '60-Years'} onChange={e => handleChange('estimatedFutureLife', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </div>
+
+            <div>
+              <label className={labelCls}>Construction Quality</label>
+              <select value={fields.qualityOfConstruction || 'Average'} onChange={e => handleChange('qualityOfConstruction', e.target.value)} disabled={isReadOnly} className={inputCls}>
+                <option value="Good">Good</option>
+                <option value="Average">Average</option>
+                <option value="Poor">Poor</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Structure Type</label>
+              <select value={fields.structureType || 'RCC'} onChange={e => handleChange('structureType', e.target.value)} disabled={isReadOnly} className={inputCls}>
+                <option value="RCC">RCC</option>
+                <option value="Load Bearing">Load Bearing</option>
+                <option value="Steel Structure">Steel Structure</option>
+                <option value="Semi-Pucca">Semi-Pucca</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Flat Configuration Type</label>
+              <input type="text" value={fields.flatConfigurationType || 'NA'} onChange={e => handleChange('flatConfigurationType', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </div>
+
+            <div>
+              <label className={labelCls}>Width (Facing Road Side) in feet</label>
+              <input type="text" value={fields.dimensionWidth || 'NA'} onChange={e => handleChange('dimensionWidth', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Depth (in feet)</label>
+              <input type="text" value={fields.dimensionDepth || 'NA'} onChange={e => handleChange('dimensionDepth', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Cautious Locations</label>
+              <input type="text" value={fields.cautiousLocations || 'NA'} onChange={e => handleChange('cautiousLocations', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </div>
+
+            <div>
+              <label className={labelCls}>% Completion of Property</label>
+              <input type="text" value={fields.percentageCompletion || '65%'} onChange={e => handleChange('percentageCompletion', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>% Recommendation</label>
+              <input type="text" value={fields.percentageRecommendation || '70%'} onChange={e => handleChange('percentageRecommendation', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </div>
+          </div>
+        </div>
+
+        {/* ═══ SECTION 4: DOCUMENTATION ═══ */}
+        <div id="section-4" className="card p-6 bg-white border border-[#dee2e6] rounded-2xl shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b pb-3">
+            <h2 className="text-sm font-black text-[#0f2038] uppercase tracking-wider flex items-center gap-2">
+              <span className="w-6 h-6 rounded-lg bg-[#0f2038] text-white flex items-center justify-center text-xs">4</span>
+              Documentation
+            </h2>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label className={labelCls}>Documents Provided</label>
+              <input type="text" value={fields.documentsProvided || ''} onChange={e => handleChange('documentsProvided', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Sanction Plan details if provided</label>
+              <input type="text" value={fields.sanctionPlanDetails || ''} onChange={e => handleChange('sanctionPlanDetails', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Utility Bills (Water bill, electricity bill)</label>
+              <input type="text" value={fields.utilityBills || 'NA'} onChange={e => handleChange('utilityBills', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </div>
+          </div>
+        </div>
+
+        {/* ═══ SECTION 5: ACCOMMODATION DETAILS ═══ */}
+        <div id="section-5" className="card p-6 bg-white border border-[#dee2e6] rounded-2xl shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b pb-3">
+            <h2 className="text-sm font-black text-[#0f2038] uppercase tracking-wider flex items-center gap-2">
+              <span className="w-6 h-6 rounded-lg bg-[#0f2038] text-white flex items-center justify-center text-xs">5</span>
+              Accommodation Details
+            </h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-100 border-b text-slate-700 font-bold uppercase">
+                  <th className="p-2 border">Unit Details / Floor</th>
+                  <th className="p-2 border">Drawing Room</th>
+                  <th className="p-2 border">Bedroom</th>
+                  <th className="p-2 border">Dining Room</th>
+                  <th className="p-2 border">Kitchen</th>
+                  <th className="p-2 border">Bathroom</th>
+                  <th className="p-2 border">Balcony</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(fields.accommodationRows || DEFAULT_ACCOM_ROWS).map((row, idx) => (
+                  <tr key={idx} className="border-b hover:bg-slate-50">
+                    <td className="p-2 border font-bold bg-slate-50">{row.floor}</td>
+                    {(['drawingRoom', 'bedroom', 'diningRoom', 'kitchen', 'bathroom', 'balcony'] as (keyof AccomRow)[]).map(colKey => (
+                      <td key={colKey} className="p-1 border">
+                        <input
+                          type="text"
+                          value={row[colKey] || ''}
+                          disabled={isReadOnly}
+                          onChange={e => {
+                            const updated = [...(fields.accommodationRows || DEFAULT_ACCOM_ROWS)];
+                            updated[idx] = { ...updated[idx], [colKey]: e.target.value };
+                            handleChange('accommodationRows', updated);
+                          }}
+                          className="w-full p-1.5 text-xs bg-transparent border-0 focus:bg-white focus:ring-1 focus:ring-amber-500 rounded"
+                        />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* ═══ SECTION 6: BUILD UP DETAILS ═══ */}
+        <div id="section-6" className="card p-6 bg-white border border-[#dee2e6] rounded-2xl shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b pb-3">
+            <h2 className="text-sm font-black text-[#0f2038] uppercase tracking-wider flex items-center gap-2">
+              <span className="w-6 h-6 rounded-lg bg-[#0f2038] text-white flex items-center justify-center text-xs">6</span>
+              Build Up Details
+            </h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-100 border-b text-slate-700 font-bold uppercase">
+                  <th className="p-2 border">Floor</th>
+                  <th className="p-2 border">As per site</th>
+                  <th className="p-2 border">As per Plan/Allowed</th>
+                  <th className="p-2 border">Percentage Deviation</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(fields.buaRows || DEFAULT_BUA_ROWS).map((row, idx) => (
+                  <tr key={idx} className="border-b hover:bg-slate-50">
+                    <td className="p-2 border font-bold bg-slate-50">{row.floor}</td>
+                    {(['asPerSite', 'asPerPlan', 'percentageDeviation'] as (keyof BuaRow)[]).map(colKey => (
+                      <td key={colKey} className="p-1 border">
+                        <input
+                          type="text"
+                          value={row[colKey] || ''}
+                          disabled={isReadOnly}
+                          onChange={e => {
+                            const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
+                            updated[idx] = { ...updated[idx], [colKey]: e.target.value };
+                            handleChange('buaRows', updated);
+                          }}
+                          className="w-full p-1.5 text-xs bg-transparent border-0 focus:bg-white focus:ring-1 focus:ring-amber-500 rounded"
+                        />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* ═══ SECTION 7: VALUATION & RATE ANALYSIS ═══ */}
+        <div id="section-7" className="card p-6 bg-white border border-[#dee2e6] rounded-2xl shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b pb-3">
+            <h2 className="text-sm font-black text-[#0f2038] uppercase tracking-wider flex items-center gap-2">
+              <span className="w-6 h-6 rounded-lg bg-[#0f2038] text-white flex items-center justify-center text-xs">7</span>
+              Valuation & Rate Analysis
+            </h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-100 border-b text-slate-700 font-bold uppercase">
+                  <th className="p-2.5 border">Detailings</th>
+                  <th className="p-2.5 border">Area in Sqft</th>
+                  <th className="p-2.5 border">Rate / Sqft (Rs.)</th>
+                  <th className="p-2.5 border">Value (Rs.)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b">
+                  <td className="p-2 border font-medium">Plot Area (As per Documents)</td>
+                  <td className="p-2 border">
+                    <input type="number" value={fields.plotAreaDocs || ''} onChange={e => handleChange('plotAreaDocs', e.target.value)} disabled={isReadOnly} className="w-24 p-1 text-xs border rounded" />
+                  </td>
+                  <td className="p-2 border">
+                    <input type="number" value={fields.landRate || ''} onChange={e => handleChange('landRate', e.target.value)} disabled={isReadOnly} className="w-24 p-1 text-xs border rounded" />
+                  </td>
+                  <td className="p-2 border font-bold bg-amber-50 text-amber-900">
+                    Rs. {formatIndianCurrency(landTotalVal)}
+                  </td>
+                </tr>
+                <tr className="border-b">
+                  <td className="p-2 border font-medium">Plot Area (As per Physical)</td>
+                  <td className="p-2 border">
+                    <input type="text" value={fields.plotAreaPhysical || ''} onChange={e => handleChange('plotAreaPhysical', e.target.value)} disabled={isReadOnly} className="w-24 p-1 text-xs border rounded" />
+                  </td>
+                  <td className="p-2 border text-slate-400">-</td>
+                  <td className="p-2 border text-slate-400">-</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="p-2 border font-medium">Plot Area (Considered For Valuation)</td>
+                  <td className="p-2 border">
+                    <input type="text" value={fields.plotAreaConsidered || ''} onChange={e => handleChange('plotAreaConsidered', e.target.value)} disabled={isReadOnly} className="w-24 p-1 text-xs border rounded" />
+                  </td>
+                  <td className="p-2 border text-slate-400">-</td>
+                  <td className="p-2 border text-slate-400">-</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="p-2 border font-medium">Build Up Area (As per Plan/Document)</td>
+                  <td className="p-2 border" colSpan={3}>
+                    <input type="text" value={fields.buaPlan || ''} onChange={e => handleChange('buaPlan', e.target.value)} disabled={isReadOnly} className="w-full p-1 text-xs border rounded" />
+                  </td>
+                </tr>
+                <tr className="border-b">
+                  <td className="p-2 border font-medium">Build Up Area (As per Actual) GF RCC on 100% comp</td>
+                  <td className="p-2 border">
+                    <input type="number" value={fields.buaActual || ''} onChange={e => handleChange('buaActual', e.target.value)} disabled={isReadOnly} className="w-24 p-1 text-xs border rounded" />
+                  </td>
+                  <td className="p-2 border">
+                    <input type="number" value={fields.buaActualRate || ''} onChange={e => handleChange('buaActualRate', e.target.value)} disabled={isReadOnly} className="w-24 p-1 text-xs border rounded" />
+                  </td>
+                  <td className="p-2 border font-bold bg-amber-50 text-amber-900">
+                    Rs. {formatIndianCurrency(bua100TotalVal)}
+                  </td>
+                </tr>
+                <tr className="border-b">
+                  <td className="p-2 border font-medium">Build Up Area (Considered for Valuation) as on date</td>
+                  <td className="p-2 border">
+                    <input type="number" value={fields.buaConsidered || ''} onChange={e => handleChange('buaConsidered', e.target.value)} disabled={isReadOnly} className="w-24 p-1 text-xs border rounded" />
+                  </td>
+                  <td className="p-2 border">
+                    <input type="number" value={fields.buaConsideredRate || ''} onChange={e => handleChange('buaConsideredRate', e.target.value)} disabled={isReadOnly} className="w-24 p-1 text-xs border rounded" />
+                  </td>
+                  <td className="p-2 border font-bold bg-amber-50 text-amber-900">
+                    Rs. {formatIndianCurrency(buaConsTotalVal)}
+                  </td>
+                </tr>
+                <tr className="border-b">
+                  <td className="p-2 border font-medium">Amenities (like parking etc in unit or lumpsum value)</td>
+                  <td className="p-2 border" colSpan={2}></td>
+                  <td className="p-2 border">
+                    <input type="number" value={fields.amenitiesValue || '0'} onChange={e => handleChange('amenitiesValue', e.target.value)} disabled={isReadOnly} className="w-28 p-1 text-xs border rounded" />
+                  </td>
+                </tr>
+
+                {/* Totals */}
+                <tr className="border-t-2 border-slate-700 bg-slate-900 text-white font-bold">
+                  <td className="p-3 border" colSpan={3}>TOTAL VALUE</td>
+                  <td className="p-3 border text-sm text-amber-400">Rs. {formatIndianCurrency(totalVal)}</td>
+                </tr>
+                <tr className="bg-slate-800 text-white font-bold">
+                  <td className="p-2.5 border" colSpan={3}>REALIZABLE VALUE (90%)</td>
+                  <td className="p-2.5 border text-sm text-emerald-400">Rs. {formatIndianCurrency(realizableVal)}</td>
+                </tr>
+                <tr className="bg-slate-800 text-white font-bold">
+                  <td className="p-2.5 border" colSpan={3}>DISTRESS VALUE (80%)</td>
+                  <td className="p-2.5 border text-sm text-rose-400">Rs. {formatIndianCurrency(distressVal)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* ═══ SECTION 8: BOUNDARY COMPARISON ═══ */}
+        <div id="section-8" className="card p-6 bg-white border border-[#dee2e6] rounded-2xl shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b pb-3">
+            <h2 className="text-sm font-black text-[#0f2038] uppercase tracking-wider flex items-center gap-2">
+              <span className="w-6 h-6 rounded-lg bg-[#0f2038] text-white flex items-center justify-center text-xs">8</span>
+              Boundary Details (4-Way Comparison)
+            </h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-100 border-b text-slate-700 font-bold uppercase">
+                  <th className="p-2 border">Detailings</th>
+                  <th className="p-2 border">North</th>
+                  <th className="p-2 border">South</th>
+                  <th className="p-2 border">East</th>
+                  <th className="p-2 border">West</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b">
+                  <td className="p-2 border font-bold bg-slate-50">As per Sketch map</td>
+                  <td className="p-1 border"><input type="text" value={fields.boundarySketchNorth || ''} onChange={e => handleChange('boundarySketchNorth', e.target.value)} disabled={isReadOnly} className={inputCls} /></td>
+                  <td className="p-1 border"><input type="text" value={fields.boundarySketchSouth || ''} onChange={e => handleChange('boundarySketchSouth', e.target.value)} disabled={isReadOnly} className={inputCls} /></td>
+                  <td className="p-1 border"><input type="text" value={fields.boundarySketchEast || ''} onChange={e => handleChange('boundarySketchEast', e.target.value)} disabled={isReadOnly} className={inputCls} /></td>
+                  <td className="p-1 border"><input type="text" value={fields.boundarySketchWest || ''} onChange={e => handleChange('boundarySketchWest', e.target.value)} disabled={isReadOnly} className={inputCls} /></td>
+                </tr>
+                <tr className="border-b">
+                  <td className="p-2 border font-bold bg-slate-50">As per Mouza Map</td>
+                  <td className="p-1 border"><input type="text" value={fields.boundaryMouzaNorth || ''} onChange={e => handleChange('boundaryMouzaNorth', e.target.value)} disabled={isReadOnly} className={inputCls} /></td>
+                  <td className="p-1 border"><input type="text" value={fields.boundaryMouzaSouth || ''} onChange={e => handleChange('boundaryMouzaSouth', e.target.value)} disabled={isReadOnly} className={inputCls} /></td>
+                  <td className="p-1 border"><input type="text" value={fields.boundaryMouzaEast || ''} onChange={e => handleChange('boundaryMouzaEast', e.target.value)} disabled={isReadOnly} className={inputCls} /></td>
+                  <td className="p-1 border"><input type="text" value={fields.boundaryMouzaWest || ''} onChange={e => handleChange('boundaryMouzaWest', e.target.value)} disabled={isReadOnly} className={inputCls} /></td>
+                </tr>
+                <tr className="border-b">
+                  <td className="p-2 border font-bold bg-slate-50">As per actual site</td>
+                  <td className="p-1 border"><input type="text" value={fields.boundaryActualNorth || ''} onChange={e => handleChange('boundaryActualNorth', e.target.value)} disabled={isReadOnly} className={inputCls} /></td>
+                  <td className="p-1 border"><input type="text" value={fields.boundaryActualSouth || ''} onChange={e => handleChange('boundaryActualSouth', e.target.value)} disabled={isReadOnly} className={inputCls} /></td>
+                  <td className="p-1 border"><input type="text" value={fields.boundaryActualEast || ''} onChange={e => handleChange('boundaryActualEast', e.target.value)} disabled={isReadOnly} className={inputCls} /></td>
+                  <td className="p-1 border"><input type="text" value={fields.boundaryActualWest || ''} onChange={e => handleChange('boundaryActualWest', e.target.value)} disabled={isReadOnly} className={inputCls} /></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <label className={labelCls}>Boundaries Matching Status</label>
+            <input type="text" value={fields.boundariesMatching || ''} onChange={e => handleChange('boundariesMatching', e.target.value)} disabled={isReadOnly} className={inputCls} />
+          </div>
+        </div>
+
+        {/* ═══ SECTION 9: REMARKS & SIGNOFF ═══ */}
+        <div id="section-9" className="card p-6 bg-white border border-[#dee2e6] rounded-2xl shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b pb-3">
+            <h2 className="text-sm font-black text-[#0f2038] uppercase tracking-wider flex items-center gap-2">
+              <span className="w-6 h-6 rounded-lg bg-[#0f2038] text-white flex items-center justify-center text-xs">9</span>
+              Remarks & Visited Engineer
+            </h2>
+          </div>
+          <div>
+            <label className={labelCls}>Detailed Valuation Remarks</label>
+            <textarea rows={5} value={fields.remarks || ''} onChange={e => handleChange('remarks', e.target.value)} disabled={isReadOnly} className={inputCls} />
+          </div>
+          <div>
+            <label className={labelCls}>Name of the Engineer Visited</label>
+            <input type="text" value={fields.engineerVisitedName || 'Mr. Kundan Singh'} onChange={e => handleChange('engineerVisitedName', e.target.value)} disabled={isReadOnly} className={inputCls} />
+          </div>
+        </div>
+
+        {/* ═══ SECTION 10: MAPS (MOUZA / CADASTRAL / SKETCH) ═══ */}
+        <div id="section-10" className="card p-6 bg-white border border-[#dee2e6] rounded-2xl shadow-sm space-y-6">
+          <div className="flex items-center justify-between border-b pb-3">
+            <h2 className="text-sm font-black text-[#0f2038] uppercase tracking-wider flex items-center gap-2">
+              <span className="w-6 h-6 rounded-lg bg-[#0f2038] text-white flex items-center justify-center text-xs">10</span>
+              Maps & Document Attachments
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Location Map */}
+            <div className="p-4 border rounded-xl bg-slate-50 space-y-3">
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">1. Location Map (Satellite)</h3>
+              {fields.locationMapImage ? (
+                <div className="relative group rounded-lg overflow-hidden border">
+                  <img src={fields.locationMapImage} alt="Location Map" className="w-full h-36 object-cover" />
+                  {!isReadOnly && (
+                    <button type="button" onClick={() => handleChange('locationMapImage', '')} className="absolute top-2 right-2 bg-red-600 text-white rounded p-1 text-[10px] font-bold">Remove</button>
+                  )}
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center h-36 border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:bg-slate-100">
+                  <span className="text-xs text-slate-500 font-bold">{uploadingTarget === 'locationMapImage' ? 'Uploading...' : 'Upload Location Map'}</span>
+                  <input type="file" accept="image/*" onChange={e => handleUploadSingleImage(e, 'locationMapImage')} className="hidden" />
+                </label>
+              )}
+            </div>
+
+            {/* Mouza Map */}
+            <div className="p-4 border rounded-xl bg-slate-50 space-y-3">
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">2. Mouza Map (Bhulekh)</h3>
+              {fields.mouzaMapImage ? (
+                <div className="relative group rounded-lg overflow-hidden border">
+                  <img src={fields.mouzaMapImage} alt="Mouza Map" className="w-full h-36 object-cover" />
+                  {!isReadOnly && (
+                    <button type="button" onClick={() => handleChange('mouzaMapImage', '')} className="absolute top-2 right-2 bg-red-600 text-white rounded p-1 text-[10px] font-bold">Remove</button>
+                  )}
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center h-36 border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:bg-slate-100">
+                  <span className="text-xs text-slate-500 font-bold">{uploadingTarget === 'mouzaMapImage' ? 'Uploading...' : 'Upload Mouza Map'}</span>
+                  <input type="file" accept="image/*" onChange={e => handleUploadSingleImage(e, 'mouzaMapImage')} className="hidden" />
+                </label>
+              )}
+            </div>
+
+            {/* Cadastral Map */}
+            <div className="p-4 border rounded-xl bg-slate-50 space-y-3">
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">3. Cadastral Map</h3>
+              {fields.cadastralMapImage ? (
+                <div className="relative group rounded-lg overflow-hidden border">
+                  <img src={fields.cadastralMapImage} alt="Cadastral Map" className="w-full h-36 object-cover" />
+                  {!isReadOnly && (
+                    <button type="button" onClick={() => handleChange('cadastralMapImage', '')} className="absolute top-2 right-2 bg-red-600 text-white rounded p-1 text-[10px] font-bold">Remove</button>
+                  )}
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center h-36 border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:bg-slate-100">
+                  <span className="text-xs text-slate-500 font-bold">{uploadingTarget === 'cadastralMapImage' ? 'Uploading...' : 'Upload Cadastral Map'}</span>
+                  <input type="file" accept="image/*" onChange={e => handleUploadSingleImage(e, 'cadastralMapImage')} className="hidden" />
+                </label>
+              )}
+            </div>
+          </div>
+
+          {/* Amin Hand-Drawn Sketch Maps */}
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">4. Amin Hand-Drawn Sketch Maps</h3>
+              {!isReadOnly && (
+                <label className="px-3 py-1.5 bg-amber-50 border border-amber-300 text-amber-800 rounded-lg text-xs font-bold cursor-pointer hover:bg-amber-100">
+                  + Add Amin Sketch Map
+                  <input type="file" accept="image/*" onChange={handleUploadSketchMap} className="hidden" />
+                </label>
+              )}
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {(fields.sketchMapImages || []).map((sketchUrl, sIdx) => (
+                <div key={sIdx} className="relative group border rounded-xl overflow-hidden">
+                  <img src={sketchUrl} alt={`Sketch ${sIdx + 1}`} className="w-full h-28 object-cover" />
+                  {!isReadOnly && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = (fields.sketchMapImages || []).filter((_, i) => i !== sIdx);
+                        handleChange('sketchMapImages', updated);
+                      }}
+                      className="absolute top-1 right-1 bg-red-600 text-white rounded p-1 text-[9px] font-bold"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ═══ SECTION 11: PROPERTY PHOTOGRAPHS (2x3 GRID) ═══ */}
+        <div id="section-11" className="card p-6 bg-white border border-[#dee2e6] rounded-2xl shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b pb-3">
+            <h2 className="text-sm font-black text-[#0f2038] uppercase tracking-wider flex items-center gap-2">
+              <span className="w-6 h-6 rounded-lg bg-[#0f2038] text-white flex items-center justify-center text-xs">11</span>
+              Property Photographs (2x3 Grid)
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[0, 1, 2, 3, 4, 5].map(idx => {
+              const defaultLabels = ['Approach Road Pic', 'External Pic', 'Internal Pic', 'Selfie with Client / Customer Representative', 'Site Work Pic 1', 'Site Work Pic 2'];
+              const currentImg = fields.propertyImages?.[idx];
+              const currentLabel = fields.propertyImageNames?.[idx] || defaultLabels[idx];
+
+              return (
+                <div key={idx} className="p-4 border rounded-xl bg-slate-50 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-black text-slate-600 uppercase tracking-wider">Slot {idx + 1}</span>
+                    <input
+                      type="text"
+                      value={currentLabel}
+                      disabled={isReadOnly}
+                      onChange={e => {
+                        const updatedLabels = [...(fields.propertyImageNames || defaultLabels)];
+                        updatedLabels[idx] = e.target.value;
+                        handleChange('propertyImageNames', updatedLabels);
+                      }}
+                      className="text-xs font-bold text-slate-800 bg-white border rounded px-2 py-0.5 max-w-[200px]"
+                    />
+                  </div>
+
+                  {currentImg ? (
+                    <div className="relative group rounded-lg overflow-hidden border">
+                      <img src={currentImg} alt={currentLabel} className="w-full h-40 object-cover" />
+                      {!isReadOnly && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updated = [...(fields.propertyImages || [])];
+                            updated[idx] = '';
+                            handleChange('propertyImages', updated);
+                          }}
+                          className="absolute top-2 right-2 bg-red-600 text-white rounded p-1 text-[10px] font-bold"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:bg-slate-100">
+                      <span className="text-xs text-slate-500 font-bold">{uploadingTarget === `photo-${idx}` ? 'Uploading...' : `Upload ${currentLabel}`}</span>
+                      <input type="file" accept="image/*" onChange={e => handleUploadPhoto(e, idx)} className="hidden" />
+                    </label>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ═══ ACTION BAR ═══ */}
+        <div className="p-6 bg-white border border-[#dee2e6] rounded-2xl shadow-md flex flex-wrap items-center justify-between gap-4 sticky bottom-4 z-40">
+          <div className="flex items-center gap-3">
+            {!isReadOnly && (
+              <>
+                {autoSaveStatus === 'saving' && (
+                  <span className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full flex items-center gap-1.5 animate-pulse">
+                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                    Auto-saving...
+                  </span>
+                )}
+                {autoSaveStatus === 'saved' && (
+                  <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    ✓ Auto-saved
+                  </span>
+                )}
+                {autoSaveStatus === 'error' && (
+                  <span className="text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                    ⚠️ Auto-save failed
+                  </span>
+                )}
+              </>
+            )}
+            {message && (
+              <span className={`text-xs font-semibold px-3 py-1.5 rounded-lg ${message.type === 'error' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                {message.text}
+              </span>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            {!isReadOnly && (
+              <>
+                <button
+                  type="button"
+                  onClick={handleSaveDraft}
+                  disabled={loading}
+                  className="px-6 py-2.5 rounded-full border-2 border-[#b8860b] text-[#b8860b] font-bold text-sm hover:bg-[#b8860b]/5 transition-all disabled:opacity-50 flex items-center gap-2"
+                >
+                  {loading ? '⏳ Saving...' : '💾 Save Draft'}
+                </button>
+                {userRole === 'REPORT_EMPLOYEE' && (
+                  <button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={loading}
+                    className="px-6 py-2.5 rounded-full bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {loading ? '⏳ Submitting...' : '📤 Submit to Manager'}
+                  </button>
+                )}
+              </>
+            )}
+
+            <button
+              type="button"
+              onClick={handlePreviewPDF}
+              disabled={loading}
+              className="px-6 py-2.5 rounded-full border border-gray-400 text-gray-700 font-bold text-sm hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center gap-2"
+            >
+              👁️ Preview PDF
+            </button>
+
+            <button
+              type="button"
+              onClick={handleDownloadPDF}
+              disabled={loading}
+              className="px-6 py-2.5 rounded-full border border-gray-400 text-gray-700 font-bold text-sm hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center gap-2"
+            >
+              📥 Download PDF
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      {/* ── Right Column: Sticky Floating Sections Navigator ── */}
+      <div className="hidden xl:flex flex-col gap-1 bg-white shadow-md border border-[#e9ecef] p-3 rounded-2xl w-[190px] sticky top-24 shrink-0 z-40">
+        <div className="text-[10px] font-black text-slate-400 mb-2 px-2 uppercase tracking-widest">
+          MLAP Sections
+        </div>
+        {SECTIONS.map(s => {
+          const isActive = activeSectionId === s.id;
+          return (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => scrollToSection(s.id)}
+              className={`text-left py-1.5 px-2.5 rounded-lg text-xs font-bold transition-all truncate ${
+                isActive
+                  ? 'bg-amber-500 text-white shadow-sm font-black'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+              }`}
+            >
+              {s.title}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── PDF Preview Modal ── */}
+      {showPreviewModal && pdfPreviewUrl && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+            <div className="p-4 bg-slate-900 text-white flex items-center justify-between">
+              <h3 className="text-sm font-bold tracking-wider uppercase">Aditya Birla Capital Ltd (MLAP) - PDF Preview</h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPreviewModal(false);
+                  URL.revokeObjectURL(pdfPreviewUrl);
+                  setPdfPreviewUrl(null);
+                }}
+                className="px-3 py-1 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700 transition-colors"
+              >
+                ✕ Close
+              </button>
+            </div>
+            <iframe src={pdfPreviewUrl} className="flex-1 w-full h-full border-0" />
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
 }
