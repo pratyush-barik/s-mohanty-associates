@@ -295,4 +295,11 @@ export interface BankConfig {
   /** Factory function returning a bank-specific PDF renderer.
    *  If omitted, the default PDFGeneralRenderer is used. */
   getPDFRenderer?: () => any; // Returns a PDFBankRenderer or PDFGeneralRenderer
+  /** Complete custom PDF generator for templates with specialized layouts (e.g. Aditya Birla MLAP) */
+  generateCustomPDF?: (
+    fields: any,
+    letterheadBytes: Uint8Array | null,
+    imageResults: (Uint8Array | null)[],
+    fmtDate: (d: string) => string
+  ) => Promise<Uint8Array>;
 }

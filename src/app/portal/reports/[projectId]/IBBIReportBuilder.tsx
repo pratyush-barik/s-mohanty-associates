@@ -2824,7 +2824,7 @@ Our valuation is based on information obtained from the client and on data gathe
             if (match) {
               r.drawLetterBullet(match[1], match[2], { labelIndent: 2, textIndent: 20 });
             } else {
-              r.drawTextBlock(line, { align: 'justify' });
+              r.drawTextBlock(line, { align: 'left' });
             }
             r.advanceCursor(4);
           }

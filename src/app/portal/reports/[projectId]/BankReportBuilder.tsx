@@ -992,10 +992,6 @@ export default function BankReportBuilder({
       if (fields.sketchMapImages?.length) imgIdx += fields.sketchMapImages.length;
       const locationBytes = fields.locationMapImage ? imageResults[imgIdx++] : null;
 
-      // Instantiate renderer: use config custom renderer or default base renderer
-      const r = config?.getPDFRenderer ? config.getPDFRenderer() : new PDFBankRenderer();
-      await r.init(letterheadBytes || undefined);
-
       // Date formatter: YYYY-MM-DD → DD/MM/YYYY
       const fmtDate = (d: string) => {
         if (!d || !d.trim()) return '________';
@@ -1003,6 +999,15 @@ export default function BankReportBuilder({
         if (/^\d{4}-\d{2}-\d{2}$/.test(t)) { const [y,m,dd] = t.split('-'); return `${dd}/${m}/${y}`; }
         return t;
       };
+
+      // If bank has a fully custom PDF generator (e.g. Aditya Birla MLAP), delegate to it
+      if (config?.generateCustomPDF) {
+        return await config.generateCustomPDF(fields, letterheadBytes, imageResults, fmtDate);
+      }
+
+      // Instantiate renderer: use config custom renderer or default base renderer
+      const r = config?.getPDFRenderer ? config.getPDFRenderer() : new PDFBankRenderer();
+      await r.init(letterheadBytes || undefined);
 
       let titleText = 'VALUATION REPORT';
 
