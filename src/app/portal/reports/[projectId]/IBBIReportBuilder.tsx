@@ -1025,8 +1025,8 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     const newCuttackBldgTotal = fmt(cuttackBldgSum);
 
     const calcCW = (lenStr: any, rateStr: any) => {
-      const l = parseFloat(String(lenStr || '').replace(/[^\d.]/g, '')) || 0;
-      const r = parseFloat(String(rateStr || '').replace(/[^\d.]/g, '')) || 0;
+      const l = parseFloat(String(lenStr || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || 0;
+      const r = parseFloat(String(rateStr || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || 0;
       return l * r;
     };
     
@@ -1052,31 +1052,31 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     const componentsGuideline = totalBldgGuideline + cwGuideline;
     const newComponentsGuideline = fmt(componentsGuideline);
 
-    const presentPlotVal = parseFloat(String(newPresentDiscountedTotal || '').replace(/[^\d.]/g, '')) || 0;
-    const presentBldgVal = parseFloat(String(newComponentsFMV || '').replace(/[^\d.]/g, '')) || 0;
+    const presentPlotVal = parseFloat(String(newPresentDiscountedTotal || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || 0;
+    const presentBldgVal = parseFloat(String(newComponentsFMV || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || 0;
     const totalPresentValNum = presentPlotVal + presentBldgVal;
     const newTotalPresentVal = fmt(totalPresentValNum);
     const orSayPresentNum = totalPresentValNum < 100000 ? totalPresentValNum : Math.floor(totalPresentValNum / 100000) * 100000;
     const newTotalPresentOrSay = orSayPresentNum > 0 ? fmt(orSayPresentNum) : '';
     const newTotalPresentInWords = `TOTAL PRESENT VALUE IN WORDS - ${rupeesInWords(orSayPresentNum).toUpperCase()}`;
 
-    const bookPlotVal = parseFloat(String(newGuidelineDiscountedTotal || '').replace(/[^\d.]/g, '')) || 0;
-    const bookBldgVal = parseFloat(String(newComponentsGuideline || '').replace(/[^\d.]/g, '')) || 0;
+    const bookPlotVal = parseFloat(String(newGuidelineDiscountedTotal || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || 0;
+    const bookBldgVal = parseFloat(String(newComponentsGuideline || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || 0;
     const totalBookValNum = bookPlotVal + bookBldgVal;
     const newTotalBookVal = fmt(totalBookValNum);
     const orSayBookNum = totalBookValNum < 100000 ? totalBookValNum : Math.floor(totalBookValNum / 100000) * 100000;
     const newTotalBookOrSay = orSayBookNum > 0 ? fmt(orSayBookNum) : '';
     const newTotalBookInWords = `TOTAL BOOK VALUE IN WORDS - ${rupeesInWords(orSayBookNum).toUpperCase()}`;
 
-    const realisableNum = parseFloat(String(fields.realisableValueAmount || '').replace(/[^\d.]/g, '')) || 0;
+    const realisableNum = parseFloat(String(fields.realisableValueAmount || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || 0;
     const orSayRealisableNum = realisableNum < 100000 ? realisableNum : Math.floor(realisableNum / 100000) * 100000;
     const newRealisableOrSay = orSayRealisableNum > 0 ? fmt(orSayRealisableNum) : '';
     const newRealisableInWords = `TOTAL LIQUIDATION VALUE IN WORDS - ${rupeesInWords(orSayRealisableNum).toUpperCase()}`;
 
 
     const calcDesc = (rccStr: any, shedStr: any) => {
-      const rccVal = parseFloat(String(rccStr || '').replace(/[^\d.]/g, '')) || 0;
-      const shedVal = parseFloat(String(shedStr || '').replace(/[^\d.]/g, '')) || 0;
+      const rccVal = parseFloat(String(rccStr || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || 0;
+      const shedVal = parseFloat(String(shedStr || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || 0;
       return `Present depreciated market value of the available RCC buildings, at its present status, assessed @ ${100 - rccVal}% of the present value And @${100 - shedVal}% For Acc Roof Sheds`;
     };
 
@@ -1096,14 +1096,14 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     }, 0);
 
     // Cuttack: auto-calc Total Guideline Value for Land and Building
-    const cuttackGuidelinePlotNum = parseFloat(String(fields.guidelinePlotTotal || '').replace(/[^\d.]/g, '')) || 0;
-    const cuttackShedsDepAmtGuidelineNum = parseFloat(String(fields.cuttackShedsDepAmtGuideline || '').replace(/[^\d.]/g, '')) || 0;
+    const cuttackGuidelinePlotNum = parseFloat(String(fields.guidelinePlotTotal || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || 0;
+    const cuttackShedsDepAmtGuidelineNum = parseFloat(String(fields.cuttackShedsDepAmtGuideline || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || 0;
     const cwCuttackGuidelineNum = cwCuttackGuideline; // already computed above
     const newCuttackTotalGuidelineLB = fmt(cuttackGuidelinePlotNum + cuttackShedsDepAmtGuidelineNum + cwCuttackGuidelineNum);
 
     // Cuttack: auto-calc Total Present Value for Land and Building
-    const cuttackPresentPlotNum = parseFloat(String(fields.presentDiscountedTotal || fields.presentPlotTotal || '').replace(/[^\d.]/g, '')) || 0;
-    const cuttackShedsDepAmtPresentNum = parseFloat(String(fields.cuttackShedsDepAmtPresent || '').replace(/[^\d.]/g, '')) || 0;
+    const cuttackPresentPlotNum = parseFloat(String(fields.presentDiscountedTotal || fields.presentPlotTotal || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || 0;
+    const cuttackShedsDepAmtPresentNum = parseFloat(String(fields.cuttackShedsDepAmtPresent || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || 0;
     const cwCuttackPresentNum = cwCuttackPresent; // already computed above
     const newCuttackTotalPresentLB = fmt(cuttackPresentPlotNum + cuttackShedsDepAmtPresentNum + cwCuttackPresentNum);
 
@@ -1147,7 +1147,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     if (fields.cuttackBuildingTotal !== newCuttackBldgTotal) { nextFields.cuttackBuildingTotal = newCuttackBldgTotal; updated = true; }
 
     // Cuttack Building/Shed: auto-calc Or Say from Total Components
-    const cuttackBldgComponentsNum = parseFloat(String(fields.cuttackBuildingComponentsTotal || '').replace(/[^\d.]/g, '')) || 0;
+    const cuttackBldgComponentsNum = parseFloat(String(fields.cuttackBuildingComponentsTotal || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || 0;
     const cuttackBldgOrSayNum = cuttackBldgComponentsNum < 100000 ? cuttackBldgComponentsNum : Math.floor(cuttackBldgComponentsNum / 100000) * 100000;
     const newCuttackBldgOrSay = fmt(cuttackBldgOrSayNum);
     if (fields.cuttackBuildingOrSay !== newCuttackBldgOrSay) { nextFields.cuttackBuildingOrSay = newCuttackBldgOrSay; updated = true; }
@@ -1701,7 +1701,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.drawSimpleRow('STATUS OF PLOT', fields.certStatusOfPlot || '');
       r.drawSimpleRow('VALUATION METHOD', (fields.valuationMethod || 'Sale Comparison Method').toUpperCase());
       r.drawSimpleRow('VALUATION DATE', fields.dateOfValuation || 'N/A');
-      const presentValueFinalNumStr = String((fields.valuationVariant === 'cuttack' ? fields.cuttackPresentOrSay : fields.totalPresentValueOrSay) || (parseFloat(fields.fairMarketValueTotal) || 0)).replace(/[^\d.]/g, '');
+      const presentValueFinalNumStr = String((fields.valuationVariant === 'cuttack' ? fields.cuttackPresentOrSay : fields.totalPresentValueOrSay) || (parseFloat(fields.fairMarketValueTotal) || 0)).replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '');
       r.drawSimpleRow('PRESENT MARKET VALUE (Rs)', `Rs. ${formatIndianCurrency(presentValueFinalNumStr)}/-`);
       r.drawSimpleRow('VALUERS DETAILS', [
           fields.representativeName ? `${fields.representativeName.toUpperCase()}${fields.valuerQualifications ? ' ' + fields.valuerQualifications : ''}` : '',
@@ -1712,7 +1712,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
       // Certificate closing + realisable value
       const certValue = fields.fairMarketValueTotal || fields.presentMarketValueTotal || '0';
-      const realValue = String(fields.realisableValueOrSay || (parseFloat(fields.realisableValueTotal) || 0)).replace(/[^\d.]/g, '');
+      const realValue = String(fields.realisableValueOrSay || (parseFloat(fields.realisableValueTotal) || 0)).replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '');
       r.drawTextBlock(`After considering various important factors discussed above, we are of the opinion that the Realisable value of the property is INR. ${formatIndianCurrency(realValue)} (${rupeesInWords(parseFloat(realValue) || 0)}).`, { fontSize: 10 });
       r.advanceCursor(6);
 
@@ -2204,8 +2204,8 @@ Our valuation is based on information obtained from the client and on data gathe
         r.advanceCursor(4);
         
         r.drawTextBlock('FAIR MARKET PRESENT VALUE', { bold: true });
-        r.drawSimpleRow('Present Value of Plot', 'Rs. ' + formatIndianCurrency(Math.round(parseFloat(String(fields.presentValueOfPlot || '').replace(/[^\d.]/g, '')) || 0).toString()));
-        r.drawSimpleRow('Present Value of Buildings and Sheds', 'Rs. ' + formatIndianCurrency(Math.round(parseFloat(String(fields.presentValueOfBuildings || '').replace(/[^\d.]/g, '')) || 0).toString()));
+        r.drawSimpleRow('Present Value of Plot', 'Rs. ' + formatIndianCurrency(Math.round(parseFloat(String(fields.presentValueOfPlot || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || 0).toString()));
+        r.drawSimpleRow('Present Value of Buildings and Sheds', 'Rs. ' + formatIndianCurrency(Math.round(parseFloat(String(fields.presentValueOfBuildings || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || 0).toString()));
         r.drawSimpleRow('Total Present Value', fields.totalPresentValue);
         if (fields.totalPresentValueOrSay) {
           r.drawSimpleRow('Or Say', fields.totalPresentValueOrSay);
@@ -2216,8 +2216,8 @@ Our valuation is based on information obtained from the client and on data gathe
         r.advanceCursor(6);
 
         r.drawTextBlock('BOOK VALUE / GUIDELINE VALUE', { bold: true });
-        r.drawSimpleRow('Book Value of Plot', 'Rs. ' + formatIndianCurrency(Math.round(parseFloat(String(fields.bookValueOfPlot || '').replace(/[^\d.]/g, '')) || 0).toString()));
-        r.drawSimpleRow('Book Value of Buildings and Sheds', 'Rs. ' + formatIndianCurrency(Math.round(parseFloat(String(fields.bookValueOfBuildings || '').replace(/[^\d.]/g, '')) || 0).toString()));
+        r.drawSimpleRow('Book Value of Plot', 'Rs. ' + formatIndianCurrency(Math.round(parseFloat(String(fields.bookValueOfPlot || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || 0).toString()));
+        r.drawSimpleRow('Book Value of Buildings and Sheds', 'Rs. ' + formatIndianCurrency(Math.round(parseFloat(String(fields.bookValueOfBuildings || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || 0).toString()));
         r.drawSimpleRow('Total Book Value', fields.totalBookValue);
         if (fields.totalBookValueOrSay) {
           r.drawSimpleRow('Or Say', fields.totalBookValueOrSay);
@@ -2233,7 +2233,7 @@ Our valuation is based on information obtained from the client and on data gathe
           const desc = fields.realisableValueDesc || defaultDesc;
           
           r.drawSectionHeader('REALISABLE VALUE / LIQUIDATION VALUE');
-          r.drawCustomSplitRow(desc, 'Rs. ' + formatIndianCurrency(Math.round(parseFloat(String(fields.realisableValueAmount || '').replace(/[^\d.]/g, '')) || 0).toString()), 0.77, { col1Bold: true, col2Bold: true, col1Align: 'justify', col2Align: 'left' });
+          r.drawCustomSplitRow(desc, 'Rs. ' + formatIndianCurrency(Math.round(parseFloat(String(fields.realisableValueAmount || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || 0).toString()), 0.77, { col1Bold: true, col2Bold: true, col1Align: 'justify', col2Align: 'left' });
           if (fields.realisableValueOrSay) {
             r.drawCustomSplitRow('OR SAY', fields.realisableValueOrSay, 0.77, { col1Bold: true, col2Bold: true, col1Align: 'center', col2Align: 'left' });
           }
@@ -2291,7 +2291,7 @@ Our valuation is based on information obtained from the client and on data gathe
           if (fields.cuttackShedsDepPctGuideline || fields.cuttackShedsDepAmtGuideline) {
             guidelineTableRows.push([
               `!!SPAN:6!!Present depreciated market value of the available sheds and buildings, at its present status, assessed @ ${fields.cuttackShedsDepPctGuideline || 0}% of the present value`, '', '', '', '', '',
-              'Rs. ' + formatIndianCurrency(String(fields.cuttackShedsDepAmtGuideline || '0').replace(/[^\d.]/g, ''))
+              'Rs. ' + formatIndianCurrency(String(fields.cuttackShedsDepAmtGuideline || '0').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, ''))
             ]);
           }
 
@@ -2308,7 +2308,7 @@ Our valuation is based on information obtained from the client and on data gathe
           ]);
 
           // GUIDELINE LAND & BUILDING VALUE in words (full-width, font size = 10pt, bold+italic)
-          const orSayGuidelineNum = parseFloat(String(fields.cuttackGuidelineOrSay || '').replace(/[^\d.]/g, '')) || 0;
+          const orSayGuidelineNum = parseFloat(String(fields.cuttackGuidelineOrSay || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || 0;
           if (orSayGuidelineNum > 0) {
             guidelineTableRows.push([
               `!!BOLD!!!!FONTSIZE:10!!GUIDELINE LAND & BUILDING VALUE - ${rupeesInWords(orSayGuidelineNum).toUpperCase()}`, '', '', '', '', '', ''
@@ -2361,7 +2361,7 @@ Our valuation is based on information obtained from the client and on data gathe
           if (fields.cuttackShedsDepPctPresent || fields.cuttackShedsDepAmtPresent) {
             presentTableRows.push([
               `!!SPAN:6!!Present depreciated market value of the available sheds and buildings, at its present status, assessed @ ${fields.cuttackShedsDepPctPresent || 0}% of the present value`, '', '', '', '', '',
-              'Rs. ' + formatIndianCurrency(String(fields.cuttackShedsDepAmtPresent || '0').replace(/[^\d.]/g, ''))
+              'Rs. ' + formatIndianCurrency(String(fields.cuttackShedsDepAmtPresent || '0').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, ''))
             ]);
           }
 
@@ -2378,7 +2378,7 @@ Our valuation is based on information obtained from the client and on data gathe
           ]);
 
           // PRESENT LAND & BUILDING VALUE in words (full-width, font size = 10pt, bold)
-          const orSayPresentNum = parseFloat(String(fields.cuttackPresentOrSay || '').replace(/[^\d.]/g, '')) || 0;
+          const orSayPresentNum = parseFloat(String(fields.cuttackPresentOrSay || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || 0;
           if (orSayPresentNum > 0) {
             presentTableRows.push([
               `!!BOLD!!!!FONTSIZE:10!!PRESENT LAND & BUILDING VALUE - ${rupeesInWords(orSayPresentNum).toUpperCase()}`, '', '', '', '', '', ''
@@ -2416,7 +2416,7 @@ Our valuation is based on information obtained from the client and on data gathe
           if (fields.cuttackBuildingComponentsTotal) {
             bldgRows.push([
               '!!SPAN:7!!!!BOLD!!Total LAND AND BUILDING/SHED COMPONENTS', '', '', '', '', '', '',
-              '!!BOLD!!Rs. ' + formatIndianCurrency(String(fields.cuttackBuildingComponentsTotal || '0').replace(/[^\d.]/g, ''))
+              '!!BOLD!!Rs. ' + formatIndianCurrency(String(fields.cuttackBuildingComponentsTotal || '0').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, ''))
             ]);
           }
 
@@ -2429,7 +2429,7 @@ Our valuation is based on information obtained from the client and on data gathe
           }
 
           // PRESENT BUILDING VALUE in words (full-width, bold)
-          const bldgOrSayNum = parseFloat(String(fields.cuttackBuildingOrSay || '').replace(/[^\d.]/g, '')) || 0;
+          const bldgOrSayNum = parseFloat(String(fields.cuttackBuildingOrSay || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || 0;
           if (bldgOrSayNum > 0) {
             bldgRows.push([
               `!!BOLD!!PRESENT BUILDING VALUE - ${rupeesInWords(bldgOrSayNum).toUpperCase()}`, '', '', '', '', '', '', ''
@@ -2446,12 +2446,12 @@ Our valuation is based on information obtained from the client and on data gathe
           const desc = fields.realisableValueDesc || defaultDesc;
           
           r.drawSectionHeader('REALISABLE VALUE / LIQUIDATION VALUE');
-          r.drawCustomSplitRow(desc, 'Rs. ' + formatIndianCurrency(Math.round(parseFloat(String(fields.realisableValueAmount || '').replace(/[^\d.]/g, '')) || 0).toString()), 0.77, { col1Bold: true, col2Bold: true, col1Align: 'justify', col2Align: 'left' });
+          r.drawCustomSplitRow(desc, 'Rs. ' + formatIndianCurrency(Math.round(parseFloat(String(fields.realisableValueAmount || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || 0).toString()), 0.77, { col1Bold: true, col2Bold: true, col1Align: 'justify', col2Align: 'left' });
           if (fields.realisableValueOrSay) {
             r.drawCustomSplitRow('OR SAY', fields.realisableValueOrSay, 0.77, { col1Bold: true, col2Bold: true, col1Align: 'center', col2Align: 'left' });
           }
           {
-            const orSayLiqNum = parseFloat(String(fields.realisableValueOrSay || '').replace(/[^\d.]/g, '')) || 0;
+            const orSayLiqNum = parseFloat(String(fields.realisableValueOrSay || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || 0;
             if (orSayLiqNum > 0) {
               r.drawFullWidthRow(`LIQUIDATION VALUE - ${rupeesInWords(orSayLiqNum).toUpperCase()}`, { bold: true });
             }
@@ -2627,20 +2627,20 @@ Our valuation is based on information obtained from the client and on data gathe
         r.advanceCursor(4);
       }
       
-      const orSayFmvNum = parseFloat(String(fields.totalPresentValueOrSay || '').replace(/[^\d.]/g, '')) || fmvVal;
+      const orSayFmvNum = parseFloat(String(fields.totalPresentValueOrSay || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || fmvVal;
       r.drawTextBlock(`Present Market Value is INR. ${fields.totalPresentValueOrSay || formatIndianCurrency(fmvVal)}.`, { bold: true });
       r.drawTextBlock(`(${rupeesInWords(orSayFmvNum).toUpperCase()}).`, { bold: true });
       r.advanceCursor(4);
       
       if (fields.realisableValueOrSay || fields.realisableValueTotal) {
-        const orSayRealNum = parseFloat(String(fields.realisableValueOrSay || '').replace(/[^\d.]/g, '')) || realVal;
+        const orSayRealNum = parseFloat(String(fields.realisableValueOrSay || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || realVal;
         r.drawTextBlock(`Realisable value is INR. ${fields.realisableValueOrSay || formatIndianCurrency(realVal)}.`, { bold: true });
         r.drawTextBlock(`(${rupeesInWords(orSayRealNum).toUpperCase()}).`, { bold: true });
         r.advanceCursor(4);
       }
       
       if (fields.totalBookValueOrSay || fields.bookValueTotal) {
-        const orSayGuideNum = parseFloat(String(fields.totalBookValueOrSay || '').replace(/[^\d.]/g, '')) || guideVal;
+        const orSayGuideNum = parseFloat(String(fields.totalBookValueOrSay || '').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')) || guideVal;
         r.drawTextBlock(`Govt Guideline Value is INR. ${fields.totalBookValueOrSay || formatIndianCurrency(guideVal)}.`, { bold: true });
         r.drawTextBlock(`(${rupeesInWords(orSayGuideNum).toUpperCase()}).`, { bold: true });
         r.advanceCursor(4);
@@ -3726,8 +3726,8 @@ Our valuation is based on information obtained from the client and on data gathe
                           }} className={inputCls} disabled={isReadOnly} /></Field>
                           <Field label="Total of Shed Structure"><input type="text" value={fields.totalShedFMV} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
                           <Field label="Total Building Value"><input type="text" value={fields.totalBuildingValueFMV} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
-                          <Field label="Compound Wall Length (rft)"><input type="text" value={fields.compoundWallLengthFMV} onChange={e => handleChange('compoundWallLengthFMV', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 3320" disabled={isReadOnly} /></Field>
-                          <Field label="Compound Wall Rate (per rft)"><input type="text" value={fields.compoundWallRateFMV} onChange={e => handleChange('compoundWallRateFMV', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 600" disabled={isReadOnly} /></Field>
+                          <Field label="Compound Wall Length (rft)"><input type="text" value={fields.compoundWallLengthFMV} onChange={e => handleChange('compoundWallLengthFMV', e.target.value.replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 3320" disabled={isReadOnly} /></Field>
+                          <Field label="Compound Wall Rate (per rft)"><input type="text" value={fields.compoundWallRateFMV} onChange={e => handleChange('compoundWallRateFMV', e.target.value.replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 600" disabled={isReadOnly} /></Field>
                           <Field label="Compound Wall Value (Fair Market Value)" span={2}><textarea rows={2} value={fields.compoundWallValueFMV} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs resize-none cursor-not-allowed" readOnly disabled /></Field>
                           <Field label="Depreciation Description" span={2}><textarea rows={2} value={fields.depreciationDescFMV} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs resize-none cursor-not-allowed" readOnly disabled /></Field>
                           <Field label="Total Building/Shed Components" span={2}><input type="text" value={fields.totalBuildingShedComponentsFMV} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
@@ -3854,8 +3854,8 @@ Our valuation is based on information obtained from the client and on data gathe
                           }} className={inputCls} disabled={isReadOnly} /></Field>
                           <Field label="Total of Shed Structure"><input type="text" value={fields.totalShedGuideline} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
                           <Field label="Total Guideline Building Value"><input type="text" value={fields.totalBuildingValueGuideline} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
-                          <Field label="Compound Wall Length (rft)"><input type="text" value={fields.compoundWallLengthGuideline} onChange={e => handleChange('compoundWallLengthGuideline', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 3320" disabled={isReadOnly} /></Field>
-                          <Field label="Compound Wall Rate (per rft)"><input type="text" value={fields.compoundWallRateGuideline} onChange={e => handleChange('compoundWallRateGuideline', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 600" disabled={isReadOnly} /></Field>
+                          <Field label="Compound Wall Length (rft)"><input type="text" value={fields.compoundWallLengthGuideline} onChange={e => handleChange('compoundWallLengthGuideline', e.target.value.replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 3320" disabled={isReadOnly} /></Field>
+                          <Field label="Compound Wall Rate (per rft)"><input type="text" value={fields.compoundWallRateGuideline} onChange={e => handleChange('compoundWallRateGuideline', e.target.value.replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 600" disabled={isReadOnly} /></Field>
                           <Field label="Compound Wall Value (Guideline Value)" span={2}><textarea rows={2} value={fields.compoundWallValueGuideline} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs resize-none cursor-not-allowed" readOnly disabled /></Field>
                           <Field label="Depreciation Description" span={2}><textarea rows={2} value={fields.depreciationDescGuideline} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs resize-none cursor-not-allowed" readOnly disabled /></Field>
                           <Field label="Total Guideline Building/Shed Components" span={2}><input type="text" value={fields.totalBuildingShedComponentsGuideline} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
@@ -3943,12 +3943,12 @@ Our valuation is based on information obtained from the client and on data gathe
                     {!isReadOnly && <button type="button" onClick={() => handleChange('guidelinePlotRows', [...fields.guidelinePlotRows, { id: String(Date.now()), mouza: '', nature: '', owner: '', plotNo: '', khataNo: '', area: '', ratePerDec: '', amount: '' }])} className="text-xs font-bold text-amber-700 hover:underline mt-2">+ Add Row</button>}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
                       <Field label={`Total Guideline Plot Value FOR AC.${(fields.guidelinePlotRows || []).reduce((s: number, r: any) => { const m = String(r.area || '').match(/(\d+\.?\d*)/); return s + (m ? parseFloat(m[1]) || 0 : 0); }, 0).toFixed(3)} dec`}><input type="text" value={fields.guidelinePlotTotal} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
-                      <Field label="Compound Wall Length (rft)"><input type="text" value={fields.cuttackCompoundWallLengthGuideline} onChange={e => handleChange('cuttackCompoundWallLengthGuideline', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 3320" disabled={isReadOnly} /></Field>
-                          <Field label="Compound Wall Rate (per rft)"><input type="text" value={fields.cuttackCompoundWallRateGuideline} onChange={e => handleChange('cuttackCompoundWallRateGuideline', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 600" disabled={isReadOnly} /></Field>
+                      <Field label="Compound Wall Length (rft)"><input type="text" value={fields.cuttackCompoundWallLengthGuideline} onChange={e => handleChange('cuttackCompoundWallLengthGuideline', e.target.value.replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 3320" disabled={isReadOnly} /></Field>
+                          <Field label="Compound Wall Rate (per rft)"><input type="text" value={fields.cuttackCompoundWallRateGuideline} onChange={e => handleChange('cuttackCompoundWallRateGuideline', e.target.value.replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 600" disabled={isReadOnly} /></Field>
                           <Field label="Compound Wall Value (Guideline Value)" span={2}><textarea rows={2} value={fields.cuttackCompoundWallGuideline} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs resize-none cursor-not-allowed" readOnly disabled /></Field>
-                      <Field label="Sheds/Buildings Depreciation %" ><input type="text" value={fields.cuttackShedsDepPctGuideline} onChange={e => handleChange('cuttackShedsDepPctGuideline', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 50" disabled={isReadOnly} /></Field>
-                      <Field label="Sheds/Buildings Depreciation Amount (Rs.)"><input type="text" value={fields.cuttackShedsDepAmtGuideline} onChange={e => handleChange('cuttackShedsDepAmtGuideline', formatIndianCurrency(e.target.value.replace(/[^\d.]/g, '')))} className={inputCls} placeholder="e.g. 16,63,000" disabled={isReadOnly} /></Field>
-                      <Field label="Sheds/Buildings Depreciation Text" span={2}><textarea rows={2} value={`Present depreciated market value of the available sheds and buildings, at its present status, assessed @ ${fields.cuttackShedsDepPctGuideline || 0}% of the present value | Rs. ${formatIndianCurrency(String(fields.cuttackShedsDepAmtGuideline || '0').replace(/[^\d.]/g, ''))}`} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs resize-none cursor-not-allowed" readOnly disabled /></Field>
+                      <Field label="Sheds/Buildings Depreciation %" ><input type="text" value={fields.cuttackShedsDepPctGuideline} onChange={e => handleChange('cuttackShedsDepPctGuideline', e.target.value.replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 50" disabled={isReadOnly} /></Field>
+                      <Field label="Sheds/Buildings Depreciation Amount (Rs.)"><input type="text" value={fields.cuttackShedsDepAmtGuideline} onChange={e => handleChange('cuttackShedsDepAmtGuideline', formatIndianCurrency(e.target.value.replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')))} className={inputCls} placeholder="e.g. 16,63,000" disabled={isReadOnly} /></Field>
+                      <Field label="Sheds/Buildings Depreciation Text" span={2}><textarea rows={2} value={`Present depreciated market value of the available sheds and buildings, at its present status, assessed @ ${fields.cuttackShedsDepPctGuideline || 0}% of the present value | Rs. ${formatIndianCurrency(String(fields.cuttackShedsDepAmtGuideline || '0').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, ''))}`} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs resize-none cursor-not-allowed" readOnly disabled /></Field>
                       <Field label="Total Guideline Value for Land and Building"><input type="text" value={fields.cuttackTotalGuidelineLandBuilding} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
                       <Field label="Or Say"><input type="text" value={fields.cuttackGuidelineOrSay} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
                     </div>
@@ -3992,12 +3992,12 @@ Our valuation is based on information obtained from the client and on data gathe
                     {!isReadOnly && <button type="button" onClick={() => handleChange('presentPlotRows', [...fields.presentPlotRows, { id: String(Date.now()), mouza: '', nature: '', owner: '', plotNo: '', khataNo: '', area: '', ratePerDec: '', amount: '' }])} className="text-xs font-bold text-blue-700 hover:underline mt-2">+ Add Row</button>}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
                       <Field label={`TOTAL PRESENT MARKET VALUE PLOT FOR AC.${(fields.presentPlotRows || []).reduce((s: number, r: any) => { const m = String(r.area || '').match(/(\d+\.?\d*)/); return s + (m ? parseFloat(m[1]) || 0 : 0); }, 0).toFixed(3)} dec`}><input type="text" value={fields.presentPlotTotal} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
-                      <Field label="Compound Wall Length (rft)"><input type="text" value={fields.cuttackCompoundWallLengthPresent} onChange={e => handleChange('cuttackCompoundWallLengthPresent', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 3320" disabled={isReadOnly} /></Field>
-                          <Field label="Compound Wall Rate (per rft)"><input type="text" value={fields.cuttackCompoundWallRatePresent} onChange={e => handleChange('cuttackCompoundWallRatePresent', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 600" disabled={isReadOnly} /></Field>
+                      <Field label="Compound Wall Length (rft)"><input type="text" value={fields.cuttackCompoundWallLengthPresent} onChange={e => handleChange('cuttackCompoundWallLengthPresent', e.target.value.replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 3320" disabled={isReadOnly} /></Field>
+                          <Field label="Compound Wall Rate (per rft)"><input type="text" value={fields.cuttackCompoundWallRatePresent} onChange={e => handleChange('cuttackCompoundWallRatePresent', e.target.value.replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 600" disabled={isReadOnly} /></Field>
                           <Field label="Compound Wall Value (Fair Market Value)" span={2}><textarea rows={2} value={fields.cuttackCompoundWallPresent} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs resize-none cursor-not-allowed" readOnly disabled /></Field>
-                      <Field label="Sheds/Buildings Depreciation %" ><input type="text" value={fields.cuttackShedsDepPctPresent} onChange={e => handleChange('cuttackShedsDepPctPresent', e.target.value.replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 50" disabled={isReadOnly} /></Field>
-                      <Field label="Sheds/Buildings Depreciation Amount (Rs.)"><input type="text" value={fields.cuttackShedsDepAmtPresent} onChange={e => handleChange('cuttackShedsDepAmtPresent', formatIndianCurrency(e.target.value.replace(/[^\d.]/g, '')))} className={inputCls} placeholder="e.g. 16,63,000" disabled={isReadOnly} /></Field>
-                      <Field label="Sheds/Buildings Depreciation Text" span={2}><textarea rows={2} value={`Present depreciated market value of the available sheds and buildings, at its present status, assessed @ ${fields.cuttackShedsDepPctPresent || 0}% of the present value | Rs. ${formatIndianCurrency(String(fields.cuttackShedsDepAmtPresent || '0').replace(/[^\d.]/g, ''))}`} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs resize-none cursor-not-allowed" readOnly disabled /></Field>
+                      <Field label="Sheds/Buildings Depreciation %" ><input type="text" value={fields.cuttackShedsDepPctPresent} onChange={e => handleChange('cuttackShedsDepPctPresent', e.target.value.replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, ''))} className={inputCls} placeholder="e.g. 50" disabled={isReadOnly} /></Field>
+                      <Field label="Sheds/Buildings Depreciation Amount (Rs.)"><input type="text" value={fields.cuttackShedsDepAmtPresent} onChange={e => handleChange('cuttackShedsDepAmtPresent', formatIndianCurrency(e.target.value.replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')))} className={inputCls} placeholder="e.g. 16,63,000" disabled={isReadOnly} /></Field>
+                      <Field label="Sheds/Buildings Depreciation Text" span={2}><textarea rows={2} value={`Present depreciated market value of the available sheds and buildings, at its present status, assessed @ ${fields.cuttackShedsDepPctPresent || 0}% of the present value | Rs. ${formatIndianCurrency(String(fields.cuttackShedsDepAmtPresent || '0').replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, ''))}`} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs resize-none cursor-not-allowed" readOnly disabled /></Field>
                       <Field label="Total Present Value for Land and Building"><input type="text" value={fields.cuttackTotalPresentLandBuilding} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
                       <Field label="Or Say"><input type="text" value={fields.cuttackPresentOrSay} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
                     </div>
@@ -4062,7 +4062,7 @@ Our valuation is based on information obtained from the client and on data gathe
                             handleChange('cuttackBuildingRows', newRows);
                           }} className={inputCls} disabled={isReadOnly} /></Field>
                       <Field label="Total"><input type="text" value={fields.cuttackBuildingTotal} className="w-full bg-gray-50 text-gray-500 border border-slate-200 rounded p-1 text-xs cursor-not-allowed" readOnly disabled /></Field>
-                      <Field label="Total Land and Building/Shed Components (Rs)"><input type="text" value={fields.cuttackBuildingComponentsTotal} onChange={e => handleChange('cuttackBuildingComponentsTotal', formatIndianCurrency(e.target.value.replace(/[^\d.]/g, '')))} className={inputCls} disabled={isReadOnly} /></Field>
+                      <Field label="Total Land and Building/Shed Components (Rs)"><input type="text" value={fields.cuttackBuildingComponentsTotal} onChange={e => handleChange('cuttackBuildingComponentsTotal', formatIndianCurrency(e.target.value.replace(/Rs\.?\s*/gi, '').replace(/[^\d.]/g, '')))} className={inputCls} disabled={isReadOnly} /></Field>
                       <Field label="Or Say"><input type="text" value={fields.cuttackBuildingOrSay} className={inputCls + ' bg-gray-50 text-gray-500 cursor-not-allowed'} placeholder="Auto-calculated" readOnly disabled /></Field>
                     </div>
                   </div>
