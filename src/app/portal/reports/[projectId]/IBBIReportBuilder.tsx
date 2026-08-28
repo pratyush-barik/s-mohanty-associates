@@ -2940,6 +2940,11 @@ Our valuation is based on information obtained from the client and on data gathe
   };
 
   const handlePreviewPDF = async () => {
+    if (!fields.objectiveIntro?.trim() || !fields.valuationCertificateIntro?.trim()) {
+      alert('Please, fill the required field(s)');
+      return;
+    }
+
     const previewWindow = window.open('', '_blank');
     if (previewWindow) {
       previewWindow.document.write(`
@@ -2976,6 +2981,11 @@ Our valuation is based on information obtained from the client and on data gathe
   };
 
   const handleDownloadPDF = async () => {
+    if (!fields.objectiveIntro?.trim() || !fields.valuationCertificateIntro?.trim()) {
+      alert('Please, fill the required field(s)');
+      return;
+    }
+
     setMessage({ type: 'success', text: 'Generating PDF for download...' });
     try {
       const blob = await handleGeneratePDF();
