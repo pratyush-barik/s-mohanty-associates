@@ -3004,6 +3004,9 @@ Our valuation is based on information obtained from the client and on data gathe
           {/* ── Valuation Report Cover ── */}
           <Section title="Valuation Report Cover" id="section-cover">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="Representative Name">
+                  <input type="text" value={fields.representativeName || ''} onChange={e => handleChange('representativeName', e.target.value)} className={inputCls} disabled={isReadOnly} />
+                </Field>
                 <Field label="Valuer Qualifications (Appears next to name)">
                   <input type="text" value={fields.valuerQualifications} onChange={e => handleChange('valuerQualifications', e.target.value)} className={inputCls} disabled={isReadOnly} />
                 </Field>
@@ -4659,7 +4662,7 @@ Our valuation is based on information obtained from the client and on data gathe
               </Field>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="Representative Name (for Declaration)">
-                  <input type="text" value={fields.representativeName} onChange={e => handleChange('representativeName', e.target.value)} className={inputCls} disabled={isReadOnly} />
+                  <input type="text" value={fields.representativeName || ''} className={inputCls + ' bg-gray-100 cursor-not-allowed'} disabled />
                 </Field>
                 <Field label="Representative's Father's Name">
                   <input type="text" value={fields.representativeFatherName} onChange={e => handleChange('representativeFatherName', e.target.value)} className={inputCls} disabled={isReadOnly} />
