@@ -4936,8 +4936,8 @@ Our valuation is based on information obtained from the client and on data gathe
                 <Field label="Site Address">
                   <input type="text" value={fields.propertyAddress || fields.certAddress || ''} disabled className={inputCls + ' bg-gray-100'} />
                 </Field>
-                <Field label="Owner Name(s)">
-                  <input type="text" value={fields.applicantName || fields.ownerName || fields.certOwner || ''} disabled className={inputCls + ' bg-gray-100'} />
+                <Field label="Applicant(s) Name">
+                  <input type="text" value={fields.section4ApplicantName || ''} disabled className={inputCls + ' bg-gray-100'} />
                 </Field>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Field label="Present Value">
