@@ -22,9 +22,9 @@ const MARGIN_L = 36;     // Left margin (compact for wide tables)
 const MARGIN_R = 36;     // Right margin
 const CONTENT_W = PAGE_W - MARGIN_L - MARGIN_R; // 523.28pt
 
-const FONT_SIZE = 9.5;
-const FONT_SIZE_HEADER = 11;
-const FONT_SIZE_TITLE = 13;
+const FONT_SIZE = 12;
+const FONT_SIZE_HEADER = 14;
+const FONT_SIZE_TITLE = 14;
 const LINE_HEIGHT = 1.25;
 const BORDER_W = 0.5;
 
@@ -260,8 +260,8 @@ export class PDFAdityaBirlaMLAPRenderer {
     return lines.length ? lines : [''];
   }  /** Render Title Banner */
   drawMainHeader(title: string): void {
-    this.checkPageBreak(24);
-    const h = 20;
+    this.checkPageBreak(28);
+    const h = 24;
     const y = this.pdfY(this.cursorY);
 
     this.page.drawRectangle({
@@ -280,7 +280,7 @@ export class PDFAdityaBirlaMLAPRenderer {
     const tw = font.widthOfTextAtSize(text, FONT_SIZE_TITLE);
     this.page.drawText(text, {
       x: MARGIN_L + (CONTENT_W - tw) / 2,
-      y: y - h + 5.5,
+      y: y - h + 6.5,
       size: FONT_SIZE_TITLE,
       font,
       color: rgb(0, 0, 0),
@@ -291,8 +291,8 @@ export class PDFAdityaBirlaMLAPRenderer {
 
   /** Render Section Header Bar */
   drawSectionHeader(title: string): void {
-    this.checkPageBreak(18);
-    const h = 16;
+    this.checkPageBreak(22);
+    const h = 20;
     const y = this.pdfY(this.cursorY);
 
     this.page.drawRectangle({
@@ -311,7 +311,7 @@ export class PDFAdityaBirlaMLAPRenderer {
     const tw = font.widthOfTextAtSize(text, FONT_SIZE_HEADER);
     this.page.drawText(text, {
       x: MARGIN_L + (CONTENT_W - tw) / 2,
-      y: y - h + 4.5,
+      y: y - h + 5.5,
       size: FONT_SIZE_HEADER,
       font,
       color: rgb(0, 0, 0),
@@ -336,7 +336,7 @@ export class PDFAdityaBirlaMLAPRenderer {
       colWrapped.push({ labelLines: lLines, valueLines: vLines });
     }
 
-    const rowH = Math.max(16, maxLines * fontSize * LINE_HEIGHT + pad * 2);
+    const rowH = Math.max(18, maxLines * fontSize * LINE_HEIGHT + pad * 2);
     this.checkPageBreak(rowH);
 
     const y = this.pdfY(this.cursorY);
