@@ -3906,13 +3906,23 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                                 isSelected ? 'border-[#1e3a5f] shadow-md scale-[0.98]' : 'border-gray-200 hover:border-gray-300 shadow-xs'
                               }`}
                             >
-                              <div className="aspect-square bg-gray-100 flex items-center justify-center overflow-hidden">
+                              <div className="aspect-square bg-gray-100 flex flex-col items-center justify-center overflow-hidden relative">
                                 <img
                                   src={img.url || ''}
                                   alt={img.fileName || 'Bucket image'}
                                   className="w-full h-full object-cover"
                                   loading="lazy"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                    const fallback = e.currentTarget.nextElementSibling as HTMLElement | null;
+                                    if (fallback) fallback.style.display = 'flex';
+                                  }}
                                 />
+                                <div className="hidden flex-col items-center justify-center p-3 text-center w-full h-full bg-slate-50">
+                                  <span className="text-2xl mb-1 opacity-60">📷</span>
+                                  <span className="text-[10px] text-slate-700 font-semibold truncate max-w-full px-1" title={img.fileName}>{img.fileName || 'Photo'}</span>
+                                  <span className="text-[9px] text-amber-700 font-bold mt-1 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">Not in Storage</span>
+                                </div>
                               </div>
                               <div className="p-2 border-t border-gray-100 bg-white">
                                 <p className="text-[10px] font-bold text-[#0f2038] truncate">{img.employee?.name || 'Field Agent'}</p>
@@ -3934,7 +3944,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                                   e.stopPropagation();
                                   handleDeleteBucketImage(img);
                                 }}
-                                className="absolute top-2 left-2 w-6 h-6 bg-red-600/90 text-white rounded-full flex items-center justify-center text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
+                                className="absolute top-2 left-2 w-6 h-6 bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold opacity-80 group-hover:opacity-100 transition-opacity hover:bg-red-700 shadow-sm"
                                 title="Delete from bucket"
                               >
                                 🗑️
