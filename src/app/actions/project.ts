@@ -1199,9 +1199,36 @@ export async function getBucketImages(projectId: string) {
       orderBy: { createdAt: 'desc' },
     });
 
-    const images = rawImages.filter(img => typeof img.url === 'string' && img.url.trim().length > 5);
+    const validImages: typeof rawImages = [];
+    const deadImageIds: string[] = [];
 
-    return { images };
+    await Promise.all(
+      rawImages.map(async (img) => {
+        if (!img.url || img.url.trim().length <= 5) {
+          deadImageIds.push(img.id);
+          return;
+        }
+        try {
+          const resp = await fetch(img.url, { method: 'HEAD' });
+          if (resp.ok) {
+            validImages.push(img);
+          } else {
+            deadImageIds.push(img.id);
+          }
+        } catch {
+          deadImageIds.push(img.id);
+        }
+      })
+    );
+
+    // Auto-purge orphaned database records that do not exist in Supabase storage
+    if (deadImageIds.length > 0) {
+      await prisma.bucketImage.deleteMany({
+        where: { id: { in: deadImageIds } }
+      }).catch(err => console.error('Failed to cleanup dead bucket images:', err));
+    }
+
+    return { images: validImages };
   } catch (error) {
     console.error('Failed to fetch bucket images:', error);
     return { error: 'Failed to fetch images.', images: [] };
