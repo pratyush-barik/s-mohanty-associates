@@ -707,7 +707,7 @@ const FloatingNavigator = ({ isApartmentFlat, annexureEnabled }: { isApartmentFl
             onClick={() => scrollTo(sec.id)}
             className={`text-left py-1 px-2.5 rounded-lg transition-all flex flex-col justify-center ${
               isSpecial
-                ? isActive ? 'bg-blue-600 text-white shadow-md my-1' : 'bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white border border-blue-100 my-1'
+                ? isActive ? 'bg-red-500 text-black font-extrabold shadow-md border border-red-600 my-1' : 'bg-red-500 text-black font-bold hover:bg-red-600 hover:text-black border border-red-600 my-1'
                 : !sec.indent
                   ? 'my-1 font-extrabold bg-indigo-50 text-indigo-800 border border-indigo-100 shadow-sm'
                   : 'pl-3.5 text-slate-600 hover:bg-[#b8860b]/10 hover:text-[#b8860b]'
