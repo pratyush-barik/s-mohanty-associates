@@ -1683,73 +1683,59 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
         return d;
       };
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  COVER PAGE
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-r.drawCoverPageBorder();
-r.advanceCursor(60);
-r.drawTextBlock('VALUATION REPORT', { bold: true, align: 'center', fontSize: 24 });
-r.advanceCursor(12);
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      //  COVER PAGE
+      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      r.advanceCursor(60);
+      r.drawCenteredTitle('VALUATION REPORT', 20);
+      r.advanceCursor(6);
+      let prefix = '';
+      if (fields.addressPrefixType === 'multiple_plots') prefix = 'OVER MULTIPLE PLOTS IN ';
+      else if (fields.addressPrefixType === 'idco_plot') prefix = fields.idcoPlotNo ? `OVER IDCO PLOT NO ${fields.idcoPlotNo}, ` : 'OVER IDCO PLOT, ';
+      else if (fields.addressPrefixType === 'other') prefix = fields.customAddressPrefix ? fields.customAddressPrefix.trim() + ', ' : '';
+      
+      r.drawTextBlock(`OF ${(fields.propertyType === 'Other' ? fields.customPropertyType : fields.propertyType) || 'Property'} BELONGING TO`.toUpperCase(), { bold: true, align: 'center', fontSize: 13 });
+      r.drawTextBlock(`${fields.companyName || '________'}`.toUpperCase(), { bold: true, align: 'center', fontSize: 13, underline: true });
+      r.drawTextBlock(`${prefix}${fields.propertyAddress || '________'}`.toUpperCase(), { bold: true, align: 'center', fontSize: 13 });
+      r.advanceCursor(12);
+      
+      if (coverPageImageBytes) {
+        await r.drawImageBlock(coverPageImageBytes as Uint8Array, { maxWidth: 380, maxHeight: 180, centered: true, borderColor: '#195B8E', borderWidth: 2 });
+        r.advanceCursor(8);
+      }
+      
+      r.drawCenteredTitle('OWNER OF THE PROPERTY', 13);
+      r.advanceCursor(4);
+      r.drawTextBlock((fields.applicantName || fields.ownerName || '________').toUpperCase(), { align: 'center', fontSize: 11 });
+      if (fields.hasManagingDirector === 'yes' && fields.managingDirectorName) {
+        r.drawTextBlock('REPRESENTED THROUGH ITS MANAGING DIRECTOR', { align: 'center', fontSize: 11 });
+        r.drawTextBlock(fields.managingDirectorName.toUpperCase(), { align: 'center', fontSize: 11 });
+      }
+      r.advanceCursor(24);
 
-let prefix = '';
-if (fields.addressPrefixType === 'multiple_plots') prefix = 'OVER MULTIPLE PLOTS IN ';
-else if (fields.addressPrefixType === 'idco_plot') prefix = fields.idcoPlotNo ? `OVER IDCO PLOT NO ${fields.idcoPlotNo}, ` : 'OVER IDCO PLOT, ';
-else if (fields.addressPrefixType === 'other') prefix = fields.customAddressPrefix ? fields.customAddressPrefix.trim() + ', ' : '';
+      // Value summary table on cover
+      const coverFmvVal = String((fields.valuationVariant === 'cuttack' ? fields.cuttackPresentOrSay : fields.totalPresentValueOrSay) || fields.fairMarketValueTotal || '0');
+      const coverLiqVal = String(fields.realisableValueOrSay || fields.realisableValueTotal || '0');
+      const coverGovtVal = String((fields.valuationVariant === 'cuttack' ? fields.cuttackGuidelineOrSay : fields.totalBookValueOrSay) || fields.bookValueTotal || '0');
 
-// 4.2 TYPE OF PROPERTY
-r.drawTextBlock(`OF ${(fields.propertyType === 'Other' ? fields.customPropertyType : fields.propertyType) || 'Property'} BELONGING TO`.toUpperCase(), { bold: true, align: 'center', fontSize: 15 });
-// 4.3 COMPANY NAME
-r.drawTextBlock(`${fields.companyName || '________'}`.toUpperCase(), { bold: true, align: 'center', fontSize: 15, underline: true });
-// 5. PROPERTY LOCATION
-r.drawTextBlock(`${prefix}${fields.propertyAddress || '________'}`.toUpperCase(), { bold: true, align: 'center', fontSize: 14 });
-r.advanceCursor(16);
+      const formatCoverVal = (v: string) => v.toLowerCase().includes('rs') ? v : `Rs.${formatIndianCurrency(v.replace(/[^0-9.]/g, '') || '0')}/-`;
 
-// 6. PROPERTY PHOTOGRAPH
-if (coverPageImageBytes) {
-  await r.drawImageBlock(coverPageImageBytes as Uint8Array, { maxWidth: 380, maxHeight: 180, centered: true, borderColor: '#000000', borderWidth: 2 });
-  r.advanceCursor(12);
-}
+      r.drawSimpleRow('FAIR MARKET VALUE', formatCoverVal(coverFmvVal));
+      r.drawSimpleRow('LIQUIDATION VALUE', formatCoverVal(coverLiqVal));
+      r.drawSimpleRow('GOVT. GUIDELINE VALUE', formatCoverVal(coverGovtVal));
+      r.advanceCursor(24);
 
-// 7. OWNER SECTION
-r.drawTextBlock('OWNER OF THE PROPERTY', { align: 'center', fontSize: 15, bold: true, underline: true });
-r.advanceCursor(4);
-// 8. OWNER NAME
-r.drawTextBlock((fields.applicantName || fields.ownerName || '________').toUpperCase(), { align: 'center', fontSize: 12, bold: true });
-if (fields.hasManagingDirector === 'yes' && fields.managingDirectorName) {
-  r.drawTextBlock('REPRESENTED THROUGH ITS MANAGING DIRECTOR', { align: 'center', fontSize: 12, bold: true });
-  r.drawTextBlock(fields.managingDirectorName.toUpperCase(), { align: 'center', fontSize: 12, bold: true });
-}
-r.advanceCursor(24);
-
-// 9. VALUATION TABLE
-const coverFmvVal = String((fields.valuationVariant === 'cuttack' ? fields.cuttackPresentOrSay : fields.totalPresentValueOrSay) || fields.fairMarketValueTotal || '0');
-const coverLiqVal = String(fields.realisableValueOrSay || fields.realisableValueTotal || '0');
-const coverGovtVal = String((fields.valuationVariant === 'cuttack' ? fields.cuttackGuidelineOrSay : fields.totalBookValueOrSay) || fields.bookValueTotal || '0');
-
-const formatCoverVal = (v: string) => v.toLowerCase().includes('rs') ? v : `Rs. ${formatIndianCurrency(v.replace(/[^0-9.]/g, '') || '0')}/-`;
-
-r.drawSimpleRow('FAIR MARKET VALUE', formatCoverVal(coverFmvVal));
-r.drawSimpleRow('LIQUIDATION VALUE', formatCoverVal(coverLiqVal));
-r.drawSimpleRow('GOVT. GUIDELINE VALUE', formatCoverVal(coverGovtVal));
-r.advanceCursor(24);
-
-// 11. PREPARED BY
-r.drawTextBlock('PREPARED BY', { bold: true, align: 'center', underline: true, fontSize: 14 });
-r.advanceCursor(4);
-// 12. VALUER NAME
-r.drawTextBlock(`${fields.representativeName || ''}`, { bold: true, align: 'center', underline: true, fontSize: 13 });
-// 13. VALUER CREDENTIALS
-if (fields.valuerQualifications) {
-  r.drawTextBlock(fields.valuerQualifications, { bold: true, align: 'center', fontSize: 10 });
-}
-if (fields.valuerAdditionalDetails) {
-  fields.valuerAdditionalDetails.split('\n').forEach((line: string) => {
-    if (line.trim()) r.drawTextBlock(line.trim(), { bold: true, align: 'center', fontSize: 10 });
-  });
-}
-r.advanceCursor(6);
-// 14. REGISTERED OFFICE ADDRESS
-r.drawTextBlock(`REGISTERED OFFICE ADDRESS ${fields.registeredOfficeAddress || ''} ${fields.registeredOfficeTel ? 'Tel-(' + fields.registeredOfficeTel.replace(/[^0-9]/g, '').slice(0, 4) + ')' + fields.registeredOfficeTel.replace(/[^0-9]/g, '').slice(4) : ''}`.trim(), { bold: true, align: 'center', fontSize: 10.5 });
+      // Prepared By block
+      r.drawCenteredTitle('PREPARED BY', 12);
+      r.advanceCursor(4);
+      r.drawTextBlock(`${fields.representativeName || ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications : ''}`, { bold: true, align: 'center', underline: true });
+      if (fields.valuerAdditionalDetails) {
+        fields.valuerAdditionalDetails.split('\n').forEach((line: string) => {
+          if (line.trim()) r.drawTextBlock(line.trim(), { align: 'center' });
+        });
+      }
+      r.advanceCursor(6);
+      r.drawTextBlock(`REGISTERED OFFICE ADDRESS ${fields.registeredOfficeAddress || ''} ${fields.registeredOfficeTel ? 'Tel-' + fields.registeredOfficeTel : ''}`.trim(), { align: 'center' });
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       //  TABLE OF CONTENTS
@@ -1957,7 +1943,7 @@ Our valuation is based on information obtained from the client and on data gathe
       tocPageMap['4.  BRIEF DESCRIPTION OF THE PROPERTY'] = r.getPageCount();
       // Introductory prose paragraph(s)
       const paras = fields.propertyDescriptionParagraphs || [fields.propertyDescription];
-      paras.forEach((para: string) => {
+      paras.forEach(para => {
         if (para && para.trim()) {
           r.drawTextBlock(para.trim());
           r.advanceCursor(6);
@@ -3497,7 +3483,7 @@ Our valuation is based on information obtained from the client and on data gathe
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Property Description (Introductory Paragraph(s))" span={2}>
                 <div className="flex flex-col gap-3">
-                  {(fields.propertyDescriptionParagraphs || [fields.propertyDescription || '']).map((para: string, idx: number) => (
+                  {(fields.propertyDescriptionParagraphs || [fields.propertyDescription || '']).map((para, idx) => (
                     <div key={idx} className="relative flex gap-2">
                       <textarea
                         value={para}

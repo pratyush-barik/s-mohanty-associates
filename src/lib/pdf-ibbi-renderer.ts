@@ -109,19 +109,6 @@ export class PDFIBBIRenderer {
   }
 
   // ─── Page Management ────────────────────────────────────────────
-  
-  public drawCoverPageBorder(): void {
-    const boxW = 528;
-    const boxH = 606;
-    const x = (PAGE_W - boxW) / 2;
-    const topY = 10;
-    
-    // Draw 3 closely spaced blue border lines (double/triple border effect)
-    this.drawRect(x, topY, boxW, boxH, undefined, '#195B8E', 0.5);
-    this.drawRect(x + 2, topY + 2, boxW - 4, boxH - 4, undefined, '#195B8E', 0.5);
-    this.drawRect(x + 4, topY + 4, boxW - 8, boxH - 8, undefined, '#195B8E', 0.5);
-  }
-
 
   private addPage(): void {
     this.page = this.doc.addPage([PAGE_W, PAGE_H]);
