@@ -145,6 +145,8 @@ interface IBBIFields {
 
   // ── Section 4: Brief Description ──
   applicantName: string;
+  clientName: string;
+  section4ApplicantName: string;
   hasManagingDirector?: string;
   managingDirectorName?: string;
   coverPageImage?: string;
@@ -460,6 +462,8 @@ const DEFAULT_FIELDS: IBBIFields = {
   ownerContactDetails: '',
 
   applicantName: '',
+  clientName: '',
+  section4ApplicantName: '',
   nameOfOwners: '',
   valuationDoneBefore: 'NO',
   customValuationDoneBefore: '',
@@ -1791,7 +1795,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.advanceCursor(4);
 
       // Certificate introductory paragraph
-      const certOwner = fields.applicantName || fields.ownerName || '________';
+      const certOwner = fields.clientName || '________';
       const certCurrentOwner = fields.certCurrentOwner || certOwner;
       const certAddress = fields.propertyAddress || fields.ownerAddress || '________';
       const certDate = fmtDateDDMMYYYY(fields.dateOfInspection);
@@ -1947,7 +1951,7 @@ Our valuation is based on information obtained from the client and on data gathe
         }
       }
 
-      r.draw5ColRow('4.1', 'Applicant(s) Name', fields.applicantName || fields.ownerName, 'Name of Owners', formattedOwners);
+      r.draw5ColRow('4.1', 'Applicant(s) Name', fields.section4ApplicantName || '________', 'Name of Owners', formattedOwners);
       r.draw5ColRow('4.2', 'Type of property', (fields.propertyType === 'Other' ? fields.customPropertyType : fields.propertyType) || '', 'Current usage', (fields.currentUsage === 'Other' ? fields.customCurrentUsage : fields.currentUsage) || '');
       r.drawSection4MultiSubRow('4.3', [
         { 
@@ -3325,8 +3329,8 @@ Our valuation is based on information obtained from the client and on data gathe
                 <p className="text-xs font-black text-[#b8860b] uppercase tracking-widest mb-2">Valuation Certificate Table</p>
               </div>
 
-              <Field label="Client Name (from Section 4)" span={2}>
-                <input type="text" value={fields.applicantName || fields.ownerName || ''} className={inputCls + ' bg-gray-100'} disabled />
+              <Field label="Client Name" span={2}>
+                <input type="text" value={fields.clientName || ''} onChange={e => handleChange('clientName', e.target.value)} className={inputCls} disabled={isReadOnly} />
               </Field>
               <Field label="Property Address (from Section 4)" span={2}>
                 <input type="text" value={fields.propertyAddress || ''} className={inputCls + ' bg-gray-100'} disabled />
@@ -3468,7 +3472,7 @@ Our valuation is based on information obtained from the client and on data gathe
                 <textarea value={fields.propertyDescription || ''} onChange={e => handleChange('propertyDescription', e.target.value)} className={inputCls + ' resize-none'} rows={3} placeholder="e.g. an inoperative water bottling unit over IDCO plot no 11,11/A at Jagatpur Industrial Estate" disabled={isReadOnly} />
               </Field>
               <Field label="4.1 (a) Applicant(s) Name" span={1}>
-                <textarea value={fields.applicantName} onChange={e => handleChange('applicantName', e.target.value)} className={inputCls} rows={2} placeholder="Full list of owners" disabled={isReadOnly} />
+                <textarea value={fields.section4ApplicantName || ''} onChange={e => handleChange('section4ApplicantName', e.target.value)} className={inputCls} rows={2} placeholder="Full list of owners" disabled={isReadOnly} />
               </Field>
               <Field label="4.1 (b) Name of Owners" span={1}>
                 <textarea 
@@ -4674,8 +4678,8 @@ Our valuation is based on information obtained from the client and on data gathe
               <Field label="Appointed By (from Section 1)">
                 <input type="text" value={fields.appointedBy || ''} className={inputCls + ' bg-gray-100'} disabled />
               </Field>
-              <Field label="Applicant / Owner Name(s) (from Section 4)">
-                <input type="text" value={fields.applicantName || fields.ownerName || ''} className={inputCls + ' bg-gray-100'} disabled />
+              <Field label="Applicant / Owner Name(s) (from Valuation Report Cover)">
+                <input type="text" value={fields.applicantName || ''} className={inputCls + ' bg-gray-100'} disabled />
               </Field>
 
               {/* b. Purpose & exclusive use (auto-derived) */}
