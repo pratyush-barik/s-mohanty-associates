@@ -137,6 +137,7 @@ interface IBBIFields {
   propertyAddress: string;
   addressPrefixType?: string;
   customAddressPrefix?: string;
+  idcoPlotNo?: string;
   legalAddress: string;
   dateOfInspection: string;
   dateOfValuation: string;
@@ -440,6 +441,7 @@ const DEFAULT_FIELDS: IBBIFields = {
   propertyAddress: '',
   addressPrefixType: 'none',
   customAddressPrefix: '',
+  idcoPlotNo: '',
   legalAddress: '',
   dateOfInspection: new Date().toISOString().split('T')[0],
   dateOfValuation: new Date().toISOString().split('T')[0],
@@ -1613,7 +1615,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.advanceCursor(6);
       let prefix = '';
       if (fields.addressPrefixType === 'multiple_plots') prefix = 'OVER MULTIPLE PLOTS IN ';
-      else if (fields.addressPrefixType === 'idco_plot') prefix = 'OVER IDCO PLOT, ';
+      else if (fields.addressPrefixType === 'idco_plot') prefix = fields.idcoPlotNo ? `OVER IDCO PLOT NO ${fields.idcoPlotNo}, ` : 'OVER IDCO PLOT, ';
       else if (fields.addressPrefixType === 'other') prefix = fields.customAddressPrefix ? fields.customAddressPrefix.trim() + ', ' : '';
       
       r.drawTextBlock(`OF ${(fields.propertyType === 'Other' ? fields.customPropertyType : fields.propertyType) || 'Property'} BELONGING TO`.toUpperCase(), { bold: true, align: 'center', fontSize: 13 });
@@ -3105,6 +3107,9 @@ Our valuation is based on information obtained from the client and on data gathe
                     <option value="idco_plot">OVER IDCO PLOT</option>
                     <option value="other">Other (Custom)</option>
                   </select>
+                  {fields.addressPrefixType === 'idco_plot' && (
+                    <input type="text" value={fields.idcoPlotNo || ''} onChange={e => handleChange('idcoPlotNo', e.target.value.replace(/[^0-9]/g, ''))} className={inputCls} placeholder="Enter Plot No. (Numbers only)" disabled={isReadOnly} />
+                  )}
                   {fields.addressPrefixType === 'other' && (
                     <input type="text" value={fields.customAddressPrefix || ''} onChange={e => handleChange('customAddressPrefix', e.target.value)} className={inputCls} placeholder="Custom prefix..." disabled={isReadOnly} />
                   )}
@@ -3410,6 +3415,9 @@ Our valuation is based on information obtained from the client and on data gathe
                     <option value="idco_plot">OVER IDCO PLOT</option>
                     <option value="other">Other (Custom)</option>
                   </select>
+                  {fields.addressPrefixType === 'idco_plot' && (
+                    <input type="text" value={fields.idcoPlotNo || ''} onChange={e => handleChange('idcoPlotNo', e.target.value.replace(/[^0-9]/g, ''))} className={inputCls} placeholder="Enter Plot No. (Numbers only)" disabled={true} />
+                  )}
                   {fields.addressPrefixType === 'other' && (
                     <input type="text" value={fields.customAddressPrefix || ''} onChange={e => handleChange('customAddressPrefix', e.target.value)} className={inputCls} placeholder="Custom prefix..." disabled={true} />
                   )}
