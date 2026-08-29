@@ -1732,10 +1732,10 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
 
         for (let i = 0; i < propImageBytes.length; i += 2) {
           const name1 = fields.propertyImageNames?.[i] ?? 'Site Picture';
-          const caption1 = name1;
+          const caption1 = name1 ? `PHOTO ${i + 1} - ${name1.toUpperCase()}` : `PHOTO ${i + 1}`;
           const img2 = i + 1 < propImageBytes.length ? propImageBytes[i + 1] : null;
           const name2 = fields.propertyImageNames?.[i + 1] ?? 'Site Picture';
-          const caption2 = name2;
+          const caption2 = name2 ? `PHOTO ${i + 2} - ${name2.toUpperCase()}` : `PHOTO ${i + 2}`;
 
           await r.drawImagePair(propImageBytes[i], caption1, img2, caption2);
           r.advanceCursor(4);
@@ -2240,8 +2240,8 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           const img2 = pageImages[r * 2 + 1];
           const gIdx1 = startIdx + r * 2;
           const gIdx2 = startIdx + r * 2 + 1;
-          const name1 = fields.propertyImageNames?.[gIdx1] || '';
-          const name2 = fields.propertyImageNames?.[gIdx2] || '';
+          const name1 = fields.propertyImageNames?.[gIdx1] ?? 'Site Picture';
+          const name2 = fields.propertyImageNames?.[gIdx2] ?? 'Site Picture';
           const caption1 = name1 ? `Figure ${gIdx1 + 1}: ${name1}` : `Figure ${gIdx1 + 1}`;
           const caption2 = name2 ? `Figure ${gIdx2 + 1}: ${name2}` : `Figure ${gIdx2 + 1}`;
 
