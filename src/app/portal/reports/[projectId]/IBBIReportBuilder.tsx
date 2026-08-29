@@ -3078,56 +3078,7 @@ Our valuation is based on information obtained from the client and on data gathe
           {/* ── Valuation Report Cover ── */}
           <Section title="Valuation Report Cover" id="section-cover">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Representative Name">
-                  <input type="text" value={fields.representativeName || ''} onChange={e => handleChange('representativeName', e.target.value)} className={inputCls} disabled={isReadOnly} />
-                </Field>
-                <Field label="Valuer Qualifications (Appears next to name)">
-                  <input type="text" value={fields.valuerQualifications} onChange={e => handleChange('valuerQualifications', e.target.value)} className={inputCls} disabled={isReadOnly} />
-                </Field>
-                <Field label="Additional Valuer Details (Each line will appear centered below)" span={2}>
-                  <textarea rows={3} value={fields.valuerAdditionalDetails || ''} onChange={e => handleChange('valuerAdditionalDetails', e.target.value)} className={inputCls} disabled={isReadOnly} />
-                </Field>
-                <Field label="Registered Office Address">
-                  <textarea rows={2} value={fields.registeredOfficeAddress || ''} onChange={e => handleChange('registeredOfficeAddress', e.target.value)} className={inputCls} disabled={isReadOnly} />
-                </Field>
-                <Field label="Registered Office Telephone">
-                  <input type="text" value={fields.registeredOfficeTel || ''} onChange={e => handleChange('registeredOfficeTel', e.target.value)} className={inputCls} disabled={isReadOnly} />
-                </Field>
-            
-<Field label="Applicant / Owner Name(s)" span={2}>
-                <textarea value={fields.applicantName} onChange={e => handleChange('applicantName', e.target.value)} className={inputCls} rows={2} placeholder="Full list of owners" disabled={isReadOnly} />
-              </Field>
-              <Field label="Managing Director">
-                <select value={fields.hasManagingDirector || 'no'} onChange={e => handleChange('hasManagingDirector', e.target.value)} className={selectCls} disabled={isReadOnly}>
-                  <option value="no">No</option>
-                  <option value="yes">Yes</option>
-                </select>
-              </Field>
-              {fields.hasManagingDirector === 'yes' && (
-                <Field label="Managing Director's Name">
-                  <input type="text" value={fields.managingDirectorName || ''} onChange={e => handleChange('managingDirectorName', e.target.value)} className={inputCls} placeholder="e.g. MR. RAJENDRA PRASAD AGARWAL" disabled={isReadOnly} />
-                </Field>
-              )}
-              <div className="col-span-1 md:col-span-2 mt-4 p-4 border border-[#e0e0e0] rounded-xl bg-gray-50">
-                <p className="text-sm font-bold text-[#1e3a5f] uppercase tracking-wider mb-2">Cover Page Photograph (Max 1)</p>
-                {!isReadOnly && !fields.coverPageImage && (
-                  <div className="flex items-center gap-3 mb-3">
-                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-                      {uploading ? 'Uploading...' : '📷 Add Property Images'}
-                      <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'coverPageImage')} disabled={uploading} />
-                    </label>
-                  </div>
-                )}
-                {fields.coverPageImage && (
-                  <div className="relative inline-block border-2 border-[#1e3a5f] rounded-lg overflow-hidden">
-                    <img src={fields.coverPageImage} alt="Cover Page" className="h-40 w-auto object-contain" />
-                    {!isReadOnly && (
-                      <button type="button" onClick={() => handleChange('coverPageImage', '')} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 shadow-md">✕</button>
-                    )}
-                  </div>
-                )}
-              </div>
-              <Field label="Type of Property">
+                              <Field label="Type of Property">
                 <select value={fields.propertyType} onChange={e => handleChange('propertyType', e.target.value)} className={selectCls} disabled={isReadOnly}>
                   <option value="Defunct Industrial Unit">Defunct Industrial Unit</option>
                   <option value="Industrial">Industrial</option>
@@ -3154,6 +3105,54 @@ Our valuation is based on information obtained from the client and on data gathe
               <Field label="Site Address">
                 <textarea value={fields.propertyAddress} onChange={e => handleChange('propertyAddress', e.target.value)} className={inputCls} rows={2} placeholder="Full site address" disabled={isReadOnly} />
               </Field>
+              <div className="col-span-1 md:col-span-2 mt-4 p-4 border border-[#e0e0e0] rounded-xl bg-gray-50">
+                <p className="text-sm font-bold text-[#1e3a5f] uppercase tracking-wider mb-2">Cover Page Photograph (Max 1)</p>
+                {!isReadOnly && !fields.coverPageImage && (
+                  <div className="flex items-center gap-3 mb-3">
+                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+                      {uploading ? 'Uploading...' : '📷 Add Property Images'}
+                      <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'coverPageImage')} disabled={uploading} />
+                    </label>
+                  </div>
+                )}
+                {fields.coverPageImage && (
+                  <div className="relative inline-block border-2 border-[#1e3a5f] rounded-lg overflow-hidden">
+                    <img src={fields.coverPageImage} alt="Cover Page" className="h-40 w-auto object-contain" />
+                    {!isReadOnly && (
+                      <button type="button" onClick={() => handleChange('coverPageImage', '')} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 shadow-md">✕</button>
+                    )}
+                  </div>
+                )}
+              </div>
+              <Field label="Applicant / Owner Name(s)" span={2}>
+                <textarea value={fields.applicantName} onChange={e => handleChange('applicantName', e.target.value)} className={inputCls} rows={2} placeholder="Full list of owners" disabled={isReadOnly} />
+              </Field>
+              <Field label="Managing Director">
+                <select value={fields.hasManagingDirector || 'no'} onChange={e => handleChange('hasManagingDirector', e.target.value)} className={selectCls} disabled={isReadOnly}>
+                  <option value="no">No</option>
+                  <option value="yes">Yes</option>
+                </select>
+              </Field>
+              {fields.hasManagingDirector === 'yes' && (
+                <Field label="Managing Director's Name">
+                  <input type="text" value={fields.managingDirectorName || ''} onChange={e => handleChange('managingDirectorName', e.target.value)} className={inputCls} placeholder="e.g. MR. RAJENDRA PRASAD AGARWAL" disabled={isReadOnly} />
+                </Field>
+              )}
+                <Field label="Representative Name">
+                  <input type="text" value={fields.representativeName || ''} onChange={e => handleChange('representativeName', e.target.value)} className={inputCls} disabled={isReadOnly} />
+                </Field>
+                <Field label="Valuer Qualifications (Appears next to name)">
+                  <input type="text" value={fields.valuerQualifications} onChange={e => handleChange('valuerQualifications', e.target.value)} className={inputCls} disabled={isReadOnly} />
+                </Field>
+                <Field label="Additional Valuer Details (Each line will appear centered below)" span={2}>
+                  <textarea rows={3} value={fields.valuerAdditionalDetails || ''} onChange={e => handleChange('valuerAdditionalDetails', e.target.value)} className={inputCls} disabled={isReadOnly} />
+                </Field>
+                <Field label="Registered Office Address">
+                  <textarea rows={2} value={fields.registeredOfficeAddress || ''} onChange={e => handleChange('registeredOfficeAddress', e.target.value)} className={inputCls} disabled={isReadOnly} />
+                </Field>
+                <Field label="Registered Office Telephone">
+                  <input type="text" value={fields.registeredOfficeTel || ''} onChange={e => handleChange('registeredOfficeTel', e.target.value)} className={inputCls} disabled={isReadOnly} />
+                </Field>
             </div>
           </Section>
 
