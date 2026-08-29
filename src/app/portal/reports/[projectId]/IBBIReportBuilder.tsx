@@ -2946,7 +2946,7 @@ Our valuation is based on information obtained from the client and on data gathe
   };
 
   const handlePreviewPDF = async () => {
-    if (!fields.objectiveIntro?.trim() || !fields.valuationCertificateIntro?.trim()) {
+    if (!fields.objectiveIntro?.trim() || !fields.valuationCertificateIntro?.trim() || (fields.addressPrefixType === 'idco_plot' && !fields.idcoPlotNo?.trim())) {
       alert('Please, fill the required field(s)');
       return;
     }
@@ -2987,7 +2987,7 @@ Our valuation is based on information obtained from the client and on data gathe
   };
 
   const handleDownloadPDF = async () => {
-    if (!fields.objectiveIntro?.trim() || !fields.valuationCertificateIntro?.trim()) {
+    if (!fields.objectiveIntro?.trim() || !fields.valuationCertificateIntro?.trim() || (fields.addressPrefixType === 'idco_plot' && !fields.idcoPlotNo?.trim())) {
       alert('Please, fill the required field(s)');
       return;
     }
