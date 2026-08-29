@@ -469,64 +469,64 @@ export default function AdityaBirlaCapitalMLAP({
     r.drawSectionHeader('Location Details');
     r.drawKeyValueRow([{ label: 'Address as per Document', value: fields.propertyAddressAsDocs || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
     r.drawKeyValueRow([{ label: 'Address as per Physical', value: fields.propertyAddressAsVisit || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
-    r.drawKeyValueRow([{ label: 'Address matching', value: fields.addressMatching || 'Yes (As per documents)', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
-    r.drawKeyValueRow([{ label: 'Co-Ordinates', value: `Lat:-${fields.latitude || '21.636778'},Long:- ${fields.longitude || '85.628000'}`, labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
+    r.drawKeyValueRow([{ label: 'Address matching', value: fields.addressMatching || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
+    r.drawKeyValueRow([{ label: 'Co-Ordinates', value: fields.latitude && fields.longitude ? `Lat: ${fields.latitude}, Long: ${fields.longitude}` : (fields.latitude || fields.longitude || 'N/A'), labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
 
     r.drawKeyValueRow([
       { label: 'Main Locality', value: fields.mainLocality || 'N/A', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
       { label: 'Sub Locality', value: fields.subLocality || 'N/A', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
     ]);
     r.drawKeyValueRow([
-      { label: 'Locality Type', value: fields.localityType || 'Residential', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
+      { label: 'Locality Type', value: fields.localityType || 'N/A', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
       { label: 'Landmark', value: fields.landmark || 'N/A', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
     ]);
     r.drawKeyValueRow([
-      { label: 'Occupancy of Locality', value: fields.localityOccupancy || 'Fully Occupied', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL, highlight: true },
-      { label: 'Population Density', value: fields.populationDensity || 'Moderate', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL, highlight: true },
+      { label: 'Occupancy of Locality', value: fields.localityOccupancy || 'N/A', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL, highlight: true },
+      { label: 'Population Density', value: fields.populationDensity || 'N/A', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL, highlight: true },
     ]);
-    r.drawKeyValueRow([{ label: 'Distance from ABCL Branch', value: fields.distanceFromBranch || '2-Kms', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
-    r.drawKeyValueRow([{ label: 'Distance from City Center', value: fields.distanceFromCityCenter || '2-Kms from market area', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
-    r.drawKeyValueRow([{ label: 'Distance from Bus Stand', value: fields.distanceBusStop || '2-Km from Bus Stand', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
-    r.drawKeyValueRow([{ label: 'Distance from Nearest Railway Station', value: fields.distanceRailwayStation || '4-Kms from Railway Station', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
-    r.drawKeyValueRow([{ label: 'Availability of Amenities (school,market etc)', value: fields.amenitiesAvailability || '1-2 Kms', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
-    r.drawKeyValueRow([{ label: 'Approach Road Width', value: fields.approachRoadWidth || '10 feet wide Road', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
+    r.drawKeyValueRow([{ label: 'Distance from ABCL Branch', value: fields.distanceFromBranch || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
+    r.drawKeyValueRow([{ label: 'Distance from City Center', value: fields.distanceFromCityCenter || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
+    r.drawKeyValueRow([{ label: 'Distance from Bus Stand', value: fields.distanceBusStop || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
+    r.drawKeyValueRow([{ label: 'Distance from Nearest Railway Station', value: fields.distanceRailwayStation || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
+    r.drawKeyValueRow([{ label: 'Availability of Amenities (school,market etc)', value: fields.amenitiesAvailability || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
+    r.drawKeyValueRow([{ label: 'Approach Road Width', value: fields.approachRoadWidth || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
     r.drawKeyValueRow([
       { label: 'Has the Valuator Done Valuation for this property before?', value: fields.valuedBefore || 'No', labelWidth: 240, valueWidth: 45 },
-      { label: 'If Yes When?', value: fields.valuedBeforeDate || 'NA', labelWidth: 90, valueWidth: 112.28 },
+      { label: 'If Yes When?', value: fields.valuedBeforeDate || 'N/A', labelWidth: 90, valueWidth: 112.28 },
     ]);
     r.drawKeyValueRow([{ label: 'Land Locked', value: fields.landLocked || 'No', labelWidth: 330, valueWidth: 157.28, highlight: true }]);
     r.drawKeyValueRow([{ label: 'Any other features like board of other financier indicating mortgage, notice of Court/any authority which may affect the title', value: fields.otherEncumbranceFeatures || 'No', labelWidth: 330, valueWidth: 157.28, highlight: true }]);
 
     // 4. Property Detailings
     r.drawSectionHeader('Property Detailings');
-    r.drawKeyValueRow([{ label: 'Occupancy', value: fields.occupiedBy || 'Vacant', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
-    r.drawKeyValueRow([{ label: 'Occupied By', value: fields.occupantName || 'NA', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
-    r.drawKeyValueRow([{ label: 'Relationship of Occupant with Client', value: fields.occupantRelation || 'NA', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
-    r.drawKeyValueRow([{ label: 'Property Demarcation (yes/no)', value: fields.plotDemarcated || 'No', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
-    r.drawKeyValueRow([{ label: 'Property Identification (yes/no)', value: fields.propertyIdentification || 'Yes', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
-    r.drawKeyValueRow([{ label: 'Property Type', value: fields.propertyType || 'Residential', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
-    r.drawKeyValueRow([{ label: 'Property Sub Type', value: fields.propertySubType || 'Single / Multi-units building - R', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
-    r.drawKeyValueRow([{ label: 'Property Holding', value: fields.propertyHolding || 'Freehold', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
-    r.drawKeyValueRow([{ label: 'Property situated in Limits', value: fields.propertyJurisdiction || 'Gram Panchayat', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
-    r.drawKeyValueRow([{ label: 'Marketability', value: fields.marketability || 'Average', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
-    r.drawKeyValueRow([{ label: 'Property Age', value: fields.ageOfPropertyActual || '0-Years', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
-    r.drawKeyValueRow([{ label: 'Residual Age', value: fields.estimatedFutureLife || '60-Years', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
-    r.drawKeyValueRow([{ label: 'Construction Quality', value: fields.qualityOfConstruction || 'Average', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
-    r.drawKeyValueRow([{ label: 'Structure Type', value: fields.structureType || 'RCC', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
+    r.drawKeyValueRow([{ label: 'Occupancy', value: fields.occupiedBy || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
+    r.drawKeyValueRow([{ label: 'Occupied By', value: fields.occupantName || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
+    r.drawKeyValueRow([{ label: 'Relationship of Occupant with Client', value: fields.occupantRelation || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
+    r.drawKeyValueRow([{ label: 'Property Demarcation (yes/no)', value: fields.plotDemarcated || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
+    r.drawKeyValueRow([{ label: 'Property Identification (yes/no)', value: fields.propertyIdentification || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
+    r.drawKeyValueRow([{ label: 'Property Type', value: fields.propertyType || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
+    r.drawKeyValueRow([{ label: 'Property Sub Type', value: fields.propertySubType || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
+    r.drawKeyValueRow([{ label: 'Property Holding', value: fields.propertyHolding || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
+    r.drawKeyValueRow([{ label: 'Property situated in Limits', value: fields.propertyJurisdiction || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
+    r.drawKeyValueRow([{ label: 'Marketability', value: fields.marketability || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
+    r.drawKeyValueRow([{ label: 'Property Age', value: fields.ageOfPropertyActual || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
+    r.drawKeyValueRow([{ label: 'Residual Age', value: fields.estimatedFutureLife || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
+    r.drawKeyValueRow([{ label: 'Construction Quality', value: fields.qualityOfConstruction || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
+    r.drawKeyValueRow([{ label: 'Structure Type', value: fields.structureType || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
     r.drawKeyValueRow([
-      { label: 'Dimensions of Property: Width (Facing Road Side) in feet', value: fields.dimensionWidth || 'NA', labelWidth: 240, valueWidth: 45, highlight: true },
-      { label: 'Depth (in feet)', value: fields.dimensionDepth || 'NA', labelWidth: 90, valueWidth: 112.28, highlight: true },
+      { label: 'Dimensions of Property: Width (Facing Road Side) in feet', value: fields.dimensionWidth || 'N/A', labelWidth: 240, valueWidth: 45, highlight: true },
+      { label: 'Depth (in feet)', value: fields.dimensionDepth || 'N/A', labelWidth: 90, valueWidth: 112.28, highlight: true },
     ]);
-    r.drawKeyValueRow([{ label: 'Cautious Locations', value: fields.cautiousLocations || 'NA', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
-    r.drawKeyValueRow([{ label: 'If Flat, Configuration Type', value: fields.flatConfigurationType || 'NA', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
-    r.drawKeyValueRow([{ label: 'Percentage Completion of Property', value: fields.percentageCompletion || '65%', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
-    r.drawKeyValueRow([{ label: 'Percentage Recommendation of Property', value: fields.percentageRecommendation || '70%', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
+    r.drawKeyValueRow([{ label: 'Cautious Locations', value: fields.cautiousLocations || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
+    r.drawKeyValueRow([{ label: 'If Flat, Configuration Type', value: fields.flatConfigurationType || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
+    r.drawKeyValueRow([{ label: 'Percentage Completion of Property', value: fields.percentageCompletion || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
+    r.drawKeyValueRow([{ label: 'Percentage Recommendation of Property', value: fields.percentageRecommendation || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
 
     // 5. Documentation
     r.drawSectionHeader('Documentation');
-    r.drawKeyValueRow([{ label: 'Documents Provided', value: fields.documentsProvided || 'Copy of Sale deed, ROR & Sketch map', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
-    r.drawKeyValueRow([{ label: 'Sanction Plan details if provided', value: fields.sanctionPlanDetails || 'Plan is not provided', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
-    r.drawKeyValueRow([{ label: 'Utility Bills (Water bill, electricity bill)', value: fields.utilityBills || 'NA', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
+    r.drawKeyValueRow([{ label: 'Documents Provided', value: fields.documentsProvided || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
+    r.drawKeyValueRow([{ label: 'Sanction Plan details if provided', value: fields.sanctionPlanDetails || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
+    r.drawKeyValueRow([{ label: 'Utility Bills (Water bill, electricity bill)', value: fields.utilityBills || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
 
     // 6. Accommodation Details
     r.drawSectionHeader('Accomodation Details');
@@ -561,7 +561,7 @@ export default function AdityaBirlaCapitalMLAP({
         ['Plot Area (As per Documents)', String(plotSqft), String(landRate), `Rs. ${formatIndianCurrency(landTotalVal)}`],
         ['Plot Area (As per Physical)', fields.plotAreaPhysical || String(plotSqft), '-', '-'],
         ['Plot Area (Considered For Valuation)', fields.plotAreaConsidered || String(plotSqft), '-', '-'],
-        ['Build Up Area (As per Plan/Document)', fields.buaPlan || 'Plan is not provided', '-', '-'],
+        ['Build Up Area (As per Plan/Document)', fields.buaPlan || '-', '-', '-'],
         ['Build Up Area (As per Actual) GF RCC on 100% comp', String(buaSqft), String(bua100Rate), `Rs. ${formatIndianCurrency(bua100TotalVal)}`],
         ['Build Up Area (Considered for Valuation) as on date', String(buaSqft), String(buaConsRate), `Rs. ${formatIndianCurrency(buaConsTotalVal)}`],
         ['Super Build Up Area (In case of Composite)', fields.superBua || '-', '-', '-'],
@@ -586,11 +586,11 @@ export default function AdityaBirlaCapitalMLAP({
       ],
       boundCols
     );
-    r.drawKeyValueRow([{ label: 'Boundaries Matching', value: fields.boundariesMatching || 'Yes (Boundary matching as per sketch map)', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
+    r.drawKeyValueRow([{ label: 'Boundaries Matching', value: fields.boundariesMatching || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
 
     // 10. Remarks
     r.drawRemarksBox('Remarks', fields.remarks || 'N/A');
-    r.drawKeyValueRow([{ label: 'Name of the Engineer Visited', value: fields.engineerVisitedName || '', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
+    r.drawKeyValueRow([{ label: 'Name of the Engineer Visited', value: fields.engineerVisitedName || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
 
     // 11. Location Map
     let imgPointer = (fields.propertyImages || []).length;
