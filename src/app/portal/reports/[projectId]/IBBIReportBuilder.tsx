@@ -4923,7 +4923,7 @@ Our valuation is based on information obtained from the client and on data gathe
                 <Field label="Valuer Name (for Declaration)">
                   <input type="text" value={fields.representativeName || ''} className={inputCls + ' bg-gray-100 cursor-not-allowed'} disabled />
                 </Field>
-                <Field label="Representative's Father's Name">
+                <Field label="Valuer's Father's Name">
                   <input type="text" value={fields.representativeFatherName} onChange={e => handleChange('representativeFatherName', e.target.value)} className={inputCls} disabled={isReadOnly} />
                 </Field>
                 <Field label="Date of Inspection">
@@ -5051,14 +5051,14 @@ Our valuation is based on information obtained from the client and on data gathe
                 </div>
                 <textarea rows={10} value={fields.annexure1Text || ''} onChange={e => handleChange('annexure1Text', e.target.value)} className={inputCls} disabled={isReadOnly} />
               </Field>
-              <Field label="Date (From Conclusion)">
+              <Field label="Date of Valuation Report">
                 <input type="text" value={fields.dateOfValuation ? new Date(fields.dateOfValuation).toLocaleDateString('en-GB') : ''} className={inputCls} disabled />
               </Field>
-              <Field label="Place (From Conclusion)">
+              <Field label="Place">
                 <input type="text" value={fields.conclusionPlace || 'Bhubaneswar'} className={inputCls} disabled />
               </Field>
-              <Field label="Signature & Seal of Valuer" span={2}>
-                <input type="text" value={`Name of the Valuer – ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}`} className={inputCls} disabled />
+              <Field label="Valuer Name" span={2}>
+                <input type="text" value={fields.representativeName ? fields.representativeName.toUpperCase() : ''} className={inputCls} disabled />
               </Field>
             </div>
           </Section>
@@ -5071,14 +5071,14 @@ Our valuation is based on information obtained from the client and on data gathe
                 </div>
                 <textarea rows={10} value={fields.annexure2Text || ''} onChange={e => handleChange('annexure2Text', e.target.value)} className={inputCls} disabled={isReadOnly} />
               </Field>
-              <Field label="Date (From Conclusion)">
+              <Field label="Date of Valuation Report">
                 <input type="text" value={fields.dateOfValuation ? new Date(fields.dateOfValuation).toLocaleDateString('en-GB') : ''} className={inputCls} disabled />
               </Field>
-              <Field label="Place (From Conclusion)">
+              <Field label="Place">
                 <input type="text" value={fields.conclusionPlace || 'Bhubaneswar'} className={inputCls} disabled />
               </Field>
-              <Field label="Signature & Seal of Valuer" span={2}>
-                <input type="text" value={`Name of the Valuer – ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}`} className={inputCls} disabled />
+              <Field label="Valuer Name" span={2}>
+                <input type="text" value={fields.representativeName ? fields.representativeName.toUpperCase() : ''} className={inputCls} disabled />
               </Field>
             </div>
           </Section>
