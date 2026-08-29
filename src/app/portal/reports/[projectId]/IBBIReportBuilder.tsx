@@ -460,6 +460,17 @@ const DEFAULT_FIELDS: IBBIFields = {
 
   applicantName: '',
   nameOfOwners: '',
+  valuationDoneBefore: 'NO',
+  locationOfProperty: '',
+  nearbyLandmark: '',
+  postalAddress47: '',
+  postalCityTown: '',
+  postalAreaType: 'Industrial area',
+  corporationLimit: '',
+  govtEnactment: 'NONE AS ASCERTAINED.',
+  agriculturalConversion: '',
+  extentOfSiteConsidered: '',
+  occupiedBy: '',
   hasManagingDirector: 'no',
   managingDirectorName: '',
   coverPageImage: '',
@@ -1874,25 +1885,46 @@ Our valuation is based on information obtained from the client and on data gathe
       r.drawTextBlock('BASIC DETAILS OF THE PROPERTY', { bold: true });
       r.advanceCursor(4);
       r.draw5ColRow('4.1', 'Applicant(s) Name', fields.applicantName || fields.ownerName, 'Name of Owners', fields.nameOfOwners);
-      r.drawSimpleRow('4.2  Type of Property', (fields.propertyType === 'Other' ? fields.customPropertyType : fields.propertyType) || '');
-      r.drawSimpleRow('     Current Usage', fields.currentUsage);
-      r.drawSimpleRow('4.3  Site Address', fields.propertyAddress);
-      r.drawSimpleRow('     Address as per Documents', fields.legalAddress);
-      r.drawSimpleRow('4.8  Revenue Plot No', fields.revenuePlotNo);
-      r.drawSimpleRow('     Khata No', fields.revenueKhataNo);
-      r.drawSimpleRow('     Village (Mouza)', fields.revenueVillage);
-      r.drawSimpleRow('     Tahasil', fields.revenueTahasil);
-      r.drawSimpleRow('     Police Station', fields.revenuePS);
-      r.drawSimpleRow('     District', fields.revenueDistrict);
-      r.drawSimpleRow('     State', fields.revenueState);
-      r.drawSimpleRow('4.10 Classification of Area', fields.classificationArea);
-      r.drawSimpleRow('4.13 Conversion Status', fields.conversionStatus);
-      r.drawSimpleRow('4.14 Boundaries (North)', fields.boundNorth);
-      r.drawSimpleRow('     Boundaries (South)', fields.boundSouth);
-      r.drawSimpleRow('     Boundaries (East)', fields.boundEast);
-      r.drawSimpleRow('     Boundaries (West)', fields.boundWest);
-      r.drawSimpleRow('4.15 Extent of Site', fields.extentOfSite);
-      r.drawSimpleRow('4.16 Occupancy Status', fields.occupancyStatus);
+      r.draw5ColRow('4.2', 'Type of property', (fields.propertyType === 'Other' ? fields.customPropertyType : fields.propertyType) || '', 'Current usage', fields.currentUsage);
+      r.drawSection4MultiSubRow('4.3', [
+        { label: 'Address of property / Site Address', value: fields.propertyAddress },
+        { label: 'Address as per documents', value: fields.legalAddress }
+      ]);
+      r.drawSection4SingleRow('4.4', 'Has the valuer done valuation of this property before? If yes, for whom & when.', fields.valuationDoneBefore, true);
+      r.drawSection4SingleRow('4.5', 'Location of the property', fields.locationOfProperty, true);
+      r.drawSection4SingleRow('4.6', 'Nearby landmark', fields.nearbyLandmark, true);
+      r.drawSection4SingleRow('4.7', 'Postal address of the property', fields.postalAddress47, false);
+      r.drawSection4ComplexRow('4.8', 'Location of property (revenue details)', [
+        { label: 'Rev Plot no', value: fields.revenuePlotNo },
+        { label: 'Khata no', value: fields.revenueKhataNo },
+        { label: 'Village(mouza)', value: fields.revenueVillage },
+        { label: 'Tahasil', value: fields.revenueTahasil },
+        { label: 'Police Station', value: fields.revenuePS },
+        { label: 'Gram Panchayat', value: fields.revenueGP },
+        { label: 'Mandal/District', value: fields.revenueDistrict }
+      ]);
+      r.drawSection4PostalAddressRow(fields.postalCityTown, fields.postalAreaType);
+      r.drawSection4SingleRow('4.10', 'Classification of the area', fields.classificationArea, true);
+      r.drawSection4SingleRow('4.11', 'Coming under corporation /GP/Municipal limit.', fields.corporationLimit, true);
+      r.drawSection4SingleRow('4.12', 'Whether covered under state/central govt. enactment.(eg.urban land ceiling act) or notified under agency/ schedule/ cantonment area.', fields.govtEnactment, true);
+      r.drawSection4SingleRow('4.13', 'In case, agricultural land, any conversion to house site plot is contemplated?', fields.agriculturalConversion, true);
+      r.drawSection4ComplexRow('4.14', 'Boundaries of the property', [
+        { label: 'East', value: fields.boundEast },
+        { label: 'West', value: fields.boundWest },
+        { label: 'North', value: fields.boundNorth },
+        { label: 'South', value: fields.boundSouth }
+      ]);
+      r.drawSection4SingleRow('4.15', 'Extent of site.(1 acre = 1000 dec)', fields.extentOfSite ? `Ac.${fields.extentOfSite} DEC (PLEASE REFER ANNEXTURE)` : '', true);
+      
+      let extentStr = '';
+      if (fields.extentOfSiteConsidered) {
+        const val16 = parseFloat(fields.extentOfSiteConsidered) || 0;
+        const dec16 = Math.round(val16 * 1000);
+        const sqft16 = +(dec16 * 43.56).toFixed(1);
+        extentStr = `Ac.${fields.extentOfSiteConsidered} DEC (${dec16} Decimal = ${sqft16} SQFT)`;
+      }
+      r.drawSection4SingleRow('4.16', 'Extent of site (considered for the present)', extentStr, true);
+      r.drawSection4SingleRow('4.17', 'Whether occupied by owner/ tenant? If occupied by the tenant, since how long? Rent received per month.', fields.occupiedBy, true);
       r.advanceCursor(8);
 
       // ── 5. TOWN PLANNING ──
@@ -3379,6 +3411,109 @@ Our valuation is based on information obtained from the client and on data gathe
               </Field>
               <Field label="4.1 (b) Name of Owners" span={1}>
                 <textarea value={fields.nameOfOwners || ''} onChange={e => handleChange('nameOfOwners', e.target.value)} className={inputCls} rows={2} placeholder="Full list of owners" disabled={isReadOnly} />
+              </Field>
+
+              {/* 4.2 Type of Property & Usage */}
+              <Field label="4.2 (a) Type of property" span={1}>
+                <select value={fields.propertyType} onChange={e => handleChange('propertyType', e.target.value)} className={selectCls} disabled={isReadOnly}>
+                  <option value="RESIDENTIAL">RESIDENTIAL</option>
+                  <option value="COMMERCIAL">COMMERCIAL</option>
+                  <option value="INDUSTRIAL">INDUSTRIAL</option>
+                  <option value="DEFUNCT BOTTLING UNIT">DEFUNCT BOTTLING UNIT</option>
+                  <option value="DEFUNCT INDUSTRIAL UNIT">DEFUNCT INDUSTRIAL UNIT</option>
+                  <option value="VACANT LAND">VACANT LAND</option>
+                  <option value="Other">Other</option>
+                </select>
+                {fields.propertyType === 'Other' && (
+                  <input type="text" value={fields.customPropertyType || ''} onChange={e => handleChange('customPropertyType', e.target.value)} className={inputCls + ' mt-2'} placeholder="Custom type" disabled={isReadOnly} />
+                )}
+              </Field>
+              <Field label="4.2 (b) Current usage" span={1}>
+                <input type="text" value={fields.currentUsage} onChange={e => handleChange('currentUsage', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
+
+              {/* 4.3 Addresses */}
+              <Field label="4.3 (a) Address of property / Site Address" span={1}>
+                <textarea value={fields.propertyAddress} onChange={e => handleChange('propertyAddress', e.target.value)} className={inputCls} rows={2} disabled={isReadOnly} />
+              </Field>
+              <Field label="4.3 (b) Address as per documents" span={1}>
+                <textarea value={fields.legalAddress} onChange={e => handleChange('legalAddress', e.target.value)} className={inputCls} rows={2} disabled={isReadOnly} />
+              </Field>
+
+              {/* 4.4 - 4.7 Various Details */}
+              <Field label="4.4 Has the valuer done valuation of this property before? If yes, for whom & when." span={2}>
+                <input type="text" value={fields.valuationDoneBefore || ''} onChange={e => handleChange('valuationDoneBefore', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
+              <Field label="4.5 Location of the property" span={1}>
+                <input type="text" value={fields.locationOfProperty || ''} onChange={e => handleChange('locationOfProperty', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
+              <Field label="4.6 Nearby landmark" span={1}>
+                <input type="text" value={fields.nearbyLandmark || ''} onChange={e => handleChange('nearbyLandmark', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
+              <Field label="4.7 Postal address of the property" span={2}>
+                <input type="text" value={fields.postalAddress47 || ''} onChange={e => handleChange('postalAddress47', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
+
+              {/* 4.8 Revenue Details */}
+              <div className="col-span-1 md:col-span-2 border border-gray-200 p-4 rounded-lg bg-gray-50 mt-2 mb-2">
+                <p className="font-semibold text-gray-700 text-sm mb-4">4.8 Location of property (revenue details)</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Field label="(a) Rev Plot no"><input type="text" value={fields.revenuePlotNo} onChange={e => handleChange('revenuePlotNo', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                  <Field label="(b) Khata no"><input type="text" value={fields.revenueKhataNo} onChange={e => handleChange('revenueKhataNo', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                  <Field label="(c) Village(mouza)"><input type="text" value={fields.revenueVillage} onChange={e => handleChange('revenueVillage', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                  <Field label="(d) Tahasil"><input type="text" value={fields.revenueTahasil} onChange={e => handleChange('revenueTahasil', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                  <Field label="(e) Police Station"><input type="text" value={fields.revenuePS} onChange={e => handleChange('revenuePS', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                  <Field label="(f) Gram Panchayat"><input type="text" value={fields.revenueGP || ''} onChange={e => handleChange('revenueGP', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                  <Field label="(g) Mandal/District"><input type="text" value={fields.revenueDistrict} onChange={e => handleChange('revenueDistrict', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                </div>
+              </div>
+
+              {/* 4.9 Postal Address (City/Town + Dropdown) */}
+              <Field label="4.9 (a) Postal address of property (City/Town)" span={1}>
+                <input type="text" value={fields.postalCityTown || ''} onChange={e => handleChange('postalCityTown', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
+              <Field label="4.9 (b) Area Type" span={1}>
+                <select value={fields.postalAreaType || 'Industrial area'} onChange={e => handleChange('postalAreaType', e.target.value)} className={selectCls} disabled={isReadOnly}>
+                  <option value="Residential area">Residential area</option>
+                  <option value="Commercial area">Commercial area</option>
+                  <option value="Industrial area">Industrial area</option>
+                </select>
+              </Field>
+
+              {/* 4.10 - 4.13 */}
+              <Field label="4.10 Classification of the area" span={1}>
+                <input type="text" value={fields.classificationArea} onChange={e => handleChange('classificationArea', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
+              <Field label="4.11 Coming under corporation /GP/Municipal limit." span={1}>
+                <input type="text" value={fields.corporationLimit || ''} onChange={e => handleChange('corporationLimit', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
+              <Field label="4.12 Whether covered under state/central govt. enactment.(eg.urban land ceiling act) or notified under agency/ schedule/ cantonment area." span={2}>
+                <textarea value={fields.govtEnactment || ''} onChange={e => handleChange('govtEnactment', e.target.value)} className={inputCls} rows={2} disabled={isReadOnly} />
+              </Field>
+              <Field label="4.13 In case, agricultural land, any conversion to house site plot is contemplated?" span={2}>
+                <input type="text" value={fields.agriculturalConversion || ''} onChange={e => handleChange('agriculturalConversion', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
+
+              {/* 4.14 Boundaries */}
+              <div className="col-span-1 md:col-span-2 border border-gray-200 p-4 rounded-lg bg-gray-50 mt-2 mb-2">
+                <p className="font-semibold text-gray-700 text-sm mb-4">4.14 Boundaries of the property</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Field label="(a) East"><input type="text" value={fields.boundEast} onChange={e => handleChange('boundEast', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                  <Field label="(b) West"><input type="text" value={fields.boundWest} onChange={e => handleChange('boundWest', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                  <Field label="(c) North"><input type="text" value={fields.boundNorth} onChange={e => handleChange('boundNorth', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                  <Field label="(d) South"><input type="text" value={fields.boundSouth} onChange={e => handleChange('boundSouth', e.target.value)} className={inputCls} disabled={isReadOnly} /></Field>
+                </div>
+              </div>
+
+              {/* 4.15 - 4.17 Extents & Occupancy */}
+              <Field label="4.15 Extent of site.(1 acre = 1000 dec) (Numbers only)" span={1}>
+                <input type="text" value={fields.extentOfSite || ''} onChange={e => handleChange('extentOfSite', e.target.value.replace(/[^0-9.]/g, ''))} className={inputCls} placeholder="e.g. 10.605" disabled={isReadOnly} />
+              </Field>
+              <Field label="4.16 Extent of site (considered for the present) (Numbers only)" span={1}>
+                <input type="text" value={fields.extentOfSiteConsidered || ''} onChange={e => handleChange('extentOfSiteConsidered', e.target.value.replace(/[^0-9.]/g, ''))} className={inputCls} placeholder="e.g. 10.605" disabled={isReadOnly} />
+              </Field>
+              <Field label="4.17 Whether occupied by owner/ tenant? If occupied by the tenant, since how long? Rent received per month." span={2}>
+                <textarea value={fields.occupiedBy || ''} onChange={e => handleChange('occupiedBy', e.target.value)} className={inputCls} rows={2} disabled={isReadOnly} />
               </Field>
               <Field label="Managing Director">
                 <select value={fields.hasManagingDirector || 'no'} onChange={e => handleChange('hasManagingDirector', e.target.value)} className={selectCls} disabled={true}>

@@ -512,6 +512,150 @@ export class PDFIBBIRenderer {
     this.cursorY += h;
   }
 
+  // Specialized method for 4.3 (multi-subrow without a col2 spanning)
+  drawSection4MultiSubRow(col1: string, subRows: {label: string, value: string}[]) {
+    const w1 = Math.round(CONTENT_W * 0.08);
+    const w2 = Math.round(CONTENT_W * 0.22);
+    const w3 = CONTENT_W - w1 - w2;
+
+    const rowHeights = subRows.map(sr => {
+      const hL = this.cellHeight(sr.label, w2, { bold: true });
+      const hV = this.cellHeight(sr.value || 'N/A', w3, { bold: false });
+      return Math.max(hL, hV);
+    });
+    const totalH = rowHeights.reduce((sum, h) => sum + h, 0);
+
+    this.checkPageBreak(totalH);
+
+    // Draw col1 spanning totalH
+    this.drawCell(MARGIN_L, this.cursorY, w1, totalH, col1, { fillColor: LBL_BG, bgOpacity: 0.5, bold: false, vAlign: 'middle' });
+
+    let currentY = this.cursorY;
+    for (let i = 0; i < subRows.length; i++) {
+      const sr = subRows[i];
+      const h = rowHeights[i];
+      this.drawCell(MARGIN_L + w1, currentY, w2, h, sr.label, { fillColor: LBL_BG, bgOpacity: 0.5, bold: true, vAlign: 'middle' });
+      this.drawCell(MARGIN_L + w1 + w2, currentY, w3, h, sr.value || 'N/A', { bold: false, vAlign: 'middle' });
+      currentY += h;
+    }
+
+    this.cursorY += totalH;
+  }
+
+  // Specialized method for 4.8 and 4.14 (col2 spans vertically, col3 and col4 are sub-rows)
+  drawSection4ComplexRow(col1: string, col2: string, subRows: {label: string, value: string}[]) {
+    const w1 = Math.round(CONTENT_W * 0.08);
+    const w2 = Math.round(CONTENT_W * 0.22);
+    const w3 = Math.round(CONTENT_W * 0.20);
+    const w4 = CONTENT_W - w1 - w2 - w3;
+
+    // We must handle pagination if totalH is too large. 
+    // 4.8 is very long, it might cross a page break!
+    // Instead of one big block, we can just draw cells individually so page breaks work naturally?
+    // Wait, if col2 spans multiple subrows, a page break will cut it.
+    // Let's just do it row by row, and for col1 and col2, we either draw them as blanks on subsequent pages or just draw them once.
+    // Actually, drawing them row-by-row but passing empty strings for col1/col2 on row > 0 works visually EXCEPT there will be horizontal lines between them.
+    // To avoid horizontal lines between col1/col2, we MUST use a unified block, OR custom draw.
+    // For simplicity and perfect rendering, let's just draw it as a block. 4.8 fits on a page usually.
+    
+    const rowHeights = subRows.map(sr => {
+      const hL = this.cellHeight(sr.label, w3, { bold: false });
+      const hV = this.cellHeight(sr.value || 'N/A', w4, { bold: false });
+      return Math.max(hL, hV);
+    });
+    
+    // To ensure col2 text fits, we check its minimum height against the sum
+    const col2MinH = this.cellHeight(col2, w2, { bold: true });
+    let totalH = rowHeights.reduce((sum, h) => sum + h, 0);
+    
+    if (col2MinH > totalH) {
+      // expand the last row to fit col2
+      rowHeights[rowHeights.length - 1] += (col2MinH - totalH);
+      totalH = col2MinH;
+    }
+
+    // Since this can be larger than a page, let's check if it fits. If not, it will just draw and overflow. 
+    // Ideally 4.8 fits on one page.
+    this.checkPageBreak(totalH);
+
+    this.drawCell(MARGIN_L, this.cursorY, w1, totalH, col1, { fillColor: LBL_BG, bgOpacity: 0.5, bold: false, vAlign: 'middle' });
+    this.drawCell(MARGIN_L + w1, this.cursorY, w2, totalH, col2, { fillColor: LBL_BG, bgOpacity: 0.5, bold: true, vAlign: 'middle' });
+
+    let currentY = this.cursorY;
+    for (let i = 0; i < subRows.length; i++) {
+      const sr = subRows[i];
+      const h = rowHeights[i];
+      this.drawCell(MARGIN_L + w1 + w2, currentY, w3, h, sr.label, { fillColor: LBL_BG, bgOpacity: 0.5, bold: false, vAlign: 'middle' });
+      this.drawCell(MARGIN_L + w1 + w2 + w3, currentY, w4, h, sr.value || 'N/A', { bold: false, vAlign: 'middle' });
+      currentY += h;
+    }
+
+    this.cursorY += totalH;
+  }
+
+  // Specialized method for 4.9
+  drawSection4PostalAddressRow(cityVal: string, areaVal: string) {
+    const w1 = Math.round(CONTENT_W * 0.08);
+    const w2 = Math.round(CONTENT_W * 0.22);
+    const w3 = Math.round(CONTENT_W * 0.20);
+    const w4 = CONTENT_W - w1 - w2 - w3;
+
+    const row1H = Math.max(
+      this.cellHeight("Postal address of property", w2, {bold:true}),
+      this.cellHeight("City/Town", w3, {bold:false}),
+      this.cellHeight(cityVal || 'N/A', w4, {bold:false})
+    );
+
+    const hLabel = this.cellHeight("Residential area", w3, {bold:false});
+    const valH = this.cellHeight(areaVal || 'N/A', w4, {bold:true});
+    // The stacked area has 3 rows of labels
+    const stackH = Math.max(hLabel * 3, valH);
+    const row234H = stackH / 3;
+
+    const totalH = row1H + stackH;
+    this.checkPageBreak(totalH);
+
+    // Col 1 spans everything
+    this.drawCell(MARGIN_L, this.cursorY, w1, totalH, "4.9", { fillColor: LBL_BG, bgOpacity: 0.5, bold: false, vAlign: 'middle' });
+    
+    // Row 1
+    this.drawCell(MARGIN_L + w1, this.cursorY, w2, row1H, "Postal address of property", { fillColor: LBL_BG, bgOpacity: 0.5, bold: true, vAlign: 'middle' });
+    this.drawCell(MARGIN_L + w1 + w2, this.cursorY, w3, row1H, "City/Town", { fillColor: LBL_BG, bgOpacity: 0.5, bold: false, vAlign: 'middle' });
+    this.drawCell(MARGIN_L + w1 + w2 + w3, this.cursorY, w4, row1H, cityVal || 'N/A', { bold: false, vAlign: 'middle' });
+    
+    let currentY = this.cursorY + row1H;
+    // Rows 2, 3, 4
+    this.drawCell(MARGIN_L + w1, currentY, w2, stackH, "", { fillColor: LBL_BG, bgOpacity: 0.5 }); // Blank cell under postal address
+    
+    this.drawCell(MARGIN_L + w1 + w2, currentY, w3, row234H, "Residential area", { fillColor: LBL_BG, bgOpacity: 0.5, bold: false, vAlign: 'middle' });
+    this.drawCell(MARGIN_L + w1 + w2, currentY + row234H, w3, row234H, "Commercial area", { fillColor: LBL_BG, bgOpacity: 0.5, bold: false, vAlign: 'middle' });
+    this.drawCell(MARGIN_L + w1 + w2, currentY + row234H * 2, w3, row234H, "Industrial area", { fillColor: LBL_BG, bgOpacity: 0.5, bold: false, vAlign: 'middle' });
+
+    // Value spanning 3 rows
+    this.drawCell(MARGIN_L + w1 + w2 + w3, currentY, w4, stackH, areaVal ? areaVal.toUpperCase() : 'N/A', { bold: true, vAlign: 'middle', fillColor: LBL_BG, bgOpacity: 0.5 });
+
+    this.cursorY += totalH;
+  }
+
+  // Specialized single row (like drawSimpleRow but 3 columns: index, label, value)
+  drawSection4SingleRow(col1: string, label: string, value: string, boldValue = false) {
+    const w1 = Math.round(CONTENT_W * 0.08);
+    const w2 = Math.round(CONTENT_W * 0.45);
+    const w3 = CONTENT_W - w1 - w2;
+
+    const hL = this.cellHeight(label, w2, { bold: true });
+    const hV = this.cellHeight(value || 'N/A', w3, { bold: boldValue });
+    const h = Math.max(hL, hV, this.cellHeight(col1, w1, {bold:false}));
+
+    this.checkPageBreak(h);
+
+    this.drawCell(MARGIN_L, this.cursorY, w1, h, col1, { fillColor: LBL_BG, bgOpacity: 0.5, bold: false, vAlign: 'middle' });
+    this.drawCell(MARGIN_L + w1, this.cursorY, w2, h, label, { fillColor: LBL_BG, bgOpacity: 0.5, bold: true, vAlign: 'middle' });
+    this.drawCell(MARGIN_L + w1 + w2, this.cursorY, w3, h, value || 'N/A', { bold: boldValue, vAlign: 'middle' });
+
+    this.cursorY += h;
+  }
+
   draw5ColRow(col1: string, col2: string, col3: string, col4: string, col5: string): void {
     const w1 = Math.round(CONTENT_W * 0.08);
     const w2 = Math.round(CONTENT_W * 0.22);
