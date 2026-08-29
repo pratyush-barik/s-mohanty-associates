@@ -1943,7 +1943,7 @@ Our valuation is based on information obtained from the client and on data gathe
       tocPageMap['4.  BRIEF DESCRIPTION OF THE PROPERTY'] = r.getPageCount();
       // Introductory prose paragraph(s)
       const paras = fields.propertyDescriptionParagraphs || [fields.propertyDescription];
-      paras.forEach(para => {
+      paras.forEach((para: string) => {
         if (para && para.trim()) {
           r.drawTextBlock(para.trim());
           r.advanceCursor(6);
@@ -3483,7 +3483,7 @@ Our valuation is based on information obtained from the client and on data gathe
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Property Description (Introductory Paragraph(s))" span={2}>
                 <div className="flex flex-col gap-3">
-                  {(fields.propertyDescriptionParagraphs || [fields.propertyDescription || '']).map((para, idx) => (
+                  {(fields.propertyDescriptionParagraphs || [fields.propertyDescription || '']).map((para: string, idx: number) => (
                     <div key={idx} className="relative flex gap-2">
                       <textarea
                         value={para}
