@@ -1884,7 +1884,17 @@ Our valuation is based on information obtained from the client and on data gathe
       }
       r.drawTextBlock('BASIC DETAILS OF THE PROPERTY', { bold: true });
       r.advanceCursor(4);
-      r.draw5ColRow('4.1', 'Applicant(s) Name', fields.applicantName || fields.ownerName, 'Name of Owners', fields.nameOfOwners);
+      let formattedOwners = '';
+      if (fields.nameOfOwners) {
+        const lines = fields.nameOfOwners.split('\n').map((l: string) => l.replace(/^\d+[\.\)]\s*/, '').trim()).filter(Boolean);
+        if (lines.length > 1) {
+          formattedOwners = lines.map((l: string, i: number) => `${i + 1}. ${l}`).join('\n');
+        } else if (lines.length === 1) {
+          formattedOwners = lines[0];
+        }
+      }
+
+      r.draw5ColRow('4.1', 'Applicant(s) Name', fields.applicantName || fields.ownerName, 'Name of Owners', formattedOwners);
       r.draw5ColRow('4.2', 'Type of property', (fields.propertyType === 'Other' ? fields.customPropertyType : fields.propertyType) || '', 'Current usage', fields.currentUsage);
       r.drawSection4MultiSubRow('4.3', [
         { 
