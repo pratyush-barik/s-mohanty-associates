@@ -50,12 +50,39 @@ export default async function ReportEditorPage({ params, searchParams }: { param
     }
 
     const { serviceRequest, report } = project;
-    const mappedBucketImages = project.bucketImages
-      .filter(img => typeof img.url === 'string' && img.url.trim().length > 5)
-      .map(img => ({
-        ...img,
-        createdAt: img.createdAt.toISOString()
-      }));
+    const rawBucketImages = project.bucketImages;
+    const verifiedBucketImages: typeof rawBucketImages = [];
+    const deadBucketImageIds: string[] = [];
+
+    await Promise.all(
+      rawBucketImages.map(async (img) => {
+        if (!img.url || img.url.trim().length <= 5) {
+          deadBucketImageIds.push(img.id);
+          return;
+        }
+        try {
+          const resp = await fetch(img.url, { method: 'HEAD' });
+          if (resp.ok) {
+            verifiedBucketImages.push(img);
+          } else {
+            deadBucketImageIds.push(img.id);
+          }
+        } catch {
+          deadBucketImageIds.push(img.id);
+        }
+      })
+    );
+
+    if (deadBucketImageIds.length > 0) {
+      prisma.bucketImage.deleteMany({
+        where: { id: { in: deadBucketImageIds } }
+      }).catch(err => console.error('Failed to auto-purge dead bucket images:', err));
+    }
+
+    const mappedBucketImages = verifiedBucketImages.map(img => ({
+      ...img,
+      createdAt: img.createdAt.toISOString()
+    }));
 
     return (
       <div className="space-y-6 w-full">

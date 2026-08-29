@@ -5255,17 +5255,12 @@ Our valuation is based on information obtained from the client and on data gathe
                                   alt={img.fileName || 'Bucket image'}
                                   className="w-full h-full object-cover"
                                   loading="lazy"
-                                  onError={(e) => {
-                                    e.currentTarget.style.display = 'none';
-                                    const fallback = e.currentTarget.nextElementSibling as HTMLElement | null;
-                                    if (fallback) fallback.style.display = 'flex';
+                                  onError={() => {
+                                    // Automatically remove dead photo from state & purge from DB silently
+                                    setLocalBucketImages(prev => prev.filter(i => i.id !== img.id));
+                                    deleteBucketImage(img.id).catch(() => {});
                                   }}
                                 />
-                                <div className="hidden flex-col items-center justify-center p-3 text-center w-full h-full bg-slate-50">
-                                  <span className="text-2xl mb-1 opacity-60">📷</span>
-                                  <span className="text-[10px] text-slate-700 font-semibold truncate max-w-full px-1" title={img.fileName}>{img.fileName || 'Photo'}</span>
-                                  <span className="text-[9px] text-amber-700 font-bold mt-1 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">Not in Storage</span>
-                                </div>
                               </div>
                               <div className="p-2 border-t border-gray-100 bg-white">
                                 <p className="text-[10px] font-bold text-[#0f2038] truncate">{img.employee?.name || 'Field Agent'}</p>
