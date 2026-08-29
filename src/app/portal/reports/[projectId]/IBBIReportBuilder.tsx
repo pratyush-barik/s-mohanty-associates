@@ -3313,6 +3313,9 @@ Our valuation is based on information obtained from the client and on data gathe
               <Field label="Place">
                 <input type="text" value={fields.conclusionPlace || ''} onChange={e => handleChange('conclusionPlace', e.target.value)} className={inputCls} disabled={isReadOnly} />
               </Field>
+              <Field label="Valuer Name">
+                <input type="text" value={fields.representativeName || ''} disabled className={inputCls + ' bg-gray-100'} />
+              </Field>
 
 
 
