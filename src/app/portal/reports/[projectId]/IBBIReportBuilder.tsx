@@ -3082,6 +3082,17 @@ Our valuation is based on information obtained from the client and on data gathe
           {/* ── Valuation Report Cover ── */}
           <Section title="Valuation Report Cover" id="section-cover">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Field label="Present Value">
+                    <input type="text" value={(fields.valuationVariant === 'cuttack' ? fields.cuttackPresentOrSay : fields.totalPresentValueOrSay) || fields.fairMarketValueTotal || ''} disabled className={inputCls + ' bg-gray-100'} />
+                  </Field>
+                  <Field label="Realisable Value">
+                    <input type="text" value={fields.realisableValueOrSay || fields.realisableValueTotal || ''} disabled className={inputCls + ' bg-gray-100'} />
+                  </Field>
+                  <Field label="Guideline Value">
+                    <input type="text" value={(fields.valuationVariant === 'cuttack' ? fields.cuttackGuidelineOrSay : fields.totalBookValueOrSay) || fields.bookValueTotal || ''} disabled className={inputCls + ' bg-gray-100'} />
+                  </Field>
+                </div>
                               <Field label="Type of Property">
                 <div className="flex flex-col gap-2">
                   <select value={fields.propertyType} onChange={e => handleChange('propertyType', e.target.value)} className={selectCls} disabled={isReadOnly}>
