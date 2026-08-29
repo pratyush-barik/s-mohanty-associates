@@ -50,10 +50,12 @@ export default async function ReportEditorPage({ params, searchParams }: { param
     }
 
     const { serviceRequest, report } = project;
-    const mappedBucketImages = project.bucketImages.map(img => ({
-      ...img,
-      createdAt: img.createdAt.toISOString()
-    }));
+    const mappedBucketImages = project.bucketImages
+      .filter(img => typeof img.url === 'string' && img.url.trim().length > 5)
+      .map(img => ({
+        ...img,
+        createdAt: img.createdAt.toISOString()
+      }));
 
     return (
       <div className="space-y-6 w-full">

@@ -1191,13 +1191,15 @@ export async function getBucketImages(projectId: string) {
       return { error: 'You are not authorized to view this project\'s bucket.', images: [] };
     }
 
-    const images = await prisma.bucketImage.findMany({
+    const rawImages = await prisma.bucketImage.findMany({
       where: { projectId },
       include: {
         employee: { select: { name: true, employeeId: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
+
+    const images = rawImages.filter(img => typeof img.url === 'string' && img.url.trim().length > 5);
 
     return { images };
   } catch (error) {

@@ -3075,22 +3075,20 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
             {/* Image Grid */}
             <div className="flex-1 overflow-y-auto p-5">
               <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
-                {localBucketImages.filter(img => !bucketPickerAgent || img.employee.name === bucketPickerAgent).map(img => (
+                {localBucketImages.filter(img => !bucketPickerAgent || img.employee?.name === bucketPickerAgent).map(img => (
                   <div
                     key={img.id}
-                    data-bucket-card
                     onClick={() => toggleBucketImage(img.id)}
                     className={`relative group rounded-xl overflow-hidden border-2 cursor-pointer transition-all ${bucketSelected.has(img.id) ? 'border-[#b8860b] ring-2 ring-[#b8860b]/30 scale-[0.97]' : 'border-transparent hover:border-[#dee2e6]'}`}
                   >
-                    <img
-                      src={img.url ? encodeURI(img.url) : ''}
-                      alt={img.fileName}
-                      className="w-full h-28 object-cover"
-                      onError={(e) => {
-                        const card = (e.target as HTMLImageElement).closest('[data-bucket-card]') as HTMLElement | null;
-                        if (card) card.style.display = 'none';
-                      }}
-                    />
+                    <div className="w-full h-28 bg-gray-100 flex items-center justify-center overflow-hidden">
+                      <img
+                        src={img.url || ''}
+                        alt={img.fileName || 'Bucket photo'}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
                     {bucketSelected.has(img.id) && (
                       <div className="absolute top-1.5 right-1.5 w-6 h-6 bg-[#b8860b] rounded-full flex items-center justify-center text-white text-xs font-bold">✓</div>
                     )}
@@ -3106,7 +3104,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                       🗑️
                     </button>
                     <div className="px-2 py-1.5 bg-white">
-                      <p className="text-[9px] font-semibold text-[#495057] truncate">{img.employee.name}</p>
+                      <p className="text-[9px] font-semibold text-[#495057] truncate">{img.employee?.name || 'Field Agent'}</p>
                     </div>
                   </div>
                 ))}

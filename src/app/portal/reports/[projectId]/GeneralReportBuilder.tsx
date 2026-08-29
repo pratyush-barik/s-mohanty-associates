@@ -3848,106 +3848,104 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
             </div>
             
             <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
-              {localBucketImages.length > 0 ? (
-                bucketPickerAgent === null ? (
-                  // Agent Selection View
-                  <div className="space-y-4">
-                    <p className="text-sm font-semibold text-[#495057] mb-2">Select a Field Engineer to view their uploaded photos:</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {Array.from(new Set(localBucketImages.map(img => img.employee.employeeId))).map(empId => {
-                        const agentImages = localBucketImages.filter(img => img.employee.employeeId === empId);
-                        const agentName = agentImages[0].employee.name;
-                        const selectedCount = agentImages.filter(img => bucketSelected.has(img.id)).length;
-                        return (
-                          <div
-                            key={empId}
-                            onClick={() => setBucketPickerAgent(empId)}
-                            className="bg-white rounded-xl border border-[#e9ecef] p-4 flex items-center justify-between cursor-pointer hover:border-[#1e3a5f] hover:shadow-md transition-all"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-full bg-[#f8f9fa] flex items-center justify-center text-xl">
-                                👤
-                              </div>
-                              <div>
-                                <p className="font-bold text-[#0f2038]">{agentName}</p>
-                                <p className="text-xs text-[#6c757d]">{agentImages.length} photos uploaded</p>
-                              </div>
-                            </div>
-                            {selectedCount > 0 && (
-                              <span className="bg-[#1e3a5f] text-white text-[10px] font-bold px-2 py-1 rounded-full">
-                                {selectedCount} selected
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ) : (
-                  // Photo Selection View
-                  <div className="space-y-4">
-                    <button
-                      type="button"
-                      onClick={() => setBucketPickerAgent(null)}
-                      className="text-sm font-bold text-[#1e3a5f] hover:underline flex items-center gap-1 mb-2"
-                    >
-                      ← Back to Agents
-                    </button>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {localBucketImages.filter(img => img.employee.employeeId === bucketPickerAgent).map((img) => {
-                        const isSelected = bucketSelected.has(img.id);
-                        return (
-                          <div
-                            key={img.id}
-                            data-bucket-card
-                            onClick={() => toggleBucketImage(img.id)}
-                            className={`relative group bg-white rounded-xl border-2 overflow-hidden cursor-pointer transition-all ${
-                              isSelected ? 'border-[#1e3a5f] shadow-md scale-[0.98]' : 'border-transparent shadow-sm hover:shadow-md'
+              {localBucketImages && localBucketImages.length > 0 ? (
+                (() => {
+                  const uniqueAgentIds = Array.from(new Set(localBucketImages.map(img => img.employee?.employeeId || img.employee?.name || 'Agent').filter(Boolean)));
+                  const displayedImages = bucketPickerAgent
+                    ? localBucketImages.filter(img => (img.employee?.employeeId === bucketPickerAgent || img.employee?.name === bucketPickerAgent))
+                    : localBucketImages;
+
+                  return (
+                    <div className="space-y-4">
+                      {/* Agent Filter Header (if multiple agents exist) */}
+                      {uniqueAgentIds.length > 1 && (
+                        <div className="flex flex-wrap items-center gap-2 pb-2 border-b border-gray-200">
+                          <button
+                            type="button"
+                            onClick={() => setBucketPickerAgent(null)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                              bucketPickerAgent === null
+                                ? 'bg-[#1e3a5f] text-white shadow-xs'
+                                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
                             }`}
                           >
-                            <div className="aspect-square bg-gray-100">
-                              <img
-                                src={img.url ? encodeURI(img.url) : ''}
-                                alt={img.fileName}
-                                className="w-full h-full object-cover"
-                                loading="lazy"
-                                onError={(e) => {
-                                  const card = (e.target as HTMLImageElement).closest('[data-bucket-card]') as HTMLElement | null;
-                                  if (card) card.style.display = 'none';
-                                }}
-                              />
-                            </div>
-                            <div className="p-2 border-t border-gray-100">
-                              <p className="text-[10px] font-bold text-[#0f2038] truncate">{img.employee.name}</p>
-                              <p className="text-[9px] text-[#6c757d]">
-                                {new Date(img.createdAt).toLocaleDateString()}
-                              </p>
-                            </div>
-                            {isSelected && (
-                              <div className="absolute top-2 right-2 w-6 h-6 bg-[#1e3a5f] text-white rounded-full flex items-center justify-center shadow-sm">
-                                ✓
-                              </div>
-                            )}
-                            {!isSelected && (
-                              <div className="absolute top-2 right-2 w-6 h-6 bg-black/20 border-2 border-white/50 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" />
-                            )}
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteBucketImage(img);
-                              }}
-                              className="absolute top-2 left-2 w-6 h-6 bg-red-600/90 text-white rounded-full flex items-center justify-center text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
-                              title="Delete from bucket"
+                            All Photos ({localBucketImages.length})
+                          </button>
+                          {uniqueAgentIds.map(agentId => {
+                            const agentImgs = localBucketImages.filter(img => (img.employee?.employeeId === agentId || img.employee?.name === agentId));
+                            const agentName = agentImgs[0]?.employee?.name || agentId;
+                            const isSelected = bucketPickerAgent === agentId;
+                            return (
+                              <button
+                                key={agentId}
+                                type="button"
+                                onClick={() => setBucketPickerAgent(agentId)}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                                  isSelected
+                                    ? 'bg-[#1e3a5f] text-white shadow-xs'
+                                    : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                                }`}
+                              >
+                                <span>👤 {agentName}</span>
+                                <span className="text-[10px] opacity-75">({agentImgs.length})</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Photo Grid */}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                        {displayedImages.map((img) => {
+                          const isSelected = bucketSelected.has(img.id);
+                          return (
+                            <div
+                              key={img.id}
+                              onClick={() => toggleBucketImage(img.id)}
+                              className={`relative group bg-white rounded-xl border-2 overflow-hidden cursor-pointer transition-all ${
+                                isSelected ? 'border-[#1e3a5f] shadow-md scale-[0.98]' : 'border-gray-200 hover:border-gray-300 shadow-xs'
+                              }`}
                             >
-                              🗑️
-                            </button>
-                          </div>
-                        );
-                      })}
+                              <div className="aspect-square bg-gray-100 flex items-center justify-center overflow-hidden">
+                                <img
+                                  src={img.url || ''}
+                                  alt={img.fileName || 'Bucket image'}
+                                  className="w-full h-full object-cover"
+                                  loading="lazy"
+                                />
+                              </div>
+                              <div className="p-2 border-t border-gray-100 bg-white">
+                                <p className="text-[10px] font-bold text-[#0f2038] truncate">{img.employee?.name || 'Field Agent'}</p>
+                                <p className="text-[9px] text-[#6c757d]">
+                                  {img.createdAt ? new Date(img.createdAt).toLocaleDateString() : ''}
+                                </p>
+                              </div>
+                              {isSelected && (
+                                <div className="absolute top-2 right-2 w-6 h-6 bg-[#1e3a5f] text-white rounded-full flex items-center justify-center shadow-sm text-xs font-bold">
+                                  ✓
+                                </div>
+                              )}
+                              {!isSelected && (
+                                <div className="absolute top-2 right-2 w-6 h-6 bg-black/20 border-2 border-white/50 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity animate-fade-in" />
+                              )}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteBucketImage(img);
+                                }}
+                                className="absolute top-2 left-2 w-6 h-6 bg-red-600/90 text-white rounded-full flex items-center justify-center text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
+                                title="Delete from bucket"
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                )
+                  );
+                })()
               ) : (
                 <div className="text-center py-12">
                   <div className="text-4xl mb-3">📷</div>
