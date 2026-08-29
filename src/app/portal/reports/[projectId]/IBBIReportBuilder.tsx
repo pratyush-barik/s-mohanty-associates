@@ -462,6 +462,7 @@ const DEFAULT_FIELDS: IBBIFields = {
   applicantName: '',
   nameOfOwners: '',
   valuationDoneBefore: 'NO',
+  customValuationDoneBefore: '',
   locationOfProperty: '',
   nearbyLandmark: '',
   postalAddress47: '',
@@ -1907,7 +1908,7 @@ Our valuation is based on information obtained from the client and on data gathe
         },
         { label: 'Address as per documents', value: fields.legalAddress }
       ]);
-      r.drawSection4SingleRow('4.4', 'Has the valuer done valuation of this property before? If yes, for whom & when.', fields.valuationDoneBefore, true);
+      r.drawSection4SingleRow('4.4', 'Has the valuer done valuation of this property before? If yes, for whom & when.', fields.valuationDoneBefore === 'YES' ? `YES, ${fields.customValuationDoneBefore || ''}` : 'NO', true);
       r.drawSection4SingleRow('4.5', 'Location of the property', fields.locationOfProperty, true);
       r.drawSection4SingleRow('4.6', 'Nearby landmark', fields.nearbyLandmark, true);
       r.drawSection4SingleRow('4.7', 'Postal address of the property', fields.postalAddress47, false);
@@ -3480,7 +3481,15 @@ Our valuation is based on information obtained from the client and on data gathe
 
               {/* 4.4 - 4.7 Various Details */}
               <Field label="4.4 Has the valuer done valuation of this property before? If yes, for whom & when." span={2}>
-                <input type="text" value={fields.valuationDoneBefore || ''} onChange={e => handleChange('valuationDoneBefore', e.target.value)} className={inputCls} disabled={isReadOnly} />
+                <div className="flex flex-col gap-2">
+                  <select value={fields.valuationDoneBefore || 'NO'} onChange={e => handleChange('valuationDoneBefore', e.target.value)} className={selectCls} disabled={isReadOnly}>
+                    <option value="NO">No</option>
+                    <option value="YES">Yes</option>
+                  </select>
+                  {fields.valuationDoneBefore === 'YES' && (
+                    <input type="text" value={fields.customValuationDoneBefore || ''} onChange={e => handleChange('customValuationDoneBefore', e.target.value)} className={inputCls} placeholder="For whom & when" disabled={isReadOnly} />
+                  )}
+                </div>
               </Field>
               <Field label="4.5 Location of the property" span={1}>
                 <input type="text" value={fields.locationOfProperty || ''} onChange={e => handleChange('locationOfProperty', e.target.value)} className={inputCls} disabled={isReadOnly} />
