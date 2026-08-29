@@ -3307,11 +3307,11 @@ Our valuation is based on information obtained from the client and on data gathe
               <Field label="Date of Valuation Report">
                 <input type="date" value={fields.dateOfValuation || ''} onChange={e => handleChange('dateOfValuation', e.target.value)} className={inputCls} disabled={isReadOnly} />
               </Field>
-              <Field label="Place">
-                <input type="text" value={fields.conclusionPlace || ''} onChange={e => handleChange('conclusionPlace', e.target.value)} className={inputCls} disabled={isReadOnly} />
-              </Field>
               <Field label="Date of Inspection">
                 <input type="date" value={fields.dateOfInspection || ''} onChange={e => handleChange('dateOfInspection', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
+              <Field label="Place">
+                <input type="text" value={fields.conclusionPlace || ''} onChange={e => handleChange('conclusionPlace', e.target.value)} className={inputCls} disabled={isReadOnly} />
               </Field>
 
 
