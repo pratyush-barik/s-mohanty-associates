@@ -1690,7 +1690,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       else if (fields.addressPrefixType === 'other') prefix = fields.customAddressPrefix ? fields.customAddressPrefix.trim() + ', ' : '';
       
       r.drawTextBlock(`OF ${(fields.propertyType === 'Other' ? fields.customPropertyType : fields.propertyType) || 'Property'} BELONGING TO`.toUpperCase(), { bold: true, align: 'center', fontSize: 13 });
-      r.drawTextBlock(`${fields.applicantName || fields.ownerName || '________'}`.toUpperCase(), { bold: true, align: 'center', fontSize: 13, underline: true });
+      r.drawTextBlock(`${fields.companyName || '________'}`.toUpperCase(), { align: 'center', fontSize: 13 });
       r.drawTextBlock(`${prefix}${fields.propertyAddress || '________'}`.toUpperCase(), { bold: true, align: 'center', fontSize: 13 });
       r.advanceCursor(12);
       
