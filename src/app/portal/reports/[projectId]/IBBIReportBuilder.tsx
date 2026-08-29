@@ -459,6 +459,7 @@ const DEFAULT_FIELDS: IBBIFields = {
   ownerContactDetails: '',
 
   applicantName: '',
+  nameOfOwners: '',
   hasManagingDirector: 'no',
   managingDirectorName: '',
   coverPageImage: '',
@@ -1872,7 +1873,7 @@ Our valuation is based on information obtained from the client and on data gathe
       }
       r.drawTextBlock('BASIC DETAILS OF THE PROPERTY', { bold: true });
       r.advanceCursor(4);
-      r.drawSimpleRow('4.1  Applicant Name / Owners', fields.applicantName || fields.ownerName);
+      r.draw5ColRow('4.1', 'Applicant(s) Name', fields.applicantName || fields.ownerName, 'Name of Owners', fields.nameOfOwners);
       r.drawSimpleRow('4.2  Type of Property', (fields.propertyType === 'Other' ? fields.customPropertyType : fields.propertyType) || '');
       r.drawSimpleRow('     Current Usage', fields.currentUsage);
       r.drawSimpleRow('4.3  Site Address', fields.propertyAddress);
@@ -3373,8 +3374,11 @@ Our valuation is based on information obtained from the client and on data gathe
               <Field label="Property Description (Introductory paragraph in PDF)" span={2}>
                 <textarea value={fields.propertyDescription || ''} onChange={e => handleChange('propertyDescription', e.target.value)} className={inputCls + ' resize-none'} rows={3} placeholder="e.g. an inoperative water bottling unit over IDCO plot no 11,11/A at Jagatpur Industrial Estate" disabled={isReadOnly} />
               </Field>
-              <Field label="4.1 (a) Applicant name(s)" span={2}>
+              <Field label="4.1 (a) Applicant(s) Name" span={1}>
                 <textarea value={fields.applicantName} onChange={e => handleChange('applicantName', e.target.value)} className={inputCls} rows={2} placeholder="Full list of owners" disabled={isReadOnly} />
+              </Field>
+              <Field label="4.1 (b) Name of Owners" span={1}>
+                <textarea value={fields.nameOfOwners || ''} onChange={e => handleChange('nameOfOwners', e.target.value)} className={inputCls} rows={2} placeholder="Full list of owners" disabled={isReadOnly} />
               </Field>
               <Field label="Managing Director">
                 <select value={fields.hasManagingDirector || 'no'} onChange={e => handleChange('hasManagingDirector', e.target.value)} className={selectCls} disabled={true}>

@@ -512,6 +512,31 @@ export class PDFIBBIRenderer {
     this.cursorY += h;
   }
 
+  draw5ColRow(col1: string, col2: string, col3: string, col4: string, col5: string): void {
+    const w1 = Math.round(CONTENT_W * 0.08);
+    const w2 = Math.round(CONTENT_W * 0.22);
+    const w3 = Math.round(CONTENT_W * 0.32);
+    const w4 = Math.round(CONTENT_W * 0.15);
+    const w5 = CONTENT_W - w1 - w2 - w3 - w4;
+
+    const h1 = this.cellHeight(col1, w1, { bold: false });
+    const h2 = this.cellHeight(col2, w2, { bold: true });
+    const h3 = this.cellHeight(col3 || 'N/A', w3, { bold: true });
+    const h4 = this.cellHeight(col4, w4, { bold: true });
+    const h5 = this.cellHeight(col5 || 'N/A', w5, { bold: true });
+    const h = Math.max(h1, h2, h3, h4, h5);
+
+    this.checkPageBreak(h);
+
+    this.drawCell(MARGIN_L, this.cursorY, w1, h, col1, { fillColor: LBL_BG, bgOpacity: 0.5, bold: false, vAlign: 'middle' });
+    this.drawCell(MARGIN_L + w1, this.cursorY, w2, h, col2, { fillColor: LBL_BG, bgOpacity: 0.5, bold: true, vAlign: 'middle' });
+    this.drawCell(MARGIN_L + w1 + w2, this.cursorY, w3, h, col3 || 'N/A', { bold: true, vAlign: 'middle' });
+    this.drawCell(MARGIN_L + w1 + w2 + w3, this.cursorY, w4, h, col4, { fillColor: LBL_BG, bgOpacity: 0.5, bold: true, vAlign: 'middle' });
+    this.drawCell(MARGIN_L + w1 + w2 + w3 + w4, this.cursorY, w5, h, col5 || 'N/A', { bold: true, vAlign: 'middle' });
+
+    this.cursorY += h;
+  }
+
   drawSimpleRow(label: string, value: string): void {    const labelW = Math.round(CONTENT_W * 0.40);  // 40% for label
     const valueW = CONTENT_W - labelW;             // 60% for value
 
