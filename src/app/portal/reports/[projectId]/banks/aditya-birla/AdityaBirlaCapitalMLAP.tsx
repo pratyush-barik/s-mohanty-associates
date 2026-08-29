@@ -116,14 +116,14 @@ export default function AdityaBirlaCapitalMLAP({
     amenitiesAvailability: initialFields?.amenitiesAvailability || '',
     approachRoadWidth: initialFields?.approachRoadWidth || '',
     valuedBefore: initialFields?.valuedBefore || 'No',
-    valuedBeforeDate: initialFields?.valuedBeforeDate || 'NA',
+    valuedBeforeDate: initialFields?.valuedBeforeDate || '',
     landLocked: initialFields?.landLocked || 'No',
     otherEncumbranceFeatures: initialFields?.otherEncumbranceFeatures || 'No',
 
     // Property Detailings
     occupiedBy: initialFields?.occupiedBy || 'Vacant',
-    occupantName: initialFields?.occupantName || 'NA',
-    occupantRelation: initialFields?.occupantRelation || 'NA',
+    occupantName: initialFields?.occupantName || '',
+    occupantRelation: initialFields?.occupantRelation || '',
     plotDemarcated: initialFields?.plotDemarcated || 'No',
     propertyIdentification: initialFields?.propertyIdentification || 'Yes',
     propertyType: initialFields?.propertyType || prefill?.propertyType || 'Residential',
@@ -132,20 +132,20 @@ export default function AdityaBirlaCapitalMLAP({
     propertyJurisdiction: initialFields?.propertyJurisdiction || 'Gram Panchayat',
     marketability: initialFields?.marketability || 'Average',
     ageOfPropertyActual: initialFields?.ageOfPropertyActual || '',
-    estimatedFutureLife: initialFields?.estimatedFutureLife || '60-Years',
+    estimatedFutureLife: initialFields?.estimatedFutureLife || '',
     qualityOfConstruction: initialFields?.qualityOfConstruction || 'Average',
     structureType: initialFields?.structureType || 'RCC',
-    dimensionWidth: initialFields?.dimensionWidth || 'NA',
-    dimensionDepth: initialFields?.dimensionDepth || 'NA',
-    cautiousLocations: initialFields?.cautiousLocations || 'NA',
-    flatConfigurationType: initialFields?.flatConfigurationType || 'NA',
+    dimensionWidth: initialFields?.dimensionWidth || '',
+    dimensionDepth: initialFields?.dimensionDepth || '',
+    cautiousLocations: initialFields?.cautiousLocations || '',
+    flatConfigurationType: initialFields?.flatConfigurationType || '',
     percentageCompletion: initialFields?.percentageCompletion || '',
     percentageRecommendation: initialFields?.percentageRecommendation || '',
 
     // Documentation
-    documentsProvided: initialFields?.documentsProvided || 'Copy of Sale deed, ROR & Sketch map',
-    sanctionPlanDetails: initialFields?.sanctionPlanDetails || 'Plan is not provided',
-    utilityBills: initialFields?.utilityBills || 'NA',
+    documentsProvided: initialFields?.documentsProvided || '',
+    sanctionPlanDetails: initialFields?.sanctionPlanDetails || '',
+    utilityBills: initialFields?.utilityBills || '',
 
     // Accommodations & BUA
     accommodationRows: initialFields?.accommodationRows || DEFAULT_ACCOM_ROWS,
@@ -156,12 +156,12 @@ export default function AdityaBirlaCapitalMLAP({
     plotAreaPhysical: initialFields?.plotAreaPhysical || '',
     plotAreaConsidered: initialFields?.plotAreaConsidered || '',
     landRate: initialFields?.landRate || '',
-    buaPlan: initialFields?.buaPlan || 'Plan is not provided',
+    buaPlan: initialFields?.buaPlan || '',
     buaActual: initialFields?.buaActual || '',
     buaActualRate: initialFields?.buaActualRate || '',
     buaConsidered: initialFields?.buaConsidered || '',
     buaConsideredRate: initialFields?.buaConsideredRate || '',
-    superBua: initialFields?.superBua || 'NA',
+    superBua: initialFields?.superBua || '',
     amenitiesValue: initialFields?.amenitiesValue || '0',
 
     // Boundaries
@@ -883,7 +883,7 @@ export default function AdityaBirlaCapitalMLAP({
                 </select>
               </Field>
               <Field label="If Yes When?">
-                <input type="text" value={fields.valuedBeforeDate || 'NA'} onChange={e => handleChange('valuedBeforeDate', e.target.value)} disabled={isReadOnly} className={inputCls} />
+                <input type="text" value={fields.valuedBeforeDate || ''} onChange={e => handleChange('valuedBeforeDate', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Month/Year or NA" />
               </Field>
               <Field label="Land Locked">
                 <select value={fields.landLocked || 'No'} onChange={e => handleChange('landLocked', e.target.value)} disabled={isReadOnly} className={selectCls}>
@@ -913,10 +913,10 @@ export default function AdityaBirlaCapitalMLAP({
               </select>
             </Field>
             <Field label="Occupied By">
-              <input type="text" value={fields.occupantName || 'NA'} onChange={e => handleChange('occupantName', e.target.value)} disabled={isReadOnly} className={inputCls} />
+              <input type="text" value={fields.occupantName || ''} onChange={e => handleChange('occupantName', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="Occupant name or NA" />
             </Field>
             <Field label="Relation with Client">
-              <input type="text" value={fields.occupantRelation || 'NA'} onChange={e => handleChange('occupantRelation', e.target.value)} disabled={isReadOnly} className={inputCls} />
+              <input type="text" value={fields.occupantRelation || ''} onChange={e => handleChange('occupantRelation', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="Relation or NA" />
             </Field>
 
             <Field label="Property Demarcation">
@@ -962,10 +962,10 @@ export default function AdityaBirlaCapitalMLAP({
               </select>
             </Field>
             <Field label="Property Age">
-              <input type="text" value={fields.ageOfPropertyActual || '0-Years'} onChange={e => handleChange('ageOfPropertyActual', e.target.value)} disabled={isReadOnly} className={inputCls} />
+              <input type="text" value={fields.ageOfPropertyActual || ''} onChange={e => handleChange('ageOfPropertyActual', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 5-Years" />
             </Field>
             <Field label="Residual Age">
-              <input type="text" value={fields.estimatedFutureLife || '60-Years'} onChange={e => handleChange('estimatedFutureLife', e.target.value)} disabled={isReadOnly} className={inputCls} />
+              <input type="text" value={fields.estimatedFutureLife || ''} onChange={e => handleChange('estimatedFutureLife', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 55-Years" />
             </Field>
 
             <Field label="Construction Quality">
@@ -984,24 +984,24 @@ export default function AdityaBirlaCapitalMLAP({
               </select>
             </Field>
             <Field label="Flat Configuration Type">
-              <input type="text" value={fields.flatConfigurationType || 'NA'} onChange={e => handleChange('flatConfigurationType', e.target.value)} disabled={isReadOnly} className={inputCls} />
+              <input type="text" value={fields.flatConfigurationType || ''} onChange={e => handleChange('flatConfigurationType', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 2BHK / 3BHK or NA" />
             </Field>
 
             <Field label="Width (Facing Road Side) in feet">
-              <input type="text" value={fields.dimensionWidth || 'NA'} onChange={e => handleChange('dimensionWidth', e.target.value)} disabled={isReadOnly} className={inputCls} />
+              <input type="text" value={fields.dimensionWidth || ''} onChange={e => handleChange('dimensionWidth', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 30 feet or NA" />
             </Field>
             <Field label="Depth (in feet)">
-              <input type="text" value={fields.dimensionDepth || 'NA'} onChange={e => handleChange('dimensionDepth', e.target.value)} disabled={isReadOnly} className={inputCls} />
+              <input type="text" value={fields.dimensionDepth || ''} onChange={e => handleChange('dimensionDepth', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 45 feet or NA" />
             </Field>
             <Field label="Cautious Locations">
-              <input type="text" value={fields.cautiousLocations || 'NA'} onChange={e => handleChange('cautiousLocations', e.target.value)} disabled={isReadOnly} className={inputCls} />
+              <input type="text" value={fields.cautiousLocations || ''} onChange={e => handleChange('cautiousLocations', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. High tension wire / NA" />
             </Field>
 
             <Field label="% Completion of Property">
-              <input type="text" value={fields.percentageCompletion || '65%'} onChange={e => handleChange('percentageCompletion', e.target.value)} disabled={isReadOnly} className={inputCls} />
+              <input type="text" value={fields.percentageCompletion || ''} onChange={e => handleChange('percentageCompletion', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 100%" />
             </Field>
             <Field label="% Recommendation">
-              <input type="text" value={fields.percentageRecommendation || '70%'} onChange={e => handleChange('percentageRecommendation', e.target.value)} disabled={isReadOnly} className={inputCls} />
+              <input type="text" value={fields.percentageRecommendation || ''} onChange={e => handleChange('percentageRecommendation', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 100%" />
             </Field>
           </div>
         </Section>
@@ -1010,13 +1010,13 @@ export default function AdityaBirlaCapitalMLAP({
         <Section title="Documentation" number={4}>
           <div className="space-y-4">
             <Field label="Documents Provided">
-              <input type="text" value={fields.documentsProvided || ''} onChange={e => handleChange('documentsProvided', e.target.value)} disabled={isReadOnly} className={inputCls} />
+              <input type="text" value={fields.documentsProvided || ''} onChange={e => handleChange('documentsProvided', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Copy of Sale Deed, ROR, Sketch Map" />
             </Field>
             <Field label="Sanction Plan details if provided">
-              <input type="text" value={fields.sanctionPlanDetails || ''} onChange={e => handleChange('sanctionPlanDetails', e.target.value)} disabled={isReadOnly} className={inputCls} />
+              <input type="text" value={fields.sanctionPlanDetails || ''} onChange={e => handleChange('sanctionPlanDetails', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Approved Plan No. or Plan not provided" />
             </Field>
             <Field label="Utility Bills (Water bill, electricity bill)">
-              <input type="text" value={fields.utilityBills || 'NA'} onChange={e => handleChange('utilityBills', e.target.value)} disabled={isReadOnly} className={inputCls} />
+              <input type="text" value={fields.utilityBills || ''} onChange={e => handleChange('utilityBills', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Electricity Bill verified / NA" />
             </Field>
           </div>
         </Section>
