@@ -1887,7 +1887,12 @@ Our valuation is based on information obtained from the client and on data gathe
       r.draw5ColRow('4.1', 'Applicant(s) Name', fields.applicantName || fields.ownerName, 'Name of Owners', fields.nameOfOwners);
       r.draw5ColRow('4.2', 'Type of property', (fields.propertyType === 'Other' ? fields.customPropertyType : fields.propertyType) || '', 'Current usage', fields.currentUsage);
       r.drawSection4MultiSubRow('4.3', [
-        { label: 'Address of property / Site Address', value: fields.propertyAddress },
+        { 
+          label: 'Address of property / Site Address', 
+          value: fields.addressPrefixType === 'idco_plot' 
+            ? (fields.idcoPlotNo ? `OVER IDCO PLOT NO ${fields.idcoPlotNo}, ` : 'OVER IDCO PLOT, ') + (fields.propertyAddress || '')
+            : fields.propertyAddress 
+        },
         { label: 'Address as per documents', value: fields.legalAddress }
       ]);
       r.drawSection4SingleRow('4.4', 'Has the valuer done valuation of this property before? If yes, for whom & when.', fields.valuationDoneBefore, true);
