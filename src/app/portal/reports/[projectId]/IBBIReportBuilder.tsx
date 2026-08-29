@@ -3093,6 +3093,77 @@ Our valuation is based on information obtained from the client and on data gathe
                 <Field label="Registered Office Telephone">
                   <input type="text" value={fields.registeredOfficeTel || ''} onChange={e => handleChange('registeredOfficeTel', e.target.value)} className={inputCls} disabled={isReadOnly} />
                 </Field>
+            
+<Field label="Applicant / Owner Name(s)" span={2}>
+                <textarea value={fields.applicantName} onChange={e => handleChange('applicantName', e.target.value)} className={inputCls} rows={2} placeholder="Full list of owners" disabled={isReadOnly} />
+              </Field>
+              <Field label="Managing Director">
+                <select value={fields.hasManagingDirector || 'no'} onChange={e => handleChange('hasManagingDirector', e.target.value)} className={selectCls} disabled={isReadOnly}>
+                  <option value="no">No</option>
+                  <option value="yes">Yes</option>
+                </select>
+              </Field>
+              {fields.hasManagingDirector === 'yes' && (
+                <Field label="Managing Director's Name">
+                  <input type="text" value={fields.managingDirectorName || ''} onChange={e => handleChange('managingDirectorName', e.target.value)} className={inputCls} placeholder="e.g. MR. RAJENDRA PRASAD AGARWAL" disabled={isReadOnly} />
+                </Field>
+              )}
+              <div className="col-span-1 md:col-span-2 mt-4 p-4 border border-[#e0e0e0] rounded-xl bg-gray-50">
+                <p className="text-sm font-bold text-[#1e3a5f] uppercase tracking-wider mb-2">Cover Page Photograph (Max 1)</p>
+                {!isReadOnly && !fields.coverPageImage && (
+                  <div className="flex items-center gap-3 mb-3">
+                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
+                      {uploading ? 'Uploading...' : '📷 Add Property Images'}
+                      <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'coverPageImage')} disabled={uploading} />
+                    </label>
+                  </div>
+                )}
+                {fields.coverPageImage && (
+                  <div className="relative inline-block border-2 border-[#1e3a5f] rounded-lg overflow-hidden">
+                    <img src={fields.coverPageImage} alt="Cover Page" className="h-40 w-auto object-contain" />
+                    {!isReadOnly && (
+                      <button type="button" onClick={() => handleChange('coverPageImage', '')} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 shadow-md">✕</button>
+                    )}
+                  </div>
+                )}
+              </div>
+              <Field label="Type of Property">
+                <select value={fields.propertyType} onChange={e => handleChange('propertyType', e.target.value)} className={selectCls} disabled={isReadOnly}>
+                  <option value="Defunct Industrial Unit">Defunct Industrial Unit</option>
+                  <option value="Industrial">Industrial</option>
+                  <option value="Residential">Residential</option>
+                  <option value="Commercial">Commercial</option>
+                  <option value="Agricultural Land">Agricultural Land</option>
+                  <option value="Residential cum Commercial">Residential cum Commercial</option>
+                  <option value="Vacant Plot">Vacant Plot</option>
+                </select>
+              </Field>
+              <Field label="Current Usage">
+                <select value={fields.currentUsage} onChange={e => handleChange('currentUsage', e.target.value)} className={selectCls} disabled={isReadOnly}>
+                  <option value="Vacant">Vacant</option>
+                  <option value="Self Occupied">Self Occupied</option>
+                  <option value="Rented">Rented</option>
+                  <option value="Under Construction">Under Construction</option>
+                  <option value="Industrial Use">Industrial Use</option>
+                  <option value="Agricultural">Agricultural</option>
+                </select>
+              </Field>
+              <Field label="Address Prefix (Cover Page)">
+                <div className="flex flex-col gap-2">
+                  <select value={fields.addressPrefixType || 'none'} onChange={e => handleChange('addressPrefixType', e.target.value)} className={selectCls} disabled={isReadOnly}>
+                    <option value="none">None</option>
+                    <option value="multiple_plots">OVER MULTIPLE PLOTS</option>
+                    <option value="idco_plot">OVER IDCO PLOT</option>
+                    <option value="other">Other (Custom)</option>
+                  </select>
+                  {fields.addressPrefixType === 'other' && (
+                    <input type="text" value={fields.customAddressPrefix || ''} onChange={e => handleChange('customAddressPrefix', e.target.value)} className={inputCls} placeholder="Custom prefix..." disabled={isReadOnly} />
+                  )}
+                </div>
+              </Field>
+              <Field label="Site Address">
+                <textarea value={fields.propertyAddress} onChange={e => handleChange('propertyAddress', e.target.value)} className={inputCls} rows={2} placeholder="Full site address" disabled={isReadOnly} />
+              </Field>
             </div>
           </Section>
 
@@ -3275,40 +3346,40 @@ Our valuation is based on information obtained from the client and on data gathe
                 <textarea value={fields.propertyDescription || ''} onChange={e => handleChange('propertyDescription', e.target.value)} className={inputCls + ' resize-none'} rows={3} placeholder="e.g. an inoperative water bottling unit over IDCO plot no 11,11/A at Jagatpur Industrial Estate" disabled={isReadOnly} />
               </Field>
               <Field label="Applicant / Owner Name(s)" span={2}>
-                <textarea value={fields.applicantName} onChange={e => handleChange('applicantName', e.target.value)} className={inputCls} rows={2} placeholder="Full list of owners" disabled={isReadOnly} />
+                <textarea value={fields.applicantName} onChange={e => handleChange('applicantName', e.target.value)} className={inputCls} rows={2} placeholder="Full list of owners" disabled={true} />
               </Field>
               <Field label="Managing Director">
-                <select value={fields.hasManagingDirector || 'no'} onChange={e => handleChange('hasManagingDirector', e.target.value)} className={selectCls} disabled={isReadOnly}>
+                <select value={fields.hasManagingDirector || 'no'} onChange={e => handleChange('hasManagingDirector', e.target.value)} className={selectCls} disabled={true}>
                   <option value="no">No</option>
                   <option value="yes">Yes</option>
                 </select>
               </Field>
               {fields.hasManagingDirector === 'yes' && (
                 <Field label="Managing Director's Name">
-                  <input type="text" value={fields.managingDirectorName || ''} onChange={e => handleChange('managingDirectorName', e.target.value)} className={inputCls} placeholder="e.g. MR. RAJENDRA PRASAD AGARWAL" disabled={isReadOnly} />
+                  <input type="text" value={fields.managingDirectorName || ''} onChange={e => handleChange('managingDirectorName', e.target.value)} className={inputCls} placeholder="e.g. MR. RAJENDRA PRASAD AGARWAL" disabled={true} />
                 </Field>
               )}
               <div className="col-span-1 md:col-span-2 mt-4 p-4 border border-[#e0e0e0] rounded-xl bg-gray-50">
                 <p className="text-sm font-bold text-[#1e3a5f] uppercase tracking-wider mb-2">Cover Page Photograph (Max 1)</p>
-                {!isReadOnly && !fields.coverPageImage && (
+                {false && (
                   <div className="flex items-center gap-3 mb-3">
                     <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
                       {uploading ? 'Uploading...' : '📷 Add Property Images'}
-                      <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'coverPageImage')} disabled={uploading} />
+                      <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'coverPageImage')} disabled={true} />
                     </label>
                   </div>
                 )}
                 {fields.coverPageImage && (
                   <div className="relative inline-block border-2 border-[#1e3a5f] rounded-lg overflow-hidden">
                     <img src={fields.coverPageImage} alt="Cover Page" className="h-40 w-auto object-contain" />
-                    {!isReadOnly && (
+                    {false && (
                       <button type="button" onClick={() => handleChange('coverPageImage', '')} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 shadow-md">✕</button>
                     )}
                   </div>
                 )}
               </div>
               <Field label="Type of Property">
-                <select value={fields.propertyType} onChange={e => handleChange('propertyType', e.target.value)} className={selectCls} disabled={isReadOnly}>
+                <select value={fields.propertyType} onChange={e => handleChange('propertyType', e.target.value)} className={selectCls} disabled={true}>
                   <option value="Defunct Industrial Unit">Defunct Industrial Unit</option>
                   <option value="Industrial">Industrial</option>
                   <option value="Residential">Residential</option>
@@ -3319,7 +3390,7 @@ Our valuation is based on information obtained from the client and on data gathe
                 </select>
               </Field>
               <Field label="Current Usage">
-                <select value={fields.currentUsage} onChange={e => handleChange('currentUsage', e.target.value)} className={selectCls} disabled={isReadOnly}>
+                <select value={fields.currentUsage} onChange={e => handleChange('currentUsage', e.target.value)} className={selectCls} disabled={true}>
                   <option value="Vacant">Vacant</option>
                   <option value="Self Occupied">Self Occupied</option>
                   <option value="Rented">Rented</option>
@@ -3330,19 +3401,19 @@ Our valuation is based on information obtained from the client and on data gathe
               </Field>
               <Field label="Address Prefix (Cover Page)">
                 <div className="flex flex-col gap-2">
-                  <select value={fields.addressPrefixType || 'none'} onChange={e => handleChange('addressPrefixType', e.target.value)} className={selectCls} disabled={isReadOnly}>
+                  <select value={fields.addressPrefixType || 'none'} onChange={e => handleChange('addressPrefixType', e.target.value)} className={selectCls} disabled={true}>
                     <option value="none">None</option>
                     <option value="multiple_plots">OVER MULTIPLE PLOTS</option>
                     <option value="idco_plot">OVER IDCO PLOT</option>
                     <option value="other">Other (Custom)</option>
                   </select>
                   {fields.addressPrefixType === 'other' && (
-                    <input type="text" value={fields.customAddressPrefix || ''} onChange={e => handleChange('customAddressPrefix', e.target.value)} className={inputCls} placeholder="Custom prefix..." disabled={isReadOnly} />
+                    <input type="text" value={fields.customAddressPrefix || ''} onChange={e => handleChange('customAddressPrefix', e.target.value)} className={inputCls} placeholder="Custom prefix..." disabled={true} />
                   )}
                 </div>
               </Field>
               <Field label="Site Address">
-                <textarea value={fields.propertyAddress} onChange={e => handleChange('propertyAddress', e.target.value)} className={inputCls} rows={2} placeholder="Full site address" disabled={isReadOnly} />
+                <textarea value={fields.propertyAddress} onChange={e => handleChange('propertyAddress', e.target.value)} className={inputCls} rows={2} placeholder="Full site address" disabled={true} />
               </Field>
               <Field label="Postal Address" span={2}>
                 <textarea value={fields.legalAddress} onChange={e => handleChange('legalAddress', e.target.value)} className={inputCls} rows={2} disabled={isReadOnly} />
