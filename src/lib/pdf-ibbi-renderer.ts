@@ -1400,10 +1400,12 @@ export class PDFIBBIRenderer {
       const pY = this.pdfY(this.cursorY + (rowImgH - s1.h)) - s1.h; // bottom-align
       this.page.drawImage(img1, { x: cx, y: pY, width: s1.w, height: s1.h });
 
-      // Caption 1
-      this.drawTextAt(caption1, x1, this.cursorY + rowImgH + 2, {
-        bold: true, fontSize: FONT_SIZE_CAPTION, align: 'center', maxWidth: imgW,
-      });
+      // Caption 1 (non-bold, Times-Italic, 10pt)
+      if (caption1 && caption1.trim().length > 0) {
+        this.drawTextAt(caption1.trim(), x1, this.cursorY + rowImgH + 2, {
+          italic: true, fontSize: FONT_SIZE_CAPTION, align: 'center', maxWidth: imgW,
+        });
+      }
     }
 
     // Draw Image 2
@@ -1413,10 +1415,12 @@ export class PDFIBBIRenderer {
       const pY = this.pdfY(this.cursorY + (rowImgH - s2.h)) - s2.h; // bottom-align
       this.page.drawImage(img2, { x: cx, y: pY, width: s2.w, height: s2.h });
 
-      // Caption 2
-      this.drawTextAt(caption2, x2, this.cursorY + rowImgH + 2, {
-        bold: true, fontSize: FONT_SIZE_CAPTION, align: 'center', maxWidth: imgW,
-      });
+      // Caption 2 (non-bold, Times-Italic, 10pt)
+      if (caption2 && caption2.trim().length > 0) {
+        this.drawTextAt(caption2.trim(), x2, this.cursorY + rowImgH + 2, {
+          italic: true, fontSize: FONT_SIZE_CAPTION, align: 'center', maxWidth: imgW,
+        });
+      }
     }
 
     this.cursorY += pairH;

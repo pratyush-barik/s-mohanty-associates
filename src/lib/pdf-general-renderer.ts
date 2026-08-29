@@ -989,9 +989,11 @@ export class PDFGeneralRenderer {
       const cx = x1 + (imgW - s1.w) / 2;
       const pY = this.pdfY(this.cursorY + (rowImgH - s1.h)) - s1.h;
       this.page.drawImage(img1, { x: cx, y: pY, width: s1.w, height: s1.h });
-      this.drawTextAt(caption1, x1, this.cursorY + rowImgH + 2, {
-        bold: true, fontSize: FONT_SIZE_CAPTION, align: 'center', maxWidth: imgW,
-      });
+      if (caption1 && caption1.trim().length > 0) {
+        this.drawTextAt(caption1.trim(), x1, this.cursorY + rowImgH + 2, {
+          italic: true, fontSize: FONT_SIZE_CAPTION, align: 'center', maxWidth: imgW,
+        });
+      }
     }
 
     if (img2) {
@@ -999,9 +1001,11 @@ export class PDFGeneralRenderer {
       const cx = x2 + (imgW - s2.w) / 2;
       const pY = this.pdfY(this.cursorY + (rowImgH - s2.h)) - s2.h;
       this.page.drawImage(img2, { x: cx, y: pY, width: s2.w, height: s2.h });
-      this.drawTextAt(caption2, x2, this.cursorY + rowImgH + 2, {
-        bold: true, fontSize: FONT_SIZE_CAPTION, align: 'center', maxWidth: imgW,
-      });
+      if (caption2 && caption2.trim().length > 0) {
+        this.drawTextAt(caption2.trim(), x2, this.cursorY + rowImgH + 2, {
+          italic: true, fontSize: FONT_SIZE_CAPTION, align: 'center', maxWidth: imgW,
+        });
+      }
     }
 
     this.cursorY += pairH;

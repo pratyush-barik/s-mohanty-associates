@@ -1731,11 +1731,13 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
         r.advanceCursor(8);
 
         for (let i = 0; i < propImageBytes.length; i += 2) {
-          const name1 = fields.propertyImageNames?.[i] ?? 'Site Picture';
-          const caption1 = name1 ? `PHOTO ${i + 1} - ${name1.toUpperCase()}` : `PHOTO ${i + 1}`;
+          const caption1 = fields.propertyImageNames?.[i] !== undefined
+            ? fields.propertyImageNames[i]
+            : 'Site Picture';
           const img2 = i + 1 < propImageBytes.length ? propImageBytes[i + 1] : null;
-          const name2 = fields.propertyImageNames?.[i + 1] ?? 'Site Picture';
-          const caption2 = name2 ? `PHOTO ${i + 2} - ${name2.toUpperCase()}` : `PHOTO ${i + 2}`;
+          const caption2 = (i + 1 < propImageBytes.length)
+            ? (fields.propertyImageNames?.[i + 1] !== undefined ? fields.propertyImageNames[i + 1] : 'Site Picture')
+            : '';
 
           await r.drawImagePair(propImageBytes[i], caption1, img2, caption2);
           r.advanceCursor(4);
@@ -2240,10 +2242,8 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           const img2 = pageImages[r * 2 + 1];
           const gIdx1 = startIdx + r * 2;
           const gIdx2 = startIdx + r * 2 + 1;
-          const name1 = fields.propertyImageNames?.[gIdx1] ?? 'Site Picture';
-          const name2 = fields.propertyImageNames?.[gIdx2] ?? 'Site Picture';
-          const caption1 = name1 ? `Figure ${gIdx1 + 1}: ${name1}` : `Figure ${gIdx1 + 1}`;
-          const caption2 = name2 ? `Figure ${gIdx2 + 1}: ${name2}` : `Figure ${gIdx2 + 1}`;
+          const caption1 = fields.propertyImageNames?.[gIdx1] !== undefined ? fields.propertyImageNames[gIdx1] : 'Site Picture';
+          const caption2 = fields.propertyImageNames?.[gIdx2] !== undefined ? fields.propertyImageNames[gIdx2] : 'Site Picture';
 
           gridHTML += `<tr>`;
           gridHTML += `<td style="width:50%;padding:${r === 0 ? 0 : gapBetweenRows}px 4px 0 0;vertical-align:top;"><div style="border:1px solid #000;padding:4px;text-align:center;"><img src="${img1}" style="width:100%;height:${imgH}px;object-fit:cover;" crossOrigin="anonymous" /><p style="font-family:${ff};font-size:10pt;margin:4px 0 0;font-style:italic;">${caption1}</p></div></td>`;

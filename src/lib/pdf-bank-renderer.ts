@@ -456,14 +456,14 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
 
       this.page.drawImage(img, { x, y, width: w, height: h });
 
-      if (caption) {
-        const text = this.sanitizeText(caption);
-        const tw = this.fontBold.widthOfTextAtSize(text, FONT_SIZE_CAPTION);
+      if (caption && caption.trim().length > 0) {
+        const text = this.sanitizeText(caption.trim());
+        const tw = this.fontItalic.widthOfTextAtSize(text, FONT_SIZE_CAPTION);
         this.page.drawText(text, {
           x: MARGIN_L + (CONTENT_W - tw) / 2,
           y: y - 12,
           size: FONT_SIZE_CAPTION,
-          font: this.fontBold,
+          font: this.fontItalic,
           color: rgb(0, 0, 0),
         });
       }
@@ -522,16 +522,18 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
 
             this.page.drawImage(img, { x: imgX, y: imgY, width: w, height: h });
 
-            // Label
-            const text = this.sanitizeText(p.label);
-            const tw = this.fontRegular.widthOfTextAtSize(text, FONT_SIZE_CAPTION);
-            this.page.drawText(text, {
-              x: curX + (cellW - tw) / 2,
-              y: y - cellH + 6,
-              size: FONT_SIZE_CAPTION,
-              font: this.fontRegular,
-              color: rgb(0, 0, 0),
-            });
+            // Label (non-bold, Times-Italic, 10pt)
+            if (p.label && p.label.trim().length > 0) {
+              const text = this.sanitizeText(p.label.trim());
+              const tw = this.fontItalic.widthOfTextAtSize(text, FONT_SIZE_CAPTION);
+              this.page.drawText(text, {
+                x: curX + (cellW - tw) / 2,
+                y: y - cellH + 6,
+                size: FONT_SIZE_CAPTION,
+                font: this.fontItalic,
+                color: rgb(0, 0, 0),
+              });
+            }
           }
         } catch { /* ignore */ }
       }

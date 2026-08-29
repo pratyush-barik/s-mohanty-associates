@@ -2885,11 +2885,13 @@ Our valuation is based on information obtained from the client and on data gathe
         r.advanceCursor(6);
 
         for (let i = 0; i < propImageBytes.length; i += 2) {
-          const name1 = fields.propertyImageNames?.[i] ?? 'Site Picture';
-          const caption1 = name1 ? `PHOTO ${i + 1} - ${name1.toUpperCase()}` : `PHOTO ${i + 1}`;
+          const caption1 = fields.propertyImageNames?.[i] !== undefined
+            ? fields.propertyImageNames[i]
+            : 'Site Picture';
           const img2 = i + 1 < propImageBytes.length ? propImageBytes[i + 1] : null;
-          const name2 = fields.propertyImageNames?.[i + 1] ?? 'Site Picture';
-          const caption2 = name2 ? `PHOTO ${i + 2} - ${name2.toUpperCase()}` : `PHOTO ${i + 2}`;
+          const caption2 = (i + 1 < propImageBytes.length)
+            ? (fields.propertyImageNames?.[i + 1] !== undefined ? fields.propertyImageNames[i + 1] : 'Site Picture')
+            : '';
 
           await r.drawImagePair(propImageBytes[i], caption1, img2, caption2);
           r.advanceCursor(2);
