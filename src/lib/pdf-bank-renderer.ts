@@ -62,7 +62,7 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
    * Draw the top Main Title Banner (e.g. "Aditya Birla Capital Ltd (MLAP)")
    */
   drawMainHeader(title: string): void {
-    this.checkPageBreak(28);
+    this.checkPageBreak(30);
     const h = 24;
     const y = this.pdfY(this.cursorY);
 
@@ -93,9 +93,16 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
 
   /**
    * Draw a Section Header Banner (e.g. "BASIC DETAILS", "LOCATION DETAILS")
+   * Includes automated section spacing and page-break lookahead protection.
    */
-  drawSectionHeader(title: string): void {
-    this.checkPageBreak(22);
+  drawSectionHeader(title: string, addSpaceBefore = true): void {
+    if (addSpaceBefore && this.cursorY > 10) {
+      this.cursorY += 10;
+    }
+
+    // Require enough height for section header + at least 2 rows of content (prevents orphan headers)
+    this.checkPageBreak(70);
+
     const h = 20;
     const y = this.pdfY(this.cursorY);
 
@@ -367,7 +374,11 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
   /**
    * Draw a full-width Remarks / Narrative box
    */
-  drawRemarksBox(label: string, text: string): void {
+  drawRemarksBox(label: string, text: string, addSpaceBefore = true): void {
+    if (addSpaceBefore && this.cursorY > 10) {
+      this.cursorY += 10;
+    }
+
     const fontSize = FONT_SIZE;
     const pad = 4;
     const lines = this.wrapText(text || 'N/A', CONTENT_W - pad * 2, fontSize, false);
