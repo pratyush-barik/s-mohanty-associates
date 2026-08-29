@@ -151,6 +151,7 @@ interface IBBIFields {
   propertyType: string;
   customPropertyType?: string;
   currentUsage: string;
+  customCurrentUsage?: string;
   revenuePlotNo: string;
   revenueKhataNo: string;
   revenueVillage: string;
@@ -477,6 +478,7 @@ const DEFAULT_FIELDS: IBBIFields = {
   propertyType: 'Defunct Industrial Unit',
   customPropertyType: '',
   currentUsage: 'Vacant',
+  customCurrentUsage: '',
   revenuePlotNo: '',
   revenueKhataNo: '',
   revenueVillage: '',
@@ -1895,7 +1897,7 @@ Our valuation is based on information obtained from the client and on data gathe
       }
 
       r.draw5ColRow('4.1', 'Applicant(s) Name', fields.applicantName || fields.ownerName, 'Name of Owners', formattedOwners);
-      r.draw5ColRow('4.2', 'Type of property', (fields.propertyType === 'Other' ? fields.customPropertyType : fields.propertyType) || '', 'Current usage', fields.currentUsage);
+      r.draw5ColRow('4.2', 'Type of property', (fields.propertyType === 'Other' ? fields.customPropertyType : fields.propertyType) || '', 'Current usage', (fields.currentUsage === 'Other' ? fields.customCurrentUsage : fields.currentUsage) || '');
       r.drawSection4MultiSubRow('4.3', [
         { 
           label: 'Address of property / Site Address', 
@@ -3437,7 +3439,17 @@ Our valuation is based on information obtained from the client and on data gathe
                 )}
               </Field>
               <Field label="4.2 (b) Current usage" span={1}>
-                <input type="text" value={fields.currentUsage} onChange={e => handleChange('currentUsage', e.target.value)} className={inputCls} disabled={isReadOnly} />
+                <div className="flex flex-col gap-2">
+                  <select value={fields.currentUsage} onChange={e => handleChange('currentUsage', e.target.value)} className={selectCls} disabled={isReadOnly}>
+                    <option value="VACANT(DEFUNCT BOTTLING UNIT)">VACANT(DEFUNCT BOTTLING UNIT)</option>
+                    <option value="VACANT">VACANT</option>
+                    <option value="VACANT (DEFUNCT INDUSTRY)">VACANT (DEFUNCT INDUSTRY)</option>
+                    <option value="Other">Other (Custom)</option>
+                  </select>
+                  {fields.currentUsage === 'Other' && (
+                    <input type="text" value={fields.customCurrentUsage || ''} onChange={e => handleChange('customCurrentUsage', e.target.value)} className={inputCls} placeholder="Custom usage" disabled={isReadOnly} />
+                  )}
+                </div>
               </Field>
 
               {/* 4.3 Addresses */}
