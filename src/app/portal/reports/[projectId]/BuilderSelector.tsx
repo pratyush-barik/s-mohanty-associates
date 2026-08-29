@@ -172,6 +172,7 @@ export default function BuilderSelector({
     }
     if (queryParam === "INCOME_TAX") return "income_tax";
     if (queryParam === "IBBI_IVS") return "ibbi";
+    if (queryParam === "BANK" || queryParam === "bank") return "bank";
     return "general";
   };
 
@@ -205,15 +206,21 @@ export default function BuilderSelector({
     }
   }, []);
 
-  const navigateToBuilder = (target: BuilderType, updatedFields: any) => {
+  const navigateToBuilder = async (target: BuilderType, updatedFields: any) => {
     setActiveFields(updatedFields);
     setActiveBuilder(target);
     const url =
-      target === "general" || target === "bank"
+      target === "general"
         ? window.location.pathname
+        : target === "bank"
+        ? window.location.pathname + "?builder=BANK"
         : window.location.pathname + "?builder=" + (target === "ibbi" ? "IBBI_IVS" : "INCOME_TAX");
     window.history.replaceState(null, "", url);
-    saveReportDraft(projectId, updatedFields).catch((e) => console.error("Save draft in background failed:", e));
+    try {
+      await saveReportDraft(projectId, updatedFields);
+    } catch (e) {
+      console.error("Save draft in background failed:", e);
+    }
   };
 
   const handleReset = async () => {

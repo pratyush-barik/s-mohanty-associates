@@ -276,7 +276,7 @@ export async function saveReportDraft(projectId: string, fields: any) {
     const user = await prisma.employee.findUnique({ where: { id: session.user.id } });
     if (!user) return { error: 'Unauthorized' };
 
-    if (user.role === 'REPORT_EMPLOYEE' && project.reportEmployeeId !== session.user.id) {
+    if (user.role === 'REPORT_EMPLOYEE' && project.reportEmployeeId && project.reportEmployeeId !== session.user.id) {
       return { error: 'You are not assigned to this report.' };
     }
 

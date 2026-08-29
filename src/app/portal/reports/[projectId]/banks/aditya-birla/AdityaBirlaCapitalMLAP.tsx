@@ -299,6 +299,15 @@ export default function AdityaBirlaCapitalMLAP({
     };
   }, [fields, projectId, isReadOnly]);
 
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (isReadOnly) return;
+      saveReportDraft(projectId, fields).catch(e => console.error(e));
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [projectId, fields, isReadOnly]);
+
   // ── Image Upload Handlers ──
   const handleUploadSingleImage = async (e: React.ChangeEvent<HTMLInputElement>, targetKey: 'locationMapImage' | 'mouzaMapImage' | 'cadastralMapImage') => {
     const file = e.target.files?.[0];
