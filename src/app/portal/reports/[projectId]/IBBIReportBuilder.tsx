@@ -4954,13 +4954,12 @@ Our valuation is based on information obtained from the client and on data gathe
                   <Field label="Date of Valuation Report">
                     <input type="date" value={fields.dateOfValuation || ''} disabled className={inputCls + ' bg-gray-100'} />
                   </Field>
-                  <Field label="Place (Editable)">
+                  <Field label="Place">
                     <input
                       type="text"
-                      value={fields.conclusionPlace || ''}
-                      onChange={e => handleChange('conclusionPlace', e.target.value)}
-                      className={inputCls}
-                      disabled={isReadOnly}
+                      value={fields.conclusionPlace || 'Bhubaneswar'}
+                      className={inputCls + ' bg-gray-100'}
+                      disabled
                     />
                   </Field>
                 </div>
