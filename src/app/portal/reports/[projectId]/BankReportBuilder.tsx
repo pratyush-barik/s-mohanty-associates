@@ -2174,7 +2174,7 @@ export default function BankReportBuilder({
         )}
 
         {/* ── Action Buttons Footer ── */}
-        <div className="p-6 bg-white border border-[#dee2e6] rounded-2xl shadow-md flex flex-wrap items-center justify-between gap-4 sticky bottom-4 z-40">
+        <div className="p-6 bg-[#556B2F]/15 border-2 border-[#556B2F]/30 backdrop-blur-md rounded-2xl shadow-lg flex flex-wrap items-center justify-between gap-4 sticky bottom-4 z-40">
           {status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE' && (
             <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 font-semibold mb-2">
               <span>⏳ Currently Under Manager Review.</span>

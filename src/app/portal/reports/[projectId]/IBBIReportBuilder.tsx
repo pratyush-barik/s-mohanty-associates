@@ -5019,7 +5019,7 @@ Our valuation is based on information obtained from the client and on data gathe
             </div>
           </Section>
 
-      <div className="p-6 bg-white border border-[#dee2e6] rounded-2xl shadow-md flex flex-wrap items-center justify-between gap-4 sticky bottom-4 z-40">
+      <div className="p-6 bg-[#556B2F]/15 border-2 border-[#556B2F]/30 backdrop-blur-md rounded-2xl shadow-lg flex flex-wrap items-center justify-between gap-4 sticky bottom-4 z-40">
         {status === 'COMPLETED' && (
           <div className="w-full p-4 rounded-xl bg-green-50 border border-green-200 text-green-800 font-bold flex items-center gap-2">
             <span>✅</span> Verified and Completed (Pushed to storage for client download)

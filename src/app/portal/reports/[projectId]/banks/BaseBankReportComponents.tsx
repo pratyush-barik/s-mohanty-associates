@@ -265,7 +265,7 @@ export function ReportActionBar({
   onDownloadPDF: () => void;
 }) {
   return (
-    <div className="p-6 bg-white border border-[#dee2e6] rounded-2xl shadow-md flex flex-wrap items-center justify-between gap-4 sticky bottom-4 z-40">
+    <div className="p-6 bg-[#556B2F]/15 border-2 border-[#556B2F]/30 backdrop-blur-md rounded-2xl shadow-lg flex flex-wrap items-center justify-between gap-4 sticky bottom-4 z-40">
       <div className="flex items-center gap-3">
         {!isReadOnly && (
           <>
