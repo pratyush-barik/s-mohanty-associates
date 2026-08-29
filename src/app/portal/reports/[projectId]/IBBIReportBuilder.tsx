@@ -5100,14 +5100,6 @@ Our valuation is based on information obtained from the client and on data gathe
             disabled={loading}
             className="px-6 py-2.5 rounded-full bg-white border border-gray-300 text-gray-800 font-bold text-sm hover:bg-gray-100 transition-all disabled:opacity-50 flex items-center gap-2 shadow-sm"
           >
-            👁️ Preview PDF
-          </button>
-
-          <button
-            onClick={handleDownloadPDF}
-            disabled={loading}
-            className="px-6 py-2.5 rounded-full border border-gray-400 text-gray-700 font-bold text-sm hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center gap-2"
-          >
             📥 Download PDF
           </button>
 
