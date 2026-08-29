@@ -110,3 +110,4 @@ temp-parser
 # Python Virtual Environments
 .venv_rembg/
 
+/trash
