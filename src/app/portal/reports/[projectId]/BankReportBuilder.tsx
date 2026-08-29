@@ -2144,20 +2144,18 @@ export default function BankReportBuilder({
                 </Field>
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-                  <span>📍 Upload Location Map</span>
+                <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#b8860b] text-[#b8860b] text-sm font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-xs">
+                  <span>📷 Upload Location Map</span>
                   <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'locationMapImage')} className="hidden" disabled={uploading || isReadOnly} />
                 </label>
-                {bucketImages.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => openBucketPicker('locationMapImage')}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-sm font-medium hover:bg-[#1e3a5f]/5 transition-colors"
-                    disabled={isReadOnly}
-                  >
-                    Pick from Bucket
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => openBucketPicker('locationMapImage')}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#1e3a5f] text-[#1e3a5f] text-sm font-semibold hover:bg-[#1e3a5f]/10 transition-all cursor-pointer shadow-xs"
+                  disabled={isReadOnly}
+                >
+                  📁 Pick from Bucket {bucketImages?.length ? `(${bucketImages.length})` : ''}
+                </button>
               </div>
               {fields.locationMapImage ? (
                 <div className="relative group border rounded-xl overflow-hidden shadow-sm max-w-sm aspect-video bg-slate-100">

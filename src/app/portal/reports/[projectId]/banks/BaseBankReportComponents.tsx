@@ -504,8 +504,8 @@ export function BasePhotographsSection({
         <div className={`flex flex-wrap items-center justify-between gap-3 ${validPhotos.length > 0 ? 'pt-3 border-t border-slate-100' : ''}`}>
           <div className="flex flex-wrap items-center gap-3">
             {/* 1. Local Device Upload */}
-            <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-              {uploading ? '⏳ Uploading...' : 'Add Property Images'}
+            <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#b8860b] text-[#b8860b] text-sm font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-xs">
+              {uploading ? '⏳ Uploading...' : '📷 Add Property Images'}
               <input
                 type="file"
                 accept="image/*"
@@ -521,7 +521,7 @@ export function BasePhotographsSection({
               <button
                 type="button"
                 onClick={onOpenBucketPicker}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-sm font-medium hover:bg-[#1e3a5f]/5 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#1e3a5f] text-[#1e3a5f] text-sm font-semibold hover:bg-[#1e3a5f]/10 transition-all cursor-pointer shadow-xs"
               >
                 📁 Pick from Bucket {bucketCount > 0 ? `(${bucketCount})` : ''}
               </button>
@@ -665,15 +665,15 @@ export function BaseMapsSection({
           ) : (
             !isReadOnly && (
               <div className="flex flex-wrap items-center gap-2">
-                <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-bold cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-                  {uploading ? '⏳ Uploading...' : '📁 Upload Map Screenshot'}
+                <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-xs">
+                  {uploading ? '⏳ Uploading...' : '📷 Upload Map Screenshot'}
                   <input type="file" accept="image/*" className="hidden" onChange={onLocationMapUpload} disabled={uploading} />
                 </label>
                 {onOpenBucketPicker && (
                   <button
                     type="button"
                     onClick={() => onOpenBucketPicker('locationMapImage')}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[#1e3a5f] text-[#1e3a5f] text-xs font-bold hover:bg-[#1e3a5f]/5 transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[#1e3a5f] text-[#1e3a5f] text-xs font-semibold hover:bg-[#1e3a5f]/10 transition-all cursor-pointer shadow-xs"
                   >
                     📁 Pick from Bucket {bucketCount > 0 ? `(${bucketCount})` : ''}
                   </button>
@@ -689,15 +689,15 @@ export function BaseMapsSection({
             <h4 className="text-xs font-bold text-[#495057] uppercase tracking-wider">Sketch Maps</h4>
             {!isReadOnly && (
               <div className="flex items-center gap-2">
-                <label className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#b8860b] text-[#b8860b] text-xs font-bold cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-                  {uploading ? '⏳...' : '+ Upload Sketch'}
+                <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-xs">
+                  {uploading ? '⏳...' : '📷 Upload Sketch'}
                   <input type="file" accept="image/*" multiple className="hidden" onChange={onSketchMapUpload} disabled={uploading} />
                 </label>
                 {onOpenBucketPicker && (
                   <button
                     type="button"
                     onClick={() => onOpenBucketPicker('sketchMapImages')}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-xs font-bold hover:bg-[#1e3a5f]/5 transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#1e3a5f] text-[#1e3a5f] text-xs font-semibold hover:bg-[#1e3a5f]/10 transition-all cursor-pointer shadow-xs"
                   >
                     📁 Pick from Bucket {bucketCount > 0 ? `(${bucketCount})` : ''}
                   </button>
