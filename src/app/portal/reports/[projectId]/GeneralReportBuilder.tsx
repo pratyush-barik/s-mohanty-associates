@@ -3428,11 +3428,18 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           <p className="text-xs font-bold text-[#495057] uppercase tracking-wider">Sketch Maps</p>
         </div>
         {!isReadOnly && (
-          <div className="mb-3">
+          <div className="mb-3 flex flex-wrap items-center gap-3">
             <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
               {uploading ? 'Uploading...' : 'Upload Sketch Maps'}
               <input type="file" multiple accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'sketchMapImages')} disabled={uploading} />
             </label>
+            <button
+              type="button"
+              onClick={() => openBucketPicker('sketchMapImages')}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-sm font-medium hover:bg-[#1e3a5f]/5 transition-colors"
+            >
+              📁 Pick from Bucket {bucketImages?.length ? `(${bucketImages.length})` : ''}
+            </button>
           </div>
         )}
         {fields.sketchMapImages && fields.sketchMapImages.length > 0 ? (
@@ -3536,6 +3543,13 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                     {uploading ? 'Uploading...' : 'Upload Map Screenshot for PDF'}
                     <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'locationMapImage')} disabled={uploading} />
                   </label>
+                  <button
+                    type="button"
+                    onClick={() => openBucketPicker('locationMapImage')}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-sm font-medium hover:bg-[#1e3a5f]/5 transition-colors"
+                  >
+                    📁 Pick from Bucket {bucketImages?.length ? `(${bucketImages.length})` : ''}
+                  </button>
                 </div>
               )
             )}
