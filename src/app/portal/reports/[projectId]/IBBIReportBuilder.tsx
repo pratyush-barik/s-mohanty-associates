@@ -3373,8 +3373,8 @@ Our valuation is based on information obtained from the client and on data gathe
               <Field label="Property Description (Introductory paragraph in PDF)" span={2}>
                 <textarea value={fields.propertyDescription || ''} onChange={e => handleChange('propertyDescription', e.target.value)} className={inputCls + ' resize-none'} rows={3} placeholder="e.g. an inoperative water bottling unit over IDCO plot no 11,11/A at Jagatpur Industrial Estate" disabled={isReadOnly} />
               </Field>
-              <Field label="Applicant / Owner Name(s)" span={2}>
-                <textarea value={fields.applicantName} onChange={e => handleChange('applicantName', e.target.value)} className={inputCls} rows={2} placeholder="Full list of owners" disabled={true} />
+              <Field label="4.1 (a) Applicant name(s)" span={2}>
+                <textarea value={fields.applicantName} onChange={e => handleChange('applicantName', e.target.value)} className={inputCls} rows={2} placeholder="Full list of owners" disabled={isReadOnly} />
               </Field>
               <Field label="Managing Director">
                 <select value={fields.hasManagingDirector || 'no'} onChange={e => handleChange('hasManagingDirector', e.target.value)} className={selectCls} disabled={true}>
