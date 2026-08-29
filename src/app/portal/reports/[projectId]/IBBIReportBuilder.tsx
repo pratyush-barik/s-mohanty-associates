@@ -3162,18 +3162,9 @@ Our valuation is based on information obtained from the client and on data gathe
                 {!isReadOnly && !fields.coverPageImage && (
                   <div className="flex items-center gap-3 mb-3">
                     <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-sm font-medium cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-                      {uploading ? 'Uploading...' : '📷 Add Property Images'}
+                      {uploading ? 'Uploading...' : '📷 Upload Cover Photograph'}
                       <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'coverPageImage')} disabled={uploading} />
                     </label>
-                    {bucketImages && bucketImages.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => openBucketPicker('coverPageImage')}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-sm font-medium hover:bg-[#1e3a5f]/5 transition-colors"
-                      >
-                        Pick from Bucket ({bucketImages.length})
-                      </button>
-                    )}
                   </div>
                 )}
                 {fields.coverPageImage && (

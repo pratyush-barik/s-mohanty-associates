@@ -1382,10 +1382,6 @@ export default function AdityaBirlaCapitalMLAP({
           onMouzaMapRemove={() => handleChange('mouzaMapImage', '')}
           onCadastralMapUpload={(e) => handleUploadSingleImage(e, 'cadastralMapImage')}
           onCadastralMapRemove={() => handleChange('cadastralMapImage', '')}
-          onOpenBucketPicker={(mode) => {
-            setBucketPickerMode(mode);
-            setBucketPickerOpen(true);
-          }}
           sectionNumber={10}
           sectionId="section-10"
         />

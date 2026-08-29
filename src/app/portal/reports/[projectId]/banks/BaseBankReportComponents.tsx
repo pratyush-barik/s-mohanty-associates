@@ -572,7 +572,6 @@ export function BaseMapsSection({
   onMouzaMapRemove,
   onCadastralMapUpload,
   onCadastralMapRemove,
-  onOpenBucketPicker,
   sectionNumber = 10,
   sectionId = 'section-10',
 }: {
@@ -669,15 +668,6 @@ export function BaseMapsSection({
                   {uploading ? '⏳ Uploading...' : '📷 Upload Map Screenshot'}
                   <input type="file" accept="image/*" className="hidden" onChange={onLocationMapUpload} disabled={uploading} />
                 </label>
-                {onOpenBucketPicker && (
-                  <button
-                    type="button"
-                    onClick={() => onOpenBucketPicker('locationMapImage')}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[#1e3a5f] text-[#1e3a5f] text-xs font-semibold hover:bg-[#1e3a5f]/10 transition-all cursor-pointer shadow-xs"
-                  >
-                    📁 Pick from Bucket {bucketCount > 0 ? `(${bucketCount})` : ''}
-                  </button>
-                )}
               </div>
             )
           )}
@@ -693,15 +683,6 @@ export function BaseMapsSection({
                   {uploading ? '⏳...' : '📷 Upload Sketch'}
                   <input type="file" accept="image/*" multiple className="hidden" onChange={onSketchMapUpload} disabled={uploading} />
                 </label>
-                {onOpenBucketPicker && (
-                  <button
-                    type="button"
-                    onClick={() => onOpenBucketPicker('sketchMapImages')}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#1e3a5f] text-[#1e3a5f] text-xs font-semibold hover:bg-[#1e3a5f]/10 transition-all cursor-pointer shadow-xs"
-                  >
-                    📁 Pick from Bucket {bucketCount > 0 ? `(${bucketCount})` : ''}
-                  </button>
-                )}
               </div>
             )}
           </div>

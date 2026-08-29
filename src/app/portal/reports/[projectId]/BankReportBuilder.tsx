@@ -2047,16 +2047,6 @@ export default function BankReportBuilder({
                         <span>🗺️ Upload Mouza Map</span>
                         <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'mouzaMapImage')} className="hidden" disabled={uploading || isReadOnly} />
                       </label>
-                      {bucketImages.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => openBucketPicker('mouzaMapImage')}
-                          className="px-3 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-xs font-semibold hover:bg-[#1e3a5f]/5"
-                          disabled={isReadOnly}
-                        >
-                          Pick from Bucket
-                        </button>
-                      )}
                     </div>
                   )}
                 </div>
@@ -2076,16 +2066,6 @@ export default function BankReportBuilder({
                         <span>🗺️ Upload Cadastral Map</span>
                         <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'cadastralMapImage')} className="hidden" disabled={uploading || isReadOnly} />
                       </label>
-                      {bucketImages.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => openBucketPicker('cadastralMapImage')}
-                          className="px-3 py-2 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-xs font-semibold hover:bg-[#1e3a5f]/5"
-                          disabled={isReadOnly}
-                        >
-                          Pick from Bucket
-                        </button>
-                      )}
                     </div>
                   )}
                 </div>
@@ -2100,16 +2080,6 @@ export default function BankReportBuilder({
                       <span>+ Add Sketch Map</span>
                       <input type="file" multiple accept="image/*" onChange={e => handleFileUpload(e, 'sketchMapImages')} className="hidden" disabled={uploading || isReadOnly} />
                     </label>
-                    {bucketImages.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => openBucketPicker('sketchMapImages')}
-                        className="px-3 py-1.5 rounded-lg border border-[#1e3a5f] text-[#1e3a5f] text-xs font-semibold hover:bg-[#1e3a5f]/5"
-                        disabled={isReadOnly}
-                      >
-                        Pick from Bucket
-                      </button>
-                    )}
                   </div>
                 </div>
                 {Array.isArray(fields.sketchMapImages) && fields.sketchMapImages.length > 0 ? (
@@ -2148,14 +2118,6 @@ export default function BankReportBuilder({
                   <span>📷 Upload Location Map</span>
                   <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'locationMapImage')} className="hidden" disabled={uploading || isReadOnly} />
                 </label>
-                <button
-                  type="button"
-                  onClick={() => openBucketPicker('locationMapImage')}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#1e3a5f] text-[#1e3a5f] text-sm font-semibold hover:bg-[#1e3a5f]/10 transition-all cursor-pointer shadow-xs"
-                  disabled={isReadOnly}
-                >
-                  📁 Pick from Bucket {bucketImages?.length ? `(${bucketImages.length})` : ''}
-                </button>
               </div>
               {fields.locationMapImage ? (
                 <div className="relative group border rounded-xl overflow-hidden shadow-sm max-w-sm aspect-video bg-slate-100">

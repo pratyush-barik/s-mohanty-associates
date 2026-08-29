@@ -3433,13 +3433,6 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
               {uploading ? '⏳ Uploading...' : '📷 Upload Sketch Maps'}
               <input type="file" multiple accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'sketchMapImages')} disabled={uploading} />
             </label>
-            <button
-              type="button"
-              onClick={() => openBucketPicker('sketchMapImages')}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#1e3a5f] text-[#1e3a5f] text-sm font-semibold hover:bg-[#1e3a5f]/10 transition-all cursor-pointer shadow-xs"
-            >
-              📁 Pick from Bucket {bucketImages?.length ? `(${bucketImages.length})` : ''}
-            </button>
           </div>
         )}
         {fields.sketchMapImages && fields.sketchMapImages.length > 0 ? (
@@ -3543,13 +3536,6 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                     {uploading ? '⏳ Uploading...' : '📷 Upload Map Screenshot for PDF'}
                     <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'locationMapImage')} disabled={uploading} />
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => openBucketPicker('locationMapImage')}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#1e3a5f] text-[#1e3a5f] text-sm font-semibold hover:bg-[#1e3a5f]/10 transition-all cursor-pointer shadow-xs"
-                  >
-                    📁 Pick from Bucket {bucketImages?.length ? `(${bucketImages.length})` : ''}
-                  </button>
                 </div>
               )
             )}
