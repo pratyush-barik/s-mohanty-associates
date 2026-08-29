@@ -5043,7 +5043,7 @@ Our valuation is based on information obtained from the client and on data gathe
           </Section>
 
           {/* ── Annexure I & II Section ── */}
-          <Section title="Annexure I: General Principles" id="section-annexure1">
+          <Section title="Annexure I: General Principles and Limiting Conditions" id="section-annexure1">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Annexure I Text (Overrides default text)" span={2}>
                 <div className="flex justify-end mb-1">
