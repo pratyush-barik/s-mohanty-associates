@@ -1690,7 +1690,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       else if (fields.addressPrefixType === 'other') prefix = fields.customAddressPrefix ? fields.customAddressPrefix.trim() + ', ' : '';
       
       r.drawTextBlock(`OF ${(fields.propertyType === 'Other' ? fields.customPropertyType : fields.propertyType) || 'Property'} BELONGING TO`.toUpperCase(), { bold: true, align: 'center', fontSize: 13 });
-      r.drawTextBlock(`${fields.companyName || '________'}`.toUpperCase(), { align: 'center', fontSize: 13 });
+      r.drawTextBlock(`${fields.companyName || '________'}`.toUpperCase(), { bold: true, align: 'center', fontSize: 13, underline: true });
       r.drawTextBlock(`${prefix}${fields.propertyAddress || '________'}`.toUpperCase(), { bold: true, align: 'center', fontSize: 13 });
       r.advanceCursor(12);
       
@@ -1701,7 +1701,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       
       r.drawCenteredTitle('OWNER OF THE PROPERTY', 13);
       r.advanceCursor(4);
-      r.drawTextBlock((fields.applicantName || fields.ownerName || '________').toUpperCase(), { bold: true, align: 'center', fontSize: 11, underline: true });
+      r.drawTextBlock((fields.applicantName || fields.ownerName || '________').toUpperCase(), { align: 'center', fontSize: 11 });
       if (fields.hasManagingDirector === 'yes' && fields.managingDirectorName) {
         r.drawTextBlock('REPRESENTED THROUGH ITS MANAGING DIRECTOR', { align: 'center', fontSize: 11 });
         r.drawTextBlock(fields.managingDirectorName.toUpperCase(), { align: 'center', fontSize: 11 });
