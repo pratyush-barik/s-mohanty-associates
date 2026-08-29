@@ -1638,9 +1638,15 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       r.advanceCursor(24);
 
       // Value summary table on cover
-      r.drawSimpleRow('FAIR MARKET VALUE', `Rs.${formatIndianCurrency(fields.fairMarketValueTotal || '0')}/-`);
-      r.drawSimpleRow('LIQUIDATION VALUE', `Rs.${formatIndianCurrency(fields.realisableValueTotal || '0')}/-`);
-      r.drawSimpleRow('GOVT. GUIDELINE VALUE', `Rs.${formatIndianCurrency(fields.bookValueTotal || '0')}/-`);
+      const coverFmvVal = String((fields.valuationVariant === 'cuttack' ? fields.cuttackPresentOrSay : fields.totalPresentValueOrSay) || fields.fairMarketValueTotal || '0');
+      const coverLiqVal = String(fields.realisableValueOrSay || fields.realisableValueTotal || '0');
+      const coverGovtVal = String((fields.valuationVariant === 'cuttack' ? fields.cuttackGuidelineOrSay : fields.totalBookValueOrSay) || fields.bookValueTotal || '0');
+
+      const formatCoverVal = (v: string) => v.toLowerCase().includes('rs') ? v : `Rs.${formatIndianCurrency(v.replace(/[^0-9.]/g, '') || '0')}/-`;
+
+      r.drawSimpleRow('FAIR MARKET VALUE', formatCoverVal(coverFmvVal));
+      r.drawSimpleRow('LIQUIDATION VALUE', formatCoverVal(coverLiqVal));
+      r.drawSimpleRow('GOVT. GUIDELINE VALUE', formatCoverVal(coverGovtVal));
       r.advanceCursor(24);
 
       // Prepared By block
