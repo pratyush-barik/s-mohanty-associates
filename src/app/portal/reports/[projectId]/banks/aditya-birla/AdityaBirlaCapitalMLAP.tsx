@@ -603,7 +603,7 @@ export default function AdityaBirlaCapitalMLAP({
     if (propImgs.length > 0) {
       const photos = propImgs.map((imgUrl: string, idx: number) => ({
         bytes: imageResults[idx],
-        label: fields.propertyImageNames?.[idx] || 'Site Picture',
+        label: fields.propertyImageNames?.[idx] ?? 'Site Picture',
       })).filter((p: any) => p.bytes && p.bytes.length > 0);
 
       await r.drawPhotoGrid(photos);

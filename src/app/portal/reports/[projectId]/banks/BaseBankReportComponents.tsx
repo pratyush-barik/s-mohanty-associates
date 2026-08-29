@@ -471,7 +471,7 @@ export function BasePhotographsSection({
                     <input
                       type="text"
                       placeholder="Photo Label"
-                      value={propertyImageNames?.[idx] !== undefined && propertyImageNames[idx] !== '' ? propertyImageNames[idx] : DEFAULT_PHOTO_LABEL}
+                      value={propertyImageNames?.[idx] !== undefined ? propertyImageNames[idx] : DEFAULT_PHOTO_LABEL}
                       disabled={isReadOnly}
                       onChange={(e) => onImageNameChange(idx, e.target.value)}
                       className="text-xs font-bold text-slate-800 bg-white border border-[#dee2e6] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#b8860b] w-full max-w-sm"
