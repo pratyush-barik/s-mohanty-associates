@@ -2984,68 +2984,61 @@ Our valuation is based on information obtained from the client and on data gathe
       }
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-      //  ANNEXURE I: GENERAL PRINCIPLES AND LIMITING CONDITIONS
+      //  ANNEXURE I & II
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      const renderAnnexureText = (text: string) => {
+        text.split('\n').forEach(line => {
+          if (!line.trim()) {
+            r.advanceCursor(4);
+            return;
+          }
+          if (line.match(/^[A-Z\s]+$/)) {
+            // It's a heading
+            r.advanceCursor(4);
+            r.drawTextBlock(line, { bold: true, fontSize: 10 });
+            r.advanceCursor(2);
+          } else {
+            r.drawTextBlock(line, { align: 'left' });
+            r.advanceCursor(2);
+          }
+        });
+      };
+
+      // Annexure I
       r.newPage();
       r.drawCenteredTitle('ANNEXURE I: GENERAL PRINCIPLES AND LIMITING CONDITIONS');
+      tocPageMap['ANNEXURE I: GENERAL PRINCIPLES AND LIMITING CONDITIONS'] = r.getPageCount();
       r.advanceCursor(8);
-      r.drawTextBlock('General Principles Adopted and Limiting Conditions in the Preparation of Valuations and Reports. These are the general principles and limiting conditions upon which our valuation and reports are normally prepared; they apply unless we have specifically mentioned otherwise in the body of the report.');
-      r.advanceCursor(6);
-      r.drawTextBlock('CONFIDENTIALITY', { bold: true });
-      r.drawTextBlock('Our valuation and reports are confidential to the client or to whom they are addressed for the specific purpose to which they refer. They may be disclosed to other professional advisors assisting the client in respect of that purpose, but the client shall not disclose the report to any other party. No responsibility is accepted to any other party and neither the whole, nor any part, nor reference thereto may be included in any published document, statement or circular, or published in any way, nor in any communication with third parties, without our prior written approval of the form and context in which it will appear.');
-      r.advanceCursor(4);
-      r.drawTextBlock('USE OF REPORT', { bold: true });
-      r.drawTextBlock('The opinion of value expressed in this Report shall be used for the purpose stated in this Report only. We are not responsible for any consequences arising from the Valuation being quoted out of context.');
-      r.advanceCursor(4);
-      r.drawTextBlock('SOURCE OF INFORMATION', { bold: true });
-      r.drawTextBlock('Where it is stated in the Report that information has been supplied by the sources listed, this information is believed to be reliable and no responsibility is accepted should it prove incorrect. All other information stated without being attributed directly to another party is obtained from our searches of documents or enquiries with the relevant authorities. This Report has been prepared on the basis that full disclosure of all information and facts which may affect the Valuation have been made known to ourselves and we cannot accept any liability or responsibility in any event, unless such full disclosure has been made.');
-      r.advanceCursor(4);
-      r.drawTextBlock('LEGAL TITLE', { bold: true });
-      r.drawTextBlock('Whilst we may have inspected the title of the property as recorded in the Register Document of Title, we cannot accept any responsibility for its legal validity.');
-      r.advanceCursor(4);
-      r.drawTextBlock('TOWN PLANNING AND OTHER STATUTORY REGULATIONS', { bold: true });
-      r.drawTextBlock('Whilst we may make verbal enquiries or gather information on Town Planning, we do not normally carry out requisitions with the various public authorities to confirm that the property is not adversely affected by any public schemes such as road and drainage improvements. If reassurance is required, we recommend that verification be obtained from your lawyers or other professional advisors.');
-      r.drawTextBlock('Our valuation has been prepared on the basis and any improvements thereon comply with all relevant statutory regulations. It is assumed that they have been, or will be issued with a Certificate of Fitness for Occupation by the competent authority.');
-      r.advanceCursor(4);
-      r.drawTextBlock('LEASES AND TENANCIES', { bold: true });
-      r.drawTextBlock('Enquiries as to the financial standing of actual or prospective lessees or tenants are not normally made unless specifically requested. Where properties are valued with the benefit of lettings, it is therefore assumed that the lessees or tenants are capable of meeting their obligations under the lease or tenancy and that there are no arrears of rent or undisclosed breaches of covenant.');
-      r.advanceCursor(4);
-      r.drawTextBlock('DEVELOPMENT AGREEMENTS', { bold: true });
-      r.drawTextBlock('Unless otherwise stated, no allowances are made in our valuation for any joint venture agreement, development right agreement or other similar contracts.');
-      r.advanceCursor(4);
-      r.drawTextBlock('SITE SURVEYS', { bold: true });
-      r.drawTextBlock('We have conducted boundary checks, and, we assume that the dimensions correspond with those shown in the title document, certified plan or any relevant agreement.');
-      r.advanceCursor(4);
-      r.drawTextBlock('STRUCTURAL SURVEYS', { bold: true });
-      r.drawTextBlock('We have neither carried out a building survey nor any testing of services, nor have we inspected those parts of the property which are inaccessible. We cannot express an opinion about or advice upon the condition of uninspected parts and this Report should not be taken as making any implied representation or statement about such parts.');
+      if (fields.annexure1Text) renderAnnexureText(fields.annexure1Text);
       r.advanceCursor(8);
+      r.drawSplitSignatureBlock(
+        [
+          { text: `Date   : ${fmtDateDDMMYYYY(fields.dateOfValuation)}`, bold: true },
+          { text: `Place:  ${fields.conclusionPlace || 'Bhubaneswar'}`, bold: true },
+        ],
+        [
+          { text: 'Signature & Seal of Valuer', bold: true },
+          { text: `Name of the Valuer – ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}`, bold: true },
+        ]
+      );
 
-      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-      //  ANNEXURE II: GENERAL ASSUMPTIONS
-      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      // Annexure II
       r.newPage();
       r.drawCenteredTitle('ANNEXURE II: GENERAL ASSUMPTIONS');
+      tocPageMap['ANNEXURE II: GENERAL ASSUMPTIONS'] = r.getPageCount();
       r.advanceCursor(8);
-      r.drawTextBlock('We assume that information provided by client or its representative for this Valuation for all relevant projects is true and accurate. It includes details of measurements of land and built up area, etc.');
-      r.advanceCursor(4);
-      r.drawTextBlock('We have not gone through the legal aspects like documents of title deed, lease deed, revenue records, court matters (if any), and documentation like joint development with other companies. We also assume for this valuation assignment that the title and development rights of all the properties lies with the Company and is clear, marketable and free of all encumbrances, restrictions, easements or charges which may have detrimental effect upon the value of the property. It is also assumed that company has paid all property related taxes.');
-      r.advanceCursor(4);
-      r.drawTextBlock('We have neither carried out any soil testing nor structural surveys nor are we experts in the field of structural survey. Therefore, we do not give any assurance that properties are free from structural defect. If any investigation identifies any structural defect in the property our report may require revision. Neither are we the experts in the town planning to factor the town planning aspects in the project. Sewers, main services and the roads giving access to the property have been provided.');
-      r.advanceCursor(4);
-      r.drawTextBlock('We assumed that all the constructed structures and proposed construction is/will be free from harmful materials and/or techniques. Our valuation is on the basis that no such materials or techniques have been used.');
-      r.advanceCursor(4);
-      r.drawTextBlock('Unless advised by the company or representative of the company, we do not normally make allowance for any liability already incurred, but not yet discharged, in respect of balance land cost, completed works, or obligations in favour of contractors, subcontractors or any other professional.');
-      r.advanceCursor(4);
-      r.drawTextBlock('Unless advised by the company or representative of the company, no allowance is made for any expense of realization or for taxation, which may arise in the event of a disposal. The property is considered as if free and clears of all mortgages or other charges that may be secured thereon.');
+      if (fields.annexure2Text) renderAnnexureText(fields.annexure2Text);
       r.advanceCursor(8);
-
-      // Annexure II signature
-      r.drawSignatureBlock([
-        { text: `Date: ${fmtDateDDMMYYYY(fields.dateOfValuation)}` },
-        { text: 'Signature & Seal of Valuer' },
-        { text: 'Place: Bhubaneswar' },
-        { text: `Name of the Valuer - ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}${fields.valuerQualifications ? ' ' + fields.valuerQualifications.toUpperCase() : ''}`, bold: true },
-      ]);
+      r.drawSplitSignatureBlock(
+        [
+          { text: `Date   : ${fmtDateDDMMYYYY(fields.dateOfValuation)}`, bold: true },
+          { text: `Place:  ${fields.conclusionPlace || 'Bhubaneswar'}`, bold: true },
+        ],
+        [
+          { text: 'Signature & Seal of Valuer', bold: true },
+          { text: `Name of the Valuer – ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}`, bold: true },
+        ]
+      );
 
       return await r.toBlob();
     } catch (err) {
@@ -5052,6 +5045,9 @@ Our valuation is based on information obtained from the client and on data gathe
           <Section title="Annexure I: General Principles" id="section-annexure1">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Annexure I Text (Overrides default text)" span={2}>
+                <div className="flex justify-end mb-1">
+                  <button type="button" onClick={() => handleChange('annexure1Text', DEFAULT_FIELDS.annexure1Text)} className="text-xs text-blue-600 hover:underline">Reset to Default</button>
+                </div>
                 <textarea rows={10} value={fields.annexure1Text || ''} onChange={e => handleChange('annexure1Text', e.target.value)} className={inputCls} disabled={isReadOnly} />
               </Field>
               <Field label="Date (From Conclusion)">
@@ -5069,6 +5065,9 @@ Our valuation is based on information obtained from the client and on data gathe
           <Section title="Annexure II: General Assumptions" id="section-annexure2">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Annexure II Text (Overrides default text)" span={2}>
+                <div className="flex justify-end mb-1">
+                  <button type="button" onClick={() => handleChange('annexure2Text', DEFAULT_FIELDS.annexure2Text)} className="text-xs text-blue-600 hover:underline">Reset to Default</button>
+                </div>
                 <textarea rows={10} value={fields.annexure2Text || ''} onChange={e => handleChange('annexure2Text', e.target.value)} className={inputCls} disabled={isReadOnly} />
               </Field>
               <Field label="Date (From Conclusion)">
