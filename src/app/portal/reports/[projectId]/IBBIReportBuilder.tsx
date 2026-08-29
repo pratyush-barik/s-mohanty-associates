@@ -2992,8 +2992,9 @@ Our valuation is based on information obtained from the client and on data gathe
             r.advanceCursor(4);
             return;
           }
-          if (line.match(/^[A-Z\s]+$/)) {
+          if (line.match(/^[A-Z\s,]+$/)) {
             // It's a heading
+            r.checkPageBreak(50); // Ensure at least 50pt remains so heading isn't orphaned
             r.advanceCursor(4);
             r.drawTextBlock(line, { bold: true, fontSize: 10 });
             r.advanceCursor(2);
