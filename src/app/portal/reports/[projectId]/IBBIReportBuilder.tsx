@@ -148,6 +148,7 @@ interface IBBIFields {
   managingDirectorName?: string;
   coverPageImage?: string;
   propertyType: string;
+  customPropertyType?: string;
   currentUsage: string;
   revenuePlotNo: string;
   revenueKhataNo: string;
@@ -460,6 +461,7 @@ const DEFAULT_FIELDS: IBBIFields = {
   managingDirectorName: '',
   coverPageImage: '',
   propertyType: 'Defunct Industrial Unit',
+  customPropertyType: '',
   currentUsage: 'Vacant',
   revenuePlotNo: '',
   revenueKhataNo: '',
@@ -1614,7 +1616,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       else if (fields.addressPrefixType === 'idco_plot') prefix = 'OVER IDCO PLOT, ';
       else if (fields.addressPrefixType === 'other') prefix = fields.customAddressPrefix ? fields.customAddressPrefix.trim() + ', ' : '';
       
-      r.drawTextBlock(`OF ${fields.propertyType || 'Property'} BELONGING TO`.toUpperCase(), { bold: true, align: 'center', fontSize: 13 });
+      r.drawTextBlock(`OF ${(fields.propertyType === 'Other' ? fields.customPropertyType : fields.propertyType) || 'Property'} BELONGING TO`.toUpperCase(), { bold: true, align: 'center', fontSize: 13 });
       r.drawTextBlock(`${fields.applicantName || fields.ownerName || '________'}`.toUpperCase(), { bold: true, align: 'center', fontSize: 13, underline: true });
       r.drawTextBlock(`${prefix}${fields.propertyAddress || '________'}`.toUpperCase(), { bold: true, align: 'center', fontSize: 13 });
       r.advanceCursor(12);
@@ -1720,7 +1722,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       const certCurrentOwner = fields.certCurrentOwner || certOwner;
       const certAddress = fields.propertyAddress || fields.ownerAddress || '________';
       const certDate = fmtDateDDMMYYYY(fields.dateOfInspection);
-      const coverDesc = fields.propertyType || 'Property';
+      const coverDesc = (fields.propertyType === 'Other' ? fields.customPropertyType : fields.propertyType) || 'Property';
       if (fields.valuationCertificateIntro && fields.valuationCertificateIntro.trim()) {
         r.drawTextBlock(fields.valuationCertificateIntro, { fontSize: 10, align: 'justify' });
       }
@@ -1863,7 +1865,7 @@ Our valuation is based on information obtained from the client and on data gathe
       r.drawTextBlock('BASIC DETAILS OF THE PROPERTY', { bold: true });
       r.advanceCursor(4);
       r.drawSimpleRow('4.1  Applicant Name / Owners', fields.applicantName || fields.ownerName);
-      r.drawSimpleRow('4.2  Type of Property', fields.propertyType);
+      r.drawSimpleRow('4.2  Type of Property', (fields.propertyType === 'Other' ? fields.customPropertyType : fields.propertyType) || '');
       r.drawSimpleRow('     Current Usage', fields.currentUsage);
       r.drawSimpleRow('4.3  Site Address', fields.propertyAddress);
       r.drawSimpleRow('     Address as per Documents', fields.legalAddress);
@@ -3079,15 +3081,21 @@ Our valuation is based on information obtained from the client and on data gathe
           <Section title="Valuation Report Cover" id="section-cover">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <Field label="Type of Property">
-                <select value={fields.propertyType} onChange={e => handleChange('propertyType', e.target.value)} className={selectCls} disabled={isReadOnly}>
-                  <option value="Defunct Industrial Unit">Defunct Industrial Unit</option>
-                  <option value="Industrial">Industrial</option>
-                  <option value="Residential">Residential</option>
-                  <option value="Commercial">Commercial</option>
-                  <option value="Agricultural Land">Agricultural Land</option>
-                  <option value="Residential cum Commercial">Residential cum Commercial</option>
-                  <option value="Vacant Plot">Vacant Plot</option>
-                </select>
+                <div className="flex flex-col gap-2">
+                  <select value={fields.propertyType} onChange={e => handleChange('propertyType', e.target.value)} className={selectCls} disabled={isReadOnly}>
+                    <option value="DEFUNCT BOTTLING UNIT">DEFUNCT BOTTLING UNIT</option>
+                    <option value="DEFUNCT INDUSTRIAL UNIT">DEFUNCT INDUSTRIAL UNIT</option>
+                    <option value="VACANT LAND">VACANT LAND</option>
+                    <option value="Industrial">Industrial</option>
+                    <option value="Residential">Residential</option>
+                    <option value="Commercial">Commercial</option>
+                    <option value="Agricultural Land">Agricultural Land</option>
+                    <option value="Other">Other (Custom)</option>
+                  </select>
+                  {fields.propertyType === 'Other' && (
+                    <input type="text" value={fields.customPropertyType || ''} onChange={e => handleChange('customPropertyType', e.target.value)} className={inputCls} placeholder="Custom property type..." disabled={isReadOnly} />
+                  )}
+                </div>
               </Field>
               <Field label="Address Prefix (Cover Page)">
                 <div className="flex flex-col gap-2">
@@ -3368,15 +3376,21 @@ Our valuation is based on information obtained from the client and on data gathe
                 )}
               </div>
               <Field label="Type of Property">
-                <select value={fields.propertyType} onChange={e => handleChange('propertyType', e.target.value)} className={selectCls} disabled={true}>
-                  <option value="Defunct Industrial Unit">Defunct Industrial Unit</option>
-                  <option value="Industrial">Industrial</option>
-                  <option value="Residential">Residential</option>
-                  <option value="Commercial">Commercial</option>
-                  <option value="Agricultural Land">Agricultural Land</option>
-                  <option value="Residential cum Commercial">Residential cum Commercial</option>
-                  <option value="Vacant Plot">Vacant Plot</option>
-                </select>
+                <div className="flex flex-col gap-2">
+                  <select value={fields.propertyType} onChange={e => handleChange('propertyType', e.target.value)} className={selectCls} disabled={true}>
+                    <option value="DEFUNCT BOTTLING UNIT">DEFUNCT BOTTLING UNIT</option>
+                    <option value="DEFUNCT INDUSTRIAL UNIT">DEFUNCT INDUSTRIAL UNIT</option>
+                    <option value="VACANT LAND">VACANT LAND</option>
+                    <option value="Industrial">Industrial</option>
+                    <option value="Residential">Residential</option>
+                    <option value="Commercial">Commercial</option>
+                    <option value="Agricultural Land">Agricultural Land</option>
+                    <option value="Other">Other (Custom)</option>
+                  </select>
+                  {fields.propertyType === 'Other' && (
+                    <input type="text" value={fields.customPropertyType || ''} onChange={e => handleChange('customPropertyType', e.target.value)} className={inputCls} placeholder="Custom property type..." disabled={true} />
+                  )}
+                </div>
               </Field>
               <Field label="Current Usage">
                 <select value={fields.currentUsage} onChange={e => handleChange('currentUsage', e.target.value)} className={selectCls} disabled={isReadOnly}>
