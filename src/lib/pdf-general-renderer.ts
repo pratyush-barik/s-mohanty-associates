@@ -6,7 +6,7 @@
 import { PDFDocument, PDFPage, PDFFont, PDFImage, PDFEmbeddedPage, StandardFonts, rgb } from 'pdf-lib';
 
 // ─── Color helpers ──────────────────────────────────────────────────
-function hexToRgb(hex: string) {
+export function hexToRgb(hex: string) {
   const h = hex.replace('#', '');
   const r = parseInt(h.substring(0, 2), 16) / 255;
   const g = parseInt(h.substring(2, 4), 16) / 255;
@@ -15,32 +15,35 @@ function hexToRgb(hex: string) {
 }
 
 // ─── Constants ──────────────────────────────────────────────────────
-const PAGE_W = 595.28;   // A4 width in points
-const PAGE_H = 841.89;   // A4 height in points
-const MARGIN_T = 108;  // Top margin — must clear the letterhead header (logo + tagline row). Increased from 84 to match actual header height and prevent per-page overlap.
-const MARGIN_B = 80;  // Bottom margin (matches letterhead footer)
-const MARGIN_L = 54;  // Left margin
-const MARGIN_R = 54;  // Right margin
-const CONTENT_W = PAGE_W - MARGIN_L - MARGIN_R; // Usable width
+export const PAGE_W = 595.28;   // A4 width in points
+export const PAGE_H = 841.89;   // A4 height in points
+export const MARGIN_T = 108;  // Top margin — must clear the letterhead header (logo + tagline row).
+export const MARGIN_B = 80;   // Bottom margin (matches letterhead footer)
+export const MARGIN_L = 54;   // Left margin
+export const MARGIN_R = 54;   // Right margin
+export const CONTENT_W = PAGE_W - MARGIN_L - MARGIN_R; // Usable width: 487.28pt
 
 // 3-column widths (28% / 35% / 37%)
-const COL_W = [
+export const COL_W = [
   Math.round(CONTENT_W * 0.28), // label column
   Math.round(CONTENT_W * 0.35), // options column
   CONTENT_W - Math.round(CONTENT_W * 0.28) - Math.round(CONTENT_W * 0.35), // value column
 ];
 
 // Styling
-const CELL_PAD_X = 4;
-const CELL_PAD_Y = 3;
-const FONT_SIZE = 12;
-const FONT_SIZE_HEADER = 14;
-const FONT_SIZE_SMALL = 12;
-const FONT_SIZE_CAPTION = 10;
-const LINE_HEIGHT = 1.25; // multiplier on font size
-const BORDER_W = 0.75;
-const LBL_BG = '#DBE6F0';
-const OPT_BG = '#DDE9F6';
+export const CELL_PAD_X = 4;
+export const CELL_PAD_Y = 3;
+export const FONT_SIZE = 12;
+export const FONT_SIZE_HEADER = 14;
+export const FONT_SIZE_TITLE = 14;
+export const FONT_SIZE_SMALL = 12;
+export const FONT_SIZE_CAPTION = 10;
+export const LINE_HEIGHT = 1.25; // multiplier on font size
+export const BORDER_W = 0.5;
+export const LBL_BG = '#DBE6F0';
+export const OPT_BG = '#DDE9F6';
+export const VAL_BG = '#FEF9E7';
+export const BG_OPACITY = 0.5;
 
 export interface TextSegment {
   text: string;
@@ -48,7 +51,7 @@ export interface TextSegment {
   italic?: boolean;
 }
 
-interface DrawTextOptions {
+export interface DrawTextOptions {
   bold?: boolean;
   italic?: boolean;
   fontSize?: number;
@@ -57,19 +60,16 @@ interface DrawTextOptions {
 }
 
 export class PDFGeneralRenderer {
-  private doc!: PDFDocument;
-  private page!: PDFPage;
-  private fontRegular!: PDFFont;
-  private fontBold!: PDFFont;
-  private fontItalic!: PDFFont;
-  private fontBoldItalic!: PDFFont;
+  protected doc!: PDFDocument;
+  protected page!: PDFPage;
+  protected fontRegular!: PDFFont;
+  protected fontBold!: PDFFont;
+  protected fontItalic!: PDFFont;
+  protected fontBoldItalic!: PDFFont;
   // Form XObject (embedded PDF page) for the letterhead background.
-  // Using embedPdf+drawPage produces /Subtype/Form instead of /Subtype/Image,
-  // which PDF-to-Word converters (e.g. ilovepdf) recognise as a template/background
-  // layer rather than an inline image, giving consistent letterhead in exported DOCX.
-  private letterheadForm: PDFEmbeddedPage | null = null;
-  private cursorY = 0; // distance from top of content area (top-down)
-  private initialized = false;
+  protected letterheadForm: PDFEmbeddedPage | null = null;
+  protected cursorY = 0; // distance from top of content area (top-down)
+  protected initialized = false;
 
   /**
    * Initialize the renderer. Must be called before any drawing.
@@ -83,8 +83,6 @@ export class PDFGeneralRenderer {
 
     if (letterheadBytes && letterheadBytes.length > 0) {
       try {
-        // Build a single-page temp PDF containing only the letterhead image,
-        // then embed it into the main document as a Form XObject.
         const tmpDoc = await PDFDocument.create();
         let tmpImg = null;
         try { tmpImg = await tmpDoc.embedPng(letterheadBytes); } catch { /* try jpg */ }
@@ -108,7 +106,7 @@ export class PDFGeneralRenderer {
 
   // ─── Page Management ────────────────────────────────────────────
 
-  private addPage(): void {
+  protected addPage(): void {
     this.page = this.doc.addPage([PAGE_W, PAGE_H]);
     this.cursorY = 0;
 
@@ -122,12 +120,12 @@ export class PDFGeneralRenderer {
   }
 
   /** Available height remaining on current page */
-  private get availableHeight(): number {
+  protected get availableHeight(): number {
     return PAGE_H - MARGIN_T - MARGIN_B - this.cursorY;
   }
 
   /** Convert top-down cursorY to pdf-lib bottom-up Y */
-  private pdfY(topDown: number): number {
+  protected pdfY(topDown: number): number {
     return PAGE_H - MARGIN_T - topDown;
   }
 
@@ -150,15 +148,15 @@ export class PDFGeneralRenderer {
 
   // ─── Font Selection ─────────────────────────────────────────────
 
-  private getFont(bold?: boolean, italic?: boolean): PDFFont {
+  protected getFont(bold?: boolean, italic?: boolean): PDFFont {
     if (bold && italic) return this.fontBoldItalic;
     if (bold) return this.fontBold;
     if (italic) return this.fontItalic;
     return this.fontRegular;
   }
 
-  /** Strip/replace characters that WinAnsi (Helvetica) cannot encode */
-  private sanitizeText(text: string): string {
+  /** Strip/replace characters that WinAnsi (Helvetica/Times) cannot encode */
+  protected sanitizeText(text: string): string {
     let clean = String(text ?? '');
     
     // Decode HTML entities
@@ -273,7 +271,7 @@ export class PDFGeneralRenderer {
   // ─── Drawing Primitives ────────────────────────────────────────
 
   /** Draw a filled rectangle */
-  private drawRect(x: number, topY: number, w: number, h: number, fillColor?: string, borderColor?: string, borderWidth?: number, opacity?: number): void {
+  protected drawRect(x: number, topY: number, w: number, h: number, fillColor?: string, borderColor?: string, borderWidth?: number, opacity?: number): void {
     const pY = this.pdfY(topY) - h;
     if (fillColor) {
       this.page.drawRectangle({ x, y: pY, width: w, height: h, color: hexToRgb(fillColor), opacity: opacity ?? 1 });
@@ -288,7 +286,7 @@ export class PDFGeneralRenderer {
   }
 
   /** Draw a horizontal line */
-  private drawHLine(x1: number, x2: number, topY: number, color?: string, width?: number): void {
+  protected drawHLine(x1: number, x2: number, topY: number, color?: string, width?: number): void {
     const pY = this.pdfY(topY);
     this.page.drawLine({
       start: { x: x1, y: pY },
@@ -299,7 +297,7 @@ export class PDFGeneralRenderer {
   }
 
   /** Draw a single line of text at absolute coordinates */
-  private drawTextAt(text: string, x: number, topY: number, opts?: DrawTextOptions & { textColor?: string }): void {
+  protected drawTextAt(text: string, x: number, topY: number, opts?: DrawTextOptions & { textColor?: string }): void {
     const strText = this.sanitizeText(text);
     const fontSize = opts?.fontSize || FONT_SIZE;
     const font = this.getFont(opts?.bold, opts?.italic);
@@ -326,7 +324,7 @@ export class PDFGeneralRenderer {
   }
 
   /** Draw wrapped text at absolute coordinates, returns total height consumed */
-  private drawWrappedTextAt(text: string, x: number, topY: number, maxWidth: number, opts?: DrawTextOptions): number {
+  protected drawWrappedTextAt(text: string, x: number, topY: number, maxWidth: number, opts?: DrawTextOptions): number {
     const fontSize = opts?.fontSize || FONT_SIZE;
     const lineH = fontSize * LINE_HEIGHT;
     const lines = this.wrapText(String(text || ''), maxWidth, fontSize, opts?.bold, opts?.italic);
@@ -338,7 +336,7 @@ export class PDFGeneralRenderer {
   }
 
   /** Draw rich text segments (mixed bold/regular) on a single conceptual line, with wrapping */
-  private drawRichTextAt(segments: TextSegment[], x: number, topY: number, maxWidth: number, fontSize: number): number {
+  protected drawRichTextAt(segments: TextSegment[], x: number, topY: number, maxWidth: number, fontSize: number): number {
     const lineH = fontSize * LINE_HEIGHT;
 
     // Build a flat list of {word, bold, italic}
