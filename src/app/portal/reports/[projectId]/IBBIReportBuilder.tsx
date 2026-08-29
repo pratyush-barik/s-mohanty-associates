@@ -453,6 +453,7 @@ const DEFAULT_FIELDS: IBBIFields = {
   purposeOfValuation: 'To assess the Fair Market Value for Auction / Liquidation purpose',
   valuationMethod: 'Sale Comparison Method coupled with Replacement Cost Approach',
   propertyDescription: '',
+  propertyDescriptionParagraphs: [''],
   caseReferenceNo: '',
   caseReferenceNo2: '',
   appointedBy: '',
@@ -1936,11 +1937,14 @@ Our valuation is based on information obtained from the client and on data gathe
       r.newPage();
       r.drawSectionHeader('4. BRIEF DESCRIPTION OF THE PROPERTY');
       tocPageMap['4.  BRIEF DESCRIPTION OF THE PROPERTY'] = r.getPageCount();
-      // Introductory prose paragraph (matches sample format)
-      if (fields.propertyDescription) {
-        r.drawTextBlock(`The Property in consideration is ${fields.propertyDescription} conveniently located at ${fields.propertyAddress || '________'}.`);
-        r.advanceCursor(6);
-      }
+      // Introductory prose paragraph(s)
+      const paras = fields.propertyDescriptionParagraphs || [fields.propertyDescription];
+      paras.forEach(para => {
+        if (para && para.trim()) {
+          r.drawTextBlock(para.trim());
+          r.advanceCursor(6);
+        }
+      });
       r.drawTextBlock('BASIC DETAILS OF THE PROPERTY', { bold: true });
       r.advanceCursor(4);
       let formattedOwners = '';
@@ -3473,8 +3477,50 @@ Our valuation is based on information obtained from the client and on data gathe
           {/* ── Section 4: Brief Description ── */}
           <Section title="Brief Description of the Property" number={4}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Property Description (Introductory paragraph in PDF)" span={2}>
-                <textarea value={fields.propertyDescription || ''} onChange={e => handleChange('propertyDescription', e.target.value)} className={inputCls + ' resize-none'} rows={3} placeholder="e.g. an inoperative water bottling unit over IDCO plot no 11,11/A at Jagatpur Industrial Estate" disabled={isReadOnly} />
+              <Field label="Property Description (Introductory Paragraph(s))" span={2}>
+                <div className="flex flex-col gap-3">
+                  {(fields.propertyDescriptionParagraphs || [fields.propertyDescription || '']).map((para, idx) => (
+                    <div key={idx} className="relative flex gap-2">
+                      <textarea
+                        value={para}
+                        onChange={e => {
+                          const newArr = [...(fields.propertyDescriptionParagraphs || [fields.propertyDescription || ''])];
+                          newArr[idx] = e.target.value;
+                          handleChange('propertyDescriptionParagraphs', newArr);
+                        }}
+                        className={inputCls + ' resize-none flex-1'}
+                        rows={3}
+                        placeholder="Write a paragraph describing the property..."
+                        disabled={isReadOnly}
+                      />
+                      {!isReadOnly && (fields.propertyDescriptionParagraphs?.length > 1 || (!fields.propertyDescriptionParagraphs && idx === 0)) && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newArr = [...(fields.propertyDescriptionParagraphs || [fields.propertyDescription || ''])];
+                            newArr.splice(idx, 1);
+                            handleChange('propertyDescriptionParagraphs', newArr);
+                          }}
+                          className="px-3 py-1 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 self-start"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  {!isReadOnly && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newArr = [...(fields.propertyDescriptionParagraphs || [fields.propertyDescription || '']), ''];
+                        handleChange('propertyDescriptionParagraphs', newArr);
+                      }}
+                      className="px-4 py-2 bg-[#f0f4f8] text-[#1e3a5f] border border-[#d1d5db] font-semibold rounded-lg self-start hover:bg-[#e2e8f0] transition-colors flex items-center gap-2"
+                    >
+                      + Add Paragraph
+                    </button>
+                  )}
+                </div>
               </Field>
               <Field label="4.1 (a) Applicant(s) Name" span={1}>
                 <textarea value={fields.section4ApplicantName || ''} onChange={e => handleChange('section4ApplicantName', e.target.value)} className={inputCls} rows={2} placeholder="Full list of owners" disabled={isReadOnly} />
