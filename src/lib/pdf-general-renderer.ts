@@ -1291,10 +1291,15 @@ export class PDFGeneralRenderer {
 
   // ─── Output ────────────────────────────────────────────────────
 
+  /** Generate the PDF as a Uint8Array */
+  async save(): Promise<Uint8Array> {
+    this.drawPageNumbers();
+    return await this.doc.save();
+  }
+
   /** Generate the PDF as a Blob */
   async toBlob(): Promise<Blob> {
-    this.drawPageNumbers();
-    const bytes = await this.doc.save();
+    const bytes = await this.save();
     return new Blob([bytes] as any, { type: 'application/pdf' });
   }
 }

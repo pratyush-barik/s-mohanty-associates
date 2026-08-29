@@ -265,24 +265,24 @@ export function ReportActionBar({
   onDownloadPDF: () => void;
 }) {
   return (
-    <div className="p-6 bg-[#556B2F]/15 border-2 border-[#556B2F]/30 backdrop-blur-md rounded-2xl shadow-lg flex flex-wrap items-center justify-between gap-4 sticky bottom-4 z-40">
+    <div className="p-5 bg-[#556B2F] border-2 border-[#3F5021] rounded-2xl shadow-xl flex flex-wrap items-center justify-between gap-4 sticky bottom-4 z-40">
       <div className="flex items-center gap-3">
         {!isReadOnly && (
           <>
             {autoSaveStatus === 'saving' && (
-              <span className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full flex items-center gap-1.5 animate-pulse">
+              <span className="text-xs font-bold text-amber-900 bg-amber-50 border border-amber-300 px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-xs animate-pulse">
                 <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
                 Auto-saving...
               </span>
             )}
             {autoSaveStatus === 'saved' && (
-              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+              <span className="text-xs font-bold text-emerald-900 bg-emerald-50 border border-emerald-300 px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-xs">
                 <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                 ✓ Auto-saved
               </span>
             )}
             {autoSaveStatus === 'error' && (
-              <span className="text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+              <span className="text-xs font-bold text-rose-900 bg-rose-50 border border-rose-300 px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-xs">
                 <span className="w-2 h-2 rounded-full bg-rose-500"></span>
                 ⚠️ Auto-save failed
               </span>
@@ -290,7 +290,7 @@ export function ReportActionBar({
           </>
         )}
         {message && (
-          <span className={`text-xs font-semibold px-3 py-1.5 rounded-lg ${message.type === 'error' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+          <span className={`text-xs font-bold px-3 py-1.5 rounded-full shadow-xs ${message.type === 'error' ? 'bg-red-100 text-red-900 border border-red-300' : 'bg-green-100 text-green-900 border border-green-300'}`}>
             {message.text}
           </span>
         )}
@@ -304,7 +304,7 @@ export function ReportActionBar({
                 type="button"
                 onClick={onSaveDraft}
                 disabled={loading}
-                className="px-6 py-2.5 rounded-full border-2 border-[#b8860b] text-[#b8860b] font-bold text-sm hover:bg-[#b8860b]/5 transition-all disabled:opacity-50 flex items-center gap-2"
+                className="px-6 py-2.5 rounded-full bg-white border-2 border-[#b8860b] text-[#b8860b] font-bold text-sm hover:bg-amber-50 transition-all disabled:opacity-50 flex items-center gap-2 shadow-sm"
               >
                 {loading ? '⏳ Saving...' : '💾 Save Draft'}
               </button>
@@ -314,7 +314,7 @@ export function ReportActionBar({
                 type="button"
                 onClick={onSubmit}
                 disabled={loading}
-                className="px-6 py-2.5 rounded-full bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex items-center gap-2"
+                className="px-6 py-2.5 rounded-full bg-[#1e3a5f] text-white font-bold text-sm hover:bg-[#0f2038] shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex items-center gap-2"
               >
                 {loading ? '⏳ Submitting...' : '📤 Submit to Manager'}
               </button>
@@ -326,7 +326,7 @@ export function ReportActionBar({
           type="button"
           onClick={onPreviewPDF}
           disabled={loading}
-          className="px-6 py-2.5 rounded-full border border-gray-400 text-gray-700 font-bold text-sm hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center gap-2"
+          className="px-6 py-2.5 rounded-full bg-white border border-gray-300 text-gray-800 font-bold text-sm hover:bg-gray-100 transition-all disabled:opacity-50 flex items-center gap-2 shadow-sm"
         >
           👁️ Preview PDF
         </button>
@@ -335,7 +335,7 @@ export function ReportActionBar({
           type="button"
           onClick={onDownloadPDF}
           disabled={loading}
-          className="px-6 py-2.5 rounded-full border border-gray-400 text-gray-700 font-bold text-sm hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center gap-2"
+          className="px-6 py-2.5 rounded-full bg-white border border-gray-300 text-gray-800 font-bold text-sm hover:bg-gray-100 transition-all disabled:opacity-50 flex items-center gap-2 shadow-sm"
         >
           📥 Download PDF
         </button>
