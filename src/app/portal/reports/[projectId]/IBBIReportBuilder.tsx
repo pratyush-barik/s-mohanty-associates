@@ -399,8 +399,8 @@ interface IBBIFields {
   registeredOfficeTel: string;
 
   // ── Annexure ──
-  annexureEnabled: boolean;
-  annexures: AnnexureItem[];
+  annexure1Text: string;
+  annexure2Text: string;
 
   // ── Valuation Certificate (dedicated) ──
   certificateDescription?: string;
@@ -713,8 +713,58 @@ const DEFAULT_FIELDS: IBBIFields = {
   registeredOfficeAddress: '',
   registeredOfficeTel: '',
 
-  annexureEnabled: false,
-  annexures: [],
+  annexure1Text: `General Principles Adopted and Limiting Conditions in the Preparation of Valuations and Reports. These are the general principles and limiting conditions upon which our valuation and reports are normally prepared; they apply unless we have specifically mentioned otherwise in the body of the report. 
+
+CONFIDENTIALITY
+Our valuation and reports are confidential to the client or to whom they are addressed for the specific purpose to which they refer. They may be disclosed to other professional advisors assisting the client in respect of that purpose, but the client shall not disclose the report to any other party.   No responsibility is accepted to any other  party and  neither  the whole,  nor any part,  nor reference thereto may be  included in any published document, statement or circular, or published in any way, nor in any communication with third parties, without our prior written approval  of the form and context in which it will appear.
+
+USE OF REPORT
+The opinion of value expressed in this Report shall be used for the purpose stated in this Report only. We are not responsible for any consequences arising from the Valuation being quoted out of context. 
+
+SOURCE OF INFORMATION
+Where it is stated in the Report that information has been supplied by the sources listed, this information is believed to be reliable and no responsibility is accepted should it prove incorrect.  All other information stated without being attributed directly to another party is obtained from our searches of documents or enquiries with the relevant authorities.  This Report has  been  prepared on the basis that  full disclosure of all information  and  facts  which may affect the  Valuation  have been  made  known to ourselves and we cannot  accept  any liability or responsibility in any event, unless such full disclosure has been made.
+
+LEGAL TITLE
+Whilst we may have inspected the title of the property as recorded in the Register Document of Title, we cannot accept any responsibility for its legal validity.
+
+TOWN PLANNING AND OTHER STATUTORY REGULATIONS
+Whilst we may make  verbal  enquiries or gather  information  on Town Planning,  we do not normally  carry  out  requisitions  with  the  various  public  authorities to  confirm  that  the property  is  not  adversely   affected   by  any  public  schemes such  as  road  and  drainage improvements. If reassurance is required, we recommend that verification be obtained from your lawyers or other professional advisors.
+Our valuation has been prepared on the basis and any improvements thereon comply with all relevant statutory regulations.  It is assumed that they have been, or will be issued with a Certificate of Fitness for Occupation by the competent authority.
+
+LEASES AND TENANCIES
+Enquiries as to the financial standing of actual or prospective lessees or tenants are not normally made unless specifically requested.  Where properties are valued with the benefit of lettings, it is therefore assumed that the lessees or tenants are capable of meeting their obligations under the lease or tenancy and that there are no arrears of rent or undisclosed breaches of covenant.
+
+DEVELOPMENT AGREEMENTS
+Unless otherwise stated, no allowances are made in our valuation for any joint venture agreement, development right agreement or other similar contracts
+
+SITE SURVEYS
+We have conducted boundary checks, and,  we assume that  the  dimensions correspond  with  those  shown   in  the   title   document,  certified   plan   or  any  relevant agreement.
+
+STRUCTURAL SURVEYS
+We have  neither  carried  out  a building  survey  nor  any  testing of services, nor  have  we inspected those parts   of  the  property  which  are  inaccessible.   We cannot   express an opinion about or advice upon the condition of uninspected parts and this Report should not be taken as making any implied representation or statement about such parts.
+
+SITE CONDITIONS
+We do not normally carry out investigations on the property or neighbouring land (including the past and present uses) in order to determine the suitability of the ground  conditions (Including contamination or potential for contamination) and services for the existing or any new development, nor have we undertaken any archaeological, ecological or environmental surveys.    Unless  we are  otherwise informed,  our  Valuations  are  on  the  basis that  these aspects  are  satisfactory  and   that,   where   development  is  proposed,  no  extraordinary expenses or delays will be incurred during the construction period
+
+DELETERIOUS OR HAZARDOUS MATERIALS
+No investigation was carried  out to determine whether  or not any deleterious or hazardous materials  have  been   used   in  the  construction  of  the  properties,  or  have  since   been incorporated and we are therefore unable to account or report for such in our report.
+
+DISEASES AND INFESTATIONS
+Whilst due  care  is taken  to note  the  presence of any disease or infestation, we have  not carried  out any test  to ascertain possible latent  infestations or diseases affecting  crops  or stock.  We are therefore unable to account for such in our Report.
+
+TAXATION, ENCUMBERANCES, STATUTORY NOTICES AND OUTGOINGS
+Unless  otherwise stated,  no  allowances are  made  in  our  valuation for any  expense of realization  or  for  taxation   which  might  arise   in  the  event   of  a  disposal,  deemed  or otherwise.  We have considered the property as if free and clear of all charges, lien and all other encumbrances which may be secured thereon.  We also assumed the property is free of statutory notices and outgoings.
+
+ATTENDANCE
+The instruction and the valuation  assignment does  not automatically bind us to attendance in court or to appear in any enquiry before any government or statutory bodies in connection with the Valuation unless agreed when the instruction is given.`,
+  annexure2Text: `We assume that information provided by client or its representative for this Valuation for all relevant projects is true and accurate. It includes details of measurements of land and built up area, etc
+We have not gone  through  the legal  aspects like documents of title deed, lease deed, revenue  records, court matters (if any), and documentation like joint development with other  companies. We also  assume for this  valuation assignment  that  the  title  and development rights  of all the properties lies with the Company and is clear, marketable and  free  of all  encumbrances, restrictions, easements  or  charges which  may  have detrimental effect upon  the value of the property.  It is also assumed that company has paid all property related taxes.
+
+We have neither carried out any soil testing nor structural surveys nor are we experts in the field of structural survey. Therefore, we do not give any assurance that properties are free from structural defect.  If any investigation identifies any structural defect in the property our report may require   revision.   Neither are we the experts in the town planning to factor the town planning aspects in the project.  Sewers, main services and the roads giving access to the property have been provided.
+We assumed that all the constructed structures and proposed construction is/will be free from harmful materials and/or techniques.  Our valuation is on the basis that no such materials or techniques have been used.
+
+Unless  advised by the company  or representative of the company,  we do not normally make  allowance  for any liability already  incurred,  but not yet discharged, in respect of balance  land   cost,   completed  works,   or   obligations  in   favour   of   contractors, subcontractors or any other professional.
+Unless  advised by the  company  or representative of the  company,  no  allowance  is made  for any expense of realization or for taxation, which may arise  in the  event  of a disposal. The property is considered as if free and clears of all mortgages or other charges that may be secured thereon.`,
 
   basis3: '',
   scope2_1: '',
@@ -772,7 +822,7 @@ function Field({ label, children, span = 1 }: { label: string; children: React.R
 const inputCls = "w-full px-3 py-2.5 rounded-lg border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] disabled:bg-[#f1f3f5] disabled:text-[#6c757d]";
 const selectCls = inputCls;
 
-const FloatingNavigator = ({ annexureEnabled }: { annexureEnabled: boolean }) => {
+const FloatingNavigator = () => {
   const [activeId, setActiveId] = useState<string>('');
 
   const NAV_SECTIONS = [
@@ -795,7 +845,7 @@ const FloatingNavigator = ({ annexureEnabled }: { annexureEnabled: boolean }) =>
     { id: 'section-15', title: '15. Assumptions' },
     { id: 'section-conclusion', title: 'Conclusion' },
     { id: 'section-declaration', title: 'Declaration' },
-    ...(annexureEnabled ? [{ id: 'section-annexure', title: 'Annexures' }] : []),
+    ...[{ id: 'section-annexure1', title: 'Annexure I' }, { id: 'section-annexure2', title: 'Annexure II' }],
   ];
 
   useEffect(() => {
@@ -816,7 +866,7 @@ const FloatingNavigator = ({ annexureEnabled }: { annexureEnabled: boolean }) =>
     });
 
     return () => observer.disconnect();
-  }, [annexureEnabled]);
+  }, []);
 
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -935,7 +985,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       ? initialFields.sketchMapImages 
       : (typeof initialFields?.sketchMapImage === 'string' && initialFields.sketchMapImage ? [initialFields.sketchMapImage] : DEFAULT_FIELDS.sketchMapImages),
     valuationRows: Array.isArray(initialFields?.valuationRows) ? initialFields.valuationRows : DEFAULT_FIELDS.valuationRows,
-    annexures: Array.isArray(initialFields?.annexures) ? initialFields.annexures : DEFAULT_FIELDS.annexures,
+    
     clientType: 'organisation',
     organisationTemplate: 'IBBI_IVS',
     cuttackLandComponentDescGuideline: initialFields?.cuttackLandComponentDescGuideline || DEFAULT_FIELDS.cuttackLandComponentDescGuideline,
@@ -1747,7 +1797,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       const certDate = fmtDateDDMMYYYY(fields.dateOfInspection);
       const coverDesc = (fields.propertyType === 'Other' ? fields.customPropertyType : fields.propertyType) || 'Property';
       if (fields.valuationCertificateIntro && fields.valuationCertificateIntro.trim()) {
-        r.drawTextBlock(fields.valuationCertificateIntro, { fontSize: 10, align: 'justify' });
+        r.drawTextBlock(fields.valuationCertificateIntro, { fontSize: 10, align: 'left' });
       }
       r.advanceCursor(3);
       r.drawTextBlock('The Valuation Certificate is to be used in conjunction with the Detailed Valuation Report Enclosed herewith based on the information and particulars furnished and actual observation, Valuation methodology, assumption, limitations, Disclaimer and bases of valuation stated herein and should not be referred in Isolation.', { fontSize: 10 });
@@ -4998,67 +5048,38 @@ Our valuation is based on information obtained from the client and on data gathe
             </div>
           </Section>
 
-          {/* ── Annexure Section ── */}
-          <Section title="Annexures (Excel Uploads)" number={'A'} defaultOpen={fields.annexureEnabled}>
-            <div id="section-annexure">
-              <div className="flex items-center gap-3 mb-4">
-                <label className="text-sm font-bold text-slate-700">Enable Annexures</label>
-                <button
-                  type="button"
-                  onClick={() => handleChange('annexureEnabled', !fields.annexureEnabled)}
-                  disabled={isReadOnly}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${fields.annexureEnabled ? 'bg-amber-600' : 'bg-slate-300'}`}
-                >
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${fields.annexureEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
-              </div>
+          {/* ── Annexure I & II Section ── */}
+          <Section title="Annexure I: General Principles" id="section-annexure1">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Annexure I Text (Overrides default text)" span={2}>
+                <textarea rows={10} value={fields.annexure1Text || ''} onChange={e => handleChange('annexure1Text', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
+              <Field label="Date (From Conclusion)">
+                <input type="text" value={fields.dateOfValuation ? new Date(fields.dateOfValuation).toLocaleDateString('en-GB') : ''} className={inputCls} disabled />
+              </Field>
+              <Field label="Place (From Conclusion)">
+                <input type="text" value={fields.conclusionPlace || 'Bhubaneswar'} className={inputCls} disabled />
+              </Field>
+              <Field label="Signature & Seal of Valuer" span={2}>
+                <input type="text" value={`Name of the Valuer – ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}`} className={inputCls} disabled />
+              </Field>
+            </div>
+          </Section>
 
-              {fields.annexureEnabled && (
-                <div className="space-y-4">
-                  {fields.annexures.map((ann: AnnexureItem, index: number) => (
-                    <div key={ann.id} className="border border-amber-200 bg-amber-50 rounded-xl p-4">
-                      <div className="flex items-center gap-3 mb-3">
-                        <span className="bg-amber-600 text-white w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm">{ann.label}</span>
-                        <input
-                          type="text"
-                          value={ann.title || ''}
-                          onChange={e => updateAnnexureTitle(ann.id, e.target.value)}
-                          placeholder="Annexure title (optional)"
-                          className="flex-1 px-3 py-2 rounded-lg border border-amber-300 bg-white text-sm"
-                          disabled={isReadOnly}
-                        />
-                        {!isReadOnly && (
-                          <button onClick={() => removeAnnexure(ann.id)} className="text-red-500 hover:text-red-700 text-sm font-bold">Remove</button>
-                        )}
-                      </div>
-                      {ann.excelFileUrl ? (
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-emerald-700 font-semibold">📎 {ann.excelFileName}</span>
-                          {ann.parsedData && <span className="text-xs text-slate-500">({ann.parsedData.rows.length} rows)</span>}
-                          {!isReadOnly && <button onClick={() => removeAnnexureFile(ann.id)} className="text-xs text-red-500 hover:underline ml-2">Remove</button>}
-                        </div>
-                      ) : (
-                        <input
-                          type="file"
-                          accept=".xlsx,.xls,.csv"
-                          onChange={e => handleAnnexureUpload(ann.id, e)}
-                          className="text-sm"
-                          disabled={isReadOnly || uploading}
-                        />
-                      )}
-                    </div>
-                  ))}
-                  {!isReadOnly && (
-                    <button
-                      type="button"
-                      onClick={addAnnexure}
-                      className="w-full py-3 border-2 border-dashed border-amber-400 rounded-xl text-amber-700 font-bold text-sm hover:bg-amber-50 transition-colors"
-                    >
-                      + Add Annexure {String.fromCharCode(65 + fields.annexures.length)}
-                    </button>
-                  )}
-                </div>
-              )}
+          <Section title="Annexure II: General Assumptions" id="section-annexure2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Annexure II Text (Overrides default text)" span={2}>
+                <textarea rows={10} value={fields.annexure2Text || ''} onChange={e => handleChange('annexure2Text', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              </Field>
+              <Field label="Date (From Conclusion)">
+                <input type="text" value={fields.dateOfValuation ? new Date(fields.dateOfValuation).toLocaleDateString('en-GB') : ''} className={inputCls} disabled />
+              </Field>
+              <Field label="Place (From Conclusion)">
+                <input type="text" value={fields.conclusionPlace || 'Bhubaneswar'} className={inputCls} disabled />
+              </Field>
+              <Field label="Signature & Seal of Valuer" span={2}>
+                <input type="text" value={`Name of the Valuer – ${fields.representativeName ? fields.representativeName.toUpperCase() : ''}`} className={inputCls} disabled />
+              </Field>
             </div>
           </Section>
 
@@ -5370,7 +5391,7 @@ Our valuation is based on information obtained from the client and on data gathe
       )}
 
       {/* Floating Navigator */}
-      {!aiAssistEnabled && <FloatingNavigator annexureEnabled={fields.annexureEnabled} />}
+      {!aiAssistEnabled && <FloatingNavigator />}
 
       {/* AI Assist Sidebar */}
       {aiAssistEnabled && (

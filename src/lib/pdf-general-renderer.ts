@@ -192,7 +192,7 @@ export class PDFGeneralRenderer {
   }
 
   /** Break text into lines that fit within maxWidth */
-  private wrapText(text: string, maxWidth: number, fontSize: number, bold?: boolean, italic?: boolean): string[] {
+  protected wrapText(text: string, maxWidth: number, fontSize: number, bold?: boolean, italic?: boolean): string[] {
     const strText = this.sanitizeText(text);
     if (!strText) return [''];
     const font = this.getFont(bold, italic);
