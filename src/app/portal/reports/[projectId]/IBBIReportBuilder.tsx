@@ -147,6 +147,7 @@ interface IBBIFields {
   applicantName: string;
   clientName: string;
   section4ApplicantName: string;
+  companyName: string;
   hasManagingDirector?: string;
   managingDirectorName?: string;
   coverPageImage?: string;
@@ -464,6 +465,7 @@ const DEFAULT_FIELDS: IBBIFields = {
   applicantName: '',
   clientName: '',
   section4ApplicantName: '',
+  companyName: '',
   nameOfOwners: '',
   valuationDoneBefore: 'NO',
   customValuationDoneBefore: '',
@@ -3206,6 +3208,9 @@ Our valuation is based on information obtained from the client and on data gathe
                   )}
                 </div>
               </Field>
+              <Field label="Company Name">
+                <input type="text" value={fields.companyName || ''} onChange={e => handleChange('companyName', e.target.value)} className={inputCls} placeholder="e.g. PRATYUS" disabled={isReadOnly} />
+              </Field>
               <Field label="Address Prefix (Cover Page)">
                 <div className="flex flex-col gap-2">
                   <select value={fields.addressPrefixType || 'none'} onChange={e => handleChange('addressPrefixType', e.target.value)} className={selectCls} disabled={isReadOnly}>
@@ -3244,7 +3249,7 @@ Our valuation is based on information obtained from the client and on data gathe
                   </div>
                 )}
               </div>
-              <Field label="Applicant / Owner Name(s)" span={2}>
+              <Field label="Owner Name(s)" span={2}>
                 <textarea value={fields.applicantName} onChange={e => handleChange('applicantName', e.target.value)} className={inputCls} rows={2} placeholder="Full list of owners" disabled={isReadOnly} />
               </Field>
               <Field label="Managing Director">
@@ -4678,7 +4683,7 @@ Our valuation is based on information obtained from the client and on data gathe
               <Field label="Appointed By (from Section 1)">
                 <input type="text" value={fields.appointedBy || ''} className={inputCls + ' bg-gray-100'} disabled />
               </Field>
-              <Field label="Applicant / Owner Name(s) (from Valuation Report Cover)">
+              <Field label="Owner Name(s) (from Valuation Report Cover)">
                 <input type="text" value={fields.applicantName || ''} className={inputCls + ' bg-gray-100'} disabled />
               </Field>
 
@@ -4881,7 +4886,7 @@ Our valuation is based on information obtained from the client and on data gathe
                 <Field label="Site Address">
                   <input type="text" value={fields.propertyAddress || fields.certAddress || ''} disabled className={inputCls + ' bg-gray-100'} />
                 </Field>
-                <Field label="Applicant / Owner Name(s)">
+                <Field label="Owner Name(s)">
                   <input type="text" value={fields.applicantName || fields.ownerName || fields.certOwner || ''} disabled className={inputCls + ' bg-gray-100'} />
                 </Field>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
