@@ -148,6 +148,8 @@ interface IBBIFields {
   clientName: string;
   section4ApplicantName: string;
   companyName: string;
+  section4PropertyType: string;
+  customSection4PropertyType: string;
   hasManagingDirector?: string;
   managingDirectorName?: string;
   coverPageImage?: string;
@@ -467,6 +469,8 @@ const DEFAULT_FIELDS: IBBIFields = {
   clientName: '',
   section4ApplicantName: '',
   companyName: '',
+  section4PropertyType: 'VACANT LAND',
+  customSection4PropertyType: '',
   nameOfOwners: '',
   valuationDoneBefore: 'NO',
   customValuationDoneBefore: '',
@@ -1958,7 +1962,7 @@ Our valuation is based on information obtained from the client and on data gathe
       }
 
       r.draw5ColRow('4.1', 'Applicant(s) Name', fields.section4ApplicantName || '________', 'Name of Owners', formattedOwners);
-      r.draw5ColRow('4.2', 'Type of property', (fields.propertyType === 'Other' ? fields.customPropertyType : fields.propertyType) || '', 'Current usage', (fields.currentUsage === 'Other' ? fields.customCurrentUsage : fields.currentUsage) || '');
+      r.draw5ColRow('4.2', 'Type of property', ((fields.section4PropertyType || fields.propertyType) === 'Other' ? (fields.customSection4PropertyType || fields.customPropertyType) : (fields.section4PropertyType || fields.propertyType)) || '', 'Current usage', (fields.currentUsage === 'Other' ? fields.customCurrentUsage : fields.currentUsage) || '');
       r.drawSection4MultiSubRow('4.3', [
         { 
           label: 'Address of property / Site Address', 
@@ -3549,7 +3553,7 @@ Our valuation is based on information obtained from the client and on data gathe
 
               {/* 4.2 Type of Property & Usage */}
               <Field label="4.2 (a) Type of property" span={1}>
-                <select value={fields.propertyType} onChange={e => handleChange('propertyType', e.target.value)} className={selectCls} disabled={isReadOnly}>
+                <select value={fields.section4PropertyType || fields.propertyType} onChange={e => handleChange('section4PropertyType', e.target.value)} className={selectCls} disabled={isReadOnly}>
                   <option value="RESIDENTIAL">RESIDENTIAL</option>
                   <option value="COMMERCIAL">COMMERCIAL</option>
                   <option value="INDUSTRIAL">INDUSTRIAL</option>
@@ -3558,8 +3562,8 @@ Our valuation is based on information obtained from the client and on data gathe
                   <option value="VACANT LAND">VACANT LAND</option>
                   <option value="Other">Other</option>
                 </select>
-                {fields.propertyType === 'Other' && (
-                  <input type="text" value={fields.customPropertyType || ''} onChange={e => handleChange('customPropertyType', e.target.value)} className={inputCls + ' mt-2'} placeholder="Custom type" disabled={isReadOnly} />
+                {(fields.section4PropertyType || fields.propertyType) === 'Other' && (
+                  <input type="text" value={fields.customSection4PropertyType || fields.customPropertyType || ''} onChange={e => handleChange('customSection4PropertyType', e.target.value)} className={inputCls + ' mt-2'} placeholder="Custom type" disabled={isReadOnly} />
                 )}
               </Field>
               <Field label="4.2 (b) Current usage" span={1}>
