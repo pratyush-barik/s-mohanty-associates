@@ -1672,7 +1672,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       const fmtDateDDMMYYYY = (d: string) => {
         if (!d) return '________';
         const parts = d.split('-');
-        if (parts.length === 3) return `${parts[2]}.${parts[1]}.${parts[0]}`;
+        if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
         return d;
       };
 
@@ -1838,7 +1838,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
           { text: `Place - Bhubaneswar`, bold: true },
         ],
         [
-          { text: 'Signature & Seal of Valuer', italic: true },
+          { text: 'Signature & Seal of Valuer', bold: true },
           { text: `Name of the Valuer - ${fields.representativeName || ''}`, bold: true },
         ]
       );
@@ -3375,7 +3375,7 @@ Our valuation is based on information obtained from the client and on data gathe
               <Field label="Realisable Value (from Section Conclusion)">
                 <input type="text" value={fields.realisableValueOrSay || fields.realisableValueTotal || ''} className={inputCls + ' bg-gray-100'} disabled />
               </Field>
-              <Field label="Valuers Details (from Declaration)" span={2}>
+              <Field label="Valuers Details (from Report Cover)" span={2}>
                 <textarea rows={2} value={[
                   fields.representativeName ? `${fields.representativeName}${fields.valuerQualifications ? ' ' + fields.valuerQualifications : ''}` : '',
                   fields.valuerAdditionalDetails || '',
@@ -5062,7 +5062,7 @@ Our valuation is based on information obtained from the client and on data gathe
                 <textarea rows={10} value={fields.annexure1Text || ''} onChange={e => handleChange('annexure1Text', e.target.value)} className={inputCls} disabled={isReadOnly} />
               </Field>
               <Field label="Date of Valuation Report">
-                <input type="text" value={fields.dateOfValuation ? new Date(fields.dateOfValuation).toLocaleDateString('en-GB') : ''} className={inputCls} disabled />
+                <input type="text" value={fields.dateOfValuation ? fields.dateOfValuation.split('-').reverse().join('-') : ''} className={inputCls} disabled />
               </Field>
               <Field label="Place">
                 <input type="text" value={fields.conclusionPlace || 'Bhubaneswar'} className={inputCls} disabled />
@@ -5082,7 +5082,7 @@ Our valuation is based on information obtained from the client and on data gathe
                 <textarea rows={10} value={fields.annexure2Text || ''} onChange={e => handleChange('annexure2Text', e.target.value)} className={inputCls} disabled={isReadOnly} />
               </Field>
               <Field label="Date of Valuation Report">
-                <input type="text" value={fields.dateOfValuation ? new Date(fields.dateOfValuation).toLocaleDateString('en-GB') : ''} className={inputCls} disabled />
+                <input type="text" value={fields.dateOfValuation ? fields.dateOfValuation.split('-').reverse().join('-') : ''} className={inputCls} disabled />
               </Field>
               <Field label="Place">
                 <input type="text" value={fields.conclusionPlace || 'Bhubaneswar'} className={inputCls} disabled />
