@@ -3420,7 +3420,25 @@ Our valuation is based on information obtained from the client and on data gathe
                 <textarea value={fields.applicantName} onChange={e => handleChange('applicantName', e.target.value)} className={inputCls} rows={2} placeholder="Full list of owners" disabled={isReadOnly} />
               </Field>
               <Field label="4.1 (b) Name of Owners" span={1}>
-                <textarea value={fields.nameOfOwners || ''} onChange={e => handleChange('nameOfOwners', e.target.value)} className={inputCls} rows={2} placeholder="Full list of owners" disabled={isReadOnly} />
+                <textarea 
+                  value={fields.nameOfOwners || ''} 
+                  onChange={e => handleChange('nameOfOwners', e.target.value)} 
+                  onBlur={(e) => {
+                    const val = e.target.value;
+                    const lines = val.split('\n').map(l => l.replace(/^\d+[\.\)]\s*/, '').trim()).filter(Boolean);
+                    if (lines.length > 1) {
+                      handleChange('nameOfOwners', lines.map((l, i) => `${i + 1}. ${l}`).join('\n'));
+                    } else if (lines.length === 1) {
+                      handleChange('nameOfOwners', lines[0]);
+                    } else {
+                      handleChange('nameOfOwners', '');
+                    }
+                  }}
+                  className={inputCls} 
+                  rows={3} 
+                  placeholder="Type names on new lines. Auto-formats on click away." 
+                  disabled={isReadOnly} 
+                />
               </Field>
 
               {/* 4.2 Type of Property & Usage */}
