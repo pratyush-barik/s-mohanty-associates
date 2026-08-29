@@ -884,7 +884,7 @@ const FloatingNavigator = () => {
   };
 
   return (
-    <div className="hidden xl:flex flex-col gap-0 bg-white/80 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2 rounded-2xl w-[160px] sticky top-24 shrink-0 z-40">
+    <div className="hidden xl:flex flex-col gap-0 bg-white/80 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2 rounded-2xl w-[160px] sticky top-24 shrink-0 z-40 max-h-[calc(100vh-120px)] overflow-y-auto custom-scrollbar">
       <div className="text-[10px] font-black text-neutral-400 mb-1 px-2 uppercase tracking-widest">IBBI Sections</div>
       {NAV_SECTIONS.map((sec: any) => {
         const isActive = activeId === sec.id;
