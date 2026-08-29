@@ -122,21 +122,53 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
     });
 
     this.cursorY += h;
-  }
-
-  /**
+  }  /**
    * Draw a multi-column key-value row (2-col, 4-col, or N-col)
+   * Automatically normalizes column widths to strictly equal CONTENT_W.
    * Labels have 50% opacity soft blue (#DBE6F0), values are transparent (or golden-yellow if highlighted).
    */
-  drawKeyValueRow(cols: { label: string; value: string; labelWidth: number; valueWidth: number; highlight?: boolean }[]): void {
+  drawKeyValueRow(cols: { label: string; value: string; labelWidth?: number; valueWidth?: number; highlight?: boolean }[]): void {
     const fontSize = FONT_SIZE;
     const pad = 3;
+
+    // Auto-calculate or normalize widths to match CONTENT_W exactly
+    let processedCols: { label: string; value: string; labelWidth: number; valueWidth: number; highlight?: boolean }[] = [];
+    const hasExplicitWidths = cols.every(c => c.labelWidth !== undefined && c.valueWidth !== undefined);
+
+    if (!hasExplicitWidths) {
+      if (cols.length === 1) {
+        const lW = 140;
+        processedCols = [{ ...cols[0], labelWidth: lW, valueWidth: CONTENT_W - lW }];
+      } else if (cols.length === 2) {
+        const lW = 110;
+        const vW = (CONTENT_W - lW * 2) / 2;
+        processedCols = [
+          { ...cols[0], labelWidth: lW, valueWidth: vW },
+          { ...cols[1], labelWidth: lW, valueWidth: vW },
+        ];
+      } else {
+        const cellW = CONTENT_W / (cols.length * 2);
+        processedCols = cols.map(c => ({ ...c, labelWidth: cellW, valueWidth: cellW }));
+      }
+    } else {
+      const totalW = cols.reduce((s, c) => s + (c.labelWidth || 0) + (c.valueWidth || 0), 0);
+      if (Math.abs(totalW - CONTENT_W) > 0.01 && totalW > 0) {
+        const scale = CONTENT_W / totalW;
+        processedCols = cols.map(c => ({
+          ...c,
+          labelWidth: (c.labelWidth || 0) * scale,
+          valueWidth: (c.valueWidth || 0) * scale,
+        }));
+      } else {
+        processedCols = cols as any;
+      }
+    }
 
     // Measure max lines needed
     let maxLines = 1;
     const colWrapped: { labelLines: string[]; valueLines: string[] }[] = [];
 
-    for (const c of cols) {
+    for (const c of processedCols) {
       const lLines = this.wrapText(c.label, c.labelWidth - pad * 2, fontSize, true);
       const vLines = this.wrapText(c.value, c.valueWidth - pad * 2, fontSize, false);
       maxLines = Math.max(maxLines, lLines.length, vLines.length);
@@ -149,8 +181,8 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
     const y = this.pdfY(this.cursorY);
     let curX = MARGIN_L;
 
-    for (let i = 0; i < cols.length; i++) {
-      const c = cols[i];
+    for (let i = 0; i < processedCols.length; i++) {
+      const c = processedCols[i];
       const cw = colWrapped[i];
 
       // Draw Label Cell (with 50% opacity soft blue background)
@@ -220,15 +252,22 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
 
   /**
    * Draw a Generic Data Table with transparent background headers and highlighted columns/rows
+   * Automatically normalizes colWidths so table width strictly matches CONTENT_W.
    */
   drawTable(headers: string[], rows: (string | number)[][], colWidths: number[], highlightedCols: number[] = []): void {
     const fontSize = FONT_SIZE;
     const pad = 3;
 
+    // Normalize colWidths so sum strictly equals CONTENT_W
+    const totalW = colWidths.reduce((a, b) => a + b, 0);
+    const normalizedColWidths = (Math.abs(totalW - CONTENT_W) > 0.01 && totalW > 0)
+      ? colWidths.map(w => (w / totalW) * CONTENT_W)
+      : colWidths;
+
     // 1. Draw Table Header
     let headerMaxLines = 1;
     const headerWrapped = headers.map((h, i) => {
-      const lines = this.wrapText(h, colWidths[i] - pad * 2, fontSize, true);
+      const lines = this.wrapText(h, normalizedColWidths[i] - pad * 2, fontSize, true);
       headerMaxLines = Math.max(headerMaxLines, lines.length);
       return lines;
     });
@@ -243,7 +282,7 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
       this.page.drawRectangle({
         x: curX,
         y: y - headerH,
-        width: colWidths[i],
+        width: normalizedColWidths[i],
         height: headerH,
         color: hexToRgb(OPT_BG),
         opacity: BG_OPACITY,
@@ -262,7 +301,7 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
         });
         lineY -= fontSize * LINE_HEIGHT;
       }
-      curX += colWidths[i];
+      curX += normalizedColWidths[i];
     }
     this.cursorY += headerH;
 
@@ -271,7 +310,7 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
       let rowMaxLines = 1;
       const rowWrapped = row.map((cell, i) => {
         const text = String(cell ?? '');
-        const lines = this.wrapText(text, colWidths[i] - pad * 2, fontSize, false);
+        const lines = this.wrapText(text, (normalizedColWidths[i] || 50) - pad * 2, fontSize, false);
         rowMaxLines = Math.max(rowMaxLines, lines.length);
         return lines;
       });
@@ -284,11 +323,12 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
 
       for (let i = 0; i < row.length; i++) {
         const isHighlight = highlightedCols.includes(i);
+        const w = normalizedColWidths[i] || 50;
         if (isHighlight) {
           this.page.drawRectangle({
             x: curX,
             y: y - rowH,
-            width: colWidths[i],
+            width: w,
             height: rowH,
             color: hexToRgb(VAL_BG),
             opacity: BG_OPACITY,
@@ -299,7 +339,7 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
           this.page.drawRectangle({
             x: curX,
             y: y - rowH,
-            width: colWidths[i],
+            width: w,
             height: rowH,
             borderColor: rgb(0, 0, 0),
             borderWidth: BORDER_W,
@@ -317,8 +357,9 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
           });
           lineY -= fontSize * LINE_HEIGHT;
         }
-        curX += colWidths[i];
+        curX += w;
       }
+
       this.cursorY += rowH;
     }
   }

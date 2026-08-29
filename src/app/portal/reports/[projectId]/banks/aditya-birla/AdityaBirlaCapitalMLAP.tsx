@@ -439,10 +439,10 @@ export default function AdityaBirlaCapitalMLAP({
     const r = new PDFAdityaBirlaMLAPRenderer();
     await r.init(letterheadBytes || undefined);
 
-    const W_LABEL_2COL = 150;
-    const W_VAL_2COL = 373.28;
-    const W_LABEL_4COL = 120;
-    const W_VAL_4COL = 141.64;
+    const W_LABEL_2COL = 140;
+    const W_VAL_2COL = 347.28;
+    const W_LABEL_4COL = 110;
+    const W_VAL_4COL = 133.64;
 
     // 1. Header
     r.drawMainHeader('Aditya Birla Capital Ltd (MLAP)');
@@ -491,11 +491,11 @@ export default function AdityaBirlaCapitalMLAP({
     r.drawKeyValueRow([{ label: 'Availability of Amenities (school,market etc)', value: fields.amenitiesAvailability || '1-2 Kms', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
     r.drawKeyValueRow([{ label: 'Approach Road Width', value: fields.approachRoadWidth || '10 feet wide Road', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
     r.drawKeyValueRow([
-      { label: 'Has the Valuator Done Valuation for this property before?', value: fields.valuedBefore || 'No', labelWidth: 260, valueWidth: 50 },
-      { label: 'If Yes When?', value: fields.valuedBeforeDate || 'NA', labelWidth: 100, valueWidth: 113.28 },
+      { label: 'Has the Valuator Done Valuation for this property before?', value: fields.valuedBefore || 'No', labelWidth: 240, valueWidth: 45 },
+      { label: 'If Yes When?', value: fields.valuedBeforeDate || 'NA', labelWidth: 90, valueWidth: 112.28 },
     ]);
-    r.drawKeyValueRow([{ label: 'Land Locked', value: fields.landLocked || 'No', labelWidth: 350, valueWidth: 173.28, highlight: true }]);
-    r.drawKeyValueRow([{ label: 'Any other features like board of other financier indicating mortgage, notice of Court/any authority which may affect the title', value: fields.otherEncumbranceFeatures || 'No', labelWidth: 350, valueWidth: 173.28, highlight: true }]);
+    r.drawKeyValueRow([{ label: 'Land Locked', value: fields.landLocked || 'No', labelWidth: 330, valueWidth: 157.28, highlight: true }]);
+    r.drawKeyValueRow([{ label: 'Any other features like board of other financier indicating mortgage, notice of Court/any authority which may affect the title', value: fields.otherEncumbranceFeatures || 'No', labelWidth: 330, valueWidth: 157.28, highlight: true }]);
 
     // 4. Property Detailings
     r.drawSectionHeader('Property Detailings');
@@ -514,8 +514,8 @@ export default function AdityaBirlaCapitalMLAP({
     r.drawKeyValueRow([{ label: 'Construction Quality', value: fields.qualityOfConstruction || 'Average', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
     r.drawKeyValueRow([{ label: 'Structure Type', value: fields.structureType || 'RCC', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
     r.drawKeyValueRow([
-      { label: 'Dimensions of Property: Width (Facing Road Side) in feet', value: fields.dimensionWidth || 'NA', labelWidth: 260, valueWidth: 50, highlight: true },
-      { label: 'Depth (in feet)', value: fields.dimensionDepth || 'NA', labelWidth: 100, valueWidth: 113.28, highlight: true },
+      { label: 'Dimensions of Property: Width (Facing Road Side) in feet', value: fields.dimensionWidth || 'NA', labelWidth: 240, valueWidth: 45, highlight: true },
+      { label: 'Depth (in feet)', value: fields.dimensionDepth || 'NA', labelWidth: 90, valueWidth: 112.28, highlight: true },
     ]);
     r.drawKeyValueRow([{ label: 'Cautious Locations', value: fields.cautiousLocations || 'NA', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
     r.drawKeyValueRow([{ label: 'If Flat, Configuration Type', value: fields.flatConfigurationType || 'NA', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
@@ -530,7 +530,7 @@ export default function AdityaBirlaCapitalMLAP({
 
     // 6. Accommodation Details
     r.drawSectionHeader('Accomodation Details');
-    const accomCols = [80, 70, 70, 70, 70, 80, 83.28];
+    const accomCols = [75, 65, 65, 65, 65, 75, 77.28];
     const accomRows = (fields.accommodationRows || DEFAULT_ACCOM_ROWS).map((row: AccomRow) => [
       row.floor, row.drawingRoom || '', row.bedroom || '', row.diningRoom || '', row.kitchen || '', row.bathroom || '', row.balcony || ''
     ]);
@@ -542,7 +542,7 @@ export default function AdityaBirlaCapitalMLAP({
 
     // 7. Build Up Details
     r.drawSectionHeader('Build Up Details');
-    const buaCols = [110, 140, 140, 133.28];
+    const buaCols = [100, 130, 130, 127.28];
     const buaRowsData = (fields.buaRows || DEFAULT_BUA_ROWS).map((row: BuaRow) => [
       row.floor, row.asPerSite || 'NA', row.asPerPlan || 'NA', row.percentageDeviation || 'NA'
     ]);
@@ -554,7 +554,7 @@ export default function AdityaBirlaCapitalMLAP({
 
     // 8. Valuation
     r.drawSectionHeader('Valuation');
-    const valCols = [240, 95, 95, 93.28];
+    const valCols = [220, 90, 90, 87.28];
     r.drawTable(
       ['Detailings', 'Area in Sqft', 'Rate/sqft', 'Value'],
       [
@@ -576,7 +576,7 @@ export default function AdityaBirlaCapitalMLAP({
 
     // 9. Boundary Details
     r.drawSectionHeader('Boundary Details');
-    const boundCols = [103.28, 105, 105, 105, 105];
+    const boundCols = [95.28, 98, 98, 98, 98];
     r.drawTable(
       ['Detailings', 'North', 'South', 'East', 'West'],
       [
