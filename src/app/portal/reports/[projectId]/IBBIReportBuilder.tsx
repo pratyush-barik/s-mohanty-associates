@@ -3138,16 +3138,6 @@ Our valuation is based on information obtained from the client and on data gathe
                   <option value="Vacant Plot">Vacant Plot</option>
                 </select>
               </Field>
-              <Field label="Current Usage">
-                <select value={fields.currentUsage} onChange={e => handleChange('currentUsage', e.target.value)} className={selectCls} disabled={isReadOnly}>
-                  <option value="Vacant">Vacant</option>
-                  <option value="Self Occupied">Self Occupied</option>
-                  <option value="Rented">Rented</option>
-                  <option value="Under Construction">Under Construction</option>
-                  <option value="Industrial Use">Industrial Use</option>
-                  <option value="Agricultural">Agricultural</option>
-                </select>
-              </Field>
               <Field label="Address Prefix (Cover Page)">
                 <div className="flex flex-col gap-2">
                   <select value={fields.addressPrefixType || 'none'} onChange={e => handleChange('addressPrefixType', e.target.value)} className={selectCls} disabled={isReadOnly}>
@@ -3390,7 +3380,7 @@ Our valuation is based on information obtained from the client and on data gathe
                 </select>
               </Field>
               <Field label="Current Usage">
-                <select value={fields.currentUsage} onChange={e => handleChange('currentUsage', e.target.value)} className={selectCls} disabled={true}>
+                <select value={fields.currentUsage} onChange={e => handleChange('currentUsage', e.target.value)} className={selectCls} disabled={isReadOnly}>
                   <option value="Vacant">Vacant</option>
                   <option value="Self Occupied">Self Occupied</option>
                   <option value="Rented">Rented</option>
