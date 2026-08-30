@@ -39,6 +39,42 @@ export interface AnnexureItem {
   };
 }
 
+/**
+ * Ensures annexures are always arranged and labeled strictly in priority order:
+ * 1. Technical / Location Annexure (if enabled & present) -> gets Annexure A (1)
+ * 2. Legal / Documentation Annexure (if enabled & present) -> gets Annexure B (2) [or A if no technical]
+ * 3. All other custom / uploaded Annexures in sequence -> get subsequent letters (Annexure C, D...) (3+)
+ */
+export function reorderAndLabelAnnexures(
+  annexures: AnnexureItem[],
+  annexureRef?: string,
+  legalAnnexureRef?: string,
+  annexureEnabled?: boolean,
+  legalAnnexureEnabled?: boolean
+): AnnexureItem[] {
+  const technicalItem = (annexureEnabled && annexureRef)
+    ? annexures.find(a => a.id === annexureRef)
+    : undefined;
+
+  const legalItem = (legalAnnexureEnabled && legalAnnexureRef)
+    ? annexures.find(a => a.id === legalAnnexureRef)
+    : undefined;
+
+  const otherItems = (annexures || []).filter(
+    a => a.id !== technicalItem?.id && a.id !== legalItem?.id
+  );
+
+  const ordered: AnnexureItem[] = [];
+  if (technicalItem) ordered.push(technicalItem);
+  if (legalItem) ordered.push(legalItem);
+  ordered.push(...otherItems);
+
+  return ordered.map((item, index) => ({
+    ...item,
+    label: String.fromCharCode(65 + index),
+  }));
+}
+
 // ─── Base Report Fields (identical to GeneralReportBuilder's ReportFields) ──
 export interface BaseReportFields {
   // Section 1 – General Details

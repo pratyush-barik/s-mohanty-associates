@@ -9,6 +9,7 @@ import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
 import { PDFBankRenderer } from '@/lib/pdf-bank-renderer';
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { BaseReportFields, BankConfig, FloorRow, AnnexureItem, ExtraFieldConfig } from '@/lib/bank-fields';
+import { reorderAndLabelAnnexures } from '@/lib/bank-fields';
 import { getFloorName, BasePhotographsSection, BaseAnnexureSection, AnnexureRefSelector } from './banks/BaseBankReportComponents';
 import * as XLSX from 'xlsx';
 
@@ -660,21 +661,52 @@ export default function BankReportBuilder({
     handleChange('floors', fields.floors.map(f => f.id === id ? { ...f, [key]: value } : f));
   };
 
-  // ── Annexure helpers ──
+  // ── Annexure helpers (Strictly ordered: 1. Technical, 2. Legal, 3+. Custom) ──
   const addAnnexure = () => {
-    const nextIndex = fields.annexures.length;
-    const label = String.fromCharCode(65 + nextIndex);
-    handleChange('annexures', [...fields.annexures, {
+    const newAnnexure: AnnexureItem = {
       id: String(Date.now()),
-      label,
+      label: 'A',
       title: '',
       excelFileUrl: '',
       excelFileName: '',
-    }]);
+    };
+    const updated = [...fields.annexures, newAnnexure];
+    handleChange('annexures', reorderAndLabelAnnexures(
+      updated,
+      fields.annexureRef,
+      fields.legalAnnexureRef,
+      fields.annexureEnabled,
+      fields.legalAnnexureEnabled
+    ));
   };
+
   const removeAnnexure = (id: string) => {
-    handleChange('annexures', fields.annexures.filter(a => a.id !== id));
+    const isTech = fields.annexureRef === id;
+    const isLegal = fields.legalAnnexureRef === id;
+    const remaining = fields.annexures.filter(a => a.id !== id);
+    const nextTechEnabled = isTech ? false : fields.annexureEnabled;
+    const nextTechRef = isTech ? '' : fields.annexureRef;
+    const nextLegalEnabled = isLegal ? false : fields.legalAnnexureEnabled;
+    const nextLegalRef = isLegal ? '' : fields.legalAnnexureRef;
+
+    setFields(prev => ({
+      ...prev,
+      annexureEnabled: nextTechEnabled,
+      annexureRef: nextTechRef,
+      annexureRefShowAlso: isTech ? false : prev.annexureRefShowAlso,
+      legalAnnexureEnabled: nextLegalEnabled,
+      legalAnnexureRef: nextLegalRef,
+      legalAnnexureRefShowAlso: isLegal ? false : prev.legalAnnexureRefShowAlso,
+      annexures: reorderAndLabelAnnexures(
+        remaining,
+        nextTechRef,
+        nextLegalRef,
+        nextTechEnabled,
+        nextLegalEnabled
+      ),
+    }));
   };
+
   const updateAnnexureTitle = (id: string, title: string) => {
     handleChange('annexures', fields.annexures.map(a => a.id === id ? { ...a, title } : a));
   };
