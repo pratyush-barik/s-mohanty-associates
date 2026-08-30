@@ -948,19 +948,34 @@ export default function AdityaBirlaCapitalMLAP({
                   annexureRefShowAlso={fields.annexureRefShowAlso}
                   annexures={fields.annexures || []}
                   isReadOnly={isReadOnly}
-                  onToggleEnabled={() => handleChange('annexureEnabled', !fields.annexureEnabled)}
+                  onToggleEnabled={() => {
+                    if (fields.annexureEnabled) {
+                      // Disabling: remove linked annexure
+                      const targetId = fields.annexureRef;
+                      const remaining = (fields.annexures || []).filter(a => a.id !== targetId);
+                      const relabeled = remaining.map((a, i) => ({ ...a, label: String.fromCharCode(65 + i) }));
+                      setFields(prev => ({
+                        ...prev,
+                        annexureEnabled: false,
+                        annexureRef: '',
+                        annexureRefShowAlso: false,
+                        annexures: relabeled,
+                      }));
+                    } else {
+                      // Enabling: auto-create linked annexure
+                      const newId = String(Date.now());
+                      const nextLabel = String.fromCharCode(65 + (fields.annexures || []).length);
+                      const newAnnexure = { id: newId, label: nextLabel, title: 'Property Address Schedule', excelFileUrl: '', excelFileName: '' };
+                      setFields(prev => ({
+                        ...prev,
+                        annexureEnabled: true,
+                        annexureRef: newId,
+                        annexures: [...(prev.annexures || []), newAnnexure],
+                      }));
+                    }
+                  }}
                   onToggleShowAlso={() => handleChange('annexureRefShowAlso', !fields.annexureRefShowAlso)}
                   onSelectRef={(id) => handleChange('annexureRef', id)}
-                  onAutoCreateAnnexure={() => {
-                    const newId = String(Date.now());
-                    const newAnnexure = { id: newId, label: 'A', title: 'Property Address Schedule', excelFileUrl: '', excelFileName: '' };
-                    setFields(prev => ({
-                      ...prev,
-                      annexureEnabled: true,
-                      annexureRef: newId,
-                      annexures: [...(prev.annexures || []), newAnnexure],
-                    }));
-                  }}
                   reportRefText="Address as per Document"
                 />
               </div>
@@ -1246,20 +1261,34 @@ export default function AdityaBirlaCapitalMLAP({
                   annexureRefShowAlso={fields.legalAnnexureRefShowAlso}
                   annexures={fields.annexures || []}
                   isReadOnly={isReadOnly}
-                  onToggleEnabled={() => handleChange('legalAnnexureEnabled', !fields.legalAnnexureEnabled)}
+                  onToggleEnabled={() => {
+                    if (fields.legalAnnexureEnabled) {
+                      // Disabling: remove linked annexure
+                      const targetId = fields.legalAnnexureRef;
+                      const remaining = (fields.annexures || []).filter(a => a.id !== targetId);
+                      const relabeled = remaining.map((a, i) => ({ ...a, label: String.fromCharCode(65 + i) }));
+                      setFields(prev => ({
+                        ...prev,
+                        legalAnnexureEnabled: false,
+                        legalAnnexureRef: '',
+                        legalAnnexureRefShowAlso: false,
+                        annexures: relabeled,
+                      }));
+                    } else {
+                      // Enabling: auto-create linked annexure
+                      const newId = String(Date.now());
+                      const nextLabel = String.fromCharCode(65 + (fields.annexures || []).length);
+                      const newAnnexure = { id: newId, label: nextLabel, title: 'Legal & Title Details', excelFileUrl: '', excelFileName: '' };
+                      setFields(prev => ({
+                        ...prev,
+                        legalAnnexureEnabled: true,
+                        legalAnnexureRef: newId,
+                        annexures: [...(prev.annexures || []), newAnnexure],
+                      }));
+                    }
+                  }}
                   onToggleShowAlso={() => handleChange('legalAnnexureRefShowAlso', !fields.legalAnnexureRefShowAlso)}
                   onSelectRef={(id) => handleChange('legalAnnexureRef', id)}
-                  onAutoCreateAnnexure={() => {
-                    const newId = String(Date.now());
-                    const nextLabel = String.fromCharCode(65 + (fields.annexures || []).length);
-                    const newAnnexure = { id: newId, label: nextLabel, title: 'Legal & Title Details', excelFileUrl: '', excelFileName: '' };
-                    setFields(prev => ({
-                      ...prev,
-                      legalAnnexureEnabled: true,
-                      legalAnnexureRef: newId,
-                      annexures: [...(prev.annexures || []), newAnnexure],
-                    }));
-                  }}
                   reportRefText="Documents Provided"
                 />
               </div>

@@ -2582,14 +2582,24 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                       type="button"
                       onClick={() => {
                         const next = !fields.annexureEnabled;
-                        if (next && fields.annexures.length === 0) {
-                          // Auto-create a linked annexure
+                        if (!next) {
+                          // Disabling: remove linked annexure
+                          const targetId = fields.annexureRef;
+                          const remaining = (fields.annexures || []).filter(a => a.id !== targetId);
+                          const relabeled = remaining.map((a, i) => ({ ...a, label: String.fromCharCode(65 + i) }));
+                          setFields(prev => ({
+                            ...prev,
+                            annexureEnabled: false,
+                            annexureRef: '',
+                            annexureRefShowAlso: false,
+                            annexures: relabeled,
+                          }));
+                        } else {
+                          // Enabling: auto-create linked annexure
                           const newId = String(Date.now());
-                          const newLabel = 'A';
+                          const newLabel = String.fromCharCode(65 + (fields.annexures || []).length);
                           const newAnnexure = { id: newId, label: newLabel, title: 'Technical Address', excelFileUrl: '', excelFileName: '' };
                           setFields(prev => ({ ...prev, annexureEnabled: true, annexureRef: newId, annexures: [...prev.annexures, newAnnexure] }));
-                        } else {
-                          handleChange('annexureEnabled', next);
                         }
                       }}
                       className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${fields.annexureEnabled ? 'bg-[#b8860b]' : 'bg-[#ccc]'}`}
@@ -2710,19 +2720,24 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                       type="button"
                       onClick={() => {
                         const next = !fields.legalAnnexureEnabled;
-                        if (next && fields.annexures.length === 0) {
-                          const newId = String(Date.now());
-                          const nextLabel = 'A';
-                          const newAnnexure = { id: newId, label: nextLabel, title: 'Legal Address', excelFileUrl: '', excelFileName: '' };
-                          setFields(prev => ({ ...prev, legalAnnexureEnabled: true, legalAnnexureRef: newId, annexures: [...prev.annexures, newAnnexure] }));
-                        } else if (next && fields.annexures.length > 0 && !fields.legalAnnexureRef) {
-                          // Auto-create a new separate annexure for legal
-                          const newId = String(Date.now());
-                          const nextLabel = String.fromCharCode(65 + fields.annexures.length);
-                          const newAnnexure = { id: newId, label: nextLabel, title: 'Legal Address', excelFileUrl: '', excelFileName: '' };
-                          setFields(prev => ({ ...prev, legalAnnexureEnabled: true, legalAnnexureRef: newId, annexures: [...prev.annexures, newAnnexure] }));
+                        if (!next) {
+                          // Disabling: remove linked annexure
+                          const targetId = fields.legalAnnexureRef;
+                          const remaining = (fields.annexures || []).filter(a => a.id !== targetId);
+                          const relabeled = remaining.map((a, i) => ({ ...a, label: String.fromCharCode(65 + i) }));
+                          setFields(prev => ({
+                            ...prev,
+                            legalAnnexureEnabled: false,
+                            legalAnnexureRef: '',
+                            legalAnnexureRefShowAlso: false,
+                            annexures: relabeled,
+                          }));
                         } else {
-                          handleChange('legalAnnexureEnabled', next);
+                          // Enabling: auto-create linked annexure
+                          const newId = String(Date.now());
+                          const newLabel = String.fromCharCode(65 + (fields.annexures || []).length);
+                          const newAnnexure = { id: newId, label: newLabel, title: 'Legal Address', excelFileUrl: '', excelFileName: '' };
+                          setFields(prev => ({ ...prev, legalAnnexureEnabled: true, legalAnnexureRef: newId, annexures: [...prev.annexures, newAnnexure] }));
                         }
                       }}
                       className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${fields.legalAnnexureEnabled ? 'bg-[#b8860b]' : 'bg-[#ccc]'}`}
