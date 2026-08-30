@@ -1667,10 +1667,140 @@ export default function BankReportBuilder({
                     <input className={inputCls} value={fields.ownerName} onChange={e => handleChange('ownerName', e.target.value)} disabled={isReadOnly} placeholder="e.g. Mr. Rajesh Kumar" />
                   </Field>
                 )}
+                {/* Property Address Card with Annexure Toggle */}
                 {!isFieldHidden('ownerAddress') && (
-                  <Field label={getLabel('ownerAddress', 'Property Address')} span={2}>
-                    <textarea className={inputCls} rows={2} value={fields.ownerAddress} onChange={e => handleChange('ownerAddress', e.target.value)} disabled={isReadOnly} placeholder="Detailed property address..." />
-                  </Field>
+                  <div className="md:col-span-2 bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between border-b border-neutral-100 pb-3 flex-wrap gap-2">
+                      <h3 className="text-sm font-bold text-[#0f2038]">{getLabel('ownerAddress', 'Property Address')}</h3>
+                      <AnnexureRefSelector
+                        label="Property Address"
+                        annexureEnabled={fields.annexureEnabled}
+                        annexureRef={fields.annexureRef}
+                        annexureRefShowAlso={fields.annexureRefShowAlso}
+                        annexures={fields.annexures || []}
+                        isReadOnly={isReadOnly}
+                        onToggleEnabled={() => {
+                          setFields(prev => {
+                            if (prev.annexureEnabled) {
+                              const remaining = (prev.annexures || []).filter(a => a.id !== prev.annexureRef);
+                              return {
+                                ...prev,
+                                annexureEnabled: false,
+                                annexureRef: '',
+                                annexureRefShowAlso: false,
+                                annexures: reorderAndLabelAnnexures(
+                                  remaining,
+                                  '',
+                                  prev.legalAnnexureRef,
+                                  false,
+                                  prev.legalAnnexureEnabled
+                                ),
+                              };
+                            } else {
+                              const newId = String(Date.now());
+                              const newAnnexure: AnnexureItem = {
+                                id: newId,
+                                label: 'A',
+                                title: 'Property Address Schedule',
+                                excelFileUrl: '',
+                                excelFileName: '',
+                              };
+                              const updated = [...(prev.annexures || []), newAnnexure];
+                              return {
+                                ...prev,
+                                annexureEnabled: true,
+                                annexureRef: newId,
+                                annexures: reorderAndLabelAnnexures(
+                                  updated,
+                                  newId,
+                                  prev.legalAnnexureRef,
+                                  true,
+                                  prev.legalAnnexureEnabled
+                                ),
+                              };
+                            }
+                          });
+                        }}
+                        onToggleShowAlso={() => handleChange('annexureRefShowAlso', !fields.annexureRefShowAlso)}
+                        onSelectRef={id => handleChange('annexureRef', id)}
+                        reportRefText="Property Address"
+                      />
+                    </div>
+                    {(!fields.annexureEnabled || fields.annexureRefShowAlso) && (
+                      <Field label={getLabel('ownerAddress', 'Property Address')} span={2}>
+                        <textarea className={inputCls} rows={2} value={fields.ownerAddress} onChange={e => handleChange('ownerAddress', e.target.value)} disabled={isReadOnly} placeholder="Detailed property address..." />
+                      </Field>
+                    )}
+                  </div>
+                )}
+
+                {/* Legal Address Card with Annexure Toggle */}
+                {!isFieldHidden('legalAddress') && (
+                  <div className="md:col-span-2 bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between border-b border-neutral-100 pb-3 flex-wrap gap-2">
+                      <h3 className="text-sm font-bold text-[#0f2038]">
+                        Legal Address <span className="text-[10px] font-normal text-[#6c757d] normal-case">(Hissa / Survey / Khasra No)</span>
+                      </h3>
+                      <AnnexureRefSelector
+                        label="Legal Address"
+                        annexureEnabled={fields.legalAnnexureEnabled}
+                        annexureRef={fields.legalAnnexureRef}
+                        annexureRefShowAlso={fields.legalAnnexureRefShowAlso}
+                        annexures={fields.annexures || []}
+                        isReadOnly={isReadOnly}
+                        onToggleEnabled={() => {
+                          setFields(prev => {
+                            if (prev.legalAnnexureEnabled) {
+                              const remaining = (prev.annexures || []).filter(a => a.id !== prev.legalAnnexureRef);
+                              return {
+                                ...prev,
+                                legalAnnexureEnabled: false,
+                                legalAnnexureRef: '',
+                                legalAnnexureRefShowAlso: false,
+                                annexures: reorderAndLabelAnnexures(
+                                  remaining,
+                                  prev.annexureRef,
+                                  '',
+                                  prev.annexureEnabled,
+                                  false
+                                ),
+                              };
+                            } else {
+                              const newId = String(Date.now());
+                              const newAnnexure: AnnexureItem = {
+                                id: newId,
+                                label: 'B',
+                                title: 'Legal Address',
+                                excelFileUrl: '',
+                                excelFileName: '',
+                              };
+                              const updated = [...(prev.annexures || []), newAnnexure];
+                              return {
+                                ...prev,
+                                legalAnnexureEnabled: true,
+                                legalAnnexureRef: newId,
+                                annexures: reorderAndLabelAnnexures(
+                                  updated,
+                                  prev.annexureRef,
+                                  newId,
+                                  prev.annexureEnabled,
+                                  true
+                                ),
+                              };
+                            }
+                          });
+                        }}
+                        onToggleShowAlso={() => handleChange('legalAnnexureRefShowAlso', !fields.legalAnnexureRefShowAlso)}
+                        onSelectRef={id => handleChange('legalAnnexureRef', id)}
+                        reportRefText="Legal Address"
+                      />
+                    </div>
+                    {(!fields.legalAnnexureEnabled || fields.legalAnnexureRefShowAlso) && (
+                      <Field label="Legal Address (Hissa / Survey / Khasra No)" span={2}>
+                        <textarea className={inputCls} rows={2} value={fields.legalAddress} onChange={e => handleChange('legalAddress', e.target.value)} disabled={isReadOnly} placeholder="Hissa / Survey / Khasra No..." />
+                      </Field>
+                    )}
+                  </div>
                 )}
                 {!isFieldHidden('landmark') && (
                   <Field label={getLabel('landmark', 'Landmark')}>
