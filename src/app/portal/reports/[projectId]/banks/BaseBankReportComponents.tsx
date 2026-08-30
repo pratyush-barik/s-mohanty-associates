@@ -940,4 +940,274 @@ export function BasePhotoBucketModal({
   );
 }
 
+// ─── Standard Annexure Reference Selector (Used in Address / Legal Sections) ───
+export function AnnexureRefSelector({
+  label,
+  annexureEnabled,
+  annexureRef,
+  annexureRefShowAlso,
+  annexures = [],
+  isReadOnly = false,
+  onToggleEnabled,
+  onToggleShowAlso,
+  onSelectRef,
+  onAutoCreateAnnexure,
+  reportRefText = 'Property Address',
+}: {
+  label: string;
+  annexureEnabled: boolean;
+  annexureRef: string;
+  annexureRefShowAlso: boolean;
+  annexures: Array<{ id: string; label: string; title?: string; [key: string]: any }>;
+  isReadOnly?: boolean;
+  onToggleEnabled: () => void;
+  onToggleShowAlso: () => void;
+  onSelectRef: (id: string) => void;
+  onAutoCreateAnnexure?: () => void;
+  reportRefText?: string;
+}) {
+  const linked = annexures.find(a => a.id === annexureRef) || (annexures.find(a => a.parsedData) || annexures[0]);
+  const displayTitle = linked ? (linked.title || `Annexure ${linked.label}`) : 'Annexure';
+
+  return (
+    <div className="flex items-center gap-3 flex-wrap justify-end">
+      <span className="text-[10px] font-bold text-[#6c757d] uppercase tracking-wide">Use Annexure</span>
+      <button
+        type="button"
+        disabled={isReadOnly}
+        onClick={() => {
+          if (!annexureEnabled && annexures.length === 0 && onAutoCreateAnnexure) {
+            onAutoCreateAnnexure();
+          } else {
+            onToggleEnabled();
+          }
+        }}
+        className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+          annexureEnabled ? 'bg-[#b8860b]' : 'bg-[#ccc]'
+        }`}
+        title={annexureEnabled ? 'Disable Annexure' : 'Enable Annexure'}
+      >
+        <span
+          className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+            annexureEnabled ? 'translate-x-5' : 'translate-x-0'
+          }`}
+        />
+      </button>
+      {annexureEnabled && (
+        <>
+          <span className="w-px h-4 bg-neutral-200" />
+          <span className="text-[10px] font-bold text-[#6c757d] uppercase tracking-wide">Also show address</span>
+          <button
+            type="button"
+            disabled={isReadOnly}
+            onClick={onToggleShowAlso}
+            className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+              annexureRefShowAlso ? 'bg-emerald-500' : 'bg-[#ccc]'
+            }`}
+            title={annexureRefShowAlso ? 'Hide address field' : 'Also show address field'}
+          >
+            <span
+              className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                annexureRefShowAlso ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── Standard Annexure Card & Section (100% Identical to General Report) ─────
+export function BaseAnnexureSection({
+  annexures = [],
+  isReadOnly = false,
+  uploading = false,
+  onAddAnnexure,
+  onRemoveAnnexure,
+  onUpdateTitle,
+  onUploadExcel,
+  onRemoveFile,
+  sectionNumber = 12,
+  sectionId = 'section-12-annexure',
+}: {
+  annexures: Array<{
+    id: string;
+    label: string;
+    title?: string;
+    excelFileUrl?: string;
+    excelFileName?: string;
+    parsedData?: {
+      headers: string[];
+      rows: string[][];
+      allRows?: string[][];
+      merges?: { sr: number; sc: number; er: number; ec: number }[];
+      colWidths?: number[];
+    };
+  }>;
+  isReadOnly?: boolean;
+  uploading?: boolean;
+  onAddAnnexure: () => void;
+  onRemoveAnnexure: (id: string) => void;
+  onUpdateTitle: (id: string, title: string) => void;
+  onUploadExcel: (id: string, e: React.ChangeEvent<HTMLInputElement>) => void;
+  onRemoveFile: (id: string) => void;
+  sectionNumber?: number | string;
+  sectionId?: string;
+}) {
+  return (
+    <Section title="Annexures & Schedules" number={sectionNumber} id={sectionId} defaultOpen={true}>
+      <div className="space-y-4">
+        {/* Info banner */}
+        <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-[#0a1628]/5 to-[#b8860b]/5 border border-[#b8860b]/20">
+          <svg className="w-5 h-5 text-[#b8860b] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <p className="text-xs text-[#495057]">
+            Upload detailed property address schedules, khasra details, or other annexure data in Excel format (.xlsx, .xls, .csv).
+          </p>
+        </div>
+
+        {/* Annexure Cards */}
+        {annexures.map((annexure) => (
+          <div key={annexure.id} className="rounded-xl border border-[#dee2e6] overflow-hidden bg-white shadow-xs">
+            {/* Annexure header */}
+            <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-[#162d4a] to-[#1e3a5f]">
+              <div className="flex items-center gap-2">
+                <span className="w-7 h-7 rounded-lg bg-[#b8860b] flex items-center justify-center text-xs font-bold text-white shadow-xs">
+                  {annexure.label}
+                </span>
+                <span className="text-sm font-semibold text-white">Annexure {annexure.label}</span>
+              </div>
+              {!isReadOnly && (
+                <button
+                  type="button"
+                  onClick={() => onRemoveAnnexure(annexure.id)}
+                  className="text-red-300 hover:text-red-100 hover:bg-red-500/20 p-1 rounded-lg transition-colors"
+                  title="Remove this annexure"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+
+            {/* Annexure body */}
+            <div className="p-5 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider mb-1.5">
+                  Annexure Title / Heading
+                </label>
+                <input
+                  type="text"
+                  value={annexure.title || ''}
+                  onChange={e => onUpdateTitle(annexure.id, e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="e.g. Schedule of Property Details / Plot List"
+                  className={inputCls}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider mb-1.5">
+                  Excel Spreadsheet Upload
+                </label>
+                {annexure.excelFileUrl ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-green-50 border border-green-200">
+                      <svg className="w-8 h-8 text-green-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-green-800 truncate">{annexure.excelFileName}</p>
+                        <a href={annexure.excelFileUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-green-600 hover:underline inline-flex items-center gap-1">
+                          Download / View file ↗
+                        </a>
+                      </div>
+                      {!isReadOnly && (
+                        <button
+                          type="button"
+                          onClick={() => onRemoveFile(annexure.id)}
+                          className="px-2.5 py-1 rounded-lg text-xs font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Table Preview */}
+                    {annexure.parsedData && annexure.parsedData.rows && annexure.parsedData.rows.length > 0 && (
+                      <div className="border border-[#dee2e6] rounded-xl overflow-hidden shadow-xs">
+                        <div className="bg-slate-100 px-4 py-2 border-b border-[#dee2e6] flex items-center justify-between">
+                          <span className="text-[11px] font-bold text-[#1e3a5f] uppercase tracking-wider">Spreadsheet Preview</span>
+                          <span className="text-[10px] text-gray-500 font-semibold">{annexure.parsedData.rows.length} rows parsed</span>
+                        </div>
+                        <div className="overflow-x-auto max-h-64">
+                          <table className="w-full text-xs text-left border-collapse">
+                            <thead>
+                              <tr className="bg-[#f8f9fa] border-b border-[#dee2e6]">
+                                {annexure.parsedData.headers.map((h, hi) => (
+                                  <th key={hi} className="px-3 py-2 font-bold text-[#1e3a5f] border-r border-[#dee2e6] last:border-r-0 whitespace-nowrap">
+                                    {h || `Col ${hi + 1}`}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {annexure.parsedData.rows.map((row, ri) => (
+                                <tr key={ri} className="border-b border-[#eee] hover:bg-slate-50 transition-colors">
+                                  {row.map((cell, ci) => (
+                                    <td key={ci} className="px-3 py-1.5 border-r border-[#eee] last:border-r-0 text-slate-700 whitespace-nowrap">
+                                      {cell}
+                                    </td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  !isReadOnly && (
+                    <label className="flex flex-col items-center justify-center gap-2 px-6 py-8 rounded-xl border-2 border-dashed border-[#b8860b]/30 bg-[#fffaf0] cursor-pointer hover:bg-[#fff5e0] hover:border-[#b8860b]/50 transition-all group">
+                      <svg className="w-10 h-10 text-[#b8860b]/40 group-hover:text-[#b8860b]/70 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                      </svg>
+                      <span className="text-sm font-medium text-[#b8860b]">
+                        {uploading ? 'Uploading...' : 'Click to upload Excel file'}
+                      </span>
+                      <span className="text-[10px] text-[#999]">Supports .xlsx, .xls, .csv (max 10MB)</span>
+                      <input
+                        type="file"
+                        accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
+                        className="hidden"
+                        onChange={e => onUploadExcel(annexure.id, e)}
+                        disabled={uploading}
+                      />
+                    </label>
+                  )
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {/* Add Annexure button */}
+        {!isReadOnly && (
+          <button
+            type="button"
+            onClick={onAddAnnexure}
+            className="mt-1 text-sm text-[#b8860b] hover:text-[#96700a] font-semibold flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#b8860b]/30 hover:bg-[#b8860b]/10 transition-colors"
+          >
+            <span className="text-lg leading-none">+</span> Add Annexure
+          </button>
+        )}
+      </div>
+    </Section>
+  );
+}
+
 

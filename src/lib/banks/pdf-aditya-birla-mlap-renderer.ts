@@ -133,6 +133,15 @@ export interface MLAPReportFields {
   mouzaMapImage?: string;
   cadastralMapImage?: string;
 
+  // Annexure
+  annexureEnabled?: boolean;
+  annexureRef?: string;
+  annexureRefShowAlso?: boolean;
+  legalAnnexureEnabled?: boolean;
+  legalAnnexureRef?: string;
+  legalAnnexureRefShowAlso?: boolean;
+  annexures?: any[];
+
   [key: string]: any;
 }
 

@@ -228,6 +228,15 @@ const DEFAULT_BASE_FIELDS: BaseReportFields = {
   latitude: '',
   longitude: '',
 
+  // Annexure
+  annexureEnabled: false,
+  annexureRef: '',
+  annexureRefShowAlso: false,
+  legalAnnexureEnabled: false,
+  legalAnnexureRef: '',
+  legalAnnexureRefShowAlso: false,
+  annexures: [],
+
   localityType: 'Residential',
   khataNo: '',
   plotNo: '',

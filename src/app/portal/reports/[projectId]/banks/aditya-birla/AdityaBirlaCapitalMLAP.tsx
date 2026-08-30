@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
+import * as XLSX from 'xlsx';
 import { formatIndianCurrency } from '@/lib/numberToWords';
 import { PDFAdityaBirlaMLAPRenderer, MLAPReportFields } from '@/lib/banks/pdf-aditya-birla-mlap-renderer';
 import {
@@ -20,6 +21,8 @@ import {
   BasePhotographsSection,
   BaseMapsSection,
   BasePhotoBucketModal,
+  AnnexureRefSelector,
+  BaseAnnexureSection,
 } from '../BaseBankReportComponents';
 
 export interface AdityaBirlaCapitalMLAPProps {
@@ -191,6 +194,15 @@ export default function AdityaBirlaCapitalMLAP({
     propertyImages: initialFields?.propertyImages || [],
     propertyImageNames: initialFields?.propertyImageNames || [],
 
+    // Annexures
+    annexureEnabled: initialFields?.annexureEnabled ?? false,
+    annexureRef: initialFields?.annexureRef || '',
+    annexureRefShowAlso: initialFields?.annexureRefShowAlso ?? false,
+    legalAnnexureEnabled: initialFields?.legalAnnexureEnabled ?? false,
+    legalAnnexureRef: initialFields?.legalAnnexureRef || '',
+    legalAnnexureRefShowAlso: initialFields?.legalAnnexureRefShowAlso ?? false,
+    annexures: Array.isArray(initialFields?.annexures) ? initialFields.annexures : [],
+
     reworkNotes: initialFields?.reworkNotes || '',
     clientType: initialFields?.clientType || 'organisation',
     organisationTemplate: initialFields?.organisationTemplate || 'ADITYA BIRLA CAPITAL LTD',
@@ -211,6 +223,105 @@ export default function AdityaBirlaCapitalMLAP({
 
   const handleChange = (key: keyof MLAPReportFields, val: any) => {
     setFields(prev => ({ ...prev, [key]: val }));
+  };
+
+  // ── Dynamic Navigation Sections (includes Annexures when enabled or present) ──
+  const dynamicNavSections: NavItem[] = useMemo(() => {
+    const base = [...NAV_SECTIONS];
+    if (fields.annexureEnabled || fields.legalAnnexureEnabled || (fields.annexures && fields.annexures.length > 0)) {
+      base.push({ id: 'section-12-annexure', title: 'Annexures' });
+    }
+    return base;
+  }, [fields.annexureEnabled, fields.legalAnnexureEnabled, fields.annexures]);
+
+  // ── Annexure State Handlers ──
+  const addAnnexure = () => {
+    const nextIndex = (fields.annexures || []).length;
+    const nextLabel = String.fromCharCode(65 + nextIndex);
+    const newAnnexure = {
+      id: String(Date.now()),
+      label: nextLabel,
+      title: '',
+      excelFileUrl: '',
+      excelFileName: '',
+    };
+    handleChange('annexures', [...(fields.annexures || []), newAnnexure]);
+  };
+
+  const removeAnnexure = (id: string) => {
+    const filtered = (fields.annexures || []).filter(a => a.id !== id);
+    const relabeled = filtered.map((a, idx) => ({ ...a, label: String.fromCharCode(65 + idx) }));
+    handleChange('annexures', relabeled);
+  };
+
+  const updateAnnexureTitle = (id: string, title: string) => {
+    handleChange('annexures', (fields.annexures || []).map(a => a.id === id ? { ...a, title } : a));
+  };
+
+  const handleAnnexureUpload = async (annexureId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingTarget(annexureId);
+    let parsedData: any = undefined;
+
+    try {
+      const buffer = await file.arrayBuffer();
+      const wb = XLSX.read(buffer, { type: 'array', cellDates: true });
+      const firstSheetName = wb.SheetNames[0];
+      const sheet = wb.Sheets[firstSheetName];
+
+      const rawRows = XLSX.utils.sheet_to_json<string[]>(sheet, { header: 1, defval: '' });
+      if (rawRows.length > 0) {
+        const headers = (rawRows[0] || []).map((h: any) => String(h ?? '').trim());
+        const rows = rawRows.slice(1).map(row => (row || []).map((cell: any) => String(cell ?? '').trim()));
+
+        const rawMerges = (sheet['!merges'] || []).map(m => ({
+          sr: m.s.r,
+          sc: m.s.c,
+          er: m.e.r,
+          ec: m.e.c,
+        }));
+
+        const colWidths = sheet['!cols'] ? sheet['!cols'].map(c => c?.wpx || c?.wch || 10) : undefined;
+
+        parsedData = {
+          headers,
+          rows,
+          allRows: rawRows.map(row => (row || []).map((cell: any) => String(cell ?? '').trim())),
+          merges: rawMerges,
+          colWidths,
+        };
+      }
+
+      const ext = file.name.split('.').pop() || 'xlsx';
+      const fileName = `annexure-${annexureId}-${Date.now()}.${ext}`;
+      const filePath = `annexures/${projectId}/${fileName}`;
+
+      const { error: uploadError } = await supabaseBrowser.storage
+        .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+        .upload(filePath, file, { cacheControl: '3600', upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabaseBrowser.storage
+        .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+        .getPublicUrl(filePath);
+
+      handleChange('annexures', (fields.annexures || []).map(a =>
+        a.id === annexureId ? { ...a, excelFileUrl: data.publicUrl, excelFileName: file.name, parsedData } : a
+      ));
+    } catch (err: any) {
+      alert(`Failed to upload/parse annexure: ${err.message}`);
+    } finally {
+      setUploadingTarget(null);
+    }
+  };
+
+  const removeAnnexureFile = (annexureId: string) => {
+    handleChange('annexures', (fields.annexures || []).map(a =>
+      a.id === annexureId ? { ...a, excelFileUrl: '', excelFileName: '', parsedData: undefined } : a
+    ));
   };
 
   // ── Dynamic Row Handlers ──
@@ -467,8 +578,25 @@ export default function AdityaBirlaCapitalMLAP({
 
     // 3. Location Details
     r.drawSectionHeader('Location Details');
-    r.drawKeyValueRow([{ label: 'Address as per Document', value: fields.propertyAddressAsDocs || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
-    r.drawKeyValueRow([{ label: 'Address as per Physical', value: fields.propertyAddressAsVisit || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
+    let propDocsText = fields.propertyAddressAsDocs || 'N/A';
+    if (fields.annexureEnabled && fields.annexures && fields.annexures.length > 0) {
+      const linked = fields.annexures.find(a => a.id === fields.annexureRef) || (fields.annexures.find(a => a.parsedData) || fields.annexures[0]);
+      const annTitle = linked ? (linked.title || `Annexure ${linked.label}`) : 'Annexure';
+      if (!fields.annexureRefShowAlso) {
+        propDocsText = `Refer to ${annTitle}`;
+      } else if (fields.propertyAddressAsDocs) {
+        propDocsText = `${fields.propertyAddressAsDocs} (Refer to ${annTitle})`;
+      }
+    }
+    r.drawKeyValueRow([{ label: 'Address as per Document', value: propDocsText, labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
+
+    let propVisitText = fields.propertyAddressAsVisit || 'N/A';
+    if (fields.annexureEnabled && fields.annexures && fields.annexures.length > 0 && !fields.annexureRefShowAlso) {
+      const linked = fields.annexures.find(a => a.id === fields.annexureRef) || (fields.annexures.find(a => a.parsedData) || fields.annexures[0]);
+      const annTitle = linked ? (linked.title || `Annexure ${linked.label}`) : 'Annexure';
+      propVisitText = `Refer to ${annTitle}`;
+    }
+    r.drawKeyValueRow([{ label: 'Address as per Physical', value: propVisitText, labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
     r.drawKeyValueRow([{ label: 'Address matching', value: fields.addressMatching || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
     r.drawKeyValueRow([{ label: 'Co-Ordinates', value: fields.latitude && fields.longitude ? `Lat: ${fields.latitude}, Long: ${fields.longitude}` : (fields.latitude || fields.longitude || 'N/A'), labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
 
@@ -524,7 +652,17 @@ export default function AdityaBirlaCapitalMLAP({
 
     // 5. Documentation
     r.drawSectionHeader('Documentation');
-    r.drawKeyValueRow([{ label: 'Documents Provided', value: fields.documentsProvided || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
+    let docsText = fields.documentsProvided || 'N/A';
+    if (fields.legalAnnexureEnabled && fields.annexures && fields.annexures.length > 0) {
+      const linked = fields.annexures.find(a => a.id === fields.legalAnnexureRef) || (fields.annexures.find(a => a.parsedData) || fields.annexures[0]);
+      const annTitle = linked ? (linked.title || `Annexure ${linked.label}`) : 'Annexure';
+      if (!fields.legalAnnexureRefShowAlso) {
+        docsText = `Refer to ${annTitle}`;
+      } else if (fields.documentsProvided) {
+        docsText = `${fields.documentsProvided} (Refer to ${annTitle})`;
+      }
+    }
+    r.drawKeyValueRow([{ label: 'Documents Provided', value: docsText, labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
     r.drawKeyValueRow([{ label: 'Sanction Plan details if provided', value: fields.sanctionPlanDetails || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
     r.drawKeyValueRow([{ label: 'Utility Bills (Water bill, electricity bill)', value: fields.utilityBills || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
 
@@ -641,6 +779,11 @@ export default function AdityaBirlaCapitalMLAP({
           await r.drawImageSection(sketchBytes[i], `Hand-Drawn Sketch Map ${i + 1}`);
         }
       }
+    }
+
+    // 14. Annexures & Schedules
+    if (fields.annexures && fields.annexures.length > 0) {
+      r.renderAnnexures(fields.annexures);
     }
 
     return await r.save();
@@ -791,12 +934,94 @@ export default function AdityaBirlaCapitalMLAP({
         {/* ═══ SECTION 2: LOCATION DETAILS ═══ */}
         <Section title="Location Details & Distance Matrix" number={2}>
           <div className="space-y-4">
-            <Field label="Address as per Document (Khata, Plot, Mouza, Tahasil, Dist, Pin)">
-              <textarea rows={2} value={fields.propertyAddressAsDocs || ''} onChange={e => handleChange('propertyAddressAsDocs', e.target.value)} disabled={isReadOnly} className={inputCls} />
-            </Field>
-            <Field label="Address as per Physical / Site Visit">
-              <textarea rows={2} value={fields.propertyAddressAsVisit || ''} onChange={e => handleChange('propertyAddressAsVisit', e.target.value)} disabled={isReadOnly} className={inputCls} />
-            </Field>
+            {/* Property Address Card with Annexure Toggle */}
+            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-neutral-100 pb-3 flex-wrap gap-2">
+                <h3 className="text-sm font-bold text-[#0f2038]">
+                  Property Address <span className="text-[10px] font-normal text-[#6c757d] normal-case">(Khata, Plot, Mouza, Tahasil, Dist, Pin)</span>
+                </h3>
+                <AnnexureRefSelector
+                  label="Property Address"
+                  annexureEnabled={fields.annexureEnabled}
+                  annexureRef={fields.annexureRef}
+                  annexureRefShowAlso={fields.annexureRefShowAlso}
+                  annexures={fields.annexures || []}
+                  isReadOnly={isReadOnly}
+                  onToggleEnabled={() => handleChange('annexureEnabled', !fields.annexureEnabled)}
+                  onToggleShowAlso={() => handleChange('annexureRefShowAlso', !fields.annexureRefShowAlso)}
+                  onSelectRef={(id) => handleChange('annexureRef', id)}
+                  onAutoCreateAnnexure={() => {
+                    const newId = String(Date.now());
+                    const newAnnexure = { id: newId, label: 'A', title: 'Property Address Schedule', excelFileUrl: '', excelFileName: '' };
+                    setFields(prev => ({
+                      ...prev,
+                      annexureEnabled: true,
+                      annexureRef: newId,
+                      annexures: [...(prev.annexures || []), newAnnexure],
+                    }));
+                  }}
+                  reportRefText="Address as per Document"
+                />
+              </div>
+
+              {(!fields.annexureEnabled || fields.annexureRefShowAlso) && (
+                <div className="space-y-3">
+                  <Field label="Address as per Document (Khata, Plot, Mouza, Tahasil, Dist, Pin)">
+                    <textarea rows={2} value={fields.propertyAddressAsDocs || ''} onChange={e => handleChange('propertyAddressAsDocs', e.target.value)} disabled={isReadOnly} className={inputCls} />
+                  </Field>
+                  <Field label="Address as per Physical / Site Visit">
+                    <textarea rows={2} value={fields.propertyAddressAsVisit || ''} onChange={e => handleChange('propertyAddressAsVisit', e.target.value)} disabled={isReadOnly} className={inputCls} />
+                  </Field>
+                </div>
+              )}
+
+              {fields.annexureEnabled && (
+                <div className="space-y-2">
+                  {/* Chip selector — only when 2+ annexures */}
+                  {(fields.annexures || []).length > 1 && (
+                    <div className="space-y-1">
+                      <label className="block text-[10px] font-bold text-[#6c757d] uppercase tracking-wider">Select Annexure</label>
+                      <div className="flex flex-wrap gap-2">
+                        {(fields.annexures || []).map(ann => {
+                          const isSelected = fields.annexureRef === ann.id;
+                          const displayTitle = ann.title || `Annexure ${ann.label}`;
+                          return (
+                            <button
+                              key={ann.id}
+                              type="button"
+                              disabled={isReadOnly}
+                              onClick={() => handleChange('annexureRef', isSelected ? '' : ann.id)}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                                isSelected
+                                  ? 'bg-[#b8860b] text-white border-[#b8860b] shadow-xs'
+                                  : 'bg-white text-[#6c757d] border-[#dee2e6] hover:border-[#b8860b] hover:text-[#b8860b]'
+                              }`}
+                            >
+                              <span className={`w-4 h-4 rounded-full text-[10px] font-black flex items-center justify-center shrink-0 ${isSelected ? 'bg-white/30' : 'bg-[#f0ead6] text-[#b8860b]'}`}>{ann.label}</span>
+                              {displayTitle}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Linked confirmation pill */}
+                  {(() => {
+                    const linked = (fields.annexures || []).find(a => a.id === fields.annexureRef) || (fields.annexures || []).find(a => a.parsedData) || (fields.annexures || [])[0];
+                    if (!linked) return null;
+                    const displayTitle = linked.title || `Annexure ${linked.label}`;
+                    return (
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#fff8e1] border border-[#ffe082] text-xs text-[#7b6b2e]">
+                        <svg className="w-3.5 h-3.5 shrink-0 text-[#b8860b]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        <span>In report: <strong>Address as per Document — Refer to {displayTitle}</strong></span>
+                        <span className="ml-auto text-[10px] text-[#b8860b]/60">Edit title &amp; file in Annexure section ↓</span>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
             <div className="grid md:grid-cols-3 gap-4">
               <Field label="Address Matching">
                 <select value={fields.addressMatching || 'Yes (As per documents)'} onChange={e => handleChange('addressMatching', e.target.value)} disabled={isReadOnly} className={selectCls}>
@@ -1008,9 +1233,88 @@ export default function AdityaBirlaCapitalMLAP({
         {/* ═══ SECTION 4: DOCUMENTATION ═══ */}
         <Section title="Documentation" number={4}>
           <div className="space-y-4">
-            <Field label="Documents Provided">
-              <input type="text" value={fields.documentsProvided || ''} onChange={e => handleChange('documentsProvided', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Copy of Sale Deed, ROR, Sketch Map" />
-            </Field>
+            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-neutral-100 pb-3 flex-wrap gap-2">
+                <h3 className="text-sm font-bold text-[#0f2038]">
+                  Documents Provided <span className="text-[10px] font-normal text-[#6c757d] normal-case">(Title Deeds, ROR, Plans)</span>
+                </h3>
+                <AnnexureRefSelector
+                  label="Legal / Documentation"
+                  annexureEnabled={fields.legalAnnexureEnabled}
+                  annexureRef={fields.legalAnnexureRef}
+                  annexureRefShowAlso={fields.legalAnnexureRefShowAlso}
+                  annexures={fields.annexures || []}
+                  isReadOnly={isReadOnly}
+                  onToggleEnabled={() => handleChange('legalAnnexureEnabled', !fields.legalAnnexureEnabled)}
+                  onToggleShowAlso={() => handleChange('legalAnnexureRefShowAlso', !fields.legalAnnexureRefShowAlso)}
+                  onSelectRef={(id) => handleChange('legalAnnexureRef', id)}
+                  onAutoCreateAnnexure={() => {
+                    const newId = String(Date.now());
+                    const nextLabel = String.fromCharCode(65 + (fields.annexures || []).length);
+                    const newAnnexure = { id: newId, label: nextLabel, title: 'Legal & Title Details', excelFileUrl: '', excelFileName: '' };
+                    setFields(prev => ({
+                      ...prev,
+                      legalAnnexureEnabled: true,
+                      legalAnnexureRef: newId,
+                      annexures: [...(prev.annexures || []), newAnnexure],
+                    }));
+                  }}
+                  reportRefText="Documents Provided"
+                />
+              </div>
+
+              {(!fields.legalAnnexureEnabled || fields.legalAnnexureRefShowAlso) && (
+                <Field label="Documents Provided">
+                  <input type="text" value={fields.documentsProvided || ''} onChange={e => handleChange('documentsProvided', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Copy of Sale Deed, ROR, Sketch Map" />
+                </Field>
+              )}
+
+              {fields.legalAnnexureEnabled && (
+                <div className="space-y-2">
+                  {(fields.annexures || []).length > 1 && (
+                    <div className="space-y-1">
+                      <label className="block text-[10px] font-bold text-[#6c757d] uppercase tracking-wider">Select Annexure</label>
+                      <div className="flex flex-wrap gap-2">
+                        {(fields.annexures || []).map(ann => {
+                          const isSelected = fields.legalAnnexureRef === ann.id;
+                          const displayTitle = ann.title || `Annexure ${ann.label}`;
+                          return (
+                            <button
+                              key={ann.id}
+                              type="button"
+                              disabled={isReadOnly}
+                              onClick={() => handleChange('legalAnnexureRef', isSelected ? '' : ann.id)}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                                isSelected
+                                  ? 'bg-[#b8860b] text-white border-[#b8860b] shadow-xs'
+                                  : 'bg-white text-[#6c757d] border-[#dee2e6] hover:border-[#b8860b] hover:text-[#b8860b]'
+                              }`}
+                            >
+                              <span className={`w-4 h-4 rounded-full text-[10px] font-black flex items-center justify-center shrink-0 ${isSelected ? 'bg-white/30' : 'bg-[#f0ead6] text-[#b8860b]'}`}>{ann.label}</span>
+                              {displayTitle}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {(() => {
+                    const linked = (fields.annexures || []).find(a => a.id === fields.legalAnnexureRef) || (fields.annexures || []).find(a => a.parsedData) || (fields.annexures || [])[0];
+                    if (!linked) return null;
+                    const displayTitle = linked.title || `Annexure ${linked.label}`;
+                    return (
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#fff8e1] border border-[#ffe082] text-xs text-[#7b6b2e]">
+                        <svg className="w-3.5 h-3.5 shrink-0 text-[#b8860b]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        <span>In report: <strong>Documents Provided — Refer to {displayTitle}</strong></span>
+                        <span className="ml-auto text-[10px] text-[#b8860b]/60">Edit title &amp; file in Annexure section ↓</span>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+
             <Field label="Sanction Plan details if provided">
               <input type="text" value={fields.sanctionPlanDetails || ''} onChange={e => handleChange('sanctionPlanDetails', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Approved Plan No. or Plan not provided" />
             </Field>
@@ -1419,6 +1723,22 @@ export default function AdityaBirlaCapitalMLAP({
           sectionId="section-11"
         />
 
+        {/* ═══ SECTION 12: ANNEXURES (When enabled or populated) ═══ */}
+        {(fields.annexureEnabled || fields.legalAnnexureEnabled || (fields.annexures && fields.annexures.length > 0)) && (
+          <BaseAnnexureSection
+            annexures={fields.annexures || []}
+            isReadOnly={isReadOnly}
+            uploading={uploadingTarget !== null}
+            onAddAnnexure={addAnnexure}
+            onRemoveAnnexure={removeAnnexure}
+            onUpdateTitle={updateAnnexureTitle}
+            onUploadExcel={handleAnnexureUpload}
+            onRemoveFile={removeAnnexureFile}
+            sectionNumber={12}
+            sectionId="section-12-annexure"
+          />
+        )}
+
         {/* ═══ STANDARDIZED ACTION BAR ═══ */}
         <ReportActionBar
           isReadOnly={isReadOnly}
@@ -1435,7 +1755,7 @@ export default function AdityaBirlaCapitalMLAP({
       </div>
 
       {/* ── Right Column: Dynamic Floating Navigator drawn from this bank's exact sections ── */}
-      <FloatingNavigator sections={NAV_SECTIONS} />
+      <FloatingNavigator sections={dynamicNavSections} />
 
       {/* ── Standard Photo Bucket Modal ── */}
       <BasePhotoBucketModal

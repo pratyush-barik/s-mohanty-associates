@@ -540,6 +540,42 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
       this.cursorY += cellH + 10;
     }
   }
+
+  /**
+   * Render all populated Annexure spreadsheets at the end of the report.
+   * Auto-formats multi-column tables with headers, cell wrapping, background shading, and page breaks.
+   */
+  renderAnnexures(annexures?: Array<{
+    id: string;
+    label: string;
+    title?: string;
+    parsedData?: {
+      headers: string[];
+      rows: string[][];
+      allRows?: string[][];
+      merges?: { sr: number; sc: number; er: number; ec: number }[];
+      colWidths?: number[];
+    };
+  }>): void {
+    if (!annexures || annexures.length === 0) return;
+
+    const populated = annexures.filter(a => a.parsedData && ((a.parsedData.allRows && a.parsedData.allRows.length > 0) || (a.parsedData.headers && a.parsedData.headers.length > 0)));
+    if (populated.length === 0) return;
+
+    for (const ann of populated) {
+      this.addPage();
+      const annTitle = ann.title ? `ANNEXURE ${ann.label} \u2014 ${ann.title.toUpperCase()}` : `ANNEXURE ${ann.label}`;
+      this.drawSectionHeader(annTitle, false);
+      this.advanceCursor(8);
+
+      const pd = ann.parsedData!;
+      if (pd.allRows && pd.allRows.length > 0) {
+        this.drawMergedTable(pd.allRows, pd.merges || [], pd.colWidths || []);
+      } else if (pd.headers && pd.headers.length > 0) {
+        this.drawDataTable(pd.headers, pd.rows || []);
+      }
+    }
+  }
 }
 
 export default PDFBankRenderer;
