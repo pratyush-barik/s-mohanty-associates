@@ -667,7 +667,7 @@ const FloatingNavigator = ({ isApartmentFlat, annexureEnabled }: { isApartmentFl
     { id: `section-${isApartmentFlat ? 11 : 12}`, title: 'Photographs' },
     { id: `section-${isApartmentFlat ? 12 : 13}`, title: 'Sketch Maps' },
     { id: `section-${isApartmentFlat ? 13 : 14}`, title: 'Location Map' },
-    ...(annexureEnabled ? [{ id: `section-${isApartmentFlat ? 14 : 15}`, title: 'Annexure' }] : []),
+    { id: `section-${isApartmentFlat ? 14 : 15}`, title: 'Annexures' },
   ];
 
   useEffect(() => {
@@ -1772,7 +1772,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
         }
       }
       // ── Annexure Sections ──
-      if ((fields.annexureEnabled || fields.legalAnnexureEnabled) && fields.annexures.length > 0) {
+      if (fields.annexures && fields.annexures.length > 0) {
         for (const annexure of fields.annexures) {
           if (annexure.parsedData && annexure.parsedData.headers.length > 0) {
             r.newPage();
@@ -3553,102 +3553,100 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
         </div>
       </Section>
 
-      {/* ── Section 15: Annexure (only when enabled) ── */}
-      {(fields.annexureEnabled || fields.legalAnnexureEnabled) && (
-        <Section title="Annexure" number={isApartmentFlat ? 14 : 15} defaultOpen={true}>
-          <div className="space-y-4">
-            {/* Info banner */}
-            <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-[#0a1628]/5 to-[#b8860b]/5 border border-[#b8860b]/20">
-              <svg className="w-5 h-5 text-[#b8860b] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-              <p className="text-xs text-[#495057]">
-                Upload detailed property address schedules, khasra details, or other annexure data in Excel format (.xlsx, .xls, .csv).
-              </p>
-            </div>
-
-            {/* Annexure Cards */}
-            {fields.annexures.map((annexure) => (
-              <div key={annexure.id} className="rounded-xl border border-[#dee2e6] overflow-hidden">
-                {/* Annexure header */}
-                <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-[#162d4a] to-[#1e3a5f]">
-                  <div className="flex items-center gap-2">
-                    <span className="w-7 h-7 rounded-lg bg-[#b8860b] flex items-center justify-center text-xs font-bold text-white">{annexure.label}</span>
-                    <span className="text-sm font-semibold text-white">Annexure {annexure.label}</span>
-                  </div>
-                  {!isReadOnly && (
-                    <button
-                      type="button"
-                      onClick={() => removeAnnexure(annexure.id)}
-                      className="text-red-300 hover:text-red-100 hover:bg-red-500/20 p-1 rounded-lg transition-colors"
-                      title="Remove this annexure"
-                    >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                  )}
-                </div>
-                {/* Annexure body */}
-                <div className="p-5 space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider mb-1.5">Annexure Title / Heading</label>
-                    <input
-                      type="text"
-                      value={annexure.title || ''}
-                      onChange={e => updateAnnexureTitle(annexure.id, e.target.value)}
-                      disabled={isReadOnly}
-                      placeholder="e.g. Schedule of Property Details"
-                      className={inputCls}
-                    />
-                  </div>
-                  <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider">Excel Upload</label>
-                  {annexure.excelFileUrl ? (
-                    <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-green-50 border border-green-200">
-                      <svg className="w-8 h-8 text-green-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-green-800 truncate">{annexure.excelFileName}</p>
-                        <a href={annexure.excelFileUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-green-600 hover:underline">
-                          Download / View file &#x2197;
-                        </a>
-                      </div>
-                      {!isReadOnly && (
-                        <button
-                          type="button"
-                          onClick={() => removeAnnexureFile(annexure.id)}
-                          className="px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
-                        >
-                          Remove
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    !isReadOnly && (
-                      <label className="flex flex-col items-center justify-center gap-2 px-6 py-8 rounded-xl border-2 border-dashed border-[#b8860b]/30 bg-[#fffaf0] cursor-pointer hover:bg-[#fff5e0] hover:border-[#b8860b]/50 transition-all group">
-                        <svg className="w-10 h-10 text-[#b8860b]/40 group-hover:text-[#b8860b]/70 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
-                        <span className="text-sm font-medium text-[#b8860b]">
-                          {uploading ? 'Uploading...' : 'Click to upload Excel file'}
-                        </span>
-                        <span className="text-[10px] text-[#999]">Supports .xlsx, .xls, .csv (max 10MB)</span>
-                        <input
-                          type="file"
-                          accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
-                          className="hidden"
-                          onChange={e => handleAnnexureUpload(annexure.id, e)}
-                          disabled={uploading}
-                        />
-                      </label>
-                    )
-                  )}
-                </div>
-              </div>
-            ))}
-
-            {/* Add Annexure button */}
-            {!isReadOnly && (
-              <button onClick={addAnnexure} className="mt-1 text-sm text-[#b8860b] hover:text-[#96700a] font-medium flex items-center gap-1">
-                <span className="text-lg">+</span> Add Annexure
-              </button>
-            )}
+      {/* ── Section 15: Annexure (Always available) ── */}
+      <Section title="Annexures & Schedules" number={isApartmentFlat ? 14 : 15} defaultOpen={true}>
+        <div className="space-y-4">
+          {/* Info banner */}
+          <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-[#0a1628]/5 to-[#b8860b]/5 border border-[#b8860b]/20">
+            <svg className="w-5 h-5 text-[#b8860b] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            <p className="text-xs text-[#495057]">
+              Upload detailed property address schedules, khasra details, or other annexure data in Excel format (.xlsx, .xls, .csv).
+            </p>
           </div>
-        </Section>
-      )}
+
+          {/* Annexure Cards */}
+          {fields.annexures.map((annexure) => (
+            <div key={annexure.id} className="rounded-xl border border-[#dee2e6] overflow-hidden">
+              {/* Annexure header */}
+              <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-[#162d4a] to-[#1e3a5f]">
+                <div className="flex items-center gap-2">
+                  <span className="w-7 h-7 rounded-lg bg-[#b8860b] flex items-center justify-center text-xs font-bold text-white">{annexure.label}</span>
+                  <span className="text-sm font-semibold text-white">Annexure {annexure.label}</span>
+                </div>
+                {!isReadOnly && (
+                  <button
+                    type="button"
+                    onClick={() => removeAnnexure(annexure.id)}
+                    className="text-red-300 hover:text-red-100 hover:bg-red-500/20 p-1 rounded-lg transition-colors"
+                    title="Remove this annexure"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                )}
+              </div>
+              {/* Annexure body */}
+              <div className="p-5 space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider mb-1.5">Annexure Title / Heading</label>
+                  <input
+                    type="text"
+                    value={annexure.title || ''}
+                    onChange={e => updateAnnexureTitle(annexure.id, e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="e.g. Schedule of Property Details"
+                    className={inputCls}
+                  />
+                </div>
+                <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider">Excel Upload</label>
+                {annexure.excelFileUrl ? (
+                  <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-green-50 border border-green-200">
+                    <svg className="w-8 h-8 text-green-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-green-800 truncate">{annexure.excelFileName}</p>
+                      <a href={annexure.excelFileUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-green-600 hover:underline">
+                        Download / View file &#x2197;
+                      </a>
+                    </div>
+                    {!isReadOnly && (
+                      <button
+                        type="button"
+                        onClick={() => removeAnnexureFile(annexure.id)}
+                        className="px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  !isReadOnly && (
+                    <label className="flex flex-col items-center justify-center gap-2 px-6 py-8 rounded-xl border-2 border-dashed border-[#b8860b]/30 bg-[#fffaf0] cursor-pointer hover:bg-[#fff5e0] hover:border-[#b8860b]/50 transition-all group">
+                      <svg className="w-10 h-10 text-[#b8860b]/40 group-hover:text-[#b8860b]/70 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+                      <span className="text-sm font-medium text-[#b8860b]">
+                        {uploading ? 'Uploading...' : 'Click to upload Excel file'}
+                      </span>
+                      <span className="text-[10px] text-[#999]">Supports .xlsx, .xls, .csv (max 10MB)</span>
+                      <input
+                        type="file"
+                        accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
+                        className="hidden"
+                        onChange={e => handleAnnexureUpload(annexure.id, e)}
+                        disabled={uploading}
+                      />
+                    </label>
+                  )
+                )}
+              </div>
+            </div>
+          ))}
+
+          {/* Add Annexure button */}
+          {!isReadOnly && (
+            <button onClick={addAnnexure} className="mt-1 text-sm text-[#b8860b] hover:text-[#96700a] font-medium flex items-center gap-1">
+              <span className="text-lg">+</span> Add Annexure
+            </button>
+          )}
+        </div>
+      </Section>
 
       </>)}
 

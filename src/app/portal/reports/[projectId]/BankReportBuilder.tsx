@@ -9,8 +9,7 @@ import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
 import { PDFBankRenderer } from '@/lib/pdf-bank-renderer';
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { BaseReportFields, BankConfig, FloorRow, AnnexureItem, ExtraFieldConfig } from '@/lib/bank-fields';
-import { getFloorName, BasePhotographsSection } from './banks/BaseBankReportComponents';
-// @ts-ignore
+import { getFloorName, BasePhotographsSection, BaseAnnexureSection, AnnexureRefSelector } from './banks/BaseBankReportComponents';
 import * as XLSX from 'xlsx';
 
 const cleanAddressForMap = (rawAddr: string): string => {
@@ -1295,7 +1294,7 @@ export default function BankReportBuilder({
       }
 
       // ── Annexure Sections ──
-      if ((fields.annexureEnabled || fields.legalAnnexureEnabled) && fields.annexures.length > 0) {
+      if (fields.annexures && fields.annexures.length > 0) {
         for (const annexure of fields.annexures) {
           if (annexure.parsedData && annexure.parsedData.headers.length > 0) {
             r.newPage();
@@ -2144,6 +2143,20 @@ export default function BankReportBuilder({
           </Section>
         )}
 
+        {/* ── Section 14 / 15: Annexures (Always available) ── */}
+        <BaseAnnexureSection
+          annexures={fields.annexures || []}
+          isReadOnly={isReadOnly}
+          uploading={uploading}
+          onAddAnnexure={addAnnexure}
+          onRemoveAnnexure={removeAnnexure}
+          onUpdateTitle={updateAnnexureTitle}
+          onUploadExcel={handleAnnexureUpload}
+          onRemoveFile={removeAnnexureFile}
+          sectionNumber={isApartmentFlat ? 14 : 15}
+          sectionId={`section-${isApartmentFlat ? 14 : 15}`}
+        />
+
         {/* ── Action Buttons Footer ── */}
         <div className="p-5 bg-[#556B2F] border-2 border-[#3F5021] rounded-2xl shadow-xl flex flex-wrap items-center justify-between gap-4 sticky bottom-4 z-40">
           {status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE' && (
@@ -2275,7 +2288,7 @@ export default function BankReportBuilder({
             { id: `section-${isApartmentFlat ? 11 : 12}`, title: 'Photographs' },
             { id: `section-${isApartmentFlat ? 12 : 13}`, title: 'Sketch Maps' },
             { id: `section-${isApartmentFlat ? 13 : 14}`, title: 'Location Map' },
-            ...(fields.annexureEnabled ? [{ id: `section-${isApartmentFlat ? 14 : 15}`, title: 'Annexure' }] : []),
+            { id: `section-${isApartmentFlat ? 14 : 15}`, title: 'Annexures' },
           ]
         }
       />

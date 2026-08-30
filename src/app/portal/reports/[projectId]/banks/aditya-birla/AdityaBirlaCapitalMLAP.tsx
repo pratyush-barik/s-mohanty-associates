@@ -61,7 +61,7 @@ const DEFAULT_BUA_ROWS: BuaRow[] = [
   { floor: 'Ground Floor', asPerSite: '', asPerPlan: 'NA', percentageDeviation: 'NA' },
 ];
 
-// ── Bank Specific Nav Sections (11 exact sections) ──
+// ── Bank Specific Nav Sections (12 exact sections) ──
 const NAV_SECTIONS: NavItem[] = [
   { id: 'section-1', title: 'Basic Details' },
   { id: 'section-2', title: 'Location Details' },
@@ -74,6 +74,7 @@ const NAV_SECTIONS: NavItem[] = [
   { id: 'section-9', title: 'Remarks' },
   { id: 'section-10', title: 'Maps & Documents' },
   { id: 'section-11', title: 'Photographs' },
+  { id: 'section-12-annexure', title: 'Annexures' },
 ];
 
 export default function AdityaBirlaCapitalMLAP({
@@ -1723,21 +1724,19 @@ export default function AdityaBirlaCapitalMLAP({
           sectionId="section-11"
         />
 
-        {/* ═══ SECTION 12: ANNEXURES (When enabled or populated) ═══ */}
-        {(fields.annexureEnabled || fields.legalAnnexureEnabled || (fields.annexures && fields.annexures.length > 0)) && (
-          <BaseAnnexureSection
-            annexures={fields.annexures || []}
-            isReadOnly={isReadOnly}
-            uploading={uploadingTarget !== null}
-            onAddAnnexure={addAnnexure}
-            onRemoveAnnexure={removeAnnexure}
-            onUpdateTitle={updateAnnexureTitle}
-            onUploadExcel={handleAnnexureUpload}
-            onRemoveFile={removeAnnexureFile}
-            sectionNumber={12}
-            sectionId="section-12-annexure"
-          />
-        )}
+        {/* ═══ SECTION 12: ANNEXURES (Always available) ═══ */}
+        <BaseAnnexureSection
+          annexures={fields.annexures || []}
+          isReadOnly={isReadOnly}
+          uploading={uploadingTarget !== null}
+          onAddAnnexure={addAnnexure}
+          onRemoveAnnexure={removeAnnexure}
+          onUpdateTitle={updateAnnexureTitle}
+          onUploadExcel={handleAnnexureUpload}
+          onRemoveFile={removeAnnexureFile}
+          sectionNumber={12}
+          sectionId="section-12-annexure"
+        />
 
         {/* ═══ STANDARDIZED ACTION BAR ═══ */}
         <ReportActionBar
@@ -1755,7 +1754,7 @@ export default function AdityaBirlaCapitalMLAP({
       </div>
 
       {/* ── Right Column: Dynamic Floating Navigator drawn from this bank's exact sections ── */}
-      <FloatingNavigator sections={dynamicNavSections} />
+      <FloatingNavigator sections={NAV_SECTIONS} />
 
       {/* ── Standard Photo Bucket Modal ── */}
       <BasePhotoBucketModal
