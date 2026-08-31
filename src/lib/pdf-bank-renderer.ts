@@ -578,15 +578,17 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
   }
 
   /**
-   * Draw standard bank report page footer on all pages (starting from Page 1):
+   * Draw standard bank report page footer on all content pages:
    * A clean horizontal divider line across the page width with "X | P a g e" format.
+   * If hasCoverPage is true, skips page 0 (cover) and numbers from 1 starting at page index 1.
    */
   protected override drawPageNumbers(): void {
     const pages = this.doc.getPages();
     const fontSize = 10;
-    for (let i = 0; i < pages.length; i++) {
+    const startIndex = this.hasCoverPage ? 1 : 0;
+    for (let i = startIndex; i < pages.length; i++) {
       const page = pages[i];
-      const pageNum = i + 1;
+      const pageNum = this.hasCoverPage ? i : i + 1;
       const text = `${pageNum} | P a g e`;
 
       const lineY = MARGIN_B * 0.65;

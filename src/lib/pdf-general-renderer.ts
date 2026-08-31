@@ -1278,11 +1278,15 @@ export class PDFGeneralRenderer {
     }
   }
 
+  public hasCoverPage: boolean = false;
+
   protected drawPageNumbers(): void {
     const pages = this.doc.getPages();
-    for (let i = 0; i < pages.length; i++) {
+    const startIndex = this.hasCoverPage ? 1 : 0;
+    for (let i = startIndex; i < pages.length; i++) {
       const page = pages[i];
-      const text = String(i + 1);
+      const pageNum = this.hasCoverPage ? i : i + 1;
+      const text = String(pageNum);
       const textW = this.fontRegular.widthOfTextAtSize(text, 10);
       page.drawText(text, {
         x: MARGIN_L + CONTENT_W - textW, // Aligned to the right
