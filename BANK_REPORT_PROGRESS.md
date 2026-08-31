@@ -8,9 +8,9 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 
 - **Total Banks / Organizations**: 57
 - **Total Subclasses / Templates**: 73
-- **Current Active Bank**: 1. `ADITYA BIRLA CAPITAL LTD`
-- **Completed Subclasses**: 1 / 73 (1.1 `MLAP`)
-- **Current Active Subclass**: 1.2 `STSL`
+- **Completed Subclasses**: 2 / 73 (1.1 `MLAP`, 1.2 `STSL`)
+- **Current Active Bank**: 2. `ADITYA BIRLA HOUSING FINANCE LTD`
+- **Current Active Subclass**: 2.1 `HL-LAP`
 
 ---
 
@@ -20,7 +20,7 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 |---|---|---|---|---|---|---|
 | **1** | **ADITYA BIRLA CAPITAL LTD** | | | | | |
 | 1.1 | ADITYA BIRLA CAPITAL LTD | `MLAP` | ✅ Complete | ✅ 12-Section Custom UI | ✅ Dedicated PDF Renderer | ✅ Validated |
-| 1.2 | ADITYA BIRLA CAPITAL LTD | `STSL` | ?? Ready for Review | ?? Configured | ?? Custom Fields | ? Pending |
+| 1.2 | ADITYA BIRLA CAPITAL LTD | `STSL` | ✅ Complete | ✅ 14-Section Custom UI | ✅ Dedicated 7-Page PDF | ✅ Validated |
 | **2** | **ADITYA BIRLA HOUSING FINANCE LTD** | | | | | |
 | 2.1 | ADITYA BIRLA HOUSING FINANCE LTD | `HL-LAP` | ?? Ready for Review | ?? Configured | ?? Custom Fields | ? Pending |
 | **3** | **ANNAPURNA MICRO FINANCE LTD** | `Standard` | ? Not Started | ? Stub | ? Base PDF | ? Pending |
@@ -109,3 +109,17 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 - **UI Builder**: `src/app/portal/reports/[projectId]/banks/aditya-birla/AdityaBirlaCapitalMLAP.tsx`
 - **PDF Renderer**: `src/lib/banks/pdf-aditya-birla-mlap-renderer.ts` (`PDFAdityaBirlaMLAPRenderer`)
 - **Status**: Complete & Verified (12 sections, Annexures, strict ordering, FloatingNavigator, Turbopack build verified)
+### 1.2 `STSL` (Small Ticket Secured Loan) — ✅ COMPLETE
+- **Vertical**: `STSL`
+- **UI Builder**: `src/app/portal/reports/[projectId]/banks/aditya-birla/AdityaBirlaCapitalSTSL.tsx`
+- **PDF Renderer**: `src/lib/banks/pdf-aditya-birla-stsl-renderer.ts` (`PDFAdityaBirlaSTSLRenderer`)
+- **Status**: Complete & Verified (14 sections, 7-page exact PDF renderer, Annexures, Maps, Declaration, Turbopack build verified)
+- **Key Features Implemented**:
+  - Full 14-section architecture matching reference sample.
+  - Page 1 & 2: 3-row Address format (TRF, Visit, Docs) with in-field Annexure selector, highlighted slash options.
+  - Page 2 & 3: 8-Item Documentation Checklist table with availability status + details.
+  - Page 3 & 4: Floor-wise Built-Up Area table with deviations, Setbacks table (Front/Side1/Side2/Rear), Valuation summary with formulas and Distress (80%) value.
+  - Page 4: 4-Side Boundary comparison table (Sale deed vs Bhulekh map vs Actual) with Boundary Matching row, Remarks & Visited Engineer.
+  - Page 5: Photographs of Property with GPS/Timestamp stamps.
+  - Page 6 & 7: Location Map, Bhulekh Mouza Cadastral Map, Superimposed Drone/Survey Cadastral Map, Appraiser Name, 5 Declaration Points, and Prepared/Finalized By sign-off.
+  - Page 8+: Standardized Annexures & Schedules.
