@@ -646,9 +646,12 @@ export default function AdityaBirlaCapitalMLAP({
     r.drawKeyValueRow([{ label: 'Distance from Nearest Railway Station', value: fields.distanceRailwayStation || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
     r.drawKeyValueRow([{ label: 'Availability of Amenities (school,market etc)', value: fields.amenitiesAvailability || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
     r.drawKeyValueRow([{ label: 'Approach Road Width', value: fields.approachRoadWidth || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
+    const whenVal = fields.valuedBefore === 'Yes'
+      ? (fmtDate(fields.valuedBeforeDate || '') || 'NA')
+      : 'NA';
     r.drawKeyValueRow([
       { label: 'Has the Valuator Done Valuation for this property before?', value: fields.valuedBefore || 'No', labelWidth: 240, valueWidth: 45 },
-      { label: 'If Yes When?', value: fields.valuedBeforeDate || 'N/A', labelWidth: 90, valueWidth: 112.28 },
+      { label: 'If Yes When?', value: whenVal, labelWidth: 90, valueWidth: 112.28 },
     ]);
     r.drawKeyValueRow([{ label: 'Land Locked', value: fields.landLocked || 'No', labelWidth: 330, valueWidth: 157.28, highlight: true }]);
     r.drawKeyValueRow([{ label: 'Any other features like board of other financier indicating mortgage, notice of Court/any authority which may affect the title', value: fields.otherEncumbranceFeatures || 'No', labelWidth: 330, valueWidth: 157.28, highlight: true }]);
@@ -1160,14 +1163,35 @@ export default function AdityaBirlaCapitalMLAP({
 
             <div className="grid md:grid-cols-2 gap-4">
               <Field label="Has Valuator Done Valuation Before?">
-                <select value={fields.valuedBefore || 'No'} onChange={e => handleChange('valuedBefore', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                <select
+                  value={fields.valuedBefore || 'No'}
+                  onChange={e => {
+                    const val = e.target.value;
+                    handleChange('valuedBefore', val);
+                    if (val === 'No') {
+                      handleChange('valuedBeforeDate', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                  className={selectCls}
+                >
                   <option value="No">No</option>
                   <option value="Yes">Yes</option>
                 </select>
               </Field>
-              <Field label="If Yes When?">
-                <input type="text" value={fields.valuedBeforeDate || ''} onChange={e => handleChange('valuedBeforeDate', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Month/Year or NA" />
-              </Field>
+              {fields.valuedBefore === 'Yes' ? (
+                <Field label="If Yes When? (Date of Prior Valuation)">
+                  <input
+                    type="date"
+                    value={fields.valuedBeforeDate || ''}
+                    onChange={e => handleChange('valuedBeforeDate', e.target.value)}
+                    disabled={isReadOnly}
+                    className={inputCls}
+                  />
+                </Field>
+              ) : (
+                <div className="hidden md:block" />
+              )}
               <Field label="Land Locked">
                 <select value={fields.landLocked || 'No'} onChange={e => handleChange('landLocked', e.target.value)} disabled={isReadOnly} className={selectCls}>
                   <option value="No">No</option>

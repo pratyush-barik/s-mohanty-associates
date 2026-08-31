@@ -565,9 +565,12 @@ export default function AdityaBirlaCapitalSTSL({
       { label: 'Type of Property', value: fields.typeOfProperty || 'Residential', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
       { label: 'Current Usage', value: fields.currentUsage || 'Residential', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
     ]);
+    const whenVal = fields.valuedBefore === 'Yes'
+      ? (fmtDate(fields.valuedBeforeDate || '') || 'NA')
+      : 'NA';
     r.drawKeyValueRow([
       { label: 'Has the Valuator Done Valuation for this property before?', value: fields.valuedBefore || 'No', labelWidth: 240, valueWidth: 45 },
-      { label: 'If yes, when', value: fields.valuedBeforeDate || 'N/A', labelWidth: 90, valueWidth: 112.28 },
+      { label: 'If yes, when', value: whenVal, labelWidth: 90, valueWidth: 112.28 },
     ]);
 
     r.drawSlashOptionRow('Property Type', ['Residential', 'Commercial', 'Industrial', 'Institutional', 'Agriculture', 'Residential cum commercial'], fields.propertyType);
@@ -1011,14 +1014,35 @@ export default function AdityaBirlaCapitalSTSL({
                 <input type="text" value={fields.currentUsage || 'Residential'} onChange={e => handleChange('currentUsage', e.target.value)} disabled={isReadOnly} className={inputCls} />
               </Field>
               <Field label="Valued for ABCL Before?">
-                <select value={fields.valuedBefore || 'No'} onChange={e => handleChange('valuedBefore', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                <select
+                  value={fields.valuedBefore || 'No'}
+                  onChange={e => {
+                    const val = e.target.value;
+                    handleChange('valuedBefore', val);
+                    if (val === 'No') {
+                      handleChange('valuedBeforeDate', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                  className={selectCls}
+                >
                   <option value="No">No</option>
                   <option value="Yes">Yes</option>
                 </select>
               </Field>
-              <Field label="If Yes, When?">
-                <input type="text" value={fields.valuedBeforeDate || ''} onChange={e => handleChange('valuedBeforeDate', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 05/2023 or NA" />
-              </Field>
+              {fields.valuedBefore === 'Yes' ? (
+                <Field label="If Yes When? (Date of Prior Valuation)">
+                  <input
+                    type="date"
+                    value={fields.valuedBeforeDate || ''}
+                    onChange={e => handleChange('valuedBeforeDate', e.target.value)}
+                    disabled={isReadOnly}
+                    className={inputCls}
+                  />
+                </Field>
+              ) : (
+                <div className="hidden md:block" />
+              )}
               <Field label="Property Sub Type">
                 <input type="text" value={fields.propertySubType || 'Row House'} onChange={e => handleChange('propertySubType', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Row House / Bungalow / Flat" />
               </Field>
