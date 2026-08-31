@@ -1,4 +1,4 @@
-# Bank & FIS Valuation Report Templates � Progress Tracker
+# Bank & FIS Valuation Report Templates � Progress Tracker
 
 This document tracks the end-to-end implementation and customization of all 57+ Bank and Financial Institution report templates and subclasses in alphabetical order.
 
@@ -9,7 +9,8 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 - **Total Banks / Organizations**: 57
 - **Total Subclasses / Templates**: 73
 - **Current Active Bank**: 1. `ADITYA BIRLA CAPITAL LTD`
-- **Current Active Subclass**: 1.1 `MLAP`
+- **Completed Subclasses**: 1 / 73 (1.1 `MLAP`)
+- **Current Active Subclass**: 1.2 `STSL`
 
 ---
 
@@ -18,7 +19,7 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 | # | Bank / Organization | Subclass / Format | Status | UI Config | PDF Renderer | Validation |
 |---|---|---|---|---|---|---|
 | **1** | **ADITYA BIRLA CAPITAL LTD** | | | | | |
-| 1.1 | ADITYA BIRLA CAPITAL LTD | `MLAP` | ?? In Progress | ?? In Progress | ?? Base PDF | ? Pending |
+| 1.1 | ADITYA BIRLA CAPITAL LTD | `MLAP` | ✅ Complete | ✅ 12-Section Custom UI | ✅ Dedicated PDF Renderer | ✅ Validated |
 | 1.2 | ADITYA BIRLA CAPITAL LTD | `STSL` | ?? Ready for Review | ?? Configured | ?? Custom Fields | ? Pending |
 | **2** | **ADITYA BIRLA HOUSING FINANCE LTD** | | | | | |
 | 2.1 | ADITYA BIRLA HOUSING FINANCE LTD | `HL-LAP` | ?? Ready for Review | ?? Configured | ?? Custom Fields | ? Pending |
@@ -101,19 +102,10 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 
 ---
 
-## ?? Current Focus: Bank 1 � ADITYA BIRLA CAPITAL LTD
+## ?? Current Focus: Bank 1 � ADITYA BIRLA CAPITAL LTD
 
-### 1.1 `MLAP` (Mortgage Loan Against Property)
+### 1.1 `MLAP` (Mortgage Loan Against Property) — ✅ COMPLETE
 - **Vertical**: `MLAP`
-- **Key Fields**:
-  - `caseReferenceNumber`: Case Reference Number / Application ID
-  - `propertyOwnerName`: Name of Property Owner / Borrower
-  - `initiationDate`: TRF / Initiation Date
-  - `propertyAddressAsVisit`: Property Address as Per Physical Inspection / Site Visit
-  - `propertyAddressAsDocs`: Property Address as Per Document / Title Deed
-  - `mainLocality`, `subLocality`, `microLocation`: Locality Breakdown
-  - `valuedBefore`: Has Valuator Done Valuation Before? (Yes / No)
-  - `valuedBeforeDate`: Date of Prior Valuation
-  - `propertySubType`: Specific subtype (Bungalow / Row House / Commercial Unit / etc.)
-  - `localityDevelopment`: Well Developed / Developed / Developing / Under Developed
-  - `propertyJurisdiction`: Municipal Corporation / Municipality / Gram Panchayat / BDA
+- **UI Builder**: `src/app/portal/reports/[projectId]/banks/aditya-birla/AdityaBirlaCapitalMLAP.tsx`
+- **PDF Renderer**: `src/lib/banks/pdf-aditya-birla-mlap-renderer.ts` (`PDFAdityaBirlaMLAPRenderer`)
+- **Status**: Complete & Verified (12 sections, Annexures, strict ordering, FloatingNavigator, Turbopack build verified)
