@@ -1210,8 +1210,9 @@ export default function AdityaBirlaCapitalMLAP({
 
         {/* ═══ SECTION 3: PROPERTY DETAILING ═══ */}
         <Section title="Property Detailings" number={3}>
-          <div className="grid md:grid-cols-3 gap-4">
-            <Field label="Occupancy Status">
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* 1. Occupancy */}
+            <Field label="Occupancy">
               <select value={fields.occupiedBy || 'Vacant'} onChange={e => handleChange('occupiedBy', e.target.value)} disabled={isReadOnly} className={selectCls}>
                 <option value="Vacant">Vacant</option>
                 <option value="Self Occupied">Self Occupied</option>
@@ -1219,25 +1220,44 @@ export default function AdityaBirlaCapitalMLAP({
                 <option value="Under Construction">Under Construction</option>
               </select>
             </Field>
+
+            {/* 2. Occupied By */}
             <Field label="Occupied By">
-              <input type="text" value={fields.occupantName || ''} onChange={e => handleChange('occupantName', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="Occupant name or NA" />
-            </Field>
-            <Field label="Relation with Client">
-              <input type="text" value={fields.occupantRelation || ''} onChange={e => handleChange('occupantRelation', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="Relation or NA" />
+              <input type="text" value={fields.occupantName || ''} onChange={e => handleChange('occupantName', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. NA or Occupant Name" />
             </Field>
 
-            <Field label="Property Demarcation">
+            {/* 3. Relationship of Occupant with Client */}
+            <Field label="Relationship of Occupant with Client">
+              <input type="text" value={fields.occupantRelation || ''} onChange={e => handleChange('occupantRelation', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. NA or Relative" />
+            </Field>
+
+            {/* 4. Property Demarcation (yes/no) */}
+            <Field label="Property Demarcation (yes/no)">
               <select value={fields.plotDemarcated || 'No'} onChange={e => handleChange('plotDemarcated', e.target.value)} disabled={isReadOnly} className={selectCls}>
                 <option value="No">No</option>
                 <option value="Yes">Yes</option>
               </select>
             </Field>
-            <Field label="Property Identification">
+
+            {/* 5. Property Identification (yes/no) */}
+            <Field label="Property Identification (yes/no)">
               <select value={fields.propertyIdentification || 'Yes'} onChange={e => handleChange('propertyIdentification', e.target.value)} disabled={isReadOnly} className={selectCls}>
                 <option value="Yes">Yes</option>
                 <option value="No">No</option>
               </select>
             </Field>
+
+            {/* 6. Property Type */}
+            <Field label="Property Type">
+              <input type="text" value={fields.propertyType || 'Residential'} onChange={e => handleChange('propertyType', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </Field>
+
+            {/* 7. Property Sub Type */}
+            <Field label="Property Sub Type">
+              <input type="text" value={fields.propertySubType || 'Single / Multi-units building - R'} onChange={e => handleChange('propertySubType', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </Field>
+
+            {/* 8. Property Holding */}
             <Field label="Property Holding">
               <select value={fields.propertyHolding || 'Freehold'} onChange={e => handleChange('propertyHolding', e.target.value)} disabled={isReadOnly} className={selectCls}>
                 <option value="Freehold">Freehold</option>
@@ -1245,13 +1265,8 @@ export default function AdityaBirlaCapitalMLAP({
               </select>
             </Field>
 
-            <Field label="Property Type">
-              <input type="text" value={fields.propertyType || 'Residential'} onChange={e => handleChange('propertyType', e.target.value)} disabled={isReadOnly} className={inputCls} />
-            </Field>
-            <Field label="Property Sub Type">
-              <input type="text" value={fields.propertySubType || 'Single / Multi-units building - R'} onChange={e => handleChange('propertySubType', e.target.value)} disabled={isReadOnly} className={inputCls} />
-            </Field>
-            <Field label="Situated In Limits">
+            {/* 9. Property situated in Limits */}
+            <Field label="Property situated in Limits">
               <select value={fields.propertyJurisdiction || 'Gram Panchayat'} onChange={e => handleChange('propertyJurisdiction', e.target.value)} disabled={isReadOnly} className={selectCls}>
                 <option value="Gram Panchayat">Gram Panchayat</option>
                 <option value="Municipal Corporation">Municipal Corporation</option>
@@ -1261,6 +1276,7 @@ export default function AdityaBirlaCapitalMLAP({
               </select>
             </Field>
 
+            {/* 10. Marketability */}
             <Field label="Marketability">
               <select value={fields.marketability || 'Average'} onChange={e => handleChange('marketability', e.target.value)} disabled={isReadOnly} className={selectCls}>
                 <option value="Good">Good</option>
@@ -1268,13 +1284,18 @@ export default function AdityaBirlaCapitalMLAP({
                 <option value="Poor">Poor</option>
               </select>
             </Field>
+
+            {/* 11. Property Age */}
             <Field label="Property Age">
-              <input type="text" value={fields.ageOfPropertyActual || ''} onChange={e => handleChange('ageOfPropertyActual', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 5-Years" />
-            </Field>
-            <Field label="Residual Age">
-              <input type="text" value={fields.estimatedFutureLife || ''} onChange={e => handleChange('estimatedFutureLife', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 55-Years" />
+              <input type="text" value={fields.ageOfPropertyActual || ''} onChange={e => handleChange('ageOfPropertyActual', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 0-Years or 5-Years" />
             </Field>
 
+            {/* 12. Residual Age */}
+            <Field label="Residual Age">
+              <input type="text" value={fields.estimatedFutureLife || ''} onChange={e => handleChange('estimatedFutureLife', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 60-Years" />
+            </Field>
+
+            {/* 13. Construction Quality */}
             <Field label="Construction Quality">
               <select value={fields.qualityOfConstruction || 'Average'} onChange={e => handleChange('qualityOfConstruction', e.target.value)} disabled={isReadOnly} className={selectCls}>
                 <option value="Good">Good</option>
@@ -1282,6 +1303,8 @@ export default function AdityaBirlaCapitalMLAP({
                 <option value="Poor">Poor</option>
               </select>
             </Field>
+
+            {/* 14. Structure Type */}
             <Field label="Structure Type">
               <select value={fields.structureType || 'RCC'} onChange={e => handleChange('structureType', e.target.value)} disabled={isReadOnly} className={selectCls}>
                 <option value="RCC">RCC</option>
@@ -1290,25 +1313,42 @@ export default function AdityaBirlaCapitalMLAP({
                 <option value="Semi-Pucca">Semi-Pucca</option>
               </select>
             </Field>
-            <Field label="Flat Configuration Type">
+
+            {/* 15. Dimensions of the Property Container */}
+            <div className="col-span-full bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-3">
+              <div className="border-b border-neutral-100 pb-2">
+                <h3 className="text-sm font-bold text-[#0f2038] uppercase tracking-wide">
+                  Dimensions of the Property
+                </h3>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Width (Facing Road Side) in feet">
+                  <input type="text" value={fields.dimensionWidth || ''} onChange={e => handleChange('dimensionWidth', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 30 feet or NA" />
+                </Field>
+                <Field label="Depth (in feet)">
+                  <input type="text" value={fields.dimensionDepth || ''} onChange={e => handleChange('dimensionDepth', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 45 feet or NA" />
+                </Field>
+              </div>
+            </div>
+
+            {/* 16. Cautious Locations */}
+            <Field label="Cautious Locations">
+              <input type="text" value={fields.cautiousLocations || ''} onChange={e => handleChange('cautiousLocations', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. No / High tension wire / NA" />
+            </Field>
+
+            {/* 17. If Flat, Configuration Type */}
+            <Field label="If Flat, Configuration Type">
               <input type="text" value={fields.flatConfigurationType || ''} onChange={e => handleChange('flatConfigurationType', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 2BHK / 3BHK or NA" />
             </Field>
 
-            <Field label="Width (Facing Road Side) in feet">
-              <input type="text" value={fields.dimensionWidth || ''} onChange={e => handleChange('dimensionWidth', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 30 feet or NA" />
-            </Field>
-            <Field label="Depth (in feet)">
-              <input type="text" value={fields.dimensionDepth || ''} onChange={e => handleChange('dimensionDepth', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 45 feet or NA" />
-            </Field>
-            <Field label="Cautious Locations">
-              <input type="text" value={fields.cautiousLocations || ''} onChange={e => handleChange('cautiousLocations', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. High tension wire / NA" />
+            {/* 18. Percentage Completion of Property */}
+            <Field label="Percentage Completion of Property">
+              <input type="text" value={fields.percentageCompletion || ''} onChange={e => handleChange('percentageCompletion', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 65% or 100%" />
             </Field>
 
-            <Field label="% Completion of Property">
-              <input type="text" value={fields.percentageCompletion || ''} onChange={e => handleChange('percentageCompletion', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 100%" />
-            </Field>
-            <Field label="% Recommendation">
-              <input type="text" value={fields.percentageRecommendation || ''} onChange={e => handleChange('percentageRecommendation', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 100%" />
+            {/* 19. Percentage Recommendation of Property */}
+            <Field label="Percentage Recommendation of Property">
+              <input type="text" value={fields.percentageRecommendation || ''} onChange={e => handleChange('percentageRecommendation', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 70% or 100%" />
             </Field>
           </div>
         </Section>

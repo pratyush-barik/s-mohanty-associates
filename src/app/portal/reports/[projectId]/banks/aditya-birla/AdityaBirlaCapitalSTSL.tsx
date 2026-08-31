@@ -1102,12 +1102,22 @@ export default function AdityaBirlaCapitalSTSL({
               <Field label="Approach Road Width / Type">
                 <input type="text" value={fields.approachRoadWidth || 'Concrete Road'} onChange={e => handleChange('approachRoadWidth', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Concrete Road / Width 20 to 40 ft." />
               </Field>
-              <Field label="Dimensions Width (Feet)">
-                <input type="text" value={fields.dimensionWidth || 'NA'} onChange={e => handleChange('dimensionWidth', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
-              <Field label="Dimensions Depth (Feet)">
-                <input type="text" value={fields.dimensionDepth || 'NA'} onChange={e => handleChange('dimensionDepth', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
+              {/* Dimensions of the Property Container */}
+              <div className="col-span-full bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-3">
+                <div className="border-b border-neutral-100 pb-2">
+                  <h3 className="text-sm font-bold text-[#0f2038] uppercase tracking-wide">
+                    Dimensions of the Property
+                  </h3>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Field label="Width (Facing Road Side) in Feet">
+                    <input type="text" value={fields.dimensionWidth || 'NA'} onChange={e => handleChange('dimensionWidth', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 30 feet or NA" />
+                  </Field>
+                  <Field label="Depth (in Feet)">
+                    <input type="text" value={fields.dimensionDepth || 'NA'} onChange={e => handleChange('dimensionDepth', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 45 feet or NA" />
+                  </Field>
+                </div>
+              </div>
               <Field label="Physical Approach">
                 <select value={fields.physicalApproach || 'Clear'} onChange={e => handleChange('physicalApproach', e.target.value)} disabled={isReadOnly} className={selectCls}>
                   <option value="Clear">Clear</option>
