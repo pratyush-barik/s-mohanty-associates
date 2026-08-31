@@ -576,6 +576,38 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
       }
     }
   }
+
+  /**
+   * Draw standard bank report page footer on all pages (starting from Page 1):
+   * A clean horizontal divider line across the page width with "X | P a g e" format.
+   */
+  protected override drawPageNumbers(): void {
+    const pages = this.doc.getPages();
+    const fontSize = 10;
+    for (let i = 0; i < pages.length; i++) {
+      const page = pages[i];
+      const pageNum = i + 1;
+      const text = `${pageNum} | P a g e`;
+
+      const lineY = MARGIN_B * 0.65;
+      // Draw horizontal dividing line above page footer
+      page.drawLine({
+        start: { x: MARGIN_L, y: lineY },
+        end: { x: MARGIN_L + CONTENT_W, y: lineY },
+        thickness: 0.5,
+        color: rgb(0.5, 0.5, 0.5),
+      });
+
+      // Draw "X | P a g e"
+      page.drawText(text, {
+        x: MARGIN_L,
+        y: lineY - 14,
+        size: fontSize,
+        font: this.fontRegular,
+        color: rgb(0.3, 0.3, 0.3),
+      });
+    }
+  }
 }
 
 export default PDFBankRenderer;

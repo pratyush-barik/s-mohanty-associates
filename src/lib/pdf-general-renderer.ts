@@ -1278,9 +1278,9 @@ export class PDFGeneralRenderer {
     }
   }
 
-  private drawPageNumbers(): void {
+  protected drawPageNumbers(): void {
     const pages = this.doc.getPages();
-    for (let i = 1; i < pages.length; i++) {
+    for (let i = 0; i < pages.length; i++) {
       const page = pages[i];
       const text = String(i + 1);
       const textW = this.fontRegular.widthOfTextAtSize(text, 10);
