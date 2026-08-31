@@ -8,9 +8,9 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 
 - **Total Banks / Organizations**: 57
 - **Total Subclasses / Templates**: 73
-- **Completed Subclasses**: 2 / 73 (1.1 `MLAP`, 1.2 `STSL`)
-- **Current Active Bank**: 2. `ADITYA BIRLA HOUSING FINANCE LTD`
-- **Current Active Subclass**: 2.1 `HL-LAP`
+- **Completed Subclasses**: 1 / 73 (1.1 `MLAP`)
+- **Current Active Bank**: 1. `ADITYA BIRLA CAPITAL LTD`
+- **Current Active Subclass**: 1.2 `STSL`
 
 ---
 
@@ -20,7 +20,7 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 |---|---|---|---|---|---|---|
 | **1** | **ADITYA BIRLA CAPITAL LTD** | | | | | |
 | 1.1 | ADITYA BIRLA CAPITAL LTD | `MLAP` | ✅ Complete | ✅ 12-Section Custom UI | ✅ Dedicated PDF Renderer | ✅ Validated |
-| 1.2 | ADITYA BIRLA CAPITAL LTD | `STSL` | ✅ Complete | ✅ 14-Section Custom UI | ✅ Dedicated 7-Page PDF | ✅ Validated |
+| 1.2 | ADITYA BIRLA CAPITAL LTD | `STSL` | 🟡 Ready for Review | 🟡 14-Section Custom UI | 🟡 Dedicated 7-Page PDF | ⏳ Pending User Review |
 | **2** | **ADITYA BIRLA HOUSING FINANCE LTD** | | | | | |
 | 2.1 | ADITYA BIRLA HOUSING FINANCE LTD | `HL-LAP` | ?? Ready for Review | ?? Configured | ?? Custom Fields | ? Pending |
 | **3** | **ANNAPURNA MICRO FINANCE LTD** | `Standard` | ? Not Started | ? Stub | ? Base PDF | ? Pending |
@@ -109,11 +109,11 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 - **UI Builder**: `src/app/portal/reports/[projectId]/banks/aditya-birla/AdityaBirlaCapitalMLAP.tsx`
 - **PDF Renderer**: `src/lib/banks/pdf-aditya-birla-mlap-renderer.ts` (`PDFAdityaBirlaMLAPRenderer`)
 - **Status**: Complete & Verified (12 sections, Annexures, strict ordering, FloatingNavigator, Turbopack build verified)
-### 1.2 `STSL` (Small Ticket Secured Loan) — ✅ COMPLETE
+### 1.2 `STSL` (Small Ticket Secured Loan) — 🟡 Ready for Review
 - **Vertical**: `STSL`
 - **UI Builder**: `src/app/portal/reports/[projectId]/banks/aditya-birla/AdityaBirlaCapitalSTSL.tsx`
 - **PDF Renderer**: `src/lib/banks/pdf-aditya-birla-stsl-renderer.ts` (`PDFAdityaBirlaSTSLRenderer`)
-- **Status**: Complete & Verified (14 sections, 7-page exact PDF renderer, Annexures, Maps, Declaration, Turbopack build verified)
+- **Status**: Ready for Review (14 sections, 7-page exact PDF renderer, Annexures, Maps, Declaration, Turbopack build verified — awaiting user sign-off)
 - **Key Features Implemented**:
   - Full 14-section architecture matching reference sample.
   - Page 1 & 2: 3-row Address format (TRF, Visit, Docs) with in-field Annexure selector, highlighted slash options.
