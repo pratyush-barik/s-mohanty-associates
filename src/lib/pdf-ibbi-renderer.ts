@@ -145,6 +145,11 @@ export class PDFIBBIRenderer {
     this.addPage();
   }
 
+  /** Alias for newPage / addPage */
+  addNewPage(): void {
+    this.addPage();
+  }
+
   /** Add vertical spacing */
   advanceCursor(pts: number): void {
     this.cursorY += pts;
