@@ -1289,8 +1289,8 @@ export class PDFGeneralRenderer {
       const text = String(pageNum);
       const textW = this.fontRegular.widthOfTextAtSize(text, 10);
       page.drawText(text, {
-        x: MARGIN_L + CONTENT_W - textW, // Aligned to the right
-        y: MARGIN_B / 2,
+        x: MARGIN_L + CONTENT_W - textW, // Aligned to the right side of paper
+        y: 50,                           // Parallel to E MAIL line in letterhead footer
         size: 10,
         font: this.fontRegular,
       });
