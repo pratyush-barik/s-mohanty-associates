@@ -750,14 +750,14 @@ export default function AdityaBirlaCapitalSTSL({
 
     // ═══ PAGE 5: PHOTOGRAPHS OF PROPERTY ═══
     if (validPhotoBytes.length > 0) {
-      r.addNewPage();
+      r.newPage();
       r.drawSectionHeader('PHOTOGRAPHS OF PROPERTY', false);
       await r.drawPhotoGrid(validPhotoBytes.slice(0, 6));
     }
 
     // ═══ PAGE 6: LOCATION MAP & BHULEKH MOUZA MAP ═══
     if (locMapBytes || mouzaMapBytes) {
-      r.addNewPage();
+      r.newPage();
       if (locMapBytes) {
         r.drawSectionHeader('Location Map', false);
         await r.drawImageSection(locMapBytes, `Latitude- ${fields.latitude || '20.288972'}, Longitude- ${fields.longitude || '85.181528'}`, 280);
@@ -769,7 +769,7 @@ export default function AdityaBirlaCapitalSTSL({
     }
 
     // ═══ PAGE 7: SUPERIMPOSED CADASTRAL MAP & DECLARATION ═══
-    r.addNewPage();
+    r.newPage();
     if (cadMapBytes) {
       r.drawSectionHeader('CADASRAL MAP', false);
       await r.drawImageSection(cadMapBytes, 'Superimposed Drone / Aerial Cadastral Map', 260);
