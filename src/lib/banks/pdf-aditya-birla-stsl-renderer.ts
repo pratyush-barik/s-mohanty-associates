@@ -1,6 +1,6 @@
 /**
  * pdf-aditya-birla-stsl-renderer.ts — Dedicated PDF renderer for Aditya Birla Capital Ltd (STSL).
- * Extends PDFBankRenderer to replicate the exact 7-page reference format.
+ * Extends PDFBankRenderer to replicate the exact reference format.
  */
 
 import { rgb } from 'pdf-lib';
@@ -53,23 +53,23 @@ export interface STSLReportFields {
   currentUsage?: string;
   valuedBefore?: string;
   valuedBeforeDate?: string;
-  propertyType?: string; // Residential // Commercial // Industrial // Institutional // Agriculture // Residential cum commercial
-  propertySubType?: string; // Row House / Bungalow / etc.
-  localityDevelopment?: string; // Well Developed // Developed // Developing // Under Develop // Slum
-  propertyJurisdiction?: string; // Municipal Corporation // Gram Panchayat // Town Planning Authority // Development Authority // Municipality // NAC
-  surroundingOccupancy?: string; // Densely Populated // Moderately Populated // Low Population density
-  conditionOfSite?: string; // Well Developed // Developing // Under Developed
+  propertyType?: string;
+  propertySubType?: string;
+  localityDevelopment?: string;
+  propertyJurisdiction?: string;
+  surroundingOccupancy?: string;
+  conditionOfSite?: string;
   distanceRailwayStation?: string;
   distanceBusStop?: string;
-  distanceFromMainRoad?: string; // Not Applicable (Prop on Concrete Road) // Less than 200 m // 200 to 500 m // above 500 m
+  distanceFromMainRoad?: string;
   distanceFromCityCenter?: string;
   distanceFromBranch?: string;
   approachRoadWidth?: string;
   dimensionWidth?: string;
   dimensionDepth?: string;
-  physicalApproach?: string; // Clear // Partially Clear // Not Clear
-  legalApproach?: string; // Clear // Partially Clear // Not Clear
-  otherEncumbranceFeatures?: string; // Yes // No
+  physicalApproach?: string;
+  legalApproach?: string;
+  otherEncumbranceFeatures?: string;
 
   // Section 3: Property Details
   occupiedBy?: string;
@@ -78,33 +78,33 @@ export interface STSLReportFields {
   plotDemarcated?: string;
   propertyIdentification?: string;
   identificationThrough?: string;
-  projectCategory?: string; // A // B // C // D // A+ // Not Applicable
-  flatType?: string; // Normal // Duplex // Not applicable
+  projectCategory?: string;
+  flatType?: string;
   flatConfiguration?: string;
-  propertyHolding?: string; // Freehold // Leasehold
-  structureType?: string; // RCC / Load Bearing
+  propertyHolding?: string;
+  structureType?: string;
   areaOfFlat?: string;
   totalNoOfFloors?: string;
-  liftFacility?: string; // Yes / No
-  amenities?: string; // Average // Excellent // Good // Low // NA
-  marketability?: string; // Average // Excellent // Good // Low
+  liftFacility?: string;
+  amenities?: string;
+  marketability?: string;
   viewOfProperty?: string;
-  parkingFacility?: string; // Yes // No
-  qualityOfConstruction?: string; // Class A // Class B // Class C // Class D
-  typeOfParking?: string; // Open CP // Dependent CP // Covered CP // Mechanical CP // Semi-Covered
-  shapeOfProperty?: string; // Regular // Irregular
-  placementOfProperty?: string; // NE Facing Corner Plot // Corner Plot // Intermittent Property // South Facing
-  exteriors?: string; // Average // Poor // Excellent // Good // Low
-  interiors?: string; // Average // Poor // Excellent // Good // Low
+  parkingFacility?: string;
+  qualityOfConstruction?: string;
+  typeOfParking?: string;
+  shapeOfProperty?: string;
+  placementOfProperty?: string;
+  exteriors?: string;
+  interiors?: string;
   ageOfPropertyActual?: string;
   estimatedFutureLife?: string;
   sourceOfAge?: string;
-  maintenanceCondition?: string; // Average // Excellent // Good // Low
-  cautiousLocations?: string; // Yes / No
+  maintenanceCondition?: string;
+  cautiousLocations?: string;
 
   // Section 4: Accommodation / Unit Details
-  unitTypeHeader?: string; // Building
-  accommodationDetails?: string; // Ground Floor: 3(G+2)
+  unitTypeHeader?: string;
+  accommodationDetails?: string;
   accommodationRows?: { floor: string; unitDetails: string }[];
 
   // Section 5: Documentation Details (8-item checklist)
@@ -217,7 +217,7 @@ export interface STSLReportFields {
 export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
   /**
    * Draw a multi-option row where all choices are shown with `//` separators,
-   * and the chosen option is bolded/underlined or enclosed in brackets.
+   * and the chosen option is bolded.
    */
   drawSlashOptionRow(
     label: string,
@@ -230,13 +230,11 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     const pad = 3;
 
     const lLines = this.wrapText(label, labelWidth - pad * 2, fontSize, true);
-
-    // Build option text segments
     const cleanSelected = (selected || '').trim().toLowerCase();
     const joinedText = options.join(' // ');
     const vLines = this.wrapText(joinedText, valueWidth - pad * 2, fontSize, false);
 
-    const maxLines = Math.max(lLines.length, vLines.length);
+    const maxLines = Math.max(lLines.length, vLines.length, 1);
     const rowH = Math.max(18, maxLines * fontSize * LINE_HEIGHT + pad * 2);
     this.checkPageBreak(rowH);
 
@@ -287,7 +285,6 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       const isSelected = cleanSelected.length > 0 && opt.toLowerCase().includes(cleanSelected);
       const optFont = isSelected ? this.fontBold : this.fontRegular;
       const optText = opt;
-
       const optW = optFont.widthOfTextAtSize(optText, fontSize);
 
       if (lineX + optW > curX + valueWidth - pad && lineX > curX + pad) {
@@ -335,7 +332,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       details: string;
     }[]
   ): void {
-    const colWidths = [120, 195, 50, 137.28];
+    const colWidths = [120, 195, 50, 122.28];
     const statusOptions = ['Fully Available', 'Partially Available', 'Not Available', 'Not Applicable'];
 
     for (const item of items) {
@@ -462,14 +459,13 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     usageDeviation: string,
     remarks: string
   ): void {
-    const colWidths = [110, 85, 85, 100, 122.28];
+    const colWidths = [110, 85, 85, 100, 107.28];
     this.drawTable(
       ['Setbacks', 'As per plan/ Bye laws', 'Actual at site', 'Deviation', 'Remarks, if any'],
       [],
       colWidths
     );
 
-    // Calculate total height needed for the 4 setback rows
     const numRows = setbacks.length;
     const rowH = 18;
     const totalSetbackH = numRows * rowH;
@@ -477,7 +473,6 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
 
     const y = this.pdfY(this.cursorY);
 
-    // Draw individual setback rows for col 0, 1, 2
     for (let r = 0; r < numRows; r++) {
       const sb = setbacks[r];
       const curY = y - r * rowH;
@@ -536,7 +531,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       });
     }
 
-    // Col 3: Usage Deviation (Spanning all setback rows)
+    // Col 3: Usage Deviation
     const x3 = MARGIN_L + colWidths[0] + colWidths[1] + colWidths[2];
     this.page.drawRectangle({
       x: x3,
@@ -560,7 +555,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       uDevY -= FONT_SIZE * LINE_HEIGHT;
     }
 
-    // Col 4: Remarks (Spanning all setback rows)
+    // Col 4: Remarks
     const x4 = x3 + colWidths[3];
     this.page.drawRectangle({
       x: x4,
@@ -596,7 +591,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     actual: { north: string; south: string; east: string; west: string },
     matching: string
   ): void {
-    const colWidths = [102.28, 100, 100, 100, 100];
+    const colWidths = [87.28, 100, 100, 100, 100];
     this.drawTable(
       ['Detailing', 'North', 'South', 'East', 'West'],
       [
@@ -607,7 +602,6 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       colWidths
     );
 
-    // Boundary Matching row
     this.drawKeyValueRow([
       { label: 'Boundary Matching (Yes)', value: matching || 'Boundary matching as per documents', labelWidth: 150, valueWidth: CONTENT_W - 150 },
     ]);
@@ -623,7 +617,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     const y0 = this.pdfY(this.cursorY);
 
     // Name of Appraiser
-    this.page.drawText(`Name of Appraiser: ${appraiserName || ''}`, {
+    this.page.drawText(`Name of Appraiser: ${appraiserName || 'Er. Satyajit Mohanty'}`, {
       x: MARGIN_L,
       y: y0 - 12,
       size: fontSize,

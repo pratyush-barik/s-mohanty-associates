@@ -785,7 +785,7 @@ export default function AdityaBirlaCapitalSTSL({
       await r.renderAnnexures(fields.annexures);
     }
 
-    return await r.toBlob();
+    return await r.save();
   };
 
   const handlePreviewPDF = async () => {
