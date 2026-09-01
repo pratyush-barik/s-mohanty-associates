@@ -165,22 +165,38 @@ export default function BuilderSelector({
   const initialBuilder = builderQuery || searchParams.get("builder");
 
   const resolveBuilderType = (fields: any, queryParam?: string | null): BuilderType => {
-    if (fields?.organisationTemplate === "INCOME_TAX") return "income_tax";
-    if (fields?.organisationTemplate === "IBBI_IVS") return "ibbi";
+    if (fields?.organisationTemplate === "INCOME_TAX" || queryParam === "INCOME_TAX") return "income_tax";
+    if (fields?.organisationTemplate === "IBBI_IVS" || queryParam === "IBBI_IVS") return "ibbi";
     if (fields?.clientType === "organisation" && fields?.organisationTemplate) {
+      return "bank";
+    }
+    if (queryParam && !["INCOME_TAX", "IBBI_IVS", "BANK", "bank", "general"].includes(queryParam)) {
       return "bank";
     }
     if (fields?.clientType === "individual") {
       return "general";
     }
-    if (queryParam === "INCOME_TAX") return "income_tax";
-    if (queryParam === "IBBI_IVS") return "ibbi";
-    if (queryParam === "BANK" || queryParam === "bank") return "bank";
     return "general";
   };
 
-  const [activeFields, setActiveFields] = useState(initialFields);
-  const [activeBuilder, setActiveBuilder] = useState<BuilderType>(() => resolveBuilderType(initialFields, initialBuilder));
+  const computedInitialFields = useMemo(() => {
+    if (initialFields?.organisationTemplate) return initialFields;
+    if (initialBuilder && !["INCOME_TAX", "IBBI_IVS", "BANK", "bank", "general"].includes(initialBuilder)) {
+      const decoded = decodeURIComponent(initialBuilder);
+      const [qOrg, qSub] = decoded.includes("::") ? decoded.split("::") : [decoded, ""];
+      return {
+        ...(initialFields || {}),
+        clientType: "organisation",
+        organisationTemplate: qOrg,
+        organisationSubTemplate: qSub || "",
+        bankName: qOrg,
+      };
+    }
+    return initialFields;
+  }, [initialFields, initialBuilder]);
+
+  const [activeFields, setActiveFields] = useState(computedInitialFields);
+  const [activeBuilder, setActiveBuilder] = useState<BuilderType>(() => resolveBuilderType(computedInitialFields, initialBuilder));
   const [resetKey, setResetKey] = useState(0);
 
   // Only re-sync if the project itself changes (e.g. user navigated to another project page)
@@ -188,10 +204,10 @@ export default function BuilderSelector({
   useEffect(() => {
     if (lastProjectIdRef.current !== projectId) {
       lastProjectIdRef.current = projectId;
-      setActiveFields(initialFields);
-      setActiveBuilder(resolveBuilderType(initialFields, builderQuery || searchParams.get("builder")));
+      setActiveFields(computedInitialFields);
+      setActiveBuilder(resolveBuilderType(computedInitialFields, builderQuery || searchParams.get("builder")));
     }
-  }, [projectId, initialFields, builderQuery, searchParams]);
+  }, [projectId, computedInitialFields, builderQuery, searchParams]);
 
   // Lock browser back & forward buttons
   useEffect(() => {
@@ -212,11 +228,14 @@ export default function BuilderSelector({
   const navigateToBuilder = async (target: BuilderType, updatedFields: any) => {
     setActiveFields(updatedFields);
     setActiveBuilder(target);
+    const org = updatedFields?.organisationTemplate || "";
+    const sub = updatedFields?.organisationSubTemplate || "";
+    const bankParam = sub ? `${org}::${sub}` : org;
     const url =
       target === "general"
         ? window.location.pathname
         : target === "bank"
-        ? window.location.pathname + "?builder=BANK"
+        ? window.location.pathname + (bankParam ? `?builder=${encodeURIComponent(bankParam)}` : "")
         : window.location.pathname + "?builder=" + (target === "ibbi" ? "IBBI_IVS" : "INCOME_TAX");
     window.history.replaceState(null, "", url);
     try {
