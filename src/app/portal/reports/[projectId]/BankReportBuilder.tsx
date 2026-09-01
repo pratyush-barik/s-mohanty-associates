@@ -1596,13 +1596,15 @@ export default function BankReportBuilder({
               )}
             </div>
           </div>
-          <button
-            type="button"
-            onClick={handleReset}
-            className="text-xs text-[#b8860b] hover:text-[#8a6507] hover:underline font-bold transition-colors shrink-0 pr-2 uppercase"
-          >
-            Change Parameters
-          </button>
+          {onResetWizard && (
+            <button
+              type="button"
+              onClick={onResetWizard}
+              className="text-xs text-[#b8860b] hover:text-[#8a6507] hover:underline font-bold transition-colors shrink-0 pr-2 uppercase cursor-pointer"
+            >
+              Change Parameters
+            </button>
+          )}
         </div>
 
         {/* Rework Banner */}
