@@ -943,9 +943,6 @@ export default function AdityaBirlaCapitalMLAP({
               <Field label="Initiation Date">
                 <input type="date" value={fields.initiationDate || ''} onChange={e => handleChange('initiationDate', e.target.value)} disabled={isReadOnly} className={inputCls} />
               </Field>
-              <Field label="Valuer Name">
-                <input type="text" value={fields.valuerName || 'Er. Satyajit Mohanty'} onChange={e => handleChange('valuerName', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
               <Field label="Visit Date (Date of Inspection)">
                 <input type="date" value={fields.dateOfInspection || ''} onChange={e => handleChange('dateOfInspection', e.target.value)} disabled={isReadOnly} className={inputCls} />
               </Field>
@@ -955,7 +952,7 @@ export default function AdityaBirlaCapitalMLAP({
               <Field label="Report Date (Date of Valuation)">
                 <input type="date" value={fields.dateOfValuation || ''} onChange={e => handleChange('dateOfValuation', e.target.value)} disabled={isReadOnly} className={inputCls} />
               </Field>
-              <Field label="Name of Property Owner (with S/O, W/O)" span={2}>
+              <Field label="Name of Property Owner (with S/O, W/O)">
                 <input type="text" value={fields.propertyOwnerName || ''} onChange={e => handleChange('propertyOwnerName', e.target.value)} disabled={isReadOnly} className={inputCls} />
               </Field>
             </div>

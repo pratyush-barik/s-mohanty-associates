@@ -309,7 +309,7 @@ export function ReportActionBar({
                 {loading ? '⏳ Saving...' : '💾 Save Draft'}
               </button>
             )}
-            {onSubmit && userRole === 'REPORT_EMPLOYEE' && (
+            {onSubmit && (
               <button
                 type="button"
                 onClick={onSubmit}

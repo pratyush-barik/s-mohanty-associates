@@ -7,6 +7,7 @@ import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import * as XLSX from 'xlsx';
 import { formatIndianCurrency } from '@/lib/numberToWords';
 import { PDFAdityaBirlaSTSLRenderer, STSLReportFields } from '@/lib/banks/pdf-aditya-birla-stsl-renderer';
+import { CONTENT_W } from '@/lib/pdf-bank-renderer';
 import {
   Section,
   Field,
@@ -875,9 +876,6 @@ export default function AdityaBirlaCapitalSTSL({
         {/* ═══ SECTION 1: BASIC DETAILS ═══ */}
         <Section title="Basic Details" number={1}>
           <div className="grid md:grid-cols-2 gap-4">
-            <Field label="Valuer Name">
-              <input type="text" value={fields.valuerName || ''} onChange={e => handleChange('valuerName', e.target.value)} disabled={isReadOnly} className={inputCls} />
-            </Field>
             <Field label="Client Name">
               <input type="text" value={fields.clientName || ''} onChange={e => handleChange('clientName', e.target.value)} disabled={isReadOnly} className={inputCls} />
             </Field>
@@ -1812,6 +1810,7 @@ export default function AdityaBirlaCapitalSTSL({
           autoSaveStatus={autoSaveStatus}
           message={message}
           isReadOnly={isReadOnly}
+          userRole={userRole}
           onSaveDraft={handleSaveDraft}
           onPreviewPDF={handlePreviewPDF}
           onDownloadPDF={handleDownloadPDF}
