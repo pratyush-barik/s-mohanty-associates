@@ -29,7 +29,7 @@ export default async function ReportEditorPage({ params, searchParams }: { param
         report: true,
         fieldEmployees: { select: { name: true, email: true, mobile: true, employeeId: true } },
         manager: { select: { name: true, employeeId: true, mobile: true } },
-        inspection: { select: { notes: true } },
+        inspection: { select: { notes: true, scheduledDate: true, completedDate: true, createdAt: true } },
         bucketImages: {
           include: { employee: { select: { name: true, employeeId: true } } },
           orderBy: { createdAt: 'desc' },
@@ -172,6 +172,8 @@ export default async function ReportEditorPage({ params, searchParams }: { param
                 propertyType: serviceRequest?.propertyType,
                 purpose: serviceRequest?.purpose,
                 fieldEmployees: project.fieldEmployees || [],
+                initiationDate: (project.startDate || project.createdAt)?.toISOString().split('T')[0],
+                inspectionDate: (project.inspection?.completedDate || project.inspection?.scheduledDate || project.inspection?.createdAt)?.toISOString().split('T')[0],
               }}
             />
         </div>

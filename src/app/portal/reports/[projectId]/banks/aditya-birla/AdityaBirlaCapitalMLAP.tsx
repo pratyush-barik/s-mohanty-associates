@@ -95,9 +95,9 @@ export default function AdityaBirlaCapitalMLAP({
     // Basic Details
     clientName: initialFields?.clientName || initialFields?.ownerName || prefill?.contactName || '',
     ownerName: initialFields?.ownerName || initialFields?.clientName || prefill?.contactName || '',
-    initiationDate: initialFields?.initiationDate || new Date().toISOString().split('T')[0],
+    initiationDate: initialFields?.initiationDate || prefill?.initiationDate || new Date().toISOString().split('T')[0],
     valuerName: initialFields?.valuerName || 'Er. Satyajit Mohanty',
-    dateOfInspection: initialFields?.dateOfInspection || new Date().toISOString().split('T')[0],
+    dateOfInspection: initialFields?.dateOfInspection || prefill?.inspectionDate || new Date().toISOString().split('T')[0],
     dateOfValuation: initialFields?.dateOfValuation || new Date().toISOString().split('T')[0],
     loanApplicationNo: initialFields?.loanApplicationNo || initialFields?.caseReferenceNumber || '',
     propertyOwnerName: initialFields?.propertyOwnerName || prefill?.contactName || '',

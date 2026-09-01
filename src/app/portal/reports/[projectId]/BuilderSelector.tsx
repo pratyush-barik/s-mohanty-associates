@@ -24,6 +24,9 @@ interface BuilderSelectorProps {
     propertyAddress?: string;
     propertyType?: string;
     purpose?: string;
+    fieldEmployees?: any[];
+    initiationDate?: string;
+    inspectionDate?: string;
   };
 }
 
