@@ -9,7 +9,7 @@ import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
 import { PDFGeneralRenderer } from '@/lib/pdf-general-renderer';
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
-import { getFloorName, BasePhotographsSection } from './banks/BaseBankReportComponents';
+import { getFloorName, BasePhotographsSection, ActiveConfigBanner } from './banks/BaseBankReportComponents';
 import { reorderAndLabelAnnexures } from '@/lib/bank-fields';
 // @ts-ignore
 import * as XLSX from 'xlsx';
@@ -982,7 +982,10 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
   const router = useRouter();
 
   const [selectingOrg, setSelectingOrg] = useState(false);
-  const [wizardStep, setWizardStep] = useState<'setup' | 'completed'>(initialFields?.clientType ? 'completed' : 'setup');
+  const isWizardComplete =
+    initialFields?.clientType === 'individual' ||
+    (initialFields?.clientType === 'organisation' && !!initialFields?.organisationTemplate);
+  const [wizardStep, setWizardStep] = useState<'setup' | 'completed'>(isWizardComplete ? 'completed' : 'setup');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showBankList, setShowBankList] = useState(false);
   const [selectedBank, setSelectedBank] = useState<string | null>(null);
@@ -2505,6 +2508,16 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       {/* ── Main Form Column ── */}
       <div className="flex-1 min-w-0 space-y-4">
       {/* Template Info Banner */}
+      {fields.clientType === 'organisation' && !['INCOME_TAX', 'IBBI_IVS'].includes(fields.organisationTemplate || '') ? (
+        <ActiveConfigBanner
+          bankName={fields.organisationTemplate || ''}
+          formatName={fields.organisationSubTemplate || undefined}
+          category={fields.institutionCategory || undefined}
+          serviceType={SERVICES_LIST.find(s => s.id === fields.serviceType)?.title || fields.serviceType}
+          subjectType={fields.subjectType}
+          onResetWizard={onResetWizard}
+        />
+      ) : (
       <div className="p-4 bg-white border border-[#dee2e6] flex flex-row items-center justify-between gap-4 shadow-md rounded-2xl sticky top-2 z-50">
         <div className="flex items-center gap-4">
           <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider leading-tight min-w-[90px] select-none">
@@ -2512,38 +2525,16 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           </div>
           <div className="flex flex-wrap gap-2">
              <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-               {fields.clientType === 'organisation' ? (
-                 <>
-                   <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                   Organisation / Bank
-                 </>
-               ) : (
-                 <>
-                   <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                   Individual
-                 </>
-               )}
+               <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+               Individual
              </span>
-             {fields.clientType === 'organisation' && fields.institutionCategory && (
-               <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-                 <span className="w-1.5 h-1.5 rounded-full bg-cyan-500"></span>
-                 {fields.institutionCategory}
-               </span>
-             )}
-             {fields.clientType === 'organisation' && fields.organisationTemplate && !['INCOME_TAX', 'IBBI_IVS'].includes(fields.organisationTemplate) && (
-               <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-                 <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
-                 {fields.organisationTemplate}
-                 {fields.organisationSubTemplate ? ` - ${fields.organisationSubTemplate}` : ''}
-               </span>
-             )}
              <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
                Service: {(SERVICES_LIST.find(s => s.id === fields.serviceType)?.title || fields.serviceType || '').replace(/_/g, ' ')}
              </span>
              <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
                Subject: {(fields.subjectType || '').replace(/_/g, ' ')}
              </span>
-              {fields.valuationLayout && fields.clientType !== 'organisation' && (
+              {fields.valuationLayout && (
                 <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
                   <span className={`w-1.5 h-1.5 rounded-full ${fields.valuationLayout === 'apartment' ? 'bg-purple-500' : 'bg-green-500'}`}></span>
                   {fields.valuationLayout === 'apartment' ? 'Flat / Apartment' : 'Land & Building'}
@@ -2559,6 +2550,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           Change Parameters
         </button>
       </div>
+      )}
 
       {/* Rework Banner */}
       {fields.reworkNotes && status === 'REPORT_DRAFTING' && (

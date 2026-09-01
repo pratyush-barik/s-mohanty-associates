@@ -209,7 +209,7 @@ export function ActiveConfigBanner({
           )}
           <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
-            {bankName}
+            {bankName || 'Unknown Bank'}
           </span>
           {formatName && (
             <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">

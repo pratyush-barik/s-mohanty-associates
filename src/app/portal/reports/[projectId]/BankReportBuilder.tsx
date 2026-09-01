@@ -10,7 +10,7 @@ import { PDFBankRenderer } from '@/lib/pdf-bank-renderer';
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { BaseReportFields, BankConfig, FloorRow, AnnexureItem, ExtraFieldConfig } from '@/lib/bank-fields';
 import { reorderAndLabelAnnexures } from '@/lib/bank-fields';
-import { getFloorName, BasePhotographsSection, BaseAnnexureSection, AnnexureRefSelector } from './banks/BaseBankReportComponents';
+import { getFloorName, BasePhotographsSection, BaseAnnexureSection, AnnexureRefSelector, ActiveConfigBanner } from './banks/BaseBankReportComponents';
 import * as XLSX from 'xlsx';
 
 const cleanAddressForMap = (rawAddr: string): string => {
@@ -1558,54 +1558,14 @@ export default function BankReportBuilder({
       {/* ── Main Form Column ── */}
       <div className="flex-1 min-w-0 space-y-4">
         {/* Template Info Banner */}
-        <div className="p-4 bg-white border border-[#dee2e6] flex flex-row items-center justify-between gap-4 shadow-md rounded-2xl sticky top-2 z-50">
-          <div className="flex items-center gap-4">
-            <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider leading-tight min-w-[90px] select-none">
-              Active<br />Configuration
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                {fields.clientType === 'organisation' ? 'Organisation / Bank' : 'Individual'}
-              </span>
-              {(fields.institutionCategory || fields.clientType === 'organisation') && (
-                <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-500"></span>
-                  {fields.institutionCategory || 'Bank & FIS'}
-                </span>
-              )}
-              <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
-                {config?.displayName || fields.bankName || fields.organisationTemplate || 'Bank Report'}
-              </span>
-              {fields.organisationSubTemplate && (
-                <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-                  <span className="w-1.5 h-1.5 rounded-full bg-teal-500"></span>
-                  Format: {fields.organisationSubTemplate}
-                </span>
-              )}
-              {fields.serviceType && (
-                <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-                  Service: {(fields.serviceType || '').replace(/_/g, ' ')}
-                </span>
-              )}
-              {fields.subjectType && (
-                <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-                  Subject: {(fields.subjectType || '').replace(/_/g, ' ')}
-                </span>
-              )}
-            </div>
-          </div>
-          {onResetWizard && (
-            <button
-              type="button"
-              onClick={onResetWizard}
-              className="text-xs text-[#b8860b] hover:text-[#8a6507] hover:underline font-bold transition-colors shrink-0 pr-2 uppercase cursor-pointer"
-            >
-              Change Parameters
-            </button>
-          )}
-        </div>
+        <ActiveConfigBanner
+          bankName={config?.displayName || fields.organisationTemplate || fields.bankName || ''}
+          formatName={fields.organisationSubTemplate || undefined}
+          category={fields.institutionCategory || undefined}
+          serviceType={fields.serviceType}
+          subjectType={fields.subjectType}
+          onResetWizard={onResetWizard}
+        />
 
         {/* Rework Banner */}
         {fields.reworkNotes && status === 'REPORT_DRAFTING' && (
