@@ -635,10 +635,8 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     // Dividing line
     const yLine = this.pdfY(this.cursorY);
     this.page.drawLine({
-      x: MARGIN_L,
-      y: yLine,
-      x2: MARGIN_L + CONTENT_W,
-      y2: yLine,
+      start: { x: MARGIN_L, y: yLine },
+      end: { x: MARGIN_L + CONTENT_W, y: yLine },
       color: rgb(0.7, 0.7, 0.7),
       thickness: 0.5,
     });
@@ -656,10 +654,8 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     // underline Declaration
     const decW = this.fontBold.widthOfTextAtSize('Declaration', fontSize);
     this.page.drawLine({
-      x: MARGIN_L,
-      y: yDec - 14,
-      x2: MARGIN_L + decW,
-      y2: yDec - 14,
+      start: { x: MARGIN_L, y: yDec - 14 },
+      end: { x: MARGIN_L + decW, y: yDec - 14 },
       color: rgb(0, 0, 0),
       thickness: 1,
     });
@@ -712,10 +708,8 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
 
     const yBottomLine = ySign - 34;
     this.page.drawLine({
-      x: MARGIN_L + 20,
-      y: yBottomLine,
-      x2: MARGIN_L + CONTENT_W,
-      y2: yBottomLine,
+      start: { x: MARGIN_L + 20, y: yBottomLine },
+      end: { x: MARGIN_L + CONTENT_W, y: yBottomLine },
       color: rgb(0.7, 0.7, 0.7),
       thickness: 0.5,
     });
