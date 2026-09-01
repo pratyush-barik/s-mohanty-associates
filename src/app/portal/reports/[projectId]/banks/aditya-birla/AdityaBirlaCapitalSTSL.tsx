@@ -865,11 +865,11 @@ export default function AdityaBirlaCapitalSTSL({
       <div className="flex-1 min-w-0 space-y-4">
         {/* Active Configuration Banner */}
         <ActiveConfigBanner
-          bankName="ADITYA BIRLA CAPITAL LTD"
-          formatName="STSL (Small Ticket Secured Loan)"
-          category="Secured Retail / SME Lending"
-          serviceType={prefill?.purpose || 'Valuation for Security / Collateral'}
-          subjectType={prefill?.propertyType || fields.propertyType || 'Residential'}
+          bankName={fields.organisationTemplate || 'ADITYA BIRLA CAPITAL LTD'}
+          formatName={fields.organisationSubTemplate || 'STSL'}
+          category={fields.institutionCategory || 'Bank & FIS'}
+          serviceType={fields.serviceType || prefill?.purpose || undefined}
+          subjectType={fields.subjectType || prefill?.propertyType || undefined}
           onResetWizard={onResetWizard}
         />
 

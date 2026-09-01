@@ -209,7 +209,7 @@ export default function AdityaBirlaCapitalMLAP({
     clientType: initialFields?.clientType || 'organisation',
     organisationTemplate: initialFields?.organisationTemplate || 'ADITYA BIRLA CAPITAL LTD',
     organisationSubTemplate: initialFields?.organisationSubTemplate || 'MLAP',
-    institutionCategory: initialFields?.institutionCategory || '',
+    institutionCategory: initialFields?.institutionCategory || 'Bank & FIS',
     serviceType: initialFields?.serviceType || prefill?.purpose || '',
     subjectType: initialFields?.subjectType || prefill?.propertyType || '',
   }));
@@ -927,7 +927,7 @@ export default function AdityaBirlaCapitalMLAP({
         <ActiveConfigBanner
           bankName={fields.organisationTemplate || 'ADITYA BIRLA CAPITAL LTD'}
           formatName={fields.organisationSubTemplate || undefined}
-          category={fields.institutionCategory || undefined}
+          category={fields.institutionCategory || 'Bank & FIS'}
           serviceType={fields.serviceType || prefill?.purpose || undefined}
           subjectType={fields.subjectType || prefill?.propertyType || undefined}
           onResetWizard={onResetWizard}
