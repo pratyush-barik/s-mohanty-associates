@@ -981,7 +981,11 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
   const reportRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  const [selectingOrg, setSelectingOrg] = useState(false);
+  // If clientType was already set to 'organisation' but no bank was chosen,
+  // skip straight to the org-selector panel when wizard opens
+  const [selectingOrg, setSelectingOrg] = useState(
+    initialFields?.clientType === 'organisation' && !initialFields?.organisationTemplate
+  );
   const isWizardComplete =
     initialFields?.clientType === 'individual' ||
     (initialFields?.clientType === 'organisation' && !!initialFields?.organisationTemplate);
@@ -2393,107 +2397,103 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
             </div>
           </div>
 
-          {!fields.clientType && (
-            <>
-              {!selectingOrg ? (
-                <div className="grid md:grid-cols-2 gap-6">
-                  {/* Individual Card */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleSelectClientType('individual');
-                    }}
-                    className="flex flex-col items-center p-8 bg-white rounded-2xl border-2 border-transparent hover:border-[#b8860b] shadow-lg hover:shadow-xl transition-all duration-300 group text-center w-full"
-                  >
-                    <div className="w-16 h-16 rounded-full bg-[#fcf8ee] flex items-center justify-center mb-5 text-[#b8860b] group-hover:scale-110 transition-transform">
-                      <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                    </div>
-                    <h3 className="text-xl font-bold text-[#0f2038] mb-2">Individual Client</h3>
-                    <p className="text-sm text-[#6c757d]">
-                      Generate a standard valuation report formatted for individual owners and standard purposes.
-                    </p>
-                  </button>
+          {/* Step 1: Choose client type — only when clientType not yet decided */}
+          {!fields.clientType && !selectingOrg && (
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Individual Card */}
+              <button
+                type="button"
+                onClick={() => handleSelectClientType('individual')}
+                className="flex flex-col items-center p-8 bg-white rounded-2xl border-2 border-transparent hover:border-[#b8860b] shadow-lg hover:shadow-xl transition-all duration-300 group text-center w-full"
+              >
+                <div className="w-16 h-16 rounded-full bg-[#fcf8ee] flex items-center justify-center mb-5 text-[#b8860b] group-hover:scale-110 transition-transform">
+                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-[#0f2038] mb-2">Individual Client</h3>
+                <p className="text-sm text-[#6c757d]">
+                  Generate a standard valuation report formatted for individual owners and standard purposes.
+                </p>
+              </button>
 
-                  {/* Organisation Card */}
-                  <button
-                    type="button"
-                    onClick={() => handleSelectClientType('organisation')}
-                    className="flex flex-col items-center p-8 bg-white rounded-2xl border-2 border-transparent hover:border-[#b8860b] shadow-lg hover:shadow-xl transition-all duration-300 group text-center w-full"
-                  >
-                    <div className="w-16 h-16 rounded-full bg-[#e8f0f8] flex items-center justify-center mb-5 text-[#0f2038] group-hover:scale-110 transition-transform">
-                      <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                      </svg>
-                    </div>
-                    <h3 className="text-xl font-bold text-[#0f2038] mb-2">Organisation / Bank</h3>
-                    <p className="text-sm text-[#6c757d]">
-                      Select an institutional layout mapped to specific banking and credit organisation requirements.
-                    </p>
-                  </button>
+              {/* Organisation Card */}
+              <button
+                type="button"
+                onClick={() => handleSelectClientType('organisation')}
+                className="flex flex-col items-center p-8 bg-white rounded-2xl border-2 border-transparent hover:border-[#b8860b] shadow-lg hover:shadow-xl transition-all duration-300 group text-center w-full"
+              >
+                <div className="w-16 h-16 rounded-full bg-[#e8f0f8] flex items-center justify-center mb-5 text-[#0f2038] group-hover:scale-110 transition-transform">
+                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-[#0f2038] mb-2">Organisation / Bank</h3>
+                <p className="text-sm text-[#6c757d]">
+                  Select an institutional layout mapped to specific banking and credit organisation requirements.
+                </p>
+              </button>
+            </div>
+          )}
+
+          {/* Step 2: Org/bank selector — shown when organisation chosen but no bank yet */}
+          {(selectingOrg || (fields.clientType === 'organisation' && !fields.organisationTemplate)) && (
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-[#e9ecef] space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b border-[#e9ecef]">
+                <h3 className="text-lg font-bold text-[#0f2038]">
+                  {showSubList ? `Select Format for ${selectedBank}` : showBankList ? 'Select Bank / Institution' : 'Select Institution Category'}
+                </h3>
+                <button
+                  type="button"
+                  onClick={handleWizardBack}
+                  className="text-sm text-[#b8860b] hover:text-[#8a6507] font-medium"
+                >
+                  ← Back
+                </button>
+              </div>
+
+              {showSubList && selectedBank ? (
+                <div className="flex flex-wrap gap-3 max-h-[420px] overflow-y-auto p-3 border border-[#dee2e6] rounded-xl bg-neutral-50/50 justify-center">
+                  {BANK_SUB_TEMPLATES[selectedBank]?.map((subOpt) => (
+                    <button
+                      key={subOpt}
+                      type="button"
+                      onClick={() => handleSelectSubTemplate(subOpt)}
+                      className="flex-1 min-w-[200px] max-w-[280px] p-3 min-h-[84px] rounded-xl border border-[#dee2e6] bg-white hover:border-[#b8860b] hover:bg-[#fffbf0] hover:shadow-md text-center transition-all duration-200 flex items-center justify-center text-xs sm:text-sm font-semibold text-[#0f2038] shadow-sm break-words leading-tight"
+                    >
+                      <span className="w-full line-clamp-3 hyphens-auto">{subOpt}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : showBankList && selectedCategory ? (
+                <div className="flex flex-wrap gap-3 max-h-[420px] overflow-y-auto p-3 border border-[#dee2e6] rounded-xl bg-neutral-50/50 justify-center">
+                  {INSTITUTE_CATEGORIES.find(c => c.id === selectedCategory)?.list?.map((bank) => (
+                    <button
+                      key={bank}
+                      type="button"
+                      onClick={() => handleSelectOrganisation(bank)}
+                      className="flex-1 min-w-[200px] max-w-[280px] p-3 min-h-[84px] rounded-xl border border-[#dee2e6] bg-white hover:border-[#b8860b] hover:bg-[#fffbf0] hover:shadow-md text-center transition-all duration-200 flex items-center justify-center text-xs sm:text-sm font-semibold text-[#0f2038] shadow-sm break-words leading-tight"
+                    >
+                      <span className="w-full line-clamp-3 hyphens-auto">{bank}</span>
+                    </button>
+                  ))}
                 </div>
               ) : (
-                <div className="bg-white p-8 rounded-2xl shadow-lg border border-[#e9ecef] space-y-6">
-                  <div className="flex items-center justify-between pb-4 border-b border-[#e9ecef]">
-                    <h3 className="text-lg font-bold text-[#0f2038]">
-                      {showSubList ? `Select Format for ${selectedBank}` : showBankList ? 'Select Bank / Institution' : 'Select Institution Category'}
-                    </h3>
+                <div className="flex flex-wrap gap-4 justify-center">
+                  {INSTITUTE_CATEGORIES.map((cat) => (
                     <button
+                      key={cat.id}
                       type="button"
-                      onClick={() => {
-                        handleWizardBack();
-                      }}
-                      className="text-sm text-[#b8860b] hover:text-[#8a6507] font-medium"
+                      onClick={() => handleCategoryClick(cat.id)}
+                      className="flex-1 min-w-[140px] max-w-[180px] p-4 min-h-[100px] rounded-xl border border-[#dee2e6] bg-white hover:border-[#b8860b] hover:bg-[#fffbf0] hover:shadow-md text-center transition-all duration-200 flex flex-col items-center justify-center gap-2 shadow-sm"
                     >
-                      ← Back
+                      <span className="text-2xl">{cat.icon}</span>
+                      <span className="text-xs font-bold text-[#0f2038] leading-tight break-words max-w-full">{cat.label}</span>
                     </button>
-                  </div>
-
-                  {showSubList && selectedBank ? (
-                    <div className="flex flex-wrap gap-3 max-h-[420px] overflow-y-auto p-3 border border-[#dee2e6] rounded-xl bg-neutral-50/50 justify-center">
-                      {BANK_SUB_TEMPLATES[selectedBank]?.map((subOpt) => (
-                        <button
-                          key={subOpt}
-                          type="button"
-                          onClick={() => handleSelectSubTemplate(subOpt)}
-                          className="flex-1 min-w-[200px] max-w-[280px] p-3 min-h-[84px] rounded-xl border border-[#dee2e6] bg-white hover:border-[#b8860b] hover:bg-[#fffbf0] hover:shadow-md text-center transition-all duration-200 flex items-center justify-center text-xs sm:text-sm font-semibold text-[#0f2038] shadow-sm break-words leading-tight"
-                        >
-                          <span className="w-full line-clamp-3 hyphens-auto">{subOpt}</span>
-                        </button>
-                      ))}
-                    </div>
-                  ) : showBankList && selectedCategory ? (
-                    <div className="flex flex-wrap gap-3 max-h-[420px] overflow-y-auto p-3 border border-[#dee2e6] rounded-xl bg-neutral-50/50 justify-center">
-                       {INSTITUTE_CATEGORIES.find(c => c.id === selectedCategory)?.list?.map((bank) => (
-                         <button
-                           key={bank}
-                           type="button"
-                           onClick={() => handleSelectOrganisation(bank)}
-                           className="flex-1 min-w-[200px] max-w-[280px] p-3 min-h-[84px] rounded-xl border border-[#dee2e6] bg-white hover:border-[#b8860b] hover:bg-[#fffbf0] hover:shadow-md text-center transition-all duration-200 flex items-center justify-center text-xs sm:text-sm font-semibold text-[#0f2038] shadow-sm break-words leading-tight"
-                         >
-                           <span className="w-full line-clamp-3 hyphens-auto">{bank}</span>
-                         </button>
-                       ))}
-                    </div>
-                  ) : (
-                    <div className="flex flex-wrap gap-4 justify-center">
-                      {INSTITUTE_CATEGORIES.map((cat) => (
-                        <button
-                          key={cat.id}
-                          type="button"
-                          onClick={() => handleCategoryClick(cat.id)}
-                          className="flex-1 min-w-[140px] max-w-[180px] p-4 min-h-[100px] rounded-xl border border-[#dee2e6] bg-white hover:border-[#b8860b] hover:bg-[#fffbf0] hover:shadow-md text-center transition-all duration-200 flex flex-col items-center justify-center gap-2 shadow-sm"
-                        >
-                          <span className="text-2xl transform group-hover:scale-110 transition-transform">{cat.icon}</span>
-                          <span className="text-xs font-bold text-[#0f2038] leading-tight break-words max-w-full">{cat.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  ))}
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
       </div>
