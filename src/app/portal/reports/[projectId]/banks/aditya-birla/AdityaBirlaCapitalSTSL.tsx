@@ -471,6 +471,29 @@ export default function AdityaBirlaCapitalSTSL({
     }));
   };
 
+  // ─── Built Up Area Handlers ───
+  const addBuaRow = () => {
+    const current = fields.buaRows || DEFAULT_BUA_ROWS;
+    const floorNames = ['Ground Floor', 'First Floor', 'Second Floor', 'Third Floor', 'Fourth Floor', 'Fifth Floor', 'Sixth Floor', 'Seventh Floor'];
+    const nonTotalRows = current.filter(r => !r.floor.toLowerCase().includes('total'));
+    const totalRow = current.find(r => r.floor.toLowerCase().includes('total'));
+    const nextFloorName = floorNames[nonTotalRows.length] || `Floor ${nonTotalRows.length + 1}`;
+    const newRow: BuaRow = { floor: nextFloorName, asPerSite: '', asPerPlan: 'NA', deviations: 'No', remarks: '' };
+
+    if (totalRow) {
+      handleChange('buaRows', [...nonTotalRows, newRow, totalRow]);
+    } else {
+      handleChange('buaRows', [...current, newRow]);
+    }
+  };
+
+  const removeBuaRow = (index: number) => {
+    const current = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
+    if (current.length <= 1) return;
+    current.splice(index, 1);
+    handleChange('buaRows', current);
+  };
+
   // ─── Image Upload Helpers ───
   const handleUploadSingleMap = async (key: 'locationMapImage' | 'mouzaMapImage' | 'cadastralMapImage', e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -1732,136 +1755,111 @@ export default function AdityaBirlaCapitalSTSL({
             </div>
 
             {/* Built Up Area Container */}
-            <div className="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs space-y-4">
-              <div className="flex items-center justify-between border-b border-neutral-100 pb-3 flex-wrap gap-2">
+            <div className="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs space-y-3">
+              <div className="border-b border-neutral-100 pb-2">
                 <h3 className="text-sm font-bold text-[#0f2038]">
                   Built up area
                 </h3>
-                {!isReadOnly && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const current = fields.buaRows || DEFAULT_BUA_ROWS;
-                      const nextFloorName = `Floor ${current.length}`;
-                      const newRow: BuaRow = { floor: nextFloorName, asPerSite: '', asPerPlan: 'NA', deviations: 'No', remarks: '' };
-                      const lastIdx = current.length - 1;
-                      if (lastIdx >= 0 && current[lastIdx].floor.toLowerCase().includes('total')) {
-                        const updated = [...current];
-                        updated.splice(lastIdx, 0, newRow);
-                        handleChange('buaRows', updated);
-                      } else {
-                        handleChange('buaRows', [...current, newRow]);
-                      }
-                    }}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0f2038] hover:bg-[#1e3a5f] text-white text-xs font-semibold rounded-lg shadow transition-colors cursor-pointer"
-                  >
-                    + Add Floor / Row
-                  </button>
-                )}
               </div>
 
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto rounded-lg border border-neutral-200">
                 <table className="w-full text-sm border-collapse">
                   <thead>
                     <tr className="bg-[#0f2038] text-white">
-                      <th className="p-2.5 text-left text-xs uppercase">Built up area</th>
-                      <th className="p-2.5 text-right text-xs uppercase">As per Site</th>
-                      <th className="p-2.5 text-right text-xs uppercase">As per Plan/FAR</th>
-                      <th className="p-2.5 text-center text-xs uppercase">Deviations</th>
-                      <th className="p-2.5 text-left text-xs uppercase">Remarks</th>
-                      {!isReadOnly && <th className="p-2.5 text-center text-xs uppercase w-16">Action</th>}
+                      <th className="px-3 py-2.5 text-left text-xs uppercase font-semibold">Built up area</th>
+                      <th className="px-3 py-2.5 text-right text-xs uppercase font-semibold">As per Site</th>
+                      <th className="px-3 py-2.5 text-right text-xs uppercase font-semibold">As per Plan/FAR</th>
+                      <th className="px-3 py-2.5 text-center text-xs uppercase font-semibold">Deviations</th>
+                      <th className="px-3 py-2.5 text-left text-xs uppercase font-semibold">Remarks</th>
+                      {!isReadOnly && <th className="px-2 py-2.5 text-center text-xs uppercase font-semibold w-10"></th>}
                     </tr>
                   </thead>
                   <tbody>
                     {(fields.buaRows || DEFAULT_BUA_ROWS).map((row, idx) => {
                       const isTotal = row.floor.toLowerCase().includes('total');
                       return (
-                        <tr key={idx} className={isTotal ? 'bg-amber-50/60 font-bold' : idx % 2 === 0 ? 'bg-white' : 'bg-neutral-50'}>
-                          <td className="p-2 border-b border-neutral-200">
+                        <tr key={idx} className={isTotal ? 'bg-amber-50/60 font-bold' : idx % 2 === 0 ? 'bg-white' : 'bg-[#f8f9fa]'}>
+                          <td className="px-2.5 py-1.5 border-b border-neutral-200">
                             <input
                               type="text"
                               value={row.floor}
                               onChange={e => {
                                 const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
-                                updated[idx].floor = e.target.value;
+                                updated[idx] = { ...updated[idx], floor: e.target.value };
                                 handleChange('buaRows', updated);
                               }}
                               disabled={isReadOnly}
-                              className={`${inputCls} font-bold`}
+                              className="w-full bg-white border border-neutral-300 rounded px-2.5 py-1.5 text-xs text-neutral-800 font-medium focus:ring-1 focus:ring-[#0f2038] focus:border-[#0f2038] outline-hidden disabled:bg-neutral-100"
                             />
                           </td>
-                          <td className="p-2 border-b border-neutral-200">
+                          <td className="px-2.5 py-1.5 border-b border-neutral-200">
                             <input
                               type="text"
                               value={row.asPerSite}
                               onChange={e => {
                                 const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
-                                updated[idx].asPerSite = e.target.value;
+                                updated[idx] = { ...updated[idx], asPerSite: e.target.value };
                                 handleChange('buaRows', updated);
                               }}
                               disabled={isReadOnly}
-                              className={`${inputCls} text-right`}
+                              className="w-full bg-white border border-neutral-300 rounded px-2.5 py-1.5 text-xs text-right text-neutral-800 focus:ring-1 focus:ring-[#0f2038] focus:border-[#0f2038] outline-hidden disabled:bg-neutral-100"
                               placeholder="e.g. 1080sqft"
                             />
                           </td>
-                          <td className="p-2 border-b border-neutral-200">
+                          <td className="px-2.5 py-1.5 border-b border-neutral-200">
                             <input
                               type="text"
                               value={row.asPerPlan}
                               onChange={e => {
                                 const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
-                                updated[idx].asPerPlan = e.target.value;
+                                updated[idx] = { ...updated[idx], asPerPlan: e.target.value };
                                 handleChange('buaRows', updated);
                               }}
                               disabled={isReadOnly}
-                              className={`${inputCls} text-right`}
+                              className="w-full bg-white border border-neutral-300 rounded px-2.5 py-1.5 text-xs text-right text-neutral-800 focus:ring-1 focus:ring-[#0f2038] focus:border-[#0f2038] outline-hidden disabled:bg-neutral-100"
                               placeholder="e.g. NA"
                             />
                           </td>
-                          <td className="p-2 border-b border-neutral-200">
+                          <td className="px-2.5 py-1.5 border-b border-neutral-200">
                             <select
                               value={row.deviations || 'No'}
                               onChange={e => {
                                 const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
-                                updated[idx].deviations = e.target.value;
+                                updated[idx] = { ...updated[idx], deviations: e.target.value };
                                 handleChange('buaRows', updated);
                               }}
                               disabled={isReadOnly}
-                              className={selectCls}
+                              className="w-full bg-white border border-neutral-300 rounded px-2 py-1.5 text-xs text-neutral-800 focus:ring-1 focus:ring-[#0f2038] focus:border-[#0f2038] outline-hidden disabled:bg-neutral-100"
                             >
                               <option value="No">No</option>
                               <option value="Yes">Yes</option>
                               <option value="Yes // No">Yes // No</option>
                             </select>
                           </td>
-                          <td className="p-2 border-b border-neutral-200">
+                          <td className="px-2.5 py-1.5 border-b border-neutral-200">
                             <input
                               type="text"
                               value={row.remarks || ''}
                               onChange={e => {
                                 const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
-                                updated[idx].remarks = e.target.value;
+                                updated[idx] = { ...updated[idx], remarks: e.target.value };
                                 handleChange('buaRows', updated);
                               }}
                               disabled={isReadOnly}
-                              className={inputCls}
+                              className="w-full bg-white border border-neutral-300 rounded px-2.5 py-1.5 text-xs text-neutral-800 focus:ring-1 focus:ring-[#0f2038] focus:border-[#0f2038] outline-hidden disabled:bg-neutral-100"
                               placeholder="Remarks..."
                             />
                           </td>
                           {!isReadOnly && (
-                            <td className="p-2 border-b border-neutral-200 text-center">
+                            <td className="px-2 py-1.5 border-b border-neutral-200 text-center">
                               {(fields.buaRows || DEFAULT_BUA_ROWS).length > 1 && (
                                 <button
                                   type="button"
-                                  onClick={() => {
-                                    const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
-                                    updated.splice(idx, 1);
-                                    handleChange('buaRows', updated);
-                                  }}
-                                  className="text-red-500 hover:text-red-700 text-xs font-semibold p-1 hover:bg-red-50 rounded transition-colors"
-                                  title="Delete Row"
+                                  onClick={() => removeBuaRow(idx)}
+                                  className="text-red-400 hover:text-red-600 text-lg leading-none cursor-pointer p-1"
+                                  title="Remove Floor"
                                 >
-                                  Delete
+                                  &times;
                                 </button>
                               )}
                             </td>
@@ -1872,6 +1870,16 @@ export default function AdityaBirlaCapitalSTSL({
                   </tbody>
                 </table>
               </div>
+
+              {!isReadOnly && (
+                <button
+                  type="button"
+                  onClick={addBuaRow}
+                  className="text-sm text-[#b8860b] hover:text-[#96700a] font-semibold flex items-center gap-1.5 pt-1 cursor-pointer"
+                >
+                  <span className="text-lg leading-none">+</span> Add Floor Details
+                </button>
+              )}
             </div>
           </div>
         </Section>
