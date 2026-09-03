@@ -24,7 +24,7 @@ import {
   AnnexureRefSelector,
   BaseAnnexureSection,
 } from '../BaseBankReportComponents';
-import { reorderAndLabelAnnexures, AnnexureItem } from '@/lib/bank-fields';
+import { reorderAndLabelAnnexures, AnnexureItem, decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/bank-fields';
 
 export interface AdityaBirlaCapitalMLAPProps {
   projectId: string;
@@ -91,7 +91,7 @@ export default function AdityaBirlaCapitalMLAP({
   const router = useRouter();
 
   // Initialize fields cleanly: dynamic prefill from project, standard dropdown defaults, blank case inputs
-  const [fields, setFields] = useState<MLAPReportFields>(() => ({
+  const [fields, setFields] = useState<MLAPReportFields>(() => decodeHtmlEntitiesDeep<MLAPReportFields>({
     // Basic Details
     clientName: initialFields?.clientName || initialFields?.ownerName || prefill?.contactName || '',
     ownerName: initialFields?.ownerName || initialFields?.clientName || prefill?.contactName || '',

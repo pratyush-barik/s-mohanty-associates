@@ -10,6 +10,7 @@
  */
 
 import type { ReactNode } from 'react';
+export { decodeHtmlEntities, decodeHtmlEntitiesDeep } from './html-entities';
 
 // ─── Floor Row (shared across all bank builders) ────────────────────
 export interface FloorRow {

@@ -8,6 +8,7 @@ import GeneralReportBuilder from "./GeneralReportBuilder";
 import IBBIReportBuilder from "./IBBIReportBuilder";
 import IncomeTaxReportBuilder from "./IncomeTaxReportBuilder";
 import BankReportBuilder from "./BankReportBuilder";
+import { decodeHtmlEntitiesDeep } from "@/lib/html-entities";
 
 interface BuilderSelectorProps {
   initialFields: any;
@@ -179,20 +180,23 @@ export default function BuilderSelector({
     return "general";
   };
 
+  const cleanPrefill = useMemo(() => decodeHtmlEntitiesDeep(prefill), [prefill]);
+
   const computedInitialFields = useMemo(() => {
-    if (initialFields?.organisationTemplate) return initialFields;
+    const decodedFields = decodeHtmlEntitiesDeep(initialFields);
+    if (decodedFields?.organisationTemplate) return decodedFields;
     if (initialBuilder && !["INCOME_TAX", "IBBI_IVS", "BANK", "bank", "general"].includes(initialBuilder)) {
       const decoded = decodeURIComponent(initialBuilder);
       const [qOrg, qSub] = decoded.includes("::") ? decoded.split("::") : [decoded, ""];
       return {
-        ...(initialFields || {}),
+        ...(decodedFields || {}),
         clientType: "organisation",
         organisationTemplate: qOrg,
         organisationSubTemplate: qSub || "",
         bankName: qOrg,
       };
     }
-    return initialFields;
+    return decodedFields;
   }, [initialFields, initialBuilder]);
 
   const [activeFields, setActiveFields] = useState(computedInitialFields);
@@ -300,7 +304,7 @@ export default function BuilderSelector({
         status={status}
         userRole={userRole}
         bucketImages={bucketImages}
-        prefill={prefill}
+        prefill={cleanPrefill}
         onReset={handleReset}
       />
     );
@@ -316,7 +320,7 @@ export default function BuilderSelector({
         status={status}
         userRole={userRole}
         bucketImages={bucketImages}
-        prefill={prefill}
+        prefill={cleanPrefill}
         onReset={handleReset}
       />
     );
@@ -333,7 +337,7 @@ export default function BuilderSelector({
         status={status}
         userRole={userRole}
         bucketImages={bucketImages}
-        prefill={prefill}
+        prefill={cleanPrefill}
         onResetWizard={handleReset}
       />
     );
@@ -348,7 +352,7 @@ export default function BuilderSelector({
       status={status}
       userRole={userRole}
       bucketImages={bucketImages}
-      prefill={prefill}
+      prefill={cleanPrefill}
       onNavigateToBuilder={(target: 'ibbi' | 'income_tax' | 'bank', updatedFields: any) => navigateToBuilder(target === "income_tax" ? "income_tax" : target === "ibbi" ? "ibbi" : "bank", updatedFields)}
       onResetWizard={handleReset}
     />

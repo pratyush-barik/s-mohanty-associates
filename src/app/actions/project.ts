@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
 import { sendMail } from '@/lib/mail';
+import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 
 /**
  * Assign a Field Employee and Report Employee to a Project.
@@ -280,11 +281,13 @@ export async function saveReportDraft(projectId: string, fields: any) {
       return { error: 'You are not assigned to this report.' };
     }
 
+    const cleanFields = decodeHtmlEntitiesDeep(fields);
+
     if (project.report) {
       // Update existing
       await prisma.report.update({
         where: { id: project.report.id },
-        data: { data: fields, status: 'DRAFTING' }
+        data: { data: cleanFields, status: 'DRAFTING' }
       });
     } else {
       // Create new report record
@@ -293,7 +296,7 @@ export async function saveReportDraft(projectId: string, fields: any) {
           projectId,
           employeeId: project.reportEmployeeId || session.user.id,
           status: 'DRAFTING',
-          data: fields
+          data: cleanFields
         }
       });
       if (project.status !== 'MANAGER_REVIEW') {
@@ -951,16 +954,16 @@ export async function createManualCase(formData: FormData) {
   try {
     const sr = await prisma.serviceRequest.create({
       data: {
-        guestName,
-        guestEmail,
-        guestPhone,
-        propertyType,
-        purpose,
-        propertyAddress,
-        propertyDetails,
-        contactName,
-        contactPhone,
-        contactEmail,
+        guestName: decodeHtmlEntities(guestName),
+        guestEmail: decodeHtmlEntities(guestEmail),
+        guestPhone: decodeHtmlEntities(guestPhone || ''),
+        propertyType: decodeHtmlEntities(propertyType),
+        purpose: decodeHtmlEntities(purpose),
+        propertyAddress: decodeHtmlEntities(propertyAddress),
+        propertyDetails: decodeHtmlEntities(propertyDetails),
+        contactName: decodeHtmlEntities(contactName),
+        contactPhone: decodeHtmlEntities(contactPhone),
+        contactEmail: decodeHtmlEntities(contactEmail),
         status: 'APPROVED',
       }
     });

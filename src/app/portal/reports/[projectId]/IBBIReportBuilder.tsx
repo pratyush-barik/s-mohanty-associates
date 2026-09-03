@@ -23,6 +23,7 @@ import { PDFIBBIRenderer } from '@/lib/pdf-ibbi-renderer';
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
 import { BasePhotographsSection } from './banks/BaseBankReportComponents';
+import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 // @ts-ignore
 import * as XLSX from 'xlsx';
 
@@ -950,7 +951,7 @@ interface IBBIReportBuilderProps {
 
 const cleanAddressForMap = (rawAddr: string): string => {
   if (!rawAddr || !rawAddr.trim()) return '';
-  let str = rawAddr.trim();
+  let str = decodeHtmlEntities(rawAddr.trim());
   str = str.replace(/\([^)]*\)/gi, '');
   str = str.replace(/\bAREA-?[^,]+/gi, '');
   str = str.replace(/\bKISSAM:?[^,]+/gi, '');
@@ -1003,7 +1004,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     cuttackLandComponentDescPresent: initialFields?.cuttackLandComponentDescPresent || DEFAULT_FIELDS.cuttackLandComponentDescPresent,
   };
 
-  const [fields, setFields] = useState<IBBIFields>(merged);
+  const [fields, setFields] = useState<IBBIFields>(() => decodeHtmlEntitiesDeep(merged));
   const [loading, setLoading] = useState(false);
   const [loadingText, setLoadingText] = useState('Loading...');
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);

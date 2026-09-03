@@ -6,19 +6,20 @@ import { revalidatePath } from 'next/cache';
 import { sendMail } from '@/lib/mail';
 import { headers } from 'next/headers';
 import { checkEnquiryRateLimit } from '@/lib/rate-limit';
+import { decodeHtmlEntities } from '@/lib/html-entities';
 
 /**
  * Submit a public enquiry from the Contact Us form.
  * No authentication required.
  */
 export async function submitEnquiry(formData: FormData) {
-  const name = formData.get('name') as string;
-  const email = formData.get('email') as string;
-  const phone = formData.get('phone') as string;
-  const subject = formData.get('subject') as string;
-  const message = formData.get('message') as string;
+  const name = decodeHtmlEntities((formData.get('name') as string) || '');
+  const email = (formData.get('email') as string) || '';
+  const phone = (formData.get('phone') as string) || '';
+  const subject = decodeHtmlEntities((formData.get('subject') as string) || '');
+  const message = decodeHtmlEntities((formData.get('message') as string) || '');
   const senderType = (formData.get('senderType') as string) || 'INDIVIDUAL';
-  const organisationName = formData.get('organisationName') as string;
+  const organisationName = decodeHtmlEntities((formData.get('organisationName') as string) || '');
 
   // Bot Protection / Spam Prevention
   const headersList = await headers();

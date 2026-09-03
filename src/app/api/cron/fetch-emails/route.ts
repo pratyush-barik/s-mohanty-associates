@@ -3,6 +3,7 @@ import { ImapFlow } from 'imapflow';
 import { simpleParser } from 'mailparser';
 import { prisma } from '@/lib/prisma';
 import { supabaseAdmin, STORAGE_BUCKETS, getPublicUrl } from '@/lib/supabase';
+import { decodeHtmlEntities } from '@/lib/html-entities';
 import path from 'path';
 
 export const dynamic = 'force-dynamic';
@@ -49,10 +50,10 @@ async function processInbox(host: string, port: number, user: string, pass: stri
         const messageStream = await client.download(seq);
         const parsedEmail = await simpleParser(messageStream);
 
-        const subject = parsedEmail.subject || '';
+        const subject = decodeHtmlEntities(parsedEmail.subject || '');
         const fromEmail = parsedEmail.from?.value[0]?.address || 'unknown@example.com';
-        const fromName = parsedEmail.from?.value[0]?.name || 'Unknown User';
-        const bodyText = parsedEmail.text || '';
+        const fromName = decodeHtmlEntities(parsedEmail.from?.value[0]?.name || 'Unknown User');
+        const bodyText = decodeHtmlEntities(parsedEmail.text || '');
 
         const ticketMatch = subject.match(/\[Ticket\s+#(SMA-[A-Z0-9\-]+)\]/i);
         const ticketNumber = ticketMatch ? ticketMatch[1] : null;

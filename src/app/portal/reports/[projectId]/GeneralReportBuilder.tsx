@@ -11,6 +11,7 @@ import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
 import { getFloorName, BasePhotographsSection, ActiveConfigBanner } from './banks/BaseBankReportComponents';
 import { reorderAndLabelAnnexures } from '@/lib/bank-fields';
+import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 // @ts-ignore
 import * as XLSX from 'xlsx';
 
@@ -43,7 +44,7 @@ interface AnnexureItem {
 
 const cleanAddressForMap = (rawAddr: string): string => {
   if (!rawAddr || !rawAddr.trim()) return '';
-  let str = rawAddr.trim();
+  let str = decodeHtmlEntities(rawAddr.trim());
 
   // 1. Remove parenthetical notes like "(AS PER ROR)", "(AS PER SALE DEED)", "(AS PER ACTUAL)"
   str = str.replace(/\([^)]*\)/gi, '');
@@ -805,7 +806,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     merged.floors = DEFAULT_FIELDS.floors;
   }
 
-  const [fields, setFields] = useState<ReportFields>(merged);
+  const [fields, setFields] = useState<ReportFields>(() => decodeHtmlEntitiesDeep(merged));
   const [loading, setLoading] = useState(false);
   const [loadingText, setLoadingText] = useState('Loading...');
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);

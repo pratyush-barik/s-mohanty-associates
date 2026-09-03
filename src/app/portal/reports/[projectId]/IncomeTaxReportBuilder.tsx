@@ -8,6 +8,7 @@ import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { generateIncomeTaxPDF } from '@/lib/pdf-it-renderer';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
 import { BasePhotographsSection } from './banks/BaseBankReportComponents';
+import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 import * as XLSX from 'xlsx';
 
 // ─── Types ─────────────────────────────────────────────────────────
@@ -158,7 +159,7 @@ const formatLandAreaWithSqft = (rawLine: string): string => {
 
 const cleanAddressForMap = (rawAddr: string): string => {
   if (!rawAddr || !rawAddr.trim()) return '';
-  let str = rawAddr.trim();
+  let str = decodeHtmlEntities(rawAddr.trim());
 
   // 1. Remove parenthetical notes like "(AS PER ROR)", "(AS PER SALE DEED)", "(AS PER ACTUAL)"
   str = str.replace(/\([^)]*\)/gi, '');
@@ -918,7 +919,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
     valuationLayout: initialFields?.valuationLayout || 'land_building',
   };
 
-  const [fields, setFields] = useState<IncomeTaxFields>(merged);
+  const [fields, setFields] = useState<IncomeTaxFields>(() => decodeHtmlEntitiesDeep(merged));
   const [loading, setLoading] = useState(false);
   const [loadingText, setLoadingText] = useState('Loading...');
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);

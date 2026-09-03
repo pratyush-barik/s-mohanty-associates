@@ -25,7 +25,7 @@ import {
   AnnexureRefSelector,
   BaseAnnexureSection,
 } from '../BaseBankReportComponents';
-import { reorderAndLabelAnnexures, AnnexureItem } from '@/lib/bank-fields';
+import { reorderAndLabelAnnexures, AnnexureItem, decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/bank-fields';
 
 export interface AdityaBirlaCapitalSTSLProps {
   projectId: string;
@@ -92,7 +92,7 @@ export default function AdityaBirlaCapitalSTSL({
   const router = useRouter();
   const isReadOnly = status === 'submitted' || status === 'verified' || status === 'completed' || userRole === 'client';
 
-  const [fields, setFields] = useState<STSLReportFields>({
+  const [fields, setFields] = useState<STSLReportFields>(() => decodeHtmlEntitiesDeep<STSLReportFields>({
     // Basic Details
     valuerName: initialFields?.valuerName || 'Er. Satyajit Mohanty',
     clientName: initialFields?.clientName || initialFields?.ownerName || prefill?.clientName || 'G.P CONSTRUCTION',
@@ -269,7 +269,7 @@ export default function AdityaBirlaCapitalSTSL({
     legalAnnexureRef: initialFields?.legalAnnexureRef || '',
     legalAnnexureRefShowAlso: initialFields?.legalAnnexureRefShowAlso ?? false,
     annexures: initialFields?.annexures || [],
-  });
+  }));
 
   const [loading, setLoading] = useState(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');

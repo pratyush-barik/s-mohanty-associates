@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import BuilderSelector from './BuilderSelector';
+import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 
 export default async function ReportEditorPage({ params, searchParams }: { params: Promise<{ projectId: string }>, searchParams: Promise<{ builder?: string }> }) {
   try {
@@ -111,9 +112,9 @@ export default async function ReportEditorPage({ params, searchParams }: { param
         <div className="card p-6 bg-[#f8f9fa] border border-[#e9ecef] grid md:grid-cols-4 gap-6">
           <div>
             <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1.5">Client & Property</p>
-            <p className="text-sm font-bold text-[#0f2038]">{serviceRequest?.contactName}</p>
-            <p className="text-xs text-[#6c757d]">{serviceRequest?.propertyType} — {serviceRequest?.purpose}</p>
-            <p className="text-xs text-[#6c757d] mt-1">{serviceRequest?.propertyAddress}</p>
+            <p className="text-sm font-bold text-[#0f2038]">{decodeHtmlEntities(serviceRequest?.contactName || '')}</p>
+            <p className="text-xs text-[#6c757d]">{decodeHtmlEntities(serviceRequest?.propertyType || '')} — {decodeHtmlEntities(serviceRequest?.purpose || '')}</p>
+            <p className="text-xs text-[#6c757d] mt-1">{decodeHtmlEntities(serviceRequest?.propertyAddress || '')}</p>
           </div>
           <div>
             <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1.5">Field Engineer & Phone</p>
@@ -135,7 +136,7 @@ export default async function ReportEditorPage({ params, searchParams }: { param
             <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1.5">Field Inspection Remarks</p>
             {project.inspection?.notes ? (
               <p className="text-xs text-[#212529] bg-white p-2.5 rounded-lg border border-[#dee2e6] max-h-24 overflow-y-auto whitespace-pre-wrap font-medium">
-                {project.inspection.notes}
+                {decodeHtmlEntities(project.inspection.notes)}
               </p>
             ) : (
               <p className="text-xs text-[#6c757d] italic">No site notes recorded.</p>
@@ -157,25 +158,25 @@ export default async function ReportEditorPage({ params, searchParams }: { param
 
         {/* Report Builder (Full Width) */}
         <BuilderSelector
-              initialFields={report?.data || null}
-              projectId={project.id}
-              projectCode={project.projectCode}
-              status={project.status}
-              userRole={currentUser.role}
-              bucketImages={mappedBucketImages}
-              builderQuery={builderFromQuery}
-              prefill={{
-                contactName: serviceRequest?.contactName,
-                contactPhone: serviceRequest?.contactPhone,
-                contactEmail: serviceRequest?.contactEmail,
-                propertyAddress: serviceRequest?.propertyAddress,
-                propertyType: serviceRequest?.propertyType,
-                purpose: serviceRequest?.purpose,
-                fieldEmployees: project.fieldEmployees || [],
-                initiationDate: (project.startDate || project.createdAt)?.toISOString().split('T')[0],
-                inspectionDate: (project.inspection?.completedAt || project.inspection?.scheduledDate || project.inspection?.createdAt)?.toISOString().split('T')[0],
-              }}
-            />
+          initialFields={decodeHtmlEntitiesDeep(report?.data) || null}
+          projectId={project.id}
+          projectCode={project.projectCode}
+          status={project.status}
+          userRole={currentUser.role}
+          bucketImages={mappedBucketImages}
+          builderQuery={builderFromQuery}
+          prefill={{
+            contactName: decodeHtmlEntities(serviceRequest?.contactName || ''),
+            contactPhone: decodeHtmlEntities(serviceRequest?.contactPhone || ''),
+            contactEmail: decodeHtmlEntities(serviceRequest?.contactEmail || ''),
+            propertyAddress: decodeHtmlEntities(serviceRequest?.propertyAddress || ''),
+            propertyType: decodeHtmlEntities(serviceRequest?.propertyType || ''),
+            purpose: decodeHtmlEntities(serviceRequest?.purpose || ''),
+            fieldEmployees: project.fieldEmployees || [],
+            initiationDate: (project.startDate || project.createdAt)?.toISOString().split('T')[0],
+            inspectionDate: (project.inspection?.completedAt || project.inspection?.scheduledDate || project.inspection?.createdAt)?.toISOString().split('T')[0],
+          }}
+        />
         </div>
       );
   } catch (error: any) {

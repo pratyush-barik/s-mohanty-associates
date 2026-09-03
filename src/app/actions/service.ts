@@ -7,6 +7,7 @@ import { revalidatePath } from 'next/cache';
 import { sendMail } from '@/lib/mail';
 import { supabaseAdmin } from '@/lib/supabase';
 import { STORAGE_BUCKETS } from '@/lib/supabase-client';
+import { decodeHtmlEntities } from '@/lib/html-entities';
 
 export async function submitServiceRequest(
   state: ServiceRequestFormState,
@@ -39,14 +40,14 @@ export async function submitServiceRequest(
   const serviceRequest = await prisma.serviceRequest.create({
     data: {
       clientId: session.user.id,
-      propertyType: data.propertyType,
-      purpose: data.purpose,
-      propertyDetails: data.propertyDetails,
-      propertyAddress: data.propertyAddress,
-      contactName: data.contactName,
-      contactPhone: data.contactPhone,
-      contactEmail: data.contactEmail,
-      additionalNotes: data.additionalNotes || null,
+      propertyType: decodeHtmlEntities(data.propertyType),
+      purpose: decodeHtmlEntities(data.purpose),
+      propertyDetails: decodeHtmlEntities(data.propertyDetails),
+      propertyAddress: decodeHtmlEntities(data.propertyAddress),
+      contactName: decodeHtmlEntities(data.contactName),
+      contactPhone: decodeHtmlEntities(data.contactPhone),
+      contactEmail: decodeHtmlEntities(data.contactEmail),
+      additionalNotes: data.additionalNotes ? decodeHtmlEntities(data.additionalNotes) : null,
       status: 'SUBMITTED',
     },
   });

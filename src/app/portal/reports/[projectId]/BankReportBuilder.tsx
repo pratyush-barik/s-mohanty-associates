@@ -11,11 +11,12 @@ import AiAssistPanel from '@/components/AiAssistPanel';
 import type { BaseReportFields, BankConfig, FloorRow, AnnexureItem, ExtraFieldConfig } from '@/lib/bank-fields';
 import { reorderAndLabelAnnexures } from '@/lib/bank-fields';
 import { getFloorName, BasePhotographsSection, BaseAnnexureSection, AnnexureRefSelector, ActiveConfigBanner } from './banks/BaseBankReportComponents';
+import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 import * as XLSX from 'xlsx';
 
 const cleanAddressForMap = (rawAddr: string): string => {
   if (!rawAddr || !rawAddr.trim()) return '';
-  let str = rawAddr.trim();
+  let str = decodeHtmlEntities(rawAddr.trim());
   str = str.replace(/\([^)]*\)/gi, '');
   str = str.replace(/\bAREA-?[^,]+/gi, '');
   str = str.replace(/\bKISSAM:?[^,]+/gi, '');
@@ -447,7 +448,7 @@ export default function BankReportBuilder({
     merged.floors = DEFAULT_BASE_FIELDS.floors;
   }
 
-  const [fields, setFields] = useState<BaseReportFields>(merged);
+  const [fields, setFields] = useState<BaseReportFields>(() => decodeHtmlEntitiesDeep(merged));
   const [loading, setLoading] = useState(false);
   const [loadingText, setLoadingText] = useState('Loading...');
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
