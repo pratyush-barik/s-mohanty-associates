@@ -134,12 +134,12 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
    * Automatically normalizes column widths to strictly equal CONTENT_W.
    * Labels have 50% opacity soft blue (#DBE6F0), values are transparent (or golden-yellow if highlighted).
    */
-  drawKeyValueRow(cols: { label: string; value: string; labelWidth?: number; valueWidth?: number; highlight?: boolean }[]): void {
+  drawKeyValueRow(cols: { label: string; value: string; labelWidth?: number; valueWidth?: number; highlight?: boolean; bold?: boolean }[]): void {
     const fontSize = FONT_SIZE;
     const pad = 3;
 
     // Auto-calculate or normalize widths to match CONTENT_W exactly
-    let processedCols: { label: string; value: string; labelWidth: number; valueWidth: number; highlight?: boolean }[] = [];
+    let processedCols: { label: string; value: string; labelWidth: number; valueWidth: number; highlight?: boolean; bold?: boolean }[] = [];
     const hasExplicitWidths = cols.every(c => c.labelWidth !== undefined && c.valueWidth !== undefined);
 
     if (!hasExplicitWidths) {
@@ -177,7 +177,7 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
 
     for (const c of processedCols) {
       const lLines = this.wrapText(c.label, c.labelWidth - pad * 2, fontSize, true);
-      const vLines = this.wrapText(c.value, c.valueWidth - pad * 2, fontSize, false);
+      const vLines = this.wrapText(c.value, c.valueWidth - pad * 2, fontSize, !!(c.highlight || c.bold));
       maxLines = Math.max(maxLines, lLines.length, vLines.length);
       colWrapped.push({ labelLines: lLines, valueLines: vLines });
     }
@@ -246,7 +246,7 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
           x: curX + pad,
           y: lineY,
           size: fontSize,
-          font: c.highlight ? this.fontBold : this.fontRegular,
+          font: (c.highlight || c.bold) ? this.fontBold : this.fontRegular,
           color: rgb(0, 0, 0),
         });
         lineY -= fontSize * LINE_HEIGHT;

@@ -646,12 +646,12 @@ export default function AdityaBirlaCapitalSTSL({
     // Property Details
     r.drawSectionHeader('Property Details');
     r.drawKeyValueRow([
-      { label: 'Occupancy', value: fields.occupiedBy || 'Self-occupied', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
-      { label: 'Occupied By', value: fields.occupantName || 'Self-occupied', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
+      { label: 'Occupancy', value: fields.occupiedBy || 'Self-occupied', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL, bold: true },
+      { label: 'Occupied By', value: fields.occupantName || 'Self-occupied', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL, bold: true },
     ]);
     r.drawKeyValueRow([
-      { label: 'Occupied Since', value: fields.occupiedSince || 'NA', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
-      { label: 'Name of the Occupant', value: fields.occupantName || 'NA', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
+      { label: 'Occupied Since', value: fields.occupiedSince || 'NA', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL, bold: false },
+      { label: 'Name of the Occupant', value: fields.occupantName || 'NA', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL, bold: true },
     ]);
     r.drawTwoSlashOptionRows(
       { label: 'Property Demarcated', options: ['Yes', 'Partially', 'No'], selected: fields.plotDemarcated || 'Yes', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
