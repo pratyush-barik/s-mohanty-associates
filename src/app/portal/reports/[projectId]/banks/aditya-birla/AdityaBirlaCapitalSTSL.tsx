@@ -918,10 +918,10 @@ export default function AdityaBirlaCapitalSTSL({
         <Section title="Location Details & Distance Matrix" number={2}>
           <div className="space-y-4">
             {/* Property Address Card with Annexure Toggle */}
-            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-4">
-              <div className="flex items-center justify-between border-b border-neutral-100 pb-3 flex-wrap gap-2">
-                <h3 className="text-sm font-bold text-[#0f2038]">
-                  Property Address <span className="text-[10px] font-normal text-[#6c757d] normal-case">(TRF, Site Visit & Document Address)</span>
+            <div className="bg-blue-50/70 p-4 rounded-xl border border-blue-200 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-blue-200/80 pb-3 flex-wrap gap-2">
+                <h3 className="text-xs font-bold text-blue-900 uppercase tracking-wide">
+                  Property Address <span className="text-[10px] font-normal text-blue-700/80 normal-case">(TRF, Site Visit & Document Address)</span>
                 </h3>
                 <AnnexureRefSelector
                   label="Property Address"
