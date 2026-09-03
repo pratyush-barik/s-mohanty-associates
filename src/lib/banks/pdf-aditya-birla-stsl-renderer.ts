@@ -603,25 +603,37 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       details: string;
     }[]
   ): void {
-    const colWidths = [135, 215, 60, 135.28];
+    const colWidths = [130, 215, 55, 145.28];
     const statusOptions = ['Fully Available', 'Partially Available', 'Not Available', 'Not Applicable'];
+    const pad = 3;
+    const fontSize = FONT_SIZE;
+    const sep = ' // ';
+    const sepW = this.fontRegular.widthOfTextAtSize(sep, fontSize);
+
+    const norm = (s: string) => s.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
 
     for (const item of items) {
-      const cleanStatus = (item.status || 'Not Available').trim().toLowerCase();
-      const statusText = statusOptions.join('//');
+      const cleanSelectedNorm = norm(item.status || 'Not Available');
+      const isStatusMatch = (opt: string) => {
+        const optNorm = norm(opt);
+        if (!optNorm || !cleanSelectedNorm) return false;
+        if (optNorm === cleanSelectedNorm) return true;
+        if (cleanSelectedNorm.includes(optNorm) && optNorm.length >= 8) return true;
+        return false;
+      };
 
-      const nameLines = this.wrapText(item.name, colWidths[0] - 6, FONT_SIZE, true);
-      const statusLines = this.wrapText(statusText, colWidths[1] - 6, FONT_SIZE, false);
-      const detailsLines = this.wrapText(item.details || 'NA', colWidths[3] - 6, FONT_SIZE, false);
+      const nameLines = this.wrapText(item.name, colWidths[0] - pad * 2, fontSize, true);
+      const lines2 = this._calcSlashOptionLines('', statusOptions, 0, colWidths[1], fontSize, pad);
+      const detailsLines = this.wrapText(item.details || 'NA', colWidths[3] - pad * 2, fontSize, false);
 
-      const maxLines = Math.max(nameLines.length, statusLines.length, detailsLines.length, 1);
-      const rowH = Math.max(20, maxLines * FONT_SIZE * LINE_HEIGHT + 6);
+      const maxLines = Math.max(nameLines.length, lines2, detailsLines.length, 1);
+      const rowH = Math.max(20, maxLines * fontSize * LINE_HEIGHT + pad * 2);
       this.checkPageBreak(rowH);
 
       const y = this.pdfY(this.cursorY);
       let curX = MARGIN_L;
 
-      // Col 1: Document Name (Soft Blue background)
+      // Col 1: Document Name (Soft Blue background, bold)
       this.page.drawRectangle({
         x: curX,
         y: y - rowH,
@@ -632,10 +644,10 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
         borderColor: rgb(0, 0, 0),
         borderWidth: BORDER_W,
       });
-      let lineY = y - 3 - FONT_SIZE * 0.85;
+      let lineY = y - pad - fontSize * 0.85;
       for (const line of nameLines) {
-        this.page.drawText(line, { x: curX + 3, y: lineY, size: FONT_SIZE, font: this.fontBold, color: rgb(0, 0, 0) });
-        lineY -= FONT_SIZE * LINE_HEIGHT;
+        this.page.drawText(line, { x: curX + pad, y: lineY, size: fontSize, font: this.fontBold, color: rgb(0, 0, 0) });
+        lineY -= fontSize * LINE_HEIGHT;
       }
       curX += colWidths[0];
 
@@ -648,42 +660,54 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
         borderColor: rgb(0, 0, 0),
         borderWidth: BORDER_W,
       });
-      let stY = y - 3 - FONT_SIZE * 0.85;
-      let stX = curX + 3;
+      let stY = y - pad - fontSize * 0.85;
+      let stX = curX + pad;
+      const maxCol2X = curX + colWidths[1] - pad;
+
       for (let s = 0; s < statusOptions.length; s++) {
         const sOpt = statusOptions[s];
-        const isSel = cleanStatus.includes(sOpt.toLowerCase());
+        const isSel = isStatusMatch(sOpt);
         const sFont = isSel ? this.fontBold : this.fontRegular;
-        const sW = sFont.widthOfTextAtSize(sOpt, FONT_SIZE);
+        const sW = sFont.widthOfTextAtSize(sOpt, fontSize);
 
-        if (stX + sW > curX + colWidths[1] - 3 && stX > curX + 3) {
-          stY -= FONT_SIZE * LINE_HEIGHT;
-          stX = curX + 3;
+        if (stX + sW > maxCol2X && stX > curX + pad) {
+          stY -= fontSize * LINE_HEIGHT;
+          stX = curX + pad;
         }
 
         this.page.drawText(sOpt, {
           x: stX,
           y: stY,
-          size: FONT_SIZE,
+          size: fontSize,
           font: sFont,
           color: isSel ? rgb(0, 0, 0) : rgb(0.3, 0.3, 0.3),
         });
         stX += sW;
 
         if (s < statusOptions.length - 1) {
-          const sep = '//';
-          const sepW = this.fontRegular.widthOfTextAtSize(sep, FONT_SIZE);
-          if (stX + sepW > curX + colWidths[1] - 3) {
-            stY -= FONT_SIZE * LINE_HEIGHT;
-            stX = curX + 3;
-          }
-          this.page.drawText(sep, { x: stX, y: stY, size: FONT_SIZE, font: this.fontRegular, color: rgb(0.5, 0.5, 0.5) });
+          this.page.drawText(sep, {
+            x: stX,
+            y: stY,
+            size: fontSize,
+            font: this.fontRegular,
+            color: rgb(0.4, 0.4, 0.4),
+          });
           stX += sepW;
+
+          const nextOpt = statusOptions[s + 1];
+          const nextIsSel = isStatusMatch(nextOpt);
+          const nextFont = nextIsSel ? this.fontBold : this.fontRegular;
+          const nextOptW = nextFont.widthOfTextAtSize(nextOpt, fontSize);
+
+          if (stX + nextOptW > maxCol2X) {
+            stY -= fontSize * LINE_HEIGHT;
+            stX = curX + pad;
+          }
         }
       }
       curX += colWidths[1];
 
-      // Col 3: "Details" label
+      // Col 3: "Details" Label (Soft Blue background, bold)
       this.page.drawRectangle({
         x: curX,
         y: y - rowH,
@@ -695,9 +719,9 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
         borderWidth: BORDER_W,
       });
       this.page.drawText('Details', {
-        x: curX + 3,
-        y: y - 3 - FONT_SIZE * 0.85,
-        size: FONT_SIZE,
+        x: curX + pad,
+        y: y - pad - fontSize * 0.85,
+        size: fontSize,
         font: this.fontBold,
         color: rgb(0, 0, 0),
       });
@@ -712,10 +736,10 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
         borderColor: rgb(0, 0, 0),
         borderWidth: BORDER_W,
       });
-      lineY = y - 3 - FONT_SIZE * 0.85;
+      lineY = y - pad - fontSize * 0.85;
       for (const line of detailsLines) {
-        this.page.drawText(line, { x: curX + 3, y: lineY, size: FONT_SIZE, font: this.fontRegular, color: rgb(0, 0, 0) });
-        lineY -= FONT_SIZE * LINE_HEIGHT;
+        this.page.drawText(line, { x: curX + pad, y: lineY, size: fontSize, font: this.fontRegular, color: rgb(0, 0, 0) });
+        lineY -= fontSize * LINE_HEIGHT;
       }
 
       this.cursorY += rowH;
