@@ -215,35 +215,24 @@ export interface STSLReportFields {
 }
 
 export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
-  /**
-   * Draw a multi-option row where all choices are shown with `//` separators,
-   * and the chosen option is bolded.
-   */
-  drawSlashOptionRow(
+  private _renderSlashOptionBox(
+    startX: number,
+    y: number,
+    rowH: number,
     label: string,
     options: string[],
     selected: string | undefined,
-    labelWidth = 140,
-    valueWidth = CONTENT_W - 140
+    labelWidth: number,
+    valueWidth: number,
+    fontSize: number,
+    pad: number
   ): void {
-    const fontSize = FONT_SIZE;
-    const pad = 3;
-
     const lLines = this.wrapText(label, labelWidth - pad * 2, fontSize, true);
     const cleanSelected = (selected || '').trim().toLowerCase();
-    const joinedText = options.join(' // ');
-    const vLines = this.wrapText(joinedText, valueWidth - pad * 2, fontSize, false);
 
-    const maxLines = Math.max(lLines.length, vLines.length, 1);
-    const rowH = Math.max(18, maxLines * fontSize * LINE_HEIGHT + pad * 2);
-    this.checkPageBreak(rowH);
-
-    const y = this.pdfY(this.cursorY);
-    let curX = MARGIN_L;
-
-    // Draw Label
+    // Draw Label Box
     this.page.drawRectangle({
-      x: curX,
+      x: startX,
       y: y - rowH,
       width: labelWidth,
       height: rowH,
@@ -256,7 +245,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     let lineY = y - pad - fontSize * 0.85;
     for (const line of lLines) {
       this.page.drawText(line, {
-        x: curX + pad,
+        x: startX + pad,
         y: lineY,
         size: fontSize,
         font: this.fontBold,
@@ -264,11 +253,12 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       });
       lineY -= fontSize * LINE_HEIGHT;
     }
-    curX += labelWidth;
 
-    // Draw Value box
+    const valX = startX + labelWidth;
+
+    // Draw Value Box
     this.page.drawRectangle({
-      x: curX,
+      x: valX,
       y: y - rowH,
       width: valueWidth,
       height: rowH,
@@ -276,9 +266,9 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       borderWidth: BORDER_W,
     });
 
-    // Draw rich text with selected option bolded
+    // Draw options text with bold selected
     let valY = y - pad - fontSize * 0.85;
-    let lineX = curX + pad;
+    let curLineX = valX + pad;
 
     for (let i = 0; i < options.length; i++) {
       const opt = options[i];
@@ -287,37 +277,129 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       const optText = opt;
       const optW = optFont.widthOfTextAtSize(optText, fontSize);
 
-      if (lineX + optW > curX + valueWidth - pad && lineX > curX + pad) {
+      if (curLineX + optW > valX + valueWidth - pad && curLineX > valX + pad) {
         valY -= fontSize * LINE_HEIGHT;
-        lineX = curX + pad;
+        curLineX = valX + pad;
       }
 
       this.page.drawText(optText, {
-        x: lineX,
+        x: curLineX,
         y: valY,
         size: fontSize,
         font: optFont,
         color: isSelected ? rgb(0, 0, 0) : rgb(0.2, 0.2, 0.2),
       });
-      lineX += optW;
+      curLineX += optW;
 
       if (i < options.length - 1) {
         const sep = ' // ';
         const sepW = this.fontRegular.widthOfTextAtSize(sep, fontSize);
-        if (lineX + sepW > curX + valueWidth - pad) {
+        if (curLineX + sepW > valX + valueWidth - pad && curLineX > valX + pad) {
           valY -= fontSize * LINE_HEIGHT;
-          lineX = curX + pad;
+          curLineX = valX + pad;
         }
         this.page.drawText(sep, {
-          x: lineX,
+          x: curLineX,
           y: valY,
           size: fontSize,
           font: this.fontRegular,
           color: rgb(0.4, 0.4, 0.4),
         });
-        lineX += sepW;
+        curLineX += sepW;
       }
     }
+  }
+
+  private _calcSlashOptionLines(
+    label: string,
+    options: string[],
+    labelWidth: number,
+    valueWidth: number,
+    fontSize: number,
+    pad: number
+  ): number {
+    const lLines = this.wrapText(label, labelWidth - pad * 2, fontSize, true);
+    let lineCount = 1;
+    let curLineX = pad;
+    const maxValW = valueWidth - pad * 2;
+
+    for (let i = 0; i < options.length; i++) {
+      const opt = options[i];
+      const optW = this.fontBold.widthOfTextAtSize(opt, fontSize);
+      if (curLineX + optW > maxValW && curLineX > pad) {
+        lineCount++;
+        curLineX = pad;
+      }
+      curLineX += optW;
+
+      if (i < options.length - 1) {
+        const sep = ' // ';
+        const sepW = this.fontRegular.widthOfTextAtSize(sep, fontSize);
+        if (curLineX + sepW > maxValW && curLineX > pad) {
+          lineCount++;
+          curLineX = pad;
+        }
+        curLineX += sepW;
+      }
+    }
+
+    return Math.max(lLines.length, lineCount);
+  }
+
+  /**
+   * Draw a full-width multi-option row where all choices are shown with `//` separators,
+   * and the chosen option is bolded.
+   */
+  drawSlashOptionRow(
+    label: string,
+    options: string[],
+    selected: string | undefined,
+    labelWidth = 140,
+    valueWidth = CONTENT_W - 140
+  ): void {
+    const fontSize = FONT_SIZE;
+    const pad = 3;
+
+    const maxLines = this._calcSlashOptionLines(label, options, labelWidth, valueWidth, fontSize, pad);
+    const rowH = Math.max(18, maxLines * fontSize * LINE_HEIGHT + pad * 2);
+    this.checkPageBreak(rowH);
+
+    const y = this.pdfY(this.cursorY);
+    this._renderSlashOptionBox(MARGIN_L, y, rowH, label, options, selected, labelWidth, valueWidth, fontSize, pad);
+    this.cursorY += rowH;
+  }
+
+  /**
+   * Draw two slash option fields side-by-side on the same row (parallel 4-column layout).
+   */
+  drawTwoSlashOptionRows(
+    left: { label: string; options: string[]; selected?: string; labelWidth?: number; valueWidth?: number },
+    right: { label: string; options: string[]; selected?: string; labelWidth?: number; valueWidth?: number }
+  ): void {
+    const fontSize = FONT_SIZE;
+    const pad = 3;
+    const halfTotalW = CONTENT_W / 2; // 272.64
+
+    const lbl1W = left.labelWidth || 105;
+    const val1W = left.valueWidth || (halfTotalW - lbl1W);
+
+    const lbl2W = right.labelWidth || 105;
+    const val2W = right.valueWidth || (CONTENT_W - (lbl1W + val1W + lbl2W));
+
+    const lines1 = this._calcSlashOptionLines(left.label, left.options, lbl1W, val1W, fontSize, pad);
+    const lines2 = this._calcSlashOptionLines(right.label, right.options, lbl2W, val2W, fontSize, pad);
+
+    const maxLines = Math.max(lines1, lines2, 1);
+    const rowH = Math.max(18, maxLines * fontSize * LINE_HEIGHT + pad * 2);
+    this.checkPageBreak(rowH);
+
+    const y = this.pdfY(this.cursorY);
+
+    // Render left box
+    this._renderSlashOptionBox(MARGIN_L, y, rowH, left.label, left.options, left.selected, lbl1W, val1W, fontSize, pad);
+
+    // Render right box
+    this._renderSlashOptionBox(MARGIN_L + lbl1W + val1W, y, rowH, right.label, right.options, right.selected, lbl2W, val2W, fontSize, pad);
 
     this.cursorY += rowH;
   }

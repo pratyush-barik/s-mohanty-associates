@@ -574,12 +574,15 @@ export default function AdityaBirlaCapitalSTSL({
     r.drawSlashOptionRow('Property Type', ['Residential', 'Commercial', 'Industrial', 'Institutional', 'Agriculture', 'Residential cum commercial'], fields.propertyType);
     r.drawKeyValueRow([{ label: 'Property Sub Type', value: fields.propertySubType || 'Row House', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
 
-    r.drawSlashOptionRow('Locality', ['Well Developed', 'Developed', 'Developing', 'Under Develop', 'Slum'], fields.localityDevelopment, 110, 133.64);
-    // Note: PDFBankRenderer handles side-by-side or stacked option rows cleanly.
-    r.drawSlashOptionRow('Property Falling Within', ['Municipal Corporation', 'Gram Panchayat', 'Town Planning Authority', 'Development Authority', 'Municipality', 'NAC'], fields.propertyJurisdiction);
+    r.drawTwoSlashOptionRows(
+      { label: 'Locality', options: ['Well Developed', 'Developed', 'Developing', 'Under Develop', 'Slum'], selected: fields.localityDevelopment, labelWidth: 80, valueWidth: 192.64 },
+      { label: 'Property Falling Within', options: ['Municipal Corporation', 'Gram Panchayat', 'Town Planning Authority', 'Development Authority', 'Municipality', 'NAC'], selected: fields.propertyJurisdiction, labelWidth: 100, valueWidth: 172.64 }
+    );
 
-    r.drawSlashOptionRow('Occupancy Level of the Surrounding', ['Densely Populated', 'Moderately Populated', 'Low Population density'], fields.surroundingOccupancy);
-    r.drawSlashOptionRow('Condition of the Site of the Property', ['Well Developed', 'Developing', 'Under Developed'], fields.conditionOfSite);
+    r.drawTwoSlashOptionRows(
+      { label: 'Occupancy Level of the Surrounding', options: ['Densely Populated', 'Moderately Populated', 'Low Population density'], selected: fields.surroundingOccupancy, labelWidth: 110, valueWidth: 162.64 },
+      { label: 'Condition of the Site of the Property', options: ['Well Developed', 'Developing', 'Under Developed'], selected: fields.conditionOfSite, labelWidth: 110, valueWidth: 162.64 }
+    );
 
     r.drawKeyValueRow([{ label: 'Distance to Railway/Metro Station', value: fields.distanceRailwayStation || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
     r.drawKeyValueRow([{ label: 'Distance to Bus Stop', value: fields.distanceBusStop || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
@@ -593,8 +596,10 @@ export default function AdityaBirlaCapitalSTSL({
       { label: 'Dimensions of the Property', value: fields.dimensionWidth || 'NA', labelWidth: 160, valueWidth: 83.64 },
       { label: 'Depth in Feet', value: fields.dimensionDepth || 'NA', labelWidth: 110, valueWidth: 133.64 },
     ]);
-    r.drawSlashOptionRow('Physical Approach to the Property', ['Clear', 'Partially Clear', 'Not Clear'], fields.physicalApproach);
-    r.drawSlashOptionRow('Legal Approach to the Property', ['Clear', 'Partially Clear', 'Not Clear'], fields.legalApproach);
+    r.drawTwoSlashOptionRows(
+      { label: 'Physical Approach to the Property', options: ['Clear', 'Partially Clear', 'Not Clear'], selected: fields.physicalApproach, labelWidth: 110, valueWidth: 162.64 },
+      { label: 'Legal Approach to the Property', options: ['Clear', 'Partially Clear', 'Not Clear'], selected: fields.legalApproach, labelWidth: 110, valueWidth: 162.64 }
+    );
     r.drawSlashOptionRow('Any other features like board of other financier indicating mortgage, notice of Court/any authority which may affect the security', ['Yes', 'No'], fields.otherEncumbranceFeatures);
 
     // Property Details
@@ -612,8 +617,10 @@ export default function AdityaBirlaCapitalSTSL({
       { label: 'Property Identification', value: fields.propertyIdentification || 'Yes', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL, highlight: true },
     ]);
     r.drawKeyValueRow([{ label: 'Identification through', value: fields.identificationThrough || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
-    r.drawSlashOptionRow('Project Category', ['A', 'B', 'C', 'D', 'A+', 'Not Applicable'], fields.projectCategory);
-    r.drawSlashOptionRow('Flat Type', ['Normal', 'Duplex', 'Not applicable'], fields.flatType);
+    r.drawTwoSlashOptionRows(
+      { label: 'Project Category', options: ['A', 'B', 'C', 'D', 'A+', 'Not Applicable'], selected: fields.projectCategory, labelWidth: 110, valueWidth: 162.64 },
+      { label: 'Flat Type', options: ['Normal', 'Duplex', 'Not applicable'], selected: fields.flatType, labelWidth: 110, valueWidth: 162.64 }
+    );
     r.drawKeyValueRow([
       { label: 'Flat Configuration', value: fields.flatConfiguration || 'NA', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
       { label: 'Property Holding', value: fields.propertyHolding || 'Freehold', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL, highlight: true },
@@ -626,21 +633,29 @@ export default function AdityaBirlaCapitalSTSL({
       { label: 'Total No of Floors', value: fields.totalNoOfFloors || 'N/A', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
       { label: 'Lift Facility', value: fields.liftFacility || 'No', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
     ]);
-    r.drawSlashOptionRow('Amenities', ['Average', 'Excellent', 'Good', 'Low', 'NA'], fields.amenities);
-    r.drawSlashOptionRow('Marketability', ['Average', 'Excellent', 'Good', 'Low'], fields.marketability);
+    r.drawTwoSlashOptionRows(
+      { label: 'Amenities', options: ['Average', 'Excellent', 'Good', 'Low', 'NA'], selected: fields.amenities, labelWidth: 110, valueWidth: 162.64 },
+      { label: 'Marketability', options: ['Average', 'Excellent', 'Good', 'Low'], selected: fields.marketability, labelWidth: 110, valueWidth: 162.64 }
+    );
     r.drawKeyValueRow([
       { label: 'View of the Property', value: fields.viewOfProperty || 'Residential', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
       { label: 'Parking Facility', value: fields.parkingFacility || 'Yes', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
     ]);
-    r.drawSlashOptionRow('Quality of Construction', ['Class A', 'Class B', 'Class C', 'Class D'], fields.qualityOfConstruction);
-    r.drawSlashOptionRow('Type of Parking', ['Open CP', 'Dependent CP', 'Covered CP', 'Mechanical CP', 'Semi-Covered'], fields.typeOfParking);
-    r.drawSlashOptionRow('Shape of the Property', ['Regular', 'Irregular'], fields.shapeOfProperty);
-    r.drawSlashOptionRow('Placement of the Property', ['NE Facing Corner Plot', 'Corner Plot', 'Intermittent Property', 'South Facing'], fields.placementOfProperty);
-    r.drawSlashOptionRow('Exteriors of the Property', ['Average', 'Poor', 'Excellent', 'Good', 'Low'], fields.exteriors);
-    r.drawSlashOptionRow('Interiors of the Property', ['Average', 'Poor', 'Excellent', 'Good', 'Low'], fields.interiors);
+    r.drawTwoSlashOptionRows(
+      { label: 'Quality of Construction', options: ['Class A', 'Class B', 'Class C', 'Class D'], selected: fields.qualityOfConstruction, labelWidth: 110, valueWidth: 162.64 },
+      { label: 'Type of Parking', options: ['Open CP', 'Dependent CP', 'Covered CP', 'Mechanical CP', 'Semi-Covered'], selected: fields.typeOfParking, labelWidth: 110, valueWidth: 162.64 }
+    );
+    r.drawTwoSlashOptionRows(
+      { label: 'Shape of the Property', options: ['Regular', 'Irregular'], selected: fields.shapeOfProperty, labelWidth: 110, valueWidth: 162.64 },
+      { label: 'Placement of the Property', options: ['NE Facing Corner Plot', 'Corner Plot', 'Intermittent Property', 'South Facing'], selected: fields.placementOfProperty, labelWidth: 110, valueWidth: 162.64 }
+    );
+    r.drawTwoSlashOptionRows(
+      { label: 'Exteriors of the Property', options: ['Average', 'Poor', 'Excellent', 'Good', 'Low'], selected: fields.exteriors, labelWidth: 110, valueWidth: 162.64 },
+      { label: 'Interiors of the Property', options: ['Average', 'Poor', 'Excellent', 'Good', 'Low'], selected: fields.interiors, labelWidth: 110, valueWidth: 162.64 }
+    );
     r.drawKeyValueRow([
-      { label: 'Age of the Property', value: fields.ageOfPropertyActual || '7-Years', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
-      { label: 'Residual Age', value: fields.estimatedFutureLife || '53-Years', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
+      { label: 'Age of the Property', value: fields.ageOfPropertyActual || 'NA', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
+      { label: 'Residual Age', value: fields.estimatedFutureLife || 'NA', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
     ]);
     r.drawKeyValueRow([{ label: 'Source of age of Property', value: fields.sourceOfAge || 'NA', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
     r.drawSlashOptionRow('Maintenance of the Property', ['Average', 'Excellent', 'Good', 'Low'], fields.maintenanceCondition);
