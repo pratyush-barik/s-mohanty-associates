@@ -1464,60 +1464,92 @@ export default function AdityaBirlaCapitalSTSL({
               </div>
             </div>
 
-            {/* Remaining Fields (uncontained grid) */}
-            <div className="grid md:grid-cols-2 gap-4 pt-2">
-              <Field label="Shape of Property">
-                <select value={fields.shapeOfProperty || 'Regular'} onChange={e => handleChange('shapeOfProperty', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                  <option value="Regular">Regular</option>
-                  <option value="Irregular">Irregular</option>
-                </select>
-              </Field>
-              <Field label="Placement of Property">
-                <select value={fields.placementOfProperty || 'South Facing'} onChange={e => handleChange('placementOfProperty', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                  <option value="South Facing">South Facing</option>
-                  <option value="NE Facing Corner Plot">NE Facing Corner Plot</option>
-                  <option value="Corner Plot">Corner Plot</option>
-                  <option value="Intermittent Property">Intermittent Property</option>
-                </select>
-              </Field>
-              <Field label="Exteriors">
-                <select value={fields.exteriors || 'Average'} onChange={e => handleChange('exteriors', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                  <option value="Excellent">Excellent</option>
-                  <option value="Good">Good</option>
-                  <option value="Average">Average</option>
-                  <option value="Poor">Poor</option>
-                  <option value="Low">Low</option>
-                </select>
-              </Field>
-              <Field label="Interiors">
-                <select value={fields.interiors || 'Average'} onChange={e => handleChange('interiors', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                  <option value="Excellent">Excellent</option>
-                  <option value="Good">Good</option>
-                  <option value="Average">Average</option>
-                  <option value="Poor">Poor</option>
-                  <option value="Low">Low</option>
-                </select>
-              </Field>
-              <Field label="Age of Property (Actual)">
-                <input type="text" value={fields.ageOfPropertyActual || ''} onChange={e => handleChange('ageOfPropertyActual', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 5 Years" />
-              </Field>
-              <Field label="Residual Life">
-                <input type="text" value={fields.estimatedFutureLife || ''} onChange={e => handleChange('estimatedFutureLife', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 55 Years" />
-              </Field>
-              <Field label="Maintenance Condition">
-                <select value={fields.maintenanceCondition || 'Good'} onChange={e => handleChange('maintenanceCondition', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                  <option value="Excellent">Excellent</option>
-                  <option value="Good">Good</option>
-                  <option value="Average">Average</option>
-                  <option value="Low">Low</option>
-                </select>
-              </Field>
-              <Field label="Cautious Location?">
-                <select value={fields.cautiousLocations || 'No'} onChange={e => handleChange('cautiousLocations', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                  <option value="No">No</option>
-                  <option value="Yes">Yes</option>
-                </select>
-              </Field>
+            {/* 6. Shape, Placement & Aesthetics Container */}
+            <div className="bg-teal-50/80 p-4 rounded-xl border border-teal-200 shadow-xs space-y-3">
+              <div className="border-b border-teal-200/80 pb-2">
+                <h3 className="text-xs font-bold text-teal-900 uppercase tracking-wide">
+                  Shape, Placement & Aesthetics
+                </h3>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Shape of Property">
+                  <select value={fields.shapeOfProperty || 'Regular'} onChange={e => handleChange('shapeOfProperty', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="Regular">Regular</option>
+                    <option value="Irregular">Irregular</option>
+                  </select>
+                </Field>
+                <Field label="Placement of Property">
+                  <select value={fields.placementOfProperty || 'South Facing'} onChange={e => handleChange('placementOfProperty', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="NE Facing Corner Plot">NE Facing Corner Plot</option>
+                    <option value="Corner Plot">Corner Plot</option>
+                    <option value="Intermittent Property">Intermittent Property</option>
+                    <option value="South Facing">South Facing</option>
+                  </select>
+                </Field>
+                <Field label="Exteriors">
+                  <select value={fields.exteriors || 'Average'} onChange={e => handleChange('exteriors', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="Average">Average</option>
+                    <option value="Poor">Poor</option>
+                    <option value="Excellent">Excellent</option>
+                    <option value="Good">Good</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </Field>
+                <Field label="Interiors">
+                  <select value={fields.interiors || 'Average'} onChange={e => handleChange('interiors', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="Average">Average</option>
+                    <option value="Poor">Poor</option>
+                    <option value="Excellent">Excellent</option>
+                    <option value="Good">Good</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </Field>
+              </div>
+            </div>
+
+            {/* 7. Property Age & Residual Life Container */}
+            <div className="bg-emerald-50/80 p-4 rounded-xl border border-emerald-200 shadow-xs space-y-3">
+              <div className="border-b border-emerald-200/80 pb-2">
+                <h3 className="text-xs font-bold text-emerald-900 uppercase tracking-wide">
+                  Property Age & Residual Life
+                </h3>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Age of Property (Actual)">
+                  <input type="text" value={fields.ageOfPropertyActual || ''} onChange={e => handleChange('ageOfPropertyActual', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 7-Years or 5 Years" />
+                </Field>
+                <Field label="Residual Age / Life">
+                  <input type="text" value={fields.estimatedFutureLife || ''} onChange={e => handleChange('estimatedFutureLife', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 53-Years or 55 Years" />
+                </Field>
+              </div>
+            </div>
+
+            {/* 8. Source of Age, Maintenance & Risk Container */}
+            <div className="bg-rose-50/70 p-4 rounded-xl border border-rose-200 shadow-xs space-y-3">
+              <div className="border-b border-rose-200/80 pb-2">
+                <h3 className="text-xs font-bold text-rose-900 uppercase tracking-wide">
+                  Source of Age, Maintenance & Risk
+                </h3>
+              </div>
+              <div className="grid md:grid-cols-3 gap-4">
+                <Field label="Source of Age of Property">
+                  <input type="text" value={fields.sourceOfAge || 'NA'} onChange={e => handleChange('sourceOfAge', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. NA / Customer / Document" />
+                </Field>
+                <Field label="Maintenance of the Property">
+                  <select value={fields.maintenanceCondition || 'Good'} onChange={e => handleChange('maintenanceCondition', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="Average">Average</option>
+                    <option value="Excellent">Excellent</option>
+                    <option value="Good">Good</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </Field>
+                <Field label="Cautious Location">
+                  <select value={fields.cautiousLocations || 'No'} onChange={e => handleChange('cautiousLocations', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </Field>
+              </div>
             </div>
           </div>
         </Section>
