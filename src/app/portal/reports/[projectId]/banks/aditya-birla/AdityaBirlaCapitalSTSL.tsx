@@ -612,10 +612,10 @@ export default function AdityaBirlaCapitalSTSL({
       { label: 'Occupied Since', value: fields.occupiedSince || 'NA', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
       { label: 'Name of the Occupant', value: fields.occupantName || 'NA', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
     ]);
-    r.drawKeyValueRow([
-      { label: 'Property Demarcated', value: fields.plotDemarcated || 'Yes', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
-      { label: 'Property Identification', value: fields.propertyIdentification || 'Yes', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
-    ]);
+    r.drawTwoSlashOptionRows(
+      { label: 'Property Demarcated', options: ['Yes', 'Partially', 'No'], selected: fields.plotDemarcated || 'Yes', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
+      { label: 'Property Identification', options: ['Yes', 'NO'], selected: fields.propertyIdentification || 'Yes', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL }
+    );
     r.drawKeyValueRow([{ label: 'Identification through', value: fields.identificationThrough || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
     r.drawTwoSlashOptionRows(
       { label: 'Project Category', options: ['A', 'B', 'C', 'D', 'A+', 'Not Applicable'], selected: fields.projectCategory, labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
@@ -658,8 +658,10 @@ export default function AdityaBirlaCapitalSTSL({
       { label: 'Residual Age', value: fields.estimatedFutureLife || 'NA', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
     ]);
     r.drawKeyValueRow([{ label: 'Source of age of Property', value: fields.sourceOfAge || 'NA', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
-    r.drawSlashOptionRow('Maintenance of the Property', ['Average', 'Excellent', 'Good', 'Low'], fields.maintenanceCondition, W_LABEL_2COL, W_VAL_2COL);
-    r.drawKeyValueRow([{ label: 'Cautious Location', value: fields.cautiousLocations || 'No', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
+    r.drawTwoSlashOptionRows(
+      { label: 'Maintenance of the Property', options: ['Average', 'Excellent', 'Good', 'Low'], selected: fields.maintenanceCondition, labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
+      { label: 'Cautious Location', options: ['No', 'Yes'], selected: fields.cautiousLocations || 'No', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL }
+    );
 
     // Accommodation Details
     r.drawSectionHeader('Accommodation/Unit Details');
