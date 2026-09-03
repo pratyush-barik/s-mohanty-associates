@@ -1178,7 +1178,7 @@ export default function AdityaBirlaCapitalSTSL({
                 </h3>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
-                <Field label="Occupancy Density of Surrounding">
+                <Field label="Occupancy Level of Surrounding">
                   <select value={fields.surroundingOccupancy || 'Densely Populated'} onChange={e => handleChange('surroundingOccupancy', e.target.value)} disabled={isReadOnly} className={selectCls}>
                     <option value="Densely Populated">Densely Populated</option>
                     <option value="Moderately Populated">Moderately Populated</option>
@@ -1203,7 +1203,7 @@ export default function AdityaBirlaCapitalSTSL({
                 </h3>
               </div>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <Field label="Distance to Railway Station">
+                <Field label="Distance to Railway/Metro Station">
                   <input type="text" value={fields.distanceRailwayStation || ''} onChange={e => handleChange('distanceRailwayStation', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 5-Kms from Railway Station" />
                 </Field>
                 <Field label="Distance to Bus Stop">
@@ -1223,8 +1223,15 @@ export default function AdityaBirlaCapitalSTSL({
                 <Field label="Distance from ABCL Branch">
                   <input type="text" value={fields.distanceFromBranch || ''} onChange={e => handleChange('distanceFromBranch', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 8-Kms from Branch" />
                 </Field>
-                <Field label="Approach Road Width / Type">
-                  <input type="text" value={fields.approachRoadWidth || 'Concrete Road'} onChange={e => handleChange('approachRoadWidth', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Concrete Road / Width 20 to 40 ft." />
+                <Field label="Width of the Approach Road">
+                  <select value={fields.approachRoadWidth || 'Concrete Road'} onChange={e => handleChange('approachRoadWidth', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="Width">Width</option>
+                    <option value="Width is >40 ft.">Width is &gt;40 ft.</option>
+                    <option value="Width 20 to 40 ft.">Width 20 to 40 ft.</option>
+                    <option value="Clear width<15ft">Clear width&lt;15ft</option>
+                    <option value="Concrete Road">Concrete Road</option>
+                    <option value="Illegal Road (Without document)">Illegal Road (Without document)</option>
+                  </select>
                 </Field>
               </div>
             </div>
