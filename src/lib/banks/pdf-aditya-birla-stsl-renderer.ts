@@ -230,13 +230,28 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     const lLines = this.wrapText(label, labelWidth - pad * 2, fontSize, true);
     const norm = (s: string) => s.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
     const cleanSelectedNorm = norm(selected || '');
+
+    const normalizeClass = (val: string) => {
+      if (val === 'classa' || val === 'a' || val === 'excellent') return 'classa';
+      if (val === 'classb' || val === 'b' || val === 'good') return 'classb';
+      if (val === 'classc' || val === 'c' || val === 'average') return 'classc';
+      if (val === 'classd' || val === 'd' || val === 'poor' || val === 'low') return 'classd';
+      return val;
+    };
+
     const isSelectedMatch = (opt: string) => {
       const optNorm = norm(opt);
       if (!optNorm || !cleanSelectedNorm) return false;
       if (optNorm === cleanSelectedNorm) return true;
+      if (normalizeClass(optNorm) === normalizeClass(cleanSelectedNorm)) return true;
       if ((selected || '').includes('/') || (selected || '').includes('//')) {
         const parts = (selected || '').split(/[\/\\]+/).map(p => norm(p)).filter(Boolean);
-        if (parts.length > 0 && parts[0] === optNorm) return true;
+        if (parts.length > 0) {
+          if (parts[0] === optNorm || normalizeClass(parts[0]) === normalizeClass(optNorm)) return true;
+        }
+      }
+      if (optNorm.startsWith(cleanSelectedNorm) || cleanSelectedNorm.startsWith(optNorm)) {
+        if (Math.min(optNorm.length, cleanSelectedNorm.length) >= 3) return true;
       }
       return false;
     };
