@@ -574,7 +574,7 @@ export default function AdityaBirlaCapitalSTSL({
     ]);
 
     r.drawSlashOptionRow('Property Type', ['Residential', 'Commercial', 'Industrial', 'Institutional', 'Agriculture', 'Residential cum commercial'], fields.typeOfProperty || fields.propertyType || 'Residential', W_LABEL_2COL, W_VAL_2COL);
-    r.drawKeyValueRow([{ label: 'Property Sub Type', value: fields.propertySubType || 'Row House', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
+    r.drawKeyValueRow([{ label: 'Property Sub Type', value: fields.propertySubType || 'Row House', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
 
     r.drawTwoSlashOptionRows(
       { label: 'Locality', options: ['Well Developed', 'Developed', 'Developing', 'Under Develop', 'Slum'], selected: fields.localityDevelopment, labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
