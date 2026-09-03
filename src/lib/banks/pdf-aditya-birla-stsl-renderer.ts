@@ -242,6 +242,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
   ): void {
     const lLines = this.wrapText(label, labelWidth - pad * 2, fontSize, true);
     const norm = (s: string) => s.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+    const cleanSelected = (selected || '').trim().toLowerCase();
     const cleanSelectedNorm = norm(selected || '');
 
     const normalizeClass = (val: string) => {
