@@ -79,6 +79,61 @@ const sanitizePositiveDecimal = (val: string): string => {
   return cleaned;
 };
 
+interface AreaValueOrNACellProps {
+  value: string;
+  onChange: (val: string) => void;
+  disabled?: boolean;
+  placeholder?: string;
+  defaultVal?: string;
+}
+
+function AreaValueOrNACell({
+  value,
+  onChange,
+  disabled,
+  placeholder = 'e.g. 1892',
+  defaultVal = '',
+}: AreaValueOrNACellProps) {
+  const isNA = !value || String(value).trim().toUpperCase() === 'NA';
+
+  return (
+    <div className="flex items-center gap-1.5">
+      <select
+        value={isNA ? 'NA' : 'Val'}
+        onChange={e => {
+          if (e.target.value === 'NA') {
+            onChange('NA');
+          } else {
+            onChange(defaultVal || '');
+          }
+        }}
+        disabled={disabled}
+        className="w-16 shrink-0 bg-neutral-100 border border-neutral-300 rounded px-1.5 py-1 text-[11px] font-semibold text-neutral-700 focus:ring-1 focus:ring-[#0f2038] outline-hidden cursor-pointer"
+        title="Choose numeric value or NA"
+      >
+        <option value="Val">Value</option>
+        <option value="NA">NA</option>
+      </select>
+
+      {isNA ? (
+        <div className="w-full bg-neutral-100 text-neutral-400 border border-neutral-200 rounded px-2.5 py-1.5 text-xs text-center font-bold select-none">
+          NA
+        </div>
+      ) : (
+        <input
+          type="text"
+          value={value === 'NA' ? '' : value}
+          onKeyDown={blockNegativeKeys}
+          onChange={e => onChange(sanitizePositiveDecimal(e.target.value))}
+          disabled={disabled}
+          className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
+          placeholder={placeholder}
+        />
+      )}
+    </div>
+  );
+}
+
 export const NAV_SECTIONS: NavItem[] = [
   { id: 'section-1', title: 'Basic Details' },
   { id: 'section-2', title: 'Location Details' },
@@ -218,6 +273,7 @@ export default function AdityaBirlaCapitalSTSL({
     carpetAreaMeasurement: initialFields?.carpetAreaMeasurement || '',
     buaNorms: initialFields?.buaNorms || 'NA',
     buaMeasurementLabel: initialFields?.buaMeasurementLabel || 'Built Up Area (as per measurement) (G+2)',
+    buaStructureSuffix: initialFields?.buaStructureSuffix ?? '(G+2)',
     buaMeasurementArea: initialFields?.buaMeasurementArea || '',
     buaMeasurementRate: initialFields?.buaMeasurementRate || '',
     buaMeasurementValue: initialFields?.buaMeasurementValue || '',
@@ -346,31 +402,36 @@ export default function AdityaBirlaCapitalSTSL({
 
   // ─── Dynamic Auto Calculations ───
   const plotDeedVal = useMemo(() => {
-    const area = parseFloat(String(fields.plotAreaDocs || '0').replace(/[^0-9.]/g, '')) || 0;
+    if (!fields.plotAreaDocs || String(fields.plotAreaDocs).trim().toUpperCase() === 'NA') return 0;
+    const area = parseFloat(String(fields.plotAreaDocs).replace(/[^0-9.]/g, '')) || 0;
     const rate = parseFloat(String(fields.plotAreaDocsRate || '0').replace(/[^0-9.]/g, '')) || 0;
     return Math.round(area * rate);
   }, [fields.plotAreaDocs, fields.plotAreaDocsRate]);
 
   const buaTotalVal = useMemo(() => {
-    const area = parseFloat(String(fields.buaMeasurementArea || '0').replace(/[^0-9.]/g, '')) || 0;
+    if (!fields.buaMeasurementArea || String(fields.buaMeasurementArea).trim().toUpperCase() === 'NA') return 0;
+    const area = parseFloat(String(fields.buaMeasurementArea).replace(/[^0-9.]/g, '')) || 0;
     const rate = parseFloat(String(fields.buaMeasurementRate || '0').replace(/[^0-9.]/g, '')) || 0;
     return Math.round(area * rate);
   }, [fields.buaMeasurementArea, fields.buaMeasurementRate]);
 
   const superBuaVal = useMemo(() => {
-    const area = parseFloat(String(fields.superBua || '0').replace(/[^0-9.]/g, '')) || 0;
+    if (!fields.superBua || String(fields.superBua).trim().toUpperCase() === 'NA') return 0;
+    const area = parseFloat(String(fields.superBua).replace(/[^0-9.]/g, '')) || 0;
     const rate = parseFloat(String(fields.superBuaRate || '0').replace(/[^0-9.]/g, '')) || 0;
     return Math.round(area * rate);
   }, [fields.superBua, fields.superBuaRate]);
 
   const carParkVal = useMemo(() => {
-    const area = parseFloat(String(fields.carParkArea || '0').replace(/[^0-9.]/g, '')) || 0;
+    if (!fields.carParkArea || String(fields.carParkArea).trim().toUpperCase() === 'NA') return 0;
+    const area = parseFloat(String(fields.carParkArea).replace(/[^0-9.]/g, '')) || 0;
     const rate = parseFloat(String(fields.carParkRate || '0').replace(/[^0-9.]/g, '')) || 0;
     return Math.round(area * rate);
   }, [fields.carParkArea, fields.carParkRate]);
 
   const amenitiesVal = useMemo(() => {
-    const area = parseFloat(String(fields.amenitiesArea || '0').replace(/[^0-9.]/g, '')) || 0;
+    if (!fields.amenitiesArea || String(fields.amenitiesArea).trim().toUpperCase() === 'NA') return 0;
+    const area = parseFloat(String(fields.amenitiesArea).replace(/[^0-9.]/g, '')) || 0;
     const rate = parseFloat(String(fields.amenitiesRate || '0').replace(/[^0-9.]/g, '')) || 0;
     return Math.round(area * rate);
   }, [fields.amenitiesArea, fields.amenitiesRate]);
@@ -794,20 +855,24 @@ export default function AdityaBirlaCapitalSTSL({
     r.drawSectionHeader('Valuation');
     const valCols = [215, 110, 110, 110.28];
     const fmtArea = (val: any) => {
-      if (!val || val === 'NA' || val === '-') return val || 'NA';
+      if (!val || String(val).trim().toUpperCase() === 'NA' || val === '-') return 'NA';
       const s = String(val).trim();
       return s.toLowerCase().endsWith('sqft') ? s : `${s}sqft`;
     };
+    const buaFullLabel = fields.buaStructureSuffix
+      ? `Built Up Area (as per measurement) ${fields.buaStructureSuffix.startsWith('(') ? fields.buaStructureSuffix : `(${fields.buaStructureSuffix})`}`
+      : (fields.buaMeasurementLabel || 'Built Up Area (as per measurement) (G+2)');
+
     r.drawTable(
       ['Detailing', 'Area in Sqft', 'Rate per Sqft', 'Value'],
       [
         ['Plot Area (in Deed)', fmtArea(fields.plotAreaDocs), fields.plotAreaDocsRate ? `Rs.${fields.plotAreaDocsRate}/-` : 'NA', plotDeedVal > 0 ? `Rs.${formatIndianCurrency(plotDeedVal)}/-` : '-'],
         ['Plot Area (as per physical)', fmtArea(fields.plotAreaPhysical), '', ''],
-        ['Carpet Area (as per plan)', String(fields.carpetAreaPlan || 'NA'), '', ''],
+        ['Carpet Area (as per plan)', fmtArea(fields.carpetAreaPlan), '', ''],
         ['Carpet Area (as per measurement)', fmtArea(fields.carpetAreaMeasurement), '', ''],
-        ['Built Up Area (as per Norms)', String(fields.buaNorms || 'NA'), '', ''],
-        [fields.buaMeasurementLabel || 'Built Up Area (as per measurement) (G+2)', fmtArea(fields.buaMeasurementArea), fields.buaMeasurementRate ? `Rs.${fields.buaMeasurementRate}/-` : 'NA', buaTotalVal > 0 ? `Rs.${formatIndianCurrency(buaTotalVal)}/-` : '-'],
-        ['Super Built-Up Area', fields.superBua ? fmtArea(fields.superBua) : '', fields.superBuaRate ? String(fields.superBuaRate) : '0', superBuaVal > 0 ? `Rs.${formatIndianCurrency(superBuaVal)}/-` : '0'],
+        ['Built Up Area (as per Norms)', fmtArea(fields.buaNorms), '', ''],
+        [buaFullLabel, fmtArea(fields.buaMeasurementArea), fields.buaMeasurementRate ? `Rs.${fields.buaMeasurementRate}/-` : 'NA', buaTotalVal > 0 ? `Rs.${formatIndianCurrency(buaTotalVal)}/-` : '-'],
+        ['Super Built-Up Area', fields.superBua && String(fields.superBua).toUpperCase() !== 'NA' ? fmtArea(fields.superBua) : '0', fields.superBuaRate ? String(fields.superBuaRate) : '0', superBuaVal > 0 ? `Rs.${formatIndianCurrency(superBuaVal)}/-` : '0'],
         ['Car Park', String(fields.carParkArea || '0'), String(fields.carParkRate || '0'), carParkVal > 0 ? `Rs.${formatIndianCurrency(carParkVal)}/-` : '0'],
         ['Amenities', String(fields.amenitiesArea || '0'), String(fields.amenitiesRate || '0'), amenitiesVal > 0 ? `Rs.${formatIndianCurrency(amenitiesVal)}/-` : '0'],
       ],
@@ -1932,19 +1997,17 @@ export default function AdityaBirlaCapitalSTSL({
                 </thead>
                 <tbody>
                   {/* Row 1: Plot Area (in Deed) */}
-                  <tr className="bg-white">
+                  <tr className="bg-white hover:bg-neutral-50/50 transition-colors">
                     <td className="px-3 py-2 border-b border-[#e9ecef] font-medium text-xs text-[#0f2038]">
                       Plot Area (in Deed)
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                      <input
-                        type="text"
+                      <AreaValueOrNACell
                         value={fields.plotAreaDocs || ''}
-                        onKeyDown={blockNegativeKeys}
-                        onChange={e => handleChange('plotAreaDocs', sanitizePositiveDecimal(e.target.value))}
+                        onChange={val => handleChange('plotAreaDocs', val)}
                         disabled={isReadOnly}
-                        className={inputCls + ' !py-1.5 text-xs text-right'}
                         placeholder="e.g. 3920"
+                        defaultVal="3920"
                       />
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
@@ -1953,13 +2016,13 @@ export default function AdityaBirlaCapitalSTSL({
                         value={fields.plotAreaDocsRate || ''}
                         onKeyDown={blockNegativeKeys}
                         onChange={e => handleChange('plotAreaDocsRate', sanitizePositiveDecimal(e.target.value))}
-                        disabled={isReadOnly}
+                        disabled={isReadOnly || String(fields.plotAreaDocs).trim().toUpperCase() === 'NA'}
                         className={inputCls + ' !py-1.5 text-xs text-right'}
                         placeholder="e.g. 700"
                       />
                     </td>
                     <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-bold text-xs bg-amber-50/50 text-[#0f2038]">
-                      {plotDeedVal > 0 ? `Rs.${formatIndianCurrency(plotDeedVal)}/-` : '-'}
+                      {plotDeedVal > 0 ? `Rs.${formatIndianCurrency(plotDeedVal)}/-` : (String(fields.plotAreaDocs).trim().toUpperCase() === 'NA' ? 'NA' : '-')}
                     </td>
                   </tr>
 
@@ -1969,14 +2032,12 @@ export default function AdityaBirlaCapitalSTSL({
                       Plot Area (as per physical)
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                      <input
-                        type="text"
+                      <AreaValueOrNACell
                         value={fields.plotAreaPhysical || ''}
-                        onKeyDown={blockNegativeKeys}
-                        onChange={e => handleChange('plotAreaPhysical', sanitizePositiveDecimal(e.target.value))}
+                        onChange={val => handleChange('plotAreaPhysical', val)}
                         disabled={isReadOnly}
-                        className={inputCls + ' !py-1.5 text-xs text-right'}
                         placeholder="e.g. 3920"
+                        defaultVal="3920"
                       />
                     </td>
                     <td className="px-3 py-2 border-b border-[#e9ecef] text-right text-xs text-slate-400">-</td>
@@ -1989,13 +2050,12 @@ export default function AdityaBirlaCapitalSTSL({
                       Carpet Area (as per plan)
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                      <input
-                        type="text"
-                        value={fields.carpetAreaPlan || ''}
-                        onChange={e => handleChange('carpetAreaPlan', e.target.value)}
+                      <AreaValueOrNACell
+                        value={fields.carpetAreaPlan || 'NA'}
+                        onChange={val => handleChange('carpetAreaPlan', val)}
                         disabled={isReadOnly}
-                        className={inputCls + ' !py-1.5 text-xs text-right'}
-                        placeholder="e.g. NA"
+                        placeholder="e.g. 1892"
+                        defaultVal=""
                       />
                     </td>
                     <td className="px-3 py-2 border-b border-[#e9ecef] text-right text-xs text-slate-400">-</td>
@@ -2008,14 +2068,12 @@ export default function AdityaBirlaCapitalSTSL({
                       Carpet Area (as per measurement)
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                      <input
-                        type="text"
+                      <AreaValueOrNACell
                         value={fields.carpetAreaMeasurement || ''}
-                        onKeyDown={blockNegativeKeys}
-                        onChange={e => handleChange('carpetAreaMeasurement', sanitizePositiveDecimal(e.target.value))}
+                        onChange={val => handleChange('carpetAreaMeasurement', val)}
                         disabled={isReadOnly}
-                        className={inputCls + ' !py-1.5 text-xs text-right'}
                         placeholder="e.g. 1892"
+                        defaultVal="1892"
                       />
                     </td>
                     <td className="px-3 py-2 border-b border-[#e9ecef] text-right text-xs text-slate-400">-</td>
@@ -2028,13 +2086,12 @@ export default function AdityaBirlaCapitalSTSL({
                       Built Up Area (as per Norms)
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                      <input
-                        type="text"
-                        value={fields.buaNorms || ''}
-                        onChange={e => handleChange('buaNorms', e.target.value)}
+                      <AreaValueOrNACell
+                        value={fields.buaNorms || 'NA'}
+                        onChange={val => handleChange('buaNorms', val)}
                         disabled={isReadOnly}
-                        className={inputCls + ' !py-1.5 text-xs text-right'}
-                        placeholder="e.g. NA"
+                        placeholder="e.g. 2226"
+                        defaultVal=""
                       />
                     </td>
                     <td className="px-3 py-2 border-b border-[#e9ecef] text-right text-xs text-slate-400">-</td>
@@ -2043,25 +2100,29 @@ export default function AdityaBirlaCapitalSTSL({
 
                   {/* Row 6: Built Up Area (as per measurement) */}
                   <tr className="bg-white hover:bg-neutral-50/50 transition-colors">
-                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                      <input
-                        type="text"
-                        value={fields.buaMeasurementLabel || 'Built Up Area (as per measurement) (G+2)'}
-                        onChange={e => handleChange('buaMeasurementLabel', e.target.value)}
-                        disabled={isReadOnly}
-                        className={inputCls + ' !py-1.5 text-xs font-medium text-[#0f2038]'}
-                        placeholder="e.g. Built Up Area (as per measurement) (G+2)"
-                      />
+                    <td className="px-3 py-2 border-b border-[#e9ecef]">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-medium text-xs text-[#0f2038] whitespace-nowrap">
+                          Built Up Area (as per measurement)
+                        </span>
+                        <input
+                          type="text"
+                          value={fields.buaStructureSuffix ?? '(G+2)'}
+                          onChange={e => handleChange('buaStructureSuffix', e.target.value)}
+                          disabled={isReadOnly}
+                          className="w-16 px-1.5 py-0.5 text-xs border border-neutral-300 rounded bg-white text-center font-bold text-[#0f2038] focus:ring-1 focus:ring-[#0f2038] shadow-2xs"
+                          placeholder="(G+2)"
+                          title="Structure / Floor configuration (e.g. (G+2), (G+1), Ground Floor)"
+                        />
+                      </div>
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                      <input
-                        type="text"
+                      <AreaValueOrNACell
                         value={fields.buaMeasurementArea || ''}
-                        onKeyDown={blockNegativeKeys}
-                        onChange={e => handleChange('buaMeasurementArea', sanitizePositiveDecimal(e.target.value))}
+                        onChange={val => handleChange('buaMeasurementArea', val)}
                         disabled={isReadOnly}
-                        className={inputCls + ' !py-1.5 text-xs text-right'}
                         placeholder="e.g. 2226"
+                        defaultVal="2226"
                       />
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
@@ -2070,13 +2131,13 @@ export default function AdityaBirlaCapitalSTSL({
                         value={fields.buaMeasurementRate || ''}
                         onKeyDown={blockNegativeKeys}
                         onChange={e => handleChange('buaMeasurementRate', sanitizePositiveDecimal(e.target.value))}
-                        disabled={isReadOnly}
+                        disabled={isReadOnly || String(fields.buaMeasurementArea).trim().toUpperCase() === 'NA'}
                         className={inputCls + ' !py-1.5 text-xs text-right'}
                         placeholder="e.g. 1500"
                       />
                     </td>
                     <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-bold text-xs bg-amber-50/50 text-[#0f2038]">
-                      {buaTotalVal > 0 ? `Rs.${formatIndianCurrency(buaTotalVal)}/-` : '-'}
+                      {buaTotalVal > 0 ? `Rs.${formatIndianCurrency(buaTotalVal)}/-` : (String(fields.buaMeasurementArea).trim().toUpperCase() === 'NA' ? 'NA' : '-')}
                     </td>
                   </tr>
 
@@ -2086,14 +2147,12 @@ export default function AdityaBirlaCapitalSTSL({
                       Super Built-Up Area
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                      <input
-                        type="text"
+                      <AreaValueOrNACell
                         value={fields.superBua || ''}
-                        onKeyDown={blockNegativeKeys}
-                        onChange={e => handleChange('superBua', sanitizePositiveDecimal(e.target.value))}
+                        onChange={val => handleChange('superBua', val)}
                         disabled={isReadOnly}
-                        className={inputCls + ' !py-1.5 text-xs text-right'}
                         placeholder="0"
+                        defaultVal="0"
                       />
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
@@ -2102,7 +2161,7 @@ export default function AdityaBirlaCapitalSTSL({
                         value={fields.superBuaRate || '0'}
                         onKeyDown={blockNegativeKeys}
                         onChange={e => handleChange('superBuaRate', sanitizePositiveDecimal(e.target.value))}
-                        disabled={isReadOnly}
+                        disabled={isReadOnly || String(fields.superBua).trim().toUpperCase() === 'NA'}
                         className={inputCls + ' !py-1.5 text-xs text-right'}
                         placeholder="0"
                       />
@@ -2118,14 +2177,12 @@ export default function AdityaBirlaCapitalSTSL({
                       Car Park
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                      <input
-                        type="text"
+                      <AreaValueOrNACell
                         value={fields.carParkArea || '0'}
-                        onKeyDown={blockNegativeKeys}
-                        onChange={e => handleChange('carParkArea', sanitizePositiveDecimal(e.target.value))}
+                        onChange={val => handleChange('carParkArea', val)}
                         disabled={isReadOnly}
-                        className={inputCls + ' !py-1.5 text-xs text-right'}
                         placeholder="0"
+                        defaultVal="0"
                       />
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
@@ -2134,7 +2191,7 @@ export default function AdityaBirlaCapitalSTSL({
                         value={fields.carParkRate || '0'}
                         onKeyDown={blockNegativeKeys}
                         onChange={e => handleChange('carParkRate', sanitizePositiveDecimal(e.target.value))}
-                        disabled={isReadOnly}
+                        disabled={isReadOnly || String(fields.carParkArea).trim().toUpperCase() === 'NA'}
                         className={inputCls + ' !py-1.5 text-xs text-right'}
                         placeholder="0"
                       />
@@ -2150,14 +2207,12 @@ export default function AdityaBirlaCapitalSTSL({
                       Amenities
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                      <input
-                        type="text"
+                      <AreaValueOrNACell
                         value={fields.amenitiesArea || '0'}
-                        onKeyDown={blockNegativeKeys}
-                        onChange={e => handleChange('amenitiesArea', sanitizePositiveDecimal(e.target.value))}
+                        onChange={val => handleChange('amenitiesArea', val)}
                         disabled={isReadOnly}
-                        className={inputCls + ' !py-1.5 text-xs text-right'}
                         placeholder="0"
+                        defaultVal="0"
                       />
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
@@ -2166,7 +2221,7 @@ export default function AdityaBirlaCapitalSTSL({
                         value={fields.amenitiesRate || '0'}
                         onKeyDown={blockNegativeKeys}
                         onChange={e => handleChange('amenitiesRate', sanitizePositiveDecimal(e.target.value))}
-                        disabled={isReadOnly}
+                        disabled={isReadOnly || String(fields.amenitiesArea).trim().toUpperCase() === 'NA'}
                         className={inputCls + ' !py-1.5 text-xs text-right'}
                         placeholder="0"
                       />

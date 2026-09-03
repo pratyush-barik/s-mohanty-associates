@@ -143,13 +143,18 @@ export interface STSLReportFields {
   carpetAreaMeasurement?: string;
   buaNorms?: string;
   buaMeasurementLabel?: string;
+  buaStructureSuffix?: string;
   buaMeasurementArea?: string;
   buaMeasurementRate?: string;
   buaMeasurementValue?: string;
   superBua?: string;
   superBuaRate?: string;
   superBuaValue?: string;
+  carParkArea?: string;
+  carParkRate?: string;
   carParkValue?: string;
+  amenitiesArea?: string;
+  amenitiesRate?: string;
   amenitiesValue?: string;
 
   // Section 8: Setbacks & Other Valuation Summary
