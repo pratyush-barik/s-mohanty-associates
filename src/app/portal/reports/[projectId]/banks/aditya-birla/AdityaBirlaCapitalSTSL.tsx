@@ -520,7 +520,7 @@ export default function AdityaBirlaCapitalSTSL({
       { label: 'Initiation Date', value: fmtDate(fields.initiationDate || ''), labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
     ]);
     r.drawKeyValueRow([
-      { label: 'Vertical', value: fields.vertical || 'STSL', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL, highlight: true },
+      { label: 'Vertical', value: fields.vertical || 'STSL', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
       { label: 'Visit Date', value: fmtDate(fields.dateOfInspection || ''), labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
     ]);
     r.drawKeyValueRow([
@@ -566,7 +566,7 @@ export default function AdityaBirlaCapitalSTSL({
     ]);
     const whenVal = fields.valuedBefore === 'Yes'
       ? (fmtDate(fields.valuedBeforeDate || '') || 'NA')
-      : '';
+      : 'NA';
     const valuedBeforeVal = fields.valuedBefore === 'Yes' ? 'Yes' : 'No';
     r.drawKeyValueRow([
       { label: 'Has the Valuator Done Valuation for this property before?', value: valuedBeforeVal, labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
