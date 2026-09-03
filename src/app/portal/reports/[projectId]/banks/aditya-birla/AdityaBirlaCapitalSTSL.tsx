@@ -1288,164 +1288,206 @@ export default function AdityaBirlaCapitalSTSL({
 
         {/* ═══ SECTION 3: PROPERTY DETAILS ═══ */}
         <Section title="Property Details" number={3}>
-          <div className="grid md:grid-cols-2 gap-4">
-            <Field label="Occupancy">
-              <select value={fields.occupiedBy || 'Self-occupied'} onChange={e => handleChange('occupiedBy', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                <option value="Self-occupied">Self-occupied</option>
-                <option value="Tenant">Tenant</option>
-                <option value="Vacant">Vacant</option>
-              </select>
-            </Field>
-            <Field label="Name of Occupant">
-              <input type="text" value={fields.occupantName || ''} onChange={e => handleChange('occupantName', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Self / Name of occupant" />
-            </Field>
-            <Field label="Occupied Since">
-              <input type="text" value={fields.occupiedSince || ''} onChange={e => handleChange('occupiedSince', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 5 Years or NA" />
-            </Field>
-            <Field label="Property Demarcated">
-              <select value={fields.plotDemarcated || 'Yes'} onChange={e => handleChange('plotDemarcated', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                <option value="Yes">Yes</option>
-                <option value="Partially">Partially</option>
-                <option value="No">No</option>
-              </select>
-            </Field>
-            <Field label="Property Identification">
-              <select value={fields.propertyIdentification || 'Yes'} onChange={e => handleChange('propertyIdentification', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                <option value="Yes">Yes</option>
-                <option value="NO">No</option>
-              </select>
-            </Field>
-            <Field label="Identification Through" span={2}>
-              <input type="text" value={fields.identificationThrough || ''} onChange={e => handleChange('identificationThrough', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Identified by document & help of customer" />
-            </Field>
-            <Field label="Project Category">
-              <select value={fields.projectCategory || 'Not Applicable'} onChange={e => handleChange('projectCategory', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                <option value="Not Applicable">Not Applicable</option>
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="C">C</option>
-                <option value="D">D</option>
-                <option value="A+">A+</option>
-              </select>
-            </Field>
-            <Field label="Flat Type">
-              <select value={fields.flatType || 'Not applicable'} onChange={e => handleChange('flatType', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                <option value="Not applicable">Not applicable</option>
-                <option value="Normal">Normal</option>
-                <option value="Duplex">Duplex</option>
-              </select>
-            </Field>
-            <Field label="Property Holding">
-              <select value={fields.propertyHolding || 'Freehold'} onChange={e => handleChange('propertyHolding', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                <option value="Freehold">Freehold</option>
-                <option value="Leasehold">Leasehold</option>
-              </select>
-            </Field>
-            <Field label="Structure Type">
-              <select value={fields.structureType || 'RCC'} onChange={e => handleChange('structureType', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                <option value="RCC">RCC</option>
-                <option value="Load Bearing">Load Bearing</option>
-                <option value="Steel Structure">Steel Structure</option>
-              </select>
-            </Field>
-            <Field label="Lift Facility">
-              <select value={fields.liftFacility || 'No'} onChange={e => handleChange('liftFacility', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                <option value="No">No</option>
-                <option value="Yes">Yes</option>
-              </select>
-            </Field>
-            <Field label="Amenities">
-              <select value={fields.amenities || 'Good'} onChange={e => handleChange('amenities', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                <option value="Excellent">Excellent</option>
-                <option value="Good">Good</option>
-                <option value="Average">Average</option>
-                <option value="Low">Low</option>
-                <option value="NA">NA</option>
-              </select>
-            </Field>
-            <Field label="Marketability">
-              <select value={fields.marketability || 'Average'} onChange={e => handleChange('marketability', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                <option value="Excellent">Excellent</option>
-                <option value="Good">Good</option>
-                <option value="Average">Average</option>
-                <option value="Low">Low</option>
-              </select>
-            </Field>
-            <Field label="Parking Facility">
-              <select value={fields.parkingFacility || 'Yes'} onChange={e => handleChange('parkingFacility', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-              </select>
-            </Field>
-            <Field label="Quality of Construction">
-              <select value={fields.qualityOfConstruction || 'Class B'} onChange={e => handleChange('qualityOfConstruction', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                <option value="Class A">Class A</option>
-                <option value="Class B">Class B</option>
-                <option value="Class C">Class C</option>
-                <option value="Class D">Class D</option>
-              </select>
-            </Field>
-            <Field label="Type of Parking">
-              <select value={fields.typeOfParking || 'Open CP'} onChange={e => handleChange('typeOfParking', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                <option value="Open CP">Open CP</option>
-                <option value="Covered CP">Covered CP</option>
-                <option value="Dependent CP">Dependent CP</option>
-                <option value="Mechanical CP">Mechanical CP</option>
-                <option value="Semi-Covered">Semi-Covered</option>
-              </select>
-            </Field>
-            <Field label="Shape of Property">
-              <select value={fields.shapeOfProperty || 'Regular'} onChange={e => handleChange('shapeOfProperty', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                <option value="Regular">Regular</option>
-                <option value="Irregular">Irregular</option>
-              </select>
-            </Field>
-            <Field label="Placement of Property">
-              <select value={fields.placementOfProperty || 'South Facing'} onChange={e => handleChange('placementOfProperty', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                <option value="South Facing">South Facing</option>
-                <option value="NE Facing Corner Plot">NE Facing Corner Plot</option>
-                <option value="Corner Plot">Corner Plot</option>
-                <option value="Intermittent Property">Intermittent Property</option>
-              </select>
-            </Field>
-            <Field label="Exteriors">
-              <select value={fields.exteriors || 'Average'} onChange={e => handleChange('exteriors', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                <option value="Excellent">Excellent</option>
-                <option value="Good">Good</option>
-                <option value="Average">Average</option>
-                <option value="Poor">Poor</option>
-                <option value="Low">Low</option>
-              </select>
-            </Field>
-            <Field label="Interiors">
-              <select value={fields.interiors || 'Average'} onChange={e => handleChange('interiors', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                <option value="Excellent">Excellent</option>
-                <option value="Good">Good</option>
-                <option value="Average">Average</option>
-                <option value="Poor">Poor</option>
-                <option value="Low">Low</option>
-              </select>
-            </Field>
-            <Field label="Age of Property (Actual)">
-              <input type="text" value={fields.ageOfPropertyActual || ''} onChange={e => handleChange('ageOfPropertyActual', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 5 Years" />
-            </Field>
-            <Field label="Residual Life">
-              <input type="text" value={fields.estimatedFutureLife || ''} onChange={e => handleChange('estimatedFutureLife', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 55 Years" />
-            </Field>
-            <Field label="Maintenance Condition">
-              <select value={fields.maintenanceCondition || 'Good'} onChange={e => handleChange('maintenanceCondition', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                <option value="Excellent">Excellent</option>
-                <option value="Good">Good</option>
-                <option value="Average">Average</option>
-                <option value="Low">Low</option>
-              </select>
-            </Field>
-            <Field label="Cautious Location?">
-              <select value={fields.cautiousLocations || 'No'} onChange={e => handleChange('cautiousLocations', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                <option value="No">No</option>
-                <option value="Yes">Yes</option>
-              </select>
-            </Field>
+          <div className="space-y-4">
+            {/* 1. Occupancy Details Container */}
+            <div className="bg-slate-50/90 p-4 rounded-xl border border-slate-200 shadow-xs space-y-3">
+              <div className="border-b border-slate-200/80 pb-2">
+                <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+                  Occupancy Details
+                </h3>
+              </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Field label="Occupancy">
+                  <select value={fields.occupiedBy || 'Self-occupied'} onChange={e => handleChange('occupiedBy', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="Self-occupied">Self-occupied</option>
+                    <option value="Tenant">Tenant</option>
+                    <option value="Vacant">Vacant</option>
+                  </select>
+                </Field>
+                <Field label="Occupied By">
+                  <input type="text" value={fields.occupantName || 'Self-occupied'} onChange={e => handleChange('occupantName', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Self-occupied / Tenant" />
+                </Field>
+                <Field label="Name of Occupant">
+                  <input type="text" value={fields.occupantName || ''} onChange={e => handleChange('occupantName', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Self / Name of occupant" />
+                </Field>
+                <Field label="Occupied Since">
+                  <input type="text" value={fields.occupiedSince || ''} onChange={e => handleChange('occupiedSince', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 5 Years or NA" />
+                </Field>
+              </div>
+            </div>
+
+            {/* 2. Property Demarcation & Identification Container */}
+            <div className="bg-sky-50/80 p-4 rounded-xl border border-sky-200 shadow-xs space-y-3">
+              <div className="border-b border-sky-200/80 pb-2">
+                <h3 className="text-xs font-bold text-sky-900 uppercase tracking-wide">
+                  Property Demarcation & Identification
+                </h3>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Property Demarcated">
+                  <select value={fields.plotDemarcated || 'Yes'} onChange={e => handleChange('plotDemarcated', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="Yes">Yes</option>
+                    <option value="Partially">Partially</option>
+                    <option value="No">No</option>
+                  </select>
+                </Field>
+                <Field label="Property Identification">
+                  <select value={fields.propertyIdentification || 'Yes'} onChange={e => handleChange('propertyIdentification', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="Yes">Yes</option>
+                    <option value="NO">No</option>
+                  </select>
+                </Field>
+                <Field label="Identification Through" span={2}>
+                  <input type="text" value={fields.identificationThrough || ''} onChange={e => handleChange('identificationThrough', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Identified by document & help of customer" />
+                </Field>
+              </div>
+            </div>
+
+            {/* 3. Classification, Structure & Holding Container */}
+            <div className="bg-indigo-50/80 p-4 rounded-xl border border-indigo-200 shadow-xs space-y-3">
+              <div className="border-b border-indigo-200/80 pb-2">
+                <h3 className="text-xs font-bold text-indigo-900 uppercase tracking-wide">
+                  Classification, Structure & Holding
+                </h3>
+              </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <Field label="Project Category">
+                  <select value={fields.projectCategory || 'Not Applicable'} onChange={e => handleChange('projectCategory', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="Not Applicable">Not Applicable</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                    <option value="D">D</option>
+                    <option value="A+">A+</option>
+                  </select>
+                </Field>
+                <Field label="Flat Type">
+                  <select value={fields.flatType || 'Not applicable'} onChange={e => handleChange('flatType', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="Not applicable">Not applicable</option>
+                    <option value="Normal">Normal</option>
+                    <option value="Duplex">Duplex</option>
+                  </select>
+                </Field>
+                <Field label="Flat Configuration">
+                  <input type="text" value={fields.flatConfiguration || ''} onChange={e => handleChange('flatConfiguration', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 2 BHK / 3 BHK or NA" />
+                </Field>
+                <Field label="Property Holding">
+                  <select value={fields.propertyHolding || 'Freehold'} onChange={e => handleChange('propertyHolding', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="Freehold">Freehold</option>
+                    <option value="Leasehold">Leasehold</option>
+                  </select>
+                </Field>
+                <Field label="Type of Structure">
+                  <select value={fields.structureType || 'RCC'} onChange={e => handleChange('structureType', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="RCC">RCC</option>
+                    <option value="Load Bearing">Load Bearing</option>
+                    <option value="Steel Structure">Steel Structure</option>
+                  </select>
+                </Field>
+              </div>
+            </div>
+
+            {/* Remaining Fields (uncontained grid) */}
+            <div className="grid md:grid-cols-2 gap-4 pt-2">
+              <Field label="Lift Facility">
+                <select value={fields.liftFacility || 'No'} onChange={e => handleChange('liftFacility', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                  <option value="No">No</option>
+                  <option value="Yes">Yes</option>
+                </select>
+              </Field>
+              <Field label="Amenities">
+                <select value={fields.amenities || 'Good'} onChange={e => handleChange('amenities', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                  <option value="Excellent">Excellent</option>
+                  <option value="Good">Good</option>
+                  <option value="Average">Average</option>
+                  <option value="Low">Low</option>
+                  <option value="NA">NA</option>
+                </select>
+              </Field>
+              <Field label="Marketability">
+                <select value={fields.marketability || 'Average'} onChange={e => handleChange('marketability', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                  <option value="Excellent">Excellent</option>
+                  <option value="Good">Good</option>
+                  <option value="Average">Average</option>
+                  <option value="Low">Low</option>
+                </select>
+              </Field>
+              <Field label="Parking Facility">
+                <select value={fields.parkingFacility || 'Yes'} onChange={e => handleChange('parkingFacility', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </Field>
+              <Field label="Quality of Construction">
+                <select value={fields.qualityOfConstruction || 'Class B'} onChange={e => handleChange('qualityOfConstruction', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                  <option value="Class A">Class A</option>
+                  <option value="Class B">Class B</option>
+                  <option value="Class C">Class C</option>
+                  <option value="Class D">Class D</option>
+                </select>
+              </Field>
+              <Field label="Type of Parking">
+                <select value={fields.typeOfParking || 'Open CP'} onChange={e => handleChange('typeOfParking', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                  <option value="Open CP">Open CP</option>
+                  <option value="Covered CP">Covered CP</option>
+                  <option value="Dependent CP">Dependent CP</option>
+                  <option value="Mechanical CP">Mechanical CP</option>
+                  <option value="Semi-Covered">Semi-Covered</option>
+                </select>
+              </Field>
+              <Field label="Shape of Property">
+                <select value={fields.shapeOfProperty || 'Regular'} onChange={e => handleChange('shapeOfProperty', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                  <option value="Regular">Regular</option>
+                  <option value="Irregular">Irregular</option>
+                </select>
+              </Field>
+              <Field label="Placement of Property">
+                <select value={fields.placementOfProperty || 'South Facing'} onChange={e => handleChange('placementOfProperty', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                  <option value="South Facing">South Facing</option>
+                  <option value="NE Facing Corner Plot">NE Facing Corner Plot</option>
+                  <option value="Corner Plot">Corner Plot</option>
+                  <option value="Intermittent Property">Intermittent Property</option>
+                </select>
+              </Field>
+              <Field label="Exteriors">
+                <select value={fields.exteriors || 'Average'} onChange={e => handleChange('exteriors', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                  <option value="Excellent">Excellent</option>
+                  <option value="Good">Good</option>
+                  <option value="Average">Average</option>
+                  <option value="Poor">Poor</option>
+                  <option value="Low">Low</option>
+                </select>
+              </Field>
+              <Field label="Interiors">
+                <select value={fields.interiors || 'Average'} onChange={e => handleChange('interiors', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                  <option value="Excellent">Excellent</option>
+                  <option value="Good">Good</option>
+                  <option value="Average">Average</option>
+                  <option value="Poor">Poor</option>
+                  <option value="Low">Low</option>
+                </select>
+              </Field>
+              <Field label="Age of Property (Actual)">
+                <input type="text" value={fields.ageOfPropertyActual || ''} onChange={e => handleChange('ageOfPropertyActual', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 5 Years" />
+              </Field>
+              <Field label="Residual Life">
+                <input type="text" value={fields.estimatedFutureLife || ''} onChange={e => handleChange('estimatedFutureLife', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 55 Years" />
+              </Field>
+              <Field label="Maintenance Condition">
+                <select value={fields.maintenanceCondition || 'Good'} onChange={e => handleChange('maintenanceCondition', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                  <option value="Excellent">Excellent</option>
+                  <option value="Good">Good</option>
+                  <option value="Average">Average</option>
+                  <option value="Low">Low</option>
+                </select>
+              </Field>
+              <Field label="Cautious Location?">
+                <select value={fields.cautiousLocations || 'No'} onChange={e => handleChange('cautiousLocations', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                  <option value="No">No</option>
+                  <option value="Yes">Yes</option>
+                </select>
+              </Field>
+            </div>
           </div>
         </Section>
 
