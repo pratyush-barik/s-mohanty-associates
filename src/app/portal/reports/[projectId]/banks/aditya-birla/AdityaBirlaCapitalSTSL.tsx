@@ -1296,7 +1296,7 @@ export default function AdityaBirlaCapitalSTSL({
                   Occupancy Details
                 </h3>
               </div>
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid md:grid-cols-2 gap-4">
                 <Field label="Occupancy">
                   <select value={fields.occupiedBy || 'Self-occupied'} onChange={e => handleChange('occupiedBy', e.target.value)} disabled={isReadOnly} className={selectCls}>
                     <option value="Self-occupied">Self-occupied</option>
@@ -1305,13 +1305,13 @@ export default function AdityaBirlaCapitalSTSL({
                   </select>
                 </Field>
                 <Field label="Occupied By">
-                  <input type="text" value={fields.occupantName || 'Self-occupied'} onChange={e => handleChange('occupantName', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Self-occupied / Tenant" />
-                </Field>
-                <Field label="Name of Occupant">
-                  <input type="text" value={fields.occupantName || ''} onChange={e => handleChange('occupantName', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Self / Name of occupant" />
+                  <input type="text" value={fields.occupiedByText || fields.occupiedBy || 'Self-occupied'} onChange={e => handleChange('occupiedByText', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Self-occupied / Tenant" />
                 </Field>
                 <Field label="Occupied Since">
                   <input type="text" value={fields.occupiedSince || ''} onChange={e => handleChange('occupiedSince', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 5 Years or NA" />
+                </Field>
+                <Field label="Name of the Occupant">
+                  <input type="text" value={fields.occupantName || ''} onChange={e => handleChange('occupantName', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Self / Name of occupant" />
                 </Field>
               </div>
             </div>
@@ -1350,7 +1350,7 @@ export default function AdityaBirlaCapitalSTSL({
                   Classification, Structure & Holding
                 </h3>
               </div>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid md:grid-cols-2 gap-4">
                 <Field label="Project Category">
                   <select value={fields.projectCategory || 'Not Applicable'} onChange={e => handleChange('projectCategory', e.target.value)} disabled={isReadOnly} className={selectCls}>
                     <option value="Not Applicable">Not Applicable</option>
@@ -1383,6 +1383,9 @@ export default function AdityaBirlaCapitalSTSL({
                     <option value="Load Bearing">Load Bearing</option>
                     <option value="Steel Structure">Steel Structure</option>
                   </select>
+                </Field>
+                <Field label="Area of Flat">
+                  <input type="text" value={fields.areaOfFlat || ''} onChange={e => handleChange('areaOfFlat', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 1200 Sqft or NA" />
                 </Field>
               </div>
             </div>
