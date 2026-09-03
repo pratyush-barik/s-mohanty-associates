@@ -53,7 +53,10 @@ interface AccomRow {
 }
 
 const DEFAULT_BUA_ROWS: BuaRow[] = [
-  { floor: 'Ground Floor', asPerSite: '', asPerPlan: 'NA', deviations: 'No', remarks: '' },
+  { floor: 'Ground Floor', asPerSite: '1080sqft', asPerPlan: 'NA', deviations: 'No', remarks: '' },
+  { floor: 'First Floor', asPerSite: '846sqft', asPerPlan: 'NA', deviations: 'No', remarks: '' },
+  { floor: 'Second Floor', asPerSite: '300sqft', asPerPlan: 'NA', deviations: 'No', remarks: '' },
+  { floor: 'Total', asPerSite: '2226sqft', asPerPlan: 'NA', deviations: 'No', remarks: '' },
 ];
 
 const DEFAULT_ACCOM_ROWS: AccomRow[] = [
@@ -65,16 +68,15 @@ export const NAV_SECTIONS: NavItem[] = [
   { id: 'section-2', title: '2. Location Details' },
   { id: 'section-3', title: '3. Property Details' },
   { id: 'section-4', title: '4. Accommodation' },
-  { id: 'section-5', title: '5. Documentation' },
-  { id: 'section-6', title: '6. Built-Up Area' },
-  { id: 'section-7', title: '7. Valuation' },
-  { id: 'section-8', title: '8. Setbacks & Summary' },
-  { id: 'section-9', title: '9. Boundaries' },
-  { id: 'section-10', title: '10. Remarks' },
-  { id: 'section-11', title: '11. Photographs' },
-  { id: 'section-12', title: '12. Location Map' },
-  { id: 'section-13', title: '13. Cadastral Map & Declaration' },
-  { id: 'section-14-annexure', title: '14. Annexures' },
+  { id: 'section-5', title: '5. Documentation & Built-Up Area' },
+  { id: 'section-6', title: '6. Valuation' },
+  { id: 'section-7', title: '7. Setbacks & Summary' },
+  { id: 'section-8', title: '8. Boundaries' },
+  { id: 'section-9', title: '9. Remarks' },
+  { id: 'section-10', title: '10. Photographs' },
+  { id: 'section-11', title: '11. Location Map' },
+  { id: 'section-12', title: '12. Cadastral Map & Declaration' },
+  { id: 'section-13-annexure', title: '13. Annexures' },
 ];
 
 export default function AdityaBirlaCapitalSTSL({
@@ -723,17 +725,9 @@ export default function AdityaBirlaCapitalSTSL({
     ];
     r.drawDocChecklistTable(docItems);
 
-    // ═══ PAGE 3 & 4: BUILT UP AREA, VALUATION & SETBACKS ═══
-    r.drawSectionHeader('Built up area');
-    const buaCols = [155, 125, 125, 70, 70.28];
-    const buaRowsData = (fields.buaRows || DEFAULT_BUA_ROWS).map((row: BuaRow) => [
-      row.floor, row.asPerSite || 'NA', row.asPerPlan || 'NA', row.deviations || 'Yes // No', row.remarks || ''
-    ]);
-    r.drawTable(
-      ['Built up area', 'As per Site', 'As per Plan/FAR', 'Deviations', 'Remarks'],
-      buaRowsData,
-      buaCols
-    );
+    // Built-Up Area Table (directly underneath Documentation Details)
+    const buaRowsData = fields.buaRows && fields.buaRows.length > 0 ? fields.buaRows : DEFAULT_BUA_ROWS;
+    r.drawBuaTable(buaRowsData);
 
     // Valuation Table
     r.drawSectionHeader('Valuation');
@@ -1736,67 +1730,154 @@ export default function AdityaBirlaCapitalSTSL({
                 </Field>
               </div>
             </div>
+
+            {/* Built Up Area Container */}
+            <div className="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-neutral-100 pb-3 flex-wrap gap-2">
+                <h3 className="text-sm font-bold text-[#0f2038]">
+                  Built up area
+                </h3>
+                {!isReadOnly && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const current = fields.buaRows || DEFAULT_BUA_ROWS;
+                      const nextFloorName = `Floor ${current.length}`;
+                      const newRow: BuaRow = { floor: nextFloorName, asPerSite: '', asPerPlan: 'NA', deviations: 'No', remarks: '' };
+                      const lastIdx = current.length - 1;
+                      if (lastIdx >= 0 && current[lastIdx].floor.toLowerCase().includes('total')) {
+                        const updated = [...current];
+                        updated.splice(lastIdx, 0, newRow);
+                        handleChange('buaRows', updated);
+                      } else {
+                        handleChange('buaRows', [...current, newRow]);
+                      }
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0f2038] hover:bg-[#1e3a5f] text-white text-xs font-semibold rounded-lg shadow transition-colors cursor-pointer"
+                  >
+                    + Add Floor / Row
+                  </button>
+                )}
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm border-collapse">
+                  <thead>
+                    <tr className="bg-[#0f2038] text-white">
+                      <th className="p-2.5 text-left text-xs uppercase">Built up area</th>
+                      <th className="p-2.5 text-right text-xs uppercase">As per Site</th>
+                      <th className="p-2.5 text-right text-xs uppercase">As per Plan/FAR</th>
+                      <th className="p-2.5 text-center text-xs uppercase">Deviations</th>
+                      <th className="p-2.5 text-left text-xs uppercase">Remarks</th>
+                      {!isReadOnly && <th className="p-2.5 text-center text-xs uppercase w-16">Action</th>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(fields.buaRows || DEFAULT_BUA_ROWS).map((row, idx) => {
+                      const isTotal = row.floor.toLowerCase().includes('total');
+                      return (
+                        <tr key={idx} className={isTotal ? 'bg-amber-50/60 font-bold' : idx % 2 === 0 ? 'bg-white' : 'bg-neutral-50'}>
+                          <td className="p-2 border-b border-neutral-200">
+                            <input
+                              type="text"
+                              value={row.floor}
+                              onChange={e => {
+                                const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
+                                updated[idx].floor = e.target.value;
+                                handleChange('buaRows', updated);
+                              }}
+                              disabled={isReadOnly}
+                              className={`${inputCls} font-bold`}
+                            />
+                          </td>
+                          <td className="p-2 border-b border-neutral-200">
+                            <input
+                              type="text"
+                              value={row.asPerSite}
+                              onChange={e => {
+                                const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
+                                updated[idx].asPerSite = e.target.value;
+                                handleChange('buaRows', updated);
+                              }}
+                              disabled={isReadOnly}
+                              className={`${inputCls} text-right`}
+                              placeholder="e.g. 1080sqft"
+                            />
+                          </td>
+                          <td className="p-2 border-b border-neutral-200">
+                            <input
+                              type="text"
+                              value={row.asPerPlan}
+                              onChange={e => {
+                                const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
+                                updated[idx].asPerPlan = e.target.value;
+                                handleChange('buaRows', updated);
+                              }}
+                              disabled={isReadOnly}
+                              className={`${inputCls} text-right`}
+                              placeholder="e.g. NA"
+                            />
+                          </td>
+                          <td className="p-2 border-b border-neutral-200">
+                            <select
+                              value={row.deviations || 'No'}
+                              onChange={e => {
+                                const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
+                                updated[idx].deviations = e.target.value;
+                                handleChange('buaRows', updated);
+                              }}
+                              disabled={isReadOnly}
+                              className={selectCls}
+                            >
+                              <option value="No">No</option>
+                              <option value="Yes">Yes</option>
+                              <option value="Yes // No">Yes // No</option>
+                            </select>
+                          </td>
+                          <td className="p-2 border-b border-neutral-200">
+                            <input
+                              type="text"
+                              value={row.remarks || ''}
+                              onChange={e => {
+                                const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
+                                updated[idx].remarks = e.target.value;
+                                handleChange('buaRows', updated);
+                              }}
+                              disabled={isReadOnly}
+                              className={inputCls}
+                              placeholder="Remarks..."
+                            />
+                          </td>
+                          {!isReadOnly && (
+                            <td className="p-2 border-b border-neutral-200 text-center">
+                              {(fields.buaRows || DEFAULT_BUA_ROWS).length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
+                                    updated.splice(idx, 1);
+                                    handleChange('buaRows', updated);
+                                  }}
+                                  className="text-red-500 hover:text-red-700 text-xs font-semibold p-1 hover:bg-red-50 rounded transition-colors"
+                                  title="Delete Row"
+                                >
+                                  Delete
+                                </button>
+                              )}
+                            </td>
+                          )}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </Section>
 
-        {/* ═══ SECTION 6: BUILT-UP AREA TABLE ═══ */}
-        <Section title="Built-Up Area Details" number={6}>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="bg-[#0f2038] text-white">
-                  <th className="p-2.5 text-left text-xs uppercase">Floor / Level</th>
-                  <th className="p-2.5 text-right text-xs uppercase">As per Site</th>
-                  <th className="p-2.5 text-right text-xs uppercase">As per Plan/FAR</th>
-                  <th className="p-2.5 text-center text-xs uppercase">Deviations</th>
-                  <th className="p-2.5 text-left text-xs uppercase">Remarks</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(fields.buaRows || DEFAULT_BUA_ROWS).map((row, idx) => (
-                  <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-neutral-50'}>
-                    <td className="p-2 border-b border-neutral-200 font-bold">{row.floor}</td>
-                    <td className="p-2 border-b border-neutral-200">
-                      <input type="text" value={row.asPerSite} onChange={e => {
-                        const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
-                        updated[idx].asPerSite = e.target.value;
-                        handleChange('buaRows', updated);
-                      }} disabled={isReadOnly} className={`${inputCls} text-right`} />
-                    </td>
-                    <td className="p-2 border-b border-neutral-200">
-                      <input type="text" value={row.asPerPlan} onChange={e => {
-                        const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
-                        updated[idx].asPerPlan = e.target.value;
-                        handleChange('buaRows', updated);
-                      }} disabled={isReadOnly} className={`${inputCls} text-right`} />
-                    </td>
-                    <td className="p-2 border-b border-neutral-200">
-                      <select value={row.deviations} onChange={e => {
-                        const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
-                        updated[idx].deviations = e.target.value;
-                        handleChange('buaRows', updated);
-                      }} disabled={isReadOnly} className={selectCls}>
-                        <option value="Yes // No">Yes // No</option>
-                        <option value="No">No</option>
-                        <option value="Yes">Yes</option>
-                      </select>
-                    </td>
-                    <td className="p-2 border-b border-neutral-200">
-                      <input type="text" value={row.remarks} onChange={e => {
-                        const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
-                        updated[idx].remarks = e.target.value;
-                        handleChange('buaRows', updated);
-                      }} disabled={isReadOnly} className={inputCls} placeholder="Remarks..." />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Section>
-
-        {/* ═══ SECTION 7: VALUATION TABLE ═══ */}
-        <Section title="Valuation Details" number={7}>
+        {/* ═══ SECTION 6: VALUATION TABLE ═══ */}
+        <Section title="Valuation Details" number={6}>
           <div className="space-y-4">
             <div className="grid md:grid-cols-3 gap-4">
               <Field label="Plot Area (in Deed)">
@@ -1848,8 +1929,8 @@ export default function AdityaBirlaCapitalSTSL({
           </div>
         </Section>
 
-        {/* ═══ SECTION 8: SETBACKS & OTHER DETAILS ═══ */}
-        <Section title="Setbacks & Other Details" number={8}>
+        {/* ═══ SECTION 7: SETBACKS & OTHER DETAILS ═══ */}
+        <Section title="Setbacks & Other Details" number={7}>
           <div className="space-y-4">
             <div className="grid md:grid-cols-4 gap-4">
               <Field label="Front Setback (Plan)">
@@ -1895,8 +1976,8 @@ export default function AdityaBirlaCapitalSTSL({
           </div>
         </Section>
 
-        {/* ═══ SECTION 9: BOUNDARY DETAILS ═══ */}
-        <Section title="Boundary Detailing Table" number={9}>
+        {/* ═══ SECTION 8: BOUNDARY DETAILS ═══ */}
+        <Section title="Boundary Detailing Table" number={8}>
           <div className="space-y-4">
             <div className="overflow-x-auto">
               <table className="w-full text-sm border-collapse">
@@ -1941,8 +2022,8 @@ export default function AdityaBirlaCapitalSTSL({
           </div>
         </Section>
 
-        {/* ═══ SECTION 10: REMARKS & SIGN-OFF ═══ */}
-        <Section title="Remarks & Sign-off" number={10}>
+        {/* ═══ SECTION 9: REMARKS & SIGN-OFF ═══ */}
+        <Section title="Remarks & Sign-off" number={9}>
           <div className="space-y-4">
             <Field label="General Remarks / Valuer Observations">
               <textarea rows={5} value={fields.remarks || ''} onChange={e => handleChange('remarks', e.target.value)} disabled={isReadOnly} className={inputCls} />
@@ -1953,7 +2034,7 @@ export default function AdityaBirlaCapitalSTSL({
           </div>
         </Section>
 
-        {/* ═══ SECTION 11: PHOTOGRAPHS ═══ */}
+        {/* ═══ SECTION 10: PHOTOGRAPHS ═══ */}
         <BasePhotographsSection
           images={fields.propertyImages || []}
           imageNames={fields.propertyImageNames || []}
@@ -1970,12 +2051,12 @@ export default function AdityaBirlaCapitalSTSL({
           }}
           onUploadImages={handleUploadMultiplePhotos}
           onOpenBucketPicker={() => setBucketPickerOpen(true)}
-          sectionNumber={11}
-          sectionId="section-11"
+          sectionNumber={10}
+          sectionId="section-10"
         />
 
-        {/* ═══ SECTION 12: LOCATION MAP & BHULEKH MOUZA MAP ═══ */}
-        <Section title="Location Map & Bhulekh Cadastral Map" number={12}>
+        {/* ═══ SECTION 11: LOCATION MAP & BHULEKH MOUZA MAP ═══ */}
+        <Section title="Location Map & Bhulekh Cadastral Map" number={11}>
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-xs font-bold text-neutral-700 block">Google Satellite Location Map</label>
@@ -2011,8 +2092,8 @@ export default function AdityaBirlaCapitalSTSL({
           </div>
         </Section>
 
-        {/* ═══ SECTION 13: CADASTRAL MAP & DECLARATION ═══ */}
-        <Section title="Superimposed Cadastral Map & Declaration" number={13}>
+        {/* ═══ SECTION 12: CADASTRAL MAP & DECLARATION ═══ */}
+        <Section title="Superimposed Cadastral Map & Declaration" number={12}>
           <div className="space-y-4">
             <div className="space-y-2">
               <label className="text-xs font-bold text-neutral-700 block">Superimposed Drone / Survey Cadastral Map</label>
@@ -2044,7 +2125,7 @@ export default function AdityaBirlaCapitalSTSL({
           </div>
         </Section>
 
-        {/* ═══ SECTION 14: ANNEXURES & SCHEDULES ═══ */}
+        {/* ═══ SECTION 13: ANNEXURES & SCHEDULES ═══ */}
         <BaseAnnexureSection
           annexures={fields.annexures || []}
           isReadOnly={isReadOnly}
@@ -2054,8 +2135,8 @@ export default function AdityaBirlaCapitalSTSL({
           onUpdateTitle={updateAnnexureTitle}
           onUploadExcel={handleAnnexureUpload}
           onRemoveFile={removeAnnexureFile}
-          sectionNumber={14}
-          sectionId="section-14-annexure"
+          sectionNumber={13}
+          sectionId="section-13-annexure"
         />
 
         {/* Standard Action Bar */}

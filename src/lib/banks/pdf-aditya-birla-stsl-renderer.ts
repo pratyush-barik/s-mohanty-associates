@@ -747,6 +747,170 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
   }
 
   /**
+   * Draw the Built-Up Area Table directly under Documentation Details
+   */
+  drawBuaTable(
+    rows: {
+      floor: string;
+      asPerSite?: string;
+      asPerPlan?: string;
+      deviations?: string;
+      remarks?: string;
+    }[]
+  ): void {
+    const colWidths = [125, 95, 95, 100, 130.28];
+    const headers = ['Built up area', 'As per Site', 'As per Plan/FAR', 'Deviations', 'Remarks'];
+    const pad = 3;
+    const fontSize = FONT_SIZE;
+    const headerH = 18;
+
+    this.checkPageBreak(headerH);
+    let y = this.pdfY(this.cursorY);
+    let curX = MARGIN_L;
+
+    // Draw Table Header Row (Soft blue background, bold)
+    for (let i = 0; i < headers.length; i++) {
+      this.page.drawRectangle({
+        x: curX,
+        y: y - headerH,
+        width: colWidths[i],
+        height: headerH,
+        color: hexToRgb(LBL_BG),
+        opacity: BG_OPACITY,
+        borderColor: rgb(0, 0, 0),
+        borderWidth: BORDER_W,
+      });
+
+      const lineY = y - pad - fontSize * 0.85;
+      this.page.drawText(headers[i], {
+        x: curX + pad,
+        y: lineY,
+        size: fontSize,
+        font: this.fontBold,
+        color: rgb(0, 0, 0),
+      });
+      curX += colWidths[i];
+    }
+    this.cursorY += headerH;
+
+    // Draw Data Rows
+    for (const row of rows) {
+      const isTotal = row.floor.toLowerCase().includes('total');
+      const rowFont = isTotal ? this.fontBold : this.fontRegular;
+
+      const floorLines = this.wrapText(row.floor, colWidths[0] - pad * 2, fontSize, isTotal);
+      const siteLines = this.wrapText(row.asPerSite || 'NA', colWidths[1] - pad * 2, fontSize, isTotal);
+      const planLines = this.wrapText(row.asPerPlan || 'NA', colWidths[2] - pad * 2, fontSize, isTotal);
+      const devLines = 1;
+      const remarksLines = this.wrapText(row.remarks || '', colWidths[4] - pad * 2, fontSize, false);
+
+      const maxLines = Math.max(floorLines.length, siteLines.length, planLines.length, devLines, remarksLines.length, 1);
+      const rowH = Math.max(18, maxLines * fontSize * LINE_HEIGHT + pad * 2);
+      this.checkPageBreak(rowH);
+
+      y = this.pdfY(this.cursorY);
+      curX = MARGIN_L;
+
+      // Col 1: Floor
+      this.page.drawRectangle({
+        x: curX,
+        y: y - rowH,
+        width: colWidths[0],
+        height: rowH,
+        borderColor: rgb(0, 0, 0),
+        borderWidth: BORDER_W,
+      });
+      let lineY = y - pad - fontSize * 0.85;
+      for (const line of floorLines) {
+        this.page.drawText(line, { x: curX + pad, y: lineY, size: fontSize, font: rowFont, color: rgb(0, 0, 0) });
+        lineY -= fontSize * LINE_HEIGHT;
+      }
+      curX += colWidths[0];
+
+      // Col 2: As per Site
+      this.page.drawRectangle({
+        x: curX,
+        y: y - rowH,
+        width: colWidths[1],
+        height: rowH,
+        borderColor: rgb(0, 0, 0),
+        borderWidth: BORDER_W,
+      });
+      lineY = y - pad - fontSize * 0.85;
+      for (const line of siteLines) {
+        this.page.drawText(line, { x: curX + pad, y: lineY, size: fontSize, font: rowFont, color: rgb(0, 0, 0) });
+        lineY -= fontSize * LINE_HEIGHT;
+      }
+      curX += colWidths[1];
+
+      // Col 3: As per Plan/FAR
+      this.page.drawRectangle({
+        x: curX,
+        y: y - rowH,
+        width: colWidths[2],
+        height: rowH,
+        borderColor: rgb(0, 0, 0),
+        borderWidth: BORDER_W,
+      });
+      lineY = y - pad - fontSize * 0.85;
+      for (const line of planLines) {
+        this.page.drawText(line, { x: curX + pad, y: lineY, size: fontSize, font: rowFont, color: rgb(0, 0, 0) });
+        lineY -= fontSize * LINE_HEIGHT;
+      }
+      curX += colWidths[2];
+
+      // Col 4: Deviations (Yes // No with selected bold)
+      this.page.drawRectangle({
+        x: curX,
+        y: y - rowH,
+        width: colWidths[3],
+        height: rowH,
+        borderColor: rgb(0, 0, 0),
+        borderWidth: BORDER_W,
+      });
+      const devSelected = row.deviations || 'No';
+      const devNorm = devSelected.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+      const isYes = devNorm === 'yes' || devNorm.startsWith('yes');
+      const isNo = devNorm === 'no' || devNorm.endsWith('no') || devNorm === 'yesno';
+
+      lineY = y - pad - fontSize * 0.85;
+      let devX = curX + pad;
+
+      // Draw "Yes"
+      const yesFont = isYes && !isNo ? this.fontBold : this.fontRegular;
+      this.page.drawText('Yes', { x: devX, y: lineY, size: fontSize, font: yesFont, color: isYes && !isNo ? rgb(0, 0, 0) : rgb(0.3, 0.3, 0.3) });
+      devX += yesFont.widthOfTextAtSize('Yes', fontSize);
+
+      // Draw " // "
+      this.page.drawText(' // ', { x: devX, y: lineY, size: fontSize, font: this.fontRegular, color: rgb(0.4, 0.4, 0.4) });
+      devX += this.fontRegular.widthOfTextAtSize(' // ', fontSize);
+
+      // Draw "No"
+      const noFont = isNo ? this.fontBold : this.fontRegular;
+      this.page.drawText('No', { x: devX, y: lineY, size: fontSize, font: noFont, color: isNo ? rgb(0, 0, 0) : rgb(0.3, 0.3, 0.3) });
+
+      curX += colWidths[3];
+
+      // Col 5: Remarks
+      this.page.drawRectangle({
+        x: curX,
+        y: y - rowH,
+        width: colWidths[4],
+        height: rowH,
+        borderColor: rgb(0, 0, 0),
+        borderWidth: BORDER_W,
+      });
+      lineY = y - pad - fontSize * 0.85;
+      for (const line of remarksLines) {
+        this.page.drawText(line, { x: curX + pad, y: lineY, size: fontSize, font: this.fontRegular, color: rgb(0, 0, 0) });
+        lineY -= fontSize * LINE_HEIGHT;
+      }
+
+      this.cursorY += rowH;
+    }
+  }
+
+  /**
    * Draw the Setbacks and Other Details table
    */
   drawSetbacksTable(
