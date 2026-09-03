@@ -272,7 +272,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
 
     for (let i = 0; i < options.length; i++) {
       const opt = options[i];
-      const isSelected = cleanSelected.length > 0 && opt.toLowerCase().includes(cleanSelected);
+      const isSelected = cleanSelected.length > 0 && opt.trim().toLowerCase() === cleanSelected;
       const optFont = isSelected ? this.fontBold : this.fontRegular;
       const optText = opt;
       const optW = optFont.widthOfTextAtSize(optText, fontSize);

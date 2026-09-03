@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { Lock } from 'lucide-react';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import * as XLSX from 'xlsx';
@@ -111,11 +112,11 @@ export default function AdityaBirlaCapitalSTSL({
     landmark: initialFields?.landmark || '',
     latitude: initialFields?.latitude || '',
     longitude: initialFields?.longitude || '',
-    typeOfProperty: initialFields?.typeOfProperty || 'Residential',
+    typeOfProperty: initialFields?.typeOfProperty || initialFields?.propertyType || 'Residential',
     currentUsage: initialFields?.currentUsage || 'Residential',
     valuedBefore: initialFields?.valuedBefore || 'No',
     valuedBeforeDate: initialFields?.valuedBeforeDate || '',
-    propertyType: initialFields?.propertyType || 'Residential',
+    propertyType: initialFields?.propertyType || initialFields?.typeOfProperty || 'Residential',
     propertySubType: initialFields?.propertySubType || 'Row House',
     localityDevelopment: initialFields?.localityDevelopment || 'Developing',
     propertyJurisdiction: initialFields?.propertyJurisdiction || 'Gram Panchayat',
@@ -560,7 +561,7 @@ export default function AdityaBirlaCapitalSTSL({
       { label: 'Longitude', value: fields.longitude || 'N/A', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
     ]);
     r.drawKeyValueRow([
-      { label: 'Type of Property', value: fields.typeOfProperty || 'Residential', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
+      { label: 'Type of Property', value: fields.typeOfProperty || fields.propertyType || 'Residential', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
       { label: 'Current Usage', value: fields.currentUsage || 'Residential', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
     ]);
     const whenVal = fields.valuedBefore === 'Yes'
@@ -571,7 +572,7 @@ export default function AdityaBirlaCapitalSTSL({
       { label: 'If yes, when', value: whenVal, labelWidth: 90, valueWidth: 112.28 },
     ]);
 
-    r.drawSlashOptionRow('Property Type', ['Residential', 'Commercial', 'Industrial', 'Institutional', 'Agriculture', 'Residential cum commercial'], fields.propertyType);
+    r.drawSlashOptionRow('Property Type', ['Residential', 'Commercial', 'Industrial', 'Institutional', 'Agriculture', 'Residential cum commercial'], fields.typeOfProperty || fields.propertyType || 'Residential');
     r.drawKeyValueRow([{ label: 'Property Sub Type', value: fields.propertySubType || 'Row House', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
 
     r.drawTwoSlashOptionRows(
@@ -1013,7 +1014,16 @@ export default function AdityaBirlaCapitalSTSL({
                 <input type="text" value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} className={inputCls} />
               </Field>
               <Field label="Type of Property">
-                <select value={fields.typeOfProperty || 'Residential'} onChange={e => handleChange('typeOfProperty', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                <select
+                  value={fields.typeOfProperty || fields.propertyType || 'Residential'}
+                  onChange={e => {
+                    const val = e.target.value;
+                    handleChange('typeOfProperty', val);
+                    handleChange('propertyType', val);
+                  }}
+                  disabled={isReadOnly}
+                  className={selectCls}
+                >
                   <option value="Residential">Residential</option>
                   <option value="Commercial">Commercial</option>
                   <option value="Industrial">Industrial</option>
@@ -1055,6 +1065,20 @@ export default function AdityaBirlaCapitalSTSL({
               ) : (
                 <div className="hidden md:block" />
               )}
+              <Field label="Property Type (Auto-synced)">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={fields.typeOfProperty || fields.propertyType || 'Residential'}
+                    disabled
+                    className={`${inputCls} bg-neutral-100 text-neutral-600 font-medium cursor-not-allowed`}
+                    title="Locked: Automatically synced with Type of Property"
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400">
+                    <Lock className="w-3.5 h-3.5" />
+                  </div>
+                </div>
+              </Field>
               <Field label="Property Sub Type">
                 <input type="text" value={fields.propertySubType || 'Row House'} onChange={e => handleChange('propertySubType', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Row House / Bungalow / Flat" />
               </Field>
