@@ -510,7 +510,7 @@ export default function AdityaBirlaCapitalSTSL({
 
     // ═══ PAGE 1: BASIC DETAILS & LOCATION DETAILS ═══
     r.drawMainHeader('Aditya Birla Capital Limited Valuation Report');
-    r.drawSectionHeader('Basic Details', false);
+    r.drawSectionHeader('Basic Details', true);
 
     r.drawKeyValueRow([
       { label: 'Name of the Valuer', value: fields.valuerName || 'Er. Satyajit Mohanty', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL },
