@@ -64,19 +64,19 @@ const DEFAULT_ACCOM_ROWS: AccomRow[] = [
 ];
 
 export const NAV_SECTIONS: NavItem[] = [
-  { id: 'section-1', title: '1. Basic Details' },
-  { id: 'section-2', title: '2. Location Details' },
-  { id: 'section-3', title: '3. Property Details' },
-  { id: 'section-4', title: '4. Accommodation' },
-  { id: 'section-5', title: '5. Documentation & Built-Up Area' },
-  { id: 'section-6', title: '6. Valuation' },
-  { id: 'section-7', title: '7. Setbacks & Summary' },
-  { id: 'section-8', title: '8. Boundaries' },
-  { id: 'section-9', title: '9. Remarks' },
-  { id: 'section-10', title: '10. Photographs' },
-  { id: 'section-11', title: '11. Location Map' },
-  { id: 'section-12', title: '12. Cadastral Map & Declaration' },
-  { id: 'section-13-annexure', title: '13. Annexures' },
+  { id: 'section-1', title: 'Basic Details' },
+  { id: 'section-2', title: 'Location Details' },
+  { id: 'section-3', title: 'Property Details' },
+  { id: 'section-4', title: 'Accommodation' },
+  { id: 'section-5', title: 'Documentation & Built-Up Area' },
+  { id: 'section-6', title: 'Valuation' },
+  { id: 'section-7', title: 'Setbacks & Summary' },
+  { id: 'section-8', title: 'Boundaries' },
+  { id: 'section-9', title: 'Remarks' },
+  { id: 'section-10', title: 'Photographs' },
+  { id: 'section-11', title: 'Location Map' },
+  { id: 'section-12', title: 'Cadastral Map & Declaration' },
+  { id: 'section-13-annexure', title: 'Annexures' },
 ];
 
 export default function AdityaBirlaCapitalSTSL({
