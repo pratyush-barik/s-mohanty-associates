@@ -417,77 +417,82 @@ export default function AdityaBirlaCapitalSTSL({
     return isNaN(parsed) ? (hasRate ? 1 : 0) : parsed;
   };
 
+  // Helper for 2-decimal precision without integer truncation
+  const round2 = (num: number): number => {
+    return Math.round((num + Number.EPSILON) * 100) / 100;
+  };
+
   // ─── Dynamic Auto Calculations ───
   const plotDeedVal = useMemo(() => {
     if (String(fields.plotAreaDocs || '').trim().toUpperCase() === 'NA') return 0;
     const rate = parseFloat(String(fields.plotAreaDocsRate || '0').replace(/[^0-9.]/g, '')) || 0;
     const area = getAreaMultiplier(fields.plotAreaDocs, rate > 0);
-    return Math.round(area * rate);
+    return round2(area * rate);
   }, [fields.plotAreaDocs, fields.plotAreaDocsRate]);
 
   const plotPhysicalVal = useMemo(() => {
     if (String(fields.plotAreaPhysical || '').trim().toUpperCase() === 'NA') return 0;
     const rate = parseFloat(String(fields.plotAreaPhysicalRate || '0').replace(/[^0-9.]/g, '')) || 0;
     const area = getAreaMultiplier(fields.plotAreaPhysical, rate > 0);
-    return Math.round(area * rate);
+    return round2(area * rate);
   }, [fields.plotAreaPhysical, fields.plotAreaPhysicalRate]);
 
   const carpetPlanVal = useMemo(() => {
     if (String(fields.carpetAreaPlan || '').trim().toUpperCase() === 'NA') return 0;
     const rate = parseFloat(String(fields.carpetAreaPlanRate || '0').replace(/[^0-9.]/g, '')) || 0;
     const area = getAreaMultiplier(fields.carpetAreaPlan, rate > 0);
-    return Math.round(area * rate);
+    return round2(area * rate);
   }, [fields.carpetAreaPlan, fields.carpetAreaPlanRate]);
 
   const carpetMeasurementVal = useMemo(() => {
     if (String(fields.carpetAreaMeasurement || '').trim().toUpperCase() === 'NA') return 0;
     const rate = parseFloat(String(fields.carpetAreaMeasurementRate || '0').replace(/[^0-9.]/g, '')) || 0;
     const area = getAreaMultiplier(fields.carpetAreaMeasurement, rate > 0);
-    return Math.round(area * rate);
+    return round2(area * rate);
   }, [fields.carpetAreaMeasurement, fields.carpetAreaMeasurementRate]);
 
   const buaNormsVal = useMemo(() => {
     if (String(fields.buaNorms || '').trim().toUpperCase() === 'NA') return 0;
     const rate = parseFloat(String(fields.buaNormsRate || '0').replace(/[^0-9.]/g, '')) || 0;
     const area = getAreaMultiplier(fields.buaNorms, rate > 0);
-    return Math.round(area * rate);
+    return round2(area * rate);
   }, [fields.buaNorms, fields.buaNormsRate]);
 
   const buaTotalVal = useMemo(() => {
     if (String(fields.buaMeasurementArea || '').trim().toUpperCase() === 'NA') return 0;
     const rate = parseFloat(String(fields.buaMeasurementRate || '0').replace(/[^0-9.]/g, '')) || 0;
     const area = getAreaMultiplier(fields.buaMeasurementArea, rate > 0);
-    return Math.round(area * rate);
+    return round2(area * rate);
   }, [fields.buaMeasurementArea, fields.buaMeasurementRate]);
 
   const superBuaVal = useMemo(() => {
     if (String(fields.superBua || '').trim().toUpperCase() === 'NA') return 0;
     const rate = parseFloat(String(fields.superBuaRate || '0').replace(/[^0-9.]/g, '')) || 0;
     const area = getAreaMultiplier(fields.superBua, rate > 0);
-    return Math.round(area * rate);
+    return round2(area * rate);
   }, [fields.superBua, fields.superBuaRate]);
 
   const carParkVal = useMemo(() => {
     if (String(fields.carParkArea || '').trim().toUpperCase() === 'NA') return 0;
     const rate = parseFloat(String(fields.carParkRate || '0').replace(/[^0-9.]/g, '')) || 0;
     const area = getAreaMultiplier(fields.carParkArea, rate > 0);
-    return Math.round(area * rate);
+    return round2(area * rate);
   }, [fields.carParkArea, fields.carParkRate]);
 
   const amenitiesVal = useMemo(() => {
     if (String(fields.amenitiesArea || '').trim().toUpperCase() === 'NA') return 0;
     const rate = parseFloat(String(fields.amenitiesRate || '0').replace(/[^0-9.]/g, '')) || 0;
     const area = getAreaMultiplier(fields.amenitiesArea, rate > 0);
-    return Math.round(area * rate);
+    return round2(area * rate);
   }, [fields.amenitiesArea, fields.amenitiesRate]);
 
   const totalCalculatedVal = useMemo(() => {
-    return plotDeedVal + plotPhysicalVal + carpetPlanVal + carpetMeasurementVal + buaNormsVal + buaTotalVal + superBuaVal + carParkVal + amenitiesVal;
+    return round2(plotDeedVal + plotPhysicalVal + carpetPlanVal + carpetMeasurementVal + buaNormsVal + buaTotalVal + superBuaVal + carParkVal + amenitiesVal);
   }, [plotDeedVal, plotPhysicalVal, carpetPlanVal, carpetMeasurementVal, buaNormsVal, buaTotalVal, superBuaVal, carParkVal, amenitiesVal]);
 
   const distressVal = useMemo(() => {
     const pct = parseFloat(fields.distressPct || '80') || 0;
-    return Math.round(totalCalculatedVal * (pct / 100));
+    return round2(totalCalculatedVal * (pct / 100));
   }, [totalCalculatedVal, fields.distressPct]);
 
   // ─── Annexure State Handlers (Strictly ordered: 1. Technical, 2. Legal, 3+. Custom) ───
