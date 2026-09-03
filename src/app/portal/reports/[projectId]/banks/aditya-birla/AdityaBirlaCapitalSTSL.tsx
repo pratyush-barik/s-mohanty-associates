@@ -94,7 +94,7 @@ function AreaValueOrNACell({
   placeholder = 'e.g. 1892',
   defaultVal = '',
 }: AreaValueOrNACellProps) {
-  const isNA = !value || String(value).trim().toUpperCase() === 'NA';
+  const isNA = Boolean(value && String(value).trim().toUpperCase() === 'NA');
 
   return (
     <div className="flex items-center gap-1.5">
@@ -122,7 +122,7 @@ function AreaValueOrNACell({
       ) : (
         <input
           type="text"
-          value={value === 'NA' ? '' : value}
+          value={value === 'NA' ? '' : (value ?? '')}
           onKeyDown={blockNegativeKeys}
           onChange={e => onChange(sanitizePositiveDecimal(e.target.value))}
           disabled={disabled}
@@ -272,8 +272,8 @@ export default function AdityaBirlaCapitalSTSL({
     carpetAreaPlan: initialFields?.carpetAreaPlan || 'NA',
     carpetAreaMeasurement: initialFields?.carpetAreaMeasurement || '',
     buaNorms: initialFields?.buaNorms || 'NA',
-    buaMeasurementLabel: initialFields?.buaMeasurementLabel || 'Built Up Area (as per measurement) (G+2)',
-    buaStructureSuffix: initialFields?.buaStructureSuffix ?? '(G+2)',
+    buaMeasurementLabel: initialFields?.buaMeasurementLabel || 'Built Up Area (as per measurement)',
+    buaStructureSuffix: initialFields?.buaStructureSuffix ?? '',
     buaMeasurementArea: initialFields?.buaMeasurementArea || '',
     buaMeasurementRate: initialFields?.buaMeasurementRate || '',
     buaMeasurementValue: initialFields?.buaMeasurementValue || '',
@@ -400,39 +400,48 @@ export default function AdityaBirlaCapitalSTSL({
     setFields(prev => ({ ...prev, [key]: value }));
   };
 
+  // Helper for area multiplier: if area is left blank in Value mode but rate is entered, treat as 1
+  const getAreaMultiplier = (val: string | undefined, hasRate: boolean): number => {
+    if (val !== undefined && String(val).trim().toUpperCase() === 'NA') return 0;
+    const trimmed = String(val || '').trim();
+    if (trimmed === '') return hasRate ? 1 : 0;
+    const parsed = parseFloat(trimmed.replace(/[^0-9.]/g, ''));
+    return isNaN(parsed) ? (hasRate ? 1 : 0) : parsed;
+  };
+
   // ─── Dynamic Auto Calculations ───
   const plotDeedVal = useMemo(() => {
-    if (!fields.plotAreaDocs || String(fields.plotAreaDocs).trim().toUpperCase() === 'NA') return 0;
-    const area = parseFloat(String(fields.plotAreaDocs).replace(/[^0-9.]/g, '')) || 0;
+    if (String(fields.plotAreaDocs || '').trim().toUpperCase() === 'NA') return 0;
     const rate = parseFloat(String(fields.plotAreaDocsRate || '0').replace(/[^0-9.]/g, '')) || 0;
+    const area = getAreaMultiplier(fields.plotAreaDocs, rate > 0);
     return Math.round(area * rate);
   }, [fields.plotAreaDocs, fields.plotAreaDocsRate]);
 
   const buaTotalVal = useMemo(() => {
-    if (!fields.buaMeasurementArea || String(fields.buaMeasurementArea).trim().toUpperCase() === 'NA') return 0;
-    const area = parseFloat(String(fields.buaMeasurementArea).replace(/[^0-9.]/g, '')) || 0;
+    if (String(fields.buaMeasurementArea || '').trim().toUpperCase() === 'NA') return 0;
     const rate = parseFloat(String(fields.buaMeasurementRate || '0').replace(/[^0-9.]/g, '')) || 0;
+    const area = getAreaMultiplier(fields.buaMeasurementArea, rate > 0);
     return Math.round(area * rate);
   }, [fields.buaMeasurementArea, fields.buaMeasurementRate]);
 
   const superBuaVal = useMemo(() => {
-    if (!fields.superBua || String(fields.superBua).trim().toUpperCase() === 'NA') return 0;
-    const area = parseFloat(String(fields.superBua).replace(/[^0-9.]/g, '')) || 0;
+    if (String(fields.superBua || '').trim().toUpperCase() === 'NA') return 0;
     const rate = parseFloat(String(fields.superBuaRate || '0').replace(/[^0-9.]/g, '')) || 0;
+    const area = getAreaMultiplier(fields.superBua, rate > 0);
     return Math.round(area * rate);
   }, [fields.superBua, fields.superBuaRate]);
 
   const carParkVal = useMemo(() => {
-    if (!fields.carParkArea || String(fields.carParkArea).trim().toUpperCase() === 'NA') return 0;
-    const area = parseFloat(String(fields.carParkArea).replace(/[^0-9.]/g, '')) || 0;
+    if (String(fields.carParkArea || '').trim().toUpperCase() === 'NA') return 0;
     const rate = parseFloat(String(fields.carParkRate || '0').replace(/[^0-9.]/g, '')) || 0;
+    const area = getAreaMultiplier(fields.carParkArea, rate > 0);
     return Math.round(area * rate);
   }, [fields.carParkArea, fields.carParkRate]);
 
   const amenitiesVal = useMemo(() => {
-    if (!fields.amenitiesArea || String(fields.amenitiesArea).trim().toUpperCase() === 'NA') return 0;
-    const area = parseFloat(String(fields.amenitiesArea).replace(/[^0-9.]/g, '')) || 0;
+    if (String(fields.amenitiesArea || '').trim().toUpperCase() === 'NA') return 0;
     const rate = parseFloat(String(fields.amenitiesRate || '0').replace(/[^0-9.]/g, '')) || 0;
+    const area = getAreaMultiplier(fields.amenitiesArea, rate > 0);
     return Math.round(area * rate);
   }, [fields.amenitiesArea, fields.amenitiesRate]);
 
@@ -855,13 +864,15 @@ export default function AdityaBirlaCapitalSTSL({
     r.drawSectionHeader('Valuation');
     const valCols = [215, 110, 110, 110.28];
     const fmtArea = (val: any) => {
-      if (!val || String(val).trim().toUpperCase() === 'NA' || val === '-') return 'NA';
+      if (val === null || val === undefined) return '';
       const s = String(val).trim();
+      if (s.toUpperCase() === 'NA') return 'NA';
+      if (s === '-' || s === '') return '';
       return s.toLowerCase().endsWith('sqft') ? s : `${s}sqft`;
     };
-    const buaFullLabel = fields.buaStructureSuffix
-      ? `Built Up Area (as per measurement) ${fields.buaStructureSuffix.startsWith('(') ? fields.buaStructureSuffix : `(${fields.buaStructureSuffix})`}`
-      : (fields.buaMeasurementLabel || 'Built Up Area (as per measurement) (G+2)');
+    const buaFullLabel = fields.buaStructureSuffix && fields.buaStructureSuffix.trim()
+      ? `Built Up Area (as per measurement) ${fields.buaStructureSuffix.trim().startsWith('(') ? fields.buaStructureSuffix.trim() : `(${fields.buaStructureSuffix.trim()})`}`
+      : 'Built Up Area (as per measurement)';
 
     r.drawTable(
       ['Detailing', 'Area in Sqft', 'Rate per Sqft', 'Value'],
@@ -2107,7 +2118,7 @@ export default function AdityaBirlaCapitalSTSL({
                         </span>
                         <input
                           type="text"
-                          value={fields.buaStructureSuffix ?? '(G+2)'}
+                          value={fields.buaStructureSuffix || ''}
                           onChange={e => handleChange('buaStructureSuffix', e.target.value)}
                           disabled={isReadOnly}
                           className="w-16 px-1.5 py-0.5 text-xs border border-neutral-300 rounded bg-white text-center font-bold text-[#0f2038] focus:ring-1 focus:ring-[#0f2038] shadow-2xs"
