@@ -270,15 +270,56 @@ export default function AdityaBirlaCapitalSTSL({
   }));
 
   const [loading, setLoading] = useState(false);
-  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [activeSection, setActiveSection] = useState('section-1');
   const [bucketPickerOpen, setBucketPickerOpen] = useState(false);
   const [uploadingTarget, setUploadingTarget] = useState<string | null>(null);
 
+  const debouncedTimer = useRef<NodeJS.Timeout | null>(null);
+  const isInitialMount = useRef(true);
+
+  // ─── Auto-Save Debounced Effect ───
+  useEffect(() => {
+    if (isReadOnly) return;
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    setAutoSaveStatus('saving');
+    if (debouncedTimer.current) clearTimeout(debouncedTimer.current);
+
+    debouncedTimer.current = setTimeout(async () => {
+      try {
+        const res = await saveReportDraft(projectId, fields);
+        if (res && 'error' in res && res.error) {
+          setAutoSaveStatus('error');
+        } else {
+          setAutoSaveStatus('saved');
+        }
+      } catch (err) {
+        console.error('Auto-save error:', err);
+        setAutoSaveStatus('error');
+      }
+    }, 1200);
+
+    return () => {
+      if (debouncedTimer.current) clearTimeout(debouncedTimer.current);
+    };
+  }, [fields, projectId, isReadOnly]);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (isReadOnly) return;
+      saveReportDraft(projectId, fields).catch(e => console.error(e));
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [projectId, fields, isReadOnly]);
+
   const handleChange = (key: keyof STSLReportFields, value: any) => {
     setFields(prev => ({ ...prev, [key]: value }));
-    setAutoSaveStatus('idle');
   };
 
   // ─── Dynamic Auto Calculations ───
