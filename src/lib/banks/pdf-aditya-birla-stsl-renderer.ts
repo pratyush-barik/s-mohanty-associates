@@ -295,41 +295,23 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       curLineX += optW;
 
       if (i < options.length - 1) {
+        this.page.drawText(sep, {
+          x: curLineX,
+          y: valY,
+          size: fontSize,
+          font: this.fontRegular,
+          color: rgb(0.4, 0.4, 0.4),
+        });
+        curLineX += sepW;
+
         const nextOpt = options[i + 1];
         const nextIsSelected = cleanSelected.length > 0 && nextOpt.trim().toLowerCase() === cleanSelected;
         const nextFont = nextIsSelected ? this.fontBold : this.fontRegular;
         const nextOptW = nextFont.widthOfTextAtSize(nextOpt, fontSize);
 
-        if (curLineX + sepW + nextOptW <= maxLineX) {
-          this.page.drawText(sep, {
-            x: curLineX,
-            y: valY,
-            size: fontSize,
-            font: this.fontRegular,
-            color: rgb(0.4, 0.4, 0.4),
-          });
-          curLineX += sepW;
-        } else if (curLineX + sepW <= maxLineX) {
-          this.page.drawText(sep, {
-            x: curLineX,
-            y: valY,
-            size: fontSize,
-            font: this.fontRegular,
-            color: rgb(0.4, 0.4, 0.4),
-          });
+        if (curLineX + nextOptW > maxLineX) {
           valY -= fontSize * LINE_HEIGHT;
           curLineX = valX + pad;
-        } else {
-          valY -= fontSize * LINE_HEIGHT;
-          curLineX = valX + pad;
-          this.page.drawText(sep.trimStart(), {
-            x: curLineX,
-            y: valY,
-            size: fontSize,
-            font: this.fontRegular,
-            color: rgb(0.4, 0.4, 0.4),
-          });
-          curLineX += this.fontRegular.widthOfTextAtSize(sep.trimStart(), fontSize);
         }
       }
     }
@@ -360,17 +342,13 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       curLineX += optW;
 
       if (i < options.length - 1) {
+        curLineX += sepW;
         const nextOpt = options[i + 1];
         const nextOptW = this.fontBold.widthOfTextAtSize(nextOpt, fontSize);
 
-        if (curLineX + sepW + nextOptW <= maxValW) {
-          curLineX += sepW;
-        } else if (curLineX + sepW <= maxValW) {
+        if (curLineX + nextOptW > maxValW) {
           lineCount++;
           curLineX = pad;
-        } else {
-          lineCount++;
-          curLineX = pad + this.fontRegular.widthOfTextAtSize(sep.trimStart(), fontSize);
         }
       }
     }
