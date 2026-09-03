@@ -450,8 +450,9 @@ export default function AdityaBirlaCapitalSTSL({
   }, [plotDeedVal, buaTotalVal, superBuaVal, carParkVal, amenitiesVal]);
 
   const distressVal = useMemo(() => {
-    return Math.round(totalCalculatedVal * 0.8);
-  }, [totalCalculatedVal]);
+    const pct = parseFloat(fields.distressPct || '80') || 0;
+    return Math.round(totalCalculatedVal * (pct / 100));
+  }, [totalCalculatedVal, fields.distressPct]);
 
   // ─── Annexure State Handlers (Strictly ordered: 1. Technical, 2. Legal, 3+. Custom) ───
   const addAnnexure = () => {
@@ -908,8 +909,9 @@ export default function AdityaBirlaCapitalSTSL({
     const formulaText = totalCalculatedVal > 0
       ? `Rs.${formatIndianCurrency(plotDeedVal)}/- + Rs.${formatIndianCurrency(buaTotalVal)}/- = Rs.${formatIndianCurrency(totalCalculatedVal)}/-`
       : 'NA';
+    const distressPctStr = fields.distressPct || '80';
     r.drawKeyValueRow([{ label: 'Total Value', value: formulaText, labelWidth: 140, valueWidth: CONTENT_W - 140 }]);
-    r.drawKeyValueRow([{ label: 'Distress Value (80%)', value: distressVal > 0 ? `Rs.${formatIndianCurrency(distressVal)}/-` : 'NA', labelWidth: 140, valueWidth: CONTENT_W - 140 }]);
+    r.drawKeyValueRow([{ label: `Distress Value (${distressPctStr}%)`, value: distressVal > 0 ? `Rs.${formatIndianCurrency(distressVal)}/-` : 'NA', labelWidth: 140, valueWidth: CONTENT_W - 140 }]);
     r.drawKeyValueRow([{ label: 'Insurance Value', value: totalCalculatedVal > 0 ? `Rs.${formatIndianCurrency(totalCalculatedVal)}/-` : 'NA', labelWidth: 140, valueWidth: CONTENT_W - 140 }]);
     r.drawKeyValueRow([{ label: 'Government Value', value: fields.govtLandRate ? `Rs.${fields.govtLandRate}/-` : 'NA', labelWidth: 140, valueWidth: CONTENT_W - 140 }]);
     r.drawKeyValueRow([
@@ -2245,19 +2247,14 @@ export default function AdityaBirlaCapitalSTSL({
               </table>
             </div>
 
-            {/* Total Valuation Summary Banner */}
-            <div className="bg-gradient-to-r from-[#0f2038] to-[#1e3a5f] p-4 rounded-xl text-white flex justify-between items-center flex-wrap gap-4">
-              <div>
-                <span className="text-xs text-neutral-300 block uppercase font-medium">Total Property Value</span>
-                <span className="text-xl font-black text-amber-300">Rs. {formatIndianCurrency(totalCalculatedVal)}</span>
+            {/* Compact Live Total Bar in Section 6 */}
+            <div className="bg-[#0f2038] px-4 py-3 rounded-xl text-white flex justify-between items-center flex-wrap gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-neutral-300 font-medium">Calculated Total Valuation:</span>
+                <span className="text-base font-black text-amber-300">Rs. {formatIndianCurrency(totalCalculatedVal)}</span>
               </div>
-              <div>
-                <span className="text-xs text-neutral-300 block uppercase font-medium">Distress Value (80%)</span>
-                <span className="text-lg font-bold text-neutral-100">Rs. {formatIndianCurrency(distressVal)}</span>
-              </div>
-              <div>
-                <span className="text-xs text-neutral-300 block uppercase font-medium">Insurance Value</span>
-                <span className="text-lg font-bold text-neutral-100">Rs. {formatIndianCurrency(totalCalculatedVal)}</span>
+              <div className="text-[11px] text-neutral-400">
+                Detailed breakdowns & distress parameters are managed in <span className="text-neutral-200 font-semibold">Section 7 (Other Details)</span>
               </div>
             </div>
           </div>
@@ -2265,47 +2262,171 @@ export default function AdityaBirlaCapitalSTSL({
 
         {/* ═══ SECTION 7: SETBACKS & OTHER DETAILS ═══ */}
         <Section title="Setbacks & Other Details" number={7}>
-          <div className="space-y-4">
-            <div className="grid md:grid-cols-4 gap-4">
-              <Field label="Front Setback (Plan)">
-                <input type="text" value={fields.setbackFrontPlan || 'M'} onChange={e => handleChange('setbackFrontPlan', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
-              <Field label="Front Setback (Site)">
-                <input type="text" value={fields.setbackFrontActual || 'M'} onChange={e => handleChange('setbackFrontActual', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
-              <Field label="Side 1 Left (Plan)">
-                <input type="text" value={fields.setbackSide1Plan || 'M'} onChange={e => handleChange('setbackSide1Plan', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
-              <Field label="Side 1 Left (Site)">
-                <input type="text" value={fields.setbackSide1Actual || 'M'} onChange={e => handleChange('setbackSide1Actual', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
-              <Field label="Side 2 Right (Plan)">
-                <input type="text" value={fields.setbackSide2Plan || 'M'} onChange={e => handleChange('setbackSide2Plan', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
-              <Field label="Side 2 Right (Site)">
-                <input type="text" value={fields.setbackSide2Actual || 'M'} onChange={e => handleChange('setbackSide2Actual', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
-              <Field label="Rear Setback (Plan)">
-                <input type="text" value={fields.setbackRearPlan || 'M'} onChange={e => handleChange('setbackRearPlan', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
-              <Field label="Rear Setback (Site)">
-                <input type="text" value={fields.setbackRearActual || 'M'} onChange={e => handleChange('setbackRearActual', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
+          <div className="space-y-6">
+            {/* Setbacks Measurements */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold text-[#0f2038] uppercase tracking-wider">Setback Measurements</h4>
+              <div className="grid md:grid-cols-4 gap-4">
+                <Field label="Front Setback (Plan)">
+                  <input type="text" value={fields.setbackFrontPlan || 'M'} onChange={e => handleChange('setbackFrontPlan', e.target.value)} disabled={isReadOnly} className={inputCls} />
+                </Field>
+                <Field label="Front Setback (Site)">
+                  <input type="text" value={fields.setbackFrontActual || 'M'} onChange={e => handleChange('setbackFrontActual', e.target.value)} disabled={isReadOnly} className={inputCls} />
+                </Field>
+                <Field label="Side 1 Left (Plan)">
+                  <input type="text" value={fields.setbackSide1Plan || 'M'} onChange={e => handleChange('setbackSide1Plan', e.target.value)} disabled={isReadOnly} className={inputCls} />
+                </Field>
+                <Field label="Side 1 Left (Site)">
+                  <input type="text" value={fields.setbackSide1Actual || 'M'} onChange={e => handleChange('setbackSide1Actual', e.target.value)} disabled={isReadOnly} className={inputCls} />
+                </Field>
+                <Field label="Side 2 Right (Plan)">
+                  <input type="text" value={fields.setbackSide2Plan || 'M'} onChange={e => handleChange('setbackSide2Plan', e.target.value)} disabled={isReadOnly} className={inputCls} />
+                </Field>
+                <Field label="Side 2 Right (Site)">
+                  <input type="text" value={fields.setbackSide2Actual || 'M'} onChange={e => handleChange('setbackSide2Actual', e.target.value)} disabled={isReadOnly} className={inputCls} />
+                </Field>
+                <Field label="Rear Setback (Plan)">
+                  <input type="text" value={fields.setbackRearPlan || 'M'} onChange={e => handleChange('setbackRearPlan', e.target.value)} disabled={isReadOnly} className={inputCls} />
+                </Field>
+                <Field label="Rear Setback (Site)">
+                  <input type="text" value={fields.setbackRearActual || 'M'} onChange={e => handleChange('setbackRearActual', e.target.value)} disabled={isReadOnly} className={inputCls} />
+                </Field>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Usage Deviation">
+                  <input type="text" value={fields.setbackUsageDeviation || 'Usage Deviation'} onChange={e => handleChange('setbackUsageDeviation', e.target.value)} disabled={isReadOnly} className={inputCls} />
+                </Field>
+                <Field label="Setback Remarks">
+                  <input type="text" value={fields.setbackRemarks || 'Plan not provided'} onChange={e => handleChange('setbackRemarks', e.target.value)} disabled={isReadOnly} className={inputCls} />
+                </Field>
+              </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              <Field label="Usage Deviation">
-                <input type="text" value={fields.setbackUsageDeviation || 'Usage Deviation'} onChange={e => handleChange('setbackUsageDeviation', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
-              <Field label="Setback Remarks">
-                <input type="text" value={fields.setbackRemarks || 'Plan not provided'} onChange={e => handleChange('setbackRemarks', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
-              <Field label="Percentage Completion">
-                <input type="text" value={fields.percentageCompletion || '100%'} onChange={e => handleChange('percentageCompletion', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
-              <Field label="Percentage Recommendation">
-                <input type="text" value={fields.percentageRecommendation || '100%'} onChange={e => handleChange('percentageRecommendation', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
+            {/* Valuation Summary & Reference Details Cards */}
+            <div className="space-y-4 pt-4 border-t border-neutral-200">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <h4 className="text-xs font-bold text-[#0f2038] uppercase tracking-wider">
+                  Valuation Summary & Final Values (Other Details)
+                </h4>
+                <span className="text-[11px] text-neutral-500 bg-neutral-100 px-2.5 py-1 rounded-full font-medium">
+                  Auto-calculated from Section 6 Valuation Table
+                </span>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-4">
+                {/* Card 1: Total Property Value */}
+                <div className="p-4 rounded-xl bg-gradient-to-br from-[#0f2038] to-[#1e3a5f] text-white flex flex-col justify-between shadow-xs">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-neutral-300 uppercase font-bold tracking-wider">
+                        Total Property Value
+                      </span>
+                      <span className="text-[10px] bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded font-semibold">
+                        Section 6 Sum
+                      </span>
+                    </div>
+                    <div className="text-2xl font-black text-amber-300 my-1">
+                      Rs. {formatIndianCurrency(totalCalculatedVal)}
+                    </div>
+                  </div>
+                  <div className="text-[11px] text-neutral-300 mt-2 pt-2 border-t border-white/10 leading-snug">
+                    <span className="font-semibold text-neutral-200 block mb-0.5">Referenced from:</span>
+                    Plot Area (Rs.{formatIndianCurrency(plotDeedVal)}) + BUA (Rs.{formatIndianCurrency(buaTotalVal)})
+                    {superBuaVal > 0 ? ` + Super BUA (Rs.${formatIndianCurrency(superBuaVal)})` : ''}
+                    {carParkVal > 0 ? ` + CP (Rs.${formatIndianCurrency(carParkVal)})` : ''}
+                    {amenitiesVal > 0 ? ` + Amenities (Rs.${formatIndianCurrency(amenitiesVal)})` : ''}
+                  </div>
+                </div>
+
+                {/* Card 2: Distress Value (with editable percentage) */}
+                <div className="p-4 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/80 text-amber-950 flex flex-col justify-between shadow-xs">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-amber-900 uppercase font-bold tracking-wider">
+                        Distress Value
+                      </span>
+                      <div className="flex items-center gap-1 bg-white border border-amber-300 px-2 py-0.5 rounded shadow-2xs">
+                        <span className="text-[11px] text-amber-800 font-semibold">Rate:</span>
+                        <input
+                          type="text"
+                          value={fields.distressPct || '80'}
+                          onKeyDown={blockNegativeKeys}
+                          onChange={e => handleChange('distressPct', sanitizePositiveDecimal(e.target.value))}
+                          disabled={isReadOnly}
+                          className="w-8 text-center text-xs font-black text-amber-900 bg-transparent outline-hidden p-0 border-b border-amber-400 focus:border-amber-600"
+                          placeholder="80"
+                          title="Click to edit Distress percentage"
+                        />
+                        <span className="text-xs font-bold text-amber-900">%</span>
+                      </div>
+                    </div>
+                    <div className="text-2xl font-black text-amber-900 my-1">
+                      Rs. {formatIndianCurrency(distressVal)}
+                    </div>
+                  </div>
+                  <div className="text-[11px] text-amber-800 mt-2 pt-2 border-t border-amber-200/60 leading-snug">
+                    <span className="font-semibold text-amber-950 block mb-0.5">Referenced from:</span>
+                    Calculated as {fields.distressPct || '80'}% of Total Property Value (Rs. {formatIndianCurrency(totalCalculatedVal)})
+                  </div>
+                </div>
+
+                {/* Card 3: Insurance Value */}
+                <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200/80 text-blue-950 flex flex-col justify-between shadow-xs">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-blue-900 uppercase font-bold tracking-wider">
+                        Insurance Value
+                      </span>
+                      <span className="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-semibold">
+                        Reinstatement
+                      </span>
+                    </div>
+                    <div className="text-2xl font-black text-blue-900 my-1">
+                      Rs. {formatIndianCurrency(totalCalculatedVal)}
+                    </div>
+                  </div>
+                  <div className="text-[11px] text-blue-800 mt-2 pt-2 border-t border-blue-200/60 leading-snug">
+                    <span className="font-semibold text-blue-950 block mb-0.5">Referenced from:</span>
+                    Referenced from Total Property Valuation (Structure Replacement Cost)
+                  </div>
+                </div>
+              </div>
+
+              {/* Completion & Government Value Row */}
+              <div className="grid md:grid-cols-3 gap-4 pt-2">
+                <Field label="Government Land Rate (Rs.)" tooltip="Sub-Registrar Guideline Land Rate">
+                  <input
+                    type="text"
+                    value={fields.govtLandRate || ''}
+                    onKeyDown={blockNegativeKeys}
+                    onChange={e => handleChange('govtLandRate', sanitizePositiveDecimal(e.target.value))}
+                    disabled={isReadOnly}
+                    className={inputCls}
+                    placeholder="e.g. 500"
+                  />
+                </Field>
+                <Field label="Percentage Completion">
+                  <input
+                    type="text"
+                    value={fields.percentageCompletion || '100%'}
+                    onChange={e => handleChange('percentageCompletion', e.target.value)}
+                    disabled={isReadOnly}
+                    className={inputCls}
+                    placeholder="100%"
+                  />
+                </Field>
+                <Field label="Percentage Recommendation">
+                  <input
+                    type="text"
+                    value={fields.percentageRecommendation || '100%'}
+                    onChange={e => handleChange('percentageRecommendation', e.target.value)}
+                    disabled={isReadOnly}
+                    className={inputCls}
+                    placeholder="100%"
+                  />
+                </Field>
+              </div>
             </div>
           </div>
         </Section>
