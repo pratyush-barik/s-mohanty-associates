@@ -139,9 +139,17 @@ export interface STSLReportFields {
   plotAreaDocsRate?: string;
   plotAreaDocsValue?: string;
   plotAreaPhysical?: string;
+  plotAreaPhysicalRate?: string;
+  plotAreaPhysicalValue?: string;
   carpetAreaPlan?: string;
+  carpetAreaPlanRate?: string;
+  carpetAreaPlanValue?: string;
   carpetAreaMeasurement?: string;
+  carpetAreaMeasurementRate?: string;
+  carpetAreaMeasurementValue?: string;
   buaNorms?: string;
+  buaNormsRate?: string;
+  buaNormsValue?: string;
   buaMeasurementLabel?: string;
   buaStructureSuffix?: string;
   buaMeasurementArea?: string;

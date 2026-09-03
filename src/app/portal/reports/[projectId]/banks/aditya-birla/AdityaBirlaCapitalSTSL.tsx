@@ -265,25 +265,33 @@ export default function AdityaBirlaCapitalSTSL({
     buaRows: initialFields?.buaRows || DEFAULT_BUA_ROWS,
 
     // Valuation Table
-    plotAreaDocs: initialFields?.plotAreaDocs || '',
+    plotAreaDocs: initialFields?.plotAreaDocs !== undefined ? initialFields.plotAreaDocs : '',
     plotAreaDocsRate: initialFields?.plotAreaDocsRate || '',
     plotAreaDocsValue: initialFields?.plotAreaDocsValue || '',
-    plotAreaPhysical: initialFields?.plotAreaPhysical || '',
-    carpetAreaPlan: initialFields?.carpetAreaPlan || 'NA',
-    carpetAreaMeasurement: initialFields?.carpetAreaMeasurement || '',
-    buaNorms: initialFields?.buaNorms || 'NA',
+    plotAreaPhysical: initialFields?.plotAreaPhysical !== undefined ? initialFields.plotAreaPhysical : '',
+    plotAreaPhysicalRate: initialFields?.plotAreaPhysicalRate || '',
+    plotAreaPhysicalValue: initialFields?.plotAreaPhysicalValue || '',
+    carpetAreaPlan: initialFields?.carpetAreaPlan !== undefined ? initialFields.carpetAreaPlan : 'NA',
+    carpetAreaPlanRate: initialFields?.carpetAreaPlanRate || '',
+    carpetAreaPlanValue: initialFields?.carpetAreaPlanValue || '',
+    carpetAreaMeasurement: initialFields?.carpetAreaMeasurement !== undefined ? initialFields.carpetAreaMeasurement : '',
+    carpetAreaMeasurementRate: initialFields?.carpetAreaMeasurementRate || '',
+    carpetAreaMeasurementValue: initialFields?.carpetAreaMeasurementValue || '',
+    buaNorms: initialFields?.buaNorms !== undefined ? initialFields.buaNorms : 'NA',
+    buaNormsRate: initialFields?.buaNormsRate || '',
+    buaNormsValue: initialFields?.buaNormsValue || '',
     buaMeasurementLabel: initialFields?.buaMeasurementLabel || 'Built Up Area (as per measurement)',
     buaStructureSuffix: initialFields?.buaStructureSuffix ?? '',
-    buaMeasurementArea: initialFields?.buaMeasurementArea || '',
+    buaMeasurementArea: initialFields?.buaMeasurementArea !== undefined ? initialFields.buaMeasurementArea : '',
     buaMeasurementRate: initialFields?.buaMeasurementRate || '',
     buaMeasurementValue: initialFields?.buaMeasurementValue || '',
-    superBua: initialFields?.superBua || '',
+    superBua: initialFields?.superBua !== undefined ? initialFields.superBua : '',
     superBuaRate: initialFields?.superBuaRate || '0',
     superBuaValue: initialFields?.superBuaValue || '0',
-    carParkArea: initialFields?.carParkArea || '0',
+    carParkArea: initialFields?.carParkArea !== undefined ? initialFields.carParkArea : '0',
     carParkRate: initialFields?.carParkRate || '0',
     carParkValue: initialFields?.carParkValue || '0',
-    amenitiesArea: initialFields?.amenitiesArea || '0',
+    amenitiesArea: initialFields?.amenitiesArea !== undefined ? initialFields.amenitiesArea : '0',
     amenitiesRate: initialFields?.amenitiesRate || '0',
     amenitiesValue: initialFields?.amenitiesValue || '0',
 
@@ -417,6 +425,34 @@ export default function AdityaBirlaCapitalSTSL({
     return Math.round(area * rate);
   }, [fields.plotAreaDocs, fields.plotAreaDocsRate]);
 
+  const plotPhysicalVal = useMemo(() => {
+    if (String(fields.plotAreaPhysical || '').trim().toUpperCase() === 'NA') return 0;
+    const rate = parseFloat(String(fields.plotAreaPhysicalRate || '0').replace(/[^0-9.]/g, '')) || 0;
+    const area = getAreaMultiplier(fields.plotAreaPhysical, rate > 0);
+    return Math.round(area * rate);
+  }, [fields.plotAreaPhysical, fields.plotAreaPhysicalRate]);
+
+  const carpetPlanVal = useMemo(() => {
+    if (String(fields.carpetAreaPlan || '').trim().toUpperCase() === 'NA') return 0;
+    const rate = parseFloat(String(fields.carpetAreaPlanRate || '0').replace(/[^0-9.]/g, '')) || 0;
+    const area = getAreaMultiplier(fields.carpetAreaPlan, rate > 0);
+    return Math.round(area * rate);
+  }, [fields.carpetAreaPlan, fields.carpetAreaPlanRate]);
+
+  const carpetMeasurementVal = useMemo(() => {
+    if (String(fields.carpetAreaMeasurement || '').trim().toUpperCase() === 'NA') return 0;
+    const rate = parseFloat(String(fields.carpetAreaMeasurementRate || '0').replace(/[^0-9.]/g, '')) || 0;
+    const area = getAreaMultiplier(fields.carpetAreaMeasurement, rate > 0);
+    return Math.round(area * rate);
+  }, [fields.carpetAreaMeasurement, fields.carpetAreaMeasurementRate]);
+
+  const buaNormsVal = useMemo(() => {
+    if (String(fields.buaNorms || '').trim().toUpperCase() === 'NA') return 0;
+    const rate = parseFloat(String(fields.buaNormsRate || '0').replace(/[^0-9.]/g, '')) || 0;
+    const area = getAreaMultiplier(fields.buaNorms, rate > 0);
+    return Math.round(area * rate);
+  }, [fields.buaNorms, fields.buaNormsRate]);
+
   const buaTotalVal = useMemo(() => {
     if (String(fields.buaMeasurementArea || '').trim().toUpperCase() === 'NA') return 0;
     const rate = parseFloat(String(fields.buaMeasurementRate || '0').replace(/[^0-9.]/g, '')) || 0;
@@ -446,8 +482,8 @@ export default function AdityaBirlaCapitalSTSL({
   }, [fields.amenitiesArea, fields.amenitiesRate]);
 
   const totalCalculatedVal = useMemo(() => {
-    return plotDeedVal + buaTotalVal + superBuaVal + carParkVal + amenitiesVal;
-  }, [plotDeedVal, buaTotalVal, superBuaVal, carParkVal, amenitiesVal]);
+    return plotDeedVal + plotPhysicalVal + carpetPlanVal + carpetMeasurementVal + buaNormsVal + buaTotalVal + superBuaVal + carParkVal + amenitiesVal;
+  }, [plotDeedVal, plotPhysicalVal, carpetPlanVal, carpetMeasurementVal, buaNormsVal, buaTotalVal, superBuaVal, carParkVal, amenitiesVal]);
 
   const distressVal = useMemo(() => {
     const pct = parseFloat(fields.distressPct || '80') || 0;
@@ -875,15 +911,25 @@ export default function AdityaBirlaCapitalSTSL({
       ? `Built Up Area (as per measurement) ${fields.buaStructureSuffix.trim().startsWith('(') ? fields.buaStructureSuffix.trim() : `(${fields.buaStructureSuffix.trim()})`}`
       : 'Built Up Area (as per measurement)';
 
+    const fmtRate = (rate: any, isNA: boolean) => {
+      if (isNA) return 'NA';
+      if (!rate || rate === '0' || rate === '-') return '';
+      return `Rs.${rate}/-`;
+    };
+    const fmtVal = (val: number, isNA: boolean) => {
+      if (isNA) return 'NA';
+      return val > 0 ? `Rs.${formatIndianCurrency(val)}/-` : '-';
+    };
+
     r.drawTable(
       ['Detailing', 'Area in Sqft', 'Rate per Sqft', 'Value'],
       [
-        ['Plot Area (in Deed)', fmtArea(fields.plotAreaDocs), fields.plotAreaDocsRate ? `Rs.${fields.plotAreaDocsRate}/-` : 'NA', plotDeedVal > 0 ? `Rs.${formatIndianCurrency(plotDeedVal)}/-` : '-'],
-        ['Plot Area (as per physical)', fmtArea(fields.plotAreaPhysical), '', ''],
-        ['Carpet Area (as per plan)', fmtArea(fields.carpetAreaPlan), '', ''],
-        ['Carpet Area (as per measurement)', fmtArea(fields.carpetAreaMeasurement), '', ''],
-        ['Built Up Area (as per Norms)', fmtArea(fields.buaNorms), '', ''],
-        [buaFullLabel, fmtArea(fields.buaMeasurementArea), fields.buaMeasurementRate ? `Rs.${fields.buaMeasurementRate}/-` : 'NA', buaTotalVal > 0 ? `Rs.${formatIndianCurrency(buaTotalVal)}/-` : '-'],
+        ['Plot Area (in Deed)', fmtArea(fields.plotAreaDocs), fmtRate(fields.plotAreaDocsRate, fields.plotAreaDocs === 'NA'), fmtVal(plotDeedVal, fields.plotAreaDocs === 'NA')],
+        ['Plot Area (as per physical)', fmtArea(fields.plotAreaPhysical), fmtRate(fields.plotAreaPhysicalRate, fields.plotAreaPhysical === 'NA'), fmtVal(plotPhysicalVal, fields.plotAreaPhysical === 'NA')],
+        ['Carpet Area (as per plan)', fmtArea(fields.carpetAreaPlan), fmtRate(fields.carpetAreaPlanRate, fields.carpetAreaPlan === 'NA'), fmtVal(carpetPlanVal, fields.carpetAreaPlan === 'NA')],
+        ['Carpet Area (as per measurement)', fmtArea(fields.carpetAreaMeasurement), fmtRate(fields.carpetAreaMeasurementRate, fields.carpetAreaMeasurement === 'NA'), fmtVal(carpetMeasurementVal, fields.carpetAreaMeasurement === 'NA')],
+        ['Built Up Area (as per Norms)', fmtArea(fields.buaNorms), fmtRate(fields.buaNormsRate, fields.buaNorms === 'NA'), fmtVal(buaNormsVal, fields.buaNorms === 'NA')],
+        [buaFullLabel, fmtArea(fields.buaMeasurementArea), fmtRate(fields.buaMeasurementRate, fields.buaMeasurementArea === 'NA'), fmtVal(buaTotalVal, fields.buaMeasurementArea === 'NA')],
         ['Super Built-Up Area', fields.superBua && String(fields.superBua).toUpperCase() !== 'NA' ? fmtArea(fields.superBua) : '0', fields.superBuaRate ? String(fields.superBuaRate) : '0', superBuaVal > 0 ? `Rs.${formatIndianCurrency(superBuaVal)}/-` : '0'],
         ['Car Park', String(fields.carParkArea || '0'), String(fields.carParkRate || '0'), carParkVal > 0 ? `Rs.${formatIndianCurrency(carParkVal)}/-` : '0'],
         ['Amenities', String(fields.amenitiesArea || '0'), String(fields.amenitiesRate || '0'), amenitiesVal > 0 ? `Rs.${formatIndianCurrency(amenitiesVal)}/-` : '0'],
@@ -906,8 +952,22 @@ export default function AdityaBirlaCapitalSTSL({
     );
 
     // Valuation Summary
+    const valItemsBreakdown: string[] = [
+      plotDeedVal > 0 ? `Rs.${formatIndianCurrency(plotDeedVal)}/-` : '',
+      plotPhysicalVal > 0 ? `Rs.${formatIndianCurrency(plotPhysicalVal)}/-` : '',
+      carpetPlanVal > 0 ? `Rs.${formatIndianCurrency(carpetPlanVal)}/-` : '',
+      carpetMeasurementVal > 0 ? `Rs.${formatIndianCurrency(carpetMeasurementVal)}/-` : '',
+      buaNormsVal > 0 ? `Rs.${formatIndianCurrency(buaNormsVal)}/-` : '',
+      buaTotalVal > 0 ? `Rs.${formatIndianCurrency(buaTotalVal)}/-` : '',
+      superBuaVal > 0 ? `Rs.${formatIndianCurrency(superBuaVal)}/-` : '',
+      carParkVal > 0 ? `Rs.${formatIndianCurrency(carParkVal)}/-` : '',
+      amenitiesVal > 0 ? `Rs.${formatIndianCurrency(amenitiesVal)}/-` : '',
+    ].filter(Boolean);
+
     const formulaText = totalCalculatedVal > 0
-      ? `Rs.${formatIndianCurrency(plotDeedVal)}/- + Rs.${formatIndianCurrency(buaTotalVal)}/- = Rs.${formatIndianCurrency(totalCalculatedVal)}/-`
+      ? (valItemsBreakdown.length > 1
+          ? `${valItemsBreakdown.join(' + ')} = Rs.${formatIndianCurrency(totalCalculatedVal)}/-`
+          : `Rs.${formatIndianCurrency(totalCalculatedVal)}/-`)
       : 'NA';
     const distressPctStr = fields.distressPct || '80';
     r.drawKeyValueRow([{ label: 'Total Value', value: formulaText, labelWidth: 140, valueWidth: CONTENT_W - 140 }]);
@@ -2016,7 +2076,7 @@ export default function AdityaBirlaCapitalSTSL({
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                       <AreaValueOrNACell
-                        value={fields.plotAreaDocs || ''}
+                        value={fields.plotAreaDocs ?? ''}
                         onChange={val => handleChange('plotAreaDocs', val)}
                         disabled={isReadOnly}
                         placeholder="e.g. 3920"
@@ -2046,15 +2106,27 @@ export default function AdityaBirlaCapitalSTSL({
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                       <AreaValueOrNACell
-                        value={fields.plotAreaPhysical || ''}
+                        value={fields.plotAreaPhysical ?? ''}
                         onChange={val => handleChange('plotAreaPhysical', val)}
                         disabled={isReadOnly}
                         placeholder="e.g. 3920"
                         defaultVal="3920"
                       />
                     </td>
-                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right text-xs text-slate-400">-</td>
-                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right text-xs text-slate-400">-</td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.plotAreaPhysicalRate || ''}
+                        onKeyDown={blockNegativeKeys}
+                        onChange={e => handleChange('plotAreaPhysicalRate', sanitizePositiveDecimal(e.target.value))}
+                        disabled={isReadOnly || String(fields.plotAreaPhysical).trim().toUpperCase() === 'NA'}
+                        className={inputCls + ' !py-1.5 text-xs text-right'}
+                        placeholder="e.g. Rate"
+                      />
+                    </td>
+                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-bold text-xs text-[#0f2038]">
+                      {plotPhysicalVal > 0 ? `Rs.${formatIndianCurrency(plotPhysicalVal)}/-` : (String(fields.plotAreaPhysical).trim().toUpperCase() === 'NA' ? 'NA' : '-')}
+                    </td>
                   </tr>
 
                   {/* Row 3: Carpet Area (as per plan) */}
@@ -2064,15 +2136,27 @@ export default function AdityaBirlaCapitalSTSL({
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                       <AreaValueOrNACell
-                        value={fields.carpetAreaPlan || 'NA'}
+                        value={fields.carpetAreaPlan ?? 'NA'}
                         onChange={val => handleChange('carpetAreaPlan', val)}
                         disabled={isReadOnly}
                         placeholder="e.g. 1892"
                         defaultVal=""
                       />
                     </td>
-                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right text-xs text-slate-400">-</td>
-                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right text-xs text-slate-400">-</td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.carpetAreaPlanRate || ''}
+                        onKeyDown={blockNegativeKeys}
+                        onChange={e => handleChange('carpetAreaPlanRate', sanitizePositiveDecimal(e.target.value))}
+                        disabled={isReadOnly || String(fields.carpetAreaPlan).trim().toUpperCase() === 'NA'}
+                        className={inputCls + ' !py-1.5 text-xs text-right'}
+                        placeholder="e.g. Rate"
+                      />
+                    </td>
+                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-bold text-xs text-[#0f2038]">
+                      {carpetPlanVal > 0 ? `Rs.${formatIndianCurrency(carpetPlanVal)}/-` : (String(fields.carpetAreaPlan).trim().toUpperCase() === 'NA' ? 'NA' : '-')}
+                    </td>
                   </tr>
 
                   {/* Row 4: Carpet Area (as per measurement) */}
@@ -2082,15 +2166,27 @@ export default function AdityaBirlaCapitalSTSL({
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                       <AreaValueOrNACell
-                        value={fields.carpetAreaMeasurement || ''}
+                        value={fields.carpetAreaMeasurement ?? ''}
                         onChange={val => handleChange('carpetAreaMeasurement', val)}
                         disabled={isReadOnly}
                         placeholder="e.g. 1892"
                         defaultVal="1892"
                       />
                     </td>
-                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right text-xs text-slate-400">-</td>
-                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right text-xs text-slate-400">-</td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.carpetAreaMeasurementRate || ''}
+                        onKeyDown={blockNegativeKeys}
+                        onChange={e => handleChange('carpetAreaMeasurementRate', sanitizePositiveDecimal(e.target.value))}
+                        disabled={isReadOnly || String(fields.carpetAreaMeasurement).trim().toUpperCase() === 'NA'}
+                        className={inputCls + ' !py-1.5 text-xs text-right'}
+                        placeholder="e.g. Rate"
+                      />
+                    </td>
+                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-bold text-xs text-[#0f2038]">
+                      {carpetMeasurementVal > 0 ? `Rs.${formatIndianCurrency(carpetMeasurementVal)}/-` : (String(fields.carpetAreaMeasurement).trim().toUpperCase() === 'NA' ? 'NA' : '-')}
+                    </td>
                   </tr>
 
                   {/* Row 5: Built Up Area (as per Norms) */}
@@ -2100,15 +2196,27 @@ export default function AdityaBirlaCapitalSTSL({
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                       <AreaValueOrNACell
-                        value={fields.buaNorms || 'NA'}
+                        value={fields.buaNorms ?? 'NA'}
                         onChange={val => handleChange('buaNorms', val)}
                         disabled={isReadOnly}
                         placeholder="e.g. 2226"
                         defaultVal=""
                       />
                     </td>
-                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right text-xs text-slate-400">-</td>
-                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right text-xs text-slate-400">-</td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.buaNormsRate || ''}
+                        onKeyDown={blockNegativeKeys}
+                        onChange={e => handleChange('buaNormsRate', sanitizePositiveDecimal(e.target.value))}
+                        disabled={isReadOnly || String(fields.buaNorms).trim().toUpperCase() === 'NA'}
+                        className={inputCls + ' !py-1.5 text-xs text-right'}
+                        placeholder="e.g. Rate"
+                      />
+                    </td>
+                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-bold text-xs text-[#0f2038]">
+                      {buaNormsVal > 0 ? `Rs.${formatIndianCurrency(buaNormsVal)}/-` : (String(fields.buaNorms).trim().toUpperCase() === 'NA' ? 'NA' : '-')}
+                    </td>
                   </tr>
 
                   {/* Row 6: Built Up Area (as per measurement) */}
@@ -2131,7 +2239,7 @@ export default function AdityaBirlaCapitalSTSL({
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                       <AreaValueOrNACell
-                        value={fields.buaMeasurementArea || ''}
+                        value={fields.buaMeasurementArea ?? ''}
                         onChange={val => handleChange('buaMeasurementArea', val)}
                         disabled={isReadOnly}
                         placeholder="e.g. 2226"
@@ -2161,7 +2269,7 @@ export default function AdityaBirlaCapitalSTSL({
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                       <AreaValueOrNACell
-                        value={fields.superBua || ''}
+                        value={fields.superBua ?? ''}
                         onChange={val => handleChange('superBua', val)}
                         disabled={isReadOnly}
                         placeholder="0"
@@ -2191,7 +2299,7 @@ export default function AdityaBirlaCapitalSTSL({
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                       <AreaValueOrNACell
-                        value={fields.carParkArea || '0'}
+                        value={fields.carParkArea ?? '0'}
                         onChange={val => handleChange('carParkArea', val)}
                         disabled={isReadOnly}
                         placeholder="0"
@@ -2221,7 +2329,7 @@ export default function AdityaBirlaCapitalSTSL({
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                       <AreaValueOrNACell
-                        value={fields.amenitiesArea || '0'}
+                        value={fields.amenitiesArea ?? '0'}
                         onChange={val => handleChange('amenitiesArea', val)}
                         disabled={isReadOnly}
                         placeholder="0"
@@ -2332,10 +2440,17 @@ export default function AdityaBirlaCapitalSTSL({
                   </div>
                   <div className="text-[11px] text-neutral-300 mt-2 pt-2 border-t border-white/10 leading-snug">
                     <span className="font-semibold text-neutral-200 block mb-0.5">Referenced from:</span>
-                    Plot Area (Rs.{formatIndianCurrency(plotDeedVal)}) + BUA (Rs.{formatIndianCurrency(buaTotalVal)})
-                    {superBuaVal > 0 ? ` + Super BUA (Rs.${formatIndianCurrency(superBuaVal)})` : ''}
-                    {carParkVal > 0 ? ` + CP (Rs.${formatIndianCurrency(carParkVal)})` : ''}
-                    {amenitiesVal > 0 ? ` + Amenities (Rs.${formatIndianCurrency(amenitiesVal)})` : ''}
+                    {[
+                      plotDeedVal > 0 ? `Plot (Deed): Rs.${formatIndianCurrency(plotDeedVal)}` : '',
+                      plotPhysicalVal > 0 ? `Plot (Physical): Rs.${formatIndianCurrency(plotPhysicalVal)}` : '',
+                      carpetPlanVal > 0 ? `Carpet (Plan): Rs.${formatIndianCurrency(carpetPlanVal)}` : '',
+                      carpetMeasurementVal > 0 ? `Carpet (Meas.): Rs.${formatIndianCurrency(carpetMeasurementVal)}` : '',
+                      buaNormsVal > 0 ? `BUA (Norms): Rs.${formatIndianCurrency(buaNormsVal)}` : '',
+                      buaTotalVal > 0 ? `BUA (Meas.): Rs.${formatIndianCurrency(buaTotalVal)}` : '',
+                      superBuaVal > 0 ? `Super BUA: Rs.${formatIndianCurrency(superBuaVal)}` : '',
+                      carParkVal > 0 ? `Car Park: Rs.${formatIndianCurrency(carParkVal)}` : '',
+                      amenitiesVal > 0 ? `Amenities: Rs.${formatIndianCurrency(amenitiesVal)}` : '',
+                    ].filter(Boolean).join(' + ') || 'Valuation Table items (Section 6)'}
                   </div>
                 </div>
 
