@@ -228,7 +228,18 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     pad: number
   ): void {
     const lLines = this.wrapText(label, labelWidth - pad * 2, fontSize, true);
-    const cleanSelected = (selected || '').trim().toLowerCase();
+    const norm = (s: string) => s.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+    const cleanSelectedNorm = norm(selected || '');
+    const isSelectedMatch = (opt: string) => {
+      const optNorm = norm(opt);
+      if (!optNorm || !cleanSelectedNorm) return false;
+      if (optNorm === cleanSelectedNorm) return true;
+      if ((selected || '').includes('/') || (selected || '').includes('//')) {
+        const parts = (selected || '').split(/[\/\\]+/).map(p => norm(p)).filter(Boolean);
+        if (parts.length > 0 && parts[0] === optNorm) return true;
+      }
+      return false;
+    };
 
     // Draw Label Box
     this.page.drawRectangle({
@@ -275,7 +286,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
 
     for (let i = 0; i < options.length; i++) {
       const opt = options[i];
-      const isSelected = cleanSelected.length > 0 && opt.trim().toLowerCase() === cleanSelected;
+      const isSelected = isSelectedMatch(opt);
       const optFont = isSelected ? this.fontBold : this.fontRegular;
       const optText = opt;
       const optW = optFont.widthOfTextAtSize(optText, fontSize);
