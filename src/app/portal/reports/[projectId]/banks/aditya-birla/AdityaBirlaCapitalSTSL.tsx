@@ -52,14 +52,11 @@ interface AccomRow {
 }
 
 const DEFAULT_BUA_ROWS: BuaRow[] = [
-  { floor: 'Ground Floor', asPerSite: '1080sqft', asPerPlan: 'NA', deviations: 'Yes // No', remarks: '' },
-  { floor: 'First Floor', asPerSite: '846sqft', asPerPlan: 'NA', deviations: 'Yes // No', remarks: '' },
-  { floor: 'Second Floor', asPerSite: '300sqft', asPerPlan: 'NA', deviations: 'Yes // No', remarks: '' },
-  { floor: 'Total', asPerSite: '2226sqft', asPerPlan: 'NA', deviations: 'Yes // No', remarks: '' },
+  { floor: 'Ground Floor', asPerSite: '', asPerPlan: 'NA', deviations: 'No', remarks: '' },
 ];
 
 const DEFAULT_ACCOM_ROWS: AccomRow[] = [
-  { floor: 'Ground Floor', unitDetails: '3(G+2)' },
+  { floor: 'Ground Floor', unitDetails: '' },
 ];
 
 export const NAV_SECTIONS: NavItem[] = [
@@ -95,8 +92,8 @@ export default function AdityaBirlaCapitalSTSL({
   const [fields, setFields] = useState<STSLReportFields>(() => decodeHtmlEntitiesDeep<STSLReportFields>({
     // Basic Details
     valuerName: initialFields?.valuerName || 'Er. Satyajit Mohanty',
-    clientName: initialFields?.clientName || initialFields?.ownerName || prefill?.clientName || 'G.P CONSTRUCTION',
-    ownerName: initialFields?.ownerName || prefill?.clientName || '',
+    clientName: initialFields?.clientName || initialFields?.ownerName || prefill?.contactName || '',
+    ownerName: initialFields?.ownerName || prefill?.contactName || '',
     initiationDate: initialFields?.initiationDate || prefill?.initiationDate || new Date().toISOString().split('T')[0],
     vertical: 'STSL',
     dateOfInspection: initialFields?.dateOfInspection || prefill?.inspectionDate || new Date().toISOString().split('T')[0],
@@ -108,12 +105,12 @@ export default function AdityaBirlaCapitalSTSL({
     propertyAddressAsTRF: initialFields?.propertyAddressAsTRF || initialFields?.ownerAddress || prefill?.propertyAddress || '',
     propertyAddressAsVisit: initialFields?.propertyAddressAsVisit || initialFields?.ownerAddress || prefill?.propertyAddress || '',
     propertyAddressAsDocs: initialFields?.propertyAddressAsDocs || initialFields?.legalAddress || prefill?.propertyAddress || '',
-    mainLocality: initialFields?.mainLocality || 'Nayagarh',
-    subLocality: initialFields?.subLocality || 'Khandapada, Basudebapur',
-    microLocation: initialFields?.microLocation || 'Khandapada, Basudebapur',
-    landmark: initialFields?.landmark || 'Near SND Girls High School',
-    latitude: initialFields?.latitude || '20.288972',
-    longitude: initialFields?.longitude || '85.181528',
+    mainLocality: initialFields?.mainLocality || '',
+    subLocality: initialFields?.subLocality || '',
+    microLocation: initialFields?.microLocation || '',
+    landmark: initialFields?.landmark || '',
+    latitude: initialFields?.latitude || '',
+    longitude: initialFields?.longitude || '',
     typeOfProperty: initialFields?.typeOfProperty || 'Residential',
     currentUsage: initialFields?.currentUsage || 'Residential',
     valuedBefore: initialFields?.valuedBefore || 'No',
@@ -124,31 +121,31 @@ export default function AdityaBirlaCapitalSTSL({
     propertyJurisdiction: initialFields?.propertyJurisdiction || 'Gram Panchayat',
     surroundingOccupancy: initialFields?.surroundingOccupancy || 'Densely Populated',
     conditionOfSite: initialFields?.conditionOfSite || 'Developing',
-    distanceRailwayStation: initialFields?.distanceRailwayStation || '15-Kms from Nayagarh Station',
-    distanceBusStop: initialFields?.distanceBusStop || '1-Km from Bus Stop',
+    distanceRailwayStation: initialFields?.distanceRailwayStation || '',
+    distanceBusStop: initialFields?.distanceBusStop || '',
     distanceFromMainRoad: initialFields?.distanceFromMainRoad || 'Not Applicable (Prop on Concrete Road)',
-    distanceFromCityCenter: initialFields?.distanceFromCityCenter || '20-Kms from Nayagarh city centre',
-    distanceFromBranch: initialFields?.distanceFromBranch || '20-Kms from Nayagarh Branch',
+    distanceFromCityCenter: initialFields?.distanceFromCityCenter || '',
+    distanceFromBranch: initialFields?.distanceFromBranch || '',
     approachRoadWidth: initialFields?.approachRoadWidth || 'Concrete Road',
-    dimensionWidth: initialFields?.dimensionWidth || 'NA',
-    dimensionDepth: initialFields?.dimensionDepth || 'NA',
+    dimensionWidth: initialFields?.dimensionWidth || '',
+    dimensionDepth: initialFields?.dimensionDepth || '',
     physicalApproach: initialFields?.physicalApproach || 'Clear',
     legalApproach: initialFields?.legalApproach || 'Clear',
     otherEncumbranceFeatures: initialFields?.otherEncumbranceFeatures || 'No',
 
     // Property Details
     occupiedBy: initialFields?.occupiedBy || 'Self-occupied',
-    occupantName: initialFields?.occupantName || 'NA',
-    occupiedSince: initialFields?.occupiedSince || 'NA',
+    occupantName: initialFields?.occupantName || '',
+    occupiedSince: initialFields?.occupiedSince || '',
     plotDemarcated: initialFields?.plotDemarcated || 'Yes',
     propertyIdentification: initialFields?.propertyIdentification || 'Yes',
-    identificationThrough: initialFields?.identificationThrough || 'Identified by document &help of customer(BIJAY MOHANTY)',
+    identificationThrough: initialFields?.identificationThrough || '',
     projectCategory: initialFields?.projectCategory || 'Not Applicable',
     flatType: initialFields?.flatType || 'Not applicable',
-    flatConfiguration: initialFields?.flatConfiguration || 'NA',
+    flatConfiguration: initialFields?.flatConfiguration || '',
     propertyHolding: initialFields?.propertyHolding || 'Freehold',
     structureType: initialFields?.structureType || 'RCC',
-    areaOfFlat: initialFields?.areaOfFlat || 'NA',
+    areaOfFlat: initialFields?.areaOfFlat || '',
     totalNoOfFloors: initialFields?.totalNoOfFloors || '',
     liftFacility: initialFields?.liftFacility || 'No',
     amenities: initialFields?.amenities || 'Good',
@@ -161,15 +158,15 @@ export default function AdityaBirlaCapitalSTSL({
     placementOfProperty: initialFields?.placementOfProperty || 'South Facing',
     exteriors: initialFields?.exteriors || 'Average',
     interiors: initialFields?.interiors || 'Average',
-    ageOfPropertyActual: initialFields?.ageOfPropertyActual || '7-Years',
-    estimatedFutureLife: initialFields?.estimatedFutureLife || '53-Years',
-    sourceOfAge: initialFields?.sourceOfAge || 'NA',
+    ageOfPropertyActual: initialFields?.ageOfPropertyActual || '',
+    estimatedFutureLife: initialFields?.estimatedFutureLife || '',
+    sourceOfAge: initialFields?.sourceOfAge || '',
     maintenanceCondition: initialFields?.maintenanceCondition || 'Good',
     cautiousLocations: initialFields?.cautiousLocations || 'No',
 
     // Accommodation
     unitTypeHeader: initialFields?.unitTypeHeader || 'Building',
-    accommodationDetails: initialFields?.accommodationDetails || '3(G+2)',
+    accommodationDetails: initialFields?.accommodationDetails || '',
     accommodationRows: initialFields?.accommodationRows || DEFAULT_ACCOM_ROWS,
 
     // Documentation Details
@@ -194,17 +191,17 @@ export default function AdityaBirlaCapitalSTSL({
     buaRows: initialFields?.buaRows || DEFAULT_BUA_ROWS,
 
     // Valuation Table
-    plotAreaDocs: initialFields?.plotAreaDocs || '3920sqft',
-    plotAreaDocsRate: initialFields?.plotAreaDocsRate || '700',
-    plotAreaDocsValue: initialFields?.plotAreaDocsValue || '2744000',
-    plotAreaPhysical: initialFields?.plotAreaPhysical || '3920sqft',
+    plotAreaDocs: initialFields?.plotAreaDocs || '',
+    plotAreaDocsRate: initialFields?.plotAreaDocsRate || '',
+    plotAreaDocsValue: initialFields?.plotAreaDocsValue || '',
+    plotAreaPhysical: initialFields?.plotAreaPhysical || '',
     carpetAreaPlan: initialFields?.carpetAreaPlan || 'NA',
-    carpetAreaMeasurement: initialFields?.carpetAreaMeasurement || '1892sqft',
+    carpetAreaMeasurement: initialFields?.carpetAreaMeasurement || '',
     buaNorms: initialFields?.buaNorms || 'NA',
-    buaMeasurementLabel: initialFields?.buaMeasurementLabel || 'Built Up Area (as per measurement) (G+2)',
-    buaMeasurementArea: initialFields?.buaMeasurementArea || '2226sqft',
-    buaMeasurementRate: initialFields?.buaMeasurementRate || '1500',
-    buaMeasurementValue: initialFields?.buaMeasurementValue || '3339000',
+    buaMeasurementLabel: initialFields?.buaMeasurementLabel || 'Built Up Area (as per measurement)',
+    buaMeasurementArea: initialFields?.buaMeasurementArea || '',
+    buaMeasurementRate: initialFields?.buaMeasurementRate || '',
+    buaMeasurementValue: initialFields?.buaMeasurementValue || '',
     superBua: initialFields?.superBua || '',
     superBuaRate: initialFields?.superBuaRate || '0',
     superBuaValue: initialFields?.superBuaValue || '0',
@@ -223,33 +220,33 @@ export default function AdityaBirlaCapitalSTSL({
     setbackUsageDeviation: initialFields?.setbackUsageDeviation || 'Usage Deviation',
     setbackRemarks: initialFields?.setbackRemarks || 'Plan not provided',
 
-    totalValuationFormula: initialFields?.totalValuationFormula || 'Rs.27,44,000/- + Rs.33,39,000/- =Rs.60,83,000/-',
-    totalPropertyValuation: initialFields?.totalPropertyValuation || '6083000',
-    distressValue: initialFields?.distressValue || '4866400',
+    totalValuationFormula: initialFields?.totalValuationFormula || '',
+    totalPropertyValuation: initialFields?.totalPropertyValuation || '',
+    distressValue: initialFields?.distressValue || '',
     distressPct: initialFields?.distressPct || '80',
-    insuranceValue: initialFields?.insuranceValue || '6083000',
-    govtLandRate: initialFields?.govtLandRate || '11',
+    insuranceValue: initialFields?.insuranceValue || '',
+    govtLandRate: initialFields?.govtLandRate || '',
     percentageCompletion: initialFields?.percentageCompletion || '100%',
     percentageRecommendation: initialFields?.percentageRecommendation || '100%',
 
     // Boundary Details
-    boundaryDeedNorth: initialFields?.boundaryDeedNorth || 'Road',
-    boundaryDeedSouth: initialFields?.boundaryDeedSouth || 'Sarhad Mouza Guania',
-    boundaryDeedEast: initialFields?.boundaryDeedEast || 'Self',
-    boundaryDeedWest: initialFields?.boundaryDeedWest || 'Bihari Parida & Others',
-    boundaryMouzaNorth: initialFields?.boundaryMouzaNorth || 'Part of Plot no-105 & 106',
-    boundaryMouzaSouth: initialFields?.boundaryMouzaSouth || 'Part of Plot no-105',
-    boundaryMouzaEast: initialFields?.boundaryMouzaEast || 'Part of Plot no-106',
-    boundaryMouzaWest: initialFields?.boundaryMouzaWest || 'Plot no-104',
-    boundaryActualNorth: initialFields?.boundaryActualNorth || '15 feet wide Road',
-    boundaryActualSouth: initialFields?.boundaryActualSouth || 'Vacant land',
-    boundaryActualEast: initialFields?.boundaryActualEast || 'House of Sanjay Parida',
-    boundaryActualWest: initialFields?.boundaryActualWest || 'Land of Shree Hari Parida',
+    boundaryDeedNorth: initialFields?.boundaryDeedNorth || '',
+    boundaryDeedSouth: initialFields?.boundaryDeedSouth || '',
+    boundaryDeedEast: initialFields?.boundaryDeedEast || '',
+    boundaryDeedWest: initialFields?.boundaryDeedWest || '',
+    boundaryMouzaNorth: initialFields?.boundaryMouzaNorth || '',
+    boundaryMouzaSouth: initialFields?.boundaryMouzaSouth || '',
+    boundaryMouzaEast: initialFields?.boundaryMouzaEast || '',
+    boundaryMouzaWest: initialFields?.boundaryMouzaWest || '',
+    boundaryActualNorth: initialFields?.boundaryActualNorth || '',
+    boundaryActualSouth: initialFields?.boundaryActualSouth || '',
+    boundaryActualEast: initialFields?.boundaryActualEast || '',
+    boundaryActualWest: initialFields?.boundaryActualWest || '',
     boundariesMatching: initialFields?.boundariesMatching || 'Boundary matching as per documents',
 
     // Remarks & Sign-off
-    remarks: initialFields?.remarks || 'Subject property is a G+2 residential building having land extend of 3920sqft, having total measured BUA 2226sqft. Approved plan is not provided. Property is accessible with 15-feet wide road. All civic amenities are within 2-3Kms. About 20-Kms from Nayagarh market area. Surrounding habitation is 60%. Property is coming under Khalisahi GP limit. Entire building is occupied by the customer for residential purpose. Valuation has been done for land & measured BUA of G+2 residential building. As approved plan is not provided, it is upto the sole discretion of ABCL to considered the BUA value or not.',
-    engineerVisitedName: initialFields?.engineerVisitedName || 'Mr. Dinesh Das',
+    remarks: initialFields?.remarks || '',
+    engineerVisitedName: initialFields?.engineerVisitedName || formatAssignedEngineers(prefill?.fieldEmployees) || '',
     appraiserName: initialFields?.appraiserName || 'Er. Satyajit Mohanty',
     preparedBy: initialFields?.preparedBy || 'Trupti Dash',
     finalizedBy: initialFields?.finalizedBy || 'Trupti Dash',
@@ -697,12 +694,12 @@ export default function AdityaBirlaCapitalSTSL({
     r.drawTable(
       ['Detailing', 'Area in Sqft', 'Rate per Sqft', 'Value'],
       [
-        ['Plot Area (in Deed)', String(fields.plotAreaDocs || '3920sqft'), `Rs.${fields.plotAreaDocsRate || '700'}/-`, `Rs.${formatIndianCurrency(plotDeedVal)}/-`],
-        ['Plot Area (as per physical)', String(fields.plotAreaPhysical || '3920sqft'), '-', '-'],
+        ['Plot Area (in Deed)', String(fields.plotAreaDocs || 'NA'), fields.plotAreaDocsRate ? `Rs.${fields.plotAreaDocsRate}/-` : 'NA', plotDeedVal > 0 ? `Rs.${formatIndianCurrency(plotDeedVal)}/-` : '-'],
+        ['Plot Area (as per physical)', String(fields.plotAreaPhysical || 'NA'), '-', '-'],
         ['Carpet Area (as per plan)', String(fields.carpetAreaPlan || 'NA'), '-', '-'],
-        ['Carpet Area (as per measurement)', String(fields.carpetAreaMeasurement || '1892sqft'), '-', '-'],
+        ['Carpet Area (as per measurement)', String(fields.carpetAreaMeasurement || 'NA'), '-', '-'],
         ['Built Up Area (as per Norms)', String(fields.buaNorms || 'NA'), '-', '-'],
-        [fields.buaMeasurementLabel || 'Built Up Area (as per measurement) (G+2)', String(fields.buaMeasurementArea || '2226sqft'), `Rs.${fields.buaMeasurementRate || '1500'}/-`, `Rs.${formatIndianCurrency(buaTotalVal)}/-`],
+        [fields.buaMeasurementLabel || 'Built Up Area (as per measurement)', String(fields.buaMeasurementArea || 'NA'), fields.buaMeasurementRate ? `Rs.${fields.buaMeasurementRate}/-` : 'NA', buaTotalVal > 0 ? `Rs.${formatIndianCurrency(buaTotalVal)}/-` : '-'],
         ['Super Built-Up Area', String(fields.superBua || '0'), '0', '0'],
         ['Car Park', '0', '0', '0'],
         ['Amenities', '0', '0', '0'],
@@ -725,11 +722,13 @@ export default function AdityaBirlaCapitalSTSL({
     );
 
     // Valuation Summary
-    const formulaText = `Rs.${formatIndianCurrency(plotDeedVal)}/- + Rs.${formatIndianCurrency(buaTotalVal)}/- = Rs.${formatIndianCurrency(totalCalculatedVal)}/-`;
+    const formulaText = totalCalculatedVal > 0
+      ? `Rs.${formatIndianCurrency(plotDeedVal)}/- + Rs.${formatIndianCurrency(buaTotalVal)}/- = Rs.${formatIndianCurrency(totalCalculatedVal)}/-`
+      : 'NA';
     r.drawKeyValueRow([{ label: 'Total Value', value: formulaText, labelWidth: 140, valueWidth: CONTENT_W - 140, highlight: true }]);
-    r.drawKeyValueRow([{ label: 'Distress Value (80%)', value: `Rs.${formatIndianCurrency(distressVal)}/-`, labelWidth: 140, valueWidth: CONTENT_W - 140, highlight: true }]);
-    r.drawKeyValueRow([{ label: 'Insurance Value', value: `Rs.${formatIndianCurrency(totalCalculatedVal)}/-`, labelWidth: 140, valueWidth: CONTENT_W - 140 }]);
-    r.drawKeyValueRow([{ label: 'Government Value', value: `Rs.${fields.govtLandRate || '11'}/-`, labelWidth: 140, valueWidth: CONTENT_W - 140 }]);
+    r.drawKeyValueRow([{ label: 'Distress Value (80%)', value: distressVal > 0 ? `Rs.${formatIndianCurrency(distressVal)}/-` : 'NA', labelWidth: 140, valueWidth: CONTENT_W - 140, highlight: true }]);
+    r.drawKeyValueRow([{ label: 'Insurance Value', value: totalCalculatedVal > 0 ? `Rs.${formatIndianCurrency(totalCalculatedVal)}/-` : 'NA', labelWidth: 140, valueWidth: CONTENT_W - 140 }]);
+    r.drawKeyValueRow([{ label: 'Government Value', value: fields.govtLandRate ? `Rs.${fields.govtLandRate}/-` : 'NA', labelWidth: 140, valueWidth: CONTENT_W - 140 }]);
     r.drawKeyValueRow([
       { label: 'Percentage Completion', value: fields.percentageCompletion || '100%', labelWidth: 140, valueWidth: 103.64, highlight: true },
       { label: 'Percentage Recommendation', value: fields.percentageRecommendation || '100%', labelWidth: 140, valueWidth: 103.64, highlight: true },
@@ -745,8 +744,8 @@ export default function AdityaBirlaCapitalSTSL({
     );
 
     // Remarks & Visited Engineer
-    r.drawRemarksBox('Remarks', fields.remarks || 'Subject property is a G+2 residential building...');
-    r.drawKeyValueRow([{ label: 'Name of the Engineer visited', value: fields.engineerVisitedName || 'Mr. Dinesh Das', labelWidth: 180, valueWidth: CONTENT_W - 180, highlight: true }]);
+    r.drawRemarksBox('Remarks', fields.remarks || '');
+    r.drawKeyValueRow([{ label: 'Name of the Engineer visited', value: fields.engineerVisitedName || '', labelWidth: 180, valueWidth: CONTENT_W - 180, highlight: true }]);
 
     // ═══ PAGE 5: PHOTOGRAPHS OF PROPERTY ═══
     if (validPhotoBytes.length > 0) {
@@ -1078,7 +1077,7 @@ export default function AdityaBirlaCapitalSTSL({
                 </select>
               </Field>
               <Field label="Distance to Railway Station">
-                <input type="text" value={fields.distanceRailwayStation || ''} onChange={e => handleChange('distanceRailwayStation', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 15-Kms from Nayagarh Station" />
+                <input type="text" value={fields.distanceRailwayStation || ''} onChange={e => handleChange('distanceRailwayStation', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 5-Kms from Railway Station" />
               </Field>
               <Field label="Distance to Bus Stop">
                 <input type="text" value={fields.distanceBusStop || ''} onChange={e => handleChange('distanceBusStop', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 1-Km from Bus Stop" />
@@ -1092,10 +1091,10 @@ export default function AdityaBirlaCapitalSTSL({
                 </select>
               </Field>
               <Field label="Distance from City Centre">
-                <input type="text" value={fields.distanceFromCityCenter || ''} onChange={e => handleChange('distanceFromCityCenter', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 20-Kms from Nayagarh city centre" />
+                <input type="text" value={fields.distanceFromCityCenter || ''} onChange={e => handleChange('distanceFromCityCenter', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 10-Kms from City Centre" />
               </Field>
               <Field label="Distance from ABCL Branch">
-                <input type="text" value={fields.distanceFromBranch || ''} onChange={e => handleChange('distanceFromBranch', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 20-Kms from Nayagarh Branch" />
+                <input type="text" value={fields.distanceFromBranch || ''} onChange={e => handleChange('distanceFromBranch', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 8-Kms from Branch" />
               </Field>
               <Field label="Approach Road Width / Type">
                 <input type="text" value={fields.approachRoadWidth || 'Concrete Road'} onChange={e => handleChange('approachRoadWidth', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Concrete Road / Width 20 to 40 ft." />
@@ -1109,10 +1108,10 @@ export default function AdityaBirlaCapitalSTSL({
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   <Field label="Width (Facing Road Side) in Feet">
-                    <input type="text" value={fields.dimensionWidth || 'NA'} onChange={e => handleChange('dimensionWidth', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 30 feet or NA" />
+                    <input type="text" value={fields.dimensionWidth || ''} onChange={e => handleChange('dimensionWidth', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 30 feet or NA" />
                   </Field>
                   <Field label="Depth (in Feet)">
-                    <input type="text" value={fields.dimensionDepth || 'NA'} onChange={e => handleChange('dimensionDepth', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 45 feet or NA" />
+                    <input type="text" value={fields.dimensionDepth || ''} onChange={e => handleChange('dimensionDepth', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 45 feet or NA" />
                   </Field>
                 </div>
               </div>
@@ -1151,10 +1150,10 @@ export default function AdityaBirlaCapitalSTSL({
               </select>
             </Field>
             <Field label="Name of Occupant">
-              <input type="text" value={fields.occupantName || 'Self-occupied'} onChange={e => handleChange('occupantName', e.target.value)} disabled={isReadOnly} className={inputCls} />
+              <input type="text" value={fields.occupantName || ''} onChange={e => handleChange('occupantName', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Self / Name of occupant" />
             </Field>
             <Field label="Occupied Since">
-              <input type="text" value={fields.occupiedSince || 'NA'} onChange={e => handleChange('occupiedSince', e.target.value)} disabled={isReadOnly} className={inputCls} />
+              <input type="text" value={fields.occupiedSince || ''} onChange={e => handleChange('occupiedSince', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 5 Years or NA" />
             </Field>
             <Field label="Property Demarcated">
               <select value={fields.plotDemarcated || 'Yes'} onChange={e => handleChange('plotDemarcated', e.target.value)} disabled={isReadOnly} className={selectCls}>
@@ -1281,10 +1280,10 @@ export default function AdityaBirlaCapitalSTSL({
               </select>
             </Field>
             <Field label="Age of Property (Actual)">
-              <input type="text" value={fields.ageOfPropertyActual || '7-Years'} onChange={e => handleChange('ageOfPropertyActual', e.target.value)} disabled={isReadOnly} className={inputCls} />
+              <input type="text" value={fields.ageOfPropertyActual || ''} onChange={e => handleChange('ageOfPropertyActual', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 5 Years" />
             </Field>
             <Field label="Residual Life">
-              <input type="text" value={fields.estimatedFutureLife || '53-Years'} onChange={e => handleChange('estimatedFutureLife', e.target.value)} disabled={isReadOnly} className={inputCls} />
+              <input type="text" value={fields.estimatedFutureLife || ''} onChange={e => handleChange('estimatedFutureLife', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 55 Years" />
             </Field>
             <Field label="Maintenance Condition">
               <select value={fields.maintenanceCondition || 'Good'} onChange={e => handleChange('maintenanceCondition', e.target.value)} disabled={isReadOnly} className={selectCls}>
@@ -1310,7 +1309,7 @@ export default function AdityaBirlaCapitalSTSL({
               <input type="text" value={fields.unitTypeHeader || 'Building'} onChange={e => handleChange('unitTypeHeader', e.target.value)} disabled={isReadOnly} className={inputCls} />
             </Field>
             <Field label="Ground Floor Accommodation Summary">
-              <input type="text" value={fields.accommodationDetails || '3(G+2)'} onChange={e => handleChange('accommodationDetails', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 3(G+2)" />
+              <input type="text" value={fields.accommodationDetails || ''} onChange={e => handleChange('accommodationDetails', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 1 Hall, 2 Bedrooms, Kitchen" />
             </Field>
           </div>
         </Section>
@@ -1546,33 +1545,33 @@ export default function AdityaBirlaCapitalSTSL({
           <div className="space-y-4">
             <div className="grid md:grid-cols-3 gap-4">
               <Field label="Plot Area (in Deed)">
-                <input type="text" value={fields.plotAreaDocs || '3920sqft'} onChange={e => handleChange('plotAreaDocs', e.target.value)} disabled={isReadOnly} className={inputCls} />
+                <input type="text" value={fields.plotAreaDocs || ''} onChange={e => handleChange('plotAreaDocs', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 1500 sqft" />
               </Field>
               <Field label="Plot Rate (Rs/sqft)">
-                <input type="text" value={fields.plotAreaDocsRate || '700'} onChange={e => handleChange('plotAreaDocsRate', e.target.value)} disabled={isReadOnly} className={inputCls} />
+                <input type="text" value={fields.plotAreaDocsRate || ''} onChange={e => handleChange('plotAreaDocsRate', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 1200" />
               </Field>
               <Field label="Plot Land Value (Rs)">
-                <input type="text" value={`Rs. ${formatIndianCurrency(plotDeedVal)}`} disabled className={`${inputCls} font-bold text-green-700 bg-green-50`} />
+                <input type="text" value={plotDeedVal > 0 ? `Rs. ${formatIndianCurrency(plotDeedVal)}` : 'Rs. 0'} disabled className={`${inputCls} font-bold text-green-700 bg-green-50`} />
               </Field>
 
               <Field label="Plot Area (Physical)">
-                <input type="text" value={fields.plotAreaPhysical || '3920sqft'} onChange={e => handleChange('plotAreaPhysical', e.target.value)} disabled={isReadOnly} className={inputCls} />
+                <input type="text" value={fields.plotAreaPhysical || ''} onChange={e => handleChange('plotAreaPhysical', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 1500 sqft" />
               </Field>
               <Field label="Carpet Area (Plan)">
-                <input type="text" value={fields.carpetAreaPlan || 'NA'} onChange={e => handleChange('carpetAreaPlan', e.target.value)} disabled={isReadOnly} className={inputCls} />
+                <input type="text" value={fields.carpetAreaPlan || ''} onChange={e => handleChange('carpetAreaPlan', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 1200 sqft or NA" />
               </Field>
               <Field label="Carpet Area (Measurement)">
-                <input type="text" value={fields.carpetAreaMeasurement || '1892sqft'} onChange={e => handleChange('carpetAreaMeasurement', e.target.value)} disabled={isReadOnly} className={inputCls} />
+                <input type="text" value={fields.carpetAreaMeasurement || ''} onChange={e => handleChange('carpetAreaMeasurement', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 1200 sqft or NA" />
               </Field>
 
               <Field label="Built Up Area Header Label" span={1}>
-                <input type="text" value={fields.buaMeasurementLabel || 'Built Up Area (as per measurement) (G+2)'} onChange={e => handleChange('buaMeasurementLabel', e.target.value)} disabled={isReadOnly} className={inputCls} />
+                <input type="text" value={fields.buaMeasurementLabel || 'Built Up Area (as per measurement)'} onChange={e => handleChange('buaMeasurementLabel', e.target.value)} disabled={isReadOnly} className={inputCls} />
               </Field>
               <Field label="BUA Rate (Rs/sqft)">
-                <input type="text" value={fields.buaMeasurementRate || '1500'} onChange={e => handleChange('buaMeasurementRate', e.target.value)} disabled={isReadOnly} className={inputCls} />
+                <input type="text" value={fields.buaMeasurementRate || ''} onChange={e => handleChange('buaMeasurementRate', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 1500" />
               </Field>
               <Field label="BUA Total Value (Rs)">
-                <input type="text" value={`Rs. ${formatIndianCurrency(buaTotalVal)}`} disabled className={`${inputCls} font-bold text-green-700 bg-green-50`} />
+                <input type="text" value={buaTotalVal > 0 ? `Rs. ${formatIndianCurrency(buaTotalVal)}` : 'Rs. 0'} disabled className={`${inputCls} font-bold text-green-700 bg-green-50`} />
               </Field>
             </div>
 
@@ -1694,7 +1693,7 @@ export default function AdityaBirlaCapitalSTSL({
               <textarea rows={5} value={fields.remarks || ''} onChange={e => handleChange('remarks', e.target.value)} disabled={isReadOnly} className={inputCls} />
             </Field>
             <Field label="Name of the Engineer Visited">
-              <input type="text" value={fields.engineerVisitedName || 'Mr. Dinesh Das'} onChange={e => handleChange('engineerVisitedName', e.target.value)} disabled={isReadOnly} className={inputCls} />
+              <input type="text" value={fields.engineerVisitedName || ''} onChange={e => handleChange('engineerVisitedName', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Dinesh Das" />
             </Field>
           </div>
         </Section>
