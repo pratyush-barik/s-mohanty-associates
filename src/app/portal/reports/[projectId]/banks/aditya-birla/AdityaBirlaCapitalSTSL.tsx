@@ -995,9 +995,9 @@ export default function AdityaBirlaCapitalSTSL({
             </div>
 
             {/* 1. Locality Breakdown Container */}
-            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-3">
-              <div className="border-b border-neutral-100 pb-2">
-                <h3 className="text-sm font-bold text-[#0f2038] uppercase tracking-wide">
+            <div className="bg-slate-50/90 p-4 rounded-xl border border-slate-200 shadow-xs space-y-3">
+              <div className="border-b border-slate-200/80 pb-2">
+                <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">
                   Locality Breakdown
                 </h3>
               </div>
@@ -1018,9 +1018,9 @@ export default function AdityaBirlaCapitalSTSL({
             </div>
 
             {/* 2. Geographic Coordinates Container */}
-            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-3">
-              <div className="border-b border-neutral-100 pb-2">
-                <h3 className="text-sm font-bold text-[#0f2038] uppercase tracking-wide">
+            <div className="bg-sky-50/80 p-4 rounded-xl border border-sky-200 shadow-xs space-y-3">
+              <div className="border-b border-sky-200/80 pb-2">
+                <h3 className="text-xs font-bold text-sky-900 uppercase tracking-wide">
                   Geographic Coordinates
                 </h3>
               </div>
@@ -1035,9 +1035,9 @@ export default function AdityaBirlaCapitalSTSL({
             </div>
 
             {/* 3. Type of Property & Usage Container */}
-            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-3">
-              <div className="border-b border-neutral-100 pb-2">
-                <h3 className="text-sm font-bold text-[#0f2038] uppercase tracking-wide">
+            <div className="bg-indigo-50/80 p-4 rounded-xl border border-indigo-200 shadow-xs space-y-3">
+              <div className="border-b border-indigo-200/80 pb-2">
+                <h3 className="text-xs font-bold text-indigo-900 uppercase tracking-wide">
                   Type of Property & Usage
                 </h3>
               </div>
@@ -1068,9 +1068,9 @@ export default function AdityaBirlaCapitalSTSL({
             </div>
 
             {/* 4. Prior Valuation with ABCL Container */}
-            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-3">
-              <div className="border-b border-neutral-100 pb-2">
-                <h3 className="text-sm font-bold text-[#0f2038] uppercase tracking-wide">
+            <div className="bg-amber-50/80 p-4 rounded-xl border border-amber-200 shadow-xs space-y-3">
+              <div className="border-b border-amber-200/80 pb-2">
+                <h3 className="text-xs font-bold text-amber-900 uppercase tracking-wide">
                   Valuation History with ABCL
                 </h3>
               </div>
@@ -1103,7 +1103,7 @@ export default function AdityaBirlaCapitalSTSL({
                     />
                   </Field>
                 ) : (
-                  <div className="flex items-center text-xs text-neutral-400 italic pt-6">
+                  <div className="flex items-center text-xs text-neutral-500 italic pt-6">
                     No prior valuation recorded for ABCL.
                   </div>
                 )}
@@ -1111,9 +1111,9 @@ export default function AdityaBirlaCapitalSTSL({
             </div>
 
             {/* 5. Property Classification Container (Property Type & Sub Type) */}
-            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-3">
-              <div className="border-b border-neutral-100 pb-2">
-                <h3 className="text-sm font-bold text-[#0f2038] uppercase tracking-wide">
+            <div className="bg-purple-50/80 p-4 rounded-xl border border-purple-200 shadow-xs space-y-3">
+              <div className="border-b border-purple-200/80 pb-2">
+                <h3 className="text-xs font-bold text-purple-900 uppercase tracking-wide">
                   Property Classification
                 </h3>
               </div>
@@ -1124,7 +1124,7 @@ export default function AdityaBirlaCapitalSTSL({
                       type="text"
                       value={fields.typeOfProperty || fields.propertyType || 'Residential'}
                       disabled
-                      className={`${inputCls} bg-neutral-100 text-neutral-600 font-medium cursor-not-allowed`}
+                      className={`${inputCls} bg-white/90 text-neutral-700 font-medium cursor-not-allowed`}
                       title="Locked: Automatically synced with Type of Property"
                     />
                     <div className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400">
@@ -1142,9 +1142,9 @@ export default function AdityaBirlaCapitalSTSL({
             </div>
 
             {/* 6. Locality Nature & Municipal Jurisdiction Container */}
-            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-3">
-              <div className="border-b border-neutral-100 pb-2">
-                <h3 className="text-sm font-bold text-[#0f2038] uppercase tracking-wide">
+            <div className="bg-emerald-50/80 p-4 rounded-xl border border-emerald-200 shadow-xs space-y-3">
+              <div className="border-b border-emerald-200/80 pb-2">
+                <h3 className="text-xs font-bold text-emerald-900 uppercase tracking-wide">
                   Locality & Municipal Jurisdiction
                 </h3>
               </div>
@@ -1172,9 +1172,9 @@ export default function AdityaBirlaCapitalSTSL({
             </div>
 
             {/* 7. Surroundings & Site Condition Container */}
-            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-3">
-              <div className="border-b border-neutral-100 pb-2">
-                <h3 className="text-sm font-bold text-[#0f2038] uppercase tracking-wide">
+            <div className="bg-teal-50/80 p-4 rounded-xl border border-teal-200 shadow-xs space-y-3">
+              <div className="border-b border-teal-200/80 pb-2">
+                <h3 className="text-xs font-bold text-teal-900 uppercase tracking-wide">
                   Surroundings & Site Condition
                 </h3>
               </div>
@@ -1197,9 +1197,9 @@ export default function AdityaBirlaCapitalSTSL({
             </div>
 
             {/* 8. Distances & Connectivity Container */}
-            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-3">
-              <div className="border-b border-neutral-100 pb-2">
-                <h3 className="text-sm font-bold text-[#0f2038] uppercase tracking-wide">
+            <div className="bg-blue-50/80 p-4 rounded-xl border border-blue-200 shadow-xs space-y-3">
+              <div className="border-b border-blue-200/80 pb-2">
+                <h3 className="text-xs font-bold text-blue-900 uppercase tracking-wide">
                   Distances & Connectivity
                 </h3>
               </div>
@@ -1231,9 +1231,9 @@ export default function AdityaBirlaCapitalSTSL({
             </div>
 
             {/* 9. Dimensions of the Property Container */}
-            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-3">
-              <div className="border-b border-neutral-100 pb-2">
-                <h3 className="text-sm font-bold text-[#0f2038] uppercase tracking-wide">
+            <div className="bg-cyan-50/80 p-4 rounded-xl border border-cyan-200 shadow-xs space-y-3">
+              <div className="border-b border-cyan-200/80 pb-2">
+                <h3 className="text-xs font-bold text-cyan-900 uppercase tracking-wide">
                   Dimensions of the Property
                 </h3>
               </div>
@@ -1248,9 +1248,9 @@ export default function AdityaBirlaCapitalSTSL({
             </div>
 
             {/* 10. Approach & Encumbrance Status Container */}
-            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-3">
-              <div className="border-b border-neutral-100 pb-2">
-                <h3 className="text-sm font-bold text-[#0f2038] uppercase tracking-wide">
+            <div className="bg-rose-50/70 p-4 rounded-xl border border-rose-200 shadow-xs space-y-3">
+              <div className="border-b border-rose-200/80 pb-2">
+                <h3 className="text-xs font-bold text-rose-900 uppercase tracking-wide">
                   Approach & Encumbrance Status
                 </h3>
               </div>
