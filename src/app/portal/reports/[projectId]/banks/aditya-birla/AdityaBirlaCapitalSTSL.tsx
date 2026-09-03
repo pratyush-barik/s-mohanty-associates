@@ -711,19 +711,8 @@ export default function AdityaBirlaCapitalSTSL({
 
     // Documentation Details
     r.drawSectionHeader('Documentation Details');
-    let saleDeedDetailText = fields.docSaleDeedDetails || 'Copy of Sale deed, ROR';
-    if (fields.legalAnnexureEnabled && fields.annexures && fields.annexures.length > 0) {
-      const linked = fields.annexures.find(a => a.id === fields.legalAnnexureRef) || fields.annexures[0];
-      const annTitle = linked ? (linked.title || `Annexure ${linked.label}`) : 'Annexure';
-      if (!fields.legalAnnexureRefShowAlso) {
-        saleDeedDetailText = `Refer to ${annTitle}`;
-      } else if (fields.docSaleDeedDetails) {
-        saleDeedDetailText = `${fields.docSaleDeedDetails} (Refer to ${annTitle})`;
-      }
-    }
-
     const docItems = [
-      { name: 'Sale Deed/allotment Letter', status: fields.docSaleDeedStatus || 'Fully Available', details: saleDeedDetailText },
+      { name: 'Sale Deed/allotment Letter', status: fields.docSaleDeedStatus || 'Fully Available', details: fields.docSaleDeedDetails || 'Copy of Sale deed, ROR' },
       { name: 'Sanctioned Plan', status: fields.docSanctionPlanStatus || 'Not Available', details: fields.docSanctionPlanDetails || 'NA' },
       { name: 'CC/OC', status: fields.docCCOCStatus || 'Not Available', details: fields.docCCOCDetails || 'NA' },
       { name: 'Agreement to Sale', status: fields.docAgreementSaleStatus || 'Not Available', details: fields.docAgreementSaleDetails || 'NA' },
@@ -1611,70 +1600,11 @@ export default function AdityaBirlaCapitalSTSL({
 
         {/* ═══ SECTION 5: DOCUMENTATION DETAILS (CHECKLIST) ═══ */}
         <Section title="Documentation Details (Checklist)" number={5}>
-          <div className="space-y-4">
-            {/* Sale Deed Card with Legal Annexure Selector */}
-            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-4">
-              <div className="flex items-center justify-between border-b border-neutral-100 pb-3 flex-wrap gap-2">
-                <h3 className="text-sm font-bold text-[#0f2038]">
-                  Sale Deed / Allotment Letter <span className="text-[10px] font-normal text-[#6c757d] normal-case">(Legal / Title Documents)</span>
-                </h3>
-                <AnnexureRefSelector
-                  label="Legal / Title Deed"
-                  annexureEnabled={fields.legalAnnexureEnabled}
-                  annexureRef={fields.legalAnnexureRef}
-                  annexureRefShowAlso={fields.legalAnnexureRefShowAlso}
-                  annexures={fields.annexures || []}
-                  isReadOnly={isReadOnly}
-                  onToggleEnabled={() => {
-                    setFields(prev => {
-                      if (prev.legalAnnexureEnabled) {
-                        const remaining = (prev.annexures || []).filter(a => a.id !== prev.legalAnnexureRef);
-                        return {
-                          ...prev,
-                          legalAnnexureEnabled: false,
-                          legalAnnexureRef: '',
-                          legalAnnexureRefShowAlso: false,
-                          annexures: reorderAndLabelAnnexures(
-                            remaining,
-                            prev.annexureRef,
-                            '',
-                            prev.annexureEnabled,
-                            false
-                          ),
-                        };
-                      } else {
-                        const newId = String(Date.now());
-                        const newAnnexure: AnnexureItem = {
-                          id: newId,
-                          label: 'B',
-                          title: 'Legal & Title Details',
-                          excelFileUrl: '',
-                          excelFileName: '',
-                        };
-                        const updated = [...(prev.annexures || []), newAnnexure];
-                        return {
-                          ...prev,
-                          legalAnnexureEnabled: true,
-                          legalAnnexureRef: newId,
-                          annexures: reorderAndLabelAnnexures(
-                            updated,
-                            prev.annexureRef,
-                            newId,
-                            prev.annexureEnabled,
-                            true
-                          ),
-                        };
-                      }
-                    });
-                  }}
-                  onToggleShowAlso={() => handleChange('legalAnnexureRefShowAlso', !fields.legalAnnexureRefShowAlso)}
-                  onSelectRef={id => handleChange('legalAnnexureRef', id)}
-                  reportRefText="Documents Provided"
-                />
-              </div>
-
+          <div className="space-y-3">
+            {/* 1. Sale Deed / Allotment Letter */}
+            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs">
               <div className="grid md:grid-cols-2 gap-4">
-                <Field label="Availability Status">
+                <Field label="Sale Deed / Allotment Letter">
                   <select value={fields.docSaleDeedStatus || 'Fully Available'} onChange={e => handleChange('docSaleDeedStatus', e.target.value)} disabled={isReadOnly} className={selectCls}>
                     <option value="Fully Available">Fully Available</option>
                     <option value="Partially Available">Partially Available</option>
@@ -1682,99 +1612,129 @@ export default function AdityaBirlaCapitalSTSL({
                     <option value="Not Applicable">Not Applicable</option>
                   </select>
                 </Field>
-                {(!fields.legalAnnexureEnabled || fields.legalAnnexureRefShowAlso) && (
-                  <Field label="Document Details / Number">
-                    <input type="text" value={fields.docSaleDeedDetails || ''} onChange={e => handleChange('docSaleDeedDetails', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Copy of Sale deed, ROR" />
-                  </Field>
-                )}
+                <Field label="Details">
+                  <input type="text" value={fields.docSaleDeedDetails || 'Copy of Sale deed, ROR'} onChange={e => handleChange('docSaleDeedDetails', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Copy of Sale deed, ROR" />
+                </Field>
               </div>
             </div>
 
-            {/* Other 7 Checklist items */}
-            <div className="grid md:grid-cols-2 gap-4">
-              <Field label="Sanctioned Plan Status">
-                <select value={fields.docSanctionPlanStatus || 'Not Available'} onChange={e => handleChange('docSanctionPlanStatus', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                  <option value="Not Available">Not Available</option>
-                  <option value="Fully Available">Fully Available</option>
-                  <option value="Partially Available">Partially Available</option>
-                  <option value="Not Applicable">Not Applicable</option>
-                </select>
-              </Field>
-              <Field label="Sanctioned Plan Details">
-                <input type="text" value={fields.docSanctionPlanDetails || 'NA'} onChange={e => handleChange('docSanctionPlanDetails', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
+            {/* 2. Sanctioned Plan */}
+            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs">
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Sanctioned Plan">
+                  <select value={fields.docSanctionPlanStatus || 'Not Available'} onChange={e => handleChange('docSanctionPlanStatus', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="Not Available">Not Available</option>
+                    <option value="Fully Available">Fully Available</option>
+                    <option value="Partially Available">Partially Available</option>
+                    <option value="Not Applicable">Not Applicable</option>
+                  </select>
+                </Field>
+                <Field label="Details">
+                  <input type="text" value={fields.docSanctionPlanDetails || 'NA'} onChange={e => handleChange('docSanctionPlanDetails', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. NA / Sanction Plan Number" />
+                </Field>
+              </div>
+            </div>
 
-              <Field label="CC / OC Status">
-                <select value={fields.docCCOCStatus || 'Not Available'} onChange={e => handleChange('docCCOCStatus', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                  <option value="Not Available">Not Available</option>
-                  <option value="Fully Available">Fully Available</option>
-                  <option value="Partially Available">Partially Available</option>
-                  <option value="Not Applicable">Not Applicable</option>
-                </select>
-              </Field>
-              <Field label="CC / OC Details">
-                <input type="text" value={fields.docCCOCDetails || 'NA'} onChange={e => handleChange('docCCOCDetails', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
+            {/* 3. CC / OC */}
+            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs">
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="CC / OC">
+                  <select value={fields.docCCOCStatus || 'Not Available'} onChange={e => handleChange('docCCOCStatus', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="Not Available">Not Available</option>
+                    <option value="Fully Available">Fully Available</option>
+                    <option value="Partially Available">Partially Available</option>
+                    <option value="Not Applicable">Not Applicable</option>
+                  </select>
+                </Field>
+                <Field label="Details">
+                  <input type="text" value={fields.docCCOCDetails || 'NA'} onChange={e => handleChange('docCCOCDetails', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. NA / Certificate Details" />
+                </Field>
+              </div>
+            </div>
 
-              <Field label="Agreement to Sale Status">
-                <select value={fields.docAgreementSaleStatus || 'Not Available'} onChange={e => handleChange('docAgreementSaleStatus', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                  <option value="Not Available">Not Available</option>
-                  <option value="Fully Available">Fully Available</option>
-                  <option value="Partially Available">Partially Available</option>
-                  <option value="Not Applicable">Not Applicable</option>
-                </select>
-              </Field>
-              <Field label="Agreement to Sale Details">
-                <input type="text" value={fields.docAgreementSaleDetails || 'NA'} onChange={e => handleChange('docAgreementSaleDetails', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
+            {/* 4. Agreement to Sale */}
+            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs">
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Agreement to Sale">
+                  <select value={fields.docAgreementSaleStatus || 'Not Available'} onChange={e => handleChange('docAgreementSaleStatus', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="Not Available">Not Available</option>
+                    <option value="Fully Available">Fully Available</option>
+                    <option value="Partially Available">Partially Available</option>
+                    <option value="Not Applicable">Not Applicable</option>
+                  </select>
+                </Field>
+                <Field label="Details">
+                  <input type="text" value={fields.docAgreementSaleDetails || 'NA'} onChange={e => handleChange('docAgreementSaleDetails', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. NA / Agreement Details" />
+                </Field>
+              </div>
+            </div>
 
-              <Field label="Mutation / Possession Letter Status">
-                <select value={fields.docMutationStatus || 'Not Available'} onChange={e => handleChange('docMutationStatus', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                  <option value="Not Available">Not Available</option>
-                  <option value="Fully Available">Fully Available</option>
-                  <option value="Partially Available">Partially Available</option>
-                  <option value="Not Applicable">Not Applicable</option>
-                </select>
-              </Field>
-              <Field label="Mutation / Possession Letter Details">
-                <input type="text" value={fields.docMutationDetails || 'NA'} onChange={e => handleChange('docMutationDetails', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
+            {/* 5. Mutation / Possession Letter */}
+            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs">
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Mutation / Possession Letter">
+                  <select value={fields.docMutationStatus || 'Not Available'} onChange={e => handleChange('docMutationStatus', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="Not Available">Not Available</option>
+                    <option value="Fully Available">Fully Available</option>
+                    <option value="Partially Available">Partially Available</option>
+                    <option value="Not Applicable">Not Applicable</option>
+                  </select>
+                </Field>
+                <Field label="Details">
+                  <input type="text" value={fields.docMutationDetails || 'NA'} onChange={e => handleChange('docMutationDetails', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. NA / Mutation Details" />
+                </Field>
+              </div>
+            </div>
 
-              <Field label="Tax Receipt Status">
-                <select value={fields.docTaxReceiptStatus || 'Not Available'} onChange={e => handleChange('docTaxReceiptStatus', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                  <option value="Not Available">Not Available</option>
-                  <option value="Fully Available">Fully Available</option>
-                  <option value="Partially Available">Partially Available</option>
-                  <option value="Not Applicable">Not Applicable</option>
-                </select>
-              </Field>
-              <Field label="Tax Receipt Details">
-                <input type="text" value={fields.docTaxReceiptDetails || 'NA'} onChange={e => handleChange('docTaxReceiptDetails', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
+            {/* 6. Tax Receipt */}
+            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs">
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Tax Receipt">
+                  <select value={fields.docTaxReceiptStatus || 'Not Available'} onChange={e => handleChange('docTaxReceiptStatus', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="Not Available">Not Available</option>
+                    <option value="Fully Available">Fully Available</option>
+                    <option value="Partially Available">Partially Available</option>
+                    <option value="Not Applicable">Not Applicable</option>
+                  </select>
+                </Field>
+                <Field label="Details">
+                  <input type="text" value={fields.docTaxReceiptDetails || 'NA'} onChange={e => handleChange('docTaxReceiptDetails', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. NA / Holding Tax Details" />
+                </Field>
+              </div>
+            </div>
 
-              <Field label="Electricity Bill Status">
-                <select value={fields.docElectricityBillStatus || 'Not Available'} onChange={e => handleChange('docElectricityBillStatus', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                  <option value="Not Available">Not Available</option>
-                  <option value="Fully Available">Fully Available</option>
-                  <option value="Partially Available">Partially Available</option>
-                  <option value="Not Applicable">Not Applicable</option>
-                </select>
-              </Field>
-              <Field label="Electricity Bill Details">
-                <input type="text" value={fields.docElectricityBillDetails || 'NA'} onChange={e => handleChange('docElectricityBillDetails', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
+            {/* 7. Electricity Bill */}
+            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs">
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Electricity Bill">
+                  <select value={fields.docElectricityBillStatus || 'Not Available'} onChange={e => handleChange('docElectricityBillStatus', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="Not Available">Not Available</option>
+                    <option value="Fully Available">Fully Available</option>
+                    <option value="Partially Available">Partially Available</option>
+                    <option value="Not Applicable">Not Applicable</option>
+                  </select>
+                </Field>
+                <Field label="Details">
+                  <input type="text" value={fields.docElectricityBillDetails || 'NA'} onChange={e => handleChange('docElectricityBillDetails', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. NA / Consumer No" />
+                </Field>
+              </div>
+            </div>
 
-              <Field label="Conversion Status">
-                <select value={fields.docConversionStatus || 'Not Available'} onChange={e => handleChange('docConversionStatus', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                  <option value="Not Available">Not Available</option>
-                  <option value="Fully Available">Fully Available</option>
-                  <option value="Partially Available">Partially Available</option>
-                  <option value="Not Applicable">Not Applicable</option>
-                </select>
-              </Field>
-              <Field label="Conversion Details">
-                <input type="text" value={fields.docConversionDetails || 'NA'} onChange={e => handleChange('docConversionDetails', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
+            {/* 8. Conversion */}
+            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs">
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Conversion">
+                  <select value={fields.docConversionStatus || 'Not Available'} onChange={e => handleChange('docConversionStatus', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="Not Available">Not Available</option>
+                    <option value="Fully Available">Fully Available</option>
+                    <option value="Partially Available">Partially Available</option>
+                    <option value="Not Applicable">Not Applicable</option>
+                  </select>
+                </Field>
+                <Field label="Details">
+                  <input type="text" value={fields.docConversionDetails || 'NA'} onChange={e => handleChange('docConversionDetails', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. NA / Order No" />
+                </Field>
+              </div>
             </div>
           </div>
         </Section>
