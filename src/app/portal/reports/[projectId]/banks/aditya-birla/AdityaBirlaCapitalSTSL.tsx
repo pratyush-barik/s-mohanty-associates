@@ -1615,11 +1615,11 @@ export default function AdityaBirlaCapitalSTSL({
           </div>
         </Section>
 
-        {/* ═══ SECTION 5: DOCUMENTATION DETAILS (CHECKLIST) ═══ */}
-        <Section title="Documentation Details (Checklist)" number={5}>
-          <div className="space-y-3">
-            {/* 1. Sale Deed / Allotment Letter (Blue) */}
-            <div className="bg-blue-50/80 p-4 rounded-xl border border-blue-200 shadow-xs">
+        {/* ═══ SECTION 5: DOCUMENTATION DETAILS (CHECKLIST) & BUILT-UP AREA ═══ */}
+        <Section title="Documentation Details & Built-Up Area" number={5}>
+          <div className="space-y-4">
+            {/* 1. Sale Deed / Allotment Letter */}
+            <div className="bg-[#f8f9fa] p-4 rounded-xl border border-[#e9ecef] shadow-xs">
               <div className="grid md:grid-cols-2 gap-4">
                 <Field label="Sale Deed / Allotment Letter">
                   <select value={fields.docSaleDeedStatus || 'Fully Available'} onChange={e => handleChange('docSaleDeedStatus', e.target.value)} disabled={isReadOnly} className={selectCls}>
@@ -1635,8 +1635,8 @@ export default function AdityaBirlaCapitalSTSL({
               </div>
             </div>
 
-            {/* 2. Sanctioned Plan (Indigo) */}
-            <div className="bg-indigo-50/80 p-4 rounded-xl border border-indigo-200 shadow-xs">
+            {/* 2. Sanctioned Plan */}
+            <div className="bg-[#f8f9fa] p-4 rounded-xl border border-[#e9ecef] shadow-xs">
               <div className="grid md:grid-cols-2 gap-4">
                 <Field label="Sanctioned Plan">
                   <select value={fields.docSanctionPlanStatus || 'Not Available'} onChange={e => handleChange('docSanctionPlanStatus', e.target.value)} disabled={isReadOnly} className={selectCls}>
@@ -1652,8 +1652,8 @@ export default function AdityaBirlaCapitalSTSL({
               </div>
             </div>
 
-            {/* 3. CC / OC (Emerald) */}
-            <div className="bg-emerald-50/80 p-4 rounded-xl border border-emerald-200 shadow-xs">
+            {/* 3. CC / OC */}
+            <div className="bg-[#f8f9fa] p-4 rounded-xl border border-[#e9ecef] shadow-xs">
               <div className="grid md:grid-cols-2 gap-4">
                 <Field label="CC / OC">
                   <select value={fields.docCCOCStatus || 'Not Available'} onChange={e => handleChange('docCCOCStatus', e.target.value)} disabled={isReadOnly} className={selectCls}>
@@ -1669,8 +1669,8 @@ export default function AdityaBirlaCapitalSTSL({
               </div>
             </div>
 
-            {/* 4. Agreement to Sale (Amber) */}
-            <div className="bg-amber-50/80 p-4 rounded-xl border border-amber-200 shadow-xs">
+            {/* 4. Agreement to Sale */}
+            <div className="bg-[#f8f9fa] p-4 rounded-xl border border-[#e9ecef] shadow-xs">
               <div className="grid md:grid-cols-2 gap-4">
                 <Field label="Agreement to Sale">
                   <select value={fields.docAgreementSaleStatus || 'Not Available'} onChange={e => handleChange('docAgreementSaleStatus', e.target.value)} disabled={isReadOnly} className={selectCls}>
@@ -1686,8 +1686,8 @@ export default function AdityaBirlaCapitalSTSL({
               </div>
             </div>
 
-            {/* 5. Mutation / Possession Letter (Purple) */}
-            <div className="bg-purple-50/80 p-4 rounded-xl border border-purple-200 shadow-xs">
+            {/* 5. Mutation / Possession Letter */}
+            <div className="bg-[#f8f9fa] p-4 rounded-xl border border-[#e9ecef] shadow-xs">
               <div className="grid md:grid-cols-2 gap-4">
                 <Field label="Mutation / Possession Letter">
                   <select value={fields.docMutationStatus || 'Not Available'} onChange={e => handleChange('docMutationStatus', e.target.value)} disabled={isReadOnly} className={selectCls}>
@@ -1703,8 +1703,8 @@ export default function AdityaBirlaCapitalSTSL({
               </div>
             </div>
 
-            {/* 6. Tax Receipt (Teal) */}
-            <div className="bg-teal-50/80 p-4 rounded-xl border border-teal-200 shadow-xs">
+            {/* 6. Tax Receipt */}
+            <div className="bg-[#f8f9fa] p-4 rounded-xl border border-[#e9ecef] shadow-xs">
               <div className="grid md:grid-cols-2 gap-4">
                 <Field label="Tax Receipt">
                   <select value={fields.docTaxReceiptStatus || 'Not Available'} onChange={e => handleChange('docTaxReceiptStatus', e.target.value)} disabled={isReadOnly} className={selectCls}>
@@ -1720,8 +1720,8 @@ export default function AdityaBirlaCapitalSTSL({
               </div>
             </div>
 
-            {/* 7. Electricity Bill (Sky) */}
-            <div className="bg-sky-50/80 p-4 rounded-xl border border-sky-200 shadow-xs">
+            {/* 7. Electricity Bill */}
+            <div className="bg-[#f8f9fa] p-4 rounded-xl border border-[#e9ecef] shadow-xs">
               <div className="grid md:grid-cols-2 gap-4">
                 <Field label="Electricity Bill">
                   <select value={fields.docElectricityBillStatus || 'Not Available'} onChange={e => handleChange('docElectricityBillStatus', e.target.value)} disabled={isReadOnly} className={selectCls}>
@@ -1737,8 +1737,8 @@ export default function AdityaBirlaCapitalSTSL({
               </div>
             </div>
 
-            {/* 8. Conversion (Rose) */}
-            <div className="bg-rose-50/75 p-4 rounded-xl border border-rose-200 shadow-xs">
+            {/* 8. Conversion */}
+            <div className="bg-[#f8f9fa] p-4 rounded-xl border border-[#e9ecef] shadow-xs">
               <div className="grid md:grid-cols-2 gap-4">
                 <Field label="Conversion">
                   <select value={fields.docConversionStatus || 'Not Available'} onChange={e => handleChange('docConversionStatus', e.target.value)} disabled={isReadOnly} className={selectCls}>
@@ -1754,119 +1754,109 @@ export default function AdityaBirlaCapitalSTSL({
               </div>
             </div>
 
-            {/* Built Up Area Container */}
-            <div className="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs space-y-3">
-              <div className="border-b border-neutral-100 pb-2">
-                <h3 className="text-sm font-bold text-[#0f2038]">
-                  Built up area
-                </h3>
-              </div>
-
-              <div className="overflow-x-auto rounded-lg border border-neutral-200">
+            {/* Built Up Area Table Container */}
+            <div className="space-y-3 pt-2">
+              <div className="overflow-x-auto">
                 <table className="w-full text-sm border-collapse">
                   <thead>
-                    <tr className="bg-[#0f2038] text-white">
-                      <th className="px-3 py-2.5 text-left text-xs uppercase font-semibold">Built up area</th>
-                      <th className="px-3 py-2.5 text-right text-xs uppercase font-semibold">As per Site</th>
-                      <th className="px-3 py-2.5 text-right text-xs uppercase font-semibold">As per Plan/FAR</th>
-                      <th className="px-3 py-2.5 text-center text-xs uppercase font-semibold">Deviations</th>
-                      <th className="px-3 py-2.5 text-left text-xs uppercase font-semibold">Remarks</th>
-                      {!isReadOnly && <th className="px-2 py-2.5 text-center text-xs uppercase font-semibold w-10"></th>}
+                    <tr className="bg-[#0a1628] text-white">
+                      <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider">Built up area</th>
+                      <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">As per Site</th>
+                      <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">As per Plan/FAR</th>
+                      <th className="px-3 py-2.5 text-center font-semibold text-xs uppercase tracking-wider">Deviations</th>
+                      <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider">Remarks</th>
+                      {!isReadOnly && <th className="px-3 py-2.5 w-10"></th>}
                     </tr>
                   </thead>
                   <tbody>
-                    {(fields.buaRows || DEFAULT_BUA_ROWS).map((row, idx) => {
-                      const isTotal = row.floor.toLowerCase().includes('total');
-                      return (
-                        <tr key={idx} className={isTotal ? 'bg-amber-50/60 font-bold' : idx % 2 === 0 ? 'bg-white' : 'bg-[#f8f9fa]'}>
-                          <td className="px-2.5 py-1.5 border-b border-neutral-200">
-                            <input
-                              type="text"
-                              value={row.floor}
-                              onChange={e => {
-                                const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
-                                updated[idx] = { ...updated[idx], floor: e.target.value };
-                                handleChange('buaRows', updated);
-                              }}
-                              disabled={isReadOnly}
-                              className="w-full bg-white border border-neutral-300 rounded px-2.5 py-1.5 text-xs text-neutral-800 font-medium focus:ring-1 focus:ring-[#0f2038] focus:border-[#0f2038] outline-hidden disabled:bg-neutral-100"
-                            />
+                    {(fields.buaRows || DEFAULT_BUA_ROWS).map((row, idx) => (
+                      <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-[#f8f9fa]'}>
+                        <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                          <input
+                            className={inputCls + ' !py-1.5 text-xs font-bold text-[#0f2038]'}
+                            value={row.floor || ''}
+                            onChange={e => {
+                              const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
+                              updated[idx] = { ...updated[idx], floor: e.target.value };
+                              handleChange('buaRows', updated);
+                            }}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                        <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                          <input
+                            type="text"
+                            value={row.asPerSite || ''}
+                            disabled={isReadOnly}
+                            onChange={e => {
+                              const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
+                              updated[idx] = { ...updated[idx], asPerSite: e.target.value };
+                              handleChange('buaRows', updated);
+                            }}
+                            className={inputCls + ' !py-1.5 text-xs text-right'}
+                            placeholder="e.g. 1080sqft"
+                          />
+                        </td>
+                        <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                          <input
+                            type="text"
+                            value={row.asPerPlan || ''}
+                            disabled={isReadOnly}
+                            onChange={e => {
+                              const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
+                              updated[idx] = { ...updated[idx], asPerPlan: e.target.value };
+                              handleChange('buaRows', updated);
+                            }}
+                            className={inputCls + ' !py-1.5 text-xs text-right'}
+                            placeholder="NA"
+                          />
+                        </td>
+                        <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                          <select
+                            value={row.deviations || 'No'}
+                            disabled={isReadOnly}
+                            onChange={e => {
+                              const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
+                              updated[idx] = { ...updated[idx], deviations: e.target.value };
+                              handleChange('buaRows', updated);
+                            }}
+                            className={selectCls + ' !py-1.5 text-xs'}
+                          >
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                            <option value="Yes // No">Yes // No</option>
+                          </select>
+                        </td>
+                        <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                          <input
+                            type="text"
+                            value={row.remarks || ''}
+                            disabled={isReadOnly}
+                            onChange={e => {
+                              const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
+                              updated[idx] = { ...updated[idx], remarks: e.target.value };
+                              handleChange('buaRows', updated);
+                            }}
+                            className={inputCls + ' !py-1.5 text-xs'}
+                            placeholder="Remarks..."
+                          />
+                        </td>
+                        {!isReadOnly && (
+                          <td className="px-2 py-1.5 border-b border-[#e9ecef] text-center">
+                            {(fields.buaRows || DEFAULT_BUA_ROWS).length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => removeBuaRow(idx)}
+                                className="text-red-400 hover:text-red-600 text-lg leading-none cursor-pointer"
+                                title="Remove Floor"
+                              >
+                                &times;
+                              </button>
+                            )}
                           </td>
-                          <td className="px-2.5 py-1.5 border-b border-neutral-200">
-                            <input
-                              type="text"
-                              value={row.asPerSite}
-                              onChange={e => {
-                                const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
-                                updated[idx] = { ...updated[idx], asPerSite: e.target.value };
-                                handleChange('buaRows', updated);
-                              }}
-                              disabled={isReadOnly}
-                              className="w-full bg-white border border-neutral-300 rounded px-2.5 py-1.5 text-xs text-right text-neutral-800 focus:ring-1 focus:ring-[#0f2038] focus:border-[#0f2038] outline-hidden disabled:bg-neutral-100"
-                              placeholder="e.g. 1080sqft"
-                            />
-                          </td>
-                          <td className="px-2.5 py-1.5 border-b border-neutral-200">
-                            <input
-                              type="text"
-                              value={row.asPerPlan}
-                              onChange={e => {
-                                const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
-                                updated[idx] = { ...updated[idx], asPerPlan: e.target.value };
-                                handleChange('buaRows', updated);
-                              }}
-                              disabled={isReadOnly}
-                              className="w-full bg-white border border-neutral-300 rounded px-2.5 py-1.5 text-xs text-right text-neutral-800 focus:ring-1 focus:ring-[#0f2038] focus:border-[#0f2038] outline-hidden disabled:bg-neutral-100"
-                              placeholder="e.g. NA"
-                            />
-                          </td>
-                          <td className="px-2.5 py-1.5 border-b border-neutral-200">
-                            <select
-                              value={row.deviations || 'No'}
-                              onChange={e => {
-                                const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
-                                updated[idx] = { ...updated[idx], deviations: e.target.value };
-                                handleChange('buaRows', updated);
-                              }}
-                              disabled={isReadOnly}
-                              className="w-full bg-white border border-neutral-300 rounded px-2 py-1.5 text-xs text-neutral-800 focus:ring-1 focus:ring-[#0f2038] focus:border-[#0f2038] outline-hidden disabled:bg-neutral-100"
-                            >
-                              <option value="No">No</option>
-                              <option value="Yes">Yes</option>
-                              <option value="Yes // No">Yes // No</option>
-                            </select>
-                          </td>
-                          <td className="px-2.5 py-1.5 border-b border-neutral-200">
-                            <input
-                              type="text"
-                              value={row.remarks || ''}
-                              onChange={e => {
-                                const updated = [...(fields.buaRows || DEFAULT_BUA_ROWS)];
-                                updated[idx] = { ...updated[idx], remarks: e.target.value };
-                                handleChange('buaRows', updated);
-                              }}
-                              disabled={isReadOnly}
-                              className="w-full bg-white border border-neutral-300 rounded px-2.5 py-1.5 text-xs text-neutral-800 focus:ring-1 focus:ring-[#0f2038] focus:border-[#0f2038] outline-hidden disabled:bg-neutral-100"
-                              placeholder="Remarks..."
-                            />
-                          </td>
-                          {!isReadOnly && (
-                            <td className="px-2 py-1.5 border-b border-neutral-200 text-center">
-                              {(fields.buaRows || DEFAULT_BUA_ROWS).length > 1 && (
-                                <button
-                                  type="button"
-                                  onClick={() => removeBuaRow(idx)}
-                                  className="text-red-400 hover:text-red-600 text-lg leading-none cursor-pointer p-1"
-                                  title="Remove Floor"
-                                >
-                                  &times;
-                                </button>
-                              )}
-                            </td>
-                          )}
-                        </tr>
-                      );
-                    })}
+                        )}
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
