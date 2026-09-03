@@ -118,7 +118,7 @@ const calculateTotalLandValue = (
   const rateSqftFactor = getSqftFactor(rateUnit || areaUnit);
 
   const totalValue = (areaSqft / rateSqftFactor) * rateNum;
-  return totalValue >= 100 ? Math.round(totalValue) : Number(totalValue.toFixed(2));
+  return Math.round((totalValue + Number.EPSILON) * 100) / 100;
 };
 
 const blockNegativeKeys = (e: React.KeyboardEvent<HTMLInputElement>) => {

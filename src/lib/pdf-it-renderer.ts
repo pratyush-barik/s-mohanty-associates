@@ -203,7 +203,7 @@ export const calculateLandValue = (
   const rateUnitSqft = UNIT_SQFT_MAP[rateUnit?.toUpperCase()] || 435.6;
   const areaInRateUnits = areaSqft / rateUnitSqft;
 
-  return Math.round(areaInRateUnits * rateNum);
+  return Math.round((areaInRateUnits * rateNum + Number.EPSILON) * 100) / 100;
 };
 
 export async function generateIncomeTaxPDF(
