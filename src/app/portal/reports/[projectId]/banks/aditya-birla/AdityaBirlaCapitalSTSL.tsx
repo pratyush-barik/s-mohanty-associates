@@ -994,186 +994,288 @@ export default function AdityaBirlaCapitalSTSL({
               )}
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              <Field label="Main Locality">
-                <input type="text" value={fields.mainLocality || ''} onChange={e => handleChange('mainLocality', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
-              <Field label="Sub Locality">
-                <input type="text" value={fields.subLocality || ''} onChange={e => handleChange('subLocality', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
-              <Field label="Micro Location">
-                <input type="text" value={fields.microLocation || ''} onChange={e => handleChange('microLocation', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
-              <Field label="Landmark">
-                <input type="text" value={fields.landmark || ''} onChange={e => handleChange('landmark', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
-              <Field label="Latitude">
-                <input type="text" value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
-              <Field label="Longitude">
-                <input type="text" value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
-              <Field label="Type of Property">
-                <select
-                  value={fields.typeOfProperty || fields.propertyType || 'Residential'}
-                  onChange={e => {
-                    const val = e.target.value;
-                    handleChange('typeOfProperty', val);
-                    handleChange('propertyType', val);
-                  }}
-                  disabled={isReadOnly}
-                  className={selectCls}
-                >
-                  <option value="Residential">Residential</option>
-                  <option value="Commercial">Commercial</option>
-                  <option value="Industrial">Industrial</option>
-                  <option value="Institutional">Institutional</option>
-                  <option value="Agriculture">Agriculture</option>
-                  <option value="Residential cum commercial">Residential cum commercial</option>
-                </select>
-              </Field>
-              <Field label="Current Usage">
-                <input type="text" value={fields.currentUsage || 'Residential'} onChange={e => handleChange('currentUsage', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
-              <Field label="Valued for ABCL Before?">
-                <select
-                  value={fields.valuedBefore || 'No'}
-                  onChange={e => {
-                    const val = e.target.value;
-                    handleChange('valuedBefore', val);
-                    if (val === 'No') {
-                      handleChange('valuedBeforeDate', '');
-                    }
-                  }}
-                  disabled={isReadOnly}
-                  className={selectCls}
-                >
-                  <option value="No">No</option>
-                  <option value="Yes">Yes</option>
-                </select>
-              </Field>
-              {fields.valuedBefore === 'Yes' ? (
-                <Field label="If Yes When? (Date of Prior Valuation)">
-                  <input
-                    type="date"
-                    value={fields.valuedBeforeDate || ''}
-                    onChange={e => handleChange('valuedBeforeDate', e.target.value)}
-                    disabled={isReadOnly}
-                    className={inputCls}
-                  />
-                </Field>
-              ) : (
-                <div className="hidden md:block" />
-              )}
-              <Field label="Property Type (Auto-synced)">
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={fields.typeOfProperty || fields.propertyType || 'Residential'}
-                    disabled
-                    className={`${inputCls} bg-neutral-100 text-neutral-600 font-medium cursor-not-allowed`}
-                    title="Locked: Automatically synced with Type of Property"
-                  />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400">
-                    <Lock className="w-3.5 h-3.5" />
-                  </div>
-                </div>
-              </Field>
-              <Field label="Property Sub Type">
-                <input type="text" value={fields.propertySubType || 'Row House'} onChange={e => handleChange('propertySubType', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Row House / Bungalow / Flat" />
-              </Field>
-              <Field label="Locality Development">
-                <select value={fields.localityDevelopment || 'Developing'} onChange={e => handleChange('localityDevelopment', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                  <option value="Well Developed">Well Developed</option>
-                  <option value="Developed">Developed</option>
-                  <option value="Developing">Developing</option>
-                  <option value="Under Develop">Under Develop</option>
-                  <option value="Slum">Slum</option>
-                </select>
-              </Field>
-              <Field label="Property Falling Within Limits Of">
-                <select value={fields.propertyJurisdiction || 'Gram Panchayat'} onChange={e => handleChange('propertyJurisdiction', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                  <option value="Municipal Corporation">Municipal Corporation</option>
-                  <option value="Gram Panchayat">Gram Panchayat</option>
-                  <option value="Town Planning Authority">Town Planning Authority</option>
-                  <option value="Development Authority">Development Authority</option>
-                  <option value="Municipality">Municipality</option>
-                  <option value="NAC">NAC</option>
-                </select>
-              </Field>
-              <Field label="Occupancy Density of Surrounding">
-                <select value={fields.surroundingOccupancy || 'Densely Populated'} onChange={e => handleChange('surroundingOccupancy', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                  <option value="Densely Populated">Densely Populated</option>
-                  <option value="Moderately Populated">Moderately Populated</option>
-                  <option value="Low Population density">Low Population density</option>
-                </select>
-              </Field>
-              <Field label="Condition of Property Site">
-                <select value={fields.conditionOfSite || 'Developing'} onChange={e => handleChange('conditionOfSite', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                  <option value="Well Developed">Well Developed</option>
-                  <option value="Developing">Developing</option>
-                  <option value="Under Developed">Under Developed</option>
-                </select>
-              </Field>
-              <Field label="Distance to Railway Station">
-                <input type="text" value={fields.distanceRailwayStation || ''} onChange={e => handleChange('distanceRailwayStation', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 5-Kms from Railway Station" />
-              </Field>
-              <Field label="Distance to Bus Stop">
-                <input type="text" value={fields.distanceBusStop || ''} onChange={e => handleChange('distanceBusStop', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 1-Km from Bus Stop" />
-              </Field>
-              <Field label="Distance from Main Road">
-                <select value={fields.distanceFromMainRoad || 'Not Applicable (Prop on Concrete Road)'} onChange={e => handleChange('distanceFromMainRoad', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                  <option value="Not Applicable (Prop on Concrete Road)">Not Applicable (Prop on Concrete Road)</option>
-                  <option value="Less than 200 m">Less than 200 m</option>
-                  <option value="200 to 500 m">200 to 500 m</option>
-                  <option value="above 500 m">above 500 m</option>
-                </select>
-              </Field>
-              <Field label="Distance from City Centre">
-                <input type="text" value={fields.distanceFromCityCenter || ''} onChange={e => handleChange('distanceFromCityCenter', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 10-Kms from City Centre" />
-              </Field>
-              <Field label="Distance from ABCL Branch">
-                <input type="text" value={fields.distanceFromBranch || ''} onChange={e => handleChange('distanceFromBranch', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 8-Kms from Branch" />
-              </Field>
-              <Field label="Approach Road Width / Type">
-                <input type="text" value={fields.approachRoadWidth || 'Concrete Road'} onChange={e => handleChange('approachRoadWidth', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Concrete Road / Width 20 to 40 ft." />
-              </Field>
-              {/* Dimensions of the Property Container */}
-              <div className="col-span-full bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-3">
-                <div className="border-b border-neutral-100 pb-2">
-                  <h3 className="text-sm font-bold text-[#0f2038] uppercase tracking-wide">
-                    Dimensions of the Property
-                  </h3>
-                </div>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <Field label="Width (Facing Road Side) in Feet">
-                    <input type="text" value={fields.dimensionWidth || ''} onChange={e => handleChange('dimensionWidth', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 30 feet or NA" />
-                  </Field>
-                  <Field label="Depth (in Feet)">
-                    <input type="text" value={fields.dimensionDepth || ''} onChange={e => handleChange('dimensionDepth', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 45 feet or NA" />
-                  </Field>
-                </div>
+            {/* 1. Locality Breakdown Container */}
+            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-3">
+              <div className="border-b border-neutral-100 pb-2">
+                <h3 className="text-sm font-bold text-[#0f2038] uppercase tracking-wide">
+                  Locality Breakdown
+                </h3>
               </div>
-              <Field label="Physical Approach">
-                <select value={fields.physicalApproach || 'Clear'} onChange={e => handleChange('physicalApproach', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                  <option value="Clear">Clear</option>
-                  <option value="Partially Clear">Partially Clear</option>
-                  <option value="Not Clear">Not Clear</option>
-                </select>
-              </Field>
-              <Field label="Legal Approach">
-                <select value={fields.legalApproach || 'Clear'} onChange={e => handleChange('legalApproach', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                  <option value="Clear">Clear</option>
-                  <option value="Partially Clear">Partially Clear</option>
-                  <option value="Not Clear">Not Clear</option>
-                </select>
-              </Field>
-              <Field label="Other Encumbrance / Security Notice" span={2}>
-                <select value={fields.otherEncumbranceFeatures || 'No'} onChange={e => handleChange('otherEncumbranceFeatures', e.target.value)} disabled={isReadOnly} className={selectCls}>
-                  <option value="No">No</option>
-                  <option value="Yes">Yes</option>
-                </select>
-              </Field>
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Field label="Main Locality">
+                  <input type="text" value={fields.mainLocality || ''} onChange={e => handleChange('mainLocality', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Nayagarh Town" />
+                </Field>
+                <Field label="Sub Locality">
+                  <input type="text" value={fields.subLocality || ''} onChange={e => handleChange('subLocality', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Ward No 5" />
+                </Field>
+                <Field label="Micro Location">
+                  <input type="text" value={fields.microLocation || ''} onChange={e => handleChange('microLocation', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Near Market Complex" />
+                </Field>
+                <Field label="Landmark">
+                  <input type="text" value={fields.landmark || ''} onChange={e => handleChange('landmark', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Near SND High School" />
+                </Field>
+              </div>
+            </div>
+
+            {/* 2. Geographic Coordinates Container */}
+            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-3">
+              <div className="border-b border-neutral-100 pb-2">
+                <h3 className="text-sm font-bold text-[#0f2038] uppercase tracking-wide">
+                  Geographic Coordinates
+                </h3>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Latitude">
+                  <input type="text" value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 20.288972" />
+                </Field>
+                <Field label="Longitude">
+                  <input type="text" value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 85.181528" />
+                </Field>
+              </div>
+            </div>
+
+            {/* 3. Type of Property & Usage Container */}
+            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-3">
+              <div className="border-b border-neutral-100 pb-2">
+                <h3 className="text-sm font-bold text-[#0f2038] uppercase tracking-wide">
+                  Type of Property & Usage
+                </h3>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Type of Property">
+                  <select
+                    value={fields.typeOfProperty || fields.propertyType || 'Residential'}
+                    onChange={e => {
+                      const val = e.target.value;
+                      handleChange('typeOfProperty', val);
+                      handleChange('propertyType', val);
+                    }}
+                    disabled={isReadOnly}
+                    className={selectCls}
+                  >
+                    <option value="Residential">Residential</option>
+                    <option value="Commercial">Commercial</option>
+                    <option value="Industrial">Industrial</option>
+                    <option value="Institutional">Institutional</option>
+                    <option value="Agriculture">Agriculture</option>
+                    <option value="Residential cum commercial">Residential cum commercial</option>
+                  </select>
+                </Field>
+                <Field label="Current Usage">
+                  <input type="text" value={fields.currentUsage || 'Residential'} onChange={e => handleChange('currentUsage', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Residential" />
+                </Field>
+              </div>
+            </div>
+
+            {/* 4. Prior Valuation with ABCL Container */}
+            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-3">
+              <div className="border-b border-neutral-100 pb-2">
+                <h3 className="text-sm font-bold text-[#0f2038] uppercase tracking-wide">
+                  Valuation History with ABCL
+                </h3>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Valued for ABCL Before?">
+                  <select
+                    value={fields.valuedBefore || 'No'}
+                    onChange={e => {
+                      const val = e.target.value;
+                      handleChange('valuedBefore', val);
+                      if (val === 'No') {
+                        handleChange('valuedBeforeDate', '');
+                      }
+                    }}
+                    disabled={isReadOnly}
+                    className={selectCls}
+                  >
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </Field>
+                {fields.valuedBefore === 'Yes' ? (
+                  <Field label="If Yes When? (Date of Prior Valuation)">
+                    <input
+                      type="date"
+                      value={fields.valuedBeforeDate || ''}
+                      onChange={e => handleChange('valuedBeforeDate', e.target.value)}
+                      disabled={isReadOnly}
+                      className={inputCls}
+                    />
+                  </Field>
+                ) : (
+                  <div className="flex items-center text-xs text-neutral-400 italic pt-6">
+                    No prior valuation recorded for ABCL.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 5. Property Classification Container (Property Type & Sub Type) */}
+            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-3">
+              <div className="border-b border-neutral-100 pb-2">
+                <h3 className="text-sm font-bold text-[#0f2038] uppercase tracking-wide">
+                  Property Classification
+                </h3>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Property Type (Auto-synced)">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={fields.typeOfProperty || fields.propertyType || 'Residential'}
+                      disabled
+                      className={`${inputCls} bg-neutral-100 text-neutral-600 font-medium cursor-not-allowed`}
+                      title="Locked: Automatically synced with Type of Property"
+                    />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400">
+                      <Lock className="w-3.5 h-3.5" />
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-amber-700 mt-1 flex items-center gap-1 font-medium">
+                    <span>ℹ️</span> Note: This value is referenced from Type of Property
+                  </p>
+                </Field>
+                <Field label="Property Sub Type">
+                  <input type="text" value={fields.propertySubType || 'Row House'} onChange={e => handleChange('propertySubType', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Row House / Bungalow / Flat" />
+                </Field>
+              </div>
+            </div>
+
+            {/* 6. Locality Nature & Municipal Jurisdiction Container */}
+            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-3">
+              <div className="border-b border-neutral-100 pb-2">
+                <h3 className="text-sm font-bold text-[#0f2038] uppercase tracking-wide">
+                  Locality & Municipal Jurisdiction
+                </h3>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Locality Development">
+                  <select value={fields.localityDevelopment || 'Developing'} onChange={e => handleChange('localityDevelopment', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="Well Developed">Well Developed</option>
+                    <option value="Developed">Developed</option>
+                    <option value="Developing">Developing</option>
+                    <option value="Under Develop">Under Develop</option>
+                    <option value="Slum">Slum</option>
+                  </select>
+                </Field>
+                <Field label="Property Falling Within Limits Of">
+                  <select value={fields.propertyJurisdiction || 'Gram Panchayat'} onChange={e => handleChange('propertyJurisdiction', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="Municipal Corporation">Municipal Corporation</option>
+                    <option value="Gram Panchayat">Gram Panchayat</option>
+                    <option value="Town Planning Authority">Town Planning Authority</option>
+                    <option value="Development Authority">Development Authority</option>
+                    <option value="Municipality">Municipality</option>
+                    <option value="NAC">NAC</option>
+                  </select>
+                </Field>
+              </div>
+            </div>
+
+            {/* 7. Surroundings & Site Condition Container */}
+            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-3">
+              <div className="border-b border-neutral-100 pb-2">
+                <h3 className="text-sm font-bold text-[#0f2038] uppercase tracking-wide">
+                  Surroundings & Site Condition
+                </h3>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Occupancy Density of Surrounding">
+                  <select value={fields.surroundingOccupancy || 'Densely Populated'} onChange={e => handleChange('surroundingOccupancy', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="Densely Populated">Densely Populated</option>
+                    <option value="Moderately Populated">Moderately Populated</option>
+                    <option value="Low Population density">Low Population density</option>
+                  </select>
+                </Field>
+                <Field label="Condition of Property Site">
+                  <select value={fields.conditionOfSite || 'Developing'} onChange={e => handleChange('conditionOfSite', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="Well Developed">Well Developed</option>
+                    <option value="Developing">Developing</option>
+                    <option value="Under Developed">Under Developed</option>
+                  </select>
+                </Field>
+              </div>
+            </div>
+
+            {/* 8. Distances & Connectivity Container */}
+            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-3">
+              <div className="border-b border-neutral-100 pb-2">
+                <h3 className="text-sm font-bold text-[#0f2038] uppercase tracking-wide">
+                  Distances & Connectivity
+                </h3>
+              </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <Field label="Distance to Railway Station">
+                  <input type="text" value={fields.distanceRailwayStation || ''} onChange={e => handleChange('distanceRailwayStation', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 5-Kms from Railway Station" />
+                </Field>
+                <Field label="Distance to Bus Stop">
+                  <input type="text" value={fields.distanceBusStop || ''} onChange={e => handleChange('distanceBusStop', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 1-Km from Bus Stop" />
+                </Field>
+                <Field label="Distance from Main Road">
+                  <select value={fields.distanceFromMainRoad || 'Not Applicable (Prop on Concrete Road)'} onChange={e => handleChange('distanceFromMainRoad', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="Not Applicable (Prop on Concrete Road)">Not Applicable (Prop on Concrete Road)</option>
+                    <option value="Less than 200 m">Less than 200 m</option>
+                    <option value="200 to 500 m">200 to 500 m</option>
+                    <option value="above 500 m">above 500 m</option>
+                  </select>
+                </Field>
+                <Field label="Distance from City Centre">
+                  <input type="text" value={fields.distanceFromCityCenter || ''} onChange={e => handleChange('distanceFromCityCenter', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 10-Kms from City Centre" />
+                </Field>
+                <Field label="Distance from ABCL Branch">
+                  <input type="text" value={fields.distanceFromBranch || ''} onChange={e => handleChange('distanceFromBranch', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 8-Kms from Branch" />
+                </Field>
+                <Field label="Approach Road Width / Type">
+                  <input type="text" value={fields.approachRoadWidth || 'Concrete Road'} onChange={e => handleChange('approachRoadWidth', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Concrete Road / Width 20 to 40 ft." />
+                </Field>
+              </div>
+            </div>
+
+            {/* 9. Dimensions of the Property Container */}
+            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-3">
+              <div className="border-b border-neutral-100 pb-2">
+                <h3 className="text-sm font-bold text-[#0f2038] uppercase tracking-wide">
+                  Dimensions of the Property
+                </h3>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Width (Facing Road Side) in Feet">
+                  <input type="text" value={fields.dimensionWidth || ''} onChange={e => handleChange('dimensionWidth', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 30 feet or NA" />
+                </Field>
+                <Field label="Depth (in Feet)">
+                  <input type="text" value={fields.dimensionDepth || ''} onChange={e => handleChange('dimensionDepth', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 45 feet or NA" />
+                </Field>
+              </div>
+            </div>
+
+            {/* 10. Approach & Encumbrance Status Container */}
+            <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-3">
+              <div className="border-b border-neutral-100 pb-2">
+                <h3 className="text-sm font-bold text-[#0f2038] uppercase tracking-wide">
+                  Approach & Encumbrance Status
+                </h3>
+              </div>
+              <div className="grid md:grid-cols-3 gap-4">
+                <Field label="Physical Approach">
+                  <select value={fields.physicalApproach || 'Clear'} onChange={e => handleChange('physicalApproach', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="Clear">Clear</option>
+                    <option value="Partially Clear">Partially Clear</option>
+                    <option value="Not Clear">Not Clear</option>
+                  </select>
+                </Field>
+                <Field label="Legal Approach">
+                  <select value={fields.legalApproach || 'Clear'} onChange={e => handleChange('legalApproach', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="Clear">Clear</option>
+                    <option value="Partially Clear">Partially Clear</option>
+                    <option value="Not Clear">Not Clear</option>
+                  </select>
+                </Field>
+                <Field label="Other Encumbrance / Security Notice">
+                  <select value={fields.otherEncumbranceFeatures || 'No'} onChange={e => handleChange('otherEncumbranceFeatures', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </Field>
+              </div>
             </div>
           </div>
         </Section>
