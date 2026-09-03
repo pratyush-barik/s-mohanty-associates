@@ -426,8 +426,161 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
   }
 
   /**
-   * Draw the Documentation Details 8-item checklist table
+   * Draw a 4-column row where the left side is a standard Key-Value pair
+   * and the right side is a multi-choice Slash Option pair.
    */
+  drawKVAndSlashRow(
+    kv: { label: string; value: string; labelWidth?: number; valueWidth?: number; bold?: boolean },
+    slash: { label: string; options: string[]; selected?: string; labelWidth?: number; valueWidth?: number }
+  ): void {
+    const fontSize = FONT_SIZE;
+    const pad = 3;
+    const halfTotalW = CONTENT_W / 2; // 272.64
+
+    const lbl1W = kv.labelWidth || 115;
+    const val1W = kv.valueWidth || (halfTotalW - lbl1W);
+
+    const lbl2W = slash.labelWidth || 115;
+    const val2W = slash.valueWidth || (CONTENT_W - (lbl1W + val1W + lbl2W));
+
+    const lLines1 = this.wrapText(kv.label, lbl1W - pad * 2, fontSize, true);
+    const vLines1 = this.wrapText(kv.value, val1W - pad * 2, fontSize, !!kv.bold);
+    const lines1 = Math.max(lLines1.length, vLines1.length);
+    const lines2 = this._calcSlashOptionLines(slash.label, slash.options, lbl2W, val2W, fontSize, pad);
+
+    const maxLines = Math.max(lines1, lines2, 1);
+    const rowH = Math.max(18, maxLines * fontSize * LINE_HEIGHT + pad * 2);
+    this.checkPageBreak(rowH);
+
+    const y = this.pdfY(this.cursorY);
+
+    // ── Render Left KV ──
+    this.page.drawRectangle({
+      x: MARGIN_L,
+      y: y - rowH,
+      width: lbl1W,
+      height: rowH,
+      color: hexToRgb(LBL_BG),
+      opacity: BG_OPACITY,
+      borderColor: rgb(0, 0, 0),
+      borderWidth: BORDER_W,
+    });
+    let lineY = y - pad - fontSize * 0.85;
+    for (const line of lLines1) {
+      this.page.drawText(line, {
+        x: MARGIN_L + pad,
+        y: lineY,
+        size: fontSize,
+        font: this.fontBold,
+        color: rgb(0, 0, 0),
+      });
+      lineY -= fontSize * LINE_HEIGHT;
+    }
+
+    this.page.drawRectangle({
+      x: MARGIN_L + lbl1W,
+      y: y - rowH,
+      width: val1W,
+      height: rowH,
+      borderColor: rgb(0, 0, 0),
+      borderWidth: BORDER_W,
+    });
+    lineY = y - pad - fontSize * 0.85;
+    for (const line of vLines1) {
+      this.page.drawText(line, {
+        x: MARGIN_L + lbl1W + pad,
+        y: lineY,
+        size: fontSize,
+        font: kv.bold ? this.fontBold : this.fontRegular,
+        color: rgb(0, 0, 0),
+      });
+      lineY -= fontSize * LINE_HEIGHT;
+    }
+
+    // ── Render Right Slash Option ──
+    this._renderSlashOptionBox(MARGIN_L + lbl1W + val1W, y, rowH, slash.label, slash.options, slash.selected, lbl2W, val2W, fontSize, pad);
+
+    this.cursorY += rowH;
+  }
+
+  /**
+   * Draw a 4-column row where the left side is a Slash Option pair
+   * and the right side is a Key-Value pair.
+   */
+  drawSlashAndKVRow(
+    slash: { label: string; options: string[]; selected?: string; labelWidth?: number; valueWidth?: number },
+    kv: { label: string; value: string; labelWidth?: number; valueWidth?: number; bold?: boolean }
+  ): void {
+    const fontSize = FONT_SIZE;
+    const pad = 3;
+    const halfTotalW = CONTENT_W / 2; // 272.64
+
+    const lbl1W = slash.labelWidth || 115;
+    const val1W = slash.valueWidth || (halfTotalW - lbl1W);
+
+    const lbl2W = kv.labelWidth || 115;
+    const val2W = kv.valueWidth || (CONTENT_W - (lbl1W + val1W + lbl2W));
+
+    const lines1 = this._calcSlashOptionLines(slash.label, slash.options, lbl1W, val1W, fontSize, pad);
+    const lLines2 = this.wrapText(kv.label, lbl2W - pad * 2, fontSize, true);
+    const vLines2 = this.wrapText(kv.value, val2W - pad * 2, fontSize, !!kv.bold);
+    const lines2 = Math.max(lLines2.length, vLines2.length);
+
+    const maxLines = Math.max(lines1, lines2, 1);
+    const rowH = Math.max(18, maxLines * fontSize * LINE_HEIGHT + pad * 2);
+    this.checkPageBreak(rowH);
+
+    const y = this.pdfY(this.cursorY);
+
+    // ── Render Left Slash Option ──
+    this._renderSlashOptionBox(MARGIN_L, y, rowH, slash.label, slash.options, slash.selected, lbl1W, val1W, fontSize, pad);
+
+    // ── Render Right KV ──
+    const rightX = MARGIN_L + lbl1W + val1W;
+    this.page.drawRectangle({
+      x: rightX,
+      y: y - rowH,
+      width: lbl2W,
+      height: rowH,
+      color: hexToRgb(LBL_BG),
+      opacity: BG_OPACITY,
+      borderColor: rgb(0, 0, 0),
+      borderWidth: BORDER_W,
+    });
+    let lineY = y - pad - fontSize * 0.85;
+    for (const line of lLines2) {
+      this.page.drawText(line, {
+        x: rightX + pad,
+        y: lineY,
+        size: fontSize,
+        font: this.fontBold,
+        color: rgb(0, 0, 0),
+      });
+      lineY -= fontSize * LINE_HEIGHT;
+    }
+
+    this.page.drawRectangle({
+      x: rightX + lbl2W,
+      y: y - rowH,
+      width: val2W,
+      height: rowH,
+      borderColor: rgb(0, 0, 0),
+      borderWidth: BORDER_W,
+    });
+    lineY = y - pad - fontSize * 0.85;
+    for (const line of vLines2) {
+      this.page.drawText(line, {
+        x: rightX + lbl2W + pad,
+        y: lineY,
+        size: fontSize,
+        font: kv.bold ? this.fontBold : this.fontRegular,
+        color: rgb(0, 0, 0),
+      });
+      lineY -= fontSize * LINE_HEIGHT;
+    }
+
+    this.cursorY += rowH;
+  }
   drawDocChecklistTable(
     items: {
       name: string;
