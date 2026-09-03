@@ -605,16 +605,16 @@ export default function AdityaBirlaCapitalSTSL({
     // Property Details
     r.drawSectionHeader('Property Details');
     r.drawKeyValueRow([
-      { label: 'Occupancy', value: fields.occupiedBy || 'Self-occupied', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL, highlight: true },
-      { label: 'Occupied By', value: fields.occupantName || 'Self-occupied', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL, highlight: true },
+      { label: 'Occupancy', value: fields.occupiedBy || 'Self-occupied', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
+      { label: 'Occupied By', value: fields.occupantName || 'Self-occupied', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
     ]);
     r.drawKeyValueRow([
       { label: 'Occupied Since', value: fields.occupiedSince || 'NA', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
       { label: 'Name of the Occupant', value: fields.occupantName || 'NA', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
     ]);
     r.drawKeyValueRow([
-      { label: 'Property Demarcated', value: fields.plotDemarcated || 'Yes', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL, highlight: true },
-      { label: 'Property Identification', value: fields.propertyIdentification || 'Yes', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL, highlight: true },
+      { label: 'Property Demarcated', value: fields.plotDemarcated || 'Yes', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
+      { label: 'Property Identification', value: fields.propertyIdentification || 'Yes', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
     ]);
     r.drawKeyValueRow([{ label: 'Identification through', value: fields.identificationThrough || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
     r.drawTwoSlashOptionRows(
@@ -623,7 +623,7 @@ export default function AdityaBirlaCapitalSTSL({
     );
     r.drawKeyValueRow([
       { label: 'Flat Configuration', value: fields.flatConfiguration || 'NA', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
-      { label: 'Property Holding', value: fields.propertyHolding || 'Freehold', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL, highlight: true },
+      { label: 'Property Holding', value: fields.propertyHolding || 'Freehold', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
     ]);
     r.drawKeyValueRow([
       { label: 'Type of Structure', value: fields.structureType || 'RCC', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
@@ -663,7 +663,7 @@ export default function AdityaBirlaCapitalSTSL({
 
     // Accommodation Details
     r.drawSectionHeader('Accommodation/Unit Details');
-    r.drawKeyValueRow([{ label: 'Unit Category', value: fields.unitTypeHeader || 'Building', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, highlight: true }]);
+    r.drawKeyValueRow([{ label: 'Unit Category', value: fields.unitTypeHeader || 'Building', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
     r.drawKeyValueRow([{ label: 'Ground Floor Details', value: fields.accommodationDetails || '3(G+2)', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
 
     // Documentation Details
@@ -740,13 +740,13 @@ export default function AdityaBirlaCapitalSTSL({
     const formulaText = totalCalculatedVal > 0
       ? `Rs.${formatIndianCurrency(plotDeedVal)}/- + Rs.${formatIndianCurrency(buaTotalVal)}/- = Rs.${formatIndianCurrency(totalCalculatedVal)}/-`
       : 'NA';
-    r.drawKeyValueRow([{ label: 'Total Value', value: formulaText, labelWidth: 140, valueWidth: CONTENT_W - 140, highlight: true }]);
-    r.drawKeyValueRow([{ label: 'Distress Value (80%)', value: distressVal > 0 ? `Rs.${formatIndianCurrency(distressVal)}/-` : 'NA', labelWidth: 140, valueWidth: CONTENT_W - 140, highlight: true }]);
+    r.drawKeyValueRow([{ label: 'Total Value', value: formulaText, labelWidth: 140, valueWidth: CONTENT_W - 140 }]);
+    r.drawKeyValueRow([{ label: 'Distress Value (80%)', value: distressVal > 0 ? `Rs.${formatIndianCurrency(distressVal)}/-` : 'NA', labelWidth: 140, valueWidth: CONTENT_W - 140 }]);
     r.drawKeyValueRow([{ label: 'Insurance Value', value: totalCalculatedVal > 0 ? `Rs.${formatIndianCurrency(totalCalculatedVal)}/-` : 'NA', labelWidth: 140, valueWidth: CONTENT_W - 140 }]);
     r.drawKeyValueRow([{ label: 'Government Value', value: fields.govtLandRate ? `Rs.${fields.govtLandRate}/-` : 'NA', labelWidth: 140, valueWidth: CONTENT_W - 140 }]);
     r.drawKeyValueRow([
-      { label: 'Percentage Completion', value: fields.percentageCompletion || '100%', labelWidth: 140, valueWidth: 103.64, highlight: true },
-      { label: 'Percentage Recommendation', value: fields.percentageRecommendation || '100%', labelWidth: 140, valueWidth: 103.64, highlight: true },
+      { label: 'Percentage Completion', value: fields.percentageCompletion || '100%', labelWidth: 140, valueWidth: 132.64 },
+      { label: 'Percentage Recommendation', value: fields.percentageRecommendation || '100%', labelWidth: 140, valueWidth: 132.64 },
     ]);
 
     // Boundary Detailing
@@ -760,7 +760,7 @@ export default function AdityaBirlaCapitalSTSL({
 
     // Remarks & Visited Engineer
     r.drawRemarksBox('Remarks', fields.remarks || '');
-    r.drawKeyValueRow([{ label: 'Name of the Engineer visited', value: fields.engineerVisitedName || '', labelWidth: 180, valueWidth: CONTENT_W - 180, highlight: true }]);
+    r.drawKeyValueRow([{ label: 'Name of the Engineer visited', value: fields.engineerVisitedName || '', labelWidth: 180, valueWidth: CONTENT_W - 180 }]);
 
     // ═══ PAGE 5: PHOTOGRAPHS OF PROPERTY ═══
     if (validPhotoBytes.length > 0) {
