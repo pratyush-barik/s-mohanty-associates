@@ -209,6 +209,7 @@ export default function AdityaBirlaCapitalSTSL({
 
     // Property Details
     occupiedBy: initialFields?.occupiedBy || 'Self-occupied',
+    occupiedByText: initialFields?.occupiedByText || initialFields?.occupiedBy || 'Self-occupied',
     occupantName: initialFields?.occupantName || '',
     occupiedSince: initialFields?.occupiedSince || '',
     plotDemarcated: initialFields?.plotDemarcated || 'Yes',
@@ -337,6 +338,13 @@ export default function AdityaBirlaCapitalSTSL({
     appraiserName: initialFields?.appraiserName || 'Er. Satyajit Mohanty',
     preparedBy: initialFields?.preparedBy || 'Trupti Dash',
     finalizedBy: initialFields?.finalizedBy || 'Trupti Dash',
+
+    // Organisation metadata (for ActiveConfigBanner)
+    organisationTemplate: initialFields?.organisationTemplate || 'ADITYA BIRLA CAPITAL LTD',
+    organisationSubTemplate: initialFields?.organisationSubTemplate || 'STSL',
+    institutionCategory: initialFields?.institutionCategory || 'Bank & FIS',
+    serviceType: initialFields?.serviceType || '',
+    subjectType: initialFields?.subjectType || '',
 
     // Photographs & Maps
     propertyImages: initialFields?.propertyImages || [],
@@ -836,7 +844,7 @@ export default function AdityaBirlaCapitalSTSL({
     r.drawSectionHeader('Property Details');
     r.drawKeyValueRow([
       { label: 'Occupancy', value: fields.occupiedBy || 'Self-occupied', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL, bold: true },
-      { label: 'Occupied By', value: fields.occupantName || 'Self-occupied', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL, bold: true },
+      { label: 'Occupied By', value: fields.occupiedByText || fields.occupiedBy || 'Self-occupied', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL, bold: true },
     ]);
     r.drawKeyValueRow([
       { label: 'Occupied Since', value: fields.occupiedSince || 'NA', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL, bold: false },
@@ -1034,7 +1042,7 @@ export default function AdityaBirlaCapitalSTSL({
     // ═══ PAGE 7: SUPERIMPOSED CADASTRAL MAP & DECLARATION ═══
     r.newPage();
     if (cadMapBytes) {
-      r.drawSectionHeader('CADASRAL MAP', false);
+      r.drawSectionHeader('CADASTRAL MAP', false);
       await r.drawImageSection(cadMapBytes, 'Superimposed Drone / Aerial Cadastral Map', 260);
     }
     r.drawDeclarationSection(
