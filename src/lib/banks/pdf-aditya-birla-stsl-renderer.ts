@@ -414,7 +414,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       details: string;
     }[]
   ): void {
-    const colWidths = [120, 195, 50, 122.28];
+    const colWidths = [135, 215, 60, 135.28];
     const statusOptions = ['Fully Available', 'Partially Available', 'Not Available', 'Not Applicable'];
 
     for (const item of items) {
@@ -541,7 +541,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     usageDeviation: string,
     remarks: string
   ): void {
-    const colWidths = [110, 85, 85, 100, 107.28];
+    const colWidths = [115, 95, 95, 115, 125.28];
     this.drawTable(
       ['Setbacks', 'As per plan/ Bye laws', 'Actual at site', 'Deviation', 'Remarks, if any'],
       [],
@@ -673,7 +673,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     actual: { north: string; south: string; east: string; west: string },
     matching: string
   ): void {
-    const colWidths = [87.28, 100, 100, 100, 100];
+    const colWidths = [105.28, 110, 110, 110, 110];
     this.drawTable(
       ['Detailing', 'North', 'South', 'East', 'West'],
       [
