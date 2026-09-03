@@ -1480,8 +1480,8 @@ export default function AdityaBirlaCapitalSTSL({
                   Quality of Construction & Parking
                 </h3>
               </div>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <Field label="Quality of Construction">
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Quality of Construction" span={2}>
                   <select value={fields.qualityOfConstruction || 'Class B'} onChange={e => handleChange('qualityOfConstruction', e.target.value)} disabled={isReadOnly} className={selectCls}>
                     <option value="Class A">Class A</option>
                     <option value="Class B">Class B</option>
