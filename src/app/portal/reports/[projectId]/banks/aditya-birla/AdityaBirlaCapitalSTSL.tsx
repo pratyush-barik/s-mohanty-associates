@@ -495,6 +495,20 @@ export default function AdityaBirlaCapitalSTSL({
     return round2(totalCalculatedVal * (pct / 100));
   }, [totalCalculatedVal, fields.distressPct]);
 
+  const valItemsBreakdown = useMemo(() => {
+    return [
+      plotDeedVal > 0 ? `Rs.${formatIndianCurrency(plotDeedVal)}/-` : '',
+      plotPhysicalVal > 0 ? `Rs.${formatIndianCurrency(plotPhysicalVal)}/-` : '',
+      carpetPlanVal > 0 ? `Rs.${formatIndianCurrency(carpetPlanVal)}/-` : '',
+      carpetMeasurementVal > 0 ? `Rs.${formatIndianCurrency(carpetMeasurementVal)}/-` : '',
+      buaNormsVal > 0 ? `Rs.${formatIndianCurrency(buaNormsVal)}/-` : '',
+      buaTotalVal > 0 ? `Rs.${formatIndianCurrency(buaTotalVal)}/-` : '',
+      superBuaVal > 0 ? `Rs.${formatIndianCurrency(superBuaVal)}/-` : '',
+      carParkVal > 0 ? `Rs.${formatIndianCurrency(carParkVal)}/-` : '',
+      amenitiesVal > 0 ? `Rs.${formatIndianCurrency(amenitiesVal)}/-` : '',
+    ].filter(Boolean);
+  }, [plotDeedVal, plotPhysicalVal, carpetPlanVal, carpetMeasurementVal, buaNormsVal, buaTotalVal, superBuaVal, carParkVal, amenitiesVal]);
+
   // ─── Annexure State Handlers (Strictly ordered: 1. Technical, 2. Legal, 3+. Custom) ───
   const addAnnexure = () => {
     const newAnnexure: AnnexureItem = {
@@ -2373,180 +2387,268 @@ export default function AdityaBirlaCapitalSTSL({
           </div>
         </Section>
 
-        {/* ═══ SECTION 7: SETBACKS & OTHER DETAILS ═══ */}
-        <Section title="Setbacks & Other Details" number={7}>
-          <div className="space-y-6">
-            {/* Setbacks Measurements */}
-            <div className="space-y-3">
-              <h4 className="text-xs font-bold text-[#0f2038] uppercase tracking-wider">Setback Measurements</h4>
-              <div className="grid md:grid-cols-4 gap-4">
-                <Field label="Front Setback (Plan)">
-                  <input type="text" value={fields.setbackFrontPlan || 'M'} onChange={e => handleChange('setbackFrontPlan', e.target.value)} disabled={isReadOnly} className={inputCls} />
-                </Field>
-                <Field label="Front Setback (Site)">
-                  <input type="text" value={fields.setbackFrontActual || 'M'} onChange={e => handleChange('setbackFrontActual', e.target.value)} disabled={isReadOnly} className={inputCls} />
-                </Field>
-                <Field label="Side 1 Left (Plan)">
-                  <input type="text" value={fields.setbackSide1Plan || 'M'} onChange={e => handleChange('setbackSide1Plan', e.target.value)} disabled={isReadOnly} className={inputCls} />
-                </Field>
-                <Field label="Side 1 Left (Site)">
-                  <input type="text" value={fields.setbackSide1Actual || 'M'} onChange={e => handleChange('setbackSide1Actual', e.target.value)} disabled={isReadOnly} className={inputCls} />
-                </Field>
-                <Field label="Side 2 Right (Plan)">
-                  <input type="text" value={fields.setbackSide2Plan || 'M'} onChange={e => handleChange('setbackSide2Plan', e.target.value)} disabled={isReadOnly} className={inputCls} />
-                </Field>
-                <Field label="Side 2 Right (Site)">
-                  <input type="text" value={fields.setbackSide2Actual || 'M'} onChange={e => handleChange('setbackSide2Actual', e.target.value)} disabled={isReadOnly} className={inputCls} />
-                </Field>
-                <Field label="Rear Setback (Plan)">
-                  <input type="text" value={fields.setbackRearPlan || 'M'} onChange={e => handleChange('setbackRearPlan', e.target.value)} disabled={isReadOnly} className={inputCls} />
-                </Field>
-                <Field label="Rear Setback (Site)">
-                  <input type="text" value={fields.setbackRearActual || 'M'} onChange={e => handleChange('setbackRearActual', e.target.value)} disabled={isReadOnly} className={inputCls} />
-                </Field>
-              </div>
+        {/* ═══ SECTION 7: OTHER DETAILS (SETBACKS & VALUATION SUMMARY) ═══ */}
+        <Section title="Other Details" number={7}>
+          <div className="space-y-4">
+            <div className="overflow-x-auto rounded-lg border border-neutral-200">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="bg-[#0a1628] text-white">
+                    <th colSpan={5} className="px-3 py-2.5 text-center font-bold text-xs uppercase tracking-wider border-b border-[#1e3a5f]">
+                      Other Details
+                    </th>
+                  </tr>
+                  <tr className="bg-[#0f2038] text-white text-xs">
+                    <th className="px-3 py-2 text-left font-semibold border-b border-neutral-300 w-[20%]">Setbacks</th>
+                    <th className="px-3 py-2 text-center font-semibold border-b border-neutral-300 w-[20%]">As per plan/ Bye laws</th>
+                    <th className="px-3 py-2 text-center font-semibold border-b border-neutral-300 w-[20%]">Actual at site</th>
+                    <th className="px-3 py-2 text-center font-semibold border-b border-neutral-300 w-[20%]">Deviation</th>
+                    <th className="px-3 py-2 text-left font-semibold border-b border-neutral-300 w-[20%]">Remarks, if any</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white text-xs text-[#0f2038]">
+                  {/* Row 1: Front */}
+                  <tr className="hover:bg-neutral-50/50 transition-colors">
+                    <td className="px-3 py-2 border-b border-[#e9ecef] font-semibold">Front</td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.setbackFrontPlan || 'M'}
+                        onChange={e => handleChange('setbackFrontPlan', e.target.value)}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1 text-xs text-center'}
+                        placeholder="M"
+                      />
+                    </td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.setbackFrontActual || 'M'}
+                        onChange={e => handleChange('setbackFrontActual', e.target.value)}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1 text-xs text-center'}
+                        placeholder="M"
+                      />
+                    </td>
+                    <td rowSpan={4} className="px-2 py-2 border-b border-[#e9ecef] bg-neutral-50/40 align-middle">
+                      <textarea
+                        rows={5}
+                        value={fields.setbackUsageDeviation || 'Usage Deviation'}
+                        onChange={e => handleChange('setbackUsageDeviation', e.target.value)}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1.5 text-xs resize-none text-center font-medium'}
+                        placeholder="Usage Deviation"
+                      />
+                    </td>
+                    <td rowSpan={4} className="px-2 py-2 border-b border-[#e9ecef] bg-neutral-50/40 align-middle">
+                      <textarea
+                        rows={5}
+                        value={fields.setbackRemarks || 'Plan not provided'}
+                        onChange={e => handleChange('setbackRemarks', e.target.value)}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1.5 text-xs resize-none font-medium'}
+                        placeholder="Plan not provided"
+                      />
+                    </td>
+                  </tr>
 
-              <div className="grid md:grid-cols-2 gap-4">
-                <Field label="Usage Deviation">
-                  <input type="text" value={fields.setbackUsageDeviation || 'Usage Deviation'} onChange={e => handleChange('setbackUsageDeviation', e.target.value)} disabled={isReadOnly} className={inputCls} />
-                </Field>
-                <Field label="Setback Remarks">
-                  <input type="text" value={fields.setbackRemarks || 'Plan not provided'} onChange={e => handleChange('setbackRemarks', e.target.value)} disabled={isReadOnly} className={inputCls} />
-                </Field>
-              </div>
-            </div>
+                  {/* Row 2: Side1(Left) */}
+                  <tr className="hover:bg-neutral-50/50 transition-colors">
+                    <td className="px-3 py-2 border-b border-[#e9ecef] font-semibold">Side1(Left)</td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.setbackSide1Plan || 'M'}
+                        onChange={e => handleChange('setbackSide1Plan', e.target.value)}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1 text-xs text-center'}
+                        placeholder="M"
+                      />
+                    </td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.setbackSide1Actual || 'M'}
+                        onChange={e => handleChange('setbackSide1Actual', e.target.value)}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1 text-xs text-center'}
+                        placeholder="M"
+                      />
+                    </td>
+                  </tr>
 
-            {/* Valuation Summary & Reference Details Cards */}
-            <div className="space-y-4 pt-4 border-t border-neutral-200">
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <h4 className="text-xs font-bold text-[#0f2038] uppercase tracking-wider">
-                  Valuation Summary & Final Values (Other Details)
-                </h4>
-                <span className="text-[11px] text-neutral-500 bg-neutral-100 px-2.5 py-1 rounded-full font-medium">
-                  Auto-calculated from Section 6 Valuation Table
-                </span>
-              </div>
+                  {/* Row 3: Side2(Right) */}
+                  <tr className="hover:bg-neutral-50/50 transition-colors">
+                    <td className="px-3 py-2 border-b border-[#e9ecef] font-semibold">Side2(Right)</td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.setbackSide2Plan || 'M'}
+                        onChange={e => handleChange('setbackSide2Plan', e.target.value)}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1 text-xs text-center'}
+                        placeholder="M"
+                      />
+                    </td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.setbackSide2Actual || 'M'}
+                        onChange={e => handleChange('setbackSide2Actual', e.target.value)}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1 text-xs text-center'}
+                        placeholder="M"
+                      />
+                    </td>
+                  </tr>
 
-              <div className="grid md:grid-cols-3 gap-4">
-                {/* Card 1: Total Property Value */}
-                <div className="p-4 rounded-xl bg-gradient-to-br from-[#0f2038] to-[#1e3a5f] text-white flex flex-col justify-between shadow-xs">
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-neutral-300 uppercase font-bold tracking-wider">
-                        Total Property Value
-                      </span>
-                      <span className="text-[10px] bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded font-semibold">
-                        Section 6 Sum
-                      </span>
-                    </div>
-                    <div className="text-2xl font-black text-amber-300 my-1">
-                      Rs. {formatIndianCurrency(totalCalculatedVal)}
-                    </div>
-                  </div>
-                  <div className="text-[11px] text-neutral-300 mt-2 pt-2 border-t border-white/10 leading-snug">
-                    <span className="font-semibold text-neutral-200 block mb-0.5">Referenced from:</span>
-                    {[
-                      plotDeedVal > 0 ? `Plot (Deed): Rs.${formatIndianCurrency(plotDeedVal)}` : '',
-                      plotPhysicalVal > 0 ? `Plot (Physical): Rs.${formatIndianCurrency(plotPhysicalVal)}` : '',
-                      carpetPlanVal > 0 ? `Carpet (Plan): Rs.${formatIndianCurrency(carpetPlanVal)}` : '',
-                      carpetMeasurementVal > 0 ? `Carpet (Meas.): Rs.${formatIndianCurrency(carpetMeasurementVal)}` : '',
-                      buaNormsVal > 0 ? `BUA (Norms): Rs.${formatIndianCurrency(buaNormsVal)}` : '',
-                      buaTotalVal > 0 ? `BUA (Meas.): Rs.${formatIndianCurrency(buaTotalVal)}` : '',
-                      superBuaVal > 0 ? `Super BUA: Rs.${formatIndianCurrency(superBuaVal)}` : '',
-                      carParkVal > 0 ? `Car Park: Rs.${formatIndianCurrency(carParkVal)}` : '',
-                      amenitiesVal > 0 ? `Amenities: Rs.${formatIndianCurrency(amenitiesVal)}` : '',
-                    ].filter(Boolean).join(' + ') || 'Valuation Table items (Section 6)'}
-                  </div>
-                </div>
+                  {/* Row 4: Rear */}
+                  <tr className="hover:bg-neutral-50/50 transition-colors">
+                    <td className="px-3 py-2 border-b-2 border-neutral-300 font-semibold">Rear</td>
+                    <td className="px-2 py-1.5 border-b-2 border-neutral-300">
+                      <input
+                        type="text"
+                        value={fields.setbackRearPlan || 'M'}
+                        onChange={e => handleChange('setbackRearPlan', e.target.value)}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1 text-xs text-center'}
+                        placeholder="M"
+                      />
+                    </td>
+                    <td className="px-2 py-1.5 border-b-2 border-neutral-300">
+                      <input
+                        type="text"
+                        value={fields.setbackRearActual || 'M'}
+                        onChange={e => handleChange('setbackRearActual', e.target.value)}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1 text-xs text-center'}
+                        placeholder="M"
+                      />
+                    </td>
+                  </tr>
 
-                {/* Card 2: Distress Value (with editable percentage) */}
-                <div className="p-4 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/80 text-amber-950 flex flex-col justify-between shadow-xs">
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-amber-900 uppercase font-bold tracking-wider">
-                        Distress Value
-                      </span>
-                      <div className="flex items-center gap-1 bg-white border border-amber-300 px-2 py-0.5 rounded shadow-2xs">
-                        <span className="text-[11px] text-amber-800 font-semibold">Rate:</span>
+                  {/* Valuation Summary Rows in Tabular Form */}
+                  {/* Total Value */}
+                  <tr className="bg-white hover:bg-neutral-50/50 transition-colors">
+                    <td className="px-3 py-2.5 border-b border-[#e9ecef] font-bold text-xs bg-neutral-50/80">
+                      Total Value
+                    </td>
+                    <td colSpan={4} className="px-3 py-2.5 border-b border-[#e9ecef]">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <span className="font-bold text-xs text-[#0f2038]">
+                          {totalCalculatedVal > 0 ? (
+                            valItemsBreakdown.length > 1
+                              ? `${valItemsBreakdown.join(' + ')} = Rs.${formatIndianCurrency(totalCalculatedVal)}/-`
+                              : `Rs.${formatIndianCurrency(totalCalculatedVal)}/-`
+                          ) : 'NA'}
+                        </span>
+                        <span className="text-[11px] text-neutral-500 font-medium">
+                          Auto-sum from Section 6 Valuation Table
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+
+                  {/* Distress Value (with editable percentage) */}
+                  <tr className="bg-white hover:bg-neutral-50/50 transition-colors">
+                    <td className="px-3 py-2.5 border-b border-[#e9ecef] font-bold text-xs bg-neutral-50/80">
+                      <div className="flex items-center gap-1.5">
+                        <span>Distress Value (</span>
                         <input
                           type="text"
                           value={fields.distressPct || '80'}
                           onKeyDown={blockNegativeKeys}
                           onChange={e => handleChange('distressPct', sanitizePositiveDecimal(e.target.value))}
                           disabled={isReadOnly}
-                          className="w-8 text-center text-xs font-black text-amber-900 bg-transparent outline-hidden p-0 border-b border-amber-400 focus:border-amber-600"
+                          className="w-7 text-center text-xs font-black text-amber-900 bg-amber-50 border border-amber-300 rounded px-0.5 py-0.5"
                           placeholder="80"
                           title="Click to edit Distress percentage"
                         />
-                        <span className="text-xs font-bold text-amber-900">%</span>
+                        <span>%)</span>
                       </div>
-                    </div>
-                    <div className="text-2xl font-black text-amber-900 my-1">
-                      Rs. {formatIndianCurrency(distressVal)}
-                    </div>
-                  </div>
-                  <div className="text-[11px] text-amber-800 mt-2 pt-2 border-t border-amber-200/60 leading-snug">
-                    <span className="font-semibold text-amber-950 block mb-0.5">Referenced from:</span>
-                    Calculated as {fields.distressPct || '80'}% of Total Property Value (Rs. {formatIndianCurrency(totalCalculatedVal)})
-                  </div>
-                </div>
+                    </td>
+                    <td colSpan={4} className="px-3 py-2.5 border-b border-[#e9ecef]">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <span className="font-bold text-xs text-[#0f2038]">
+                          {distressVal > 0 ? `Rs.${formatIndianCurrency(distressVal)}/-` : 'NA'}
+                        </span>
+                        <span className="text-[11px] text-neutral-500 font-medium">
+                          Calculated as {fields.distressPct || '80'}% of Total Property Value
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
 
-                {/* Card 3: Insurance Value */}
-                <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200/80 text-blue-950 flex flex-col justify-between shadow-xs">
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-blue-900 uppercase font-bold tracking-wider">
-                        Insurance Value
-                      </span>
-                      <span className="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-semibold">
-                        Reinstatement
-                      </span>
-                    </div>
-                    <div className="text-2xl font-black text-blue-900 my-1">
-                      Rs. {formatIndianCurrency(totalCalculatedVal)}
-                    </div>
-                  </div>
-                  <div className="text-[11px] text-blue-800 mt-2 pt-2 border-t border-blue-200/60 leading-snug">
-                    <span className="font-semibold text-blue-950 block mb-0.5">Referenced from:</span>
-                    Referenced from Total Property Valuation (Structure Replacement Cost)
-                  </div>
-                </div>
-              </div>
+                  {/* Insurance Value */}
+                  <tr className="bg-white hover:bg-neutral-50/50 transition-colors">
+                    <td className="px-3 py-2.5 border-b border-[#e9ecef] font-bold text-xs bg-neutral-50/80">
+                      Insurance Value
+                    </td>
+                    <td colSpan={4} className="px-3 py-2.5 border-b border-[#e9ecef]">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <span className="font-bold text-xs text-[#0f2038]">
+                          {totalCalculatedVal > 0 ? `Rs.${formatIndianCurrency(totalCalculatedVal)}/-` : 'NA'}
+                        </span>
+                        <span className="text-[11px] text-neutral-500 font-medium">
+                          Structure Reinstatement Value
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
 
-              {/* Completion & Government Value Row */}
-              <div className="grid md:grid-cols-3 gap-4 pt-2">
-                <Field label="Government Land Rate (Rs.)" tooltip="Sub-Registrar Guideline Land Rate">
-                  <input
-                    type="text"
-                    value={fields.govtLandRate || ''}
-                    onKeyDown={blockNegativeKeys}
-                    onChange={e => handleChange('govtLandRate', sanitizePositiveDecimal(e.target.value))}
-                    disabled={isReadOnly}
-                    className={inputCls}
-                    placeholder="e.g. 500"
-                  />
-                </Field>
-                <Field label="Percentage Completion">
-                  <input
-                    type="text"
-                    value={fields.percentageCompletion || '100%'}
-                    onChange={e => handleChange('percentageCompletion', e.target.value)}
-                    disabled={isReadOnly}
-                    className={inputCls}
-                    placeholder="100%"
-                  />
-                </Field>
-                <Field label="Percentage Recommendation">
-                  <input
-                    type="text"
-                    value={fields.percentageRecommendation || '100%'}
-                    onChange={e => handleChange('percentageRecommendation', e.target.value)}
-                    disabled={isReadOnly}
-                    className={inputCls}
-                    placeholder="100%"
-                  />
-                </Field>
-              </div>
+                  {/* Government Value */}
+                  <tr className="bg-white hover:bg-neutral-50/50 transition-colors">
+                    <td className="px-3 py-2.5 border-b border-[#e9ecef] font-bold text-xs bg-neutral-50/80">
+                      Government Value
+                    </td>
+                    <td colSpan={4} className="px-3 py-2 border-b border-[#e9ecef]">
+                      <div className="flex items-center gap-1.5 max-w-xs">
+                        <span className="text-xs font-medium text-neutral-600">Rs.</span>
+                        <input
+                          type="text"
+                          value={fields.govtLandRate || ''}
+                          onKeyDown={blockNegativeKeys}
+                          onChange={e => handleChange('govtLandRate', sanitizePositiveDecimal(e.target.value))}
+                          disabled={isReadOnly}
+                          className={inputCls + ' !py-1 text-xs font-semibold text-left'}
+                          placeholder="e.g. 500"
+                        />
+                        <span className="text-xs font-medium text-neutral-600">/-</span>
+                      </div>
+                    </td>
+                  </tr>
+
+                  {/* Percentage Completion & Recommendation */}
+                  <tr className="bg-white hover:bg-neutral-50/50 transition-colors">
+                    <td className="px-3 py-2.5 border-b border-[#e9ecef] font-bold text-xs bg-neutral-50/80">
+                      Percentage Completion
+                    </td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.percentageCompletion || '100%'}
+                        onChange={e => handleChange('percentageCompletion', e.target.value)}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1 text-xs text-center font-semibold'}
+                        placeholder="100%"
+                      />
+                    </td>
+                    <td className="px-3 py-2.5 border-b border-[#e9ecef] font-bold text-xs bg-neutral-50/80 text-left">
+                      Percentage Recommendation
+                    </td>
+                    <td colSpan={2} className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.percentageRecommendation || '100%'}
+                        onChange={e => handleChange('percentageRecommendation', e.target.value)}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1 text-xs text-center font-semibold'}
+                        placeholder="100%"
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </Section>
