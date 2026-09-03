@@ -63,6 +63,22 @@ const DEFAULT_ACCOM_ROWS: AccomRow[] = [
   { floor: 'Ground Floor', unitDetails: '' },
 ];
 
+const blockNegativeKeys = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  if (['-', '+', 'e', 'E'].includes(e.key)) {
+    e.preventDefault();
+  }
+};
+
+const sanitizePositiveDecimal = (val: string): string => {
+  if (!val) return '';
+  let cleaned = val.replace(/[^0-9.]/g, '');
+  const parts = cleaned.split('.');
+  if (parts.length > 2) {
+    cleaned = parts[0] + '.' + parts.slice(1).join('');
+  }
+  return cleaned;
+};
+
 export const NAV_SECTIONS: NavItem[] = [
   { id: 'section-1', title: 'Basic Details' },
   { id: 'section-2', title: 'Location Details' },
@@ -201,14 +217,18 @@ export default function AdityaBirlaCapitalSTSL({
     carpetAreaPlan: initialFields?.carpetAreaPlan || 'NA',
     carpetAreaMeasurement: initialFields?.carpetAreaMeasurement || '',
     buaNorms: initialFields?.buaNorms || 'NA',
-    buaMeasurementLabel: initialFields?.buaMeasurementLabel || 'Built Up Area (as per measurement)',
+    buaMeasurementLabel: initialFields?.buaMeasurementLabel || 'Built Up Area (as per measurement) (G+2)',
     buaMeasurementArea: initialFields?.buaMeasurementArea || '',
     buaMeasurementRate: initialFields?.buaMeasurementRate || '',
     buaMeasurementValue: initialFields?.buaMeasurementValue || '',
     superBua: initialFields?.superBua || '',
     superBuaRate: initialFields?.superBuaRate || '0',
     superBuaValue: initialFields?.superBuaValue || '0',
+    carParkArea: initialFields?.carParkArea || '0',
+    carParkRate: initialFields?.carParkRate || '0',
     carParkValue: initialFields?.carParkValue || '0',
+    amenitiesArea: initialFields?.amenitiesArea || '0',
+    amenitiesRate: initialFields?.amenitiesRate || '0',
     amenitiesValue: initialFields?.amenitiesValue || '0',
 
     // Setbacks & Other Valuation Summary
@@ -337,9 +357,27 @@ export default function AdityaBirlaCapitalSTSL({
     return Math.round(area * rate);
   }, [fields.buaMeasurementArea, fields.buaMeasurementRate]);
 
+  const superBuaVal = useMemo(() => {
+    const area = parseFloat(String(fields.superBua || '0').replace(/[^0-9.]/g, '')) || 0;
+    const rate = parseFloat(String(fields.superBuaRate || '0').replace(/[^0-9.]/g, '')) || 0;
+    return Math.round(area * rate);
+  }, [fields.superBua, fields.superBuaRate]);
+
+  const carParkVal = useMemo(() => {
+    const area = parseFloat(String(fields.carParkArea || '0').replace(/[^0-9.]/g, '')) || 0;
+    const rate = parseFloat(String(fields.carParkRate || '0').replace(/[^0-9.]/g, '')) || 0;
+    return Math.round(area * rate);
+  }, [fields.carParkArea, fields.carParkRate]);
+
+  const amenitiesVal = useMemo(() => {
+    const area = parseFloat(String(fields.amenitiesArea || '0').replace(/[^0-9.]/g, '')) || 0;
+    const rate = parseFloat(String(fields.amenitiesRate || '0').replace(/[^0-9.]/g, '')) || 0;
+    return Math.round(area * rate);
+  }, [fields.amenitiesArea, fields.amenitiesRate]);
+
   const totalCalculatedVal = useMemo(() => {
-    return plotDeedVal + buaTotalVal;
-  }, [plotDeedVal, buaTotalVal]);
+    return plotDeedVal + buaTotalVal + superBuaVal + carParkVal + amenitiesVal;
+  }, [plotDeedVal, buaTotalVal, superBuaVal, carParkVal, amenitiesVal]);
 
   const distressVal = useMemo(() => {
     return Math.round(totalCalculatedVal * 0.8);
@@ -755,18 +793,23 @@ export default function AdityaBirlaCapitalSTSL({
     // Valuation Table
     r.drawSectionHeader('Valuation');
     const valCols = [215, 110, 110, 110.28];
+    const fmtArea = (val: any) => {
+      if (!val || val === 'NA' || val === '-') return val || 'NA';
+      const s = String(val).trim();
+      return s.toLowerCase().endsWith('sqft') ? s : `${s}sqft`;
+    };
     r.drawTable(
       ['Detailing', 'Area in Sqft', 'Rate per Sqft', 'Value'],
       [
-        ['Plot Area (in Deed)', String(fields.plotAreaDocs || 'NA'), fields.plotAreaDocsRate ? `Rs.${fields.plotAreaDocsRate}/-` : 'NA', plotDeedVal > 0 ? `Rs.${formatIndianCurrency(plotDeedVal)}/-` : '-'],
-        ['Plot Area (as per physical)', String(fields.plotAreaPhysical || 'NA'), '-', '-'],
-        ['Carpet Area (as per plan)', String(fields.carpetAreaPlan || 'NA'), '-', '-'],
-        ['Carpet Area (as per measurement)', String(fields.carpetAreaMeasurement || 'NA'), '-', '-'],
-        ['Built Up Area (as per Norms)', String(fields.buaNorms || 'NA'), '-', '-'],
-        [fields.buaMeasurementLabel || 'Built Up Area (as per measurement)', String(fields.buaMeasurementArea || 'NA'), fields.buaMeasurementRate ? `Rs.${fields.buaMeasurementRate}/-` : 'NA', buaTotalVal > 0 ? `Rs.${formatIndianCurrency(buaTotalVal)}/-` : '-'],
-        ['Super Built-Up Area', String(fields.superBua || '0'), '0', '0'],
-        ['Car Park', '0', '0', '0'],
-        ['Amenities', '0', '0', '0'],
+        ['Plot Area (in Deed)', fmtArea(fields.plotAreaDocs), fields.plotAreaDocsRate ? `Rs.${fields.plotAreaDocsRate}/-` : 'NA', plotDeedVal > 0 ? `Rs.${formatIndianCurrency(plotDeedVal)}/-` : '-'],
+        ['Plot Area (as per physical)', fmtArea(fields.plotAreaPhysical), '', ''],
+        ['Carpet Area (as per plan)', String(fields.carpetAreaPlan || 'NA'), '', ''],
+        ['Carpet Area (as per measurement)', fmtArea(fields.carpetAreaMeasurement), '', ''],
+        ['Built Up Area (as per Norms)', String(fields.buaNorms || 'NA'), '', ''],
+        [fields.buaMeasurementLabel || 'Built Up Area (as per measurement) (G+2)', fmtArea(fields.buaMeasurementArea), fields.buaMeasurementRate ? `Rs.${fields.buaMeasurementRate}/-` : 'NA', buaTotalVal > 0 ? `Rs.${formatIndianCurrency(buaTotalVal)}/-` : '-'],
+        ['Super Built-Up Area', fields.superBua ? fmtArea(fields.superBua) : '', fields.superBuaRate ? String(fields.superBuaRate) : '0', superBuaVal > 0 ? `Rs.${formatIndianCurrency(superBuaVal)}/-` : '0'],
+        ['Car Park', String(fields.carParkArea || '0'), String(fields.carParkRate || '0'), carParkVal > 0 ? `Rs.${formatIndianCurrency(carParkVal)}/-` : '0'],
+        ['Amenities', String(fields.amenitiesArea || '0'), String(fields.amenitiesRate || '0'), amenitiesVal > 0 ? `Rs.${formatIndianCurrency(amenitiesVal)}/-` : '0'],
       ],
       valCols,
       [3]
@@ -1770,7 +1813,7 @@ export default function AdityaBirlaCapitalSTSL({
                   </thead>
                   <tbody>
                     {(fields.buaRows || DEFAULT_BUA_ROWS).map((row, idx) => (
-                      <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-[#f8f9fa]'}>
+                      <tr key={idx} className="bg-white hover:bg-neutral-50/50 transition-colors">
                         <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                           <input
                             className={inputCls + ' !py-1.5 text-xs font-bold text-[#0f2038]'}
@@ -1877,36 +1920,263 @@ export default function AdityaBirlaCapitalSTSL({
         {/* ═══ SECTION 6: VALUATION TABLE ═══ */}
         <Section title="Valuation Details" number={6}>
           <div className="space-y-4">
-            <div className="grid md:grid-cols-3 gap-4">
-              <Field label="Plot Area (in Deed)">
-                <input type="text" value={fields.plotAreaDocs || ''} onChange={e => handleChange('plotAreaDocs', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 1500 sqft" />
-              </Field>
-              <Field label="Plot Rate (Rs/sqft)">
-                <input type="text" value={fields.plotAreaDocsRate || ''} onChange={e => handleChange('plotAreaDocsRate', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 1200" />
-              </Field>
-              <Field label="Plot Land Value (Rs)">
-                <input type="text" value={plotDeedVal > 0 ? `Rs. ${formatIndianCurrency(plotDeedVal)}` : 'Rs. 0'} disabled className={`${inputCls} font-bold text-green-700 bg-green-50`} />
-              </Field>
+            <div className="overflow-x-auto rounded-lg border border-neutral-200">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="bg-[#0a1628] text-white">
+                    <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider">Detailing</th>
+                    <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">Area in Sqft</th>
+                    <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">Rate per Sqft</th>
+                    <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {/* Row 1: Plot Area (in Deed) */}
+                  <tr className="bg-white">
+                    <td className="px-3 py-2 border-b border-[#e9ecef] font-medium text-xs text-[#0f2038]">
+                      Plot Area (in Deed)
+                    </td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.plotAreaDocs || ''}
+                        onKeyDown={blockNegativeKeys}
+                        onChange={e => handleChange('plotAreaDocs', sanitizePositiveDecimal(e.target.value))}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1.5 text-xs text-right'}
+                        placeholder="e.g. 3920"
+                      />
+                    </td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.plotAreaDocsRate || ''}
+                        onKeyDown={blockNegativeKeys}
+                        onChange={e => handleChange('plotAreaDocsRate', sanitizePositiveDecimal(e.target.value))}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1.5 text-xs text-right'}
+                        placeholder="e.g. 700"
+                      />
+                    </td>
+                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-bold text-xs bg-amber-50/50 text-[#0f2038]">
+                      {plotDeedVal > 0 ? `Rs.${formatIndianCurrency(plotDeedVal)}/-` : '-'}
+                    </td>
+                  </tr>
 
-              <Field label="Plot Area (Physical)">
-                <input type="text" value={fields.plotAreaPhysical || ''} onChange={e => handleChange('plotAreaPhysical', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 1500 sqft" />
-              </Field>
-              <Field label="Carpet Area (Plan)">
-                <input type="text" value={fields.carpetAreaPlan || ''} onChange={e => handleChange('carpetAreaPlan', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 1200 sqft or NA" />
-              </Field>
-              <Field label="Carpet Area (Measurement)">
-                <input type="text" value={fields.carpetAreaMeasurement || ''} onChange={e => handleChange('carpetAreaMeasurement', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 1200 sqft or NA" />
-              </Field>
+                  {/* Row 2: Plot Area (as per physical) */}
+                  <tr className="bg-white hover:bg-neutral-50/50 transition-colors">
+                    <td className="px-3 py-2 border-b border-[#e9ecef] font-medium text-xs text-[#0f2038]">
+                      Plot Area (as per physical)
+                    </td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.plotAreaPhysical || ''}
+                        onKeyDown={blockNegativeKeys}
+                        onChange={e => handleChange('plotAreaPhysical', sanitizePositiveDecimal(e.target.value))}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1.5 text-xs text-right'}
+                        placeholder="e.g. 3920"
+                      />
+                    </td>
+                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right text-xs text-slate-400">-</td>
+                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right text-xs text-slate-400">-</td>
+                  </tr>
 
-              <Field label="Built Up Area Header Label" span={1}>
-                <input type="text" value={fields.buaMeasurementLabel || 'Built Up Area (as per measurement)'} onChange={e => handleChange('buaMeasurementLabel', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
-              <Field label="BUA Rate (Rs/sqft)">
-                <input type="text" value={fields.buaMeasurementRate || ''} onChange={e => handleChange('buaMeasurementRate', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 1500" />
-              </Field>
-              <Field label="BUA Total Value (Rs)">
-                <input type="text" value={buaTotalVal > 0 ? `Rs. ${formatIndianCurrency(buaTotalVal)}` : 'Rs. 0'} disabled className={`${inputCls} font-bold text-green-700 bg-green-50`} />
-              </Field>
+                  {/* Row 3: Carpet Area (as per plan) */}
+                  <tr className="bg-white hover:bg-neutral-50/50 transition-colors">
+                    <td className="px-3 py-2 border-b border-[#e9ecef] font-medium text-xs text-[#0f2038]">
+                      Carpet Area (as per plan)
+                    </td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.carpetAreaPlan || ''}
+                        onChange={e => handleChange('carpetAreaPlan', e.target.value)}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1.5 text-xs text-right'}
+                        placeholder="e.g. NA"
+                      />
+                    </td>
+                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right text-xs text-slate-400">-</td>
+                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right text-xs text-slate-400">-</td>
+                  </tr>
+
+                  {/* Row 4: Carpet Area (as per measurement) */}
+                  <tr className="bg-white hover:bg-neutral-50/50 transition-colors">
+                    <td className="px-3 py-2 border-b border-[#e9ecef] font-medium text-xs text-[#0f2038]">
+                      Carpet Area (as per measurement)
+                    </td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.carpetAreaMeasurement || ''}
+                        onKeyDown={blockNegativeKeys}
+                        onChange={e => handleChange('carpetAreaMeasurement', sanitizePositiveDecimal(e.target.value))}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1.5 text-xs text-right'}
+                        placeholder="e.g. 1892"
+                      />
+                    </td>
+                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right text-xs text-slate-400">-</td>
+                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right text-xs text-slate-400">-</td>
+                  </tr>
+
+                  {/* Row 5: Built Up Area (as per Norms) */}
+                  <tr className="bg-white hover:bg-neutral-50/50 transition-colors">
+                    <td className="px-3 py-2 border-b border-[#e9ecef] font-medium text-xs text-[#0f2038]">
+                      Built Up Area (as per Norms)
+                    </td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.buaNorms || ''}
+                        onChange={e => handleChange('buaNorms', e.target.value)}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1.5 text-xs text-right'}
+                        placeholder="e.g. NA"
+                      />
+                    </td>
+                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right text-xs text-slate-400">-</td>
+                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right text-xs text-slate-400">-</td>
+                  </tr>
+
+                  {/* Row 6: Built Up Area (as per measurement) */}
+                  <tr className="bg-white hover:bg-neutral-50/50 transition-colors">
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.buaMeasurementLabel || 'Built Up Area (as per measurement) (G+2)'}
+                        onChange={e => handleChange('buaMeasurementLabel', e.target.value)}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1.5 text-xs font-medium text-[#0f2038]'}
+                        placeholder="e.g. Built Up Area (as per measurement) (G+2)"
+                      />
+                    </td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.buaMeasurementArea || ''}
+                        onKeyDown={blockNegativeKeys}
+                        onChange={e => handleChange('buaMeasurementArea', sanitizePositiveDecimal(e.target.value))}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1.5 text-xs text-right'}
+                        placeholder="e.g. 2226"
+                      />
+                    </td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.buaMeasurementRate || ''}
+                        onKeyDown={blockNegativeKeys}
+                        onChange={e => handleChange('buaMeasurementRate', sanitizePositiveDecimal(e.target.value))}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1.5 text-xs text-right'}
+                        placeholder="e.g. 1500"
+                      />
+                    </td>
+                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-bold text-xs bg-amber-50/50 text-[#0f2038]">
+                      {buaTotalVal > 0 ? `Rs.${formatIndianCurrency(buaTotalVal)}/-` : '-'}
+                    </td>
+                  </tr>
+
+                  {/* Row 7: Super Built-Up Area */}
+                  <tr className="bg-white hover:bg-neutral-50/50 transition-colors">
+                    <td className="px-3 py-2 border-b border-[#e9ecef] font-medium text-xs text-[#0f2038]">
+                      Super Built-Up Area
+                    </td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.superBua || ''}
+                        onKeyDown={blockNegativeKeys}
+                        onChange={e => handleChange('superBua', sanitizePositiveDecimal(e.target.value))}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1.5 text-xs text-right'}
+                        placeholder="0"
+                      />
+                    </td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.superBuaRate || '0'}
+                        onKeyDown={blockNegativeKeys}
+                        onChange={e => handleChange('superBuaRate', sanitizePositiveDecimal(e.target.value))}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1.5 text-xs text-right'}
+                        placeholder="0"
+                      />
+                    </td>
+                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-medium text-xs text-[#0f2038]">
+                      {superBuaVal > 0 ? `Rs.${formatIndianCurrency(superBuaVal)}/-` : '0'}
+                    </td>
+                  </tr>
+
+                  {/* Row 8: Car Park */}
+                  <tr className="bg-white hover:bg-neutral-50/50 transition-colors">
+                    <td className="px-3 py-2 border-b border-[#e9ecef] font-medium text-xs text-[#0f2038]">
+                      Car Park
+                    </td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.carParkArea || '0'}
+                        onKeyDown={blockNegativeKeys}
+                        onChange={e => handleChange('carParkArea', sanitizePositiveDecimal(e.target.value))}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1.5 text-xs text-right'}
+                        placeholder="0"
+                      />
+                    </td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.carParkRate || '0'}
+                        onKeyDown={blockNegativeKeys}
+                        onChange={e => handleChange('carParkRate', sanitizePositiveDecimal(e.target.value))}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1.5 text-xs text-right'}
+                        placeholder="0"
+                      />
+                    </td>
+                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-medium text-xs text-[#0f2038]">
+                      {carParkVal > 0 ? `Rs.${formatIndianCurrency(carParkVal)}/-` : '0'}
+                    </td>
+                  </tr>
+
+                  {/* Row 9: Amenities */}
+                  <tr className="bg-white hover:bg-neutral-50/50 transition-colors">
+                    <td className="px-3 py-2 border-b border-[#e9ecef] font-medium text-xs text-[#0f2038]">
+                      Amenities
+                    </td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.amenitiesArea || '0'}
+                        onKeyDown={blockNegativeKeys}
+                        onChange={e => handleChange('amenitiesArea', sanitizePositiveDecimal(e.target.value))}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1.5 text-xs text-right'}
+                        placeholder="0"
+                      />
+                    </td>
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <input
+                        type="text"
+                        value={fields.amenitiesRate || '0'}
+                        onKeyDown={blockNegativeKeys}
+                        onChange={e => handleChange('amenitiesRate', sanitizePositiveDecimal(e.target.value))}
+                        disabled={isReadOnly}
+                        className={inputCls + ' !py-1.5 text-xs text-right'}
+                        placeholder="0"
+                      />
+                    </td>
+                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-medium text-xs text-[#0f2038]">
+                      {amenitiesVal > 0 ? `Rs.${formatIndianCurrency(amenitiesVal)}/-` : '0'}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
             {/* Total Valuation Summary Banner */}
