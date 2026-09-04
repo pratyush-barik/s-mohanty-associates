@@ -680,15 +680,15 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       details?: string;
     }[]
   ): void {
-    // Exact coincidence with BUA table: [115, 150, 55, 167.28]
-    // 115 + 150 = 265 (same X as Details label & Deviations!)
-    // Details label width = 55 (same width as Deviations!)
-    // Details content width = 167.28 (same width as Remarks!)
-    const colWidths = [115, 150, 55, CONTENT_W - (115 + 150 + 55)];
+    // Exact coincidence with BUA table: [115, 160, 60, 152.28]
+    // 115 + 160 = 275 (same X as Details label & Deviations!)
+    // Details label width = 60 (same width as Deviations!)
+    // Details content width = 152.28 (same width as Remarks!)
+    const colWidths = [115, 160, 60, CONTENT_W - (115 + 160 + 60)];
     const statusOptions = ['Fully Available', 'Partially Available', 'Not Available', 'Not Applicable'];
     const pad = 3;
     const fontSize = FONT_SIZE;
-    const stFontSize = 10;
+    const stFontSize = 9.5;
     const sep = '//';
     const sepW = this.fontRegular.widthOfTextAtSize(sep, stFontSize);
     const spaceW = this.fontRegular.widthOfTextAtSize(' ', stFontSize);
@@ -836,11 +836,11 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       remarks?: string;
     }[]
   ): void {
-    // Coincides with Doc Details: [115, 75, 75, 55, 167.28]
-    // 115 + 75 + 75 = 265 (same X as Details label & Deviations!)
-    // Deviations width = 55 (same width as Details label!)
-    // Remarks width = 167.28 (same width as Details content!)
-    const colWidths = [115, 75, 75, 55, CONTENT_W - (115 + 75 + 75 + 55)];
+    // Coincides with Doc Details: [115, 80, 80, 60, 152.28]
+    // 115 + 80 + 80 = 275 (same X as Details label & Deviations!)
+    // Deviations width = 60 (same width as Details label!)
+    // Remarks width = 152.28 (same width as Details content!)
+    const colWidths = [115, 80, 80, 60, CONTENT_W - (115 + 80 + 80 + 60)];
     const headerCols = [
       ['Built up area'],
       ['As per Site'],
@@ -874,12 +874,17 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       let lineY = y - (headerH - totalTextH) / 2 - fontSize * 0.85;
 
       for (const line of lines) {
-        const hW = this.fontBold.widthOfTextAtSize(line, fontSize);
+        let hFontSize = fontSize;
+        let hW = this.fontBold.widthOfTextAtSize(line, hFontSize);
+        if (hW > colWidths[i] - pad * 2) {
+          hFontSize = fontSize - 0.5;
+          hW = this.fontBold.widthOfTextAtSize(line, hFontSize);
+        }
         const hX = curX + Math.max(pad, (colWidths[i] - hW) / 2);
         this.page.drawText(line, {
           x: hX,
           y: lineY,
-          size: fontSize,
+          size: hFontSize,
           font: this.fontBold,
           color: rgb(0, 0, 0),
         });
