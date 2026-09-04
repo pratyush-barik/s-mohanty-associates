@@ -1149,7 +1149,9 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
         ['Bhulekh map', bhulekh.north || '', bhulekh.south || '', bhulekh.east || '', bhulekh.west || ''],
         ['As per Actual', actual.north || '', actual.south || '', actual.east || '', actual.west || ''],
       ],
-      colWidths
+      colWidths,
+      [],
+      [0]
     );
 
     this.drawKeyValueRow([

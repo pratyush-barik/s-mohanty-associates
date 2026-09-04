@@ -258,10 +258,16 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
   }
 
   /**
-   * Draw a Generic Data Table with transparent background headers and highlighted columns/rows
+   * Draw a Generic Data Table with transparent background headers and highlighted/label columns/rows
    * Automatically normalizes colWidths so table width strictly matches CONTENT_W.
    */
-  drawTable(headers: string[], rows: (string | number)[][], colWidths: number[], highlightedCols: number[] = []): void {
+  drawTable(
+    headers: string[],
+    rows: (string | number)[][],
+    colWidths: number[],
+    highlightedCols: number[] = [],
+    labelCols: number[] = []
+  ): void {
     const fontSize = FONT_SIZE;
     const pad = 3;
 
@@ -317,7 +323,8 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
       let rowMaxLines = 1;
       const rowWrapped = row.map((cell, i) => {
         const text = String(cell ?? '');
-        const lines = this.wrapText(text, (normalizedColWidths[i] || 50) - pad * 2, fontSize, false);
+        const isBold = highlightedCols.includes(i) || labelCols.includes(i);
+        const lines = this.wrapText(text, (normalizedColWidths[i] || 50) - pad * 2, fontSize, isBold);
         rowMaxLines = Math.max(rowMaxLines, lines.length);
         return lines;
       });
@@ -330,8 +337,20 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
 
       for (let i = 0; i < row.length; i++) {
         const isHighlight = highlightedCols.includes(i);
+        const isLabel = labelCols.includes(i);
         const w = normalizedColWidths[i] || 50;
-        if (isHighlight) {
+        if (isLabel) {
+          this.page.drawRectangle({
+            x: curX,
+            y: y - rowH,
+            width: w,
+            height: rowH,
+            color: hexToRgb(LBL_BG),
+            opacity: BG_OPACITY,
+            borderColor: rgb(0, 0, 0),
+            borderWidth: BORDER_W,
+          });
+        } else if (isHighlight) {
           this.page.drawRectangle({
             x: curX,
             y: y - rowH,
@@ -359,7 +378,7 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
             x: curX + pad,
             y: lineY,
             size: fontSize,
-            font: isHighlight ? this.fontBold : this.fontRegular,
+            font: (isHighlight || isLabel) ? this.fontBold : this.fontRegular,
             color: rgb(0, 0, 0),
           });
           lineY -= fontSize * LINE_HEIGHT;

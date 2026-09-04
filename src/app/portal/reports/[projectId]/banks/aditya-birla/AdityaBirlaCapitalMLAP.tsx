@@ -740,7 +740,8 @@ export default function AdityaBirlaCapitalMLAP({
         ['Distress Value(80%)', '', '', `Rs. ${formatIndianCurrency(distressVal)}`],
       ],
       valCols,
-      [3]
+      [3],
+      [0]
     );
 
     // 9. Boundary Details
@@ -753,7 +754,9 @@ export default function AdityaBirlaCapitalMLAP({
         ['As per Mouza Map', fields.boundaryMouzaNorth || '', fields.boundaryMouzaSouth || '', fields.boundaryMouzaEast || '', fields.boundaryMouzaWest || ''],
         ['As per actual', fields.boundaryActualNorth || '', fields.boundaryActualSouth || '', fields.boundaryActualEast || '', fields.boundaryActualWest || ''],
       ],
-      boundCols
+      boundCols,
+      [],
+      [0]
     );
     r.drawKeyValueRow([{ label: 'Boundaries Matching', value: fields.boundariesMatching || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
 

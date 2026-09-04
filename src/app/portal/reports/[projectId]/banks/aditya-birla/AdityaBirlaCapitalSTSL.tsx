@@ -1054,7 +1054,8 @@ export default function AdityaBirlaCapitalSTSL({
         ['Amenities', String(fields.amenitiesArea || '0'), String(fields.amenitiesRate || '0'), amenitiesVal > 0 ? `Rs.${formatIndianCurrency(amenitiesVal)}/-` : '0'],
       ],
       valCols,
-      []
+      [],
+      [0]
     );
 
     // Other Details / Setbacks Table
