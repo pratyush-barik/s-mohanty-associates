@@ -840,7 +840,7 @@ export default function AdityaBirlaCapitalSTSL({
       { label: 'Physical Approach to the Property', options: ['Clear', 'Partially Clear', 'Not Clear'], selected: fields.physicalApproach || 'Clear', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
       { label: 'Legal Approach to the Property', options: ['Clear', 'Partially Clear', 'Not Clear'], selected: fields.legalApproach || 'Clear', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL }
     );
-    r.drawSlashOptionRow('Any other features like board of other financier indicating mortgage, notice of Court/any authority which may affect the security', ['Yes', 'No'], fields.otherEncumbranceFeatures || 'No', 387.64, 157.64);
+    r.drawSlashOptionRow('Any other features like board of other financier indicating mortgage, notice of Court/any authority which may affect the security', ['Yes', 'No'], fields.otherEncumbranceFeatures || 'No', 387.64, CONTENT_W - 387.64);
 
     // Property Details
     r.drawSectionHeader('Property Details');

@@ -410,17 +410,18 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     options: string[],
     selected: string | undefined,
     labelWidth = 140,
-    valueWidth = CONTENT_W - 140
+    valueWidth?: number
   ): void {
+    const vWidth = valueWidth !== undefined ? valueWidth : (CONTENT_W - labelWidth);
     const fontSize = FONT_SIZE;
     const pad = 3;
 
-    const maxLines = this._calcSlashOptionLines(label, options, labelWidth, valueWidth, fontSize, pad);
+    const maxLines = this._calcSlashOptionLines(label, options, labelWidth, vWidth, fontSize, pad);
     const rowH = Math.max(18, maxLines * fontSize * LINE_HEIGHT + pad * 2);
     this.checkPageBreak(rowH);
 
     const y = this.pdfY(this.cursorY);
-    this._renderSlashOptionBox(MARGIN_L, y, rowH, label, options, selected, labelWidth, valueWidth, fontSize, pad);
+    this._renderSlashOptionBox(MARGIN_L, y, rowH, label, options, selected, labelWidth, vWidth, fontSize, pad);
     this.cursorY += rowH;
   }
 
