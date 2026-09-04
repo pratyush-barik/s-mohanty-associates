@@ -311,7 +311,7 @@ export default function AdityaBirlaCapitalSTSL({
     totalValuationFormula: initialFields?.totalValuationFormula || '',
     totalPropertyValuation: initialFields?.totalPropertyValuation || '',
     distressValue: initialFields?.distressValue || '',
-    distressPct: initialFields?.distressPct || '80',
+    distressPct: initialFields?.distressPct ?? '80',
     insuranceValue: initialFields?.insuranceValue || '',
     govtLandRate: initialFields?.govtLandRate || '',
     percentageCompletion: initialFields?.percentageCompletion || '100%',
@@ -499,7 +499,9 @@ export default function AdityaBirlaCapitalSTSL({
   }, [plotDeedVal, plotPhysicalVal, carpetPlanVal, carpetMeasurementVal, buaNormsVal, buaTotalVal, superBuaVal, carParkVal, amenitiesVal]);
 
   const distressVal = useMemo(() => {
-    const pct = parseFloat(fields.distressPct || '80') || 0;
+    const pct = fields.distressPct !== '' && fields.distressPct != null
+      ? (parseFloat(String(fields.distressPct).replace(/[^0-9.]/g, '')) || 0)
+      : 0;
     return round2(totalCalculatedVal * (pct / 100));
   }, [totalCalculatedVal, fields.distressPct]);
 
@@ -996,7 +998,7 @@ export default function AdityaBirlaCapitalSTSL({
           ? `${valItemsBreakdown.join(' + ')} = Rs.${formatIndianCurrency(totalCalculatedVal)}/-`
           : `Rs.${formatIndianCurrency(totalCalculatedVal)}/-`)
       : 'NA';
-    const distressPctStr = fields.distressPct || '80';
+    const distressPctStr = (fields.distressPct !== '' && fields.distressPct != null) ? fields.distressPct : '0';
     r.drawKeyValueRow([{ label: 'Total Value', value: formulaText, labelWidth: 140, valueWidth: CONTENT_W - 140 }]);
     r.drawKeyValueRow([{ label: `Distress Value (${distressPctStr}%)`, value: distressVal > 0 ? `Rs.${formatIndianCurrency(distressVal)}/-` : 'NA', labelWidth: 140, valueWidth: CONTENT_W - 140 }]);
     r.drawKeyValueRow([{ label: 'Insurance Value', value: totalCalculatedVal > 0 ? `Rs.${formatIndianCurrency(totalCalculatedVal)}/-` : 'NA', labelWidth: 140, valueWidth: CONTENT_W - 140 }]);
@@ -2559,7 +2561,7 @@ export default function AdityaBirlaCapitalSTSL({
                           onKeyDown={blockNegativeKeys}
                           onChange={e => handleChange('distressPct', sanitizePositiveDecimal(e.target.value))}
                           disabled={isReadOnly}
-                          className="w-7 text-center text-xs font-black text-amber-900 bg-amber-50 border border-amber-300 rounded px-0.5 py-0.5"
+                          className="w-12 text-center text-xs font-black text-amber-900 bg-amber-50 border border-amber-300 rounded px-0.5 py-0.5"
                           placeholder="80"
                           title="Click to edit Distress percentage"
                         />
@@ -2572,7 +2574,7 @@ export default function AdityaBirlaCapitalSTSL({
                           {distressVal > 0 ? `Rs.${formatIndianCurrency(distressVal)}/-` : 'NA'}
                         </span>
                         <span className="text-[11px] text-neutral-500 font-medium">
-                          Calculated as {fields.distressPct || '80'}% of Total Property Value
+                          Calculated as {(fields.distressPct !== '' && fields.distressPct != null) ? fields.distressPct : '0'}% of Total Property Value
                         </span>
                       </div>
                     </td>
