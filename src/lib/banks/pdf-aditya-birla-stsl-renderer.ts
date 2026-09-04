@@ -586,11 +586,12 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       details: string;
     }[]
   ): void {
-    const colWidths = [130, 215, 55, 145.28];
+    // Tightened: name col narrower, Details label col narrower → value col wider
+    const colWidths = [105, 215, 40, 185.28];
     const statusOptions = ['Fully Available', 'Partially Available', 'Not Available', 'Not Applicable'];
     const pad = 3;
     const fontSize = FONT_SIZE;
-    const sep = ' // ';
+    const sep = ' //';
     const sepW = this.fontRegular.widthOfTextAtSize(sep, fontSize);
 
     const norm = (s: string) => s.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -606,7 +607,8 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       };
 
       const nameLines = this.wrapText(item.name, colWidths[0] - pad * 2, fontSize, true);
-      const lines2 = this._calcSlashOptionLines('', statusOptions, 0, colWidths[1], fontSize, pad);
+      // Each status option gets its own line (always break after //)
+      const lines2 = statusOptions.length;
       const detailsLines = this.wrapText(item.details || 'NA', colWidths[3] - pad * 2, fontSize, false);
 
       const maxLines = Math.max(nameLines.length, lines2, detailsLines.length, 1);
@@ -634,7 +636,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       }
       curX += colWidths[0];
 
-      // Col 2: Status Options with Bold Selected
+      // Col 2: Status Options — always line-break after each //
       this.page.drawRectangle({
         x: curX,
         y: y - rowH,
@@ -645,18 +647,12 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       });
       let stY = y - pad - fontSize * 0.85;
       let stX = curX + pad;
-      const maxCol2X = curX + colWidths[1] - pad;
 
       for (let s = 0; s < statusOptions.length; s++) {
         const sOpt = statusOptions[s];
         const isSel = isStatusMatch(sOpt);
         const sFont = isSel ? this.fontBold : this.fontRegular;
         const sW = sFont.widthOfTextAtSize(sOpt, fontSize);
-
-        if (stX + sW > maxCol2X && stX > curX + pad) {
-          stY -= fontSize * LINE_HEIGHT;
-          stX = curX + pad;
-        }
 
         this.page.drawText(sOpt, {
           x: stX,
@@ -675,22 +671,14 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
             font: this.fontRegular,
             color: rgb(0.4, 0.4, 0.4),
           });
-          stX += sepW;
-
-          const nextOpt = statusOptions[s + 1];
-          const nextIsSel = isStatusMatch(nextOpt);
-          const nextFont = nextIsSel ? this.fontBold : this.fontRegular;
-          const nextOptW = nextFont.widthOfTextAtSize(nextOpt, fontSize);
-
-          if (stX + nextOptW > maxCol2X) {
-            stY -= fontSize * LINE_HEIGHT;
-            stX = curX + pad;
-          }
+          // Always break to next line after //
+          stY -= fontSize * LINE_HEIGHT;
+          stX = curX + pad;
         }
       }
       curX += colWidths[1];
 
-      // Col 3: "Details" Label (Soft Blue background, bold)
+      // Col 3: "Details" Label (Soft Blue background, bold, centred)
       this.page.drawRectangle({
         x: curX,
         y: y - rowH,
@@ -702,9 +690,9 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
         borderWidth: BORDER_W,
       });
       this.page.drawText('Details', {
-        x: curX + pad,
+        x: curX + 1,
         y: y - pad - fontSize * 0.85,
-        size: fontSize,
+        size: fontSize - 0.5,
         font: this.fontBold,
         color: rgb(0, 0, 0),
       });
