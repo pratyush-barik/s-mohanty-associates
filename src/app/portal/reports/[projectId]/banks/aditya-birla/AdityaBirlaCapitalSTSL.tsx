@@ -818,7 +818,7 @@ export default function AdityaBirlaCapitalSTSL({
 
     r.drawTwoSlashOptionRows(
       { label: 'Locality', options: ['Well Developed', 'Developed', 'Developing', 'Under Develop', 'Slum'], selected: fields.localityDevelopment || 'Developing', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
-      { label: 'Property Falling Within', options: ['Municipal Corporation', 'Gram Panchayat', 'Town Planning Authority', 'Development Authority', 'Municipality', 'NAC'], selected: fields.propertyJurisdiction || 'Gram Panchayat', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL }
+      { label: 'Property Falling Within', options: ['Municipal Corporation', 'Gram Panchayat', 'Town Planning Authority', 'Development Authority', 'Municipality', 'NAC'], selected: fields.propertyJurisdiction || 'Gram Panchayat', labelWidth: 80, valueWidth: (CONTENT_W / 2) - 80 }
     );
 
     r.drawSlashOptionRow('Occupancy Level of the Surrounding', ['Densely Populated', 'Moderately Populated', 'Low Population density'], fields.surroundingOccupancy || 'Densely Populated', W_LABEL_2COL, W_VAL_2COL);

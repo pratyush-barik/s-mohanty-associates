@@ -336,30 +336,41 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       borderWidth: BORDER_W,
     });
 
+    // Dynamically adjust font size if any single option + separator is wider than the available cell
+    let optFontSize = fontSize;
+    const maxValW = valueWidth - pad * 2;
+    const testSepW = this.fontRegular.widthOfTextAtSize(' //', optFontSize);
+    for (const opt of options) {
+      const optW = this.fontBold.widthOfTextAtSize(opt, optFontSize) + testSepW;
+      if (optW > maxValW && optFontSize > 9.5) {
+        optFontSize = Math.max(9.5, optFontSize * (maxValW / optW));
+      }
+    }
+
     // Flow options horizontally with ' // ' separators and wrap to next line only when needed
-    let valY = y - pad - fontSize * 0.85;
+    let valY = y - pad - optFontSize * 0.85;
     let curLineX = valX + pad;
     const maxLineX = valX + valueWidth - pad;
     const sep = ' //';
-    const sepW = this.fontRegular.widthOfTextAtSize(sep, fontSize);
-    const spaceW = this.fontRegular.widthOfTextAtSize(' ', fontSize);
+    const sepW = this.fontRegular.widthOfTextAtSize(sep, optFontSize);
+    const spaceW = this.fontRegular.widthOfTextAtSize(' ', optFontSize);
 
     for (let i = 0; i < options.length; i++) {
       const opt = options[i];
       const isSelected = (i === selectedIdx);
       const optFont = isSelected ? this.fontBold : this.fontRegular;
-      const optW = optFont.widthOfTextAtSize(opt, fontSize);
+      const optW = optFont.widthOfTextAtSize(opt, optFontSize);
 
       // Wrap if this option itself doesn't fit on the current line
       if (curLineX + optW > maxLineX && curLineX > valX + pad) {
-        valY -= fontSize * LINE_HEIGHT;
+        valY -= optFontSize * LINE_HEIGHT;
         curLineX = valX + pad;
       }
 
       this.page.drawText(opt, {
         x: curLineX,
         y: valY,
-        size: fontSize,
+        size: optFontSize,
         font: optFont,
         color: isSelected ? rgb(0, 0, 0) : rgb(0.2, 0.2, 0.2),
       });
@@ -369,7 +380,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
         this.page.drawText(sep, {
           x: curLineX,
           y: valY,
-          size: fontSize,
+          size: optFontSize,
           font: this.fontRegular,
           color: rgb(0.4, 0.4, 0.4),
         });
@@ -377,17 +388,17 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
 
         if (shouldAlwaysBreak) {
           // Break after every single //
-          valY -= fontSize * LINE_HEIGHT;
+          valY -= optFontSize * LINE_HEIGHT;
           curLineX = valX + pad;
         } else {
           const nextOpt = options[i + 1];
           const nextIsSelected = (i + 1 === selectedIdx);
           const nextFont = nextIsSelected ? this.fontBold : this.fontRegular;
-          const nextOptW = nextFont.widthOfTextAtSize(nextOpt, fontSize);
+          const nextOptW = nextFont.widthOfTextAtSize(nextOpt, optFontSize);
 
           if (curLineX + spaceW + nextOptW > maxLineX) {
             // Next option won't fit → break to next line
-            valY -= fontSize * LINE_HEIGHT;
+            valY -= optFontSize * LINE_HEIGHT;
             curLineX = valX + pad;
           } else {
             // Fits → continue on same line with a space
@@ -416,15 +427,24 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       return Math.max(lLines.length, valLineCount);
     }
 
+    let optFontSize = fontSize;
     const maxValW = valueWidth - pad * 2;
-    const sepW = this.fontRegular.widthOfTextAtSize(' //', fontSize);
-    const spaceW = this.fontRegular.widthOfTextAtSize(' ', fontSize);
+    const testSepW = this.fontRegular.widthOfTextAtSize(' //', optFontSize);
+    for (const opt of options) {
+      const optW = this.fontBold.widthOfTextAtSize(opt, optFontSize) + testSepW;
+      if (optW > maxValW && optFontSize > 9.5) {
+        optFontSize = Math.max(9.5, optFontSize * (maxValW / optW));
+      }
+    }
+
+    const sepW = this.fontRegular.widthOfTextAtSize(' //', optFontSize);
+    const spaceW = this.fontRegular.widthOfTextAtSize(' ', optFontSize);
 
     let valLineCount = 1;
     let curX = 0;
 
     for (let i = 0; i < options.length; i++) {
-      const optW = this.fontBold.widthOfTextAtSize(options[i], fontSize);
+      const optW = this.fontBold.widthOfTextAtSize(options[i], optFontSize);
       if (curX + optW > maxValW && curX > 0) {
         valLineCount++;
         curX = 0;
@@ -433,7 +453,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
 
       if (i < options.length - 1) {
         curX += sepW;
-        const nextW = this.fontBold.widthOfTextAtSize(options[i + 1], fontSize);
+        const nextW = this.fontBold.widthOfTextAtSize(options[i + 1], optFontSize);
         if (curX + spaceW + nextW > maxValW) {
           valLineCount++;
           curX = 0;
