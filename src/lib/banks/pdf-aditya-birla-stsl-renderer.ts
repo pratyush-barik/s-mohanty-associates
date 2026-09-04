@@ -669,8 +669,8 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       details: string;
     }[]
   ): void {
-    // Exact sum to CONTENT_W (487.28): [115, 215, 45, 112.28]
-    const colWidths = [115, 215, 45, CONTENT_W - (115 + 215 + 45)];
+    // Exact coincidence with BUA table: [115, 210, 60, 102.28]
+    const colWidths = [115, 210, 60, CONTENT_W - (115 + 210 + 60)];
     const statusOptions = ['Fully Available', 'Partially Available', 'Not Available', 'Not Applicable'];
     const pad = 3;
     const fontSize = FONT_SIZE;
@@ -770,7 +770,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       }
       curX += colWidths[1];
 
-      // Col 3: "Details" Label (Soft Blue background, bold, centred)
+      // Col 3: "Details" Label (Soft Blue background, bold, centred — coincides with Deviations)
       this.page.drawRectangle({
         x: curX,
         y: y - rowH,
@@ -792,7 +792,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       });
       curX += colWidths[2];
 
-      // Col 4: Details content
+      // Col 4: Details content (coincides with Remarks)
       this.page.drawRectangle({
         x: curX,
         y: y - rowH,
@@ -823,8 +823,11 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       remarks?: string;
     }[]
   ): void {
-    // Aligns with Doc Details: col 0 = 115, total sum = CONTENT_W (487.28)
-    const colWidths = [115, 85, 85, 75, CONTENT_W - (115 + 85 + 85 + 75)];
+    // Coincides with Doc Details: [115, 105, 105, 60, 102.28]
+    // 115 + 105 + 105 = 325 (same X as Details label!)
+    // Deviations width = 60 (same width as Details label!)
+    // Remarks width = 102.28 (same width as Details content!)
+    const colWidths = [115, 105, 105, 60, CONTENT_W - (115 + 105 + 105 + 60)];
     const headers = ['Built up area', 'As per Site', 'As per Plan/FAR', 'Deviations', 'Remarks'];
     const pad = 3;
     const fontSize = FONT_SIZE;
@@ -848,8 +851,10 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       });
 
       const lineY = y - pad - fontSize * 0.85;
+      const hW = this.fontBold.widthOfTextAtSize(headers[i], fontSize);
+      const hX = curX + Math.max(pad, (colWidths[i] - hW) / 2);
       this.page.drawText(headers[i], {
-        x: curX + pad,
+        x: hX,
         y: lineY,
         size: fontSize,
         font: this.fontBold,
