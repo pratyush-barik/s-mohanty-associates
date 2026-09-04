@@ -311,7 +311,7 @@ export default function AdityaBirlaCapitalSTSL({
     totalValuationFormula: initialFields?.totalValuationFormula || '',
     totalPropertyValuation: initialFields?.totalPropertyValuation || '',
     distressValue: initialFields?.distressValue || '',
-    distressPct: initialFields?.distressPct ?? '80',
+    distressPct: initialFields?.distressPct || '80',
     insuranceValue: initialFields?.insuranceValue || '',
     govtLandRate: initialFields?.govtLandRate || '',
     percentageCompletion: initialFields?.percentageCompletion || '100%',
@@ -2557,12 +2557,11 @@ export default function AdityaBirlaCapitalSTSL({
                         <span>Distress Value (</span>
                         <input
                           type="text"
-                          value={fields.distressPct ?? ''}
+                          value={fields.distressPct}
                           onKeyDown={blockNegativeKeys}
                           onChange={e => handleChange('distressPct', sanitizePositiveDecimal(e.target.value))}
                           disabled={isReadOnly}
                           className="w-12 text-center text-xs font-black text-amber-900 bg-amber-50 border border-amber-300 rounded px-0.5 py-0.5"
-                          placeholder="80"
                           title="Click to edit Distress percentage"
                         />
                         <span>%)</span>
