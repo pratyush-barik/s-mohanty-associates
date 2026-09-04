@@ -198,42 +198,50 @@ export class PDFGeneralRenderer {
 
   /** Break text into lines that fit within maxWidth */
   protected wrapText(text: string, maxWidth: number, fontSize: number, bold?: boolean, italic?: boolean): string[] {
-    const strText = this.sanitizeText(text);
-    if (!strText) return [''];
+    if (!text) return [''];
     const font = this.getFont(bold, italic);
-    const words = strText.split(/\s+/);
+    const paragraphs = String(text).split(/\r?\n/);
     const lines: string[] = [];
-    let currentLine = '';
 
-    for (let word of words) {
-      if (!word) continue;
+    for (const para of paragraphs) {
+      const strText = this.sanitizeText(para);
+      if (!strText) {
+        lines.push('');
+        continue;
+      }
+      const words = strText.split(/\s+/);
+      let currentLine = '';
 
-      // Force break long words to prevent horizontal spillage across cell boundaries
-      if (font.widthOfTextAtSize(word, fontSize) > maxWidth) {
-        if (currentLine) {
-          lines.push(currentLine);
-          currentLine = '';
-        }
-        while (font.widthOfTextAtSize(word, fontSize) > maxWidth && word.length > 1) {
-          let fitLen = 1;
-          while (fitLen < word.length && font.widthOfTextAtSize(word.substring(0, fitLen + 1), fontSize) <= maxWidth) {
-            fitLen++;
+      for (let word of words) {
+        if (!word) continue;
+
+        // Force break long words to prevent horizontal spillage across cell boundaries
+        if (font.widthOfTextAtSize(word, fontSize) > maxWidth) {
+          if (currentLine) {
+            lines.push(currentLine);
+            currentLine = '';
           }
-          lines.push(word.substring(0, fitLen));
-          word = word.substring(fitLen);
+          while (font.widthOfTextAtSize(word, fontSize) > maxWidth && word.length > 1) {
+            let fitLen = 1;
+            while (fitLen < word.length && font.widthOfTextAtSize(word.substring(0, fitLen + 1), fontSize) <= maxWidth) {
+              fitLen++;
+            }
+            lines.push(word.substring(0, fitLen));
+            word = word.substring(fitLen);
+          }
+        }
+
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        const w = font.widthOfTextAtSize(testLine, fontSize);
+        if (w > maxWidth && currentLine) {
+          lines.push(currentLine);
+          currentLine = word;
+        } else {
+          currentLine = testLine;
         }
       }
-
-      const testLine = currentLine ? `${currentLine} ${word}` : word;
-      const w = font.widthOfTextAtSize(testLine, fontSize);
-      if (w > maxWidth && currentLine) {
-        lines.push(currentLine);
-        currentLine = word;
-      } else {
-        currentLine = testLine;
-      }
+      if (currentLine) lines.push(currentLine);
     }
-    if (currentLine) lines.push(currentLine);
     if (lines.length === 0) lines.push('');
     return lines;
   }

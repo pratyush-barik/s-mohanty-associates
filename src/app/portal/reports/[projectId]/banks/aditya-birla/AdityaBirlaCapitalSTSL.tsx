@@ -1001,11 +1001,11 @@ export default function AdityaBirlaCapitalSTSL({
     // Documentation Details
     r.drawSectionHeader('Documentation Details');
     const docItems = [
-      { name: 'Sale Deed/allotment Letter', status: fields.docSaleDeedStatus || 'Fully Available', details: fields.docSaleDeedDetails || 'Copy of Sale deed, ROR' },
+      { name: 'Sale deed/\nAllotment letter', status: fields.docSaleDeedStatus || 'Fully Available', details: fields.docSaleDeedDetails || 'Copy of Sale deed, ROR' },
       { name: 'Sanctioned Plan', status: fields.docSanctionPlanStatus || 'Not Available', details: fields.docSanctionPlanDetails || 'NA' },
       { name: 'CC/OC', status: fields.docCCOCStatus || 'Not Available', details: fields.docCCOCDetails || 'NA' },
       { name: 'Agreement to Sale', status: fields.docAgreementSaleStatus || 'Not Available', details: fields.docAgreementSaleDetails || 'NA' },
-      { name: 'Mutation/Possession Letter', status: fields.docMutationStatus || 'Not Available', details: fields.docMutationDetails || 'NA' },
+      { name: 'Mutation/\nPossession Letter', status: fields.docMutationStatus || 'Not Available', details: fields.docMutationDetails || 'NA' },
       { name: 'Tax Receipt', status: fields.docTaxReceiptStatus || 'Not Available', details: fields.docTaxReceiptDetails || 'NA' },
       { name: 'Electricity Bill', status: fields.docElectricityBillStatus || 'Not Available', details: fields.docElectricityBillDetails || 'NA' },
       { name: 'Conversion', status: fields.docConversionStatus || 'Not Available', details: fields.docConversionDetails || 'NA' },
