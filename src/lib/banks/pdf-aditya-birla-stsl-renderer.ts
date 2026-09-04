@@ -669,21 +669,29 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
 
     this.cursorY += rowH;
   }
+
+  /**
+   * Draw Documentation Checklist Table
+   */
   drawDocChecklistTable(
     items: {
       name: string;
-      status: string;
-      details: string;
+      status?: string;
+      details?: string;
     }[]
   ): void {
-    // Exact coincidence with BUA table: [115, 210, 60, 102.28]
-    const colWidths = [115, 210, 60, CONTENT_W - (115 + 210 + 60)];
+    // Exact coincidence with BUA table: [115, 150, 55, 167.28]
+    // 115 + 150 = 265 (same X as Details label & Deviations!)
+    // Details label width = 55 (same width as Deviations!)
+    // Details content width = 167.28 (same width as Remarks!)
+    const colWidths = [115, 150, 55, CONTENT_W - (115 + 150 + 55)];
     const statusOptions = ['Fully Available', 'Partially Available', 'Not Available', 'Not Applicable'];
     const pad = 3;
     const fontSize = FONT_SIZE;
+    const stFontSize = 10;
     const sep = '//';
-    const sepW = this.fontRegular.widthOfTextAtSize(sep, fontSize);
-    const spaceW = this.fontRegular.widthOfTextAtSize(' ', fontSize);
+    const sepW = this.fontRegular.widthOfTextAtSize(sep, stFontSize);
+    const spaceW = this.fontRegular.widthOfTextAtSize(' ', stFontSize);
 
     const norm = (s: string) => s.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
 
@@ -736,19 +744,19 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
         borderColor: rgb(0, 0, 0),
         borderWidth: BORDER_W,
       });
-      let stY = y - pad - fontSize * 0.85;
+      let stY = y - pad - stFontSize * 0.85;
       let stX = curX + pad;
 
       for (let s = 0; s < statusOptions.length; s++) {
         const sOpt = statusOptions[s];
         const isSel = (s === selectedIdx);
         const sFont = isSel ? this.fontBold : this.fontRegular;
-        const sW = sFont.widthOfTextAtSize(sOpt, fontSize);
+        const sW = sFont.widthOfTextAtSize(sOpt, stFontSize);
 
         this.page.drawText(sOpt, {
           x: stX,
           y: stY,
-          size: fontSize,
+          size: stFontSize,
           font: sFont,
           color: isSel ? rgb(0, 0, 0) : rgb(0.3, 0.3, 0.3),
         });
@@ -758,7 +766,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
           this.page.drawText(sep, {
             x: stX,
             y: stY,
-            size: fontSize,
+            size: stFontSize,
             font: this.fontRegular,
             color: rgb(0.4, 0.4, 0.4),
           });
@@ -766,7 +774,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
 
           // Break after option 1 (end of line 1: Fully Available// Partially Available//)
           if (s === 1) {
-            stY -= fontSize * LINE_HEIGHT;
+            stY -= stFontSize * LINE_HEIGHT;
             stX = curX + pad;
           } else {
             stX += spaceW;
@@ -828,22 +836,28 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       remarks?: string;
     }[]
   ): void {
-    // Coincides with Doc Details: [115, 105, 105, 60, 102.28]
-    // 115 + 105 + 105 = 325 (same X as Details label!)
-    // Deviations width = 60 (same width as Details label!)
-    // Remarks width = 102.28 (same width as Details content!)
-    const colWidths = [115, 105, 105, 60, CONTENT_W - (115 + 105 + 105 + 60)];
-    const headers = ['Built up area', 'As per Site', 'As per Plan/FAR', 'Deviations', 'Remarks'];
+    // Coincides with Doc Details: [115, 75, 75, 55, 167.28]
+    // 115 + 75 + 75 = 265 (same X as Details label & Deviations!)
+    // Deviations width = 55 (same width as Details label!)
+    // Remarks width = 167.28 (same width as Details content!)
+    const colWidths = [115, 75, 75, 55, CONTENT_W - (115 + 75 + 75 + 55)];
+    const headerCols = [
+      ['Built up area'],
+      ['As per Site'],
+      ['As per', 'Plan/FAR'],
+      ['Deviations'],
+      ['Remarks'],
+    ];
     const pad = 3;
     const fontSize = FONT_SIZE;
-    const headerH = 18;
+    const headerH = 24;
 
     this.checkPageBreak(headerH);
     let y = this.pdfY(this.cursorY);
     let curX = MARGIN_L;
 
     // Draw Table Header Row (Soft blue background, bold)
-    for (let i = 0; i < headers.length; i++) {
+    for (let i = 0; i < headerCols.length; i++) {
       this.page.drawRectangle({
         x: curX,
         y: y - headerH,
@@ -855,16 +869,22 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
         borderWidth: BORDER_W,
       });
 
-      const lineY = y - pad - fontSize * 0.85;
-      const hW = this.fontBold.widthOfTextAtSize(headers[i], fontSize);
-      const hX = curX + Math.max(pad, (colWidths[i] - hW) / 2);
-      this.page.drawText(headers[i], {
-        x: hX,
-        y: lineY,
-        size: fontSize,
-        font: this.fontBold,
-        color: rgb(0, 0, 0),
-      });
+      const lines = headerCols[i];
+      const totalTextH = (lines.length - 1) * (fontSize * 1.1) + fontSize * 0.85;
+      let lineY = y - (headerH - totalTextH) / 2 - fontSize * 0.85;
+
+      for (const line of lines) {
+        const hW = this.fontBold.widthOfTextAtSize(line, fontSize);
+        const hX = curX + Math.max(pad, (colWidths[i] - hW) / 2);
+        this.page.drawText(line, {
+          x: hX,
+          y: lineY,
+          size: fontSize,
+          font: this.fontBold,
+          color: rgb(0, 0, 0),
+        });
+        lineY -= fontSize * 1.1;
+      }
       curX += colWidths[i];
     }
     this.cursorY += headerH;
@@ -935,7 +955,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       }
       curX += colWidths[2];
 
-      // Col 4: Deviations (Yes // No with selected bold)
+      // Col 4: Deviations (Yes // No with selected bold, centered)
       this.page.drawRectangle({
         x: curX,
         y: y - rowH,
@@ -950,19 +970,24 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       const isNo = devNorm === 'no' || devNorm.endsWith('no') || devNorm === 'yesno';
 
       lineY = y - pad - fontSize * 0.85;
-      let devX = curX + pad;
+
+      const yesFont = isYes && !isNo ? this.fontBold : this.fontRegular;
+      const noFont = isNo ? this.fontBold : this.fontRegular;
+      const yesW = yesFont.widthOfTextAtSize('Yes', fontSize);
+      const sepStrW = this.fontRegular.widthOfTextAtSize(' // ', fontSize);
+      const noW = noFont.widthOfTextAtSize('No', fontSize);
+      const devTotalW = yesW + sepStrW + noW;
+      let devX = curX + Math.max(pad, (colWidths[3] - devTotalW) / 2);
 
       // Draw "Yes"
-      const yesFont = isYes && !isNo ? this.fontBold : this.fontRegular;
       this.page.drawText('Yes', { x: devX, y: lineY, size: fontSize, font: yesFont, color: isYes && !isNo ? rgb(0, 0, 0) : rgb(0.3, 0.3, 0.3) });
-      devX += yesFont.widthOfTextAtSize('Yes', fontSize);
+      devX += yesW;
 
       // Draw " // "
       this.page.drawText(' // ', { x: devX, y: lineY, size: fontSize, font: this.fontRegular, color: rgb(0.4, 0.4, 0.4) });
-      devX += this.fontRegular.widthOfTextAtSize(' // ', fontSize);
+      devX += sepStrW;
 
       // Draw "No"
-      const noFont = isNo ? this.fontBold : this.fontRegular;
       this.page.drawText('No', { x: devX, y: lineY, size: fontSize, font: noFont, color: isNo ? rgb(0, 0, 0) : rgb(0.3, 0.3, 0.3) });
 
       curX += colWidths[3];
