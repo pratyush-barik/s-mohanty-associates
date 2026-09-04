@@ -251,53 +251,40 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       if (!val) return '';
       // Ratings / Quality / Exterior / Interior
       if (['classa', 'a', 'aplus', 'excellent', 'superior', 'verygood'].includes(val)) return 'excellent';
-      if (['classb', 'b', 'good', 'wellmaintained', 'beamandcolumnstructure', 'beamcolumnstructure', 'framedstructure'].includes(val)) return 'good';
-      if (['classc', 'c', 'average', 'normal', 'satisfactory', 'fair', 'standard', 'moderate'].includes(val)) return 'average';
-      if (['classd', 'd', 'poor', 'bad', 'dilapidated'].includes(val)) return 'poor';
+      if (['classb', 'b', 'good', 'wellmaintained'].includes(val)) return 'good';
+      if (['classc', 'c', 'average', 'normal', 'satisfactory', 'fair', 'standard', 'moderate', 'beamandcolumnstructure', 'beamcolumnstructure', 'framedstructure', 'rcc'].includes(val)) return 'average';
+      if (['classd', 'd', 'poor', 'bad', 'dilapidated', 'loadbearing'].includes(val)) return 'poor';
       if (['low', 'lowclass', 'inferior'].includes(val)) return 'low';
 
       // Yes / No / Demarcated / Approach
-      if (['yes', 'easytoidentify', 'fullyavailable', 'clear', 'true', 'available'].includes(val)) return 'yes';
-      if (['no', 'difficulttoidentify', 'notavailable', 'notclear', 'false'].includes(val)) return 'no';
-      if (['partially', 'partiallyavailable', 'partiallyclear', 'part'].includes(val)) return 'partially';
-      if (['notapplicable', 'na'].includes(val)) return 'na';
+      if (['yes', 'easytoidentify', 'fullyavailable', 'clear', 'true', 'available', 'identified', 'demarcated'].includes(val)) return 'yes';
+      if (['no', 'difficulttoidentify', 'notavailable', 'notclear', 'false', 'unidentified', 'notdemarcated'].includes(val)) return 'no';
+      if (['partially', 'partiallyavailable', 'partiallyclear', 'part', 'partial'].includes(val)) return 'partially';
+      if (['notapplicable', 'na', 'none'].includes(val)) return 'na';
 
       return val;
     };
 
-    const isMatch = (opt: string): boolean => {
-      const optNorm = norm(opt);
-      if (!optNorm || !cleanSelectedNorm) return false;
-      if (optNorm === cleanSelectedNorm) return true;
-      if (mapAlias(optNorm) === mapAlias(cleanSelectedNorm)) return true;
-      if (optNorm.startsWith(cleanSelectedNorm) || cleanSelectedNorm.startsWith(optNorm)) {
-        if (Math.min(optNorm.length, cleanSelectedNorm.length) >= 3) return true;
-      }
-      return false;
-    };
+    // Priority 1: Exact match (case-insensitive and whitespace-trimmed)
+    let selectedIdx = options.findIndex(opt => norm(opt) === cleanSelectedNorm);
 
-    // Pre-calculate which option index is selected to guarantee exactly ONE bold option
-    let selectedIdx = options.findIndex(opt => isMatch(opt));
+    // Priority 2: Alias match (only when exact match fails)
+    if (selectedIdx === -1 && cleanSelectedNorm) {
+      const selAlias = mapAlias(cleanSelectedNorm);
+      selectedIdx = options.findIndex(opt => mapAlias(norm(opt)) === selAlias);
+    }
+
+    // Priority 3: Substring / Prefix match (min 3 chars)
+    if (selectedIdx === -1 && cleanSelectedNorm) {
+      selectedIdx = options.findIndex(opt => {
+        const optNorm = norm(opt);
+        return (optNorm.startsWith(cleanSelectedNorm) || cleanSelectedNorm.startsWith(optNorm) || optNorm.includes(cleanSelectedNorm) || cleanSelectedNorm.includes(optNorm)) && Math.min(optNorm.length, cleanSelectedNorm.length) >= 3;
+      });
+    }
+
+    // Priority 4: Default fallback
     if (selectedIdx === -1 && options.length > 0) {
-      if (cleanSelectedNorm) {
-        selectedIdx = options.findIndex(opt => {
-          const oNorm = norm(opt);
-          return oNorm.includes(cleanSelectedNorm) || cleanSelectedNorm.includes(oNorm);
-        });
-      }
-      if (selectedIdx === -1) {
-        const avgIdx = options.findIndex(opt => norm(opt) === 'average');
-        if (avgIdx !== -1) selectedIdx = avgIdx;
-        else {
-          const goodIdx = options.findIndex(opt => norm(opt) === 'good');
-          if (goodIdx !== -1) selectedIdx = goodIdx;
-          else {
-            const yesIdx = options.findIndex(opt => norm(opt) === 'yes');
-            if (yesIdx !== -1) selectedIdx = yesIdx;
-            else selectedIdx = 0;
-          }
-        }
-      }
+      selectedIdx = 0;
     }
 
     // Draw Label Box
@@ -702,15 +689,13 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
 
     for (const item of items) {
       const cleanSelectedNorm = norm(item.status || 'Not Available');
-      const isStatusMatch = (opt: string) => {
-        const optNorm = norm(opt);
-        if (!optNorm || !cleanSelectedNorm) return false;
-        if (optNorm === cleanSelectedNorm) return true;
-        if (cleanSelectedNorm.startsWith(optNorm) || optNorm.startsWith(cleanSelectedNorm)) {
-          if (Math.min(optNorm.length, cleanSelectedNorm.length) >= 6) return true;
-        }
-        return false;
-      };
+      let selectedIdx = statusOptions.findIndex(opt => norm(opt) === cleanSelectedNorm);
+      if (selectedIdx === -1) {
+        if (['available', 'fullyavailable', 'full', 'yes', 'provided', 'copyavailable'].includes(cleanSelectedNorm)) selectedIdx = 0;
+        else if (['partiallyavailable', 'partially', 'part', 'partial'].includes(cleanSelectedNorm)) selectedIdx = 1;
+        else if (['notapplicable', 'na', 'none'].includes(cleanSelectedNorm)) selectedIdx = 3;
+        else selectedIdx = 2; // Not Available
+      }
 
       const nameLines = this.wrapText(item.name, colWidths[0] - pad * 2, fontSize, true);
       // 2 options on each line → 2 lines total
@@ -756,7 +741,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
 
       for (let s = 0; s < statusOptions.length; s++) {
         const sOpt = statusOptions[s];
-        const isSel = isStatusMatch(sOpt);
+        const isSel = (s === selectedIdx);
         const sFont = isSel ? this.fontBold : this.fontRegular;
         const sW = sFont.widthOfTextAtSize(sOpt, fontSize);
 

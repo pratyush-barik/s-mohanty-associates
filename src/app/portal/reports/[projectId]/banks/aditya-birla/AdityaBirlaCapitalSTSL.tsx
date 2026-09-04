@@ -134,6 +134,96 @@ function AreaValueOrNACell({
   );
 }
 
+export const STSL_OPTIONS = {
+  propertyType: ['Residential', 'Commercial', 'Industrial', 'Institutional', 'Agriculture', 'Residential cum commercial'],
+  localityDevelopment: ['Well Developed', 'Developed', 'Developing', 'Under Develop', 'Slum'],
+  propertyJurisdiction: ['Municipal Corporation', 'Gram Panchayat', 'Town Planning Authority', 'Development Authority', 'Municipality', 'NAC'],
+  surroundingOccupancy: ['Densely Populated', 'Moderately Populated', 'Low Population density'],
+  conditionOfSite: ['Well Developed', 'Developing', 'Under Developed'],
+  distanceFromMainRoad: ['Not Applicable (Prop on Concrete Road)', 'Less than 200 m', '200 to 500 m', 'above 500 m'],
+  approachRoadWidth: ['Width', 'Width is >40 ft.', 'Width 20 to 40 ft.', 'Clear width<15ft', 'Concrete Road', 'Illegal Road (Without document)'],
+  physicalApproach: ['Clear', 'Partially Clear', 'Not Clear'],
+  legalApproach: ['Clear', 'Partially Clear', 'Not Clear'],
+  otherEncumbranceFeatures: ['No', 'Yes'],
+  occupiedBy: ['Self-occupied', 'Tenant', 'Vacant'],
+  plotDemarcated: ['Yes', 'Partially', 'No'],
+  propertyIdentification: ['Yes', 'No'],
+  projectCategory: ['Not Applicable', 'A', 'B', 'C', 'D', 'A+'],
+  flatType: ['Not applicable', 'Normal', 'Duplex'],
+  propertyHolding: ['Freehold', 'Leasehold'],
+  structureType: ['RCC', 'Load Bearing', 'Steel Structure'],
+  liftFacility: ['No', 'Yes'],
+  amenities: ['Average', 'Excellent', 'Good', 'Low', 'NA'],
+  marketability: ['Average', 'Excellent', 'Good', 'Low'],
+  parkingFacility: ['Yes', 'No'],
+  qualityOfConstruction: ['Class A', 'Class B', 'Class C', 'Class D'],
+  typeOfParking: ['Open CP', 'Dependent CP', 'Covered CP', 'Mechanical CP', 'Semi-Covered'],
+  shapeOfProperty: ['Regular', 'Irregular'],
+  placementOfProperty: ['NE Facing Corner Plot', 'Corner Plot', 'Intermittent Property', 'South Facing'],
+  exteriors: ['Average', 'Poor', 'Excellent', 'Good', 'Low'],
+  interiors: ['Average', 'Poor', 'Excellent', 'Good', 'Low'],
+  maintenanceCondition: ['Average', 'Excellent', 'Good', 'Low'],
+  cautiousLocations: ['No', 'Yes'],
+  docStatus: ['Fully Available', 'Partially Available', 'Not Available', 'Not Applicable'],
+};
+
+export function normalizeOption(val: string | undefined, validOptions: string[], defaultVal: string): string {
+  if (!val || typeof val !== 'string' || !val.trim()) return defaultVal;
+  const norm = (s: string) => s.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+  const vNorm = norm(val);
+
+  // 1. Exact match
+  const exact = validOptions.find(opt => norm(opt) === vNorm);
+  if (exact) return exact;
+
+  // 2. Specialized Aliases
+  if (validOptions.includes('Class A') && validOptions.includes('Class B')) {
+    if (['classa', 'a', 'firstclass', 'superior', 'excellent', 'aplus'].includes(vNorm)) return 'Class A';
+    if (['classb', 'b', 'secondclass', 'good', 'wellmaintained', 'rcc'].includes(vNorm)) return 'Class B';
+    if (['classc', 'c', 'thirdclass', 'average', 'normal', 'satisfactory'].includes(vNorm)) return 'Class C';
+    if (['classd', 'd', 'fourthclass', 'poor', 'bad', 'dilapidated', 'loadbearing'].includes(vNorm)) return 'Class D';
+  }
+
+  if (validOptions.includes('Average') && validOptions.includes('Poor')) {
+    if (['excellent', 'superior', 'verygood', 'classa', 'a', 'aplus'].includes(vNorm)) return 'Excellent';
+    if (['good', 'wellmaintained', 'classb', 'b'].includes(vNorm)) return 'Good';
+    if (['average', 'normal', 'satisfactory', 'fair', 'standard', 'moderate', 'beamandcolumnstructure', 'beamcolumnstructure', 'framedstructure', 'rcc'].includes(vNorm)) return 'Average';
+    if (['poor', 'bad', 'dilapidated', 'classd', 'd', 'loadbearing'].includes(vNorm)) return 'Poor';
+    if (['low', 'lowclass', 'inferior'].includes(vNorm)) return 'Low';
+    if (validOptions.includes('NA') && ['na', 'notapplicable', 'none'].includes(vNorm)) return 'NA';
+  }
+
+  if (validOptions.includes('Yes') && validOptions.includes('No')) {
+    if (['yes', 'true', 'available', 'demarcated', 'clear', 'easytoidentify', 'identified'].includes(vNorm)) return 'Yes';
+    if (['no', 'false', 'notavailable', 'notdemarcated', 'notclear', 'difficulttoidentify', 'unidentified'].includes(vNorm)) return 'No';
+    if (validOptions.includes('Partially') && ['partially', 'part', 'partial', 'partiallyclear'].includes(vNorm)) return 'Partially';
+  }
+
+  if (validOptions.includes('Fully Available') && validOptions.includes('Not Available')) {
+    if (['fullyavailable', 'available', 'yes', 'provided', 'copyavailable', 'full'].includes(vNorm)) return 'Fully Available';
+    if (['partiallyavailable', 'partially', 'part', 'partial'].includes(vNorm)) return 'Partially Available';
+    if (['notapplicable', 'na', 'none'].includes(vNorm)) return 'Not Applicable';
+    if (['notavailable', 'no', 'notprovided', 'nil'].includes(vNorm)) return 'Not Available';
+  }
+
+  if (validOptions.includes('Open CP') && validOptions.includes('Covered CP')) {
+    if (vNorm.includes('open')) return 'Open CP';
+    if (vNorm.includes('covered')) return 'Covered CP';
+    if (vNorm.includes('semi')) return 'Semi-Covered';
+    if (vNorm.includes('mech')) return 'Mechanical CP';
+    if (vNorm.includes('dep')) return 'Dependent CP';
+  }
+
+  // 3. Substring / Prefix match
+  const sub = validOptions.find(opt => {
+    const oNorm = norm(opt);
+    return (oNorm.startsWith(vNorm) || vNorm.startsWith(oNorm) || oNorm.includes(vNorm) || vNorm.includes(oNorm)) && Math.min(oNorm.length, vNorm.length) >= 3;
+  });
+  if (sub) return sub;
+
+  return defaultVal;
+}
+
 export const NAV_SECTIONS: NavItem[] = [
   { id: 'section-1', title: 'Basic Details' },
   { id: 'section-2', title: 'Location Details' },
@@ -185,59 +275,59 @@ export default function AdityaBirlaCapitalSTSL({
     landmark: initialFields?.landmark || '',
     latitude: initialFields?.latitude || '',
     longitude: initialFields?.longitude || '',
-    typeOfProperty: initialFields?.typeOfProperty || initialFields?.propertyType || 'Residential',
+    typeOfProperty: normalizeOption(initialFields?.typeOfProperty || initialFields?.propertyType, STSL_OPTIONS.propertyType, 'Residential'),
     currentUsage: initialFields?.currentUsage || 'Residential',
-    valuedBefore: initialFields?.valuedBefore || 'No',
+    valuedBefore: normalizeOption(initialFields?.valuedBefore, ['No', 'Yes'], 'No'),
     valuedBeforeDate: initialFields?.valuedBeforeDate || '',
-    propertyType: initialFields?.propertyType || initialFields?.typeOfProperty || 'Residential',
+    propertyType: normalizeOption(initialFields?.propertyType || initialFields?.typeOfProperty, STSL_OPTIONS.propertyType, 'Residential'),
     propertySubType: initialFields?.propertySubType || 'Row House',
-    localityDevelopment: initialFields?.localityDevelopment || 'Developing',
-    propertyJurisdiction: initialFields?.propertyJurisdiction || 'Gram Panchayat',
-    surroundingOccupancy: initialFields?.surroundingOccupancy || 'Densely Populated',
-    conditionOfSite: initialFields?.conditionOfSite || 'Developing',
+    localityDevelopment: normalizeOption(initialFields?.localityDevelopment, STSL_OPTIONS.localityDevelopment, 'Developing'),
+    propertyJurisdiction: normalizeOption(initialFields?.propertyJurisdiction, STSL_OPTIONS.propertyJurisdiction, 'Gram Panchayat'),
+    surroundingOccupancy: normalizeOption(initialFields?.surroundingOccupancy, STSL_OPTIONS.surroundingOccupancy, 'Densely Populated'),
+    conditionOfSite: normalizeOption(initialFields?.conditionOfSite, STSL_OPTIONS.conditionOfSite, 'Developing'),
     distanceRailwayStation: initialFields?.distanceRailwayStation || '',
     distanceBusStop: initialFields?.distanceBusStop || '',
-    distanceFromMainRoad: initialFields?.distanceFromMainRoad || 'Not Applicable (Prop on Concrete Road)',
+    distanceFromMainRoad: normalizeOption(initialFields?.distanceFromMainRoad, STSL_OPTIONS.distanceFromMainRoad, 'Not Applicable (Prop on Concrete Road)'),
     distanceFromCityCenter: initialFields?.distanceFromCityCenter || '',
     distanceFromBranch: initialFields?.distanceFromBranch || '',
-    approachRoadWidth: initialFields?.approachRoadWidth || 'Concrete Road',
+    approachRoadWidth: normalizeOption(initialFields?.approachRoadWidth, STSL_OPTIONS.approachRoadWidth, 'Concrete Road'),
     dimensionWidth: initialFields?.dimensionWidth || '',
     dimensionDepth: initialFields?.dimensionDepth || '',
-    physicalApproach: initialFields?.physicalApproach || 'Clear',
-    legalApproach: initialFields?.legalApproach || 'Clear',
-    otherEncumbranceFeatures: initialFields?.otherEncumbranceFeatures || 'No',
+    physicalApproach: normalizeOption(initialFields?.physicalApproach, STSL_OPTIONS.physicalApproach, 'Clear'),
+    legalApproach: normalizeOption(initialFields?.legalApproach, STSL_OPTIONS.legalApproach, 'Clear'),
+    otherEncumbranceFeatures: normalizeOption(initialFields?.otherEncumbranceFeatures, STSL_OPTIONS.otherEncumbranceFeatures, 'No'),
 
     // Property Details
-    occupiedBy: initialFields?.occupiedBy || 'Self-occupied',
+    occupiedBy: normalizeOption(initialFields?.occupiedBy, STSL_OPTIONS.occupiedBy, 'Self-occupied'),
     occupiedByText: initialFields?.occupiedByText || initialFields?.occupiedBy || 'Self-occupied',
     occupantName: initialFields?.occupantName || '',
     occupiedSince: initialFields?.occupiedSince || '',
-    plotDemarcated: initialFields?.plotDemarcated || 'Yes',
-    propertyIdentification: initialFields?.propertyIdentification || 'Yes',
+    plotDemarcated: normalizeOption(initialFields?.plotDemarcated, STSL_OPTIONS.plotDemarcated, 'Yes'),
+    propertyIdentification: normalizeOption(initialFields?.propertyIdentification, STSL_OPTIONS.propertyIdentification, 'Yes'),
     identificationThrough: initialFields?.identificationThrough || '',
-    projectCategory: initialFields?.projectCategory || 'Not Applicable',
-    flatType: initialFields?.flatType || 'Not applicable',
+    projectCategory: normalizeOption(initialFields?.projectCategory, STSL_OPTIONS.projectCategory, 'Not Applicable'),
+    flatType: normalizeOption(initialFields?.flatType, STSL_OPTIONS.flatType, 'Not applicable'),
     flatConfiguration: initialFields?.flatConfiguration || '',
-    propertyHolding: initialFields?.propertyHolding || 'Freehold',
-    structureType: initialFields?.structureType || 'RCC',
+    propertyHolding: normalizeOption(initialFields?.propertyHolding, STSL_OPTIONS.propertyHolding, 'Freehold'),
+    structureType: normalizeOption(initialFields?.structureType, STSL_OPTIONS.structureType, 'RCC'),
     areaOfFlat: initialFields?.areaOfFlat || '',
     totalNoOfFloors: initialFields?.totalNoOfFloors || '',
-    liftFacility: initialFields?.liftFacility || 'No',
-    amenities: initialFields?.amenities || 'Good',
-    marketability: initialFields?.marketability || 'Average',
+    liftFacility: normalizeOption(initialFields?.liftFacility, STSL_OPTIONS.liftFacility, 'No'),
+    amenities: normalizeOption(initialFields?.amenities, STSL_OPTIONS.amenities, 'Good'),
+    marketability: normalizeOption(initialFields?.marketability, STSL_OPTIONS.marketability, 'Average'),
     viewOfProperty: initialFields?.viewOfProperty || 'Residential',
-    parkingFacility: initialFields?.parkingFacility || 'Yes',
-    qualityOfConstruction: initialFields?.qualityOfConstruction || 'Class B',
-    typeOfParking: initialFields?.typeOfParking || 'Open CP',
-    shapeOfProperty: initialFields?.shapeOfProperty || 'Regular',
-    placementOfProperty: initialFields?.placementOfProperty || 'South Facing',
-    exteriors: initialFields?.exteriors || 'Average',
-    interiors: initialFields?.interiors || 'Average',
+    parkingFacility: normalizeOption(initialFields?.parkingFacility, STSL_OPTIONS.parkingFacility, 'Yes'),
+    qualityOfConstruction: normalizeOption(initialFields?.qualityOfConstruction, STSL_OPTIONS.qualityOfConstruction, 'Class B'),
+    typeOfParking: normalizeOption(initialFields?.typeOfParking, STSL_OPTIONS.typeOfParking, 'Open CP'),
+    shapeOfProperty: normalizeOption(initialFields?.shapeOfProperty, STSL_OPTIONS.shapeOfProperty, 'Regular'),
+    placementOfProperty: normalizeOption(initialFields?.placementOfProperty, STSL_OPTIONS.placementOfProperty, 'South Facing'),
+    exteriors: normalizeOption(initialFields?.exteriors, STSL_OPTIONS.exteriors, 'Average'),
+    interiors: normalizeOption(initialFields?.interiors, STSL_OPTIONS.interiors, 'Average'),
     ageOfPropertyActual: initialFields?.ageOfPropertyActual || '',
     estimatedFutureLife: initialFields?.estimatedFutureLife || '',
     sourceOfAge: initialFields?.sourceOfAge || '',
-    maintenanceCondition: initialFields?.maintenanceCondition || 'Good',
-    cautiousLocations: initialFields?.cautiousLocations || 'No',
+    maintenanceCondition: normalizeOption(initialFields?.maintenanceCondition, STSL_OPTIONS.maintenanceCondition, 'Good'),
+    cautiousLocations: normalizeOption(initialFields?.cautiousLocations, STSL_OPTIONS.cautiousLocations, 'No'),
 
     // Accommodation
     unitTypeHeader: initialFields?.unitTypeHeader || 'Building',
@@ -245,21 +335,21 @@ export default function AdityaBirlaCapitalSTSL({
     accommodationRows: initialFields?.accommodationRows || DEFAULT_ACCOM_ROWS,
 
     // Documentation Details
-    docSaleDeedStatus: initialFields?.docSaleDeedStatus || 'Fully Available',
+    docSaleDeedStatus: normalizeOption(initialFields?.docSaleDeedStatus, STSL_OPTIONS.docStatus, 'Fully Available'),
     docSaleDeedDetails: initialFields?.docSaleDeedDetails || 'Copy of Sale deed, ROR',
-    docSanctionPlanStatus: initialFields?.docSanctionPlanStatus || 'Not Available',
+    docSanctionPlanStatus: normalizeOption(initialFields?.docSanctionPlanStatus, STSL_OPTIONS.docStatus, 'Not Available'),
     docSanctionPlanDetails: initialFields?.docSanctionPlanDetails || 'NA',
-    docCCOCStatus: initialFields?.docCCOCStatus || 'Not Available',
+    docCCOCStatus: normalizeOption(initialFields?.docCCOCStatus, STSL_OPTIONS.docStatus, 'Not Available'),
     docCCOCDetails: initialFields?.docCCOCDetails || 'NA',
-    docAgreementSaleStatus: initialFields?.docAgreementSaleStatus || 'Not Available',
+    docAgreementSaleStatus: normalizeOption(initialFields?.docAgreementSaleStatus, STSL_OPTIONS.docStatus, 'Not Available'),
     docAgreementSaleDetails: initialFields?.docAgreementSaleDetails || 'NA',
-    docMutationStatus: initialFields?.docMutationStatus || 'Not Available',
+    docMutationStatus: normalizeOption(initialFields?.docMutationStatus, STSL_OPTIONS.docStatus, 'Not Available'),
     docMutationDetails: initialFields?.docMutationDetails || 'NA',
-    docTaxReceiptStatus: initialFields?.docTaxReceiptStatus || 'Not Available',
+    docTaxReceiptStatus: normalizeOption(initialFields?.docTaxReceiptStatus, STSL_OPTIONS.docStatus, 'Not Available'),
     docTaxReceiptDetails: initialFields?.docTaxReceiptDetails || 'NA',
-    docElectricityBillStatus: initialFields?.docElectricityBillStatus || 'Not Available',
+    docElectricityBillStatus: normalizeOption(initialFields?.docElectricityBillStatus, STSL_OPTIONS.docStatus, 'Not Available'),
     docElectricityBillDetails: initialFields?.docElectricityBillDetails || 'NA',
-    docConversionStatus: initialFields?.docConversionStatus || 'Not Available',
+    docConversionStatus: normalizeOption(initialFields?.docConversionStatus, STSL_OPTIONS.docStatus, 'Not Available'),
     docConversionDetails: initialFields?.docConversionDetails || 'NA',
 
     // Built-Up Area
@@ -874,7 +964,7 @@ export default function AdityaBirlaCapitalSTSL({
       { label: 'Lift Facility', options: ['No', 'Yes'], selected: fields.liftFacility || 'No', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL }
     );
     r.drawTwoSlashOptionRows(
-      { label: 'Amenities', options: ['Average', 'Excellent', 'Good', 'Low', 'NA'], selected: fields.amenities || 'Average', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
+      { label: 'Amenities', options: ['Average', 'Excellent', 'Good', 'Low', 'NA'], selected: fields.amenities || 'Good', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
       { label: 'Marketability', options: ['Average', 'Excellent', 'Good', 'Low'], selected: fields.marketability || 'Average', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL }
     );
     r.drawKVAndSlashRow(
