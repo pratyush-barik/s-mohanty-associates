@@ -306,26 +306,26 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       borderWidth: BORDER_W,
     });
 
-    // Draw options text with bold selected
+    // Draw options text — each option on its own line, separator at end of line
     let valY = y - pad - fontSize * 0.85;
     let curLineX = valX + pad;
     const maxLineX = valX + valueWidth - pad;
-    const sep = ' // ';
+    const sep = ' //';
     const sepW = this.fontRegular.widthOfTextAtSize(sep, fontSize);
 
     for (let i = 0; i < options.length; i++) {
       const opt = options[i];
       const isSelected = isSelectedMatch(opt);
       const optFont = isSelected ? this.fontBold : this.fontRegular;
-      const optText = opt;
-      const optW = optFont.widthOfTextAtSize(optText, fontSize);
+      const optW = optFont.widthOfTextAtSize(opt, fontSize);
 
+      // If this option doesn't fit on the current line, wrap
       if (curLineX + optW > maxLineX && curLineX > valX + pad) {
         valY -= fontSize * LINE_HEIGHT;
         curLineX = valX + pad;
       }
 
-      this.page.drawText(optText, {
+      this.page.drawText(opt, {
         x: curLineX,
         y: valY,
         size: fontSize,
@@ -334,6 +334,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       });
       curLineX += optW;
 
+      // Draw separator and ALWAYS break to next line after it
       if (i < options.length - 1) {
         this.page.drawText(sep, {
           x: curLineX,
@@ -342,17 +343,9 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
           font: this.fontRegular,
           color: rgb(0.4, 0.4, 0.4),
         });
-        curLineX += sepW;
-
-        const nextOpt = options[i + 1];
-        const nextIsSelected = cleanSelected.length > 0 && nextOpt.trim().toLowerCase() === cleanSelected;
-        const nextFont = nextIsSelected ? this.fontBold : this.fontRegular;
-        const nextOptW = nextFont.widthOfTextAtSize(nextOpt, fontSize);
-
-        if (curLineX + nextOptW > maxLineX) {
-          valY -= fontSize * LINE_HEIGHT;
-          curLineX = valX + pad;
-        }
+        // Always break after '//'
+        valY -= fontSize * LINE_HEIGHT;
+        curLineX = valX + pad;
       }
     }
   }
@@ -366,33 +359,9 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     pad: number
   ): number {
     const lLines = this.wrapText(label, labelWidth - pad * 2, fontSize, true);
-    let lineCount = 1;
-    let curLineX = pad;
-    const maxValW = valueWidth - pad * 2;
-    const sep = ' // ';
-    const sepW = this.fontRegular.widthOfTextAtSize(sep, fontSize);
-
-    for (let i = 0; i < options.length; i++) {
-      const opt = options[i];
-      const optW = this.fontBold.widthOfTextAtSize(opt, fontSize);
-      if (curLineX + optW > maxValW && curLineX > pad) {
-        lineCount++;
-        curLineX = pad;
-      }
-      curLineX += optW;
-
-      if (i < options.length - 1) {
-        curLineX += sepW;
-        const nextOpt = options[i + 1];
-        const nextOptW = this.fontBold.widthOfTextAtSize(nextOpt, fontSize);
-
-        if (curLineX + nextOptW > maxValW) {
-          lineCount++;
-          curLineX = pad;
-        }
-      }
-    }
-
+    // Each option gets its own line (always break after //)
+    // First option = 1 line, each subsequent option = 1 more line
+    const lineCount = Math.max(options.length, 1);
     return Math.max(lLines.length, lineCount);
   }
 
