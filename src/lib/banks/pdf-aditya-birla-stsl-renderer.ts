@@ -669,8 +669,8 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       details: string;
     }[]
   ): void {
-    // Tightened: name col narrower, Details label col narrower → value col wider
-    const colWidths = [105, 215, 40, 185.28];
+    // Exact sum to CONTENT_W (487.28): [105, 140, 45, 197.28]
+    const colWidths = [105, 140, 45, CONTENT_W - (105 + 140 + 45)];
     const statusOptions = ['Fully Available', 'Partially Available', 'Not Available', 'Not Applicable'];
     const pad = 3;
     const fontSize = FONT_SIZE;
@@ -772,8 +772,10 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
         borderColor: rgb(0, 0, 0),
         borderWidth: BORDER_W,
       });
+      const detailsLblW = this.fontBold.widthOfTextAtSize('Details', fontSize - 0.5);
+      const detailsLblX = curX + Math.max(1, (colWidths[2] - detailsLblW) / 2);
       this.page.drawText('Details', {
-        x: curX + 1,
+        x: detailsLblX,
         y: y - pad - fontSize * 0.85,
         size: fontSize - 0.5,
         font: this.fontBold,
