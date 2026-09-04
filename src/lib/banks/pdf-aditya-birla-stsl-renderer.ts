@@ -238,11 +238,14 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     labelWidth: number,
     valueWidth: number,
     fontSize: number,
-    pad: number
+    pad: number,
+    alwaysBreak = false
   ): void {
     const lLines = this.wrapText(label, labelWidth - pad * 2, fontSize, true);
     const norm = (s: string) => s.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
     const cleanSelectedNorm = norm(selected || '');
+    const isLocality = label.trim().toLowerCase() === 'locality';
+    const shouldAlwaysBreak = alwaysBreak || isLocality;
 
     const mapAlias = (val: string): string => {
       if (!val) return '';
@@ -372,18 +375,24 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
         });
         curLineX += sepW;
 
-        const nextOpt = options[i + 1];
-        const nextIsSelected = (i + 1 === selectedIdx);
-        const nextFont = nextIsSelected ? this.fontBold : this.fontRegular;
-        const nextOptW = nextFont.widthOfTextAtSize(nextOpt, fontSize);
-
-        if (curLineX + spaceW + nextOptW > maxLineX) {
-          // Next option won't fit → break to next line
+        if (shouldAlwaysBreak) {
+          // Break after every single //
           valY -= fontSize * LINE_HEIGHT;
           curLineX = valX + pad;
         } else {
-          // Fits → continue on same line with a space
-          curLineX += spaceW;
+          const nextOpt = options[i + 1];
+          const nextIsSelected = (i + 1 === selectedIdx);
+          const nextFont = nextIsSelected ? this.fontBold : this.fontRegular;
+          const nextOptW = nextFont.widthOfTextAtSize(nextOpt, fontSize);
+
+          if (curLineX + spaceW + nextOptW > maxLineX) {
+            // Next option won't fit → break to next line
+            valY -= fontSize * LINE_HEIGHT;
+            curLineX = valX + pad;
+          } else {
+            // Fits → continue on same line with a space
+            curLineX += spaceW;
+          }
         }
       }
     }
@@ -395,9 +404,18 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     labelWidth: number,
     valueWidth: number,
     fontSize: number,
-    pad: number
+    pad: number,
+    alwaysBreak = false
   ): number {
     const lLines = this.wrapText(label, labelWidth - pad * 2, fontSize, true);
+    const isLocality = label.trim().toLowerCase() === 'locality';
+    const shouldAlwaysBreak = alwaysBreak || isLocality;
+
+    if (shouldAlwaysBreak) {
+      const valLineCount = Math.max(options.length, 1);
+      return Math.max(lLines.length, valLineCount);
+    }
+
     const maxValW = valueWidth - pad * 2;
     const sepW = this.fontRegular.widthOfTextAtSize(' //', fontSize);
     const spaceW = this.fontRegular.widthOfTextAtSize(' ', fontSize);
@@ -437,18 +455,19 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     options: string[],
     selected: string | undefined,
     labelWidth = 140,
-    valueWidth?: number
+    valueWidth?: number,
+    alwaysBreak = false
   ): void {
     const vWidth = valueWidth !== undefined ? valueWidth : (CONTENT_W - labelWidth);
     const fontSize = FONT_SIZE;
     const pad = 3;
 
-    const maxLines = this._calcSlashOptionLines(label, options, labelWidth, vWidth, fontSize, pad);
+    const maxLines = this._calcSlashOptionLines(label, options, labelWidth, vWidth, fontSize, pad, alwaysBreak);
     const rowH = Math.max(18, maxLines * fontSize * LINE_HEIGHT + pad * 2);
     this.checkPageBreak(rowH);
 
     const y = this.pdfY(this.cursorY);
-    this._renderSlashOptionBox(MARGIN_L, y, rowH, label, options, selected, labelWidth, vWidth, fontSize, pad);
+    this._renderSlashOptionBox(MARGIN_L, y, rowH, label, options, selected, labelWidth, vWidth, fontSize, pad, alwaysBreak);
     this.cursorY += rowH;
   }
 
@@ -456,8 +475,8 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
    * Draw two slash option fields side-by-side on the same row (parallel 4-column layout).
    */
   drawTwoSlashOptionRows(
-    left: { label: string; options: string[]; selected?: string; labelWidth?: number; valueWidth?: number },
-    right: { label: string; options: string[]; selected?: string; labelWidth?: number; valueWidth?: number }
+    left: { label: string; options: string[]; selected?: string; labelWidth?: number; valueWidth?: number; alwaysBreak?: boolean },
+    right: { label: string; options: string[]; selected?: string; labelWidth?: number; valueWidth?: number; alwaysBreak?: boolean }
   ): void {
     const fontSize = FONT_SIZE;
     const pad = 3;
@@ -469,8 +488,8 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     const lbl2W = right.labelWidth || 105;
     const val2W = right.valueWidth || (CONTENT_W - (lbl1W + val1W + lbl2W));
 
-    const lines1 = this._calcSlashOptionLines(left.label, left.options, lbl1W, val1W, fontSize, pad);
-    const lines2 = this._calcSlashOptionLines(right.label, right.options, lbl2W, val2W, fontSize, pad);
+    const lines1 = this._calcSlashOptionLines(left.label, left.options, lbl1W, val1W, fontSize, pad, left.alwaysBreak);
+    const lines2 = this._calcSlashOptionLines(right.label, right.options, lbl2W, val2W, fontSize, pad, right.alwaysBreak);
 
     const maxLines = Math.max(lines1, lines2, 1);
     const rowH = Math.max(18, maxLines * fontSize * LINE_HEIGHT + pad * 2);
@@ -479,10 +498,10 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     const y = this.pdfY(this.cursorY);
 
     // Render left box
-    this._renderSlashOptionBox(MARGIN_L, y, rowH, left.label, left.options, left.selected, lbl1W, val1W, fontSize, pad);
+    this._renderSlashOptionBox(MARGIN_L, y, rowH, left.label, left.options, left.selected, lbl1W, val1W, fontSize, pad, left.alwaysBreak);
 
     // Render right box
-    this._renderSlashOptionBox(MARGIN_L + lbl1W + val1W, y, rowH, right.label, right.options, right.selected, lbl2W, val2W, fontSize, pad);
+    this._renderSlashOptionBox(MARGIN_L + lbl1W + val1W, y, rowH, right.label, right.options, right.selected, lbl2W, val2W, fontSize, pad, right.alwaysBreak);
 
     this.cursorY += rowH;
   }
@@ -493,7 +512,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
    */
   drawKVAndSlashRow(
     kv: { label: string; value: string; labelWidth?: number; valueWidth?: number; bold?: boolean },
-    slash: { label: string; options: string[]; selected?: string; labelWidth?: number; valueWidth?: number }
+    slash: { label: string; options: string[]; selected?: string; labelWidth?: number; valueWidth?: number; alwaysBreak?: boolean }
   ): void {
     const fontSize = FONT_SIZE;
     const pad = 3;
@@ -508,7 +527,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     const lLines1 = this.wrapText(kv.label, lbl1W - pad * 2, fontSize, true);
     const vLines1 = this.wrapText(kv.value, val1W - pad * 2, fontSize, !!kv.bold);
     const lines1 = Math.max(lLines1.length, vLines1.length);
-    const lines2 = this._calcSlashOptionLines(slash.label, slash.options, lbl2W, val2W, fontSize, pad);
+    const lines2 = this._calcSlashOptionLines(slash.label, slash.options, lbl2W, val2W, fontSize, pad, slash.alwaysBreak);
 
     const maxLines = Math.max(lines1, lines2, 1);
     const rowH = Math.max(18, maxLines * fontSize * LINE_HEIGHT + pad * 2);
@@ -560,7 +579,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     }
 
     // ── Render Right Slash Option ──
-    this._renderSlashOptionBox(MARGIN_L + lbl1W + val1W, y, rowH, slash.label, slash.options, slash.selected, lbl2W, val2W, fontSize, pad);
+    this._renderSlashOptionBox(MARGIN_L + lbl1W + val1W, y, rowH, slash.label, slash.options, slash.selected, lbl2W, val2W, fontSize, pad, slash.alwaysBreak);
 
     this.cursorY += rowH;
   }
