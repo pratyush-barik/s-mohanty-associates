@@ -242,35 +242,60 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
   ): void {
     const lLines = this.wrapText(label, labelWidth - pad * 2, fontSize, true);
     const norm = (s: string) => s.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
-    const cleanSelected = (selected || '').trim().toLowerCase();
     const cleanSelectedNorm = norm(selected || '');
 
-    const normalizeClass = (val: string) => {
-      if (val === 'classa' || val === 'a' || val === 'excellent') return 'classa';
-      if (val === 'classb' || val === 'b' || val === 'good') return 'classb';
-      if (val === 'classc' || val === 'c' || val === 'average') return 'classc';
-      if (val === 'classd' || val === 'd' || val === 'poor' || val === 'low') return 'classd';
-      if (val === 'easytoidentify' || val === 'yes') return 'yes';
-      if (val === 'difficulttoidentify' || val === 'no') return 'no';
+    const mapAlias = (val: string): string => {
+      if (!val) return '';
+      // Ratings / Quality / Exterior / Interior
+      if (['classa', 'a', 'aplus', 'excellent', 'superior', 'verygood'].includes(val)) return 'excellent';
+      if (['classb', 'b', 'good', 'wellmaintained', 'beamandcolumnstructure', 'beamcolumnstructure', 'framedstructure'].includes(val)) return 'good';
+      if (['classc', 'c', 'average', 'normal', 'satisfactory', 'fair', 'standard', 'moderate'].includes(val)) return 'average';
+      if (['classd', 'd', 'poor', 'bad', 'dilapidated'].includes(val)) return 'poor';
+      if (['low', 'lowclass', 'inferior'].includes(val)) return 'low';
+
+      // Yes / No / Demarcated / Approach
+      if (['yes', 'easytoidentify', 'fullyavailable', 'clear', 'true', 'available'].includes(val)) return 'yes';
+      if (['no', 'difficulttoidentify', 'notavailable', 'notclear', 'false'].includes(val)) return 'no';
+      if (['partially', 'partiallyavailable', 'partiallyclear', 'part'].includes(val)) return 'partially';
+      if (['notapplicable', 'na'].includes(val)) return 'na';
+
       return val;
     };
 
-    const isSelectedMatch = (opt: string) => {
+    const isMatch = (opt: string): boolean => {
       const optNorm = norm(opt);
       if (!optNorm || !cleanSelectedNorm) return false;
       if (optNorm === cleanSelectedNorm) return true;
-      if (normalizeClass(optNorm) === normalizeClass(cleanSelectedNorm)) return true;
-      if ((selected || '').includes('/') || (selected || '').includes('//')) {
-        const parts = (selected || '').split(/[\/\\]+/).map(p => norm(p)).filter(Boolean);
-        if (parts.length > 0) {
-          if (parts[0] === optNorm || normalizeClass(parts[0]) === normalizeClass(optNorm)) return true;
-        }
-      }
+      if (mapAlias(optNorm) === mapAlias(cleanSelectedNorm)) return true;
       if (optNorm.startsWith(cleanSelectedNorm) || cleanSelectedNorm.startsWith(optNorm)) {
         if (Math.min(optNorm.length, cleanSelectedNorm.length) >= 3) return true;
       }
       return false;
     };
+
+    // Pre-calculate which option index is selected to guarantee exactly ONE bold option
+    let selectedIdx = options.findIndex(opt => isMatch(opt));
+    if (selectedIdx === -1 && options.length > 0) {
+      if (cleanSelectedNorm) {
+        selectedIdx = options.findIndex(opt => {
+          const oNorm = norm(opt);
+          return oNorm.includes(cleanSelectedNorm) || cleanSelectedNorm.includes(oNorm);
+        });
+      }
+      if (selectedIdx === -1) {
+        const avgIdx = options.findIndex(opt => norm(opt) === 'average');
+        if (avgIdx !== -1) selectedIdx = avgIdx;
+        else {
+          const goodIdx = options.findIndex(opt => norm(opt) === 'good');
+          if (goodIdx !== -1) selectedIdx = goodIdx;
+          else {
+            const yesIdx = options.findIndex(opt => norm(opt) === 'yes');
+            if (yesIdx !== -1) selectedIdx = yesIdx;
+            else selectedIdx = 0;
+          }
+        }
+      }
+    }
 
     // Draw Label Box
     this.page.drawRectangle({
@@ -318,7 +343,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
 
     for (let i = 0; i < options.length; i++) {
       const opt = options[i];
-      const isSelected = isSelectedMatch(opt);
+      const isSelected = (i === selectedIdx);
       const optFont = isSelected ? this.fontBold : this.fontRegular;
       const optW = optFont.widthOfTextAtSize(opt, fontSize);
 
@@ -348,7 +373,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
         curLineX += sepW;
 
         const nextOpt = options[i + 1];
-        const nextIsSelected = isSelectedMatch(nextOpt);
+        const nextIsSelected = (i + 1 === selectedIdx);
         const nextFont = nextIsSelected ? this.fontBold : this.fontRegular;
         const nextOptW = nextFont.widthOfTextAtSize(nextOpt, fontSize);
 
