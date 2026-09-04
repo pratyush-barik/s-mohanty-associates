@@ -669,13 +669,14 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       details: string;
     }[]
   ): void {
-    // Exact sum to CONTENT_W (487.28): [105, 140, 45, 197.28]
-    const colWidths = [105, 140, 45, CONTENT_W - (105 + 140 + 45)];
+    // Exact sum to CONTENT_W (487.28): 2 options per line in Status col (width 210)
+    const colWidths = [100, 210, 40, CONTENT_W - (100 + 210 + 40)];
     const statusOptions = ['Fully Available', 'Partially Available', 'Not Available', 'Not Applicable'];
     const pad = 3;
     const fontSize = FONT_SIZE;
     const sep = ' //';
     const sepW = this.fontRegular.widthOfTextAtSize(sep, fontSize);
+    const spaceW = this.fontRegular.widthOfTextAtSize(' ', fontSize);
 
     const norm = (s: string) => s.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
 
@@ -685,17 +686,19 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
         const optNorm = norm(opt);
         if (!optNorm || !cleanSelectedNorm) return false;
         if (optNorm === cleanSelectedNorm) return true;
-        if (cleanSelectedNorm.includes(optNorm) && optNorm.length >= 8) return true;
+        if (cleanSelectedNorm.startsWith(optNorm) || optNorm.startsWith(cleanSelectedNorm)) {
+          if (Math.min(optNorm.length, cleanSelectedNorm.length) >= 6) return true;
+        }
         return false;
       };
 
       const nameLines = this.wrapText(item.name, colWidths[0] - pad * 2, fontSize, true);
-      // Each status option gets its own line (always break after //)
-      const lines2 = statusOptions.length;
+      // 2 options on each line → 2 lines total
+      const lines2 = 2;
       const detailsLines = this.wrapText(item.details || 'NA', colWidths[3] - pad * 2, fontSize, false);
 
       const maxLines = Math.max(nameLines.length, lines2, detailsLines.length, 1);
-      const rowH = Math.max(20, maxLines * fontSize * LINE_HEIGHT + pad * 2);
+      const rowH = Math.max(18, maxLines * fontSize * LINE_HEIGHT + pad * 2);
       this.checkPageBreak(rowH);
 
       const y = this.pdfY(this.cursorY);
@@ -719,7 +722,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       }
       curX += colWidths[0];
 
-      // Col 2: Status Options — always line-break after each //
+      // Col 2: Status Options — 2 on each line
       this.page.drawRectangle({
         x: curX,
         y: y - rowH,
@@ -754,9 +757,15 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
             font: this.fontRegular,
             color: rgb(0.4, 0.4, 0.4),
           });
-          // Always break to next line after //
-          stY -= fontSize * LINE_HEIGHT;
-          stX = curX + pad;
+          stX += sepW;
+
+          // Break after option 1 (end of line 1: Fully Available // Partially Available //)
+          if (s === 1) {
+            stY -= fontSize * LINE_HEIGHT;
+            stX = curX + pad;
+          } else {
+            stX += spaceW;
+          }
         }
       }
       curX += colWidths[1];
