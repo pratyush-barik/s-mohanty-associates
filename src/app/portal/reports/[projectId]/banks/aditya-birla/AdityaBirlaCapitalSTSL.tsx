@@ -2117,8 +2117,7 @@ export default function AdityaBirlaCapitalSTSL({
                         onKeyDown={blockNegativeKeys}
                         onChange={e => handleChange('plotAreaDocsRate', sanitizePositiveDecimal(e.target.value))}
                         disabled={isReadOnly || String(fields.plotAreaDocs).trim().toUpperCase() === 'NA'}
-                        className={inputCls + ' !py-1.5 text-xs text-right'}
-                        placeholder="e.g. 700"
+                         className={inputCls + ' !py-1.5 text-xs text-right'}
                       />
                     </td>
                     <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-bold text-xs bg-amber-50/50 text-[#0f2038]">
@@ -2148,7 +2147,6 @@ export default function AdityaBirlaCapitalSTSL({
                         onChange={e => handleChange('plotAreaPhysicalRate', sanitizePositiveDecimal(e.target.value))}
                         disabled={isReadOnly || String(fields.plotAreaPhysical).trim().toUpperCase() === 'NA'}
                         className={inputCls + ' !py-1.5 text-xs text-right'}
-                        placeholder="e.g. Rate"
                       />
                     </td>
                     <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-bold text-xs text-[#0f2038]">
@@ -2178,7 +2176,6 @@ export default function AdityaBirlaCapitalSTSL({
                         onChange={e => handleChange('carpetAreaPlanRate', sanitizePositiveDecimal(e.target.value))}
                         disabled={isReadOnly || String(fields.carpetAreaPlan).trim().toUpperCase() === 'NA'}
                         className={inputCls + ' !py-1.5 text-xs text-right'}
-                        placeholder="e.g. Rate"
                       />
                     </td>
                     <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-bold text-xs text-[#0f2038]">
@@ -2208,7 +2205,6 @@ export default function AdityaBirlaCapitalSTSL({
                         onChange={e => handleChange('carpetAreaMeasurementRate', sanitizePositiveDecimal(e.target.value))}
                         disabled={isReadOnly || String(fields.carpetAreaMeasurement).trim().toUpperCase() === 'NA'}
                         className={inputCls + ' !py-1.5 text-xs text-right'}
-                        placeholder="e.g. Rate"
                       />
                     </td>
                     <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-bold text-xs text-[#0f2038]">
@@ -2238,7 +2234,6 @@ export default function AdityaBirlaCapitalSTSL({
                         onChange={e => handleChange('buaNormsRate', sanitizePositiveDecimal(e.target.value))}
                         disabled={isReadOnly || String(fields.buaNorms).trim().toUpperCase() === 'NA'}
                         className={inputCls + ' !py-1.5 text-xs text-right'}
-                        placeholder="e.g. Rate"
                       />
                     </td>
                     <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-bold text-xs text-[#0f2038]">
@@ -2281,7 +2276,6 @@ export default function AdityaBirlaCapitalSTSL({
                         onChange={e => handleChange('buaMeasurementRate', sanitizePositiveDecimal(e.target.value))}
                         disabled={isReadOnly || String(fields.buaMeasurementArea).trim().toUpperCase() === 'NA'}
                         className={inputCls + ' !py-1.5 text-xs text-right'}
-                        placeholder="e.g. 1500"
                       />
                     </td>
                     <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-bold text-xs bg-amber-50/50 text-[#0f2038]">
@@ -2299,8 +2293,8 @@ export default function AdityaBirlaCapitalSTSL({
                         value={fields.superBua ?? ''}
                         onChange={val => handleChange('superBua', val)}
                         disabled={isReadOnly}
-                        placeholder="0"
-                        defaultVal="0"
+                        placeholder="e.g. Area"
+                        defaultVal=""
                       />
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
@@ -2311,11 +2305,10 @@ export default function AdityaBirlaCapitalSTSL({
                         onChange={e => handleChange('superBuaRate', sanitizePositiveDecimal(e.target.value))}
                         disabled={isReadOnly || String(fields.superBua).trim().toUpperCase() === 'NA'}
                         className={inputCls + ' !py-1.5 text-xs text-right'}
-                        placeholder="0"
                       />
                     </td>
                     <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-medium text-xs text-[#0f2038]">
-                      {superBuaVal > 0 ? `Rs.${formatIndianCurrency(superBuaVal)}/-` : '0'}
+                      {superBuaVal > 0 ? `Rs.${formatIndianCurrency(superBuaVal)}/-` : (String(fields.superBua).trim().toUpperCase() === 'NA' ? 'NA' : '-')}
                     </td>
                   </tr>
 
@@ -2326,11 +2319,11 @@ export default function AdityaBirlaCapitalSTSL({
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                       <AreaValueOrNACell
-                        value={fields.carParkArea ?? '0'}
+                        value={fields.carParkArea ?? ''}
                         onChange={val => handleChange('carParkArea', val)}
                         disabled={isReadOnly}
-                        placeholder="0"
-                        defaultVal="0"
+                        placeholder="e.g. Area"
+                        defaultVal=""
                       />
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
@@ -2341,11 +2334,10 @@ export default function AdityaBirlaCapitalSTSL({
                         onChange={e => handleChange('carParkRate', sanitizePositiveDecimal(e.target.value))}
                         disabled={isReadOnly || String(fields.carParkArea).trim().toUpperCase() === 'NA'}
                         className={inputCls + ' !py-1.5 text-xs text-right'}
-                        placeholder="0"
                       />
                     </td>
                     <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-medium text-xs text-[#0f2038]">
-                      {carParkVal > 0 ? `Rs.${formatIndianCurrency(carParkVal)}/-` : '0'}
+                      {carParkVal > 0 ? `Rs.${formatIndianCurrency(carParkVal)}/-` : (String(fields.carParkArea).trim().toUpperCase() === 'NA' ? 'NA' : '-')}
                     </td>
                   </tr>
 
@@ -2356,11 +2348,11 @@ export default function AdityaBirlaCapitalSTSL({
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                       <AreaValueOrNACell
-                        value={fields.amenitiesArea ?? '0'}
+                        value={fields.amenitiesArea ?? ''}
                         onChange={val => handleChange('amenitiesArea', val)}
                         disabled={isReadOnly}
-                        placeholder="0"
-                        defaultVal="0"
+                        placeholder="e.g. Area"
+                        defaultVal=""
                       />
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
@@ -2371,11 +2363,10 @@ export default function AdityaBirlaCapitalSTSL({
                         onChange={e => handleChange('amenitiesRate', sanitizePositiveDecimal(e.target.value))}
                         disabled={isReadOnly || String(fields.amenitiesArea).trim().toUpperCase() === 'NA'}
                         className={inputCls + ' !py-1.5 text-xs text-right'}
-                        placeholder="0"
                       />
                     </td>
                     <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-medium text-xs text-[#0f2038]">
-                      {amenitiesVal > 0 ? `Rs.${formatIndianCurrency(amenitiesVal)}/-` : '0'}
+                      {amenitiesVal > 0 ? `Rs.${formatIndianCurrency(amenitiesVal)}/-` : (String(fields.amenitiesArea).trim().toUpperCase() === 'NA' ? 'NA' : '-')}
                     </td>
                   </tr>
                 </tbody>
