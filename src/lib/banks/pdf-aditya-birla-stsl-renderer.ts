@@ -306,14 +306,11 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       borderWidth: BORDER_W,
     });
 
-    // Smart-wrap: break after // only when next option won't fit on same line.
-    // "Yes // No" stays on one line; long lists wrap where needed.
+    // Always break after each // — each option on its own line
     let valY = y - pad - fontSize * 0.85;
     let curLineX = valX + pad;
     const maxLineX = valX + valueWidth - pad;
     const sep = ' //';
-    const sepW = this.fontRegular.widthOfTextAtSize(sep, fontSize);
-    const spaceW = this.fontRegular.widthOfTextAtSize(' ', fontSize);
 
     for (let i = 0; i < options.length; i++) {
       const opt = options[i];
@@ -321,7 +318,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       const optFont = isSelected ? this.fontBold : this.fontRegular;
       const optW = optFont.widthOfTextAtSize(opt, fontSize);
 
-      // Wrap if this option itself doesn't fit
+      // Wrap if this option itself doesn't fit on the current line
       if (curLineX + optW > maxLineX && curLineX > valX + pad) {
         valY -= fontSize * LINE_HEIGHT;
         curLineX = valX + pad;
@@ -344,21 +341,9 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
           font: this.fontRegular,
           color: rgb(0.4, 0.4, 0.4),
         });
-        curLineX += sepW;
-
-        const nextOpt = options[i + 1];
-        const nextIsSelected = isSelectedMatch(nextOpt);
-        const nextFont = nextIsSelected ? this.fontBold : this.fontRegular;
-        const nextOptW = nextFont.widthOfTextAtSize(nextOpt, fontSize);
-
-        if (curLineX + spaceW + nextOptW > maxLineX) {
-          // Next option won't fit → break
-          valY -= fontSize * LINE_HEIGHT;
-          curLineX = valX + pad;
-        } else {
-          // Fits → stay on same line with a space
-          curLineX += spaceW;
-        }
+        // Always break to next line after //
+        valY -= fontSize * LINE_HEIGHT;
+        curLineX = valX + pad;
       }
     }
   }
@@ -372,23 +357,8 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     pad: number
   ): number {
     const lLines = this.wrapText(label, labelWidth - pad * 2, fontSize, true);
-    const maxValW = valueWidth - pad * 2;
-    const sepW = this.fontRegular.widthOfTextAtSize(' //', fontSize);
-    const spaceW = this.fontRegular.widthOfTextAtSize(' ', fontSize);
-
-    let lineCount = 1;
-    let curX = 0;
-    for (let i = 0; i < options.length; i++) {
-      const optW = this.fontBold.widthOfTextAtSize(options[i], fontSize);
-      if (curX + optW > maxValW && curX > 0) { lineCount++; curX = 0; }
-      curX += optW;
-      if (i < options.length - 1) {
-        curX += sepW;
-        const nextW = this.fontBold.widthOfTextAtSize(options[i + 1], fontSize);
-        if (curX + spaceW + nextW > maxValW) { lineCount++; curX = 0; }
-        else { curX += spaceW; }
-      }
-    }
+    // Each option gets its own line (always break after //)
+    const lineCount = Math.max(options.length, 1);
     return Math.max(lLines.length, lineCount);
   }
 
