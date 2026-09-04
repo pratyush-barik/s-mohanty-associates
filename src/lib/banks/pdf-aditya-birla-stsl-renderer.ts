@@ -971,16 +971,14 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
 
       lineY = y - pad - fontSize * 0.85;
 
-      const yesFont = isYes && !isNo ? this.fontBold : this.fontRegular;
-      const noFont = isNo ? this.fontBold : this.fontRegular;
-      const yesW = yesFont.widthOfTextAtSize('Yes', fontSize);
+      const yesW = this.fontRegular.widthOfTextAtSize('Yes', fontSize);
       const sepStrW = this.fontRegular.widthOfTextAtSize(' // ', fontSize);
-      const noW = noFont.widthOfTextAtSize('No', fontSize);
+      const noW = this.fontRegular.widthOfTextAtSize('No', fontSize);
       const devTotalW = yesW + sepStrW + noW;
       let devX = curX + Math.max(pad, (colWidths[3] - devTotalW) / 2);
 
       // Draw "Yes"
-      this.page.drawText('Yes', { x: devX, y: lineY, size: fontSize, font: yesFont, color: isYes && !isNo ? rgb(0, 0, 0) : rgb(0.3, 0.3, 0.3) });
+      this.page.drawText('Yes', { x: devX, y: lineY, size: fontSize, font: this.fontRegular, color: isYes && !isNo ? rgb(0, 0, 0) : rgb(0.3, 0.3, 0.3) });
       devX += yesW;
 
       // Draw " // "
@@ -988,7 +986,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       devX += sepStrW;
 
       // Draw "No"
-      this.page.drawText('No', { x: devX, y: lineY, size: fontSize, font: noFont, color: isNo ? rgb(0, 0, 0) : rgb(0.3, 0.3, 0.3) });
+      this.page.drawText('No', { x: devX, y: lineY, size: fontSize, font: this.fontRegular, color: isNo ? rgb(0, 0, 0) : rgb(0.3, 0.3, 0.3) });
 
       curX += colWidths[3];
 
@@ -1102,15 +1100,15 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       borderColor: rgb(0, 0, 0),
       borderWidth: BORDER_W,
     });
-    const uDevLines = this.wrapText(usageDeviation || 'Usage Deviation', colWidths[3] - 6, FONT_SIZE, true);
+    const uDevLines = this.wrapText(usageDeviation || 'Usage Deviation', colWidths[3] - 6, FONT_SIZE, false);
     let uDevY = y - totalSetbackH / 2 + (uDevLines.length * FONT_SIZE * LINE_HEIGHT) / 2 - FONT_SIZE * 0.85;
     for (const line of uDevLines) {
-      const tw = this.fontBold.widthOfTextAtSize(line, FONT_SIZE);
+      const tw = this.fontRegular.widthOfTextAtSize(line, FONT_SIZE);
       this.page.drawText(line, {
         x: x3 + (colWidths[3] - tw) / 2,
         y: uDevY,
         size: FONT_SIZE,
-        font: this.fontBold,
+        font: this.fontRegular,
         color: rgb(0, 0, 0),
       });
       uDevY -= FONT_SIZE * LINE_HEIGHT;
