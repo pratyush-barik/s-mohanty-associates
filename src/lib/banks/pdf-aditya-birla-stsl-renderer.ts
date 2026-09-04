@@ -669,12 +669,12 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       details: string;
     }[]
   ): void {
-    // Exact sum to CONTENT_W (487.28): 2 options per line in Status col (width 210)
-    const colWidths = [100, 210, 40, CONTENT_W - (100 + 210 + 40)];
+    // Exact sum to CONTENT_W (487.28): [115, 215, 45, 112.28]
+    const colWidths = [115, 215, 45, CONTENT_W - (115 + 215 + 45)];
     const statusOptions = ['Fully Available', 'Partially Available', 'Not Available', 'Not Applicable'];
     const pad = 3;
     const fontSize = FONT_SIZE;
-    const sep = ' //';
+    const sep = '//';
     const sepW = this.fontRegular.widthOfTextAtSize(sep, fontSize);
     const spaceW = this.fontRegular.widthOfTextAtSize(' ', fontSize);
 
@@ -759,7 +759,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
           });
           stX += sepW;
 
-          // Break after option 1 (end of line 1: Fully Available // Partially Available //)
+          // Break after option 1 (end of line 1: Fully Available// Partially Available//)
           if (s === 1) {
             stY -= fontSize * LINE_HEIGHT;
             stX = curX + pad;
@@ -823,7 +823,8 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       remarks?: string;
     }[]
   ): void {
-    const colWidths = [125, 95, 95, 100, 130.28];
+    // Aligns with Doc Details: col 0 = 115, total sum = CONTENT_W (487.28)
+    const colWidths = [115, 85, 85, 75, CONTENT_W - (115 + 85 + 85 + 75)];
     const headers = ['Built up area', 'As per Site', 'As per Plan/FAR', 'Deviations', 'Remarks'];
     const pad = 3;
     const fontSize = FONT_SIZE;
