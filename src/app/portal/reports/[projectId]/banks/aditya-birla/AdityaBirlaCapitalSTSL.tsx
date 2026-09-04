@@ -1054,7 +1054,7 @@ export default function AdityaBirlaCapitalSTSL({
         ['Amenities', String(fields.amenitiesArea || '0'), String(fields.amenitiesRate || '0'), amenitiesVal > 0 ? `Rs.${formatIndianCurrency(amenitiesVal)}/-` : '0'],
       ],
       valCols,
-      [3]
+      []
     );
 
     // Other Details / Setbacks Table
@@ -2212,7 +2212,7 @@ export default function AdityaBirlaCapitalSTSL({
                          className={inputCls + ' !py-1.5 text-xs text-right'}
                       />
                     </td>
-                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-bold text-xs bg-amber-50/50 text-[#0f2038]">
+                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-normal text-xs bg-amber-50/50 text-[#0f2038]">
                       {plotDeedVal > 0 ? `Rs.${formatIndianCurrency(plotDeedVal)}/-` : (String(fields.plotAreaDocs).trim().toUpperCase() === 'NA' ? 'NA' : '-')}
                     </td>
                   </tr>
@@ -2241,7 +2241,7 @@ export default function AdityaBirlaCapitalSTSL({
                         className={inputCls + ' !py-1.5 text-xs text-right'}
                       />
                     </td>
-                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-bold text-xs text-[#0f2038]">
+                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-normal text-xs text-[#0f2038]">
                       {plotPhysicalVal > 0 ? `Rs.${formatIndianCurrency(plotPhysicalVal)}/-` : (String(fields.plotAreaPhysical).trim().toUpperCase() === 'NA' ? 'NA' : '-')}
                     </td>
                   </tr>
@@ -2270,7 +2270,7 @@ export default function AdityaBirlaCapitalSTSL({
                         className={inputCls + ' !py-1.5 text-xs text-right'}
                       />
                     </td>
-                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-bold text-xs text-[#0f2038]">
+                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-normal text-xs text-[#0f2038]">
                       {carpetPlanVal > 0 ? `Rs.${formatIndianCurrency(carpetPlanVal)}/-` : (String(fields.carpetAreaPlan).trim().toUpperCase() === 'NA' ? 'NA' : '-')}
                     </td>
                   </tr>
@@ -2299,7 +2299,7 @@ export default function AdityaBirlaCapitalSTSL({
                         className={inputCls + ' !py-1.5 text-xs text-right'}
                       />
                     </td>
-                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-bold text-xs text-[#0f2038]">
+                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-normal text-xs text-[#0f2038]">
                       {carpetMeasurementVal > 0 ? `Rs.${formatIndianCurrency(carpetMeasurementVal)}/-` : (String(fields.carpetAreaMeasurement).trim().toUpperCase() === 'NA' ? 'NA' : '-')}
                     </td>
                   </tr>
@@ -2328,7 +2328,7 @@ export default function AdityaBirlaCapitalSTSL({
                         className={inputCls + ' !py-1.5 text-xs text-right'}
                       />
                     </td>
-                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-bold text-xs text-[#0f2038]">
+                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-normal text-xs text-[#0f2038]">
                       {buaNormsVal > 0 ? `Rs.${formatIndianCurrency(buaNormsVal)}/-` : (String(fields.buaNorms).trim().toUpperCase() === 'NA' ? 'NA' : '-')}
                     </td>
                   </tr>
@@ -2370,7 +2370,7 @@ export default function AdityaBirlaCapitalSTSL({
                         className={inputCls + ' !py-1.5 text-xs text-right'}
                       />
                     </td>
-                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-bold text-xs bg-amber-50/50 text-[#0f2038]">
+                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-normal text-xs bg-amber-50/50 text-[#0f2038]">
                       {buaTotalVal > 0 ? `Rs.${formatIndianCurrency(buaTotalVal)}/-` : (String(fields.buaMeasurementArea).trim().toUpperCase() === 'NA' ? 'NA' : '-')}
                     </td>
                   </tr>
@@ -2399,7 +2399,7 @@ export default function AdityaBirlaCapitalSTSL({
                         className={inputCls + ' !py-1.5 text-xs text-right'}
                       />
                     </td>
-                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-medium text-xs text-[#0f2038]">
+                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-normal text-xs text-[#0f2038]">
                       {superBuaVal > 0 ? `Rs.${formatIndianCurrency(superBuaVal)}/-` : (String(fields.superBua).trim().toUpperCase() === 'NA' ? 'NA' : '-')}
                     </td>
                   </tr>
@@ -2428,7 +2428,7 @@ export default function AdityaBirlaCapitalSTSL({
                         className={inputCls + ' !py-1.5 text-xs text-right'}
                       />
                     </td>
-                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-medium text-xs text-[#0f2038]">
+                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-normal text-xs text-[#0f2038]">
                       {carParkVal > 0 ? `Rs.${formatIndianCurrency(carParkVal)}/-` : (String(fields.carParkArea).trim().toUpperCase() === 'NA' ? 'NA' : '-')}
                     </td>
                   </tr>
@@ -2457,7 +2457,7 @@ export default function AdityaBirlaCapitalSTSL({
                         className={inputCls + ' !py-1.5 text-xs text-right'}
                       />
                     </td>
-                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-medium text-xs text-[#0f2038]">
+                    <td className="px-3 py-2 border-b border-[#e9ecef] text-right font-normal text-xs text-[#0f2038]">
                       {amenitiesVal > 0 ? `Rs.${formatIndianCurrency(amenitiesVal)}/-` : (String(fields.amenitiesArea).trim().toUpperCase() === 'NA' ? 'NA' : '-')}
                     </td>
                   </tr>
