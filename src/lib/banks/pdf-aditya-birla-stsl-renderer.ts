@@ -665,11 +665,11 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       details?: string;
     }[]
   ): void {
-    // Exact coincidence with BUA table: [85, 205, 60, 137.28]
-    // 85 + 205 = 290 (same X as Details label & Deviations!)
+    // Exact coincidence with BUA table: [85, 196, 60, 146.28]
+    // 85 + 196 = 281 (same X as Details label & Deviations!)
     // Details label width = 60 (same width as Deviations!)
-    // Details content width = 137.28 (same width as Remarks!)
-    const colWidths = [85, 205, 60, CONTENT_W - (85 + 205 + 60)];
+    // Details content width = 146.28 (same width as Remarks!)
+    const colWidths = [85, 196, 60, CONTENT_W - (85 + 196 + 60)];
     const statusOptions = ['Fully Available', 'Partially Available', 'Not Available', 'Not Applicable'];
     const pad = 3;
     const fontSize = FONT_SIZE;
@@ -771,7 +771,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       }
       curX += colWidths[1];
 
-      // Col 3: "Details" Label (Soft Blue background, bold, centred — coincides with Deviations)
+      // Col 3: "Details" Label (Soft Blue background, bold, left-aligned — coincides with Deviations)
       this.page.drawRectangle({
         x: curX,
         y: y - rowH,
@@ -782,10 +782,8 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
         borderColor: rgb(0, 0, 0),
         borderWidth: BORDER_W,
       });
-      const detailsLblW = this.fontBold.widthOfTextAtSize('Details', fontSize);
-      const detailsLblX = curX + Math.max(1, (colWidths[2] - detailsLblW) / 2);
       this.page.drawText('Details', {
-        x: detailsLblX,
+        x: curX + pad,
         y: y - pad - fontSize * 0.85,
         size: fontSize,
         font: this.fontBold,
@@ -824,11 +822,11 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       remarks?: string;
     }[]
   ): void {
-    // Coincides with Doc Details: [85, 102.5, 102.5, 60, 137.28]
-    // 85 + 102.5 + 102.5 = 290 (same X as Details label & Deviations!)
+    // Coincides with Doc Details: [85, 98, 98, 60, 146.28]
+    // 85 + 98 + 98 = 281 (same X as Details label & Deviations!)
     // Deviations width = 60 (same width as Details label!)
-    // Remarks width = 137.28 (same width as Details content!)
-    const colWidths = [85, 102.5, 102.5, 60, CONTENT_W - (85 + 102.5 + 102.5 + 60)];
+    // Remarks width = 146.28 (same width as Details content!)
+    const colWidths = [85, 98, 98, 60, CONTENT_W - (85 + 98 + 98 + 60)];
     const headerCols = [
       ['Built up area'],
       ['As per Site'],
