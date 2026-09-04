@@ -1004,8 +1004,8 @@ export default function AdityaBirlaCapitalSTSL({
     r.drawKeyValueRow([{ label: 'Insurance Value', value: totalCalculatedVal > 0 ? `Rs.${formatIndianCurrency(totalCalculatedVal)}/-` : 'NA', labelWidth: 140, valueWidth: CONTENT_W - 140 }]);
     r.drawKeyValueRow([{ label: 'Government Value', value: fields.govtLandRate ? `Rs.${fields.govtLandRate}/-` : 'NA', labelWidth: 140, valueWidth: CONTENT_W - 140 }]);
     r.drawKeyValueRow([
-      { label: 'Percentage Completion', value: fields.percentageCompletion || '100%', labelWidth: 140, valueWidth: 132.64 },
-      { label: 'Percentage Recommendation', value: fields.percentageRecommendation || '100%', labelWidth: 140, valueWidth: 132.64 },
+      { label: 'Percentage Completion', value: fields.percentageCompletion || '100%', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
+      { label: 'Percentage Recommendation', value: fields.percentageRecommendation || '100%', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
     ]);
 
     // Boundary Detailing

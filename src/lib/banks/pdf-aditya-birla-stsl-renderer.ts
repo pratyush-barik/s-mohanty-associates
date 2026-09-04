@@ -989,7 +989,8 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     usageDeviation: string,
     remarks: string
   ): void {
-    const colWidths = [115, 95, 95, 115, 125.28];
+    // Exact sum to CONTENT_W (487.28): [115, 90, 90, 90, 102.28]
+    const colWidths = [115, 90, 90, 90, CONTENT_W - (115 + 90 + 90 + 90)];
     this.drawTable(
       ['Setbacks', 'As per plan/ Bye laws', 'Actual at site', 'Deviation', 'Remarks, if any'],
       [],
@@ -1121,7 +1122,8 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     actual: { north: string; south: string; east: string; west: string },
     matching: string
   ): void {
-    const colWidths = [105.28, 110, 110, 110, 110];
+    // Exact sum to CONTENT_W (487.28): [107.28, 95, 95, 95, 95]
+    const colWidths = [107.28, 95, 95, 95, 95];
     this.drawTable(
       ['Detailing', 'North', 'South', 'East', 'West'],
       [
