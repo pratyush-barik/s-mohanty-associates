@@ -323,18 +323,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       borderWidth: BORDER_W,
     });
 
-    // Dynamically adjust font size if any single option + separator is wider than the available cell
-    let optFontSize = fontSize;
-    const maxValW = valueWidth - pad * 2;
-    const testSepW = this.fontRegular.widthOfTextAtSize(' //', optFontSize);
-    for (const opt of options) {
-      const optW = this.fontBold.widthOfTextAtSize(opt, optFontSize) + testSepW;
-      if (optW > maxValW && optFontSize > 9.5) {
-        optFontSize = Math.max(9.5, optFontSize * (maxValW / optW));
-      }
-    }
-
-    // Flow options horizontally with ' // ' separators and wrap to next line only when needed
+    const optFontSize = fontSize;
     let valY = y - pad - optFontSize * 0.85;
     let curLineX = valX + pad;
     const maxLineX = valX + valueWidth - pad;
@@ -414,16 +403,8 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       return Math.max(lLines.length, valLineCount);
     }
 
-    let optFontSize = fontSize;
+    const optFontSize = fontSize;
     const maxValW = valueWidth - pad * 2;
-    const testSepW = this.fontRegular.widthOfTextAtSize(' //', optFontSize);
-    for (const opt of options) {
-      const optW = this.fontBold.widthOfTextAtSize(opt, optFontSize) + testSepW;
-      if (optW > maxValW && optFontSize > 9.5) {
-        optFontSize = Math.max(9.5, optFontSize * (maxValW / optW));
-      }
-    }
-
     const sepW = this.fontRegular.widthOfTextAtSize(' //', optFontSize);
     const spaceW = this.fontRegular.widthOfTextAtSize(' ', optFontSize);
 
@@ -680,15 +661,15 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       details?: string;
     }[]
   ): void {
-    // Exact coincidence with BUA table: [115, 160, 60, 152.28]
-    // 115 + 160 = 275 (same X as Details label & Deviations!)
+    // Exact coincidence with BUA table: [100, 185, 60, 142.28]
+    // 100 + 185 = 285 (same X as Details label & Deviations!)
     // Details label width = 60 (same width as Deviations!)
-    // Details content width = 152.28 (same width as Remarks!)
-    const colWidths = [115, 160, 60, CONTENT_W - (115 + 160 + 60)];
+    // Details content width = 142.28 (same width as Remarks!)
+    const colWidths = [100, 185, 60, CONTENT_W - (100 + 185 + 60)];
     const statusOptions = ['Fully Available', 'Partially Available', 'Not Available', 'Not Applicable'];
     const pad = 3;
     const fontSize = FONT_SIZE;
-    const stFontSize = 9.5;
+    const stFontSize = FONT_SIZE;
     const sep = '//';
     const sepW = this.fontRegular.widthOfTextAtSize(sep, stFontSize);
     const spaceW = this.fontRegular.widthOfTextAtSize(' ', stFontSize);
@@ -794,12 +775,12 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
         borderColor: rgb(0, 0, 0),
         borderWidth: BORDER_W,
       });
-      const detailsLblW = this.fontBold.widthOfTextAtSize('Details', fontSize - 0.5);
+      const detailsLblW = this.fontBold.widthOfTextAtSize('Details', fontSize);
       const detailsLblX = curX + Math.max(1, (colWidths[2] - detailsLblW) / 2);
       this.page.drawText('Details', {
         x: detailsLblX,
         y: y - pad - fontSize * 0.85,
-        size: fontSize - 0.5,
+        size: fontSize,
         font: this.fontBold,
         color: rgb(0, 0, 0),
       });
@@ -836,11 +817,11 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       remarks?: string;
     }[]
   ): void {
-    // Coincides with Doc Details: [115, 80, 80, 60, 152.28]
-    // 115 + 80 + 80 = 275 (same X as Details label & Deviations!)
+    // Coincides with Doc Details: [100, 92.5, 92.5, 60, 142.28]
+    // 100 + 92.5 + 92.5 = 285 (same X as Details label & Deviations!)
     // Deviations width = 60 (same width as Details label!)
-    // Remarks width = 152.28 (same width as Details content!)
-    const colWidths = [115, 80, 80, 60, CONTENT_W - (115 + 80 + 80 + 60)];
+    // Remarks width = 142.28 (same width as Details content!)
+    const colWidths = [100, 92.5, 92.5, 60, CONTENT_W - (100 + 92.5 + 92.5 + 60)];
     const headerCols = [
       ['Built up area'],
       ['As per Site'],
@@ -874,17 +855,12 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       let lineY = y - (headerH - totalTextH) / 2 - fontSize * 0.85;
 
       for (const line of lines) {
-        let hFontSize = fontSize;
-        let hW = this.fontBold.widthOfTextAtSize(line, hFontSize);
-        if (hW > colWidths[i] - pad * 2) {
-          hFontSize = fontSize - 0.5;
-          hW = this.fontBold.widthOfTextAtSize(line, hFontSize);
-        }
+        const hW = this.fontBold.widthOfTextAtSize(line, fontSize);
         const hX = curX + Math.max(pad, (colWidths[i] - hW) / 2);
         this.page.drawText(line, {
           x: hX,
           y: lineY,
-          size: hFontSize,
+          size: fontSize,
           font: this.fontBold,
           color: rgb(0, 0, 0),
         });
@@ -1229,18 +1205,18 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     ];
 
     for (const pt of points) {
-      const lines = this.wrapText(pt, CONTENT_W - 10, fontSize - 1, false);
+      const lines = this.wrapText(pt, CONTENT_W - 10, fontSize, false);
       for (const line of lines) {
-        this.checkPageBreak(14);
+        this.checkPageBreak(15);
         const yPt = this.pdfY(this.cursorY);
         this.page.drawText(line, {
           x: MARGIN_L,
           y: yPt - 10,
-          size: fontSize - 1,
+          size: fontSize,
           font: this.fontRegular,
           color: rgb(0, 0, 0),
         });
-        this.cursorY += 13;
+        this.cursorY += 14;
       }
       this.cursorY += 4;
     }
@@ -1253,14 +1229,14 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     this.page.drawText(`•    Report Prepared by – ${preparedBy || 'Trupti Dash'}`, {
       x: MARGIN_L + 20,
       y: ySign - 12,
-      size: fontSize - 0.5,
+      size: fontSize,
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });
     this.page.drawText(`•    Report Finalized by – ${finalizedBy || 'Trupti Dash'}`, {
       x: MARGIN_L + 20,
-      y: ySign - 26,
-      size: fontSize - 0.5,
+      y: ySign - 28,
+      size: fontSize,
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });
