@@ -854,7 +854,7 @@ export default function AdityaBirlaCapitalSTSL({
     ]);
     r.drawTwoSlashOptionRows(
       { label: 'Property Demarcated', options: ['Yes', 'Partially', 'No'], selected: fields.plotDemarcated || 'Yes', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL },
-      { label: 'Property Identification', options: ['Yes', 'NO'], selected: fields.propertyIdentification || 'Yes', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL }
+      { label: 'Property Identification', options: ['Yes', 'No'], selected: (fields.propertyIdentification?.toLowerCase() === 'no' || fields.propertyIdentification === 'Difficult to identify') ? 'No' : 'Yes', labelWidth: W_LABEL_4COL, valueWidth: W_VAL_4COL }
     );
     r.drawKeyValueRow([{ label: 'Identification through', value: fields.identificationThrough || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL, bold: true }]);
     r.drawTwoSlashOptionRows(
@@ -1591,9 +1591,9 @@ export default function AdityaBirlaCapitalSTSL({
                   </select>
                 </Field>
                 <Field label="Property Identification">
-                  <select value={fields.propertyIdentification || 'Yes'} onChange={e => handleChange('propertyIdentification', e.target.value)} disabled={isReadOnly} className={selectCls}>
+                  <select value={(fields.propertyIdentification === 'NO' || fields.propertyIdentification === 'No' || fields.propertyIdentification === 'Difficult to identify') ? 'No' : 'Yes'} onChange={e => handleChange('propertyIdentification', e.target.value)} disabled={isReadOnly} className={selectCls}>
                     <option value="Yes">Yes</option>
-                    <option value="NO">No</option>
+                    <option value="No">No</option>
                   </select>
                 </Field>
                 <Field label="Identification Through" span={2}>

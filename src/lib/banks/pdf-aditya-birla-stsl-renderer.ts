@@ -250,6 +250,8 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       if (val === 'classb' || val === 'b' || val === 'good') return 'classb';
       if (val === 'classc' || val === 'c' || val === 'average') return 'classc';
       if (val === 'classd' || val === 'd' || val === 'poor' || val === 'low') return 'classd';
+      if (val === 'easytoidentify' || val === 'yes') return 'yes';
+      if (val === 'difficulttoidentify' || val === 'no') return 'no';
       return val;
     };
 
