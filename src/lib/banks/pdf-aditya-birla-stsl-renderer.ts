@@ -831,7 +831,9 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     ];
     const pad = 3;
     const fontSize = FONT_SIZE;
-    const headerH = 24;
+    const maxHeaderLines = Math.max(...headerCols.map(c => c.length), 1);
+    const lineSpacing = fontSize * 1.15; // 13.8pt
+    const headerH = Math.max(24, maxHeaderLines * lineSpacing + pad * 2); // 33.6pt for 2 lines
 
     this.checkPageBreak(headerH);
     let y = this.pdfY(this.cursorY);
@@ -851,7 +853,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       });
 
       const lines = headerCols[i];
-      const totalTextH = (lines.length - 1) * (fontSize * 1.1) + fontSize * 0.85;
+      const totalTextH = (lines.length - 1) * lineSpacing + fontSize * 0.85;
       let lineY = y - (headerH - totalTextH) / 2 - fontSize * 0.85;
 
       for (const line of lines) {
@@ -864,7 +866,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
           font: this.fontBold,
           color: rgb(0, 0, 0),
         });
-        lineY -= fontSize * 1.1;
+        lineY -= lineSpacing;
       }
       curX += colWidths[i];
     }
