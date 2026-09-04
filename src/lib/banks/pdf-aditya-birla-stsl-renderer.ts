@@ -327,8 +327,8 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     let valY = y - pad - optFontSize * 0.85;
     let curLineX = valX + pad;
     const maxLineX = valX + valueWidth - pad;
-    const sep = ' //';
-    const sepW = this.fontRegular.widthOfTextAtSize(sep, optFontSize);
+    const slashSep = '//';
+    const slashSepW = this.fontRegular.widthOfTextAtSize(slashSep, optFontSize);
     const spaceW = this.fontRegular.widthOfTextAtSize(' ', optFontSize);
 
     for (let i = 0; i < options.length; i++) {
@@ -353,14 +353,17 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       curLineX += optW;
 
       if (i < options.length - 1) {
-        this.page.drawText(sep, {
+        // Explicit space before slash
+        curLineX += spaceW;
+
+        this.page.drawText(slashSep, {
           x: curLineX,
           y: valY,
           size: optFontSize,
           font: this.fontRegular,
           color: rgb(0.4, 0.4, 0.4),
         });
-        curLineX += sepW;
+        curLineX += slashSepW;
 
         if (shouldAlwaysBreak) {
           // Break after every single //
@@ -405,7 +408,8 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
 
     const optFontSize = fontSize;
     const maxValW = valueWidth - pad * 2;
-    const sepW = this.fontRegular.widthOfTextAtSize(' //', optFontSize);
+    const slashSep = '//';
+    const slashSepW = this.fontRegular.widthOfTextAtSize(slashSep, optFontSize);
     const spaceW = this.fontRegular.widthOfTextAtSize(' ', optFontSize);
 
     let valLineCount = 1;
@@ -420,7 +424,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       curX += optW;
 
       if (i < options.length - 1) {
-        curX += sepW;
+        curX += spaceW + slashSepW;
         const nextW = this.fontBold.widthOfTextAtSize(options[i + 1], optFontSize);
         if (curX + spaceW + nextW > maxValW) {
           valLineCount++;
@@ -670,8 +674,8 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     const pad = 3;
     const fontSize = FONT_SIZE;
     const stFontSize = FONT_SIZE;
-    const sep = '//';
-    const sepW = this.fontRegular.widthOfTextAtSize(sep, stFontSize);
+    const slashSep = '//';
+    const slashSepW = this.fontRegular.widthOfTextAtSize(slashSep, stFontSize);
     const spaceW = this.fontRegular.widthOfTextAtSize(' ', stFontSize);
 
     const norm = (s: string) => s.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -744,16 +748,19 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
         stX += sW;
 
         if (s < statusOptions.length - 1) {
-          this.page.drawText(sep, {
+          // Explicit space before slash
+          stX += spaceW;
+
+          this.page.drawText(slashSep, {
             x: stX,
             y: stY,
             size: stFontSize,
             font: this.fontRegular,
             color: rgb(0.4, 0.4, 0.4),
           });
-          stX += sepW;
+          stX += slashSepW;
 
-          // Break after option 1 (end of line 1: Fully Available// Partially Available//)
+          // Break after option 1 (end of line 1: Fully Available // Partially Available //)
           if (s === 1) {
             stY -= stFontSize * LINE_HEIGHT;
             stX = curX + pad;
@@ -955,18 +962,20 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       lineY = y - pad - fontSize * 0.85;
 
       const yesW = this.fontRegular.widthOfTextAtSize('Yes', fontSize);
-      const sepStrW = this.fontRegular.widthOfTextAtSize(' // ', fontSize);
+      const spaceW = this.fontRegular.widthOfTextAtSize(' ', fontSize);
+      const slashSep = '//';
+      const slashSepW = this.fontRegular.widthOfTextAtSize(slashSep, fontSize);
       const noW = this.fontRegular.widthOfTextAtSize('No', fontSize);
-      const devTotalW = yesW + sepStrW + noW;
+      const devTotalW = yesW + spaceW + slashSepW + spaceW + noW;
       let devX = curX + Math.max(pad, (colWidths[3] - devTotalW) / 2);
 
       // Draw "Yes"
       this.page.drawText('Yes', { x: devX, y: lineY, size: fontSize, font: this.fontRegular, color: isYes && !isNo ? rgb(0, 0, 0) : rgb(0.3, 0.3, 0.3) });
-      devX += yesW;
+      devX += yesW + spaceW;
 
-      // Draw " // "
-      this.page.drawText(' // ', { x: devX, y: lineY, size: fontSize, font: this.fontRegular, color: rgb(0.4, 0.4, 0.4) });
-      devX += sepStrW;
+      // Draw "//"
+      this.page.drawText(slashSep, { x: devX, y: lineY, size: fontSize, font: this.fontRegular, color: rgb(0.4, 0.4, 0.4) });
+      devX += slashSepW + spaceW;
 
       // Draw "No"
       this.page.drawText('No', { x: devX, y: lineY, size: fontSize, font: this.fontRegular, color: isNo ? rgb(0, 0, 0) : rgb(0.3, 0.3, 0.3) });
