@@ -665,11 +665,11 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       details?: string;
     }[]
   ): void {
-    // Exact coincidence with BUA table: [100, 185, 60, 142.28]
-    // 100 + 185 = 285 (same X as Details label & Deviations!)
+    // Exact coincidence with BUA table: [85, 205, 60, 137.28]
+    // 85 + 205 = 290 (same X as Details label & Deviations!)
     // Details label width = 60 (same width as Deviations!)
-    // Details content width = 142.28 (same width as Remarks!)
-    const colWidths = [100, 185, 60, CONTENT_W - (100 + 185 + 60)];
+    // Details content width = 137.28 (same width as Remarks!)
+    const colWidths = [85, 205, 60, CONTENT_W - (85 + 205 + 60)];
     const statusOptions = ['Fully Available', 'Partially Available', 'Not Available', 'Not Applicable'];
     const pad = 3;
     const fontSize = FONT_SIZE;
@@ -824,11 +824,11 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
       remarks?: string;
     }[]
   ): void {
-    // Coincides with Doc Details: [100, 92.5, 92.5, 60, 142.28]
-    // 100 + 92.5 + 92.5 = 285 (same X as Details label & Deviations!)
+    // Coincides with Doc Details: [85, 102.5, 102.5, 60, 137.28]
+    // 85 + 102.5 + 102.5 = 290 (same X as Details label & Deviations!)
     // Deviations width = 60 (same width as Details label!)
-    // Remarks width = 142.28 (same width as Details content!)
-    const colWidths = [100, 92.5, 92.5, 60, CONTENT_W - (100 + 92.5 + 92.5 + 60)];
+    // Remarks width = 137.28 (same width as Details content!)
+    const colWidths = [85, 102.5, 102.5, 60, CONTENT_W - (85 + 102.5 + 102.5 + 60)];
     const headerCols = [
       ['Built up area'],
       ['As per Site'],
