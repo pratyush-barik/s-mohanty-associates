@@ -2306,7 +2306,7 @@ export default function AdityaBirlaCapitalSTSL({
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                       <input
                         type="text"
-                        value={fields.superBuaRate || '0'}
+                        value={fields.superBuaRate ?? ''}
                         onKeyDown={blockNegativeKeys}
                         onChange={e => handleChange('superBuaRate', sanitizePositiveDecimal(e.target.value))}
                         disabled={isReadOnly || String(fields.superBua).trim().toUpperCase() === 'NA'}
@@ -2336,7 +2336,7 @@ export default function AdityaBirlaCapitalSTSL({
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                       <input
                         type="text"
-                        value={fields.carParkRate || '0'}
+                        value={fields.carParkRate ?? ''}
                         onKeyDown={blockNegativeKeys}
                         onChange={e => handleChange('carParkRate', sanitizePositiveDecimal(e.target.value))}
                         disabled={isReadOnly || String(fields.carParkArea).trim().toUpperCase() === 'NA'}
@@ -2366,7 +2366,7 @@ export default function AdityaBirlaCapitalSTSL({
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                       <input
                         type="text"
-                        value={fields.amenitiesRate || '0'}
+                        value={fields.amenitiesRate ?? ''}
                         onKeyDown={blockNegativeKeys}
                         onChange={e => handleChange('amenitiesRate', sanitizePositiveDecimal(e.target.value))}
                         disabled={isReadOnly || String(fields.amenitiesArea).trim().toUpperCase() === 'NA'}
@@ -2564,7 +2564,7 @@ export default function AdityaBirlaCapitalSTSL({
                         <span>Distress Value (</span>
                         <input
                           type="text"
-                          value={fields.distressPct || '80'}
+                          value={fields.distressPct ?? ''}
                           onKeyDown={blockNegativeKeys}
                           onChange={e => handleChange('distressPct', sanitizePositiveDecimal(e.target.value))}
                           disabled={isReadOnly}
@@ -2634,7 +2634,7 @@ export default function AdityaBirlaCapitalSTSL({
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                       <input
                         type="text"
-                        value={fields.percentageCompletion || '100%'}
+                        value={fields.percentageCompletion ?? ''}
                         onChange={e => handleChange('percentageCompletion', e.target.value)}
                         disabled={isReadOnly}
                         className={inputCls + ' !py-1 text-xs text-center font-semibold'}
@@ -2647,7 +2647,7 @@ export default function AdityaBirlaCapitalSTSL({
                     <td colSpan={2} className="px-2 py-1.5 border-b border-[#e9ecef]">
                       <input
                         type="text"
-                        value={fields.percentageRecommendation || '100%'}
+                        value={fields.percentageRecommendation ?? ''}
                         onChange={e => handleChange('percentageRecommendation', e.target.value)}
                         disabled={isReadOnly}
                         className={inputCls + ' !py-1 text-xs text-center font-semibold'}

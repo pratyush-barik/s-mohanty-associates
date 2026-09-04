@@ -1726,7 +1726,7 @@ export default function AdityaBirlaCapitalMLAP({
                   <td className="px-3 py-2 border-b border-[#e9ecef] font-medium text-xs">Amenities (like parking etc in unit or lumpsum value)</td>
                   <td className="px-3 py-2 border-b border-[#e9ecef]" colSpan={2}></td>
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                    <input type="number" value={fields.amenitiesValue || '0'} onChange={e => handleChange('amenitiesValue', e.target.value)} disabled={isReadOnly} className={inputCls + ' !py-1.5 text-xs text-right'} />
+                    <input type="number" value={fields.amenitiesValue ?? ''} onChange={e => handleChange('amenitiesValue', e.target.value)} disabled={isReadOnly} className={inputCls + ' !py-1.5 text-xs text-right'} />
                   </td>
                 </tr>
 
