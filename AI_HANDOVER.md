@@ -264,6 +264,13 @@ The core business logic is **100% complete**.
     - **SVG Logo Migration**: Converted the main PNG logo to an embedded Base64 SVG (`smohantyassociate_logo.svg`) and replaced all `.png` references across the codebase (Navbar, Footer, layouts) to improve rendering consistency and scalability.
     - **Layout & Typography Optimization**: Increased maximum container width to `1600px` for better ultrawide usage. Re-aligned the main navigation bar links to the center, augmented button spacing, and boosted navbar font sizes for enhanced legibility. Re-flowed the footer contact address to prevent awkward orphaned words on mobile screens.
     - **PDF Text Rendering Fix**: Added comprehensive HTML entity decoding (`&amp;` to `&`, etc.) across all PDF renderers before string processing to prevent escaped entities appearing in final printable reports.
+24. **Bank & Financial Institution Builders Progress (September 2026)**:
+    - **Aditya Birla Capital Ltd (MLAP)**: Completed 12-section custom UI and dedicated PDF renderer.
+    - **Aditya Birla Capital Ltd (STSL)**: Completed 14-section custom UI and dedicated 7-page PDF renderer.
+      - Exact 3-row Address format (TRF, Visit, Docs), 8-item documentation checklist, BUA & Setback deviation tables, 4-side boundary comparison (Deed vs Mouza vs Actual), GPS-stamped photo grid.
+      - Continuous map stack on Page 6 (Location Map & Mouza Map) touching section headers with zero extra gaps and bounding box borders.
+      - Declaration section with hanging indent on all 5 clauses, locked Appraiser Name (`Er. Satyajit Mohanty`), and pre-filled editable Report Prepared By / Finalized By fields.
+    - Complete tracking across all 57 banks and 73 subclasses maintained in `BANK_REPORT_PROGRESS.md`.
 
 ## 5. Pending Work (What is next)
 
