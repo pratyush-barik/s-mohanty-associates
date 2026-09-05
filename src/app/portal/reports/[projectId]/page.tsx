@@ -29,6 +29,7 @@ export default async function ReportEditorPage({ params, searchParams }: { param
         serviceRequest: true,
         report: true,
         fieldEmployees: { select: { name: true, email: true, mobile: true, employeeId: true } },
+        reportEmployee: { select: { name: true, email: true, mobile: true, employeeId: true } },
         manager: { select: { name: true, employeeId: true, mobile: true } },
         inspection: { select: { notes: true, scheduledDate: true, completedAt: true, createdAt: true } },
         bucketImages: {
@@ -173,6 +174,7 @@ export default async function ReportEditorPage({ params, searchParams }: { param
             propertyType: decodeHtmlEntities(serviceRequest?.propertyType || ''),
             purpose: decodeHtmlEntities(serviceRequest?.purpose || ''),
             fieldEmployees: project.fieldEmployees || [],
+            reportEmployeeName: project.reportEmployee?.name || (currentUser.role === 'REPORT_EMPLOYEE' ? session.user.name : '') || '',
             initiationDate: (project.startDate || project.createdAt)?.toISOString().split('T')[0],
             inspectionDate: (project.inspection?.completedAt || project.inspection?.scheduledDate || project.inspection?.createdAt)?.toISOString().split('T')[0],
           }}

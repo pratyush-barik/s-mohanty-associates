@@ -426,8 +426,8 @@ export default function AdityaBirlaCapitalSTSL({
     remarks: initialFields?.remarks || '',
     engineerVisitedName: initialFields?.engineerVisitedName || formatAssignedEngineers(prefill?.fieldEmployees) || '',
     appraiserName: initialFields?.appraiserName || 'Er. Satyajit Mohanty',
-    preparedBy: initialFields?.preparedBy || 'Trupti Dash',
-    finalizedBy: initialFields?.finalizedBy || 'Trupti Dash',
+    preparedBy: initialFields?.preparedBy || '',
+    finalizedBy: initialFields?.finalizedBy || prefill?.reportEmployeeName || '',
 
     // Organisation metadata (for ActiveConfigBanner)
     organisationTemplate: initialFields?.organisationTemplate || 'ADITYA BIRLA CAPITAL LTD',
@@ -1203,9 +1203,9 @@ export default function AdityaBirlaCapitalSTSL({
       await r.drawImageSection(cadMapBytes, 'Superimposed Drone / Aerial Cadastral Map', 260);
     }
     r.drawDeclarationSection(
-      fields.appraiserName || fields.valuerName || 'Er. Satyajit Mohanty',
-      fields.preparedBy || 'Trupti Dash',
-      fields.finalizedBy || 'Trupti Dash'
+      fields.appraiserName || 'Er. Satyajit Mohanty',
+      fields.preparedBy || '',
+      fields.finalizedBy || ''
     );
 
     // ═══ PAGE 8+: STANDARDIZED ANNEXURES & SCHEDULES ═══
@@ -2935,13 +2935,35 @@ export default function AdityaBirlaCapitalSTSL({
         <Section title="Declaration & Sign-off" number={12} id="section-12">
           <div className="grid md:grid-cols-3 gap-4">
             <Field label="Name of Appraiser">
-              <input type="text" value={fields.appraiserName || 'Er. Satyajit Mohanty'} onChange={e => handleChange('appraiserName', e.target.value)} disabled={isReadOnly} className={inputCls} />
+              <div className="relative">
+                <input
+                  type="text"
+                  value={fields.appraiserName || 'Er. Satyajit Mohanty'}
+                  disabled={true}
+                  className={`${inputCls} bg-gray-50 text-gray-700 font-semibold cursor-not-allowed`}
+                />
+                <Lock className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2" />
+              </div>
             </Field>
             <Field label="Report Prepared By">
-              <input type="text" value={fields.preparedBy || 'Trupti Dash'} onChange={e => handleChange('preparedBy', e.target.value)} disabled={isReadOnly} className={inputCls} />
+              <input
+                type="text"
+                value={fields.preparedBy || ''}
+                onChange={e => handleChange('preparedBy', e.target.value)}
+                disabled={isReadOnly}
+                className={inputCls}
+                placeholder="Name of Engineer (Prepared By)"
+              />
             </Field>
             <Field label="Report Finalized By">
-              <input type="text" value={fields.finalizedBy || 'Trupti Dash'} onChange={e => handleChange('finalizedBy', e.target.value)} disabled={isReadOnly} className={inputCls} />
+              <input
+                type="text"
+                value={fields.finalizedBy || ''}
+                onChange={e => handleChange('finalizedBy', e.target.value)}
+                disabled={isReadOnly}
+                className={inputCls}
+                placeholder="Name of Report Engineer (Finalized By)"
+              />
             </Field>
           </div>
         </Section>

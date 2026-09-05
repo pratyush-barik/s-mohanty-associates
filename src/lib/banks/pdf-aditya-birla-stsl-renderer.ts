@@ -1344,14 +1344,14 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
 
     // Sign-off block
     const ySign = this.pdfY(this.cursorY);
-    this.page.drawText(`•    Report Prepared by – ${preparedBy || 'Trupti Dash'}`, {
+    this.page.drawText(`•    Report Prepared by – ${preparedBy || ''}`, {
       x: MARGIN_L + 20,
       y: ySign - 12,
       size: fontSize,
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });
-    this.page.drawText(`•    Report Finalized by – ${finalizedBy || 'Trupti Dash'}`, {
+    this.page.drawText(`•    Report Finalized by – ${finalizedBy || ''}`, {
       x: MARGIN_L + 20,
       y: ySign - 28,
       size: fontSize,

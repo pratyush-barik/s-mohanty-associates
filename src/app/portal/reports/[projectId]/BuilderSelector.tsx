@@ -26,6 +26,7 @@ interface BuilderSelectorProps {
     propertyType?: string;
     purpose?: string;
     fieldEmployees?: any[];
+    reportEmployeeName?: string;
     initiationDate?: string;
     inspectionDate?: string;
   };
