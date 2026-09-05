@@ -597,14 +597,20 @@ export function BaseMapsSection({
   sectionNumber?: number | string;
   sectionId?: string;
 }) {
-  const mapQuery = latitude && longitude
-    ? `${latitude.trim()},${longitude.trim()}`
-    : propertyAddress.trim();
-  const encodedQuery = encodeURIComponent(mapQuery);
-  const hasQuery = mapQuery.length > 0;
-  const googleMapsUrl = latitude && longitude
-    ? `https://www.google.com/maps?q=${latitude.trim()},${longitude.trim()}&z=15&t=k`
-    : `https://www.google.com/maps/search/${encodedQuery}`;
+  const cleanLat = (latitude || '').trim();
+  const cleanLng = (longitude || '').trim();
+  const hasCoordinates = Boolean(cleanLat && cleanLng && !isNaN(Number(cleanLat)) && !isNaN(Number(cleanLng)));
+  const cleanAddress = (propertyAddress || '').trim();
+
+  const queryParam = hasCoordinates
+    ? `loc:${cleanLat},${cleanLng}`
+    : cleanAddress;
+
+  const encodedQuery = encodeURIComponent(queryParam);
+  const hasQuery = hasCoordinates || cleanAddress.length > 0;
+  const googleMapsUrl = hasCoordinates
+    ? `https://www.google.com/maps?q=loc:${cleanLat},${cleanLng}&z=17&t=k`
+    : `https://www.google.com/maps/search/${encodeURIComponent(cleanAddress)}`;
 
   return (
     <Section title="Maps & Documents" number={sectionNumber} id={sectionId} defaultOpen={false}>
@@ -615,8 +621,8 @@ export function BaseMapsSection({
           {hasQuery ? (
             <div className="rounded-2xl overflow-hidden border border-[#c8d6e5] shadow-sm">
               <div className="bg-[#d5e8f5] px-4 py-2 flex items-center justify-between">
-                <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider">
-                  Live Satellite Preview
+                <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider flex items-center gap-1.5">
+                  📍 Live Satellite Preview {hasCoordinates ? `(Pinned at ${cleanLat}, ${cleanLng})` : ''}
                 </span>
                 <a
                   href={googleMapsUrl}
@@ -628,7 +634,7 @@ export function BaseMapsSection({
                 </a>
               </div>
               <iframe
-                src={`https://maps.google.com/maps?q=${encodedQuery}&t=k&z=16&output=embed`}
+                src={`https://maps.google.com/maps?q=${encodedQuery}&t=k&z=17&output=embed`}
                 width="100%"
                 height="320"
                 style={{ border: 0 }}

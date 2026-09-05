@@ -2907,20 +2907,37 @@ export default function AdityaBirlaCapitalSTSL({
             <div>
               <h4 className="text-xs font-bold text-[#495057] uppercase tracking-wider mb-2">Live Map & Location</h4>
               {(() => {
-                const mapQuery = fields.latitude && fields.longitude
-                  ? `${fields.latitude.trim()},${fields.longitude.trim()}`
-                  : (fields.propertyAddressAsDocs || fields.propertyAddressAsVisit || fields.propertyAddressAsTRF || '').trim();
-                const encodedQuery = encodeURIComponent(mapQuery);
-                const hasQuery = mapQuery.length > 0;
-                const googleMapsUrl = fields.latitude && fields.longitude
-                  ? `https://www.google.com/maps?q=${fields.latitude.trim()},${fields.longitude.trim()}&z=15&t=k`
-                  : `https://www.google.com/maps/search/${encodedQuery}`;
+                const locationComponents = [
+                  fields.propertyAddressAsDocs || fields.propertyAddressAsVisit || fields.propertyAddressAsTRF,
+                  fields.landmark,
+                  fields.microLocation,
+                  fields.subLocality,
+                  fields.mainLocality,
+                ].map(s => (s || '').trim()).filter(Boolean);
+
+                const mainAreaLocation = locationComponents.join(', ') || (fields.propertyAddressAsDocs || fields.propertyAddressAsVisit || fields.propertyAddressAsTRF || '').trim();
+
+                const latStr = (fields.latitude || '').trim();
+                const lngStr = (fields.longitude || '').trim();
+                const hasCoordinates = Boolean(latStr && lngStr && !isNaN(Number(latStr)) && !isNaN(Number(lngStr)));
+
+                const hasQuery = hasCoordinates || mainAreaLocation.length > 0;
+
+                // Priority: Reads from location in main area, overridden by latitude and longitude with red pointer
+                const queryParam = hasCoordinates
+                  ? `loc:${latStr},${lngStr}`
+                  : mainAreaLocation;
+
+                const encodedQuery = encodeURIComponent(queryParam);
+                const googleMapsUrl = hasCoordinates
+                  ? `https://www.google.com/maps?q=loc:${latStr},${lngStr}&z=17&t=k`
+                  : `https://www.google.com/maps/search/${encodeURIComponent(mainAreaLocation)}`;
 
                 return hasQuery ? (
                   <div className="rounded-2xl overflow-hidden border border-[#c8d6e5] shadow-sm">
                     <div className="bg-[#d5e8f5] px-4 py-2 flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider">
-                        Live Satellite Preview
+                      <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider flex items-center gap-1.5">
+                        📍 Live Satellite Preview {hasCoordinates ? `(Pinned at ${latStr}, ${lngStr})` : `(${fields.mainLocality || 'Address'})`}
                       </span>
                       <a
                         href={googleMapsUrl}
@@ -2932,7 +2949,7 @@ export default function AdityaBirlaCapitalSTSL({
                       </a>
                     </div>
                     <iframe
-                      src={`https://maps.google.com/maps?q=${encodedQuery}&t=k&z=16&output=embed`}
+                      src={`https://maps.google.com/maps?q=${encodedQuery}&t=k&z=17&output=embed`}
                       width="100%"
                       height="300"
                       style={{ border: 0 }}
@@ -2944,7 +2961,7 @@ export default function AdityaBirlaCapitalSTSL({
                   </div>
                 ) : (
                   <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 text-center text-xs text-gray-500">
-                    Enter Property Address or Coordinates in Section 2 to view live satellite map.
+                    Enter Location Details (Main Locality, Address) or Coordinates in Section 2 to view live satellite map.
                   </div>
                 );
               })()}
