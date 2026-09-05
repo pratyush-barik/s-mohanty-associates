@@ -127,7 +127,7 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
    * Draw a Section Header Banner (e.g. "BASIC DETAILS", "LOCATION DETAILS")
    * Includes automated section spacing and page-break lookahead protection.
    */
-  drawSectionHeader(title: string, addSpaceBefore = true): void {
+  drawSectionHeader(title: string, addSpaceBefore = true, preserveCase = false): void {
     if (addSpaceBefore && this.cursorY > 10) {
       this.cursorY += 10;
     }
@@ -150,7 +150,7 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
     });
 
     const font = this.fontBold;
-    const text = this.sanitizeText(title).toUpperCase();
+    const text = preserveCase ? this.sanitizeText(title) : this.sanitizeText(title).toUpperCase();
     const tw = font.widthOfTextAtSize(text, FONT_SIZE_HEADER);
     this.page.drawText(text, {
       x: MARGIN_L + (CONTENT_W - tw) / 2,

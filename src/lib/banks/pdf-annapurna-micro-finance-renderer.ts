@@ -1040,7 +1040,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     // Additional Checks & Statutory Declaration (Intact on dedicated page)
     // ══════════════════════════════════════════════════════════════════════
     this.addPage();
-    this.drawSectionHeader('Additional Checks & Statutory Declaration', false);
+    this.drawSectionHeader('Additional checks of properties:', false, true);
 
     const chkCol1 = 210;
     const chkCol2 = CONTENT_W - chkCol1;
