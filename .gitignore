@@ -108,4 +108,7 @@ temp-parser/
 temp-parser
 
 # Python Virtual Environments
-.venv_rembg/ 
+.venv_rembg/
+
+# Aditya Birla Housing Finance Samples
+/Aditya_Birla_House_finance(Samples)
