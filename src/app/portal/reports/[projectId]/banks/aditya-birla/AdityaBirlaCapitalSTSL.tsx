@@ -458,6 +458,7 @@ export default function AdityaBirlaCapitalSTSL({
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [activeSection, setActiveSection] = useState('section-1');
   const [bucketPickerOpen, setBucketPickerOpen] = useState(false);
+  const [bucketPickerMode, setBucketPickerMode] = useState<'propertyImages' | 'sketchMapImages' | 'locationMapImage'>('propertyImages');
   const [uploadingTarget, setUploadingTarget] = useState<string | null>(null);
 
   const debouncedTimer = useRef<NodeJS.Timeout | null>(null);
@@ -778,23 +779,40 @@ export default function AdityaBirlaCapitalSTSL({
     }
   };
 
-  const handleUploadMultiplePhotos = async (files: FileList) => {
-    const uploadedUrls: string[] = [];
-    const uploadedNames: string[] = [];
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const ext = file.name.split('.').pop() || 'jpg';
-      const fileName = `property-photo-${Date.now()}-${i}.${ext}`;
-      const filePath = `reports/${projectId}/${fileName}`;
-      const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(filePath, file);
-      if (!error) {
+  const handleUploadMultiplePhotos = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileList = e.target.files;
+    if (!fileList || fileList.length === 0) return;
+    setUploadingTarget('photos');
+    try {
+      const newUrls: string[] = [...(fields.propertyImages || [])];
+      const newNames: string[] = [...(fields.propertyImageNames || [])];
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
+        if (file.size > 5 * 1024 * 1024) {
+          alert(`${file.name} exceeds 5MB size limit.`);
+          continue;
+        }
+        const ext = file.name.split('.').pop() || 'jpg';
+        const fileName = `${projectId}-photo-${Date.now()}-${i}.${ext}`;
+        const filePath = `reports/${projectId}/${fileName}`;
+        const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(filePath, file);
+        if (error) {
+          console.error(`Upload error for ${file.name}:`, error);
+          alert(`Failed to upload ${file.name}: ${error.message}`);
+          continue;
+        }
         const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
-        uploadedUrls.push(data.publicUrl);
-        uploadedNames.push(file.name.replace(/\.[^/.]+$/, ''));
+        newUrls.push(data.publicUrl);
+        newNames.push(file.name.replace(/\.[^/.]+$/, '') || 'Site Picture');
       }
+      handleChange('propertyImages', newUrls);
+      handleChange('propertyImageNames', newNames);
+    } catch (err: any) {
+      alert(`Photo upload failed: ${err.message}`);
+    } finally {
+      e.target.value = '';
+      setUploadingTarget(null);
     }
-    handleChange('propertyImages', [...(fields.propertyImages || []), ...uploadedUrls]);
-    handleChange('propertyImageNames', [...(fields.propertyImageNames || []), ...uploadedNames]);
   };
 
   // ─── PDF Generation Pipeline (Exact 7 Pages) ───
@@ -810,15 +828,21 @@ export default function AdityaBirlaCapitalSTSL({
       }
     };
 
+    const propImgs = fields.propertyImages || [];
     const [letterheadBytes, locMapBytes, mouzaMapBytes, cadMapBytes, ...propImageBytesList] = await Promise.all([
       fetchBytes('/templates/letterhead.png'),
       fetchBytes(fields.locationMapImage),
       fetchBytes(fields.mouzaMapImage),
       fetchBytes(fields.cadastralMapImage),
-      ...(fields.propertyImages || []).map(url => fetchBytes(url)),
+      ...propImgs.map(url => fetchBytes(url)),
     ]);
 
-    const validPhotoBytes = propImageBytesList.filter(Boolean) as Uint8Array[];
+    const photos = propImgs.map((imgUrl: string, idx: number) => ({
+      bytes: propImageBytesList[idx],
+      label: fields.propertyImageNames?.[idx] !== undefined && fields.propertyImageNames[idx].trim().length > 0
+        ? fields.propertyImageNames[idx]
+        : 'Site Picture',
+    })).filter((p: any) => p.bytes && p.bytes.length > 0);
 
     const r = new PDFAdityaBirlaSTSLRenderer();
     await r.init(letterheadBytes || undefined);
@@ -1115,10 +1139,8 @@ export default function AdityaBirlaCapitalSTSL({
     r.drawKeyValueRow([{ label: 'Name of the Engineer visited', value: fields.engineerVisitedName || '', labelWidth: 180, valueWidth: CONTENT_W - 180 }]);
 
     // ═══ PAGE 5: PHOTOGRAPHS OF PROPERTY ═══
-    if (validPhotoBytes.length > 0) {
-      r.newPage();
-      r.drawSectionHeader('PHOTOGRAPHS OF PROPERTY', false);
-      await r.drawPhotoGrid(validPhotoBytes.slice(0, 6));
+    if (photos.length > 0) {
+      await r.drawPhotoGrid(photos);
     }
 
     // ═══ PAGE 6: LOCATION MAP & BHULEKH MOUZA MAP ═══
@@ -2806,9 +2828,19 @@ export default function AdityaBirlaCapitalSTSL({
 
         {/* ═══ SECTION 10: PHOTOGRAPHS ═══ */}
         <BasePhotographsSection
-          images={fields.propertyImages || []}
-          imageNames={fields.propertyImageNames || []}
+          propertyImages={fields.propertyImages || []}
+          propertyImageNames={fields.propertyImageNames || []}
           isReadOnly={isReadOnly}
+          uploading={uploadingTarget === 'photos'}
+          bucketCount={bucketImages?.length || 0}
+          onImageNameChange={(idx, name) => {
+            const updatedNames = [...(fields.propertyImageNames || [])];
+            while (updatedNames.length <= idx) {
+              updatedNames.push('');
+            }
+            updatedNames[idx] = name;
+            handleChange('propertyImageNames', updatedNames);
+          }}
           onRemoveImage={idx => {
             const updatedImgs = (fields.propertyImages || []).filter((_, i) => i !== idx);
             const updatedNames = (fields.propertyImageNames || []).filter((_, i) => i !== idx);
@@ -2820,7 +2852,10 @@ export default function AdityaBirlaCapitalSTSL({
             handleChange('propertyImageNames', newNames);
           }}
           onUploadImages={handleUploadMultiplePhotos}
-          onOpenBucketPicker={() => setBucketPickerOpen(true)}
+          onOpenBucketPicker={() => {
+            setBucketPickerMode('propertyImages');
+            setBucketPickerOpen(true);
+          }}
           sectionNumber={10}
           sectionId="section-10"
         />
@@ -2931,11 +2966,13 @@ export default function AdityaBirlaCapitalSTSL({
       />
 
       {/* Base Photo Bucket Picker Modal */}
-      {bucketPickerOpen && (
-        <BasePhotoBucketModal
-          bucketImages={bucketImages}
-          onClose={() => setBucketPickerOpen(false)}
-          onSelectImages={selectedUrls => {
+      <BasePhotoBucketModal
+        isOpen={bucketPickerOpen}
+        bucketImages={bucketImages || []}
+        mode={bucketPickerMode}
+        onClose={() => setBucketPickerOpen(false)}
+        onConfirm={selectedUrls => {
+          if (bucketPickerMode === 'propertyImages') {
             const currentImages = fields.propertyImages || [];
             const currentNames = fields.propertyImageNames || [];
             const newImages = [...currentImages];
@@ -2948,9 +2985,11 @@ export default function AdityaBirlaCapitalSTSL({
             });
             handleChange('propertyImages', newImages);
             handleChange('propertyImageNames', newNames);
-          }}
-        />
-      )}
+          } else if (bucketPickerMode === 'locationMapImage' && selectedUrls[0]) {
+            handleChange('locationMapImage', selectedUrls[0]);
+          }
+        }}
+      />
     </div>
   );
 }

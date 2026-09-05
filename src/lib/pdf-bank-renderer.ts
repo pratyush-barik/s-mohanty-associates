@@ -496,8 +496,17 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
   /**
    * Draw a 2-column Photograph Grid with dynamic user labels
    */
-  async drawPhotoGrid(photos: { bytes: Uint8Array; label: string }[]): Promise<void> {
+  async drawPhotoGrid(photos: (Uint8Array | { bytes: Uint8Array; label?: string })[]): Promise<void> {
     if (!photos || photos.length === 0) return;
+
+    const normalizedPhotos = photos.map(p => {
+      if (p instanceof Uint8Array || (p as any)?.byteLength !== undefined) {
+        return { bytes: p as Uint8Array, label: '' };
+      }
+      return { bytes: (p as any)?.bytes as Uint8Array, label: (p as any)?.label || '' };
+    }).filter(p => p.bytes && p.bytes.length > 0);
+
+    if (normalizedPhotos.length === 0) return;
 
     this.addPage();
     this.drawSectionHeader('Photographs');
@@ -506,9 +515,9 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
     const cellW = (CONTENT_W - 10) / 2;
     const cellH = 180;
 
-    for (let i = 0; i < photos.length; i += 2) {
+    for (let i = 0; i < normalizedPhotos.length; i += 2) {
       this.checkPageBreak(cellH + 20);
-      const rowPhotos = photos.slice(i, i + 2);
+      const rowPhotos = normalizedPhotos.slice(i, i + 2);
       const y = this.pdfY(this.cursorY);
 
       for (let j = 0; j < rowPhotos.length; j++) {
