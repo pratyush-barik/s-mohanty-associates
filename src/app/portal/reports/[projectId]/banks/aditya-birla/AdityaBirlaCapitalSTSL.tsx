@@ -234,9 +234,9 @@ export const NAV_SECTIONS: NavItem[] = [
   { id: 'section-7', title: 'Setbacks & Summary' },
   { id: 'section-8', title: 'Boundaries' },
   { id: 'section-9', title: 'Remarks' },
-  { id: 'section-10', title: 'Maps & Documents' },
-  { id: 'section-11', title: 'Photographs' },
-  { id: 'section-12', title: 'Declaration & Sign-off' },
+  { id: 'section-10', title: 'Photographs' },
+  { id: 'section-11', title: 'Location Map & Mouza Map' },
+  { id: 'section-12', title: 'Cadastral Map & Declaration' },
   { id: 'section-13-annexure', title: 'Annexures' },
 ];
 
@@ -2866,38 +2866,7 @@ export default function AdityaBirlaCapitalSTSL({
           </div>
         </Section>
 
-        {/* ═══ SECTION 10: MAPS & DOCUMENTS ═══ */}
-        <BaseMapsSection
-          locationMapImage={fields.locationMapImage}
-          latitude={fields.latitude}
-          longitude={fields.longitude}
-          propertyAddress={fields.propertyAddressAsDocs || fields.propertyAddressAsVisit || fields.propertyAddressAsTRF || ''}
-          sketchMapImages={fields.sketchMapImages}
-          mouzaMapImage={fields.mouzaMapImage}
-          cadastralMapImage={fields.cadastralMapImage}
-          isReadOnly={isReadOnly}
-          uploading={!!uploadingTarget}
-          bucketCount={bucketImages?.length || 0}
-          onLocationMapUpload={(e) => handleUploadSingleMap('locationMapImage', e)}
-          onLocationMapRemove={() => handleChange('locationMapImage', '')}
-          onSketchMapUpload={handleUploadMultipleSketches}
-          onSketchMapRemove={(idx) => {
-            const updated = (fields.sketchMapImages || []).filter((_, i) => i !== idx);
-            handleChange('sketchMapImages', updated);
-          }}
-          onMouzaMapUpload={(e) => handleUploadSingleMap('mouzaMapImage', e)}
-          onMouzaMapRemove={() => handleChange('mouzaMapImage', '')}
-          onCadastralMapUpload={(e) => handleUploadSingleMap('cadastralMapImage', e)}
-          onCadastralMapRemove={() => handleChange('cadastralMapImage', '')}
-          onOpenBucketPicker={(mode) => {
-            setBucketPickerMode(mode);
-            setBucketPickerOpen(true);
-          }}
-          sectionNumber={10}
-          sectionId="section-10"
-        />
-
-        {/* ═══ SECTION 11: PHOTOGRAPHS ═══ */}
+        {/* ═══ SECTION 10: PHOTOGRAPHS ═══ */}
         <BasePhotographsSection
           propertyImages={fields.propertyImages || []}
           propertyImageNames={fields.propertyImageNames || []}
@@ -2927,44 +2896,212 @@ export default function AdityaBirlaCapitalSTSL({
             setBucketPickerMode('propertyImages');
             setBucketPickerOpen(true);
           }}
-          sectionNumber={11}
-          sectionId="section-11"
+          sectionNumber={10}
+          sectionId="section-10"
         />
 
-        {/* ═══ SECTION 12: DECLARATION & SIGN-OFF ═══ */}
-        <Section title="Declaration & Sign-off" number={12} id="section-12">
-          <div className="grid md:grid-cols-3 gap-4">
-            <Field label="Name of Appraiser">
-              <div className="relative">
+        {/* ═══ SECTION 11: LOCATION MAP & BHULEKH MOUZA MAP ═══ */}
+        <Section title="Location Map & Bhulekh Cadastral Map" number={11} id="section-11">
+          <div className="space-y-6">
+            {/* Live Google Satellite Map Preview */}
+            <div>
+              <h4 className="text-xs font-bold text-[#495057] uppercase tracking-wider mb-2">Live Map & Location</h4>
+              {(() => {
+                const mapQuery = fields.latitude && fields.longitude
+                  ? `${fields.latitude.trim()},${fields.longitude.trim()}`
+                  : (fields.propertyAddressAsDocs || fields.propertyAddressAsVisit || fields.propertyAddressAsTRF || '').trim();
+                const encodedQuery = encodeURIComponent(mapQuery);
+                const hasQuery = mapQuery.length > 0;
+                const googleMapsUrl = fields.latitude && fields.longitude
+                  ? `https://www.google.com/maps?q=${fields.latitude.trim()},${fields.longitude.trim()}&z=15&t=k`
+                  : `https://www.google.com/maps/search/${encodedQuery}`;
+
+                return hasQuery ? (
+                  <div className="rounded-2xl overflow-hidden border border-[#c8d6e5] shadow-sm">
+                    <div className="bg-[#d5e8f5] px-4 py-2 flex items-center justify-between">
+                      <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider">
+                        Live Satellite Preview
+                      </span>
+                      <a
+                        href={googleMapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-semibold text-[#b8860b] hover:underline"
+                      >
+                        Open in Google Maps &#x2197;
+                      </a>
+                    </div>
+                    <iframe
+                      src={`https://maps.google.com/maps?q=${encodedQuery}&t=k&z=16&output=embed`}
+                      width="100%"
+                      height="300"
+                      style={{ border: 0 }}
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      title="Property Location Map"
+                    />
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 text-center text-xs text-gray-500">
+                    Enter Property Address or Coordinates in Section 2 to view live satellite map.
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Map Upload Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Google Satellite Location Map */}
+              <div className="p-4 border border-[#dee2e6] rounded-2xl bg-white space-y-3 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-[#495057] uppercase tracking-wider">
+                    Google Satellite Location Map (For PDF)
+                  </h4>
+                </div>
+                {fields.locationMapImage ? (
+                  <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] bg-slate-50">
+                    <img src={fields.locationMapImage} alt="Location Map" className="w-full h-44 object-cover" />
+                    {!isReadOnly && (
+                      <button
+                        type="button"
+                        onClick={() => handleChange('locationMapImage', '')}
+                        className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded-lg shadow text-xs font-semibold hover:bg-red-700 transition-colors"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  !isReadOnly && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-xs">
+                        {uploadingTarget === 'locationMapImage' ? '⏳ Uploading...' : '📷 Upload Location Map'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={e => handleUploadSingleMap('locationMapImage', e)}
+                          disabled={uploadingTarget === 'locationMapImage'}
+                        />
+                      </label>
+                    </div>
+                  )
+                )}
+              </div>
+
+              {/* Bhulekh Mouza Cadastral Map */}
+              <div className="p-4 border border-[#dee2e6] rounded-2xl bg-white space-y-3 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-[#495057] uppercase tracking-wider">
+                    Bhulekh Mouza Cadastral Map
+                  </h4>
+                </div>
+                {fields.mouzaMapImage ? (
+                  <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] bg-slate-50">
+                    <img src={fields.mouzaMapImage} alt="Mouza Map" className="w-full h-44 object-cover" />
+                    {!isReadOnly && (
+                      <button
+                        type="button"
+                        onClick={() => handleChange('mouzaMapImage', '')}
+                        className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded-lg shadow text-xs font-semibold hover:bg-red-700 transition-colors"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  !isReadOnly && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-xs">
+                        {uploadingTarget === 'mouzaMapImage' ? '⏳ Uploading...' : '📁 Upload Mouza Map'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={e => handleUploadSingleMap('mouzaMapImage', e)}
+                          disabled={uploadingTarget === 'mouzaMapImage'}
+                        />
+                      </label>
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        {/* ═══ SECTION 12: CADASTRAL MAP & DECLARATION ═══ */}
+        <Section title="Superimposed Cadastral Map & Declaration" number={12} id="section-12">
+          <div className="space-y-6">
+            {/* Superimposed Cadastral Map Card */}
+            <div className="p-4 border border-[#dee2e6] rounded-2xl bg-white space-y-3 shadow-xs">
+              <h4 className="text-xs font-bold text-[#495057] uppercase tracking-wider">
+                Superimposed Drone / Survey Cadastral Map
+              </h4>
+              {fields.cadastralMapImage ? (
+                <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] bg-slate-50 max-w-lg">
+                  <img src={fields.cadastralMapImage} alt="Cadastral Map" className="w-full h-48 object-cover" />
+                  {!isReadOnly && (
+                    <button
+                      type="button"
+                      onClick={() => handleChange('cadastralMapImage', '')}
+                      className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded-lg shadow text-xs font-semibold hover:bg-red-700 transition-colors"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              ) : (
+                !isReadOnly && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-xs">
+                      {uploadingTarget === 'cadastralMapImage' ? '⏳ Uploading...' : '📁 Upload Cadastral Map'}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={e => handleUploadSingleMap('cadastralMapImage', e)}
+                        disabled={uploadingTarget === 'cadastralMapImage'}
+                      />
+                    </label>
+                  </div>
+                )
+              )}
+            </div>
+
+            {/* Declaration & Sign-off Fields */}
+            <div className="grid md:grid-cols-3 gap-4 pt-4 border-t border-neutral-100">
+              <Field label="Name of Appraiser">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={fields.appraiserName || 'Er. Satyajit Mohanty'}
+                    disabled={true}
+                    className={`${inputCls} bg-gray-50 text-gray-700 font-semibold cursor-not-allowed`}
+                  />
+                  <Lock className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2" />
+                </div>
+              </Field>
+              <Field label="Report Prepared By">
                 <input
                   type="text"
-                  value={fields.appraiserName || 'Er. Satyajit Mohanty'}
-                  disabled={true}
-                  className={`${inputCls} bg-gray-50 text-gray-700 font-semibold cursor-not-allowed`}
+                  value={fields.preparedBy || ''}
+                  onChange={e => handleChange('preparedBy', e.target.value)}
+                  disabled={isReadOnly}
+                  className={inputCls}
                 />
-                <Lock className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2" />
-              </div>
-            </Field>
-            <Field label="Report Prepared By">
-              <input
-                type="text"
-                value={fields.preparedBy || ''}
-                onChange={e => handleChange('preparedBy', e.target.value)}
-                disabled={isReadOnly}
-                className={inputCls}
-                placeholder="Name of Engineer (Prepared By)"
-              />
-            </Field>
-            <Field label="Report Finalized By">
-              <input
-                type="text"
-                value={fields.finalizedBy || ''}
-                onChange={e => handleChange('finalizedBy', e.target.value)}
-                disabled={isReadOnly}
-                className={inputCls}
-                placeholder="Name of Report Engineer (Finalized By)"
-              />
-            </Field>
+              </Field>
+              <Field label="Report Finalized By">
+                <input
+                  type="text"
+                  value={fields.finalizedBy || ''}
+                  onChange={e => handleChange('finalizedBy', e.target.value)}
+                  disabled={isReadOnly}
+                  className={inputCls}
+                />
+              </Field>
+            </div>
           </div>
         </Section>
 
