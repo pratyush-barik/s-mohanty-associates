@@ -775,8 +775,8 @@ export default function AdityaBirlaCapitalMLAP({
 
     if (locMapBytes) {
       r.checkPageBreak(300);
-      r.drawSectionHeader('Location Map');
-      await r.drawImageSection(locMapBytes, `Latitude: ${fields.latitude || ''}, Longitude: ${fields.longitude || ''}`);
+      r.drawSectionHeader('Location Map', false);
+      await r.drawImageSection(locMapBytes, '');
     }
 
     // 12. Photographs Grid
@@ -795,14 +795,14 @@ export default function AdityaBirlaCapitalMLAP({
     // 13. Maps
     if (mouzaMapBytes) {
       r.checkPageBreak(300);
-      r.drawSectionHeader('MOUZA MAP');
-      await r.drawImageSection(mouzaMapBytes, 'Mouza Map (Bhulekh Plot Detail)');
+      r.drawSectionHeader('MOUZA MAP', false);
+      await r.drawImageSection(mouzaMapBytes, '');
     }
 
     if (cadastralMapBytes) {
       r.checkPageBreak(300);
-      r.drawSectionHeader('CADASTRAL MAP');
-      await r.drawImageSection(cadastralMapBytes, 'Cadastral Satellite Plot Boundary Map');
+      r.drawSectionHeader('CADASTRAL MAP', false);
+      await r.drawImageSection(cadastralMapBytes, '');
     }
 
     if (sketchBytes && sketchBytes.length > 0) {

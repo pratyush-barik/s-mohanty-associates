@@ -1186,13 +1186,14 @@ export default function AdityaBirlaCapitalSTSL({
     // ═══ PAGE 6: LOCATION MAP & BHULEKH MOUZA MAP ═══
     if (locMapBytes || mouzaMapBytes) {
       r.newPage();
-      if (locMapBytes) {
-        r.drawSectionHeader('Location Map', false);
-        await r.drawImageSection(locMapBytes, `Latitude- ${fields.latitude || '20.288972'}, Longitude- ${fields.longitude || '85.181528'}`, 280);
-      }
-      if (mouzaMapBytes) {
-        r.drawSectionHeader('Cadastral / Mouza Map');
-        await r.drawImageSection(mouzaMapBytes, 'Bhulekh Cadastral Map with Plot Boundary', 280);
+      r.drawSectionHeader('Location Map', false);
+      if (locMapBytes && mouzaMapBytes) {
+        await r.drawImageSection(locMapBytes, '', 310);
+        await r.drawImageSection(mouzaMapBytes, '', 310);
+      } else if (locMapBytes) {
+        await r.drawImageSection(locMapBytes, '', 600);
+      } else if (mouzaMapBytes) {
+        await r.drawImageSection(mouzaMapBytes, '', 600);
       }
     }
 
@@ -1200,7 +1201,7 @@ export default function AdityaBirlaCapitalSTSL({
     r.newPage();
     if (cadMapBytes) {
       r.drawSectionHeader('CADASTRAL MAP', false);
-      await r.drawImageSection(cadMapBytes, 'Superimposed Drone / Aerial Cadastral Map', 260);
+      await r.drawImageSection(cadMapBytes, '', 280);
     }
     r.drawDeclarationSection(
       fields.appraiserName || 'Er. Satyajit Mohanty',

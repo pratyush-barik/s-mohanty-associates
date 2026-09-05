@@ -453,12 +453,13 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
   }
 
   /**
-   * Draw an Image on the page with a caption
+   * Draw an Image on the page with an optional caption and bounding border
    */
-  async drawImageSection(imageBytes: Uint8Array, caption: string, maxH = 260): Promise<void> {
+  async drawImageSection(imageBytes: Uint8Array, caption = '', maxH = 260, drawBorder = true): Promise<void> {
     if (!imageBytes || imageBytes.length === 0) return;
 
-    this.checkPageBreak(maxH + 30);
+    const hasCaption = !!(caption && caption.trim().length > 0);
+    this.checkPageBreak(maxH + (hasCaption ? 20 : 0));
     try {
       let img = null;
       try { img = await this.doc.embedPng(imageBytes); } catch { /* ignore */ }
@@ -473,9 +474,20 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
       const x = MARGIN_L + (CONTENT_W - w) / 2;
       const y = this.pdfY(this.cursorY) - h;
 
+      if (drawBorder) {
+        this.page.drawRectangle({
+          x: MARGIN_L,
+          y: this.pdfY(this.cursorY) - h,
+          width: CONTENT_W,
+          height: h,
+          borderColor: rgb(0, 0, 0),
+          borderWidth: BORDER_W,
+        });
+      }
+
       this.page.drawImage(img, { x, y, width: w, height: h });
 
-      if (caption && caption.trim().length > 0) {
+      if (hasCaption) {
         const text = this.sanitizeText(caption.trim());
         const tw = this.fontItalic.widthOfTextAtSize(text, FONT_SIZE_CAPTION);
         this.page.drawText(text, {
@@ -485,9 +497,10 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
           font: this.fontItalic,
           color: rgb(0, 0, 0),
         });
+        this.cursorY += h + 20;
+      } else {
+        this.cursorY += h;
       }
-
-      this.cursorY += h + 24;
     } catch (e) {
       console.error('Failed to embed image:', e);
     }
