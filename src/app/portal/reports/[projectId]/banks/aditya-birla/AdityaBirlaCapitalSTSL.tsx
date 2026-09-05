@@ -234,9 +234,9 @@ export const NAV_SECTIONS: NavItem[] = [
   { id: 'section-7', title: 'Setbacks & Summary' },
   { id: 'section-8', title: 'Boundaries' },
   { id: 'section-9', title: 'Remarks' },
-  { id: 'section-10', title: 'Photographs' },
-  { id: 'section-11', title: 'Location Map' },
-  { id: 'section-12', title: 'Cadastral Map & Declaration' },
+  { id: 'section-10', title: 'Maps & Documents' },
+  { id: 'section-11', title: 'Photographs' },
+  { id: 'section-12', title: 'Declaration & Sign-off' },
   { id: 'section-13-annexure', title: 'Annexures' },
 ];
 
@@ -437,6 +437,7 @@ export default function AdityaBirlaCapitalSTSL({
     subjectType: initialFields?.subjectType || '',
 
     // Photographs & Maps
+    sketchMapImages: initialFields?.sketchMapImages || [],
     propertyImages: initialFields?.propertyImages || [],
     propertyImageNames: initialFields?.propertyImageNames || [],
     locationMapImage: initialFields?.locationMapImage || '',
@@ -775,6 +776,40 @@ export default function AdityaBirlaCapitalSTSL({
     } catch (err: any) {
       alert(`Map upload failed: ${err.message}`);
     } finally {
+      e.target.value = '';
+      setUploadingTarget(null);
+    }
+  };
+
+  const handleUploadMultipleSketches = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileList = e.target.files;
+    if (!fileList || fileList.length === 0) return;
+    setUploadingTarget('sketches');
+    try {
+      const newUrls: string[] = [...(fields.sketchMapImages || [])];
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
+        if (file.size > 5 * 1024 * 1024) {
+          alert(`${file.name} exceeds 5MB size limit.`);
+          continue;
+        }
+        const ext = file.name.split('.').pop() || 'jpg';
+        const fileName = `${projectId}-sketch-${Date.now()}-${i}.${ext}`;
+        const filePath = `reports/${projectId}/${fileName}`;
+        const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(filePath, file);
+        if (error) {
+          console.error(`Upload error for ${file.name}:`, error);
+          alert(`Failed to upload ${file.name}: ${error.message}`);
+          continue;
+        }
+        const { data: publicUrlData } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
+        newUrls.push(publicUrlData.publicUrl);
+      }
+      handleChange('sketchMapImages', newUrls);
+    } catch (err: any) {
+      alert(`Sketch upload failed: ${err.message}`);
+    } finally {
+      e.target.value = '';
       setUploadingTarget(null);
     }
   };
@@ -829,13 +864,18 @@ export default function AdityaBirlaCapitalSTSL({
     };
 
     const propImgs = fields.propertyImages || [];
-    const [letterheadBytes, locMapBytes, mouzaMapBytes, cadMapBytes, ...propImageBytesList] = await Promise.all([
+    const sketchImgs = fields.sketchMapImages || [];
+    const [letterheadBytes, locMapBytes, mouzaMapBytes, cadMapBytes, ...restBytes] = await Promise.all([
       fetchBytes('/templates/letterhead.png'),
       fetchBytes(fields.locationMapImage),
       fetchBytes(fields.mouzaMapImage),
       fetchBytes(fields.cadastralMapImage),
       ...propImgs.map(url => fetchBytes(url)),
+      ...sketchImgs.map(url => fetchBytes(url)),
     ]);
+
+    const propImageBytesList = restBytes.slice(0, propImgs.length);
+    const sketchBytesList = restBytes.slice(propImgs.length);
 
     const photos = propImgs.map((imgUrl: string, idx: number) => ({
       bytes: propImageBytesList[idx],
@@ -2826,7 +2866,38 @@ export default function AdityaBirlaCapitalSTSL({
           </div>
         </Section>
 
-        {/* ═══ SECTION 10: PHOTOGRAPHS ═══ */}
+        {/* ═══ SECTION 10: MAPS & DOCUMENTS ═══ */}
+        <BaseMapsSection
+          locationMapImage={fields.locationMapImage}
+          latitude={fields.latitude}
+          longitude={fields.longitude}
+          propertyAddress={fields.propertyAddressAsDocs || fields.propertyAddressAsVisit || fields.propertyAddressAsTRF || ''}
+          sketchMapImages={fields.sketchMapImages}
+          mouzaMapImage={fields.mouzaMapImage}
+          cadastralMapImage={fields.cadastralMapImage}
+          isReadOnly={isReadOnly}
+          uploading={!!uploadingTarget}
+          bucketCount={bucketImages?.length || 0}
+          onLocationMapUpload={(e) => handleUploadSingleMap('locationMapImage', e)}
+          onLocationMapRemove={() => handleChange('locationMapImage', '')}
+          onSketchMapUpload={handleUploadMultipleSketches}
+          onSketchMapRemove={(idx) => {
+            const updated = (fields.sketchMapImages || []).filter((_, i) => i !== idx);
+            handleChange('sketchMapImages', updated);
+          }}
+          onMouzaMapUpload={(e) => handleUploadSingleMap('mouzaMapImage', e)}
+          onMouzaMapRemove={() => handleChange('mouzaMapImage', '')}
+          onCadastralMapUpload={(e) => handleUploadSingleMap('cadastralMapImage', e)}
+          onCadastralMapRemove={() => handleChange('cadastralMapImage', '')}
+          onOpenBucketPicker={(mode) => {
+            setBucketPickerMode(mode);
+            setBucketPickerOpen(true);
+          }}
+          sectionNumber={10}
+          sectionId="section-10"
+        />
+
+        {/* ═══ SECTION 11: PHOTOGRAPHS ═══ */}
         <BasePhotographsSection
           propertyImages={fields.propertyImages || []}
           propertyImageNames={fields.propertyImageNames || []}
@@ -2856,77 +2927,22 @@ export default function AdityaBirlaCapitalSTSL({
             setBucketPickerMode('propertyImages');
             setBucketPickerOpen(true);
           }}
-          sectionNumber={10}
-          sectionId="section-10"
+          sectionNumber={11}
+          sectionId="section-11"
         />
 
-        {/* ═══ SECTION 11: LOCATION MAP & BHULEKH MOUZA MAP ═══ */}
-        <Section title="Location Map & Bhulekh Cadastral Map" number={11}>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-neutral-700 block">Google Satellite Location Map</label>
-              {fields.locationMapImage ? (
-                <div className="relative rounded-xl overflow-hidden border border-neutral-200 group">
-                  <img src={fields.locationMapImage} alt="Location Map" className="w-full h-48 object-cover" />
-                  {!isReadOnly && (
-                    <button type="button" onClick={() => handleChange('locationMapImage', '')} className="absolute top-2 right-2 bg-red-600 text-white p-1.5 rounded-lg shadow text-xs">
-                      Remove
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <input type="file" accept="image/*" onChange={e => handleUploadSingleMap('locationMapImage', e)} disabled={isReadOnly || uploadingTarget === 'locationMapImage'} className={inputCls} />
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-neutral-700 block">Bhulekh Mouza Cadastral Map</label>
-              {fields.mouzaMapImage ? (
-                <div className="relative rounded-xl overflow-hidden border border-neutral-200 group">
-                  <img src={fields.mouzaMapImage} alt="Mouza Map" className="w-full h-48 object-cover" />
-                  {!isReadOnly && (
-                    <button type="button" onClick={() => handleChange('mouzaMapImage', '')} className="absolute top-2 right-2 bg-red-600 text-white p-1.5 rounded-lg shadow text-xs">
-                      Remove
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <input type="file" accept="image/*" onChange={e => handleUploadSingleMap('mouzaMapImage', e)} disabled={isReadOnly || uploadingTarget === 'mouzaMapImage'} className={inputCls} />
-              )}
-            </div>
-          </div>
-        </Section>
-
-        {/* ═══ SECTION 12: CADASTRAL MAP & DECLARATION ═══ */}
-        <Section title="Superimposed Cadastral Map & Declaration" number={12}>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-neutral-700 block">Superimposed Drone / Survey Cadastral Map</label>
-              {fields.cadastralMapImage ? (
-                <div className="relative rounded-xl overflow-hidden border border-neutral-200 group">
-                  <img src={fields.cadastralMapImage} alt="Cadastral Map" className="w-full h-48 object-cover" />
-                  {!isReadOnly && (
-                    <button type="button" onClick={() => handleChange('cadastralMapImage', '')} className="absolute top-2 right-2 bg-red-600 text-white p-1.5 rounded-lg shadow text-xs">
-                      Remove
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <input type="file" accept="image/*" onChange={e => handleUploadSingleMap('cadastralMapImage', e)} disabled={isReadOnly || uploadingTarget === 'cadastralMapImage'} className={inputCls} />
-              )}
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-4 pt-4 border-t border-neutral-100">
-              <Field label="Name of Appraiser">
-                <input type="text" value={fields.appraiserName || 'Er. Satyajit Mohanty'} onChange={e => handleChange('appraiserName', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
-              <Field label="Report Prepared By">
-                <input type="text" value={fields.preparedBy || 'Trupti Dash'} onChange={e => handleChange('preparedBy', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
-              <Field label="Report Finalized By">
-                <input type="text" value={fields.finalizedBy || 'Trupti Dash'} onChange={e => handleChange('finalizedBy', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
-            </div>
+        {/* ═══ SECTION 12: DECLARATION & SIGN-OFF ═══ */}
+        <Section title="Declaration & Sign-off" number={12} id="section-12">
+          <div className="grid md:grid-cols-3 gap-4">
+            <Field label="Name of Appraiser">
+              <input type="text" value={fields.appraiserName || 'Er. Satyajit Mohanty'} onChange={e => handleChange('appraiserName', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </Field>
+            <Field label="Report Prepared By">
+              <input type="text" value={fields.preparedBy || 'Trupti Dash'} onChange={e => handleChange('preparedBy', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </Field>
+            <Field label="Report Finalized By">
+              <input type="text" value={fields.finalizedBy || 'Trupti Dash'} onChange={e => handleChange('finalizedBy', e.target.value)} disabled={isReadOnly} className={inputCls} />
+            </Field>
           </div>
         </Section>
 
@@ -2985,6 +3001,9 @@ export default function AdityaBirlaCapitalSTSL({
             });
             handleChange('propertyImages', newImages);
             handleChange('propertyImageNames', newNames);
+          } else if (bucketPickerMode === 'sketchMapImages') {
+            const combined = [...(fields.sketchMapImages || []), ...selectedUrls];
+            handleChange('sketchMapImages', combined);
           } else if (bucketPickerMode === 'locationMapImage' && selectedUrls[0]) {
             handleChange('locationMapImage', selectedUrls[0]);
           }

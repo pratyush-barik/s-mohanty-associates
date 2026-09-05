@@ -214,6 +214,7 @@ export interface STSLReportFields {
   locationMapImage?: string;
   mouzaMapImage?: string;
   cadastralMapImage?: string;
+  sketchMapImages?: string[];
 
   // Annexures
   annexureEnabled?: boolean;
