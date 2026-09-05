@@ -392,7 +392,7 @@ export default function AnnapurnaMicro({
     // 1. Fetch letterhead
     let letterheadBytes: Uint8Array | null = null;
     try {
-      const res = await fetch('/letterhead.png');
+      const res = await fetch('/templates/letterhead.png');
       if (res.ok) {
         const buf = await res.arrayBuffer();
         letterheadBytes = new Uint8Array(buf);
@@ -590,12 +590,9 @@ export default function AnnapurnaMicro({
   ];
 
   return (
-    <div className="flex gap-6 max-w-[1600px] mx-auto p-4 relative items-start">
-      {/* Sidebar Navigator */}
-      <FloatingNavigator sections={navSections} />
-
-      {/* Main Form Content */}
-      <div className="flex-1 space-y-6 min-w-0 pb-28">
+    <div className="flex gap-6 items-start w-full">
+      {/* ── Main Form Column ── */}
+      <div className="flex-1 min-w-0 space-y-4">
         <ActiveConfigBanner
           bankName="ANNAPURNA MICRO FINANCE LTD"
           formatName="Valuation Report"
@@ -1305,20 +1302,23 @@ export default function AnnapurnaMicro({
           sectionNumber={12}
           sectionId="sec-12"
         />
+
+        {/* ═══ STANDARDIZED ACTION BAR ═══ */}
+        <ReportActionBar
+          isReadOnly={isReadOnly}
+          userRole={userRole}
+          autoSaveStatus={autoSaveStatus}
+          message={message}
+          loading={loading}
+          onSaveDraft={handleSaveDraft}
+          onSubmit={handleSubmitForVerification}
+          onPreviewPDF={handlePreviewPDF}
+          onDownloadPDF={handleDownloadPDF}
+        />
       </div>
 
-      {/* Persistent Bottom Action Bar */}
-      <ReportActionBar
-        isReadOnly={isReadOnly}
-        userRole={userRole}
-        autoSaveStatus={autoSaveStatus}
-        message={message}
-        loading={loading}
-        onSaveDraft={handleSaveDraft}
-        onSubmit={handleSubmitForVerification}
-        onPreviewPDF={handlePreviewPDF}
-        onDownloadPDF={handleDownloadPDF}
-      />
+      {/* ── Right Column: Dynamic Floating Navigator ── */}
+      <FloatingNavigator sections={navSections} />
     </div>
   );
 }
