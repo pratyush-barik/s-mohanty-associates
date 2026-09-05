@@ -288,9 +288,12 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     const lineH = fontSize * LINE_HEIGHT;
     const totalTextH = lines.length * lineH;
 
-    let startY = vAlign === 'middle'
-      ? (y - h / 2) + (totalTextH / 2) - (fontSize * 0.82)
-      : (y - padY - fontSize * 0.82);
+    let startY: number;
+    if (vAlign === 'middle' && h >= totalTextH + padY * 2) {
+      startY = (y - h / 2) + (totalTextH / 2) - (fontSize * 0.82);
+    } else {
+      startY = y - padY - (fontSize * 0.82);
+    }
 
     for (const line of lines) {
       let lineX = x + padX;
@@ -439,18 +442,50 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { text: fields.documentsProvided || 'COPY OF Sale deed, ROR & Sketch map', width: appCol2 + appCol3 + appCol4 },
     ]);
 
-    // 5. Location Details Section
+    // 5. Location Details Section (Exactly matches reference layout with dynamic height)
     this.drawSectionHeader('Location Details');
 
-    const locSideW = 125;
+    const locSideW = 135;
     const locSubW = CONTENT_W - locSideW;
+    const subCol1 = 110;
+    const subCol2 = 65;
+    const subCol3 = 95;
+    const subCol4 = locSubW - (subCol1 + subCol2 + subCol3); // 82.28
+    const subColFull = locSubW - subCol1; // 242.28
+
+    const calcSubH = (items: { text: string; width: number; isLabel?: boolean }[], minH = 22): number => {
+      let maxLines = 1;
+      for (const it of items) {
+        const lines = this.wrapText(this.sanitizeText(it.text), Math.max(10, it.width - 8), FONT_SIZE, !!it.isLabel);
+        if (lines.length > maxLines) maxLines = lines.length;
+      }
+      return Math.max(minH, maxLines * FONT_SIZE * LINE_HEIGHT + 8);
+    };
 
     // Block 1: Address as per Site
     const addrText = fields.addressAsPerSite || 'NA';
-    const linesAddr = this.wrapText(addrText, locSubW - 130 - 8, FONT_SIZE);
-    const subH1 = Math.max(26, linesAddr.length * FONT_SIZE * LINE_HEIGHT + 8);
-    const subH2 = 24;
-    const subH3 = 24;
+    const latLongVal = fields.latLong
+      ? fields.latLong
+      : (fields.latitude && fields.longitude)
+      ? `Lat:- ${fields.latitude} Long:- ${fields.longitude}`
+      : (fields.latitude || fields.longitude || 'NA');
+
+    const subH1 = calcSubH([
+      { text: 'Address as per Site:', width: subCol1, isLabel: true },
+      { text: addrText, width: subColFull },
+    ]);
+    const subH2 = calcSubH([
+      { text: 'Locality (Urban, semi Urban, Rural)', width: subCol1, isLabel: true },
+      { text: fields.locality || 'RURAL', width: subCol2 },
+      { text: 'Landmark Near By', width: subCol3, isLabel: true },
+      { text: fields.landmarkNearBy || 'NA', width: subCol4 },
+    ]);
+    const subH3 = calcSubH([
+      { text: 'Distance from Branch in km', width: subCol1, isLabel: true },
+      { text: fields.distanceFromBranch || 'NA', width: subCol2 },
+      { text: 'LAT/LONG', width: subCol3, isLabel: true },
+      { text: latLongVal, width: subCol4 },
+    ]);
     const totalBlock1H = subH1 + subH2 + subH3;
 
     this.checkPageBreak(totalBlock1H);
@@ -459,31 +494,39 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     this.drawCleanCell(MARGIN_L, curY, locSideW, totalBlock1H, 'Address of Property', { isLabel: true, align: 'center', vAlign: 'middle' });
 
     // Sub-row 1: Address as per Site
-    this.drawCleanCell(MARGIN_L + locSideW, curY, 130, subH1, 'Address as per Site:', { isLabel: true });
-    this.drawCleanCell(MARGIN_L + locSideW + 130, curY, locSubW - 130, subH1, addrText);
+    this.drawCleanCell(MARGIN_L + locSideW, curY, subCol1, subH1, 'Address as per Site:', { isLabel: true });
+    this.drawCleanCell(MARGIN_L + locSideW + subCol1, curY, subColFull, subH1, addrText);
 
     // Sub-row 2: Locality & Landmark
-    const sub2ColW = Math.floor(locSubW / 4);
-    const sub2Col4 = locSubW - sub2ColW * 3;
-    this.drawCleanCell(MARGIN_L + locSideW, curY - subH1, sub2ColW, subH2, 'Locality (Urban/Rural)', { isLabel: true });
-    this.drawCleanCell(MARGIN_L + locSideW + sub2ColW, curY - subH1, sub2ColW, subH2, fields.locality || 'RURAL');
-    this.drawCleanCell(MARGIN_L + locSideW + sub2ColW * 2, curY - subH1, sub2ColW, subH2, 'Landmark Near By', { isLabel: true });
-    this.drawCleanCell(MARGIN_L + locSideW + sub2ColW * 3, curY - subH1, sub2Col4, subH2, fields.landmarkNearBy || 'NA');
+    const top2 = curY - subH1;
+    this.drawCleanCell(MARGIN_L + locSideW, top2, subCol1, subH2, 'Locality (Urban, semi Urban, Rural)', { isLabel: true });
+    this.drawCleanCell(MARGIN_L + locSideW + subCol1, top2, subCol2, subH2, fields.locality || 'RURAL', { align: 'center' });
+    this.drawCleanCell(MARGIN_L + locSideW + subCol1 + subCol2, top2, subCol3, subH2, 'Landmark Near By', { isLabel: true });
+    this.drawCleanCell(MARGIN_L + locSideW + subCol1 + subCol2 + subCol3, top2, subCol4, subH2, fields.landmarkNearBy || 'NA');
 
     // Sub-row 3: Distance from branch & Lat/Long
-    this.drawCleanCell(MARGIN_L + locSideW, curY - subH1 - subH2, sub2ColW, subH3, 'Distance from Branch (km)', { isLabel: true });
-    this.drawCleanCell(MARGIN_L + locSideW + sub2ColW, curY - subH1 - subH2, sub2ColW, subH3, fields.distanceFromBranch || 'NA');
-    this.drawCleanCell(MARGIN_L + locSideW + sub2ColW * 2, curY - subH1 - subH2, sub2ColW, subH3, 'LAT/LONG', { isLabel: true });
-    this.drawCleanCell(MARGIN_L + locSideW + sub2ColW * 3, curY - subH1 - subH2, sub2Col4, subH3, fields.latLong || 'NA');
+    const top3 = curY - subH1 - subH2;
+    this.drawCleanCell(MARGIN_L + locSideW, top3, subCol1, subH3, 'Distance from Branch in km', { isLabel: true });
+    this.drawCleanCell(MARGIN_L + locSideW + subCol1, top3, subCol2, subH3, fields.distanceFromBranch || 'NA', { align: 'center' });
+    this.drawCleanCell(MARGIN_L + locSideW + subCol1 + subCol2, top3, subCol3, subH3, 'LAT/LONG', { isLabel: true });
+    this.drawCleanCell(MARGIN_L + locSideW + subCol1 + subCol2 + subCol3, top3, subCol4, subH3, latLongVal);
 
     this.cursorY += totalBlock1H;
 
     // Block 2: Legal Address of the Property
     const legalAddrText = fields.addressAsPerLegal || fields.addressAsPerSite || 'NA';
-    const linesLegal = this.wrapText(legalAddrText, locSubW - 130 - 8, FONT_SIZE);
-    const subLegalH1 = Math.max(26, linesLegal.length * FONT_SIZE * LINE_HEIGHT + 8);
-    const subLegalH2 = 22;
-    const subLegalH3 = 22;
+    const subLegalH1 = calcSubH([
+      { text: 'Address of Property as per Legal', width: subCol1, isLabel: true },
+      { text: legalAddrText, width: subColFull },
+    ]);
+    const subLegalH2 = calcSubH([
+      { text: 'Floor No. of Property', width: subCol1, isLabel: true },
+      { text: fields.floorNo || 'NA', width: subColFull },
+    ]);
+    const subLegalH3 = calcSubH([
+      { text: 'Property State', width: subCol1, isLabel: true },
+      { text: fields.propertyState || 'Odisha', width: subColFull },
+    ]);
     const totalBlock2H = subLegalH1 + subLegalH2 + subLegalH3;
 
     this.checkPageBreak(totalBlock2H);
@@ -491,55 +534,86 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
 
     this.drawCleanCell(MARGIN_L, curY, locSideW, totalBlock2H, 'Legal Address of the Property:\n(As per Title Deed)', { isLabel: true, align: 'center', vAlign: 'middle' });
 
-    this.drawCleanCell(MARGIN_L + locSideW, curY, 130, subLegalH1, 'Address of Property as per Legal', { isLabel: true });
-    this.drawCleanCell(MARGIN_L + locSideW + 130, curY, locSubW - 130, subLegalH1, legalAddrText);
+    // Sub-row 4: Address as per Legal
+    this.drawCleanCell(MARGIN_L + locSideW, curY, subCol1, subLegalH1, 'Address of Property as per Legal', { isLabel: true });
+    this.drawCleanCell(MARGIN_L + locSideW + subCol1, curY, subColFull, subLegalH1, legalAddrText);
 
-    this.drawCleanCell(MARGIN_L + locSideW, curY - subLegalH1, 130, subLegalH2, 'Floor No. of Property', { isLabel: true });
-    this.drawCleanCell(MARGIN_L + locSideW + 130, curY - subLegalH1, locSubW - 130, subLegalH2, fields.floorNo || 'NA');
+    // Sub-row 5: Floor No.
+    const top5 = curY - subLegalH1;
+    this.drawCleanCell(MARGIN_L + locSideW, top5, subCol1, subLegalH2, 'Floor No. of Property', { isLabel: true });
+    this.drawCleanCell(MARGIN_L + locSideW + subCol1, top5, subColFull, subLegalH2, fields.floorNo || 'NA');
 
-    this.drawCleanCell(MARGIN_L + locSideW, curY - subLegalH1 - subLegalH2, 130, subLegalH3, 'Property State', { isLabel: true });
-    this.drawCleanCell(MARGIN_L + locSideW + 130, curY - subLegalH1 - subLegalH2, locSubW - 130, subLegalH3, fields.propertyState || 'Odisha');
+    // Sub-row 6: Property State
+    const top6 = curY - subLegalH1 - subLegalH2;
+    this.drawCleanCell(MARGIN_L + locSideW, top6, subCol1, subLegalH3, 'Property State', { isLabel: true });
+    this.drawCleanCell(MARGIN_L + locSideW + subCol1, top6, subColFull, subLegalH3, fields.propertyState || 'Odisha');
 
     this.cursorY += totalBlock2H;
+
+    // Block 3: Property City & Pincode (Empty left cell, matching Image 2)
+    const hCity = calcSubH([
+      { text: 'Property City', width: subCol1, isLabel: true },
+      { text: fields.propertyCity || 'NA', width: subColFull },
+    ]);
+    const hPincode = calcSubH([
+      { text: 'Property Pincode', width: subCol1, isLabel: true },
+      { text: fields.propertyPincode || 'NA', width: subColFull },
+    ]);
+    const totalBlock3H = hCity + hPincode;
+
+    this.checkPageBreak(totalBlock3H);
+    curY = this.pdfY(this.cursorY);
+
+    this.drawCleanCell(MARGIN_L, curY, locSideW, totalBlock3H, '', {});
+
+    // Row 7: Property City
+    this.drawCleanCell(MARGIN_L + locSideW, curY, subCol1, hCity, 'Property City', { isLabel: true });
+    this.drawCleanCell(MARGIN_L + locSideW + subCol1, curY, subColFull, hCity, fields.propertyCity || 'NA');
+
+    // Row 8: Property Pincode
+    const top8 = curY - hCity;
+    this.drawCleanCell(MARGIN_L + locSideW, top8, subCol1, hPincode, 'Property Pincode', { isLabel: true });
+    this.drawCleanCell(MARGIN_L + locSideW + subCol1, top8, subColFull, hPincode, fields.propertyPincode || 'NA');
+
+    this.cursorY += totalBlock3H;
 
     // ══════════════════════════════════════════════════════════════════════
     // PAGE 2: Location Details Continued + Schedule Table + NDMA Parameters
     // ══════════════════════════════════════════════════════════════════════
     this.checkPageBreak(120);
 
-    const p2LabelW = 150;
-    const p2ValW = CONTENT_W - p2LabelW;
-    this.drawCleanRow([
-      { text: 'Property City', width: p2LabelW, isLabel: true },
-      { text: fields.propertyCity || 'NA', width: p2ValW },
-    ]);
-    this.drawCleanRow([
-      { text: 'Property Pincode', width: p2LabelW, isLabel: true },
-      { text: fields.propertyPincode || 'NA', width: p2ValW },
-    ]);
+    // Row 9: Address Matching & Jurisdiction
     this.drawCleanRow([
       { text: 'Address Matching (Yes/No)', width: 140, isLabel: true },
-      { text: fields.addressMatching || 'YES', width: 60 },
-      { text: 'Jurisdiction / Local Municipal Body', width: 155, isLabel: true },
-      { text: fields.jurisdiction || 'NA', width: CONTENT_W - 355 },
+      { text: fields.addressMatching || 'YES', width: 55, align: 'center' },
+      { text: 'Jurisdiction/Local Municipal Body/Development Authority', width: 180, isLabel: true },
+      { text: fields.jurisdiction || 'NA', width: CONTENT_W - 375 },
     ]);
+
+    // Row 10: Property Holding Type & Marketability
     this.drawCleanRow([
-      { text: 'Property Holding Type (Freehold/Leasehold)', width: 180, isLabel: true },
-      { text: fields.holdingType || 'FREE HOLD', width: 80 },
-      { text: 'Marketability (POOR/FAIR/GOOD)', width: 135, isLabel: true },
-      { text: fields.marketability || 'FAIR', width: CONTENT_W - 395 },
+      { text: 'Property Holding Type (Freehold/Leasehold)', width: 170, isLabel: true },
+      { text: fields.holdingType || 'FREE HOLD', width: 70, align: 'center' },
+      { text: 'Marketability (POOR/FAIR/GOOD)', width: 140, isLabel: true },
+      { text: (fields.marketability || 'FAIR').toUpperCase(), width: CONTENT_W - 380, align: 'center' },
     ]);
+
+    // Row 11: Property Occupied By
     this.drawCleanRow([
-      { text: 'Property Occupied by (Self/Tenant/Vacant/Under Construction)', width: 220, isLabel: true },
-      { text: fields.propertyOccupiedBy || 'Self', width: CONTENT_W - 220 },
+      { text: 'Property Occupied by (Self/Tenant/Vacant/Under Construction)', width: 230, isLabel: true },
+      { text: fields.propertyOccupiedBy || 'Self', width: CONTENT_W - 230 },
     ]);
+
+    // Row 12: Type of the Property
     this.drawCleanRow([
-      { text: 'Type of the Property (Flat/Commercial/Plot/etc.)', width: 220, isLabel: true },
-      { text: fields.propertyTypeCategory || 'Commercial Building', width: CONTENT_W - 220 },
+      { text: 'Type of the Property (Flat/Commercial/Plot/etc.)', width: 230, isLabel: true },
+      { text: fields.propertyTypeCategory || 'Commercial Building', width: CONTENT_W - 230 },
     ]);
+
+    // Row 13: Occupancy Status
     this.drawCleanRow([
-      { text: 'Occupancy Status (SORP/SOCP/Rented/Vacant)', width: 220, isLabel: true },
-      { text: fields.occupancyStatus || 'SORP', width: CONTENT_W - 220 },
+      { text: 'Occupancy Status (SORP/SOCP/Rented/Vacant)', width: 230, isLabel: true },
+      { text: fields.occupancyStatus || 'SORP', width: CONTENT_W - 230 },
     ]);
 
     // Schedule of Property Section (14pt Bold Banner)
