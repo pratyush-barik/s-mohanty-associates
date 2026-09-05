@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { normalizeMapImages } from '@/lib/bank-fields';
-import { DEFAULT_LETTERHEAD_PATH, fetchDefaultLetterhead } from '@/lib/pdf-bank-renderer';
-export { DEFAULT_LETTERHEAD_PATH, fetchDefaultLetterhead };
+import { DEFAULT_LETTERHEAD_PATH, fetchDefaultLetterhead, fetchBytes, formatReportDate } from '@/lib/pdf-bank-renderer';
+export { DEFAULT_LETTERHEAD_PATH, fetchDefaultLetterhead, fetchBytes, formatReportDate };
 
 // ─── Dynamic Floor Naming (Pure Algorithmic Ordinal Generator) ───────────
 const ORDINALS_MAP: Record<number, string> = {

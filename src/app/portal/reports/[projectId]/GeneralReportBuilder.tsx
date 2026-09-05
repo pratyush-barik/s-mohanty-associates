@@ -1511,8 +1511,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
 
       const propertyImgs = Array.isArray(fields.propertyImages) ? fields.propertyImages.filter(img => typeof img === 'string' && img.length > 0) : [];
 
-      const [letterheadBytes, ...imageResults] = await Promise.all([
-        fetchBytes('/templates/letterhead.png'),
+      const imageResults = await Promise.all([
         ...propertyImgs.map(url => fetchBytes(url)),
         ...(fields.sketchMapImages && fields.sketchMapImages.length > 0 ? fields.sketchMapImages.map(u => fetchBytes(u)) : []),
         ...(fields.locationMapImage ? [fetchBytes(fields.locationMapImage)] : []),
@@ -1524,9 +1523,9 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       if (fields.sketchMapImages?.length) imgIdx += fields.sketchMapImages.length;
       const locationBytes = fields.locationMapImage ? imageResults[imgIdx++] : null;
 
-      // ── Initialize the renderer ──
+      // ── Initialize the renderer (automatically defaults letterhead) ──
       const r = new PDFGeneralRenderer();
-      await r.init(letterheadBytes || undefined);
+      await r.init();
 
       // Date formatter: YYYY-MM-DD → DD/MM/YYYY
       const fmtDate = (d: string) => {

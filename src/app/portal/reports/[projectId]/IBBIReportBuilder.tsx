@@ -1648,8 +1648,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
 
       const propertyImgs = Array.isArray(fields.propertyImages) ? fields.propertyImages.filter((img: string) => typeof img === 'string' && img.length > 0) : [];
 
-      const [letterheadBytes, ...imageResults] = await Promise.all([
-        fetchBytes('/templates/letterhead.png'),
+      const imageResults = await Promise.all([
         ...propertyImgs.map((url: string) => fetchBytes(url)),
         ...(fields.sketchMapImages && fields.sketchMapImages.length > 0 ? fields.sketchMapImages.map((u: string) => fetchBytes(u)) : []),
         ...(fields.locationMapImage ? [fetchBytes(fields.locationMapImage)] : []),
@@ -1674,7 +1673,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       const rorPattaBytes = fields.rorPattaImage ? imageResults[imgIdx++] : null;
 
       const r = new PDFIBBIRenderer();
-      await r.init(letterheadBytes || undefined);
+      await r.init();
 
       // Date formatter: YYYY-MM-DD → DD.MM.YYYY (used throughout PDF generation)
       const fmtDateDDMMYYYY = (d: string) => {

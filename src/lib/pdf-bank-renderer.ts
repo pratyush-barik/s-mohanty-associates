@@ -38,6 +38,34 @@ import {
 export const DEFAULT_LETTERHEAD_PATH = PDFGeneralRenderer.DEFAULT_LETTERHEAD_PATH;
 export const fetchDefaultLetterhead = PDFGeneralRenderer.fetchDefaultLetterhead;
 
+/**
+ * Safely fetches an image or asset from a URL into Uint8Array in the browser.
+ */
+export async function fetchBytes(url?: string | null): Promise<Uint8Array | null> {
+  if (!url || !url.trim()) return null;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const buf = await res.arrayBuffer();
+    return new Uint8Array(buf);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Standard date formatter for bank reports: YYYY-MM-DD → DD/MM/YYYY
+ */
+export function formatReportDate(d?: string | null, fallback = '________'): string {
+  if (!d || !d.trim()) return fallback;
+  const t = d.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(t)) {
+    const [y, m, dd] = t.split('-');
+    return `${dd}/${m}/${y}`;
+  }
+  return t;
+}
+
 export {
   PAGE_W,
   PAGE_H,

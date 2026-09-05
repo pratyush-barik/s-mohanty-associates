@@ -23,6 +23,7 @@ import {
   BasePhotoBucketModal,
   AnnexureRefSelector,
   BaseAnnexureSection,
+  fetchBytes,
 } from '../BaseBankReportComponents';
 import { reorderAndLabelAnnexures, AnnexureItem, decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/bank-fields';
 
@@ -540,12 +541,6 @@ export default function AdityaBirlaCapitalMLAP({
 
   // ── PDF Generation Hook ──
   const generatePDFBytes = async (): Promise<Uint8Array> => {
-    let letterheadBytes: Uint8Array | null = null;
-    try {
-      const res = await fetch('/templates/letterhead.png');
-      if (res.ok) letterheadBytes = new Uint8Array(await res.arrayBuffer());
-    } catch { /* ignore */ }
-
     const allUrls: string[] = [
       ...(fields.propertyImages || []),
       ...(fields.sketchMapImages || []),
@@ -554,17 +549,7 @@ export default function AdityaBirlaCapitalMLAP({
       fields.cadastralMapImage || '',
     ].filter(Boolean);
 
-    const imageResults = await Promise.all(
-      allUrls.map(async url => {
-        try {
-          const res = await fetch(url);
-          if (res.ok) return new Uint8Array(await res.arrayBuffer());
-          return null;
-        } catch {
-          return null;
-        }
-      })
-    );
+    const imageResults = await Promise.all(allUrls.map(fetchBytes));
 
     const fmtDate = (d: string) => {
       if (!d) return '________';
@@ -576,7 +561,7 @@ export default function AdityaBirlaCapitalMLAP({
     };
 
     const r = new PDFAdityaBirlaMLAPRenderer();
-    await r.init(letterheadBytes || undefined);
+    await r.init();
 
     const W_LABEL_2COL = 140;
     const W_VAL_2COL = 347.28;

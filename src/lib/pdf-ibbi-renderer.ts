@@ -73,25 +73,48 @@ export class PDFIBBIRenderer {
   private cursorY = 0; // distance from top of content area (top-down)
   private initialized = false;
 
+  public static readonly DEFAULT_LETTERHEAD_PATH = '/templates/letterhead.png';
+
+  /**
+   * Helper to fetch the predefined letterhead bytes in browser environments.
+   */
+  public static async fetchDefaultLetterhead(): Promise<Uint8Array | null> {
+    if (typeof window === 'undefined') return null;
+    try {
+      const res = await fetch(PDFIBBIRenderer.DEFAULT_LETTERHEAD_PATH);
+      if (!res.ok) return null;
+      const buf = await res.arrayBuffer();
+      return new Uint8Array(buf);
+    } catch {
+      return null;
+    }
+  }
+
   /**
    * Initialize the renderer. Must be called before any drawing.
+   * If letterheadBytes is omitted or null, automatically defaults to predefined letterhead.
    */
-  async init(letterheadBytes?: Uint8Array): Promise<void> {
+  async init(letterheadBytes?: Uint8Array | null): Promise<void> {
     this.doc = await PDFDocument.create();
     this.fontRegular = await this.doc.embedFont(StandardFonts.TimesRoman);
     this.fontBold = await this.doc.embedFont(StandardFonts.TimesRomanBold);
     this.fontItalic = await this.doc.embedFont(StandardFonts.TimesRomanItalic);
     this.fontBoldItalic = await this.doc.embedFont(StandardFonts.TimesRomanBoldItalic);
 
-    if (letterheadBytes && letterheadBytes.length > 0) {
+    let bytesToUse = letterheadBytes;
+    if (!bytesToUse && typeof window !== 'undefined') {
+      bytesToUse = await PDFIBBIRenderer.fetchDefaultLetterhead();
+    }
+
+    if (bytesToUse && bytesToUse.length > 0) {
       try {
         // Build a single-page temp PDF containing only the letterhead image,
         // then embed it into the main document as a Form XObject.
         const tmpDoc = await PDFDocument.create();
         let tmpImg = null;
-        try { tmpImg = await tmpDoc.embedPng(letterheadBytes); } catch { /* try jpg */ }
+        try { tmpImg = await tmpDoc.embedPng(bytesToUse); } catch { /* try jpg */ }
         if (!tmpImg) {
-          try { tmpImg = await tmpDoc.embedJpg(letterheadBytes); } catch { /* ignore */ }
+          try { tmpImg = await tmpDoc.embedJpg(bytesToUse); } catch { /* ignore */ }
         }
         if (tmpImg) {
           const tmpPage = tmpDoc.addPage([PAGE_W, PAGE_H]);

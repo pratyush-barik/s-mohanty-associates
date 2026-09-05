@@ -22,6 +22,7 @@ import {
   BasePhotographsSection,
   BaseMapsSection,
   BaseAnnexureSection,
+  fetchBytes,
 } from '../BaseBankReportComponents';
 import { reorderAndLabelAnnexures, AnnexureItem, normalizeMapImages, BankConfig } from '@/lib/bank-fields';
 import { decodeHtmlEntitiesDeep } from '@/lib/html-entities';
@@ -400,30 +401,7 @@ export default function AnnapurnaMicroFinance({
 
   // ── PDF Generation ──
   const generatePDFBytes = async (): Promise<Uint8Array> => {
-    // 1. Fetch letterhead
-    let letterheadBytes: Uint8Array | null = null;
-    try {
-      const res = await fetch('/templates/letterhead.png');
-      if (res.ok) {
-        const buf = await res.arrayBuffer();
-        letterheadBytes = new Uint8Array(buf);
-      }
-    } catch { /* ignore */ }
-
-    // 2. Fetch image helper
-    const fetchBytes = async (url: string): Promise<Uint8Array | null> => {
-      if (!url || !url.trim()) return null;
-      try {
-        const res = await fetch(url);
-        if (res.ok) {
-          const buf = await res.arrayBuffer();
-          return new Uint8Array(buf);
-        }
-      } catch { /* ignore */ }
-      return null;
-    };
-
-    // 3. Fetch property photographs
+    // 1. Fetch property photographs
     const propImages = fields.propertyImages || [];
     const photoBytesList = await Promise.all(propImages.map(fetchBytes));
     const photos = propImages.map((url, idx) => ({
@@ -431,25 +409,25 @@ export default function AnnapurnaMicroFinance({
       label: fields.propertyImageNames?.[idx] || 'Site Picture',
     })).filter(p => p.bytes && p.bytes.length > 0);
 
-    // 4. Fetch Google Satellite maps
+    // 2. Fetch Google Satellite maps
     const locImages = fields.locationMapImages || normalizeMapImages(fields.locationMapImage);
     const locBytes = (await Promise.all(locImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
 
-    // 5. Fetch Mouza maps
+    // 3. Fetch Mouza maps
     const mouzaImages = fields.mouzaMapImages || normalizeMapImages(fields.mouzaMapImage);
     const mouzaBytes = (await Promise.all(mouzaImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
 
-    // 6. Fetch Sketch maps
+    // 4. Fetch Sketch maps
     const sketchImages = fields.sketchMapImages || [];
     const sketchBytes = (await Promise.all(sketchImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
 
-    // 7. Fetch Cadastral maps
+    // 5. Fetch Cadastral maps
     const cadastralImages = fields.cadastralMapImages || normalizeMapImages(fields.cadastralMapImage);
     const cadastralBytes = (await Promise.all(cadastralImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
 
-    // 8. Render report
+    // 6. Render report (Letterhead is automatically defaulted and embedded by base renderer)
     const renderer = new PDFAnnapurnaMicroFinanceRenderer();
-    await renderer.init(letterheadBytes || undefined);
+    await renderer.init();
 
     return renderer.generateAnnapurnaReport(fields, {
       photos,

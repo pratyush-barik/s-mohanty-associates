@@ -25,6 +25,7 @@ import {
   BasePhotoBucketModal,
   AnnexureRefSelector,
   BaseAnnexureSection,
+  fetchBytes,
 } from '../BaseBankReportComponents';
 import { reorderAndLabelAnnexures, AnnexureItem, decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/bank-fields';
 
@@ -852,21 +853,9 @@ export default function AdityaBirlaCapitalSTSL({
 
   // ─── PDF Generation Pipeline (Exact 7 Pages) ───
   const generatePDFBytes = async (): Promise<Uint8Array> => {
-    const fetchBytes = async (url: string | undefined): Promise<Uint8Array | null> => {
-      if (!url) return null;
-      try {
-        const resp = await fetch(url);
-        const buf = await resp.arrayBuffer();
-        return new Uint8Array(buf);
-      } catch {
-        return null;
-      }
-    };
-
     const propImgs = fields.propertyImages || [];
     const sketchImgs = fields.sketchMapImages || [];
-    const [letterheadBytes, locMapBytes, mouzaMapBytes, cadMapBytes, ...restBytes] = await Promise.all([
-      fetchBytes('/templates/letterhead.png'),
+    const [locMapBytes, mouzaMapBytes, cadMapBytes, ...restBytes] = await Promise.all([
       fetchBytes(fields.locationMapImage),
       fetchBytes(fields.mouzaMapImage),
       fetchBytes(fields.cadastralMapImage),
@@ -885,7 +874,7 @@ export default function AdityaBirlaCapitalSTSL({
     })).filter((p: any) => p.bytes && p.bytes.length > 0);
 
     const r = new PDFAdityaBirlaSTSLRenderer();
-    await r.init(letterheadBytes || undefined);
+    await r.init();
 
     const fmtDate = (d: string) => {
       if (!d || !d.trim()) return 'NA';

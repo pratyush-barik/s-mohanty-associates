@@ -6,7 +6,7 @@ import { saveReportDraft, submitReportForVerification, getBucketImages, deleteBu
 import { SERVICES_LIST } from './constants';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
-import { PDFBankRenderer } from '@/lib/pdf-bank-renderer';
+import { PDFBankRenderer, fetchBytes } from '@/lib/pdf-bank-renderer';
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
 import type { BaseReportFields, BankConfig, FloorRow, AnnexureItem, ExtraFieldConfig } from '@/lib/bank-fields';
@@ -996,19 +996,9 @@ export default function BankReportBuilder({
 
   const handleGeneratePDF = async () => {
     try {
-      const fetchBytes = async (url: string | undefined): Promise<Uint8Array | null> => {
-        if (!url) return null;
-        try {
-          const resp = await fetch(url);
-          const buf = await resp.arrayBuffer();
-          return new Uint8Array(buf);
-        } catch { return null; }
-      };
-
       const propertyImgs = Array.isArray(fields.propertyImages) ? fields.propertyImages.filter(img => typeof img === 'string' && img.length > 0) : [];
 
-      const [letterheadBytes, ...imageResults] = await Promise.all([
-        fetchBytes('/templates/letterhead.png'),
+      const imageResults = await Promise.all([
         ...propertyImgs.map(url => fetchBytes(url)),
         ...(fields.sketchMapImages && fields.sketchMapImages.length > 0 ? fields.sketchMapImages.map(u => fetchBytes(u)) : []),
         ...(fields.locationMapImage ? [fetchBytes(fields.locationMapImage)] : []),
@@ -1028,14 +1018,14 @@ export default function BankReportBuilder({
         return t;
       };
 
-      // If bank has a fully custom PDF generator (e.g. Aditya Birla MLAP), delegate to it
+      // If bank has a fully custom PDF generator, delegate to it
       if (config?.generateCustomPDF) {
-        return await config.generateCustomPDF(fields, letterheadBytes, imageResults, fmtDate);
+        return await config.generateCustomPDF(fields, null, imageResults, fmtDate);
       }
 
-      // Instantiate renderer: use config custom renderer or default base renderer
+      // Instantiate renderer: use config custom renderer or default base renderer (automatically defaults letterhead)
       const r = config?.getPDFRenderer ? config.getPDFRenderer() : new PDFBankRenderer();
-      await r.init(letterheadBytes || undefined);
+      await r.init();
 
       let titleText = 'VALUATION REPORT';
 
