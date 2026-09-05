@@ -496,7 +496,7 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
   /**
    * Draw a 2-column Photograph Grid with dynamic user labels
    */
-  async drawPhotoGrid(photos: (Uint8Array | { bytes: Uint8Array; label?: string })[]): Promise<void> {
+  async drawPhotoGrid(photos: (Uint8Array | { bytes: Uint8Array; label?: string })[], title: string = 'PHOTOGRAPHS OF PROPERTY'): Promise<void> {
     if (!photos || photos.length === 0) return;
 
     const normalizedPhotos = photos.map(p => {
@@ -509,7 +509,7 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
     if (normalizedPhotos.length === 0) return;
 
     this.addPage();
-    this.drawSectionHeader('Photographs');
+    this.drawSectionHeader(title);
     this.advanceCursor(8);
 
     const cellW = (CONTENT_W - 10) / 2;
