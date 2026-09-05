@@ -878,35 +878,78 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     // ══════════════════════════════════════════════════════════════════════
     this.checkPageBreak(120);
 
-    // FSI Details Section Header (Standard FONT_SIZE = 12 typography)
-    this.drawSectionHeader('FSI & Building Details');
-
-    const fsiW1 = 60;
+    // FSI & Building Details Table (No section banner, vertically merged Items cell)
+    const fsiW1 = 55;
     const fsiW2 = 72;
     const fsiW3 = 72;
     const fsiW4 = 60;
-    const fsiW5 = 72;
-    const fsiW6 = 75;
-    const fsiW7 = CONTENT_W - (fsiW1 + fsiW2 + fsiW3 + fsiW4 + fsiW5 + fsiW6);
+    const fsiW5 = 76;
+    const fsiW6 = 78;
+    const fsiW7 = CONTENT_W - (fsiW1 + fsiW2 + fsiW3 + fsiW4 + fsiW5 + fsiW6); // 74.28
 
-    this.drawCleanRow([
-      { text: 'Items', width: fsiW1, isHeader: true, align: 'center' },
-      { text: 'Permissible area as per plan (In Sq. Ft)', width: fsiW2, isHeader: true, align: 'center' },
-      { text: 'Land Component (In Sq. Ft)', width: fsiW3, isHeader: true, align: 'center' },
-      { text: 'Permissible FSI', width: fsiW4, isHeader: true, align: 'center' },
-      { text: 'Permissible construction as per FSI', width: fsiW5, isHeader: true, align: 'center' },
-      { text: 'Actual construction (BUA) (In Sq. Ft)', width: fsiW6, isHeader: true, align: 'center' },
-      { text: 'Consider construction (BUA)', width: fsiW7, isHeader: true, align: 'center' },
-    ]);
-    this.drawCleanRow([
-      { text: 'Values', width: fsiW1, isLabel: true, align: 'center' },
-      { text: fields.permissibleAreaPlan || 'NA', width: fsiW2, align: 'center' },
-      { text: fields.landComponent || fields.landAreaSqft || 'NA', width: fsiW3, align: 'center' },
-      { text: fields.permissibleFsi || 'NA', width: fsiW4, align: 'center' },
-      { text: fields.permissibleConstructionFsi || 'NA', width: fsiW5, align: 'center' },
-      { text: fields.actualConstructionBua || 'NA', width: fsiW6, align: 'center' },
-      { text: fields.considerConstructionBua || 'NA', width: fsiW7, align: 'center' },
-    ]);
+    const fsiHeaders = [
+      { text: 'Permissible area as per plan (In Sq. Ft)', width: fsiW2 },
+      { text: 'Land Component (in Sq. Ft)', width: fsiW3 },
+      { text: 'Permissible FSI', width: fsiW4 },
+      { text: 'Permissible construction as per FSI (In Sq. Ft)', width: fsiW5 },
+      { text: 'Actual construction (BUA) (In Sq. Ft)', width: fsiW6 },
+      { text: 'Consider construction (BUA) (In Sq. Ft)', width: fsiW7 },
+    ];
+
+    const fsiValues = [
+      { text: fields.permissibleAreaPlan || 'NA', width: fsiW2 },
+      { text: fields.landComponent || (fields.landAreaSqft ? `${fields.landAreaSqft}sqft` : 'NA'), width: fsiW3 },
+      { text: fields.permissibleFsi || 'NA', width: fsiW4 },
+      { text: fields.permissibleConstructionFsi || 'NA', width: fsiW5 },
+      { text: fields.actualConstructionBua || 'NA', width: fsiW6 },
+      { text: fields.considerConstructionBua || 'NA', width: fsiW7 },
+    ];
+
+    // Calculate dynamic heights for header row and values row
+    const maxHdrLines = Math.max(
+      ...fsiHeaders.map(h => this.wrapText(this.sanitizeText(h.text), h.width - 8, FONT_SIZE, true).length)
+    );
+    const hFsiHeader = Math.max(48, maxHdrLines * FONT_SIZE * LINE_HEIGHT + 8);
+
+    const maxValLines = Math.max(
+      ...fsiValues.map(v => this.wrapText(this.sanitizeText(v.text), v.width - 8, FONT_SIZE, false).length)
+    );
+    const hFsiValue = Math.max(28, maxValLines * FONT_SIZE * LINE_HEIGHT + 8);
+
+    const totalFsiH = hFsiHeader + hFsiValue;
+    this.checkPageBreak(totalFsiH);
+    curY = this.pdfY(this.cursorY);
+
+    // Left cell: Items vertically merged spanning both rows
+    this.drawCleanCell(MARGIN_L, curY, fsiW1, totalFsiH, 'Items', {
+      isHeader: true,
+      align: 'center',
+      vAlign: 'middle',
+    });
+
+    // Row 1: Header cells
+    let fsiX = MARGIN_L + fsiW1;
+    for (const h of fsiHeaders) {
+      this.drawCleanCell(fsiX, curY, h.width, hFsiHeader, h.text, {
+        isHeader: true,
+        align: 'center',
+        vAlign: 'middle',
+      });
+      fsiX += h.width;
+    }
+
+    // Row 2: Value cells
+    const yFsiVal = curY - hFsiHeader;
+    fsiX = MARGIN_L + fsiW1;
+    for (const v of fsiValues) {
+      this.drawCleanCell(fsiX, yFsiVal, v.width, hFsiValue, v.text, {
+        align: 'center',
+        vAlign: 'middle',
+      });
+      fsiX += v.width;
+    }
+
+    this.cursorY += totalFsiH;
 
     // Status, Risk of Demolition, Age
     this.drawCleanRow([
@@ -1154,11 +1197,11 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       }
     }
 
-    this.cursorY += declH + 10;
+    this.cursorY += declH + 20;
 
-    // Date & Place (as per original template provided)
+    // Date & Place (as per original template provided, with clear spacing below table)
     this.checkPageBreak(50);
-    const yFooter = this.pdfY(this.cursorY);
+    const yFooter = this.pdfY(this.cursorY) - FONT_SIZE;
     this.page.drawText(`Date: ${this.sanitizeText(fields.reportDate || fields.dateOfVisit || '')}`, {
       x: MARGIN_L,
       y: yFooter,
@@ -1173,7 +1216,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });
-    this.cursorY += 40;
+    this.cursorY += FONT_SIZE + 38;
 
     // ══════════════════════════════════════════════════════════════════════
     // PAGES 6+: Photographs -> Maps -> Annexures
