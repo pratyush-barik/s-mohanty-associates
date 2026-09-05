@@ -335,7 +335,8 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       isHeader?: boolean;
       isLabel?: boolean;
     }[],
-    minH: number = 20
+    minH: number = 20,
+    rowPad: number = 6
   ): number {
     let maxLines = 1;
     for (const col of cols) {
@@ -348,7 +349,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     }
 
     const maxFs = Math.max(...cols.map(c => c.fontSize || FONT_SIZE));
-    const rowH = Math.max(minH, maxLines * maxFs * LINE_HEIGHT + 8);
+    const rowH = Math.max(minH, maxLines * maxFs * LINE_HEIGHT + rowPad);
     this.checkPageBreak(rowH);
 
     const y = this.pdfY(this.cursorY);
@@ -1036,14 +1037,12 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     this.cursorY += remH;
 
     // ══════════════════════════════════════════════════════════════════════
-    // PAGE 5: Additional Checks + Statutory Declaration + Signatures
+    // Additional Checks & Statutory Declaration (Intact on dedicated page)
     // ══════════════════════════════════════════════════════════════════════
-    this.checkPageBreak(120);
+    this.addPage();
+    this.drawSectionHeader('Additional Checks & Statutory Declaration', false);
 
-    // Section Header: Additional Checks & Declaration
-    this.drawSectionHeader('Additional Checks & Statutory Declaration');
-
-    const chkCol1 = 250;
+    const chkCol1 = 210;
     const chkCol2 = CONTENT_W - chkCol1;
 
     this.drawCleanRow([
@@ -1092,29 +1091,87 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     ]);
 
     // Statutory Declaration Row
-    const engineerName = fields.declarationSiteEngineer || (fields.assignedEngineers && fields.assignedEngineers[0]?.name) || 'Mr. Engineer';
+    const engineerName = fields.declarationSiteEngineer || (fields.assignedEngineers && fields.assignedEngineers[0]?.name) || fields.personMetOnSite || 'Mr. Engineer';
     const inspDate = fields.declarationInspectionDate || fields.dateOfVisit || fields.reportDate || '12/07/2026';
 
     const declBullets = [
       'The final valuation has been concluded basis Land & Building valuation approach and rates are cross verified with the rates Prevalent in the nearby localities.',
       'We have no direct/indirect interest in the property valued.',
       'The information furnished in the report is true and correct to the best of my knowledge.',
-      `${engineerName} has visited the property on dated ${inspDate} & provide the data as collected during site inspection.`,
-      'I have not been convicted of any offence and sentenced to a term of Imprisonment.',
+      `${engineerName} has visited the property on dated ${inspDate} & provide the data as collected during site inspection`,
+      fields.declarationConviction || 'I have not been convicted of any offence and sentenced to a team of Imprisonment',
     ];
 
-    const declFormatted = declBullets.map(b => `-  ${b}`).join('\n\n');
-    const declLines = this.wrapText(declFormatted, chkCol2 - 8, FONT_SIZE);
-    const declH = Math.max(110, declLines.length * FONT_SIZE * LINE_HEIGHT + 14);
+    const declPadX = 6;
+    const declPadY = 5;
+    const declBulletGap = 4;
+    const declIndent = 14;
+    const bulletTextW = chkCol2 - declPadX * 2 - declIndent;
 
-    this.checkPageBreak(declH);
+    const bulletLinesArr = declBullets.map(b => this.wrapText(this.sanitizeText(b), bulletTextW, FONT_SIZE));
+    const totalTextLines = bulletLinesArr.reduce((sum, l) => sum + l.length, 0);
+    const totalTextH = totalTextLines * (FONT_SIZE * LINE_HEIGHT) + (declBullets.length - 1) * declBulletGap;
+    const declH = Math.max(130, totalTextH + declPadY * 2);
+
+    this.checkPageBreak(declH + 20);
     curY = this.pdfY(this.cursorY);
-    this.drawCleanCell(MARGIN_L, curY, chkCol1, declH, 'Declaration (I hereby declare that)', { isLabel: true, align: 'center', vAlign: 'middle' });
-    this.drawCleanCell(MARGIN_L + chkCol1, curY, chkCol2, declH, declFormatted, { vAlign: 'middle' });
-    this.cursorY += declH + 16;
+
+    // 1. Left cell: Declaration (I hereby declare that)
+    this.drawCleanCell(MARGIN_L, curY, chkCol1, declH, 'Declaration (I hereby declare that)', {
+      isLabel: true,
+      align: 'center',
+      vAlign: 'middle',
+    });
+
+    // 2. Right cell: Border & background
+    this.page.drawRectangle({
+      x: MARGIN_L + chkCol1,
+      y: curY - declH,
+      width: chkCol2,
+      height: declH,
+      borderColor: rgb(0, 0, 0),
+      borderWidth: BORDER_W,
+    });
+
+    // 3. Draw each bullet with bullet symbol '•', hanging indent & bullet gap
+    let textY = curY - declPadY - (FONT_SIZE * 0.82);
+    const lineH = FONT_SIZE * LINE_HEIGHT;
+    const fontReg = this.fontRegular;
+
+    for (let bIdx = 0; bIdx < bulletLinesArr.length; bIdx++) {
+      const lines = bulletLinesArr[bIdx];
+
+      // Draw bullet symbol '•' on the first line
+      this.page.drawText('•', {
+        x: MARGIN_L + chkCol1 + declPadX + 2,
+        y: textY,
+        size: FONT_SIZE,
+        font: fontReg,
+        color: rgb(0, 0, 0),
+      });
+
+      // Draw lines of bullet text indented
+      for (const line of lines) {
+        this.page.drawText(line, {
+          x: MARGIN_L + chkCol1 + declPadX + declIndent,
+          y: textY,
+          size: FONT_SIZE,
+          font: fontReg,
+          color: rgb(0, 0, 0),
+        });
+        textY -= lineH;
+      }
+
+      // Spacing between bullets
+      if (bIdx < bulletLinesArr.length - 1) {
+        textY -= declBulletGap;
+      }
+    }
+
+    this.cursorY += declH + 10;
 
     // Date & Place
-    this.checkPageBreak(80);
+    this.checkPageBreak(65);
     const yFooter = this.pdfY(this.cursorY);
     this.page.drawText(`Date: ${this.sanitizeText(fields.reportDate || fields.dateOfVisit || '')}`, {
       x: MARGIN_L,
