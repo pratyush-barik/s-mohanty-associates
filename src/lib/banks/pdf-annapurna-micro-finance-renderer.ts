@@ -1170,8 +1170,8 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
 
     this.cursorY += declH + 10;
 
-    // Date & Place
-    this.checkPageBreak(65);
+    // Date & Place (as per original template provided)
+    this.checkPageBreak(50);
     const yFooter = this.pdfY(this.cursorY);
     this.page.drawText(`Date: ${this.sanitizeText(fields.reportDate || fields.dateOfVisit || '')}`, {
       x: MARGIN_L,
@@ -1187,46 +1187,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });
-
-    // Official Appraiser Signature Block
-    const engineers = fields.assignedEngineers && fields.assignedEngineers.length > 0 ? fields.assignedEngineers : [
-      { name: 'Er. S. Mohanty', designation: 'Chartered Engineer & Approved Valuer', role: 'Chief Valuer' }
-    ];
-
-    const sigY = yFooter;
-    const sigBoxW = 220;
-    const sigStartX = MARGIN_L + CONTENT_W - sigBoxW;
-
-    this.page.drawText('For S MOHANTY ASSOCIATES', {
-      x: sigStartX,
-      y: sigY,
-      size: FONT_SIZE,
-      font: this.fontBold,
-      color: rgb(0, 0, 0),
-    });
-
-    let currentSigY = sigY - 36;
-    for (const eng of engineers) {
-      this.page.drawText(eng.name, {
-        x: sigStartX,
-        y: currentSigY,
-        size: FONT_SIZE,
-        font: this.fontBold,
-        color: rgb(0, 0, 0),
-      });
-      currentSigY -= 14;
-      if (eng.designation) {
-        this.page.drawText(eng.designation, {
-          x: sigStartX,
-          y: currentSigY,
-          size: FONT_SIZE_CAPTION,
-          font: this.fontItalic,
-          color: rgb(0, 0, 0),
-        });
-        currentSigY -= 12;
-      }
-    }
-    this.cursorY += 60;
+    this.cursorY += 40;
 
     // ══════════════════════════════════════════════════════════════════════
     // PAGES 6+: Photographs -> Maps -> Annexures
