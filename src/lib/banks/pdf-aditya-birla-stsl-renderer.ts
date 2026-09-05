@@ -1160,6 +1160,112 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
   }
 
   /**
+   * Dedicated STSL Remarks Box: Renders a single-cell bordered table row
+   * with inline bold prefix "Remarks: " followed immediately by the remarks body.
+   */
+  override drawRemarksBox(label: string, text: string, addSpaceBefore = false): void {
+    if (addSpaceBefore && this.cursorY > 10) {
+      this.cursorY += 10;
+    }
+
+    const fontSize = FONT_SIZE;
+    const pad = 3;
+    const maxWidth = CONTENT_W - pad * 2;
+    const rawClean = this.sanitizeText(text || 'N/A').trim();
+    const cleanText = rawClean.length > 0 ? rawClean : 'N/A';
+    const rawPrefix = label ? label.trim() : 'Remarks';
+    const prefix = rawPrefix.endsWith(':') ? `${rawPrefix} ` : `${rawPrefix}: `;
+    const prefixW = this.fontBold.widthOfTextAtSize(prefix, fontSize);
+
+    // Break into paragraphs by explicit newline if any
+    const rawParagraphs = cleanText.split(/\r?\n/);
+    const lines: { isFirst: boolean; text: string }[] = [];
+    let isFirstLine = true;
+
+    for (let pIdx = 0; pIdx < rawParagraphs.length; pIdx++) {
+      const para = rawParagraphs[pIdx].trim();
+      if (!para) continue;
+      const words = para.split(/\s+/);
+      let currentLine = '';
+
+      for (const word of words) {
+        if (!word) continue;
+        const availableW = isFirstLine ? (maxWidth - prefixW) : maxWidth;
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        const testW = this.fontRegular.widthOfTextAtSize(testLine, fontSize);
+
+        if (testW > availableW && currentLine) {
+          lines.push({ isFirst: isFirstLine, text: currentLine });
+          isFirstLine = false;
+          currentLine = word;
+        } else {
+          currentLine = testLine;
+        }
+      }
+      if (currentLine) {
+        lines.push({ isFirst: isFirstLine, text: currentLine });
+        isFirstLine = false;
+      }
+    }
+
+    if (lines.length === 0) {
+      lines.push({ isFirst: true, text: 'N/A' });
+    }
+
+    const rowH = Math.max(20, lines.length * fontSize * LINE_HEIGHT + pad * 2);
+    this.checkPageBreak(rowH);
+
+    const y = this.pdfY(this.cursorY);
+
+    // Single outer bordered rectangle (no top header bar)
+    this.page.drawRectangle({
+      x: MARGIN_L,
+      y: y - rowH,
+      width: CONTENT_W,
+      height: rowH,
+      borderColor: rgb(0, 0, 0),
+      borderWidth: BORDER_W,
+    });
+
+    let lineY = y - pad - fontSize * 0.85;
+
+    for (const l of lines) {
+      if (l.isFirst) {
+        // Draw bold prefix (e.g. "Remarks: ")
+        this.page.drawText(prefix, {
+          x: MARGIN_L + pad,
+          y: lineY,
+          size: fontSize,
+          font: this.fontBold,
+          color: rgb(0, 0, 0),
+        });
+        // Draw regular text body immediately on same line
+        if (l.text) {
+          this.page.drawText(l.text, {
+            x: MARGIN_L + pad + prefixW,
+            y: lineY,
+            size: fontSize,
+            font: this.fontRegular,
+            color: rgb(0, 0, 0),
+          });
+        }
+      } else {
+        // Subsequent lines start at left edge of box
+        this.page.drawText(l.text, {
+          x: MARGIN_L + pad,
+          y: lineY,
+          size: fontSize,
+          font: this.fontRegular,
+          color: rgb(0, 0, 0),
+        });
+      }
+      lineY -= fontSize * LINE_HEIGHT;
+    }
+
+    this.cursorY += rowH;
+  }
+
+  /**
    * Draw the 5 Declaration Points and Sign-off block
    */
   drawDeclarationSection(appraiserName: string, preparedBy: string, finalizedBy: string): void {
