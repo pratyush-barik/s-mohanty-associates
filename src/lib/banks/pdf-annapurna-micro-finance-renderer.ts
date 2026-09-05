@@ -746,13 +746,6 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     const planRightW = CONTENT_W - planSideW;
     const planLabelW = 210;
     const planValW = planRightW - planLabelW;
-    const subH = 22;
-    const totalPlanH = subH * 6;
-
-    this.checkPageBreak(totalPlanH + 50);
-    curY = this.pdfY(this.cursorY);
-
-    this.drawCleanCell(MARGIN_L, curY, planSideW, totalPlanH, 'Approved Plan Details if self-construction case', { isLabel: true, align: 'center', vAlign: 'middle' });
 
     const planItems = [
       { l: 'Sanctioned Plan Provided (Yes/No)', v: fields.sanctionedPlanProvided || 'NO' },
@@ -763,20 +756,42 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { l: 'Approving Authority', v: fields.approvingAuthority || 'NA' },
     ];
 
+    // Dynamically calculate row heights so wrapped titles never collide or overlap
+    const planRowHeights = planItems.map(item => {
+      const linesL = this.wrapText(this.sanitizeText(item.l), Math.max(10, planLabelW - 8), FONT_SIZE, true);
+      const linesV = this.wrapText(this.sanitizeText(item.v), Math.max(10, planValW - 8), FONT_SIZE, false);
+      const maxLines = Math.max(linesL.length, linesV.length);
+      return Math.max(22, maxLines * FONT_SIZE * LINE_HEIGHT + 8);
+    });
+    const totalPlanH = planRowHeights.reduce((sum, h) => sum + h, 0);
+
+    this.checkPageBreak(totalPlanH + 50);
+    curY = this.pdfY(this.cursorY);
+
+    this.drawCleanCell(MARGIN_L, curY, planSideW, totalPlanH, 'Approved Plan Details if self-construction case', {
+      isLabel: true,
+      align: 'center',
+      vAlign: 'middle',
+    });
+
+    let currentPlanY = curY;
     for (let i = 0; i < planItems.length; i++) {
-      const rowTop = curY - (i * subH);
-      this.drawCleanCell(MARGIN_L + planSideW, rowTop, planLabelW, subH, planItems[i].l, { isLabel: true });
-      this.drawCleanCell(MARGIN_L + planSideW + planLabelW, rowTop, planValW, subH, planItems[i].v);
+      const rH = planRowHeights[i];
+      this.drawCleanCell(MARGIN_L + planSideW, currentPlanY, planLabelW, rH, planItems[i].l, { isLabel: true });
+      this.drawCleanCell(MARGIN_L + planSideW + planLabelW, currentPlanY, planValW, rH, planItems[i].v);
+      currentPlanY -= rH;
     }
     this.cursorY += totalPlanH;
 
+    const fullPlanLabelW = planSideW + planLabelW;
+    const fullPlanValW = CONTENT_W - fullPlanLabelW;
     this.drawCleanRow([
-      { text: 'Approved Usages (Residential/Industrial/Commercial/Mixed Usages)', width: 330, isLabel: true },
-      { text: fields.approvedUsages || 'NA', width: CONTENT_W - 330 },
+      { text: 'Approved Usages (Residential/Industrial/Commercial/Mixed Usages)', width: fullPlanLabelW, isLabel: true },
+      { text: fields.approvedUsages || 'NA', width: fullPlanValW },
     ]);
     this.drawCleanRow([
-      { text: 'Number of Floor in Building', width: 330, isLabel: true },
-      { text: fields.numberOfFloorsInBuilding || 'NA', width: CONTENT_W - 330 },
+      { text: 'Number of Floor in Building', width: fullPlanLabelW, isLabel: true },
+      { text: fields.numberOfFloorsInBuilding || 'NA', width: fullPlanValW },
     ]);
 
     // Technical Details Section Header
@@ -875,8 +890,8 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     // ══════════════════════════════════════════════════════════════════════
     this.checkPageBreak(120);
 
-    // FSI & Valuation Section Header (Standard FONT_SIZE = 12 typography)
-    this.drawSectionHeader('Valuation & FSI Details');
+    // FSI Details Section Header (Standard FONT_SIZE = 12 typography)
+    this.drawSectionHeader('FSI & Building Details');
 
     const fsiW1 = 60;
     const fsiW2 = 72;
@@ -910,24 +925,57 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { text: 'Risk of Demolition (High/Medium/Low)', width: 280, isLabel: true },
       { text: fields.riskOfDemolition || 'LOW', width: CONTENT_W - 280 },
     ]);
-    this.drawCleanRow([
-      { text: 'Status of Property (Plot/Under Construction/Completed)', width: 170, isLabel: true },
-      { text: 'COMPLETED (Y/N)', width: 100, isHeader: true, align: 'center' },
-      { text: '100% Completed', width: 105, isHeader: true, align: 'center' },
-      { text: '100% Recommended', width: CONTENT_W - 375, isHeader: true, align: 'center' },
-    ]);
-    this.drawCleanRow([
-      { text: '', width: 170 },
-      { text: fields.propertyStatus || 'NA', width: 100, align: 'center' },
-      { text: fields.completedPct || 'NA', width: 105, align: 'center' },
-      { text: fields.recommendedPct || 'NA', width: CONTENT_W - 375, align: 'center' },
-    ]);
+
+    // Status of the Property: single left cell vertically merged spanning both rows
+    const statusW1 = 175;
+    const statusW2 = 100;
+    const statusW3 = 105;
+    const statusW4 = CONTENT_W - (statusW1 + statusW2 + statusW3);
+
+    const statusTextL = 'Status of the Property (Plot/Under Construction/ Completed/ Construction on Hold)';
+    const statusLinesL = this.wrapText(this.sanitizeText(statusTextL), Math.max(10, statusW1 - 8), FONT_SIZE, true);
+    const minLeftH = Math.max(50, statusLinesL.length * FONT_SIZE * LINE_HEIGHT + 10);
+
+    const hRow1 = Math.max(26, Math.floor(minLeftH / 2));
+    const hRow2 = Math.max(24, minLeftH - hRow1);
+    const totalStatusH = hRow1 + hRow2;
+
+    this.checkPageBreak(totalStatusH + 30);
+    curY = this.pdfY(this.cursorY);
+
+    // Left merged cell spanning both rows
+    this.drawCleanCell(MARGIN_L, curY, statusW1, totalStatusH, statusTextL, {
+      isLabel: true,
+      align: 'left',
+      vAlign: 'middle',
+    });
+
+    // Row 1 (Headers)
+    this.drawCleanCell(MARGIN_L + statusW1, curY, statusW2, hRow1, 'COMPLETED (Y/N)', { isHeader: true, align: 'center', vAlign: 'middle' });
+    this.drawCleanCell(MARGIN_L + statusW1 + statusW2, curY, statusW3, hRow1, '100% Completed', { isHeader: true, align: 'center', vAlign: 'middle' });
+    this.drawCleanCell(MARGIN_L + statusW1 + statusW2 + statusW3, curY, statusW4, hRow1, '100% Recommended', { isHeader: true, align: 'center', vAlign: 'middle' });
+
+    // Row 2 (Values)
+    const yRow2 = curY - hRow1;
+    this.drawCleanCell(MARGIN_L + statusW1, yRow2, statusW2, hRow2, fields.propertyStatus || 'NA', { align: 'center', vAlign: 'middle' });
+    this.drawCleanCell(MARGIN_L + statusW1 + statusW2, yRow2, statusW3, hRow2, fields.completedPct || 'NA', { align: 'center', vAlign: 'middle' });
+    this.drawCleanCell(MARGIN_L + statusW1 + statusW2 + statusW3, yRow2, statusW4, hRow2, fields.recommendedPct || 'NA', { align: 'center', vAlign: 'middle' });
+
+    this.cursorY += totalStatusH;
+
     this.drawCleanRow([
       { text: 'Current Age of Property', width: 145, isLabel: true },
       { text: fields.currentAge || 'NA', width: 95 },
       { text: 'Residual Age', width: 110, isLabel: true },
       { text: fields.residualAge || 'NA', width: CONTENT_W - 350 },
     ]);
+
+    // ══════════════════════════════════════════════════════════════════════
+    // Section break after Current Age of Property / Residual Age:
+    // Valuation Table starts on the next page
+    // ══════════════════════════════════════════════════════════════════════
+    this.addPage();
+    this.drawSectionHeader('Valuation Details', false);
 
     // Valuation Table
     const valW1 = 160;
