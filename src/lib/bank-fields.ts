@@ -207,6 +207,11 @@ export interface BaseReportFields {
   propertyImageNames: string[];
   sketchMapImages: string[];
   locationMapImage: string;
+  locationMapImages: string[];
+  mouzaMapImage?: string;
+  mouzaMapImages?: string[];
+  cadastralMapImage?: string;
+  cadastralMapImages?: string[];
   latitude: string;
   longitude: string;
 
@@ -323,6 +328,10 @@ export interface BankConfig {
   extraSections?: SectionConfig[];
   /** Custom Nav Sections for FloatingNavigator */
   navSections?: { id: string; title: string }[];
+  /** Hidden base fields for this bank */
+  hiddenFields?: string[];
+  /** Hidden base sections for this bank */
+  hiddenSections?: string[];
   /** Bank-specific validation rules added on top of base validation */
   validationRules?: ValidationRule[];
 
@@ -338,3 +347,19 @@ export interface BankConfig {
     fmtDate: (d: string) => string
   ) => Promise<Uint8Array>;
 }
+
+/**
+ * Normalizes a map image field that might be stored as a single string (legacy) or an array of strings (multi-photo).
+ * Always returns a clean array of non-empty URLs.
+ */
+export function normalizeMapImages(val: string | string[] | undefined | null): string[] {
+  if (!val) return [];
+  if (Array.isArray(val)) {
+    return val.filter(item => typeof item === 'string' && item.trim().length > 0);
+  }
+  if (typeof val === 'string' && val.trim().length > 0) {
+    return [val.trim()];
+  }
+  return [];
+}
+

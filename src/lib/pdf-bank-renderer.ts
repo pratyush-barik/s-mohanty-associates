@@ -391,6 +391,18 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
   }
 
   /**
+   * Draw a generic data table, with optional custom column widths.
+   * If customColWidths is provided, uses drawTable; otherwise delegates to super.drawDataTable.
+   */
+  override drawDataTable(headers: string[], rows: string[][], customColWidths?: number[]): void {
+    if (customColWidths && customColWidths.length === headers.length) {
+      this.drawTable(headers, rows, customColWidths);
+    } else {
+      super.drawDataTable(headers, rows);
+    }
+  }
+
+  /**
    * Draw a full-width Remarks / Narrative box
    */
   drawRemarksBox(label: string, text: string, addSpaceBefore = true): void {
@@ -579,6 +591,40 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
         } catch { /* ignore */ }
       }
       this.cursorY += cellH + 10;
+    }
+  }
+
+  /**
+   * Draw a Map Gallery for a specific map type (Google Satellite Map, Mouza Map, Sketch Map, Cadastral Map).
+   * Supports 1, 2, or N images.
+   * If images exist, adds a new page (or continues), draws the section header, and lays out images cleanly
+   * with bounding borders, captions, and page break checking.
+   */
+  async drawMapGallery(
+    images: (Uint8Array | { bytes: Uint8Array; caption?: string })[],
+    title: string,
+    maxImageH: number = 260
+  ): Promise<void> {
+    if (!images || images.length === 0) return;
+
+    const normalized = images.map(item => {
+      if (item instanceof Uint8Array || (item as any)?.byteLength !== undefined) {
+        return { bytes: item as Uint8Array, caption: '' };
+      }
+      return { bytes: (item as any)?.bytes as Uint8Array, caption: (item as any)?.caption || '' };
+    }).filter(i => i.bytes && i.bytes.length > 0);
+
+    if (normalized.length === 0) return;
+
+    this.addPage();
+    this.drawSectionHeader(title, false);
+    this.advanceCursor(8);
+
+    for (let i = 0; i < normalized.length; i++) {
+      const { bytes, caption } = normalized[i];
+      const imgCaption = caption || (normalized.length > 1 ? `${title} — Image ${i + 1} of ${normalized.length}` : '');
+      await this.drawImageSection(bytes, imgCaption, maxImageH, true);
+      this.advanceCursor(10);
     }
   }
 

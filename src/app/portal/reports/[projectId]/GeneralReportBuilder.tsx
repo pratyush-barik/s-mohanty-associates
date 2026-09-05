@@ -10,7 +10,7 @@ import { PDFGeneralRenderer } from '@/lib/pdf-general-renderer';
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
 import { getFloorName, BasePhotographsSection, ActiveConfigBanner } from './banks/BaseBankReportComponents';
-import { reorderAndLabelAnnexures } from '@/lib/bank-fields';
+import { reorderAndLabelAnnexures, type AnnexureItem } from '@/lib/bank-fields';
 import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 // @ts-ignore
 import * as XLSX from 'xlsx';
@@ -25,21 +25,6 @@ interface FloorRow {
   lifeYears: string;
   ageYears: string;
   depreciationPct: string;
-}
-
-interface AnnexureItem {
-  id: string;
-  label: string;          // 'A', 'B', 'C', ...
-  title?: string;         // Custom title for the annexure
-  excelFileUrl: string;   // Uploaded Excel URL from Supabase
-  excelFileName: string;  // Original filename
-  parsedData?: {          // Parsed Excel table data
-    headers: string[];         // row 0 (kept for compat)
-    rows: string[][];          // rows 1+ (kept for compat)
-    allRows: string[][];       // ALL rows including row 0 (used for merged rendering)
-    merges: { sr: number; sc: number; er: number; ec: number }[]; // 0-indexed merge ranges
-    colWidths: number[];       // normalised 0-1 column widths from workbook
-  };
 }
 
 const cleanAddressForMap = (rawAddr: string): string => {

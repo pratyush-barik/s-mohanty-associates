@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { normalizeMapImages } from '@/lib/bank-fields';
 
 // ─── Dynamic Floor Naming (Pure Algorithmic Ordinal Generator) ───────────
 const ORDINALS_MAP: Record<number, string> = {
@@ -554,13 +555,16 @@ export function BasePhotographsSection({
 
 // ─── Standard Maps & Documents Section (Derived from General) ─────────
 export function BaseMapsSection({
-  locationMapImage = '',
+  locationMapImage,
+  locationMapImages,
   latitude = '',
   longitude = '',
   propertyAddress = '',
   sketchMapImages = [],
-  mouzaMapImage = '',
-  cadastralMapImage = '',
+  mouzaMapImage,
+  mouzaMapImages,
+  cadastralMapImage,
+  cadastralMapImages,
   isReadOnly = false,
   uploading = false,
   bucketCount = 0,
@@ -572,30 +576,40 @@ export function BaseMapsSection({
   onMouzaMapRemove,
   onCadastralMapUpload,
   onCadastralMapRemove,
+  onOpenBucketPicker,
   sectionNumber = 10,
   sectionId = 'section-10',
+  title = 'Maps & Documents',
+  mapOrder = ['location', 'mouza', 'sketch', 'cadastral'],
+  withoutSectionWrapper = false,
 }: {
-  locationMapImage?: string;
+  locationMapImage?: string | string[];
+  locationMapImages?: string[];
   latitude?: string;
   longitude?: string;
   propertyAddress?: string;
   sketchMapImages?: string[];
-  mouzaMapImage?: string;
-  cadastralMapImage?: string;
+  mouzaMapImage?: string | string[];
+  mouzaMapImages?: string[];
+  cadastralMapImage?: string | string[];
+  cadastralMapImages?: string[];
   isReadOnly?: boolean;
   uploading?: boolean;
   bucketCount?: number;
-  onLocationMapUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onLocationMapRemove: () => void;
-  onSketchMapUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onSketchMapRemove: (index: number) => void;
+  onLocationMapUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onLocationMapRemove?: (index?: number) => void;
+  onSketchMapUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSketchMapRemove?: (index: number) => void;
   onMouzaMapUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onMouzaMapRemove?: () => void;
+  onMouzaMapRemove?: (index?: number) => void;
   onCadastralMapUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onCadastralMapRemove?: () => void;
-  onOpenBucketPicker?: (mode: 'sketchMapImages' | 'locationMapImage') => void;
+  onCadastralMapRemove?: (index?: number) => void;
+  onOpenBucketPicker?: (mode: 'sketchMapImages' | 'locationMapImage' | 'locationMapImages' | 'mouzaMapImages' | 'cadastralMapImages') => void;
   sectionNumber?: number | string;
   sectionId?: string;
+  title?: string;
+  mapOrder?: ('location' | 'mouza' | 'sketch' | 'cadastral')[];
+  withoutSectionWrapper?: boolean;
 }) {
   const cleanLat = (latitude || '').trim();
   const cleanLng = (longitude || '').trim();
@@ -612,172 +626,262 @@ export function BaseMapsSection({
     ? `https://www.google.com/maps?q=loc:${cleanLat},${cleanLng}&z=17&t=k`
     : `https://www.google.com/maps/search/${encodeURIComponent(cleanAddress)}`;
 
-  return (
-    <Section title="Maps & Documents" number={sectionNumber} id={sectionId} defaultOpen={false}>
-      <div className="space-y-6">
-        {/* 1. Live Google Map Preview */}
-        <div>
-          <h4 className="text-xs font-bold text-[#495057] uppercase tracking-wider mb-2">Live Map & Location</h4>
-          {hasQuery ? (
-            <div className="rounded-2xl overflow-hidden border border-[#c8d6e5] shadow-sm">
-              <div className="bg-[#d5e8f5] px-4 py-2 flex items-center justify-between">
-                <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider flex items-center gap-1.5">
-                  📍 Live Satellite Preview {hasCoordinates ? `(Pinned at ${cleanLat}, ${cleanLng})` : ''}
-                </span>
-                <a
-                  href={googleMapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs font-semibold text-[#b8860b] hover:underline"
-                >
-                  Open in Google Maps &#x2197;
-                </a>
-              </div>
-              <iframe
-                src={`https://maps.google.com/maps?q=${encodedQuery}&t=k&z=17&output=embed`}
-                width="100%"
-                height="320"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Property Location Map"
-              />
-            </div>
-          ) : (
-            <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 text-center text-xs text-gray-500">
-              Enter Property Address or Coordinates in Section 2 to view live satellite map.
-            </div>
-          )}
+  // Normalize multi-photo arrays (supports both legacy single string and array)
+  const normLocationImages = normalizeMapImages(locationMapImages || locationMapImage);
+  const normMouzaImages = normalizeMapImages(mouzaMapImages || mouzaMapImage);
+  const normSketchImages = normalizeMapImages(sketchMapImages);
+  const normCadastralImages = normalizeMapImages(cadastralMapImages || cadastralMapImage);
+
+  // Sub-renderers for each map category
+  const renderLocationMap = () => (
+    <div key="location" className="space-y-4 p-4 border border-[#dee2e6] rounded-2xl bg-white shadow-xs">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+        <div className="flex items-center gap-2">
+          <span className="text-base">🛰️</span>
+          <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+            Google Satellite Map {normLocationImages.length > 0 ? `(${normLocationImages.length})` : ''}
+          </h4>
         </div>
-
-        {/* 2. Map Screenshot for PDF */}
-        <div className="space-y-2">
-          <h4 className="text-xs font-bold text-[#495057] uppercase tracking-wider">Location Map Screenshot (For PDF)</h4>
-          {locationMapImage ? (
-            <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] max-w-md">
-              <img src={locationMapImage} alt="Location Map" className="w-full h-44 object-cover" />
-              {!isReadOnly && (
-                <button
-                  type="button"
-                  onClick={onLocationMapRemove}
-                  className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity text-xs"
-                >
-                  Remove
-                </button>
-              )}
-            </div>
-          ) : (
-            !isReadOnly && (
-              <div className="flex flex-wrap items-center gap-2">
-                <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-xs">
-                  {uploading ? '⏳ Uploading...' : '📷 Upload Map Screenshot'}
-                  <input type="file" accept="image/*" className="hidden" onChange={onLocationMapUpload} disabled={uploading} />
-                </label>
-              </div>
-            )
-          )}
-        </div>
-
-        {/* 3. Sketch Maps */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h4 className="text-xs font-bold text-[#495057] uppercase tracking-wider">Sketch Maps</h4>
-            {!isReadOnly && (
-              <div className="flex items-center gap-2">
-                <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-xs">
-                  {uploading ? '⏳...' : '📷 Upload Sketch'}
-                  <input type="file" accept="image/*" multiple className="hidden" onChange={onSketchMapUpload} disabled={uploading} />
-                </label>
-              </div>
-            )}
-          </div>
-          {sketchMapImages.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {sketchMapImages.map((url, idx) => (
-                <div key={idx} className="relative group rounded-xl overflow-hidden border border-[#e9ecef] bg-slate-50">
-                  <img src={url} alt={`Sketch Map ${idx + 1}`} className="w-full h-36 object-contain" />
-                  {!isReadOnly && (
-                    <button
-                      type="button"
-                      onClick={() => onSketchMapRemove(idx)}
-                      className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity text-xs"
-                    >
-                      Remove
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="p-4 border border-dashed rounded-xl text-center text-xs text-gray-500">
-              No sketch maps uploaded yet.
-            </div>
-          )}
-        </div>
-
-        {/* 4. Optional Mouza & Cadastral Maps */}
-        {(onMouzaMapUpload || onCadastralMapUpload) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-            {onMouzaMapUpload && (
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold text-[#495057] uppercase tracking-wider">Mouza Map</h4>
-                {mouzaMapImage ? (
-                  <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] bg-slate-50">
-                    <img src={mouzaMapImage} alt="Mouza Map" className="w-full h-36 object-contain" />
-                    {!isReadOnly && onMouzaMapRemove && (
-                      <button
-                        type="button"
-                        onClick={onMouzaMapRemove}
-                        className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity text-xs"
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  !isReadOnly && (
-                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-bold cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-                      {uploading ? '⏳...' : '📁 Upload Mouza Map'}
-                      <input type="file" accept="image/*" className="hidden" onChange={onMouzaMapUpload} disabled={uploading} />
-                    </label>
-                  )
-                )}
-              </div>
-            )}
-
-            {onCadastralMapUpload && (
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold text-[#495057] uppercase tracking-wider">Cadastral Map</h4>
-                {cadastralMapImage ? (
-                  <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] bg-slate-50">
-                    <img src={cadastralMapImage} alt="Cadastral Map" className="w-full h-36 object-contain" />
-                    {!isReadOnly && onCadastralMapRemove && (
-                      <button
-                        type="button"
-                        onClick={onCadastralMapRemove}
-                        className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity text-xs"
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  !isReadOnly && (
-                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-bold cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-                      {uploading ? '⏳...' : '📁 Upload Cadastral Map'}
-                      <input type="file" accept="image/*" className="hidden" onChange={onCadastralMapUpload} disabled={uploading} />
-                    </label>
-                  )
-                )}
-              </div>
+        {!isReadOnly && onLocationMapUpload && (
+          <div className="flex items-center gap-2">
+            <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-2xs">
+              {uploading ? '⏳ Uploading...' : '+ Add Satellite Image'}
+              <input type="file" accept="image/*" multiple className="hidden" onChange={onLocationMapUpload} disabled={uploading} />
+            </label>
+            {onOpenBucketPicker && (
+              <button
+                type="button"
+                onClick={() => onOpenBucketPicker('locationMapImages')}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#1e3a5f] text-[#1e3a5f] text-xs font-semibold hover:bg-[#1e3a5f]/10 transition-all cursor-pointer shadow-2xs"
+              >
+                📁 Bucket {bucketCount > 0 ? `(${bucketCount})` : ''}
+              </button>
             )}
           </div>
         )}
       </div>
+
+      {/* Live Google Map Interactive Preview */}
+      <div>
+        <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Live Satellite & Coordinate Preview</div>
+        {hasQuery ? (
+          <div className="rounded-xl overflow-hidden border border-[#c8d6e5] shadow-xs">
+            <div className="bg-[#d5e8f5] px-3.5 py-1.5 flex items-center justify-between">
+              <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider flex items-center gap-1.5">
+                📍 Live Pin {hasCoordinates ? `(${cleanLat}, ${cleanLng})` : ''}
+              </span>
+              <a
+                href={googleMapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-semibold text-[#b8860b] hover:underline"
+              >
+                Open in Google Maps &#x2197;
+              </a>
+            </div>
+            <iframe
+              src={`https://maps.google.com/maps?q=${encodedQuery}&t=k&z=17&output=embed`}
+              width="100%"
+              height="260"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Property Location Map"
+            />
+          </div>
+        ) : (
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center text-xs text-slate-500">
+            Enter Property Address or Coordinates in Section 2 to view live satellite map.
+          </div>
+        )}
+      </div>
+
+      {/* Satellite Screenshots Gallery (For PDF) */}
+      <div className="space-y-2 pt-1">
+        <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+          Satellite Screenshots (For PDF Inclusion)
+        </div>
+        {normLocationImages.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {normLocationImages.map((url, idx) => (
+              <div key={idx} className="relative group rounded-xl overflow-hidden border border-[#dee2e6] bg-slate-50 shadow-xs aspect-video flex items-center justify-center">
+                <img src={url} alt={`Satellite Map ${idx + 1}`} className="w-full h-full object-cover" />
+                {!isReadOnly && onLocationMapRemove && (
+                  <button
+                    type="button"
+                    onClick={() => onLocationMapRemove(idx)}
+                    className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full bg-red-600 text-white font-bold text-xs opacity-90 group-hover:opacity-100 hover:bg-red-700 shadow-sm transition-opacity cursor-pointer"
+                    title="Remove Photo"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="p-4 border border-dashed border-slate-300 rounded-xl text-center text-xs text-slate-400 bg-slate-50/50">
+            No satellite map screenshots uploaded yet. Click "+ Add Satellite Image" to add one or more photos for PDF.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const renderMouzaMap = () => (
+    <div key="mouza" className="space-y-3 p-4 border border-[#dee2e6] rounded-2xl bg-white shadow-xs">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+        <div className="flex items-center gap-2">
+          <span className="text-base">🗺️</span>
+          <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+            Mouza Map (Bhulekh / Revenue Map) {normMouzaImages.length > 0 ? `(${normMouzaImages.length})` : ''}
+          </h4>
+        </div>
+        {!isReadOnly && onMouzaMapUpload && (
+          <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-2xs">
+            {uploading ? '⏳ Uploading...' : '+ Add Mouza Map'}
+            <input type="file" accept="image/*" multiple className="hidden" onChange={onMouzaMapUpload} disabled={uploading} />
+          </label>
+        )}
+      </div>
+
+      {normMouzaImages.length > 0 ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {normMouzaImages.map((url, idx) => (
+            <div key={idx} className="relative group rounded-xl overflow-hidden border border-[#dee2e6] bg-slate-50 shadow-xs aspect-video flex items-center justify-center">
+              <img src={url} alt={`Mouza Map ${idx + 1}`} className="w-full h-full object-contain" />
+              {!isReadOnly && onMouzaMapRemove && (
+                <button
+                  type="button"
+                  onClick={() => onMouzaMapRemove(idx)}
+                  className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full bg-red-600 text-white font-bold text-xs opacity-90 group-hover:opacity-100 hover:bg-red-700 shadow-sm transition-opacity cursor-pointer"
+                  title="Remove Map"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="p-4 border border-dashed border-slate-300 rounded-xl text-center text-xs text-slate-400 bg-slate-50/50">
+          No mouza map uploaded yet. Click "+ Add Mouza Map" to upload one or more maps.
+        </div>
+      )}
+    </div>
+  );
+
+  const renderSketchMap = () => (
+    <div key="sketch" className="space-y-3 p-4 border border-[#dee2e6] rounded-2xl bg-white shadow-xs">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+        <div className="flex items-center gap-2">
+          <span className="text-base">📐</span>
+          <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+            Sketch Map (Amin Hand-Drawn / Demarcation) {normSketchImages.length > 0 ? `(${normSketchImages.length})` : ''}
+          </h4>
+        </div>
+        {!isReadOnly && onSketchMapUpload && (
+          <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-2xs">
+            {uploading ? '⏳ Uploading...' : '+ Add Sketch Map'}
+            <input type="file" accept="image/*" multiple className="hidden" onChange={onSketchMapUpload} disabled={uploading} />
+          </label>
+        )}
+      </div>
+
+      {normSketchImages.length > 0 ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {normSketchImages.map((url, idx) => (
+            <div key={idx} className="relative group rounded-xl overflow-hidden border border-[#dee2e6] bg-slate-50 shadow-xs aspect-video flex items-center justify-center">
+              <img src={url} alt={`Sketch Map ${idx + 1}`} className="w-full h-full object-contain" />
+              {!isReadOnly && onSketchMapRemove && (
+                <button
+                  type="button"
+                  onClick={() => onSketchMapRemove(idx)}
+                  className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full bg-red-600 text-white font-bold text-xs opacity-90 group-hover:opacity-100 hover:bg-red-700 shadow-sm transition-opacity cursor-pointer"
+                  title="Remove Sketch"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="p-4 border border-dashed border-slate-300 rounded-xl text-center text-xs text-slate-400 bg-slate-50/50">
+          No sketch maps uploaded yet. Click "+ Add Sketch Map" to upload one or more maps.
+        </div>
+      )}
+    </div>
+  );
+
+  const renderCadastralMap = () => (
+    <div key="cadastral" className="space-y-3 p-4 border border-[#dee2e6] rounded-2xl bg-white shadow-xs">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+        <div className="flex items-center gap-2">
+          <span className="text-base">🌐</span>
+          <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+            Cadastral Map {normCadastralImages.length > 0 ? `(${normCadastralImages.length})` : ''}
+          </h4>
+        </div>
+        {!isReadOnly && onCadastralMapUpload && (
+          <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-2xs">
+            {uploading ? '⏳ Uploading...' : '+ Add Cadastral Map'}
+            <input type="file" accept="image/*" multiple className="hidden" onChange={onCadastralMapUpload} disabled={uploading} />
+          </label>
+        )}
+      </div>
+
+      {normCadastralImages.length > 0 ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {normCadastralImages.map((url, idx) => (
+            <div key={idx} className="relative group rounded-xl overflow-hidden border border-[#dee2e6] bg-slate-50 shadow-xs aspect-video flex items-center justify-center">
+              <img src={url} alt={`Cadastral Map ${idx + 1}`} className="w-full h-full object-contain" />
+              {!isReadOnly && onCadastralMapRemove && (
+                <button
+                  type="button"
+                  onClick={() => onCadastralMapRemove(idx)}
+                  className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full bg-red-600 text-white font-bold text-xs opacity-90 group-hover:opacity-100 hover:bg-red-700 shadow-sm transition-opacity cursor-pointer"
+                  title="Remove Map"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="p-4 border border-dashed border-slate-300 rounded-xl text-center text-xs text-slate-400 bg-slate-50/50">
+          No cadastral map uploaded yet. Click "+ Add Cadastral Map" to upload one or more maps.
+        </div>
+      )}
+    </div>
+  );
+
+  const contentMap: Record<'location' | 'mouza' | 'sketch' | 'cadastral', () => React.ReactNode> = {
+    location: renderLocationMap,
+    mouza: renderMouzaMap,
+    sketch: renderSketchMap,
+    cadastral: renderCadastralMap,
+  };
+
+  const content = (
+    <div className="space-y-6">
+      {mapOrder.map((key) => contentMap[key]?.())}
+    </div>
+  );
+
+  if (withoutSectionWrapper) {
+    return content;
+  }
+
+  return (
+    <Section title={title} number={sectionNumber} id={sectionId} defaultOpen={false}>
+      {content}
     </Section>
   );
 }
+
 
 // ─── Standard Photo Bucket Picker Modal ───────────────────────────────
 export function BasePhotoBucketModal({

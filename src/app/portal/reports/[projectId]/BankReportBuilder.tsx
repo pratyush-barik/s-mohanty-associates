@@ -8,9 +8,10 @@ import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
 import { PDFBankRenderer } from '@/lib/pdf-bank-renderer';
 import AiAssistPanel from '@/components/AiAssistPanel';
+import type { Suggestion } from '@/lib/ai/predictor';
 import type { BaseReportFields, BankConfig, FloorRow, AnnexureItem, ExtraFieldConfig } from '@/lib/bank-fields';
-import { reorderAndLabelAnnexures } from '@/lib/bank-fields';
-import { getFloorName, BasePhotographsSection, BaseAnnexureSection, AnnexureRefSelector, ActiveConfigBanner } from './banks/BaseBankReportComponents';
+import { reorderAndLabelAnnexures, normalizeMapImages } from '@/lib/bank-fields';
+import { getFloorName, BasePhotographsSection, BaseMapsSection, BaseAnnexureSection, AnnexureRefSelector, ActiveConfigBanner } from './banks/BaseBankReportComponents';
 import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 import * as XLSX from 'xlsx';
 
@@ -226,6 +227,11 @@ const DEFAULT_BASE_FIELDS: BaseReportFields = {
   propertyImageNames: [],
   sketchMapImages: [],
   locationMapImage: '',
+  locationMapImages: [],
+  mouzaMapImage: '',
+  mouzaMapImages: [],
+  cadastralMapImage: '',
+  cadastralMapImages: [],
   latitude: '',
   longitude: '',
 
@@ -259,13 +265,6 @@ const DEFAULT_BASE_FIELDS: BaseReportFields = {
   institutionCategory: 'Bank & FIS',
   serviceType: '',
   subjectType: '',
-  annexureEnabled: false,
-  annexureRef: '',
-  annexureRefShowAlso: false,
-  legalAnnexureEnabled: false,
-  legalAnnexureRef: '',
-  legalAnnexureRefShowAlso: false,
-  annexures: [],
 };
 
 // ─── UI Components ─────────────────────────────────────────────────
@@ -907,17 +906,21 @@ export default function BankReportBuilder({
   const distressValue = totalPropertyValue * (parseNum(fields.distressPct || '80') / 100);
 
   // ── File upload ──
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'propertyImages' | 'sketchMapImages' | 'locationMapImage') => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
     const fileList = e.target.files;
     if (!fileList || fileList.length === 0) return;
     setUploading(true);
     setUploadError(null);
 
-    if (fieldName === 'propertyImages' || fieldName === 'sketchMapImages') {
-      const newUrls = [...(fields[fieldName] || [])];
+    const arrayFields = ['propertyImages', 'sketchMapImages', 'locationMapImages', 'mouzaMapImages', 'cadastralMapImages'];
+    if (arrayFields.includes(fieldName)) {
+      const currentList = Array.isArray((fields as any)[fieldName])
+        ? [...(fields as any)[fieldName]]
+        : normalizeMapImages((fields as any)[fieldName]);
+      const newUrls = [...currentList];
       for (let i = 0; i < fileList.length; i++) {
         const file = fileList[i];
-        if (file.size > 5 * 1024 * 1024) { setUploadError(`${file.name}: exceeds 5MB.`); continue; }
+        if (file.size > 10 * 1024 * 1024) { setUploadError(`${file.name}: exceeds 10MB.`); continue; }
         const ext = file.name.split('.').pop();
         const fileName = `${projectId}-${Math.random().toString(36).substring(2)}.${ext}`;
         const filePath = `temp-photos/${projectId}/${fileName}`;
@@ -926,10 +929,13 @@ export default function BankReportBuilder({
         const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
         newUrls.push(data.publicUrl);
       }
-      handleChange(fieldName, newUrls);
+      handleChange(fieldName as any, newUrls);
+      if (fieldName === 'locationMapImages') handleChange('locationMapImage', newUrls[0] || '');
+      if (fieldName === 'mouzaMapImages') handleChange('mouzaMapImage', newUrls[0] || '');
+      if (fieldName === 'cadastralMapImages') handleChange('cadastralMapImage', newUrls[0] || '');
     } else {
       const file = fileList[0];
-      if (file.size > 5 * 1024 * 1024) { setUploadError(`${file.name}: exceeds 5MB.`); setUploading(false); return; }
+      if (file.size > 10 * 1024 * 1024) { setUploadError(`${file.name}: exceeds 10MB.`); setUploading(false); return; }
       const ext = file.name.split('.').pop();
       const fileName = `${projectId}-${fieldName}-${Date.now()}.${ext}`;
       const filePath = `temp-photos/${projectId}/${fileName}`;
@@ -937,7 +943,7 @@ export default function BankReportBuilder({
       if (error) { setUploadError(`Failed: ${error.message}`); }
       else {
         const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
-        handleChange(fieldName, data.publicUrl);
+        handleChange(fieldName as any, data.publicUrl);
       }
     }
     setUploading(false);
@@ -950,8 +956,17 @@ export default function BankReportBuilder({
     }
   };
 
+  const removeMapImage = (field: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages', index?: number) => {
+    const currentList = normalizeMapImages((fields as any)[field] || (fields as any)[field.replace(/s$/, '')]);
+    const updated = typeof index === 'number' ? currentList.filter((_, i) => i !== index) : [];
+    handleChange(field as any, updated);
+    if (field === 'locationMapImages') handleChange('locationMapImage', updated[0] || '');
+    if (field === 'mouzaMapImages') handleChange('mouzaMapImage', updated[0] || '');
+    if (field === 'cadastralMapImages') handleChange('cadastralMapImage', updated[0] || '');
+  };
+
   const removeSketchMap = (index: number) => {
-    handleChange('sketchMapImages', (fields.sketchMapImages || []).filter((_, i) => i !== index));
+    removeMapImage('sketchMapImages', index);
   };
 
   // ── Save / Submit / Finalize ──
@@ -2161,111 +2176,30 @@ export default function BankReportBuilder({
           />
         )}
 
-        {/* ── Section 12: Sketch Maps & Mouza/Cadastral Maps ── */}
+        {/* ── Section 12: Maps & Sketches (Multi-Photo Supported) ── */}
         {!isSectionHidden('section-12') && (
-          <Section title="Maps & Sketches" number={isApartmentFlat ? 11 : 12}>
-            <div className="space-y-6">
-              {/* Mouza & Cadastral Upload Slots */}
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="p-4 border border-[#dee2e6] rounded-xl bg-slate-50 space-y-3">
-                  <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Mouza Map (Bhulekh)</h4>
-                  {fields.mouzaMapImage ? (
-                    <div className="relative group rounded-lg overflow-hidden border border-[#dee2e6] aspect-video bg-white">
-                      <img src={fields.mouzaMapImage} alt="Mouza Map" className="w-full h-full object-contain" />
-                      {!isReadOnly && (
-                        <button type="button" onClick={() => handleChange('mouzaMapImage', '')} className="absolute top-2 right-2 bg-red-600 text-white rounded p-1 text-[10px] font-bold">Remove</button>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-xs font-semibold cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-                        <span>🗺️ Upload Mouza Map</span>
-                        <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'mouzaMapImage')} className="hidden" disabled={uploading || isReadOnly} />
-                      </label>
-                    </div>
-                  )}
-                </div>
-
-                <div className="p-4 border border-[#dee2e6] rounded-xl bg-slate-50 space-y-3">
-                  <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Cadastral Satellite Map</h4>
-                  {fields.cadastralMapImage ? (
-                    <div className="relative group rounded-lg overflow-hidden border border-[#dee2e6] aspect-video bg-white">
-                      <img src={fields.cadastralMapImage} alt="Cadastral Map" className="w-full h-full object-contain" />
-                      {!isReadOnly && (
-                        <button type="button" onClick={() => handleChange('cadastralMapImage', '')} className="absolute top-2 right-2 bg-red-600 text-white rounded p-1 text-[10px] font-bold">Remove</button>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-[#b8860b] text-[#b8860b] text-xs font-semibold cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-                        <span>🗺️ Upload Cadastral Map</span>
-                        <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'cadastralMapImage')} className="hidden" disabled={uploading || isReadOnly} />
-                      </label>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Amin Sketch Maps */}
-              <div className="space-y-3 pt-2">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Amin Hand-Drawn Sketch Maps</h4>
-                  <div className="flex items-center gap-2">
-                    <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#b8860b] text-[#b8860b] text-xs font-semibold cursor-pointer hover:bg-[#b8860b]/5 transition-colors">
-                      <span>+ Add Sketch Map</span>
-                      <input type="file" multiple accept="image/*" onChange={e => handleFileUpload(e, 'sketchMapImages')} className="hidden" disabled={uploading || isReadOnly} />
-                    </label>
-                  </div>
-                </div>
-                {Array.isArray(fields.sketchMapImages) && fields.sketchMapImages.length > 0 ? (
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {fields.sketchMapImages.map((img, idx) => (
-                      <div key={idx} className="relative group border rounded-xl overflow-hidden shadow-sm aspect-video bg-slate-100">
-                        <img src={img} alt={`Sketch ${idx + 1}`} className="w-full h-full object-contain" />
-                        {!isReadOnly && (
-                          <button type="button" onClick={() => removeSketchMap(idx)} className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-80 hover:opacity-100 shadow">✕</button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-slate-400 italic">No sketch maps uploaded yet.</p>
-                )}
-              </div>
-            </div>
-          </Section>
-        )}
-
-        {/* ── Section 13: Location Map ── */}
-        {!isSectionHidden('section-13') && (
-          <Section title="Location Map" number={isApartmentFlat ? 12 : 13}>
-            <div className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <Field label="Latitude">
-                  <input className={inputCls} value={fields.latitude} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 20.2961" />
-                </Field>
-                <Field label="Longitude">
-                  <input className={inputCls} value={fields.longitude} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 85.8245" />
-                </Field>
-              </div>
-              <div className="flex flex-wrap items-center gap-3">
-                <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#b8860b] text-[#b8860b] text-sm font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-xs">
-                  <span>📷 Upload Location Map</span>
-                  <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'locationMapImage')} className="hidden" disabled={uploading || isReadOnly} />
-                </label>
-              </div>
-              {fields.locationMapImage ? (
-                <div className="relative group border rounded-xl overflow-hidden shadow-sm max-w-sm aspect-video bg-slate-100">
-                  <img src={fields.locationMapImage} alt="Location Map" className="w-full h-full object-contain" />
-                  {!isReadOnly && (
-                    <button type="button" onClick={() => handleChange('locationMapImage', '')} className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-80 hover:opacity-100 shadow">✕</button>
-                  )}
-                </div>
-              ) : (
-                <p className="text-xs text-slate-400 italic">No location map uploaded yet.</p>
-              )}
-            </div>
-          </Section>
+          <BaseMapsSection
+            locationMapImages={fields.locationMapImages || normalizeMapImages(fields.locationMapImage)}
+            mouzaMapImages={fields.mouzaMapImages || normalizeMapImages(fields.mouzaMapImage)}
+            sketchMapImages={fields.sketchMapImages || []}
+            cadastralMapImages={fields.cadastralMapImages || normalizeMapImages(fields.cadastralMapImage)}
+            latitude={fields.latitude}
+            longitude={fields.longitude}
+            propertyAddress={fields.propertyAddress}
+            isReadOnly={isReadOnly}
+            uploading={uploading}
+            bucketCount={localBucketImages?.length || 0}
+            onLocationMapUpload={(e) => handleFileUpload(e, 'locationMapImages')}
+            onLocationMapRemove={(idx) => removeMapImage('locationMapImages', idx)}
+            onMouzaMapUpload={(e) => handleFileUpload(e, 'mouzaMapImages')}
+            onMouzaMapRemove={(idx) => removeMapImage('mouzaMapImages', idx)}
+            onSketchMapUpload={(e) => handleFileUpload(e, 'sketchMapImages')}
+            onSketchMapRemove={(idx) => removeMapImage('sketchMapImages', idx)}
+            onCadastralMapUpload={(e) => handleFileUpload(e, 'cadastralMapImages')}
+            onCadastralMapRemove={(idx) => removeMapImage('cadastralMapImages', idx)}
+            sectionNumber={isApartmentFlat ? 11 : 12}
+            sectionId="section-12"
+          />
         )}
 
         {/* ── Section 14 / 15: Annexures (Always available) ── */}
