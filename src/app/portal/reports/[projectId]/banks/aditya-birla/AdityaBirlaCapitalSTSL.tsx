@@ -426,7 +426,7 @@ export default function AdityaBirlaCapitalSTSL({
     remarks: initialFields?.remarks || '',
     engineerVisitedName: initialFields?.engineerVisitedName || formatAssignedEngineers(prefill?.fieldEmployees) || '',
     appraiserName: initialFields?.appraiserName || 'Er. Satyajit Mohanty',
-    preparedBy: initialFields?.preparedBy || '',
+    preparedBy: initialFields?.preparedBy || prefill?.reportEmployeeName || '',
     finalizedBy: initialFields?.finalizedBy || prefill?.reportEmployeeName || '',
 
     // Organisation metadata (for ActiveConfigBanner)
