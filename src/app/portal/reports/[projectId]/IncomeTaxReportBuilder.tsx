@@ -2676,14 +2676,22 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
             {(() => {
               const defaultAddr = getIncomeTaxLocationAddress(fields);
               const activeAddr = fields.locationSearchQuery !== undefined ? fields.locationSearchQuery : defaultAddr;
-              const mapQuery = fields.latitude && fields.longitude
-                ? `${fields.latitude.trim()},${fields.longitude.trim()}`
+
+              const latStr = (fields.latitude || '').trim();
+              const lngStr = (fields.longitude || '').trim();
+              const hasCoordinates = Boolean(latStr && lngStr && !isNaN(Number(latStr)) && !isNaN(Number(lngStr)));
+
+              const hasQuery = hasCoordinates || activeAddr.trim().length > 0;
+
+              const queryParam = hasCoordinates
+                ? `loc:${latStr},${lngStr}`
                 : activeAddr;
-              const encodedQuery = encodeURIComponent(mapQuery);
-              const hasQuery = mapQuery.trim().length > 0;
-              const googleMapsUrl = fields.latitude && fields.longitude
-                ? `https://www.google.com/maps?q=${fields.latitude.trim()},${fields.longitude.trim()}&z=15&t=k`
-                : `https://www.google.com/maps/search/${encodedQuery}`;
+
+              const encodedQuery = encodeURIComponent(queryParam);
+              const googleMapsUrl = hasCoordinates
+                ? `https://www.google.com/maps?q=loc:${latStr},${lngStr}&z=17&t=k`
+                : `https://www.google.com/maps/search/${encodeURIComponent(activeAddr)}`;
+
               return (
                 <div className="space-y-3">
                   <Field label="Google Maps Location Address / Search Query (Auto-derived from Q06 Location Details & Legal Address)">
@@ -2698,8 +2706,8 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                   {hasQuery ? (
                     <div className="rounded-xl overflow-hidden border border-[#c8d6e5] shadow-sm">
                       <div className="bg-[#d5e8f5] px-4 py-2 flex items-center justify-between">
-                        <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider">
-                          Live Map Preview (Property Legal Location)
+                        <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider flex items-center gap-1.5">
+                          📍 Live Map Preview {hasCoordinates ? `(Pinned at ${latStr}, ${lngStr})` : '(Property Legal Location)'}
                         </span>
                         <a
                           href={googleMapsUrl}
@@ -2711,7 +2719,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                         </a>
                       </div>
                       <iframe
-                        src={`https://maps.google.com/maps?q=${encodedQuery}&t=k&z=16&output=embed`}
+                        src={`https://maps.google.com/maps?q=${encodedQuery}&t=k&z=17&output=embed`}
                         width="100%"
                         height="300"
                         style={{ border: 0 }}
@@ -2720,9 +2728,9 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                         referrerPolicy="no-referrer-when-downgrade"
                         title="Property Location Map"
                       />
-                      {fields.latitude && fields.longitude && (
+                      {hasCoordinates && (
                         <div className="bg-[#0a1628] text-[#f0c040] px-4 py-2 text-xs font-bold text-center">
-                          Latitude: {fields.latitude}, Longitude: {fields.longitude}
+                          Latitude: {latStr}, Longitude: {lngStr}
                         </div>
                       )}
                     </div>
