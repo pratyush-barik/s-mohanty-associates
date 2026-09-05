@@ -36,3 +36,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - Server actions: `src/app/actions/project.ts`, `src/app/actions/service.ts`, `src/app/actions/enquiry.ts`
 - Portal pages: `src/app/portal/` with role-based dashboards (`owner/`, `manager/`, `field-agent/`, `report-agent/`)
 - Key components: `ChatInterface.tsx` (client-side enquiry chat), `ProjectChat.tsx` (employee-side project chat), `RequestsDashboard.tsx`, `EnquiryList.tsx`, `GeneralReportBuilder.tsx`, `IBBIReportBuilder.tsx`, `IncomeTaxReportBuilder.tsx`, `BankReportBuilder.tsx`, `BuilderSelector.tsx`, and `banks/` directory (57 bank builders)
+
+### Core Guideline: Maximize Base Bank Architecture Reuse
+- **UI Components**: Always refer to and reuse building blocks from `src/app/portal/reports/[projectId]/banks/BaseBankReportComponents.tsx` (`BaseBankReportLayout`, `BaseLocationSection`, `BasePropertySection`, `BaseValuationSection`, `BaseBoundarySection`, `BasePhotographsSection`, `BaseMapsSection`, `BaseAnnexureSection`, `Field`, `Section`, `SubSection`, `FloatingNavigator`).
+- **Fields & Types**: Inherit from `src/lib/bank-fields.ts` (`BaseReportFields`, `BankConfig`).
+- **PDF Generation**: Extend `PDFBankRenderer` from `src/lib/pdf-bank-renderer.ts`, inheriting table structures, image section boxes, photo grids, coordinate math, and multi-page flows. Override only bank-specific delta methods.

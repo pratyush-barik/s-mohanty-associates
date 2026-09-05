@@ -1,5 +1,4 @@
 @AGENTS.md
 
-
-
-
+## Core Developer Directive
+- **Base Bank Reuse**: For every bank report builder project, always refer to and maximize reuse from Base Bank components (`src/app/portal/reports/[projectId]/banks/BaseBankReportComponents.tsx`), fields (`src/lib/bank-fields.ts`), and PDF renderer (`src/lib/pdf-bank-renderer.ts`). Avoid duplicating standard sections from scratch.
