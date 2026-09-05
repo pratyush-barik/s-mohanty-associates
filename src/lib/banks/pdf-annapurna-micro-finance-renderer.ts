@@ -514,7 +514,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
 
     this.cursorY += totalBlock1H;
 
-    // Block 2: Legal Address of the Property
+    // Block 2: Legal Address of the Property (unbroken single cell spanning all 5 sub-rows)
     const legalAddrText = fields.addressAsPerLegal || fields.addressAsPerSite || 'NA';
     const subLegalH1 = calcSubH([
       { text: 'Address of Property as per Legal', width: subCol1, isLabel: true },
@@ -528,93 +528,91 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { text: 'Property State', width: subCol1, isLabel: true },
       { text: fields.propertyState || 'Odisha', width: subColFull },
     ]);
-    const totalBlock2H = subLegalH1 + subLegalH2 + subLegalH3;
+    const subLegalH4 = calcSubH([
+      { text: 'Property City', width: subCol1, isLabel: true },
+      { text: fields.propertyCity || 'NA', width: subColFull },
+    ]);
+    const subLegalH5 = calcSubH([
+      { text: 'Property Pincode', width: subCol1, isLabel: true },
+      { text: fields.propertyPincode || 'NA', width: subColFull },
+    ]);
+    const totalBlock2H = subLegalH1 + subLegalH2 + subLegalH3 + subLegalH4 + subLegalH5;
 
     this.checkPageBreak(totalBlock2H);
     curY = this.pdfY(this.cursorY);
 
     this.drawCleanCell(MARGIN_L, curY, locSideW, totalBlock2H, 'Legal Address of the Property:\n(As per Title Deed)', { isLabel: true, align: 'center', vAlign: 'middle' });
 
-    // Sub-row 4: Address as per Legal
+    // Sub-row 1: Address as per Legal
     this.drawCleanCell(MARGIN_L + locSideW, curY, subCol1, subLegalH1, 'Address of Property as per Legal', { isLabel: true });
     this.drawCleanCell(MARGIN_L + locSideW + subCol1, curY, subColFull, subLegalH1, legalAddrText);
 
-    // Sub-row 5: Floor No.
-    const top5 = curY - subLegalH1;
-    this.drawCleanCell(MARGIN_L + locSideW, top5, subCol1, subLegalH2, 'Floor No. of Property', { isLabel: true });
-    this.drawCleanCell(MARGIN_L + locSideW + subCol1, top5, subColFull, subLegalH2, fields.floorNo || 'NA');
+    // Sub-row 2: Floor No.
+    const topL2 = curY - subLegalH1;
+    this.drawCleanCell(MARGIN_L + locSideW, topL2, subCol1, subLegalH2, 'Floor No. of Property', { isLabel: true });
+    this.drawCleanCell(MARGIN_L + locSideW + subCol1, topL2, subColFull, subLegalH2, fields.floorNo || 'NA');
 
-    // Sub-row 6: Property State
-    const top6 = curY - subLegalH1 - subLegalH2;
-    this.drawCleanCell(MARGIN_L + locSideW, top6, subCol1, subLegalH3, 'Property State', { isLabel: true });
-    this.drawCleanCell(MARGIN_L + locSideW + subCol1, top6, subColFull, subLegalH3, fields.propertyState || 'Odisha');
+    // Sub-row 3: Property State
+    const topL3 = curY - subLegalH1 - subLegalH2;
+    this.drawCleanCell(MARGIN_L + locSideW, topL3, subCol1, subLegalH3, 'Property State', { isLabel: true });
+    this.drawCleanCell(MARGIN_L + locSideW + subCol1, topL3, subColFull, subLegalH3, fields.propertyState || 'Odisha');
+
+    // Sub-row 4: Property City
+    const topL4 = curY - subLegalH1 - subLegalH2 - subLegalH3;
+    this.drawCleanCell(MARGIN_L + locSideW, topL4, subCol1, subLegalH4, 'Property City', { isLabel: true });
+    this.drawCleanCell(MARGIN_L + locSideW + subCol1, topL4, subColFull, subLegalH4, fields.propertyCity || 'NA');
+
+    // Sub-row 5: Property Pincode
+    const topL5 = curY - subLegalH1 - subLegalH2 - subLegalH3 - subLegalH4;
+    this.drawCleanCell(MARGIN_L + locSideW, topL5, subCol1, subLegalH5, 'Property Pincode', { isLabel: true });
+    this.drawCleanCell(MARGIN_L + locSideW + subCol1, topL5, subColFull, subLegalH5, fields.propertyPincode || 'NA');
 
     this.cursorY += totalBlock2H;
-
-    // Block 3: Property City & Pincode (Empty left cell, matching Image 2)
-    const hCity = calcSubH([
-      { text: 'Property City', width: subCol1, isLabel: true },
-      { text: fields.propertyCity || 'NA', width: subColFull },
-    ]);
-    const hPincode = calcSubH([
-      { text: 'Property Pincode', width: subCol1, isLabel: true },
-      { text: fields.propertyPincode || 'NA', width: subColFull },
-    ]);
-    const totalBlock3H = hCity + hPincode;
-
-    this.checkPageBreak(totalBlock3H);
-    curY = this.pdfY(this.cursorY);
-
-    this.drawCleanCell(MARGIN_L, curY, locSideW, totalBlock3H, '', {});
-
-    // Row 7: Property City
-    this.drawCleanCell(MARGIN_L + locSideW, curY, subCol1, hCity, 'Property City', { isLabel: true });
-    this.drawCleanCell(MARGIN_L + locSideW + subCol1, curY, subColFull, hCity, fields.propertyCity || 'NA');
-
-    // Row 8: Property Pincode
-    const top8 = curY - hCity;
-    this.drawCleanCell(MARGIN_L + locSideW, top8, subCol1, hPincode, 'Property Pincode', { isLabel: true });
-    this.drawCleanCell(MARGIN_L + locSideW + subCol1, top8, subColFull, hPincode, fields.propertyPincode || 'NA');
-
-    this.cursorY += totalBlock3H;
 
     // ══════════════════════════════════════════════════════════════════════
     // PAGE 2: Location Details Continued + Schedule Table + NDMA Parameters
     // ══════════════════════════════════════════════════════════════════════
     this.checkPageBreak(120);
 
-    // Row 9: Address Matching & Jurisdiction
+    // Row 9: Address Matching & Jurisdiction (aligned with Rows 10-13)
+    const locGridL = 175;
+    const locGridV = 65;
+    const locLeftW = locGridL + locGridV; // 240
+    const locRightW = CONTENT_W - locLeftW; // 247.28
+    const locJurL = 160;
+    const locJurV = locRightW - locJurL; // 87.28
+
     this.drawCleanRow([
-      { text: 'Address Matching (Yes/No)', width: 140, isLabel: true },
-      { text: fields.addressMatching || 'YES', width: 55, align: 'center' },
-      { text: 'Jurisdiction/Local Municipal Body/Development Authority', width: 180, isLabel: true },
-      { text: fields.jurisdiction || 'NA', width: CONTENT_W - 375 },
+      { text: 'Address Matching (Yes/No)', width: locGridL, isLabel: true },
+      { text: fields.addressMatching || 'YES', width: locGridV, align: 'center' },
+      { text: 'Jurisdiction/Local Municipal Body/Development Authority', width: locJurL, isLabel: true },
+      { text: fields.jurisdiction || 'NA', width: locJurV },
     ]);
 
     // Row 10: Property Holding Type & Marketability
     this.drawCleanRow([
-      { text: 'Property Holding Type (Freehold/Leasehold)', width: 170, isLabel: true },
-      { text: fields.holdingType || 'FREE HOLD', width: 70, align: 'center' },
-      { text: 'Marketability (POOR/FAIR/GOOD)', width: 140, isLabel: true },
-      { text: (fields.marketability || 'FAIR').toUpperCase(), width: CONTENT_W - 380, align: 'center' },
+      { text: 'Property Holding Type (Freehold/Leasehold)', width: locGridL, isLabel: true },
+      { text: fields.holdingType || 'FREE HOLD', width: locGridV, align: 'center' },
+      { text: 'Marketability (POOR/FAIR/GOOD)', width: locJurL, isLabel: true },
+      { text: (fields.marketability || 'FAIR').toUpperCase(), width: locJurV, align: 'center' },
     ]);
 
-    // Row 11: Property Occupied By
+    // Row 11: Property Occupied By (left half width matches Rows 9 & 10)
     this.drawCleanRow([
-      { text: 'Property Occupied by (Self/Tenant/Vacant/Under Construction)', width: 230, isLabel: true },
-      { text: fields.propertyOccupiedBy || 'Self', width: CONTENT_W - 230 },
+      { text: 'Property Occupied by (Self/Tenant/Vacant/Under Construction)', width: locLeftW, isLabel: true },
+      { text: fields.propertyOccupiedBy || 'Self', width: locRightW },
     ]);
 
-    // Row 12: Type of the Property
+    // Row 12: Type of the Property (full label from template)
     this.drawCleanRow([
-      { text: 'Type of the Property (Flat/Commercial/Plot/etc.)', width: 230, isLabel: true },
-      { text: fields.propertyTypeCategory || 'Commercial Building', width: CONTENT_W - 230 },
+      { text: 'Type of the Property (Flat/Independent House/Commercial Building/Commercial Unit/Industrial/Vacant Plot (Agricultural/Homestead))', width: locLeftW, isLabel: true },
+      { text: fields.propertyTypeCategory || 'Commercial Building', width: locRightW },
     ]);
 
     // Row 13: Occupancy Status
     this.drawCleanRow([
-      { text: 'Occupancy Status (SORP/SOCP/Rented/Vacant)\n(Please mention only one)', width: 230, isLabel: true },
-      { text: fields.occupancyStatus || 'SORP', width: CONTENT_W - 230 },
+      { text: 'Occupancy Status (SORP/SOCP/Rented/Vacant)\n(Please mention only one)', width: locLeftW, isLabel: true },
+      { text: fields.occupancyStatus || 'SORP', width: locRightW },
     ]);
 
     // Schedule of Property (seamlessly continues with no space or section banner)
@@ -665,83 +663,72 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     ]);
 
     // NDMA Parameters Section (Standard FONT_SIZE = 12 typography)
+    // NDMA Parameters Section (Standard FONT_SIZE = 12 typography, 6 columns matching template)
     this.drawSectionHeader('NDMA Parameters');
 
-    const ndmaL1 = 130;
-    const ndmaV1 = 113.64;
-    const ndmaL2 = 130;
-    const ndmaV2 = 113.64;
+    const ndmaL1 = 96;
+    const ndmaV1 = 66.4;
+    const ndmaL2 = 96;
+    const ndmaV2 = 66.4;
+    const ndmaL3 = 96;
+    const ndmaV3 = CONTENT_W - (ndmaL1 + ndmaV1 + ndmaL2 + ndmaV2 + ndmaL3); // 66.48
 
     this.drawCleanRow([
       { text: 'Nature of Building/Wing', width: ndmaL1, isLabel: true },
       { text: fields.natureOfBuilding || 'RCC', width: ndmaV1 },
       { text: 'Plan Aspect Ratio', width: ndmaL2, isLabel: true },
       { text: fields.planAspectRatio || 'NA', width: ndmaV2 },
+      { text: 'Structure Type', width: ndmaL3, isLabel: true },
+      { text: fields.structureType || 'RCC', width: ndmaV3 },
     ]);
     this.drawCleanRow([
-      { text: 'Structure Type', width: ndmaL1, isLabel: true },
-      { text: fields.structureType || 'RCC', width: ndmaV1 },
-      { text: 'Projected Parts Available', width: ndmaL2, isLabel: true },
-      { text: fields.projectedParts || 'NA', width: ndmaV2 },
-    ]);
-    this.drawCleanRow([
-      { text: 'Type of Masonry', width: ndmaL1, isLabel: true },
-      { text: fields.masonryType || 'BRICK', width: ndmaV1 },
-      { text: 'Expansion Joints Available', width: ndmaL2, isLabel: true },
-      { text: fields.expansionJoints || 'No', width: ndmaV2 },
+      { text: 'Projected Parts Available', width: ndmaL1, isLabel: true },
+      { text: fields.projectedParts || 'NA', width: ndmaV1 },
+      { text: 'Type of Masonry', width: ndmaL2, isLabel: true },
+      { text: fields.masonryType || 'BRICK', width: ndmaV2 },
+      { text: 'Expansion Joints Available', width: ndmaL3, isLabel: true },
+      { text: fields.expansionJoints || 'No', width: ndmaV3 },
     ]);
     this.drawCleanRow([
       { text: 'Roof Type', width: ndmaL1, isLabel: true },
       { text: fields.roofType || 'RCC', width: ndmaV1 },
       { text: 'Steel Grade', width: ndmaL2, isLabel: true },
       { text: fields.steelGrade || 'FE 450', width: ndmaV2 },
+      { text: 'Mortar Type', width: ndmaL3, isLabel: true },
+      { text: fields.mortarType || 'NA', width: ndmaV3 },
     ]);
     this.drawCleanRow([
-      { text: 'Mortar Type', width: ndmaL1, isLabel: true },
-      { text: fields.mortarType || 'NA', width: ndmaV1 },
-      { text: 'Concrete Grade', width: ndmaL2, isLabel: true },
-      { text: fields.concreteGrade || 'NA', width: ndmaV2 },
-    ]);
-    this.drawCleanRow([
-      { text: 'Environment Exposure', width: ndmaL1, isLabel: true },
-      { text: fields.environmentExposure || 'Mild', width: ndmaV1 },
-      { text: 'Footing Type', width: ndmaL2, isLabel: true },
-      { text: fields.footingType || 'NA', width: ndmaV2 },
+      { text: 'Concrete Grade', width: ndmaL1, isLabel: true },
+      { text: fields.concreteGrade || 'NA', width: ndmaV1 },
+      { text: 'Environment Exposure Condition', width: ndmaL2, isLabel: true },
+      { text: fields.environmentExposure || 'Mild', width: ndmaV2 },
+      { text: 'Footing Type', width: ndmaL3, isLabel: true },
+      { text: fields.footingType || 'NA', width: ndmaV3 },
     ]);
     this.drawCleanRow([
       { text: 'Seismic Zone', width: ndmaL1, isLabel: true },
       { text: fields.seismicZone || 'II&III', width: ndmaV1 },
-      { text: 'Soil liquefiable', width: ndmaL2, isLabel: true },
+      { text: 'Soil Liquefiable', width: ndmaL2, isLabel: true },
       { text: fields.soilLiquefiable || 'No', width: ndmaV2 },
+      { text: 'Coastal Regulatory Zone (Yes/No)', width: ndmaL3, isLabel: true },
+      { text: fields.coastalRegulatoryZone || 'NO', width: ndmaV3 },
     ]);
     this.drawCleanRow([
-      { text: 'Coastal Regulatory Zone', width: ndmaL1, isLabel: true },
-      { text: fields.coastalRegulatoryZone || 'NO', width: ndmaV1 },
-      { text: 'Soil Slope Vulnerable', width: ndmaL2, isLabel: true },
-      { text: fields.soilSlopeVulnerable || 'NA', width: ndmaV2 },
-    ]);
-    this.drawCleanRow([
-      { text: 'Flood Prone Area', width: ndmaL1, isLabel: true },
-      { text: fields.floodProneArea || 'No', width: ndmaV1 },
-      { text: 'Ground Slope > 20%', width: ndmaL2, isLabel: true },
-      { text: fields.groundSlopeMoreThan20 || 'No', width: ndmaV2 },
+      { text: 'Soil Slope Vulnerable to Landslide', width: ndmaL1, isLabel: true },
+      { text: fields.soilSlopeVulnerable || 'NA', width: ndmaV1 },
+      { text: 'Flood Prone Area', width: ndmaL2, isLabel: true },
+      { text: fields.floodProneArea || 'No', width: ndmaV2 },
+      { text: 'Ground Slope More than 20%', width: ndmaL3, isLabel: true },
+      { text: fields.groundSlopeMoreThan20 || 'No', width: ndmaV3 },
     ]);
 
-    // ══════════════════════════════════════════════════════════════════════
-    // PAGE 3: Fire Exit + Approved Plan Details + Technical Details + Area Tables
-    // ══════════════════════════════════════════════════════════════════════
-    this.checkPageBreak(120);
-
-    // Fire Exit row
-    const feCol1 = CONTENT_W - 150;
+    // Fire Exit row (underneath cols 5 & 6, cols 1-4 blank matching Image 1)
+    const ndmaBlankW = ndmaL1 + ndmaV1 + ndmaL2 + ndmaV2; // 324.8
     this.drawCleanRow([
-      { text: '', width: feCol1 },
-      { text: 'Fire Exit', width: 75, isLabel: true },
-      { text: fields.fireExit || 'NA', width: 75 },
-    ], 20);
-
-    // Section: Approved Plan & Technical Details
-    this.drawSectionHeader('Approved Plan Details');
+      { text: '', width: ndmaBlankW },
+      { text: 'Fire Exit', width: ndmaL3, isLabel: true },
+      { text: fields.fireExit || 'NA', width: ndmaV3 },
+    ]);
 
     const planSideW = 140;
     const planRightW = CONTENT_W - planSideW;
@@ -976,7 +963,6 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     // Valuation Table starts on the next page
     // ══════════════════════════════════════════════════════════════════════
     this.addPage();
-    this.drawSectionHeader('Valuation Details', false);
 
     // Valuation Table
     const valW1 = 160;
