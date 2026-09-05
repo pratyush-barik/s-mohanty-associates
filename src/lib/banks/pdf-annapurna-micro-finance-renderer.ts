@@ -612,13 +612,11 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
 
     // Row 13: Occupancy Status
     this.drawCleanRow([
-      { text: 'Occupancy Status (SORP/SOCP/Rented/Vacant)', width: 230, isLabel: true },
+      { text: 'Occupancy Status (SORP/SOCP/Rented/Vacant)\n(Please mention only one)', width: 230, isLabel: true },
       { text: fields.occupancyStatus || 'SORP', width: CONTENT_W - 230 },
     ]);
 
-    // Schedule of Property Section (14pt Bold Banner)
-    this.drawSectionHeader('Schedule of the Property');
-
+    // Schedule of Property (seamlessly continues with no space or section banner)
     const schW1 = 120;
     const schW2 = 122;
     const schW3 = 122;
