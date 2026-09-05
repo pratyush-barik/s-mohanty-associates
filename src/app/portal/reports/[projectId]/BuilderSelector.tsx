@@ -44,7 +44,7 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   'ADITYA BIRLA HOUSING FINANCE LTD': dynamic(() => import('./banks/aditya-birla-housing/AdityaBirlaHousingHLLAP')),
 
   // Annapurna, Arka, Arthan, AU, Ave
-  'ANNAPURNA MICRO FINANCE LTD': dynamic(() => import('./banks/annapurna/AnnapurnaMicro')),
+  'ANNAPURNA MICRO FINANCE LTD': dynamic(() => import('./banks/annapurna/AnnapurnaMicroFinance')),
   'ARKA FINANCE LTD': dynamic(() => import('./banks/arka/ArkaFinance')),
   'ARTHAN FINANCE': dynamic(() => import('./banks/arthan/ArthanFinance')),
   'AU SMALL FINANCE BANK': dynamic(() => import('./banks/au-sfb/AUSmallFinanceBank')),

@@ -35,6 +35,9 @@ import {
   hexToRgb,
 } from './pdf-general-renderer';
 
+export const DEFAULT_LETTERHEAD_PATH = PDFGeneralRenderer.DEFAULT_LETTERHEAD_PATH;
+export const fetchDefaultLetterhead = PDFGeneralRenderer.fetchDefaultLetterhead;
+
 export {
   PAGE_W,
   PAGE_H,
@@ -55,6 +58,7 @@ export {
   VAL_BG,
   BG_OPACITY,
   hexToRgb,
+  PDFGeneralRenderer,
 };
 
 export class PDFBankRenderer extends PDFGeneralRenderer {
