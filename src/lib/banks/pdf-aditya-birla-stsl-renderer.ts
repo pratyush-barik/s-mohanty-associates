@@ -1315,20 +1315,32 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     this.cursorY += 22;
 
     const points = [
-      '1.   I hereby declare that, I have no direct and indirect interest in the property valued and the information furnished in the report is true and correct to the best of my knowledge of belief.',
-      '2.   Any additions or alterations after the date of inspection shall not fall under the scope of this report.',
-      '3.   The legal aspects are not in the scope of evaluation of the property.',
-      '4.   The Property is identified by the owner before the valuer. This valuation report is prepared without any prejudice and bias to any person or institution.',
-      '5.   This report has been prepared on basis of verifications in the locality.',
+      { num: '1.', text: 'I hereby declare that, I have no direct and indirect interest in the property valued and the information furnished in the report is true and correct to the best of my knowledge of belief.' },
+      { num: '2.', text: 'Any additions or alterations after the date of inspection shall not fall under the scope of this report.' },
+      { num: '3.', text: 'The legal aspects are not in the scope of evaluation of the property.' },
+      { num: '4.', text: 'The Property is identified by the owner before the valuer. This valuation report is prepared without any prejudice and bias to any person or institution.' },
+      { num: '5.', text: 'This report has been prepared on basis of verifications in the locality.' },
     ];
 
+    const textIndent = 16;
+    const maxTextWidth = CONTENT_W - textIndent;
+
     for (const pt of points) {
-      const lines = this.wrapText(pt, CONTENT_W - 10, fontSize, false);
-      for (const line of lines) {
+      const lines = this.wrapText(pt.text, maxTextWidth, fontSize, false);
+      for (let i = 0; i < lines.length; i++) {
         this.checkPageBreak(15);
         const yPt = this.pdfY(this.cursorY);
-        this.page.drawText(line, {
-          x: MARGIN_L,
+        if (i === 0) {
+          this.page.drawText(pt.num, {
+            x: MARGIN_L,
+            y: yPt - 10,
+            size: fontSize,
+            font: this.fontRegular,
+            color: rgb(0, 0, 0),
+          });
+        }
+        this.page.drawText(lines[i], {
+          x: MARGIN_L + textIndent,
           y: yPt - 10,
           size: fontSize,
           font: this.fontRegular,
