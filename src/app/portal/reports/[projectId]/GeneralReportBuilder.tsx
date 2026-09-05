@@ -3560,15 +3560,22 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
               <div className="space-y-3">
                 {hasQuery ? (
                   <div className="rounded-xl overflow-hidden border border-[#c8d6e5] shadow-sm">
-                    <div className="bg-[#d5e8f5] px-4 py-2 flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider flex items-center gap-1.5">
-                        📍 Live Map Preview {hasCoordinates ? `(Pinned at ${latStr}, ${lngStr})` : '— Auto-loaded from Property Address'}
-                      </span>
+                    <div className="bg-[#d5e8f5] px-4 py-2.5 flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex flex-col">
+                        <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider flex items-center gap-1.5">
+                          📍 Live Map Preview {hasCoordinates ? `(Pinned at ${latStr}, ${lngStr})` : '— Auto-loaded from Property Address'}
+                        </span>
+                        {hasCoordinates && (
+                          <span className="text-[11px] text-sky-800 font-medium">
+                            Latitude & Longitude referenced from Location Details ({latStr}, {lngStr})
+                          </span>
+                        )}
+                      </div>
                       <a
                         href={googleMapsUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs font-semibold text-[#b8860b] hover:underline"
+                        className="text-xs font-semibold text-[#b8860b] hover:underline shrink-0"
                       >
                         Open in Google Maps &#x2197;
                       </a>
@@ -3585,7 +3592,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                     />
                     {hasCoordinates && (
                       <div className="bg-[#0a1628] text-[#f0c040] px-4 py-2 text-sm font-bold text-center">
-                        Latitude: {latStr}, Longitude: {lngStr}
+                        Latitude: {latStr}, Longitude: {lngStr} (Referenced from Location Details)
                       </div>
                     )}
                   </div>

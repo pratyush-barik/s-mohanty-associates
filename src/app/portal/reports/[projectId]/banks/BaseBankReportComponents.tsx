@@ -616,33 +616,50 @@ export function BaseMapsSection({
     <Section title="Maps & Documents" number={sectionNumber} id={sectionId} defaultOpen={false}>
       <div className="space-y-6">
         {/* 1. Live Google Map Preview */}
-        <div>
-          <h4 className="text-xs font-bold text-[#495057] uppercase tracking-wider mb-2">Live Map & Location</h4>
+        <div className="space-y-3">
+          <h4 className="text-xs font-bold text-[#495057] uppercase tracking-wider">Live Map & Location</h4>
           {hasQuery ? (
-            <div className="rounded-2xl overflow-hidden border border-[#c8d6e5] shadow-sm">
-              <div className="bg-[#d5e8f5] px-4 py-2 flex items-center justify-between">
-                <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider flex items-center gap-1.5">
-                  📍 Live Satellite Preview {hasCoordinates ? `(Pinned at ${cleanLat}, ${cleanLng})` : ''}
-                </span>
-                <a
-                  href={googleMapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs font-semibold text-[#b8860b] hover:underline"
-                >
-                  Open in Google Maps &#x2197;
-                </a>
+            <div className="space-y-3">
+              <div className="rounded-2xl overflow-hidden border border-[#c8d6e5] shadow-sm">
+                <div className="bg-[#d5e8f5] px-4 py-2.5 flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider flex items-center gap-1.5">
+                      📍 Live Satellite Preview {hasCoordinates ? `(Pinned at ${cleanLat}, ${cleanLng})` : ''}
+                    </span>
+                    {hasCoordinates && (
+                      <span className="text-[11px] text-sky-800 font-medium">
+                        Latitude & Longitude referenced from Section 2: Location Details ({cleanLat}, {cleanLng})
+                      </span>
+                    )}
+                  </div>
+                  <a
+                    href={googleMapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs font-semibold text-[#b8860b] hover:underline shrink-0"
+                  >
+                    Open in Google Maps &#x2197;
+                  </a>
+                </div>
+                <iframe
+                  src={`https://maps.google.com/maps?q=${encodedQuery}&t=k&z=17&output=embed`}
+                  width="100%"
+                  height="320"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Property Location Map"
+                />
               </div>
-              <iframe
-                src={`https://maps.google.com/maps?q=${encodedQuery}&t=k&z=17&output=embed`}
-                width="100%"
-                height="320"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Property Location Map"
-              />
+              {hasCoordinates && (
+                <div className="p-2.5 rounded-xl bg-sky-50 border border-sky-200 text-xs text-sky-900 flex items-center gap-2">
+                  <span className="text-sky-600 font-bold">ℹ️</span>
+                  <span>
+                    Latitude (<strong>{cleanLat}</strong>) & Longitude (<strong>{cleanLng}</strong>) are referenced from <strong>Section 2: Location Details</strong>.
+                  </span>
+                </div>
+              )}
             </div>
           ) : (
             <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 text-center text-xs text-gray-500">
