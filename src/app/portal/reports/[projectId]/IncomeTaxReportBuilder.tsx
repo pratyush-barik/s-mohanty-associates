@@ -2705,22 +2705,15 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                   </Field>
                   {hasQuery ? (
                     <div className="rounded-xl overflow-hidden border border-[#c8d6e5] shadow-sm">
-                      <div className="bg-[#d5e8f5] px-4 py-2.5 flex items-center justify-between gap-2 flex-wrap">
-                        <div className="flex flex-col">
-                          <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider flex items-center gap-1.5">
-                            📍 Live Map Preview {hasCoordinates ? `(Pinned at ${latStr}, ${lngStr})` : '(Property Legal Location)'}
-                          </span>
-                          {hasCoordinates && (
-                            <span className="text-[11px] text-sky-800 font-medium">
-                              Latitude & Longitude referenced from Q06 Location Details ({latStr}, {lngStr})
-                            </span>
-                          )}
-                        </div>
+                      <div className="bg-[#d5e8f5] px-4 py-2 flex items-center justify-between">
+                        <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider flex items-center gap-1.5">
+                          📍 Live Map Preview {hasCoordinates ? `(Pinned at ${latStr}, ${lngStr})` : '(Property Legal Location)'}
+                        </span>
                         <a
                           href={googleMapsUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs font-semibold text-[#b8860b] hover:underline shrink-0"
+                          className="text-xs font-semibold text-[#b8860b] hover:underline"
                         >
                           Open in Google Maps ↗
                         </a>
@@ -2737,7 +2730,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                       />
                       {hasCoordinates && (
                         <div className="bg-[#0a1628] text-[#f0c040] px-4 py-2 text-xs font-bold text-center">
-                          Latitude: {latStr}, Longitude: {lngStr} (Referenced from Q06 Location Details)
+                          Latitude: {latStr}, Longitude: {lngStr}
                         </div>
                       )}
                     </div>
