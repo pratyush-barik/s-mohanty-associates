@@ -417,3 +417,8 @@ Outstanding items in **priority order**:
 - `latest` - feat(IBBI): de-hardcode Section 1, 2, and 3 with optional override textareas and dynamic PDF fallbacks matching IBBI standard text
 - `latest` - feat(IBBI): add 30 new fields, sub-numbering, sub-headers, new form inputs, and textarea conversions for sections 4-12 to IBBIFields interface and PDF render
 - `latest` - update(Resume): update CGPA to 7.43 and S Mohanty Associates full-stack internship details with 5 priority bullet points
+
+## Current Status / Pending Work
+- The IBBI report draft UI is now completed.
+- However, the rendering of sizes of fonts are not consistent in the entire PDF/preview.
+- Also, the 1st page of the IBBI PDF must contain a blue rectangular box shown exactly as it is in the samples. It should be dynamically created and adjust its spacing outside the content of that page.
