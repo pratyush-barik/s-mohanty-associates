@@ -405,7 +405,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     this.cursorY += FONT_SIZE + 10;
 
     // 2. Main Title Banner (Standard 14pt Bold Banner in #DBE6F0)
-    this.drawMainHeader('VALUATION REPORT — ANNAPURNA FINANCE');
+    this.drawMainHeader('VALUATION REPORT');
 
     // 3. Application Details Section (14pt Bold Banner in #DDE9F6)
     this.drawSectionHeader('Application Details');
@@ -587,7 +587,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { text: fields.addressMatching || 'YES', width: locGridV, align: 'center' },
       { text: 'Jurisdiction/Local Municipal Body/Development Authority', width: locJurL, isLabel: true },
       { text: fields.jurisdiction || 'NA', width: locJurV },
-    ]);
+    ], 18, 3);
 
     // Row 10: Property Holding Type & Marketability
     this.drawCleanRow([
@@ -595,83 +595,82 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { text: fields.holdingType || 'FREE HOLD', width: locGridV, align: 'center' },
       { text: 'Marketability (POOR/FAIR/GOOD)', width: locJurL, isLabel: true },
       { text: (fields.marketability || 'FAIR').toUpperCase(), width: locJurV, align: 'center' },
-    ]);
+    ], 18, 3);
 
     // Row 11: Property Occupied By (left half width matches Rows 9 & 10)
     this.drawCleanRow([
       { text: 'Property Occupied by (Self/Tenant/Vacant/Under Construction)', width: locLeftW, isLabel: true },
       { text: fields.propertyOccupiedBy || 'Self', width: locRightW },
-    ]);
+    ], 18, 3);
 
     // Row 12: Type of the Property (full label from template)
     this.drawCleanRow([
       { text: 'Type of the Property (Flat/Independent House/Commercial Building/Commercial Unit/Industrial/Vacant Plot (Agricultural/Homestead))', width: locLeftW, isLabel: true },
       { text: fields.propertyTypeCategory || 'Commercial Building', width: locRightW },
-    ]);
+    ], 18, 3);
 
     // Row 13: Occupancy Status
     this.drawCleanRow([
       { text: 'Occupancy Status (SORP/SOCP/Rented/Vacant)\n(Please mention only one)', width: locLeftW, isLabel: true },
       { text: fields.occupancyStatus || 'SORP', width: locRightW },
-    ]);
+    ], 18, 3);
 
     // Schedule of Property (seamlessly continues with no space or section banner)
     const schW1 = 120;
-    const schW2 = 122;
-    const schW3 = 122;
-    const schW4 = CONTENT_W - (schW1 + schW2 + schW3);
+    const schW2 = 120;
+    const schW3 = 123.64;
+    const schW4 = CONTENT_W - (schW1 + schW2 + schW3); // 123.64
 
     this.drawCleanRow([
       { text: 'Schedule of the Property', width: schW1, isHeader: true, align: 'center' },
       { text: 'As per legal documents', width: schW2, isHeader: true, align: 'center' },
       { text: 'As per site visit', width: schW3, isHeader: true, align: 'center' },
       { text: 'As Per Sketch Map', width: schW4, isHeader: true, align: 'center' },
-    ]);
+    ], 18, 3);
     this.drawCleanRow([
       { text: 'North', width: schW1, isLabel: true },
       { text: fields.northLegal || 'Not mentioned', width: schW2 },
       { text: fields.northSite || 'NA', width: schW3 },
       { text: fields.northSketch || 'NA', width: schW4 },
-    ]);
+    ], 18, 3);
     this.drawCleanRow([
       { text: 'East', width: schW1, isLabel: true },
       { text: fields.eastLegal || 'Not mentioned', width: schW2 },
       { text: fields.eastSite || 'NA', width: schW3 },
       { text: fields.eastSketch || 'NA', width: schW4 },
-    ]);
+    ], 18, 3);
     this.drawCleanRow([
       { text: 'West', width: schW1, isLabel: true },
       { text: fields.westLegal || 'Not mentioned', width: schW2 },
       { text: fields.westSite || 'NA', width: schW3 },
       { text: fields.westSketch || 'NA', width: schW4 },
-    ]);
+    ], 18, 3);
     this.drawCleanRow([
       { text: 'South', width: schW1, isLabel: true },
       { text: fields.southLegal || 'Not mentioned', width: schW2 },
       { text: fields.southSite || 'NA', width: schW3 },
       { text: fields.southSketch || 'NA', width: schW4 },
-    ]);
+    ], 18, 3);
     this.drawCleanRow([
       { text: 'Boundaries Matching (Yes/No)', width: schW1, isLabel: true },
       { text: fields.boundariesMatching || 'Boundary is matching', width: schW2 },
       { text: 'Property Identified (Yes/No)', width: schW3, isLabel: true },
       { text: fields.propertyIdentified || 'Yes', width: schW4 },
-    ]);
+    ], 18, 3);
     this.drawCleanRow([
       { text: 'Approach Road Size (<5ft/5-10ft/10-15ft/>15ft)', width: schW1 + schW2, isLabel: true },
       { text: fields.approachRoadSize || '>20 FT', width: schW3 + schW4 },
-    ]);
+    ], 18, 3);
 
-    // NDMA Parameters Section (Standard FONT_SIZE = 12 typography)
     // NDMA Parameters Section (Standard FONT_SIZE = 12 typography, 6 columns matching template)
-    this.drawSectionHeader('NDMA Parameters');
+    this.drawSectionHeader('NDMA Parameters', false);
 
-    const ndmaL1 = 96;
-    const ndmaV1 = 66.4;
-    const ndmaL2 = 96;
-    const ndmaV2 = 66.4;
-    const ndmaL3 = 96;
-    const ndmaV3 = CONTENT_W - (ndmaL1 + ndmaV1 + ndmaL2 + ndmaV2 + ndmaL3); // 66.48
+    const ndmaL1 = 98;
+    const ndmaV1 = 58;
+    const ndmaL2 = 98;
+    const ndmaV2 = 58;
+    const ndmaL3 = 110;
+    const ndmaV3 = CONTENT_W - (ndmaL1 + ndmaV1 + ndmaL2 + ndmaV2 + ndmaL3); // 65.28
 
     this.drawCleanRow([
       { text: 'Nature of Building/Wing', width: ndmaL1, isLabel: true },
@@ -680,7 +679,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { text: fields.planAspectRatio || 'NA', width: ndmaV2 },
       { text: 'Structure Type', width: ndmaL3, isLabel: true },
       { text: fields.structureType || 'RCC', width: ndmaV3 },
-    ]);
+    ], 18, 3);
     this.drawCleanRow([
       { text: 'Projected Parts Available', width: ndmaL1, isLabel: true },
       { text: fields.projectedParts || 'NA', width: ndmaV1 },
@@ -688,7 +687,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { text: fields.masonryType || 'BRICK', width: ndmaV2 },
       { text: 'Expansion Joints Available', width: ndmaL3, isLabel: true },
       { text: fields.expansionJoints || 'No', width: ndmaV3 },
-    ]);
+    ], 18, 3);
     this.drawCleanRow([
       { text: 'Roof Type', width: ndmaL1, isLabel: true },
       { text: fields.roofType || 'RCC', width: ndmaV1 },
@@ -696,7 +695,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { text: fields.steelGrade || 'FE 450', width: ndmaV2 },
       { text: 'Mortar Type', width: ndmaL3, isLabel: true },
       { text: fields.mortarType || 'NA', width: ndmaV3 },
-    ]);
+    ], 18, 3);
     this.drawCleanRow([
       { text: 'Concrete Grade', width: ndmaL1, isLabel: true },
       { text: fields.concreteGrade || 'NA', width: ndmaV1 },
@@ -704,7 +703,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { text: fields.environmentExposure || 'Mild', width: ndmaV2 },
       { text: 'Footing Type', width: ndmaL3, isLabel: true },
       { text: fields.footingType || 'NA', width: ndmaV3 },
-    ]);
+    ], 18, 3);
     this.drawCleanRow([
       { text: 'Seismic Zone', width: ndmaL1, isLabel: true },
       { text: fields.seismicZone || 'II&III', width: ndmaV1 },
@@ -712,7 +711,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { text: fields.soilLiquefiable || 'No', width: ndmaV2 },
       { text: 'Coastal Regulatory Zone (Yes/No)', width: ndmaL3, isLabel: true },
       { text: fields.coastalRegulatoryZone || 'NO', width: ndmaV3 },
-    ]);
+    ], 18, 3);
     this.drawCleanRow([
       { text: 'Soil Slope Vulnerable to Landslide', width: ndmaL1, isLabel: true },
       { text: fields.soilSlopeVulnerable || 'NA', width: ndmaV1 },
@@ -720,15 +719,16 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { text: fields.floodProneArea || 'No', width: ndmaV2 },
       { text: 'Ground Slope More than 20%', width: ndmaL3, isLabel: true },
       { text: fields.groundSlopeMoreThan20 || 'No', width: ndmaV3 },
-    ]);
+    ], 18, 3);
 
-    // Fire Exit row (underneath cols 5 & 6, cols 1-4 blank matching Image 1)
-    const ndmaBlankW = ndmaL1 + ndmaV1 + ndmaL2 + ndmaV2; // 324.8
+    // Fire Exit row (starts on Page 3 matching template)
+    this.addPage();
+    const ndmaBlankW = ndmaL1 + ndmaV1 + ndmaL2 + ndmaV2;
     this.drawCleanRow([
       { text: '', width: ndmaBlankW },
       { text: 'Fire Exit', width: ndmaL3, isLabel: true },
       { text: fields.fireExit || 'NA', width: ndmaV3 },
-    ]);
+    ], 18, 3);
 
     const planSideW = 140;
     const planRightW = CONTENT_W - planSideW;
@@ -1052,12 +1052,12 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { text: fields.inNegativeArea || 'NO', width: valW4, align: 'center' },
     ]);
 
-    // Remarks Box
+    // Remarks Box (Dynamically sized to eliminate wasted space and handle overflow)
     const remSideW = 120;
     const remContentW = CONTENT_W - remSideW;
     const remarksText = fields.remarks || 'Subject property has been physically inspected. Boundary details match the title deed/ROR. Clear access available.';
     const remLines = this.wrapText(remarksText, remContentW - 8, FONT_SIZE);
-    const remH = Math.max(90, remLines.length * FONT_SIZE * LINE_HEIGHT + 10);
+    const remH = Math.max(32, remLines.length * FONT_SIZE * LINE_HEIGHT + 14);
 
     this.checkPageBreak(remH);
     curY = this.pdfY(this.cursorY);

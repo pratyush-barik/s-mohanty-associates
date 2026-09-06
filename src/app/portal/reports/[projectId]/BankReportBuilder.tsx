@@ -965,6 +965,13 @@ export default function BankReportBuilder({
     if (field === 'cadastralMapImages') handleChange('cadastralMapImage', updated[0] || '');
   };
 
+  const reorderMapImage = (field: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages', newImages: string[]) => {
+    handleChange(field as any, newImages);
+    if (field === 'locationMapImages') handleChange('locationMapImage', newImages[0] || '');
+    if (field === 'mouzaMapImages') handleChange('mouzaMapImage', newImages[0] || '');
+    if (field === 'cadastralMapImages') handleChange('cadastralMapImage', newImages[0] || '');
+  };
+
   const removeSketchMap = (index: number) => {
     removeMapImage('sketchMapImages', index);
   };
@@ -2187,6 +2194,10 @@ export default function BankReportBuilder({
             onSketchMapRemove={(idx) => removeMapImage('sketchMapImages', idx)}
             onCadastralMapUpload={(e) => handleFileUpload(e, 'cadastralMapImages')}
             onCadastralMapRemove={(idx) => removeMapImage('cadastralMapImages', idx)}
+            onReorderLocationMap={(newImgs) => reorderMapImage('locationMapImages', newImgs)}
+            onReorderMouzaMap={(newImgs) => reorderMapImage('mouzaMapImages', newImgs)}
+            onReorderSketchMap={(newImgs) => reorderMapImage('sketchMapImages', newImgs)}
+            onReorderCadastralMap={(newImgs) => reorderMapImage('cadastralMapImages', newImgs)}
             sectionNumber={isApartmentFlat ? 11 : 12}
             sectionId="section-12"
           />

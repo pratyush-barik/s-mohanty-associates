@@ -1819,6 +1819,7 @@ export default function AdityaBirlaCapitalMLAP({
             const updated = (fields.sketchMapImages || []).filter((_, i) => i !== idx);
             handleChange('sketchMapImages', updated);
           }}
+          onReorderSketchMap={(newImgs) => handleChange('sketchMapImages', newImgs)}
           onMouzaMapUpload={(e) => handleUploadSingleImage(e, 'mouzaMapImage')}
           onMouzaMapRemove={() => handleChange('mouzaMapImage', '')}
           onCadastralMapUpload={(e) => handleUploadSingleImage(e, 'cadastralMapImage')}

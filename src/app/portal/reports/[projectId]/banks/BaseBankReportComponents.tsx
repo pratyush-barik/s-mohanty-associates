@@ -578,7 +578,10 @@ export function BaseMapsSection({
   onMouzaMapRemove,
   onCadastralMapUpload,
   onCadastralMapRemove,
-  onOpenBucketPicker,
+  onReorderLocationMap,
+  onReorderMouzaMap,
+  onReorderSketchMap,
+  onReorderCadastralMap,
   sectionNumber = 10,
   sectionId = 'section-10',
   title = 'Maps & Documents',
@@ -606,7 +609,11 @@ export function BaseMapsSection({
   onMouzaMapRemove?: (index?: number) => void;
   onCadastralMapUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onCadastralMapRemove?: (index?: number) => void;
-  onOpenBucketPicker?: (mode: 'sketchMapImages' | 'locationMapImage' | 'locationMapImages' | 'mouzaMapImages' | 'cadastralMapImages') => void;
+  onReorderLocationMap?: (newImages: string[]) => void;
+  onReorderMouzaMap?: (newImages: string[]) => void;
+  onReorderSketchMap?: (newImages: string[]) => void;
+  onReorderCadastralMap?: (newImages: string[]) => void;
+  onOpenBucketPicker?: any;
   sectionNumber?: number | string;
   sectionId?: string;
   title?: string;
@@ -634,229 +641,118 @@ export function BaseMapsSection({
   const normSketchImages = normalizeMapImages(sketchMapImages);
   const normCadastralImages = normalizeMapImages(cadastralMapImages || cadastralMapImage);
 
-  // Sub-renderers for each map category
   const renderLocationMap = () => (
-    <div key="location" className="space-y-4 p-4 border border-[#dee2e6] rounded-2xl bg-white shadow-xs">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
-        <div className="flex items-center gap-2">
-          <span className="text-base">🛰️</span>
-          <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-            Google Satellite Map {normLocationImages.length > 0 ? `(${normLocationImages.length})` : ''}
-          </h4>
-        </div>
-        {!isReadOnly && onLocationMapUpload && (
-          <div className="flex items-center gap-2">
-            <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-2xs">
-              {uploading ? '⏳ Uploading...' : '+ Add Satellite Image'}
-              <input type="file" accept="image/*" multiple className="hidden" onChange={onLocationMapUpload} disabled={uploading} />
-            </label>
-            {onOpenBucketPicker && (
-              <button
-                type="button"
-                onClick={() => onOpenBucketPicker('locationMapImages')}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#1e3a5f] text-[#1e3a5f] text-xs font-semibold hover:bg-[#1e3a5f]/10 transition-all cursor-pointer shadow-2xs"
-              >
-                📁 Bucket {bucketCount > 0 ? `(${bucketCount})` : ''}
-              </button>
+    <div key="location">
+      <MapImageCategoryCard
+        images={normLocationImages}
+        categoryLabel="Satellite Screenshot"
+        isReadOnly={isReadOnly}
+        uploading={uploading}
+        icon="🛰️"
+        title="Google Satellite Map"
+        btnLabel="Satellite Image"
+        onUpload={onLocationMapUpload}
+        onRemove={onLocationMapRemove}
+        onReorder={onReorderLocationMap}
+        emptyMessage="No satellite map screenshots uploaded yet. Click '+ Add Satellite Image' to add one or more photos for PDF."
+        headerExtra={
+          <div className="space-y-1.5 pt-1">
+            <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              Live Satellite & Coordinate Preview
+            </div>
+            {hasQuery ? (
+              <div className="rounded-xl overflow-hidden border border-[#c8d6e5] shadow-xs">
+                <div className="bg-[#d5e8f5] px-3.5 py-1.5 flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider flex items-center gap-1.5">
+                    📍 Live Pin {hasCoordinates ? `(${cleanLat}, ${cleanLng})` : ''}
+                  </span>
+                  <a
+                    href={googleMapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs font-semibold text-[#b8860b] hover:underline"
+                  >
+                    Open in Google Maps &#x2197;
+                  </a>
+                </div>
+                <iframe
+                  src={`https://maps.google.com/maps?q=${encodedQuery}&t=k&z=17&output=embed`}
+                  width="100%"
+                  height="260"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Property Location Map"
+                />
+              </div>
+            ) : (
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center text-xs text-slate-500">
+                Enter Property Address or Coordinates in Section 2 to view live satellite map.
+              </div>
+            )}
+            {normLocationImages.length > 0 && (
+              <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider pt-2">
+                Satellite Screenshots (For PDF Inclusion)
+              </div>
             )}
           </div>
-        )}
-      </div>
-
-      {/* Live Google Map Interactive Preview */}
-      <div>
-        <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Live Satellite & Coordinate Preview</div>
-        {hasQuery ? (
-          <div className="rounded-xl overflow-hidden border border-[#c8d6e5] shadow-xs">
-            <div className="bg-[#d5e8f5] px-3.5 py-1.5 flex items-center justify-between">
-              <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider flex items-center gap-1.5">
-                📍 Live Pin {hasCoordinates ? `(${cleanLat}, ${cleanLng})` : ''}
-              </span>
-              <a
-                href={googleMapsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs font-semibold text-[#b8860b] hover:underline"
-              >
-                Open in Google Maps &#x2197;
-              </a>
-            </div>
-            <iframe
-              src={`https://maps.google.com/maps?q=${encodedQuery}&t=k&z=17&output=embed`}
-              width="100%"
-              height="260"
-              style={{ border: 0 }}
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              title="Property Location Map"
-            />
-          </div>
-        ) : (
-          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center text-xs text-slate-500">
-            Enter Property Address or Coordinates in Section 2 to view live satellite map.
-          </div>
-        )}
-      </div>
-
-      {/* Satellite Screenshots Gallery (For PDF) */}
-      <div className="space-y-2 pt-1">
-        <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-          Satellite Screenshots (For PDF Inclusion)
-        </div>
-        {normLocationImages.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {normLocationImages.map((url, idx) => (
-              <div key={idx} className="relative group rounded-xl overflow-hidden border border-[#dee2e6] bg-slate-50 shadow-xs aspect-video flex items-center justify-center">
-                <img src={url} alt={`Satellite Map ${idx + 1}`} className="w-full h-full object-cover" />
-                {!isReadOnly && onLocationMapRemove && (
-                  <button
-                    type="button"
-                    onClick={() => onLocationMapRemove(idx)}
-                    className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full bg-red-600 text-white font-bold text-xs opacity-90 group-hover:opacity-100 hover:bg-red-700 shadow-sm transition-opacity cursor-pointer"
-                    title="Remove Photo"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="p-4 border border-dashed border-slate-300 rounded-xl text-center text-xs text-slate-400 bg-slate-50/50">
-            No satellite map screenshots uploaded yet. Click "+ Add Satellite Image" to add one or more photos for PDF.
-          </div>
-        )}
-      </div>
+        }
+      />
     </div>
   );
 
   const renderMouzaMap = () => (
-    <div key="mouza" className="space-y-3 p-4 border border-[#dee2e6] rounded-2xl bg-white shadow-xs">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
-        <div className="flex items-center gap-2">
-          <span className="text-base">🗺️</span>
-          <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-            Mouza Map (Bhulekh / Revenue Map) {normMouzaImages.length > 0 ? `(${normMouzaImages.length})` : ''}
-          </h4>
-        </div>
-        {!isReadOnly && onMouzaMapUpload && (
-          <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-2xs">
-            {uploading ? '⏳ Uploading...' : '+ Add Mouza Map'}
-            <input type="file" accept="image/*" multiple className="hidden" onChange={onMouzaMapUpload} disabled={uploading} />
-          </label>
-        )}
-      </div>
-
-      {normMouzaImages.length > 0 ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {normMouzaImages.map((url, idx) => (
-            <div key={idx} className="relative group rounded-xl overflow-hidden border border-[#dee2e6] bg-slate-50 shadow-xs aspect-video flex items-center justify-center">
-              <img src={url} alt={`Mouza Map ${idx + 1}`} className="w-full h-full object-contain" />
-              {!isReadOnly && onMouzaMapRemove && (
-                <button
-                  type="button"
-                  onClick={() => onMouzaMapRemove(idx)}
-                  className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full bg-red-600 text-white font-bold text-xs opacity-90 group-hover:opacity-100 hover:bg-red-700 shadow-sm transition-opacity cursor-pointer"
-                  title="Remove Map"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="p-4 border border-dashed border-slate-300 rounded-xl text-center text-xs text-slate-400 bg-slate-50/50">
-          No mouza map uploaded yet. Click "+ Add Mouza Map" to upload one or more maps.
-        </div>
-      )}
+    <div key="mouza">
+      <MapImageCategoryCard
+        images={normMouzaImages}
+        categoryLabel="Mouza Map"
+        isReadOnly={isReadOnly}
+        uploading={uploading}
+        icon="🗺️"
+        title="Mouza Map (Bhulekh / Revenue Map)"
+        btnLabel="Mouza Map"
+        onUpload={onMouzaMapUpload}
+        onRemove={onMouzaMapRemove}
+        onReorder={onReorderMouzaMap}
+        emptyMessage="No mouza map uploaded yet. Click '+ Add Mouza Map' to upload one or more maps."
+      />
     </div>
   );
 
   const renderSketchMap = () => (
-    <div key="sketch" className="space-y-3 p-4 border border-[#dee2e6] rounded-2xl bg-white shadow-xs">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
-        <div className="flex items-center gap-2">
-          <span className="text-base">📐</span>
-          <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-            Sketch Map (Amin Hand-Drawn / Demarcation) {normSketchImages.length > 0 ? `(${normSketchImages.length})` : ''}
-          </h4>
-        </div>
-        {!isReadOnly && onSketchMapUpload && (
-          <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-2xs">
-            {uploading ? '⏳ Uploading...' : '+ Add Sketch Map'}
-            <input type="file" accept="image/*" multiple className="hidden" onChange={onSketchMapUpload} disabled={uploading} />
-          </label>
-        )}
-      </div>
-
-      {normSketchImages.length > 0 ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {normSketchImages.map((url, idx) => (
-            <div key={idx} className="relative group rounded-xl overflow-hidden border border-[#dee2e6] bg-slate-50 shadow-xs aspect-video flex items-center justify-center">
-              <img src={url} alt={`Sketch Map ${idx + 1}`} className="w-full h-full object-contain" />
-              {!isReadOnly && onSketchMapRemove && (
-                <button
-                  type="button"
-                  onClick={() => onSketchMapRemove(idx)}
-                  className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full bg-red-600 text-white font-bold text-xs opacity-90 group-hover:opacity-100 hover:bg-red-700 shadow-sm transition-opacity cursor-pointer"
-                  title="Remove Sketch"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="p-4 border border-dashed border-slate-300 rounded-xl text-center text-xs text-slate-400 bg-slate-50/50">
-          No sketch maps uploaded yet. Click "+ Add Sketch Map" to upload one or more maps.
-        </div>
-      )}
+    <div key="sketch">
+      <MapImageCategoryCard
+        images={normSketchImages}
+        categoryLabel="Sketch Map"
+        isReadOnly={isReadOnly}
+        uploading={uploading}
+        icon="📐"
+        title="Sketch Map (Demarcation / Hand-Drawn)"
+        btnLabel="Sketch Map"
+        onUpload={onSketchMapUpload}
+        onRemove={onSketchMapRemove}
+        onReorder={onReorderSketchMap}
+        emptyMessage="No sketch maps uploaded yet. Click '+ Add Sketch Map' to upload one or more maps."
+      />
     </div>
   );
 
   const renderCadastralMap = () => (
-    <div key="cadastral" className="space-y-3 p-4 border border-[#dee2e6] rounded-2xl bg-white shadow-xs">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
-        <div className="flex items-center gap-2">
-          <span className="text-base">🌐</span>
-          <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-            Cadastral Map {normCadastralImages.length > 0 ? `(${normCadastralImages.length})` : ''}
-          </h4>
-        </div>
-        {!isReadOnly && onCadastralMapUpload && (
-          <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-2xs">
-            {uploading ? '⏳ Uploading...' : '+ Add Cadastral Map'}
-            <input type="file" accept="image/*" multiple className="hidden" onChange={onCadastralMapUpload} disabled={uploading} />
-          </label>
-        )}
-      </div>
-
-      {normCadastralImages.length > 0 ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {normCadastralImages.map((url, idx) => (
-            <div key={idx} className="relative group rounded-xl overflow-hidden border border-[#dee2e6] bg-slate-50 shadow-xs aspect-video flex items-center justify-center">
-              <img src={url} alt={`Cadastral Map ${idx + 1}`} className="w-full h-full object-contain" />
-              {!isReadOnly && onCadastralMapRemove && (
-                <button
-                  type="button"
-                  onClick={() => onCadastralMapRemove(idx)}
-                  className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full bg-red-600 text-white font-bold text-xs opacity-90 group-hover:opacity-100 hover:bg-red-700 shadow-sm transition-opacity cursor-pointer"
-                  title="Remove Map"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="p-4 border border-dashed border-slate-300 rounded-xl text-center text-xs text-slate-400 bg-slate-50/50">
-          No cadastral map uploaded yet. Click "+ Add Cadastral Map" to upload one or more maps.
-        </div>
-      )}
+    <div key="cadastral">
+      <MapImageCategoryCard
+        images={normCadastralImages}
+        categoryLabel="Cadastral Map"
+        isReadOnly={isReadOnly}
+        uploading={uploading}
+        icon="🌐"
+        title="Cadastral Map"
+        btnLabel="Cadastral Map"
+        onUpload={onCadastralMapUpload}
+        onRemove={onCadastralMapRemove}
+        onReorder={onReorderCadastralMap}
+        emptyMessage="No cadastral map uploaded yet. Click '+ Add Cadastral Map' to upload one or more maps."
+      />
     </div>
   );
 
@@ -881,6 +777,151 @@ export function BaseMapsSection({
     <Section title={title} number={sectionNumber} id={sectionId} defaultOpen={false}>
       {content}
     </Section>
+  );
+}
+
+// ─── Standardized Map Category Card with Drag & Drop Repositioning ───
+function MapImageCategoryCard({
+  images,
+  categoryLabel,
+  isReadOnly = false,
+  uploading = false,
+  icon,
+  title,
+  btnLabel,
+  onUpload,
+  onRemove,
+  onReorder,
+  emptyMessage,
+  headerExtra,
+}: {
+  images: string[];
+  categoryLabel: string;
+  isReadOnly?: boolean;
+  uploading?: boolean;
+  icon: string;
+  title: string;
+  btnLabel: string;
+  onUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onRemove?: (idx: number) => void;
+  onReorder?: (newImages: string[]) => void;
+  emptyMessage: string;
+  headerExtra?: React.ReactNode;
+}) {
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+
+  const handleDragStart = (idx: number) => {
+    if (isReadOnly) return;
+    setDraggedIdx(idx);
+  };
+
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    if (draggedIdx === null || draggedIdx === idx) return;
+    setDragOverIdx(idx);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIdx(null);
+  };
+
+  const handleDrop = (targetIdx: number) => {
+    if (draggedIdx === null || draggedIdx === targetIdx) {
+      setDraggedIdx(null);
+      setDragOverIdx(null);
+      return;
+    }
+    const reordered = [...images];
+    const [moved] = reordered.splice(draggedIdx, 1);
+    reordered.splice(targetIdx, 0, moved);
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+    if (onReorder) {
+      onReorder(reordered);
+    }
+  };
+
+  return (
+    <div className="space-y-4 p-4 border border-[#dee2e6] rounded-2xl bg-white shadow-xs">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+        <div className="flex items-center gap-2">
+          <span className="text-base">{icon}</span>
+          <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+            {title} {images.length > 0 ? `(${images.length})` : ''}
+          </h4>
+        </div>
+        {!isReadOnly && onUpload && (
+          <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-2xs">
+            {uploading ? '⏳ Uploading...' : `+ Add ${btnLabel}`}
+            <input type="file" accept="image/*" multiple className="hidden" onChange={onUpload} disabled={uploading} />
+          </label>
+        )}
+      </div>
+
+      {headerExtra}
+
+      {images.length > 0 ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {images.map((url, idx) => {
+            const isDragging = draggedIdx === idx;
+            const isDragOver = dragOverIdx === idx;
+            const canDrag = !isReadOnly && images.length > 1;
+
+            return (
+              <div
+                key={idx}
+                draggable={canDrag}
+                onDragStart={() => handleDragStart(idx)}
+                onDragOver={(e) => handleDragOver(e, idx)}
+                onDragLeave={handleDragLeave}
+                onDrop={() => handleDrop(idx)}
+                onDragEnd={() => {
+                  setDraggedIdx(null);
+                  setDragOverIdx(null);
+                }}
+                className={`relative group rounded-xl overflow-hidden border bg-slate-50 shadow-xs aspect-video flex items-center justify-center transition-all duration-200 ${
+                  isDragging ? 'opacity-40 scale-[0.98]' : 'opacity-100'
+                } ${
+                  isDragOver
+                    ? 'border-2 border-dashed border-[#b8860b] ring-2 ring-[#b8860b]/20 shadow-md'
+                    : 'border-[#dee2e6] hover:border-slate-300'
+                }`}
+              >
+                <img src={url} alt={`${categoryLabel} ${idx + 1}`} className="w-full h-full object-contain pointer-events-none" />
+
+                {/* Drag Handle Indicator */}
+                {canDrag && (
+                  <span
+                    className="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/60 text-white text-[11px] font-bold cursor-grab active:cursor-grabbing select-none opacity-80 group-hover:opacity-100 transition-opacity flex items-center gap-1 shadow-xs"
+                    title="Drag to reposition map"
+                  >
+                    <span>⠿</span>
+                    <span className="text-[10px] font-medium">{idx + 1}</span>
+                  </span>
+                )}
+
+                {/* Remove button */}
+                {!isReadOnly && onRemove && (
+                  <button
+                    type="button"
+                    onClick={() => onRemove(idx)}
+                    className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full bg-red-600 text-white font-bold text-xs opacity-90 group-hover:opacity-100 hover:bg-red-700 shadow-sm transition-opacity cursor-pointer"
+                    title={`Remove ${categoryLabel}`}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="p-4 border border-dashed border-slate-300 rounded-xl text-center text-xs text-slate-400 bg-slate-50/50">
+          {emptyMessage}
+        </div>
+      )}
+    </div>
   );
 }
 

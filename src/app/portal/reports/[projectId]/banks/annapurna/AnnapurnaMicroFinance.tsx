@@ -18,9 +18,11 @@ import {
   ActiveConfigBanner,
   ReportActionBar,
   NavItem,
+  getFloorName,
   formatAssignedEngineers,
   BasePhotographsSection,
   BaseMapsSection,
+  BasePhotoBucketModal,
   BaseAnnexureSection,
   fetchBytes,
 } from '../BaseBankReportComponents';
@@ -176,8 +178,7 @@ export default function AnnapurnaMicroFinance({
 
       // BAU Floors Details
       bauFloors: Array.isArray(raw.bauFloors) && raw.bauFloors.length > 0 ? raw.bauFloors : [
-        { floor: 'Basement/Stilt Floor', rooms: 'NA', kitchens: 'NA', bathrooms: 'NA', sanctionedUsage: 'NA', actualUsage: 'NA' },
-        { floor: 'GROUND FLOOR', rooms: '', kitchens: '', bathrooms: '', sanctionedUsage: 'NA', actualUsage: 'Commercial' },
+        { floor: 'Ground Floor', rooms: '', kitchens: '', bathrooms: '', sanctionedUsage: 'NA', actualUsage: 'Commercial' },
         { floor: 'First Floor', rooms: '', kitchens: '', bathrooms: '', sanctionedUsage: 'NA', actualUsage: 'Commercial' },
       ],
 
@@ -250,6 +251,7 @@ export default function AnnapurnaMicroFinance({
   const [fields, setFields] = useState<AnnapurnaMicroReportFields>(() => decodeHtmlEntitiesDeep(initialData));
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [bucketPickerOpen, setBucketPickerOpen] = useState(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
@@ -340,6 +342,16 @@ export default function AnnapurnaMicroFinance({
     if (key === 'cadastralMapImages') handleChange('cadastralMapImage', updated[0] || '');
   };
 
+  const handleReorderMap = (
+    key: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages',
+    newImages: string[]
+  ) => {
+    handleChange(key, newImages);
+    if (key === 'locationMapImages') handleChange('locationMapImage', newImages[0] || '');
+    if (key === 'mouzaMapImages') handleChange('mouzaMapImage', newImages[0] || '');
+    if (key === 'cadastralMapImages') handleChange('cadastralMapImage', newImages[0] || '');
+  };
+
   // Property Photos Handlers
   const handlePhotosUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -378,6 +390,29 @@ export default function AnnapurnaMicroFinance({
     const updatedNames = (fields.propertyImageNames || []).filter((_, i) => i !== idx);
     handleChange('propertyImages', updated);
     handleChange('propertyImageNames', updatedNames);
+  };
+
+  const handleBucketConfirm = (selectedUrls: string[]) => {
+    const existing = fields.propertyImages || [];
+    const updated = [...existing, ...selectedUrls];
+    handleChange('propertyImages', updated);
+  };
+
+  const handleAddFloor = () => {
+    const currentFloors = fields.bauFloors || [];
+    const nextFloorName = getFloorName(currentFloors.length);
+    const updated = [
+      ...currentFloors,
+      {
+        floor: nextFloorName,
+        rooms: '',
+        kitchens: '',
+        bathrooms: '',
+        sanctionedUsage: 'NA',
+        actualUsage: 'Commercial',
+      },
+    ];
+    handleChange('bauFloors', updated);
   };
 
   // ── Save Draft ──
@@ -866,8 +901,19 @@ export default function AnnapurnaMicroFinance({
             <Field label="Approving Authority">
               <input className={inputCls} value={fields.approvingAuthority || 'NA'} onChange={e => handleChange('approvingAuthority', e.target.value)} disabled={isReadOnly} />
             </Field>
-            <Field label="Approved Usages">
-              <input className={inputCls} value={fields.approvedUsages || 'NA'} onChange={e => handleChange('approvedUsages', e.target.value)} disabled={isReadOnly} />
+            <Field label="Approved Usages (Residential/Industrial/Commercial/Mixed Usages)">
+              <select
+                className={selectCls}
+                value={fields.approvedUsages || 'NA'}
+                onChange={e => handleChange('approvedUsages', e.target.value)}
+                disabled={isReadOnly}
+              >
+                <option value="NA">NA</option>
+                <option value="Residential">Residential</option>
+                <option value="Industrial">Industrial</option>
+                <option value="Commercial">Commercial</option>
+                <option value="Mixed Usages">Mixed Usages</option>
+              </select>
             </Field>
             <Field label="Number of Floors in Building">
               <input className={inputCls} value={fields.numberOfFloorsInBuilding || 'NA'} onChange={e => handleChange('numberOfFloorsInBuilding', e.target.value)} disabled={isReadOnly} />
@@ -947,11 +993,8 @@ export default function AnnapurnaMicroFinance({
                 {!isReadOnly && (
                   <button
                     type="button"
-                    onClick={() => {
-                      const updated = [...(fields.bauFloors || []), { floor: `Floor ${(fields.bauFloors || []).length}`, rooms: '', kitchens: '', bathrooms: '', sanctionedUsage: 'NA', actualUsage: 'Commercial' }];
-                      handleChange('bauFloors', updated);
-                    }}
-                    className="text-xs font-bold text-[#b8860b] hover:underline"
+                    onClick={handleAddFloor}
+                    className="text-xs font-bold text-[#b8860b] hover:underline cursor-pointer"
                   >
                     + Add Floor
                   </button>
@@ -962,9 +1005,9 @@ export default function AnnapurnaMicroFinance({
                   <thead className="bg-[#d5e8f5] text-[#1a3a5c] font-bold">
                     <tr>
                       <th className="p-2 text-left border-r border-[#dee2e6]">Floor</th>
-                      <th className="p-2 text-left border-r border-[#dee2e6]">Rooms</th>
-                      <th className="p-2 text-left border-r border-[#dee2e6]">Kitchens</th>
-                      <th className="p-2 text-left border-r border-[#dee2e6]">Bathrooms</th>
+                      <th className="p-2 text-center border-r border-[#dee2e6]">Rooms</th>
+                      <th className="p-2 text-center border-r border-[#dee2e6]">Kitchens</th>
+                      <th className="p-2 text-center border-r border-[#dee2e6]">Bathrooms</th>
                       <th className="p-2 text-left border-r border-[#dee2e6]">Sanctioned Usage</th>
                       <th className="p-2 text-left">Actual Usage</th>
                       {!isReadOnly && <th className="p-2 text-center w-10"></th>}
@@ -973,47 +1016,82 @@ export default function AnnapurnaMicroFinance({
                   <tbody className="divide-y divide-[#dee2e6]">
                     {(fields.bauFloors || []).map((row, idx) => (
                       <tr key={idx} className="hover:bg-slate-50">
-                        <td className="p-1.5 border-r border-[#dee2e6]">
-                          <input className="w-full p-1 border rounded text-xs font-semibold" value={row.floor} onChange={e => {
-                            const updated = [...(fields.bauFloors || [])];
-                            updated[idx] = { ...updated[idx], floor: e.target.value };
-                            handleChange('bauFloors', updated);
-                          }} disabled={isReadOnly} />
+                        <td className="p-1.5 border-r border-[#dee2e6] min-w-[140px]">
+                          <input
+                            className={inputCls + ' !py-1.5 text-xs font-bold text-[#0f2038]'}
+                            value={row.floor}
+                            onChange={e => {
+                              const updated = [...(fields.bauFloors || [])];
+                              updated[idx] = { ...updated[idx], floor: e.target.value };
+                              handleChange('bauFloors', updated);
+                            }}
+                            disabled={isReadOnly}
+                            placeholder="e.g. Ground Floor"
+                          />
                         </td>
-                        <td className="p-1.5 border-r border-[#dee2e6]">
-                          <input className="w-full p-1 border rounded text-xs" value={row.rooms} onChange={e => {
-                            const updated = [...(fields.bauFloors || [])];
-                            updated[idx] = { ...updated[idx], rooms: e.target.value };
-                            handleChange('bauFloors', updated);
-                          }} disabled={isReadOnly} placeholder="NA" />
+                        <td className="p-1.5 border-r border-[#dee2e6] w-24">
+                          <input
+                            className={inputCls + ' !py-1.5 text-xs text-center'}
+                            value={row.rooms}
+                            onChange={e => {
+                              const updated = [...(fields.bauFloors || [])];
+                              updated[idx] = { ...updated[idx], rooms: e.target.value };
+                              handleChange('bauFloors', updated);
+                            }}
+                            disabled={isReadOnly}
+                            placeholder="NA"
+                          />
                         </td>
-                        <td className="p-1.5 border-r border-[#dee2e6]">
-                          <input className="w-full p-1 border rounded text-xs" value={row.kitchens} onChange={e => {
-                            const updated = [...(fields.bauFloors || [])];
-                            updated[idx] = { ...updated[idx], kitchens: e.target.value };
-                            handleChange('bauFloors', updated);
-                          }} disabled={isReadOnly} placeholder="NA" />
+                        <td className="p-1.5 border-r border-[#dee2e6] w-24">
+                          <input
+                            className={inputCls + ' !py-1.5 text-xs text-center'}
+                            value={row.kitchens}
+                            onChange={e => {
+                              const updated = [...(fields.bauFloors || [])];
+                              updated[idx] = { ...updated[idx], kitchens: e.target.value };
+                              handleChange('bauFloors', updated);
+                            }}
+                            disabled={isReadOnly}
+                            placeholder="NA"
+                          />
                         </td>
-                        <td className="p-1.5 border-r border-[#dee2e6]">
-                          <input className="w-full p-1 border rounded text-xs" value={row.bathrooms} onChange={e => {
-                            const updated = [...(fields.bauFloors || [])];
-                            updated[idx] = { ...updated[idx], bathrooms: e.target.value };
-                            handleChange('bauFloors', updated);
-                          }} disabled={isReadOnly} placeholder="NA" />
+                        <td className="p-1.5 border-r border-[#dee2e6] w-24">
+                          <input
+                            className={inputCls + ' !py-1.5 text-xs text-center'}
+                            value={row.bathrooms}
+                            onChange={e => {
+                              const updated = [...(fields.bauFloors || [])];
+                              updated[idx] = { ...updated[idx], bathrooms: e.target.value };
+                              handleChange('bauFloors', updated);
+                            }}
+                            disabled={isReadOnly}
+                            placeholder="NA"
+                          />
                         </td>
-                        <td className="p-1.5 border-r border-[#dee2e6]">
-                          <input className="w-full p-1 border rounded text-xs" value={row.sanctionedUsage} onChange={e => {
-                            const updated = [...(fields.bauFloors || [])];
-                            updated[idx] = { ...updated[idx], sanctionedUsage: e.target.value };
-                            handleChange('bauFloors', updated);
-                          }} disabled={isReadOnly} placeholder="NA" />
+                        <td className="p-1.5 border-r border-[#dee2e6] min-w-[130px]">
+                          <input
+                            className={inputCls + ' !py-1.5 text-xs'}
+                            value={row.sanctionedUsage}
+                            onChange={e => {
+                              const updated = [...(fields.bauFloors || [])];
+                              updated[idx] = { ...updated[idx], sanctionedUsage: e.target.value };
+                              handleChange('bauFloors', updated);
+                            }}
+                            disabled={isReadOnly}
+                            placeholder="NA"
+                          />
                         </td>
-                        <td className="p-1.5">
-                          <input className="w-full p-1 border rounded text-xs" value={row.actualUsage} onChange={e => {
-                            const updated = [...(fields.bauFloors || [])];
-                            updated[idx] = { ...updated[idx], actualUsage: e.target.value };
-                            handleChange('bauFloors', updated);
-                          }} disabled={isReadOnly} />
+                        <td className="p-1.5 min-w-[130px]">
+                          <input
+                            className={inputCls + ' !py-1.5 text-xs'}
+                            value={row.actualUsage}
+                            onChange={e => {
+                              const updated = [...(fields.bauFloors || [])];
+                              updated[idx] = { ...updated[idx], actualUsage: e.target.value };
+                              handleChange('bauFloors', updated);
+                            }}
+                            disabled={isReadOnly}
+                          />
                         </td>
                         {!isReadOnly && (
                           <td className="p-1.5 text-center">
@@ -1023,7 +1101,8 @@ export default function AnnapurnaMicroFinance({
                                 const updated = (fields.bauFloors || []).filter((_, i) => i !== idx);
                                 handleChange('bauFloors', updated);
                               }}
-                              className="text-red-500 hover:text-red-700 font-bold"
+                              className="w-6 h-6 flex items-center justify-center rounded-full text-red-500 hover:bg-red-50 hover:text-red-700 font-bold transition-colors cursor-pointer"
+                              title="Delete floor row"
                             >
                               ✕
                             </button>
@@ -1239,6 +1318,7 @@ export default function AnnapurnaMicroFinance({
             handleChange('propertyImageNames', newNames);
           }}
           onUploadImages={handlePhotosUpload}
+          onOpenBucketPicker={() => setBucketPickerOpen(true)}
           sectionNumber={10}
           sectionId="sec-10"
         />
@@ -1255,7 +1335,6 @@ export default function AnnapurnaMicroFinance({
           propertyAddress={fields.propertyAddressSite || fields.propertyAddressLegal}
           isReadOnly={isReadOnly}
           uploading={uploading}
-          bucketCount={bucketImages.length}
           onLocationMapUpload={e => handleMapUpload('locationMapImages', e)}
           onLocationMapRemove={idx => handleMapRemove('locationMapImages', idx)}
           onMouzaMapUpload={e => handleMapUpload('mouzaMapImages', e)}
@@ -1264,6 +1343,10 @@ export default function AnnapurnaMicroFinance({
           onSketchMapRemove={idx => handleMapRemove('sketchMapImages', idx)}
           onCadastralMapUpload={e => handleMapUpload('cadastralMapImages', e)}
           onCadastralMapRemove={idx => handleMapRemove('cadastralMapImages', idx)}
+          onReorderLocationMap={newImgs => handleReorderMap('locationMapImages', newImgs)}
+          onReorderMouzaMap={newImgs => handleReorderMap('mouzaMapImages', newImgs)}
+          onReorderSketchMap={newImgs => handleReorderMap('sketchMapImages', newImgs)}
+          onReorderCadastralMap={newImgs => handleReorderMap('cadastralMapImages', newImgs)}
           mapOrder={['location', 'mouza', 'sketch', 'cadastral']}
           sectionNumber={11}
           sectionId="sec-11"
@@ -1308,6 +1391,15 @@ export default function AnnapurnaMicroFinance({
 
       {/* ── Right Column: Dynamic Floating Navigator ── */}
       <FloatingNavigator sections={navSections} />
+
+      {/* ── Photo Bucket Picker Modal (for Site Photographs) ── */}
+      <BasePhotoBucketModal
+        isOpen={bucketPickerOpen}
+        bucketImages={bucketImages}
+        mode="propertyImages"
+        onClose={() => setBucketPickerOpen(false)}
+        onConfirm={handleBucketConfirm}
+      />
     </div>
   );
 }
