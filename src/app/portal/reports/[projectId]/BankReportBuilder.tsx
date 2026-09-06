@@ -11,7 +11,7 @@ import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
 import type { BaseReportFields, BankConfig, FloorRow, AnnexureItem, ExtraFieldConfig } from '@/lib/bank-fields';
 import { reorderAndLabelAnnexures, normalizeMapImages } from '@/lib/bank-fields';
-import { getFloorName, BasePhotographsSection, BaseMapsSection, BaseAnnexureSection, AnnexureRefSelector, ActiveConfigBanner } from './banks/BaseBankReportComponents';
+import { getFloorName, BasePhotographsSection, BaseMapsSection, BaseAnnexureSection, AnnexureRefSelector, ActiveConfigBanner, BasePhotoBucketModal } from './banks/BaseBankReportComponents';
 import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 import * as XLSX from 'xlsx';
 
@@ -456,8 +456,6 @@ export default function BankReportBuilder({
 
   // Bucket Picker State
   const [bucketPickerOpen, setBucketPickerOpen] = useState(false);
-  const [bucketPickerMode, setBucketPickerMode] = useState<'propertyImages' | 'sketchMapImages' | 'locationMapImage'>('propertyImages');
-  const [bucketSelected, setBucketSelected] = useState<Set<string>>(new Set());
   const [localBucketImages, setLocalBucketImages] = useState<any[]>(bucketImages);
 
   const handleDeleteBucketImage = async (img: any) => {
@@ -472,11 +470,6 @@ export default function BankReportBuilder({
         alert(res.error);
       } else {
         setLocalBucketImages(prev => prev.filter(i => i.id !== img.id));
-        setBucketSelected(prev => {
-          const next = new Set(prev);
-          next.delete(img.id);
-          return next;
-        });
       }
     } catch (e) {
       console.error('Delete error:', e);
@@ -484,9 +477,7 @@ export default function BankReportBuilder({
     }
   };
 
-  const openBucketPicker = async (mode: 'propertyImages' | 'sketchMapImages' | 'locationMapImage') => {
-    setBucketPickerMode(mode);
-    setBucketSelected(new Set());
+  const openBucketPicker = async () => {
     setBucketPickerOpen(true);
     try {
       const res = await getBucketImages(projectId);
@@ -501,37 +492,18 @@ export default function BankReportBuilder({
     }
   };
 
-  const handleBucketConfirm = () => {
-    const selectedImages = localBucketImages.filter(img => bucketSelected.has(img.id));
-    if (selectedImages.length === 0) { setBucketPickerOpen(false); return; }
-
-    if (bucketPickerMode === 'propertyImages') {
-      const newUrls = [...(fields.propertyImages || []), ...selectedImages.map(img => img.url)];
-      handleChange('propertyImages', newUrls);
-    } else if (bucketPickerMode === 'sketchMapImages') {
-      const newUrls = [...(fields.sketchMapImages || []), ...selectedImages.map(img => img.url)];
-      handleChange('sketchMapImages', newUrls);
-    } else if (bucketPickerMode === 'locationMapImage') {
-      handleChange('locationMapImage', selectedImages[0].url);
+  const handleBucketConfirm = (selectedUrls: string[]) => {
+    if (selectedUrls.length === 0) {
+      setBucketPickerOpen(false);
+      return;
     }
 
-    setBucketPickerOpen(false);
-    setBucketSelected(new Set());
-    setMessage({ type: 'success', text: `${selectedImages.length} photo${selectedImages.length > 1 ? 's' : ''} added from bucket!` });
-    setTimeout(() => setMessage(null), 3000);
-  };
+    const newUrls = [...(fields.propertyImages || []), ...selectedUrls];
+    handleChange('propertyImages', newUrls);
 
-  const toggleBucketImage = (id: string) => {
-    setBucketSelected(prev => {
-      const next = new Set(prev);
-      if (bucketPickerMode !== 'propertyImages' && bucketPickerMode !== 'sketchMapImages') {
-        next.clear();
-        next.add(id);
-      } else {
-        if (next.has(id)) next.delete(id); else next.add(id);
-      }
-      return next;
-    });
+    setBucketPickerOpen(false);
+    setMessage({ type: 'success', text: `${selectedUrls.length} photo${selectedUrls.length > 1 ? 's' : ''} added from bucket!` });
+    setTimeout(() => setMessage(null), 3000);
   };
 
   const PREDEFINED_AMENITIES = [
@@ -2167,7 +2139,7 @@ export default function BankReportBuilder({
               handleChange('propertyImageNames', newNames);
             }}
             onUploadImages={(e) => handleFileUpload(e, 'propertyImages')}
-            onOpenBucketPicker={() => openBucketPicker('propertyImages')}
+            onOpenBucketPicker={openBucketPicker}
             sectionNumber={isApartmentFlat ? 10 : 11}
             sectionId="section-11"
           />
@@ -2393,48 +2365,14 @@ export default function BankReportBuilder({
       )}
 
       {/* ── Bucket Picker Modal ── */}
-      {bucketPickerOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[85vh] flex flex-col">
-            <div className="flex justify-between items-center border-b pb-3">
-              <h3 className="font-bold text-sm text-[#0f2038]">
-                Select Images from Project Bucket ({localBucketImages.length} available)
-              </h3>
-              <button onClick={() => setBucketPickerOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
-            </div>
-            <div className="flex-1 overflow-y-auto grid grid-cols-3 gap-3 p-1">
-              {localBucketImages.map(img => {
-                const selected = bucketSelected.has(img.id);
-                return (
-                  <div
-                    key={img.id}
-                    onClick={() => toggleBucketImage(img.id)}
-                    className={`relative border-2 rounded-xl overflow-hidden cursor-pointer aspect-square transition-all ${selected ? 'border-[#b8860b] shadow-md ring-2 ring-[#b8860b]/30' : 'border-slate-200 hover:border-slate-400'}`}
-                  >
-                    <img src={img.url} alt={img.fileName} className="w-full h-full object-cover" />
-                    {selected && (
-                      <div className="absolute top-1.5 right-1.5 bg-[#b8860b] text-white rounded-full w-5 h-5 text-xs flex items-center justify-center font-bold">✓</div>
-                    )}
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); handleDeleteBucketImage(img); }}
-                      className="absolute top-1.5 left-1.5 bg-red-600/80 hover:bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="flex justify-end gap-2 border-t pt-3">
-              <button onClick={() => setBucketPickerOpen(false)} className="px-4 py-2 rounded-lg border border-[#dee2e6] text-xs font-semibold text-[#495057] hover:bg-slate-50 transition-colors">Cancel</button>
-              <button onClick={handleBucketConfirm} className="px-4 py-2 rounded-lg bg-[#b8860b] text-white text-xs font-bold hover:bg-[#9a6f08] transition-colors">
-                Add Selected ({bucketSelected.size})
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <BasePhotoBucketModal
+        isOpen={bucketPickerOpen}
+        bucketImages={localBucketImages}
+        mode="propertyImages"
+        onClose={() => setBucketPickerOpen(false)}
+        onConfirm={handleBucketConfirm}
+        onDeleteImage={handleDeleteBucketImage}
+      />
     </div>
   );
 }

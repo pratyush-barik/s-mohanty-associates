@@ -237,7 +237,7 @@ export const NAV_SECTIONS: NavItem[] = [
   { id: 'section-9', title: 'Remarks' },
   { id: 'section-10', title: 'Photographs' },
   { id: 'section-11', title: 'Location Map & Mouza Map' },
-  { id: 'section-12', title: 'Cadastral Map & Declaration' },
+  { id: 'section-12', title: 'Declaration & Sign-off' },
   { id: 'section-13-annexure', title: 'Annexures' },
 ];
 
@@ -460,7 +460,6 @@ export default function AdityaBirlaCapitalSTSL({
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [activeSection, setActiveSection] = useState('section-1');
   const [bucketPickerOpen, setBucketPickerOpen] = useState(false);
-  const [bucketPickerMode, setBucketPickerMode] = useState<'propertyImages' | 'sketchMapImages' | 'locationMapImage'>('propertyImages');
   const [uploadingTarget, setUploadingTarget] = useState<string | null>(null);
 
   const debouncedTimer = useRef<NodeJS.Timeout | null>(null);
@@ -762,18 +761,31 @@ export default function AdityaBirlaCapitalSTSL({
   };
 
   // ─── Image Upload Helpers ───
-  const handleUploadSingleMap = async (key: 'locationMapImage' | 'mouzaMapImage' | 'cadastralMapImage', e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleMapUpload = async (
+    key: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages',
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const fileList = e.target.files;
+    if (!fileList || fileList.length === 0) return;
     setUploadingTarget(key);
     try {
-      const ext = file.name.split('.').pop() || 'jpg';
-      const fileName = `${key}-${Date.now()}.${ext}`;
-      const filePath = `reports/${projectId}/${fileName}`;
-      const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(filePath, file);
-      if (error) throw error;
-      const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
-      handleChange(key, data.publicUrl);
+      const newUrls: string[] = [...(fields[key] || [])];
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
+        if (file.size > 10 * 1024 * 1024) continue;
+        const ext = file.name.split('.').pop() || 'jpg';
+        const fileName = `${projectId}-${key}-${Date.now()}-${i}.${ext}`;
+        const filePath = `reports/${projectId}/${fileName}`;
+        const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(filePath, file);
+        if (!error) {
+          const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
+          newUrls.push(data.publicUrl);
+        }
+      }
+      handleChange(key, newUrls);
+      if (key === 'locationMapImages' && newUrls.length > 0) handleChange('locationMapImage', newUrls[0]);
+      if (key === 'mouzaMapImages' && newUrls.length > 0) handleChange('mouzaMapImage', newUrls[0]);
+      if (key === 'cadastralMapImages' && newUrls.length > 0) handleChange('cadastralMapImage', newUrls[0]);
     } catch (err: any) {
       alert(`Map upload failed: ${err.message}`);
     } finally {
@@ -782,37 +794,33 @@ export default function AdityaBirlaCapitalSTSL({
     }
   };
 
-  const handleUploadMultipleSketches = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const fileList = e.target.files;
-    if (!fileList || fileList.length === 0) return;
-    setUploadingTarget('sketches');
-    try {
-      const newUrls: string[] = [...(fields.sketchMapImages || [])];
-      for (let i = 0; i < fileList.length; i++) {
-        const file = fileList[i];
-        if (file.size > 5 * 1024 * 1024) {
-          alert(`${file.name} exceeds 5MB size limit.`);
-          continue;
-        }
-        const ext = file.name.split('.').pop() || 'jpg';
-        const fileName = `${projectId}-sketch-${Date.now()}-${i}.${ext}`;
-        const filePath = `reports/${projectId}/${fileName}`;
-        const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(filePath, file);
-        if (error) {
-          console.error(`Upload error for ${file.name}:`, error);
-          alert(`Failed to upload ${file.name}: ${error.message}`);
-          continue;
-        }
-        const { data: publicUrlData } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
-        newUrls.push(publicUrlData.publicUrl);
-      }
-      handleChange('sketchMapImages', newUrls);
-    } catch (err: any) {
-      alert(`Sketch upload failed: ${err.message}`);
-    } finally {
-      e.target.value = '';
-      setUploadingTarget(null);
+  const handleMapRemove = (
+    key: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages',
+    idx?: number
+  ) => {
+    if (idx === undefined) {
+      handleChange(key, []);
+      if (key === 'locationMapImages') handleChange('locationMapImage', '');
+      if (key === 'mouzaMapImages') handleChange('mouzaMapImage', '');
+      if (key === 'cadastralMapImages') handleChange('cadastralMapImage', '');
+      return;
     }
+    const current = (fields[key] || []) as string[];
+    const updated = current.filter((_, i) => i !== idx);
+    handleChange(key, updated);
+    if (key === 'locationMapImages') handleChange('locationMapImage', updated[0] || '');
+    if (key === 'mouzaMapImages') handleChange('mouzaMapImage', updated[0] || '');
+    if (key === 'cadastralMapImages') handleChange('cadastralMapImage', updated[0] || '');
+  };
+
+  const handleReorderMap = (
+    key: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages',
+    newImages: string[]
+  ) => {
+    handleChange(key, newImages);
+    if (key === 'locationMapImages') handleChange('locationMapImage', newImages[0] || '');
+    if (key === 'mouzaMapImages') handleChange('mouzaMapImage', newImages[0] || '');
+    if (key === 'cadastralMapImages') handleChange('cadastralMapImage', newImages[0] || '');
   };
 
   const handleUploadMultiplePhotos = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -2882,220 +2890,44 @@ export default function AdityaBirlaCapitalSTSL({
             handleChange('propertyImageNames', newNames);
           }}
           onUploadImages={handleUploadMultiplePhotos}
-          onOpenBucketPicker={() => {
-            setBucketPickerMode('propertyImages');
-            setBucketPickerOpen(true);
-          }}
+          onOpenBucketPicker={() => setBucketPickerOpen(true)}
           sectionNumber={10}
           sectionId="section-10"
         />
 
-        {/* ═══ SECTION 11: LOCATION MAP & BHULEKH MOUZA MAP ═══ */}
-        <Section title="Location Map & Bhulekh Cadastral Map" number={11} id="section-11">
+        {/* ═══ SECTION 11: MAPS & DOCUMENTS ═══ */}
+        <BaseMapsSection
+          locationMapImages={fields.locationMapImages || (fields.locationMapImage ? [fields.locationMapImage] : [])}
+          mouzaMapImages={fields.mouzaMapImages || (fields.mouzaMapImage ? [fields.mouzaMapImage] : [])}
+          sketchMapImages={fields.sketchMapImages || []}
+          cadastralMapImages={fields.cadastralMapImages || (fields.cadastralMapImage ? [fields.cadastralMapImage] : [])}
+          latitude={fields.latitude}
+          longitude={fields.longitude}
+          propertyAddress={fields.propertyAddressAsDocs || fields.propertyAddressAsVisit || fields.propertyAddressAsTRF || ''}
+          isReadOnly={isReadOnly}
+          uploading={uploadingTarget !== null}
+          onLocationMapUpload={(e) => handleMapUpload('locationMapImages', e)}
+          onLocationMapRemove={(idx) => handleMapRemove('locationMapImages', idx)}
+          onMouzaMapUpload={(e) => handleMapUpload('mouzaMapImages', e)}
+          onMouzaMapRemove={(idx) => handleMapRemove('mouzaMapImages', idx)}
+          onSketchMapUpload={(e) => handleMapUpload('sketchMapImages', e)}
+          onSketchMapRemove={(idx) => handleMapRemove('sketchMapImages', idx)}
+          onCadastralMapUpload={(e) => handleMapUpload('cadastralMapImages', e)}
+          onCadastralMapRemove={(idx) => handleMapRemove('cadastralMapImages', idx)}
+          onReorderLocationMap={(newImgs) => handleReorderMap('locationMapImages', newImgs)}
+          onReorderMouzaMap={(newImgs) => handleReorderMap('mouzaMapImages', newImgs)}
+          onReorderSketchMap={(newImgs) => handleReorderMap('sketchMapImages', newImgs)}
+          onReorderCadastralMap={(newImgs) => handleReorderMap('cadastralMapImages', newImgs)}
+          sectionNumber={11}
+          sectionId="section-11"
+          title="Location Map & Bhulekh Cadastral Map"
+        />
+
+        {/* ═══ SECTION 12: DECLARATION & SIGN-OFF ═══ */}
+        <Section title="Declaration & Sign-off" number={12} id="section-12">
           <div className="space-y-6">
-            {/* Live Google Satellite Map Preview */}
-            <div>
-              <h4 className="text-xs font-bold text-[#495057] uppercase tracking-wider mb-2">Live Map & Location</h4>
-              {(() => {
-                const locationComponents = [
-                  fields.propertyAddressAsDocs || fields.propertyAddressAsVisit || fields.propertyAddressAsTRF,
-                  fields.landmark,
-                  fields.microLocation,
-                  fields.subLocality,
-                  fields.mainLocality,
-                ].map(s => (s || '').trim()).filter(Boolean);
-
-                const mainAreaLocation = locationComponents.join(', ') || (fields.propertyAddressAsDocs || fields.propertyAddressAsVisit || fields.propertyAddressAsTRF || '').trim();
-
-                const latStr = (fields.latitude || '').trim();
-                const lngStr = (fields.longitude || '').trim();
-                const hasCoordinates = Boolean(latStr && lngStr && !isNaN(Number(latStr)) && !isNaN(Number(lngStr)));
-
-                const hasQuery = hasCoordinates || mainAreaLocation.length > 0;
-
-                // Priority: Reads from location in main area, overridden by latitude and longitude with red pointer
-                const queryParam = hasCoordinates
-                  ? `loc:${latStr},${lngStr}`
-                  : mainAreaLocation;
-
-                const encodedQuery = encodeURIComponent(queryParam);
-                const googleMapsUrl = hasCoordinates
-                  ? `https://www.google.com/maps?q=loc:${latStr},${lngStr}&z=17&t=k`
-                  : `https://www.google.com/maps/search/${encodeURIComponent(mainAreaLocation)}`;
-
-                return hasQuery ? (
-                  <div className="space-y-3">
-                    <div className="rounded-2xl overflow-hidden border border-[#c8d6e5] shadow-sm">
-                      <div className="bg-[#d5e8f5] px-4 py-2.5 flex items-center justify-between gap-2 flex-wrap">
-                        <div className="flex flex-col">
-                          <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider flex items-center gap-1.5">
-                            📍 Live Satellite Preview {hasCoordinates ? `(Pinned at ${latStr}, ${lngStr})` : `(${fields.mainLocality || 'Address'})`}
-                          </span>
-                          {hasCoordinates && (
-                            <span className="text-[11px] text-sky-800 font-medium">
-                              Latitude & Longitude referenced from Section 2: Location Details ({latStr}, {lngStr})
-                            </span>
-                          )}
-                        </div>
-                        <a
-                          href={googleMapsUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs font-semibold text-[#b8860b] hover:underline shrink-0"
-                        >
-                          Open in Google Maps &#x2197;
-                        </a>
-                      </div>
-                      <iframe
-                        src={`https://maps.google.com/maps?q=${encodedQuery}&t=k&z=17&output=embed`}
-                        width="100%"
-                        height="300"
-                        style={{ border: 0 }}
-                        allowFullScreen
-                        loading="lazy"
-                        referrerPolicy="no-referrer-when-downgrade"
-                        title="Property Location Map"
-                      />
-                    </div>
-                    {hasCoordinates && (
-                      <div className="p-2.5 rounded-xl bg-sky-50 border border-sky-200 text-xs text-sky-900 flex items-center gap-2">
-                        <span className="text-sky-600 font-bold">ℹ️</span>
-                        <span>
-                          Latitude (<strong>{latStr}</strong>) & Longitude (<strong>{lngStr}</strong>) are referenced from <strong>Section 2: Location Details</strong>.
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 text-center text-xs text-gray-500">
-                    Enter Location Details (Main Locality, Address) or Coordinates in Section 2 to view live satellite map.
-                  </div>
-                );
-              })()}
-            </div>
-
-            {/* Map Upload Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Google Satellite Location Map */}
-              <div className="p-4 border border-[#dee2e6] rounded-2xl bg-white space-y-3 shadow-xs">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-bold text-[#495057] uppercase tracking-wider">
-                    Google Satellite Location Map (For PDF)
-                  </h4>
-                </div>
-                {fields.locationMapImage ? (
-                  <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] bg-slate-50">
-                    <img src={fields.locationMapImage} alt="Location Map" className="w-full h-44 object-cover" />
-                    {!isReadOnly && (
-                      <button
-                        type="button"
-                        onClick={() => handleChange('locationMapImage', '')}
-                        className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded-lg shadow text-xs font-semibold hover:bg-red-700 transition-colors"
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  !isReadOnly && (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-xs">
-                        {uploadingTarget === 'locationMapImage' ? '⏳ Uploading...' : '📷 Upload Location Map'}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={e => handleUploadSingleMap('locationMapImage', e)}
-                          disabled={uploadingTarget === 'locationMapImage'}
-                        />
-                      </label>
-                    </div>
-                  )
-                )}
-              </div>
-
-              {/* Bhulekh Mouza Cadastral Map */}
-              <div className="p-4 border border-[#dee2e6] rounded-2xl bg-white space-y-3 shadow-xs">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-bold text-[#495057] uppercase tracking-wider">
-                    Bhulekh Mouza Cadastral Map
-                  </h4>
-                </div>
-                {fields.mouzaMapImage ? (
-                  <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] bg-slate-50">
-                    <img src={fields.mouzaMapImage} alt="Mouza Map" className="w-full h-44 object-cover" />
-                    {!isReadOnly && (
-                      <button
-                        type="button"
-                        onClick={() => handleChange('mouzaMapImage', '')}
-                        className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded-lg shadow text-xs font-semibold hover:bg-red-700 transition-colors"
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  !isReadOnly && (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-xs">
-                        {uploadingTarget === 'mouzaMapImage' ? '⏳ Uploading...' : '📁 Upload Mouza Map'}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={e => handleUploadSingleMap('mouzaMapImage', e)}
-                          disabled={uploadingTarget === 'mouzaMapImage'}
-                        />
-                      </label>
-                    </div>
-                  )
-                )}
-              </div>
-            </div>
-          </div>
-        </Section>
-
-        {/* ═══ SECTION 12: CADASTRAL MAP & DECLARATION ═══ */}
-        <Section title="Superimposed Cadastral Map & Declaration" number={12} id="section-12">
-          <div className="space-y-6">
-            {/* Superimposed Cadastral Map Card */}
-            <div className="p-4 border border-[#dee2e6] rounded-2xl bg-white space-y-3 shadow-xs">
-              <h4 className="text-xs font-bold text-[#495057] uppercase tracking-wider">
-                Superimposed Drone / Survey Cadastral Map
-              </h4>
-              {fields.cadastralMapImage ? (
-                <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] bg-slate-50 max-w-lg">
-                  <img src={fields.cadastralMapImage} alt="Cadastral Map" className="w-full h-48 object-cover" />
-                  {!isReadOnly && (
-                    <button
-                      type="button"
-                      onClick={() => handleChange('cadastralMapImage', '')}
-                      className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded-lg shadow text-xs font-semibold hover:bg-red-700 transition-colors"
-                    >
-                      Remove
-                    </button>
-                  )}
-                </div>
-              ) : (
-                !isReadOnly && (
-                  <div className="flex flex-wrap items-center gap-2">
-                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-xs">
-                      {uploadingTarget === 'cadastralMapImage' ? '⏳ Uploading...' : '📁 Upload Cadastral Map'}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={e => handleUploadSingleMap('cadastralMapImage', e)}
-                        disabled={uploadingTarget === 'cadastralMapImage'}
-                      />
-                    </label>
-                  </div>
-                )
-              )}
-            </div>
-
             {/* Declaration & Sign-off Fields */}
-            <div className="grid md:grid-cols-3 gap-4 pt-4 border-t border-neutral-100">
+            <div className="grid md:grid-cols-3 gap-4">
               <Field label="Name of Appraiser">
                 <div className="relative">
                   <input
@@ -3168,28 +3000,21 @@ export default function AdityaBirlaCapitalSTSL({
       <BasePhotoBucketModal
         isOpen={bucketPickerOpen}
         bucketImages={bucketImages || []}
-        mode={bucketPickerMode}
+        mode="propertyImages"
         onClose={() => setBucketPickerOpen(false)}
         onConfirm={selectedUrls => {
-          if (bucketPickerMode === 'propertyImages') {
-            const currentImages = fields.propertyImages || [];
-            const currentNames = fields.propertyImageNames || [];
-            const newImages = [...currentImages];
-            const newNames = [...currentNames];
-            selectedUrls.forEach((url, i) => {
-              if (!newImages.includes(url)) {
-                newImages.push(url);
-                newNames.push(`Inspection Photo ${currentImages.length + i + 1}`);
-              }
-            });
-            handleChange('propertyImages', newImages);
-            handleChange('propertyImageNames', newNames);
-          } else if (bucketPickerMode === 'sketchMapImages') {
-            const combined = [...(fields.sketchMapImages || []), ...selectedUrls];
-            handleChange('sketchMapImages', combined);
-          } else if (bucketPickerMode === 'locationMapImage' && selectedUrls[0]) {
-            handleChange('locationMapImage', selectedUrls[0]);
-          }
+          const currentImages = fields.propertyImages || [];
+          const currentNames = fields.propertyImageNames || [];
+          const newImages = [...currentImages];
+          const newNames = [...currentNames];
+          selectedUrls.forEach((url, i) => {
+            if (!newImages.includes(url)) {
+              newImages.push(url);
+              newNames.push(`Inspection Photo ${currentImages.length + i + 1}`);
+            }
+          });
+          handleChange('propertyImages', newImages);
+          handleChange('propertyImageNames', newNames);
         }}
       />
     </div>

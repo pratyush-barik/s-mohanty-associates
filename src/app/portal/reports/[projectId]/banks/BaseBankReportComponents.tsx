@@ -930,14 +930,14 @@ function MapImageCategoryCard({
 export function BasePhotoBucketModal({
   isOpen,
   bucketImages = [],
-  mode,
+  mode = 'propertyImages',
   onClose,
   onConfirm,
   onDeleteImage,
 }: {
   isOpen: boolean;
   bucketImages: any[];
-  mode: 'propertyImages' | 'sketchMapImages' | 'locationMapImage';
+  mode?: 'propertyImages' | 'sketchMapImages' | 'locationMapImage';
   onClose: () => void;
   onConfirm: (selectedUrls: string[]) => void;
   onDeleteImage?: (img: any) => Promise<void>;

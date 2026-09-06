@@ -218,9 +218,7 @@ export default function AdityaBirlaCapitalMLAP({
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
-  const [uploadingTarget, setUploadingTarget] = useState<string | null>(null);
   const [bucketPickerOpen, setBucketPickerOpen] = useState(false);
-  const [bucketPickerMode, setBucketPickerMode] = useState<'propertyImages' | 'sketchMapImages' | 'locationMapImage'>('propertyImages');
 
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
 
@@ -449,28 +447,68 @@ export default function AdityaBirlaCapitalMLAP({
   }, [projectId, fields, isReadOnly]);
 
   // ── Image Upload Handlers ──
-  const handleUploadSingleImage = async (e: React.ChangeEvent<HTMLInputElement>, targetKey: 'locationMapImage' | 'mouzaMapImage' | 'cadastralMapImage') => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploadingTarget(targetKey);
+  const [uploadingTarget, setUploadingTarget] = useState<string | null>(null);
+
+  const handleMapUpload = async (
+    key: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages',
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const fileList = e.target.files;
+    if (!fileList || fileList.length === 0) return;
+    setUploadingTarget(key);
     try {
-      if (file.size > 5 * 1024 * 1024) {
-        alert(`${file.name} exceeds 5MB size limit.`);
-        return;
+      const newUrls: string[] = [...(fields[key] || [])];
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
+        if (file.size > 10 * 1024 * 1024) continue;
+        const ext = file.name.split('.').pop() || 'jpg';
+        const fileName = `${projectId}-${key}-${Date.now()}-${i}.${ext}`;
+        const filePath = `temp-photos/${projectId}/${fileName}`;
+        const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(filePath, file);
+        if (!error) {
+          const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
+          newUrls.push(data.publicUrl);
+        }
       }
-      const ext = file.name.split('.').pop();
-      const fileName = `${projectId}-${targetKey}-${Date.now()}.${ext}`;
-      const filePath = `temp-photos/${projectId}/${fileName}`;
-      const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(filePath, file);
-      if (error) throw error;
-      const { data: publicUrlData } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
-      handleChange(targetKey, publicUrlData.publicUrl);
+      handleChange(key, newUrls);
+      if (key === 'locationMapImages' && newUrls.length > 0) handleChange('locationMapImage', newUrls[0]);
+      if (key === 'mouzaMapImages' && newUrls.length > 0) handleChange('mouzaMapImage', newUrls[0]);
+      if (key === 'cadastralMapImages' && newUrls.length > 0) handleChange('cadastralMapImage', newUrls[0]);
     } catch (err: any) {
-      alert(`Image upload failed: ${err.message}`);
+      alert(`Map upload failed: ${err.message}`);
     } finally {
       e.target.value = '';
       setUploadingTarget(null);
     }
+  };
+
+  const handleMapRemove = (
+    key: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages',
+    idx?: number
+  ) => {
+    if (idx === undefined) {
+      handleChange(key, []);
+      if (key === 'locationMapImages') handleChange('locationMapImage', '');
+      if (key === 'mouzaMapImages') handleChange('mouzaMapImage', '');
+      if (key === 'cadastralMapImages') handleChange('cadastralMapImage', '');
+      return;
+    }
+    const current = (fields[key] || []) as string[];
+    const updated = current.filter((_, i) => i !== idx);
+    handleChange(key, updated);
+    if (key === 'locationMapImages') handleChange('locationMapImage', updated[0] || '');
+    if (key === 'mouzaMapImages') handleChange('mouzaMapImage', updated[0] || '');
+    if (key === 'cadastralMapImages') handleChange('cadastralMapImage', updated[0] || '');
+  };
+
+  const handleReorderMap = (
+    key: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages',
+    newImages: string[]
+  ) => {
+    handleChange(key, newImages);
+    if (key === 'locationMapImages') handleChange('locationMapImage', newImages[0] || '');
+    if (key === 'mouzaMapImages') handleChange('mouzaMapImage', newImages[0] || '');
+    if (key === 'cadastralMapImages') handleChange('cadastralMapImage', newImages[0] || '');
   };
 
   const handleUploadMultiplePhotos = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -500,39 +538,6 @@ export default function AdityaBirlaCapitalMLAP({
       handleChange('propertyImages', newUrls);
     } catch (err: any) {
       alert(`Photo upload failed: ${err.message}`);
-    } finally {
-      e.target.value = '';
-      setUploadingTarget(null);
-    }
-  };
-
-  const handleUploadMultipleSketches = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const fileList = e.target.files;
-    if (!fileList || fileList.length === 0) return;
-    setUploadingTarget('sketches');
-    try {
-      const newUrls: string[] = [...(fields.sketchMapImages || [])];
-      for (let i = 0; i < fileList.length; i++) {
-        const file = fileList[i];
-        if (file.size > 5 * 1024 * 1024) {
-          alert(`${file.name} exceeds 5MB size limit.`);
-          continue;
-        }
-        const ext = file.name.split('.').pop();
-        const fileName = `${projectId}-sketch-${Date.now()}-${i}.${ext}`;
-        const filePath = `temp-photos/${projectId}/${fileName}`;
-        const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(filePath, file);
-        if (error) {
-          console.error(`Upload error for ${file.name}:`, error);
-          alert(`Failed to upload ${file.name}: ${error.message}`);
-          continue;
-        }
-        const { data: publicUrlData } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
-        newUrls.push(publicUrlData.publicUrl);
-      }
-      handleChange('sketchMapImages', newUrls);
-    } catch (err: any) {
-      alert(`Sketch upload failed: ${err.message}`);
     } finally {
       e.target.value = '';
       setUploadingTarget(null);
@@ -1802,28 +1807,27 @@ export default function AdityaBirlaCapitalMLAP({
 
         {/* ═══ SECTION 10: MAPS & ATTACHMENTS ═══ */}
         <BaseMapsSection
-          locationMapImage={fields.locationMapImage}
+          locationMapImages={fields.locationMapImages || (fields.locationMapImage ? [fields.locationMapImage] : [])}
+          mouzaMapImages={fields.mouzaMapImages || (fields.mouzaMapImage ? [fields.mouzaMapImage] : [])}
+          sketchMapImages={fields.sketchMapImages || []}
+          cadastralMapImages={fields.cadastralMapImages || (fields.cadastralMapImage ? [fields.cadastralMapImage] : [])}
           latitude={fields.latitude}
           longitude={fields.longitude}
           propertyAddress={fields.propertyAddressAsDocs || fields.propertyAddressAsVisit || ''}
-          sketchMapImages={fields.sketchMapImages}
-          mouzaMapImage={fields.mouzaMapImage}
-          cadastralMapImage={fields.cadastralMapImage}
           isReadOnly={isReadOnly}
           uploading={!!uploadingTarget}
-          bucketCount={bucketImages?.length || 0}
-          onLocationMapUpload={(e) => handleUploadSingleImage(e, 'locationMapImage')}
-          onLocationMapRemove={() => handleChange('locationMapImage', '')}
-          onSketchMapUpload={handleUploadMultipleSketches}
-          onSketchMapRemove={(idx) => {
-            const updated = (fields.sketchMapImages || []).filter((_, i) => i !== idx);
-            handleChange('sketchMapImages', updated);
-          }}
-          onReorderSketchMap={(newImgs) => handleChange('sketchMapImages', newImgs)}
-          onMouzaMapUpload={(e) => handleUploadSingleImage(e, 'mouzaMapImage')}
-          onMouzaMapRemove={() => handleChange('mouzaMapImage', '')}
-          onCadastralMapUpload={(e) => handleUploadSingleImage(e, 'cadastralMapImage')}
-          onCadastralMapRemove={() => handleChange('cadastralMapImage', '')}
+          onLocationMapUpload={(e) => handleMapUpload('locationMapImages', e)}
+          onLocationMapRemove={(idx) => handleMapRemove('locationMapImages', idx)}
+          onMouzaMapUpload={(e) => handleMapUpload('mouzaMapImages', e)}
+          onMouzaMapRemove={(idx) => handleMapRemove('mouzaMapImages', idx)}
+          onSketchMapUpload={(e) => handleMapUpload('sketchMapImages', e)}
+          onSketchMapRemove={(idx) => handleMapRemove('sketchMapImages', idx)}
+          onCadastralMapUpload={(e) => handleMapUpload('cadastralMapImages', e)}
+          onCadastralMapRemove={(idx) => handleMapRemove('cadastralMapImages', idx)}
+          onReorderLocationMap={(newImgs) => handleReorderMap('locationMapImages', newImgs)}
+          onReorderMouzaMap={(newImgs) => handleReorderMap('mouzaMapImages', newImgs)}
+          onReorderSketchMap={(newImgs) => handleReorderMap('sketchMapImages', newImgs)}
+          onReorderCadastralMap={(newImgs) => handleReorderMap('cadastralMapImages', newImgs)}
           sectionNumber={10}
           sectionId="section-10"
         />
@@ -1854,10 +1858,7 @@ export default function AdityaBirlaCapitalMLAP({
             handleChange('propertyImageNames', newNames);
           }}
           onUploadImages={handleUploadMultiplePhotos}
-          onOpenBucketPicker={() => {
-            setBucketPickerMode('propertyImages');
-            setBucketPickerOpen(true);
-          }}
+          onOpenBucketPicker={() => setBucketPickerOpen(true)}
           sectionNumber={11}
           sectionId="section-11"
         />
@@ -1898,19 +1899,13 @@ export default function AdityaBirlaCapitalMLAP({
       <BasePhotoBucketModal
         isOpen={bucketPickerOpen}
         bucketImages={bucketImages}
-        mode={bucketPickerMode}
+        mode="propertyImages"
         onClose={() => setBucketPickerOpen(false)}
         onConfirm={(selectedUrls) => {
-          if (bucketPickerMode === 'propertyImages') {
-            const combined = [...(fields.propertyImages || []), ...selectedUrls];
-            handleChange('propertyImages', combined);
-          } else if (bucketPickerMode === 'sketchMapImages') {
-            const combined = [...(fields.sketchMapImages || []), ...selectedUrls];
-            handleChange('sketchMapImages', combined);
-          } else if (bucketPickerMode === 'locationMapImage' && selectedUrls[0]) {
-            handleChange('locationMapImage', selectedUrls[0]);
-          }
+          const combined = [...(fields.propertyImages || []), ...selectedUrls];
+          handleChange('propertyImages', combined);
         }}
+        onDeleteImage={handleDeleteBucketImage}
       />
 
     </div>
