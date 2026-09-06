@@ -419,7 +419,29 @@ Outstanding items in **priority order**:
 - `latest` - feat(IBBI): add 30 new fields, sub-numbering, sub-headers, new form inputs, and textarea conversions for sections 4-12 to IBBIFields interface and PDF render
 - `latest` - update(Resume): update CGPA to 7.43 and S Mohanty Associates full-stack internship details with 5 priority bullet points
 
-## Current Status / Pending Work
-- The IBBI report draft UI is now completed.
-- However, the rendering of sizes of fonts are not consistent in the entire PDF/preview.
-- Also, the 1st page of the IBBI PDF must contain a blue rectangular box shown exactly as it is in the samples. It should be dynamically created and adjust its spacing outside the content of that page.
+## Recent Changes
+- e8ca0\ — feat(bank): populate Aditya Birla Housing Finance HL-LAP config with all fields from samples (11 sections, 130+ fields)
+- !8ca80\ — docs: update AI_HANDOVER with IBBI report draft completion and pending PDF formatting tasks
+- /8193b\ — fix(pdf): apply hanging indent to declaration bullet points
+- cda830\ — feat(maps): mention origin section for latitude and longitude in location map preview across all report builders
+- ee074\ — fix(pdf): make map images touch header and remove bottom caption texts
+- 8d648\ — fix(stsl): prefill both preparedBy and finalizedBy with report engineer name
+- e7cc50\ — fix(maps): apply location priority and explicit red pointer coordinates override uniformly across all report builders
+- 9d381c\ — fix(stsl): restore section sequence (photos -> location map -> cadastral map & declaration) and remove placeholder background text
+- \dc36458\ — fix(stsl): lock appraiser name, remove hardcoded preparedBy, and bind finalizedBy to report engineer
+- \8ac6632\ — fix(pdf): render PHOTOGRAPHS OF PROPERTY header banner on photo grid
+- \dddecb\ — fix(stsl): align section 10 (maps) and section 11 (photographs) with predefined UI components
+
+## Current Status
+
+### Completed
+- **IBBI Report Draft** — UI is fully completed with all sections, fields, and dynamic content.
+- **Aditya Birla Capital Ltd (STSL / MLAP)** — Bank report builder fully completed with custom PDF renderer.
+- **Aditya Birla Housing Finance Ltd (HL-LAP)** — Config-driven bank report builder populated with 130+ fields across 11 sections (Header & Basic Details, Surrounding & Locality, Property Details, Sanction Plan & Documents, Setbacks & BUA, Valuation Details, Boundaries, Remarks & Declaration, Photographs, Location Map, Deviations/Observations). Uses the generic BankReportBuilder architecture.
+- **57 Bank/Sub-template Stubs** — Scalable OOP architecture with BankConfig-driven system, dynamic lazy-loading in BuilderSelector.
+
+### Pending / Next Steps
+- **IBBI PDF Font Consistency** — The rendering of font sizes is not consistent across the entire IBBI PDF/preview output. Needs a pass to standardize all font sizes.
+- **IBBI Cover Page Blue Box** — The 1st page of the IBBI PDF must contain a blue rectangular box shown exactly as in the samples. It should dynamically create and adjust spacing of that box outside the content of that page.
+- **Aditya Birla Housing Finance PDF Renderer** — The HL-LAP config currently uses the generic BankReportBuilder PDF output. A custom PDF renderer (like the one built for Aditya Birla Capital MLAP) may be needed to match the exact sample layout with its specific table structures, header banner, and dark-themed formatting.
+- **Remaining Bank Report Builders** — 55 other bank stubs need to be populated with their specific fields once samples are provided.
