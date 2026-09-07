@@ -5,7 +5,7 @@ import { BankConfig } from '@/lib/bank-fields';
 export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
   bankId: 'ADITYA BIRLA HOUSING FINANCE LTD',
   subTemplateId: 'HL-LAP',
-  displayName: 'Aditya Birla Housing Finance Ltd — HL / LAP',
+  displayName: 'Aditya Birla Housing Finance Ltd',
   navSections: [
     { id: 'section-1', title: 'Header & Basic Details' },
     { id: 'section-2', title: 'Surrounding & Locality' },
