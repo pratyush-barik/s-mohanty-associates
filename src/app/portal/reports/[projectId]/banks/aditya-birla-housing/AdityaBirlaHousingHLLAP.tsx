@@ -24,14 +24,44 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
     ownerName: 'Applicant Name(s)',
     ownerAddress: 'Address as per request',
   },
+  // Hide base fields that are not in the Aditya Birla Housing Finance sample
+  // (these are replaced by the extraFields below in the exact sample order)
+  hiddenFields: [
+    'to',
+    'refNo',
+    'purpose',
+    'bankName',
+    'propertyType',
+    'ownerAddress',
+    'legalAddress',
+    'landmark',
+    'loanApplicationNo',
+    'documentHolderName',
+    'dateOfInspection',
+  ],
   extraFields: {
-    // ── HEADER / TOP BANNER ──
+    // ── SECTION 1: HEADER & BASIC DETAILS ──
+    // Order matches the sample image exactly:
+    // Header banner → Deal Number, Asset ID, Branch Name, Type of Case,
+    // Valuer Name, Product Type, Valuer Ref No, Date of Visit,
+    // Valuer Feedback, Date of Report, Contacted Person, Relation with Customer,
+    // Seller, Contact No
+    // Then BASIC DETAILS → 1. Applicant Name(s), 2. Originally type of property,
+    // 3. Address as per request, Address as per document, Address as per Site,
+    // Project/Colony/Layout Name, Unit/Flat no, Floor No, Building Name, Wing Name,
+    // S.No/G.No/Khasra No, Close Vicinity/Landmark, Street Name, Village Name,
+    // City, State, Main Locality, Sub Locality, Pin code, Latitude, Longitude,
+    // 4. Has the valuator valued...
     'section-1': [
+      // ── Header Banner Fields ──
       { key: 'dealNumber', label: 'Deal Number' },
       { key: 'assetId', label: 'Asset ID' },
       { key: 'typeOfCase', label: 'Type of Case', default: 'Home Loan' },
       { key: 'productType', label: 'Product Type', default: 'Home Loan' },
+      { key: 'valuerRefNo', label: 'Valuer Ref No' },
+      { key: 'dateOfVisit', label: 'Date of Visit', type: 'date' },
       { key: 'valuerFeedback', label: 'Valuer Feedback', default: 'Positive' },
+      { key: 'dateOfReport', label: 'Date of Report', type: 'date' },
       { key: 'contactedPerson', label: 'Contacted Person' },
       { key: 'relationWithCustomer', label: 'Relation with Customer', default: 'Self' },
       { key: 'sellerName', label: 'Seller' },
@@ -61,7 +91,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       { key: 'valuedBefore', label: '4. Has the valuator valued this property before, If yes, when, for whom', default: 'No' },
     ],
 
-    // ── SURROUNDING & LOCALITY DETAILS (5-11) ──
+    // ── SECTION 2: SURROUNDING & LOCALITY DETAILS (5-11) ──
     'section-2': [
       { key: 'locationType', label: '5. Type (Comm, Res, Ind, Mix)', default: 'Residential' },
       { key: 'localityLevel', label: 'Locality (Low, Medium, Posh)', default: 'Medium' },
@@ -79,7 +109,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       { key: 'securityObservation', label: '11. Any observation which affects the security', default: 'NA' },
     ],
 
-    // ── PROPERTY DETAILS (12-16) ──
+    // ── SECTION 3: PROPERTY DETAILS (12-16) ──
     'section-3': [
       { key: 'occupiedBy', label: '12. Occupied By', default: 'Vacant' },
       { key: 'nameOfOccupant', label: 'Name of Occupant', default: 'NA' },
@@ -110,7 +140,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       { key: 'residualAge', label: 'Residual age (Yrs)' },
     ],
 
-    // ── SANCTION PLAN APPROVAL & OTHER DOCUMENTS DETAILS (17-23) ──
+    // ── SECTION 4: SANCTION PLAN APPROVAL & OTHER DOCUMENTS DETAILS (17-23) ──
     'section-4': [
       { key: 'sanctionPlanAvailable', label: '17. Sanction Plan Available', default: 'NA' },
       { key: 'layoutPlanApprovalNo', label: '18. Layout Plan - Approval No', default: 'N.A' },
@@ -138,7 +168,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       { key: 'usageAsPerSite', label: 'Usage As per Site' },
     ],
 
-    // ── SETBACKS & BUA AREA (24-26) ──
+    // ── SECTION 5: SETBACKS & BUA AREA (24-26) ──
     'section-5': [
       { key: 'demolitionList', label: '24. Whether property under demolition list as per authority (Y/N)', default: 'No' },
       { key: 'setbackFrontPlan', label: '25. Setback Front - As per plan/Byelaws (Fts)', default: 'N.A' },
@@ -162,7 +192,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       { key: 'totalBuaSite', label: 'Total BUA (In Sft.) - Site', default: 'N.A' },
     ],
 
-    // ── VALUATION DETAILS (27) ──
+    // ── SECTION 6: VALUATION DETAILS (27) ──
     'section-6': [
       { key: 'propertyTypeBungalow', label: 'Property Type', default: 'Bungalow' },
       { key: 'landAreaMeasurement', label: 'Land Area - Unit of Measurement', default: 'Sqft' },
@@ -197,7 +227,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       { key: 'approxRentals', label: 'Approx. Rentals in case of 100% complete property' },
     ],
 
-    // ── BOUNDARIES (28) ──
+    // ── SECTION 7: BOUNDARIES (28) ──
     'section-7': [
       { key: 'boundaryDocsNorth', label: 'As per Docs - North', default: 'NA' },
       { key: 'boundaryDocsEast', label: 'As per Docs - East', default: 'NA' },
@@ -214,13 +244,13 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       { key: 'boundariesMatching', label: '28. Boundaries Matching' },
     ],
 
-    // ── REMARKS & DECLARATION ──
+    // ── SECTION 8: REMARKS & DECLARATION ──
     'section-8': [
       { key: 'remarksText', label: 'Remarks', type: 'textarea', span: 2 },
       { key: 'declarationText', label: 'Declaration', type: 'textarea', span: 2 },
     ],
 
-    // ── DEVIATIONS / OBSERVATIONS ──
+    // ── SECTION 11: DEVIATIONS / OBSERVATIONS ──
     'section-11': [
       { key: 'deviationPropertyAddress', label: 'Property Address (for Deviation page)', type: 'textarea', span: 2 },
       { key: 'deviationsObservations', label: 'Deviations/Observations', type: 'textarea', span: 2 },
