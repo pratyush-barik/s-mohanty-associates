@@ -1022,6 +1022,13 @@ export default function BankReportBuilder({
       r.drawCenteredTitle(titleText);
       r.advanceCursor(8);
 
+      // ── Optional Split Section 1a ──
+      if (config?.navSections?.some(s => s.id === 'section-1a') && !isSectionHidden('section-1a')) {
+        r.drawSectionHeader(getSectionTitle('section-1a', 'BASIC DETAILS').toUpperCase());
+        drawExtraPDFFields('section-1a');
+        r.advanceCursor(8);
+      }
+
       const drawExtraPDFFields = (secId: string) => {
         if (config?.extraFields?.[secId]) {
           for (const ef of config.extraFields[secId]) {
@@ -1035,7 +1042,7 @@ export default function BankReportBuilder({
 
       // ── General Details ──
       if (!isSectionHidden('section-1')) {
-        r.drawSectionHeader('GENERAL DETAILS');
+        r.drawSectionHeader(getSectionTitle('section-1', 'GENERAL DETAILS').toUpperCase());
         r.drawOptionRow('Type of property', ['Residential', 'Commercial', 'Residential cum Commercial', 'Industrial', 'Vacant Plot'], fields.propertyType);
         r.drawSimpleRow(config?.fieldLabels?.ownerName || 'Name of the Customer(s)', `"${fields.ownerName || 'N/A'}"`);
         
@@ -1075,7 +1082,7 @@ export default function BankReportBuilder({
 
       // ── Surrounding Locality Details ──
       if (!isSectionHidden('section-2')) {
-        r.drawSectionHeader('SURROUNDING LOCALITY DETAILS');
+        r.drawSectionHeader(getSectionTitle('section-2', 'SURROUNDING LOCALITY DETAILS').toUpperCase());
         r.drawSimpleRow('Ward No / Municipal Land No', fields.wardNo);
         r.drawOptionRow('Vicinity', ['Slum', 'Residential', 'Commercial', 'Mixed', 'Industrial'], fields.vicinity);
         r.drawOptionRow('Locality Type', ['Elite/Posh/High Class', 'Upper Middle Class', 'Middle Class', 'Lower Middle Class'], fields.classOfLocality);
@@ -1097,7 +1104,7 @@ export default function BankReportBuilder({
 
       // ── Property Details ──
       if (!isSectionHidden('section-3')) {
-        r.drawSectionHeader('PROPERTY DETAILS');
+        r.drawSectionHeader(getSectionTitle('section-3', 'PROPERTY DETAILS').toUpperCase());
         r.drawSimpleRow('Type of Usage of Entire Property', fields.usageType);
         r.drawSimpleRow('Additional Amenities', fields.additionalAmenities || 'N/A');
         r.drawOptionRow('Legal Status of Property', ['Freehold', 'Lease hold >30 yrs.', 'Lease hold 15-30 yrs.', 'Lease hold <15 yrs.'], fields.legalStatus);
@@ -1121,7 +1128,7 @@ export default function BankReportBuilder({
 
       // ── Structural Details ──
       if (!isSectionHidden('section-5')) {
-        r.drawSectionHeader('STRUCTURAL DETAILS');
+        r.drawSectionHeader(getSectionTitle('section-5', 'STRUCTURAL DETAILS').toUpperCase());
         r.drawOptionRow('Type of Structure', ['RCC', 'Load Bearing', 'Steel Structure', 'Composite Structure', 'Industrial Shed', 'A/C Sheet', 'G/I Sheet', 'Asbestos Roofing'], fields.structureType);
         r.drawSimpleRow('No. of Floors', fields.numberOfFloors);
         r.drawSimpleRow('No. of Wings', fields.numberOfWings);
@@ -1202,7 +1209,7 @@ export default function BankReportBuilder({
 
       // ── Abstract of Valuation ──
       if (!isSectionHidden('section-9')) {
-        r.drawSectionHeader('ABSTRACT OF VALUATION');
+        r.drawSectionHeader(getSectionTitle('section-9', 'ABSTRACT OF VALUATION').toUpperCase());
         r.drawSimpleRow(
           isApartmentFlat ? 'Market Value (Apartment/Flat)' : 'Market Value (Land + Building)',
           `Rs.${formatIndianCurrency(totalPropertyValue)}/- (${rupeesInWords(totalPropertyValue)})`
@@ -1539,7 +1546,8 @@ export default function BankReportBuilder({
   };
 
   const isFieldHidden = (key: string) => config?.hiddenFields?.includes(key) || false;
-  const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(sectionId) || false;
+    const getSectionTitle = (id: string, fallback: string) => config?.navSections?.find(s => s.id === id)?.title || fallback;
+const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(sectionId) || false;
   const getLabel = (key: string, fallback: string) => config?.fieldLabels?.[key] || fallback;
 
   const aiAssistEnabled = process.env.NEXT_PUBLIC_AI_ASSIST_ENABLED === 'true';
@@ -1573,7 +1581,7 @@ export default function BankReportBuilder({
 
         {/* ── Section 1: General Details ── */}
         {!isSectionHidden('section-1') && (
-          <Section title="General Details" number={1}>
+          <Section title={getSectionTitle("section-1", "General Details")} number={1}>
             <div className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4 bg-amber-50/30 p-4 rounded-xl border border-amber-200/50 mb-2">
                 {!isFieldHidden('to') && (
@@ -1781,9 +1789,16 @@ export default function BankReportBuilder({
           </Section>
         )}
 
+        {/* ── Section 1a: Optional Split Section ── */}
+        {!isSectionHidden('section-1a') && config?.navSections?.some(s => s.id === 'section-1a') && (
+          <Section title={getSectionTitle('section-1a', 'Basic Details')} number={2}>
+            {renderExtraFields('section-1a')}
+          </Section>
+        )}
+
         {/* ── Section 2: Surrounding Locality Details ── */}
         {!isSectionHidden('section-2') && (
-          <Section title="Surrounding Locality Details" number={2}>
+          <Section title={getSectionTitle("section-2", "Surrounding Locality Details")} number={2}>
             <div className="grid md:grid-cols-2 gap-4">
               <Field label="Ward No / Municipal Land No">
                 <input className={inputCls} value={fields.wardNo} onChange={e => handleChange('wardNo', e.target.value)} disabled={isReadOnly} placeholder="e.g. Ward 12" />
@@ -1834,7 +1849,7 @@ export default function BankReportBuilder({
 
         {/* ── Section 3: Property Details ── */}
         {!isSectionHidden('section-3') && (
-          <Section title="Property Details" number={3}>
+          <Section title={getSectionTitle("section-3", "Property Details")} number={3}>
             <div className="grid md:grid-cols-2 gap-4">
               <Field label="Usage Type">
                 <input className={inputCls} value={fields.usageType} onChange={e => handleChange('usageType', e.target.value)} disabled={isReadOnly} placeholder="e.g. Residential" />
@@ -1881,7 +1896,7 @@ export default function BankReportBuilder({
 
         {/* ── Section 5: Structural Details ── */}
         {!isSectionHidden('section-5') && (
-          <Section title="Structural Details" number={5}>
+          <Section title={getSectionTitle("section-5", "Structural Details")} number={5}>
             <div className="grid md:grid-cols-2 gap-4">
               <Field label="Type of Structure">
                 <select className={selectCls} value={fields.structureType} onChange={e => handleChange('structureType', e.target.value)} disabled={isReadOnly}>
@@ -2100,7 +2115,7 @@ export default function BankReportBuilder({
 
         {/* ── Section 10: Remarks & Declaration ── */}
         {!isSectionHidden('section-10') && (
-          <Section title="Remarks & Declaration" number={isApartmentFlat ? 9 : 10}>
+          <Section title={getSectionTitle("section-8", "Remarks & Declaration")} number={isApartmentFlat ? 9 : 10}>
             <div className="grid md:grid-cols-2 gap-4">
               <Field label="Demarcation">
                 <input className={inputCls} value={fields.demarcation} onChange={e => handleChange('demarcation', e.target.value)} disabled={isReadOnly} placeholder="Clear" />

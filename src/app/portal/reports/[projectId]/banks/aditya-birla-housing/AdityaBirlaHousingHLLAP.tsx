@@ -7,7 +7,8 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
   subTemplateId: 'HL-LAP',
   displayName: 'Aditya Birla Housing Finance Ltd',
   navSections: [
-    { id: 'section-1', title: 'Header & Basic Details' },
+    { id: 'section-1', title: 'Header Details' },
+    { id: 'section-1a', title: 'Basic Details' },
     { id: 'section-2', title: 'Surrounding & Locality' },
     { id: 'section-3', title: 'Property Details' },
     { id: 'section-4', title: 'Sanction Plan & Documents' },
@@ -70,6 +71,10 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       { key: 'contactedPerson', label: 'Contacted Person' },
       { key: 'relationWithCustomer', label: 'Relation with Customer', default: 'Seller' },
       { key: 'contactNo', label: 'Contact No' },
+    ],
+
+    // ── SECTION 1a: BASIC DETAILS ──
+    'section-1a': [
       // ── BASIC DETAILS (1-4) ──
       { key: 'ownerName', label: '1. Applicant Name(s)' },
       { key: 'originallyTypeOfProperty', label: '2. Originally type of property' },
