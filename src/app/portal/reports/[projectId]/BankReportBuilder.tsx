@@ -1008,10 +1008,16 @@ export default function BankReportBuilder({
 
       let titleText = 'VALUATION REPORT';
 
-      r.drawTextBlock('To', { bold: true });
-      r.drawTextBlock(fields.to || '________', { bold: true });
-      r.drawRichTextBlock([{ text: 'Date of valuation report: ' }, { text: fmtDate(fields.dateOfValuation), bold: true }]);
-      r.drawRichTextBlock([{ text: 'Ref: ' }, { text: fields.refNo || '________', bold: true }]);
+      if (!isFieldHidden('to')) {
+        r.drawTextBlock('To', { bold: true });
+        r.drawTextBlock(fields.to || '________', { bold: true });
+      }
+      if (!isFieldHidden('dateOfValuation')) {
+        r.drawRichTextBlock([{ text: 'Date of valuation report: ' }, { text: fmtDate(fields.dateOfValuation), bold: true }]);
+      }
+      if (!isFieldHidden('refNo')) {
+        r.drawRichTextBlock([{ text: 'Ref: ' }, { text: fields.refNo || '________', bold: true }]);
+      }
       r.advanceCursor(6);
       r.drawCenteredTitle(titleText);
       r.advanceCursor(8);
