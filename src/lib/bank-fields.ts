@@ -271,6 +271,8 @@ export interface ExtraFieldConfig {
   span?: 1 | 2;
   /** Inline positioning hint: render this field in a 2-col inline pair */
   inline?: 'left' | 'right';
+  /** Make this field conditionally visible based on the value of another field */
+  dependsOn?: { field: string; value: string };
 }
 
 // ─── Section Config ──────────────────────────────────────────────────

@@ -98,7 +98,8 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       { key: 'pinCodeOfProperty', label: 'Pin code of the Property' },
       { key: 'latitude', label: 'Latitude' },
       { key: 'longitude', label: 'Longitude' },
-      { key: 'valuedBefore', label: '4. Has the valuator valued this property before, If yes, when, for whom', default: 'No' },
+      { key: 'valuedBefore', label: '4. Has the valuator valued this property before, If yes, when, for whom', type: 'yesno', default: 'No' },
+      { key: 'valuedBeforeDetails', label: 'When and for whom', type: 'textarea', span: 2, dependsOn: { field: 'valuedBefore', value: 'Yes' } },
     ],
 
     // ── SECTION 2: SURROUNDING & LOCALITY DETAILS (5-11) ──

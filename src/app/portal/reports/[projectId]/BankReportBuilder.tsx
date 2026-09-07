@@ -1032,6 +1032,7 @@ export default function BankReportBuilder({
       const drawExtraPDFFields = (secId: string) => {
         if (config?.extraFields?.[secId]) {
           for (const ef of config.extraFields[secId]) {
+            if (ef.dependsOn && fields[ef.dependsOn.field] !== ef.dependsOn.value) continue;
             const val = fields[ef.key] !== undefined ? fields[ef.key] : (ef.default || '');
             if (val !== '' && val !== null && val !== undefined) {
               r.drawSimpleRow(ef.label, String(val));
@@ -1488,6 +1489,7 @@ export default function BankReportBuilder({
   };
 
   const renderExtraField = (ef: ExtraFieldConfig) => {
+    if (ef.dependsOn && fields[ef.dependsOn.field] !== ef.dependsOn.value) return null;
     const val = fields[ef.key] !== undefined ? fields[ef.key] : (ef.default || '');
     return (
       <Field key={ef.key} label={ef.label} span={ef.span || 1}>
