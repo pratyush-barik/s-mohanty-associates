@@ -410,7 +410,6 @@ Outstanding items in **priority order**:
 - `latest` - feat(IBBI): match Section 11 Architectural Aspects labels to IBBI sample exactly
 - `latest` - feat(IBBI): split Section 10 and 11, update Section 10 Marketability of the Property labels to IBBI sample exactly
 - `latest` - feat(IBBI): match Section 9 Environmental Factors labels to IBBI sample exactly
-- `latest` - feat(IBBI): split Section 8 and 9, update Section 8 Socio-Cultural Aspects labels to IBBI sample exactly
 - `latest` - feat(IBBI): match Section 7 Functional and Infrastructure Aspects labels to IBBI sample exactly
 - `latest` - feat(IBBI): match Section 6 Document Details and Legal Aspects labels to IBBI sample exactly
 - `latest` - feat(IBBI): match Section 5 Town Planning Parameters labels to IBBI sample exactly
@@ -420,24 +419,36 @@ Outstanding items in **priority order**:
 - `latest` - update(Resume): update CGPA to 7.43 and S Mohanty Associates full-stack internship details with 5 priority bullet points
 
 ## Recent Changes
-- e8ca0\ — feat(bank): populate Aditya Birla Housing Finance HL-LAP config with all fields from samples (11 sections, 130+ fields)
-- !8ca80\ — docs: update AI_HANDOVER with IBBI report draft completion and pending PDF formatting tasks
-- /8193b\ — fix(pdf): apply hanging indent to declaration bullet points
-- cda830\ — feat(maps): mention origin section for latitude and longitude in location map preview across all report builders
-- ee074\ — fix(pdf): make map images touch header and remove bottom caption texts
-- 8d648\ — fix(stsl): prefill both preparedBy and finalizedBy with report engineer name
-- e7cc50\ — fix(maps): apply location priority and explicit red pointer coordinates override uniformly across all report builders
-- 9d381c\ — fix(stsl): restore section sequence (photos -> location map -> cadastral map & declaration) and remove placeholder background text
-- \dc36458\ — fix(stsl): lock appraiser name, remove hardcoded preparedBy, and bind finalizedBy to report engineer
-- \8ac6632\ — fix(pdf): render PHOTOGRAPHS OF PROPERTY header banner on photo grid
-- \dddecb\ — fix(stsl): align section 10 (maps) and section 11 (photographs) with predefined UI components
+- `acd365b` — fix(mlap): resolve ReferenceError on handleDeleteBucketImage and restore builder loading; fix TDZ for drawExtraPDFFields in BankReportBuilder; type AnnexureRefSelector optional props
+- `1ab1a5e` — feat(bank): dynamically calculate section numbers in UI based on navSections configuration
+- `e36b141` — feat(bank): add 3.x numbering prefix to all address fields in Basic Details section
+- `47401d8` — feat(bank): rename originally type of property and current usage labels for Aditya Birla Housing
+- `e8b8f7d` — fix(bank): swap yesno options to default to No and fallback properly
+- `dc8fbef` — fix(bank): hide empty section-1 top banner container if all fields inside are hidden
+- `c679037` — feat(bank): add dependsOn logic for conditional fields and implement for valuedBefore field
+- `f991333` — feat(bank): split section-1 into Header Details and Basic Details using section-1a
+- `61fc1df` — fix(bank): hide branchName, ownerName and to from base fields, move them to extraFields for exact sorting
+- `36ae1bf` — fix(bank): hide irrelevant base fields and reorder section-1 to match Aditya Birla Housing sample exactly
+- `8a42dc4` — refactor(builders): standardize map handling across builders with BaseMapsSection, eliminate redundant bucket picker modal in BankReportBuilder, and unify BasePhotoBucketModal
+- `e8ca070` — feat(bank): populate Aditya Birla Housing Finance HL-LAP config with all fields from samples (11 sections, 130+ fields)
+- `8ca80d5` — docs: update AI_HANDOVER with IBBI report draft completion and pending PDF formatting tasks
+- `8193ba1` — fix(pdf): apply hanging indent to declaration bullet points
+- `cda8303` — feat(maps): mention origin section for latitude and longitude in location map preview across all report builders
+- `ee07452` — fix(pdf): make map images touch header and remove bottom caption texts
+- `8d648ea` — fix(stsl): prefill both preparedBy and finalizedBy with report engineer name
+- `e7cc501` — fix(maps): apply location priority and explicit red pointer coordinates override uniformly across all report builders
+- `9d381c1` — fix(stsl): restore section sequence (photos -> location map -> cadastral map & declaration) and remove placeholder background text
+- `dc36458` — fix(stsl): lock appraiser name, remove hardcoded preparedBy, and bind finalizedBy to report engineer
+- `8ac6632` — fix(pdf): render PHOTOGRAPHS OF PROPERTY header banner on photo grid
+- `dddecb6` — fix(stsl): align section 10 (maps) and section 11 (photographs) with predefined UI components
 
 ## Current Status
 
 ### Completed
 - **IBBI Report Draft** — UI is fully completed with all sections, fields, and dynamic content.
-- **Aditya Birla Capital Ltd (STSL / MLAP)** — Bank report builder fully completed with custom PDF renderer.
+- **Aditya Birla Capital Ltd (STSL / MLAP)** — Bank report builder fully completed with custom PDF renderer, standardized map uploads/reordering, unified bucket modals, and runtime loader stability.
 - **Aditya Birla Housing Finance Ltd (HL-LAP)** — Config-driven bank report builder populated with 130+ fields across 11 sections (Header & Basic Details, Surrounding & Locality, Property Details, Sanction Plan & Documents, Setbacks & BUA, Valuation Details, Boundaries, Remarks & Declaration, Photographs, Location Map, Deviations/Observations). Uses the generic BankReportBuilder architecture.
+- **Dynamic UI Section Numbering** — All bank builders dynamically compute section numbering matching their specific `navSections` sequence.
 - **57 Bank/Sub-template Stubs** — Scalable OOP architecture with BankConfig-driven system, dynamic lazy-loading in BuilderSelector.
 
 ### Pending / Next Steps
