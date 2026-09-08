@@ -1108,14 +1108,14 @@ export function AnnexureRefSelector({
   reportRefText = 'Property Address',
 }: {
   label: string;
-  annexureEnabled: boolean;
-  annexureRef: string;
-  annexureRefShowAlso: boolean;
-  annexures: Array<{ id: string; label: string; title?: string; [key: string]: any }>;
+  annexureEnabled?: boolean;
+  annexureRef?: string;
+  annexureRefShowAlso?: boolean;
+  annexures?: Array<{ id: string; label: string; title?: string; [key: string]: any }>;
   isReadOnly?: boolean;
   onToggleEnabled: () => void;
-  onToggleShowAlso: () => void;
-  onSelectRef: (id: string) => void;
+  onToggleShowAlso?: () => void;
+  onSelectRef?: (id: string) => void;
   onAutoCreateAnnexure?: () => void;
   reportRefText?: string;
 }) {

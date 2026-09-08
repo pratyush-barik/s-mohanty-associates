@@ -2990,11 +2990,7 @@ export default function AdityaBirlaCapitalSTSL({
       </div>
 
       {/* ── Floating Navigator Side Column ── */}
-      <FloatingNavigator
-        sections={NAV_SECTIONS}
-        activeSection={activeSection}
-        onSelectSection={setActiveSection}
-      />
+      <FloatingNavigator sections={NAV_SECTIONS} />
 
       {/* Base Photo Bucket Picker Modal */}
       <BasePhotoBucketModal

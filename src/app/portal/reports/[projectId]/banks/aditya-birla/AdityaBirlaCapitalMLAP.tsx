@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
+import { saveReportDraft, submitReportForVerification, deleteBucketImage } from '@/app/actions/project';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import * as XLSX from 'xlsx';
 import { formatIndianCurrency } from '@/lib/numberToWords';
@@ -219,6 +219,29 @@ export default function AdityaBirlaCapitalMLAP({
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [bucketPickerOpen, setBucketPickerOpen] = useState(false);
+  const [localBucketImages, setLocalBucketImages] = useState<any[]>(bucketImages || []);
+  useEffect(() => {
+    setLocalBucketImages(bucketImages || []);
+  }, [bucketImages]);
+
+  const handleDeleteBucketImage = async (img: any) => {
+    if (!confirm('Delete this photo from the bucket?')) return;
+    try {
+      await supabaseBrowser.storage
+        .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+        .remove([img.storagePath]);
+
+      const res = await deleteBucketImage(img.id);
+      if (res.error) {
+        alert(res.error);
+      } else {
+        setLocalBucketImages(prev => prev.filter(i => i.id !== img.id));
+      }
+    } catch (e) {
+      console.error('Delete error:', e);
+      alert('Failed to delete photo.');
+    }
+  };
 
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
 
@@ -777,7 +800,7 @@ export default function AdityaBirlaCapitalMLAP({
         label: fields.propertyImageNames?.[idx] !== undefined
           ? fields.propertyImageNames[idx]
           : 'Site Picture',
-      })).filter((p: any) => p.bytes && p.bytes.length > 0);
+      })).filter((p): p is { bytes: Uint8Array; label: string } => !!p.bytes && p.bytes.length > 0);
 
       await r.drawPhotoGrid(photos);
     }
@@ -797,10 +820,11 @@ export default function AdityaBirlaCapitalMLAP({
 
     if (sketchBytes && sketchBytes.length > 0) {
       for (let i = 0; i < sketchBytes.length; i++) {
-        if (sketchBytes[i]) {
+        const sb = sketchBytes[i];
+        if (sb) {
           r.checkPageBreak(300);
           r.drawSectionHeader(i === 0 ? 'AMIN HAND-DRAWN SKETCH MAP' : `SKETCH MAP ${i + 1}`);
-          await r.drawImageSection(sketchBytes[i], `Hand-Drawn Sketch Map ${i + 1}`);
+          await r.drawImageSection(sb, `Hand-Drawn Sketch Map ${i + 1}`);
         }
       }
     }
@@ -1838,7 +1862,7 @@ export default function AdityaBirlaCapitalMLAP({
           propertyImageNames={fields.propertyImageNames || []}
           isReadOnly={isReadOnly}
           uploading={uploadingTarget === 'photos'}
-          bucketCount={bucketImages?.length || 0}
+          bucketCount={localBucketImages?.length || 0}
           onImageNameChange={(idx, name) => {
             const updatedNames = [...(fields.propertyImageNames || [])];
             while (updatedNames.length <= idx) {
@@ -1898,12 +1922,22 @@ export default function AdityaBirlaCapitalMLAP({
       {/* ── Standard Photo Bucket Modal ── */}
       <BasePhotoBucketModal
         isOpen={bucketPickerOpen}
-        bucketImages={bucketImages}
+        bucketImages={localBucketImages}
         mode="propertyImages"
         onClose={() => setBucketPickerOpen(false)}
         onConfirm={(selectedUrls) => {
-          const combined = [...(fields.propertyImages || []), ...selectedUrls];
-          handleChange('propertyImages', combined);
+          const currentImages = fields.propertyImages || [];
+          const currentNames = fields.propertyImageNames || [];
+          const newImages = [...currentImages];
+          const newNames = [...currentNames];
+          selectedUrls.forEach((url, i) => {
+            if (!newImages.includes(url)) {
+              newImages.push(url);
+              newNames.push(`Inspection Photo ${currentImages.length + i + 1}`);
+            }
+          });
+          handleChange('propertyImages', newImages);
+          handleChange('propertyImageNames', newNames);
         }}
         onDeleteImage={handleDeleteBucketImage}
       />

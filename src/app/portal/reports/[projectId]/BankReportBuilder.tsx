@@ -1022,13 +1022,6 @@ export default function BankReportBuilder({
       r.drawCenteredTitle(titleText);
       r.advanceCursor(8);
 
-      // ── Optional Split Section 1a ──
-      if (config?.navSections?.some(s => s.id === 'section-1a') && !isSectionHidden('section-1a')) {
-        r.drawSectionHeader(getSectionTitle('section-1a', 'BASIC DETAILS').toUpperCase());
-        drawExtraPDFFields('section-1a');
-        r.advanceCursor(8);
-      }
-
       const drawExtraPDFFields = (secId: string) => {
         if (config?.extraFields?.[secId]) {
           for (const ef of config.extraFields[secId]) {
@@ -1040,6 +1033,13 @@ export default function BankReportBuilder({
           }
         }
       };
+
+      // ── Optional Split Section 1a ──
+      if (config?.navSections?.some(s => s.id === 'section-1a') && !isSectionHidden('section-1a')) {
+        r.drawSectionHeader(getSectionTitle('section-1a', 'BASIC DETAILS').toUpperCase());
+        drawExtraPDFFields('section-1a');
+        r.advanceCursor(8);
+      }
 
       // ── General Details ──
       if (!isSectionHidden('section-1')) {
