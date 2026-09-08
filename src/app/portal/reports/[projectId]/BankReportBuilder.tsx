@@ -1585,33 +1585,35 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
         {!isSectionHidden('section-1') && (
           <Section title={getSectionTitle("section-1", "General Details")} number={1}>
             <div className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4 bg-amber-50/30 p-4 rounded-xl border border-amber-200/50 mb-2">
-                {!isFieldHidden('to') && (
-                  <Field label={getLabel('to', 'To (Recipient / Bank)')} span={2}>
-                    <input className={inputCls} value={fields.to} onChange={e => handleChange('to', e.target.value)} disabled={isReadOnly} placeholder="e.g. HDFC BANK LTD., Bhubaneswar" />
-                  </Field>
-                )}
-                {!isFieldHidden('dateOfValuation') && (
-                  <Field label={getLabel('dateOfValuation', 'Date of Valuation Report')}>
-                    <input type="date" className={inputCls} value={fields.dateOfValuation} onChange={e => handleChange('dateOfValuation', e.target.value)} disabled={isReadOnly} />
-                  </Field>
-                )}
-                {!isFieldHidden('refNo') && (
-                  <Field label="Ref No. (Locked)">
-                    <input className={inputCls} value={fields.refNo} disabled={true} readOnly={true} placeholder="Project ID" />
-                  </Field>
-                )}
-                {!isFieldHidden('bankName') && (
-                  <Field label={getLabel('bankName', 'Name of Bank / Institution')}>
-                    <input className={inputCls} value={fields.bankName} onChange={e => handleChange('bankName', e.target.value)} disabled={isReadOnly} placeholder="e.g. State Bank of India" />
-                  </Field>
-                )}
-                {!isFieldHidden('branchName') && (
-                  <Field label={getLabel('branchName', 'Branch Name')}>
-                    <input className={inputCls} value={fields.branchName} onChange={e => handleChange('branchName', e.target.value)} disabled={isReadOnly} placeholder="e.g. Commercial Branch, Cuttack" />
-                  </Field>
-                )}
-              </div>
+              {(!isFieldHidden('to') || !isFieldHidden('dateOfValuation') || !isFieldHidden('refNo') || !isFieldHidden('bankName') || !isFieldHidden('branchName')) && (
+                <div className="grid md:grid-cols-2 gap-4 bg-amber-50/30 p-4 rounded-xl border border-amber-200/50 mb-2">
+                  {!isFieldHidden('to') && (
+                    <Field label={getLabel('to', 'To (Recipient / Bank)')} span={2}>
+                      <input className={inputCls} value={fields.to} onChange={e => handleChange('to', e.target.value)} disabled={isReadOnly} placeholder="e.g. HDFC BANK LTD., Bhubaneswar" />
+                    </Field>
+                  )}
+                  {!isFieldHidden('dateOfValuation') && (
+                    <Field label={getLabel('dateOfValuation', 'Date of Valuation Report')}>
+                      <input type="date" className={inputCls} value={fields.dateOfValuation} onChange={e => handleChange('dateOfValuation', e.target.value)} disabled={isReadOnly} />
+                    </Field>
+                  )}
+                  {!isFieldHidden('refNo') && (
+                    <Field label="Ref No. (Locked)">
+                      <input className={inputCls} value={fields.refNo} disabled={true} readOnly={true} placeholder="Project ID" />
+                    </Field>
+                  )}
+                  {!isFieldHidden('bankName') && (
+                    <Field label={getLabel('bankName', 'Name of Bank / Institution')}>
+                      <input className={inputCls} value={fields.bankName} onChange={e => handleChange('bankName', e.target.value)} disabled={isReadOnly} placeholder="e.g. State Bank of India" />
+                    </Field>
+                  )}
+                  {!isFieldHidden('branchName') && (
+                    <Field label={getLabel('branchName', 'Branch Name')}>
+                      <input className={inputCls} value={fields.branchName} onChange={e => handleChange('branchName', e.target.value)} disabled={isReadOnly} placeholder="e.g. Commercial Branch, Cuttack" />
+                    </Field>
+                  )}
+                </div>
+              )}
 
               <div className="grid md:grid-cols-2 gap-4">
                 {!isFieldHidden('propertyType') && (
