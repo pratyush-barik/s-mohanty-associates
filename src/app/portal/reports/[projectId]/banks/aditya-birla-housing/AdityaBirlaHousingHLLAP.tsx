@@ -42,6 +42,14 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
     'documentHolderName',
     'dateOfInspection',
   ],
+  // Hide default BankReportBuilder sections not used by Aditya Birla Housing
+  // (their content is replaced by bank-specific extraFields in the correct sections)
+  hiddenSections: [
+    'section-7b',  // Land Valuation (covered by section-6 Valuation Details)
+    'section-7c',  // Valuation Abstract (covered by section-6 Valuation Details)
+    'section-9',   // Default Abstract of Valuation
+    'section-10',  // Default Deviations
+  ],
   extraFields: {
     // ── SECTION 1: HEADER & BASIC DETAILS ──
     // Order matches the sample image exactly:

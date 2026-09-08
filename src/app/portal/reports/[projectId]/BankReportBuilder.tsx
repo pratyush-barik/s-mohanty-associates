@@ -1166,7 +1166,7 @@ export default function BankReportBuilder({
       }
 
       // ── Land Valuation ──
-      if (!isApartmentFlat && !isSectionHidden('section-8')) {
+      if (!isApartmentFlat && !isSectionHidden('section-7b')) {
         r.drawSectionHeader('VALUATION \u2014 Land');
         r.drawSimpleRow('Land Area', `${fields.landArea || '0'} ${fields.landAreaUnit}`);
         r.drawSimpleRow('Current Govt. Approved Rates for Land', `Rs.${fields.govtLandRate || fields.guidelineValue || 'N/A'}/- Per ${fields.landAreaUnit}`);
@@ -1212,7 +1212,7 @@ export default function BankReportBuilder({
       }
 
       // ── Abstract of Valuation ──
-      if (!isSectionHidden('section-9')) {
+      if (!isSectionHidden('section-7c')) {
         r.drawSectionHeader(getSectionTitle('section-9', 'ABSTRACT OF VALUATION').toUpperCase());
         r.drawSimpleRow(
           isApartmentFlat ? 'Market Value (Apartment/Flat)' : 'Market Value (Land + Building)',
@@ -1230,7 +1230,7 @@ export default function BankReportBuilder({
       }
 
       // ── Remarks ──
-      if (!isSectionHidden('section-10')) {
+      if (!isSectionHidden('section-8')) {
         r.drawSectionHeader('REMARKS, DEMARCATION & POSSESSION');
         r.drawSimpleRow('Demarcation', fields.demarcation);
         r.drawSimpleRow('Possession', fields.possession);
@@ -2062,8 +2062,8 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
         )}
 
         {/* ── Section 8: Land Valuation (if not apartment) ── */}
-        {!isApartmentFlat && !isSectionHidden('section-8') && (
-          <Section title={getSectionTitle("section-7b", "Land Valuation")} number={getSectionNumber("section-7", 8)}>
+        {!isApartmentFlat && !isSectionHidden('section-7b') && (
+          <Section id="section-7b" title={getSectionTitle("section-7b", "Land Valuation")} number={getSectionNumber("section-7b", 8)}>
             <div className="grid md:grid-cols-2 gap-4">
               <Field label="Land Area">
                 <input className={inputCls} value={fields.landArea} onChange={e => handleChange('landArea', e.target.value)} disabled={isReadOnly} placeholder="e.g. 1500" />
@@ -2093,8 +2093,8 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
         )}
 
         {/* ── Section 9: Valuation Abstract ── */}
-        {!isSectionHidden('section-9') && (
-          <Section title={getSectionTitle("section-7c", "Valuation Abstract")} number={getSectionNumber("section-7", isApartmentFlat ? 8 : 9)}>
+        {!isSectionHidden('section-7c') && (
+          <Section id="section-7c" title={getSectionTitle("section-7c", "Valuation Abstract")} number={getSectionNumber("section-7c", isApartmentFlat ? 8 : 9)}>
             <div className="grid md:grid-cols-3 gap-4">
               <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Fair Market Value</p>
@@ -2128,8 +2128,8 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
           </Section>
         )}
 
-        {/* ── Section 10: Remarks & Declaration ── */}
-        {!isSectionHidden('section-10') && (
+        {/* ── Section 8: Remarks & Declaration ── */}
+        {!isSectionHidden('section-8') && (
           <Section id="section-8" title={getSectionTitle("section-8", "Remarks & Declaration")} number={getSectionNumber("section-8", isApartmentFlat ? 9 : 10)}>
             <div className="grid md:grid-cols-2 gap-4">
               <Field label="Demarcation">
@@ -2142,7 +2142,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
                 <textarea className={inputCls} rows={3} value={fields.remarks} onChange={e => handleChange('remarks', e.target.value)} disabled={isReadOnly} placeholder="General observations..." />
               </Field>
             </div>
-            {renderExtraFields('section-10')}
+            {renderExtraFields('section-8')}
           </Section>
         )}
 
