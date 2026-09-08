@@ -64,7 +64,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       { key: 'typeOfCase', label: 'Type of Case', default: 'Home Loan' },
       { key: 'valuerName', label: 'Valuer Name', default: 'S Mohanty Associates' },
       { key: 'productType', label: 'Product Type', default: 'Home Loan - Resale' },
-      { key: 'valuerRefNo', label: 'Valuer Ref No' },
+      { key: 'valuerRefNo', label: 'Valuer Ref No', dynamicDefaultField: 'refNo' },
       { key: 'dateOfVisit', label: 'Date of Visit', type: 'date' },
       { key: 'valuerFeedback', label: 'Valuer Feedback', default: 'Positive' },
       { key: 'dateOfReport', label: 'Date of Report', type: 'date' },

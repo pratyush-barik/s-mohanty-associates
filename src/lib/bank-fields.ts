@@ -265,6 +265,8 @@ export interface ExtraFieldConfig {
   options?: string[];
   /** Default value */
   default?: string;
+  /** Dynamic default value mapped from a base field key */
+  dynamicDefaultField?: string;
   /** Make the field read-only */
   readOnly?: boolean;
   /** Span 2 columns in the grid */
