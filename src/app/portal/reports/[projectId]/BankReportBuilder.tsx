@@ -1516,12 +1516,12 @@ export default function BankReportBuilder({
         ) : ef.type === 'yesno' ? (
           <select
             className={selectCls}
-            value={val}
+            value={val || ef.default || 'No'}
             onChange={e => handleChange(ef.key, e.target.value)}
             disabled={isReadOnly || ef.readOnly}
           >
-            <option value="Yes">Yes</option>
             <option value="No">No</option>
+            <option value="Yes">Yes</option>
           </select>
         ) : (
           <input
