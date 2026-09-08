@@ -77,8 +77,8 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
     'section-1a': [
       // ── BASIC DETAILS (1-4) ──
       { key: 'ownerName', label: '1. Applicant Name(s)' },
-      { key: 'originallyTypeOfProperty', label: '2. Originally type of property' },
-      { key: 'currentUsage', label: 'Current Usage', default: 'Residential Flat' },
+      { key: 'originallyTypeOfProperty', label: '2.1 Originally type of property' },
+      { key: 'currentUsage', label: '2.2 Current Usage', default: 'Residential Flat' },
       { key: 'addressAsPerRequest', label: '3. Address as per request', type: 'textarea', span: 2 },
       { key: 'addressAsPerDocument', label: 'Address as per document', type: 'textarea', span: 2 },
       { key: 'addressAsPerSite', label: 'Address as per Site', type: 'textarea', span: 2 },
