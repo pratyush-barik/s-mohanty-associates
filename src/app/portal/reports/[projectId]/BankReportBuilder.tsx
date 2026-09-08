@@ -1548,7 +1548,12 @@ export default function BankReportBuilder({
   };
 
   const isFieldHidden = (key: string) => config?.hiddenFields?.includes(key) || false;
-    const getSectionTitle = (id: string, fallback: string) => config?.navSections?.find(s => s.id === id)?.title || fallback;
+      const getSectionNumber = (id: string, fallback: number | string) => {
+    if (!config?.navSections) return fallback;
+    const index = config.navSections.findIndex(s => s.id === id);
+    return index !== -1 ? index + 1 : fallback;
+  };
+const getSectionTitle = (id: string, fallback: string) => config?.navSections?.find(s => s.id === id)?.title || fallback;
 const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(sectionId) || false;
   const getLabel = (key: string, fallback: string) => config?.fieldLabels?.[key] || fallback;
 
@@ -1583,7 +1588,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
 
         {/* ── Section 1: General Details ── */}
         {!isSectionHidden('section-1') && (
-          <Section title={getSectionTitle("section-1", "General Details")} number={1}>
+          <Section title={getSectionTitle("section-1", "General Details")} number={getSectionNumber("section-1", 1)}>
             <div className="space-y-4">
               {(!isFieldHidden('to') || !isFieldHidden('dateOfValuation') || !isFieldHidden('refNo') || !isFieldHidden('bankName') || !isFieldHidden('branchName')) && (
                 <div className="grid md:grid-cols-2 gap-4 bg-amber-50/30 p-4 rounded-xl border border-amber-200/50 mb-2">
@@ -1795,14 +1800,14 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
 
         {/* ── Section 1a: Optional Split Section ── */}
         {!isSectionHidden('section-1a') && config?.navSections?.some(s => s.id === 'section-1a') && (
-          <Section title={getSectionTitle('section-1a', 'Basic Details')} number={2}>
+          <Section title={getSectionTitle('section-1a', 'Basic Details')} number={getSectionNumber('section-1a', 2)}>
             {renderExtraFields('section-1a')}
           </Section>
         )}
 
         {/* ── Section 2: Surrounding Locality Details ── */}
         {!isSectionHidden('section-2') && (
-          <Section title={getSectionTitle("section-2", "Surrounding Locality Details")} number={2}>
+          <Section title={getSectionTitle("section-2", "Surrounding Locality Details")} number={getSectionNumber("section-2", 2)}>
             <div className="grid md:grid-cols-2 gap-4">
               <Field label="Ward No / Municipal Land No">
                 <input className={inputCls} value={fields.wardNo} onChange={e => handleChange('wardNo', e.target.value)} disabled={isReadOnly} placeholder="e.g. Ward 12" />
@@ -1853,7 +1858,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
 
         {/* ── Section 3: Property Details ── */}
         {!isSectionHidden('section-3') && (
-          <Section title={getSectionTitle("section-3", "Property Details")} number={3}>
+          <Section title={getSectionTitle("section-3", "Property Details")} number={getSectionNumber("section-3", 3)}>
             <div className="grid md:grid-cols-2 gap-4">
               <Field label="Usage Type">
                 <input className={inputCls} value={fields.usageType} onChange={e => handleChange('usageType', e.target.value)} disabled={isReadOnly} placeholder="e.g. Residential" />
@@ -1873,7 +1878,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
 
         {/* ── Section 4: Subject Property Details ── */}
         {!isSectionHidden('section-4') && (
-          <Section title="Subject Property Details" number={4}>
+          <Section title={getSectionTitle("section-4", "Subject Property Details")} number={getSectionNumber("section-4", 4)}>
             <div className="grid md:grid-cols-2 gap-4">
               <Field label="Premises Type">
                 <input className={inputCls} value={fields.premisesType} onChange={e => handleChange('premisesType', e.target.value)} disabled={isReadOnly} placeholder="e.g. Row House / Independent Building" />
@@ -1900,7 +1905,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
 
         {/* ── Section 5: Structural Details ── */}
         {!isSectionHidden('section-5') && (
-          <Section title={getSectionTitle("section-5", "Structural Details")} number={5}>
+          <Section title={getSectionTitle("section-5", "Structural Details")} number={getSectionNumber("section-5", 5)}>
             <div className="grid md:grid-cols-2 gap-4">
               <Field label="Type of Structure">
                 <select className={selectCls} value={fields.structureType} onChange={e => handleChange('structureType', e.target.value)} disabled={isReadOnly}>
@@ -1943,7 +1948,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
 
         {/* ── Section 6: Plan Approvals ── */}
         {!isSectionHidden('section-6') && (
-          <Section title="Plan Approvals" number={6}>
+          <Section title={getSectionTitle("section-6", "Plan Approvals")} number={getSectionNumber("section-6", 6)}>
             <div className="grid md:grid-cols-2 gap-4">
               <Field label="Construction Approved">
                 <select className={selectCls} value={fields.constructionApproved} onChange={e => handleChange('constructionApproved', e.target.value)} disabled={isReadOnly}>
@@ -1972,7 +1977,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
 
         {/* ── Section 7: Floor-wise Valuation ── */}
         {!isSectionHidden('section-7') && (
-          <Section title="Floor-wise Area & Building Valuation" number={7}>
+          <Section title={getSectionTitle("section-7a", "Floor-wise Area & Building Valuation")} number={getSectionNumber("section-7", 7)}>
             <div className="space-y-4">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm border-collapse">
@@ -2052,7 +2057,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
 
         {/* ── Section 8: Land Valuation (if not apartment) ── */}
         {!isApartmentFlat && !isSectionHidden('section-8') && (
-          <Section title="Land Valuation" number={8}>
+          <Section title={getSectionTitle("section-7b", "Land Valuation")} number={getSectionNumber("section-7", 8)}>
             <div className="grid md:grid-cols-2 gap-4">
               <Field label="Land Area">
                 <input className={inputCls} value={fields.landArea} onChange={e => handleChange('landArea', e.target.value)} disabled={isReadOnly} placeholder="e.g. 1500" />
@@ -2083,7 +2088,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
 
         {/* ── Section 9: Valuation Abstract ── */}
         {!isSectionHidden('section-9') && (
-          <Section title="Valuation Abstract" number={isApartmentFlat ? 8 : 9}>
+          <Section title={getSectionTitle("section-7c", "Valuation Abstract")} number={getSectionNumber("section-7", isApartmentFlat ? 8 : 9)}>
             <div className="grid md:grid-cols-3 gap-4">
               <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Fair Market Value</p>
@@ -2119,7 +2124,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
 
         {/* ── Section 10: Remarks & Declaration ── */}
         {!isSectionHidden('section-10') && (
-          <Section title={getSectionTitle("section-8", "Remarks & Declaration")} number={isApartmentFlat ? 9 : 10}>
+          <Section title={getSectionTitle("section-8", "Remarks & Declaration")} number={getSectionNumber("section-8", isApartmentFlat ? 9 : 10)}>
             <div className="grid md:grid-cols-2 gap-4">
               <Field label="Demarcation">
                 <input className={inputCls} value={fields.demarcation} onChange={e => handleChange('demarcation', e.target.value)} disabled={isReadOnly} placeholder="Clear" />
