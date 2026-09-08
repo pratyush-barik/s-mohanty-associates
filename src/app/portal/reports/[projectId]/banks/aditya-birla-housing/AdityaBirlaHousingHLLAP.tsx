@@ -16,9 +16,8 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
     { id: 'section-6', title: 'Valuation Details' },
     { id: 'section-7', title: 'Boundaries' },
     { id: 'section-8', title: 'Remarks & Declaration' },
-    { id: 'section-9', title: 'Photographs' },
-    { id: 'section-10', title: 'Location Map' },
-    { id: 'section-11', title: 'Deviations / Observations' },
+    { id: 'section-11', title: 'Photographs' },
+    { id: 'section-12', title: 'Location Map' },
   ],
   fieldLabels: {
     loanApplicationNo: 'Deal Number',
