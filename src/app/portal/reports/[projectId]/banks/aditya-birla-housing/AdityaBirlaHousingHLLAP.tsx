@@ -538,8 +538,8 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       },
       { key: 'constructionQualityExteriors', label: '15.1 Construction Quality ((Good/Avg/Bad)) - Exteriors', type: 'select', options: ['Good', 'Average', 'Bad', 'NA'], default: 'NA' },
       { key: 'constructionQualityInteriors', label: '15.2 Construction Quality (Good/Avg/Bad) - Interiors', type: 'select', options: ['Good', 'Average', 'Bad', 'NA'], default: 'NA' },
-      { key: 'ageOfProperty', label: '16. Age of the property (Yrs)' },
-      { key: 'residualAge', label: 'Residual age (Yrs)' },
+      { key: 'ageOfProperty', label: '16.1 Age of the property (Yrs)' },
+      { key: 'residualAge', label: '16.2 Residual age (Yrs)' },
     ],
 
     // ── SECTION 4: SANCTION PLAN APPROVAL & OTHER DOCUMENTS DETAILS (17-23) ──

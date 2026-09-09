@@ -1904,17 +1904,21 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
         {!isSectionHidden('section-3') && (
           <Section id="section-3" title={getSectionTitle("section-3", "Property Details")} number={getSectionNumber("section-3", 3)}>
             <div className="grid md:grid-cols-2 gap-4">
-              <Field label="Usage Type">
-                <input className={inputCls} value={fields.usageType} onChange={e => handleChange('usageType', e.target.value)} disabled={isReadOnly} placeholder="e.g. Residential" />
-              </Field>
-              <Field label="Legal Status">
-                <select className={selectCls} value={fields.legalStatus} onChange={e => handleChange('legalStatus', e.target.value)} disabled={isReadOnly}>
-                  <option value="Freehold">Freehold</option>
-                  <option value="Lease hold >30 yrs.">Lease hold &gt;30 yrs.</option>
-                  <option value="Lease hold 15-30 yrs.">Lease hold 15-30 yrs.</option>
-                  <option value="Lease hold <15 yrs.">Lease hold &lt;15 yrs.</option>
-                </select>
-              </Field>
+              {!isFieldHidden('usageType') && (
+                <Field label="Usage Type">
+                  <input className={inputCls} value={fields.usageType} onChange={e => handleChange('usageType', e.target.value)} disabled={isReadOnly} placeholder="e.g. Residential" />
+                </Field>
+              )}
+              {!isFieldHidden('legalStatus') && (
+                <Field label="Legal Status">
+                  <select className={selectCls} value={fields.legalStatus} onChange={e => handleChange('legalStatus', e.target.value)} disabled={isReadOnly}>
+                    <option value="Freehold">Freehold</option>
+                    <option value="Lease hold >30 yrs.">Lease hold &gt;30 yrs.</option>
+                    <option value="Lease hold 15-30 yrs.">Lease hold 15-30 yrs.</option>
+                    <option value="Lease hold <15 yrs.">Lease hold &lt;15 yrs.</option>
+                  </select>
+                </Field>
+              )}
             </div>
             {renderExtraFields('section-3')}
           </Section>
