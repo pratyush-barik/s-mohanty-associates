@@ -220,8 +220,8 @@ async function generateHLLAPPDF(
 
   r.drawKeyValueRow([{ label: '14', value: '', labelWidth: propNumW, valueWidth: 0 }, { label: 'Unit details', value: '', labelWidth: propLblW, valueWidth: 0 }, { label: 'Property located on Floor', value: fv(fields, 'propertyLocatedOnFloor', ''), labelWidth: propSubLblW, valueWidth: propValW }]);
   r.drawKeyValueRow([{ label: '', value: '', labelWidth: propNumW + propLblW, valueWidth: 0 }, { label: 'Unit Configuration', value: fv(fields, 'unitConfiguration', ''), labelWidth: propSubLblW, valueWidth: propValW }]);
-  r.drawKeyValueRow([{ label: '', value: '', labelWidth: propNumW + propLblW, valueWidth: 0 }, { label: 'Carpet area', value: fv(fields, 'carpetArea', ''), labelWidth: propSubLblW, valueWidth: areaValW2 }, { label: 'Sqft', value: '', labelWidth: areaValW2, valueWidth: 0 }]);
-  r.drawKeyValueRow([{ label: '', value: '', labelWidth: propNumW + propLblW, valueWidth: 0 }, { label: 'SBUA of', value: fv(fields, 'sbuaOf', ''), labelWidth: propSubLblW, valueWidth: areaValW2 }, { label: 'Sqft', value: '', labelWidth: areaValW2, valueWidth: 0 }]);
+  r.drawKeyValueRow([{ label: '', value: '', labelWidth: propNumW + propLblW, valueWidth: 0 }, { label: 'Carpet area', value: fv(fields, 'carpetArea', ''), labelWidth: propSubLblW, valueWidth: propValW }]);
+  r.drawKeyValueRow([{ label: '', value: '', labelWidth: propNumW + propLblW, valueWidth: 0 }, { label: 'SBUA of', value: fv(fields, 'sbuaOf', ''), labelWidth: propSubLblW, valueWidth: propValW }]);
   r.drawKeyValueRow([{ label: '', value: '', labelWidth: propNumW + propLblW, valueWidth: 0 }, { label: 'View from property', value: fv(fields, 'viewFromProperty', 'Good'), labelWidth: propSubLblW, valueWidth: propValW }]);
 
   r.drawKeyValueRow([
@@ -532,9 +532,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
           { key: 'propertyLocatedOnFloor', label: 'Property located on Floor' },
           { key: 'unitConfiguration', label: 'Unit Configuration' },
           { key: 'carpetArea', label: 'Carpet area' },
-          { key: 'carpetAreaUnit', label: 'Unit', default: 'Sqft' },
           { key: 'sbuaOf', label: 'SBUA of' },
-          { key: 'sbuaUnit', label: 'Unit', default: 'Sqft' },
           { key: 'viewFromProperty', label: 'View from property', default: 'Good' }
         ]
       },
