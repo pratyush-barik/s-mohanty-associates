@@ -470,13 +470,19 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
 
     // ── SECTION 2: SURROUNDING & LOCALITY DETAILS (5-11) ──
     'section-2': [
-      { key: 'locationHeading', label: '5. Location', type: 'heading' },
-      { key: 'locationType', label: '5. Type (Comm, Res, Ind, Mix)', type: 'select', options: ['Commercial', 'Residential', 'Industrial', 'Mixed'], default: 'Residential' },
-      { key: 'localityLevel', label: 'Locality (Low, Medium, Posh)', type: 'select', options: ['Low', 'Medium', 'Posh'], default: 'Medium' },
-      { key: 'siteDevStatus', label: 'Site is (Dev, Under Dev, Developing)', type: 'select', options: ['Developed', 'Under Development', 'Developing'], default: 'Developed' },
-      { key: 'proximityToCivicAmenities', label: 'Proximity to civic amenities/public transport', default: 'Good' },
-      { key: 'railwayStationDistance', label: 'Railway Station' },
-      { key: 'busStopDistance', label: 'Bus Stop' },
+      {
+        key: 'locationFieldset',
+        label: '5. Location',
+        type: 'fieldset',
+        fields: [
+          { key: 'locationType', label: 'Type (Comm, Res, Ind, Mix)', type: 'select', options: ['Commercial', 'Residential', 'Industrial', 'Mixed'], default: 'Residential' },
+          { key: 'localityLevel', label: 'Locality (Low, Medium, Posh)', type: 'select', options: ['Low', 'Medium', 'Posh'], default: 'Medium' },
+          { key: 'siteDevStatus', label: 'Site is (Dev, Under Dev, Developing)', type: 'select', options: ['Developed', 'Under Development', 'Developing'], default: 'Developed' },
+          { key: 'proximityToCivicAmenities', label: 'Proximity to civic amenities/public transport', default: 'Good' },
+          { key: 'railwayStationDistance', label: 'Railway Station' },
+          { key: 'busStopDistance', label: 'Bus Stop' }
+        ]
+      },
       { key: 'distanceFromCityCentre', label: '6. Distance from City Centre' },
       { key: 'distanceFromCityCentreUnit', label: 'Unit', default: 'Km' },
       { key: 'natureOfApproachRoad', label: '7. Nature of approach Road', default: 'Bitumen Road' },

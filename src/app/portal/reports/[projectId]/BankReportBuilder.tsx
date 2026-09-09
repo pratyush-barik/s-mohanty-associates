@@ -1504,6 +1504,17 @@ export default function BankReportBuilder({
       );
     }
     
+    if (ef.type === 'fieldset') {
+      return (
+        <div key={ef.key} className="md:col-span-2 border border-blue-200 bg-[#f8fafc] rounded-xl p-4 mt-2 shadow-sm space-y-4">
+          <h3 className="text-sm font-bold text-[#0f2038] mb-4">{ef.label}</h3>
+          <div className="grid md:grid-cols-2 gap-4">
+            {ef.fields?.map(childEf => renderExtraField(childEf))}
+          </div>
+        </div>
+      );
+    }
+    
     let val = fields[ef.key];
             if (val === undefined || val === null || val === '') {
               val = ef.dynamicDefaultField ? (fields[ef.dynamicDefaultField as keyof typeof fields] as string || '') : (ef.default || '');

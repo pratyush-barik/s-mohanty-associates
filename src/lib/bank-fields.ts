@@ -260,7 +260,7 @@ export interface ExtraFieldConfig {
   /** Display label in the form */
   label: string;
   /** Field type (defaults to 'text') */
-  type?: 'text' | 'textarea' | 'select' | 'date' | 'number' | 'yesno' | 'heading';
+  type?: 'text' | 'textarea' | 'select' | 'date' | 'number' | 'yesno' | 'heading' | 'fieldset';
   /** Options for select-type fields */
   options?: string[];
   /** Default value */
@@ -271,6 +271,10 @@ export interface ExtraFieldConfig {
   readOnly?: boolean;
   /** Span 2 columns in the grid */
   span?: 1 | 2;
+  /** For fieldset: Nested fields */
+
+  fields?: ExtraFieldConfig[];
+
   /** Inline positioning hint: render this field in a 2-col inline pair */
   inline?: 'left' | 'right';
   /** Make this field conditionally visible based on the value of another field */
