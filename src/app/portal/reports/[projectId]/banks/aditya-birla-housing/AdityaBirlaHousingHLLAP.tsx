@@ -184,9 +184,9 @@ async function generateHLLAPPDF(
     ]);
   }
 
-  r.drawKeyValueRow([{ label: '6', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Distance from City Centre', value: fv(fields, 'distanceFromCityCentre', ''), labelWidth: LABEL_W, valueWidth: vW - 40 }, { label: 'Km', value: '', labelWidth: 40, valueWidth: 0 }]);
+  r.drawKeyValueRow([{ label: '6', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Distance from City Centre', value: fv(fields, 'distanceFromCityCentre', ''), labelWidth: LABEL_W, valueWidth: vW }]);
   r.drawKeyValueRow([{ label: '7', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Nature of approach Road', value: fv(fields, 'natureOfApproachRoad', 'Bitumen Road'), labelWidth: LABEL_W, valueWidth: vW }]);
-  r.drawKeyValueRow([{ label: '8', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Approach Road width', value: fv(fields, 'customApproachRoadWidth', ''), labelWidth: LABEL_W, valueWidth: vW - 40 }, { label: 'Feet', value: '', labelWidth: 40, valueWidth: 0 }]);
+  r.drawKeyValueRow([{ label: '8', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Approach Road width', value: fv(fields, 'customApproachRoadWidth', ''), labelWidth: LABEL_W, valueWidth: vW }]);
   r.drawKeyValueRow([{ label: '9', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Approach to the property as per Site', value: fv(fields, 'approachAsPerSite', 'Clear'), labelWidth: LABEL_W, valueWidth: vW }]);
   r.drawKeyValueRow([{ label: '10', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Approach to the property as per Docs', value: fv(fields, 'approachAsPerDocs', 'Clear'), labelWidth: LABEL_W, valueWidth: vW }]);
   r.drawKeyValueRow([{ label: '11', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Any observation which affects the security', value: fv(fields, 'securityObservation', 'NA'), labelWidth: LABEL_W, valueWidth: vW }]);
@@ -484,10 +484,8 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
         ]
       },
       { key: 'distanceFromCityCentre', label: '6. Distance from City Centre' },
-      { key: 'distanceFromCityCentreUnit', label: 'Unit', default: 'Km' },
       { key: 'natureOfApproachRoad', label: '7. Nature of approach Road', default: 'Bitumen Road' },
       { key: 'customApproachRoadWidth', label: '8. Approach Road width' },
-      { key: 'approachRoadWidthUnit', label: 'Unit', default: 'Feet' },
       { key: 'approachAsPerSite', label: '9. Approach to the property as per Site', default: 'Clear' },
       { key: 'approachAsPerDocs', label: '10. Approach to the property as per Docs', default: 'Clear' },
       { key: 'securityObservation', label: '11. Any observation which affects the security', default: 'NA' },
