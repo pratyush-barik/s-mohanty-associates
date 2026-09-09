@@ -511,7 +511,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
         color: 'red',
         fields: [
           { key: 'propertyDemarcation', label: 'Property Demarcation', default: 'Yes' },
-          { key: 'propertyIdentifiedYN', label: 'Property Identified (Y/N)', default: 'Yes' },
+          { key: 'propertyIdentifiedYN', label: 'Property Identified (Y/N)', type: 'yesno', default: 'Yes' },
           { key: 'propertyIdentifiedThrough', label: 'Property Identified through' },
           { key: 'typeOfStructure', label: 'Type of structure', default: 'R.C.C' },
           { key: 'landPlotAreaUDS', label: 'Land/Plot Area -UDS' },
@@ -519,7 +519,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
           { key: 'noOfUnitsOnEachFloor', label: 'No of Units on each floor' },
           { key: 'noOfFloors', label: 'No. of Floors' },
           { key: 'noOfLifts', label: 'No. of Lifts' },
-          { key: 'amenitiesAvailable', label: 'Amenities Available', default: 'Yes' },
+          { key: 'amenitiesAvailable', label: 'Amenities Available', type: 'select', options: ['Yes', 'NA'], default: 'Yes' },
           { key: 'deliveryAgency', label: 'Delivery Agency' }
         ]
       },
