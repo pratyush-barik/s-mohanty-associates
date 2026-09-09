@@ -43,15 +43,14 @@ async function generateHLLAPPDF(
   ];
 
   const labelW1 = 95;
-  const colonW = 10;
-  const valW1 = (CONTENT_W / 2) - labelW1 - colonW;
+  const valW1 = (CONTENT_W / 2) - labelW1;
   const labelW2 = 90;
-  const valW2 = (CONTENT_W / 2) - labelW2 - colonW;
+  const valW2 = (CONTENT_W / 2) - labelW2;
 
   for (const [l1, v1, l2, v2] of headerRows) {
     r.drawKeyValueRow([
-      { label: l1, value: ': ' + v1, labelWidth: labelW1, valueWidth: valW1 + colonW },
-      { label: l2, value: ': ' + v2, labelWidth: labelW2, valueWidth: valW2 + colonW },
+      { label: l1, value: v1, labelWidth: labelW1, valueWidth: valW1 },
+      { label: l2, value: v2, labelWidth: labelW2, valueWidth: valW2 },
     ]);
   }
 
