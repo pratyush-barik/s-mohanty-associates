@@ -1928,24 +1928,30 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
         {!isSectionHidden('section-4') && (
           <Section id="section-4" title={getSectionTitle("section-4", "Subject Property Details")} number={getSectionNumber("section-4", 4)}>
             <div className="grid md:grid-cols-2 gap-4">
-              <Field label="Premises Type">
-                <input className={inputCls} value={fields.premisesType} onChange={e => handleChange('premisesType', e.target.value)} disabled={isReadOnly} placeholder="e.g. Row House / Independent Building" />
-              </Field>
-              <Field label="Occupied By">
-                <select className={selectCls} value={fields.occupiedBy} onChange={e => handleChange('occupiedBy', e.target.value)} disabled={isReadOnly}>
-                  <option value="Self Occupied">Self Occupied</option>
-                  <option value="Tenant">Tenant</option>
-                  <option value="Vacant">Vacant</option>
-                </select>
-              </Field>
-              <Field label="Boundaries as per Sketch Map (N, S, E, W)" span={2}>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  <input className={inputCls} value={fields.boundaryNorth} onChange={e => handleChange('boundaryNorth', e.target.value)} disabled={isReadOnly} placeholder="North" />
-                  <input className={inputCls} value={fields.boundarySouth} onChange={e => handleChange('boundarySouth', e.target.value)} disabled={isReadOnly} placeholder="South" />
-                  <input className={inputCls} value={fields.boundaryEast} onChange={e => handleChange('boundaryEast', e.target.value)} disabled={isReadOnly} placeholder="East" />
-                  <input className={inputCls} value={fields.boundaryWest} onChange={e => handleChange('boundaryWest', e.target.value)} disabled={isReadOnly} placeholder="West" />
-                </div>
-              </Field>
+              {!isFieldHidden('premisesType') && (
+                <Field label="Premises Type">
+                  <input className={inputCls} value={fields.premisesType} onChange={e => handleChange('premisesType', e.target.value)} disabled={isReadOnly} placeholder="e.g. Row House / Independent Building" />
+                </Field>
+              )}
+              {!isFieldHidden('occupiedBy') && (
+                <Field label="Occupied By">
+                  <select className={selectCls} value={fields.occupiedBy} onChange={e => handleChange('occupiedBy', e.target.value)} disabled={isReadOnly}>
+                    <option value="Self Occupied">Self Occupied</option>
+                    <option value="Tenant">Tenant</option>
+                    <option value="Vacant">Vacant</option>
+                  </select>
+                </Field>
+              )}
+              {!isFieldHidden('boundaries') && (
+                <Field label="Boundaries as per Sketch Map (N, S, E, W)" span={2}>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <input className={inputCls} value={fields.boundaryNorth} onChange={e => handleChange('boundaryNorth', e.target.value)} disabled={isReadOnly} placeholder="North" />
+                    <input className={inputCls} value={fields.boundarySouth} onChange={e => handleChange('boundarySouth', e.target.value)} disabled={isReadOnly} placeholder="South" />
+                    <input className={inputCls} value={fields.boundaryEast} onChange={e => handleChange('boundaryEast', e.target.value)} disabled={isReadOnly} placeholder="East" />
+                    <input className={inputCls} value={fields.boundaryWest} onChange={e => handleChange('boundaryWest', e.target.value)} disabled={isReadOnly} placeholder="West" />
+                  </div>
+                </Field>
+              )}
             </div>
             {renderExtraFields('section-4')}
           </Section>
