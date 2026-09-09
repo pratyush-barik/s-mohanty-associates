@@ -211,40 +211,36 @@ export class PDFAdityaBirlaHousingRenderer extends PDFBankRenderer {
    * Custom method to draw the main title banner exactly as shown in the Aditya Birla sample.
    * Dark grey solid background, white bold text, no borders.
    */
-  drawDarkTitleBanner(title: string): void {
+  drawCustomTitleBanner(title: string): void {
     if (this.cursorY > 10) {
       this.cursorY += 10;
     }
 
     this.checkPageBreak(50);
 
-    const h = 26; // slightly taller banner
+    const h = 20; 
     const y = this.pdfY(this.cursorY);
 
-    // Draw solid dark grey background
-    this.page.drawRectangle({
-      x: MARGIN_L,
-      y: y - h,
-      width: CONTENT_W,
-      height: h,
-      color: rgb(0.12, 0.12, 0.12), // Dark grey
-      // No border
-    });
+    // No background rectangle, or maybe just white/transparent.
+    // The user requested NO table lines (borders), and bold black text.
 
     const font = this.fontBold;
     const text = this.sanitizeText(title).toUpperCase();
-    const fontSize = FONT_SIZE_HEADER + 2;
+    const fontSize = FONT_SIZE_HEADER; // default font size used for all
     const tw = font.widthOfTextAtSize(text, fontSize);
     
     this.page.drawText(text, {
       x: MARGIN_L + (CONTENT_W - tw) / 2,
-      y: y - h + 8,
+      y: y - h + 6,
       size: fontSize,
       font,
-      color: rgb(1, 1, 1), // White text
+      color: rgb(0, 0, 0), // Bold black
     });
 
     this.cursorY += h;
+    
+    // Add a small gap between the title and the table below it
+    this.cursorY += 5;
   }
 }
 
