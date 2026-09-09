@@ -1495,6 +1495,15 @@ export default function BankReportBuilder({
 
   const renderExtraField = (ef: ExtraFieldConfig) => {
     if (ef.dependsOn && fields[ef.dependsOn.field] !== ef.dependsOn.value) return null;
+    
+    if (ef.type === 'heading') {
+      return (
+        <div key={ef.key} className="md:col-span-2 bg-[#f0ead6] px-3 py-2.5 mt-2 mb-1 rounded-sm shadow-sm border border-[#e5dfcc]">
+          <h4 className="text-xs font-bold text-[#0f2038] uppercase tracking-wider">{ef.label}</h4>
+        </div>
+      );
+    }
+    
     let val = fields[ef.key];
             if (val === undefined || val === null || val === '') {
               val = ef.dynamicDefaultField ? (fields[ef.dynamicDefaultField as keyof typeof fields] as string || '') : (ef.default || '');
