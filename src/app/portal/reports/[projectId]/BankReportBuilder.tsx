@@ -1817,9 +1817,12 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
         {!isSectionHidden('section-2') && (
           <Section id="section-2" title={getSectionTitle("section-2", "Surrounding Locality Details")} number={getSectionNumber("section-2", 2)}>
             <div className="grid md:grid-cols-2 gap-4">
+              {!isFieldHidden('wardNo') && (
               <Field label="Ward No / Municipal Land No">
                 <input className={inputCls} value={fields.wardNo} onChange={e => handleChange('wardNo', e.target.value)} disabled={isReadOnly} placeholder="e.g. Ward 12" />
               </Field>
+            )}
+              {!isFieldHidden('vicinity') && (
               <Field label="Vicinity">
                 <select className={selectCls} value={fields.vicinity} onChange={e => handleChange('vicinity', e.target.value)} disabled={isReadOnly}>
                   <option value="Residential">Residential</option>
@@ -1829,6 +1832,8 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
                   <option value="Slum">Slum</option>
                 </select>
               </Field>
+            )}
+              {!isFieldHidden('classOfLocality') && (
               <Field label="Class of Locality">
                 <select className={selectCls} value={fields.classOfLocality} onChange={e => handleChange('classOfLocality', e.target.value)} disabled={isReadOnly}>
                   <option value="Elite/Posh/High Class">Elite/Posh/High Class</option>
@@ -1837,6 +1842,8 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
                   <option value="Lower Middle Class">Lower Middle Class</option>
                 </select>
               </Field>
+            )}
+              {!isFieldHidden('approachRoadWidth') && (
               <Field label="Approach Road Width">
                 <select className={selectCls} value={fields.approachRoadWidth} onChange={e => handleChange('approachRoadWidth', e.target.value)} disabled={isReadOnly}>
                   <option value=">=60 Feet Road">&gt;=60 Feet Road</option>
@@ -1845,12 +1852,16 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
                   <option value="<20 Feet Road">&lt;20 Feet Road</option>
                 </select>
               </Field>
+            )}
+              {!isFieldHidden('plotDemarcated') && (
               <Field label="Plot Demarcated at Site">
                 <select className={selectCls} value={fields.plotDemarcated} onChange={e => handleChange('plotDemarcated', e.target.value)} disabled={isReadOnly}>
                   <option value="Yes">Yes</option>
                   <option value="No">No</option>
                 </select>
               </Field>
+            )}
+              {!isFieldHidden('proximityToFacilities') && (
               <Field label="Proximity to Facilities">
                 <select className={selectCls} value={fields.proximityToFacilities} onChange={e => handleChange('proximityToFacilities', e.target.value)} disabled={isReadOnly}>
                   <option value="<1 Km">&lt;1 Km</option>
@@ -1859,6 +1870,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
                   <option value=">5 Kms">&gt;5 Kms</option>
                 </select>
               </Field>
+            )}
             </div>
             {renderExtraFields('section-2')}
           </Section>
