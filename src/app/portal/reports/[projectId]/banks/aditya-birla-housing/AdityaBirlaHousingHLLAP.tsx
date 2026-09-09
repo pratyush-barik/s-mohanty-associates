@@ -212,7 +212,7 @@ async function generateHLLAPPDF(
   }
 
   const areaValW2 = propValW / 2;
-  r.drawKeyValueRow([{ label: '', value: '', labelWidth: propNumW + propLblW, valueWidth: 0 }, { label: 'Land/Plot Area -UDS', value: fv(fields, 'landPlotAreaUDS', ''), labelWidth: propSubLblW, valueWidth: areaValW2 }, { label: 'Sqft', value: '', labelWidth: areaValW2, valueWidth: 0 }]);
+  r.drawKeyValueRow([{ label: '', value: '', labelWidth: propNumW + propLblW, valueWidth: 0 }, { label: 'Land/Plot Area -UDS', value: fv(fields, 'landPlotAreaUDS', ''), labelWidth: propSubLblW, valueWidth: propValW }]);
 
   for (const [lbl, key, def] of [['No of Blocks', 'noOfBlocks', '0'], ['No of Units on each floor', 'noOfUnitsOnEachFloor', '0'], ['No. of Floors', 'noOfFloors', ''], ['No. of Lifts', 'noOfLifts', ''], ['Amenities Available', 'amenitiesAvailable', 'Yes'], ['Delivery Agency', 'deliveryAgency', '']] as [string, string, string][]) {
     r.drawKeyValueRow([{ label: '', value: '', labelWidth: propNumW + propLblW, valueWidth: 0 }, { label: lbl, value: fv(fields, key, def), labelWidth: propSubLblW, valueWidth: propValW }]);
@@ -509,7 +509,6 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       { key: 'propertyIdentifiedThrough', label: 'Property Identified through' },
       { key: 'typeOfStructure', label: 'Type of structure', default: 'R.C.C' },
       { key: 'landPlotAreaUDS', label: 'Land/Plot Area -UDS' },
-      { key: 'landPlotAreaUDSUnit', label: 'Unit', default: 'Sqft' },
       { key: 'noOfBlocks', label: 'No of Blocks' },
       { key: 'noOfUnitsOnEachFloor', label: 'No of Units on each floor' },
       { key: 'noOfFloors', label: 'No. of Floors' },
