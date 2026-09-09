@@ -493,10 +493,17 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
 
     // ── SECTION 3: PROPERTY DETAILS (12-16) ──
     'section-3': [
-      { key: 'occupiedBy', label: '12. Occupied By', default: 'Vacant' },
-      { key: 'nameOfOccupant', label: 'Name of Occupant', default: 'NA' },
-      { key: 'noOfTenants', label: 'No of Tenants', default: 'NA' },
-      { key: 'relationWithApplicant', label: 'Relation with applicant', default: 'NA' },
+      {
+        key: 'occupantFieldset',
+        label: '12. Occupant',
+        type: 'fieldset',
+        fields: [
+          { key: 'occupiedBy', label: 'Occupied By', default: 'Vacant' },
+          { key: 'nameOfOccupant', label: 'Name of Occupant', default: 'NA' },
+          { key: 'noOfTenants', label: 'No of Tenants', default: 'NA' },
+          { key: 'relationWithApplicant', label: 'Relation with applicant', default: 'NA' }
+        ]
+      },
       { key: 'propertyDemarcation', label: '13. Property Demarcation', default: 'Yes' },
       { key: 'propertyIdentifiedYN', label: 'Property Identified (Y/N)', default: 'Yes' },
       { key: 'propertyIdentifiedThrough', label: 'Property Identified through' },
