@@ -66,17 +66,17 @@ async function generateHLLAPPDF(
 
   const vW = CONTENT_W - NUM_W - LABEL_W; // Full value width
   const halfVW = vW / 2; // Half value width
+  const subLblW = 80; // Fixed width for right-side sub-labels
 
   r.drawKeyValueRow([
     { label: '1', value: '', labelWidth: NUM_W, valueWidth: 0 },
     { label: 'Applicant Name(s)', value: fv(fields, 'ownerName', 'NA'), labelWidth: LABEL_W, valueWidth: vW },
   ]);
 
-  const curUsageLblW = 90;
   r.drawKeyValueRow([
     { label: '2', value: '', labelWidth: NUM_W, valueWidth: 0 },
     { label: 'Originally type of property', value: fv(fields, 'originallyTypeOfProperty', 'Residential'), labelWidth: LABEL_W, valueWidth: halfVW },
-    { label: 'Current Usage', value: fv(fields, 'currentUsage', 'Residential Flat'), labelWidth: curUsageLblW, valueWidth: halfVW - curUsageLblW },
+    { label: 'Current Usage', value: fv(fields, 'currentUsage', 'Residential Flat'), labelWidth: subLblW, valueWidth: halfVW - subLblW },
   ]);
 
   r.drawKeyValueRow([
@@ -95,18 +95,16 @@ async function generateHLLAPPDF(
     ]);
   }
 
-  const floorLblW = 60;
   r.drawKeyValueRow([
     { label: '', value: '', labelWidth: NUM_W, valueWidth: 0 },
     { label: 'Unit/Flat no/ Bungalow/Plot/House no.', value: fv(fields, 'unitFlatBungalowPlotHouseNo', ''), labelWidth: LABEL_W, valueWidth: halfVW },
-    { label: 'Floor No', value: fv(fields, 'floorNo', ''), labelWidth: floorLblW, valueWidth: halfVW - floorLblW },
+    { label: 'Floor No', value: fv(fields, 'floorNo', ''), labelWidth: subLblW, valueWidth: halfVW - subLblW },
   ]);
 
-  const wingLblW = 70;
   r.drawKeyValueRow([
     { label: '', value: '', labelWidth: NUM_W, valueWidth: 0 },
     { label: 'Building Name', value: fv(fields, 'buildingName', ''), labelWidth: LABEL_W, valueWidth: halfVW },
-    { label: 'Wing Name', value: fv(fields, 'wingName', ''), labelWidth: wingLblW, valueWidth: halfVW - wingLblW },
+    { label: 'Wing Name', value: fv(fields, 'wingName', ''), labelWidth: subLblW, valueWidth: halfVW - subLblW },
   ]);
 
   for (const [lbl, key] of [
@@ -119,25 +117,22 @@ async function generateHLLAPPDF(
     ]);
   }
 
-  const vilLblW = 80;
   r.drawKeyValueRow([
     { label: '', value: '', labelWidth: NUM_W, valueWidth: 0 },
     { label: 'Street Name', value: fv(fields, 'streetName', ''), labelWidth: LABEL_W, valueWidth: halfVW },
-    { label: 'Village Name', value: fv(fields, 'villageName', ''), labelWidth: vilLblW, valueWidth: halfVW - vilLblW },
+    { label: 'Village Name', value: fv(fields, 'villageName', ''), labelWidth: subLblW, valueWidth: halfVW - subLblW },
   ]);
 
-  const stateLblW = 50;
   r.drawKeyValueRow([
     { label: '', value: '', labelWidth: NUM_W, valueWidth: 0 },
     { label: 'City', value: fv(fields, 'city', ''), labelWidth: LABEL_W, valueWidth: halfVW },
-    { label: 'State', value: fv(fields, 'stateName', fv(fields, 'state', 'Odisha')), labelWidth: stateLblW, valueWidth: halfVW - stateLblW },
+    { label: 'State', value: fv(fields, 'stateName', fv(fields, 'state', 'Odisha')), labelWidth: subLblW, valueWidth: halfVW - subLblW },
   ]);
 
-  const subLocLblW = 80;
   r.drawKeyValueRow([
     { label: '', value: '', labelWidth: NUM_W, valueWidth: 0 },
     { label: 'Main Locality of the Property', value: fv(fields, 'mainLocalityOfProperty', ''), labelWidth: LABEL_W, valueWidth: halfVW },
-    { label: 'Sub Locality', value: fv(fields, 'subLocality', ''), labelWidth: subLocLblW, valueWidth: halfVW - subLocLblW },
+    { label: 'Sub Locality', value: fv(fields, 'subLocality', ''), labelWidth: subLblW, valueWidth: halfVW - subLblW },
   ]);
 
   r.drawKeyValueRow([
@@ -145,11 +140,10 @@ async function generateHLLAPPDF(
     { label: 'Pin code of the Property', value: fv(fields, 'pinCodeOfProperty', ''), labelWidth: LABEL_W, valueWidth: vW },
   ]);
 
-  const longLblW = 80;
   r.drawKeyValueRow([
     { label: '', value: '', labelWidth: NUM_W, valueWidth: 0 },
     { label: 'Latitude', value: fv(fields, 'latitude', ''), labelWidth: LABEL_W, valueWidth: halfVW },
-    { label: 'Longitude', value: fv(fields, 'longitude', ''), labelWidth: longLblW, valueWidth: halfVW - longLblW },
+    { label: 'Longitude', value: fv(fields, 'longitude', ''), labelWidth: subLblW, valueWidth: halfVW - subLblW },
   ]);
 
   r.drawKeyValueRow([
