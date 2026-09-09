@@ -8,7 +8,8 @@
  *   2. Self-contained .tsx component in banks/aditya-birla-housing/
  */
 
-import { PDFBankRenderer } from '../pdf-bank-renderer';
+import { PDFBankRenderer, MARGIN_L, CONTENT_W, FONT_SIZE_HEADER } from '../pdf-bank-renderer';
+import { rgb } from 'pdf-lib';
 
 export interface HLLAPReportFields {
   // Header Details
@@ -206,17 +207,45 @@ export interface HLLAPReportFields {
 }
 
 export class PDFAdityaBirlaHousingRenderer extends PDFBankRenderer {
-  // Inherits all core bank report methods from PDFBankRenderer:
-  // - init(letterheadBytes)
-  // - drawMainHeader(title)
-  // - drawSectionHeader(title)
-  // - drawKeyValueRow(cols)
-  // - drawSimpleRow(label, value)
-  // - drawTable(headers, rows, colWidths, highlightedCols, labelCols)
-  // - drawRemarksBox(label, text)
-  // - drawImageSection(imageBytes, caption, maxH)
-  // - drawPhotoGrid(photos)
-  // - save() / toBlob()
+  /**
+   * Custom method to draw the main title banner exactly as shown in the Aditya Birla sample.
+   * Dark grey solid background, white bold text, no borders.
+   */
+  drawDarkTitleBanner(title: string): void {
+    if (this.cursorY > 10) {
+      this.cursorY += 10;
+    }
+
+    this.checkPageBreak(50);
+
+    const h = 26; // slightly taller banner
+    const y = this.pdfY(this.cursorY);
+
+    // Draw solid dark grey background
+    this.page.drawRectangle({
+      x: MARGIN_L,
+      y: y - h,
+      width: CONTENT_W,
+      height: h,
+      color: rgb(0.12, 0.12, 0.12), // Dark grey
+      // No border
+    });
+
+    const font = this.fontBold;
+    const text = this.sanitizeText(title).toUpperCase();
+    const fontSize = FONT_SIZE_HEADER + 2;
+    const tw = font.widthOfTextAtSize(text, fontSize);
+    
+    this.page.drawText(text, {
+      x: MARGIN_L + (CONTENT_W - tw) / 2,
+      y: y - h + 8,
+      size: fontSize,
+      font,
+      color: rgb(1, 1, 1), // White text
+    });
+
+    this.cursorY += h;
+  }
 }
 
 export default PDFAdityaBirlaHousingRenderer;

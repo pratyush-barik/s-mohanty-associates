@@ -31,7 +31,7 @@ async function generateHLLAPPDF(
   await r.init();
 
   // ====== TITLE BANNER ======
-  r.drawSectionHeader('VALUATION REPORT FOR ADITYA BIRLA HOUSING FINANCE LTD');
+  r.drawDarkTitleBanner('VALUATION REPORT FOR ADITYA BIRLA HOUSING FINANCE LTD');
 
   // ====== HEADER DETAILS TABLE ======
   const headerRows: [string, string, string, string][] = [
