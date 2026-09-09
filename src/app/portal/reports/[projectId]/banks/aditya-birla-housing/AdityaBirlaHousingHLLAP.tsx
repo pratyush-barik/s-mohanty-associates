@@ -1,6 +1,7 @@
 'use client';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig } from '@/lib/bank-fields';
+import { generateAdityaBirlaHousingPDF } from './AdityaBirlaHousingPDF';
 
 export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
   bankId: 'ADITYA BIRLA HOUSING FINANCE LTD',
@@ -274,6 +275,8 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       { key: 'deviationsObservations', label: 'Deviations/Observations', type: 'textarea', span: 2 },
     ],
   },
+  // Custom PDF generator matching the bank's exact sample format
+  generateCustomPDF: generateAdityaBirlaHousingPDF,
   defaultValues: {
     to: 'ADITYA BIRLA HOUSING FINANCE LTD',
     purpose: 'Home Loan / LAP',
