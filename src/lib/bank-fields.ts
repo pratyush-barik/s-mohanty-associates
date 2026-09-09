@@ -260,7 +260,7 @@ export interface ExtraFieldConfig {
   /** Display label in the form */
   label: string;
   /** Field type (defaults to 'text') */
-  type?: 'text' | 'textarea' | 'select' | 'date' | 'number' | 'yesno' | 'heading' | 'fieldset';
+  type?: 'text' | 'textarea' | 'select' | 'date' | 'number' | 'yesno' | 'heading' | 'fieldset' | 'table';
   /** Options for select-type fields */
   options?: string[];
   /** Default value */

@@ -545,22 +545,50 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
     // ── SECTION 4: SANCTION PLAN APPROVAL & OTHER DOCUMENTS DETAILS (17-23) ──
     'section-4': [
       { key: 'sanctionPlanAvailable', label: '17. Sanction Plan Available', default: 'NA' },
-      { key: 'layoutPlanApprovalNo', label: '18. Layout Plan - Approval No', default: 'N.A' },
-      { key: 'layoutPlanDateOfApproval', label: 'Layout Plan - Date of Approval', default: 'N.A' },
-      { key: 'layoutPlanExpiryDate', label: 'Layout Plan - Expiry Date', default: 'N.A' },
-      { key: 'layoutPlanSanctioningAuthority', label: 'Layout Plan - Sanctioning Authority', default: 'N.A' },
-      { key: 'buildingPlanApprovalNo', label: 'Building Plan - Approval No' },
-      { key: 'buildingPlanDateOfApproval', label: 'Building Plan - Date of Approval' },
-      { key: 'buildingPlanExpiryDate', label: 'Building Plan - Expiry Date', default: 'N.A' },
-      { key: 'buildingPlanSanctioningAuthority', label: 'Building Plan - Sanctioning Authority' },
-      { key: 'constructionPermissionApprovalNo', label: 'Construction Permission - Approval No', default: 'N.A' },
-      { key: 'constructionPermissionDateOfApproval', label: 'Construction Permission - Date of Approval', default: 'N.A' },
-      { key: 'constructionPermissionExpiryDate', label: 'Construction Permission - Expiry Date', default: 'N.A' },
-      { key: 'constructionPermissionSanctioningAuthority', label: 'Construction Permission - Sanctioning Authority', default: 'N.A' },
-      { key: 'constructionCertificateApprovalNo', label: 'Construction Certificate - Approval No', default: 'N.A' },
-      { key: 'constructionCertificateDateOfApproval', label: 'Construction Certificate - Date of Approval', default: 'N.A' },
-      { key: 'constructionCertificateExpiryDate', label: 'Construction Certificate - Expiry Date', default: 'N.A' },
-      { key: 'constructionCertificateSanctioningAuthority', label: 'Construction Certificate - Sanctioning Authority', default: 'N.A' },
+      {
+        key: 'sanctionPlanDetailsTable',
+        label: '18. Approval Details',
+        type: 'table',
+        columns: ['Approval No', 'Date of Approval', 'Expiry Date', 'Sanctioning Authority'],
+        rows: [
+          {
+            label: 'Layout Plan',
+            fields: [
+              { key: 'layoutPlanApprovalNo', default: 'N.A' },
+              { key: 'layoutPlanDateOfApproval', default: 'N.A' },
+              { key: 'layoutPlanExpiryDate', default: 'N.A' },
+              { key: 'layoutPlanSanctioningAuthority', default: 'N.A' }
+            ]
+          },
+          {
+            label: 'Building Plan',
+            fields: [
+              { key: 'buildingPlanApprovalNo', placeholder: 'Enter building plan - approval no...' },
+              { key: 'buildingPlanDateOfApproval', placeholder: 'Enter building plan - date of approval...' },
+              { key: 'buildingPlanExpiryDate', default: 'N.A' },
+              { key: 'buildingPlanSanctioningAuthority', placeholder: 'Enter building plan - sanctioning authority...' }
+            ]
+          },
+          {
+            label: 'Construction Permission',
+            fields: [
+              { key: 'constructionPermissionApprovalNo', default: 'N.A' },
+              { key: 'constructionPermissionDateOfApproval', default: 'N.A' },
+              { key: 'constructionPermissionExpiryDate', default: 'N.A' },
+              { key: 'constructionPermissionSanctioningAuthority', default: 'N.A' }
+            ]
+          },
+          {
+            label: 'Construction Certificate',
+            fields: [
+              { key: 'constructionCertificateApprovalNo', default: 'N.A' },
+              { key: 'constructionCertificateDateOfApproval', default: 'N.A' },
+              { key: 'constructionCertificateExpiryDate', default: 'N.A' },
+              { key: 'constructionCertificateSanctioningAuthority', default: 'N.A' }
+            ]
+          }
+        ]
+      },
       { key: 'constructionCommencementDate', label: '19. Construction commencement date' },
       { key: 'expectedCompletionDate', label: 'Expected Completion Date' },
       { key: 'ownershipType', label: '20. Ownership Type (Free / Lease Hold)', default: 'FREEHOLD' },
