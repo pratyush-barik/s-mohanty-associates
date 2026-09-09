@@ -998,8 +998,10 @@ export default function BankReportBuilder({
       };
 
       // If bank has a fully custom PDF generator, delegate to it
+      // generateCustomPDF returns Uint8Array, but callers expect Blob for URL.createObjectURL()
       if (config?.generateCustomPDF) {
-        return await config.generateCustomPDF(fields, null, imageResults, fmtDate);
+        const pdfBytes = await config.generateCustomPDF(fields, null, imageResults, fmtDate);
+        return new Blob([pdfBytes as any], { type: 'application/pdf' });
       }
 
       // Instantiate renderer: use config custom renderer or default base renderer (automatically defaults letterhead)
