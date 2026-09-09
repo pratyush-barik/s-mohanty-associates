@@ -504,24 +504,40 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
           { key: 'relationWithApplicant', label: 'Relation with applicant', default: 'NA' }
         ]
       },
-      { key: 'propertyDemarcation', label: '13. Property Demarcation', default: 'Yes' },
-      { key: 'propertyIdentifiedYN', label: 'Property Identified (Y/N)', default: 'Yes' },
-      { key: 'propertyIdentifiedThrough', label: 'Property Identified through' },
-      { key: 'typeOfStructure', label: 'Type of structure', default: 'R.C.C' },
-      { key: 'landPlotAreaUDS', label: 'Land/Plot Area -UDS' },
-      { key: 'noOfBlocks', label: 'No of Blocks' },
-      { key: 'noOfUnitsOnEachFloor', label: 'No of Units on each floor' },
-      { key: 'noOfFloors', label: 'No. of Floors' },
-      { key: 'noOfLifts', label: 'No. of Lifts' },
-      { key: 'amenitiesAvailable', label: 'Amenities Available', default: 'Yes' },
-      { key: 'deliveryAgency', label: 'Delivery Agency' },
-      { key: 'propertyLocatedOnFloor', label: '14. Property located on Floor' },
-      { key: 'unitConfiguration', label: 'Unit Configuration' },
-      { key: 'carpetArea', label: 'Carpet area' },
-      { key: 'carpetAreaUnit', label: 'Unit', default: 'Sqft' },
-      { key: 'sbuaOf', label: 'SBUA of' },
-      { key: 'sbuaUnit', label: 'Unit', default: 'Sqft' },
-      { key: 'viewFromProperty', label: 'View from property', default: 'Good' },
+      {
+        key: 'buildingDetailsFieldset',
+        label: '13. Building details',
+        type: 'fieldset',
+        color: 'red',
+        fields: [
+          { key: 'propertyDemarcation', label: 'Property Demarcation', default: 'Yes' },
+          { key: 'propertyIdentifiedYN', label: 'Property Identified (Y/N)', default: 'Yes' },
+          { key: 'propertyIdentifiedThrough', label: 'Property Identified through' },
+          { key: 'typeOfStructure', label: 'Type of structure', default: 'R.C.C' },
+          { key: 'landPlotAreaUDS', label: 'Land/Plot Area -UDS' },
+          { key: 'noOfBlocks', label: 'No of Blocks' },
+          { key: 'noOfUnitsOnEachFloor', label: 'No of Units on each floor' },
+          { key: 'noOfFloors', label: 'No. of Floors' },
+          { key: 'noOfLifts', label: 'No. of Lifts' },
+          { key: 'amenitiesAvailable', label: 'Amenities Available', default: 'Yes' },
+          { key: 'deliveryAgency', label: 'Delivery Agency' }
+        ]
+      },
+      {
+        key: 'unitDetailsFieldset',
+        label: '14. Unit details',
+        type: 'fieldset',
+        color: 'green',
+        fields: [
+          { key: 'propertyLocatedOnFloor', label: 'Property located on Floor' },
+          { key: 'unitConfiguration', label: 'Unit Configuration' },
+          { key: 'carpetArea', label: 'Carpet area' },
+          { key: 'carpetAreaUnit', label: 'Unit', default: 'Sqft' },
+          { key: 'sbuaOf', label: 'SBUA of' },
+          { key: 'sbuaUnit', label: 'Unit', default: 'Sqft' },
+          { key: 'viewFromProperty', label: 'View from property', default: 'Good' }
+        ]
+      },
       { key: 'constructionQualityExteriors', label: '15. Construction Quality - Exteriors', default: 'Good' },
       { key: 'constructionQualityInteriors', label: 'Construction Quality - Interiors', default: 'Good' },
       { key: 'ageOfProperty', label: '16. Age of the property (Yrs)' },

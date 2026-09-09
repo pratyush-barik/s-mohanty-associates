@@ -271,6 +271,10 @@ export interface ExtraFieldConfig {
   readOnly?: boolean;
   /** Span 2 columns in the grid */
   span?: 1 | 2;
+  /** Color theme for fieldset */
+
+  color?: 'blue' | 'red' | 'green';
+
   /** For fieldset: Nested fields */
 
   fields?: ExtraFieldConfig[];

@@ -1505,8 +1505,12 @@ export default function BankReportBuilder({
     }
     
     if (ef.type === 'fieldset') {
+      let bgClass = "border-blue-200 bg-[#f8fafc]";
+      if (ef.color === 'red') bgClass = "border-red-200 bg-[#fff5f5]";
+      if (ef.color === 'green') bgClass = "border-green-200 bg-[#f0fdf4]";
+      
       return (
-        <div key={ef.key} className="md:col-span-2 border border-blue-200 bg-[#f8fafc] rounded-xl p-4 mt-2 shadow-sm space-y-4">
+        <div key={ef.key} className={`md:col-span-2 border ${bgClass} rounded-xl p-4 mt-2 shadow-sm space-y-4`}>
           <h3 className="text-sm font-bold text-[#0f2038] mb-4 flex items-baseline gap-1 lining-nums font-sans">{ef.label}</h3>
           <div className="grid md:grid-cols-2 gap-4">
             {ef.fields?.map(childEf => renderExtraField(childEf))}
