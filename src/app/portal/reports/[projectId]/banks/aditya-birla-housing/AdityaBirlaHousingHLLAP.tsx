@@ -473,7 +473,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       { key: 'locationHeading', label: '5. Location', type: 'heading' },
       { key: 'locationType', label: '5. Type (Comm, Res, Ind, Mix)', type: 'select', options: ['Commercial', 'Residential', 'Industrial', 'Mixed'], default: 'Residential' },
       { key: 'localityLevel', label: 'Locality (Low, Medium, Posh)', type: 'select', options: ['Low', 'Medium', 'Posh'], default: 'Medium' },
-      { key: 'siteDevStatus', label: 'Site is (Dev, Under Dev, Developing)', default: 'Developed' },
+      { key: 'siteDevStatus', label: 'Site is (Dev, Under Dev, Developing)', type: 'select', options: ['Developed', 'Under Development', 'Developing'], default: 'Developed' },
       { key: 'proximityToCivicAmenities', label: 'Proximity to civic amenities/public transport', default: 'Good' },
       { key: 'railwayStationDistance', label: 'Railway Station' },
       { key: 'busStopDistance', label: 'Bus Stop' },
