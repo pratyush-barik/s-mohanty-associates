@@ -536,8 +536,8 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
           { key: 'viewFromProperty', label: 'View from property', default: 'Good' }
         ]
       },
-      { key: 'constructionQualityExteriors', label: '15. Construction Quality - Exteriors', default: 'Good' },
-      { key: 'constructionQualityInteriors', label: 'Construction Quality - Interiors', default: 'Good' },
+      { key: 'constructionQualityExteriors', label: '15.1 Construction Quality ((Good/Avg/Bad)) - Exteriors', type: 'select', options: ['Good', 'Average', 'Bad', 'NA'], default: 'NA' },
+      { key: 'constructionQualityInteriors', label: '15.2 Construction Quality (Good/Avg/Bad) - Interiors', type: 'select', options: ['Good', 'Average', 'Bad', 'NA'], default: 'NA' },
       { key: 'ageOfProperty', label: '16. Age of the property (Yrs)' },
       { key: 'residualAge', label: 'Residual age (Yrs)' },
     ],
