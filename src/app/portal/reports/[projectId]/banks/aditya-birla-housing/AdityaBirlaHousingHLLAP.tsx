@@ -499,6 +499,8 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
     'section-7c',  // Valuation Abstract (covered by section-6 Valuation Details)
     'section-9',   // Default Abstract of Valuation
     'section-10',  // Default Deviations
+    'section-14',  // Annexures (Apartment/Flat)
+    'section-15',  // Annexures (Bungalow/Land)
   ],
   extraFields: {
     // ── SECTION 1: HEADER & BASIC DETAILS ──

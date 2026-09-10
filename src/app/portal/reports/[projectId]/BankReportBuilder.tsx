@@ -2529,19 +2529,21 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
           );
         })()}
 
-        {/* ── Section 14 / 15: Annexures (Always available) ── */}
-        <BaseAnnexureSection
-          annexures={fields.annexures || []}
-          isReadOnly={isReadOnly}
-          uploading={uploading}
-          onAddAnnexure={addAnnexure}
-          onRemoveAnnexure={removeAnnexure}
-          onUpdateTitle={updateAnnexureTitle}
-          onUploadExcel={handleAnnexureUpload}
-          onRemoveFile={removeAnnexureFile}
-          sectionNumber={isApartmentFlat ? 14 : 15}
-          sectionId={`section-${isApartmentFlat ? 14 : 15}`}
-        />
+        {/* ── Section 14 / 15: Annexures ── */}
+        {!isSectionHidden(`section-${isApartmentFlat ? 14 : 15}`) && (
+          <BaseAnnexureSection
+            annexures={fields.annexures || []}
+            isReadOnly={isReadOnly}
+            uploading={uploading}
+            onAddAnnexure={addAnnexure}
+            onRemoveAnnexure={removeAnnexure}
+            onUpdateTitle={updateAnnexureTitle}
+            onUploadExcel={handleAnnexureUpload}
+            onRemoveFile={removeAnnexureFile}
+            sectionNumber={getSectionNumber(`section-${isApartmentFlat ? 14 : 15}`, isApartmentFlat ? 14 : 15)}
+            sectionId={`section-${isApartmentFlat ? 14 : 15}`}
+          />
+        )}
 
         {/* ── Action Buttons Footer ── */}
         <div className="p-5 bg-[#556B2F] border-2 border-[#3F5021] rounded-2xl shadow-xl flex flex-wrap items-center justify-between gap-4 sticky bottom-4 z-40">
