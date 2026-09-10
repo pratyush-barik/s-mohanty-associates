@@ -773,7 +773,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
           { label: 'Total of Component A on Completion', fields: [{ key: 'totalComponentA', editToggle: true, computedSumOf: ['valLandAmount', 'valParkingAmount', 'valBuaAmount'] }] },
           { label: 'Total of Component B on Completion', fields: [{ key: 'totalComponentB', inputType: 'number', editToggle: true, computedSumOf: ['noOfCarParks', 'carParkingCharges', 'edcIdcLumpsum', 'plcChargesLumpsum', 'powerBackup', 'interiorsAmenities', 'interiorsPercentCompletion'] }] },
           { label: 'Total Market Value of Property on Completion (A+B)', fields: [{ key: 'totalMarketValueOnCompletion', inputType: 'number', editToggle: true, computedSumOf: ['totalComponentA', 'totalComponentB'] }] },
-          { label: 'Total Market Value of Property on Completion in Words', fields: [{ key: 'totalMarketValueOnCompletionWords' }] },
+          { label: 'Total Market Value of Property on Completion in Words', fields: [{ key: 'totalMarketValueOnCompletionWords', computedWordsOf: 'totalMarketValueOnCompletion', readOnly: true }] },
           { label: 'Total Market Value of Property as on Date (A+B)', fields: [{ key: 'totalMarketValueAsOnDate' }] },
           { label: 'Guideline Value of The Property', fields: [{ key: 'guidelineValueOfProperty' }] },
           { label: 'Distress Sale Value as on date', fields: [{ key: 'distressSaleValue' }] },

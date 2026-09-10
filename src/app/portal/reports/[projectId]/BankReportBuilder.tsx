@@ -1598,6 +1598,26 @@ export default function BankReportBuilder({
                     // Compute sum if computedSumOf is specified
                     let cellVal = fields[field.key as keyof typeof fields] as string || '';
                     if (!cellVal && field.default) cellVal = field.default;
+                    // Compute words if computedWordsOf is specified
+                    if (field.computedWordsOf) {
+                      const sourceVal = fields[field.computedWordsOf as keyof typeof fields];
+                      const wordVal = rupeesInWords(sourceVal || 0);
+                      cellVal = wordVal;
+                      // Auto-save the computed value
+                      if (fields[field.key as keyof typeof fields] !== cellVal) {
+                        handleChange(field.key as string, cellVal);
+                      }
+                      return (
+                        <td key={fIdx} colSpan={field.colSpan || 1} className="p-2 border border-slate-300 bg-white min-w-[120px]">
+                          <input
+                            className={`${inputCls} bg-slate-50 font-semibold text-slate-600`}
+                            value={cellVal}
+                            disabled={true}
+                            readOnly={true}
+                          />
+                        </td>
+                      );
+                    }
                     if (field.computedSumOf && Array.isArray(field.computedSumOf)) {
                       const editToggleKey = `_editToggle_${field.key}`;
                       const isEditMode = (fields as any)[editToggleKey] === 'on';
