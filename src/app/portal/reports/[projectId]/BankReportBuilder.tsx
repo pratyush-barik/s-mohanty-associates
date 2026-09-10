@@ -1543,12 +1543,21 @@ export default function BankReportBuilder({
             <tbody>
               {ef.rows.map((row: any, rIdx: number) => (
                 <tr key={rIdx}>
-                  <td className="p-2 border border-slate-300 text-sm font-medium text-slate-800 bg-white whitespace-nowrap">{row.label}</td>
+                  {row.label !== undefined && (
+                    <td className="p-2 border border-slate-300 text-sm font-medium text-slate-800 bg-white whitespace-nowrap">{row.label}</td>
+                  )}
                   {row.fields.map((field: any, fIdx: number) => {
+                    if (field.isLabel) {
+                      return (
+                        <td key={fIdx} colSpan={field.colSpan || 1} className="p-2 border border-slate-300 text-sm font-medium text-slate-800 bg-white whitespace-nowrap">
+                          {field.label}
+                        </td>
+                      );
+                    }
                     let cellVal = fields[field.key as keyof typeof fields] as string || '';
                     if (!cellVal && field.default) cellVal = field.default;
                     return (
-                      <td key={fIdx} className="p-2 border border-slate-300 bg-white min-w-[120px]">
+                      <td key={fIdx} colSpan={field.colSpan || 1} className="p-2 border border-slate-300 bg-white min-w-[120px]">
                         <input
                           className={inputCls}
                           value={cellVal}

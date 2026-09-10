@@ -700,6 +700,56 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
 
     // ── SECTION 6: VALUATION DETAILS (27) ──
     'section-6': [
+      {
+        key: 'descLandConstructedAreaRatesTable',
+        label: '27. (A) Description of Land &Constructed Area and Rates',
+        type: 'table',
+        firstColumnHeader: 'Description',
+        columns: ['Unit of Measurement', 'Area', 'Rate/unit', 'Amount'],
+        rows: [
+          {
+            label: 'Land Area',
+            fields: [
+              { key: 'valLandUnit', default: 'Sqft' },
+              { key: 'valLandArea', default: '0' },
+              { key: 'valLandRate', default: '00.00' },
+              { key: 'valLandAmount', default: '00.00' }
+            ]
+          },
+          {
+            label: 'Parking/Stilt BUA',
+            fields: [
+              { key: 'valParkingUnit', default: 'Sqft' },
+              { key: 'valParkingArea', default: '0' },
+              { key: 'valParkingRate', default: '0' },
+              { key: 'valParkingAmount', default: '0' }
+            ]
+          },
+          {
+            label: 'BUA/SBUA',
+            fields: [
+              { key: 'valBuaUnit', default: 'Sqft' },
+              { key: 'valBuaArea', default: '1544' },
+              { key: 'valBuaRate', default: '6800' },
+              { key: 'valBuaAmount', default: '1,04,99,200' }
+            ]
+          },
+          {
+            fields: [
+              { isLabel: true, label: 'Construction Progress', colSpan: 2 },
+              { key: 'valConstructionProgress', colSpan: 3, default: 'Complete in all respect' }
+            ]
+          },
+          {
+            fields: [
+              { isLabel: true, label: '% Completion', colSpan: 1 },
+              { key: 'valPercentCompletion', default: '100', colSpan: 1 },
+              { isLabel: true, label: '% Recommendation', colSpan: 1 },
+              { key: 'valPercentRecommendation', default: '100', colSpan: 2 }
+            ]
+          }
+        ]
+      },
       { key: 'propertyTypeBungalow', label: 'Property Type', default: 'Bungalow' },
       { key: 'landAreaMeasurement', label: 'Land Area - Unit of Measurement', default: 'Sqft' },
       { key: 'landAreaValue', label: 'Land Area - Area', default: '0' },

@@ -284,8 +284,8 @@ export interface ExtraFieldConfig {
   columns?: string[];
   /** For table: Row definitions */
   rows?: {
-    label: string;
-    fields: { key: string; placeholder?: string; default?: string; type?: 'text' | 'select' | 'yesno'; options?: string[] }[];
+    label?: string;
+    fields: { key?: string; isLabel?: boolean; label?: string; colSpan?: number; placeholder?: string; default?: string; type?: 'text' | 'select' | 'yesno'; options?: string[] }[];
   }[];
 
   /** Inline positioning hint: render this field in a 2-col inline pair */
