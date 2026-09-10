@@ -2039,40 +2039,52 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
         {!isSectionHidden('section-5') && (
           <Section id="section-5" title={getSectionTitle("section-5", "Structural Details")} number={getSectionNumber("section-5", 5)}>
             <div className="grid md:grid-cols-2 gap-4">
-              <Field label="Type of Structure">
-                <select className={selectCls} value={fields.structureType} onChange={e => handleChange('structureType', e.target.value)} disabled={isReadOnly}>
-                  <option value="RCC">RCC</option>
-                  <option value="Load Bearing">Load Bearing</option>
-                  <option value="Steel Structure">Steel Structure</option>
-                  <option value="Composite Structure">Composite Structure</option>
-                  <option value="Industrial Shed">Industrial Shed</option>
-                </select>
-              </Field>
-              <Field label="No. of Floors">
-                <input className={inputCls} value={fields.numberOfFloors} onChange={e => handleChange('numberOfFloors', e.target.value)} disabled={isReadOnly} placeholder="e.g. Ground + 2" />
-              </Field>
-              <Field label="Age of Property (Years)">
-                <input className={inputCls} value={fields.ageOfPropertyActual} onChange={e => handleChange('ageOfPropertyActual', e.target.value)} disabled={isReadOnly} placeholder="e.g. 5" />
-              </Field>
-              <Field label="Estimated Future Life (Years)">
-                <input className={inputCls} value={fields.estimatedFutureLife} onChange={e => handleChange('estimatedFutureLife', e.target.value)} disabled={isReadOnly} placeholder="e.g. 55" />
-              </Field>
-              <Field label="Quality of Construction">
-                <select className={selectCls} value={fields.qualityOfConstruction} onChange={e => handleChange('qualityOfConstruction', e.target.value)} disabled={isReadOnly}>
-                  <option value="Very Good">Very Good</option>
-                  <option value="Good">Good</option>
-                  <option value="Average">Average</option>
-                  <option value="Poor">Poor</option>
-                </select>
-              </Field>
-              <Field label="Maintenance Condition">
-                <select className={selectCls} value={fields.maintenanceCondition} onChange={e => handleChange('maintenanceCondition', e.target.value)} disabled={isReadOnly}>
-                  <option value="Very Good">Very Good</option>
-                  <option value="Good">Good</option>
-                  <option value="Average">Average</option>
-                  <option value="Poor">Poor</option>
-                </select>
-              </Field>
+              {!isFieldHidden('structureType') && (
+                <Field label="Type of Structure">
+                  <select className={selectCls} value={fields.structureType} onChange={e => handleChange('structureType', e.target.value)} disabled={isReadOnly}>
+                    <option value="RCC">RCC</option>
+                    <option value="Load Bearing">Load Bearing</option>
+                    <option value="Steel Structure">Steel Structure</option>
+                    <option value="Composite Structure">Composite Structure</option>
+                    <option value="Industrial Shed">Industrial Shed</option>
+                  </select>
+                </Field>
+              )}
+              {!isFieldHidden('numberOfFloors') && (
+                <Field label="No. of Floors">
+                  <input className={inputCls} value={fields.numberOfFloors} onChange={e => handleChange('numberOfFloors', e.target.value)} disabled={isReadOnly} placeholder="e.g. Ground + 2" />
+                </Field>
+              )}
+              {!isFieldHidden('ageOfPropertyActual') && (
+                <Field label="Age of Property (Years)">
+                  <input className={inputCls} value={fields.ageOfPropertyActual} onChange={e => handleChange('ageOfPropertyActual', e.target.value)} disabled={isReadOnly} placeholder="e.g. 5" />
+                </Field>
+              )}
+              {!isFieldHidden('estimatedFutureLife') && (
+                <Field label="Estimated Future Life (Years)">
+                  <input className={inputCls} value={fields.estimatedFutureLife} onChange={e => handleChange('estimatedFutureLife', e.target.value)} disabled={isReadOnly} placeholder="e.g. 55" />
+                </Field>
+              )}
+              {!isFieldHidden('qualityOfConstruction') && (
+                <Field label="Quality of Construction">
+                  <select className={selectCls} value={fields.qualityOfConstruction} onChange={e => handleChange('qualityOfConstruction', e.target.value)} disabled={isReadOnly}>
+                    <option value="Very Good">Very Good</option>
+                    <option value="Good">Good</option>
+                    <option value="Average">Average</option>
+                    <option value="Poor">Poor</option>
+                  </select>
+                </Field>
+              )}
+              {!isFieldHidden('maintenanceCondition') && (
+                <Field label="Maintenance Condition">
+                  <select className={selectCls} value={fields.maintenanceCondition} onChange={e => handleChange('maintenanceCondition', e.target.value)} disabled={isReadOnly}>
+                    <option value="Very Good">Very Good</option>
+                    <option value="Good">Good</option>
+                    <option value="Average">Average</option>
+                    <option value="Poor">Poor</option>
+                  </select>
+                </Field>
+              )}
             </div>
             {renderExtraFields('section-5')}
           </Section>
