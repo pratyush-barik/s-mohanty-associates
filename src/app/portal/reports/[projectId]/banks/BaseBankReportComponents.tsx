@@ -174,7 +174,7 @@ export function FloatingNavigator({ sections }: { sections: NavItem[] }) {
       <div className="text-[10px] font-black text-emerald-500 mb-1 px-2 uppercase tracking-widest">Sections</div>
       {sections.map((sec) => {
         const isActive = activeId === sec.id;
-        const cleanTitle = sec.title.replace(/^\d+[\.\s\-:]*\s*/, '');
+        const cleanTitle = (sec.title || '').replace(/^\d+[\.\s\-:]*\s*/, '');
         return (
           <button
             key={sec.id}

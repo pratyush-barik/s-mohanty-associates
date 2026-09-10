@@ -6,7 +6,7 @@ import { saveReportDraft, submitReportForVerification, getBucketImages, deleteBu
 import { SERVICES_LIST } from './constants';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
-import { PDFBankRenderer, fetchBytes } from '@/lib/pdf-bank-renderer';
+import { PDFBankRenderer, fetchBytes, formatReportDate } from '@/lib/pdf-bank-renderer';
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
 import type { BaseReportFields, BankConfig, FloorRow, AnnexureItem, ExtraFieldConfig } from '@/lib/bank-fields';
@@ -14,6 +14,8 @@ import { reorderAndLabelAnnexures, normalizeMapImages } from '@/lib/bank-fields'
 import { getFloorName, BasePhotographsSection, BaseMapsSection, BaseAnnexureSection, AnnexureRefSelector, ActiveConfigBanner, BasePhotoBucketModal } from './banks/BaseBankReportComponents';
 import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 import * as XLSX from 'xlsx';
+
+const fmtDate = (d?: string | null) => formatReportDate(d, '________');
 
 const cleanAddressForMap = (rawAddr: string): string => {
   if (!rawAddr || !rawAddr.trim()) return '';
@@ -335,7 +337,7 @@ const FloatingNavigator = ({ sections }: { sections: { id: string; title: string
       <div className="text-[10px] font-black text-emerald-500 mb-1 px-2 uppercase tracking-widest">Sections</div>
       {sections.map((sec) => {
         const isActive = activeId === sec.id;
-        const cleanTitle = sec.title.replace(/^\d+[\.\s\-:]*\s*/, '');
+        const cleanTitle = (sec.title || '').replace(/^\d+[\.\s\-:]*\s*/, '');
         return (
           <button
             key={sec.id}

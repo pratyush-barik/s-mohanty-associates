@@ -451,6 +451,7 @@ Outstanding items in **priority order**:
 - `annapurna-fixes` — feat(annapurna): auto-fill visiting engineer name from assigned inspectors (single: Name, 2: Name 1 and Name 2, 2+: Name 1, Name 2 and Name 3), fix declaration grammar ("rates prevalent in the nearby localities"), enforce DD/MM/YYYY date format everywhere, and convert Additional Checks to dropdowns with NA default
 - `annapurna-refinements` — fix(annapurna): remove Block 1 sidebar cell in PDF table under Location Details, synchronize propertyAddressSite/addressAsPerSite, add NDMA page break before section and after Fire Exit, bold Current Occupant & Separate Access in PDF, provide dropdowns in Web UI, and format all dates as DD/MM/YYYY across GeneralReportBuilder and bank renderers
 - `navbar-wrap` — fix(ui): allow FloatingNavigator pill buttons to wrap to second row without ellipsis truncation, widen sidebar to 175px, add hover tooltips, and simplify Annapurna section 2 to "Location Details"
+- `fix-builder-crash` — fix(builders): restore VAL_BG import in pdf-annapurna-micro-finance-renderer, export AnnapurnaMicroReportFields alias, define fmtDate in BankReportBuilder, guard sec.title in FloatingNavigator, and fix mainAreaLocation -> activeAddr in IBBI/IncomeTax builders
 - `maps-coord-override` — feat(maps): default location map to technical address, override with coordinates across all report builders, mention reference source under preview, and provide direct coordinate entry when absent in form
 
 ## Current Status

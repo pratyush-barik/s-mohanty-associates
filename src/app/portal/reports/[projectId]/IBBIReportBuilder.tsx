@@ -4538,9 +4538,9 @@ Our valuation is based on information obtained from the client and on data gathe
                                 Coordinates Override Active
                               </span>
                             </div>
-                            {mainAreaLocation && (
-                              <div className="text-[11px] text-slate-600 pl-4 truncate" title={mainAreaLocation}>
-                                <span className="font-medium text-slate-700">Overridden Technical Address:</span> {mainAreaLocation}
+                            {activeAddr && (
+                              <div className="text-[11px] text-slate-600 pl-4 truncate" title={activeAddr}>
+                                <span className="font-medium text-slate-700">Overridden Technical Address:</span> {activeAddr}
                               </div>
                             )}
                           </div>
@@ -4561,8 +4561,8 @@ Our valuation is based on information obtained from the client and on data gathe
                                 Enter coordinates below to override for higher accuracy
                               </span>
                             </div>
-                            <div className="text-[11px] text-slate-700 pl-4 font-normal truncate" title={mainAreaLocation}>
-                              <span className="font-semibold text-blue-900">Address text:</span> {mainAreaLocation}
+                            <div className="text-[11px] text-slate-700 pl-4 font-normal truncate" title={activeAddr}>
+                              <span className="font-semibold text-blue-900">Address text:</span> {activeAddr}
                             </div>
                           </div>
                         )}

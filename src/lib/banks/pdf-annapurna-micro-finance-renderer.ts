@@ -36,11 +36,14 @@ import {
   BORDER_W,
   LBL_BG,
   OPT_BG,
+  VAL_BG,
   BG_OPACITY,
   hexToRgb,
   formatReportDate,
 } from '../pdf-bank-renderer';
 import { formatAssignedEngineers } from '@/app/portal/reports/[projectId]/banks/BaseBankReportComponents';
+
+export type AnnapurnaMicroReportFields = AnnapurnaMicroFinanceReportFields;
 
 export interface AnnapurnaMicroFinanceReportFields {
   // Application Details

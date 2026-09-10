@@ -8,6 +8,7 @@ import { formatIndianCurrency } from '@/lib/numberToWords';
 import {
   PDFAnnapurnaMicroFinanceRenderer,
   AnnapurnaMicroFinanceReportFields,
+  AnnapurnaMicroReportFields,
 } from '@/lib/banks/pdf-annapurna-micro-finance-renderer';
 import {
   Section,
