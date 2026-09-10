@@ -1533,6 +1533,22 @@ export default function BankReportBuilder({
           <h3 className="text-sm font-bold text-[#0f2038] mb-4 flex items-baseline gap-1 lining-nums font-sans">{ef.label}</h3>
           <table className="w-full text-left border-collapse">
             <thead>
+              {ef.tableTopField && (
+                <tr>
+                  <th colSpan={(ef.columns?.length || 0) + 1} className="p-2 border border-slate-300 bg-slate-50 text-sm font-bold text-slate-800">
+                    <div className="flex items-center gap-2">
+                      <span>{ef.tableTopField.label}:</span>
+                      <input
+                        className={`${inputCls} max-w-[250px] font-semibold text-indigo-700 bg-white/80`}
+                        value={fields[ef.tableTopField.key as keyof typeof fields] || ef.tableTopField.default || ''}
+                        onChange={e => handleChange(ef.tableTopField!.key, e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder={`Enter ${ef.tableTopField.label.toLowerCase()}...`}
+                      />
+                    </div>
+                  </th>
+                </tr>
+              )}
               <tr>
                 <th className="p-2 border border-slate-300 bg-slate-100 text-xs font-semibold text-slate-700 whitespace-nowrap">{ef.firstColumnHeader || 'Description'}</th>
                 {ef.columns.map((col: string, idx: number) => (

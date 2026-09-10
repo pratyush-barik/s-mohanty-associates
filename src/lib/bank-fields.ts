@@ -282,6 +282,8 @@ export interface ExtraFieldConfig {
   firstColumnHeader?: string;
   /** For table: Subsequent column headers */
   columns?: string[];
+  /** For table: Optional field row above the column headers */
+  tableTopField?: { key: string; label: string; default?: string };
   /** For table: Row definitions */
   rows?: {
     label?: string;

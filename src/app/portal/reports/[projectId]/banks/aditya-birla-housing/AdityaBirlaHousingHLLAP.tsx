@@ -709,6 +709,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
         label: '27. (A) Description of Land &Constructed Area and Rates',
         type: 'table',
         firstColumnHeader: 'Description',
+        tableTopField: { key: 'propertyTypeBungalow', label: 'Property Type' },
         columns: ['Unit of Measurement', 'Area', 'Rate/unit', 'Amount'],
         rows: [
           {
