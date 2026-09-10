@@ -1566,7 +1566,11 @@ export default function BankReportBuilder({
                       <div className="flex items-center gap-2">
                         <span>
                           {row.dynamicLabelTemplate
-                            ? row.dynamicLabelTemplate.replace(/\{([^}]+)\}/g, (match: string, key: string) => (fields[key as keyof typeof fields] as string || '0'))
+                            ? row.dynamicLabelTemplate.replace(/\{([^}]+)\}/g, (match: string, key: string) => {
+                                let val = fields[key as keyof typeof fields] as string || '0';
+                                // Prevent double % by stripping it out before injecting into a template that already has %
+                                return val.replace(/%/g, '').trim();
+                              })
                             : row.label}
                         </span>
                         {row.fields?.some((f: any) => f.editToggle) && (() => {
@@ -1605,8 +1609,8 @@ export default function BankReportBuilder({
                     // Compute percentage if computedPercentOf is specified
                     if (field.computedPercentOf) {
                       const { percentField, totalField } = field.computedPercentOf;
-                      const percentVal = parseFloat(String(fields[percentField as keyof typeof fields] || '0').replace(/,/g, ''));
-                      const totalVal = parseFloat(String(fields[totalField as keyof typeof fields] || '0').replace(/,/g, ''));
+                      const percentVal = parseFloat(String(fields[percentField as keyof typeof fields] || '0').replace(/,/g, '').replace(/%/g, ''));
+                      const totalVal = parseFloat(String(fields[totalField as keyof typeof fields] || '0').replace(/,/g, '').replace(/%/g, ''));
                       
                       const editToggleKey = `_editToggle_${field.key}`;
                       const isEditMode = (fields as any)[editToggleKey] === 'on';
