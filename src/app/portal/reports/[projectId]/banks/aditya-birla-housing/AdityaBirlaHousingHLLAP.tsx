@@ -719,7 +719,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
               { key: 'valLandUnit' },
               { key: 'valLandArea' },
               { key: 'valLandRate' },
-              { key: 'valLandAmount' }
+              { key: 'valLandAmount', inputType: 'number' }
             ]
           },
           {
@@ -728,7 +728,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
               { key: 'valParkingUnit' },
               { key: 'valParkingArea' },
               { key: 'valParkingRate' },
-              { key: 'valParkingAmount' }
+              { key: 'valParkingAmount', inputType: 'number' }
             ]
           },
           {
@@ -737,7 +737,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
               { key: 'valBuaUnit' },
               { key: 'valBuaArea' },
               { key: 'valBuaRate' },
-              { key: 'valBuaAmount' }
+              { key: 'valBuaAmount', inputType: 'number' }
             ]
           },
           {
@@ -763,14 +763,14 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
         hideHeaders: true,
         columns: [''], // 1 column for input
         rows: [
-          { label: 'No of Car Parks', fields: [{ key: 'noOfCarParks' }] },
-          { label: 'Car Parking Charges Lumpsum (INR)', fields: [{ key: 'carParkingCharges' }] },
-          { label: 'EDC,IDC Lumpsum(INR)', fields: [{ key: 'edcIdcLumpsum' }] },
-          { label: 'PLC Charges Lumpsum(INR)', fields: [{ key: 'plcChargesLumpsum' }] },
-          { label: 'Power Backup', fields: [{ key: 'powerBackup' }] },
-          { label: 'Interiors/Amenities', fields: [{ key: 'interiorsAmenities' }] },
-          { label: 'Interiors % completion', fields: [{ key: 'interiorsPercentCompletion' }] },
-          { label: 'Total of Component A on Completion', fields: [{ key: 'totalComponentA' }] },
+          { label: 'No of Car Parks', fields: [{ key: 'noOfCarParks', inputType: 'number' }] },
+          { label: 'Car Parking Charges Lumpsum (INR)', fields: [{ key: 'carParkingCharges', inputType: 'number' }] },
+          { label: 'EDC,IDC Lumpsum(INR)', fields: [{ key: 'edcIdcLumpsum', inputType: 'number' }] },
+          { label: 'PLC Charges Lumpsum(INR)', fields: [{ key: 'plcChargesLumpsum', inputType: 'number' }] },
+          { label: 'Power Backup', fields: [{ key: 'powerBackup', inputType: 'number' }] },
+          { label: 'Interiors/Amenities', fields: [{ key: 'interiorsAmenities', inputType: 'number' }] },
+          { label: 'Interiors % completion', fields: [{ key: 'interiorsPercentCompletion', inputType: 'number' }] },
+          { label: 'Total of Component A on Completion', fields: [{ key: 'totalComponentA', editToggle: true, computedSumOf: ['valLandAmount', 'valParkingAmount', 'valBuaAmount'] }] },
           { label: 'Total of Component B on Completion', fields: [{ key: 'totalComponentB' }] },
           { label: 'Total Market Value of Property on Completion (A+B)', fields: [{ key: 'totalMarketValueOnCompletion' }] },
           { label: 'Total Market Value of Property on Completion in Words', fields: [{ key: 'totalMarketValueOnCompletionWords' }] },

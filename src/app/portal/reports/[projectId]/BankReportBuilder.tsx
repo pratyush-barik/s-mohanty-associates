@@ -1562,7 +1562,30 @@ export default function BankReportBuilder({
               {ef.rows.map((row: any, rIdx: number) => (
                 <tr key={rIdx}>
                   {row.label !== undefined && (
-                    <td className="p-2 border border-slate-300 text-sm font-medium text-slate-800 bg-white whitespace-nowrap">{row.label}</td>
+                    <td className="p-2 border border-slate-300 text-sm font-medium text-slate-800 bg-white whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <span>{row.label}</span>
+                        {row.fields?.some((f: any) => f.editToggle) && (() => {
+                          const toggleField = row.fields.find((f: any) => f.editToggle);
+                          const editToggleKey = `_editToggle_${toggleField.key}`;
+                          const isOn = (fields as any)[editToggleKey] === 'on';
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => handleChange(editToggleKey, isOn ? '' : 'on')}
+                              className={`ml-auto text-[10px] px-2 py-0.5 rounded-full border transition-all duration-200 font-bold ${
+                                isOn
+                                  ? 'bg-amber-100 text-amber-700 border-amber-300'
+                                  : 'bg-slate-100 text-slate-400 border-slate-200 hover:bg-slate-200'
+                              }`}
+                              title={isOn ? 'Switch to auto-calculated' : 'Switch to manual edit'}
+                            >
+                              {isOn ? '✎ Edit ON' : '✎ Edit OFF'}
+                            </button>
+                          );
+                        })()}
+                      </div>
+                    </td>
                   )}
                   {row.fields.map((field: any, fIdx: number) => {
                     if (field.isLabel) {
@@ -1572,16 +1595,56 @@ export default function BankReportBuilder({
                         </td>
                       );
                     }
+                    // Compute sum if computedSumOf is specified
                     let cellVal = fields[field.key as keyof typeof fields] as string || '';
                     if (!cellVal && field.default) cellVal = field.default;
+                    if (field.computedSumOf && Array.isArray(field.computedSumOf)) {
+                      const editToggleKey = `_editToggle_${field.key}`;
+                      const isEditMode = (fields as any)[editToggleKey] === 'on';
+                      if (!isEditMode) {
+                        const sum = field.computedSumOf.reduce((acc: number, k: string) => {
+                          const v = parseFloat(String(fields[k as keyof typeof fields] || '0').replace(/,/g, ''));
+                          return acc + (isNaN(v) ? 0 : v);
+                        }, 0);
+                        cellVal = sum > 0 ? sum.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+                        // Auto-save the computed value
+                        if (fields[field.key as keyof typeof fields] !== cellVal) {
+                          handleChange(field.key as string, cellVal);
+                        }
+                      }
+                      return (
+                        <td key={fIdx} colSpan={field.colSpan || 1} className="p-2 border border-slate-300 bg-white min-w-[120px]">
+                          <div className="flex items-center gap-2">
+                            <input
+                              className={`${inputCls} ${!isEditMode ? 'bg-slate-50 font-semibold text-emerald-700' : ''}`}
+                              value={cellVal}
+                              onChange={e => handleChange(field.key as string, e.target.value)}
+                              disabled={isReadOnly || !isEditMode}
+                              placeholder={field.placeholder || ''}
+                              inputMode={field.inputType === 'number' ? 'decimal' : undefined}
+                            />
+                          </div>
+                        </td>
+                      );
+                    }
+                    // Handle readOnly with editToggle on the label side
+                    const isNumeric = field.inputType === 'number';
                     return (
                       <td key={fIdx} colSpan={field.colSpan || 1} className="p-2 border border-slate-300 bg-white min-w-[120px]">
                         <input
                           className={inputCls}
                           value={cellVal}
-                          onChange={e => handleChange(field.key as string, e.target.value)}
-                          disabled={isReadOnly}
+                          onChange={e => {
+                            if (isNumeric) {
+                              const v = e.target.value.replace(/[^0-9.,]/g, '');
+                              handleChange(field.key as string, v);
+                            } else {
+                              handleChange(field.key as string, e.target.value);
+                            }
+                          }}
+                          disabled={isReadOnly || field.readOnly}
                           placeholder={field.placeholder || ''}
+                          inputMode={isNumeric ? 'decimal' : undefined}
                         />
                       </td>
                     );
