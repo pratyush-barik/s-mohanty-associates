@@ -794,10 +794,10 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
           {
             label: 'As per Docs',
             fields: [
-              { key: 'boundaryDocsNorth', default: 'NA' },
-              { key: 'boundaryDocsEast', default: 'NA' },
-              { key: 'boundaryDocsSouth', default: 'NA' },
-              { key: 'boundaryDocsWest', default: 'NA' }
+              { key: 'boundaryDocsNorth' },
+              { key: 'boundaryDocsEast' },
+              { key: 'boundaryDocsSouth' },
+              { key: 'boundaryDocsWest' }
             ]
           },
           {
