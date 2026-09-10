@@ -339,8 +339,7 @@ async function generateHLLAPPDF(
   r.drawRemarksBox('Declaration-:', fv(fields, 'declarationText', 'We hereby declare that we have no direct or indirect interest in the valued and the information furnished in the report is true and correct to the best of my knowledge of belief.'));
 
   const engName = fv(fields, 'nameOfEngineerVisitingProperty', '');
-  const engVal = engName ? `${engName} (Authorized Signatory)` : '(Authorized Signatory)';
-  r.drawKeyValueRow([{ label: 'Name of Engineer who visited the property-:', value: engVal, labelWidth: Math.round(CONTENT_W * 0.60), valueWidth: Math.round(CONTENT_W * 0.40) }]);
+  r.drawKeyValueRow([{ label: 'Name of Engineer who visited the property-:', value: engName, labelWidth: Math.round(CONTENT_W * 0.60), valueWidth: Math.round(CONTENT_W * 0.40) }]);
 
   // ====== PROPERTY PHOTOGRAPHS ======
   if (imageResults && imageResults.length > 0) {
