@@ -601,7 +601,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       },
       {
         key: 'commencementCompletionFieldset',
-        label: 'Commencement / Completion Dates',
+        label: '19. Commencement / Completion Dates',
         type: 'fieldset',
         color: 'red',
         fields: [
