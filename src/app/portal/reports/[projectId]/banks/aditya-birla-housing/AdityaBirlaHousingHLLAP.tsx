@@ -2,7 +2,8 @@
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig } from '@/lib/bank-fields';
 import { PDFAdityaBirlaHousingRenderer, HLLAPReportFields } from '@/lib/banks/pdf-aditya-birla-housing-renderer';
-import { CONTENT_W, fetchBytes } from '@/lib/pdf-bank-renderer';
+import { rgb } from 'pdf-lib';
+import { CONTENT_W, MARGIN_L, fetchBytes } from '@/lib/pdf-bank-renderer';
 
 
 /** Helper: get field value with fallback */
@@ -341,13 +342,66 @@ async function generateHLLAPPDF(
   const engName = fv(fields, 'nameOfEngineerVisitingProperty', '');
   r.drawKeyValueRow([{ label: 'Name of Engineer who visited the property-:', value: engName, labelWidth: Math.round(CONTENT_W * 0.60), valueWidth: Math.round(CONTENT_W * 0.40) }]);
 
-  // ====== PROPERTY PHOTOGRAPHS ======
+  // ====== PROPERTY PHOTOGRAPHS & MAPS ======
   if (imageResults && imageResults.length > 0) {
-    const validPhotos = imageResults
+    const propertyImgs = Array.isArray(fields.propertyImages) ? fields.propertyImages.filter((img: any) => typeof img === 'string' && img.length > 0) : [];
+    const propCount = propertyImgs.length;
+    
+    const validPhotos = imageResults.slice(0, propCount)
       .map((bytes, idx) => ({ bytes: bytes!, label: (fields.propertyImageNames && fields.propertyImageNames[idx]) || '' }))
       .filter(p => p.bytes && p.bytes.length > 0);
+      
     if (validPhotos.length > 0) {
       await r.drawPhotoGrid(validPhotos, 'Property Photographs');
+    }
+
+    let imgIdx = propCount;
+    const sketchCount = fields.sketchMapImages?.length || 0;
+    if (sketchCount > 0) {
+      const sketchBytesList = imageResults.slice(imgIdx, imgIdx + sketchCount).map(b => ({ bytes: b!, caption: '' })).filter(p => p.bytes);
+      await r.drawMapGallery(sketchBytesList, 'Sketch Map');
+    }
+    imgIdx += sketchCount;
+
+    const locationBytes = fields.locationMapImage ? imageResults[imgIdx] : null;
+    if (locationBytes) {
+      r.addPage();
+      const lat = fields.latitude || '';
+      const lng = fields.longitude || '';
+      r.drawSectionHeader(`Location Map(Latitude-${lat}, Longitude-${lng})`, false);
+      r.advanceCursor(8);
+
+      const maxH = 400;
+      
+      let img = null;
+      try { img = await r.doc.embedPng(locationBytes); } catch { /* ignore */ }
+      if (!img) {
+        try { img = await r.doc.embedJpg(locationBytes); } catch { /* ignore */ }
+      }
+      
+      if (img) {
+        const scale = Math.min(CONTENT_W / img.width, maxH / img.height, 1);
+        const w = img.width * scale;
+        const h = img.height * scale;
+        const x = MARGIN_L + (CONTENT_W - w) / 2;
+        const y = r.pdfY(r.cursorY) - h;
+
+        r.page.drawRectangle({
+          x: MARGIN_L,
+          y: r.pdfY(r.cursorY) - h,
+          width: CONTENT_W,
+          height: h,
+          borderColor: rgb(0, 0, 0),
+          borderWidth: 1,
+        });
+
+        r.page.drawImage(img, { x, y, width: w, height: h });
+
+        r.page.drawText(`Latitude:- ${lat}`, { x: x + w - 170, y: y + 30, size: 14, font: r.fontBold, color: rgb(1, 1, 0) });
+        r.page.drawText(`Longitude:- ${lng}`, { x: x + w - 170, y: y + 10, size: 14, font: r.fontBold, color: rgb(1, 1, 0) });
+
+        r.cursorY += h + 20;
+      }
     }
   }
 

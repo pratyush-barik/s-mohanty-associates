@@ -807,46 +807,46 @@ export function BaseMapsSection({
             )}
 
             {/* Direct GPS Coordinates entry if absent in the rest of the report builder */}
-            {!hasExternalCoordinatesField && (
-              <div className="rounded-xl border border-slate-200 bg-slate-50/90 p-3 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#0f2038] flex items-center gap-1.5">
-                    🧭 Direct GPS Coordinates Entry
-                  </span>
-                  <span className="text-[11px] text-slate-500">
-                    Input latitude & longitude to override technical address
-                  </span>
+            <div className="rounded-xl border border-slate-200 bg-slate-50/90 p-3 space-y-2 mt-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-[#0f2038] flex items-center gap-1.5">
+                  🧭 {hasExternalCoordinatesField ? 'Report Coordinates' : 'Direct GPS Coordinates Entry'}
+                </span>
+                <span className="text-[11px] text-slate-500">
+                  {hasExternalCoordinatesField
+                    ? `Coordinates synced from ${coordinatesSectionName || 'report details'}`
+                    : 'Input latitude & longitude to override technical address'}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                    {hasExternalCoordinatesField ? 'Latitude' : 'Latitude (DD)'}
+                  </label>
+                  <input
+                    type="text"
+                    className={`w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-1 focus:ring-[#0f2038] focus:border-[#0f2038] outline-none text-slate-800 font-mono ${hasExternalCoordinatesField ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                    placeholder="e.g. 20.296059"
+                    value={activeLat}
+                    onChange={e => handleLatChange(e.target.value)}
+                    disabled={isReadOnly || hasExternalCoordinatesField}
+                  />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                      Latitude (DD)
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-1 focus:ring-[#0f2038] focus:border-[#0f2038] outline-none text-slate-800 font-mono"
-                      placeholder="e.g. 20.296059"
-                      value={activeLat}
-                      onChange={e => handleLatChange(e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                      Longitude (DD)
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-1 focus:ring-[#0f2038] focus:border-[#0f2038] outline-none text-slate-800 font-mono"
-                      placeholder="e.g. 85.824540"
-                      value={activeLng}
-                      onChange={e => handleLngChange(e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                  </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                    {hasExternalCoordinatesField ? 'Longitude' : 'Longitude (DD)'}
+                  </label>
+                  <input
+                    type="text"
+                    className={`w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-1 focus:ring-[#0f2038] focus:border-[#0f2038] outline-none text-slate-800 font-mono ${hasExternalCoordinatesField ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                    placeholder="e.g. 85.824540"
+                    value={activeLng}
+                    onChange={e => handleLngChange(e.target.value)}
+                    disabled={isReadOnly || hasExternalCoordinatesField}
+                  />
                 </div>
               </div>
-            )}
+            </div>
 
             {normLocationImages.length > 0 && (
               <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider pt-2">
