@@ -1,6 +1,6 @@
 'use client';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
-import { BankConfig } from '@/lib/bank-fields';
+import { BankConfig, normalizeMapImages } from '@/lib/bank-fields';
 import { PDFAdityaBirlaHousingRenderer, HLLAPReportFields } from '@/lib/banks/pdf-aditya-birla-housing-renderer';
 import { rgb } from 'pdf-lib';
 import { CONTENT_W, MARGIN_L, fetchBytes } from '@/lib/pdf-bank-renderer';
@@ -357,13 +357,22 @@ async function generateHLLAPPDF(
 
     let imgIdx = propCount;
     const sketchCount = fields.sketchMapImages?.length || 0;
-    if (sketchCount > 0) {
-      const sketchBytesList = imageResults.slice(imgIdx, imgIdx + sketchCount).map(b => ({ bytes: b!, caption: '' })).filter(p => p.bytes);
-      await r.drawMapGallery(sketchBytesList, 'Sketch Map');
-    }
+    const sketchBytesList = sketchCount > 0 ? imageResults.slice(imgIdx, imgIdx + sketchCount).map(b => ({ bytes: b!, caption: '' })).filter(p => p.bytes) : [];
     imgIdx += sketchCount;
 
     const locationBytes = fields.locationMapImage ? imageResults[imgIdx] : null;
+    if (fields.locationMapImage) imgIdx++;
+    
+    const normMouzaImages = fields.mouzaMapImages || normalizeMapImages(fields.mouzaMapImage);
+    const mouzaCount = normMouzaImages.length;
+    const mouzaBytesList = mouzaCount > 0 ? imageResults.slice(imgIdx, imgIdx + mouzaCount).map(b => ({ bytes: b!, caption: '' })).filter(p => p.bytes) : [];
+    imgIdx += mouzaCount;
+
+    const normCadastralImages = fields.cadastralMapImages || normalizeMapImages(fields.cadastralMapImage);
+    const cadastralCount = normCadastralImages.length;
+    const cadastralBytesList = cadastralCount > 0 ? imageResults.slice(imgIdx, imgIdx + cadastralCount).map(b => ({ bytes: b!, caption: '' })).filter(p => p.bytes) : [];
+    imgIdx += cadastralCount;
+
     if (locationBytes) {
       r.addPage();
       const lat = fields.latitude || '';
@@ -403,6 +412,16 @@ async function generateHLLAPPDF(
         r.cursorY += h + 20;
       }
     }
+
+    if (mouzaBytesList.length > 0) {
+      await r.drawMapGallery(mouzaBytesList, 'Mouza Map (Bhulekh / Revenue Map) (1)');
+    }
+    if (sketchBytesList.length > 0) {
+      await r.drawMapGallery(sketchBytesList, 'Sketch Map (Demarcation / Hand-Drawn) (1)');
+    }
+    if (cadastralBytesList.length > 0) {
+      await r.drawMapGallery(cadastralBytesList, 'Cadastral Map (1)');
+    }
   }
 
   // ====== FINALIZE ======
@@ -422,8 +441,8 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
     { id: 'section-6', title: 'Valuation Details' },
     { id: 'section-7', title: 'Boundaries' },
     { id: 'section-8', title: 'Remarks & Declaration' },
-    { id: 'section-11', title: 'Photographs' },
-    { id: 'section-12', title: 'Location Map' },
+    { id: 'section-11', title: '9. Photographs' },
+    { id: 'section-12', title: '10. Maps & Documents' },
   ],
   fieldLabels: {
     loanApplicationNo: 'Deal Number',

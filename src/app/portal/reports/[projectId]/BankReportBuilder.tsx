@@ -981,10 +981,15 @@ export default function BankReportBuilder({
     try {
       const propertyImgs = Array.isArray(fields.propertyImages) ? fields.propertyImages.filter(img => typeof img === 'string' && img.length > 0) : [];
 
+      const normMouzaImages = fields.mouzaMapImages || normalizeMapImages(fields.mouzaMapImage);
+      const normCadastralImages = fields.cadastralMapImages || normalizeMapImages(fields.cadastralMapImage);
+
       const imageResults = await Promise.all([
         ...propertyImgs.map(url => fetchBytes(url)),
         ...(fields.sketchMapImages && fields.sketchMapImages.length > 0 ? fields.sketchMapImages.map(u => fetchBytes(u)) : []),
         ...(fields.locationMapImage ? [fetchBytes(fields.locationMapImage)] : []),
+        ...normMouzaImages.map(url => fetchBytes(url)),
+        ...normCadastralImages.map(url => fetchBytes(url)),
       ]);
 
       const propImageBytes: Uint8Array[] = imageResults.slice(0, propertyImgs.length).filter(Boolean) as Uint8Array[];
@@ -2476,7 +2481,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
             }}
             onUploadImages={(e) => handleFileUpload(e, 'propertyImages')}
             onOpenBucketPicker={openBucketPicker}
-            sectionNumber={isApartmentFlat ? 10 : 11}
+            sectionNumber={getSectionNumber('section-11', isApartmentFlat ? 10 : 11)}
             sectionId="section-11"
           />
         )}
@@ -2518,7 +2523,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
               onReorderMouzaMap={(newImgs) => reorderMapImage('mouzaMapImages', newImgs)}
               onReorderSketchMap={(newImgs) => reorderMapImage('sketchMapImages', newImgs)}
               onReorderCadastralMap={(newImgs) => reorderMapImage('cadastralMapImages', newImgs)}
-              sectionNumber={isApartmentFlat ? 11 : 12}
+              sectionNumber={getSectionNumber('section-12', isApartmentFlat ? 11 : 12)}
               sectionId="section-12"
             />
           );
