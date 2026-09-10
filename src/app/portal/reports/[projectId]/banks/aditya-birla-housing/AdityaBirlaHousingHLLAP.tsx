@@ -442,7 +442,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
     { id: 'section-6', title: 'Valuation Details' },
     { id: 'section-7', title: 'Boundaries' },
     { id: 'section-8', title: 'Remarks & Declaration' },
-    { id: 'section-deviations', title: 'Deviations / Observations' },
+    { id: 'section-deviations', title: '11. Deviations / Observations' },
     { id: 'section-11', title: '9. Photographs' },
     { id: 'section-12', title: '10. Maps & Documents' },
   ],
@@ -507,7 +507,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
   extraSections: [
     {
       id: 'section-deviations',
-      title: 'Deviations / Observations',
+      title: '11. Deviations / Observations',
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
         const tdClsLabel = "border border-slate-300 px-3 py-2 font-bold text-slate-800 text-sm whitespace-nowrap align-middle w-[15%]";
         const tdClsColon = "border border-slate-300 px-1 py-2 font-bold text-slate-800 text-sm text-center align-middle w-[1%]";
