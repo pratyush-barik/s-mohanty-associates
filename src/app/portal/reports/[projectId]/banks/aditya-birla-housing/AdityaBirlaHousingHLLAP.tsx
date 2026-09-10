@@ -1,3 +1,4 @@
+import React from 'react';
 'use client';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig, normalizeMapImages } from '@/lib/bank-fields';
@@ -441,6 +442,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
     { id: 'section-6', title: 'Valuation Details' },
     { id: 'section-7', title: 'Boundaries' },
     { id: 'section-8', title: 'Remarks & Declaration' },
+    { id: 'section-deviations', title: 'Deviations / Observations' },
     { id: 'section-11', title: '9. Photographs' },
     { id: 'section-12', title: '10. Maps & Documents' },
   ],
@@ -501,6 +503,104 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
     'section-10',  // Default Deviations
     'section-14',  // Annexures (Apartment/Flat)
     'section-15',  // Annexures (Bungalow/Land)
+  ],
+  extraSections: [
+    {
+      id: 'section-deviations',
+      title: 'Deviations / Observations',
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        const tdClsLabel = "border border-slate-300 px-3 py-2 font-bold text-slate-800 text-sm whitespace-nowrap align-middle w-[15%]";
+        const tdClsColon = "border border-slate-300 px-1 py-2 font-bold text-slate-800 text-sm text-center align-middle w-[1%]";
+        const tdClsValue = "border border-slate-300 px-0 py-0 align-middle w-[34%]";
+        const inputCls = "w-full h-full px-3 py-2 bg-transparent text-slate-700 outline-none text-sm";
+        
+        return (
+          <div className="w-full bg-[#2a2a2a] p-6 rounded-lg font-sans">
+            <h3 className="text-white text-center text-xl font-bold mb-6">Deviations /Observations</h3>
+            <div className="bg-transparent overflow-hidden border border-gray-400">
+              <table className="w-full border-collapse">
+                <tbody>
+                  <tr>
+                    <td className="border border-gray-400 px-3 py-2 text-white font-bold text-sm whitespace-nowrap w-[15%]">Deal Number</td>
+                    <td className="border border-gray-400 px-2 py-2 text-white font-bold text-sm text-center w-[1%]">:</td>
+                    <td className="border border-gray-400 px-0 py-0 w-[34%]"><input className="w-full h-full px-3 py-2 bg-transparent text-white outline-none text-sm" disabled value={fields.dealNumber || ''} /></td>
+                    
+                    <td className="border border-gray-400 px-3 py-2 text-white font-bold text-sm whitespace-nowrap w-[15%]">Asset id</td>
+                    <td className="border border-gray-400 px-2 py-2 text-white font-bold text-sm text-center w-[1%]">:</td>
+                    <td className="border border-gray-400 px-0 py-0 w-[34%]"><input className="w-full h-full px-3 py-2 bg-transparent text-white outline-none text-sm" disabled value={fields.assetId || ''} /></td>
+                  </tr>
+                  
+                  <tr>
+                    <td className="border border-gray-400 px-3 py-2 text-white font-bold text-sm whitespace-nowrap">Branch Name</td>
+                    <td className="border border-gray-400 px-2 py-2 text-white font-bold text-sm text-center">:</td>
+                    <td className="border border-gray-400 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-white outline-none text-sm" disabled value={fields.branchName || ''} /></td>
+                    
+                    <td className="border border-gray-400 px-3 py-2 text-white font-bold text-sm whitespace-nowrap">Type of Case</td>
+                    <td className="border border-gray-400 px-2 py-2 text-white font-bold text-sm text-center">:</td>
+                    <td className="border border-gray-400 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-white outline-none text-sm" disabled value={fields.typeOfCase || ''} /></td>
+                  </tr>
+
+                  <tr>
+                    <td className="border border-gray-400 px-3 py-2 text-white font-bold text-sm whitespace-nowrap">Valuer Name</td>
+                    <td className="border border-gray-400 px-2 py-2 text-white font-bold text-sm text-center">:</td>
+                    <td className="border border-gray-400 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-white outline-none text-sm" disabled value={fields.valuerName || ''} /></td>
+                    
+                    <td className="border border-gray-400 px-3 py-2 text-white font-bold text-sm whitespace-nowrap">Product Type</td>
+                    <td className="border border-gray-400 px-2 py-2 text-white font-bold text-sm text-center">:</td>
+                    <td className="border border-gray-400 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-white outline-none text-sm" disabled value={fields.productType || ''} /></td>
+                  </tr>
+
+                  <tr>
+                    <td className="border border-gray-400 px-3 py-2 text-white font-bold text-sm whitespace-nowrap">Valuer Ref No</td>
+                    <td className="border border-gray-400 px-2 py-2 text-white font-bold text-sm text-center">:</td>
+                    <td className="border border-gray-400 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-white outline-none text-sm" disabled value={fields.valuerRefNo || ''} /></td>
+                    
+                    <td className="border border-gray-400 px-3 py-2 text-white font-bold text-sm whitespace-nowrap">Date of Visit</td>
+                    <td className="border border-gray-400 px-2 py-2 text-white font-bold text-sm text-center">:</td>
+                    <td className="border border-gray-400 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-white outline-none text-sm" disabled value={fields.dateOfVisit || fields.dateOfInspection || ''} /></td>
+                  </tr>
+
+                  <tr>
+                    <td className="border border-gray-400 px-3 py-2 text-white font-bold text-sm whitespace-nowrap">Valuer Feedback</td>
+                    <td className="border border-gray-400 px-2 py-2 text-white font-bold text-sm text-center">:</td>
+                    <td className="border border-gray-400 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-white outline-none text-sm" disabled value={fields.valuerFeedback || ''} /></td>
+                    
+                    <td className="border border-gray-400 px-3 py-2 text-white font-bold text-sm whitespace-nowrap">Date of Report</td>
+                    <td className="border border-gray-400 px-2 py-2 text-white font-bold text-sm text-center">:</td>
+                    <td className="border border-gray-400 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-white outline-none text-sm" disabled value={fields.dateOfReport || fields.dateOfValuation || ''} /></td>
+                  </tr>
+
+                  <tr>
+                    <td colSpan={2} className="border border-gray-400 px-3 py-3 text-white font-bold text-sm align-top">Property Address</td>
+                    <td colSpan={4} className="border border-gray-400 px-0 py-0 align-top">
+                      <textarea 
+                        className="w-full h-full min-h-[80px] px-3 py-3 bg-transparent text-white outline-none text-sm resize-none" 
+                        disabled 
+                        value={fields.addressAsPerDocument || ''} 
+                      />
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td colSpan={6} className="border border-gray-400 px-3 py-4 align-top border-b-0">
+                      <div className="flex flex-col gap-2 h-full">
+                        <label className="text-white text-sm">Deviations/Observations:</label>
+                        <textarea 
+                          className="w-full p-3 bg-transparent text-white outline-none min-h-[250px] resize-none"
+                          value={fields.deviationsObservations || ''}
+                          onChange={e => handleChange('deviationsObservations', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      }
+    }
   ],
   extraFields: {
     // ── SECTION 1: HEADER & BASIC DETAILS ──
