@@ -657,6 +657,43 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
             ]
           }
         ]
+      },
+      {
+        key: 'buaAreaTable',
+        label: '26. BUA Area (In Sqft.)',
+        type: 'table',
+        firstColumnHeader: 'Floor',
+        columns: ['As per plan/ Byelaws (sqft)', 'As per site (Sqft)'],
+        rows: [
+          {
+            label: 'Ground Floor',
+            fields: [
+              { key: 'buaGroundPlan', default: 'N.A' },
+              { key: 'buaGroundSite', default: 'N.A' }
+            ]
+          },
+          {
+            label: 'First Floor',
+            fields: [
+              { key: 'buaFirstPlan', default: 'N.A' },
+              { key: 'buaFirstSite', default: 'N.A' }
+            ]
+          },
+          {
+            label: 'Second Floor',
+            fields: [
+              { key: 'buaSecondPlan', default: 'N.A' },
+              { key: 'buaSecondSite', default: 'N.A' }
+            ]
+          },
+          {
+            label: 'Total BUA (In sqft.)',
+            fields: [
+              { key: 'buaTotalPlan', default: 'N.A' },
+              { key: 'buaTotalSite', default: 'N.A' }
+            ]
+          }
+        ]
       }
     ],
 
