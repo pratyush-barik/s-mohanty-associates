@@ -714,42 +714,42 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
           {
             label: 'Land Area',
             fields: [
-              { key: 'valLandUnit', default: 'Sqft' },
-              { key: 'valLandArea', default: '0' },
-              { key: 'valLandRate', default: '00.00' },
-              { key: 'valLandAmount', default: '00.00' }
+              { key: 'valLandUnit' },
+              { key: 'valLandArea' },
+              { key: 'valLandRate' },
+              { key: 'valLandAmount' }
             ]
           },
           {
             label: 'Parking/Stilt BUA',
             fields: [
-              { key: 'valParkingUnit', default: 'Sqft' },
-              { key: 'valParkingArea', default: '0' },
-              { key: 'valParkingRate', default: '0' },
-              { key: 'valParkingAmount', default: '0' }
+              { key: 'valParkingUnit' },
+              { key: 'valParkingArea' },
+              { key: 'valParkingRate' },
+              { key: 'valParkingAmount' }
             ]
           },
           {
             label: 'BUA/SBUA',
             fields: [
-              { key: 'valBuaUnit', default: 'Sqft' },
-              { key: 'valBuaArea', default: '1544' },
-              { key: 'valBuaRate', default: '6800' },
-              { key: 'valBuaAmount', default: '1,04,99,200' }
+              { key: 'valBuaUnit' },
+              { key: 'valBuaArea' },
+              { key: 'valBuaRate' },
+              { key: 'valBuaAmount' }
             ]
           },
           {
             fields: [
               { isLabel: true, label: 'Construction Progress', colSpan: 2 },
-              { key: 'valConstructionProgress', colSpan: 3, default: 'Complete in all respect' }
+              { key: 'valConstructionProgress', colSpan: 3 }
             ]
           },
           {
             fields: [
               { isLabel: true, label: '% Completion', colSpan: 1 },
-              { key: 'valPercentCompletion', default: '100', colSpan: 1 },
+              { key: 'valPercentCompletion', colSpan: 1 },
               { isLabel: true, label: '% Recommendation', colSpan: 1 },
-              { key: 'valPercentRecommendation', default: '100', colSpan: 2 }
+              { key: 'valPercentRecommendation', colSpan: 2 }
             ]
           }
         ]
