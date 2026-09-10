@@ -218,7 +218,7 @@ export default function AnnapurnaMicroFinance({
 
       // Section 8: Additional Checks
       approachRoadType: raw.approachRoadType || 'SINGLE LANE',
-      surroundingAreaDevelopment: raw.surroundingAreaDevelopment || 'SURROUNDING 30%-40% DEVELOPING',
+      surroundingAreaDevelopment: raw.surroundingAreaDevelopment || '',
       distanceFromCityCentre: raw.distanceFromCityCentre || '',
       distanceFromCorpLimits: raw.distanceFromCorpLimits || '',
       electricity: raw.electricity || 'YES',
@@ -1256,56 +1256,150 @@ export default function AnnapurnaMicroFinance({
         {/* ════ SECTION 6: VALUATION ════ */}
         <Section title="Valuation" number={6} id="sec-6" defaultOpen={true}>
           <div className="space-y-6">
-            <div className="grid md:grid-cols-3 gap-4 p-4 border border-[#dee2e6] rounded-2xl bg-amber-50/30">
-              <div>
-                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">Land Valuation</h4>
-                <div className="space-y-2">
-                  <Field label="Land Area (Sq.Ft)">
-                    <input className={inputCls} value={fields.landAreaSqft || ''} onChange={e => handleChange('landAreaSqft', e.target.value)} disabled={isReadOnly} placeholder="NA" />
-                  </Field>
-                  <Field label="Rate per Sq.Ft (Rs)">
-                    <input className={inputCls} value={fields.landRateSqft || ''} onChange={e => handleChange('landRateSqft', e.target.value)} disabled={isReadOnly} placeholder="e.g. 700" />
-                  </Field>
-                  <Field label="Total Land Value (Rs)">
-                    <input className={`${inputCls} bg-white font-bold text-blue-900`} value={fields.landTotalValue ? formatIndianCurrency(parseNum(fields.landTotalValue)) : ''} readOnly placeholder="Auto-calculated" />
-                  </Field>
-                </div>
-              </div>
+            {/* Tabular Valuation Table matching PDF template */}
+            <div className="overflow-x-auto border border-[#dee2e6] rounded-2xl overflow-hidden bg-white shadow-xs">
+              <table className="w-full text-xs">
+                <thead className="bg-[#1a3a5c] text-white font-bold">
+                  <tr>
+                    <th className="p-3 text-left w-[32%] border-r border-[#2a4d70]">Items</th>
+                    <th className="p-3 text-center w-[22%] border-r border-[#2a4d70]">Area Details in Sq. Ft.</th>
+                    <th className="p-3 text-center w-[22%] border-r border-[#2a4d70]">Rate per Sq. Ft.</th>
+                    <th className="p-3 text-center w-[24%]">Total Values in Rupees</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#dee2e6]">
+                  {/* Row 1: Land Value */}
+                  <tr className="hover:bg-slate-50/70">
+                    <td className="p-2.5 font-bold text-slate-800 bg-slate-50/60 border-r border-[#dee2e6]">
+                      Land Value
+                    </td>
+                    <td className="p-2 border-r border-[#dee2e6]">
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="text"
+                          className="w-full p-1.5 border border-slate-300 rounded text-xs text-center font-bold"
+                          value={fields.landAreaSqft || ''}
+                          onChange={e => handleChange('landAreaSqft', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="NA"
+                        />
+                        <span className="text-[10px] font-bold text-slate-500 shrink-0">SQFT</span>
+                      </div>
+                    </td>
+                    <td className="p-2 border-r border-[#dee2e6]">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-bold text-slate-500 shrink-0">Rs.</span>
+                        <input
+                          type="text"
+                          className="w-full p-1.5 border border-slate-300 rounded text-xs text-center font-bold"
+                          value={fields.landRateSqft || ''}
+                          onChange={e => handleChange('landRateSqft', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="NA"
+                        />
+                        <span className="text-[10px] font-bold text-slate-500 shrink-0">/-</span>
+                      </div>
+                    </td>
+                    <td className="p-2 text-center font-extrabold text-blue-900 bg-blue-50/30">
+                      {fields.landTotalValue ? `Rs. ${formatIndianCurrency(parseNum(fields.landTotalValue))}/-` : 'Rs. 0/-'}
+                    </td>
+                  </tr>
 
-              <div>
-                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">Building / BUA Valuation</h4>
-                <div className="space-y-2">
-                  <Field label="BUA Area (Sq.Ft)">
-                    <input className={inputCls} value={fields.buaAreaSqft || ''} onChange={e => handleChange('buaAreaSqft', e.target.value)} disabled={isReadOnly} placeholder="e.g. 800" />
-                  </Field>
-                  <Field label="Rate per Sq.Ft (Rs)">
-                    <input className={inputCls} value={fields.buaRateSqft || ''} onChange={e => handleChange('buaRateSqft', e.target.value)} disabled={isReadOnly} placeholder="e.g. 0" />
-                  </Field>
-                  <Field label="Total BUA Value (Rs)">
-                    <input className={`${inputCls} bg-white font-bold text-blue-900`} value={fields.buaTotalValue ? formatIndianCurrency(parseNum(fields.buaTotalValue)) : ''} readOnly placeholder="Auto-calculated" />
-                  </Field>
-                </div>
-              </div>
+                  {/* Row 2: BUA Value RCC GF */}
+                  <tr className="hover:bg-slate-50/70">
+                    <td className="p-2.5 font-bold text-slate-800 bg-slate-50/60 border-r border-[#dee2e6]">
+                      BUA Value RCC GF
+                    </td>
+                    <td className="p-2 border-r border-[#dee2e6]">
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="text"
+                          className="w-full p-1.5 border border-slate-300 rounded text-xs text-center font-bold"
+                          value={fields.buaAreaSqft || ''}
+                          onChange={e => handleChange('buaAreaSqft', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="NA"
+                        />
+                        <span className="text-[10px] font-bold text-slate-500 shrink-0">SQFT</span>
+                      </div>
+                    </td>
+                    <td className="p-2 border-r border-[#dee2e6]">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-bold text-slate-500 shrink-0">Rs.</span>
+                        <input
+                          type="text"
+                          className="w-full p-1.5 border border-slate-300 rounded text-xs text-center font-bold"
+                          value={fields.buaRateSqft || ''}
+                          onChange={e => handleChange('buaRateSqft', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="NA"
+                        />
+                        <span className="text-[10px] font-bold text-slate-500 shrink-0">/-</span>
+                      </div>
+                    </td>
+                    <td className="p-2 text-center font-extrabold text-blue-900 bg-blue-50/30">
+                      {fields.buaTotalValue ? `Rs. ${formatIndianCurrency(parseNum(fields.buaTotalValue))}/-` : 'Rs. 0/-'}
+                    </td>
+                  </tr>
 
-              <div>
-                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">Abstract & Final Values</h4>
-                <div className="space-y-2">
-                  <Field label="Market Value After Completion (Rs)">
-                    <input className={`${inputCls} bg-white font-extrabold text-emerald-800`} value={fields.marketValue ? formatIndianCurrency(parseNum(fields.marketValue)) : ''} readOnly placeholder="Auto-calculated sum" />
-                  </Field>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Field label="Distress %">
-                      <input className={inputCls} value={fields.distressedPct || '80'} onChange={e => handleChange('distressedPct', e.target.value)} disabled={isReadOnly} />
-                    </Field>
-                    <Field label="Distressed Value (Rs)">
-                      <input className={`${inputCls} bg-white font-bold text-amber-900`} value={fields.distressedValue ? formatIndianCurrency(parseNum(fields.distressedValue)) : ''} readOnly />
-                    </Field>
-                  </div>
-                  <Field label="Govt / Circle Rate (Rs/Sq.Ft)">
-                    <input className={inputCls} value={fields.govtRate || ''} onChange={e => handleChange('govtRate', e.target.value)} disabled={isReadOnly} placeholder="e.g. 41" />
-                  </Field>
-                </div>
-              </div>
+                  {/* Row 3: Market Value After Completion */}
+                  <tr className="bg-emerald-50/40">
+                    <td colSpan={3} className="p-2.5 font-extrabold text-slate-800 border-r border-[#dee2e6]">
+                      Market Value After Completion <span className="text-red-500 font-semibold">(In Rs.)</span>
+                    </td>
+                    <td className="p-2 text-center font-black text-emerald-800 text-sm">
+                      {fields.marketValue ? `Rs. ${formatIndianCurrency(parseNum(fields.marketValue))}/-` : 'Rs. 0/-'}
+                    </td>
+                  </tr>
+
+                  {/* Row 4: Distressed/Force Value */}
+                  <tr className="bg-amber-50/40">
+                    <td colSpan={3} className="p-2.5 border-r border-[#dee2e6]">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-extrabold text-slate-800">
+                          Distressed/Force Value ({fields.distressedPct || '80'}%) <span className="text-red-500 font-semibold">(In Rs.)</span>
+                        </span>
+                        {!isReadOnly && (
+                          <div className="flex items-center gap-1 text-[11px] font-normal text-slate-500">
+                            <span>Distress:</span>
+                            <input
+                              type="text"
+                              className="w-12 p-1 border border-amber-300 rounded text-xs text-center font-bold bg-white"
+                              value={fields.distressedPct || '80'}
+                              onChange={e => handleChange('distressedPct', e.target.value)}
+                            />
+                            <span>%</span>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-2 text-center font-black text-amber-900 text-sm">
+                      {fields.distressedValue ? `Rs. ${formatIndianCurrency(parseNum(fields.distressedValue))}/-` : 'Rs. 0/-'}
+                    </td>
+                  </tr>
+
+                  {/* Row 5: Government/Circle Rate Value */}
+                  <tr className="hover:bg-slate-50/70">
+                    <td colSpan={3} className="p-2.5 font-bold text-slate-800 border-r border-[#dee2e6]">
+                      Government/Circle Rate Value
+                    </td>
+                    <td className="p-2">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <span className="text-[10px] font-bold text-slate-500 shrink-0">Rs.</span>
+                        <input
+                          type="text"
+                          className="w-24 p-1.5 border border-slate-300 rounded text-xs text-center font-bold"
+                          value={fields.govtRate || ''}
+                          onChange={e => handleChange('govtRate', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="NA"
+                        />
+                        <span className="text-[10px] font-bold text-slate-500 shrink-0">/- PER SQFT</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
@@ -1340,7 +1434,7 @@ export default function AnnapurnaMicroFinance({
               </select>
             </Field>
             <Field label="Development of Surrounding Area">
-              <input className={inputCls} value={fields.surroundingAreaDevelopment || 'SURROUNDING 30%-40% DEVELOPING'} onChange={e => handleChange('surroundingAreaDevelopment', e.target.value)} disabled={isReadOnly} />
+              <input className={inputCls} value={fields.surroundingAreaDevelopment || ''} onChange={e => handleChange('surroundingAreaDevelopment', e.target.value)} disabled={isReadOnly} placeholder="e.g. SURROUNDING 30%-40% DEVELOPING" />
             </Field>
             <Field label="Distance from City Centre in Kms">
               <input className={inputCls} value={fields.distanceFromCityCentre || ''} onChange={e => handleChange('distanceFromCityCentre', e.target.value)} disabled={isReadOnly} placeholder="e.g. 50 KMS" />
