@@ -868,6 +868,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
         key: 'buaAreaTable',
         label: '26. BUA Area (In Sqft.)',
         type: 'table',
+        color: 'red',
         firstColumnHeader: 'Floor',
         columns: ['As per plan/ Byelaws (sqft)', 'As per site (Sqft)'],
         rows: [
@@ -961,6 +962,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
         key: 'extraAmenitiesTable',
         label: '27. (B) Value of Extra Amenities (if applicable)',
         type: 'table',
+        color: 'red',
         hideHeaders: true,
         columns: [''], // 1 column for input
         rows: [
