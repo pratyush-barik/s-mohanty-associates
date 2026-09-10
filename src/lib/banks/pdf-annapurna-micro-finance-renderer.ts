@@ -52,25 +52,34 @@ export interface AnnapurnaMicroFinanceReportFields {
   loanType?: string;
   personMetOnSite?: string;
   propertyOwner?: string;
+  ownerName?: string;
   documentsProvided?: string;
 
   // Location Details
   addressAsPerSite?: string;
+  propertyAddressSite?: string;
   locality?: string;
   landmarkNearBy?: string;
+  landmark?: string;
   distanceFromBranch?: string;
+  latitude?: string;
+  longitude?: string;
   latLong?: string;
   addressAsPerLegal?: string;
+  propertyAddressLegal?: string;
   floorNo?: string;
   propertyState?: string;
   propertyCity?: string;
   propertyPincode?: string;
+  pincode?: string;
   addressMatching?: string;
   jurisdiction?: string;
   holdingType?: string;
   marketability?: string;
   propertyOccupiedBy?: string;
+  occupiedBy?: string;
   propertyTypeCategory?: string;
+  propertyType?: string;
   occupancyStatus?: string;
 
   // Schedule of Property (4-side comparison)
@@ -258,7 +267,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     let bgColor: string | null = options.bg || null;
     if (!bgColor) {
       if (options.isHeader) bgColor = OPT_BG;
-      else if (options.isLabel || options.bold) bgColor = LBL_BG;
+      else if (options.isLabel) bgColor = LBL_BG;
       else if (options.highlight) bgColor = VAL_BG;
     }
 
@@ -436,7 +445,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     ]);
     this.drawCleanRow([
       { text: 'Name of Property Owner as per Legal Document & No.', width: appCol1 + appCol2, isLabel: true },
-      { text: fields.propertyOwner || 'NA', width: appCol3 + appCol4 },
+      { text: fields.propertyOwner || fields.ownerName || 'NA', width: appCol3 + appCol4 },
     ]);
     this.drawCleanRow([
       { text: 'Documents Provided', width: appCol1, isLabel: true },
@@ -464,58 +473,45 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     };
 
     // Block 1: Address as per Site
-    const addrText = fields.addressAsPerSite || 'NA';
+    const addrText = fields.addressAsPerSite || fields.propertyAddressSite || 'NA';
     const latLongVal = fields.latLong
       ? fields.latLong
       : (fields.latitude && fields.longitude)
       ? `Lat:- ${fields.latitude} Long:- ${fields.longitude}`
       : (fields.latitude || fields.longitude || 'NA');
 
-    const subH1 = calcSubH([
-      { text: 'Address as per Site:', width: subCol1, isLabel: true },
-      { text: addrText, width: subColFull },
-    ]);
-    const subH2 = calcSubH([
-      { text: 'Locality (Urban, semi Urban, Rural)', width: subCol1, isLabel: true },
-      { text: fields.locality || 'RURAL', width: subCol2 },
-      { text: 'Landmark Near By', width: subCol3, isLabel: true },
-      { text: fields.landmarkNearBy || 'NA', width: subCol4 },
-    ]);
-    const subH3 = calcSubH([
-      { text: 'Distance from Branch in km', width: subCol1, isLabel: true },
-      { text: fields.distanceFromBranch || 'NA', width: subCol2 },
-      { text: 'LAT/LONG', width: subCol3, isLabel: true },
-      { text: latLongVal, width: subCol4 },
-    ]);
-    const totalBlock1H = subH1 + subH2 + subH3;
+    // In Block 1, "Address as per Site:" has NO outer sidebar cell on the left.
+    // Row 1: Address as per Site (width = 135) and addrText (width = CONTENT_W - 135)
+    // Row 2 & Row 3: 4 columns across CONTENT_W matching template
+    const b1W1 = locSideW; // 135 pt
+    const b1W2 = 105;
+    const b1W3 = 115;
+    const b1W4 = CONTENT_W - (b1W1 + b1W2 + b1W3); // 127.28 pt
 
-    this.checkPageBreak(totalBlock1H);
-    let curY = this.pdfY(this.cursorY);
+    // Row 1: Address as per Site
+    this.drawCleanRow([
+      { text: 'Address as per Site:', width: b1W1, isLabel: true },
+      { text: addrText, width: CONTENT_W - b1W1 },
+    ], 22, 6);
 
-    this.drawCleanCell(MARGIN_L, curY, locSideW, totalBlock1H, 'Address of Property', { isLabel: true, align: 'center', vAlign: 'middle' });
+    // Row 2: Locality & Landmark
+    this.drawCleanRow([
+      { text: 'Locality (Urban, semi Urban, Rural)', width: b1W1, isLabel: true },
+      { text: fields.locality || 'RURAL', width: b1W2, align: 'center' },
+      { text: 'Landmark Near By', width: b1W3, isLabel: true },
+      { text: fields.landmarkNearBy || fields.landmark || 'NA', width: b1W4 },
+    ], 22, 6);
 
-    // Sub-row 1: Address as per Site
-    this.drawCleanCell(MARGIN_L + locSideW, curY, subCol1, subH1, 'Address as per Site:', { isLabel: true });
-    this.drawCleanCell(MARGIN_L + locSideW + subCol1, curY, subColFull, subH1, addrText);
-
-    // Sub-row 2: Locality & Landmark
-    const top2 = curY - subH1;
-    this.drawCleanCell(MARGIN_L + locSideW, top2, subCol1, subH2, 'Locality (Urban, semi Urban, Rural)', { isLabel: true });
-    this.drawCleanCell(MARGIN_L + locSideW + subCol1, top2, subCol2, subH2, fields.locality || 'RURAL', { align: 'center' });
-    this.drawCleanCell(MARGIN_L + locSideW + subCol1 + subCol2, top2, subCol3, subH2, 'Landmark Near By', { isLabel: true });
-    this.drawCleanCell(MARGIN_L + locSideW + subCol1 + subCol2 + subCol3, top2, subCol4, subH2, fields.landmarkNearBy || 'NA');
-
-    // Sub-row 3: Distance from branch & Lat/Long
-    const top3 = curY - subH1 - subH2;
-    this.drawCleanCell(MARGIN_L + locSideW, top3, subCol1, subH3, 'Distance from Branch in km', { isLabel: true });
-    this.drawCleanCell(MARGIN_L + locSideW + subCol1, top3, subCol2, subH3, fields.distanceFromBranch || 'NA', { align: 'center' });
-    this.drawCleanCell(MARGIN_L + locSideW + subCol1 + subCol2, top3, subCol3, subH3, 'LAT/LONG', { isLabel: true });
-    this.drawCleanCell(MARGIN_L + locSideW + subCol1 + subCol2 + subCol3, top3, subCol4, subH3, latLongVal);
-
-    this.cursorY += totalBlock1H;
+    // Row 3: Distance from branch & Lat/Long
+    this.drawCleanRow([
+      { text: 'Distance from Branch in km', width: b1W1, isLabel: true },
+      { text: fields.distanceFromBranch || 'NA', width: b1W2, align: 'center' },
+      { text: 'LAT/LONG', width: b1W3, isLabel: true },
+      { text: latLongVal, width: b1W4 },
+    ], 22, 6);
 
     // Block 2: Legal Address of the Property (unbroken single cell spanning all 5 sub-rows)
-    const legalAddrText = fields.addressAsPerLegal || fields.addressAsPerSite || 'NA';
+    const legalAddrText = fields.addressAsPerLegal || fields.propertyAddressLegal || addrText;
     const subLegalH1 = calcSubH([
       { text: 'Address of Property as per Legal', width: subCol1, isLabel: true },
       { text: legalAddrText, width: subColFull },
@@ -534,12 +530,12 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     ]);
     const subLegalH5 = calcSubH([
       { text: 'Property Pincode', width: subCol1, isLabel: true },
-      { text: fields.propertyPincode || 'NA', width: subColFull },
+      { text: fields.propertyPincode || fields.pincode || 'NA', width: subColFull },
     ]);
     const totalBlock2H = subLegalH1 + subLegalH2 + subLegalH3 + subLegalH4 + subLegalH5;
 
     this.checkPageBreak(totalBlock2H);
-    curY = this.pdfY(this.cursorY);
+    let curY = this.pdfY(this.cursorY);
 
     this.drawCleanCell(MARGIN_L, curY, locSideW, totalBlock2H, 'Legal Address of the Property:\n(As per Title Deed)', { isLabel: true, align: 'center', vAlign: 'middle' });
 
@@ -565,7 +561,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     // Sub-row 5: Property Pincode
     const topL5 = curY - subLegalH1 - subLegalH2 - subLegalH3 - subLegalH4;
     this.drawCleanCell(MARGIN_L + locSideW, topL5, subCol1, subLegalH5, 'Property Pincode', { isLabel: true });
-    this.drawCleanCell(MARGIN_L + locSideW + subCol1, topL5, subColFull, subLegalH5, fields.propertyPincode || 'NA');
+    this.drawCleanCell(MARGIN_L + locSideW + subCol1, topL5, subColFull, subLegalH5, fields.propertyPincode || fields.pincode || 'NA');
 
     this.cursorY += totalBlock2H;
 
@@ -663,6 +659,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     ], 18, 3);
 
     // NDMA Parameters Section (Standard FONT_SIZE = 12 typography, 6 columns matching template)
+    this.addPage();
     this.drawSectionHeader('NDMA Parameters', false);
 
     const ndmaL1 = 98;
@@ -721,14 +718,14 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { text: fields.groundSlopeMoreThan20 || 'No', width: ndmaV3 },
     ], 18, 3);
 
-    // Fire Exit row (starts on Page 3 matching template)
-    this.addPage();
+    // Fire Exit row
     const ndmaBlankW = ndmaL1 + ndmaV1 + ndmaL2 + ndmaV2;
     this.drawCleanRow([
       { text: '', width: ndmaBlankW },
       { text: 'Fire Exit', width: ndmaL3, isLabel: true },
       { text: fields.fireExit || 'NA', width: ndmaV3 },
     ], 18, 3);
+    this.addPage();
 
     const planSideW = 140;
     const planRightW = CONTENT_W - planSideW;
@@ -787,9 +784,9 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
 
     this.drawCleanRow([
       { text: 'Current Occupant of Property (Owner/Tenant/Vacant)', width: 185, isLabel: true },
-      { text: fields.currentOccupant || 'Owner', width: 75 },
+      { text: fields.currentOccupant || 'Owner', width: 75, bold: true },
       { text: 'Separate Independent Access (Yes/No)', width: 155, isLabel: true },
-      { text: fields.separateAccess || 'NA', width: CONTENT_W - 415 },
+      { text: fields.separateAccess || 'NA', width: CONTENT_W - 415, bold: true },
     ]);
     this.drawCleanRow([
       { text: 'Accommodation details: Floor wise and Occupancy', width: 185, isLabel: true },

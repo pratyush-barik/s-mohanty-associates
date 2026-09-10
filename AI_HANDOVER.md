@@ -443,6 +443,7 @@ Outstanding items in **priority order**:
 - `dc36458` — fix(stsl): lock appraiser name, remove hardcoded preparedBy, and bind finalizedBy to report engineer
 - `8ac6632` — fix(pdf): render PHOTOGRAPHS OF PROPERTY header banner on photo grid
 - `dddecb6` — fix(stsl): align section 10 (maps) and section 11 (photographs) with predefined UI components
+- `annapurna` — feat(annapurna): update Location Details layout without Block 1 sidebar cell, add NDMA page breaks before section & after Fire Exit, render bold Technical answers, and provide dropdowns for Current Occupant, Separate Access, and BAU Floor Actual Usage
 
 ## Current Status
 

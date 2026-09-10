@@ -83,17 +83,21 @@ export default function AnnapurnaMicroFinance({
       contactPerson: raw.contactPerson || prefill?.contactName || '',
       loanType: raw.loanType || 'LAP',
       personMetOnSite: raw.personMetOnSite || '',
-      ownerName: raw.ownerName || prefill?.contactName || '',
+      ownerName: raw.ownerName || raw.propertyOwner || prefill?.contactName || '',
+      propertyOwner: raw.propertyOwner || raw.ownerName || prefill?.contactName || '',
       documentsProvided: raw.documentsProvided || 'Sale deed, ROR & Sketch map',
 
       // Section 2: Location Details
-      propertyAddressSite: raw.propertyAddressSite || raw.propertyAddress || prefill?.propertyAddress || '',
+      propertyAddressSite: raw.propertyAddressSite || raw.addressAsPerSite || raw.propertyAddress || prefill?.propertyAddress || '',
+      addressAsPerSite: raw.addressAsPerSite || raw.propertyAddressSite || raw.propertyAddress || prefill?.propertyAddress || '',
       locality: raw.locality || 'RURAL',
-      landmark: raw.landmark || raw.nearbyLandmarks || '',
+      landmark: raw.landmark || raw.landmarkNearBy || raw.nearbyLandmarks || '',
+      landmarkNearBy: raw.landmarkNearBy || raw.landmark || raw.nearbyLandmarks || '',
       distanceFromBranch: raw.distanceFromBranch || '',
       latitude: raw.latitude || '',
       longitude: raw.longitude || '',
-      propertyAddressLegal: raw.propertyAddressLegal || raw.legalAddress || prefill?.propertyAddress || '',
+      propertyAddressLegal: raw.propertyAddressLegal || raw.addressAsPerLegal || raw.legalAddress || prefill?.propertyAddress || '',
+      addressAsPerLegal: raw.addressAsPerLegal || raw.propertyAddressLegal || raw.legalAddress || prefill?.propertyAddress || '',
       floorNo: raw.floorNo || 'NA',
       propertyState: raw.propertyState || raw.state || 'Odisha',
       propertyCity: raw.propertyCity || raw.city || '',
@@ -464,7 +468,18 @@ export default function AnnapurnaMicroFinance({
     const renderer = new PDFAnnapurnaMicroFinanceRenderer();
     await renderer.init();
 
-    return renderer.generateAnnapurnaReport(fields, {
+    const renderFields: AnnapurnaMicroFinanceReportFields = {
+      ...fields,
+      addressAsPerSite: fields.addressAsPerSite || fields.propertyAddressSite || '',
+      addressAsPerLegal: fields.addressAsPerLegal || fields.propertyAddressLegal || fields.propertyAddressSite || '',
+      propertyOwner: fields.propertyOwner || fields.ownerName || '',
+      landmarkNearBy: fields.landmarkNearBy || fields.landmark || '',
+      propertyPincode: fields.propertyPincode || fields.pincode || '',
+      propertyOccupiedBy: fields.propertyOccupiedBy || fields.occupiedBy || 'Self',
+      propertyTypeCategory: fields.propertyTypeCategory || fields.propertyType || 'Commercial Building',
+    };
+
+    return renderer.generateAnnapurnaReport(renderFields, {
       photos,
       locationMaps: locBytes,
       mouzaMaps: mouzaBytes,
@@ -925,11 +940,30 @@ export default function AnnapurnaMicroFinance({
         <Section title="Technical Details & Area Statements" number={6} id="sec-6" defaultOpen={false}>
           <div className="space-y-6">
             <div className="grid md:grid-cols-3 gap-4">
-              <Field label="Current Occupant of Property">
-                <input className={inputCls} value={fields.currentOccupant || 'Owner'} onChange={e => handleChange('currentOccupant', e.target.value)} disabled={isReadOnly} />
+              <Field label="Current Occupant of Property (Owner/Tenant/Vacant)">
+                <select
+                  className={selectCls}
+                  value={fields.currentOccupant || 'Owner'}
+                  onChange={e => handleChange('currentOccupant', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="Owner">Owner</option>
+                  <option value="Tenant">Tenant</option>
+                  <option value="Vacant">Vacant</option>
+                  <option value="NA">NA</option>
+                </select>
               </Field>
-              <Field label="Separate Independent Access">
-                <input className={inputCls} value={fields.separateAccess || 'NA'} onChange={e => handleChange('separateAccess', e.target.value)} disabled={isReadOnly} />
+              <Field label="Separate Independent Access (Yes/No)">
+                <select
+                  className={selectCls}
+                  value={fields.separateAccess || 'NA'}
+                  onChange={e => handleChange('separateAccess', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                  <option value="NA">NA</option>
+                </select>
               </Field>
               <Field label="Accommodation Details">
                 <input className={inputCls} value={fields.accommodationDetails || 'G+1'} onChange={e => handleChange('accommodationDetails', e.target.value)} disabled={isReadOnly} />
@@ -1081,17 +1115,24 @@ export default function AnnapurnaMicroFinance({
                             placeholder="NA"
                           />
                         </td>
-                        <td className="p-1.5 min-w-[130px]">
-                          <input
-                            className={inputCls + ' !py-1.5 text-xs'}
-                            value={row.actualUsage}
+                        <td className="p-1.5 min-w-[140px]">
+                          <select
+                            className={selectCls + ' !py-1.5 text-xs'}
+                            value={row.actualUsage || 'Residential'}
                             onChange={e => {
                               const updated = [...(fields.bauFloors || [])];
                               updated[idx] = { ...updated[idx], actualUsage: e.target.value };
                               handleChange('bauFloors', updated);
                             }}
                             disabled={isReadOnly}
-                          />
+                          >
+                            <option value="Residential">Residential</option>
+                            <option value="Industrial">Industrial</option>
+                            <option value="Commercial">Commercial</option>
+                            <option value="Mixed Usage">Mixed Usage</option>
+                            <option value="MixedUsage">MixedUsage</option>
+                            <option value="NA">NA</option>
+                          </select>
                         </td>
                         {!isReadOnly && (
                           <td className="p-1.5 text-center">
