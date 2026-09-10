@@ -199,9 +199,9 @@ async function generateHLLAPPDF(
   const propSubLblW = 150;
   const propValW = CONTENT_W - propNumW - propLblW - propSubLblW;
 
-  r.drawKeyValueRow([{ label: '12', value: '', labelWidth: propNumW, valueWidth: 0 }, { label: 'Occupant', value: '', labelWidth: propLblW, valueWidth: 0 }, { label: 'Occupied By', value: fv(fields, 'occupiedBy', 'Vacant'), labelWidth: propSubLblW, valueWidth: propValW }]);
+  r.drawKeyValueRow([{ label: '12', value: '', labelWidth: propNumW, valueWidth: 0 }, { label: 'Occupant', value: '', labelWidth: propLblW, valueWidth: 0 }, { label: 'Name of Occupant', value: fv(fields, 'nameOfOccupant', 'NA'), labelWidth: propSubLblW, valueWidth: propValW }]);
 
-  for (const [lbl, key, def] of [['Name of Occupant', 'nameOfOccupant', 'NA'], ['No of Tenants', 'noOfTenants', 'NA'], ['Relation with applicant', 'relationWithApplicant', 'NA']] as [string, string, string][]) {
+  for (const [lbl, key, def] of [['No of Tenants', 'noOfTenants', 'NA'], ['Relation with applicant', 'relationWithApplicant', 'NA']] as [string, string, string][]) {
     r.drawKeyValueRow([{ label: '', value: '', labelWidth: propNumW + propLblW, valueWidth: 0 }, { label: lbl, value: fv(fields, key, def), labelWidth: propSubLblW, valueWidth: propValW }]);
   }
 
@@ -400,6 +400,9 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
     'approachRoadWidth',
     'plotDemarcated',
     'proximityToFacilities',
+    'premisesType',
+    'occupiedBy',
+    'boundaries',
   ],
   // Hide default BankReportBuilder sections not used by Aditya Birla Housing
   // (their content is replaced by bank-specific extraFields in the correct sections)
@@ -498,7 +501,6 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
         label: '12. Occupant',
         type: 'fieldset',
         fields: [
-          { key: 'occupiedBy', label: 'Occupied By', default: 'Vacant' },
           { key: 'nameOfOccupant', label: 'Name of Occupant', default: 'NA' },
           { key: 'noOfTenants', label: 'No of Tenants', default: 'NA' },
           { key: 'relationWithApplicant', label: 'Relation with applicant', default: 'NA' }
