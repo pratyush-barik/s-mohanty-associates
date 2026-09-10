@@ -771,7 +771,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
           { label: 'Interiors/Amenities', fields: [{ key: 'interiorsAmenities', inputType: 'number' }] },
           { label: 'Interiors % completion', fields: [{ key: 'interiorsPercentCompletion', inputType: 'number' }] },
           { label: 'Total of Component A on Completion', fields: [{ key: 'totalComponentA', editToggle: true, computedSumOf: ['valLandAmount', 'valParkingAmount', 'valBuaAmount'] }] },
-          { label: 'Total of Component B on Completion', fields: [{ key: 'totalComponentB' }] },
+          { label: 'Total of Component B on Completion', fields: [{ key: 'totalComponentB', inputType: 'number', editToggle: true, computedSumOf: ['noOfCarParks', 'carParkingCharges', 'edcIdcLumpsum', 'plcChargesLumpsum', 'powerBackup', 'interiorsAmenities', 'interiorsPercentCompletion'] }] },
           { label: 'Total Market Value of Property on Completion (A+B)', fields: [{ key: 'totalMarketValueOnCompletion' }] },
           { label: 'Total Market Value of Property on Completion in Words', fields: [{ key: 'totalMarketValueOnCompletionWords' }] },
           { label: 'Total Market Value of Property as on Date (A+B)', fields: [{ key: 'totalMarketValueAsOnDate' }] },
