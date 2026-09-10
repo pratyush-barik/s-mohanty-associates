@@ -749,9 +749,9 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
           {
             fields: [
               { isLabel: true, label: '% Completion', colSpan: 1 },
-              { key: 'valPercentCompletion', colSpan: 1 },
+              { key: 'valPercentCompletion', colSpan: 1, inputType: 'number' },
               { isLabel: true, label: '% Recommendation', colSpan: 1 },
-              { key: 'valPercentRecommendation', colSpan: 2 }
+              { key: 'valPercentRecommendation', colSpan: 2, inputType: 'number' }
             ]
           }
         ]
