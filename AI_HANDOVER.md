@@ -419,6 +419,8 @@ Outstanding items in **priority order**:
 - `latest` - update(Resume): update CGPA to 7.43 and S Mohanty Associates full-stack internship details with 5 priority bullet points
 
 ## Recent Changes
+- `87729f4` — feat(ui): remove Premises Type, Occupied By, and Boundaries from Section 5 in Aditya Birla Housing
+- `600cc9f` — feat(ui): rename Age of property fields, remove Usage Type/Legal Status, and introduce dedicated PDFAdityaBirlaHousingRenderer
 - `acd365b` — fix(mlap): resolve ReferenceError on handleDeleteBucketImage and restore builder loading; fix TDZ for drawExtraPDFFields in BankReportBuilder; type AnnexureRefSelector optional props
 - `1ab1a5e` — feat(bank): dynamically calculate section numbers in UI based on navSections configuration
 - `e36b141` — feat(bank): add 3.x numbering prefix to all address fields in Basic Details section
@@ -447,12 +449,11 @@ Outstanding items in **priority order**:
 ### Completed
 - **IBBI Report Draft** — UI is fully completed with all sections, fields, and dynamic content.
 - **Aditya Birla Capital Ltd (STSL / MLAP)** — Bank report builder fully completed with custom PDF renderer, standardized map uploads/reordering, unified bucket modals, and runtime loader stability.
-- **Aditya Birla Housing Finance Ltd (HL-LAP)** — Config-driven bank report builder populated with 130+ fields across 11 sections (Header & Basic Details, Surrounding & Locality, Property Details, Sanction Plan & Documents, Setbacks & BUA, Valuation Details, Boundaries, Remarks & Declaration, Photographs, Location Map, Deviations/Observations). Uses the generic BankReportBuilder architecture.
+- **Aditya Birla Housing Finance Ltd (HL-LAP)** — Config-driven bank report builder populated with 130+ fields across 11 sections. Now supported by dedicated `PDFAdityaBirlaHousingRenderer` for layout fidelity.
 - **Dynamic UI Section Numbering** — All bank builders dynamically compute section numbering matching their specific `navSections` sequence.
 - **57 Bank/Sub-template Stubs** — Scalable OOP architecture with BankConfig-driven system, dynamic lazy-loading in BuilderSelector.
 
 ### Pending / Next Steps
 - **IBBI PDF Font Consistency** — The rendering of font sizes is not consistent across the entire IBBI PDF/preview output. Needs a pass to standardize all font sizes.
 - **IBBI Cover Page Blue Box** — The 1st page of the IBBI PDF must contain a blue rectangular box shown exactly as in the samples. It should dynamically create and adjust spacing of that box outside the content of that page.
-- **Aditya Birla Housing Finance PDF Renderer** — The HL-LAP config currently uses the generic BankReportBuilder PDF output. A custom PDF renderer (like the one built for Aditya Birla Capital MLAP) may be needed to match the exact sample layout with its specific table structures, header banner, and dark-themed formatting.
 - **Remaining Bank Report Builders** — 55 other bank stubs need to be populated with their specific fields once samples are provided.
