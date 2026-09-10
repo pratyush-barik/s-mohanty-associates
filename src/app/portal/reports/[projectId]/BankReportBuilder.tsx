@@ -1518,6 +1518,50 @@ export default function BankReportBuilder({
         </div>
       );
     }
+
+    if (ef.type === 'table' && ef.columns && ef.rows) {
+      let bgClass = "border-blue-200 bg-[#f8fafc]";
+      if (ef.color === 'red') bgClass = "border-red-200 bg-[#fff5f5]";
+      if (ef.color === 'green') bgClass = "border-green-200 bg-[#f0fdf4]";
+
+      return (
+        <div key={ef.key} className={`md:col-span-2 border ${bgClass} rounded-xl p-4 mt-2 shadow-sm overflow-x-auto`}>
+          <h3 className="text-sm font-bold text-[#0f2038] mb-4 flex items-baseline gap-1 lining-nums font-sans">{ef.label}</h3>
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr>
+                <th className="p-2 border border-slate-300 bg-slate-100 text-xs font-semibold text-slate-700 whitespace-nowrap">Description</th>
+                {ef.columns.map((col: string, idx: number) => (
+                  <th key={idx} className="p-2 border border-slate-300 bg-slate-100 text-xs font-semibold text-slate-700 whitespace-nowrap">{col}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {ef.rows.map((row: any, rIdx: number) => (
+                <tr key={rIdx}>
+                  <td className="p-2 border border-slate-300 text-sm font-medium text-slate-800 bg-white whitespace-nowrap">{row.label}</td>
+                  {row.fields.map((field: any, fIdx: number) => {
+                    let cellVal = fields[field.key as keyof typeof fields] as string || '';
+                    if (!cellVal && field.default) cellVal = field.default;
+                    return (
+                      <td key={fIdx} className="p-2 border border-slate-300 bg-white min-w-[120px]">
+                        <input
+                          className={inputCls}
+                          value={cellVal}
+                          onChange={e => handleChange(field.key as string, e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder={field.placeholder || ''}
+                        />
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    }
     
     let val = fields[ef.key];
             if (val === undefined || val === null || val === '') {

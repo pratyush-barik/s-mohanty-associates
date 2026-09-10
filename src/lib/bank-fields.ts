@@ -278,6 +278,13 @@ export interface ExtraFieldConfig {
   /** For fieldset: Nested fields */
 
   fields?: ExtraFieldConfig[];
+  /** For table: Column headers */
+  columns?: string[];
+  /** For table: Row definitions */
+  rows?: {
+    label: string;
+    fields: { key: string; placeholder?: string; default?: string; type?: 'text' | 'select' | 'yesno'; options?: string[] }[];
+  }[];
 
   /** Inline positioning hint: render this field in a 2-col inline pair */
   inline?: 'left' | 'right';
