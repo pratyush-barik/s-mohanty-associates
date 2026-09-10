@@ -343,6 +343,28 @@ async function generateHLLAPPDF(
   const engName = fv(fields, 'nameOfEngineerVisitingProperty', '');
   r.drawKeyValueRow([{ label: 'Name of Engineer who visited the property-:', value: engName, labelWidth: Math.round(CONTENT_W * 0.60), valueWidth: Math.round(CONTENT_W * 0.40) }]);
 
+  // ====== 11. DEVIATIONS / OBSERVATIONS ======
+  r.drawSectionHeader('11. Deviations / Observations');
+  const devC1 = 110;
+  const devC2 = 10;
+  const devC3 = (CONTENT_W - devC1 * 2 - devC2 * 2) / 2;
+  
+  r.drawTable([], [
+    ['Deal Number', ':', fv(fields, 'dealNumber', ''), 'Asset id', ':', fv(fields, 'assetId', 'NA')],
+    ['Branch Name', ':', fv(fields, 'branchName', ''), 'Type of Case', ':', fv(fields, 'typeOfCase', 'Home Loan')],
+    ['Valuer Name', ':', fv(fields, 'valuerName', 'S Mohanty Associates'), 'Product Type', ':', fv(fields, 'productType', 'Home Loan')],
+    ['Valuer Ref No', ':', fv(fields, 'valuerRefNo', ''), 'Date of Visit', ':', fv(fields, 'dateOfVisit', fv(fields, 'dateOfInspection', ''))],
+    ['Valuer Feedback', ':', fv(fields, 'valuerFeedback', 'Positive'), 'Date of Report', ':', fv(fields, 'dateOfReport', fv(fields, 'dateOfValuation', ''))],
+  ], [devC1, devC2, devC3, devC1, devC2, devC3], [], [0, 1, 3, 4]);
+
+  r.drawTable([], [
+    ['Property Address', fv(fields, 'addressAsPerDocument', '')]
+  ], [devC1 + devC2, CONTENT_W - devC1 - devC2], [], [0]);
+
+  r.drawTable([], [
+    [`Deviations/Observations:\n\n${fv(fields, 'deviationsObservations', '')}\n`]
+  ], [CONTENT_W], [], []);
+
   // ====== PROPERTY PHOTOGRAPHS & MAPS ======
   if (imageResults && imageResults.length > 0) {
     const propertyImgs = Array.isArray(fields.propertyImages) ? fields.propertyImages.filter((img: any) => typeof img === 'string' && img.length > 0) : [];
