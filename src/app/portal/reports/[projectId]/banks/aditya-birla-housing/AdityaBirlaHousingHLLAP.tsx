@@ -784,19 +784,39 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
 
     // ── SECTION 7: BOUNDARIES (28) ──
     'section-7': [
-      { key: 'boundaryDocsNorth', label: 'As per Docs - North', default: 'NA' },
-      { key: 'boundaryDocsEast', label: 'As per Docs - East', default: 'NA' },
-      { key: 'boundaryDocsSouth', label: 'As per Docs - South', default: 'NA' },
-      { key: 'boundaryDocsWest', label: 'As per Docs - West', default: 'NA' },
-      { key: 'boundaryApprovedNorth', label: 'As per Approved plan key map - North' },
-      { key: 'boundaryApprovedEast', label: 'As per Approved plan key map - East' },
-      { key: 'boundaryApprovedSouth', label: 'As per Approved plan key map - South' },
-      { key: 'boundaryApprovedWest', label: 'As per Approved plan key map - West' },
-      { key: 'boundaryAtSiteNorth', label: 'At site - North' },
-      { key: 'boundaryAtSiteEast', label: 'At site - East' },
-      { key: 'boundaryAtSiteSouth', label: 'At site - South' },
-      { key: 'boundaryAtSiteWest', label: 'At site - West' },
-      { key: 'boundariesMatching', label: '28. Boundaries Matching' },
+      {
+        key: 'boundaryDetailsTable',
+        label: '28. Boundary Details',
+        type: 'table',
+        firstColumnHeader: 'Boundaries',
+        columns: ['North', 'East', 'South', 'West'],
+        rows: [
+          {
+            label: 'As per Docs',
+            fields: [
+              { key: 'boundaryDocsNorth', default: 'NA' },
+              { key: 'boundaryDocsEast', default: 'NA' },
+              { key: 'boundaryDocsSouth', default: 'NA' },
+              { key: 'boundaryDocsWest', default: 'NA' }
+            ]
+          },
+          {
+            label: 'At site',
+            fields: [
+              { key: 'boundaryAtSiteNorth' },
+              { key: 'boundaryAtSiteEast' },
+              { key: 'boundaryAtSiteSouth' },
+              { key: 'boundaryAtSiteWest' }
+            ]
+          },
+          {
+            fields: [
+              { isLabel: true, label: 'Boundaries Matching', colSpan: 2 },
+              { key: 'boundariesMatching', colSpan: 3 }
+            ]
+          }
+        ]
+      }
     ],
 
     // ── SECTION 8: REMARKS & DECLARATION ──
