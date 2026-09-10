@@ -755,6 +755,30 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
           }
         ]
       },
+      {
+        key: 'extraAmenitiesTable',
+        label: '27. (B) Value of Extra Amenities if applicable',
+        type: 'table',
+        hideHeaders: true,
+        columns: [''], // 1 column for input
+        rows: [
+          { label: 'No of Car Parks', fields: [{ key: 'noOfCarParks' }] },
+          { label: 'Car Parking Charges Lumpsum (INR)', fields: [{ key: 'carParkingCharges' }] },
+          { label: 'EDC,IDC Lumpsum(INR)', fields: [{ key: 'edcIdcLumpsum' }] },
+          { label: 'PLC Charges Lumpsum(INR)', fields: [{ key: 'plcChargesLumpsum' }] },
+          { label: 'Power Backup', fields: [{ key: 'powerBackup' }] },
+          { label: 'Interiors/Amenities', fields: [{ key: 'interiorsAmenities' }] },
+          { label: 'Interiors % completion', fields: [{ key: 'interiorsPercentCompletion' }] },
+          { label: 'Total of Component A on Completion', fields: [{ key: 'totalComponentA' }] },
+          { label: 'Total of Component B on Completion', fields: [{ key: 'totalComponentB' }] },
+          { label: 'Total Market Value of Property on Completion (A+B)', fields: [{ key: 'totalMarketValueOnCompletion' }] },
+          { label: 'Total Market Value of Property on Completion in Words', fields: [{ key: 'totalMarketValueOnCompletionWords' }] },
+          { label: 'Total Market Value of Property as on Date (A+B)', fields: [{ key: 'totalMarketValueAsOnDate' }] },
+          { label: 'Guideline Value of The Property', fields: [{ key: 'guidelineValueOfProperty', default: 'NA' }] },
+          { label: 'Distress Sale Value as on date', fields: [{ key: 'distressSaleValue' }] },
+          { label: 'Approx. Rentals in case of 100% complete property', fields: [{ key: 'approxRentals' }] },
+        ]
+      },
     ],
 
     // ── SECTION 7: BOUNDARIES (28) ──

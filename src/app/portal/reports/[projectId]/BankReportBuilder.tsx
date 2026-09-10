@@ -1523,7 +1523,7 @@ export default function BankReportBuilder({
       );
     }
 
-    if (ef.type === 'table' && ef.columns && ef.rows) {
+    if (ef.type === 'table' && ef.rows) {
       let bgClass = "border-blue-200 bg-[#f8fafc]";
       if (ef.color === 'red') bgClass = "border-red-200 bg-[#fff5f5]";
       if (ef.color === 'green') bgClass = "border-green-200 bg-[#f0fdf4]";
@@ -1549,12 +1549,14 @@ export default function BankReportBuilder({
                   </th>
                 </tr>
               )}
-              <tr>
-                <th className="p-2 border border-slate-300 bg-slate-100 text-xs font-semibold text-slate-700 whitespace-nowrap">{ef.firstColumnHeader || 'Description'}</th>
-                {ef.columns.map((col: string, idx: number) => (
-                  <th key={idx} className="p-2 border border-slate-300 bg-slate-100 text-xs font-semibold text-slate-700 whitespace-nowrap">{col}</th>
-                ))}
-              </tr>
+              {!ef.hideHeaders && (
+                <tr>
+                  <th className="p-2 border border-slate-300 bg-slate-100 text-xs font-semibold text-slate-700 whitespace-nowrap">{ef.firstColumnHeader || 'Description'}</th>
+                  {(ef.columns || []).map((col: string, idx: number) => (
+                    <th key={idx} className="p-2 border border-slate-300 bg-slate-100 text-xs font-semibold text-slate-700 whitespace-nowrap">{col}</th>
+                  ))}
+                </tr>
+              )}
             </thead>
             <tbody>
               {ef.rows.map((row: any, rIdx: number) => (
