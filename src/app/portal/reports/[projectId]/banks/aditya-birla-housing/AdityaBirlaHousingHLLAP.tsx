@@ -546,7 +546,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
 
     // ── SECTION 4: SANCTION PLAN APPROVAL & OTHER DOCUMENTS DETAILS (17-23) ──
     'section-4': [
-      { key: 'sanctionPlanAvailable', label: '17. Sanction Plan Available', type: 'select', options: ['Yes', 'No'], default: 'No' },
+      { key: 'sanctionPlanAvailable', label: '17. Sanction Plan Available', type: 'select', options: ['Yes', 'NA'], default: 'NA' },
       {
         key: 'sanctionPlanDetailsTable',
         label: '18. Approval Details',
