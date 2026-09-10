@@ -879,7 +879,7 @@ export default function AdityaBirlaCapitalSTSL({
       label: fields.propertyImageNames?.[idx] !== undefined && fields.propertyImageNames[idx].trim().length > 0
         ? fields.propertyImageNames[idx]
         : 'Site Picture',
-    })).filter((p: any) => p.bytes && p.bytes.length > 0);
+    })).filter((p): p is { bytes: Uint8Array; label: string } => Boolean(p.bytes && p.bytes.length > 0));
 
     const r = new PDFAdityaBirlaSTSLRenderer();
     await r.init();

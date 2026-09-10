@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import BuilderSelector from './BuilderSelector';
+import BuilderErrorBoundary from './BuilderErrorBoundary';
 import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 
 export default async function ReportEditorPage({ params, searchParams }: { params: Promise<{ projectId: string }>, searchParams: Promise<{ builder?: string }> }) {
@@ -158,27 +159,29 @@ export default async function ReportEditorPage({ params, searchParams }: { param
         </div>
 
         {/* Report Builder (Full Width) */}
-        <BuilderSelector
-          initialFields={decodeHtmlEntitiesDeep(report?.data) || null}
-          projectId={project.id}
-          projectCode={project.projectCode}
-          status={project.status}
-          userRole={currentUser.role}
-          bucketImages={mappedBucketImages}
-          builderQuery={builderFromQuery}
-          prefill={{
-            contactName: decodeHtmlEntities(serviceRequest?.contactName || ''),
-            contactPhone: decodeHtmlEntities(serviceRequest?.contactPhone || ''),
-            contactEmail: decodeHtmlEntities(serviceRequest?.contactEmail || ''),
-            propertyAddress: decodeHtmlEntities(serviceRequest?.propertyAddress || ''),
-            propertyType: decodeHtmlEntities(serviceRequest?.propertyType || ''),
-            purpose: decodeHtmlEntities(serviceRequest?.purpose || ''),
-            fieldEmployees: project.fieldEmployees || [],
-            reportEmployeeName: project.reportEmployee?.name || (currentUser.role === 'REPORT_EMPLOYEE' ? session.user.name : '') || '',
-            initiationDate: (project.startDate || project.createdAt)?.toISOString().split('T')[0],
-            inspectionDate: (project.inspection?.completedAt || project.inspection?.scheduledDate || project.inspection?.createdAt)?.toISOString().split('T')[0],
-          }}
-        />
+        <BuilderErrorBoundary>
+          <BuilderSelector
+            initialFields={decodeHtmlEntitiesDeep(report?.data) || null}
+            projectId={project.id}
+            projectCode={project.projectCode}
+            status={project.status}
+            userRole={currentUser.role}
+            bucketImages={mappedBucketImages}
+            builderQuery={builderFromQuery}
+            prefill={{
+              contactName: decodeHtmlEntities(serviceRequest?.contactName || ''),
+              contactPhone: decodeHtmlEntities(serviceRequest?.contactPhone || ''),
+              contactEmail: decodeHtmlEntities(serviceRequest?.contactEmail || ''),
+              propertyAddress: decodeHtmlEntities(serviceRequest?.propertyAddress || ''),
+              propertyType: decodeHtmlEntities(serviceRequest?.propertyType || ''),
+              purpose: decodeHtmlEntities(serviceRequest?.purpose || ''),
+              fieldEmployees: project.fieldEmployees || [],
+              reportEmployeeName: project.reportEmployee?.name || (currentUser.role === 'REPORT_EMPLOYEE' ? session.user.name : '') || '',
+              initiationDate: (project.startDate || project.createdAt)?.toISOString().split('T')[0],
+              inspectionDate: (project.inspection?.completedAt || project.inspection?.scheduledDate || project.inspection?.createdAt)?.toISOString().split('T')[0],
+            }}
+          />
+        </BuilderErrorBoundary>
         </div>
       );
   } catch (error: any) {

@@ -43,8 +43,6 @@ import {
 } from '../pdf-bank-renderer';
 import { formatAssignedEngineers } from '@/app/portal/reports/[projectId]/banks/BaseBankReportComponents';
 
-export type AnnapurnaMicroReportFields = AnnapurnaMicroFinanceReportFields;
-
 export interface AnnapurnaMicroFinanceReportFields {
   // Application Details
   refNo?: string;

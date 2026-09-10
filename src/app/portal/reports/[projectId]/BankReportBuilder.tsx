@@ -2279,7 +2279,12 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
 
         {/* ── Section 12: Maps & Sketches (Multi-Photo Supported) ── */}
         {!isSectionHidden('section-12') && (() => {
-          const hasCoordsInConfig = Boolean(config?.extraFields?.some((f: any) => f.key === 'latitude' || f.key === 'longitude'));
+          const hasCoordsInConfig = Boolean(
+            config?.extraFields &&
+            Object.values(config.extraFields).some((fieldList) =>
+              Array.isArray(fieldList) && fieldList.some((f: any) => f.key === 'latitude' || f.key === 'longitude')
+            )
+          );
           const technicalAddress = fields.propertyAddressSite || fields.propertyAddressAsVisit || fields.propertyAddress || getFullAddress() || fields.ownerAddress || '';
           return (
             <BaseMapsSection
