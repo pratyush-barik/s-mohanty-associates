@@ -620,7 +620,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       { key: 'propertyJurisdiction', label: '22. Property Jurisdiction', span: 2 },
       { key: 'permissibleZoning', label: '23.1 Permissible zoning as per master plan' },
       { key: 'usageAsPerSite', label: '23.2 Usage As per Site' },
-      { key: 'underDemolitionList', label: '24. Whether property under demolition list as per authority (Y/N)', type: 'yesno', default: 'No', span: 2 },
+      { key: 'underDemolitionList', label: '24. Whether property under demolition list as per authority (Y/N)', type: 'select', options: ['Yes', 'No'], default: 'No', span: 2 },
       {
         key: 'setbacksTable',
         label: '25. Setbacks',
