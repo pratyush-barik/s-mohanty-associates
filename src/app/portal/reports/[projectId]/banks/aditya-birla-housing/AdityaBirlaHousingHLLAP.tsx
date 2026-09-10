@@ -338,7 +338,9 @@ async function generateHLLAPPDF(
   r.drawRemarksBox('Remarks-:', fv(fields, 'remarksText', fv(fields, 'remarks', '')));
   r.drawRemarksBox('Declaration-:', fv(fields, 'declarationText', 'We hereby declare that we have no direct or indirect interest in the valued and the information furnished in the report is true and correct to the best of my knowledge of belief.'));
 
-  r.drawKeyValueRow([{ label: 'Name of Engineer who visited the property-:', value: '(Authorized Signatory)', labelWidth: Math.round(CONTENT_W * 0.60), valueWidth: Math.round(CONTENT_W * 0.40) }]);
+  const engName = fv(fields, 'nameOfEngineerVisitingProperty', '');
+  const engVal = engName ? `${engName} (Authorized Signatory)` : '(Authorized Signatory)';
+  r.drawKeyValueRow([{ label: 'Name of Engineer who visited the property-:', value: engVal, labelWidth: Math.round(CONTENT_W * 0.60), valueWidth: Math.round(CONTENT_W * 0.40) }]);
 
   // ====== PROPERTY PHOTOGRAPHS ======
   if (imageResults && imageResults.length > 0) {
@@ -826,6 +828,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
     'section-8': [
       { key: 'remarksText', label: 'Remarks', type: 'textarea', span: 2 },
       { key: 'declarationText', label: 'Declaration', type: 'textarea', span: 2 },
+      { key: 'nameOfEngineerVisitingProperty', label: 'Name of Engineer who visited the property', type: 'text', span: 2 },
     ],
 
     // ── SECTION 11: DEVIATIONS / OBSERVATIONS ──
