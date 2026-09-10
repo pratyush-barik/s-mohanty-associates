@@ -412,6 +412,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
     'approvalDetails',
     'violationsObserved',
     'conformsToByelaws',
+    'floorValuations',
   ],
   // Hide default BankReportBuilder sections not used by Aditya Birla Housing
   // (their content is replaced by bank-specific extraFields in the correct sections)

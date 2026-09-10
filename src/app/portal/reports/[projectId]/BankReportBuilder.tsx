@@ -2156,10 +2156,12 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
 
         {/* ── Section 7: Floor-wise Valuation ── */}
         {!isSectionHidden('section-7') && (
-          <Section id="section-7" title={getSectionTitle("section-7a", "Floor-wise Area & Building Valuation")} number={getSectionNumber("section-7", 7)}>
+          <Section id="section-7" title={getSectionTitle("section-7", "Floor-wise Area & Building Valuation")} number={getSectionNumber("section-7", 7)}>
             <div className="space-y-4">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm border-collapse">
+              {!isFieldHidden('floorValuations') && (
+                <>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm border-collapse">
                   <thead>
                     <tr className="bg-[#0a1628] text-white">
                       <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider">Floor</th>
@@ -2220,14 +2222,16 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
                   </tfoot>
                 </table>
               </div>
-              {!isReadOnly && (
-                <button
-                  type="button"
-                  onClick={addFloor}
-                  className="text-sm text-[#b8860b] hover:text-[#96700a] font-semibold flex items-center gap-1.5 pt-1"
-                >
-                  <span className="text-lg leading-none">+</span> Add Floor
-                </button>
+                  {!isReadOnly && (
+                    <button
+                      type="button"
+                      onClick={addFloor}
+                      className="text-sm text-[#b8860b] hover:text-[#96700a] font-semibold flex items-center gap-1.5 pt-1"
+                    >
+                      <span className="text-lg leading-none">+</span> Add Floor
+                    </button>
+                  )}
+                </>
               )}
               {renderExtraFields('section-7')}
             </div>
