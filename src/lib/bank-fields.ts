@@ -260,7 +260,7 @@ export interface ExtraFieldConfig {
   /** Display label in the form */
   label: string;
   /** Field type (defaults to 'text') */
-  type?: 'text' | 'textarea' | 'select' | 'date' | 'number' | 'yesno' | 'heading' | 'fieldset' | 'table';
+  type?: 'text' | 'textarea' | 'select' | 'date' | 'number' | 'yesno' | 'heading' | 'fieldset' | 'table' | 'yearPicker';
   /** Options for select-type fields */
   options?: string[];
   /** Default value */
@@ -288,6 +288,8 @@ export interface ExtraFieldConfig {
 
   /** Inline positioning hint: render this field in a 2-col inline pair */
   inline?: 'left' | 'right';
+  /** For yearPicker: constrain min year based on another year field's value */
+  constrainedByYear?: string;
   /** Make this field conditionally visible based on the value of another field */
   dependsOn?: { field: string; value: string };
 }

@@ -591,8 +591,16 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
           }
         ]
       },
-      { key: 'constructionCommencementDate', label: '19. Construction commencement date' },
-      { key: 'expectedCompletionDate', label: 'Expected Completion Date' },
+      {
+        key: 'commencementCompletionFieldset',
+        label: 'Commencement / Completion Dates',
+        type: 'fieldset',
+        color: 'red',
+        fields: [
+          { key: 'constructionCommencementDate', label: 'Construction commencement date', type: 'yearPicker', default: 'NA' },
+          { key: 'expectedCompletionDate', label: 'Expected Completion Date', type: 'yearPicker', default: 'NA', constrainedByYear: 'constructionCommencementDate' }
+        ]
+      },
       { key: 'ownershipType', label: '20. Ownership Type (Free Hold / Lease Hold)', type: 'select', options: ['Freehold', 'Leasehold'], default: 'Freehold' },
       { key: 'propertyDocsVerification', label: '21. Property documents verification details' },
       { key: 'propertyJurisdiction', label: '22. Property Jurisdiction' },

@@ -1603,6 +1603,36 @@ export default function BankReportBuilder({
             <option value="No">No</option>
             <option value="Yes">Yes</option>
           </select>
+        ) : ef.type === 'yearPicker' ? (
+          (() => {
+            const currentYear = new Date().getFullYear();
+            let minYear = currentYear - 50;
+            const maxYear = currentYear + 20;
+            if (ef.constrainedByYear) {
+              const constrainVal = fields[ef.constrainedByYear as keyof typeof fields] as string;
+              if (constrainVal && constrainVal !== 'NA' && !isNaN(Number(constrainVal))) {
+                minYear = Number(constrainVal);
+              }
+            }
+            const yearOptions: string[] = [];
+            for (let y = maxYear; y >= minYear; y--) {
+              yearOptions.push(String(y));
+            }
+            return (
+              <select
+                className={selectCls}
+                value={val || ef.default || 'NA'}
+                onChange={e => handleChange(ef.key, e.target.value)}
+                disabled={isReadOnly || ef.readOnly}
+                style={{ maxHeight: '200px' }}
+              >
+                <option value="NA">NA</option>
+                {yearOptions.map(yr => (
+                  <option key={yr} value={yr}>{yr}</option>
+                ))}
+              </select>
+            );
+          })()
         ) : (
           <input
             type={ef.type || 'text'}
