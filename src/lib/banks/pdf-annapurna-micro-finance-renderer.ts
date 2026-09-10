@@ -484,7 +484,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     // Row 1: Address as per Site (width = 135) and addrText (width = CONTENT_W - 135)
     // Row 2 & Row 3: 4 columns across CONTENT_W matching template
     const b1W1 = locSideW; // 135 pt
-    const b1W2 = 105;
+    const b1W2 = subCol1; // 110 pt (aligns with lower Block 2 Address of Property column)
     const b1W3 = 115;
     const b1W4 = CONTENT_W - (b1W1 + b1W2 + b1W3); // 127.28 pt
 
