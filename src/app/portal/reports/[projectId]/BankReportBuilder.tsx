@@ -2103,26 +2103,34 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
         {!isSectionHidden('section-6') && (
           <Section id="section-6" title={getSectionTitle("section-6", "Plan Approvals")} number={getSectionNumber("section-6", 6)}>
             <div className="grid md:grid-cols-2 gap-4">
-              <Field label="Construction Approved">
-                <select className={selectCls} value={fields.constructionApproved} onChange={e => handleChange('constructionApproved', e.target.value)} disabled={isReadOnly}>
-                  <option value="Yes">Yes</option>
-                  <option value="No">No</option>
-                </select>
-              </Field>
-              <Field label="Approval Details">
-                <input className={inputCls} value={fields.approvalDetails} onChange={e => handleChange('approvalDetails', e.target.value)} disabled={isReadOnly} placeholder="e.g. Approved by BDA/CMC" />
-              </Field>
-              <Field label="Violations Observed">
-                <select className={selectCls} value={fields.violationsObserved} onChange={e => handleChange('violationsObserved', e.target.value)} disabled={isReadOnly}>
-                  <option value="Low">Low</option>
-                  <option value="Moderate">Moderate</option>
-                  <option value="High">High</option>
-                  <option value="None">None</option>
-                </select>
-              </Field>
-              <Field label="Conforms to Byelaws">
-                <input className={inputCls} value={fields.conformsToByelaws} onChange={e => handleChange('conformsToByelaws', e.target.value)} disabled={isReadOnly} placeholder="e.g. Yes / Conforms to norms" />
-              </Field>
+              {!isFieldHidden('constructionApproved') && (
+                <Field label="Construction Approved">
+                  <select className={selectCls} value={fields.constructionApproved} onChange={e => handleChange('constructionApproved', e.target.value)} disabled={isReadOnly}>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </Field>
+              )}
+              {!isFieldHidden('approvalDetails') && (
+                <Field label="Approval Details">
+                  <input className={inputCls} value={fields.approvalDetails} onChange={e => handleChange('approvalDetails', e.target.value)} disabled={isReadOnly} placeholder="e.g. Approved by BDA/CMC" />
+                </Field>
+              )}
+              {!isFieldHidden('violationsObserved') && (
+                <Field label="Violations Observed">
+                  <select className={selectCls} value={fields.violationsObserved} onChange={e => handleChange('violationsObserved', e.target.value)} disabled={isReadOnly}>
+                    <option value="Low">Low</option>
+                    <option value="Moderate">Moderate</option>
+                    <option value="High">High</option>
+                    <option value="None">None</option>
+                  </select>
+                </Field>
+              )}
+              {!isFieldHidden('conformsToByelaws') && (
+                <Field label="Conforms to Byelaws">
+                  <input className={inputCls} value={fields.conformsToByelaws} onChange={e => handleChange('conformsToByelaws', e.target.value)} disabled={isReadOnly} placeholder="e.g. Yes / Conforms to norms" />
+                </Field>
+              )}
             </div>
             {renderExtraFields('section-6')}
           </Section>
