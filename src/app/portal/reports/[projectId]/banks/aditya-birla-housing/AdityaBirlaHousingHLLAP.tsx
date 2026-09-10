@@ -374,6 +374,16 @@ async function generateHLLAPPDF(
     const cadastralBytesList = cadastralCount > 0 ? imageResults.slice(imgIdx, imgIdx + cadastralCount).map(b => ({ bytes: b!, caption: '' })).filter(p => p.bytes) : [];
     imgIdx += cadastralCount;
 
+    if (mouzaBytesList.length > 0) {
+      await r.drawMapGallery(mouzaBytesList, 'Mouza Map (Bhulekh / Revenue Map) (1)');
+    }
+    if (sketchBytesList.length > 0) {
+      await r.drawMapGallery(sketchBytesList, 'Sketch Map (Demarcation / Hand-Drawn) (1)');
+    }
+    if (cadastralBytesList.length > 0) {
+      await r.drawMapGallery(cadastralBytesList, 'Cadastral Map (1)');
+    }
+
     if (locationBytes) {
       r.addPage();
       const lat = fields.latitude || '';
@@ -412,16 +422,6 @@ async function generateHLLAPPDF(
 
         r.cursorY += h + 20;
       }
-    }
-
-    if (mouzaBytesList.length > 0) {
-      await r.drawMapGallery(mouzaBytesList, 'Mouza Map (Bhulekh / Revenue Map) (1)');
-    }
-    if (sketchBytesList.length > 0) {
-      await r.drawMapGallery(sketchBytesList, 'Sketch Map (Demarcation / Hand-Drawn) (1)');
-    }
-    if (cadastralBytesList.length > 0) {
-      await r.drawMapGallery(cadastralBytesList, 'Cadastral Map (1)');
     }
   }
 
