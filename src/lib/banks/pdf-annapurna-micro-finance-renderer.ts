@@ -36,10 +36,11 @@ import {
   BORDER_W,
   LBL_BG,
   OPT_BG,
-  VAL_BG,
   BG_OPACITY,
   hexToRgb,
+  formatReportDate,
 } from '../pdf-bank-renderer';
+import { formatAssignedEngineers } from '@/app/portal/reports/[projectId]/banks/BaseBankReportComponents';
 
 export interface AnnapurnaMicroFinanceReportFields {
   // Application Details
@@ -402,7 +403,8 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       color: rgb(0, 0, 0),
     });
 
-    const dateText = `Date: ${this.sanitizeText(fields.reportDate || fields.dateOfVisit || '')}`;
+    const dateVal = formatReportDate(fields.reportDate || fields.dateOfVisit, '');
+    const dateText = dateVal ? `Date: ${this.sanitizeText(dateVal)}` : '';
     const dateW = fontB.widthOfTextAtSize(dateText, FONT_SIZE);
     this.page.drawText(dateText, {
       x: MARGIN_L + CONTENT_W - dateW,
@@ -429,7 +431,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { text: 'File No. / LAN No. / Lead No.', width: appCol1, isLabel: true },
       { text: fields.fileNo || 'NA', width: appCol2 },
       { text: 'Date of Visit', width: appCol3, isLabel: true },
-      { text: fields.dateOfVisit || 'NA', width: appCol4 },
+      { text: formatReportDate(fields.dateOfVisit, 'NA'), width: appCol4 },
     ]);
     this.drawCleanRow([
       { text: 'Name of Applicant & No.', width: appCol1, isLabel: true },
@@ -1077,7 +1079,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     ]);
     this.drawCleanRow([
       { text: 'Development of surrounding areas to property', width: chkCol1, isLabel: true },
-      { text: fields.developmentSurroundingArea || 'SURROUNDING 30%-40% DEVELOPING', width: chkCol2 },
+      { text: fields.developmentSurroundingArea || fields.surroundingAreaDevelopment || 'NA', width: chkCol2 },
     ]);
     this.drawCleanRow([
       { text: 'Distance from city centre in Kms', width: chkCol1, isLabel: true },
@@ -1089,7 +1091,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     ]);
     this.drawCleanRow([
       { text: 'Electricity (Available/Not available)', width: chkCol1, isLabel: true },
-      { text: fields.electricity || 'YES', width: chkCol2 },
+      { text: fields.electricity || 'NA', width: chkCol2 },
     ]);
     this.drawCleanRow([
       { text: 'Electricity Distributor (Govt./Semi-Govt./Private)', width: chkCol1, isLabel: true },
@@ -1109,23 +1111,27 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     ]);
     this.drawCleanRow([
       { text: 'Sewer line connected to main sewer (Yes/No)', width: chkCol1, isLabel: true },
-      { text: fields.sewerLineConnected || 'NA', width: chkCol2 },
+      { text: fields.sewerLineConnected || fields.sewerConnected || 'NA', width: chkCol2 },
     ]);
     this.drawCleanRow([
       { text: 'Any demolition threat in future development/expansion (Yes/No)', width: chkCol1, isLabel: true },
-      { text: fields.demolitionThreat || 'NA', width: chkCol2 },
+      { text: fields.demolitionThreat || fields.futureDemolitionThreat || 'NA', width: chkCol2 },
     ]);
 
     // Statutory Declaration Row
-    const engineerName = fields.declarationSiteEngineer || (fields.assignedEngineers && fields.assignedEngineers[0]?.name) || fields.personMetOnSite || 'Mr. Engineer';
-    const inspDate = fields.declarationInspectionDate || fields.dateOfVisit || fields.reportDate || '12/07/2026';
+    const rawEngName = fields.visitingEngineer || fields.declarationSiteEngineer || (fields.assignedEngineers && formatAssignedEngineers(fields.assignedEngineers)) || fields.personMetOnSite || 'Visiting Engineer';
+    const isPlural = rawEngName.includes(' and ');
+    const engPrefix = isPlural || rawEngName.startsWith('Mr.') ? '' : 'Mr. ';
+    const engineerName = `${engPrefix}${rawEngName}`;
+    const inspDate = formatReportDate(fields.declarationInspectionDate || fields.dateOfVisit || fields.reportDate, '12/07/2026');
+    const verb = isPlural ? 'have' : 'has';
 
     const declBullets = [
-      'The final valuation has been concluded basis Land & Building valuation approach and rates are cross verified with the rates Prevalent in the nearby localities.',
+      'The final valuation has been concluded on the basis of Land & Building valuation approach and rates are cross-verified with the rates prevalent in the nearby localities.',
       'We have no direct/indirect interest in the property valued.',
       'The information furnished in the report is true and correct to the best of my knowledge.',
-      `${engineerName} has visited the property on dated ${inspDate} & provide the data as collected during site inspection`,
-      fields.declarationConviction || 'I have not been convicted of any offence and sentenced to a team of Imprisonment',
+      `${engineerName} ${verb} visited the property on dated ${inspDate} & provided the data as collected during site inspection`,
+      fields.declarationConviction || 'I have not been convicted of any offence and sentenced to a term of Imprisonment',
     ];
 
     const declPadX = 6;

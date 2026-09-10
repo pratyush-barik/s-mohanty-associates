@@ -1263,7 +1263,7 @@ export default function BankReportBuilder({
             { text: ' situated at ' },
             { text: fields.annexureEnabled && fields.annexures.length > 0 ? `address as provided in Annexure ${(fields.annexures.find(a => a.parsedData) || fields.annexures[0]).label}` : getFullAddress(), bold: true },
             { text: ' on ' },
-            { text: fields.dateOfInspection, bold: true },
+            { text: fmtDate(fields.dateOfInspection), bold: true },
             { text: ' and after careful examination and consideration of all relevant factors, the Fair Market Value of the said property is assessed as under:' },
           ],
         },

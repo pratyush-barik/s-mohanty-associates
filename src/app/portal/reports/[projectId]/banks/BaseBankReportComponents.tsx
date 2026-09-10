@@ -44,11 +44,29 @@ export function getFloorName(index: number): string {
 }
 
 // ─── Assigned Field Engineers Formatter ──────────────────────────────
-export function formatAssignedEngineers(fieldEmployees?: Array<{ name: string; [key: string]: any }>): string {
+export function formatAssignedEngineers(fieldEmployees?: Array<any>): string {
   if (!fieldEmployees || !Array.isArray(fieldEmployees) || fieldEmployees.length === 0) {
     return '';
   }
-  const names = fieldEmployees.map(e => e.name?.trim()).filter(Boolean);
+  const rawNames = fieldEmployees
+    .map(e => {
+      if (!e) return '';
+      if (typeof e === 'string') return e.trim();
+      return (e.name || e.employee?.name || e.user?.name || '').trim();
+    })
+    .filter(Boolean);
+
+  // Remove duplicates while preserving original order
+  const seen = new Set<string>();
+  const names: string[] = [];
+  for (const n of rawNames) {
+    const lower = n.toLowerCase();
+    if (!seen.has(lower)) {
+      seen.add(lower);
+      names.push(n);
+    }
+  }
+
   if (names.length === 0) return '';
   if (names.length === 1) return names[0];
   if (names.length === 2) return `${names[0]} and ${names[1]}`;

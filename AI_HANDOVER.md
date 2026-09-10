@@ -19,6 +19,10 @@
 - **PDF Generation:** Client-side via `pdf-lib` (Native PDF generation engine, replacing the old `html2canvas` HTML screenshot approach)
   - **Renderers:** `pdf-general-renderer.ts` (General builder), `pdf-ibbi-renderer.ts` (IBBI builder), `pdf-it-renderer.ts` (IT builder). All renderers include `sanitizeText()` which strips newlines, bullets (U+2022→`-`), smart quotes, em/en-dashes, ellipsis, rupee sign (₹→`Rs.`), and any non-WinAnsi characters before passing text to `pdf-lib`'s `page.drawText()`.
   - **Table Layout:** `drawSimpleRow()` renders as a proper **two-column table** (40% label with background / 60% bold value) matching sample IBBI reports. `drawDataTable()` handles multi-column dynamic tables.
+- **MANDATORY DATE FORMAT (DD/MM/YYYY):**
+  - **Every single area across the system (Web UI, Declaration text, data tables, and all rendered PDFs) MUST use `DD/MM/YYYY` format ONLY (e.g., `10/09/2026`).**
+  - Never render raw ISO format (`YYYY-MM-DD`) in report PDFs or user-facing forms/declarations.
+  - Always use `formatReportDate(date)` (from `@/lib/pdf-bank-renderer` or `BaseBankReportComponents`) to guarantee strict `DD/MM/YYYY` date representation.
 
 ## 2. Architecture & Data Storage
 
@@ -444,6 +448,8 @@ Outstanding items in **priority order**:
 - `8ac6632` — fix(pdf): render PHOTOGRAPHS OF PROPERTY header banner on photo grid
 - `dddecb6` — fix(stsl): align section 10 (maps) and section 11 (photographs) with predefined UI components
 - `annapurna` — feat(annapurna): update Location Details layout without Block 1 sidebar cell, add NDMA page breaks before section & after Fire Exit, render bold Technical answers, and provide dropdowns for Current Occupant, Separate Access, and BAU Floor Actual Usage
+- `annapurna-fixes` — feat(annapurna): auto-fill visiting engineer name from assigned inspectors (single: Name, 2: Name 1 and Name 2, 2+: Name 1, Name 2 and Name 3), fix declaration grammar ("rates prevalent in the nearby localities"), enforce DD/MM/YYYY date format everywhere, and convert Additional Checks to dropdowns with NA default
+- `annapurna-refinements` — fix(annapurna): remove Block 1 sidebar cell in PDF table under Location Details, synchronize propertyAddressSite/addressAsPerSite, add NDMA page break before section and after Fire Exit, bold Current Occupant & Separate Access in PDF, provide dropdowns in Web UI, and format all dates as DD/MM/YYYY across GeneralReportBuilder and bank renderers
 - `maps-coord-override` — feat(maps): default location map to technical address, override with coordinates across all report builders, mention reference source under preview, and provide direct coordinate entry when absent in form
 
 ## Current Status

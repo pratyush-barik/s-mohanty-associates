@@ -54,15 +54,45 @@ export async function fetchBytes(url?: string | null): Promise<Uint8Array | null
 }
 
 /**
- * Standard date formatter for bank reports: YYYY-MM-DD → DD/MM/YYYY
+ * Standard date formatter for bank reports: ALWAYS outputs DD/MM/YYYY
  */
-export function formatReportDate(d?: string | null, fallback = '________'): string {
-  if (!d || !d.trim()) return fallback;
-  const t = d.trim();
-  if (/^\d{4}-\d{2}-\d{2}$/.test(t)) {
-    const [y, m, dd] = t.split('-');
-    return `${dd}/${m}/${y}`;
+export function formatReportDate(d?: string | null | Date, fallback = '________'): string {
+  if (!d) return fallback;
+  if (d instanceof Date) {
+    if (isNaN(d.getTime())) return fallback;
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
   }
+  const t = String(d).trim();
+  if (!t) return fallback;
+
+  // Already DD/MM/YYYY
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(t)) return t;
+
+  // DD-MM-YYYY -> DD/MM/YYYY
+  if (/^(\d{1,2})-(\d{1,2})-(\d{4})$/.test(t)) {
+    const match = t.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+    if (match) return `${match[1].padStart(2, '0')}/${match[2].padStart(2, '0')}/${match[3]}`;
+  }
+
+  // YYYY-MM-DD or YYYY/MM/DD (with optional ISO time like 2026-09-10T12:00:00Z)
+  const isoMatch = t.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+  if (isoMatch) {
+    const [, yyyy, mm, dd] = isoMatch;
+    return `${dd.padStart(2, '0')}/${mm.padStart(2, '0')}/${yyyy}`;
+  }
+
+  // Fallback to JS Date parsing
+  const parsed = new Date(t);
+  if (!isNaN(parsed.getTime())) {
+    const dd = String(parsed.getDate()).padStart(2, '0');
+    const mm = String(parsed.getMonth() + 1).padStart(2, '0');
+    const yyyy = parsed.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
+  }
+
   return t;
 }
 

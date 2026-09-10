@@ -20,6 +20,7 @@ import {
   NavItem,
   getFloorName,
   formatAssignedEngineers,
+  formatReportDate,
   BasePhotographsSection,
   BaseMapsSection,
   BasePhotoBucketModal,
@@ -76,9 +77,9 @@ export default function AnnapurnaMicroFinance({
     return {
       // Section 1: Application Details
       refNo: raw.refNo || (projectCode ? `AFPL/${projectCode}` : 'AFPL/'),
-      reportDate: raw.reportDate || raw.dateOfValuation || new Date().toLocaleDateString('en-GB'),
+      reportDate: formatReportDate(raw.reportDate || raw.dateOfValuation || new Date()),
       fileNo: raw.fileNo || '',
-      dateOfVisit: raw.dateOfVisit || raw.dateOfInspection || prefill?.inspectionDate || '',
+      dateOfVisit: formatReportDate(raw.dateOfVisit || raw.dateOfInspection || prefill?.inspectionDate || ''),
       applicantName: raw.applicantName || prefill?.contactName || '',
       contactPerson: raw.contactPerson || prefill?.contactName || '',
       loanType: raw.loanType || 'LAP',
@@ -221,7 +222,7 @@ export default function AnnapurnaMicroFinance({
       surroundingAreaDevelopment: raw.surroundingAreaDevelopment || '',
       distanceFromCityCentre: raw.distanceFromCityCentre || '',
       distanceFromCorpLimits: raw.distanceFromCorpLimits || '',
-      electricity: raw.electricity || 'YES',
+      electricity: raw.electricity || 'NA',
       electricityDistributor: raw.electricityDistributor || 'NA',
       waterSupply: raw.waterSupply || 'NA',
       waterDistributor: raw.waterDistributor || 'NA',
@@ -229,8 +230,10 @@ export default function AnnapurnaMicroFinance({
       sewerConnected: raw.sewerConnected || 'NA',
       futureDemolitionThreat: raw.futureDemolitionThreat || 'NA',
 
-      // Section 9: Declaration
-      visitingEngineer: raw.visitingEngineer || (prefill?.assignedFieldEmployees ? formatAssignedEngineers(prefill.assignedFieldEmployees) : ''),
+      // Section 8: Declaration
+      visitingEngineer: (raw.visitingEngineer && raw.visitingEngineer !== 'Visiting Engineer' && raw.visitingEngineer !== 'Mr. Engineer')
+        ? raw.visitingEngineer
+        : (formatAssignedEngineers(prefill?.fieldEmployees || prefill?.assignedFieldEmployees || prefill?.assignedEngineers) || raw.visitingEngineer || ''),
       place: raw.place || 'Bhubaneswar',
 
       // Photos & Maps
@@ -299,6 +302,20 @@ export default function AnnapurnaMicroFinance({
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [projectId, fields, isReadOnly]);
+
+  // Auto-fill visitingEngineer from assigned field inspectors if empty or default
+  useEffect(() => {
+    if (!fields.visitingEngineer || fields.visitingEngineer === 'Visiting Engineer' || fields.visitingEngineer === 'Mr. Engineer') {
+      const assigned = formatAssignedEngineers(
+        prefill?.fieldEmployees ||
+        prefill?.assignedFieldEmployees ||
+        prefill?.assignedEngineers
+      );
+      if (assigned) {
+        setFields(prev => ({ ...prev, visitingEngineer: assigned }));
+      }
+    }
+  }, [prefill?.fieldEmployees, prefill?.assignedFieldEmployees, prefill?.assignedEngineers]);
 
   // Field change handler
   const handleChange = useCallback((key: keyof AnnapurnaMicroReportFields, value: any) => {
@@ -518,6 +535,9 @@ export default function AnnapurnaMicroFinance({
       propertyPincode: fields.propertyPincode || fields.pincode || '',
       propertyOccupiedBy: fields.propertyOccupiedBy || fields.occupiedBy || 'Self',
       propertyTypeCategory: fields.propertyTypeCategory || fields.propertyType || 'Commercial Building',
+      developmentSurroundingArea: fields.developmentSurroundingArea || fields.surroundingAreaDevelopment || '',
+      sewerLineConnected: fields.sewerLineConnected || fields.sewerConnected || 'NA',
+      demolitionThreat: fields.demolitionThreat || fields.futureDemolitionThreat || 'NA',
     };
 
     return renderer.generateAnnapurnaReport(renderFields, {
@@ -693,8 +713,29 @@ export default function AnnapurnaMicroFinance({
             <Field label="File No. / LAN No. / Lead No.">
               <input className={inputCls} value={fields.fileNo || ''} onChange={e => handleChange('fileNo', e.target.value)} disabled={isReadOnly} placeholder="e.g. 20159644" />
             </Field>
-            <Field label="Date of Visit">
-              <input type="date" className={inputCls} value={fields.dateOfVisit || ''} onChange={e => handleChange('dateOfVisit', e.target.value)} disabled={isReadOnly} />
+            <Field label="Date of Visit (DD/MM/YYYY)">
+              <div className="relative flex items-center">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.dateOfVisit || ''}
+                  onChange={e => handleChange('dateOfVisit', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="DD/MM/YYYY"
+                />
+                {!isReadOnly && (
+                  <input
+                    type="date"
+                    className="absolute right-2 opacity-0 w-8 h-8 cursor-pointer"
+                    title="Choose Date"
+                    onChange={e => {
+                      if (e.target.value) {
+                        handleChange('dateOfVisit', formatReportDate(e.target.value));
+                      }
+                    }}
+                  />
+                )}
+              </div>
             </Field>
             <Field label="Name of Applicant & No.">
               <input className={inputCls} value={fields.applicantName || ''} onChange={e => handleChange('applicantName', e.target.value)} disabled={isReadOnly} placeholder="Applicant name & contact" />
@@ -1442,29 +1483,56 @@ export default function AnnapurnaMicroFinance({
             <Field label="Distance from Corporation Limits in Kms">
               <input className={inputCls} value={fields.distanceFromCorpLimits || ''} onChange={e => handleChange('distanceFromCorpLimits', e.target.value)} disabled={isReadOnly} placeholder="e.g. 5 KMS" />
             </Field>
-            <Field label="Electricity">
-              <select className={selectCls} value={fields.electricity || 'YES'} onChange={e => handleChange('electricity', e.target.value)} disabled={isReadOnly}>
-                <option value="YES">YES</option>
-                <option value="NO">NO</option>
+            <Field label="Electricity (Available/Notavailable)">
+              <select className={selectCls} value={fields.electricity || 'NA'} onChange={e => handleChange('electricity', e.target.value)} disabled={isReadOnly}>
+                <option value="NA">NA</option>
+                <option value="Available">Available</option>
+                <option value="Not Available">Not Available</option>
               </select>
             </Field>
-            <Field label="Electricity Distributor">
-              <input className={inputCls} value={fields.electricityDistributor || 'NA'} onChange={e => handleChange('electricityDistributor', e.target.value)} disabled={isReadOnly} />
+            <Field label="Electricity Distributor (Govt./Semi-Govt./Private)">
+              <select className={selectCls} value={fields.electricityDistributor || 'NA'} onChange={e => handleChange('electricityDistributor', e.target.value)} disabled={isReadOnly}>
+                <option value="NA">NA</option>
+                <option value="Govt.">Govt.</option>
+                <option value="Semi-Govt.">Semi-Govt.</option>
+                <option value="Private">Private</option>
+              </select>
             </Field>
-            <Field label="Water Supply">
-              <input className={inputCls} value={fields.waterSupply || 'NA'} onChange={e => handleChange('waterSupply', e.target.value)} disabled={isReadOnly} />
+            <Field label="Water supply (Available/Not Available)">
+              <select className={selectCls} value={fields.waterSupply || 'NA'} onChange={e => handleChange('waterSupply', e.target.value)} disabled={isReadOnly}>
+                <option value="NA">NA</option>
+                <option value="Available">Available</option>
+                <option value="Not Available">Not Available</option>
+              </select>
             </Field>
-            <Field label="Water Distributor">
-              <input className={inputCls} value={fields.waterDistributor || 'NA'} onChange={e => handleChange('waterDistributor', e.target.value)} disabled={isReadOnly} />
+            <Field label="Water Distributor (Govt./Self/Boringwater)">
+              <select className={selectCls} value={fields.waterDistributor || 'NA'} onChange={e => handleChange('waterDistributor', e.target.value)} disabled={isReadOnly}>
+                <option value="NA">NA</option>
+                <option value="Govt.">Govt.</option>
+                <option value="Self">Self</option>
+                <option value="Boring water">Boring water</option>
+              </select>
             </Field>
-            <Field label="Sewer Provision (Yes/No)">
-              <input className={inputCls} value={fields.sewerProvision || 'NA'} onChange={e => handleChange('sewerProvision', e.target.value)} disabled={isReadOnly} />
+            <Field label="Sewer provision (Yes/No)">
+              <select className={selectCls} value={fields.sewerProvision || 'NA'} onChange={e => handleChange('sewerProvision', e.target.value)} disabled={isReadOnly}>
+                <option value="NA">NA</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
             </Field>
-            <Field label="Sewer Line Connected (Yes/No)">
-              <input className={inputCls} value={fields.sewerConnected || 'NA'} onChange={e => handleChange('sewerConnected', e.target.value)} disabled={isReadOnly} />
+            <Field label="Sewer line connected to main sewer (Yes/No)">
+              <select className={selectCls} value={fields.sewerConnected || 'NA'} onChange={e => handleChange('sewerConnected', e.target.value)} disabled={isReadOnly}>
+                <option value="NA">NA</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
             </Field>
-            <Field label="Any Demolition Threat in Future">
-              <input className={inputCls} value={fields.futureDemolitionThreat || 'NA'} onChange={e => handleChange('futureDemolitionThreat', e.target.value)} disabled={isReadOnly} />
+            <Field label="Any demolition threat in future development/expansion (Yes/No)">
+              <select className={selectCls} value={fields.futureDemolitionThreat || 'NA'} onChange={e => handleChange('futureDemolitionThreat', e.target.value)} disabled={isReadOnly}>
+                <option value="NA">NA</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
             </Field>
           </div>
         </Section>
@@ -1475,10 +1543,13 @@ export default function AnnapurnaMicroFinance({
             <div className="p-4 border border-[#dee2e6] rounded-xl bg-slate-50 space-y-2 text-xs text-slate-700">
               <div className="font-bold text-slate-900 mb-1">Declaration Clauses (Included in Final PDF):</div>
               <ul className="list-disc pl-5 space-y-1">
-                <li>The final valuation has been concluded basis Land & Building valuation approach and rates are cross verified with the rates Prevalent in the nearby localities.</li>
+                <li>The final valuation has been concluded on the basis of Land & Building valuation approach and rates are cross-verified with the rates prevalent in the nearby localities.</li>
                 <li>We have no direct/indirect interest in the property valued.</li>
                 <li>The information furnished in the report is true and correct to the best of my knowledge.</li>
-                <li>Mr. <span className="font-bold">{fields.visitingEngineer || 'Visiting Engineer'}</span> has visited the property on dated <span className="font-bold">{fields.dateOfVisit || '...'}</span> & provide the data as collected during site inspection.</li>
+                <li>
+                  {fields.visitingEngineer?.includes(' and ') ? '' : (fields.visitingEngineer?.startsWith('Mr.') ? '' : 'Mr. ')}
+                  <span className="font-bold">{fields.visitingEngineer || 'Visiting Engineer'}</span> {fields.visitingEngineer?.includes(' and ') ? 'have' : 'has'} visited the property on dated <span className="font-bold">{formatReportDate(fields.dateOfVisit) || '...'}</span> & provided the data as collected during site inspection.
+                </li>
                 <li>I have not been convicted of any offence and sentenced to a term of Imprisonment.</li>
               </ul>
             </div>

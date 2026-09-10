@@ -9,11 +9,13 @@ import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
 import { PDFGeneralRenderer } from '@/lib/pdf-general-renderer';
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
-import { getFloorName, BasePhotographsSection, ActiveConfigBanner } from './banks/BaseBankReportComponents';
+import { getFloorName, BasePhotographsSection, ActiveConfigBanner, formatReportDate } from './banks/BaseBankReportComponents';
 import { reorderAndLabelAnnexures, type AnnexureItem } from '@/lib/bank-fields';
 import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 // @ts-ignore
 import * as XLSX from 'xlsx';
+
+const fmtDate = (d?: string | null) => formatReportDate(d, '________');
 
 // ─── Types ─────────────────────────────────────────────────────────
 interface FloorRow {
@@ -1730,7 +1732,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
             { text: ' situated at ' },
             { text: fields.annexureEnabled && fields.annexures.length > 0 ? `address as provided in Annexure ${(fields.annexures.find(a => a.parsedData) || fields.annexures[0]).label}` : getFullAddress(), bold: true },
             { text: ' on ' },
-            { text: fields.dateOfInspection, bold: true },
+            { text: fmtDate(fields.dateOfInspection), bold: true },
             { text: ' and after careful examination and consideration of all relevant factors, the Fair Market Value of the said property is assessed as under:' },
           ],
         },
@@ -2041,8 +2043,8 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       }
       ${simpleRow(loanAppLabel, fields.loanApplicationNo)}
       ${simpleRow('Name of Document holder', fields.documentHolderName || fields.ownerName)}
-      ${simpleRow('Date of Inspection', fields.dateOfInspection)}
-      ${simpleRow('Date of Valuation Report', fields.dateOfValuation)}
+      ${simpleRow('Date of Inspection', fmtDate(fields.dateOfInspection))}
+      ${simpleRow('Date of Valuation Report', fmtDate(fields.dateOfValuation))}
       ${fields.clientType === 'organisation'
         ? `${simpleRow('Name of Bank / Institution', fields.organisationSubTemplate ? `${fields.bankName || fields.organisationTemplate || 'N/A'} (${fields.organisationSubTemplate})` : (fields.bankName || fields.organisationTemplate || 'N/A'))}
            ${simpleRow('Branch Name', fields.branchName || 'N/A')}`
@@ -2215,7 +2217,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     allBlocks.push(`<div style="margin-top:10px;font-family:${ff};font-size:12pt;line-height:0.5em;">
       <p style="font-weight:bold;font-size:14pt;margin-bottom:4px;">Declaration:</p>
       <p style="margin-bottom:3px;">I hereby declare that:</p>
-      <p style="margin-bottom:3px;">\u2022 I have deputed my representative <b>${fields.representativeName ? 'Mr. ' + fields.representativeName : '______'}${fields.representativeFatherName ? ', S/o: ' + fields.representativeFatherName : ''}</b> to inspect the property on <b>${fields.dateOfInspection || '______'}</b>.</p>
+      <p style="margin-bottom:3px;">\u2022 I have deputed my representative <b>${fields.representativeName ? 'Mr. ' + fields.representativeName : '______'}${fields.representativeFatherName ? ', S/o: ' + fields.representativeFatherName : ''}</b> to inspect the property on <b>${fmtDate(fields.dateOfInspection) || '______'}</b>.</p>
       <p style="margin-bottom:3px;">\u2022 I have no direct or indirect interest in the property valued.</p>
       <p style="margin-bottom:3px;">\u2022 The information furnished is true and correct to the best of my knowledge and belief.</p>
     </div>`);
@@ -2226,7 +2228,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       <div style="border:1.5px solid #000;padding:12px;font-family:${ff};font-size:12pt;line-height:0.5em;">
         <p style="margin-top:0;">This is to certify that the undersigned has personally inspected the property belonging to
         <b>${fields.ownerName}</b> situated at <b>${fields.annexureEnabled && fields.annexures.length > 0 ? `address as provided in Annexure ${(fields.annexures.find(a => a.parsedData) || fields.annexures[0]).label}` : (getFullAddress() || '________')}</b> on
-        <b>${fields.dateOfInspection}</b> and after careful examination and consideration of all relevant factors,
+        <b>${fmtDate(fields.dateOfInspection)}</b> and after careful examination and consideration of all relevant factors,
         the Fair Market Value of the said property is assessed as under:</p>
         <p style="padding:4px 0;margin:4px 0;"><b>Fair Market Value: \u20B9 ${formatIndianCurrency(totalPropertyValue)} (${rupeesInWords(totalPropertyValue)})</b></p>
         <p style="padding:4px 0;margin:2px 0;"><b>Realizable Value (${fields.realizablePct || '90'}%): \u20B9 ${formatIndianCurrency(realizableValue)} (${rupeesInWords(realizableValue)})</b></p>
@@ -2295,7 +2297,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           <div style="text-align:center;border:1px solid #000;padding:6px;">
             <img src="${imgUrl}" style="max-width:100%;max-height:680px;" crossOrigin="anonymous" />
           </div>
-          <p style="font-family:${ff};font-size:12pt;font-style:italic;text-align:center;margin-top:4px;">Source: Site Visit dated ${fields.dateOfInspection || 'N/A'}</p>
+          <p style="font-family:${ff};font-size:12pt;font-style:italic;text-align:center;margin-top:4px;">Source: Site Visit dated ${fmtDate(fields.dateOfInspection) || 'N/A'}</p>
         </div>`);
       });
     }
@@ -2308,7 +2310,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           <img src="${fields.locationMapImage}" style="max-width:100%;max-height:630px;" crossOrigin="anonymous" />
         </div>
         ${fields.latitude || fields.longitude ? `<p style="text-align:center;font-family:${ff};font-size:12pt;margin-top:6px;font-weight:bold;">Lat: ${fields.latitude || 'N/A'}, Long: ${fields.longitude || 'N/A'}</p>` : ''}
-        <p style="font-family:${ff};font-size:12pt;font-style:italic;text-align:center;margin-top:2px;">Source: Site Visit dated ${fields.dateOfInspection || 'N/A'}</p>
+        <p style="font-family:${ff};font-size:12pt;font-style:italic;text-align:center;margin-top:2px;">Source: Site Visit dated ${fmtDate(fields.dateOfInspection) || 'N/A'}</p>
       </div>`);
     }
 
@@ -3443,7 +3445,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
             This is to certify that the undersigned has personally inspected the property belonging to
             <strong> {fields.ownerName || '________'}</strong> situated at
             <strong> {fields.annexureEnabled && fields.annexures.length > 0 ? `address as provided in Annexure ${(fields.annexures.find(a => a.parsedData) || fields.annexures[0]).label}` : (getFullAddress() || '________')}</strong> on
-            <strong> {fields.dateOfInspection || '________'}</strong> and after careful examination and consideration
+            <strong> {fmtDate(fields.dateOfInspection) || '________'}</strong> and after careful examination and consideration
             of all relevant factors, the Fair Market Value of the said property is assessed as under:
           </p>
           <div className="space-y-2 my-4 pl-4 border-l-4 border-[#b8860b]">
