@@ -620,6 +620,43 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       { key: 'propertyJurisdiction', label: '22. Property Jurisdiction', span: 2 },
       { key: 'permissibleZoning', label: '23.1 Permissible zoning as per master plan' },
       { key: 'usageAsPerSite', label: '23.2 Usage As per Site' },
+      {
+        key: 'setbacksTable',
+        label: '25. Setbacks',
+        type: 'table',
+        firstColumnHeader: 'Setbacks (Fts)',
+        columns: ['As per plan/ Byelaws (Fts)', 'As per site (Fts)'],
+        rows: [
+          {
+            label: 'Front',
+            fields: [
+              { key: 'setbackFrontPlan', default: 'N.A' },
+              { key: 'setbackFrontSite', default: 'N.A' }
+            ]
+          },
+          {
+            label: 'Side1(Left)',
+            fields: [
+              { key: 'setbackSide1Plan', default: 'N.A' },
+              { key: 'setbackSide1Site', default: 'N.A' }
+            ]
+          },
+          {
+            label: 'Side2(Right)',
+            fields: [
+              { key: 'setbackSide2Plan', default: 'N.A' },
+              { key: 'setbackSide2Site', default: 'N.A' }
+            ]
+          },
+          {
+            label: 'Rear',
+            fields: [
+              { key: 'setbackRearPlan', default: 'N.A' },
+              { key: 'setbackRearSite', default: 'N.A' }
+            ]
+          }
+        ]
+      }
     ],
 
     // ── SECTION 5: SETBACKS & BUA AREA (24-26) ──

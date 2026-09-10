@@ -1534,7 +1534,7 @@ export default function BankReportBuilder({
           <table className="w-full text-left border-collapse">
             <thead>
               <tr>
-                <th className="p-2 border border-slate-300 bg-slate-100 text-xs font-semibold text-slate-700 whitespace-nowrap">Description</th>
+                <th className="p-2 border border-slate-300 bg-slate-100 text-xs font-semibold text-slate-700 whitespace-nowrap">{ef.firstColumnHeader || 'Description'}</th>
                 {ef.columns.map((col: string, idx: number) => (
                   <th key={idx} className="p-2 border border-slate-300 bg-slate-100 text-xs font-semibold text-slate-700 whitespace-nowrap">{col}</th>
                 ))}

@@ -278,7 +278,9 @@ export interface ExtraFieldConfig {
   /** For fieldset: Nested fields */
 
   fields?: ExtraFieldConfig[];
-  /** For table: Column headers */
+  /** For table: Header for the first column containing row labels */
+  firstColumnHeader?: string;
+  /** For table: Subsequent column headers */
   columns?: string[];
   /** For table: Row definitions */
   rows?: {
