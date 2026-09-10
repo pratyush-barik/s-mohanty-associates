@@ -676,7 +676,7 @@ export default function AnnapurnaMicroFinance({
   // Nav Items (clean titles without numbering)
   const navSections: NavItem[] = [
     { id: 'sec-1', title: 'Application Details' },
-    { id: 'sec-2', title: 'Location Details & Schedule' },
+    { id: 'sec-2', title: 'Location Details' },
     { id: 'sec-3', title: 'NDMA Parameters' },
     { id: 'sec-4', title: 'Approved Plan Details' },
     { id: 'sec-5', title: 'Technical Details' },
