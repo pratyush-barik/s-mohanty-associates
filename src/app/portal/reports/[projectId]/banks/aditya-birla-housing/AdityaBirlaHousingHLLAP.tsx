@@ -364,7 +364,6 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
     { id: 'section-2', title: 'Surrounding & Locality' },
     { id: 'section-3', title: 'Property Details' },
     { id: 'section-4', title: 'Sanction Plan & Documents' },
-    { id: 'section-5', title: 'Setbacks & BUA' },
     { id: 'section-6', title: 'Valuation Details' },
     { id: 'section-7', title: 'Boundaries' },
     { id: 'section-8', title: 'Remarks & Declaration' },
@@ -413,6 +412,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
   // Hide default BankReportBuilder sections not used by Aditya Birla Housing
   // (their content is replaced by bank-specific extraFields in the correct sections)
   hiddenSections: [
+    'section-5',   // Setbacks & BUA (removed per user request, fields moved to section-4)
     'section-7b',  // Land Valuation (covered by section-6 Valuation Details)
     'section-7c',  // Valuation Abstract (covered by section-6 Valuation Details)
     'section-9',   // Default Abstract of Valuation
@@ -697,29 +697,6 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       }
     ],
 
-    // ── SECTION 5: SETBACKS & BUA AREA (24-26) ──
-    'section-5': [
-      { key: 'demolitionList', label: '24. Whether property under demolition list as per authority (Y/N)', default: 'No' },
-      { key: 'setbackFrontPlan', label: '25. Setback Front - As per plan/Byelaws (Fts)', default: 'N.A' },
-      { key: 'setbackFrontSite', label: 'Setback Front - As per site (Fts)', default: 'N.A' },
-      { key: 'setbackSide1Plan', label: 'Setback Side1(Left) - As per plan/Byelaws (Fts)', default: 'N.A' },
-      { key: 'setbackSide1Site', label: 'Setback Side1(Left) - As per site (Fts)', default: 'N.A' },
-      { key: 'setbackSide2Plan', label: 'Setback Side2(Right) - As per plan/Byelaws (Fts)', default: 'N.A' },
-      { key: 'setbackSide2Site', label: 'Setback Side2(Right) - As per site (Fts)', default: 'N.A' },
-      { key: 'setbackRearPlan', label: 'Setback Rear - As per plan/Byelaws (Fts)', default: 'N.A' },
-      { key: 'setbackRearSite', label: 'Setback Rear - As per site (Fts)', default: 'N.A' },
-      { key: 'buaFloor1Name', label: '26. BUA Floor 1 Name', default: 'First' },
-      { key: 'buaFloor1Plan', label: 'BUA Floor 1 - As per plan/Byelaws (Sqft)', default: 'N.A' },
-      { key: 'buaFloor1Site', label: 'BUA Floor 1 - As per site (Sqft)', default: 'N.A' },
-      { key: 'buaFloor2Name', label: 'BUA Floor 2 Name' },
-      { key: 'buaFloor2Plan', label: 'BUA Floor 2 - As per plan/Byelaws (Sqft)' },
-      { key: 'buaFloor2Site', label: 'BUA Floor 2 - As per site (Sqft)' },
-      { key: 'buaFloor3Name', label: 'BUA Floor 3 Name' },
-      { key: 'buaFloor3Plan', label: 'BUA Floor 3 - As per plan/Byelaws (Sqft)' },
-      { key: 'buaFloor3Site', label: 'BUA Floor 3 - As per site (Sqft)' },
-      { key: 'totalBuaPlan', label: 'Total BUA (In Sft.) - Plan', default: 'N.A' },
-      { key: 'totalBuaSite', label: 'Total BUA (In Sft.) - Site', default: 'N.A' },
-    ],
 
     // ── SECTION 6: VALUATION DETAILS (27) ──
     'section-6': [
