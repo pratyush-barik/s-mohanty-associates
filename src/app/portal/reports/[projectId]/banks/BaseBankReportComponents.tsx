@@ -168,7 +168,7 @@ export function FloatingNavigator({ sections }: { sections: NavItem[] }) {
             }`}
           >
             <span className="leading-tight truncate block w-full">
-              {sec.title}
+              {sec.title.replace(/^\d+[\.\s\-:]*\s*/, '')}
             </span>
           </button>
         );

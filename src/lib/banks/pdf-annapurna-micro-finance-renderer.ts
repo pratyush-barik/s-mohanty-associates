@@ -580,17 +580,17 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
 
     this.drawCleanRow([
       { text: 'Address Matching (Yes/No)', width: locGridL, isLabel: true },
-      { text: fields.addressMatching || 'YES', width: locGridV, align: 'center' },
+      { text: fields.addressMatching || 'YES', width: locGridV, align: 'center', bold: true },
       { text: 'Jurisdiction/Local Municipal Body/Development Authority', width: locJurL, isLabel: true },
-      { text: fields.jurisdiction || 'NA', width: locJurV },
+      { text: fields.jurisdiction || 'NA', width: locJurV, bold: true },
     ], 18, 3);
 
     // Row 10: Property Holding Type & Marketability
     this.drawCleanRow([
       { text: 'Property Holding Type (Freehold/Leasehold)', width: locGridL, isLabel: true },
-      { text: fields.holdingType || 'FREE HOLD', width: locGridV, align: 'center' },
+      { text: fields.holdingType || 'FREE HOLD', width: locGridV, align: 'center', bold: true },
       { text: 'Marketability (POOR/FAIR/GOOD)', width: locJurL, isLabel: true },
-      { text: (fields.marketability || 'FAIR').toUpperCase(), width: locJurV, align: 'center' },
+      { text: (fields.marketability || 'FAIR').toUpperCase(), width: locJurV, align: 'center', bold: true },
     ], 18, 3);
 
     // Row 11: Property Occupied By (left half width matches Rows 9 & 10)
@@ -601,8 +601,8 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
 
     // Row 12: Type of the Property (full label from template)
     this.drawCleanRow([
-      { text: 'Type of the Property (Flat/Independent House/Commercial Building/Commercial Unit/Industrial/Vacant Plot (Agricultural/Homestead))', width: locLeftW, isLabel: true },
-      { text: fields.propertyTypeCategory || 'Commercial Building', width: locRightW },
+      { text: 'Type of the Property (Flat/Independent House/Commercial Building/Commercial Unit/Industrial/Vacant Plot/Agricultural/Homestead)', width: locLeftW, isLabel: true },
+      { text: fields.propertyTypeCategory || fields.propertyType || 'Commercial Building', width: locRightW },
     ], 18, 3);
 
     // Row 13: Occupancy Status

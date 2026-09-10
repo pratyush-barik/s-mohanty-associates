@@ -161,7 +161,7 @@ export default function AnnapurnaMicroFinance({
       // Section 6: Technical Details
       currentOccupant: raw.currentOccupant || 'Owner',
       separateAccess: raw.separateAccess || 'NA',
-      accommodationDetails: raw.accommodationDetails || 'G+1',
+      accommodationDetails: raw.accommodationDetails || '',
 
       // Plot Area Details
       eastDocs: raw.eastDocs || 'NA',
@@ -188,11 +188,11 @@ export default function AnnapurnaMicroFinance({
 
       // FSI & Demolition Details
       permissibleAreaPlan: raw.permissibleAreaPlan || 'NA',
-      landComponent: raw.landComponent || '',
+      landComponent: raw.landComponent || 'NA',
       permissibleFsi: raw.permissibleFsi || 'NA',
       permissibleConstructionFsi: raw.permissibleConstructionFsi || 'NA',
-      actualConstructionBua: raw.actualConstructionBua || '',
-      considerConstructionBua: raw.considerConstructionBua || '',
+      actualConstructionBua: raw.actualConstructionBua || 'NA',
+      considerConstructionBua: raw.considerConstructionBua || 'NA',
       riskOfDemolition: raw.riskOfDemolition || 'LOW',
       propertyStatus: raw.propertyStatus || 'COMPLETED',
       isCompleted: raw.isCompleted || 'Y',
@@ -258,6 +258,47 @@ export default function AnnapurnaMicroFinance({
   const [bucketPickerOpen, setBucketPickerOpen] = useState(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const isInitialMount = useRef(true);
+  const debouncedTimer = useRef<NodeJS.Timeout | null>(null);
+
+  // Auto-Save Draft with Debounce
+  useEffect(() => {
+    if (isReadOnly) return;
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    setAutoSaveStatus('saving');
+    if (debouncedTimer.current) clearTimeout(debouncedTimer.current);
+
+    debouncedTimer.current = setTimeout(async () => {
+      try {
+        const res = await saveReportDraft(projectId, fields);
+        if (res && 'error' in res && res.error) {
+          setAutoSaveStatus('error');
+        } else {
+          setAutoSaveStatus('saved');
+        }
+      } catch (err) {
+        console.error('Auto-save error:', err);
+        setAutoSaveStatus('error');
+      }
+    }, 1200);
+
+    return () => {
+      if (debouncedTimer.current) clearTimeout(debouncedTimer.current);
+    };
+  }, [fields, projectId, isReadOnly]);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (isReadOnly) return;
+      saveReportDraft(projectId, fields).catch(e => console.error(e));
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [projectId, fields, isReadOnly]);
 
   // Field change handler
   const handleChange = useCallback((key: keyof AnnapurnaMicroReportFields, value: any) => {
@@ -612,20 +653,19 @@ export default function AnnapurnaMicroFinance({
     ));
   };
 
-  // Nav Items
+  // Nav Items (clean titles without numbering)
   const navSections: NavItem[] = [
-    { id: 'sec-1', title: '1. Application Details' },
-    { id: 'sec-2', title: '2. Location Details' },
-    { id: 'sec-3', title: '3. Schedule of Property' },
-    { id: 'sec-4', title: '4. NDMA Parameters' },
-    { id: 'sec-5', title: '5. Approved Plan Details' },
-    { id: 'sec-6', title: '6. Technical Details' },
-    { id: 'sec-7', title: '7. Valuation' },
-    { id: 'sec-8', title: '8. Additional Checks' },
-    { id: 'sec-9', title: '9. Declaration' },
-    { id: 'sec-10', title: '10. Photographs' },
-    { id: 'sec-11', title: '11. Maps & Documents' },
-    { id: 'sec-12', title: '12. Annexures' },
+    { id: 'sec-1', title: 'Application Details' },
+    { id: 'sec-2', title: 'Location Details & Schedule' },
+    { id: 'sec-3', title: 'NDMA Parameters' },
+    { id: 'sec-4', title: 'Approved Plan Details' },
+    { id: 'sec-5', title: 'Technical Details' },
+    { id: 'sec-6', title: 'Valuation' },
+    { id: 'sec-7', title: 'Additional Checks' },
+    { id: 'sec-8', title: 'Declaration' },
+    { id: 'sec-9', title: 'Photographs' },
+    { id: 'sec-10', title: 'Maps & Documents' },
+    { id: 'sec-11', title: 'Annexures' },
   ];
 
   return (
@@ -685,8 +725,8 @@ export default function AnnapurnaMicroFinance({
           </div>
         </Section>
 
-        {/* ════ SECTION 2: LOCATION DETAILS ════ */}
-        <Section title="Location Details" number={2} id="sec-2" defaultOpen={true}>
+        {/* ════ SECTION 2: LOCATION DETAILS & SCHEDULE OF PROPERTY ════ */}
+        <Section title="Location Details & Schedule of the Property" number={2} id="sec-2" defaultOpen={true}>
           <div className="grid md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
               <Field label="Address as per Site">
@@ -761,8 +801,17 @@ export default function AnnapurnaMicroFinance({
                 <option value="Under Construction">Under Construction</option>
               </select>
             </Field>
-            <Field label="Type of Property">
-              <input className={inputCls} value={fields.propertyType || 'Commercial Building'} onChange={e => handleChange('propertyType', e.target.value)} disabled={isReadOnly} />
+            <Field label="Type of the Property (Flat/Independent House/Commercial Building/Commercial Unit/Industrial/Vacant Plot/Agricultural/Homestead)">
+              <select className={selectCls} value={fields.propertyType || 'Commercial Building'} onChange={e => handleChange('propertyType', e.target.value)} disabled={isReadOnly}>
+                <option value="Commercial Building">Commercial Building</option>
+                <option value="Flat">Flat</option>
+                <option value="Independent House">Independent House</option>
+                <option value="Commercial Unit">Commercial Unit</option>
+                <option value="Industrial">Industrial</option>
+                <option value="Vacant Plot">Vacant Plot</option>
+                <option value="Agricultural">Agricultural</option>
+                <option value="Homestead">Homestead</option>
+              </select>
             </Field>
             <Field label="Occupancy Status">
               <select className={selectCls} value={fields.occupancyStatus || 'SORP'} onChange={e => handleChange('occupancyStatus', e.target.value)} disabled={isReadOnly}>
@@ -772,65 +821,67 @@ export default function AnnapurnaMicroFinance({
                 <option value="Vacant">Vacant</option>
               </select>
             </Field>
+
+            {/* Schedule of the Property (Boundaries) Sub-Section */}
+            <div className="md:col-span-2 border-t border-slate-200 pt-5 mt-2 space-y-4">
+              <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                Schedule of the Property (Boundaries)
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs border border-[#dee2e6] rounded-xl overflow-hidden">
+                  <thead className="bg-[#d5e8f5] text-[#1a3a5c] font-bold">
+                    <tr>
+                      <th className="p-2.5 text-left border-r border-[#dee2e6]">Side</th>
+                      <th className="p-2.5 text-left border-r border-[#dee2e6]">As per Legal Documents</th>
+                      <th className="p-2.5 text-left border-r border-[#dee2e6]">As per Site Visit</th>
+                      <th className="p-2.5 text-left">As per Sketch Map</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#dee2e6]">
+                    {(['North', 'East', 'West', 'South'] as const).map(side => {
+                      const lKey = `${side.toLowerCase()}Legal` as keyof AnnapurnaMicroReportFields;
+                      const sKey = `${side.toLowerCase()}Site` as keyof AnnapurnaMicroReportFields;
+                      const skKey = `${side.toLowerCase()}Sketch` as keyof AnnapurnaMicroReportFields;
+                      return (
+                        <tr key={side} className="hover:bg-slate-50">
+                          <td className="p-2 font-bold text-slate-700 bg-slate-50 border-r border-[#dee2e6]">{side}</td>
+                          <td className="p-1.5 border-r border-[#dee2e6]">
+                            <input className="w-full p-1 border rounded text-xs" value={fields[lKey] || ''} onChange={e => handleChange(lKey, e.target.value)} disabled={isReadOnly} />
+                          </td>
+                          <td className="p-1.5 border-r border-[#dee2e6]">
+                            <input className="w-full p-1 border rounded text-xs" value={fields[sKey] || ''} onChange={e => handleChange(sKey, e.target.value)} disabled={isReadOnly} />
+                          </td>
+                          <td className="p-1.5">
+                            <input className="w-full p-1 border rounded text-xs" value={fields[skKey] || ''} onChange={e => handleChange(skKey, e.target.value)} disabled={isReadOnly} />
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-4 pt-2">
+                <Field label="Boundaries Matching (Yes/No)">
+                  <input className={inputCls} value={fields.boundariesMatching || 'Boundary is matching'} onChange={e => handleChange('boundariesMatching', e.target.value)} disabled={isReadOnly} />
+                </Field>
+                <Field label="Property Identified (Yes/No)">
+                  <select className={selectCls} value={fields.propertyIdentified || 'Yes'} onChange={e => handleChange('propertyIdentified', e.target.value)} disabled={isReadOnly}>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </Field>
+                <Field label="Approach Road Size">
+                  <input className={inputCls} value={fields.approachRoadSize || '>20 FT'} onChange={e => handleChange('approachRoadSize', e.target.value)} disabled={isReadOnly} />
+                </Field>
+              </div>
+            </div>
           </div>
         </Section>
 
-        {/* ════ SECTION 3: SCHEDULE OF PROPERTY ════ */}
-        <Section title="Schedule of the Property (Boundaries)" number={3} id="sec-3" defaultOpen={false}>
-          <div className="space-y-4">
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs border border-[#dee2e6] rounded-xl overflow-hidden">
-                <thead className="bg-[#d5e8f5] text-[#1a3a5c] font-bold">
-                  <tr>
-                    <th className="p-2.5 text-left border-r border-[#dee2e6]">Side</th>
-                    <th className="p-2.5 text-left border-r border-[#dee2e6]">As per Legal Documents</th>
-                    <th className="p-2.5 text-left border-r border-[#dee2e6]">As per Site Visit</th>
-                    <th className="p-2.5 text-left">As per Sketch Map</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#dee2e6]">
-                  {(['North', 'East', 'West', 'South'] as const).map(side => {
-                    const lKey = `${side.toLowerCase()}Legal` as keyof AnnapurnaMicroReportFields;
-                    const sKey = `${side.toLowerCase()}Site` as keyof AnnapurnaMicroReportFields;
-                    const skKey = `${side.toLowerCase()}Sketch` as keyof AnnapurnaMicroReportFields;
-                    return (
-                      <tr key={side} className="hover:bg-slate-50">
-                        <td className="p-2 font-bold text-slate-700 bg-slate-50 border-r border-[#dee2e6]">{side}</td>
-                        <td className="p-1.5 border-r border-[#dee2e6]">
-                          <input className="w-full p-1 border rounded text-xs" value={fields[lKey] || ''} onChange={e => handleChange(lKey, e.target.value)} disabled={isReadOnly} />
-                        </td>
-                        <td className="p-1.5 border-r border-[#dee2e6]">
-                          <input className="w-full p-1 border rounded text-xs" value={fields[sKey] || ''} onChange={e => handleChange(sKey, e.target.value)} disabled={isReadOnly} />
-                        </td>
-                        <td className="p-1.5">
-                          <input className="w-full p-1 border rounded text-xs" value={fields[skKey] || ''} onChange={e => handleChange(skKey, e.target.value)} disabled={isReadOnly} />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-4 pt-2">
-              <Field label="Boundaries Matching (Yes/No)">
-                <input className={inputCls} value={fields.boundariesMatching || 'Boundary is matching'} onChange={e => handleChange('boundariesMatching', e.target.value)} disabled={isReadOnly} />
-              </Field>
-              <Field label="Property Identified (Yes/No)">
-                <select className={selectCls} value={fields.propertyIdentified || 'Yes'} onChange={e => handleChange('propertyIdentified', e.target.value)} disabled={isReadOnly}>
-                  <option value="Yes">Yes</option>
-                  <option value="No">No</option>
-                </select>
-              </Field>
-              <Field label="Approach Road Size">
-                <input className={inputCls} value={fields.approachRoadSize || '>20 FT'} onChange={e => handleChange('approachRoadSize', e.target.value)} disabled={isReadOnly} />
-              </Field>
-            </div>
-          </div>
-        </Section>
-
-        {/* ════ SECTION 4: NDMA PARAMETERS ════ */}
-        <Section title="NDMA Parameters" number={4} id="sec-4" defaultOpen={false}>
+        {/* ════ SECTION 3: NDMA PARAMETERS ════ */}
+        <Section title="NDMA Parameters" number={3} id="sec-3" defaultOpen={false}>
           <div className="grid md:grid-cols-3 gap-4">
             <Field label="Nature of Building/Wing">
               <input className={inputCls} value={fields.natureOfBuilding || 'RCC'} onChange={e => handleChange('natureOfBuilding', e.target.value)} disabled={isReadOnly} />
@@ -892,8 +943,8 @@ export default function AnnapurnaMicroFinance({
           </div>
         </Section>
 
-        {/* ════ SECTION 5: APPROVED PLAN DETAILS ════ */}
-        <Section title="Approved Plan Details (if self-construction)" number={5} id="sec-5" defaultOpen={false}>
+        {/* ════ SECTION 4: APPROVED PLAN DETAILS ════ */}
+        <Section title="Approved Plan Details (if self-construction)" number={4} id="sec-4" defaultOpen={false}>
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="Sanctioned Plan Provided (Yes/No)">
               <select className={selectCls} value={fields.sanctionedPlanProvided || 'NO'} onChange={e => handleChange('sanctionedPlanProvided', e.target.value)} disabled={isReadOnly}>
@@ -936,8 +987,8 @@ export default function AnnapurnaMicroFinance({
           </div>
         </Section>
 
-        {/* ════ SECTION 6: TECHNICAL DETAILS ════ */}
-        <Section title="Technical Details & Area Statements" number={6} id="sec-6" defaultOpen={false}>
+        {/* ════ SECTION 5: TECHNICAL DETAILS ════ */}
+        <Section title="Technical Details & Area Statements" number={5} id="sec-5" defaultOpen={false}>
           <div className="space-y-6">
             <div className="grid md:grid-cols-3 gap-4">
               <Field label="Current Occupant of Property (Owner/Tenant/Vacant)">
@@ -966,7 +1017,7 @@ export default function AnnapurnaMicroFinance({
                 </select>
               </Field>
               <Field label="Accommodation Details">
-                <input className={inputCls} value={fields.accommodationDetails || 'G+1'} onChange={e => handleChange('accommodationDetails', e.target.value)} disabled={isReadOnly} />
+                <input className={inputCls} value={fields.accommodationDetails || ''} onChange={e => handleChange('accommodationDetails', e.target.value)} disabled={isReadOnly} placeholder="NA" />
               </Field>
             </div>
 
@@ -1006,10 +1057,10 @@ export default function AnnapurnaMicroFinance({
                     <tr className="bg-amber-50/60 font-semibold">
                       <td className="p-2 text-slate-800 border-r border-[#dee2e6]">Land Area (In Sqft.)</td>
                       <td className="p-1.5 border-r border-[#dee2e6]">
-                        <input className="w-full p-1 border rounded text-xs font-bold" value={fields.landAreaDocs || ''} onChange={e => handleChange('landAreaDocs', e.target.value)} disabled={isReadOnly} placeholder="e.g. 2657" />
+                        <input className="w-full p-1 border rounded text-xs font-bold" value={fields.landAreaDocs || ''} onChange={e => handleChange('landAreaDocs', e.target.value)} disabled={isReadOnly} placeholder="NA" />
                       </td>
                       <td className="p-1.5 border-r border-[#dee2e6]">
-                        <input className="w-full p-1 border rounded text-xs font-bold" value={fields.landAreaSite || ''} onChange={e => handleChange('landAreaSite', e.target.value)} disabled={isReadOnly} placeholder="e.g. 2657" />
+                        <input className="w-full p-1 border rounded text-xs font-bold" value={fields.landAreaSite || ''} onChange={e => handleChange('landAreaSite', e.target.value)} disabled={isReadOnly} placeholder="NA" />
                       </td>
                       <td className="p-1.5">
                         <input className="w-full p-1 border rounded text-xs font-bold" value={fields.landAreaPlan || ''} onChange={e => handleChange('landAreaPlan', e.target.value)} disabled={isReadOnly} placeholder="NA" />
@@ -1130,7 +1181,6 @@ export default function AnnapurnaMicroFinance({
                             <option value="Industrial">Industrial</option>
                             <option value="Commercial">Commercial</option>
                             <option value="Mixed Usage">Mixed Usage</option>
-                            <option value="MixedUsage">MixedUsage</option>
                             <option value="NA">NA</option>
                           </select>
                         </td>
@@ -1156,23 +1206,33 @@ export default function AnnapurnaMicroFinance({
               </div>
             </div>
 
-            {/* FSI & Demolition Area Metrics */}
-            <div className="grid md:grid-cols-3 gap-4 pt-2">
-              <Field label="Permissible Area as per Plan (Sq.Ft)">
-                <input className={inputCls} value={fields.permissibleAreaPlan || 'NA'} onChange={e => handleChange('permissibleAreaPlan', e.target.value)} disabled={isReadOnly} />
-              </Field>
-              <Field label="Land Component (Sq.Ft)">
-                <input className={inputCls} value={fields.landComponent || ''} onChange={e => handleChange('landComponent', e.target.value)} disabled={isReadOnly} placeholder="e.g. 2657" />
-              </Field>
-              <Field label="Permissible FSI">
-                <input className={inputCls} value={fields.permissibleFsi || 'NA'} onChange={e => handleChange('permissibleFsi', e.target.value)} disabled={isReadOnly} />
-              </Field>
-              <Field label="Actual Construction (BUA) (Sq.Ft)">
-                <input className={inputCls} value={fields.actualConstructionBua || ''} onChange={e => handleChange('actualConstructionBua', e.target.value)} disabled={isReadOnly} placeholder="e.g. 1600" />
-              </Field>
-              <Field label="Consider Construction (BUA) (Sq.Ft)">
-                <input className={inputCls} value={fields.considerConstructionBua || ''} onChange={e => handleChange('considerConstructionBua', e.target.value)} disabled={isReadOnly} placeholder="e.g. 1600" />
-              </Field>
+            {/* Items Container */}
+            <div className="p-4 border border-[#dee2e6] rounded-2xl bg-slate-50/70 space-y-3">
+              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                Items
+              </h4>
+              <div className="grid md:grid-cols-3 gap-4">
+                <Field label="Permissible Area as per Plan (Sq.Ft)">
+                  <input className={inputCls} value={fields.permissibleAreaPlan || 'NA'} onChange={e => handleChange('permissibleAreaPlan', e.target.value)} disabled={isReadOnly} />
+                </Field>
+                <Field label="Land Component (Sq.Ft)">
+                  <input className={inputCls} value={fields.landComponent || 'NA'} onChange={e => handleChange('landComponent', e.target.value)} disabled={isReadOnly} />
+                </Field>
+                <Field label="Permissible FSI">
+                  <input className={inputCls} value={fields.permissibleFsi || 'NA'} onChange={e => handleChange('permissibleFsi', e.target.value)} disabled={isReadOnly} />
+                </Field>
+                <Field label="Actual Construction (BUA) (Sq.Ft)">
+                  <input className={inputCls} value={fields.actualConstructionBua || 'NA'} onChange={e => handleChange('actualConstructionBua', e.target.value)} disabled={isReadOnly} />
+                </Field>
+                <Field label="Consider Construction (BUA) (Sq.Ft)">
+                  <input className={inputCls} value={fields.considerConstructionBua || 'NA'} onChange={e => handleChange('considerConstructionBua', e.target.value)} disabled={isReadOnly} />
+                </Field>
+              </div>
+            </div>
+
+            {/* Demolition Risk & Property Age Metrics */}
+            <div className="grid md:grid-cols-3 gap-4 pt-1">
               <Field label="Risk of Demolition">
                 <select className={selectCls} value={fields.riskOfDemolition || 'LOW'} onChange={e => handleChange('riskOfDemolition', e.target.value)} disabled={isReadOnly}>
                   <option value="LOW">LOW</option>
@@ -1193,15 +1253,15 @@ export default function AnnapurnaMicroFinance({
           </div>
         </Section>
 
-        {/* ════ SECTION 7: VALUATION ════ */}
-        <Section title="Valuation" number={7} id="sec-7" defaultOpen={true}>
+        {/* ════ SECTION 6: VALUATION ════ */}
+        <Section title="Valuation" number={6} id="sec-6" defaultOpen={true}>
           <div className="space-y-6">
             <div className="grid md:grid-cols-3 gap-4 p-4 border border-[#dee2e6] rounded-2xl bg-amber-50/30">
               <div>
                 <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">Land Valuation</h4>
                 <div className="space-y-2">
                   <Field label="Land Area (Sq.Ft)">
-                    <input className={inputCls} value={fields.landAreaSqft || ''} onChange={e => handleChange('landAreaSqft', e.target.value)} disabled={isReadOnly} placeholder="e.g. 2657" />
+                    <input className={inputCls} value={fields.landAreaSqft || ''} onChange={e => handleChange('landAreaSqft', e.target.value)} disabled={isReadOnly} placeholder="NA" />
                   </Field>
                   <Field label="Rate per Sq.Ft (Rs)">
                     <input className={inputCls} value={fields.landRateSqft || ''} onChange={e => handleChange('landRateSqft', e.target.value)} disabled={isReadOnly} placeholder="e.g. 700" />
@@ -1269,8 +1329,8 @@ export default function AnnapurnaMicroFinance({
           </div>
         </Section>
 
-        {/* ════ SECTION 8: ADDITIONAL CHECKS ════ */}
-        <Section title="Additional Checks of Properties" number={8} id="sec-8" defaultOpen={false}>
+        {/* ════ SECTION 7: ADDITIONAL CHECKS ════ */}
+        <Section title="Additional Checks of Properties" number={7} id="sec-7" defaultOpen={false}>
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="Approach Road to Property">
               <select className={selectCls} value={fields.approachRoadType || 'SINGLE LANE'} onChange={e => handleChange('approachRoadType', e.target.value)} disabled={isReadOnly}>
@@ -1315,8 +1375,8 @@ export default function AnnapurnaMicroFinance({
           </div>
         </Section>
 
-        {/* ════ SECTION 9: DECLARATION ════ */}
-        <Section title="Declaration & Sign-Off" number={9} id="sec-9" defaultOpen={false}>
+        {/* ════ SECTION 8: DECLARATION ════ */}
+        <Section title="Declaration & Sign-Off" number={8} id="sec-8" defaultOpen={false}>
           <div className="space-y-4">
             <div className="p-4 border border-[#dee2e6] rounded-xl bg-slate-50 space-y-2 text-xs text-slate-700">
               <div className="font-bold text-slate-900 mb-1">Declaration Clauses (Included in Final PDF):</div>
@@ -1340,7 +1400,7 @@ export default function AnnapurnaMicroFinance({
           </div>
         </Section>
 
-        {/* ════ SECTION 10: PHOTOGRAPHS OF THE PROPERTY ════ */}
+        {/* ════ SECTION 9: PHOTOGRAPHS OF THE PROPERTY ════ */}
         <BasePhotographsSection
           propertyImages={fields.propertyImages || []}
           propertyImageNames={fields.propertyImageNames || []}
@@ -1360,11 +1420,11 @@ export default function AnnapurnaMicroFinance({
           }}
           onUploadImages={handlePhotosUpload}
           onOpenBucketPicker={() => setBucketPickerOpen(true)}
-          sectionNumber={10}
-          sectionId="sec-10"
+          sectionNumber={9}
+          sectionId="sec-9"
         />
 
-        {/* ════ SECTION 11: MAPS & DOCUMENTS (MULTI-PHOTO) ════ */}
+        {/* ════ SECTION 10: MAPS & DOCUMENTS (MULTI-PHOTO) ════ */}
         {/* Strictly in the requested order: Google Satellite Map, Mouza Map, Sketch Map, Cadastral Map */}
         <BaseMapsSection
           locationMapImages={fields.locationMapImages || []}
@@ -1375,7 +1435,7 @@ export default function AnnapurnaMicroFinance({
           longitude={fields.longitude}
           propertyAddress={fields.propertyAddressSite || fields.addressAsPerSite || fields.propertyAddressLegal || ''}
           hasExternalCoordinatesField={true}
-          coordinatesSectionName="Section 2: Location Details"
+          coordinatesSectionName="Section 2: Location Details & Schedule"
           isReadOnly={isReadOnly}
           uploading={uploading}
           onLocationMapUpload={e => handleMapUpload('locationMapImages', e)}
@@ -1391,11 +1451,11 @@ export default function AnnapurnaMicroFinance({
           onReorderSketchMap={newImgs => handleReorderMap('sketchMapImages', newImgs)}
           onReorderCadastralMap={newImgs => handleReorderMap('cadastralMapImages', newImgs)}
           mapOrder={['location', 'mouza', 'sketch', 'cadastral']}
-          sectionNumber={11}
-          sectionId="sec-11"
+          sectionNumber={10}
+          sectionId="sec-10"
         />
 
-        {/* ════ SECTION 12: ANNEXURES ════ */}
+        {/* ════ SECTION 11: ANNEXURES ════ */}
         <BaseAnnexureSection
           annexures={fields.annexures || []}
           isReadOnly={isReadOnly}
@@ -1414,8 +1474,8 @@ export default function AnnapurnaMicroFinance({
           }}
           onUploadExcel={handleAnnexureUpload}
           onRemoveFile={removeAnnexureFile}
-          sectionNumber={12}
-          sectionId="sec-12"
+          sectionNumber={11}
+          sectionId="sec-11"
         />
 
         {/* ═══ STANDARDIZED ACTION BAR ═══ */}
