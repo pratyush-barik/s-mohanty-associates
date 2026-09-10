@@ -1585,7 +1585,7 @@ export default function BankReportBuilder({
         ) : ef.type === 'select' ? (
           <select
             className={selectCls}
-            value={val}
+            value={val || ef.default || (ef.options && ef.options[0]) || ''}
             onChange={e => handleChange(ef.key, e.target.value)}
             disabled={isReadOnly || ef.readOnly}
           >
