@@ -1561,10 +1561,14 @@ export default function BankReportBuilder({
             <tbody>
               {ef.rows.map((row: any, rIdx: number) => (
                 <tr key={rIdx}>
-                  {row.label !== undefined && (
+                  {(row.label !== undefined || row.dynamicLabelTemplate !== undefined) && (
                     <td className="p-2 border border-slate-300 text-sm font-medium text-slate-800 bg-white whitespace-nowrap">
                       <div className="flex items-center gap-2">
-                        <span>{row.label}</span>
+                        <span>
+                          {row.dynamicLabelTemplate
+                            ? row.dynamicLabelTemplate.replace(/\{([^}]+)\}/g, (match: string, key: string) => (fields[key as keyof typeof fields] as string || '0'))
+                            : row.label}
+                        </span>
                         {row.fields?.some((f: any) => f.editToggle) && (() => {
                           const toggleField = row.fields.find((f: any) => f.editToggle);
                           const editToggleKey = `_editToggle_${toggleField.key}`;
@@ -1598,6 +1602,38 @@ export default function BankReportBuilder({
                     // Compute sum if computedSumOf is specified
                     let cellVal = fields[field.key as keyof typeof fields] as string || '';
                     if (!cellVal && field.default) cellVal = field.default;
+                    // Compute percentage if computedPercentOf is specified
+                    if (field.computedPercentOf) {
+                      const { percentField, totalField } = field.computedPercentOf;
+                      const percentVal = parseFloat(String(fields[percentField as keyof typeof fields] || '0').replace(/,/g, ''));
+                      const totalVal = parseFloat(String(fields[totalField as keyof typeof fields] || '0').replace(/,/g, ''));
+                      
+                      const editToggleKey = `_editToggle_${field.key}`;
+                      const isEditMode = (fields as any)[editToggleKey] === 'on';
+                      
+                      if (!isEditMode) {
+                        const calculated = (!isNaN(percentVal) && !isNaN(totalVal)) ? (percentVal / 100) * totalVal : 0;
+                        cellVal = calculated > 0 ? calculated.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+                        if (fields[field.key as keyof typeof fields] !== cellVal) {
+                          handleChange(field.key as string, cellVal);
+                        }
+                      }
+                      return (
+                        <td key={fIdx} colSpan={field.colSpan || 1} className="p-2 border border-slate-300 bg-white min-w-[120px]">
+                          <div className="flex items-center gap-2">
+                            <input
+                              className={`${inputCls} ${!isEditMode ? 'bg-slate-50 font-semibold text-emerald-700' : ''}`}
+                              value={cellVal}
+                              onChange={e => handleChange(field.key as string, e.target.value)}
+                              disabled={isReadOnly || !isEditMode}
+                              placeholder={field.placeholder || ''}
+                              inputMode="decimal"
+                            />
+                          </div>
+                        </td>
+                      );
+                    }
+                    
                     // Compute words if computedWordsOf is specified
                     if (field.computedWordsOf) {
                       const sourceVal = fields[field.computedWordsOf as keyof typeof fields];

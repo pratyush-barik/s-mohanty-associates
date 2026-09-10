@@ -289,7 +289,8 @@ export interface ExtraFieldConfig {
   /** For table: Row definitions */
   rows?: {
     label?: string;
-    fields: { key?: string; isLabel?: boolean; label?: string; colSpan?: number; placeholder?: string; default?: string; type?: 'text' | 'select' | 'yesno'; options?: string[]; inputType?: 'number' | 'text'; readOnly?: boolean; editToggle?: boolean; computedSumOf?: string[]; computedWordsOf?: string }[];
+    dynamicLabelTemplate?: string;
+    fields: { key?: string; isLabel?: boolean; label?: string; colSpan?: number; placeholder?: string; default?: string; type?: 'text' | 'select' | 'yesno'; options?: string[]; inputType?: 'number' | 'text'; readOnly?: boolean; editToggle?: boolean; computedSumOf?: string[]; computedWordsOf?: string; computedPercentOf?: { percentField: string; totalField: string } }[];
   }[];
 
   /** Inline positioning hint: render this field in a 2-col inline pair */
