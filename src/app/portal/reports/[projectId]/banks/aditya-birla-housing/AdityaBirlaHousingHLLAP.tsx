@@ -775,7 +775,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
           { label: 'Total Market Value of Property on Completion (A+B)', fields: [{ key: 'totalMarketValueOnCompletion' }] },
           { label: 'Total Market Value of Property on Completion in Words', fields: [{ key: 'totalMarketValueOnCompletionWords' }] },
           { label: 'Total Market Value of Property as on Date (A+B)', fields: [{ key: 'totalMarketValueAsOnDate' }] },
-          { label: 'Guideline Value of The Property', fields: [{ key: 'guidelineValueOfProperty', default: 'NA' }] },
+          { label: 'Guideline Value of The Property', fields: [{ key: 'guidelineValueOfProperty' }] },
           { label: 'Distress Sale Value as on date', fields: [{ key: 'distressSaleValue' }] },
           { label: 'Approx. Rentals in case of 100% complete property', fields: [{ key: 'approxRentals' }] },
         ]
