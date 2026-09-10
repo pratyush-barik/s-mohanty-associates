@@ -757,7 +757,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       },
       {
         key: 'extraAmenitiesTable',
-        label: '27. (B) Value of Extra Amenities if applicable',
+        label: '27. (B) Value of Extra Amenities (if applicable)',
         type: 'table',
         hideHeaders: true,
         columns: [''], // 1 column for input
