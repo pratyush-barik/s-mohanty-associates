@@ -537,66 +537,66 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
         const inputCls = "w-full h-full px-3 py-2 bg-transparent text-slate-700 outline-none text-sm";
         
         return (
-          <div className="w-full bg-[#2a2a2a] p-6 rounded-lg font-sans">
-            <h3 className="text-white text-center text-xl font-bold mb-6">Deviations /Observations</h3>
-            <div className="bg-transparent overflow-hidden border border-gray-400">
+          <div className="w-full bg-red-50 p-6 rounded-lg font-sans border-2 border-red-100">
+            <h3 className="text-red-900 text-center text-xl font-bold mb-6">Deviations /Observations</h3>
+            <div className="bg-white overflow-hidden border border-red-200 shadow-sm rounded-md">
               <table className="w-full border-collapse">
                 <tbody>
                   <tr>
-                    <td className="border border-gray-400 px-3 py-2 text-white font-bold text-sm whitespace-nowrap w-[15%]">Deal Number</td>
-                    <td className="border border-gray-400 px-2 py-2 text-white font-bold text-sm text-center w-[1%]">:</td>
-                    <td className="border border-gray-400 px-0 py-0 w-[34%]"><input className="w-full h-full px-3 py-2 bg-transparent text-white outline-none text-sm" disabled value={fields.dealNumber || ''} /></td>
+                    <td className="border border-red-200 px-3 py-2 text-slate-800 font-bold text-sm whitespace-nowrap w-[15%]">Deal Number</td>
+                    <td className="border border-red-200 px-2 py-2 text-slate-800 font-bold text-sm text-center w-[1%]">:</td>
+                    <td className="border border-red-200 px-0 py-0 w-[34%]"><input className="w-full h-full px-3 py-2 bg-transparent text-slate-800 outline-none text-sm" disabled value={fields.dealNumber || ''} /></td>
                     
-                    <td className="border border-gray-400 px-3 py-2 text-white font-bold text-sm whitespace-nowrap w-[15%]">Asset id</td>
-                    <td className="border border-gray-400 px-2 py-2 text-white font-bold text-sm text-center w-[1%]">:</td>
-                    <td className="border border-gray-400 px-0 py-0 w-[34%]"><input className="w-full h-full px-3 py-2 bg-transparent text-white outline-none text-sm" disabled value={fields.assetId || ''} /></td>
+                    <td className="border border-red-200 px-3 py-2 text-slate-800 font-bold text-sm whitespace-nowrap w-[15%]">Asset id</td>
+                    <td className="border border-red-200 px-2 py-2 text-slate-800 font-bold text-sm text-center w-[1%]">:</td>
+                    <td className="border border-red-200 px-0 py-0 w-[34%]"><input className="w-full h-full px-3 py-2 bg-transparent text-slate-800 outline-none text-sm" disabled value={fields.assetId || ''} /></td>
                   </tr>
                   
                   <tr>
-                    <td className="border border-gray-400 px-3 py-2 text-white font-bold text-sm whitespace-nowrap">Branch Name</td>
-                    <td className="border border-gray-400 px-2 py-2 text-white font-bold text-sm text-center">:</td>
-                    <td className="border border-gray-400 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-white outline-none text-sm" disabled value={fields.branchName || ''} /></td>
+                    <td className="border border-red-200 px-3 py-2 text-slate-800 font-bold text-sm whitespace-nowrap">Branch Name</td>
+                    <td className="border border-red-200 px-2 py-2 text-slate-800 font-bold text-sm text-center">:</td>
+                    <td className="border border-red-200 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-slate-800 outline-none text-sm" disabled value={fields.branchName || ''} /></td>
                     
-                    <td className="border border-gray-400 px-3 py-2 text-white font-bold text-sm whitespace-nowrap">Type of Case</td>
-                    <td className="border border-gray-400 px-2 py-2 text-white font-bold text-sm text-center">:</td>
-                    <td className="border border-gray-400 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-white outline-none text-sm" disabled value={fields.typeOfCase || ''} /></td>
+                    <td className="border border-red-200 px-3 py-2 text-slate-800 font-bold text-sm whitespace-nowrap">Type of Case</td>
+                    <td className="border border-red-200 px-2 py-2 text-slate-800 font-bold text-sm text-center">:</td>
+                    <td className="border border-red-200 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-slate-800 outline-none text-sm" disabled value={fields.typeOfCase || ''} /></td>
                   </tr>
 
                   <tr>
-                    <td className="border border-gray-400 px-3 py-2 text-white font-bold text-sm whitespace-nowrap">Valuer Name</td>
-                    <td className="border border-gray-400 px-2 py-2 text-white font-bold text-sm text-center">:</td>
-                    <td className="border border-gray-400 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-white outline-none text-sm" disabled value={fields.valuerName || ''} /></td>
+                    <td className="border border-red-200 px-3 py-2 text-slate-800 font-bold text-sm whitespace-nowrap">Valuer Name</td>
+                    <td className="border border-red-200 px-2 py-2 text-slate-800 font-bold text-sm text-center">:</td>
+                    <td className="border border-red-200 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-slate-800 outline-none text-sm" disabled value={fields.valuerName || ''} /></td>
                     
-                    <td className="border border-gray-400 px-3 py-2 text-white font-bold text-sm whitespace-nowrap">Product Type</td>
-                    <td className="border border-gray-400 px-2 py-2 text-white font-bold text-sm text-center">:</td>
-                    <td className="border border-gray-400 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-white outline-none text-sm" disabled value={fields.productType || ''} /></td>
+                    <td className="border border-red-200 px-3 py-2 text-slate-800 font-bold text-sm whitespace-nowrap">Product Type</td>
+                    <td className="border border-red-200 px-2 py-2 text-slate-800 font-bold text-sm text-center">:</td>
+                    <td className="border border-red-200 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-slate-800 outline-none text-sm" disabled value={fields.productType || ''} /></td>
                   </tr>
 
                   <tr>
-                    <td className="border border-gray-400 px-3 py-2 text-white font-bold text-sm whitespace-nowrap">Valuer Ref No</td>
-                    <td className="border border-gray-400 px-2 py-2 text-white font-bold text-sm text-center">:</td>
-                    <td className="border border-gray-400 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-white outline-none text-sm" disabled value={fields.valuerRefNo || ''} /></td>
+                    <td className="border border-red-200 px-3 py-2 text-slate-800 font-bold text-sm whitespace-nowrap">Valuer Ref No</td>
+                    <td className="border border-red-200 px-2 py-2 text-slate-800 font-bold text-sm text-center">:</td>
+                    <td className="border border-red-200 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-slate-800 outline-none text-sm" disabled value={fields.valuerRefNo || ''} /></td>
                     
-                    <td className="border border-gray-400 px-3 py-2 text-white font-bold text-sm whitespace-nowrap">Date of Visit</td>
-                    <td className="border border-gray-400 px-2 py-2 text-white font-bold text-sm text-center">:</td>
-                    <td className="border border-gray-400 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-white outline-none text-sm" disabled value={fields.dateOfVisit || fields.dateOfInspection || ''} /></td>
+                    <td className="border border-red-200 px-3 py-2 text-slate-800 font-bold text-sm whitespace-nowrap">Date of Visit</td>
+                    <td className="border border-red-200 px-2 py-2 text-slate-800 font-bold text-sm text-center">:</td>
+                    <td className="border border-red-200 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-slate-800 outline-none text-sm" disabled value={fields.dateOfVisit || fields.dateOfInspection || ''} /></td>
                   </tr>
 
                   <tr>
-                    <td className="border border-gray-400 px-3 py-2 text-white font-bold text-sm whitespace-nowrap">Valuer Feedback</td>
-                    <td className="border border-gray-400 px-2 py-2 text-white font-bold text-sm text-center">:</td>
-                    <td className="border border-gray-400 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-white outline-none text-sm" disabled value={fields.valuerFeedback || ''} /></td>
+                    <td className="border border-red-200 px-3 py-2 text-slate-800 font-bold text-sm whitespace-nowrap">Valuer Feedback</td>
+                    <td className="border border-red-200 px-2 py-2 text-slate-800 font-bold text-sm text-center">:</td>
+                    <td className="border border-red-200 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-slate-800 outline-none text-sm" disabled value={fields.valuerFeedback || ''} /></td>
                     
-                    <td className="border border-gray-400 px-3 py-2 text-white font-bold text-sm whitespace-nowrap">Date of Report</td>
-                    <td className="border border-gray-400 px-2 py-2 text-white font-bold text-sm text-center">:</td>
-                    <td className="border border-gray-400 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-white outline-none text-sm" disabled value={fields.dateOfReport || fields.dateOfValuation || ''} /></td>
+                    <td className="border border-red-200 px-3 py-2 text-slate-800 font-bold text-sm whitespace-nowrap">Date of Report</td>
+                    <td className="border border-red-200 px-2 py-2 text-slate-800 font-bold text-sm text-center">:</td>
+                    <td className="border border-red-200 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-slate-800 outline-none text-sm" disabled value={fields.dateOfReport || fields.dateOfValuation || ''} /></td>
                   </tr>
 
                   <tr>
-                    <td colSpan={2} className="border border-gray-400 px-3 py-3 text-white font-bold text-sm align-top">Property Address</td>
-                    <td colSpan={4} className="border border-gray-400 px-0 py-0 align-top">
+                    <td colSpan={2} className="border border-red-200 px-3 py-3 text-slate-800 font-bold text-sm align-top">Property Address</td>
+                    <td colSpan={4} className="border border-red-200 px-0 py-0 align-top">
                       <textarea 
-                        className="w-full h-full min-h-[80px] px-3 py-3 bg-transparent text-white outline-none text-sm resize-none" 
+                        className="w-full h-full min-h-[80px] px-3 py-3 bg-transparent text-slate-800 outline-none text-sm resize-none" 
                         disabled 
                         value={fields.addressAsPerDocument || ''} 
                       />
@@ -604,11 +604,11 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
                   </tr>
 
                   <tr>
-                    <td colSpan={6} className="border border-gray-400 px-3 py-4 align-top border-b-0">
+                    <td colSpan={6} className="border border-red-200 px-3 py-4 align-top border-b-0">
                       <div className="flex flex-col gap-2 h-full">
-                        <label className="text-white text-sm">Deviations/Observations:</label>
+                        <label className="text-slate-800 text-sm">Deviations/Observations:</label>
                         <textarea 
-                          className="w-full p-3 bg-transparent text-white outline-none min-h-[250px] resize-none"
+                          className="w-full p-3 bg-transparent text-slate-800 outline-none min-h-[250px] resize-none"
                           value={fields.deviationsObservations || ''}
                           onChange={e => handleChange('deviationsObservations', e.target.value)}
                           disabled={isReadOnly}
