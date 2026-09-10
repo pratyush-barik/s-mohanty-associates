@@ -591,7 +591,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       },
       { key: 'constructionCommencementDate', label: '19. Construction commencement date' },
       { key: 'expectedCompletionDate', label: 'Expected Completion Date' },
-      { key: 'ownershipType', label: '20. Ownership Type (Free / Lease Hold)', default: 'FREEHOLD' },
+      { key: 'ownershipType', label: '20. Ownership Type (Free Hold / Lease Hold)', type: 'select', options: ['Freehold', 'Leasehold'], default: 'Freehold' },
       { key: 'propertyDocsVerification', label: '21. Property documents verification details' },
       { key: 'propertyJurisdiction', label: '22. Property Jurisdiction' },
       { key: 'permissibleZoning', label: '23. Permissible zoning as per master plan' },
