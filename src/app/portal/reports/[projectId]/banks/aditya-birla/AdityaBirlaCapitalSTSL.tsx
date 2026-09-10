@@ -2903,7 +2903,9 @@ export default function AdityaBirlaCapitalSTSL({
           cadastralMapImages={fields.cadastralMapImages || (fields.cadastralMapImage ? [fields.cadastralMapImage] : [])}
           latitude={fields.latitude}
           longitude={fields.longitude}
-          propertyAddress={fields.propertyAddressAsDocs || fields.propertyAddressAsVisit || fields.propertyAddressAsTRF || ''}
+          propertyAddress={fields.propertyAddressAsVisit || fields.propertyAddressAsDocs || fields.propertyAddressAsTRF || ''}
+          hasExternalCoordinatesField={true}
+          coordinatesSectionName="Section 2: Property Details"
           isReadOnly={isReadOnly}
           uploading={uploadingTarget !== null}
           onLocationMapUpload={(e) => handleMapUpload('locationMapImages', e)}

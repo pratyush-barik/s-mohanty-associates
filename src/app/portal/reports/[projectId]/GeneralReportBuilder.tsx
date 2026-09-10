@@ -3567,9 +3567,49 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                       referrerPolicy="no-referrer-when-downgrade"
                       title="Property Location Map"
                     />
-                    {hasCoordinates && (
-                      <div className="bg-[#0a1628] text-[#f0c040] px-4 py-2 text-sm font-bold text-center">
-                        Latitude: {latStr}, Longitude: {lngStr}
+                    {hasCoordinates ? (
+                      <div className="bg-emerald-50 border-t border-emerald-200 px-4 py-2.5 text-xs text-slate-800 space-y-1">
+                        <div className="flex items-center justify-between flex-wrap gap-1.5">
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
+                            <span className="font-bold text-emerald-950">📍 Map Referenced From:</span>
+                            <span className="font-semibold text-emerald-800 font-mono bg-emerald-100/80 px-1.5 py-0.5 rounded">
+                              GPS Coordinates ({latStr}, {lngStr})
+                            </span>
+                            <span className="text-[11px] font-medium text-emerald-700">
+                              (Coordinates override from inputs below)
+                            </span>
+                          </div>
+                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/60 px-2 py-0.5 rounded border border-emerald-200 uppercase tracking-wide">
+                            Coordinates Override Active
+                          </span>
+                        </div>
+                        {mainAreaLocation && (
+                          <div className="text-[11px] text-slate-600 pl-4 truncate" title={mainAreaLocation}>
+                            <span className="font-medium text-slate-700">Overridden Technical Address:</span> {mainAreaLocation}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="bg-blue-50 border-t border-blue-200 px-4 py-2.5 text-xs text-slate-800 space-y-1">
+                        <div className="flex items-center justify-between flex-wrap gap-1.5">
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0" />
+                            <span className="font-bold text-blue-950">📍 Map Referenced From:</span>
+                            <span className="font-semibold text-blue-800 bg-blue-100/80 px-1.5 py-0.5 rounded">
+                              Technical Address
+                            </span>
+                            <span className="text-[11px] text-blue-700 font-medium">
+                              (Default Address Input)
+                            </span>
+                          </div>
+                          <span className="text-[10px] font-medium text-slate-600 bg-white/80 px-2 py-0.5 rounded border border-blue-200">
+                            Enter coordinates below to override for higher accuracy
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-700 pl-4 font-normal truncate" title={mainAreaLocation}>
+                          <span className="font-semibold text-blue-900">Address text:</span> {mainAreaLocation}
+                        </div>
                       </div>
                     )}
                   </div>

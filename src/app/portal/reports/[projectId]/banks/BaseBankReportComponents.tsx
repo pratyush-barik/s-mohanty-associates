@@ -570,6 +570,10 @@ export function BaseMapsSection({
   isReadOnly = false,
   uploading = false,
   bucketCount = 0,
+  hasExternalCoordinatesField = false,
+  coordinatesSectionName = '',
+  onLatitudeChange,
+  onLongitudeChange,
   onLocationMapUpload,
   onLocationMapRemove,
   onSketchMapUpload,
@@ -601,6 +605,10 @@ export function BaseMapsSection({
   isReadOnly?: boolean;
   uploading?: boolean;
   bucketCount?: number;
+  hasExternalCoordinatesField?: boolean;
+  coordinatesSectionName?: string;
+  onLatitudeChange?: (val: string) => void;
+  onLongitudeChange?: (val: string) => void;
   onLocationMapUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onLocationMapRemove?: (index?: number) => void;
   onSketchMapUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -620,11 +628,36 @@ export function BaseMapsSection({
   mapOrder?: ('location' | 'mouza' | 'sketch' | 'cadastral')[];
   withoutSectionWrapper?: boolean;
 }) {
-  const cleanLat = (latitude || '').trim();
-  const cleanLng = (longitude || '').trim();
+  const [localLat, setLocalLat] = useState(latitude || '');
+  const [localLng, setLocalLng] = useState(longitude || '');
+
+  useEffect(() => {
+    setLocalLat(latitude || '');
+  }, [latitude]);
+
+  useEffect(() => {
+    setLocalLng(longitude || '');
+  }, [longitude]);
+
+  const activeLat = onLatitudeChange ? (latitude || '') : localLat;
+  const activeLng = onLongitudeChange ? (longitude || '') : localLng;
+
+  const handleLatChange = (val: string) => {
+    setLocalLat(val);
+    onLatitudeChange?.(val);
+  };
+
+  const handleLngChange = (val: string) => {
+    setLocalLng(val);
+    onLongitudeChange?.(val);
+  };
+
+  const cleanLat = (activeLat || '').trim();
+  const cleanLng = (activeLng || '').trim();
   const hasCoordinates = Boolean(cleanLat && cleanLng && !isNaN(Number(cleanLat)) && !isNaN(Number(cleanLng)));
   const cleanAddress = (propertyAddress || '').trim();
 
+  // Coordinates override technical address for more accurate pinpointing
   const queryParam = hasCoordinates
     ? `loc:${cleanLat},${cleanLng}`
     : cleanAddress;
@@ -656,7 +689,7 @@ export function BaseMapsSection({
         onReorder={onReorderLocationMap}
         emptyMessage="No satellite map screenshots uploaded yet. Click '+ Add Satellite Image' to add one or more photos for PDF."
         headerExtra={
-          <div className="space-y-1.5 pt-1">
+          <div className="space-y-2 pt-1">
             <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
               Live Satellite & Coordinate Preview
             </div>
@@ -664,7 +697,7 @@ export function BaseMapsSection({
               <div className="rounded-xl overflow-hidden border border-[#c8d6e5] shadow-xs">
                 <div className="bg-[#d5e8f5] px-3.5 py-1.5 flex items-center justify-between">
                   <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider flex items-center gap-1.5">
-                    📍 Live Pin {hasCoordinates ? `(${cleanLat}, ${cleanLng})` : ''}
+                    📍 Live Pin {hasCoordinates ? `(${cleanLat}, ${cleanLng})` : '— Technical Address'}
                   </span>
                   <a
                     href={googleMapsUrl}
@@ -688,9 +721,113 @@ export function BaseMapsSection({
               </div>
             ) : (
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center text-xs text-slate-500">
-                Enter Property Address or Coordinates in Section 2 to view live satellite map.
+                Enter technical address or coordinates to view live satellite map preview.
               </div>
             )}
+
+            {/* Map Reference Source Notice */}
+            {hasCoordinates ? (
+              <div className="rounded-lg p-2.5 bg-emerald-50 border border-emerald-200 text-xs text-slate-800 space-y-1">
+                <div className="flex items-center justify-between flex-wrap gap-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0 shadow-xs" />
+                    <span className="font-bold text-emerald-950">📍 Map Referenced From:</span>
+                    <span className="font-semibold text-emerald-800 font-mono bg-emerald-100/80 px-1.5 py-0.5 rounded">
+                      GPS Coordinates ({cleanLat}, {cleanLng})
+                    </span>
+                    <span className="text-[11px] font-medium text-emerald-700">
+                      {hasExternalCoordinatesField
+                        ? `(Referenced from ${coordinatesSectionName || 'report coordinates'})`
+                        : '(Manual coordinate entry below)'}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/60 px-2 py-0.5 rounded border border-emerald-200 uppercase tracking-wide">
+                    Coordinates Override Active
+                  </span>
+                </div>
+                {cleanAddress && (
+                  <div className="text-[11px] text-slate-600 pl-4 truncate" title={cleanAddress}>
+                    <span className="font-medium text-slate-700">Overridden Technical Address:</span> {cleanAddress}
+                  </div>
+                )}
+              </div>
+            ) : cleanAddress ? (
+              <div className="rounded-lg p-2.5 bg-blue-50 border border-blue-200 text-xs text-slate-800 space-y-1">
+                <div className="flex items-center justify-between flex-wrap gap-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <span className="inline-block w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0 shadow-xs" />
+                    <span className="font-bold text-blue-950">📍 Map Referenced From:</span>
+                    <span className="font-semibold text-blue-800 bg-blue-100/80 px-1.5 py-0.5 rounded">
+                      Technical Address
+                    </span>
+                    <span className="text-[11px] text-blue-700 font-medium">
+                      (Default Address Input)
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-medium text-slate-600 bg-white/80 px-2 py-0.5 rounded border border-blue-200">
+                    {hasExternalCoordinatesField
+                      ? `Enter coordinates in ${coordinatesSectionName || 'Location Details'} to override`
+                      : 'Enter coordinates below to override for higher accuracy'}
+                  </span>
+                </div>
+                <div className="text-[11px] text-slate-700 pl-4 font-normal truncate" title={cleanAddress}>
+                  <span className="font-semibold text-blue-900">Address text:</span> {cleanAddress}
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-lg p-2.5 bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-center gap-2">
+                <span>⚠️</span>
+                <span>
+                  No technical address or coordinates found.{' '}
+                  {hasExternalCoordinatesField
+                    ? `Please enter technical property address or coordinates in ${coordinatesSectionName || 'Location Details'}.`
+                    : 'Enter technical address in report details or input coordinates below.'}
+                </span>
+              </div>
+            )}
+
+            {/* Direct GPS Coordinates entry if absent in the rest of the report builder */}
+            {!hasExternalCoordinatesField && (
+              <div className="rounded-xl border border-slate-200 bg-slate-50/90 p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#0f2038] flex items-center gap-1.5">
+                    🧭 Direct GPS Coordinates Entry
+                  </span>
+                  <span className="text-[11px] text-slate-500">
+                    Input latitude & longitude to override technical address
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                      Latitude (DD)
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-1 focus:ring-[#0f2038] focus:border-[#0f2038] outline-none text-slate-800 font-mono"
+                      placeholder="e.g. 20.296059"
+                      value={activeLat}
+                      onChange={e => handleLatChange(e.target.value)}
+                      disabled={isReadOnly}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                      Longitude (DD)
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-1 focus:ring-[#0f2038] focus:border-[#0f2038] outline-none text-slate-800 font-mono"
+                      placeholder="e.g. 85.824540"
+                      value={activeLng}
+                      onChange={e => handleLngChange(e.target.value)}
+                      disabled={isReadOnly}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
             {normLocationImages.length > 0 && (
               <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider pt-2">
                 Satellite Screenshots (For PDF Inclusion)

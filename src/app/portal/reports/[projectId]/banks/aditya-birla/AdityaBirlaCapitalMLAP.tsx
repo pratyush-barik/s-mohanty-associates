@@ -1837,7 +1837,9 @@ export default function AdityaBirlaCapitalMLAP({
           cadastralMapImages={fields.cadastralMapImages || (fields.cadastralMapImage ? [fields.cadastralMapImage] : [])}
           latitude={fields.latitude}
           longitude={fields.longitude}
-          propertyAddress={fields.propertyAddressAsDocs || fields.propertyAddressAsVisit || ''}
+          propertyAddress={fields.propertyAddressAsVisit || fields.propertyAddressAsDocs || ''}
+          hasExternalCoordinatesField={true}
+          coordinatesSectionName="Section 3: Basic Details"
           isReadOnly={isReadOnly}
           uploading={!!uploadingTarget}
           onLocationMapUpload={(e) => handleMapUpload('locationMapImages', e)}

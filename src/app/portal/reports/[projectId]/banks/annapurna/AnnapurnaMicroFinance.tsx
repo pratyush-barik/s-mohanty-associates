@@ -1373,7 +1373,9 @@ export default function AnnapurnaMicroFinance({
           cadastralMapImages={fields.cadastralMapImages || []}
           latitude={fields.latitude}
           longitude={fields.longitude}
-          propertyAddress={fields.propertyAddressSite || fields.propertyAddressLegal}
+          propertyAddress={fields.propertyAddressSite || fields.addressAsPerSite || fields.propertyAddressLegal || ''}
+          hasExternalCoordinatesField={true}
+          coordinatesSectionName="Section 2: Location Details"
           isReadOnly={isReadOnly}
           uploading={uploading}
           onLocationMapUpload={e => handleMapUpload('locationMapImages', e)}

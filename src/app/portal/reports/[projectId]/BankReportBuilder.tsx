@@ -2230,34 +2230,42 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
         )}
 
         {/* ── Section 12: Maps & Sketches (Multi-Photo Supported) ── */}
-        {!isSectionHidden('section-12') && (
-          <BaseMapsSection
-            locationMapImages={fields.locationMapImages || normalizeMapImages(fields.locationMapImage)}
-            mouzaMapImages={fields.mouzaMapImages || normalizeMapImages(fields.mouzaMapImage)}
-            sketchMapImages={fields.sketchMapImages || []}
-            cadastralMapImages={fields.cadastralMapImages || normalizeMapImages(fields.cadastralMapImage)}
-            latitude={fields.latitude}
-            longitude={fields.longitude}
-            propertyAddress={fields.propertyAddress}
-            isReadOnly={isReadOnly}
-            uploading={uploading}
-            bucketCount={localBucketImages?.length || 0}
-            onLocationMapUpload={(e) => handleFileUpload(e, 'locationMapImages')}
-            onLocationMapRemove={(idx) => removeMapImage('locationMapImages', idx)}
-            onMouzaMapUpload={(e) => handleFileUpload(e, 'mouzaMapImages')}
-            onMouzaMapRemove={(idx) => removeMapImage('mouzaMapImages', idx)}
-            onSketchMapUpload={(e) => handleFileUpload(e, 'sketchMapImages')}
-            onSketchMapRemove={(idx) => removeMapImage('sketchMapImages', idx)}
-            onCadastralMapUpload={(e) => handleFileUpload(e, 'cadastralMapImages')}
-            onCadastralMapRemove={(idx) => removeMapImage('cadastralMapImages', idx)}
-            onReorderLocationMap={(newImgs) => reorderMapImage('locationMapImages', newImgs)}
-            onReorderMouzaMap={(newImgs) => reorderMapImage('mouzaMapImages', newImgs)}
-            onReorderSketchMap={(newImgs) => reorderMapImage('sketchMapImages', newImgs)}
-            onReorderCadastralMap={(newImgs) => reorderMapImage('cadastralMapImages', newImgs)}
-            sectionNumber={isApartmentFlat ? 11 : 12}
-            sectionId="section-12"
-          />
-        )}
+        {!isSectionHidden('section-12') && (() => {
+          const hasCoordsInConfig = Boolean(config?.extraFields?.some((f: any) => f.key === 'latitude' || f.key === 'longitude'));
+          const technicalAddress = fields.propertyAddressSite || fields.propertyAddressAsVisit || fields.propertyAddress || getFullAddress() || fields.ownerAddress || '';
+          return (
+            <BaseMapsSection
+              locationMapImages={fields.locationMapImages || normalizeMapImages(fields.locationMapImage)}
+              mouzaMapImages={fields.mouzaMapImages || normalizeMapImages(fields.mouzaMapImage)}
+              sketchMapImages={fields.sketchMapImages || []}
+              cadastralMapImages={fields.cadastralMapImages || normalizeMapImages(fields.cadastralMapImage)}
+              latitude={fields.latitude}
+              longitude={fields.longitude}
+              propertyAddress={technicalAddress}
+              hasExternalCoordinatesField={hasCoordsInConfig}
+              coordinatesSectionName="Property Details"
+              onLatitudeChange={(val) => handleChange('latitude', val)}
+              onLongitudeChange={(val) => handleChange('longitude', val)}
+              isReadOnly={isReadOnly}
+              uploading={uploading}
+              bucketCount={localBucketImages?.length || 0}
+              onLocationMapUpload={(e) => handleFileUpload(e, 'locationMapImages')}
+              onLocationMapRemove={(idx) => removeMapImage('locationMapImages', idx)}
+              onMouzaMapUpload={(e) => handleFileUpload(e, 'mouzaMapImages')}
+              onMouzaMapRemove={(idx) => removeMapImage('mouzaMapImages', idx)}
+              onSketchMapUpload={(e) => handleFileUpload(e, 'sketchMapImages')}
+              onSketchMapRemove={(idx) => removeMapImage('sketchMapImages', idx)}
+              onCadastralMapUpload={(e) => handleFileUpload(e, 'cadastralMapImages')}
+              onCadastralMapRemove={(idx) => removeMapImage('cadastralMapImages', idx)}
+              onReorderLocationMap={(newImgs) => reorderMapImage('locationMapImages', newImgs)}
+              onReorderMouzaMap={(newImgs) => reorderMapImage('mouzaMapImages', newImgs)}
+              onReorderSketchMap={(newImgs) => reorderMapImage('sketchMapImages', newImgs)}
+              onReorderCadastralMap={(newImgs) => reorderMapImage('cadastralMapImages', newImgs)}
+              sectionNumber={isApartmentFlat ? 11 : 12}
+              sectionId="section-12"
+            />
+          );
+        })()}
 
         {/* ── Section 14 / 15: Annexures (Always available) ── */}
         <BaseAnnexureSection
