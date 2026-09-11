@@ -245,7 +245,22 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
     }
 
     const rowH = Math.max(18, maxLines * fontSize * LINE_HEIGHT + pad * 2);
-    this.checkPageBreak(rowH);
+    
+    // Handle page breaks specifically for table borders
+    if (this.availableHeight < rowH) {
+      // Draw closing bottom line on current page
+      const yBottom = this.pdfY(this.cursorY);
+      this.page.drawLine({ start: { x: MARGIN_L, y: yBottom }, end: { x: MARGIN_L + CONTENT_W, y: yBottom }, thickness: BORDER_W, color: rgb(0, 0, 0) });
+      
+      this.addPage();
+      
+      // Force top borders on the new page
+      for (const c of processedCols) {
+        c.hideTop = false;
+      }
+    } else {
+      this.checkPageBreak(rowH);
+    }
 
     const y = this.pdfY(this.cursorY);
     let curX = MARGIN_L;
