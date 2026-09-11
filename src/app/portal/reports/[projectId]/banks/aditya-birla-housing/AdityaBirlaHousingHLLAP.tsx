@@ -294,25 +294,65 @@ async function generateHLLAPPDF(
   const setbackCol2 = (CONTENT_W - NUM_W - setbackCol1) / 2;
   const setbackCol3 = CONTENT_W - NUM_W - setbackCol1 - setbackCol2;
 
-  r.drawTable(['', 'Setbacks (Fts)', 'As per plan/ Byelaws (Fts)', 'As per site (Fts)'],
-    [['', 'Front', fv(fields, 'setbackFrontPlan', 'N.A'), fv(fields, 'setbackFrontSite', 'N.A')], ['', 'Side1(Left)', fv(fields, 'setbackSide1Plan', 'N.A'), fv(fields, 'setbackSide1Site', 'N.A')], ['25', 'Side2(Right)', fv(fields, 'setbackSide2Plan', 'N.A'), fv(fields, 'setbackSide2Site', 'N.A')], ['', 'Rear', fv(fields, 'setbackRearPlan', 'N.A'), fv(fields, 'setbackRearSite', 'N.A')]],
-    [NUM_W, setbackCol1, setbackCol2, setbackCol3], [], [0, 1]);
+  r.drawKeyValueRow([
+    { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideBottom: true },
+    { label: 'Setbacks (Fts)', value: '', labelWidth: setbackCol1, valueWidth: 0, bold: true },
+    { label: 'As per plan/ Byelaws (Fts)', value: '', labelWidth: setbackCol2, valueWidth: 0, bold: true },
+    { label: 'As per site (Fts)', value: '', labelWidth: setbackCol3, valueWidth: 0, bold: true }
+  ]);
+  
+  const setbacksData = [
+    ['Front', 'setbackFrontPlan', 'setbackFrontSite'],
+    ['Side1(Left)', 'setbackSide1Plan', 'setbackSide1Site'],
+    ['Side2(Right)', 'setbackSide2Plan', 'setbackSide2Site'],
+    ['Rear', 'setbackRearPlan', 'setbackRearSite']
+  ];
 
-  r.drawSimpleRow('BUA Area (In Sqft.)', '');
+  for (let i = 0; i < setbacksData.length; i++) {
+    const isLast = i === setbacksData.length - 1;
+    r.drawKeyValueRow([
+      { label: i === 1 ? '25' : '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true, hideBottom: !isLast },
+      { label: setbacksData[i][0], value: '', labelWidth: setbackCol1, valueWidth: 0 },
+      { label: fv(fields, setbacksData[i][1], 'N.A'), value: '', labelWidth: setbackCol2, valueWidth: 0 },
+      { label: fv(fields, setbacksData[i][2], 'N.A'), value: '', labelWidth: setbackCol3, valueWidth: 0 }
+    ]);
+  }
 
   const buaCol1 = LABEL_W;
   const buaCol2 = (CONTENT_W - NUM_W - buaCol1) / 2;
   const buaCol3 = CONTENT_W - NUM_W - buaCol1 - buaCol2;
-  const buaRows: string[][] = [];
-  const f1Name = fv(fields, 'buaFloor1Name', 'First');
-  if (f1Name) buaRows.push(['', f1Name, fv(fields, 'buaFloor1Plan', 'N.A'), fv(fields, 'buaFloor1Site', 'N.A')]);
-  const f2Name = fv(fields, 'buaFloor2Name', '');
-  if (f2Name) buaRows.push(['', f2Name, fv(fields, 'buaFloor2Plan', 'N.A'), fv(fields, 'buaFloor2Site', 'N.A')]);
-  const f3Name = fv(fields, 'buaFloor3Name', '');
-  if (f3Name) buaRows.push(['', f3Name, fv(fields, 'buaFloor3Plan', 'N.A'), fv(fields, 'buaFloor3Site', 'N.A')]);
-  buaRows.push(['', 'Total BUA (In Sft.)', fv(fields, 'totalBuaPlan', 'N.A'), fv(fields, 'totalBuaSite', 'N.A')]);
 
-  r.drawTable(['26', 'Floor', 'As per plan/ Byelaws (Sft)', 'As per site (Sft)'], buaRows, [NUM_W, buaCol1, buaCol2, buaCol3], [], [0, 1]);
+  r.drawKeyValueRow([
+    { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideBottom: true },
+    { label: 'BUA Area (In Sqft.)', value: '', labelWidth: CONTENT_W - NUM_W, valueWidth: 0, bold: true }
+  ]);
+
+  r.drawKeyValueRow([
+    { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true, hideBottom: true },
+    { label: 'Floor', value: '', labelWidth: buaCol1, valueWidth: 0, bold: true },
+    { label: 'As per plan/ Byelaws (sqft)', value: '', labelWidth: buaCol2, valueWidth: 0, bold: true },
+    { label: 'As per site (Sqft)', value: '', labelWidth: buaCol3, valueWidth: 0, bold: true }
+  ]);
+
+  const buaRowsData = [];
+  const f1Name = fv(fields, 'buaFloor1Name', 'First');
+  if (f1Name) buaRowsData.push([f1Name, fv(fields, 'buaFloor1Plan', 'N.A'), fv(fields, 'buaFloor1Site', 'N.A')]);
+  const f2Name = fv(fields, 'buaFloor2Name', '');
+  if (f2Name) buaRowsData.push([f2Name, fv(fields, 'buaFloor2Plan', 'N.A'), fv(fields, 'buaFloor2Site', 'N.A')]);
+  const f3Name = fv(fields, 'buaFloor3Name', '');
+  if (f3Name) buaRowsData.push([f3Name, fv(fields, 'buaFloor3Plan', 'N.A'), fv(fields, 'buaFloor3Site', 'N.A')]);
+  buaRowsData.push(['Total BUA (In sqft.)', fv(fields, 'totalBuaPlan', 'N.A'), fv(fields, 'totalBuaSite', 'N.A')]);
+
+  for (let i = 0; i < buaRowsData.length; i++) {
+    const isLast = i === buaRowsData.length - 1;
+    const midIdx = Math.floor((buaRowsData.length - 1) / 2);
+    r.drawKeyValueRow([
+      { label: i === midIdx ? '26' : '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true, hideBottom: !isLast },
+      { label: buaRowsData[i][0], value: '', labelWidth: buaCol1, valueWidth: 0 },
+      { label: fv(fields, buaRowsData[i][1], 'N.A'), value: '', labelWidth: buaCol2, valueWidth: 0 },
+      { label: fv(fields, buaRowsData[i][2], 'N.A'), value: '', labelWidth: buaCol3, valueWidth: 0 }
+    ]);
+  }
 
   // ====== VALUATION DETAILS ======
   r.drawSectionHeader('VALUATION DETAILS');
