@@ -334,14 +334,12 @@ async function generateHLLAPPDF(
     { label: 'As per site (Sqft)', value: '', labelWidth: buaCol3, valueWidth: 0, bold: true }
   ]);
 
-  const buaRowsData = [];
-  const f1Name = fv(fields, 'buaFloor1Name', 'First');
-  if (f1Name) buaRowsData.push([f1Name, fv(fields, 'buaFloor1Plan', 'N.A'), fv(fields, 'buaFloor1Site', 'N.A')]);
-  const f2Name = fv(fields, 'buaFloor2Name', '');
-  if (f2Name) buaRowsData.push([f2Name, fv(fields, 'buaFloor2Plan', 'N.A'), fv(fields, 'buaFloor2Site', 'N.A')]);
-  const f3Name = fv(fields, 'buaFloor3Name', '');
-  if (f3Name) buaRowsData.push([f3Name, fv(fields, 'buaFloor3Plan', 'N.A'), fv(fields, 'buaFloor3Site', 'N.A')]);
-  buaRowsData.push(['Total BUA (In sqft.)', fv(fields, 'totalBuaPlan', 'N.A'), fv(fields, 'totalBuaSite', 'N.A')]);
+  const buaRowsData = [
+    ['Ground Floor', fv(fields, 'buaGroundPlan', 'N.A'), fv(fields, 'buaGroundSite', 'N.A')],
+    ['First', fv(fields, 'buaFirstPlan', 'N.A'), fv(fields, 'buaFirstSite', 'N.A')],
+    ['Second', fv(fields, 'buaSecondPlan', 'N.A'), fv(fields, 'buaSecondSite', 'N.A')],
+    ['Total BUA (In sqft.)', fv(fields, 'totalBuaPlan', 'N.A'), fv(fields, 'totalBuaSite', 'N.A')]
+  ];
 
   for (let i = 0; i < buaRowsData.length; i++) {
     const isLast = i === buaRowsData.length - 1;
