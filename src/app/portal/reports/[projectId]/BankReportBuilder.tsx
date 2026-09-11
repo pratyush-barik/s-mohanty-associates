@@ -2441,15 +2441,21 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
         {!isSectionHidden('section-8') && (
           <Section id="section-8" title={getSectionTitle("section-8", "Remarks & Declaration")} number={getSectionNumber("section-8", isApartmentFlat ? 9 : 10)}>
             <div className="grid md:grid-cols-2 gap-4">
-              <Field label="Demarcation">
-                <input className={inputCls} value={fields.demarcation} onChange={e => handleChange('demarcation', e.target.value)} disabled={isReadOnly} placeholder="Clear" />
-              </Field>
-              <Field label="Possession">
-                <input className={inputCls} value={fields.possession} onChange={e => handleChange('possession', e.target.value)} disabled={isReadOnly} placeholder="With Owner" />
-              </Field>
-              <Field label="Remarks / Observations" span={2}>
-                <textarea className={inputCls} rows={3} value={fields.remarks} onChange={e => handleChange('remarks', e.target.value)} disabled={isReadOnly} placeholder="General observations..." />
-              </Field>
+              {!isFieldHidden('demarcation') && (
+                <Field label="Demarcation">
+                  <input className={inputCls} value={fields.demarcation} onChange={e => handleChange('demarcation', e.target.value)} disabled={isReadOnly} placeholder="Clear" />
+                </Field>
+              )}
+              {!isFieldHidden('possession') && (
+                <Field label="Possession">
+                  <input className={inputCls} value={fields.possession} onChange={e => handleChange('possession', e.target.value)} disabled={isReadOnly} placeholder="With Owner" />
+                </Field>
+              )}
+              {!isFieldHidden('remarks') && (
+                <Field label="Remarks / Observations" span={2}>
+                  <textarea className={inputCls} rows={3} value={fields.remarks} onChange={e => handleChange('remarks', e.target.value)} disabled={isReadOnly} placeholder="General observations..." />
+                </Field>
+              )}
             </div>
             {renderExtraFields('section-8')}
           </Section>
@@ -2532,6 +2538,13 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
             />
           );
         })()}
+
+        {/* ── Extra Bank-Specific Sections (End) ── */}
+        {config?.extraSectionsEnd?.map(sec => (
+          <Section key={sec.id} id={sec.id} title={sec.title} number={sec.number} defaultOpen={sec.defaultOpen ?? true}>
+            {sec.render(fields, handleChange, isReadOnly)}
+          </Section>
+        ))}
 
         {/* ── Section 14 / 15: Annexures ── */}
         {!isSectionHidden(`section-${isApartmentFlat ? 14 : 15}`) && (
@@ -2678,6 +2691,10 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
             { id: `section-${isApartmentFlat ? 10 : 11}`, title: 'Certificate' },
             ...(config?.extraSections || []).map((es, idx) => ({ id: es.id || `extra-section-${idx}`, title: es.title })),
             { id: `section-${isApartmentFlat ? 11 : 12}`, title: 'Photographs' },
+            { id: `section-${isApartmentFlat ? 12 : 13}`, title: 'Sketch Maps' },
+            { id: `section-${isApartmentFlat ? 13 : 14}`, title: 'Location Map' },
+            ...(config?.extraSectionsEnd || []).map((es, idx) => ({ id: es.id || `extra-section-end-${idx}`, title: es.title })),
+            { id: `section-${isApartmentFlat ? 14 : 15}`, title: 'Annexures' },
             { id: `section-${isApartmentFlat ? 12 : 13}`, title: 'Sketch Maps' },
             { id: `section-${isApartmentFlat ? 13 : 14}`, title: 'Location Map' },
             { id: `section-${isApartmentFlat ? 14 : 15}`, title: 'Annexures' },

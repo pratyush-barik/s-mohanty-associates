@@ -354,6 +354,8 @@ export interface BankConfig {
   extraFields?: Record<string, ExtraFieldConfig[]>;
   /** Entirely new sections added to the form */
   extraSections?: SectionConfig[];
+  /** Entirely new sections added to the VERY END of the form (after Maps) */
+  extraSectionsEnd?: SectionConfig[];
   /** Custom Nav Sections for FloatingNavigator */
   navSections?: { id: string; title: string }[];
   /** Hidden base fields for this bank */
