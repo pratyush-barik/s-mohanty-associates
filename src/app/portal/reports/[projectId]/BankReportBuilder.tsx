@@ -2539,6 +2539,13 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
           );
         })()}
 
+        {/* ── Extra Bank-Specific Sections (End) ── */}
+        {config?.extraSectionsEnd?.map(sec => (
+          <Section key={sec.id} id={sec.id} title={sec.title} number={sec.number} defaultOpen={sec.defaultOpen ?? true}>
+            {sec.render(fields, handleChange, isReadOnly)}
+          </Section>
+        ))}
+
         {/* ── Section 14 / 15: Annexures ── */}
         {!isSectionHidden(`section-${isApartmentFlat ? 14 : 15}`) && (
           <BaseAnnexureSection
@@ -2684,6 +2691,10 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
             { id: `section-${isApartmentFlat ? 10 : 11}`, title: 'Certificate' },
             ...(config?.extraSections || []).map((es, idx) => ({ id: es.id || `extra-section-${idx}`, title: es.title })),
             { id: `section-${isApartmentFlat ? 11 : 12}`, title: 'Photographs' },
+            { id: `section-${isApartmentFlat ? 12 : 13}`, title: 'Sketch Maps' },
+            { id: `section-${isApartmentFlat ? 13 : 14}`, title: 'Location Map' },
+            ...(config?.extraSectionsEnd || []).map((es, idx) => ({ id: es.id || `extra-section-end-${idx}`, title: es.title })),
+            { id: `section-${isApartmentFlat ? 14 : 15}`, title: 'Annexures' },
             { id: `section-${isApartmentFlat ? 12 : 13}`, title: 'Sketch Maps' },
             { id: `section-${isApartmentFlat ? 13 : 14}`, title: 'Location Map' },
             { id: `section-${isApartmentFlat ? 14 : 15}`, title: 'Annexures' },

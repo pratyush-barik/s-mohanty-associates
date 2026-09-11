@@ -465,9 +465,9 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
     { id: 'section-6', title: 'Valuation Details' },
     { id: 'section-7', title: 'Boundaries' },
     { id: 'section-8', title: 'Remarks & Declaration' },
-    { id: 'section-deviations', title: 'Deviations / Observations' },
     { id: 'section-11', title: '9. Photographs' },
     { id: 'section-12', title: '10. Maps & Documents' },
+    { id: 'section-deviations', title: '11. Deviations / Observations' },
   ],
   fieldLabels: {
     loanApplicationNo: 'Deal Number',
@@ -527,7 +527,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
     'section-14',  // Annexures (Apartment/Flat)
     'section-15',  // Annexures (Bungalow/Land)
   ],
-  extraSections: [
+  extraSectionsEnd: [
     {
       id: 'section-deviations',
       title: '11. Deviations / Observations',
