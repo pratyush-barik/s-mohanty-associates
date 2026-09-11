@@ -2441,15 +2441,21 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
         {!isSectionHidden('section-8') && (
           <Section id="section-8" title={getSectionTitle("section-8", "Remarks & Declaration")} number={getSectionNumber("section-8", isApartmentFlat ? 9 : 10)}>
             <div className="grid md:grid-cols-2 gap-4">
-              <Field label="Demarcation">
-                <input className={inputCls} value={fields.demarcation} onChange={e => handleChange('demarcation', e.target.value)} disabled={isReadOnly} placeholder="Clear" />
-              </Field>
-              <Field label="Possession">
-                <input className={inputCls} value={fields.possession} onChange={e => handleChange('possession', e.target.value)} disabled={isReadOnly} placeholder="With Owner" />
-              </Field>
-              <Field label="Remarks / Observations" span={2}>
-                <textarea className={inputCls} rows={3} value={fields.remarks} onChange={e => handleChange('remarks', e.target.value)} disabled={isReadOnly} placeholder="General observations..." />
-              </Field>
+              {!isFieldHidden('demarcation') && (
+                <Field label="Demarcation">
+                  <input className={inputCls} value={fields.demarcation} onChange={e => handleChange('demarcation', e.target.value)} disabled={isReadOnly} placeholder="Clear" />
+                </Field>
+              )}
+              {!isFieldHidden('possession') && (
+                <Field label="Possession">
+                  <input className={inputCls} value={fields.possession} onChange={e => handleChange('possession', e.target.value)} disabled={isReadOnly} placeholder="With Owner" />
+                </Field>
+              )}
+              {!isFieldHidden('remarks') && (
+                <Field label="Remarks / Observations" span={2}>
+                  <textarea className={inputCls} rows={3} value={fields.remarks} onChange={e => handleChange('remarks', e.target.value)} disabled={isReadOnly} placeholder="General observations..." />
+                </Field>
+              )}
             </div>
             {renderExtraFields('section-8')}
           </Section>
