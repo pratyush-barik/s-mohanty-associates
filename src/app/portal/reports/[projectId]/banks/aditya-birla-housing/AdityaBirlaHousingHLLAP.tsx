@@ -344,27 +344,7 @@ async function generateHLLAPPDF(
   const engName = fv(fields, 'nameOfEngineerVisitingProperty', '');
   r.drawKeyValueRow([{ label: 'Name of Engineer who visited the property-:', value: engName, labelWidth: Math.round(CONTENT_W * 0.60), valueWidth: Math.round(CONTENT_W * 0.40) }]);
 
-  // ====== 11. DEVIATIONS / OBSERVATIONS ======
-  r.drawSectionHeader('11. Deviations / Observations');
-  const devC1 = 110;
-  const devC2 = 10;
-  const devC3 = (CONTENT_W - devC1 * 2 - devC2 * 2) / 2;
-  
-  r.drawTable([], [
-    ['Deal Number', ':', fv(fields, 'dealNumber', ''), 'Asset id', ':', fv(fields, 'assetId', 'NA')],
-    ['Branch Name', ':', fv(fields, 'branchName', ''), 'Type of Case', ':', fv(fields, 'typeOfCase', 'Home Loan')],
-    ['Valuer Name', ':', fv(fields, 'valuerName', 'S Mohanty Associates'), 'Product Type', ':', fv(fields, 'productType', 'Home Loan')],
-    ['Valuer Ref No', ':', fv(fields, 'valuerRefNo', ''), 'Date of Visit', ':', fv(fields, 'dateOfVisit', fv(fields, 'dateOfInspection', ''))],
-    ['Valuer Feedback', ':', fv(fields, 'valuerFeedback', 'Positive'), 'Date of Report', ':', fv(fields, 'dateOfReport', fv(fields, 'dateOfValuation', ''))],
-  ], [devC1, devC2, devC3, devC1, devC2, devC3], [], [0, 1, 3, 4]);
 
-  r.drawTable([], [
-    ['Property Address', fv(fields, 'addressAsPerDocument', '')]
-  ], [devC1 + devC2, CONTENT_W - devC1 - devC2], [], [0]);
-
-  r.drawTable([], [
-    [`Deviations/Observations:\n\n${fv(fields, 'deviationsObservations', '')}\n`]
-  ], [CONTENT_W], [], []);
 
   // ====== PROPERTY PHOTOGRAPHS & MAPS ======
   if (imageResults && imageResults.length > 0) {
@@ -448,6 +428,29 @@ async function generateHLLAPPDF(
     }
   }
 
+  // ====== DEVIATIONS / OBSERVATIONS ======
+  r.addPage();
+  r.drawSectionHeader('DEVIATIONS / OBSERVATIONS');
+  const devC1 = 110;
+  const devC2 = 10;
+  const devC3 = (CONTENT_W - devC1 * 2 - devC2 * 2) / 2;
+  
+  r.drawTable([], [
+    ['Deal Number', ':', fv(fields, 'dealNumber', ''), 'Asset id', ':', fv(fields, 'assetId', '')],
+    ['Branch Name', ':', fv(fields, 'branchName', ''), 'Type of Case', ':', fv(fields, 'typeOfCase', '')],
+    ['Valuer Name', ':', fv(fields, 'valuerName', ''), 'Product Type', ':', fv(fields, 'productType', '')],
+    ['Valuer Ref No', ':', fv(fields, 'valuerRefNo', ''), 'Date of Visit', ':', fv(fields, 'dateOfVisit', '')],
+    ['Valuer Feedback', ':', fv(fields, 'valuerFeedback', ''), 'Date of Report', ':', fv(fields, 'dateOfReport', '')],
+  ], [devC1, devC2, devC3, devC1, devC2, devC3], [], [0, 1, 3, 4]);
+
+  r.drawTable([], [
+    ['Property Address', fv(fields, 'addressAsPerDocument', '')]
+  ], [devC1 + devC2, CONTENT_W - devC1 - devC2], [], [0]);
+
+  r.drawTable([], [
+    [`Deviations/Observations:\n\n${fv(fields, 'deviationsObservations', '')}\n`]
+  ], [CONTENT_W], [], []);
+
   // ====== FINALIZE ======
   return await r.save();
 }
@@ -467,7 +470,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
     { id: 'section-8', title: 'Remarks & Declaration' },
     { id: 'section-11', title: '9. Photographs' },
     { id: 'section-12', title: '10. Maps & Documents' },
-    { id: 'section-deviations', title: '11. Deviations / Observations' },
+    { id: 'section-deviations', title: '11. DEVIATIONS / OBSERVATIONS' },
   ],
   fieldLabels: {
     loanApplicationNo: 'Deal Number',
@@ -530,7 +533,8 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
   extraSectionsEnd: [
     {
       id: 'section-deviations',
-      title: '11. Deviations / Observations',
+      title: 'DEVIATIONS / OBSERVATIONS',
+      number: 11,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
         const inputCls = "w-full text-sm p-2 rounded-full border border-slate-200 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 outline-none transition-all disabled:bg-slate-50 disabled:text-slate-500 bg-white shadow-sm";
         const tdLabelCls = "p-2 border border-slate-300 text-sm font-medium text-slate-800 bg-white whitespace-nowrap w-[20%]";
@@ -543,38 +547,38 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
                 <tbody>
                   <tr>
                     <td className={tdLabelCls}>Deal Number</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.dealNumber || ''} placeholder="Deal Number" /></td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.dealNumber || ''} /></td>
                     <td className={tdLabelCls}>Asset id</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.assetId || ''} placeholder="Asset id" /></td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.assetId || ''} /></td>
                   </tr>
                   <tr>
                     <td className={tdLabelCls}>Branch Name</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.branchName || ''} placeholder="Branch Name" /></td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.branchName || ''} /></td>
                     <td className={tdLabelCls}>Type of Case</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.typeOfCase || ''} placeholder="Type of Case" /></td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.typeOfCase || ''} /></td>
                   </tr>
                   <tr>
                     <td className={tdLabelCls}>Valuer Name</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.valuerName || ''} placeholder="Valuer Name" /></td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.valuerName || ''} /></td>
                     <td className={tdLabelCls}>Product Type</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.productType || ''} placeholder="Product Type" /></td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.productType || ''} /></td>
                   </tr>
                   <tr>
                     <td className={tdLabelCls}>Valuer Ref No</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.valuerRefNo || ''} placeholder="Valuer Ref No" /></td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.valuerRefNo || ''} /></td>
                     <td className={tdLabelCls}>Date of Visit</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.dateOfVisit || fields.dateOfInspection || ''} placeholder="Date of Visit" /></td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.dateOfVisit || ''} /></td>
                   </tr>
                   <tr>
                     <td className={tdLabelCls}>Valuer Feedback</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.valuerFeedback || ''} placeholder="Valuer Feedback" /></td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.valuerFeedback || ''} /></td>
                     <td className={tdLabelCls}>Date of Report</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.dateOfReport || fields.dateOfValuation || ''} placeholder="Date of Report" /></td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.dateOfReport || ''} /></td>
                   </tr>
                   <tr>
                     <td className={tdLabelCls}>Property Address</td>
                     <td colSpan={3} className={tdInputCls}>
-                      <textarea className={`${inputCls} !rounded-xl min-h-[60px] resize-y`} disabled value={fields.addressAsPerDocument || ''} placeholder="Property Address" />
+                      <textarea className={`${inputCls} !rounded-xl min-h-[60px] resize-y`} disabled value={fields.addressAsPerDocument || ''} />
                     </td>
                   </tr>
                   <tr>
@@ -586,7 +590,6 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
                           value={fields.deviationsObservations || ''}
                           onChange={e => handleChange('deviationsObservations', e.target.value)}
                           disabled={isReadOnly}
-                          placeholder="Enter deviations or observations here..."
                         />
                       </div>
                     </td>
@@ -617,12 +620,12 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       { key: 'dealNumber', label: 'Deal Number' },
       { key: 'assetId', label: 'Asset ID' },
       { key: 'branchName', label: 'Branch Name' },
-      { key: 'typeOfCase', label: 'Type of Case', default: 'Home Loan' },
-      { key: 'valuerName', label: 'Valuer Name', default: 'S Mohanty Associates' },
-      { key: 'productType', label: 'Product Type', default: 'Home Loan - Resale' },
-      { key: 'valuerRefNo', label: 'Valuer Ref No', dynamicDefaultField: 'refNo' },
+      { key: 'typeOfCase', label: 'Type of Case' },
+      { key: 'valuerName', label: 'Valuer Name' },
+      { key: 'productType', label: 'Product Type' },
+      { key: 'valuerRefNo', label: 'Valuer Ref No' },
       { key: 'dateOfVisit', label: 'Date of Visit', type: 'date' },
-      { key: 'valuerFeedback', label: 'Valuer Feedback', default: 'Positive' },
+      { key: 'valuerFeedback', label: 'Valuer Feedback' },
       { key: 'dateOfReport', label: 'Date of Report', type: 'date' },
       { key: 'contactedPerson', label: 'Contacted Person' },
       { key: 'relationWithCustomer', label: 'Relation with Customer', default: 'Seller' },
