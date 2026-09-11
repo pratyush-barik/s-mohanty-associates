@@ -9,8 +9,8 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 - **Total Banks / Organizations**: 57
 - **Total Subclasses / Templates**: 73
 - **Completed Subclasses**: 3 / 73 (1.1 `MLAP`, 1.2 `STSL`, 3 `Standard` (Annapurna))
-- **Current Active Bank**: 2. `ADITYA BIRLA HOUSING FINANCE LTD`
-- **Current Active Subclass**: 2.1 `HL-LAP`
+- **Current Active Bank**: 8. `AXIS BANK`
+- **Current Active Subclass**: 8.1 `AGRI` (1st Half Complete)
 
 ---
 
@@ -25,11 +25,11 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 | 2.1 | ADITYA BIRLA HOUSING FINANCE LTD | `HL-LAP` | 🟡 Ready for Review | 🟡 Configured | 🟡 Custom Fields | ⏳ Pending |
 | **3** | **ANNAPURNA MICRO FINANCE LTD** | `Standard` | ✅ Complete | ✅ 8-Section Custom UI | ✅ Dedicated PDF Renderer | ✅ Validated |
 | **4** | **ARKA FINANCE LTD** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
-| **5** | **ARTHAN FINANCE** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
+| **5** | **ARTHAN FINANCE** | `Standard` | 🟡 In Progress | 🟡 Configuring | 🟡 Dedicated PDF Renderer | ⏳ Pending |
 | **6** | **AU SMALL FINANCE BANK** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **7** | **AVE FINANCE LTD** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **8** | **AXIS BANK** | | | | | |
-| 8.1 | AXIS BANK | `AGRI` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
+| 8.1 | AXIS BANK | `AGRI` | 🟡 In Progress (1st Half) | 🟡 7-Section Custom UI | 🟡 Dedicated PDF Types | ⏳ Pending 2nd Half |
 | 8.2 | AXIS BANK | `HL-LAP` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | 8.3 | AXIS BANK | `SBB` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | 8.4 | AXIS BANK | `SME` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
