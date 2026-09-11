@@ -432,20 +432,19 @@ async function generateHLLAPPDF(
   r.addPage();
   r.drawSectionHeader('DEVIATIONS / OBSERVATIONS');
   const devC1 = 110;
-  const devC2 = 10;
-  const devC3 = (CONTENT_W - devC1 * 2 - devC2 * 2) / 2;
+  const devC3 = (CONTENT_W - devC1 * 2) / 2;
   
   r.drawTable([], [
-    ['Deal Number', ':', fv(fields, 'dealNumber', ''), 'Asset id', ':', fv(fields, 'assetId', '')],
-    ['Branch Name', ':', fv(fields, 'branchName', ''), 'Type of Case', ':', fv(fields, 'typeOfCase', '')],
-    ['Valuer Name', ':', fv(fields, 'valuerName', ''), 'Product Type', ':', fv(fields, 'productType', '')],
-    ['Valuer Ref No', ':', fv(fields, 'valuerRefNo', ''), 'Date of Visit', ':', fv(fields, 'dateOfVisit', '')],
-    ['Valuer Feedback', ':', fv(fields, 'valuerFeedback', ''), 'Date of Report', ':', fv(fields, 'dateOfReport', '')],
-  ], [devC1, devC2, devC3, devC1, devC2, devC3], [], [0, 1, 3, 4]);
+    ['Deal Number', fv(fields, 'dealNumber', ''), 'Asset id', fv(fields, 'assetId', '')],
+    ['Branch Name', fv(fields, 'branchName', ''), 'Type of Case', fv(fields, 'typeOfCase', '')],
+    ['Valuer Name', fv(fields, 'valuerName', ''), 'Product Type', fv(fields, 'productType', '')],
+    ['Valuer Ref No', fv(fields, 'valuerRefNo', ''), 'Date of Visit', fv(fields, 'dateOfVisit', '')],
+    ['Valuer Feedback', fv(fields, 'valuerFeedback', ''), 'Date of Report', fv(fields, 'dateOfReport', '')],
+  ], [devC1, devC3, devC1, devC3], [], [0, 2]);
 
   r.drawTable([], [
     ['Property Address', fv(fields, 'addressAsPerDocument', '')]
-  ], [devC1 + devC2, CONTENT_W - devC1 - devC2], [], [0]);
+  ], [devC1, devC3 + devC1 + devC3], [], [0]);
 
   r.drawTable([], [
     [`Deviations/Observations:\n\n${fv(fields, 'deviationsObservations', '')}\n`]
