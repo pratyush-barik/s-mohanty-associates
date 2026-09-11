@@ -255,8 +255,8 @@ async function generateHLLAPPDF(
 
   r.drawKeyValueRow([
     { label: '16', value: '', labelWidth: propNumW, valueWidth: 0 },
-    { label: 'Age of the property (Yrs)', value: fv(fields, 'ageOfProperty', ''), labelWidth: propLblW, valueWidth: 60 + extIntW },
-    { label: 'Residual age (Yrs)', value: fv(fields, 'residualAge', ''), labelWidth: 60, valueWidth: extIntW },
+    { label: 'Age of the property (Yrs)', value: fv(fields, 'ageOfProperty', ''), labelWidth: propLblW, valueWidth: 60 },
+    { label: 'Residual age (Yrs)', value: fv(fields, 'residualAge', ''), labelWidth: extIntW, valueWidth: 60 + extIntW },
   ]);
 
   // ====== SANCTION PLAN APPROVAL ======
