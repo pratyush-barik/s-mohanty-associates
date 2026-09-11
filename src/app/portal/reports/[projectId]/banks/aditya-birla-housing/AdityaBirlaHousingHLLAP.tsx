@@ -567,13 +567,13 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
                     <td className={tdLabelCls}>Valuer Ref No</td>
                     <td className={tdInputCls}><input className={inputCls} disabled value={fields.valuerRefNo || ''} /></td>
                     <td className={tdLabelCls}>Date of Visit</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.dateOfVisit || fields.dateOfInspection || ''} /></td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.dateOfVisit || ''} /></td>
                   </tr>
                   <tr>
                     <td className={tdLabelCls}>Valuer Feedback</td>
                     <td className={tdInputCls}><input className={inputCls} disabled value={fields.valuerFeedback || ''} /></td>
                     <td className={tdLabelCls}>Date of Report</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.dateOfReport || fields.dateOfValuation || ''} /></td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.dateOfReport || ''} /></td>
                   </tr>
                   <tr>
                     <td className={tdLabelCls}>Property Address</td>
