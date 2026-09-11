@@ -1,5 +1,6 @@
-import React from 'react';
 'use client';
+
+import React from 'react';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig, normalizeMapImages } from '@/lib/bank-fields';
 import { PDFAdityaBirlaHousingRenderer, HLLAPReportFields } from '@/lib/banks/pdf-aditya-birla-housing-renderer';
