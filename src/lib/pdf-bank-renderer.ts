@@ -665,7 +665,8 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
   async drawMapGallery(
     images: (Uint8Array | { bytes: Uint8Array; caption?: string })[],
     title: string,
-    maxImageH: number = 260
+    maxImageH: number = 230,
+    forceNewPage: boolean = false
   ): Promise<void> {
     if (!images || images.length === 0) return;
 
@@ -678,7 +679,17 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
 
     if (normalized.length === 0) return;
 
-    this.addPage();
+    // Check if title + minimum image height fits on the current page
+    const neededH = 35 + Math.min(maxImageH, 180);
+
+    if (forceNewPage || this.cursorY === 0 || this.availableHeight < neededH) {
+      if (this.cursorY > 0) {
+        this.addPage();
+      }
+    } else {
+      this.advanceCursor(14);
+    }
+
     this.drawSectionHeader(title, false);
     this.advanceCursor(8);
 

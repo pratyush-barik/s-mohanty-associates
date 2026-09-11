@@ -1257,37 +1257,32 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
 
     // 1. Photographs of the Property
     if (images.photos && images.photos.length > 0) {
-      this.addPage();
-      this.drawSectionHeader('PHOTOGRAPHS OF THE PROPERTY');
-      await this.drawPhotoGrid(images.photos);
+      await this.drawPhotoGrid(images.photos, 'PHOTOGRAPHS OF PROPERTY');
     }
 
-    // 2. Google Satellite Map (supports multiple photos)
-    if (images.locationMaps && images.locationMaps.length > 0) {
-      await this.drawMapGallery(images.locationMaps, 'GOOGLE SATELLITE MAP');
-    }
+    // 2. Maps (Google Satellite, Mouza, Sketch, Cadastral)
+    // The first available map starts on a new page after the report/photos;
+    // subsequent maps flow dynamically on the same page if space permits to prevent wasting space.
+    let isFirstMap = true;
+    const renderMap = async (mapImages: Uint8Array[] | undefined, title: string) => {
+      if (mapImages && mapImages.length > 0) {
+        await this.drawMapGallery(mapImages, title, 220, isFirstMap);
+        isFirstMap = false;
+      }
+    };
 
-    // 3. Mouza Map (supports multiple photos)
-    if (images.mouzaMaps && images.mouzaMaps.length > 0) {
-      await this.drawMapGallery(images.mouzaMaps, 'MOUZA MAP');
-    }
-
-    // 4. Sketch Map (supports multiple photos)
-    if (images.sketchMaps && images.sketchMaps.length > 0) {
-      await this.drawMapGallery(images.sketchMaps, 'SKETCH MAP');
-    }
-
-    // 5. Cadastral Map (supports multiple photos)
-    if (images.cadastralMaps && images.cadastralMaps.length > 0) {
-      await this.drawMapGallery(images.cadastralMaps, 'CADASTRAL MAP');
-    }
+    await renderMap(images.locationMaps, 'GOOGLE SATELLITE MAP');
+    await renderMap(images.mouzaMaps, 'MOUZA MAP');
+    await renderMap(images.sketchMaps, 'SKETCH MAP');
+    await renderMap(images.cadastralMaps, 'CADASTRAL MAP');
 
     // 6. Annexures
     if (fields.annexures && fields.annexures.length > 0) {
       this.renderAnnexures(fields.annexures);
     }
 
-    return await this.doc.save();
+    // Base save() method stamps page numbers on every page via this.drawPageNumbers()
+    return await this.save();
   }
 }
 
