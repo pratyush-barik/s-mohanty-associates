@@ -359,7 +359,7 @@ async function generateHLLAPPDF(
   const s27ValW = CONTENT_W - s27LblW;
   
   r.drawKeyValueRow([{ label: '(A)Description of Land & Constructed Area and Rates', value: '', labelWidth: CONTENT_W, valueWidth: 0, labelBold: true }]);
-  r.drawKeyValueRow([{ label: 'Property Type: ' + fv(fields, 'propertyTypeBungalow', 'Bungalow'), value: '', labelWidth: CONTENT_W, valueWidth: 0, labelBold: true }]);
+  r.drawKeyValueRow([{ label: 'Property Type', value: fv(fields, 'propertyTypeBungalow', ''), labelWidth: NUM_W + LABEL_W, valueWidth: CONTENT_W - (NUM_W + LABEL_W), labelBold: true, valueBold: false }]);
 
   const valDescW2 = 100; const valUnitW = 90; const valAreaW = 60; const valRateW = 70;
   const valAmtW = CONTENT_W - valDescW2 - valUnitW - valAreaW - valRateW;
