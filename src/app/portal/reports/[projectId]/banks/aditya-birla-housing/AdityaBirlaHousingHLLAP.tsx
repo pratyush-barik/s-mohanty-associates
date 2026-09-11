@@ -344,27 +344,7 @@ async function generateHLLAPPDF(
   const engName = fv(fields, 'nameOfEngineerVisitingProperty', '');
   r.drawKeyValueRow([{ label: 'Name of Engineer who visited the property-:', value: engName, labelWidth: Math.round(CONTENT_W * 0.60), valueWidth: Math.round(CONTENT_W * 0.40) }]);
 
-  // ====== 11. DEVIATIONS / OBSERVATIONS ======
-  r.drawSectionHeader('11. Deviations / Observations');
-  const devC1 = 110;
-  const devC2 = 10;
-  const devC3 = (CONTENT_W - devC1 * 2 - devC2 * 2) / 2;
-  
-  r.drawTable([], [
-    ['Deal Number', ':', fv(fields, 'dealNumber', ''), 'Asset id', ':', fv(fields, 'assetId', 'NA')],
-    ['Branch Name', ':', fv(fields, 'branchName', ''), 'Type of Case', ':', fv(fields, 'typeOfCase', 'Home Loan')],
-    ['Valuer Name', ':', fv(fields, 'valuerName', 'S Mohanty Associates'), 'Product Type', ':', fv(fields, 'productType', 'Home Loan')],
-    ['Valuer Ref No', ':', fv(fields, 'valuerRefNo', ''), 'Date of Visit', ':', fv(fields, 'dateOfVisit', fv(fields, 'dateOfInspection', ''))],
-    ['Valuer Feedback', ':', fv(fields, 'valuerFeedback', 'Positive'), 'Date of Report', ':', fv(fields, 'dateOfReport', fv(fields, 'dateOfValuation', ''))],
-  ], [devC1, devC2, devC3, devC1, devC2, devC3], [], [0, 1, 3, 4]);
 
-  r.drawTable([], [
-    ['Property Address', fv(fields, 'addressAsPerDocument', '')]
-  ], [devC1 + devC2, CONTENT_W - devC1 - devC2], [], [0]);
-
-  r.drawTable([], [
-    [`Deviations/Observations:\n\n${fv(fields, 'deviationsObservations', '')}\n`]
-  ], [CONTENT_W], [], []);
 
   // ====== PROPERTY PHOTOGRAPHS & MAPS ======
   if (imageResults && imageResults.length > 0) {
@@ -448,6 +428,29 @@ async function generateHLLAPPDF(
     }
   }
 
+  // ====== DEVIATIONS / OBSERVATIONS ======
+  r.addPage();
+  r.drawSectionHeader('DEVIATIONS / OBSERVATIONS');
+  const devC1 = 110;
+  const devC2 = 10;
+  const devC3 = (CONTENT_W - devC1 * 2 - devC2 * 2) / 2;
+  
+  r.drawTable([], [
+    ['Deal Number', ':', fv(fields, 'dealNumber', ''), 'Asset id', ':', fv(fields, 'assetId', '')],
+    ['Branch Name', ':', fv(fields, 'branchName', ''), 'Type of Case', ':', fv(fields, 'typeOfCase', '')],
+    ['Valuer Name', ':', fv(fields, 'valuerName', ''), 'Product Type', ':', fv(fields, 'productType', '')],
+    ['Valuer Ref No', ':', fv(fields, 'valuerRefNo', ''), 'Date of Visit', ':', fv(fields, 'dateOfVisit', '')],
+    ['Valuer Feedback', ':', fv(fields, 'valuerFeedback', ''), 'Date of Report', ':', fv(fields, 'dateOfReport', '')],
+  ], [devC1, devC2, devC3, devC1, devC2, devC3], [], [0, 1, 3, 4]);
+
+  r.drawTable([], [
+    ['Property Address', fv(fields, 'addressAsPerDocument', '')]
+  ], [devC1 + devC2, CONTENT_W - devC1 - devC2], [], [0]);
+
+  r.drawTable([], [
+    [`Deviations/Observations:\n\n${fv(fields, 'deviationsObservations', '')}\n`]
+  ], [CONTENT_W], [], []);
+
   // ====== FINALIZE ======
   return await r.save();
 }
@@ -467,7 +470,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
     { id: 'section-8', title: 'Remarks & Declaration' },
     { id: 'section-11', title: '9. Photographs' },
     { id: 'section-12', title: '10. Maps & Documents' },
-    { id: 'section-deviations', title: '11. Deviations / Observations' },
+    { id: 'section-deviations', title: '11. DEVIATIONS / OBSERVATIONS' },
   ],
   fieldLabels: {
     loanApplicationNo: 'Deal Number',
@@ -530,7 +533,8 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
   extraSectionsEnd: [
     {
       id: 'section-deviations',
-      title: '11. Deviations / Observations',
+      title: 'DEVIATIONS / OBSERVATIONS',
+      number: 11,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
         const inputCls = "w-full text-sm p-2 rounded-full border border-slate-200 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 outline-none transition-all disabled:bg-slate-50 disabled:text-slate-500 bg-white shadow-sm";
         const tdLabelCls = "p-2 border border-slate-300 text-sm font-medium text-slate-800 bg-white whitespace-nowrap w-[20%]";
