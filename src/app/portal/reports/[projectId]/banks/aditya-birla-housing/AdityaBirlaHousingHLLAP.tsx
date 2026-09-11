@@ -281,7 +281,7 @@ async function generateHLLAPPDF(
     [NUM_W, descW, approvalNoW, dateApprovalW, expiryW, sanctAuthW], [], [0, 1]
   );
 
-  r.drawKeyValueRow([{ label: '19', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Construction commencement date', value: fv(fields, 'constructionCommencementDate', ''), labelWidth: 200, valueWidth: 60 }, { label: 'Expected Completion Date', value: fv(fields, 'expectedCompletionDate', ''), labelWidth: 110, valueWidth: CONTENT_W - NUM_W - 200 - 60 - 110 }]);
+  r.drawKeyValueRow([{ label: '19', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Construction commencement date', value: fv(fields, 'constructionCommencementDate', ''), labelWidth: descW + approvalNoW, valueWidth: dateApprovalW }, { label: 'Expected Completion Date', value: fv(fields, 'expectedCompletionDate', ''), labelWidth: expiryW, valueWidth: sanctAuthW }]);
   r.drawKeyValueRow([{ label: '20', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Ownership Type (Free / Lease Hold)', value: fv(fields, 'ownershipType', 'FREEHOLD'), labelWidth: wideLabel, valueWidth: wideVal }]);
   r.drawKeyValueRow([{ label: '21', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Property documents verification details', value: fv(fields, 'propertyDocsVerification', ''), labelWidth: wideLabel, valueWidth: wideVal }]);
   r.drawKeyValueRow([{ label: '22', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Property Jurisdiction', value: fv(fields, 'propertyJurisdiction', ''), labelWidth: wideLabel, valueWidth: wideVal }]);
