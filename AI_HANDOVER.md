@@ -455,6 +455,7 @@ Outstanding items in **priority order**:
 - `32df980` — fix(builders): fix config.extraFields crash in BankReportBuilder and wrap BuilderSelector in BuilderErrorBoundary
 - `b54d48c` — fix: place 'use client' at the very top of AdityaBirlaHousingHLLAP.tsx to satisfy Turbopack compiler
 - `maps-coord-override` — feat(maps): default location map to technical address, override with coordinates across all report builders, mention reference source under preview, and provide direct coordinate entry when absent in form
+- `annapurna-pdf-polish` — fix(annapurna): complete Annapurna Micro Finance PDF renderer with aligned vertical borders across Risk of Demolition/Status/Age, 2-line symmetrical 100% headers, integrated declaration and date/place sign-off without orphaned pages, dynamic map flow below photos, and guaranteed title & image grouping in map gallery
 
 ## Current Status
 
@@ -462,10 +463,11 @@ Outstanding items in **priority order**:
 - **IBBI Report Draft** — UI is fully completed with all sections, fields, and dynamic content.
 - **Aditya Birla Capital Ltd (STSL / MLAP)** — Bank report builder fully completed with custom PDF renderer, standardized map uploads/reordering, unified bucket modals, and runtime loader stability.
 - **Aditya Birla Housing Finance Ltd (HL-LAP)** — Config-driven bank report builder populated with 130+ fields across 11 sections. Now supported by dedicated `PDFAdityaBirlaHousingRenderer` for layout fidelity.
+- **Annapurna Micro Finance Ltd (Standard)** — Bank report builder and dedicated PDF renderer (`PDFAnnapurnaMicroFinanceRenderer`) fully completed with 8-section custom UI, exact sample table alignments, strict DD/MM/YYYY date formatting, dynamic photos & maps layout, and integrated sign-off / statutory declaration.
 - **Dynamic UI Section Numbering** — All bank builders dynamically compute section numbering matching their specific `navSections` sequence.
 - **57 Bank/Sub-template Stubs** — Scalable OOP architecture with BankConfig-driven system, dynamic lazy-loading in BuilderSelector.
 
 ### Pending / Next Steps
 - **IBBI PDF Font Consistency** — The rendering of font sizes is not consistent across the entire IBBI PDF/preview output. Needs a pass to standardize all font sizes.
 - **IBBI Cover Page Blue Box** — The 1st page of the IBBI PDF must contain a blue rectangular box shown exactly as in the samples. It should dynamically create and adjust spacing of that box outside the content of that page.
-- **Remaining Bank Report Builders** — 55 other bank stubs need to be populated with their specific fields once samples are provided.
+- **Remaining Bank Report Builders** — 54 other bank stubs need to be populated with their specific fields once samples are provided.
