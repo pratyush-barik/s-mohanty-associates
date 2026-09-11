@@ -59,9 +59,9 @@ async function generateHLLAPPDF(
 
   // Contacted Person row
   r.drawKeyValueRow([
-    { label: 'Contacted Person', value: fv(fields, 'contactedPerson', 'NA'), labelWidth: 95, valueWidth: 100 },
-    { label: 'Relation with', value: fv(fields, 'relationWithCustomer', 'Customer'), labelWidth: 95, valueWidth: 55 },
-    { label: 'Contact No', value: fv(fields, 'contactNo', 'NA'), labelWidth: 60, valueWidth: CONTENT_W - 95 - 100 - 95 - 55 - 60 },
+    { label: 'Contacted Person', value: fv(fields, 'contactedPerson', ''), labelWidth: 95, valueWidth: 100 },
+    { label: 'Relation with Customer', value: fv(fields, 'relationWithCustomer', ''), labelWidth: 120, valueWidth: 60 },
+    { label: 'Contact No', value: fv(fields, 'contactNo', ''), labelWidth: 65, valueWidth: CONTENT_W - 95 - 100 - 120 - 60 - 65 },
   ]);
 
   // ====== BASIC DETAILS ======
