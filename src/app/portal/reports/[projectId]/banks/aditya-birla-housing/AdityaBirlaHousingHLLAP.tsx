@@ -313,8 +313,8 @@ async function generateHLLAPPDF(
     r.drawKeyValueRow([
       { label: i === 1 ? '25' : '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true, hideBottom: !isLast },
       { label: setbacksData[i][0], value: '', labelWidth: setbackCol1, valueWidth: 0 },
-      { label: fv(fields, setbacksData[i][1], ''), value: '', labelWidth: setbackCol2, valueWidth: 0 },
-      { label: fv(fields, setbacksData[i][2], ''), value: '', labelWidth: setbackCol3, valueWidth: 0 }
+      { label: '', value: fv(fields, setbacksData[i][1], ''), labelWidth: 0, valueWidth: setbackCol2, valueBold: false },
+      { label: '', value: fv(fields, setbacksData[i][2], ''), labelWidth: 0, valueWidth: setbackCol3, valueBold: false }
     ]);
   }
 
@@ -347,8 +347,8 @@ async function generateHLLAPPDF(
     r.drawKeyValueRow([
       { label: i === midIdx ? '26' : '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true, hideBottom: !isLast },
       { label: buaRowsData[i][0], value: '', labelWidth: buaCol1, valueWidth: 0 },
-      { label: buaRowsData[i][1], value: '', labelWidth: buaCol2, valueWidth: 0 },
-      { label: buaRowsData[i][2], value: '', labelWidth: buaCol3, valueWidth: 0 }
+      { label: '', value: buaRowsData[i][1], labelWidth: 0, valueWidth: buaCol2, valueBold: false },
+      { label: '', value: buaRowsData[i][2], labelWidth: 0, valueWidth: buaCol3, valueBold: false }
     ]);
   }
 
