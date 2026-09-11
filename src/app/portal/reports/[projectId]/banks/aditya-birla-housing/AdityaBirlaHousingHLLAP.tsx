@@ -541,7 +541,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
 
         return (
           <div className="w-full font-sans mb-4">
-            <div className="md:col-span-2 border border-blue-200 bg-[#f8fafc] rounded-xl p-4 shadow-sm overflow-x-auto">
+            <div className="md:col-span-2 border border-red-200 bg-[#fff5f5] rounded-xl p-4 shadow-sm overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <tbody>
                   <tr>
