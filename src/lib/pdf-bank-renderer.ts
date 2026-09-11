@@ -679,10 +679,11 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
 
     if (normalized.length === 0) return;
 
-    // Check if title + minimum image height fits on the current page
-    const neededH = 35 + Math.min(maxImageH, 180);
+    // Both title header and first image MUST fit together on the current page.
+    // If not enough space, start on the next page so the title is never orphaned without its content.
+    const neededForTitleAndImage = 44 + maxImageH + 20;
 
-    if (forceNewPage || this.cursorY === 0 || this.availableHeight < neededH) {
+    if (forceNewPage || this.cursorY === 0 || this.availableHeight < neededForTitleAndImage) {
       if (this.cursorY > 0) {
         this.addPage();
       }
