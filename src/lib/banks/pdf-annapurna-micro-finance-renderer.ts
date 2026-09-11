@@ -971,18 +971,18 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
 
     this.cursorY += totalFsiH;
 
-    // Status, Risk of Demolition, Age
-    this.drawCleanRow([
-      { text: 'Risk of Demolition (High/Medium/Low)', width: 280, isLabel: true },
-      { text: fields.riskOfDemolition || 'LOW', width: CONTENT_W - 280 },
-    ]);
-
-    // Status of the Property: single left cell vertically merged spanning both rows
+    // Status, Risk of Demolition, Age (Flawless unified vertical line alignment across all 3 components)
     const statusW1 = 175;
     const statusW2 = 100;
     const statusW3 = 105;
-    const statusW4 = CONTENT_W - (statusW1 + statusW2 + statusW3);
+    const statusW4 = CONTENT_W - (statusW1 + statusW2 + statusW3); // 107.28
 
+    this.drawCleanRow([
+      { text: 'Risk of Demolition (High/Medium/Low)', width: statusW1 + statusW2, isLabel: true },
+      { text: fields.riskOfDemolition || 'LOW', width: statusW3 + statusW4 },
+    ]);
+
+    // Status of the Property: single left cell vertically merged spanning both rows
     const statusTextL = 'Status of the Property (Plot/Under Construction/ Completed/ Construction on Hold)';
     const statusLinesL = this.wrapText(this.sanitizeText(statusTextL), Math.max(10, statusW1 - 8), FONT_SIZE, true);
     const minLeftH = Math.max(50, statusLinesL.length * FONT_SIZE * LINE_HEIGHT + 10);
@@ -1015,10 +1015,10 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     this.cursorY += totalStatusH;
 
     this.drawCleanRow([
-      { text: 'Current Age of Property', width: 145, isLabel: true },
-      { text: fields.currentAge || 'NA', width: 95 },
-      { text: 'Residual Age', width: 110, isLabel: true },
-      { text: fields.residualAge || 'NA', width: CONTENT_W - 350 },
+      { text: 'Current Age of Property', width: statusW1, isLabel: true },
+      { text: fields.currentAge || 'NA', width: statusW2, align: 'center' },
+      { text: 'Residual Age', width: statusW3, isLabel: true },
+      { text: fields.residualAge || 'NA', width: statusW4, align: 'center' },
     ]);
 
     // Valuation Table (flows naturally, breaking to next page only if needed)
