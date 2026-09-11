@@ -1002,9 +1002,9 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     });
 
     // Row 1 (Headers)
-    this.drawCleanCell(MARGIN_L + statusW1, curY, statusW2, hRow1, 'COMPLETED (Y/N)', { isHeader: true, align: 'center', vAlign: 'middle' });
-    this.drawCleanCell(MARGIN_L + statusW1 + statusW2, curY, statusW3, hRow1, '100% Completed', { isHeader: true, align: 'center', vAlign: 'middle' });
-    this.drawCleanCell(MARGIN_L + statusW1 + statusW2 + statusW3, curY, statusW4, hRow1, '100% Recommended', { isHeader: true, align: 'center', vAlign: 'middle' });
+    this.drawCleanCell(MARGIN_L + statusW1, curY, statusW2, hRow1, 'COMPLETED\n(Y/N)', { isHeader: true, align: 'center', vAlign: 'middle' });
+    this.drawCleanCell(MARGIN_L + statusW1 + statusW2, curY, statusW3, hRow1, '100%\nCompleted', { isHeader: true, align: 'center', vAlign: 'middle' });
+    this.drawCleanCell(MARGIN_L + statusW1 + statusW2 + statusW3, curY, statusW4, hRow1, '100%\nRecommended', { isHeader: true, align: 'center', vAlign: 'middle' });
 
     // Row 2 (Values)
     const yRow2 = curY - hRow1;
