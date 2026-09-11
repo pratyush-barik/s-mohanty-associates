@@ -641,7 +641,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       { key: 'addressAsPerDocument', label: '3.2 Address as per document', type: 'textarea', span: 2 },
       { key: 'addressAsPerSite', label: '3.3 Address as per Site', type: 'textarea', span: 2 },
       { key: 'projectColonyLayoutName', label: '3.4 Project/Colony/Layout Name' },
-      { key: 'unitFlatBungalowPlotHouseNo', label: '3.5 Unit/Flat no/ Bungalow/Plot/House no.' },
+      { key: 'unitFlatBungalowPlotHouseNo', label: '3.5 Unit/Flat no/ Bungalow/Plot/House no.', type: 'textarea', span: 2 },
       { key: 'floorNo', label: '3.6 Floor No' },
       { key: 'buildingName', label: '3.7 Building Name' },
       { key: 'wingName', label: '3.8 Wing Name' },
