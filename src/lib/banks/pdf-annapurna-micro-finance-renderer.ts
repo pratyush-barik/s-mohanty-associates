@@ -1157,17 +1157,19 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     ];
 
     const declPadX = 6;
-    const declPadY = 5;
-    const declBulletGap = 4;
+    const declPadY = 4;
+    const declBulletGap = 2;
     const declIndent = 14;
     const bulletTextW = chkCol2 - declPadX * 2 - declIndent;
 
     const bulletLinesArr = declBullets.map(b => this.wrapText(this.sanitizeText(b), bulletTextW, FONT_SIZE));
     const totalTextLines = bulletLinesArr.reduce((sum, l) => sum + l.length, 0);
     const totalTextH = totalTextLines * (FONT_SIZE * LINE_HEIGHT) + (declBullets.length - 1) * declBulletGap;
-    const declH = Math.max(130, totalTextH + declPadY * 2);
+    const declH = Math.max(110, totalTextH + declPadY * 2);
 
-    this.startSection(declH + 20);
+    // Keep Declaration and Date/Place sign-off together so Date & Place are never orphaned on a new page
+    const totalDeclAndFooterH = declH + 40;
+    this.checkPageBreak(totalDeclAndFooterH);
     curY = this.pdfY(this.cursorY);
 
     // 1. Left cell: Declaration (I hereby declare that)
@@ -1222,10 +1224,9 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       }
     }
 
-    this.cursorY += declH + 10;
+    this.cursorY += declH + 8;
 
-    // Date & Place (as per original template provided, with clear spacing below table)
-    this.startSection(50);
+    // Date & Place (rendered immediately below Declaration table on the same page)
     const yFooter = this.pdfY(this.cursorY) - FONT_SIZE;
     const dateFooter = formatReportDate(fields.declarationDate || fields.reportDate || fields.dateOfVisit, '');
     this.page.drawText(`Date: ${this.sanitizeText(dateFooter)}`, {
@@ -1237,12 +1238,12 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     });
     this.page.drawText(`Place: ${this.sanitizeText(fields.place || 'Bhubaneswar')}`, {
       x: MARGIN_L,
-      y: yFooter - 18,
+      y: yFooter - 16,
       size: FONT_SIZE,
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });
-    this.cursorY += FONT_SIZE + 38;
+    this.cursorY += FONT_SIZE + 24;
 
     // ══════════════════════════════════════════════════════════════════════
     // PAGES 6+: Photographs -> Maps -> Annexures
@@ -1261,13 +1262,11 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     }
 
     // 2. Maps (Google Satellite, Mouza, Sketch, Cadastral)
-    // The first available map starts on a new page after the report/photos;
-    // subsequent maps flow dynamically on the same page if space permits to prevent wasting space.
-    let isFirstMap = true;
+    // Flow dynamically so maps can render directly below photographs if space permits,
+    // and multiple maps can share pages to eliminate space wastage.
     const renderMap = async (mapImages: Uint8Array[] | undefined, title: string) => {
       if (mapImages && mapImages.length > 0) {
-        await this.drawMapGallery(mapImages, title, 220, isFirstMap);
-        isFirstMap = false;
+        await this.drawMapGallery(mapImages, title, 220, false);
       }
     };
 
