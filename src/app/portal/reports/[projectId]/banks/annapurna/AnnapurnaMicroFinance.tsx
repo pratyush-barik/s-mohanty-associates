@@ -86,20 +86,20 @@ export default function AnnapurnaMicroFinance({
       loanType: raw.loanType || 'LAP',
       personMetOnSite: raw.personMetOnSite || '',
       ownerName: raw.ownerName || raw.propertyOwner || prefill?.contactName || '',
-      propertyOwner: raw.propertyOwner || raw.ownerName || prefill?.contactName || '',
+      propertyOwner: raw.ownerName || raw.propertyOwner || prefill?.contactName || '',
       documentsProvided: raw.documentsProvided || 'Sale deed, ROR & Sketch map',
 
       // Section 2: Location Details
       propertyAddressSite: raw.propertyAddressSite || raw.addressAsPerSite || raw.propertyAddress || prefill?.propertyAddress || '',
-      addressAsPerSite: raw.addressAsPerSite || raw.propertyAddressSite || raw.propertyAddress || prefill?.propertyAddress || '',
+      addressAsPerSite: raw.propertyAddressSite || raw.addressAsPerSite || raw.propertyAddress || prefill?.propertyAddress || '',
       locality: raw.locality || 'RURAL',
       landmark: raw.landmark || raw.landmarkNearBy || raw.nearbyLandmarks || '',
-      landmarkNearBy: raw.landmarkNearBy || raw.landmark || raw.nearbyLandmarks || '',
+      landmarkNearBy: raw.landmark || raw.landmarkNearBy || raw.nearbyLandmarks || '',
       distanceFromBranch: raw.distanceFromBranch || '',
       latitude: raw.latitude || '',
       longitude: raw.longitude || '',
-      propertyAddressLegal: raw.propertyAddressLegal || raw.addressAsPerLegal || raw.legalAddress || prefill?.propertyAddress || '',
-      addressAsPerLegal: raw.addressAsPerLegal || raw.propertyAddressLegal || raw.legalAddress || prefill?.propertyAddress || '',
+      propertyAddressLegal: raw.propertyAddressLegal || raw.addressAsPerLegal || raw.legalAddress || '',
+      addressAsPerLegal: raw.propertyAddressLegal || raw.addressAsPerLegal || raw.legalAddress || '',
       floorNo: raw.floorNo || 'NA',
       propertyState: raw.propertyState || raw.state || 'Odisha',
       propertyCity: raw.propertyCity || raw.city || '',
@@ -108,8 +108,10 @@ export default function AnnapurnaMicroFinance({
       jurisdiction: raw.jurisdiction || '',
       holdingType: raw.holdingType || 'FREE HOLD',
       marketability: raw.marketability || 'FAIR',
-      occupiedBy: raw.occupiedBy || 'Self',
-      propertyType: raw.propertyType || 'Commercial Building',
+      occupiedBy: raw.occupiedBy || raw.propertyOccupiedBy || 'Self',
+      propertyOccupiedBy: raw.occupiedBy || raw.propertyOccupiedBy || 'Self',
+      propertyType: raw.propertyType || raw.propertyTypeCategory || 'Commercial Building',
+      propertyTypeCategory: raw.propertyType || raw.propertyTypeCategory || 'Commercial Building',
       occupancyStatus: raw.occupancyStatus || 'SORP',
 
       // Section 3: Schedule of Property
@@ -130,24 +132,24 @@ export default function AnnapurnaMicroFinance({
       approachRoadSize: raw.approachRoadSize || '>20 FT',
 
       // Section 4: NDMA Parameters
-      natureOfBuilding: raw.natureOfBuilding || 'RCC',
+      natureOfBuilding: raw.natureOfBuilding || 'NA',
       planAspectRatio: raw.planAspectRatio || 'NA',
-      structureType: raw.structureType || 'RCC',
+      structureType: raw.structureType || 'NA',
       projectedParts: raw.projectedParts || 'NA',
-      masonryType: raw.masonryType || 'BRICK',
-      expansionJoints: raw.expansionJoints || 'No',
-      roofType: raw.roofType || 'RCC',
-      steelGrade: raw.steelGrade || 'FE 450',
+      masonryType: raw.masonryType || 'NA',
+      expansionJoints: raw.expansionJoints || 'NA',
+      roofType: raw.roofType || 'NA',
+      steelGrade: raw.steelGrade || 'NA',
       mortarType: raw.mortarType || 'NA',
       concreteGrade: raw.concreteGrade || 'NA',
-      environmentExposure: raw.environmentExposure || 'Mild',
+      environmentExposure: raw.environmentExposure || 'NA',
       footingType: raw.footingType || 'NA',
-      seismicZone: raw.seismicZone || 'II&III',
-      soilLiquefiable: raw.soilLiquefiable || 'No',
-      coastalRegulatoryZone: raw.coastalRegulatoryZone || 'NO',
+      seismicZone: raw.seismicZone || 'NA',
+      soilLiquefiable: raw.soilLiquefiable || 'NA',
+      coastalRegulatoryZone: raw.coastalRegulatoryZone || 'NA',
       soilSlopeVulnerable: raw.soilSlopeVulnerable || 'NA',
-      floodProneArea: raw.floodProneArea || 'No',
-      groundSlopeMoreThan20: raw.groundSlopeMoreThan20 || 'No',
+      floodProneArea: raw.floodProneArea || 'NA',
+      groundSlopeMoreThan20: raw.groundSlopeMoreThan20 || 'NA',
       fireExit: raw.fireExit || 'NA',
 
       // Section 5: Approved Plan Details
@@ -220,16 +222,20 @@ export default function AnnapurnaMicroFinance({
 
       // Section 8: Additional Checks
       approachRoadType: raw.approachRoadType || 'SINGLE LANE',
-      surroundingAreaDevelopment: raw.surroundingAreaDevelopment || '',
+      surroundingAreaDevelopment: raw.surroundingAreaDevelopment || raw.developmentSurroundingArea || '',
+      developmentSurroundingArea: raw.surroundingAreaDevelopment || raw.developmentSurroundingArea || '',
       distanceFromCityCentre: raw.distanceFromCityCentre || '',
-      distanceFromCorpLimits: raw.distanceFromCorpLimits || '',
+      distanceFromCorpLimits: raw.distanceFromCorpLimits || raw.distanceFromCorporationLimits || '',
+      distanceFromCorporationLimits: raw.distanceFromCorpLimits || raw.distanceFromCorporationLimits || '',
       electricity: raw.electricity || 'NA',
       electricityDistributor: raw.electricityDistributor || 'NA',
       waterSupply: raw.waterSupply || 'NA',
       waterDistributor: raw.waterDistributor || 'NA',
       sewerProvision: raw.sewerProvision || 'NA',
-      sewerConnected: raw.sewerConnected || 'NA',
-      futureDemolitionThreat: raw.futureDemolitionThreat || 'NA',
+      sewerConnected: raw.sewerConnected || raw.sewerLineConnected || 'NA',
+      sewerLineConnected: raw.sewerConnected || raw.sewerLineConnected || 'NA',
+      futureDemolitionThreat: raw.futureDemolitionThreat || raw.demolitionThreat || 'NA',
+      demolitionThreat: raw.futureDemolitionThreat || raw.demolitionThreat || 'NA',
 
       // Section 8: Declaration
       visitingEngineer: (raw.visitingEngineer && raw.visitingEngineer !== 'Visiting Engineer' && raw.visitingEngineer !== 'Mr. Engineer')
@@ -322,6 +328,52 @@ export default function AnnapurnaMicroFinance({
   const handleChange = useCallback((key: keyof AnnapurnaMicroReportFields, value: any) => {
     setFields(prev => {
       const next = { ...prev, [key]: value };
+
+      // Bi-directional alias synchronizations to prevent any UI-vs-Renderer discrepancies
+      if (key === 'propertyAddressLegal' || key === 'addressAsPerLegal') {
+        next.propertyAddressLegal = value;
+        next.addressAsPerLegal = value;
+      }
+      if (key === 'propertyAddressSite' || key === 'addressAsPerSite') {
+        next.propertyAddressSite = value;
+        next.addressAsPerSite = value;
+      }
+      if (key === 'ownerName' || key === 'propertyOwner') {
+        next.ownerName = value;
+        next.propertyOwner = value;
+      }
+      if (key === 'landmark' || key === 'landmarkNearBy') {
+        next.landmark = value;
+        next.landmarkNearBy = value;
+      }
+      if (key === 'propertyPincode' || key === 'pincode') {
+        next.propertyPincode = value;
+        next.pincode = value;
+      }
+      if (key === 'occupiedBy' || key === 'propertyOccupiedBy') {
+        next.occupiedBy = value;
+        next.propertyOccupiedBy = value;
+      }
+      if (key === 'propertyType' || key === 'propertyTypeCategory') {
+        next.propertyType = value;
+        next.propertyTypeCategory = value;
+      }
+      if (key === 'surroundingAreaDevelopment' || key === 'developmentSurroundingArea') {
+        next.surroundingAreaDevelopment = value;
+        next.developmentSurroundingArea = value;
+      }
+      if (key === 'distanceFromCorpLimits' || key === 'distanceFromCorporationLimits') {
+        next.distanceFromCorpLimits = value;
+        next.distanceFromCorporationLimits = value;
+      }
+      if (key === 'sewerConnected' || key === 'sewerLineConnected') {
+        next.sewerConnected = value;
+        next.sewerLineConnected = value;
+      }
+      if (key === 'futureDemolitionThreat' || key === 'demolitionThreat') {
+        next.futureDemolitionThreat = value;
+        next.demolitionThreat = value;
+      }
 
       // Auto-calculations for Valuation Section
       if (key === 'landAreaSqft' || key === 'landRateSqft') {
@@ -529,16 +581,31 @@ export default function AnnapurnaMicroFinance({
 
     const renderFields: AnnapurnaMicroFinanceReportFields = {
       ...fields,
-      addressAsPerSite: fields.addressAsPerSite || fields.propertyAddressSite || '',
-      addressAsPerLegal: fields.addressAsPerLegal || fields.propertyAddressLegal || fields.propertyAddressSite || '',
-      propertyOwner: fields.propertyOwner || fields.ownerName || '',
-      landmarkNearBy: fields.landmarkNearBy || fields.landmark || '',
+      addressAsPerSite: fields.propertyAddressSite || fields.addressAsPerSite || '',
+      propertyAddressSite: fields.propertyAddressSite || fields.addressAsPerSite || '',
+      addressAsPerLegal: fields.propertyAddressLegal || fields.addressAsPerLegal || fields.propertyAddressSite || fields.addressAsPerSite || '',
+      propertyAddressLegal: fields.propertyAddressLegal || fields.addressAsPerLegal || fields.propertyAddressSite || fields.addressAsPerSite || '',
+      ownerName: fields.ownerName || fields.propertyOwner || '',
+      propertyOwner: fields.ownerName || fields.propertyOwner || '',
+      landmark: fields.landmark || fields.landmarkNearBy || '',
+      landmarkNearBy: fields.landmark || fields.landmarkNearBy || '',
       propertyPincode: fields.propertyPincode || fields.pincode || '',
-      propertyOccupiedBy: fields.propertyOccupiedBy || fields.occupiedBy || 'Self',
-      propertyTypeCategory: fields.propertyTypeCategory || fields.propertyType || 'Commercial Building',
-      developmentSurroundingArea: fields.developmentSurroundingArea || fields.surroundingAreaDevelopment || '',
-      sewerLineConnected: fields.sewerLineConnected || fields.sewerConnected || 'NA',
-      demolitionThreat: fields.demolitionThreat || fields.futureDemolitionThreat || 'NA',
+      pincode: fields.propertyPincode || fields.pincode || '',
+      occupiedBy: fields.occupiedBy || fields.propertyOccupiedBy || 'Self',
+      propertyOccupiedBy: fields.occupiedBy || fields.propertyOccupiedBy || 'Self',
+      propertyType: fields.propertyType || fields.propertyTypeCategory || 'Commercial Building',
+      propertyTypeCategory: fields.propertyType || fields.propertyTypeCategory || 'Commercial Building',
+      surroundingAreaDevelopment: fields.surroundingAreaDevelopment || fields.developmentSurroundingArea || '',
+      developmentSurroundingArea: fields.surroundingAreaDevelopment || fields.developmentSurroundingArea || '',
+      distanceFromCorpLimits: fields.distanceFromCorpLimits || fields.distanceFromCorporationLimits || '',
+      distanceFromCorporationLimits: fields.distanceFromCorpLimits || fields.distanceFromCorporationLimits || '',
+      sewerConnected: fields.sewerConnected || fields.sewerLineConnected || 'NA',
+      sewerLineConnected: fields.sewerConnected || fields.sewerLineConnected || 'NA',
+      futureDemolitionThreat: fields.futureDemolitionThreat || fields.demolitionThreat || 'NA',
+      demolitionThreat: fields.futureDemolitionThreat || fields.demolitionThreat || 'NA',
+      landAreaSqft: fields.landAreaSqft || fields.landAreaSite || fields.landAreaDocs || '',
+      landAreaSite: fields.landAreaSite || fields.landAreaSqft || fields.landAreaDocs || '',
+      landAreaDocs: fields.landAreaDocs || fields.landAreaSqft || fields.landAreaSite || '',
     };
 
     return renderer.generateAnnapurnaReport(renderFields, {
@@ -926,28 +993,28 @@ export default function AnnapurnaMicroFinance({
         <Section title="NDMA Parameters" number={3} id="sec-3" defaultOpen={false}>
           <div className="grid md:grid-cols-3 gap-4">
             <Field label="Nature of Building/Wing">
-              <input className={inputCls} value={fields.natureOfBuilding || 'RCC'} onChange={e => handleChange('natureOfBuilding', e.target.value)} disabled={isReadOnly} />
+              <input className={inputCls} value={fields.natureOfBuilding || 'NA'} onChange={e => handleChange('natureOfBuilding', e.target.value)} disabled={isReadOnly} />
             </Field>
             <Field label="Plan Aspect Ratio">
               <input className={inputCls} value={fields.planAspectRatio || 'NA'} onChange={e => handleChange('planAspectRatio', e.target.value)} disabled={isReadOnly} />
             </Field>
             <Field label="Structure Type">
-              <input className={inputCls} value={fields.structureType || 'RCC'} onChange={e => handleChange('structureType', e.target.value)} disabled={isReadOnly} />
+              <input className={inputCls} value={fields.structureType || 'NA'} onChange={e => handleChange('structureType', e.target.value)} disabled={isReadOnly} />
             </Field>
             <Field label="Projected Parts Available">
               <input className={inputCls} value={fields.projectedParts || 'NA'} onChange={e => handleChange('projectedParts', e.target.value)} disabled={isReadOnly} />
             </Field>
             <Field label="Type of Masonry">
-              <input className={inputCls} value={fields.masonryType || 'BRICK'} onChange={e => handleChange('masonryType', e.target.value)} disabled={isReadOnly} />
+              <input className={inputCls} value={fields.masonryType || 'NA'} onChange={e => handleChange('masonryType', e.target.value)} disabled={isReadOnly} />
             </Field>
             <Field label="Expansion Joints Available">
-              <input className={inputCls} value={fields.expansionJoints || 'No'} onChange={e => handleChange('expansionJoints', e.target.value)} disabled={isReadOnly} />
+              <input className={inputCls} value={fields.expansionJoints || 'NA'} onChange={e => handleChange('expansionJoints', e.target.value)} disabled={isReadOnly} />
             </Field>
             <Field label="Roof Type">
-              <input className={inputCls} value={fields.roofType || 'RCC'} onChange={e => handleChange('roofType', e.target.value)} disabled={isReadOnly} />
+              <input className={inputCls} value={fields.roofType || 'NA'} onChange={e => handleChange('roofType', e.target.value)} disabled={isReadOnly} />
             </Field>
             <Field label="Steel Grade">
-              <input className={inputCls} value={fields.steelGrade || 'FE 450'} onChange={e => handleChange('steelGrade', e.target.value)} disabled={isReadOnly} />
+              <input className={inputCls} value={fields.steelGrade || 'NA'} onChange={e => handleChange('steelGrade', e.target.value)} disabled={isReadOnly} />
             </Field>
             <Field label="Mortar Type">
               <input className={inputCls} value={fields.mortarType || 'NA'} onChange={e => handleChange('mortarType', e.target.value)} disabled={isReadOnly} />
@@ -956,28 +1023,28 @@ export default function AnnapurnaMicroFinance({
               <input className={inputCls} value={fields.concreteGrade || 'NA'} onChange={e => handleChange('concreteGrade', e.target.value)} disabled={isReadOnly} />
             </Field>
             <Field label="Environment Exposure">
-              <input className={inputCls} value={fields.environmentExposure || 'Mild'} onChange={e => handleChange('environmentExposure', e.target.value)} disabled={isReadOnly} />
+              <input className={inputCls} value={fields.environmentExposure || 'NA'} onChange={e => handleChange('environmentExposure', e.target.value)} disabled={isReadOnly} />
             </Field>
             <Field label="Footing Type">
               <input className={inputCls} value={fields.footingType || 'NA'} onChange={e => handleChange('footingType', e.target.value)} disabled={isReadOnly} />
             </Field>
             <Field label="Seismic Zone">
-              <input className={inputCls} value={fields.seismicZone || 'II&III'} onChange={e => handleChange('seismicZone', e.target.value)} disabled={isReadOnly} />
+              <input className={inputCls} value={fields.seismicZone || 'NA'} onChange={e => handleChange('seismicZone', e.target.value)} disabled={isReadOnly} />
             </Field>
             <Field label="Soil Liquefiable">
-              <input className={inputCls} value={fields.soilLiquefiable || 'No'} onChange={e => handleChange('soilLiquefiable', e.target.value)} disabled={isReadOnly} />
+              <input className={inputCls} value={fields.soilLiquefiable || 'NA'} onChange={e => handleChange('soilLiquefiable', e.target.value)} disabled={isReadOnly} />
             </Field>
             <Field label="Coastal Regulatory Zone">
-              <input className={inputCls} value={fields.coastalRegulatoryZone || 'NO'} onChange={e => handleChange('coastalRegulatoryZone', e.target.value)} disabled={isReadOnly} />
+              <input className={inputCls} value={fields.coastalRegulatoryZone || 'NA'} onChange={e => handleChange('coastalRegulatoryZone', e.target.value)} disabled={isReadOnly} />
             </Field>
             <Field label="Soil Slope Vulnerable to Landslide">
               <input className={inputCls} value={fields.soilSlopeVulnerable || 'NA'} onChange={e => handleChange('soilSlopeVulnerable', e.target.value)} disabled={isReadOnly} />
             </Field>
             <Field label="Flood Prone Area">
-              <input className={inputCls} value={fields.floodProneArea || 'No'} onChange={e => handleChange('floodProneArea', e.target.value)} disabled={isReadOnly} />
+              <input className={inputCls} value={fields.floodProneArea || 'NA'} onChange={e => handleChange('floodProneArea', e.target.value)} disabled={isReadOnly} />
             </Field>
             <Field label="Ground Slope More than 20%">
-              <input className={inputCls} value={fields.groundSlopeMoreThan20 || 'No'} onChange={e => handleChange('groundSlopeMoreThan20', e.target.value)} disabled={isReadOnly} />
+              <input className={inputCls} value={fields.groundSlopeMoreThan20 || 'NA'} onChange={e => handleChange('groundSlopeMoreThan20', e.target.value)} disabled={isReadOnly} />
             </Field>
             <Field label="Fire Exit">
               <input className={inputCls} value={fields.fireExit || 'NA'} onChange={e => handleChange('fireExit', e.target.value)} disabled={isReadOnly} />
@@ -1284,6 +1351,12 @@ export default function AnnapurnaMicroFinance({
               </Field>
               <Field label="Status of the Property">
                 <input className={inputCls} value={fields.propertyStatus || 'COMPLETED'} onChange={e => handleChange('propertyStatus', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="% Completed">
+                <input className={inputCls} value={fields.completedPct || '100%'} onChange={e => handleChange('completedPct', e.target.value)} disabled={isReadOnly} placeholder="100%" />
+              </Field>
+              <Field label="% Recommended">
+                <input className={inputCls} value={fields.recommendedPct || '100%'} onChange={e => handleChange('recommendedPct', e.target.value)} disabled={isReadOnly} placeholder="100%" />
               </Field>
               <Field label="Current Age of Property">
                 <input className={inputCls} value={fields.currentAge || ''} onChange={e => handleChange('currentAge', e.target.value)} disabled={isReadOnly} placeholder="e.g. 7-Years" />

@@ -448,7 +448,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     ]);
     this.drawCleanRow([
       { text: 'Name of Property Owner as per Legal Document & No.', width: appCol1 + appCol2, isLabel: true },
-      { text: fields.propertyOwner || fields.ownerName || 'NA', width: appCol3 + appCol4 },
+      { text: fields.ownerName || fields.propertyOwner || 'NA', width: appCol3 + appCol4 },
     ]);
     this.drawCleanRow([
       { text: 'Documents Provided', width: appCol1, isLabel: true },
@@ -476,7 +476,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     };
 
     // Block 1: Address as per Site
-    const addrText = fields.addressAsPerSite || fields.propertyAddressSite || 'NA';
+    const addrText = fields.propertyAddressSite || fields.addressAsPerSite || 'NA';
     const latLongVal = fields.latLong
       ? fields.latLong
       : (fields.latitude && fields.longitude)
@@ -502,7 +502,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { text: 'Locality (Urban, semi Urban, Rural)', width: b1W1, isLabel: true },
       { text: fields.locality || 'RURAL', width: b1W2, align: 'center' },
       { text: 'Landmark Near By', width: b1W3, isLabel: true },
-      { text: fields.landmarkNearBy || fields.landmark || 'NA', width: b1W4 },
+      { text: fields.landmark || fields.landmarkNearBy || 'NA', width: b1W4 },
     ], 22, 6);
 
     // Row 3: Distance from branch & Lat/Long
@@ -514,7 +514,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     ], 22, 6);
 
     // Block 2: Legal Address of the Property (unbroken single cell spanning all 5 sub-rows)
-    const legalAddrText = fields.addressAsPerLegal || fields.propertyAddressLegal || addrText;
+    const legalAddrText = fields.propertyAddressLegal || fields.addressAsPerLegal || addrText;
     const subLegalH1 = calcSubH([
       { text: 'Address of Property as per Legal', width: subCol1, isLabel: true },
       { text: legalAddrText, width: subColFull },
@@ -599,13 +599,13 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     // Row 11: Property Occupied By (left half width matches Rows 9 & 10)
     this.drawCleanRow([
       { text: 'Property Occupied by (Self/Tenant/Vacant/Under Construction)', width: locLeftW, isLabel: true },
-      { text: fields.propertyOccupiedBy || 'Self', width: locRightW },
+      { text: fields.occupiedBy || fields.propertyOccupiedBy || 'Self', width: locRightW },
     ], 18, 3);
 
     // Row 12: Type of the Property (full label from template)
     this.drawCleanRow([
       { text: 'Type of the Property (Flat/Independent House/Commercial Building/Commercial Unit/Industrial/Vacant Plot/Agricultural/Homestead)', width: locLeftW, isLabel: true },
-      { text: fields.propertyTypeCategory || fields.propertyType || 'Commercial Building', width: locRightW },
+      { text: fields.propertyType || fields.propertyTypeCategory || 'Commercial Building', width: locRightW },
     ], 18, 3);
 
     // Row 13: Occupancy Status
@@ -614,7 +614,8 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { text: fields.occupancyStatus || 'SORP', width: locRightW },
     ], 18, 3);
 
-    // Schedule of Property (seamlessly continues with no space or section banner)
+    // Schedule of Property (seamlessly continues with no space or section banner, kept together)
+    this.checkPageBreak(135);
     const schW1 = 120;
     const schW2 = 120;
     const schW3 = 123.64;
@@ -662,7 +663,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     ], 18, 3);
 
     // NDMA Parameters Section (Standard FONT_SIZE = 12 typography, 6 columns matching template)
-    this.addPage();
+    this.checkPageBreak(160);
     this.drawSectionHeader('NDMA Parameters', false);
 
     const ndmaL1 = 98;
@@ -674,25 +675,25 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
 
     this.drawCleanRow([
       { text: 'Nature of Building/Wing', width: ndmaL1, isLabel: true },
-      { text: fields.natureOfBuilding || 'RCC', width: ndmaV1 },
+      { text: fields.natureOfBuilding || 'NA', width: ndmaV1 },
       { text: 'Plan Aspect Ratio', width: ndmaL2, isLabel: true },
       { text: fields.planAspectRatio || 'NA', width: ndmaV2 },
       { text: 'Structure Type', width: ndmaL3, isLabel: true },
-      { text: fields.structureType || 'RCC', width: ndmaV3 },
+      { text: fields.structureType || 'NA', width: ndmaV3 },
     ], 18, 3);
     this.drawCleanRow([
       { text: 'Projected Parts Available', width: ndmaL1, isLabel: true },
       { text: fields.projectedParts || 'NA', width: ndmaV1 },
       { text: 'Type of Masonry', width: ndmaL2, isLabel: true },
-      { text: fields.masonryType || 'BRICK', width: ndmaV2 },
+      { text: fields.masonryType || 'NA', width: ndmaV2 },
       { text: 'Expansion Joints Available', width: ndmaL3, isLabel: true },
-      { text: fields.expansionJoints || 'No', width: ndmaV3 },
+      { text: fields.expansionJoints || 'NA', width: ndmaV3 },
     ], 18, 3);
     this.drawCleanRow([
       { text: 'Roof Type', width: ndmaL1, isLabel: true },
-      { text: fields.roofType || 'RCC', width: ndmaV1 },
+      { text: fields.roofType || 'NA', width: ndmaV1 },
       { text: 'Steel Grade', width: ndmaL2, isLabel: true },
-      { text: fields.steelGrade || 'FE 450', width: ndmaV2 },
+      { text: fields.steelGrade || 'NA', width: ndmaV2 },
       { text: 'Mortar Type', width: ndmaL3, isLabel: true },
       { text: fields.mortarType || 'NA', width: ndmaV3 },
     ], 18, 3);
@@ -700,25 +701,25 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { text: 'Concrete Grade', width: ndmaL1, isLabel: true },
       { text: fields.concreteGrade || 'NA', width: ndmaV1 },
       { text: 'Environment Exposure Condition', width: ndmaL2, isLabel: true },
-      { text: fields.environmentExposure || 'Mild', width: ndmaV2 },
+      { text: fields.environmentExposure || 'NA', width: ndmaV2 },
       { text: 'Footing Type', width: ndmaL3, isLabel: true },
       { text: fields.footingType || 'NA', width: ndmaV3 },
     ], 18, 3);
     this.drawCleanRow([
       { text: 'Seismic Zone', width: ndmaL1, isLabel: true },
-      { text: fields.seismicZone || 'II&III', width: ndmaV1 },
+      { text: fields.seismicZone || 'NA', width: ndmaV1 },
       { text: 'Soil Liquefiable', width: ndmaL2, isLabel: true },
-      { text: fields.soilLiquefiable || 'No', width: ndmaV2 },
+      { text: fields.soilLiquefiable || 'NA', width: ndmaV2 },
       { text: 'Coastal Regulatory Zone (Yes/No)', width: ndmaL3, isLabel: true },
-      { text: fields.coastalRegulatoryZone || 'NO', width: ndmaV3 },
+      { text: fields.coastalRegulatoryZone || 'NA', width: ndmaV3 },
     ], 18, 3);
     this.drawCleanRow([
       { text: 'Soil Slope Vulnerable to Landslide', width: ndmaL1, isLabel: true },
       { text: fields.soilSlopeVulnerable || 'NA', width: ndmaV1 },
       { text: 'Flood Prone Area', width: ndmaL2, isLabel: true },
-      { text: fields.floodProneArea || 'No', width: ndmaV2 },
+      { text: fields.floodProneArea || 'NA', width: ndmaV2 },
       { text: 'Ground Slope More than 20%', width: ndmaL3, isLabel: true },
-      { text: fields.groundSlopeMoreThan20 || 'No', width: ndmaV3 },
+      { text: fields.groundSlopeMoreThan20 || 'NA', width: ndmaV3 },
     ], 18, 3);
 
     // Fire Exit row
@@ -728,7 +729,6 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { text: 'Fire Exit', width: ndmaL3, isLabel: true },
       { text: fields.fireExit || 'NA', width: ndmaV3 },
     ], 18, 3);
-    this.addPage();
 
     const planSideW = 140;
     const planRightW = CONTENT_W - planSideW;
@@ -896,9 +896,10 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { text: 'Consider construction (BUA) (In Sq. Ft)', width: fsiW7 },
     ];
 
+    const landAreaDisplay = fields.landAreaSqft || fields.landAreaSite || fields.landAreaDocs || '';
     const fsiValues = [
       { text: fields.permissibleAreaPlan || 'NA', width: fsiW2 },
-      { text: fields.landComponent || (fields.landAreaSqft ? `${fields.landAreaSqft}sqft` : 'NA'), width: fsiW3 },
+      { text: fields.landComponent || (landAreaDisplay ? `${landAreaDisplay}sqft` : 'NA'), width: fsiW3 },
       { text: fields.permissibleFsi || 'NA', width: fsiW4 },
       { text: fields.permissibleConstructionFsi || 'NA', width: fsiW5 },
       { text: fields.actualConstructionBua || 'NA', width: fsiW6 },
@@ -988,9 +989,9 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
 
     // Row 2 (Values)
     const yRow2 = curY - hRow1;
-    this.drawCleanCell(MARGIN_L + statusW1, yRow2, statusW2, hRow2, fields.propertyStatus || 'NA', { align: 'center', vAlign: 'middle' });
-    this.drawCleanCell(MARGIN_L + statusW1 + statusW2, yRow2, statusW3, hRow2, fields.completedPct || 'NA', { align: 'center', vAlign: 'middle' });
-    this.drawCleanCell(MARGIN_L + statusW1 + statusW2 + statusW3, yRow2, statusW4, hRow2, fields.recommendedPct || 'NA', { align: 'center', vAlign: 'middle' });
+    this.drawCleanCell(MARGIN_L + statusW1, yRow2, statusW2, hRow2, fields.propertyStatus || 'COMPLETED', { align: 'center', vAlign: 'middle' });
+    this.drawCleanCell(MARGIN_L + statusW1 + statusW2, yRow2, statusW3, hRow2, fields.completedPct || '100%', { align: 'center', vAlign: 'middle' });
+    this.drawCleanCell(MARGIN_L + statusW1 + statusW2 + statusW3, yRow2, statusW4, hRow2, fields.recommendedPct || '100%', { align: 'center', vAlign: 'middle' });
 
     this.cursorY += totalStatusH;
 
@@ -1001,11 +1002,8 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { text: fields.residualAge || 'NA', width: CONTENT_W - 350 },
     ]);
 
-    // ══════════════════════════════════════════════════════════════════════
-    // Section break after Current Age of Property / Residual Age:
-    // Valuation Table starts on the next page
-    // ══════════════════════════════════════════════════════════════════════
-    this.addPage();
+    // Valuation Table (flows naturally, breaking to next page only if needed)
+    this.checkPageBreak(220);
 
     // Valuation Table
     const valW1 = 160;
@@ -1021,7 +1019,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     ]);
     this.drawCleanRow([
       { text: 'Land Value', width: valW1, isLabel: true },
-      { text: fields.landAreaSqft ? `${fields.landAreaSqft} SQFT` : 'NA', width: valW2, align: 'center' },
+      { text: landAreaDisplay ? `${landAreaDisplay} SQFT` : 'NA', width: valW2, align: 'center' },
       { text: fields.landRateSqft ? `Rs.${fields.landRateSqft}/-` : 'NA', width: valW3, align: 'center' },
       { text: fields.landTotalValue ? `Rs.${fields.landTotalValue}/-` : 'NA', width: valW4, align: 'center', bold: true },
     ]);
@@ -1066,9 +1064,9 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     this.cursorY += remH;
 
     // ══════════════════════════════════════════════════════════════════════
-    // Additional Checks & Statutory Declaration (Intact on dedicated page)
+    // Additional Checks & Statutory Declaration (Intact, checks page break)
     // ══════════════════════════════════════════════════════════════════════
-    this.addPage();
+    this.checkPageBreak(300);
     this.drawSectionHeader('Additional checks of properties:', false, true);
 
     const chkCol1 = 210;
@@ -1080,7 +1078,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     ]);
     this.drawCleanRow([
       { text: 'Development of surrounding areas to property', width: chkCol1, isLabel: true },
-      { text: fields.developmentSurroundingArea || fields.surroundingAreaDevelopment || 'NA', width: chkCol2 },
+      { text: fields.surroundingAreaDevelopment || fields.developmentSurroundingArea || 'NA', width: chkCol2 },
     ]);
     this.drawCleanRow([
       { text: 'Distance from city centre in Kms', width: chkCol1, isLabel: true },
@@ -1088,7 +1086,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     ]);
     this.drawCleanRow([
       { text: 'Distance from corporation limits in Kms/Bus stop', width: chkCol1, isLabel: true },
-      { text: fields.distanceFromCorporationLimits || '5KMS', width: chkCol2 },
+      { text: fields.distanceFromCorpLimits || fields.distanceFromCorporationLimits || '5KMS', width: chkCol2 },
     ]);
     this.drawCleanRow([
       { text: 'Electricity (Available/Not available)', width: chkCol1, isLabel: true },
@@ -1112,11 +1110,11 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     ]);
     this.drawCleanRow([
       { text: 'Sewer line connected to main sewer (Yes/No)', width: chkCol1, isLabel: true },
-      { text: fields.sewerLineConnected || fields.sewerConnected || 'NA', width: chkCol2 },
+      { text: fields.sewerConnected || fields.sewerLineConnected || 'NA', width: chkCol2 },
     ]);
     this.drawCleanRow([
       { text: 'Any demolition threat in future development/expansion (Yes/No)', width: chkCol1, isLabel: true },
-      { text: fields.demolitionThreat || fields.futureDemolitionThreat || 'NA', width: chkCol2 },
+      { text: fields.futureDemolitionThreat || fields.demolitionThreat || 'NA', width: chkCol2 },
     ]);
 
     // Statutory Declaration Row
@@ -1206,7 +1204,8 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     // Date & Place (as per original template provided, with clear spacing below table)
     this.checkPageBreak(50);
     const yFooter = this.pdfY(this.cursorY) - FONT_SIZE;
-    this.page.drawText(`Date: ${this.sanitizeText(fields.reportDate || fields.dateOfVisit || '')}`, {
+    const dateFooter = formatReportDate(fields.reportDate || fields.dateOfVisit, '');
+    this.page.drawText(`Date: ${this.sanitizeText(dateFooter)}`, {
       x: MARGIN_L,
       y: yFooter,
       size: FONT_SIZE,
