@@ -453,6 +453,7 @@ Outstanding items in **priority order**:
 - `navbar-wrap` — fix(ui): allow FloatingNavigator pill buttons to wrap to second row without ellipsis truncation, widen sidebar to 175px, add hover tooltips, and simplify Annapurna section 2 to "Location Details"
 - `fix-builder-crash` — fix(builders): restore VAL_BG import in pdf-annapurna-micro-finance-renderer, export AnnapurnaMicroReportFields alias, define fmtDate in BankReportBuilder, guard sec.title in FloatingNavigator, and fix mainAreaLocation -> activeAddr in IBBI/IncomeTax builders
 - `32df980` — fix(builders): fix config.extraFields crash in BankReportBuilder and wrap BuilderSelector in BuilderErrorBoundary
+- `b54d48c` — fix: place 'use client' at the very top of AdityaBirlaHousingHLLAP.tsx to satisfy Turbopack compiler
 - `maps-coord-override` — feat(maps): default location map to technical address, override with coordinates across all report builders, mention reference source under preview, and provide direct coordinate entry when absent in form
 
 ## Current Status
