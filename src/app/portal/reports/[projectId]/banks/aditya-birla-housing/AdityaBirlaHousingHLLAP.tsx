@@ -358,8 +358,8 @@ async function generateHLLAPPDF(
   const s27LblW = Math.round(CONTENT_W * 0.40);
   const s27ValW = CONTENT_W - s27LblW;
   
-  r.drawKeyValueRow([{ label: '(A)Description of Land & Constructed Area and Rates', value: '', labelWidth: s27LblW, valueWidth: s27ValW, labelBold: true, valueBold: false }]);
-  r.drawKeyValueRow([{ label: 'Property Type: ' + fv(fields, 'propertyTypeBungalow', 'Bungalow'), value: '', labelWidth: s27LblW, valueWidth: s27ValW, labelBold: true, valueBold: false }]);
+  r.drawKeyValueRow([{ label: '(A)Description of Land & Constructed Area and Rates', value: '', labelWidth: CONTENT_W, valueWidth: 0, labelBold: true }]);
+  r.drawKeyValueRow([{ label: 'Property Type: ' + fv(fields, 'propertyTypeBungalow', 'Bungalow'), value: '', labelWidth: CONTENT_W, valueWidth: 0, labelBold: true }]);
 
   const valDescW2 = 100; const valUnitW = 90; const valAreaW = 60; const valRateW = 70;
   const valAmtW = CONTENT_W - valDescW2 - valUnitW - valAreaW - valRateW;
@@ -378,7 +378,7 @@ async function generateHLLAPPDF(
     { label: '% Recommendation', value: fv(fields, 'percentRecommendation', '100'), labelWidth: 130, valueWidth: CONTENT_W - NUM_W - 130 - 40 - 130, labelBold: true, valueBold: false }
   ]);
 
-  r.drawKeyValueRow([{ label: '(B)Value of Extra Amenities if applicable', value: '', labelWidth: s27LblW, valueWidth: s27ValW, labelBold: true, valueBold: false }]);
+  r.drawKeyValueRow([{ label: '(B)Value of Extra Amenities if applicable', value: '', labelWidth: CONTENT_W, valueWidth: 0, labelBold: true }]);
 
   for (const [label, value] of [['No of Car Parks', fv(fields, 'noOfCarParks', '0')], ['Car Parking Charges Lumpsum (INR)', fv(fields, 'carParkingCharges', '0')], ['EDC,IDC Lumpsum(INR)', fv(fields, 'edcIdcLumpsum', '0')], ['PLC Charges Lumpsum(INR)', fv(fields, 'plcChargesLumpsum', '0')], ['Power Backup', fv(fields, 'powerBackup', '0')], ['Interiors/Amenities', fv(fields, 'interiorsAmenities', '0')], ['Interiors % completion', fv(fields, 'interiorsPercentCompletion', '0')]]) {
     r.drawKeyValueRow([{ label, value, labelWidth: s27LblW, valueWidth: s27ValW, labelBold: true, valueBold: false }]);
