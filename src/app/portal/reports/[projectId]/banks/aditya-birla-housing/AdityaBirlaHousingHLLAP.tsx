@@ -198,7 +198,7 @@ async function generateHLLAPPDF(
   r.drawSectionHeader('PROPERTY DETAILS');
 
   const propNumW = NUM_W;
-  const propLblW = 120;
+  const propLblW = LABEL_W;
   const propSubLblW = 150;
   const propValW = CONTENT_W - propNumW - propLblW - propSubLblW;
 
@@ -267,7 +267,7 @@ async function generateHLLAPPDF(
 
   r.drawKeyValueRow([{ label: '17', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Sanction Plan Available', value: fv(fields, 'sanctionPlanAvailable', 'NA'), labelWidth: wideLabel, valueWidth: wideVal }]);
 
-  const descW = 100; const approvalNoW = 75; const dateApprovalW = 90; const expiryW = 75;
+  const descW = LABEL_W; const approvalNoW = 75; const dateApprovalW = 90; const expiryW = 75;
   const sanctAuthW = CONTENT_W - NUM_W - descW - approvalNoW - dateApprovalW - expiryW;
 
   r.drawTable(
@@ -285,12 +285,12 @@ async function generateHLLAPPDF(
   r.drawKeyValueRow([{ label: '20', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Ownership Type (Free / Lease Hold)', value: fv(fields, 'ownershipType', 'FREEHOLD'), labelWidth: wideLabel, valueWidth: wideVal }]);
   r.drawKeyValueRow([{ label: '21', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Property documents verification details', value: fv(fields, 'propertyDocsVerification', ''), labelWidth: wideLabel, valueWidth: wideVal }]);
   r.drawKeyValueRow([{ label: '22', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Property Jurisdiction', value: fv(fields, 'propertyJurisdiction', ''), labelWidth: wideLabel, valueWidth: wideVal }]);
-  r.drawKeyValueRow([{ label: '23', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Permissible zoning as per master plan', value: fv(fields, 'permissibleZoning', ''), labelWidth: 200, valueWidth: 80 }, { label: 'Usage As per Site', value: fv(fields, 'usageAsPerSite', ''), labelWidth: 100, valueWidth: CONTENT_W - NUM_W - 200 - 80 - 100 }]);
+  r.drawKeyValueRow([{ label: '23', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Permissible zoning as per master plan', value: fv(fields, 'permissibleZoning', ''), labelWidth: descW, valueWidth: approvalNoW }, { label: 'Usage As per Site', value: fv(fields, 'usageAsPerSite', ''), labelWidth: dateApprovalW + expiryW, valueWidth: sanctAuthW }]);
 
   // ====== SETBACKS & BUA ======
-  r.drawKeyValueRow([{ label: '24', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Whether property under demolition list as per authority (Y/N)', value: fv(fields, 'demolitionList', 'No'), labelWidth: CONTENT_W - NUM_W - 60, valueWidth: 60 }]);
+  r.drawKeyValueRow([{ label: '24', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Whether property under demolition list as per authority (Y/N)', value: fv(fields, 'demolitionList', 'No'), labelWidth: CONTENT_W - NUM_W - sanctAuthW, valueWidth: sanctAuthW }]);
 
-  const setbackCol1 = 120;
+  const setbackCol1 = LABEL_W;
   const setbackCol2 = (CONTENT_W - NUM_W - setbackCol1) / 2;
   const setbackCol3 = CONTENT_W - NUM_W - setbackCol1 - setbackCol2;
 
@@ -300,7 +300,7 @@ async function generateHLLAPPDF(
 
   r.drawSimpleRow('BUA Area (In Sqft.)', '');
 
-  const buaCol1 = 120;
+  const buaCol1 = LABEL_W;
   const buaCol2 = (CONTENT_W - NUM_W - buaCol1) / 2;
   const buaCol3 = CONTENT_W - NUM_W - buaCol1 - buaCol2;
   const buaRows: string[][] = [];
