@@ -532,87 +532,61 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       id: 'section-deviations',
       title: '11. Deviations / Observations',
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
-        const tdClsLabel = "border border-slate-300 px-3 py-2 font-bold text-slate-800 text-sm whitespace-nowrap align-middle w-[15%]";
-        const tdClsColon = "border border-slate-300 px-1 py-2 font-bold text-slate-800 text-sm text-center align-middle w-[1%]";
-        const tdClsValue = "border border-slate-300 px-0 py-0 align-middle w-[34%]";
-        const inputCls = "w-full h-full px-3 py-2 bg-transparent text-slate-700 outline-none text-sm";
-        
+        const inputCls = "w-full text-sm p-2 rounded-full border border-slate-200 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 outline-none transition-all disabled:bg-slate-50 disabled:text-slate-500 bg-white shadow-sm";
+        const tdLabelCls = "p-2 border border-slate-300 text-sm font-medium text-slate-800 bg-white whitespace-nowrap w-[20%]";
+        const tdInputCls = "p-2 border border-slate-300 bg-white w-[30%]";
+
         return (
-          <div className="w-full bg-red-50 p-6 rounded-lg font-sans border-2 border-red-100">
-            <h3 className="text-red-900 text-center text-xl font-bold mb-6">Deviations /Observations</h3>
-            <div className="bg-white overflow-hidden border border-red-200 shadow-sm rounded-md">
-              <table className="w-full border-collapse">
+          <div className="w-full font-sans mb-4">
+            <div className="md:col-span-2 border border-blue-200 bg-[#f8fafc] rounded-xl p-4 shadow-sm overflow-x-auto">
+              <table className="w-full text-left border-collapse">
                 <tbody>
                   <tr>
-                    <td className="border border-red-200 px-3 py-2 text-slate-800 font-bold text-sm whitespace-nowrap w-[15%]">Deal Number</td>
-                    <td className="border border-red-200 px-2 py-2 text-slate-800 font-bold text-sm text-center w-[1%]">:</td>
-                    <td className="border border-red-200 px-0 py-0 w-[34%]"><input className="w-full h-full px-3 py-2 bg-transparent text-slate-800 outline-none text-sm" disabled value={fields.dealNumber || ''} /></td>
-                    
-                    <td className="border border-red-200 px-3 py-2 text-slate-800 font-bold text-sm whitespace-nowrap w-[15%]">Asset id</td>
-                    <td className="border border-red-200 px-2 py-2 text-slate-800 font-bold text-sm text-center w-[1%]">:</td>
-                    <td className="border border-red-200 px-0 py-0 w-[34%]"><input className="w-full h-full px-3 py-2 bg-transparent text-slate-800 outline-none text-sm" disabled value={fields.assetId || ''} /></td>
+                    <td className={tdLabelCls}>Deal Number</td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.dealNumber || ''} placeholder="Deal Number" /></td>
+                    <td className={tdLabelCls}>Asset id</td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.assetId || ''} placeholder="Asset id" /></td>
                   </tr>
-                  
                   <tr>
-                    <td className="border border-red-200 px-3 py-2 text-slate-800 font-bold text-sm whitespace-nowrap">Branch Name</td>
-                    <td className="border border-red-200 px-2 py-2 text-slate-800 font-bold text-sm text-center">:</td>
-                    <td className="border border-red-200 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-slate-800 outline-none text-sm" disabled value={fields.branchName || ''} /></td>
-                    
-                    <td className="border border-red-200 px-3 py-2 text-slate-800 font-bold text-sm whitespace-nowrap">Type of Case</td>
-                    <td className="border border-red-200 px-2 py-2 text-slate-800 font-bold text-sm text-center">:</td>
-                    <td className="border border-red-200 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-slate-800 outline-none text-sm" disabled value={fields.typeOfCase || ''} /></td>
+                    <td className={tdLabelCls}>Branch Name</td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.branchName || ''} placeholder="Branch Name" /></td>
+                    <td className={tdLabelCls}>Type of Case</td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.typeOfCase || ''} placeholder="Type of Case" /></td>
                   </tr>
-
                   <tr>
-                    <td className="border border-red-200 px-3 py-2 text-slate-800 font-bold text-sm whitespace-nowrap">Valuer Name</td>
-                    <td className="border border-red-200 px-2 py-2 text-slate-800 font-bold text-sm text-center">:</td>
-                    <td className="border border-red-200 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-slate-800 outline-none text-sm" disabled value={fields.valuerName || ''} /></td>
-                    
-                    <td className="border border-red-200 px-3 py-2 text-slate-800 font-bold text-sm whitespace-nowrap">Product Type</td>
-                    <td className="border border-red-200 px-2 py-2 text-slate-800 font-bold text-sm text-center">:</td>
-                    <td className="border border-red-200 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-slate-800 outline-none text-sm" disabled value={fields.productType || ''} /></td>
+                    <td className={tdLabelCls}>Valuer Name</td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.valuerName || ''} placeholder="Valuer Name" /></td>
+                    <td className={tdLabelCls}>Product Type</td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.productType || ''} placeholder="Product Type" /></td>
                   </tr>
-
                   <tr>
-                    <td className="border border-red-200 px-3 py-2 text-slate-800 font-bold text-sm whitespace-nowrap">Valuer Ref No</td>
-                    <td className="border border-red-200 px-2 py-2 text-slate-800 font-bold text-sm text-center">:</td>
-                    <td className="border border-red-200 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-slate-800 outline-none text-sm" disabled value={fields.valuerRefNo || ''} /></td>
-                    
-                    <td className="border border-red-200 px-3 py-2 text-slate-800 font-bold text-sm whitespace-nowrap">Date of Visit</td>
-                    <td className="border border-red-200 px-2 py-2 text-slate-800 font-bold text-sm text-center">:</td>
-                    <td className="border border-red-200 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-slate-800 outline-none text-sm" disabled value={fields.dateOfVisit || fields.dateOfInspection || ''} /></td>
+                    <td className={tdLabelCls}>Valuer Ref No</td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.valuerRefNo || ''} placeholder="Valuer Ref No" /></td>
+                    <td className={tdLabelCls}>Date of Visit</td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.dateOfVisit || fields.dateOfInspection || ''} placeholder="Date of Visit" /></td>
                   </tr>
-
                   <tr>
-                    <td className="border border-red-200 px-3 py-2 text-slate-800 font-bold text-sm whitespace-nowrap">Valuer Feedback</td>
-                    <td className="border border-red-200 px-2 py-2 text-slate-800 font-bold text-sm text-center">:</td>
-                    <td className="border border-red-200 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-slate-800 outline-none text-sm" disabled value={fields.valuerFeedback || ''} /></td>
-                    
-                    <td className="border border-red-200 px-3 py-2 text-slate-800 font-bold text-sm whitespace-nowrap">Date of Report</td>
-                    <td className="border border-red-200 px-2 py-2 text-slate-800 font-bold text-sm text-center">:</td>
-                    <td className="border border-red-200 px-0 py-0"><input className="w-full h-full px-3 py-2 bg-transparent text-slate-800 outline-none text-sm" disabled value={fields.dateOfReport || fields.dateOfValuation || ''} /></td>
+                    <td className={tdLabelCls}>Valuer Feedback</td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.valuerFeedback || ''} placeholder="Valuer Feedback" /></td>
+                    <td className={tdLabelCls}>Date of Report</td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.dateOfReport || fields.dateOfValuation || ''} placeholder="Date of Report" /></td>
                   </tr>
-
                   <tr>
-                    <td colSpan={2} className="border border-red-200 px-3 py-3 text-slate-800 font-bold text-sm align-top">Property Address</td>
-                    <td colSpan={4} className="border border-red-200 px-0 py-0 align-top">
-                      <textarea 
-                        className="w-full h-full min-h-[80px] px-3 py-3 bg-transparent text-slate-800 outline-none text-sm resize-none" 
-                        disabled 
-                        value={fields.addressAsPerDocument || ''} 
-                      />
+                    <td className={tdLabelCls}>Property Address</td>
+                    <td colSpan={3} className={tdInputCls}>
+                      <textarea className={`${inputCls} !rounded-xl min-h-[60px] resize-y`} disabled value={fields.addressAsPerDocument || ''} placeholder="Property Address" />
                     </td>
                   </tr>
-
                   <tr>
-                    <td colSpan={6} className="border border-red-200 px-3 py-4 align-top border-b-0">
-                      <div className="flex flex-col gap-2 h-full">
-                        <label className="text-slate-800 text-sm">Deviations/Observations:</label>
+                    <td colSpan={4} className="p-2 border border-slate-300 bg-white">
+                      <div className="flex flex-col gap-2 p-1">
+                        <label className="text-slate-800 text-sm font-bold ml-1">Deviations/Observations:</label>
                         <textarea 
-                          className="w-full p-3 bg-transparent text-slate-800 outline-none min-h-[250px] resize-none"
+                          className={`${inputCls} !rounded-xl min-h-[150px] resize-y`}
                           value={fields.deviationsObservations || ''}
                           onChange={e => handleChange('deviationsObservations', e.target.value)}
                           disabled={isReadOnly}
+                          placeholder="Enter deviations or observations here..."
                         />
                       </div>
                     </td>
