@@ -400,6 +400,8 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       cadastralMaps: Uint8Array[];
     }
   ): Promise<Uint8Array> {
+    const landAreaDisplay = fields.landAreaSqft || fields.landAreaSite || fields.landAreaDocs || '';
+
     // ══════════════════════════════════════════════════════════════════════
     // PAGE 1: Header + Application Details + Location Details (Part 1)
     // ══════════════════════════════════════════════════════════════════════
