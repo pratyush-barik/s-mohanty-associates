@@ -377,6 +377,17 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
   }
 
   /**
+   * Introduce a line break before a section or table to prevent joining sections directly,
+   * while dynamically checking if the section fits to eliminate wasted page space.
+   */
+  startSection(neededHeight: number = 50, gap: number = 12): void {
+    this.checkPageBreak(neededHeight + gap);
+    if (this.cursorY > 0) {
+      this.cursorY += gap;
+    }
+  }
+
+  /**
    * Main PDF Generation orchestration for Annapurna Micro Finance Ltd
    */
   async generateAnnapurnaReport(
@@ -457,7 +468,8 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     ]);
 
     // 5. Location Details Section (Exactly matches reference layout with dynamic height)
-    this.drawSectionHeader('Location Details');
+    this.startSection(100);
+    this.drawSectionHeader('Location Details', false);
 
     const locSideW = 135;
     const locSubW = CONTENT_W - locSideW;
@@ -615,8 +627,8 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { text: fields.occupancyStatus || 'SORP', width: locRightW },
     ], 18, 3);
 
-    // Schedule of Property (seamlessly continues with no space or section banner, kept together)
-    this.checkPageBreak(135);
+    // Schedule of Property (separated by clean line break, dynamically checked)
+    this.startSection(135);
     const schW1 = 120;
     const schW2 = 120;
     const schW3 = 123.64;
@@ -664,7 +676,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     ], 18, 3);
 
     // NDMA Parameters Section (Standard FONT_SIZE = 12 typography, 6 columns matching template)
-    this.checkPageBreak(160);
+    this.startSection(160);
     this.drawSectionHeader('NDMA Parameters', false);
 
     const ndmaL1 = 98;
@@ -754,7 +766,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     });
     const totalPlanH = planRowHeights.reduce((sum, h) => sum + h, 0);
 
-    this.checkPageBreak(totalPlanH + 50);
+    this.startSection(totalPlanH + 40);
     curY = this.pdfY(this.cursorY);
 
     this.drawCleanCell(MARGIN_L, curY, planSideW, totalPlanH, 'Approved Plan Details if self-construction case', {
@@ -784,7 +796,8 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     ]);
 
     // Technical Details Section Header
-    this.drawSectionHeader('Technical Details');
+    this.startSection(80);
+    this.drawSectionHeader('Technical Details', false);
 
     this.drawCleanRow([
       { text: 'Current Occupant of Property (Owner/Tenant/Vacant)', width: 185, isLabel: true },
@@ -798,6 +811,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     ]);
 
     // Plot Area Details Table
+    this.startSection(130);
     const plotW1 = 120;
     const plotW2 = 122;
     const plotW3 = 122;
@@ -835,12 +849,21 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     ]);
     this.drawCleanRow([
       { text: 'Land Area (In Sqft.)', width: plotW1, isLabel: true },
-      { text: fields.landAreaDocs || fields.landAreaSqft || 'NA', width: plotW2, bold: true },
-      { text: fields.landAreaSite || fields.landAreaSqft || 'NA', width: plotW3, bold: true },
-      { text: fields.landAreaPlan || 'NA', width: plotW4, bold: true },
+      { text: fields.landAreaDocs || (landAreaDisplay ? `${landAreaDisplay}sqft` : 'NA'), width: plotW2, align: 'center', bold: true },
+      { text: fields.landAreaSite || (landAreaDisplay ? `${landAreaDisplay}sqft` : 'NA'), width: plotW3, align: 'center', bold: true },
+      { text: fields.landAreaPlan || 'NA', width: plotW4, align: 'center', bold: true },
     ]);
 
     // BAU Area Details Table (Standard FONT_SIZE = 12 typography)
+    const floorsData = fields.bauFloors && fields.bauFloors.length > 0 ? fields.bauFloors : [
+      { floor: 'Basement/Stilt Floor', rooms: 'NA', kitchens: 'NA', bathrooms: 'NA', sanctionedUsage: 'NA', actualUsage: 'NA' },
+      { floor: 'GROUND FLOOR', rooms: '2', kitchens: 'NA', bathrooms: 'NA', sanctionedUsage: 'NA', actualUsage: 'NA' },
+      { floor: 'First Floor', rooms: 'NA', kitchens: 'NA', bathrooms: 'NA', sanctionedUsage: 'NA', actualUsage: 'NA' },
+    ];
+    const totalBauH = (floorsData.length + 1) * 22;
+
+    this.startSection(totalBauH + 20);
+
     const bauW1 = 110;
     const bauW2 = 60;
     const bauW3 = 60;
@@ -857,12 +880,6 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { text: 'Actual Usage (Residential/Commercial)', width: bauW6, isHeader: true, align: 'center' },
     ]);
 
-    const floorsData = fields.bauFloors && fields.bauFloors.length > 0 ? fields.bauFloors : [
-      { floor: 'Basement/Stilt Floor', rooms: 'NA', kitchens: 'NA', bathrooms: 'NA', sanctionedUsage: 'NA', actualUsage: 'NA' },
-      { floor: 'GROUND FLOOR', rooms: '2', kitchens: 'NA', bathrooms: 'NA', sanctionedUsage: 'NA', actualUsage: 'NA' },
-      { floor: 'First Floor', rooms: 'NA', kitchens: 'NA', bathrooms: 'NA', sanctionedUsage: 'NA', actualUsage: 'NA' },
-    ];
-
     for (const fl of floorsData) {
       this.drawCleanRow([
         { text: fl.floor, width: bauW1, isLabel: true },
@@ -877,7 +894,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     // ══════════════════════════════════════════════════════════════════════
     // PAGE 4: FSI Details + Valuation Table + Remarks Box
     // ══════════════════════════════════════════════════════════════════════
-    this.checkPageBreak(120);
+    // FSI & Building Details Table (Clean line break separation)
 
     // FSI & Building Details Table (No section banner, vertically merged Items cell)
     const fsiW1 = 55;
@@ -897,7 +914,6 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { text: 'Consider construction (BUA) (In Sq. Ft)', width: fsiW7 },
     ];
 
-    const landAreaDisplay = fields.landAreaSqft || fields.landAreaSite || fields.landAreaDocs || '';
     const fsiValues = [
       { text: fields.permissibleAreaPlan || 'NA', width: fsiW2 },
       { text: fields.landComponent || (landAreaDisplay ? `${landAreaDisplay}sqft` : 'NA'), width: fsiW3 },
@@ -919,7 +935,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     const hFsiValue = Math.max(28, maxValLines * FONT_SIZE * LINE_HEIGHT + 8);
 
     const totalFsiH = hFsiHeader + hFsiValue;
-    this.checkPageBreak(totalFsiH);
+    this.startSection(totalFsiH);
     curY = this.pdfY(this.cursorY);
 
     // Left cell: Items vertically merged spanning both rows
@@ -954,6 +970,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     this.cursorY += totalFsiH;
 
     // Status, Risk of Demolition, Age
+    this.startSection(25);
     this.drawCleanRow([
       { text: 'Risk of Demolition (High/Medium/Low)', width: 280, isLabel: true },
       { text: fields.riskOfDemolition || 'LOW', width: CONTENT_W - 280 },
@@ -973,7 +990,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     const hRow2 = Math.max(24, minLeftH - hRow1);
     const totalStatusH = hRow1 + hRow2;
 
-    this.checkPageBreak(totalStatusH + 30);
+    this.startSection(totalStatusH + 20);
     curY = this.pdfY(this.cursorY);
 
     // Left merged cell spanning both rows
@@ -996,6 +1013,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
 
     this.cursorY += totalStatusH;
 
+    this.startSection(25);
     this.drawCleanRow([
       { text: 'Current Age of Property', width: 145, isLabel: true },
       { text: fields.currentAge || 'NA', width: 95 },
@@ -1004,7 +1022,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     ]);
 
     // Valuation Table (flows naturally, breaking to next page only if needed)
-    this.checkPageBreak(220);
+    this.startSection(220);
 
     // Valuation Table
     const valW1 = 160;
@@ -1034,9 +1052,13 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { text: 'Market Value After Completion (In Rs.)', width: valW1 + valW2 + valW3, isLabel: true },
       { text: fields.marketValue ? `Rs.${fields.marketValue}/-` : 'NA', width: valW4, align: 'center', highlight: true },
     ]);
+    const distPct = fields.distressedPct !== undefined && fields.distressedPct !== '' ? fields.distressedPct : '0';
+    const distVal = fields.distressedValue && Number(String(fields.distressedValue).replace(/[^0-9.]/g, '')) > 0
+      ? `Rs.${fields.distressedValue}/-`
+      : (fields.marketValue || fields.distressedValue === '0' ? 'Rs. 0/-' : 'NA');
     this.drawCleanRow([
-      { text: `Distressed/Force Value (${fields.distressedPct || '80'}%) (In Rs.)`, width: valW1 + valW2 + valW3, isLabel: true },
-      { text: fields.distressedValue ? `Rs.${fields.distressedValue}/-` : 'NA', width: valW4, align: 'center', highlight: true },
+      { text: `Distressed/Force Value (${distPct}%) (In Rs.)`, width: valW1 + valW2 + valW3, isLabel: true },
+      { text: distVal, width: valW4, align: 'center', highlight: true },
     ]);
     this.drawCleanRow([
       { text: 'Government/Circle Rate Value', width: valW1 + valW2 + valW3, isLabel: true },
@@ -1058,7 +1080,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     const remLines = this.wrapText(remarksText, remContentW - 8, FONT_SIZE);
     const remH = Math.max(32, remLines.length * FONT_SIZE * LINE_HEIGHT + 14);
 
-    this.checkPageBreak(remH);
+    this.startSection(remH);
     curY = this.pdfY(this.cursorY);
     this.drawCleanCell(MARGIN_L, curY, remSideW, remH, 'Remarks', { isLabel: true, align: 'center', vAlign: 'middle' });
     this.drawCleanCell(MARGIN_L + remSideW, curY, remContentW, remH, remarksText, { vAlign: 'top' });
@@ -1067,7 +1089,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     // ══════════════════════════════════════════════════════════════════════
     // Additional Checks & Statutory Declaration (Intact, checks page break)
     // ══════════════════════════════════════════════════════════════════════
-    this.checkPageBreak(300);
+    this.startSection(280);
     this.drawSectionHeader('Additional checks of properties:', false, true);
 
     const chkCol1 = 210;
@@ -1145,7 +1167,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     const totalTextH = totalTextLines * (FONT_SIZE * LINE_HEIGHT) + (declBullets.length - 1) * declBulletGap;
     const declH = Math.max(130, totalTextH + declPadY * 2);
 
-    this.checkPageBreak(declH + 20);
+    this.startSection(declH + 20);
     curY = this.pdfY(this.cursorY);
 
     // 1. Left cell: Declaration (I hereby declare that)
@@ -1200,10 +1222,10 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       }
     }
 
-    this.cursorY += declH + 20;
+    this.cursorY += declH + 10;
 
     // Date & Place (as per original template provided, with clear spacing below table)
-    this.checkPageBreak(50);
+    this.startSection(50);
     const yFooter = this.pdfY(this.cursorY) - FONT_SIZE;
     const dateFooter = formatReportDate(fields.declarationDate || fields.reportDate || fields.dateOfVisit, '');
     this.page.drawText(`Date: ${this.sanitizeText(dateFooter)}`, {

@@ -198,14 +198,14 @@ export default function AnnapurnaMicroFinance({
       actualConstructionBua: raw.actualConstructionBua || 'NA',
       considerConstructionBua: raw.considerConstructionBua || 'NA',
       riskOfDemolition: raw.riskOfDemolition || 'LOW',
-      propertyStatus: raw.propertyStatus || 'COMPLETED',
-      isCompleted: raw.isCompleted || 'Y',
-      completedPct: raw.completedPct || '100%',
-      recommendedPct: raw.recommendedPct || '100%',
+      propertyStatus: raw.propertyStatus !== undefined ? raw.propertyStatus : (raw.isCompleted || 'COMPLETED'),
+      isCompleted: raw.isCompleted !== undefined ? raw.isCompleted : (raw.propertyStatus || 'COMPLETED'),
+      completedPct: raw.completedPct !== undefined ? raw.completedPct : '100%',
+      recommendedPct: raw.recommendedPct !== undefined ? raw.recommendedPct : '100%',
       currentAge: raw.currentAge || '',
       residualAge: raw.residualAge || '',
 
-      // Section 7: Valuation
+      // Section 6: Valuation
       landAreaSqft: raw.landAreaSqft || raw.landArea || '',
       landRateSqft: raw.landRateSqft || raw.landRatePerUnit || '',
       landTotalValue: raw.landTotalValue || '',
@@ -213,8 +213,8 @@ export default function AnnapurnaMicroFinance({
       buaRateSqft: raw.buaRateSqft || '',
       buaTotalValue: raw.buaTotalValue || '',
       marketValue: raw.marketValue || '',
-      distressedPct: raw.distressedPct || '80',
-      distressedValue: raw.distressedValue || '',
+      distressedPct: raw.distressedPct !== undefined && raw.distressedPct !== null && raw.distressedPct !== '' ? String(raw.distressedPct) : '0',
+      distressedValue: raw.distressedValue !== undefined && raw.distressedValue !== null ? String(raw.distressedValue) : '',
       govtRate: raw.govtRate || raw.govtLandRate || '',
       inDemolitionList: raw.inDemolitionList || 'NO',
       inNegativeArea: raw.inNegativeArea || 'NO',
@@ -375,6 +375,16 @@ export default function AnnapurnaMicroFinance({
         next.futureDemolitionThreat = value;
         next.demolitionThreat = value;
       }
+      if (key === 'propertyStatus' || key === 'isCompleted') {
+        next.propertyStatus = value;
+        next.isCompleted = value;
+      }
+      if (key === 'distressedPct') {
+        next.distressedPct = value;
+      }
+      if (key === 'distressedValue') {
+        next.distressedValue = value;
+      }
 
       // Auto-calculations for Valuation Section
       if (key === 'landAreaSqft' || key === 'landRateSqft') {
@@ -393,11 +403,18 @@ export default function AnnapurnaMicroFinance({
 
       const landTot = parseNum(next.landTotalValue);
       const buaTot = parseNum(next.buaTotalValue);
-      const marketVal = landTot + buaTot;
+      let marketVal = landTot + buaTot;
+      if (marketVal === 0 && next.marketValue) {
+        marketVal = parseNum(next.marketValue);
+      }
       if (marketVal > 0) {
         next.marketValue = String(marketVal);
-        const distPct = parseNum(next.distressedPct || '80');
+        const pctStr = next.distressedPct !== undefined && next.distressedPct !== null ? String(next.distressedPct).trim() : '0';
+        const distPct = pctStr === '' ? 0 : parseNum(pctStr);
         next.distressedValue = String(Math.round(marketVal * (distPct / 100)));
+      } else {
+        next.marketValue = '';
+        next.distressedValue = '';
       }
 
       return next;
@@ -1342,7 +1359,7 @@ export default function AnnapurnaMicroFinance({
               </div>
             </div>
 
-            {/* Demolition Risk & Property Age Metrics */}
+            {/* Risk of Demolition */}
             <div className="grid md:grid-cols-3 gap-4 pt-1">
               <Field label="Risk of Demolition">
                 <select className={selectCls} value={fields.riskOfDemolition || 'LOW'} onChange={e => handleChange('riskOfDemolition', e.target.value)} disabled={isReadOnly}>
@@ -1351,15 +1368,47 @@ export default function AnnapurnaMicroFinance({
                   <option value="HIGH">HIGH</option>
                 </select>
               </Field>
-              <Field label="Status of the Property">
-                <input className={inputCls} value={fields.propertyStatus || 'COMPLETED'} onChange={e => handleChange('propertyStatus', e.target.value)} disabled={isReadOnly} />
-              </Field>
-              <Field label="% Completed">
-                <input className={inputCls} value={fields.completedPct || '100%'} onChange={e => handleChange('completedPct', e.target.value)} disabled={isReadOnly} placeholder="100%" />
-              </Field>
-              <Field label="% Recommended">
-                <input className={inputCls} value={fields.recommendedPct || '100%'} onChange={e => handleChange('recommendedPct', e.target.value)} disabled={isReadOnly} placeholder="100%" />
-              </Field>
+            </div>
+
+            {/* Status of the Property Container (Heading = Column 1, Sub-parts = Columns 2, 3, 4) */}
+            <div className="p-4 border border-[#dee2e6] rounded-2xl bg-slate-50/70 space-y-3">
+              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                Status of the Property (Plot/ Under Construction/ Completed/ Construction on Hold)
+              </h4>
+              <div className="grid md:grid-cols-3 gap-4">
+                <Field label="COMPLETED (Y/N)">
+                  <input
+                    className={inputCls}
+                    value={fields.propertyStatus !== undefined ? fields.propertyStatus : 'COMPLETED'}
+                    onChange={e => handleChange('propertyStatus', e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="e.g. COMPLETED or NA"
+                  />
+                </Field>
+                <Field label="100% Completed">
+                  <input
+                    className={inputCls}
+                    value={fields.completedPct !== undefined ? fields.completedPct : '100%'}
+                    onChange={e => handleChange('completedPct', e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="e.g. 100% or NA"
+                  />
+                </Field>
+                <Field label="100% Recommended">
+                  <input
+                    className={inputCls}
+                    value={fields.recommendedPct !== undefined ? fields.recommendedPct : '100%'}
+                    onChange={e => handleChange('recommendedPct', e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="e.g. 100% or NA"
+                  />
+                </Field>
+              </div>
+            </div>
+
+            {/* Property Age Metrics */}
+            <div className="grid md:grid-cols-2 gap-4 pt-1">
               <Field label="Current Age of Property">
                 <input className={inputCls} value={fields.currentAge || ''} onChange={e => handleChange('currentAge', e.target.value)} disabled={isReadOnly} placeholder="e.g. 7-Years" />
               </Field>
@@ -1474,16 +1523,17 @@ export default function AnnapurnaMicroFinance({
                     <td colSpan={3} className="p-2.5 border-r border-[#dee2e6]">
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-extrabold text-slate-800">
-                          Distressed/Force Value ({fields.distressedPct || '80'}%) <span className="text-red-500 font-semibold">(In Rs.)</span>
+                          Distressed/Force Value ({fields.distressedPct !== undefined && fields.distressedPct !== '' ? fields.distressedPct : '0'}%) <span className="text-red-500 font-semibold">(In Rs.)</span>
                         </span>
                         {!isReadOnly && (
                           <div className="flex items-center gap-1 text-[11px] font-normal text-slate-500">
                             <span>Distress:</span>
                             <input
                               type="text"
-                              className="w-12 p-1 border border-amber-300 rounded text-xs text-center font-bold bg-white"
-                              value={fields.distressedPct || '80'}
+                              className="w-14 p-1 border border-amber-300 rounded text-xs text-center font-bold bg-white"
+                              value={fields.distressedPct !== undefined ? fields.distressedPct : '0'}
                               onChange={e => handleChange('distressedPct', e.target.value)}
+                              placeholder="0"
                             />
                             <span>%</span>
                           </div>
@@ -1491,7 +1541,7 @@ export default function AnnapurnaMicroFinance({
                       </div>
                     </td>
                     <td className="p-2 text-center font-black text-amber-900 text-sm">
-                      {fields.distressedValue ? `Rs. ${formatIndianCurrency(parseNum(fields.distressedValue))}/-` : 'Rs. 0/-'}
+                      {fields.distressedValue && parseNum(fields.distressedValue) > 0 ? `Rs. ${formatIndianCurrency(parseNum(fields.distressedValue))}/-` : 'Rs. 0/-'}
                     </td>
                   </tr>
 
