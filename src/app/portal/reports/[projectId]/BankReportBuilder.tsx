@@ -1855,6 +1855,13 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
           </div>
         )}
 
+        {/* ── Extra Bank-Specific Sections (Start) ── */}
+        {config?.extraSectionsStart?.map(sec => (
+          <Section key={sec.id} id={sec.id} title={sec.title} number={sec.number} defaultOpen={sec.defaultOpen ?? true}>
+            {sec.render(fields, handleChange, isReadOnly)}
+          </Section>
+        ))}
+
         {/* ── Section 1: General Details ── */}
         {!isSectionHidden('section-1') && (
           <Section id="section-1" title={getSectionTitle("section-1", "General Details")} number={getSectionNumber("section-1", 1)}>
@@ -2678,6 +2685,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
       <FloatingNavigator
         sections={
           config?.navSections || [
+            ...(config?.extraSectionsStart || []).map((es, idx) => ({ id: es.id || `extra-section-start-${idx}`, title: es.title })),
             { id: 'section-1', title: 'General Details' },
             { id: 'section-2', title: 'Locality Details' },
             { id: 'section-3', title: 'Property Details' },

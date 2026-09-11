@@ -353,6 +353,8 @@ export interface BankConfig {
   /** Extra fields injected into existing sections: sectionId → field configs */
   extraFields?: Record<string, ExtraFieldConfig[]>;
   /** Entirely new sections added to the form */
+  extraSectionsStart?: SectionConfig[];
+  /** Entirely new sections added to the form */
   extraSections?: SectionConfig[];
   /** Entirely new sections added to the VERY END of the form (after Maps) */
   extraSectionsEnd?: SectionConfig[];

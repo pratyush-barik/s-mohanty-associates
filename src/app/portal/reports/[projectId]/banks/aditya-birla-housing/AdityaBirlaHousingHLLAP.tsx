@@ -532,7 +532,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
     'section-14',  // Annexures (Apartment/Flat)
     'section-15',  // Annexures (Bungalow/Land)
   ],
-  extraSections: [
+  extraSectionsStart: [
     {
       id: 'section-header',
       title: 'Header Details',
@@ -588,12 +588,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
                             <td className={tdInputSmallCls}><input className={inputCls} value={fields.contactedPerson || ''} onChange={e => handleChange('contactedPerson', e.target.value)} disabled={isReadOnly} /></td>
                             <td className={tdLabelSmallCls}>Relation with Customer</td>
                             <td className={tdInputSmallCls}>
-                              <select className={inputCls} value={fields.relationWithCustomer || 'Seller'} onChange={e => handleChange('relationWithCustomer', e.target.value)} disabled={isReadOnly}>
-                                <option value="Seller">Seller</option>
-                                <option value="Buyer">Buyer</option>
-                                <option value="Broker">Broker</option>
-                                <option value="Self">Self</option>
-                              </select>
+                              <input className={inputCls} value={fields.relationWithCustomer || ''} onChange={e => handleChange('relationWithCustomer', e.target.value)} disabled={isReadOnly} />
                             </td>
                             <td className={tdLabelSmallCls}>Contact No</td>
                             <td className="p-2 bg-white w-[18%]"><input className={inputCls} value={fields.contactNo || ''} onChange={e => handleChange('contactNo', e.target.value)} disabled={isReadOnly} /></td>
