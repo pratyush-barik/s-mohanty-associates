@@ -313,8 +313,8 @@ async function generateHLLAPPDF(
     r.drawKeyValueRow([
       { label: i === 1 ? '25' : '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true, hideBottom: !isLast },
       { label: setbacksData[i][0], value: '', labelWidth: setbackCol1, valueWidth: 0 },
-      { label: fv(fields, setbacksData[i][1], 'N.A'), value: '', labelWidth: setbackCol2, valueWidth: 0 },
-      { label: fv(fields, setbacksData[i][2], 'N.A'), value: '', labelWidth: setbackCol3, valueWidth: 0 }
+      { label: fv(fields, setbacksData[i][1], ''), value: '', labelWidth: setbackCol2, valueWidth: 0 },
+      { label: fv(fields, setbacksData[i][2], ''), value: '', labelWidth: setbackCol3, valueWidth: 0 }
     ]);
   }
 
@@ -335,10 +335,10 @@ async function generateHLLAPPDF(
   ]);
 
   const buaRowsData = [
-    ['Ground Floor', fv(fields, 'buaGroundPlan', 'N.A'), fv(fields, 'buaGroundSite', 'N.A')],
-    ['First', fv(fields, 'buaFirstPlan', 'N.A'), fv(fields, 'buaFirstSite', 'N.A')],
-    ['Second', fv(fields, 'buaSecondPlan', 'N.A'), fv(fields, 'buaSecondSite', 'N.A')],
-    ['Total BUA (In sqft.)', fv(fields, 'totalBuaPlan', 'N.A'), fv(fields, 'totalBuaSite', 'N.A')]
+    ['Ground Floor', fv(fields, 'buaGroundPlan', ''), fv(fields, 'buaGroundSite', '')],
+    ['First', fv(fields, 'buaFirstPlan', ''), fv(fields, 'buaFirstSite', '')],
+    ['Second', fv(fields, 'buaSecondPlan', ''), fv(fields, 'buaSecondSite', '')],
+    ['Total BUA (In sqft.)', fv(fields, 'buaTotalPlan', ''), fv(fields, 'buaTotalSite', '')]
   ];
 
   for (let i = 0; i < buaRowsData.length; i++) {
@@ -347,8 +347,8 @@ async function generateHLLAPPDF(
     r.drawKeyValueRow([
       { label: i === midIdx ? '26' : '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true, hideBottom: !isLast },
       { label: buaRowsData[i][0], value: '', labelWidth: buaCol1, valueWidth: 0 },
-      { label: fv(fields, buaRowsData[i][1], 'N.A'), value: '', labelWidth: buaCol2, valueWidth: 0 },
-      { label: fv(fields, buaRowsData[i][2], 'N.A'), value: '', labelWidth: buaCol3, valueWidth: 0 }
+      { label: buaRowsData[i][1], value: '', labelWidth: buaCol2, valueWidth: 0 },
+      { label: buaRowsData[i][2], value: '', labelWidth: buaCol3, valueWidth: 0 }
     ]);
   }
 
