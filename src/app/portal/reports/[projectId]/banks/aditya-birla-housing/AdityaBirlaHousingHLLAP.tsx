@@ -368,17 +368,17 @@ async function generateHLLAPPDF(
   const valAmtW = CONTENT_W - valDescW2 - valUnitW - valAreaW - valRateW;
 
   r.drawTable(['Description', 'Unit of Measurement', 'Area', 'Rate/unit', 'Amount'],
-    [['Land Area', fv(fields, 'landAreaMeasurement', 'Sqft'), fv(fields, 'landAreaValue', '0'), fv(fields, 'landAreaRatePerUnit', '0'), fv(fields, 'landAreaAmount', '0')],
-     ['Parking/Stilt BUA', fv(fields, 'parkingStiltBuaUnit', 'Sqft'), fv(fields, 'parkingStiltBuaArea', '0'), fv(fields, 'parkingStiltBuaRate', '0'), fv(fields, 'parkingStiltBuaAmount', '0')],
-     ['BUA/SBUA', fv(fields, 'buaSbuaUnit', 'Sqft'), fv(fields, 'buaSbuaArea', ''), fv(fields, 'buaSbuaRate', ''), fv(fields, 'buaSbuaAmount', '')]],
+    [['Land Area', fv(fields, 'valLandUnit', 'Sqft'), fv(fields, 'valLandArea', '0'), fv(fields, 'valLandRate', '0'), fv(fields, 'valLandAmount', '0')],
+     ['Parking/Stilt BUA', fv(fields, 'valParkingUnit', 'Sqft'), fv(fields, 'valParkingArea', '0'), fv(fields, 'valParkingRate', '0'), fv(fields, 'valParkingAmount', '0')],
+     ['BUA/SBUA', fv(fields, 'valBuaUnit', 'Sqft'), fv(fields, 'valBuaArea', ''), fv(fields, 'valBuaRate', ''), fv(fields, 'valBuaAmount', '')]],
     [valDescW2, valUnitW, valAreaW, valRateW, valAmtW], [], [0]);
 
-  r.drawKeyValueRow([{ label: 'Construction Progress', value: fv(fields, 'constructionProgress', 'Complete in all respect'), labelWidth: s27LblW, valueWidth: s27ValW, labelBold: true, valueBold: false }]);
+  r.drawKeyValueRow([{ label: 'Construction Progress', value: fv(fields, 'valConstructionProgress', 'Complete in all respect'), labelWidth: s27LblW, valueWidth: s27ValW, labelBold: true, valueBold: false }]);
 
   r.drawKeyValueRow([
     { label: '27', value: '', labelWidth: NUM_W, valueWidth: 0, labelBold: true }, 
-    { label: '% Completion', value: fv(fields, 'percentCompletion', '100'), labelWidth: 130, valueWidth: 40, labelBold: true, valueBold: false }, 
-    { label: '% Recommendation', value: fv(fields, 'percentRecommendation', '100'), labelWidth: 130, valueWidth: CONTENT_W - NUM_W - 130 - 40 - 130, labelBold: true, valueBold: false }
+    { label: '% Completion', value: fv(fields, 'valPercentCompletion', '100'), labelWidth: 130, valueWidth: 40, labelBold: true, valueBold: false }, 
+    { label: '% Recommendation', value: fv(fields, 'valPercentRecommendation', '100'), labelWidth: 130, valueWidth: CONTENT_W - NUM_W - 130 - 40 - 130, labelBold: true, valueBold: false }
   ]);
 
   r.drawKeyValueRow([{ label: '(B)Value of Extra Amenities if applicable', value: '', labelWidth: CONTENT_W, valueWidth: 0, labelBold: true }]);
