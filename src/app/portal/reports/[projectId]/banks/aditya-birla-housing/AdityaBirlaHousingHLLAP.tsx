@@ -354,8 +354,12 @@ async function generateHLLAPPDF(
 
   // ====== VALUATION DETAILS ======
   r.drawSectionHeader('VALUATION DETAILS');
-  r.drawSimpleRow('(A)Description of Land & Constructed Area and Rates', '');
-  r.drawSimpleRow('Property Type: ' + fv(fields, 'propertyTypeBungalow', 'Bungalow'), '');
+  
+  const s27LblW = Math.round(CONTENT_W * 0.40);
+  const s27ValW = CONTENT_W - s27LblW;
+  
+  r.drawKeyValueRow([{ label: '(A)Description of Land & Constructed Area and Rates', value: '', labelWidth: s27LblW, valueWidth: s27ValW, labelBold: true, valueBold: false }]);
+  r.drawKeyValueRow([{ label: 'Property Type: ' + fv(fields, 'propertyTypeBungalow', 'Bungalow'), value: '', labelWidth: s27LblW, valueWidth: s27ValW, labelBold: true, valueBold: false }]);
 
   const valDescW2 = 100; const valUnitW = 90; const valAreaW = 60; const valRateW = 70;
   const valAmtW = CONTENT_W - valDescW2 - valUnitW - valAreaW - valRateW;
@@ -366,14 +370,18 @@ async function generateHLLAPPDF(
      ['BUA/SBUA', fv(fields, 'buaSbuaUnit', 'Sqft'), fv(fields, 'buaSbuaArea', ''), fv(fields, 'buaSbuaRate', ''), fv(fields, 'buaSbuaAmount', '')]],
     [valDescW2, valUnitW, valAreaW, valRateW, valAmtW], [4], [0]);
 
-  r.drawSimpleRow('Construction Progress', fv(fields, 'constructionProgress', 'Complete in all respect'));
+  r.drawKeyValueRow([{ label: 'Construction Progress', value: fv(fields, 'constructionProgress', 'Complete in all respect'), labelWidth: s27LblW, valueWidth: s27ValW, labelBold: true, valueBold: false }]);
 
-  r.drawKeyValueRow([{ label: '27', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: '% Completion', value: fv(fields, 'percentCompletion', '100'), labelWidth: 130, valueWidth: 40 }, { label: '% Recommendation', value: fv(fields, 'percentRecommendation', '100'), labelWidth: 130, valueWidth: CONTENT_W - NUM_W - 130 - 40 - 130 }]);
+  r.drawKeyValueRow([
+    { label: '27', value: '', labelWidth: NUM_W, valueWidth: 0, labelBold: true }, 
+    { label: '% Completion', value: fv(fields, 'percentCompletion', '100'), labelWidth: 130, valueWidth: 40, labelBold: true, valueBold: false }, 
+    { label: '% Recommendation', value: fv(fields, 'percentRecommendation', '100'), labelWidth: 130, valueWidth: CONTENT_W - NUM_W - 130 - 40 - 130, labelBold: true, valueBold: false }
+  ]);
 
-  r.drawSimpleRow('(B)Value of Extra Amenities if applicable', '');
+  r.drawKeyValueRow([{ label: '(B)Value of Extra Amenities if applicable', value: '', labelWidth: s27LblW, valueWidth: s27ValW, labelBold: true, valueBold: false }]);
 
   for (const [label, value] of [['No of Car Parks', fv(fields, 'noOfCarParks', '0')], ['Car Parking Charges Lumpsum (INR)', fv(fields, 'carParkingCharges', '0')], ['EDC,IDC Lumpsum(INR)', fv(fields, 'edcIdcLumpsum', '0')], ['PLC Charges Lumpsum(INR)', fv(fields, 'plcChargesLumpsum', '0')], ['Power Backup', fv(fields, 'powerBackup', '0')], ['Interiors/Amenities', fv(fields, 'interiorsAmenities', '0')], ['Interiors % completion', fv(fields, 'interiorsPercentCompletion', '0')]]) {
-    r.drawSimpleRow(label, value);
+    r.drawKeyValueRow([{ label, value, labelWidth: s27LblW, valueWidth: s27ValW, labelBold: true, valueBold: false }]);
   }
 
   for (const [label, value] of [['Total of Component A on Completion', fv(fields, 'totalComponentA', '')], ['Total of Component B on Completion', fv(fields, 'totalComponentB', '0')], ['Total Market Value of Property on Completion (A+B) 100%', fv(fields, 'totalMarketValueOnCompletion', '')], ['Total Market Value of Property on Completion in Words 100%', fv(fields, 'totalMarketValueOnCompletionWords', '')], ['Total Market Value of Property as on Date (95%)', fv(fields, 'totalMarketValueAsOnDate', '')], ['Guideline Value of The Property', fv(fields, 'guidelineValueOfProperty', 'NA')], ['Distress Sale Value as on date', fv(fields, 'distressSaleValue', '')], ['Approx. Rentals in case of 100% complete property', fv(fields, 'approxRentals', '')]]) {

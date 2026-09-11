@@ -197,12 +197,12 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
    * Automatically normalizes column widths to strictly equal CONTENT_W.
    * Labels have 50% opacity soft blue (#DBE6F0), values are transparent (or golden-yellow if highlighted).
    */
-  drawKeyValueRow(cols: { label: string; value: string; labelWidth?: number; valueWidth?: number; highlight?: boolean; bold?: boolean; hideTop?: boolean; hideBottom?: boolean }[]): void {
+  drawKeyValueRow(cols: { label: string; value: string; labelWidth?: number; valueWidth?: number; highlight?: boolean; bold?: boolean; labelBold?: boolean; valueBold?: boolean; hideTop?: boolean; hideBottom?: boolean }[]): void {
     const fontSize = FONT_SIZE;
     const pad = 3;
 
     // Auto-calculate or normalize widths to match CONTENT_W exactly
-    let processedCols: { label: string; value: string; labelWidth: number; valueWidth: number; highlight?: boolean; bold?: boolean; hideTop?: boolean; hideBottom?: boolean }[] = [];
+    let processedCols: { label: string; value: string; labelWidth: number; valueWidth: number; highlight?: boolean; bold?: boolean; labelBold?: boolean; valueBold?: boolean; hideTop?: boolean; hideBottom?: boolean }[] = [];
     const hasExplicitWidths = cols.every(c => c.labelWidth !== undefined && c.valueWidth !== undefined);
 
     if (!hasExplicitWidths) {
@@ -239,8 +239,8 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
     const colWrapped: { labelLines: string[]; valueLines: string[] }[] = [];
 
     for (const c of processedCols) {
-      const lLines = this.wrapText(c.label, c.labelWidth - pad * 2, fontSize, true);
-      const vLines = this.wrapText(c.value, c.valueWidth - pad * 2, fontSize, !!(c.highlight || c.bold));
+      const lLines = this.wrapText(c.label, c.labelWidth - pad * 2, fontSize, c.labelBold !== undefined ? c.labelBold : true);
+      const vLines = this.wrapText(c.value, c.valueWidth - pad * 2, fontSize, c.valueBold !== undefined ? c.valueBold : !!(c.highlight || c.bold));
       maxLines = Math.max(maxLines, lLines.length, vLines.length);
       colWrapped.push({ labelLines: lLines, valueLines: vLines });
     }
@@ -293,7 +293,7 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
           x: curX + pad,
           y: lineY,
           size: fontSize,
-          font: this.fontBold,
+          font: (c.labelBold !== undefined ? c.labelBold : true) ? this.fontBold : this.fontRegular,
           color: rgb(0, 0, 0),
         });
         lineY -= fontSize * LINE_HEIGHT;
@@ -324,7 +324,7 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
           x: curX + pad,
           y: lineY,
           size: fontSize,
-          font: (c.highlight || c.bold) ? this.fontBold : this.fontRegular,
+          font: (c.valueBold !== undefined ? c.valueBold : !!(c.highlight || c.bold)) ? this.fontBold : this.fontRegular,
           color: rgb(0, 0, 0),
         });
         lineY -= fontSize * LINE_HEIGHT;
@@ -388,7 +388,7 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
           x: curX + pad,
           y: lineY,
           size: fontSize,
-          font: this.fontBold,
+          font: (c.labelBold !== undefined ? c.labelBold : true) ? this.fontBold : this.fontRegular,
           color: rgb(0, 0, 0),
         });
         lineY -= fontSize * LINE_HEIGHT;
@@ -523,7 +523,7 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
       x: MARGIN_L + pad,
       y: y - pad - fontSize * 0.85,
       size: fontSize,
-      font: this.fontBold,
+      font: (c.labelBold !== undefined ? c.labelBold : true) ? this.fontBold : this.fontRegular,
       color: rgb(0, 0, 0),
     });
 
