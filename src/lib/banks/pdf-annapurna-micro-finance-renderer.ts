@@ -629,8 +629,8 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { text: fields.occupancyStatus || 'SORP', width: locRightW },
     ], 18, 3);
 
-    // Schedule of Property (separated by clean line break, dynamically checked)
-    this.startSection(135);
+    // Schedule of Property (continuous table within Location Details)
+    this.checkPageBreak(135);
     const schW1 = 120;
     const schW2 = 120;
     const schW3 = 123.64;
@@ -812,8 +812,8 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       { text: fields.accommodationDetails || 'G+1', width: CONTENT_W - 185 },
     ]);
 
-    // Plot Area Details Table
-    this.startSection(130);
+    // Plot Area Details Table (continuous table within Technical Details)
+    this.checkPageBreak(130);
     const plotW1 = 120;
     const plotW2 = 122;
     const plotW3 = 122;
@@ -864,7 +864,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     ];
     const totalBauH = (floorsData.length + 1) * 22;
 
-    this.startSection(totalBauH + 20);
+    this.checkPageBreak(totalBauH + 20);
 
     const bauW1 = 110;
     const bauW2 = 60;
@@ -937,7 +937,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     const hFsiValue = Math.max(28, maxValLines * FONT_SIZE * LINE_HEIGHT + 8);
 
     const totalFsiH = hFsiHeader + hFsiValue;
-    this.startSection(totalFsiH);
+    this.checkPageBreak(totalFsiH);
     curY = this.pdfY(this.cursorY);
 
     // Left cell: Items vertically merged spanning both rows
@@ -972,7 +972,6 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     this.cursorY += totalFsiH;
 
     // Status, Risk of Demolition, Age
-    this.startSection(25);
     this.drawCleanRow([
       { text: 'Risk of Demolition (High/Medium/Low)', width: 280, isLabel: true },
       { text: fields.riskOfDemolition || 'LOW', width: CONTENT_W - 280 },
@@ -992,7 +991,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     const hRow2 = Math.max(24, minLeftH - hRow1);
     const totalStatusH = hRow1 + hRow2;
 
-    this.startSection(totalStatusH + 20);
+    this.checkPageBreak(totalStatusH + 20);
     curY = this.pdfY(this.cursorY);
 
     // Left merged cell spanning both rows
@@ -1015,7 +1014,6 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
 
     this.cursorY += totalStatusH;
 
-    this.startSection(25);
     this.drawCleanRow([
       { text: 'Current Age of Property', width: 145, isLabel: true },
       { text: fields.currentAge || 'NA', width: 95 },
