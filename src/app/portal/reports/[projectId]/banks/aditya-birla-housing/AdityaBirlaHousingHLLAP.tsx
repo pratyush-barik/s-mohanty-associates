@@ -38,11 +38,11 @@ async function generateHLLAPPDF(
 
   // ====== HEADER DETAILS TABLE ======
   const headerRows: [string, string, string, string][] = [
-    ['Deal Number', fv(fields, 'dealNumber', fv(fields, 'loanApplicationNo')), 'Asset id', fv(fields, 'assetId', 'NA')],
-    ['Branch Name', fv(fields, 'branchName', 'Bhubaneswar'), 'Type of Case', fv(fields, 'typeOfCase', 'Home Loan')],
-    ['Valuer Name', fv(fields, 'valuerName', 'S Mohanty Associates'), 'Product Type', fv(fields, 'productType', 'Home Loan')],
-    ['Valuer Ref No', fv(fields, 'valuerRefNo', fv(fields, 'refNo')), 'Date of Visit', fmtDate(fv(fields, 'dateOfVisit'))],
-    ['Valuer Feedback', fv(fields, 'valuerFeedback', 'Positive'), 'Date of Report', fmtDate(fv(fields, 'dateOfReport'))],
+    ['Deal Number', fv(fields, 'dealNumber', ''), 'Asset id', fv(fields, 'assetId', '')],
+    ['Branch Name', fv(fields, 'branchName', ''), 'Type of Case', fv(fields, 'typeOfCase', '')],
+    ['Valuer Name', fv(fields, 'valuerName', ''), 'Product Type', fv(fields, 'productType', '')],
+    ['Valuer Ref No', fv(fields, 'valuerRefNo', ''), 'Date of Visit', fmtDate(fv(fields, 'dateOfVisit'))],
+    ['Valuer Feedback', fv(fields, 'valuerFeedback', ''), 'Date of Report', fmtDate(fv(fields, 'dateOfReport'))],
   ];
 
   const labelW1 = 95;
@@ -1110,7 +1110,6 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
   defaultValues: {
     to: 'ADITYA BIRLA HOUSING FINANCE LTD',
     purpose: 'Home Loan / LAP',
-    branchName: 'Bhubaneswar',
     state: 'Odisha',
   },
 };
