@@ -368,7 +368,7 @@ async function generateHLLAPPDF(
     [['Land Area', fv(fields, 'landAreaMeasurement', 'Sqft'), fv(fields, 'landAreaValue', '0'), fv(fields, 'landAreaRatePerUnit', '0'), fv(fields, 'landAreaAmount', '0')],
      ['Parking/Stilt BUA', fv(fields, 'parkingStiltBuaUnit', 'Sqft'), fv(fields, 'parkingStiltBuaArea', '0'), fv(fields, 'parkingStiltBuaRate', '0'), fv(fields, 'parkingStiltBuaAmount', '0')],
      ['BUA/SBUA', fv(fields, 'buaSbuaUnit', 'Sqft'), fv(fields, 'buaSbuaArea', ''), fv(fields, 'buaSbuaRate', ''), fv(fields, 'buaSbuaAmount', '')]],
-    [valDescW2, valUnitW, valAreaW, valRateW, valAmtW], [4], [0]);
+    [valDescW2, valUnitW, valAreaW, valRateW, valAmtW], [], [0]);
 
   r.drawKeyValueRow([{ label: 'Construction Progress', value: fv(fields, 'constructionProgress', 'Complete in all respect'), labelWidth: s27LblW, valueWidth: s27ValW, labelBold: true, valueBold: false }]);
 
