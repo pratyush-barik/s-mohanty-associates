@@ -461,7 +461,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
   subTemplateId: 'HL-LAP',
   displayName: 'Aditya Birla Housing Finance Ltd',
   navSections: [
-    { id: 'section-1', title: 'Header Details' },
+    { id: 'section-header', title: 'Header Details' },
     { id: 'section-1a', title: 'Basic Details' },
     { id: 'section-2', title: 'Surrounding & Locality' },
     { id: 'section-3', title: 'Property Details' },
@@ -523,6 +523,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
   // Hide default BankReportBuilder sections not used by Aditya Birla Housing
   // (their content is replaced by bank-specific extraFields in the correct sections)
   hiddenSections: [
+    'section-1',   // Hide the default Header Details
     'section-5',   // Setbacks & BUA (removed per user request, fields moved to section-4)
     'section-7b',  // Land Valuation (covered by section-6 Valuation Details)
     'section-7c',  // Valuation Abstract (covered by section-6 Valuation Details)
@@ -530,6 +531,84 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
     'section-10',  // Default Deviations
     'section-14',  // Annexures (Apartment/Flat)
     'section-15',  // Annexures (Bungalow/Land)
+  ],
+  extraSections: [
+    {
+      id: 'section-header',
+      title: 'Header Details',
+      number: 1,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        const inputCls = "w-full text-sm p-2 rounded-full border border-slate-200 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 outline-none transition-all disabled:bg-slate-50 disabled:text-slate-500 bg-white shadow-sm";
+        const tdLabelCls = "p-2 border border-slate-300 text-sm font-medium text-slate-800 bg-[#f8fafc] whitespace-nowrap w-[20%]";
+        const tdInputCls = "p-2 border border-slate-300 bg-white w-[30%]";
+        const tdLabelSmallCls = "p-2 border-r border-slate-300 text-sm font-medium text-slate-800 bg-[#f8fafc] whitespace-nowrap w-[15%]";
+        const tdInputSmallCls = "p-2 border-r border-slate-300 bg-white w-[18%]";
+
+        return (
+          <div className="w-full font-sans mb-4">
+            <div className="md:col-span-2 border border-blue-200 bg-[#f8fafc] rounded-xl p-4 shadow-sm overflow-x-auto">
+              <table className="w-full text-left border-collapse bg-white">
+                <tbody>
+                  <tr>
+                    <td className={tdLabelCls}>Deal Number</td>
+                    <td className={tdInputCls}><input className={inputCls} value={fields.dealNumber || ''} onChange={e => handleChange('dealNumber', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className={tdLabelCls}>Asset id</td>
+                    <td className={tdInputCls}><input className={inputCls} value={fields.assetId || ''} onChange={e => handleChange('assetId', e.target.value)} disabled={isReadOnly} /></td>
+                  </tr>
+                  <tr>
+                    <td className={tdLabelCls}>Branch Name</td>
+                    <td className={tdInputCls}><input className={inputCls} value={fields.branchName || ''} onChange={e => handleChange('branchName', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className={tdLabelCls}>Type of Case</td>
+                    <td className={tdInputCls}><input className={inputCls} value={fields.typeOfCase || ''} onChange={e => handleChange('typeOfCase', e.target.value)} disabled={isReadOnly} /></td>
+                  </tr>
+                  <tr>
+                    <td className={tdLabelCls}>Valuer Name</td>
+                    <td className={tdInputCls}><input className={inputCls} value={fields.valuerName || ''} onChange={e => handleChange('valuerName', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className={tdLabelCls}>Product Type</td>
+                    <td className={tdInputCls}><input className={inputCls} value={fields.productType || ''} onChange={e => handleChange('productType', e.target.value)} disabled={isReadOnly} /></td>
+                  </tr>
+                  <tr>
+                    <td className={tdLabelCls}>Valuer Ref No</td>
+                    <td className={tdInputCls}><input className={inputCls} value={fields.valuerRefNo || ''} onChange={e => handleChange('valuerRefNo', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className={tdLabelCls}>Date of Visit</td>
+                    <td className={tdInputCls}><input type="date" className={inputCls} value={fields.dateOfVisit || ''} onChange={e => handleChange('dateOfVisit', e.target.value)} disabled={isReadOnly} /></td>
+                  </tr>
+                  <tr>
+                    <td className={tdLabelCls}>Valuer Feedback</td>
+                    <td className={tdInputCls}><input className={inputCls} value={fields.valuerFeedback || ''} onChange={e => handleChange('valuerFeedback', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className={tdLabelCls}>Date of Report</td>
+                    <td className={tdInputCls}><input type="date" className={inputCls} value={fields.dateOfReport || ''} onChange={e => handleChange('dateOfReport', e.target.value)} disabled={isReadOnly} /></td>
+                  </tr>
+                  <tr>
+                    <td colSpan={4} className="p-0 border border-slate-300">
+                      <table className="w-full text-left border-collapse">
+                        <tbody>
+                          <tr>
+                            <td className={tdLabelSmallCls}>Contacted Person</td>
+                            <td className={tdInputSmallCls}><input className={inputCls} value={fields.contactedPerson || ''} onChange={e => handleChange('contactedPerson', e.target.value)} disabled={isReadOnly} /></td>
+                            <td className={tdLabelSmallCls}>Relation with Customer</td>
+                            <td className={tdInputSmallCls}>
+                              <select className={inputCls} value={fields.relationWithCustomer || 'Seller'} onChange={e => handleChange('relationWithCustomer', e.target.value)} disabled={isReadOnly}>
+                                <option value="Seller">Seller</option>
+                                <option value="Buyer">Buyer</option>
+                                <option value="Broker">Broker</option>
+                                <option value="Self">Self</option>
+                              </select>
+                            </td>
+                            <td className={tdLabelSmallCls}>Contact No</td>
+                            <td className="p-2 bg-white w-[18%]"><input className={inputCls} value={fields.contactNo || ''} onChange={e => handleChange('contactNo', e.target.value)} disabled={isReadOnly} /></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      }
+    }
   ],
   extraSectionsEnd: [
     {
