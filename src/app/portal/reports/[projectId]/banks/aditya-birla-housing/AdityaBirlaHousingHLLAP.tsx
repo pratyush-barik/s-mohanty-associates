@@ -247,15 +247,15 @@ async function generateHLLAPPDF(
 
   r.drawKeyValueRow([
     { label: '15', value: '', labelWidth: propNumW, valueWidth: 0 },
-    { label: 'Construction Quality (Good/Avg/Bad)', value: '', labelWidth: 200, valueWidth: 0 },
-    { label: 'Exteriors', value: fv(fields, 'constructionQualityExteriors', 'Good'), labelWidth: 60, valueWidth: (CONTENT_W - propNumW - 200 - 120) / 2 },
-    { label: 'Interiors', value: fv(fields, 'constructionQualityInteriors', 'Good'), labelWidth: 60, valueWidth: (CONTENT_W - propNumW - 200 - 120) / 2 },
+    { label: 'Construction Quality (Good/Avg/Bad)', value: '', labelWidth: propLblW, valueWidth: 0 },
+    { label: 'Exteriors', value: fv(fields, 'constructionQualityExteriors', 'Good'), labelWidth: 60, valueWidth: (propSubLblW + propValW - 120) / 2 },
+    { label: 'Interiors', value: fv(fields, 'constructionQualityInteriors', 'Good'), labelWidth: 60, valueWidth: (propSubLblW + propValW - 120) / 2 },
   ]);
 
   r.drawKeyValueRow([
     { label: '16', value: '', labelWidth: propNumW, valueWidth: 0 },
-    { label: 'Age of the property (Yrs)', value: fv(fields, 'ageOfProperty', ''), labelWidth: 200, valueWidth: 60 },
-    { label: 'Residual age (Yrs)', value: fv(fields, 'residualAge', ''), labelWidth: 110, valueWidth: CONTENT_W - propNumW - 200 - 60 - 110 },
+    { label: 'Age of the property (Yrs)', value: fv(fields, 'ageOfProperty', ''), labelWidth: propLblW + propSubLblW, valueWidth: 90 },
+    { label: 'Residual age (Yrs)', value: fv(fields, 'residualAge', ''), labelWidth: 90, valueWidth: propValW - 180 },
   ]);
 
   // ====== SANCTION PLAN APPROVAL ======

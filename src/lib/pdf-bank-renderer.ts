@@ -120,6 +120,7 @@ export {
 };
 
 export class PDFBankRenderer extends PDFGeneralRenderer {
+  public lastRowHadHiddenBottom: boolean = false;
   /**
    * Draw the top Main Title Banner (e.g. "Aditya Birla Capital Ltd (MLAP)")
    */
@@ -248,9 +249,11 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
     
     // Handle page breaks specifically for table borders
     if (this.availableHeight < rowH) {
-      // Draw closing bottom line on current page
-      const yBottom = this.pdfY(this.cursorY);
-      this.page.drawLine({ start: { x: MARGIN_L, y: yBottom }, end: { x: MARGIN_L + CONTENT_W, y: yBottom }, thickness: BORDER_W, color: rgb(0, 0, 0) });
+      if (this.lastRowHadHiddenBottom) {
+        // Draw closing bottom line on current page
+        const yBottom = this.pdfY(this.cursorY);
+        this.page.drawLine({ start: { x: MARGIN_L, y: yBottom }, end: { x: MARGIN_L + CONTENT_W, y: yBottom }, thickness: BORDER_W, color: rgb(0, 0, 0) });
+      }
       
       this.addPage();
       
@@ -330,6 +333,7 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
     }
 
     this.cursorY += rowH;
+    this.lastRowHadHiddenBottom = processedCols.some(c => c.hideBottom);
   }
 
   /**
@@ -462,6 +466,7 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
       }
 
       this.cursorY += rowH;
+    this.lastRowHadHiddenBottom = processedCols.some(c => c.hideBottom);
     }
   }
 
