@@ -429,26 +429,28 @@ async function generateHLLAPPDF(
   }
 
   // ====== DEVIATIONS / OBSERVATIONS ======
-  r.addPage();
-  r.drawSectionHeader('DEVIATIONS / OBSERVATIONS');
-  const devC1 = 110;
-  const devC3 = (CONTENT_W - devC1 * 2) / 2;
-  
-  r.drawTable([], [
-    ['Deal Number', fv(fields, 'dealNumber', ''), 'Asset id', fv(fields, 'assetId', '')],
-    ['Branch Name', fv(fields, 'branchName', ''), 'Type of Case', fv(fields, 'typeOfCase', '')],
-    ['Valuer Name', fv(fields, 'valuerName', ''), 'Product Type', fv(fields, 'productType', '')],
-    ['Valuer Ref No', fv(fields, 'valuerRefNo', ''), 'Date of Visit', fv(fields, 'dateOfVisit', '')],
-    ['Valuer Feedback', fv(fields, 'valuerFeedback', ''), 'Date of Report', fv(fields, 'dateOfReport', '')],
-  ], [devC1, devC3, devC1, devC3], [], [0, 2]);
+  if (fields.showDeviationsTable !== false) {
+    r.addPage();
+    r.drawSectionHeader('DEVIATIONS / OBSERVATIONS');
+    const devC1 = 110;
+    const devC3 = (CONTENT_W - devC1 * 2) / 2;
+    
+    r.drawTable([], [
+      ['Deal Number', fv(fields, 'dealNumber', ''), 'Asset id', fv(fields, 'assetId', '')],
+      ['Branch Name', fv(fields, 'branchName', ''), 'Type of Case', fv(fields, 'typeOfCase', '')],
+      ['Valuer Name', fv(fields, 'valuerName', ''), 'Product Type', fv(fields, 'productType', '')],
+      ['Valuer Ref No', fv(fields, 'valuerRefNo', ''), 'Date of Visit', fv(fields, 'dateOfVisit', '')],
+      ['Valuer Feedback', fv(fields, 'valuerFeedback', ''), 'Date of Report', fv(fields, 'dateOfReport', '')],
+    ], [devC1, devC3, devC1, devC3], [], [0, 2]);
 
-  r.drawTable([], [
-    ['Property Address', fv(fields, 'addressAsPerDocument', '')]
-  ], [devC1, devC3 + devC1 + devC3], [], [0]);
+    r.drawTable([], [
+      ['Property Address', fv(fields, 'addressAsPerDocument', '')]
+    ], [devC1, devC3 + devC1 + devC3], [], [0]);
 
-  r.drawTable([], [
-    [`Deviations/Observations:\n\n${fv(fields, 'deviationsObservations', '')}\n`]
-  ], [CONTENT_W], [], []);
+    r.drawTable([], [
+      [`Deviations/Observations:\n\n${fv(fields, 'deviationsObservations', '')}\n`]
+    ], [CONTENT_W], [], []);
+  }
 
   // ====== FINALIZE ======
   return await r.save();
@@ -539,63 +541,80 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
         const tdLabelCls = "p-2 border border-slate-300 text-sm font-medium text-slate-800 bg-white whitespace-nowrap w-[20%]";
         const tdInputCls = "p-2 border border-slate-300 bg-white w-[30%]";
 
+        const showTable = fields.showDeviationsTable ?? true;
+
         return (
           <div className="w-full font-sans mb-4">
-            <div className="md:col-span-2 border border-red-200 bg-[#fff5f5] rounded-xl p-4 shadow-sm overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <tbody>
-                  <tr>
-                    <td className={tdLabelCls}>Deal Number</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.dealNumber || ''} /></td>
-                    <td className={tdLabelCls}>Asset id</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.assetId || ''} /></td>
-                  </tr>
-                  <tr>
-                    <td className={tdLabelCls}>Branch Name</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.branchName || ''} /></td>
-                    <td className={tdLabelCls}>Type of Case</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.typeOfCase || ''} /></td>
-                  </tr>
-                  <tr>
-                    <td className={tdLabelCls}>Valuer Name</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.valuerName || ''} /></td>
-                    <td className={tdLabelCls}>Product Type</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.productType || ''} /></td>
-                  </tr>
-                  <tr>
-                    <td className={tdLabelCls}>Valuer Ref No</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.valuerRefNo || ''} /></td>
-                    <td className={tdLabelCls}>Date of Visit</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.dateOfVisit || ''} /></td>
-                  </tr>
-                  <tr>
-                    <td className={tdLabelCls}>Valuer Feedback</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.valuerFeedback || ''} /></td>
-                    <td className={tdLabelCls}>Date of Report</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.dateOfReport || ''} /></td>
-                  </tr>
-                  <tr>
-                    <td className={tdLabelCls}>Property Address</td>
-                    <td colSpan={3} className={tdInputCls}>
-                      <textarea className={`${inputCls} !rounded-xl min-h-[60px] resize-y`} disabled value={fields.addressAsPerDocument || ''} />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colSpan={4} className="p-2 border border-slate-300 bg-white">
-                      <div className="flex flex-col gap-2 p-1">
-                        <label className="text-slate-800 text-sm font-bold ml-1">Deviations/Observations:</label>
-                        <textarea 
-                          className={`${inputCls} !rounded-xl min-h-[150px] resize-y`}
-                          value={fields.deviationsObservations || ''}
-                          onChange={e => handleChange('deviationsObservations', e.target.value)}
-                          disabled={isReadOnly}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <div className="flex items-center gap-3 mb-4">
+              <span className="font-bold text-slate-700 text-sm">show table</span>
+              <button
+                type="button"
+                onClick={() => handleChange('showDeviationsTable', !showTable)}
+                disabled={isReadOnly}
+                className={`relative inline-flex items-center justify-center w-16 h-8 rounded-full border-2 transition-colors ${showTable ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'}`}
+              >
+                <span className={`text-xs font-bold ${showTable ? 'text-green-600' : 'text-red-600'}`}>
+                  {showTable ? 'ON' : 'OFF'}
+                </span>
+              </button>
             </div>
+            {showTable && (
+              <div className="md:col-span-2 border border-red-200 bg-[#fff5f5] rounded-xl p-4 shadow-sm overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <tbody>
+                    <tr>
+                      <td className={tdLabelCls}>Deal Number</td>
+                      <td className={tdInputCls}><input className={inputCls} disabled value={fields.dealNumber || ''} /></td>
+                      <td className={tdLabelCls}>Asset id</td>
+                      <td className={tdInputCls}><input className={inputCls} disabled value={fields.assetId || ''} /></td>
+                    </tr>
+                    <tr>
+                      <td className={tdLabelCls}>Branch Name</td>
+                      <td className={tdInputCls}><input className={inputCls} disabled value={fields.branchName || ''} /></td>
+                      <td className={tdLabelCls}>Type of Case</td>
+                      <td className={tdInputCls}><input className={inputCls} disabled value={fields.typeOfCase || ''} /></td>
+                    </tr>
+                    <tr>
+                      <td className={tdLabelCls}>Valuer Name</td>
+                      <td className={tdInputCls}><input className={inputCls} disabled value={fields.valuerName || ''} /></td>
+                      <td className={tdLabelCls}>Product Type</td>
+                      <td className={tdInputCls}><input className={inputCls} disabled value={fields.productType || ''} /></td>
+                    </tr>
+                    <tr>
+                      <td className={tdLabelCls}>Valuer Ref No</td>
+                      <td className={tdInputCls}><input className={inputCls} disabled value={fields.valuerRefNo || ''} /></td>
+                      <td className={tdLabelCls}>Date of Visit</td>
+                      <td className={tdInputCls}><input className={inputCls} disabled value={fields.dateOfVisit || ''} /></td>
+                    </tr>
+                    <tr>
+                      <td className={tdLabelCls}>Valuer Feedback</td>
+                      <td className={tdInputCls}><input className={inputCls} disabled value={fields.valuerFeedback || ''} /></td>
+                      <td className={tdLabelCls}>Date of Report</td>
+                      <td className={tdInputCls}><input className={inputCls} disabled value={fields.dateOfReport || ''} /></td>
+                    </tr>
+                    <tr>
+                      <td className={tdLabelCls}>Property Address</td>
+                      <td colSpan={3} className={tdInputCls}>
+                        <textarea className={`${inputCls} !rounded-xl min-h-[60px] resize-y`} disabled value={fields.addressAsPerDocument || ''} />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colSpan={4} className="p-2 border border-slate-300 bg-white">
+                        <div className="flex flex-col gap-2 p-1">
+                          <label className="text-slate-800 text-sm font-bold ml-1">Deviations/Observations:</label>
+                          <textarea 
+                            className={`${inputCls} !rounded-xl min-h-[150px] resize-y`}
+                            value={fields.deviationsObservations || ''}
+                            onChange={e => handleChange('deviationsObservations', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         );
       }
