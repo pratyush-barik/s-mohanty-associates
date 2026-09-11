@@ -625,16 +625,16 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
         return (
           <div className="w-full font-sans mb-4">
             <div className="flex items-center gap-3 mb-4">
-              <span className="font-bold text-slate-700 text-sm">show table</span>
+              <span className="font-bold text-slate-700 text-sm">SHOW TABLE</span>
               <button
                 type="button"
                 onClick={() => handleChange('showDeviationsTable', !showTable)}
                 disabled={isReadOnly}
-                className={`relative inline-flex items-center justify-center w-16 h-8 rounded-full border-2 transition-colors ${showTable ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'}`}
+                className={`relative inline-flex items-center w-16 h-8 rounded-full border-2 transition-colors ${showTable ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'}`}
               >
-                <span className={`text-xs font-bold ${showTable ? 'text-green-600' : 'text-red-600'}`}>
-                  {showTable ? 'ON' : 'OFF'}
-                </span>
+                <span className={`absolute left-2 text-[10px] font-bold transition-opacity ${showTable ? 'opacity-100 text-green-600' : 'opacity-0'}`}>ON</span>
+                <span className={`absolute right-1.5 text-[10px] font-bold transition-opacity ${!showTable ? 'opacity-100 text-red-600' : 'opacity-0'}`}>OFF</span>
+                <span className={`absolute w-5 h-5 rounded-full shadow-sm transition-transform transform ${showTable ? 'bg-green-500 translate-x-9' : 'bg-red-500 translate-x-1'}`} />
               </button>
             </div>
             {showTable && (
