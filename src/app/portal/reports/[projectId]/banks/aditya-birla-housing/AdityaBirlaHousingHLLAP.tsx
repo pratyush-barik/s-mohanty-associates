@@ -202,30 +202,48 @@ async function generateHLLAPPDF(
   const propSubLblW = 150;
   const propValW = CONTENT_W - propNumW - propLblW - propSubLblW;
 
-  r.drawKeyValueRow([{ label: '12', value: '', labelWidth: propNumW, valueWidth: 0 }, { label: 'Occupant', value: '', labelWidth: propLblW, valueWidth: 0 }, { label: 'Name of Occupant', value: fv(fields, 'nameOfOccupant', 'NA'), labelWidth: propSubLblW, valueWidth: propValW }]);
+  r.drawKeyValueRow([{ label: '12', value: '', labelWidth: propNumW, valueWidth: 0, hideBottom: true }, { label: 'Occupant', value: '', labelWidth: propLblW, valueWidth: 0, hideBottom: true }, { label: 'Occupied By', value: fv(fields, 'occupiedBy', 'Vacant'), labelWidth: propSubLblW, valueWidth: propValW }]);
 
-  for (const [lbl, key, def] of [['No of Tenants', 'noOfTenants', 'NA'], ['Relation with applicant', 'relationWithApplicant', 'NA']] as [string, string, string][]) {
-    r.drawKeyValueRow([{ label: '', value: '', labelWidth: propNumW + propLblW, valueWidth: 0 }, { label: lbl, value: fv(fields, key, def), labelWidth: propSubLblW, valueWidth: propValW }]);
+  const sec12Rows = [['Name of Occupant', 'nameOfOccupant', 'NA'], ['No of Tenants', 'noOfTenants', 'NA'], ['Relation with applicant', 'relationWithApplicant', 'NA']];
+  for (let i = 0; i < sec12Rows.length; i++) {
+    const [lbl, key, def] = sec12Rows[i];
+    const isLast = i === sec12Rows.length - 1;
+    r.drawKeyValueRow([{ label: '', value: '', labelWidth: propNumW, valueWidth: 0, hideTop: true, hideBottom: !isLast }, { label: '', value: '', labelWidth: propLblW, valueWidth: 0, hideTop: true, hideBottom: !isLast }, { label: lbl, value: fv(fields, key, def), labelWidth: propSubLblW, valueWidth: propValW }]);
   }
 
-  r.drawKeyValueRow([{ label: '13', value: '', labelWidth: propNumW, valueWidth: 0 }, { label: 'Building details', value: '', labelWidth: propLblW, valueWidth: 0 }, { label: 'Property Demarcation', value: fv(fields, 'propertyDemarcation', 'Yes'), labelWidth: propSubLblW, valueWidth: propValW }]);
+  r.drawKeyValueRow([{ label: '13', value: '', labelWidth: propNumW, valueWidth: 0, hideBottom: true }, { label: 'Building details', value: '', labelWidth: propLblW, valueWidth: 0, hideBottom: true }, { label: 'Property Demarcation', value: fv(fields, 'propertyDemarcation', 'Yes'), labelWidth: propSubLblW, valueWidth: propValW }]);
 
-  for (const [lbl, key, def] of [['Property Identified (Y/N)', 'propertyIdentifiedYN', 'Yes'], ['Property Identified through', 'propertyIdentifiedThrough', ''], ['Type of structure', 'typeOfStructure', 'R.C.C']] as [string, string, string][]) {
-    r.drawKeyValueRow([{ label: '', value: '', labelWidth: propNumW + propLblW, valueWidth: 0 }, { label: lbl, value: fv(fields, key, def), labelWidth: propSubLblW, valueWidth: propValW }]);
+  const sec13Rows = [
+    ['Property Identified (Y/N)', 'propertyIdentifiedYN', 'Yes'], 
+    ['Property Identified through', 'propertyIdentifiedThrough', ''], 
+    ['Type of structure', 'typeOfStructure', 'R.C.C'],
+    ['Land/Plot Area -UDS', 'landPlotAreaUDS', ''],
+    ['No of Blocks', 'noOfBlocks', '0'], 
+    ['No of Units on each floor', 'noOfUnitsOnEachFloor', '0'], 
+    ['No. of Floors', 'noOfFloors', ''], 
+    ['No. of Lifts', 'noOfLifts', ''], 
+    ['Amenities Available', 'amenitiesAvailable', 'Yes'], 
+    ['Delivery Agency', 'deliveryAgency', '']
+  ];
+  for (let i = 0; i < sec13Rows.length; i++) {
+    const [lbl, key, def] = sec13Rows[i];
+    const isLast = i === sec13Rows.length - 1;
+    r.drawKeyValueRow([{ label: '', value: '', labelWidth: propNumW, valueWidth: 0, hideTop: true, hideBottom: !isLast }, { label: '', value: '', labelWidth: propLblW, valueWidth: 0, hideTop: true, hideBottom: !isLast }, { label: lbl, value: fv(fields, key, def), labelWidth: propSubLblW, valueWidth: propValW }]);
   }
 
-  const areaValW2 = propValW / 2;
-  r.drawKeyValueRow([{ label: '', value: '', labelWidth: propNumW + propLblW, valueWidth: 0 }, { label: 'Land/Plot Area -UDS', value: fv(fields, 'landPlotAreaUDS', ''), labelWidth: propSubLblW, valueWidth: propValW }]);
-
-  for (const [lbl, key, def] of [['No of Blocks', 'noOfBlocks', '0'], ['No of Units on each floor', 'noOfUnitsOnEachFloor', '0'], ['No. of Floors', 'noOfFloors', ''], ['No. of Lifts', 'noOfLifts', ''], ['Amenities Available', 'amenitiesAvailable', 'Yes'], ['Delivery Agency', 'deliveryAgency', '']] as [string, string, string][]) {
-    r.drawKeyValueRow([{ label: '', value: '', labelWidth: propNumW + propLblW, valueWidth: 0 }, { label: lbl, value: fv(fields, key, def), labelWidth: propSubLblW, valueWidth: propValW }]);
+  r.drawKeyValueRow([{ label: '14', value: '', labelWidth: propNumW, valueWidth: 0, hideBottom: true }, { label: 'Unit details', value: '', labelWidth: propLblW, valueWidth: 0, hideBottom: true }, { label: 'Property located on Floor', value: fv(fields, 'propertyLocatedOnFloor', ''), labelWidth: propSubLblW, valueWidth: propValW }]);
+  
+  const sec14Rows = [
+    ['Unit Configuration', 'unitConfiguration', ''],
+    ['Carpet area', 'carpetArea', ''],
+    ['SBUA of', 'sbuaOf', ''],
+    ['View from property', 'viewFromProperty', 'Good']
+  ];
+  for (let i = 0; i < sec14Rows.length; i++) {
+    const [lbl, key, def] = sec14Rows[i];
+    const isLast = i === sec14Rows.length - 1;
+    r.drawKeyValueRow([{ label: '', value: '', labelWidth: propNumW, valueWidth: 0, hideTop: true, hideBottom: !isLast }, { label: '', value: '', labelWidth: propLblW, valueWidth: 0, hideTop: true, hideBottom: !isLast }, { label: lbl, value: fv(fields, key, def), labelWidth: propSubLblW, valueWidth: propValW }]);
   }
-
-  r.drawKeyValueRow([{ label: '14', value: '', labelWidth: propNumW, valueWidth: 0 }, { label: 'Unit details', value: '', labelWidth: propLblW, valueWidth: 0 }, { label: 'Property located on Floor', value: fv(fields, 'propertyLocatedOnFloor', ''), labelWidth: propSubLblW, valueWidth: propValW }]);
-  r.drawKeyValueRow([{ label: '', value: '', labelWidth: propNumW + propLblW, valueWidth: 0 }, { label: 'Unit Configuration', value: fv(fields, 'unitConfiguration', ''), labelWidth: propSubLblW, valueWidth: propValW }]);
-  r.drawKeyValueRow([{ label: '', value: '', labelWidth: propNumW + propLblW, valueWidth: 0 }, { label: 'Carpet area', value: fv(fields, 'carpetArea', ''), labelWidth: propSubLblW, valueWidth: propValW }]);
-  r.drawKeyValueRow([{ label: '', value: '', labelWidth: propNumW + propLblW, valueWidth: 0 }, { label: 'SBUA of', value: fv(fields, 'sbuaOf', ''), labelWidth: propSubLblW, valueWidth: propValW }]);
-  r.drawKeyValueRow([{ label: '', value: '', labelWidth: propNumW + propLblW, valueWidth: 0 }, { label: 'View from property', value: fv(fields, 'viewFromProperty', 'Good'), labelWidth: propSubLblW, valueWidth: propValW }]);
 
   r.drawKeyValueRow([
     { label: '15', value: '', labelWidth: propNumW, valueWidth: 0 },

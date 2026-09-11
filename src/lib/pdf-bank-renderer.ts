@@ -196,12 +196,12 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
    * Automatically normalizes column widths to strictly equal CONTENT_W.
    * Labels have 50% opacity soft blue (#DBE6F0), values are transparent (or golden-yellow if highlighted).
    */
-  drawKeyValueRow(cols: { label: string; value: string; labelWidth?: number; valueWidth?: number; highlight?: boolean; bold?: boolean }[]): void {
+  drawKeyValueRow(cols: { label: string; value: string; labelWidth?: number; valueWidth?: number; highlight?: boolean; bold?: boolean; hideTop?: boolean; hideBottom?: boolean }[]): void {
     const fontSize = FONT_SIZE;
     const pad = 3;
 
     // Auto-calculate or normalize widths to match CONTENT_W exactly
-    let processedCols: { label: string; value: string; labelWidth: number; valueWidth: number; highlight?: boolean; bold?: boolean }[] = [];
+    let processedCols: { label: string; value: string; labelWidth: number; valueWidth: number; highlight?: boolean; bold?: boolean; hideTop?: boolean; hideBottom?: boolean }[] = [];
     const hasExplicitWidths = cols.every(c => c.labelWidth !== undefined && c.valueWidth !== undefined);
 
     if (!hasExplicitWidths) {
@@ -262,9 +262,12 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
         height: rowH,
         color: hexToRgb(LBL_BG),
         opacity: BG_OPACITY,
-        borderColor: rgb(0, 0, 0),
-        borderWidth: BORDER_W,
       });
+      // Borders
+      if (!c.hideTop) this.page.drawLine({ start: { x: curX, y: y }, end: { x: curX + c.labelWidth, y: y }, thickness: BORDER_W, color: rgb(0,0,0) });
+      if (!c.hideBottom) this.page.drawLine({ start: { x: curX, y: y - rowH }, end: { x: curX + c.labelWidth, y: y - rowH }, thickness: BORDER_W, color: rgb(0,0,0) });
+      this.page.drawLine({ start: { x: curX, y: y }, end: { x: curX, y: y - rowH }, thickness: BORDER_W, color: rgb(0,0,0) });
+      this.page.drawLine({ start: { x: curX + c.labelWidth, y: y }, end: { x: curX + c.labelWidth, y: y - rowH }, thickness: BORDER_W, color: rgb(0,0,0) });
 
       let lineY = y - pad - fontSize * 0.85;
       for (const line of cw.labelLines) {
@@ -280,26 +283,21 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
       curX += c.labelWidth;
 
       // Draw Value Cell (with 50% opacity yellow highlight or transparent)
-      if (c.highlight) {
-        this.page.drawRectangle({
-          x: curX,
-          y: y - rowH,
-          width: c.valueWidth,
-          height: rowH,
-          color: hexToRgb(VAL_BG),
-          opacity: BG_OPACITY,
-          borderColor: rgb(0, 0, 0),
-          borderWidth: BORDER_W,
-        });
-      } else {
-        this.page.drawRectangle({
-          x: curX,
-          y: y - rowH,
-          width: c.valueWidth,
-          height: rowH,
-          borderColor: rgb(0, 0, 0),
-          borderWidth: BORDER_W,
-        });
+      if (c.valueWidth > 0) {
+        if (c.highlight) {
+          this.page.drawRectangle({
+            x: curX,
+            y: y - rowH,
+            width: c.valueWidth,
+            height: rowH,
+            color: hexToRgb(VAL_BG),
+            opacity: BG_OPACITY,
+          });
+        }
+        if (!c.hideTop) this.page.drawLine({ start: { x: curX, y: y }, end: { x: curX + c.valueWidth, y: y }, thickness: BORDER_W, color: rgb(0,0,0) });
+        if (!c.hideBottom) this.page.drawLine({ start: { x: curX, y: y - rowH }, end: { x: curX + c.valueWidth, y: y - rowH }, thickness: BORDER_W, color: rgb(0,0,0) });
+        this.page.drawLine({ start: { x: curX, y: y }, end: { x: curX, y: y - rowH }, thickness: BORDER_W, color: rgb(0,0,0) });
+        this.page.drawLine({ start: { x: curX + c.valueWidth, y: y }, end: { x: curX + c.valueWidth, y: y - rowH }, thickness: BORDER_W, color: rgb(0,0,0) });
       }
 
       lineY = y - pad - fontSize * 0.85;
