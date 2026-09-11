@@ -285,10 +285,10 @@ async function generateHLLAPPDF(
   r.drawKeyValueRow([{ label: '20', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Ownership Type (Free / Lease Hold)', value: fv(fields, 'ownershipType', 'FREEHOLD'), labelWidth: wideLabel, valueWidth: wideVal }]);
   r.drawKeyValueRow([{ label: '21', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Property documents verification details', value: fv(fields, 'propertyDocsVerification', ''), labelWidth: wideLabel, valueWidth: wideVal }]);
   r.drawKeyValueRow([{ label: '22', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Property Jurisdiction', value: fv(fields, 'propertyJurisdiction', ''), labelWidth: wideLabel, valueWidth: wideVal }]);
-  r.drawKeyValueRow([{ label: '23', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Permissible zoning as per master plan', value: fv(fields, 'permissibleZoning', ''), labelWidth: descW, valueWidth: approvalNoW }, { label: 'Usage As per Site', value: fv(fields, 'usageAsPerSite', ''), labelWidth: dateApprovalW + expiryW, valueWidth: sanctAuthW }]);
+  r.drawKeyValueRow([{ label: '23', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Permissible zoning as per master plan', value: fv(fields, 'permissibleZoning', ''), labelWidth: descW, valueWidth: approvalNoW + dateApprovalW / 2 }, { label: 'Usage As per Site', value: fv(fields, 'usageAsPerSite', ''), labelWidth: dateApprovalW / 2 + expiryW / 2, valueWidth: expiryW / 2 + sanctAuthW }]);
 
   // ====== SETBACKS & BUA ======
-  r.drawKeyValueRow([{ label: '24', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Whether property under demolition list as per authority (Y/N)', value: fv(fields, 'demolitionList', 'No'), labelWidth: CONTENT_W - NUM_W - sanctAuthW, valueWidth: sanctAuthW }]);
+  r.drawKeyValueRow([{ label: '24', value: '', labelWidth: NUM_W, valueWidth: 0 }, { label: 'Whether property under demolition list as per authority (Y/N)', value: fv(fields, 'demolitionList', 'No'), labelWidth: descW + approvalNoW + dateApprovalW + expiryW / 2, valueWidth: expiryW / 2 + sanctAuthW }]);
 
   const setbackCol1 = LABEL_W;
   const setbackCol2 = (CONTENT_W - NUM_W - setbackCol1) / 2;
