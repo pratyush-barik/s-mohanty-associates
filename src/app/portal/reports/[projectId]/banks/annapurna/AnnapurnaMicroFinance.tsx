@@ -238,6 +238,7 @@ export default function AnnapurnaMicroFinance({
       demolitionThreat: raw.futureDemolitionThreat || raw.demolitionThreat || 'NA',
 
       // Section 8: Declaration
+      declarationDate: formatReportDate(raw.declarationDate || raw.reportDate || raw.dateOfVisit || new Date()),
       visitingEngineer: (raw.visitingEngineer && raw.visitingEngineer !== 'Visiting Engineer' && raw.visitingEngineer !== 'Mr. Engineer')
         ? raw.visitingEngineer
         : (formatAssignedEngineers(prefill?.fieldEmployees || prefill?.assignedFieldEmployees || prefill?.assignedEngineers) || raw.visitingEngineer || ''),
@@ -606,6 +607,7 @@ export default function AnnapurnaMicroFinance({
       landAreaSqft: fields.landAreaSqft || fields.landAreaSite || fields.landAreaDocs || '',
       landAreaSite: fields.landAreaSite || fields.landAreaSqft || fields.landAreaDocs || '',
       landAreaDocs: fields.landAreaDocs || fields.landAreaSqft || fields.landAreaSite || '',
+      declarationDate: fields.declarationDate || fields.reportDate || fields.dateOfVisit || '',
     };
 
     return renderer.generateAnnapurnaReport(renderFields, {
@@ -1628,9 +1630,33 @@ export default function AnnapurnaMicroFinance({
               </ul>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-3 gap-4">
               <Field label="Engineer Visited Name">
                 <input className={inputCls} value={fields.visitingEngineer || ''} onChange={e => handleChange('visitingEngineer', e.target.value)} disabled={isReadOnly} placeholder="e.g. Mr. Kundan Singh" />
+              </Field>
+              <Field label="Date">
+                <div className="relative flex items-center">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.declarationDate || ''}
+                    onChange={e => handleChange('declarationDate', e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="DD/MM/YYYY"
+                  />
+                  {!isReadOnly && (
+                    <input
+                      type="date"
+                      className="absolute right-2 opacity-0 w-8 h-8 cursor-pointer"
+                      title="Choose Date"
+                      onChange={e => {
+                        if (e.target.value) {
+                          handleChange('declarationDate', formatReportDate(e.target.value));
+                        }
+                      }}
+                    />
+                  )}
+                </div>
               </Field>
               <Field label="Place">
                 <input className={inputCls} value={fields.place || 'Bhubaneswar'} onChange={e => handleChange('place', e.target.value)} disabled={isReadOnly} />

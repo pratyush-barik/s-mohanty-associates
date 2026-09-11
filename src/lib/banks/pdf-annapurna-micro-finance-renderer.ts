@@ -210,6 +210,7 @@ export interface AnnapurnaMicroFinanceReportFields {
   // Declaration
   declarationSiteEngineer?: string;
   declarationInspectionDate?: string;
+  declarationDate?: string;
   place?: string;
   assignedEngineers?: { name: string; designation?: string; role?: string }[];
 
@@ -1204,7 +1205,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     // Date & Place (as per original template provided, with clear spacing below table)
     this.checkPageBreak(50);
     const yFooter = this.pdfY(this.cursorY) - FONT_SIZE;
-    const dateFooter = formatReportDate(fields.reportDate || fields.dateOfVisit, '');
+    const dateFooter = formatReportDate(fields.declarationDate || fields.reportDate || fields.dateOfVisit, '');
     this.page.drawText(`Date: ${this.sanitizeText(dateFooter)}`, {
       x: MARGIN_L,
       y: yFooter,
