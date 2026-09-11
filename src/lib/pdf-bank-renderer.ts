@@ -466,7 +466,6 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
       }
 
       this.cursorY += rowH;
-    this.lastRowHadHiddenBottom = processedCols.some(c => c.hideBottom);
     }
   }
 
