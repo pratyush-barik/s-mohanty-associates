@@ -543,38 +543,38 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
                 <tbody>
                   <tr>
                     <td className={tdLabelCls}>Deal Number</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.dealNumber || ''} placeholder="Deal Number" /></td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.dealNumber || ''} /></td>
                     <td className={tdLabelCls}>Asset id</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.assetId || ''} placeholder="Asset id" /></td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.assetId || ''} /></td>
                   </tr>
                   <tr>
                     <td className={tdLabelCls}>Branch Name</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.branchName || ''} placeholder="Branch Name" /></td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.branchName || ''} /></td>
                     <td className={tdLabelCls}>Type of Case</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.typeOfCase || ''} placeholder="Type of Case" /></td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.typeOfCase || ''} /></td>
                   </tr>
                   <tr>
                     <td className={tdLabelCls}>Valuer Name</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.valuerName || ''} placeholder="Valuer Name" /></td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.valuerName || ''} /></td>
                     <td className={tdLabelCls}>Product Type</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.productType || ''} placeholder="Product Type" /></td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.productType || ''} /></td>
                   </tr>
                   <tr>
                     <td className={tdLabelCls}>Valuer Ref No</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.valuerRefNo || ''} placeholder="Valuer Ref No" /></td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.valuerRefNo || ''} /></td>
                     <td className={tdLabelCls}>Date of Visit</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.dateOfVisit || fields.dateOfInspection || ''} placeholder="Date of Visit" /></td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.dateOfVisit || fields.dateOfInspection || ''} /></td>
                   </tr>
                   <tr>
                     <td className={tdLabelCls}>Valuer Feedback</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.valuerFeedback || ''} placeholder="Valuer Feedback" /></td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.valuerFeedback || ''} /></td>
                     <td className={tdLabelCls}>Date of Report</td>
-                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.dateOfReport || fields.dateOfValuation || ''} placeholder="Date of Report" /></td>
+                    <td className={tdInputCls}><input className={inputCls} disabled value={fields.dateOfReport || fields.dateOfValuation || ''} /></td>
                   </tr>
                   <tr>
                     <td className={tdLabelCls}>Property Address</td>
                     <td colSpan={3} className={tdInputCls}>
-                      <textarea className={`${inputCls} !rounded-xl min-h-[60px] resize-y`} disabled value={fields.addressAsPerDocument || ''} placeholder="Property Address" />
+                      <textarea className={`${inputCls} !rounded-xl min-h-[60px] resize-y`} disabled value={fields.addressAsPerDocument || ''} />
                     </td>
                   </tr>
                   <tr>
@@ -586,7 +586,6 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
                           value={fields.deviationsObservations || ''}
                           onChange={e => handleChange('deviationsObservations', e.target.value)}
                           disabled={isReadOnly}
-                          placeholder="Enter deviations or observations here..."
                         />
                       </div>
                     </td>
@@ -617,12 +616,12 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       { key: 'dealNumber', label: 'Deal Number' },
       { key: 'assetId', label: 'Asset ID' },
       { key: 'branchName', label: 'Branch Name' },
-      { key: 'typeOfCase', label: 'Type of Case', default: 'Home Loan' },
-      { key: 'valuerName', label: 'Valuer Name', default: 'S Mohanty Associates' },
-      { key: 'productType', label: 'Product Type', default: 'Home Loan - Resale' },
-      { key: 'valuerRefNo', label: 'Valuer Ref No', dynamicDefaultField: 'refNo' },
+      { key: 'typeOfCase', label: 'Type of Case' },
+      { key: 'valuerName', label: 'Valuer Name' },
+      { key: 'productType', label: 'Product Type' },
+      { key: 'valuerRefNo', label: 'Valuer Ref No' },
       { key: 'dateOfVisit', label: 'Date of Visit', type: 'date' },
-      { key: 'valuerFeedback', label: 'Valuer Feedback', default: 'Positive' },
+      { key: 'valuerFeedback', label: 'Valuer Feedback' },
       { key: 'dateOfReport', label: 'Date of Report', type: 'date' },
       { key: 'contactedPerson', label: 'Contacted Person' },
       { key: 'relationWithCustomer', label: 'Relation with Customer', default: 'Seller' },
