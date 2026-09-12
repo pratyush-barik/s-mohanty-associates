@@ -54,11 +54,14 @@ interface AccomRow {
 }
 
 const DEFAULT_BUA_ROWS: BuaRow[] = [
-  { floor: 'Ground Floor', asPerSite: '1080sqft', asPerPlan: 'NA', deviations: 'No', remarks: '' },
-  { floor: 'First Floor', asPerSite: '846sqft', asPerPlan: 'NA', deviations: 'No', remarks: '' },
-  { floor: 'Second Floor', asPerSite: '300sqft', asPerPlan: 'NA', deviations: 'No', remarks: '' },
-  { floor: 'Total', asPerSite: '2226sqft', asPerPlan: 'NA', deviations: 'No', remarks: '' },
+  { floor: 'Ground Floor', asPerSite: '', asPerPlan: 'NA', deviations: 'No', remarks: '' },
+  { floor: 'Total', asPerSite: '', asPerPlan: 'NA', deviations: 'No', remarks: '' },
 ];
+
+const isLegacyMockBua = (rows?: BuaRow[]) => {
+  if (!Array.isArray(rows) || rows.length < 4) return false;
+  return rows[0]?.asPerSite === '1080sqft' && rows.some(r => r.asPerSite === '2226sqft');
+};
 
 const DEFAULT_ACCOM_ROWS: AccomRow[] = [
   { floor: 'Ground Floor', unitDetails: '' },
@@ -354,7 +357,7 @@ export default function AdityaBirlaCapitalSTSL({
     docConversionDetails: initialFields?.docConversionDetails || 'NA',
 
     // Built-Up Area
-    buaRows: initialFields?.buaRows || DEFAULT_BUA_ROWS,
+    buaRows: (initialFields?.buaRows && !isLegacyMockBua(initialFields.buaRows)) ? initialFields.buaRows : DEFAULT_BUA_ROWS,
 
     // Valuation Table
     plotAreaDocs: initialFields?.plotAreaDocs !== undefined ? initialFields.plotAreaDocs : '',
@@ -2157,7 +2160,7 @@ export default function AdityaBirlaCapitalSTSL({
                               handleChange('buaRows', updated);
                             }}
                             className={inputCls + ' !py-1.5 text-xs text-right'}
-                            placeholder="e.g. 1080sqft"
+                            placeholder="e.g. 1000 sqft"
                           />
                         </td>
                         <td className="px-2 py-1.5 border-b border-[#e9ecef]">
@@ -2377,7 +2380,7 @@ export default function AdityaBirlaCapitalSTSL({
                         value={fields.buaNorms ?? 'NA'}
                         onChange={val => handleChange('buaNorms', val)}
                         disabled={isReadOnly}
-                        placeholder="e.g. 2226"
+                        placeholder="e.g. 2000"
                         defaultVal=""
                       />
                     </td>
@@ -2419,8 +2422,8 @@ export default function AdityaBirlaCapitalSTSL({
                         value={fields.buaMeasurementArea ?? ''}
                         onChange={val => handleChange('buaMeasurementArea', val)}
                         disabled={isReadOnly}
-                        placeholder="e.g. 2226"
-                        defaultVal="2226"
+                        placeholder="e.g. 2000"
+                        defaultVal=""
                       />
                     </td>
                     <td className="px-2 py-1.5 border-b border-[#e9ecef]">

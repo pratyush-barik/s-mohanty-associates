@@ -656,24 +656,18 @@ export default function ArthanFinance({
               </Field>
             </div>
             {/* Address of property being appraised — Soft Container (Aditya Birla STSL Pattern) */}
-            <div className="md:col-span-2 bg-slate-50/90 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
-              <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-2">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#b8860b]"></span>
-                  <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
-                    Address of Property Being Appraised
-                  </h3>
-                </div>
-                <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                  TRF, Document & Site Observations
-                </span>
+            <div className="md:col-span-2 bg-amber-50/80 p-4 rounded-xl border border-amber-200 shadow-xs space-y-3">
+              <div className="border-b border-amber-200/80 pb-2">
+                <h3 className="text-xs font-bold text-amber-900 uppercase tracking-wide">
+                  Address of Property Being Appraised
+                </h3>
               </div>
 
               <div className="space-y-3">
                 <Field label="As per TRF">
                   <textarea
-                    rows={2}
-                    className={inputCls}
+                    rows={3}
+                    className={`${inputCls} min-h-[72px] resize-y leading-relaxed`}
                     value={fields.addressAsPerTRF || ''}
                     onChange={e => handleChange('addressAsPerTRF', e.target.value)}
                     disabled={isReadOnly}
@@ -682,8 +676,8 @@ export default function ArthanFinance({
                 </Field>
                 <Field label="As per Document">
                   <textarea
-                    rows={2}
-                    className={inputCls}
+                    rows={3}
+                    className={`${inputCls} min-h-[72px] resize-y leading-relaxed`}
                     value={fields.addressAsPerDocument || ''}
                     onChange={e => handleChange('addressAsPerDocument', e.target.value)}
                     disabled={isReadOnly}
@@ -692,8 +686,8 @@ export default function ArthanFinance({
                 </Field>
                 <Field label="As per Actual at site">
                   <textarea
-                    rows={2}
-                    className={inputCls}
+                    rows={3}
+                    className={`${inputCls} min-h-[72px] resize-y leading-relaxed`}
                     value={fields.addressAsPerActualSite || ''}
                     onChange={e => handleChange('addressAsPerActualSite', e.target.value)}
                     disabled={isReadOnly}
@@ -905,56 +899,42 @@ export default function ArthanFinance({
         {/* ════ SECTION 4: SETBACKS / MARGIN ════ */}
         <Section title="Setbacks / Margin" number={4} id="sec-4">
           <div className="space-y-4">
-            <div className="bg-slate-50/90 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
-              <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-2">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#b8860b]"></span>
-                  <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
-                    Setbacks & Margin in the Building (in Ft)
-                  </h3>
-                </div>
-                <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                  Front, Rear, Left & Right (Ft)
-                </span>
-              </div>
-
-              <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-2xs">
-                <table className="w-full text-sm border-collapse">
-                  <thead>
-                    <tr className="bg-[#0a1628] text-white">
-                      <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider w-2/5">
-                        Setbacks / Margin in the Building (in Ft)
-                      </th>
-                      <th className="px-3 py-2.5 text-center font-semibold text-xs uppercase tracking-wider">Front</th>
-                      <th className="px-3 py-2.5 text-center font-semibold text-xs uppercase tracking-wider">Rear</th>
-                      <th className="px-3 py-2.5 text-center font-semibold text-xs uppercase tracking-wider">Left Side</th>
-                      <th className="px-3 py-2.5 text-center font-semibold text-xs uppercase tracking-wider">Right Side</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-950">
-                    <tr className="hover:bg-slate-50/70 dark:hover:bg-slate-900/50 transition-colors">
-                      <td className="px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-50/60 dark:bg-slate-900/40">
-                        As per sanctioned / permissible byelaws
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="bg-[#0a1628] text-white">
+                    <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider w-2/5">
+                      Setbacks / Margin in the Building (in Ft)
+                    </th>
+                    <th className="px-3 py-2.5 text-center font-semibold text-xs uppercase tracking-wider">Front</th>
+                    <th className="px-3 py-2.5 text-center font-semibold text-xs uppercase tracking-wider">Rear</th>
+                    <th className="px-3 py-2.5 text-center font-semibold text-xs uppercase tracking-wider">Left Side</th>
+                    <th className="px-3 py-2.5 text-center font-semibold text-xs uppercase tracking-wider">Right Side</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  <tr className="bg-white hover:bg-neutral-50/50 transition-colors">
+                    <td className="px-3 py-2 text-xs font-semibold text-slate-700 bg-slate-50/60 border-b border-[#e9ecef]">
+                      As per sanctioned / permissible byelaws
+                    </td>
+                    {(['setbackFrontSanctioned', 'setbackRearSanctioned', 'setbackLeftSanctioned', 'setbackRightSanctioned'] as const).map(k => (
+                      <td key={k} className="px-2 py-1.5 border-b border-[#e9ecef]">
+                        <input className={inputCls + ' !py-1.5 text-xs text-center font-medium'} value={fields[k] || ''} onChange={e => handleChange(k, e.target.value)} disabled={isReadOnly} placeholder="NA" />
                       </td>
-                      {(['setbackFrontSanctioned', 'setbackRearSanctioned', 'setbackLeftSanctioned', 'setbackRightSanctioned'] as const).map(k => (
-                        <td key={k} className="px-2 py-1.5">
-                          <input className={inputCls + ' !py-1.5 text-xs text-center font-medium'} value={fields[k] || ''} onChange={e => handleChange(k, e.target.value)} disabled={isReadOnly} placeholder="NA" />
-                        </td>
-                      ))}
-                    </tr>
-                    <tr className="hover:bg-slate-50/70 dark:hover:bg-slate-900/50 transition-colors">
-                      <td className="px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-50/60 dark:bg-slate-900/40">
-                        As per Site / Actual
+                    ))}
+                  </tr>
+                  <tr className="bg-white hover:bg-neutral-50/50 transition-colors">
+                    <td className="px-3 py-2 text-xs font-semibold text-slate-700 bg-slate-50/60 border-b border-[#e9ecef]">
+                      As per Site / Actual
+                    </td>
+                    {(['setbackFrontSite', 'setbackRearSite', 'setbackLeftSite', 'setbackRightSite'] as const).map(k => (
+                      <td key={k} className="px-2 py-1.5 border-b border-[#e9ecef]">
+                        <input className={inputCls + ' !py-1.5 text-xs text-center font-medium'} value={fields[k] || ''} onChange={e => handleChange(k, e.target.value)} disabled={isReadOnly} placeholder="" />
                       </td>
-                      {(['setbackFrontSite', 'setbackRearSite', 'setbackLeftSite', 'setbackRightSite'] as const).map(k => (
-                        <td key={k} className="px-2 py-1.5">
-                          <input className={inputCls + ' !py-1.5 text-xs text-center font-medium'} value={fields[k] || ''} onChange={e => handleChange(k, e.target.value)} disabled={isReadOnly} placeholder="" />
-                        </td>
-                      ))}
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </Section>
@@ -974,157 +954,138 @@ export default function ArthanFinance({
         {/* ════ SECTION 6: BUA & ACCOMMODATION DETAILS ════ */}
         <Section title="Built-up Area & Accommodation Details" number={6} id="sec-6">
           <div className="space-y-4">
-            {/* Soft Container matching Aditya Birla STSL standard */}
-            <div className="bg-slate-50/90 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
-              <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-2">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#b8860b]"></span>
-                  <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
-                    Floor-Wise Built-Up Area & Usage Breakup
-                  </h3>
-                </div>
-                <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                  Carpet, Site Actual & Adopted BUA
-                </span>
-              </div>
-
-              {/* Table Container */}
-              <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-2xs">
-                <table className="w-full text-sm border-collapse">
-                  <thead>
-                    <tr className="bg-[#0a1628] text-white">
-                      <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider">Floor</th>
-                      <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider">Accommodation</th>
-                      <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">Carpet Area (Sft)</th>
-                      <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">Actual BUA / SBUA (Sft)</th>
-                      <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">Permissible BUA (Sft)</th>
-                      <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">Adopted BUA (Sft)</th>
-                      {!isReadOnly && <th className="px-2 py-2.5 w-10 text-center"></th>}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="bg-[#0a1628] text-white">
+                    <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider">Floor</th>
+                    <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider">Accommodation</th>
+                    <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">Carpet Area (Sft)</th>
+                    <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">Actual BUA / SBUA (Sft)</th>
+                    <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">Permissible BUA (Sft)</th>
+                    <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">Adopted BUA (Sft)</th>
+                    {!isReadOnly && <th className="px-2 py-2.5 w-10 text-center"></th>}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {(fields.buaFloors || []).map((fl, idx) => (
+                    <tr key={idx} className="bg-white hover:bg-neutral-50/50 transition-colors">
+                      <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                        <input
+                          className={inputCls + ' !py-1.5 text-xs font-bold text-[#0f2038]'}
+                          value={fl.floor || ''}
+                          onChange={e => handleBUAFloorChange(idx, 'floor', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="e.g. Ground Floor"
+                        />
+                      </td>
+                      <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                        <input
+                          className={inputCls + ' !py-1.5 text-xs'}
+                          value={fl.accommodation || ''}
+                          onChange={e => handleBUAFloorChange(idx, 'accommodation', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="e.g. Residential / 1 Hall, 2 BHK"
+                        />
+                      </td>
+                      <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                        <input
+                          className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
+                          value={fl.carpetArea || ''}
+                          onChange={e => handleBUAFloorChange(idx, 'carpetArea', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="0.00"
+                        />
+                      </td>
+                      <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                        <input
+                          className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
+                          value={fl.actualBUA || ''}
+                          onChange={e => handleBUAFloorChange(idx, 'actualBUA', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="0.00"
+                        />
+                      </td>
+                      <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                        <input
+                          className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
+                          value={fl.permissibleBUA || ''}
+                          onChange={e => handleBUAFloorChange(idx, 'permissibleBUA', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="NA"
+                        />
+                      </td>
+                      <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                        <input
+                          className={inputCls + ' !py-1.5 text-xs text-right font-bold text-emerald-700 bg-emerald-50/50'}
+                          value={fl.adoptedBUA || ''}
+                          onChange={e => handleBUAFloorChange(idx, 'adoptedBUA', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="0.00"
+                        />
+                      </td>
+                      {!isReadOnly && (
+                        <td className="px-2 py-1.5 border-b border-[#e9ecef] text-center">
+                          {(fields.buaFloors || []).length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveBUAFloor(idx)}
+                              className="text-red-400 hover:text-red-600 text-lg leading-none cursor-pointer p-1"
+                              title="Remove Floor"
+                            >
+                              &times;
+                            </button>
+                          )}
+                        </td>
+                      )}
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-950">
-                    {(fields.buaFloors || []).map((fl, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50/70 dark:hover:bg-slate-900/50 transition-colors">
-                        <td className="px-2 py-1.5 border-b border-[#e9ecef] dark:border-slate-800">
-                          <input
-                            className={inputCls + ' !py-1.5 text-xs font-bold text-[#0f2038] dark:text-slate-100'}
-                            value={fl.floor || ''}
-                            onChange={e => handleBUAFloorChange(idx, 'floor', e.target.value)}
-                            disabled={isReadOnly}
-                            placeholder="e.g. Ground Floor"
-                          />
-                        </td>
-                        <td className="px-2 py-1.5 border-b border-[#e9ecef] dark:border-slate-800">
-                          <input
-                            className={inputCls + ' !py-1.5 text-xs'}
-                            value={fl.accommodation || ''}
-                            onChange={e => handleBUAFloorChange(idx, 'accommodation', e.target.value)}
-                            disabled={isReadOnly}
-                            placeholder="e.g. Residential / 1 Hall, 2 BHK"
-                          />
-                        </td>
-                        <td className="px-2 py-1.5 border-b border-[#e9ecef] dark:border-slate-800">
-                          <input
-                            className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
-                            value={fl.carpetArea || ''}
-                            onChange={e => handleBUAFloorChange(idx, 'carpetArea', e.target.value)}
-                            disabled={isReadOnly}
-                            placeholder="0.00"
-                          />
-                        </td>
-                        <td className="px-2 py-1.5 border-b border-[#e9ecef] dark:border-slate-800">
-                          <input
-                            className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
-                            value={fl.actualBUA || ''}
-                            onChange={e => handleBUAFloorChange(idx, 'actualBUA', e.target.value)}
-                            disabled={isReadOnly}
-                            placeholder="0.00"
-                          />
-                        </td>
-                        <td className="px-2 py-1.5 border-b border-[#e9ecef] dark:border-slate-800">
-                          <input
-                            className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
-                            value={fl.permissibleBUA || ''}
-                            onChange={e => handleBUAFloorChange(idx, 'permissibleBUA', e.target.value)}
-                            disabled={isReadOnly}
-                            placeholder="NA"
-                          />
-                        </td>
-                        <td className="px-2 py-1.5 border-b border-[#e9ecef] dark:border-slate-800">
-                          <input
-                            className={inputCls + ' !py-1.5 text-xs text-right font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/20'}
-                            value={fl.adoptedBUA || ''}
-                            onChange={e => handleBUAFloorChange(idx, 'adoptedBUA', e.target.value)}
-                            disabled={isReadOnly}
-                            placeholder="0.00"
-                          />
-                        </td>
-                        {!isReadOnly && (
-                          <td className="px-2 py-1.5 border-b border-[#e9ecef] dark:border-slate-800 text-center">
-                            {(fields.buaFloors || []).length > 1 && (
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveBUAFloor(idx)}
-                                className="text-red-400 hover:text-red-600 text-lg leading-none cursor-pointer p-1"
-                                title="Remove Floor"
-                              >
-                                &times;
-                              </button>
-                            )}
-                          </td>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot className="bg-slate-50 dark:bg-slate-900/90 font-bold border-t-2 border-slate-300 dark:border-slate-700 text-xs">
-                    <tr>
-                      <td className="px-3 py-2.5 text-slate-800 dark:text-slate-200 font-bold uppercase tracking-wider">
-                        Total
-                      </td>
-                      <td className="px-3 py-2.5 text-slate-400 dark:text-slate-500 font-normal text-center">
-                        -
-                      </td>
-                      <td className="px-3 py-2.5 text-right text-slate-800 dark:text-slate-200 font-bold">
-                        {totalCarpet > 0 ? totalCarpet.toFixed(2) : '-'}
-                      </td>
-                      <td className="px-3 py-2.5 text-right text-slate-800 dark:text-slate-200 font-bold">
-                        {totalActualBUA > 0 ? totalActualBUA.toFixed(2) : '-'}
-                      </td>
-                      <td className="px-3 py-2.5 text-right text-slate-800 dark:text-slate-200 font-bold">
-                        {totalPermissibleBUA > 0 ? totalPermissibleBUA.toFixed(2) : 'NA'}
-                      </td>
-                      <td className="px-3 py-2.5 text-right text-emerald-700 dark:text-emerald-400 font-bold text-sm bg-emerald-50/70 dark:bg-emerald-950/30">
-                        {totalAdoptedBUA > 0 ? `${totalAdoptedBUA.toFixed(2)} Sft` : '-'}
-                      </td>
-                      {!isReadOnly && <td></td>}
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-
-              {!isReadOnly && (
-                <button
-                  type="button"
-                  onClick={handleAddBUAFloor}
-                  className="text-sm text-[#b8860b] hover:text-[#96700a] font-semibold flex items-center gap-1.5 pt-1 cursor-pointer transition-colors"
-                >
-                  <span className="text-lg leading-none font-bold">+</span> Add Floor Details
-                </button>
-              )}
+                  ))}
+                </tbody>
+                <tfoot className="bg-slate-50 font-bold border-t-2 border-slate-300 text-xs">
+                  <tr>
+                    <td className="px-3 py-2.5 text-slate-800 font-bold uppercase tracking-wider">
+                      Total
+                    </td>
+                    <td className="px-3 py-2.5 text-slate-400 font-normal text-center">
+                      -
+                    </td>
+                    <td className="px-3 py-2.5 text-right text-slate-800 font-bold">
+                      {totalCarpet > 0 ? totalCarpet.toFixed(2) : '-'}
+                    </td>
+                    <td className="px-3 py-2.5 text-right text-slate-800 font-bold">
+                      {totalActualBUA > 0 ? totalActualBUA.toFixed(2) : '-'}
+                    </td>
+                    <td className="px-3 py-2.5 text-right text-slate-800 font-bold">
+                      {totalPermissibleBUA > 0 ? totalPermissibleBUA.toFixed(2) : 'NA'}
+                    </td>
+                    <td className="px-3 py-2.5 text-right text-emerald-700 font-bold text-sm bg-emerald-50/70">
+                      {totalAdoptedBUA > 0 ? `${totalAdoptedBUA.toFixed(2)} Sft` : '-'}
+                    </td>
+                    {!isReadOnly && <td></td>}
+                  </tr>
+                </tfoot>
+              </table>
             </div>
 
-            {/* Violation Observed Container */}
-            <div className="bg-slate-50/70 dark:bg-slate-900/40 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
-              <Field label="Violation observed if any">
-                <input
-                  className={inputCls}
-                  value={fields.violationObserved || ''}
-                  onChange={e => handleChange('violationObserved', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="e.g. No violation observed / As per local bye-laws"
-                />
-              </Field>
-            </div>
+            {!isReadOnly && (
+              <button
+                type="button"
+                onClick={handleAddBUAFloor}
+                className="text-sm text-[#b8860b] hover:text-[#96700a] font-semibold flex items-center gap-1.5 pt-1 cursor-pointer transition-colors"
+              >
+                <span className="text-lg leading-none font-bold">+</span> Add Floor Details
+              </button>
+            )}
+
+            <Field label="Violation observed if any">
+              <input
+                className={inputCls}
+                value={fields.violationObserved || ''}
+                onChange={e => handleChange('violationObserved', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="e.g. No violation observed / As per local bye-laws"
+              />
+            </Field>
           </div>
         </Section>
 
@@ -1239,17 +1200,11 @@ export default function ArthanFinance({
             <Field label="Flat / Apartment Value as per Government Rate (Rs)">
               <input className={inputCls} value={fields.flatValueGovtRate || ''} onChange={e => handleChange('flatValueGovtRate', e.target.value)} disabled={isReadOnly} placeholder="NA" />
             </Field>
-            <div className="md:col-span-2 bg-slate-50/90 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3 mt-2">
-              <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-2">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#b8860b]"></span>
-                  <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
-                    Geo Coordinates (GPS Location)
-                  </h3>
-                </div>
-                <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                  Latitude & Longitude (Decimal Degrees)
-                </span>
+            <div className="md:col-span-2 bg-amber-50/80 p-4 rounded-xl border border-amber-200 shadow-xs space-y-3 mt-2">
+              <div className="border-b border-amber-200/80 pb-2">
+                <h3 className="text-xs font-bold text-amber-900 uppercase tracking-wide">
+                  Geo Coordinates (GPS Location)
+                </h3>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <Field label="Latitude (N)">
