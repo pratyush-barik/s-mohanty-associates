@@ -72,6 +72,7 @@ export interface ArthanFinanceReportFields {
   nearestLandmark?: string;
   customerName?: string;       // Name of Customer/Applicant & Contact Details
   ownerName?: string;          // Name of Current Owner / Seller
+  ownerOrSeller?: 'Owner' | 'Seller'; // Choice between Owner and Seller
   personMetOnSite?: string;    // Name of Person met at site & Contact No.
   addressAsPerTRF?: string;
   addressAsPerDocument?: string;
@@ -243,6 +244,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       highlight?: boolean;
       isHeader?: boolean;
       isLabel?: boolean;
+      segments?: { text: string; bold?: boolean }[];
     } = {}
   ): void {
     const fontSize = options.fontSize || FONT_SIZE;
@@ -279,6 +281,35 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     }
 
     this.page.drawRectangle(rectOpts);
+
+    // Multi-segment text support (e.g. mixed regular and bold in the same cell)
+    if (options.segments && options.segments.length > 0) {
+      const padX = 4;
+      const padY = 3;
+      const lineH = fontSize * LINE_HEIGHT;
+      let startY: number;
+      if (vAlign === 'middle' && h >= lineH + padY * 2) {
+        startY = (y - h / 2) + (lineH / 2) - (fontSize * 0.82);
+      } else {
+        startY = y - padY - (fontSize * 0.82);
+      }
+
+      let lineX = x + padX;
+      for (const seg of options.segments) {
+        const segClean = this.sanitizeText(seg.text);
+        if (!segClean) continue;
+        const segFont = seg.bold ? this.fontBold : this.fontRegular;
+        this.page.drawText(segClean, {
+          x: Math.max(x + 1, lineX),
+          y: startY,
+          size: fontSize,
+          font: segFont,
+          color: rgb(0, 0, 0),
+        });
+        lineX += segFont.widthOfTextAtSize(segClean, fontSize);
+      }
+      return;
+    }
 
     const cleanText = this.sanitizeText(text);
     if (!cleanText) return;
@@ -325,6 +356,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
   drawRow(
     cols: {
       text: string;
+      segments?: { text: string; bold?: boolean }[];
       width: number;
       bold?: boolean;
       italic?: boolean;
@@ -449,9 +481,24 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       { text: fields.customerName || '', width: CONTENT_W - s1L },
     ], 20, 4);
 
-    // Row: Name of Current Owner / Seller
+    // Row: Name of Current Owner / Seller (bold whichever was chosen: Owner or Seller)
+    const isSeller = fields.ownerOrSeller === 'Seller';
     this.drawRow([
-      { text: 'Name of Current Owner / Seller', width: s1L, isLabel: true },
+      {
+        text: 'Name of Current Owner / Seller',
+        segments: isSeller
+          ? [
+              { text: 'Name of Current Owner / ', bold: false },
+              { text: 'Seller', bold: true },
+            ]
+          : [
+              { text: 'Name of Current ', bold: false },
+              { text: 'Owner', bold: true },
+              { text: ' / Seller', bold: false },
+            ],
+        width: s1L,
+        isLabel: true,
+      },
       { text: fields.ownerName || '', width: CONTENT_W - s1L },
     ], 20, 4);
 
@@ -514,7 +561,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
 
     this.drawRow([
       { text: 'Status of Land Holding', width: s2L, isLabel: true },
-      { text: fields.statusOfLandHolding || '', width: s2V },
+      { text: fields.statusOfLandHolding || '', width: s2V, bold: true },
       { text: 'Developed By', width: s2L2, isLabel: true },
       { text: fields.developedBy || 'NA', width: s2V2 },
     ], 20, 4);
@@ -542,14 +589,14 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
 
     this.drawRow([
       { text: 'Plot Demarcation', width: s2L, isLabel: true },
-      { text: fields.plotDemarcation || 'No', width: s2V },
+      { text: fields.plotDemarcation || 'NA', width: s2V },
       { text: 'Property Identifiable', width: s2L2, isLabel: true },
-      { text: fields.propertyIdentifiable || 'No', width: s2V2 },
+      { text: fields.propertyIdentifiable || 'NA', width: s2V2 },
     ], 20, 4);
 
     this.drawRow([
       { text: 'Identified Through', width: s2L, isLabel: true },
-      { text: fields.identifiedThrough || 'Customer', width: s2V },
+      { text: fields.identifiedThrough || 'NA', width: s2V },
       { text: 'Within MC / GP Limit & Distance From Nearest M.C', width: s2L2, isLabel: true },
       { text: fields.withinMCLimit || '', width: s2V2 },
     ], 20, 4);
@@ -584,9 +631,9 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
 
     this.drawRow([
       { text: 'Construction Stage of the Property (in 100%)', width: s2L, isLabel: true },
-      { text: fields.constructionStage || '100%', width: s2V },
+      { text: fields.constructionStage || 'NA', width: s2V },
       { text: 'Disbursement Recommended (in %)', width: s2L2, isLabel: true },
-      { text: fields.disbursementRecommended || '100%', width: s2V2 },
+      { text: fields.disbursementRecommended || 'NA', width: s2V2 },
     ], 20, 4);
 
     this.drawRow([
