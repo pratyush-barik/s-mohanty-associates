@@ -61,6 +61,170 @@ export interface ArthanFinanceBUAFloor {
   adoptedBUA: string;
 }
 
+/**
+ * Sanitize input to only accept positive floats (digits and at most one decimal point).
+ * Strips negative signs and any invalid characters.
+ */
+export const sanitizePositiveFloat = (val: string): string => {
+  if (!val) return '';
+  const trimmed = val.trim();
+  if (trimmed.toUpperCase() === 'NA') return '';
+  let cleaned = val.replace(/[^0-9.]/g, '');
+  const parts = cleaned.split('.');
+  if (parts.length > 2) {
+    cleaned = parts[0] + '.' + parts.slice(1).join('');
+  }
+  return cleaned;
+};
+
+/**
+ * Sanitize input to only accept positive floats or 'NA' (allows typing 'N' or 'NA').
+ * Strips negative signs and invalid characters.
+ */
+export const sanitizePositiveFloatWithNA = (val: string): string => {
+  if (!val) return '';
+  const trimmed = val.trim();
+  const upper = trimmed.toUpperCase();
+  if (upper === 'NA' || upper === 'N') return upper;
+  let cleaned = val.replace(/[^0-9.]/g, '');
+  const parts = cleaned.split('.');
+  if (parts.length > 2) {
+    cleaned = parts[0] + '.' + parts.slice(1).join('');
+  }
+  return cleaned;
+};
+
+/**
+ * Sanitize input to only accept positive integers.
+ * Strips negative signs, decimals, and non-digit characters.
+ */
+export const sanitizePositiveInt = (val: string, maxLen?: number): string => {
+  if (!val) return '';
+  let cleaned = val.replace(/[^0-9]/g, '');
+  if (maxLen && cleaned.length > maxLen) {
+    cleaned = cleaned.slice(0, maxLen);
+  }
+  return cleaned;
+};
+
+/**
+ * Sanitize input to only accept positive integers or 'NA'.
+ */
+export const sanitizePositiveIntWithNA = (val: string, maxLen?: number): string => {
+  if (!val) return '';
+  const upper = val.trim().toUpperCase();
+  if (upper === 'NA' || upper === 'N') return upper;
+  let cleaned = val.replace(/[^0-9]/g, '');
+  if (maxLen && cleaned.length > maxLen) {
+    cleaned = cleaned.slice(0, maxLen);
+  }
+  return cleaned;
+};
+
+/**
+ * Sanitize percentage values: positive float between 0 and 100, with optional '%' suffix.
+ * No negative values allowed.
+ */
+export const sanitizePercentage = (val: string): string => {
+  if (!val) return '';
+  const trimmed = val.trim();
+  const upper = trimmed.toUpperCase();
+  if (upper === 'NA' || upper === 'N') return upper;
+  const hasPercent = trimmed.includes('%');
+  let cleaned = trimmed.replace(/[^0-9.]/g, '');
+  const parts = cleaned.split('.');
+  if (parts.length > 2) {
+    cleaned = parts[0] + '.' + parts.slice(1).join('');
+  }
+  if (!cleaned) return hasPercent ? '%' : '';
+  const num = parseFloat(cleaned);
+  if (!isNaN(num) && num > 100) {
+    cleaned = '100';
+  }
+  return hasPercent ? `${cleaned}%` : cleaned;
+};
+
+/**
+ * Sanitize positive numerical range (e.g. "100-200" or "1500-2000").
+ * Strips leading negative signs and ensures only positive numbers on both sides of hyphen.
+ */
+export const sanitizePositiveRange = (val: string): string => {
+  if (!val) return '';
+  const trimmed = val.trim();
+  const upper = trimmed.toUpperCase();
+  if (upper === 'NA' || upper === 'N') return upper;
+  // Strip any leading minus signs or whitespace
+  let cleaned = val.replace(/^[-\s]+/g, '');
+  // Keep only digits, dots, spaces, and hyphens
+  cleaned = cleaned.replace(/[^0-9.\s-]/g, '');
+  // Keep at most one hyphen for the range separator
+  const parts = cleaned.split('-');
+  if (parts.length > 2) {
+    cleaned = parts[0] + '-' + parts.slice(1).join('').replace(/-/g, '');
+  }
+  return cleaned;
+};
+
+/**
+ * Sanitize age / future life fields (e.g. "7 Years", "53 Years", or "NA").
+ * Eliminates leading negative signs and keeps clean alphanumeric and spaces.
+ */
+export const sanitizeYearsWithNA = (val: string): string => {
+  if (!val) return '';
+  const upper = val.trim().toUpperCase();
+  if (upper === 'NA' || upper === 'N') return upper;
+  // Strip leading minus signs
+  let cleaned = val.replace(/^[-\s]+/g, '');
+  // Replace symbols/hyphens with a space and keep alphanumeric
+  cleaned = cleaned.replace(/[^0-9a-zA-Z\s]/g, ' ');
+  // Collapse whitespace
+  cleaned = cleaned.replace(/\s+/g, ' ').trim();
+  return cleaned;
+};
+
+/**
+ * Sanitize height / storeys fields (e.g. "GF", "G+1", "10 ft", "NA").
+ * Strictly prohibits negative values.
+ */
+export const sanitizePositiveHeight = (val: string): string => {
+  if (!val) return '';
+  const upper = val.trim().toUpperCase();
+  if (upper === 'NA' || upper === 'N') return upper;
+  let cleaned = val.replace(/^[-\s]+/g, '');
+  cleaned = cleaned.replace(/[^0-9a-zA-Z\s+.]/g, '');
+  return cleaned;
+};
+
+/**
+ * Exact decimal addition to avoid floating point imprecision without premature roundoff.
+ */
+export const sumDecimals = (values: (string | undefined | null)[]): number => {
+  let sum = 0;
+  let maxDecimals = 0;
+  for (const v of values) {
+    if (!v) continue;
+    const s = String(v).trim().replace(/[^0-9.]/g, '');
+    if (!s) continue;
+    const num = parseFloat(s);
+    if (isNaN(num)) continue;
+    if (s.includes('.')) {
+      const dec = s.split('.')[1].length;
+      if (dec > maxDecimals) maxDecimals = dec;
+    }
+    sum += num;
+  }
+  if (maxDecimals > 0) {
+    const factor = Math.pow(10, Math.min(maxDecimals, 8));
+    return Math.round(sum * factor) / factor;
+  }
+  return Math.round(sum);
+};
+
+export const formatExactDecimal = (n: number): string => {
+  if (n <= 0) return '';
+  return String(n);
+};
+
 export interface ArthanFinanceReportFields {
   // Header
   dateOfValuation?: string;
@@ -778,30 +942,26 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     ], 36, 4);
 
     const defaultBuaFloors: ArthanFinanceBUAFloor[] = [
-      { floor: 'Basement / Stilt', accommodation: 'NA', carpetArea: 'NA', actualBUA: 'NA', permissibleBUA: 'NA', adoptedBUA: 'NA' },
+      { floor: 'Basement / Stilt', accommodation: 'NA', carpetArea: '', actualBUA: '', permissibleBUA: 'NA', adoptedBUA: '' },
       { floor: 'Ground Floor', accommodation: 'NA', carpetArea: '', actualBUA: '', permissibleBUA: 'NA', adoptedBUA: '' },
-      { floor: 'First Floor', accommodation: 'NA', carpetArea: 'NA', actualBUA: 'NA', permissibleBUA: 'NA', adoptedBUA: 'NA' },
+      { floor: 'First Floor', accommodation: 'NA', carpetArea: '', actualBUA: '', permissibleBUA: 'NA', adoptedBUA: '' },
     ];
     const buaFloors = (fields.buaFloors && fields.buaFloors.length > 0) ? fields.buaFloors : defaultBuaFloors;
 
-    // Calculate total adopted BUA for Total row
-    let totalAdoptedBUA = 0;
-    let totalCarpetArea = 0;
-    for (const fl of buaFloors) {
-      const a = parseFloat((fl.adoptedBUA || '').replace(/[^0-9.]/g, ''));
-      if (!isNaN(a)) totalAdoptedBUA += a;
-      const c = parseFloat((fl.carpetArea || '').replace(/[^0-9.]/g, ''));
-      if (!isNaN(c)) totalCarpetArea += c;
-    }
+    // Calculate exact totals without floating point roundoff
+    const totalAdoptedBUA = sumDecimals(buaFloors.map(fl => fl.adoptedBUA));
+    const totalActualBUA = sumDecimals(buaFloors.map(fl => fl.actualBUA));
+    const totalCarpetArea = sumDecimals(buaFloors.map(fl => fl.carpetArea));
+    const totalPermissibleBUA = sumDecimals(buaFloors.map(fl => fl.permissibleBUA));
 
     for (const fl of buaFloors) {
       this.drawRow([
         { text: fl.floor, width: buaW1, isLabel: true },
         { text: fl.accommodation || 'NA', width: buaW2, align: 'center' },
-        { text: fl.carpetArea || 'NA', width: buaW3, align: 'center' },
-        { text: fl.actualBUA || 'NA', width: buaW4, align: 'center' },
+        { text: fl.carpetArea ? (fl.carpetArea === 'NA' ? 'NA' : `${fl.carpetArea}`) : 'NA', width: buaW3, align: 'center' },
+        { text: fl.actualBUA ? (fl.actualBUA === 'NA' ? 'NA' : `${fl.actualBUA}`) : 'NA', width: buaW4, align: 'center' },
         { text: fl.permissibleBUA || 'NA', width: buaW5, align: 'center' },
-        { text: fl.adoptedBUA || 'NA', width: buaW6, align: 'center' },
+        { text: fl.adoptedBUA ? (fl.adoptedBUA === 'NA' ? 'NA' : `${fl.adoptedBUA}`) : 'NA', width: buaW6, align: 'center' },
       ], 22, 4);
     }
 
@@ -809,10 +969,10 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     this.drawRow([
       { text: 'Total', width: buaW1, isLabel: true, bold: false },
       { text: 'NA', width: buaW2, align: 'center', bold: false },
-      { text: totalCarpetArea > 0 ? String(totalCarpetArea) : 'NA', width: buaW3, align: 'center', bold: false },
-      { text: totalAdoptedBUA > 0 ? `${totalAdoptedBUA}sqft` : 'NA', width: buaW4, align: 'center', bold: false },
-      { text: 'NA', width: buaW5, align: 'center', bold: false },
-      { text: totalAdoptedBUA > 0 ? `${totalAdoptedBUA}sqft` : 'NA', width: buaW6, align: 'center', bold: false },
+      { text: totalCarpetArea > 0 ? formatExactDecimal(totalCarpetArea) : 'NA', width: buaW3, align: 'center', bold: false },
+      { text: totalActualBUA > 0 ? `${formatExactDecimal(totalActualBUA)}sqft` : 'NA', width: buaW4, align: 'center', bold: false },
+      { text: totalPermissibleBUA > 0 ? formatExactDecimal(totalPermissibleBUA) : 'NA', width: buaW5, align: 'center', bold: false },
+      { text: totalAdoptedBUA > 0 ? `${formatExactDecimal(totalAdoptedBUA)}sqft` : 'NA', width: buaW6, align: 'center', bold: false },
     ], 22, 4);
 
     // Violation observed

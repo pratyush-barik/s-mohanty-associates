@@ -8,6 +8,16 @@ import {
   PDFArthanFinanceRenderer,
   ArthanFinanceReportFields,
   ArthanFinanceBUAFloor,
+  sanitizePositiveFloat,
+  sanitizePositiveFloatWithNA,
+  sanitizePositiveInt,
+  sanitizePositiveIntWithNA,
+  sanitizePercentage,
+  sanitizePositiveRange,
+  sanitizeYearsWithNA,
+  sanitizePositiveHeight,
+  sumDecimals,
+  formatExactDecimal,
 } from '@/lib/banks/pdf-arthan-finance-renderer';
 import {
   Section,
@@ -48,7 +58,7 @@ export interface ArthanFinanceProps {
 
 const parseNum = (v: any): number => {
   if (!v) return 0;
-  const n = parseFloat(String(v).replace(/[^0-9.-]/g, ''));
+  const n = parseFloat(String(v).replace(/[^0-9.]/g, ''));
   return isNaN(n) ? 0 : n;
 };
 
@@ -143,12 +153,20 @@ export default function ArthanFinance({
       heightSanctioned: raw.heightSanctioned || 'NA',
       heightSite: raw.heightSite || '',
 
-      // Section 6 — BUA
-      buaFloors: Array.isArray(raw.buaFloors) && raw.buaFloors.length > 0 ? raw.buaFloors : [
-        { floor: 'Basement / Stilt', accommodation: 'NA', carpetArea: 'NA', actualBUA: 'NA', permissibleBUA: 'NA', adoptedBUA: 'NA' },
-        { floor: 'Ground Floor', accommodation: 'NA', carpetArea: '', actualBUA: '', permissibleBUA: 'NA', adoptedBUA: '' },
-        { floor: 'First Floor', accommodation: 'NA', carpetArea: 'NA', actualBUA: 'NA', permissibleBUA: 'NA', adoptedBUA: 'NA' },
-      ],
+      // Section 6 — BUA (default adoptedBUA is empty string; renders as NA when empty)
+      buaFloors: Array.isArray(raw.buaFloors) && raw.buaFloors.length > 0
+        ? raw.buaFloors.map((fl: any) => ({
+            ...fl,
+            adoptedBUA: fl.adoptedBUA === 'NA' ? '' : (fl.adoptedBUA || ''),
+            carpetArea: fl.carpetArea === 'NA' ? '' : (fl.carpetArea || ''),
+            actualBUA: fl.actualBUA === 'NA' ? '' : (fl.actualBUA || ''),
+            permissibleBUA: fl.permissibleBUA || 'NA',
+          }))
+        : [
+            { floor: 'Basement / Stilt', accommodation: 'NA', carpetArea: '', actualBUA: '', permissibleBUA: 'NA', adoptedBUA: '' },
+            { floor: 'Ground Floor', accommodation: 'NA', carpetArea: '', actualBUA: '', permissibleBUA: 'NA', adoptedBUA: '' },
+            { floor: 'First Floor', accommodation: 'NA', carpetArea: '', actualBUA: '', permissibleBUA: 'NA', adoptedBUA: '' },
+          ],
       violationObserved: raw.violationObserved || 'NA',
 
       // Section 7 — Plan Approvals
@@ -250,8 +268,44 @@ export default function ArthanFinance({
     }
   }, [prefill?.fieldEmployees, prefill?.assignedFieldEmployees, prefill?.assignedEngineers]);
 
-  // Field change handler with auto-calculations
-  const handleChange = useCallback((key: keyof ArthanFinanceReportFields, value: any) => {
+  // Field change handler with sanitization and auto-calculations
+  const handleChange = useCallback((key: keyof ArthanFinanceReportFields, rawValue: any) => {
+    let value = rawValue;
+    if (typeof value === 'string') {
+      if (key === 'totalFlatsUnits') {
+        value = sanitizePositiveIntWithNA(value);
+      } else if (key === 'yearOfCompletion') {
+        value = sanitizePositiveIntWithNA(value, 4);
+      } else if (key === 'constructionStage' || key === 'disbursementRecommended') {
+        value = sanitizePercentage(value);
+      } else if (key === 'ageOfProperty' || key === 'futurePhysicalLife') {
+        value = sanitizeYearsWithNA(value);
+      } else if (
+        key === 'setbackFrontSanctioned' || key === 'setbackRearSanctioned' ||
+        key === 'setbackLeftSanctioned' || key === 'setbackRightSanctioned' ||
+        key === 'setbackFrontSite' || key === 'setbackRearSite' ||
+        key === 'setbackLeftSite' || key === 'setbackRightSite' ||
+        key === 'estimatedCostTotal' || key === 'estimatedCostPerSqft' ||
+        key === 'justifiedEstimatedCostPerSqft' || key === 'adoptableJustifiedEstimatedCost' ||
+        key === 'flatSBUA' || key === 'compositeSaleRate' ||
+        key === 'totalMarketValueApartment' || key === 'govtGuidelineRateFlats' ||
+        key === 'flatValueGovtRate'
+      ) {
+        value = sanitizePositiveFloatWithNA(value);
+      } else if (key === 'heightSanctioned' || key === 'heightSite') {
+        value = sanitizePositiveHeight(value);
+      } else if (
+        key === 'landAreaSqft' || key === 'adoptableBuiltUpArea' ||
+        key === 'constructionCostPerSqft' || key === 'recommendedRateOfLand' ||
+        key === 'totalConstructionValue100' || key === 'govtGuidelineRateLand' ||
+        key === 'latitude' || key === 'longitude'
+      ) {
+        value = sanitizePositiveFloat(value);
+      } else if (key === 'currentMarketRateRange') {
+        value = sanitizePositiveRange(value);
+      }
+    }
+
     setFields(prev => {
       const next = { ...prev, [key]: value };
 
@@ -265,7 +319,7 @@ export default function ArthanFinance({
       if (key === 'landAreaSqft' || key === 'recommendedRateOfLand') {
         const area = parseNum(key === 'landAreaSqft' ? value : next.landAreaSqft);
         const rate = parseNum(key === 'recommendedRateOfLand' ? value : next.recommendedRateOfLand);
-        if (area > 0 && rate > 0) next.totalLandValue = String(area * rate);
+        next.totalLandValue = area > 0 && rate > 0 ? String(area * rate) : '';
       }
 
       // Auto-calculate Total Construction Value (100% complete)
@@ -275,9 +329,11 @@ export default function ArthanFinance({
         if (bua > 0 && cost > 0) {
           const cv = bua * cost;
           next.totalConstructionValue100 = String(cv);
-          // Construction value for present stage (same if 100%)
           const stagePct = parseNum(next.constructionStage) || 100;
           next.totalConstructionValuePresent = String(Math.round(cv * stagePct / 100));
+        } else {
+          next.totalConstructionValue100 = '';
+          next.totalConstructionValuePresent = '';
         }
       }
 
@@ -285,7 +341,7 @@ export default function ArthanFinance({
       if (key === 'constructionStage' && next.totalConstructionValue100) {
         const cv = parseNum(next.totalConstructionValue100);
         const stagePct = parseNum(value) || 100;
-        next.totalConstructionValuePresent = String(Math.round(cv * stagePct / 100));
+        next.totalConstructionValuePresent = cv > 0 ? String(Math.round(cv * stagePct / 100)) : '';
       }
 
       // Auto-calculate Market Value = Land Value + Construction Value
@@ -298,13 +354,18 @@ export default function ArthanFinance({
         // Distress Value = 80% of MV
         next.distressValue100 = String(Math.round(mv * 0.8));
         next.distressValuePresent = String(Math.round(mv * 0.8));
+      } else {
+        next.marketValueLandBuilding = '';
+        next.marketValueLandBuildingRight = '';
+        next.distressValue100 = '';
+        next.distressValuePresent = '';
       }
 
       // Auto-calculate Land Value as per Govt Rate
-      if (key === 'govtGuidelineRateLand') {
-        const area = parseNum(next.landAreaSqft);
-        const gRate = parseNum(value);
-        if (area > 0 && gRate > 0) next.landValueGovtRate = String(area * gRate);
+      if (key === 'govtGuidelineRateLand' || key === 'landAreaSqft') {
+        const area = parseNum(key === 'landAreaSqft' ? value : next.landAreaSqft);
+        const gRate = parseNum(key === 'govtGuidelineRateLand' ? value : next.govtGuidelineRateLand);
+        next.landValueGovtRate = area > 0 && gRate > 0 ? String(area * gRate) : '';
       }
 
       return next;
@@ -323,23 +384,23 @@ export default function ArthanFinance({
   };
 
   const handleBUAFloorChange = (idx: number, field: keyof ArthanFinanceBUAFloor, value: string) => {
-    const updated = (fields.buaFloors || []).map((f, i) => i === idx ? { ...f, [field]: value } : f);
+    let finalVal = value;
+    if (field === 'carpetArea' || field === 'actualBUA' || field === 'permissibleBUA' || field === 'adoptedBUA') {
+      finalVal = sanitizePositiveFloat(value);
+    }
+    const updated = (fields.buaFloors || []).map((f, i) => i === idx ? { ...f, [field]: finalVal } : f);
     handleChange('buaFloors', updated);
     if (field === 'adoptedBUA') {
-      const sumAdopted = updated.reduce((acc, f) => acc + parseNum(f.adoptedBUA), 0);
-      if (sumAdopted > 0) {
-        handleChange('adoptableBuiltUpArea', String(sumAdopted));
-      }
+      const sumAdopted = sumDecimals(updated.map(f => f.adoptedBUA));
+      handleChange('adoptableBuiltUpArea', sumAdopted > 0 ? formatExactDecimal(sumAdopted) : '');
     }
   };
 
   const handleRemoveBUAFloor = (idx: number) => {
     const updated = (fields.buaFloors || []).filter((_, i) => i !== idx);
     handleChange('buaFloors', updated);
-    const sumAdopted = updated.reduce((acc, f) => acc + parseNum(f.adoptedBUA), 0);
-    if (sumAdopted > 0) {
-      handleChange('adoptableBuiltUpArea', String(sumAdopted));
-    }
+    const sumAdopted = sumDecimals(updated.map(f => f.adoptedBUA));
+    handleChange('adoptableBuiltUpArea', sumAdopted > 0 ? formatExactDecimal(sumAdopted) : '');
   };
 
   // Map Upload Handlers (device upload only)
@@ -554,21 +615,21 @@ export default function ArthanFinance({
     </Field>
   );
 
-  // BUA Totals calculation
+  // BUA Totals calculation (exact decimal calculation, no roundoff)
   const totalCarpet = useMemo(() => {
-    return (fields.buaFloors || []).reduce((sum, r) => sum + parseNum(r.carpetArea), 0);
+    return sumDecimals((fields.buaFloors || []).map(r => r.carpetArea));
   }, [fields.buaFloors]);
 
   const totalActualBUA = useMemo(() => {
-    return (fields.buaFloors || []).reduce((sum, r) => sum + parseNum(r.actualBUA), 0);
+    return sumDecimals((fields.buaFloors || []).map(r => r.actualBUA));
   }, [fields.buaFloors]);
 
   const totalPermissibleBUA = useMemo(() => {
-    return (fields.buaFloors || []).reduce((sum, r) => sum + parseNum(r.permissibleBUA), 0);
+    return sumDecimals((fields.buaFloors || []).map(r => r.permissibleBUA));
   }, [fields.buaFloors]);
 
   const totalAdoptedBUA = useMemo(() => {
-    return (fields.buaFloors || []).reduce((sum, r) => sum + parseNum(r.adoptedBUA), 0);
+    return sumDecimals((fields.buaFloors || []).map(r => r.adoptedBUA));
   }, [fields.buaFloors]);
 
   // Nav sections
@@ -917,7 +978,7 @@ export default function ArthanFinance({
                   <input className={inputCls} value={fields.locatedOnFloorNo || ''} onChange={e => handleChange('locatedOnFloorNo', e.target.value)} disabled={isReadOnly} placeholder="e.g. GF / NA" />
                 </Field>
                 <Field label="Total No. of Flats / Unit in building">
-                  <input className={inputCls} value={fields.totalFlatsUnits || ''} onChange={e => handleChange('totalFlatsUnits', e.target.value)} disabled={isReadOnly} placeholder="e.g. 1 / NA" />
+                  <input type="text" inputMode="numeric" className={inputCls} value={fields.totalFlatsUnits || ''} onChange={e => handleChange('totalFlatsUnits', e.target.value)} disabled={isReadOnly} placeholder="e.g. 1 / NA" />
                 </Field>
                 <Field label="External Finishing">
                   <select className={selectCls} value={fields.externalFinishing || ''} onChange={e => handleChange('externalFinishing', e.target.value)} disabled={isReadOnly}>
@@ -941,13 +1002,13 @@ export default function ArthanFinance({
             <div className="bg-rose-50/70 p-4 rounded-xl border border-rose-200/80 shadow-xs">
               <div className="grid md:grid-cols-3 gap-4">
                 <Field label="Year of Completion of Property">
-                  <input className={inputCls} value={fields.yearOfCompletion || ''} onChange={e => handleChange('yearOfCompletion', e.target.value)} disabled={isReadOnly} placeholder="e.g. 2018 / NA" />
+                  <input type="text" inputMode="numeric" className={inputCls} value={fields.yearOfCompletion || ''} onChange={e => handleChange('yearOfCompletion', e.target.value)} disabled={isReadOnly} placeholder="e.g. 2018 / NA" />
                 </Field>
                 <Field label="Construction Stage of the Property (in 100%)">
-                  <input className={inputCls} value={fields.constructionStage || ''} onChange={e => handleChange('constructionStage', e.target.value)} disabled={isReadOnly} placeholder="e.g. 100%" />
+                  <input type="text" inputMode="decimal" className={inputCls} value={fields.constructionStage || ''} onChange={e => handleChange('constructionStage', e.target.value)} disabled={isReadOnly} placeholder="e.g. 100%" />
                 </Field>
                 <Field label="Disbursement Recommended (in %)">
-                  <input className={inputCls} value={fields.disbursementRecommended || ''} onChange={e => handleChange('disbursementRecommended', e.target.value)} disabled={isReadOnly} placeholder="e.g. 100%" />
+                  <input type="text" inputMode="decimal" className={inputCls} value={fields.disbursementRecommended || ''} onChange={e => handleChange('disbursementRecommended', e.target.value)} disabled={isReadOnly} placeholder="e.g. 100%" />
                 </Field>
               </div>
             </div>
@@ -956,10 +1017,10 @@ export default function ArthanFinance({
             <div className="bg-teal-50/70 p-4 rounded-xl border border-teal-200/80 shadow-xs">
               <div className="grid md:grid-cols-2 gap-4">
                 <Field label="Age of the Property">
-                  <input className={inputCls} value={fields.ageOfProperty || ''} onChange={e => handleChange('ageOfProperty', e.target.value)} disabled={isReadOnly} placeholder="e.g. 7-Years" />
+                  <input type="text" className={inputCls} value={fields.ageOfProperty || ''} onChange={e => handleChange('ageOfProperty', e.target.value)} disabled={isReadOnly} placeholder="e.g. 7 Years" />
                 </Field>
                 <Field label="Future Physical Life of Property">
-                  <input className={inputCls} value={fields.futurePhysicalLife || ''} onChange={e => handleChange('futurePhysicalLife', e.target.value)} disabled={isReadOnly} placeholder="e.g. 53-Years" />
+                  <input type="text" className={inputCls} value={fields.futurePhysicalLife || ''} onChange={e => handleChange('futurePhysicalLife', e.target.value)} disabled={isReadOnly} placeholder="e.g. 53 Years" />
                 </Field>
               </div>
             </div>
@@ -1042,7 +1103,7 @@ export default function ArthanFinance({
                     </td>
                     {(['setbackFrontSanctioned', 'setbackRearSanctioned', 'setbackLeftSanctioned', 'setbackRightSanctioned'] as const).map(k => (
                       <td key={k} className="px-2 py-1.5 border-b border-[#e9ecef]">
-                        <input className={inputCls + ' !py-1.5 text-xs text-center font-medium'} value={fields[k] || ''} onChange={e => handleChange(k, e.target.value)} disabled={isReadOnly} placeholder="NA" />
+                        <input type="text" inputMode="decimal" className={inputCls + ' !py-1.5 text-xs text-center font-medium'} value={fields[k] || ''} onChange={e => handleChange(k, e.target.value)} disabled={isReadOnly} placeholder="NA" />
                       </td>
                     ))}
                   </tr>
@@ -1052,7 +1113,7 @@ export default function ArthanFinance({
                     </td>
                     {(['setbackFrontSite', 'setbackRearSite', 'setbackLeftSite', 'setbackRightSite'] as const).map(k => (
                       <td key={k} className="px-2 py-1.5 border-b border-[#e9ecef]">
-                        <input className={inputCls + ' !py-1.5 text-xs text-center font-medium'} value={fields[k] || ''} onChange={e => handleChange(k, e.target.value)} disabled={isReadOnly} placeholder="" />
+                        <input type="text" inputMode="decimal" className={inputCls + ' !py-1.5 text-xs text-center font-medium'} value={fields[k] || ''} onChange={e => handleChange(k, e.target.value)} disabled={isReadOnly} placeholder="" />
                       </td>
                     ))}
                   </tr>
@@ -1113,26 +1174,32 @@ export default function ArthanFinance({
                       </td>
                       <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                         <input
+                          type="text"
+                          inputMode="decimal"
                           className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
-                          value={fl.carpetArea || ''}
+                          value={isReadOnly && !fl.carpetArea ? 'NA' : (fl.carpetArea || '')}
                           onChange={e => handleBUAFloorChange(idx, 'carpetArea', e.target.value)}
                           disabled={isReadOnly}
-                          placeholder="0.00"
+                          placeholder="NA"
                         />
                       </td>
                       <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                         <input
+                          type="text"
+                          inputMode="decimal"
                           className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
-                          value={fl.actualBUA || ''}
+                          value={isReadOnly && !fl.actualBUA ? 'NA' : (fl.actualBUA || '')}
                           onChange={e => handleBUAFloorChange(idx, 'actualBUA', e.target.value)}
                           disabled={isReadOnly}
-                          placeholder="0.00"
+                          placeholder="NA"
                         />
                       </td>
                       <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                         <input
+                          type="text"
+                          inputMode="decimal"
                           className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
-                          value={fl.permissibleBUA || ''}
+                          value={isReadOnly && !fl.permissibleBUA ? 'NA' : (fl.permissibleBUA || '')}
                           onChange={e => handleBUAFloorChange(idx, 'permissibleBUA', e.target.value)}
                           disabled={isReadOnly}
                           placeholder="NA"
@@ -1140,11 +1207,13 @@ export default function ArthanFinance({
                       </td>
                       <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                         <input
+                          type="text"
+                          inputMode="decimal"
                           className={inputCls + ' !py-1.5 text-xs text-right font-bold text-emerald-700 bg-emerald-50/50'}
-                          value={fl.adoptedBUA || ''}
+                          value={isReadOnly && !fl.adoptedBUA ? 'NA' : (fl.adoptedBUA || '')}
                           onChange={e => handleBUAFloorChange(idx, 'adoptedBUA', e.target.value)}
                           disabled={isReadOnly}
-                          placeholder="0.00"
+                          placeholder="NA"
                         />
                       </td>
                       {!isReadOnly && (
@@ -1170,19 +1239,19 @@ export default function ArthanFinance({
                       Total
                     </td>
                     <td className="px-3 py-2.5 text-slate-400 font-normal text-center">
-                      -
+                      NA
                     </td>
                     <td className="px-3 py-2.5 text-right text-slate-800 font-bold">
-                      {totalCarpet > 0 ? totalCarpet.toFixed(2) : '-'}
+                      {totalCarpet > 0 ? formatExactDecimal(totalCarpet) : 'NA'}
                     </td>
                     <td className="px-3 py-2.5 text-right text-slate-800 font-bold">
-                      {totalActualBUA > 0 ? totalActualBUA.toFixed(2) : '-'}
+                      {totalActualBUA > 0 ? formatExactDecimal(totalActualBUA) : 'NA'}
                     </td>
                     <td className="px-3 py-2.5 text-right text-slate-800 font-bold">
-                      {totalPermissibleBUA > 0 ? totalPermissibleBUA.toFixed(2) : 'NA'}
+                      {totalPermissibleBUA > 0 ? formatExactDecimal(totalPermissibleBUA) : 'NA'}
                     </td>
                     <td className="px-3 py-2.5 text-right text-emerald-700 font-bold text-sm bg-emerald-50/70">
-                      {totalAdoptedBUA > 0 ? `${totalAdoptedBUA.toFixed(2)} Sft` : '-'}
+                      {totalAdoptedBUA > 0 ? `${formatExactDecimal(totalAdoptedBUA)} Sft` : 'NA'}
                     </td>
                     {!isReadOnly && <td></td>}
                   </tr>
@@ -1247,16 +1316,16 @@ export default function ArthanFinance({
         <Section title="Estimate Analysis (Applicable only in Self Construction cases)" number={8} id="sec-8">
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="Estimated Cost (In Rs)">
-              <input className={inputCls} value={fields.estimatedCostTotal || ''} onChange={e => handleChange('estimatedCostTotal', e.target.value)} disabled={isReadOnly} placeholder="NA" />
+              <input type="text" inputMode="decimal" className={inputCls} value={fields.estimatedCostTotal || ''} onChange={e => handleChange('estimatedCostTotal', e.target.value)} disabled={isReadOnly} placeholder="NA" />
             </Field>
             <Field label="Estimated Cost (in Rs per Sqft)">
-              <input className={inputCls} value={fields.estimatedCostPerSqft || ''} onChange={e => handleChange('estimatedCostPerSqft', e.target.value)} disabled={isReadOnly} placeholder="NA" />
+              <input type="text" inputMode="decimal" className={inputCls} value={fields.estimatedCostPerSqft || ''} onChange={e => handleChange('estimatedCostPerSqft', e.target.value)} disabled={isReadOnly} placeholder="NA" />
             </Field>
             <Field label="Justified Estimated Cost (in Rs per Sqft)">
-              <input className={inputCls} value={fields.justifiedEstimatedCostPerSqft || ''} onChange={e => handleChange('justifiedEstimatedCostPerSqft', e.target.value)} disabled={isReadOnly} placeholder="NA" />
+              <input type="text" inputMode="decimal" className={inputCls} value={fields.justifiedEstimatedCostPerSqft || ''} onChange={e => handleChange('justifiedEstimatedCostPerSqft', e.target.value)} disabled={isReadOnly} placeholder="NA" />
             </Field>
             <Field label="Adoptable / Justified Estimated Cost (In Rs)">
-              <input className={inputCls} value={fields.adoptableJustifiedEstimatedCost || ''} onChange={e => handleChange('adoptableJustifiedEstimatedCost', e.target.value)} disabled={isReadOnly} placeholder="NA" />
+              <input type="text" inputMode="decimal" className={inputCls} value={fields.adoptableJustifiedEstimatedCost || ''} onChange={e => handleChange('adoptableJustifiedEstimatedCost', e.target.value)} disabled={isReadOnly} placeholder="NA" />
             </Field>
           </div>
         </Section>
@@ -1265,22 +1334,22 @@ export default function ArthanFinance({
         <Section title="Valuation of Property (Fair Market Valuation / Distress Valuation)" number={9} id="sec-9">
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="Land Area (In Sqft)">
-              <input className={inputCls} value={fields.landAreaSqft || ''} onChange={e => handleChange('landAreaSqft', e.target.value)} disabled={isReadOnly} placeholder="e.g. 8276" />
+              <input type="text" inputMode="decimal" className={inputCls} value={fields.landAreaSqft || ''} onChange={e => handleChange('landAreaSqft', e.target.value)} disabled={isReadOnly} placeholder="e.g. 8276" />
             </Field>
             <Field label="Adoptable Built-up Area (in Sqft) GF RCC">
-              <input className={inputCls} value={fields.adoptableBuiltUpArea || ''} onChange={e => handleChange('adoptableBuiltUpArea', e.target.value)} disabled={isReadOnly} placeholder="e.g. 1128" />
+              <input type="text" inputMode="decimal" className={inputCls} value={fields.adoptableBuiltUpArea || ''} onChange={e => handleChange('adoptableBuiltUpArea', e.target.value)} disabled={isReadOnly} placeholder="e.g. 1128" />
             </Field>
             <Field label="Current Market Rate of land (Range) in Rs per Sqft">
-              <input className={inputCls} value={fields.currentMarketRateRange || ''} onChange={e => handleChange('currentMarketRateRange', e.target.value)} disabled={isReadOnly} placeholder="e.g. 100-200" />
+              <input type="text" className={inputCls} value={fields.currentMarketRateRange || ''} onChange={e => handleChange('currentMarketRateRange', e.target.value)} disabled={isReadOnly} placeholder="e.g. 100-200" />
             </Field>
             <Field label="Construction Cost (Rs per sft)">
-              <input className={inputCls} value={fields.constructionCostPerSqft || ''} onChange={e => handleChange('constructionCostPerSqft', e.target.value)} disabled={isReadOnly} placeholder="e.g. 1300" />
+              <input type="text" inputMode="decimal" className={inputCls} value={fields.constructionCostPerSqft || ''} onChange={e => handleChange('constructionCostPerSqft', e.target.value)} disabled={isReadOnly} placeholder="e.g. 1300" />
             </Field>
             <Field label="Recommended Rate of Land (Rs per sqft)">
-              <input className={inputCls} value={fields.recommendedRateOfLand || ''} onChange={e => handleChange('recommendedRateOfLand', e.target.value)} disabled={isReadOnly} placeholder="e.g. 150" />
+              <input type="text" inputMode="decimal" className={inputCls} value={fields.recommendedRateOfLand || ''} onChange={e => handleChange('recommendedRateOfLand', e.target.value)} disabled={isReadOnly} placeholder="e.g. 150" />
             </Field>
             <Field label="Total Construction Value for 100% complete building (in Rs)">
-              <input className={inputCls} value={fields.totalConstructionValue100 || ''} onChange={e => handleChange('totalConstructionValue100', e.target.value)} disabled={isReadOnly} placeholder="Auto-calculated" />
+              <input type="text" inputMode="decimal" className={inputCls} value={fields.totalConstructionValue100 || ''} onChange={e => handleChange('totalConstructionValue100', e.target.value)} disabled={isReadOnly} placeholder="Auto-calculated" />
             </Field>
             <Field label="Total Land Value (in Rs)">
               <input className={`${inputCls} bg-yellow-50`} value={fields.totalLandValue || ''} onChange={e => handleChange('totalLandValue', e.target.value)} disabled={isReadOnly} placeholder="Auto-calculated" readOnly />
@@ -1301,27 +1370,27 @@ export default function ArthanFinance({
               <input className={`${inputCls} bg-orange-50`} value={fields.distressValuePresent || ''} onChange={e => handleChange('distressValuePresent', e.target.value)} disabled={isReadOnly} placeholder="Auto-calculated" readOnly />
             </Field>
             <Field label="Flat / Apartment / Shop / Office SBUA (in Sqft)">
-              <input className={inputCls} value={fields.flatSBUA || ''} onChange={e => handleChange('flatSBUA', e.target.value)} disabled={isReadOnly} placeholder="NA" />
+              <input type="text" inputMode="decimal" className={inputCls} value={fields.flatSBUA || ''} onChange={e => handleChange('flatSBUA', e.target.value)} disabled={isReadOnly} placeholder="NA" />
             </Field>
             <Field label="Composite sale rate (Rs per sqft)">
-              <input className={inputCls} value={fields.compositeSaleRate || ''} onChange={e => handleChange('compositeSaleRate', e.target.value)} disabled={isReadOnly} placeholder="NA" />
+              <input type="text" inputMode="decimal" className={inputCls} value={fields.compositeSaleRate || ''} onChange={e => handleChange('compositeSaleRate', e.target.value)} disabled={isReadOnly} placeholder="NA" />
             </Field>
             <div className="md:col-span-2">
               <Field label="Total Market Value of Apartment / Shop / Flat / Office (Rs per sqft)">
-                <input className={inputCls} value={fields.totalMarketValueApartment || ''} onChange={e => handleChange('totalMarketValueApartment', e.target.value)} disabled={isReadOnly} placeholder="NA" />
+                <input type="text" inputMode="decimal" className={inputCls} value={fields.totalMarketValueApartment || ''} onChange={e => handleChange('totalMarketValueApartment', e.target.value)} disabled={isReadOnly} placeholder="NA" />
               </Field>
             </div>
             <Field label="Government Guideline / Circle rate for Land (Rs per sqft)">
-              <input className={inputCls} value={fields.govtGuidelineRateLand || ''} onChange={e => handleChange('govtGuidelineRateLand', e.target.value)} disabled={isReadOnly} placeholder="e.g. 28.00" />
+              <input type="text" inputMode="decimal" className={inputCls} value={fields.govtGuidelineRateLand || ''} onChange={e => handleChange('govtGuidelineRateLand', e.target.value)} disabled={isReadOnly} placeholder="e.g. 28.00" />
             </Field>
             <Field label="Land Value as per Government Rate (Rs)">
               <input className={`${inputCls} bg-yellow-50`} value={fields.landValueGovtRate || ''} onChange={e => handleChange('landValueGovtRate', e.target.value)} disabled={isReadOnly} placeholder="Auto-calculated" readOnly />
             </Field>
             <Field label="Government Guideline / Circle rate for Flats (Rs per sqft)">
-              <input className={inputCls} value={fields.govtGuidelineRateFlats || ''} onChange={e => handleChange('govtGuidelineRateFlats', e.target.value)} disabled={isReadOnly} placeholder="NA" />
+              <input type="text" inputMode="decimal" className={inputCls} value={fields.govtGuidelineRateFlats || ''} onChange={e => handleChange('govtGuidelineRateFlats', e.target.value)} disabled={isReadOnly} placeholder="NA" />
             </Field>
             <Field label="Flat / Apartment Value as per Government Rate (Rs)">
-              <input className={inputCls} value={fields.flatValueGovtRate || ''} onChange={e => handleChange('flatValueGovtRate', e.target.value)} disabled={isReadOnly} placeholder="NA" />
+              <input type="text" inputMode="decimal" className={inputCls} value={fields.flatValueGovtRate || ''} onChange={e => handleChange('flatValueGovtRate', e.target.value)} disabled={isReadOnly} placeholder="NA" />
             </Field>
             <div className="md:col-span-2 bg-amber-50/80 p-4 rounded-xl border border-amber-200 shadow-xs space-y-3 mt-2">
               <div className="border-b border-amber-200/80 pb-2">
@@ -1331,10 +1400,10 @@ export default function ArthanFinance({
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <Field label="Latitude (N)">
-                  <input className={inputCls} value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 21.1705" />
+                  <input type="text" inputMode="decimal" className={inputCls} value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 21.1705" />
                 </Field>
                 <Field label="Longitude (E)">
-                  <input className={inputCls} value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 86.492417" />
+                  <input type="text" inputMode="decimal" className={inputCls} value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 86.492417" />
                 </Field>
               </div>
             </div>
