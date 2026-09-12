@@ -13,10 +13,17 @@ import {
   ReportActionBar,
   NavItem,
   formatReportDate,
+  BasePhotographsSection,
+  BaseMapsSection,
+  BasePhotoBucketModal,
+  fetchBytes,
 } from '../BaseBankReportComponents';
+import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
+import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
 import { BankConfig } from '@/lib/bank-fields';
 import { decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 import {
+  PDFAxisAgriRenderer,
   AxisAgriReportFields,
   AxisAgriFloorItem,
 } from '@/lib/banks/pdf-axis-agri-renderer';
@@ -258,11 +265,96 @@ export default function AxisAGRI({
       extraConstructionCompoundable: raw.extraConstructionCompoundable || 'Not Applicable',
       qualityOfConstruction: raw.qualityOfConstruction || 'Good',
       maintenanceOfProperty: raw.maintenanceOfProperty || 'Good',
+
+      // Page 4: Building Condition, Life & Land Rate (Sec 8)
+      conditionOfBuilding: raw.conditionOfBuilding || 'Good',
+      currentLifeStructure: raw.currentLifeStructure || '8 Years',
+      projectedLifeStructure: raw.projectedLifeStructure || '52 Years',
+      landRevenueTaxesPaid: raw.landRevenueTaxesPaid || 'Recent rent receipt is not provided',
+      municipalTaxesPaid: raw.municipalTaxesPaid || 'Not Applicable',
+      govtBenchmarkRateAcre: raw.govtBenchmarkRateAcre || '86,55,000',
+      govtBenchmarkRateSft: raw.govtBenchmarkRateSft || '199',
+      totalLandAreaDec: raw.totalLandAreaDec || '0.013',
+      totalLandAreaSft: raw.totalLandAreaSft || '566.00',
+      totalGovtValueLand: raw.totalGovtValueLand || '1,12,634.00',
+      prevailingMarketRateMin: raw.prevailingMarketRateMin || '500',
+      prevailingMarketRateMax: raw.prevailingMarketRateMax || '600',
+      adoptedMarketRateSft: raw.adoptedMarketRateSft || '550',
+      totalMarketValueLand: raw.totalMarketValueLand || '5,98,950.00',
+
+      // Page 4: Building Basic Valuation (Sec 9)
+      totalBasicValueBuilding: raw.totalBasicValueBuilding || '21,96,285.00',
+      totalBasicValueBuildingSay: raw.totalBasicValueBuildingSay || '21,96,000.00',
+      totalBasicValueBuildingWords: raw.totalBasicValueBuildingWords || 'RUPEES TWENTY ONE LAKHS NINETY SIX THOUSANDS ONLY',
+
+      // Page 5: Value of Property Summary Table (Sec 10)
+      govtGuideLand: raw.govtGuideLand || '1,12,634.00',
+      govtGuideBuilding: raw.govtGuideBuilding || '-',
+      govtGuideAmenities: raw.govtGuideAmenities || '-',
+      govtGuideTotal: raw.govtGuideTotal || '1,12,634.00',
+      marketValueLand: raw.marketValueLand || '5,98,950.00',
+      marketValueBuilding: raw.marketValueBuilding || '21,96,285.00',
+      marketValueAmenities: raw.marketValueAmenities || '-',
+      marketValueTotal: raw.marketValueTotal || '27,95,235.00',
+      realisableValueLand: raw.realisableValueLand || '5,69,002.50',
+      realisableValueBuilding: raw.realisableValueBuilding || '20,86,470.75',
+      realisableValueAmenities: raw.realisableValueAmenities || '-',
+      realisableValueTotal: raw.realisableValueTotal || '26,55,473.25',
+      distressValueLand: raw.distressValueLand || '5,09,107.50',
+      distressValueBuilding: raw.distressValueBuilding || '18,66,842.25',
+      distressValueAmenities: raw.distressValueAmenities || '-',
+      distressValueTotal: raw.distressValueTotal || '23,75,949.75',
+      insurableValueLand: raw.insurableValueLand || '-',
+      insurableValueBuilding: raw.insurableValueBuilding || '18,66,842.25',
+      insurableValueAmenities: raw.insurableValueAmenities || '-',
+      insurableValueTotal: raw.insurableValueTotal || '18,66,842.25',
+
+      // Page 5 & 6: Narratives & Remarks (Sec 11)
+      realizableEstimationText: raw.realizableEstimationText || 'REALIZABLE ESTIMATION OF THE PROPERTY IN CASE OF DISTRESS SALE, IN CASE, THE BANK WILL SELL THE PROPERTY THROUGH PROCEEDINGS.',
+      marketValueSay: raw.marketValueSay || '27,95,000.00',
+      marketValueWords: raw.marketValueWords || 'RUPEES TWENTY SEVEN LAKHS NINETY FIVE THOUSANDS ONLY',
+      realizableValueSay: raw.realizableValueSay || '26,55,000.00',
+      realizableValueWords: raw.realizableValueWords || 'RUPEES TWENTY SIX LAKHS FIFTY THOUSAND ONLY',
+      distressValueSay: raw.distressValueSay || '23,76,000.00',
+      distressValueWords: raw.distressValueWords || 'RUPEES TWENTY THREE LAKHS SEVENTY FIVE THOUSAND ONLY',
+      basisOfValuation: raw.basisOfValuation || 'AS PER MARKET FEEDBACK, FREE HOLD SMALL SIZE RESIDENTIAL LANDS PATCH IN ACHHULI, PURUSOTTAMPUR & GANJAM. APPROACHING 20-FT WIDE ROAD ARE GETTING TRANSACTED IN A RANGE OF RS.500/- TO RS.600/- PER SFT. OUR LAND PATCH APPROACHES 20-FT WIDE ROAD, SHOULD BE GETTING TRANSACTED IN A RATE OF RS.550/- PER SFT INCLUDING ALL LAND DEVELOPMENT CHARGES.',
+      opinionOfMarketValue: raw.opinionOfMarketValue || 'AS A RESULT OF MY / OUR APPRAISAL AND ANALYSIS IT IS MY/OUR CONSIDERED OPINION THAT THE PRESENT MARKET VALUE OF THE ABOVE PROPERTY IN THE PREVAILING CONDITION WITH AFORESAID SPECIFICATIONS IS SAY : Rs.27,95,000/- (RUPEES TWENTY SEVEN LAKHS NINETY FIVE THOUSANDS ONLY).',
+      remarksText: raw.remarksText || 'THE SUBJECT PROPERTY IS AN EXISTING CASE WITH AXIS BANK. SUBJECT PROPERTY IS A G+2 STORIED RESIDENTIAL CUM COMMERCIAL BUILDING, LAND EXTENT OF (AC.0.013 DEC I.E. 566.00 SFT). THE BUILDING IS APPROXIMATELY 8 YEARS OLD AND IS LOCATED IN A DEVELOPED RESIDENTIAL AREA AT ACHHULI, PURUSOTTAMPUR & GANJAM, WITHIN THE JURISDICTION OF ACHHULI GRAM PANCHAYAT AREA LIMIT. THE PROPERTY IS PRESENTLY OWNER-OCCUPIED. BASIC CIVIC AMENITIES SUCH AS SCHOOLS, HOSPITALS, MARKETS, BANKS, AND PUBLIC TRANSPORTATION ARE AVAILABLE WITHIN A RADIUS OF APPROXIMATELY 2–3 KM. VALUATION HAS BEEN DONE FOR LAND & BUA OF THE G+2 STORIED RESIDENTIAL CUM COMMERCIAL BUILDING\nNB: WE HAVE NOT VERIFIED ANY SALE DEED, ROR, SKETCH MAP, AND APPROVAL PLAN. ALL THE DATA LIKE KHATA NO, PLOT NO, PLOT AREA, BUILT UP AREA, BOUNDARIES DETAILS ARE SHARED BY AXIS BANK LIMITED. REPORT IS RELEASED BASING UPON THE DATA SHARED BY AXIS BANK LIMITED.',
+      undertakingText: raw.undertakingText || '• I have personally visited the property & identified the same based on the documents provided.\n• I/We have no direct or indirect interest in the property being valued.\n• The information furnished above is true and correct to my/our knowledge.\n• I/ we have not been dismissed or removed from govt. Service or convicted of an offence connected with any proceedings of income tax act, wealth tax act or gift tax act or have been blacklisted by any bank/ financial institution/ govt. Department/ public sector enterprise/ body corporate etc.\n• This valuation is prepared without any prejudice or bias to any person or institution\n• The value of land is taken into account by making due enquires in the locality and ascertaining the sales value of the properties in the locality\n• Any additions/alterations made to the property after the date of valuations shall not fall under the scope of this report',
+      annexureARegardingLand: raw.annexureARegardingLand || 'THERE IS A VERY HIGH DIFFERENCE BETWEEN GOVT. VALUE AND MARKET VALUE. GOVT. BENCHMARK VALUE NOT REVISED FOR THAT LOCALITY RECENTLY AND TO AVOID HIGH STAMP DUTY/REGISTRATION CHARGES SALE DEED EXECUTED IN UNDER-VALUED RATE.',
+      annexureARegardingBuilding: raw.annexureARegardingBuilding || 'BUILDING VALUE IS ARRIVED BY ANALYSIS OF RATE OF MATERIAL, LABOUR ETC. THIS A RCC ROOFING BUILDING WITH GOOD MAINTENANCE LEVEL & QUALITY OF CONSTRUCTION.',
+      annexureABasisLandRate: raw.annexureABasisLandRate || 'AS PER MARKET FEEDBACK, FREE HOLD SMALL SIZE RESIDENTIAL LANDS PATCH IN ACHHULI, PURUSOTTAMPUR & GANJAM. APPROACHING 20-FT WIDE ROAD ARE GETTING TRANSACTED IN A RANGE OF RS.500/- TO RS.600/- PER SFT. OUR LAND PATCH APPROACHES 20-FT WIDE ROAD, SHOULD BE GETTING TRANSACTED IN A RATE OF RS.550/- PER SFT INCLUDING ALL LAND DEVELOPMENT CHARGES.',
+
+      // Page 10: Checklist (Sec 12)
+      checklistResponses: raw.checklistResponses || {
+        q1: 'YES',
+        q2: 'YES',
+        q3: 'YES',
+        q4: 'YES',
+        q5: 'YES',
+        q6: 'YES',
+        q7: 'NO',
+        q8: 'NO',
+        q9: 'YES',
+        q10: 'YES',
+        q11: 'NO',
+        q12: 'NO',
+      },
+
+      // Photographs & Maps (Sec 13 & 14)
+      propertyImages: raw.propertyImages || raw.propertyPhotos || [],
+      propertyImageNames: raw.propertyImageNames || [],
+      locationMapImages: raw.locationMapImages || [],
+      cadastralMapImages: raw.cadastralMapImages || [],
+      benchmarkImages: raw.benchmarkImages || [],
+      sketchMapImages: raw.sketchMapImages || [],
     };
   }, [initialFields, prefill, defaultRefNo]);
 
   const [fields, setFields] = useState<AxisAgriReportFields>(() => decodeHtmlEntitiesDeep(initialData));
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [bucketPickerOpen, setBucketPickerOpen] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -288,6 +380,20 @@ export default function AxisAGRI({
     setFields(prev => {
       const updated = [...(prev.floors || [])];
       updated[index] = { ...updated[index], [field]: val };
+
+      // Auto-calculate row estimatedCost, depreciation, netValue
+      const plinth = parseNum(field === 'plinthArea' ? val : updated[index].plinthArea);
+      const rate = parseNum(field === 'replacementRate' ? val : updated[index].replacementRate);
+      const age = parseNum(field === 'ageYears' ? val : (updated[index].ageYears || '8'));
+      if (plinth > 0 && rate > 0) {
+        const estCost = plinth * rate;
+        updated[index].estimatedCost = estCost.toFixed(2);
+        // Default 1% per annum depreciation
+        const depRate = (age * 0.01);
+        const depAmt = estCost * depRate;
+        updated[index].depreciationAmount = depAmt.toFixed(2);
+        updated[index].netValue = (estCost - depAmt).toFixed(2);
+      }
       return { ...prev, floors: updated };
     });
   }, []);
@@ -297,7 +403,7 @@ export default function AxisAGRI({
       ...prev,
       floors: [
         ...(prev.floors || []),
-        { floorName: `Floor ${(prev.floors?.length || 0) + 1}`, plinthArea: '0.00', usage: 'Residential' },
+        { floorName: `Floor ${(prev.floors?.length || 0) + 1}`, plinthArea: '0.00', usage: 'Residential', roofHeight: "10'-6\"", ageYears: '8Yrs', replacementRate: '1300.00', estimatedCost: '0.00', depreciationAmount: '0.00', netValue: '0.00' },
       ],
     }));
   }, []);
@@ -309,13 +415,169 @@ export default function AxisAGRI({
     }));
   }, []);
 
-  // Auto-sum Plinth Area into Total BUA
+  // Auto-sum Plinth Area into Total BUA & Total Basic Value of Building
   useEffect(() => {
-    const sum = (fields.floors || []).reduce((acc, f) => acc + parseNum(f.plinthArea), 0);
-    if (sum > 0) {
-      handleChange('totalBUA', `${sum.toFixed(2)} Sft`);
+    const sumPlinth = (fields.floors || []).reduce((acc, f) => acc + parseNum(f.plinthArea), 0);
+    if (sumPlinth > 0) {
+      handleChange('totalBUA', `${sumPlinth.toFixed(2)} Sft`);
+    }
+
+    const sumNetValue = (fields.floors || []).reduce((acc, f) => acc + parseNum(f.netValue), 0);
+    if (sumNetValue > 0) {
+      const formattedSum = sumNetValue.toFixed(2);
+      const roundedVal = Math.round(sumNetValue / 1000) * 1000;
+      const formattedSay = roundedVal.toFixed(2);
+      handleChange('totalBasicValueBuilding', formattedSum);
+      handleChange('totalBasicValueBuildingSay', formattedSay);
+      handleChange('totalBasicValueBuildingWords', rupeesInWords(roundedVal));
+
+      // Propagate to summary table
+      handleChange('marketValueBuilding', formattedSum);
+      handleChange('realisableValueBuilding', (sumNetValue * 0.95).toFixed(2));
+      handleChange('distressValueBuilding', (sumNetValue * 0.85).toFixed(2));
+      handleChange('insurableValueBuilding', (sumNetValue * 0.85).toFixed(2));
     }
   }, [fields.floors, handleChange]);
+
+  // Auto-calculate Land Values when benchmark or market rate changes
+  useEffect(() => {
+    const areaSft = parseNum(fields.totalLandAreaSft || '566');
+    const benchRate = parseNum(fields.govtBenchmarkRateSft || '199');
+    const adoptedRate = parseNum(fields.adoptedMarketRateSft || '550');
+
+    if (areaSft > 0 && benchRate > 0) {
+      const govtVal = (areaSft * benchRate).toFixed(2);
+      handleChange('totalGovtValueLand', govtVal);
+      handleChange('govtGuideLand', govtVal);
+      handleChange('govtGuideTotal', govtVal);
+    }
+
+    if (areaSft > 0 && adoptedRate > 0) {
+      const mktVal = (areaSft * adoptedRate).toFixed(2);
+      handleChange('totalMarketValueLand', mktVal);
+      handleChange('marketValueLand', mktVal);
+      handleChange('realisableValueLand', (parseNum(mktVal) * 0.95).toFixed(2));
+      handleChange('distressValueLand', (parseNum(mktVal) * 0.85).toFixed(2));
+    }
+  }, [fields.totalLandAreaSft, fields.govtBenchmarkRateSft, fields.adoptedMarketRateSft, handleChange]);
+
+  // Auto-calculate Total Values across Land + Building
+  useEffect(() => {
+    const landMkt = parseNum(fields.marketValueLand);
+    const bldgMkt = parseNum(fields.marketValueBuilding);
+    const totalMkt = landMkt + bldgMkt;
+
+    if (totalMkt > 0) {
+      const roundedMkt = Math.round(totalMkt / 1000) * 1000;
+      handleChange('marketValueTotal', totalMkt.toFixed(2));
+      handleChange('marketValueSay', roundedMkt.toFixed(2));
+      handleChange('marketValueWords', rupeesInWords(roundedMkt));
+
+      const totalReal = totalMkt * 0.95;
+      const roundedReal = Math.round(totalReal / 1000) * 1000;
+      handleChange('realisableValueTotal', totalReal.toFixed(2));
+      handleChange('realizableValueSay', roundedReal.toFixed(2));
+      handleChange('realizableValueWords', rupeesInWords(roundedReal));
+
+      const totalDist = totalMkt * 0.85;
+      const roundedDist = Math.round(totalDist / 1000) * 1000;
+      handleChange('distressValueTotal', totalDist.toFixed(2));
+      handleChange('distressValueSay', roundedDist.toFixed(2));
+      handleChange('distressValueWords', rupeesInWords(roundedDist));
+
+      const bldgInsurable = parseNum(fields.insurableValueBuilding);
+      handleChange('insurableValueTotal', bldgInsurable > 0 ? bldgInsurable.toFixed(2) : (bldgMkt * 0.85).toFixed(2));
+    }
+  }, [fields.marketValueLand, fields.marketValueBuilding, fields.insurableValueBuilding, handleChange]);
+
+  // Photo upload & bucket handlers (Sec 13)
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      const uploadedUrls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.size > 10 * 1024 * 1024) continue;
+        const ext = file.name.split('.').pop() || 'jpg';
+        const path = `temp-photos/${projectId}/property-${Date.now()}-${i}.${ext}`;
+        const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(path, file);
+        if (!error) {
+          const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(path);
+          uploadedUrls.push(data.publicUrl);
+        }
+      }
+      const existing = fields.propertyImages || [];
+      const newImages = [...existing, ...uploadedUrls];
+      const existingNames = fields.propertyImageNames || [];
+      const newNames = [...existingNames, ...uploadedUrls.map(() => 'Site Picture')];
+      handleChange('propertyImages', newImages);
+      handleChange('propertyImageNames', newNames);
+    } catch (err: any) {
+      alert(`Upload error: ${err.message}`);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handlePhotoRemove = (idx: number) => {
+    const updated = (fields.propertyImages || []).filter((_, i) => i !== idx);
+    const updatedNames = (fields.propertyImageNames || []).filter((_, i) => i !== idx);
+    handleChange('propertyImages', updated);
+    handleChange('propertyImageNames', updatedNames);
+  };
+
+  const handleReorderPhotos = (newImgs: string[], newNames: string[]) => {
+    handleChange('propertyImages', newImgs);
+    handleChange('propertyImageNames', newNames);
+  };
+
+  const handleBucketConfirm = (selectedUrls: string[]) => {
+    const existing = fields.propertyImages || [];
+    const newImages = [...existing, ...selectedUrls];
+    const existingNames = fields.propertyImageNames || [];
+    const newNames = [...existingNames, ...selectedUrls.map(() => 'Site Picture')];
+    handleChange('propertyImages', newImages);
+    handleChange('propertyImageNames', newNames);
+    setBucketPickerOpen(false);
+  };
+
+  // Local map upload handlers (Sec 14 — device upload only)
+  const handleMultiMapUpload = async (e: React.ChangeEvent<HTMLInputElement>, key: 'locationMapImages' | 'cadastralMapImages' | 'sketchMapImages' | 'benchmarkImages') => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      const uploadedUrls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.size > 10 * 1024 * 1024) continue;
+        const ext = file.name.split('.').pop() || 'jpg';
+        const path = `temp-photos/${projectId}/${key}-${Date.now()}-${i}.${ext}`;
+        const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(path, file);
+        if (!error) {
+          const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(path);
+          uploadedUrls.push(data.publicUrl);
+        }
+      }
+      const existing = fields[key] || [];
+      handleChange(key, [...existing, ...uploadedUrls]);
+    } catch (err: any) {
+      alert(`Upload error: ${err.message}`);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleMapRemove = (key: 'locationMapImages' | 'cadastralMapImages' | 'sketchMapImages' | 'benchmarkImages', idx?: number) => {
+    if (idx === undefined) {
+      handleChange(key, []);
+      return;
+    }
+    const updated = (fields[key] || []).filter((_, i) => i !== idx);
+    handleChange(key, updated);
+  };
 
   // Auto-save debounced
   useEffect(() => {
@@ -355,6 +617,72 @@ export default function AxisAGRI({
     }
   };
 
+  // PDF Generation
+  const generatePDFBytes = async (): Promise<Uint8Array> => {
+    // Fetch property photos
+    const propImages = fields.propertyImages || [];
+    const photoBytesList = await Promise.all(propImages.map(fetchBytes));
+    const photos = propImages.map((url, idx) => ({
+      bytes: photoBytesList[idx] as Uint8Array,
+      label: fields.propertyImageNames?.[idx] || `Photograph ${idx + 1}`,
+    })).filter(p => p.bytes && p.bytes.length > 0);
+
+    // Fetch location maps
+    const locImages = fields.locationMapImages || [];
+    const locBytes = (await Promise.all(locImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
+
+    // Fetch cadastral maps
+    const cadImages = fields.cadastralMapImages || [];
+    const cadBytes = (await Promise.all(cadImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
+
+    // Fetch benchmark screenshots
+    const benchImages = fields.benchmarkImages || [];
+    const benchBytes = (await Promise.all(benchImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
+
+    const renderer = new PDFAxisAgriRenderer();
+    await renderer.init();
+
+    return renderer.generateAxisAgriReport(fields, {
+      photos,
+      locationMaps: locBytes,
+      cadastralMaps: cadBytes,
+      benchmarkImages: benchBytes,
+    });
+  };
+
+  const handlePreviewPDF = async () => {
+    setLoading(true);
+    try {
+      const bytes = await generatePDFBytes();
+      const blob = new Blob([bytes as any], { type: 'application/pdf' });
+      window.open(URL.createObjectURL(blob), '_blank');
+    } catch (err: any) {
+      alert(`PDF Preview Failed: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    setLoading(true);
+    try {
+      const bytes = await generatePDFBytes();
+      const blob = new Blob([bytes as any], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Axis_Agri_Valuation_${projectCode || 'Report'}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      alert(`PDF Download Failed: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Date picker helper component
   const DateInput = ({ fieldKey, label }: { fieldKey: keyof AxisAgriReportFields; label: string }) => (
     <Field label={label}>
@@ -381,7 +709,7 @@ export default function AxisAGRI({
     </Field>
   );
 
-  // ── Navigation Sections (1st Half) ──
+  // ── Navigation Sections (All 14 Sections) ──
   const navSections: NavItem[] = [
     { id: 'sec-1', title: '1. Header & Initiation' },
     { id: 'sec-2', title: '2. Property Location' },
@@ -390,6 +718,13 @@ export default function AxisAGRI({
     { id: 'sec-5', title: '5. Locality & Infrastructure' },
     { id: 'sec-6', title: '6. Statutory Approvals' },
     { id: 'sec-7', title: '7. Construction & BUA' },
+    { id: 'sec-8', title: '8. Condition, Life & Land Rate' },
+    { id: 'sec-9', title: '9. Building Valuation Breakdown' },
+    { id: 'sec-10', title: '10. Value of Property Summary' },
+    { id: 'sec-11', title: '11. Remarks & Annexure A' },
+    { id: 'sec-12', title: '12. Checklist & Undertaking' },
+    { id: 'sec-13', title: '13. Property Photographs' },
+    { id: 'sec-14', title: '14. Maps & Documents' },
   ];
 
   return (
@@ -415,8 +750,8 @@ export default function AxisAGRI({
           userRole={userRole}
           message={message}
           onSaveDraft={handleSaveDraft}
-          onPreviewPDF={() => alert('PDF preview for Axis Bank AGRI will be fully integrated with 2nd Half.')}
-          onDownloadPDF={() => alert('PDF download for Axis Bank AGRI will be fully integrated with 2nd Half.')}
+          onPreviewPDF={handlePreviewPDF}
+          onDownloadPDF={handleDownloadPDF}
         />
 
         {message && (
@@ -1704,6 +2039,664 @@ export default function AxisAGRI({
             </div>
           </div>
         </Section>
+
+        {/* ═══════════════════════════════════════════════════════════════
+            SECTION 8: BUILDING CONDITION, LIFE & LAND RATE
+        ═══════════════════════════════════════════════════════════════ */}
+        <Section id="sec-8" title="8. Building Condition, Life & Land Rate" defaultOpen>
+          <div className="space-y-6">
+            {/* Condition & Life Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs border border-slate-300 dark:border-slate-700 rounded-lg overflow-hidden">
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                  <tr className="bg-slate-50 dark:bg-slate-900">
+                    <td className="p-3 font-semibold text-slate-700 dark:text-slate-300 w-1/4 border-r border-slate-200 dark:border-slate-800">
+                      Condition Of Building
+                    </td>
+                    <td colSpan={3} className="p-2">
+                      <select
+                        className={selectCls}
+                        value={fields.conditionOfBuilding || 'Good'}
+                        onChange={e => handleChange('conditionOfBuilding', e.target.value)}
+                        disabled={isReadOnly}
+                      >
+                        <option value="Good">Good</option>
+                        <option value="Average">Average</option>
+                        <option value="Poor">Poor</option>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-800">
+                      Current Life of the structure
+                    </td>
+                    <td className="p-2 border-r border-slate-200 dark:border-slate-800">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.currentLifeStructure || ''}
+                        onChange={e => handleChange('currentLifeStructure', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="8 Years"
+                      />
+                    </td>
+                    <td className="p-3 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-800">
+                      Projected Life of the Structure
+                    </td>
+                    <td className="p-2">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.projectedLifeStructure || ''}
+                        onChange={e => handleChange('projectedLifeStructure', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="52 Years"
+                      />
+                    </td>
+                  </tr>
+                  <tr className="bg-slate-50 dark:bg-slate-900">
+                    <td className="p-3 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-800">
+                      Land Revenue/Taxes Paid upto (for Land)
+                    </td>
+                    <td className="p-2 border-r border-slate-200 dark:border-slate-800">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.landRevenueTaxesPaid || ''}
+                        onChange={e => handleChange('landRevenueTaxesPaid', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="Recent rent receipt is not provided"
+                      />
+                    </td>
+                    <td className="p-3 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-800">
+                      Municipal Taxes Paid upto (for Building)
+                    </td>
+                    <td className="p-2">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.municipalTaxesPaid || ''}
+                        onChange={e => handleChange('municipalTaxesPaid', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="Not Applicable"
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Land Rate Calculations */}
+            <div className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 space-y-4">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 border-b pb-2">
+                The Land Rate Adopted in this Valuation
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="GOVT. BENCHMARK RATE (PER ACRE)">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.govtBenchmarkRateAcre || ''}
+                    onChange={e => handleChange('govtBenchmarkRateAcre', e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="86,55,000"
+                  />
+                </Field>
+
+                <Field label="GOVT. BENCHMARK RATE (PER SFT)">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.govtBenchmarkRateSft || ''}
+                    onChange={e => handleChange('govtBenchmarkRateSft', e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="199"
+                  />
+                </Field>
+
+                <Field label="TOTAL LAND AREA (DECIMAL)">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.totalLandAreaDec || ''}
+                    onChange={e => handleChange('totalLandAreaDec', e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="0.013"
+                  />
+                </Field>
+
+                <Field label="TOTAL LAND AREA (IN SFT)">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.totalLandAreaSft || ''}
+                    onChange={e => handleChange('totalLandAreaSft', e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="566.00"
+                  />
+                </Field>
+              </div>
+
+              <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 flex justify-between items-center text-xs font-bold">
+                <span className="text-slate-600 dark:text-slate-400">Total Govt. Value of Land:</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-mono text-sm">
+                  ₹ {fields.totalGovtValueLand || '0.00'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                <Field label="PREVAILING MARKET RATE MIN (RS./SFT)">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.prevailingMarketRateMin || ''}
+                    onChange={e => handleChange('prevailingMarketRateMin', e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="500"
+                  />
+                </Field>
+
+                <Field label="PREVAILING MARKET RATE MAX (RS./SFT)">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.prevailingMarketRateMax || ''}
+                    onChange={e => handleChange('prevailingMarketRateMax', e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="600"
+                  />
+                </Field>
+
+                <Field label="ADOPTED MARKET RATE (RS./SFT)">
+                  <input
+                    type="text"
+                    className={`${inputCls} font-bold text-emerald-600`}
+                    value={fields.adoptedMarketRateSft || ''}
+                    onChange={e => handleChange('adoptedMarketRateSft', e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="550"
+                  />
+                </Field>
+              </div>
+
+              <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-lg border border-emerald-200 dark:border-emerald-800 flex justify-between items-center text-xs font-bold">
+                <span className="text-emerald-800 dark:text-emerald-300">Total Market Value of Land:</span>
+                <span className="text-emerald-700 dark:text-emerald-400 font-mono text-sm">
+                  ₹ {fields.totalMarketValueLand || '0.00'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        {/* ═══════════════════════════════════════════════════════════════
+            SECTION 9: BUILDING VALUATION BREAKDOWN
+        ═══════════════════════════════════════════════════════════════ */}
+        <Section id="sec-9" title="9. Building Valuation (Floor-Wise Breakdown & Cost Analysis)" defaultOpen>
+          <div className="space-y-4">
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+                <thead className="bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300">
+                  <tr>
+                    <th className="p-2 text-left font-bold">Particulars of Items</th>
+                    <th className="p-2 text-right font-bold w-24">Plinth (Sft)</th>
+                    <th className="p-2 text-center font-bold w-20">Roof Ht</th>
+                    <th className="p-2 text-center font-bold w-16">Age</th>
+                    <th className="p-2 text-right font-bold w-28">Rate (Rs./Sft)</th>
+                    <th className="p-2 text-right font-bold w-32">Est. Cost (Rs.)</th>
+                    <th className="p-2 text-right font-bold w-32">Depreciation (Rs.)</th>
+                    <th className="p-2 text-right font-bold w-32">Net Value (Rs.)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-950">
+                  {(fields.floors || []).map((floor, idx) => (
+                    <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-900/50">
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={floor.floorName}
+                          onChange={e => handleFloorChange(idx, 'floorName', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={`${inputCls} text-right`}
+                          value={floor.plinthArea}
+                          onChange={e => handleFloorChange(idx, 'plinthArea', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={`${inputCls} text-center`}
+                          value={floor.roofHeight || "10'-6\""}
+                          onChange={e => handleFloorChange(idx, 'roofHeight', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={`${inputCls} text-center`}
+                          value={floor.ageYears || '8Yrs'}
+                          onChange={e => handleFloorChange(idx, 'ageYears', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={`${inputCls} text-right`}
+                          value={floor.replacementRate || '1300.00'}
+                          onChange={e => handleFloorChange(idx, 'replacementRate', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={`${inputCls} text-right font-medium`}
+                          value={floor.estimatedCost || '0.00'}
+                          onChange={e => handleFloorChange(idx, 'estimatedCost', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={`${inputCls} text-right text-rose-600 font-medium`}
+                          value={floor.depreciationAmount || '0.00'}
+                          onChange={e => handleFloorChange(idx, 'depreciationAmount', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={`${inputCls} text-right text-emerald-600 font-bold`}
+                          value={floor.netValue || '0.00'}
+                          onChange={e => handleFloorChange(idx, 'netValue', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot className="bg-slate-50 dark:bg-slate-900 font-bold border-t border-slate-300 dark:border-slate-700">
+                  <tr>
+                    <td colSpan={7} className="p-3 text-right text-slate-700 dark:text-slate-300">
+                      Total Net Building Value:
+                    </td>
+                    <td className="p-3 text-right text-emerald-700 dark:text-emerald-400 text-sm">
+                      ₹ {fields.totalBasicValueBuilding || '0.00'}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <Field label="TOTAL BASIC VALUE OF BUILDING (ROUNDED / SAY)">
+                <input
+                  type="text"
+                  className={`${inputCls} font-bold text-emerald-700`}
+                  value={fields.totalBasicValueBuildingSay || ''}
+                  onChange={e => handleChange('totalBasicValueBuildingSay', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="21,96,000.00"
+                />
+              </Field>
+
+              <Field label="TOTAL BASIC VALUE IN WORDS">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.totalBasicValueBuildingWords || ''}
+                  onChange={e => handleChange('totalBasicValueBuildingWords', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="RUPEES TWENTY ONE LAKHS NINETY SIX THOUSANDS ONLY"
+                />
+              </Field>
+            </div>
+          </div>
+        </Section>
+
+        {/* ═══════════════════════════════════════════════════════════════
+            SECTION 10: VALUE OF PROPERTY SUMMARY MATRIX
+        ═══════════════════════════════════════════════════════════════ */}
+        <Section id="sec-10" title="10. Value of the Property (Summary Matrix)" defaultOpen>
+          <div className="space-y-6">
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs border border-slate-300 dark:border-slate-700 rounded-lg overflow-hidden">
+                <thead className="bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300">
+                  <tr>
+                    <th className="p-3 text-left font-bold">Category</th>
+                    <th className="p-3 text-right font-bold w-40">Land (₹)</th>
+                    <th className="p-3 text-right font-bold w-40">Building (₹)</th>
+                    <th className="p-3 text-right font-bold w-32">Amenities (₹)</th>
+                    <th className="p-3 text-right font-bold w-44">Total in Rs (₹)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-950">
+                  <tr>
+                    <td className="p-3 font-bold text-slate-700 dark:text-slate-300">Govt. Guide Line Value</td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.govtGuideLand || ''} onChange={e => handleChange('govtGuideLand', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.govtGuideBuilding || '-'} onChange={e => handleChange('govtGuideBuilding', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.govtGuideAmenities || '-'} onChange={e => handleChange('govtGuideAmenities', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-slate-800 dark:text-slate-100`} value={fields.govtGuideTotal || ''} onChange={e => handleChange('govtGuideTotal', e.target.value)} disabled={isReadOnly} /></td>
+                  </tr>
+                  <tr className="bg-slate-50/50 dark:bg-slate-900/30">
+                    <td className="p-3 font-bold text-emerald-800 dark:text-emerald-300">Market Value in Rs</td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.marketValueLand || ''} onChange={e => handleChange('marketValueLand', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.marketValueBuilding || ''} onChange={e => handleChange('marketValueBuilding', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.marketValueAmenities || '-'} onChange={e => handleChange('marketValueAmenities', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-emerald-700 dark:text-emerald-400`} value={fields.marketValueTotal || ''} onChange={e => handleChange('marketValueTotal', e.target.value)} disabled={isReadOnly} /></td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-bold text-blue-800 dark:text-blue-300">Realisable Value (95%)</td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.realisableValueLand || ''} onChange={e => handleChange('realisableValueLand', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.realisableValueBuilding || ''} onChange={e => handleChange('realisableValueBuilding', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.realisableValueAmenities || '-'} onChange={e => handleChange('realisableValueAmenities', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-blue-700 dark:text-blue-400`} value={fields.realisableValueTotal || ''} onChange={e => handleChange('realisableValueTotal', e.target.value)} disabled={isReadOnly} /></td>
+                  </tr>
+                  <tr className="bg-slate-50/50 dark:bg-slate-900/30">
+                    <td className="p-3 font-bold text-amber-800 dark:text-amber-300">Distress/Forced Sale Value (85%)</td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.distressValueLand || ''} onChange={e => handleChange('distressValueLand', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.distressValueBuilding || ''} onChange={e => handleChange('distressValueBuilding', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.distressValueAmenities || '-'} onChange={e => handleChange('distressValueAmenities', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-amber-700 dark:text-amber-400`} value={fields.distressValueTotal || ''} onChange={e => handleChange('distressValueTotal', e.target.value)} disabled={isReadOnly} /></td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-bold text-indigo-800 dark:text-indigo-300">Insurable Value</td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.insurableValueLand || '-'} onChange={e => handleChange('insurableValueLand', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.insurableValueBuilding || ''} onChange={e => handleChange('insurableValueBuilding', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.insurableValueAmenities || '-'} onChange={e => handleChange('insurableValueAmenities', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-indigo-700 dark:text-indigo-400`} value={fields.insurableValueTotal || ''} onChange={e => handleChange('insurableValueTotal', e.target.value)} disabled={isReadOnly} /></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Rounded Figures & Words */}
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20">
+                <Field label="MARKET VALUE (SAY)">
+                  <input type="text" className={`${inputCls} font-bold text-emerald-800 dark:text-emerald-300`} value={fields.marketValueSay || ''} onChange={e => handleChange('marketValueSay', e.target.value)} disabled={isReadOnly} />
+                </Field>
+                <Field label="MARKET VALUE IN WORDS">
+                  <input type="text" className={inputCls} value={fields.marketValueWords || ''} onChange={e => handleChange('marketValueWords', e.target.value)} disabled={isReadOnly} />
+                </Field>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20">
+                <Field label="REALIZABLE VALUE (SAY)">
+                  <input type="text" className={`${inputCls} font-bold text-blue-800 dark:text-blue-300`} value={fields.realizableValueSay || ''} onChange={e => handleChange('realizableValueSay', e.target.value)} disabled={isReadOnly} />
+                </Field>
+                <Field label="REALIZABLE VALUE IN WORDS">
+                  <input type="text" className={inputCls} value={fields.realizableValueWords || ''} onChange={e => handleChange('realizableValueWords', e.target.value)} disabled={isReadOnly} />
+                </Field>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
+                <Field label="DISTRESS VALUE (SAY)">
+                  <input type="text" className={`${inputCls} font-bold text-amber-800 dark:text-amber-300`} value={fields.distressValueSay || ''} onChange={e => handleChange('distressValueSay', e.target.value)} disabled={isReadOnly} />
+                </Field>
+                <Field label="DISTRESS VALUE IN WORDS">
+                  <input type="text" className={inputCls} value={fields.distressValueWords || ''} onChange={e => handleChange('distressValueWords', e.target.value)} disabled={isReadOnly} />
+                </Field>
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        {/* ═══════════════════════════════════════════════════════════════
+            SECTION 11: REMARKS & ANNEXURE A
+        ═══════════════════════════════════════════════════════════════ */}
+        <Section id="sec-11" title="11. Remarks, Opinions & Annexure 'A'" defaultOpen>
+          <div className="space-y-4">
+            <Field label="BASIS OF VALUATION">
+              <textarea
+                rows={3}
+                className={inputCls}
+                value={fields.basisOfValuation || ''}
+                onChange={e => handleChange('basisOfValuation', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
+
+            <Field label="OPINION OF MARKET VALUE">
+              <textarea
+                rows={3}
+                className={inputCls}
+                value={fields.opinionOfMarketValue || ''}
+                onChange={e => handleChange('opinionOfMarketValue', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
+
+            <Field label="REMARKS (INCLUDING NB: DISCLAIMER)">
+              <textarea
+                rows={6}
+                className={inputCls}
+                value={fields.remarksText || ''}
+                onChange={e => handleChange('remarksText', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
+
+            {/* Annexure A */}
+            <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 border-b pb-2">
+                Annexure - &quot;A&quot; Details
+              </h4>
+              <Field label="REGARDING LAND">
+                <textarea
+                  rows={2}
+                  className={inputCls}
+                  value={fields.annexureARegardingLand || ''}
+                  onChange={e => handleChange('annexureARegardingLand', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="REGARDING BUILDING">
+                <textarea
+                  rows={2}
+                  className={inputCls}
+                  value={fields.annexureARegardingBuilding || ''}
+                  onChange={e => handleChange('annexureARegardingBuilding', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="BASIS OF ARRIVING AT THE LAND RATE">
+                <textarea
+                  rows={3}
+                  className={inputCls}
+                  value={fields.annexureABasisLandRate || ''}
+                  onChange={e => handleChange('annexureABasisLandRate', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+            </div>
+          </div>
+        </Section>
+
+        {/* ═══════════════════════════════════════════════════════════════
+            SECTION 12: STATUTORY CHECKLIST & UNDERTAKING
+        ═══════════════════════════════════════════════════════════════ */}
+        <Section id="sec-12" title="12. Valuation Report Checklist & Undertaking" defaultOpen>
+          <div className="space-y-6">
+            <div className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 space-y-4">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 border-b pb-2">
+                Valuation Report Check List (12 Statutory Items)
+              </h4>
+
+              {[
+                { id: 'q1', text: '1. FULL NAMES OF ALL PROPERTY OWNERS ARE MENTIONED. ADDRESS OF THE PROPERTY IS MENTIONED AND IS SAME AS LATEST TITLE DEED' },
+                { id: 'q2', text: '2. BOUNDARIES OF THE PROPERTY ARE MENTIONED AS PER BOTH, TITLE DEED AND ACTUAL OBSERVATIONS' },
+                { id: 'q3', text: '3. CLEARLY MENTIONED THAT PROPERTY HAS BEEN IDENTIFIED BY THE BORROWER ON HIS OWN BASED ON THE ADDRESS' },
+                { id: 'q4', text: '4. TYPE OF PROPERTY IS CLEARLY MENTIONED (AMONGST AGRICULTURAL, RESIDENTIAL, COMMERCIAL, INDUSTRIAL ETC.)' },
+                { id: 'q5', text: '5. IF LAND, CLEARLY MENTIONED WHETHER THE LAND IS LAND BLOCKED PLOT OR INDEPENDENT LAND (ONLY YES OR NO)' },
+                { id: 'q6', text: '6. IF VACANT LAND, CLEARLY MENTIONED THAT PROPER DEMARCATION AND FENCING HAS BEEN DONE' },
+                { id: 'q7', text: '7. IF BUILDING, CLEARLY MENTIONED THAT CONSTRUCTION HAS BEEN DONE ACCORDING TO THE BUILDING PLAN APPROVAL (IF NOT, DEVIATION SPECIFIED)' },
+                { id: 'q8', text: '8. IF BUILDING, CLEARLY MENTIONED THAT BUILDING USE/COMPLETION CERTIFICATE HAS BEEN OBTAINED FROM COMPETENT AUTHORITY' },
+                { id: 'q9', text: '9. CLEARLY MENTIONED WHETHER ACCESS TO THE PROPERTY IS AVAILABLE (ONLY YES OR NO)' },
+                { id: 'q10', text: '10. BASIS FOR ARRIVING AT GOVERNMENT VALUE HAS BEEN MENTIONED AND NECESSARY DOCUMENTS HAVE BEEN ENCLOSED' },
+                { id: 'q11', text: '11. WHETHER THE SITE IS SITUATED ABOVE THE WATER TANK LEVEL (IF BELOW, NEGATIVE EFFECT SPECIFIED)' },
+                { id: 'q12', text: '12. ANY HIGH TENSION ELECTRICITY WIRES ARE PASSING ABOVE THE SITE (IF SO, NEGATIVE EFFECT SPECIFIED)' },
+              ].map(item => {
+                const currentVal = fields.checklistResponses?.[item.id] || 'YES';
+                return (
+                  <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
+                    <span className="font-medium text-slate-700 dark:text-slate-300 flex-1">{item.text}</span>
+                    <div className="flex items-center gap-4 shrink-0">
+                      {['YES', 'NO'].map(opt => (
+                        <label key={opt} className="flex items-center gap-1.5 cursor-pointer font-bold">
+                          <input
+                            type="radio"
+                            name={`check-${item.id}`}
+                            value={opt}
+                            checked={currentVal === opt}
+                            onChange={() => {
+                              const updated = { ...(fields.checklistResponses || {}), [item.id]: opt };
+                              handleChange('checklistResponses', updated);
+                            }}
+                            disabled={isReadOnly}
+                            className="text-emerald-600 focus:ring-emerald-500"
+                          />
+                          <span>{opt}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Undertaking & Signatory */}
+            <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 space-y-4">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 border-b pb-2">
+                Undertaking & Authorized Signatory Block
+              </h4>
+
+              <Field label="UNDERTAKING TEXT">
+                <textarea
+                  rows={6}
+                  className={inputCls}
+                  value={fields.undertakingText || ''}
+                  onChange={e => handleChange('undertakingText', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+
+              <div className="p-3 bg-white dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 space-y-1">
+                <p className="font-bold text-slate-900 dark:text-slate-100">Prepared By: Er. Satyajit Mohanty (B.E,Civil) FIV</p>
+                <p>Registered Valuer, Govt. of India (Regd. No.-107/2016-17, Cat -I)</p>
+                <p>Chartered Engineer (Regd. No.-M-156096-9) • Empanelled Valuer of Axis Bank</p>
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        {/* ═══════════════════════════════════════════════════════════════
+            SECTION 13: PROPERTY PHOTOGRAPHS (DUAL MODALITY: DEVICE + BUCKET)
+        ═══════════════════════════════════════════════════════════════ */}
+        <BasePhotographsSection
+          title="13. Property Photographs"
+          sectionNumber={13}
+          sectionId="sec-13"
+          propertyImages={fields.propertyImages || []}
+          propertyImageNames={fields.propertyImageNames || []}
+          isReadOnly={isReadOnly}
+          uploading={uploading}
+          bucketCount={bucketImages?.length || 0}
+          onImageNameChange={(idx, name) => {
+            const next = [...(fields.propertyImageNames || [])];
+            next[idx] = name;
+            handleChange('propertyImageNames', next);
+          }}
+          onRemoveImage={handlePhotoRemove}
+          onReorderImages={handleReorderPhotos}
+          onUploadImages={handlePhotoUpload}
+          onOpenBucketPicker={() => setBucketPickerOpen(true)}
+        />
+
+        {/* ═══════════════════════════════════════════════════════════════
+            SECTION 14: MAPS & SPATIAL DOCUMENTS (LOCAL DEVICE UPLOAD ONLY)
+        ═══════════════════════════════════════════════════════════════ */}
+        <BaseMapsSection
+          title="14. Maps & Spatial Documents"
+          sectionNumber={14}
+          sectionId="sec-14"
+          isReadOnly={isReadOnly}
+          uploading={uploading}
+          propertyAddress={fields.localityLandmark || fields.colonyNagarSector || ''}
+          latitude={fields.latitude}
+          longitude={fields.longitude}
+          locationMapImages={fields.locationMapImages}
+          cadastralMapImages={fields.cadastralMapImages}
+          sketchMapImages={fields.sketchMapImages}
+          mapOrder={['location', 'cadastral', 'sketch']}
+          onLocationMapUpload={(e) => handleMultiMapUpload(e, 'locationMapImages')}
+          onLocationMapRemove={(idx) => handleMapRemove('locationMapImages', idx)}
+          onCadastralMapUpload={(e) => handleMultiMapUpload(e, 'cadastralMapImages')}
+          onCadastralMapRemove={(idx) => handleMapRemove('cadastralMapImages', idx)}
+          onSketchMapUpload={(e) => handleMultiMapUpload(e, 'sketchMapImages')}
+          onSketchMapRemove={(idx) => handleMapRemove('sketchMapImages', idx)}
+          onReorderLocationMap={(imgs) => handleChange('locationMapImages', imgs)}
+          onReorderCadastralMap={(imgs) => handleChange('cadastralMapImages', imgs)}
+          onReorderSketchMap={(imgs) => handleChange('sketchMapImages', imgs)}
+        />
+
+        {/* Benchmark Screenshot Upload inside Sec 14 */}
+        <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+              📊 Benchmark Valuation Screenshot (Page 8)
+            </span>
+            {!isReadOnly && (
+              <label className="px-3 py-1.5 rounded-lg border border-[#b8860b] text-[#b8860b] text-xs font-semibold hover:bg-[#b8860b]/10 cursor-pointer transition-colors">
+                {uploading ? 'Uploading...' : '+ Upload Benchmark Screenshot'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => handleMultiMapUpload(e, 'benchmarkImages')}
+                  disabled={uploading}
+                />
+              </label>
+            )}
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {(fields.benchmarkImages || []).map((img, idx) => (
+              <div key={idx} className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 aspect-video bg-slate-100">
+                <img src={img} alt={`Benchmark ${idx + 1}`} className="w-full h-full object-cover" />
+                {!isReadOnly && (
+                  <button
+                    type="button"
+                    onClick={() => handleMapRemove('benchmarkImages', idx)}
+                    className="absolute top-1.5 right-1.5 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Cloud Photo Bucket Picker Modal */}
+        <BasePhotoBucketModal
+          isOpen={bucketPickerOpen}
+          bucketImages={bucketImages || []}
+          onClose={() => setBucketPickerOpen(false)}
+          onConfirm={handleBucketConfirm}
+        />
       </div>
     </div>
   );

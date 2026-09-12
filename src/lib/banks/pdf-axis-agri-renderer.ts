@@ -2,15 +2,19 @@
  * pdf-axis-agri-renderer.ts — Dedicated PDF renderer and types for Axis Bank (AGRI).
  *
  * Implements the statutory VALUATION REPORT FORMAT (NON-AGRI) handled under Axis Agri:
- * - Ref No format: SMA/MM/YYYY/XX
- * - Strict DD/MM/YYYY dates via formatReportDate()
- * - Individual 8-box approval date cells [ D | D | M | M | Y | Y | Y | Y ]
- * - Dual boundary verification/document matrix
- * - Dynamic floor plinth area & usage table
- * - Auto-calculated depreciation and market value matrix
- * - 12-item valuation report checklist with signature block
+ * - Page 1: Header banner, Technical Initiation table, Property Details, Type of Property
+ * - Page 2: Boundaries (Verification vs Document), Locality, Infrastructure, Occupancy, Tenancy, Leasehold, RERA
+ * - Page 3: Statutory Approvals (8-box individual date cells), Construction Details & Floor Plinth Area Table
+ * - Page 4: Building Condition, Life, Land Rate Adopted, Floor-wise Cost Breakdown Table (8 cols), Basic Value Building
+ * - Page 5: Value of Property Summary Table (5x5 matrix), Realizable/Distress/Market values, Remarks with NB notice
+ * - Page 6: Top bank data notice, Undertaking bullet points, Authorized Signatory, Annexure "A"
+ * - Page 7: Property Photographs (2x2 photo grid with captions)
+ * - Page 8: Locational Diagram with GPS Co-ordinates & Benchmark Valuation screenshot
+ * - Page 9: Cadastral Map (Bhulekh screenshot)
+ * - Page 10: Valuation Report Checklist (12 items) & Signature Block ("Er. Satyajit Mohanty (B.E,Civil) FIV")
  */
 
+import { rgb } from 'pdf-lib';
 import {
   PDFBankRenderer,
   PAGE_W,
@@ -148,6 +152,8 @@ export interface AxisAgriReportFields {
   approvedBUA?: string; // 'Not Available'
   actualBUA?: string; // RCC GF: 525.00 Sft RCC FF: 525.00 Sft RCC SF: 204.00 Sft Total BUA: 1254.00 Sft
   demarcationAtSite?: string; // 'Yes' | 'No'
+  basementArea?: string;
+  stiltArea?: string;
   floors?: AxisAgriFloorItem[];
   totalBUA?: string; // e.g. 1254.00 Sft
   totalCarpetArea?: string; // e.g. 1090.00 Sft (Approx.)
@@ -223,11 +229,1505 @@ export interface AxisAgriReportFields {
   // Page 10: Check List & Images
   checklistResponses?: Record<string, string>;
   propertyPhotos?: any[];
-  locationMapImages?: any[];
-  cadastralMapImages?: any[];
+  propertyImages?: string[];
+  propertyImageNames?: string[];
+  locationMapImages?: string[];
+  cadastralMapImages?: string[];
+  benchmarkImages?: string[];
+  sketchMapImages?: string[];
 }
 
 export class PDFAxisAgriRenderer extends PDFBankRenderer {
-  // Foundation class for Axis Bank AGRI PDF Renderer.
-  // Full implementation will follow in 2nd half.
+  /**
+   * Draw a styled rectangular cell using the standard bank palette.
+   */
+  drawCell(
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    text: string,
+    options: {
+      bold?: boolean;
+      italic?: boolean;
+      fontSize?: number;
+      align?: 'left' | 'center' | 'right';
+      vAlign?: 'top' | 'middle';
+      bg?: string;
+      opacity?: number;
+      highlight?: boolean;
+      isHeader?: boolean;
+      isLabel?: boolean;
+    } = {}
+  ): void {
+    const fontSize = options.fontSize || FONT_SIZE;
+    const font = options.italic
+      ? this.fontItalic
+      : options.bold || options.isHeader || options.isLabel || options.highlight
+      ? this.fontBold
+      : this.fontRegular;
+    const vAlign = options.vAlign || 'middle';
+    const align = options.align || 'left';
+
+    let bgColor: string | null = options.bg || null;
+    if (!bgColor) {
+      if (options.isHeader) bgColor = OPT_BG;
+      else if (options.isLabel) bgColor = LBL_BG;
+      else if (options.highlight) bgColor = VAL_BG;
+    }
+
+    const rectOpts: any = {
+      x,
+      y: y - h,
+      width: w,
+      height: h,
+      borderColor: rgb(0, 0, 0),
+      borderWidth: BORDER_W,
+    };
+
+    if (bgColor) {
+      rectOpts.color = hexToRgb(bgColor);
+      rectOpts.opacity = options.opacity !== undefined ? options.opacity : BG_OPACITY;
+    }
+
+    this.page.drawRectangle(rectOpts);
+
+    const cleanText = this.sanitizeText(text);
+    if (!cleanText) return;
+
+    const padX = 4;
+    const padY = 3;
+    const maxTextW = Math.max(10, w - padX * 2);
+    const lines = this.wrapText(
+      cleanText,
+      maxTextW,
+      fontSize,
+      !!(options.bold || options.isHeader || options.isLabel || options.highlight)
+    );
+    const lineH = fontSize * LINE_HEIGHT;
+    const totalTextH = lines.length * lineH;
+
+    let startY: number;
+    if (vAlign === 'middle' && h >= totalTextH + padY * 2) {
+      startY = y - h / 2 + totalTextH / 2 - fontSize * 0.82;
+    } else {
+      startY = y - padY - fontSize * 0.82;
+    }
+
+    for (const line of lines) {
+      let lineX = x + padX;
+      if (align === 'center') {
+        const tw = font.widthOfTextAtSize(line, fontSize);
+        lineX = x + (w - tw) / 2;
+      } else if (align === 'right') {
+        const tw = font.widthOfTextAtSize(line, fontSize);
+        lineX = x + w - padX - tw;
+      }
+
+      this.page.drawText(line, {
+        x: Math.max(x + 1, lineX),
+        y: startY,
+        size: fontSize,
+        font,
+        color: rgb(0, 0, 0),
+      });
+
+      startY -= lineH;
+    }
+  }
+
+  /**
+   * Draw a row of cells with dynamic height to accommodate wrapped text.
+   */
+  drawRow(
+    cols: {
+      text: string;
+      width: number;
+      bold?: boolean;
+      italic?: boolean;
+      fontSize?: number;
+      align?: 'left' | 'center' | 'right';
+      vAlign?: 'top' | 'middle';
+      bg?: string;
+      highlight?: boolean;
+      isHeader?: boolean;
+      isLabel?: boolean;
+    }[],
+    minH: number = 20,
+    rowPad: number = 6
+  ): number {
+    let maxLines = 1;
+    for (const col of cols) {
+      const fs = col.fontSize || FONT_SIZE;
+      const isBold = !!(col.bold || col.isHeader || col.isLabel || col.highlight);
+      const lines = this.wrapText(this.sanitizeText(col.text), Math.max(10, col.width - 8), fs, isBold);
+      if (lines.length > maxLines) maxLines = lines.length;
+    }
+
+    const maxFs = Math.max(...cols.map(c => c.fontSize || FONT_SIZE));
+    const rowH = Math.max(minH, maxLines * maxFs * LINE_HEIGHT + rowPad);
+    this.checkPageBreak(rowH);
+
+    const y = this.pdfY(this.cursorY);
+    let curX = MARGIN_L;
+
+    for (const col of cols) {
+      this.drawCell(curX, y, col.width, rowH, col.text, col);
+      curX += col.width;
+    }
+
+    this.cursorY += rowH;
+    return rowH;
+  }
+
+  /**
+   * Draw the 8-box date grid [ D | D | M | M | Y | Y | Y | Y ]
+   */
+  draw8BoxDate(x: number, y: number, dateStr: string = '', cellW: number = 13, cellH: number = 16): void {
+    // Sanitize string to get digits or characters
+    const clean = dateStr.replace(/[^0-9A-Za-z]/g, '');
+    const chars = clean.padEnd(8, ' ').split('').slice(0, 8);
+    const headers = ['D', 'D', 'M', 'M', 'Y', 'Y', 'Y', 'Y'];
+
+    for (let i = 0; i < 8; i++) {
+      const cellX = x + i * cellW;
+      const char = chars[i].trim() || headers[i];
+      const isFilled = chars[i].trim().length > 0;
+
+      this.page.drawRectangle({
+        x: cellX,
+        y: y - cellH,
+        width: cellW,
+        height: cellH,
+        borderColor: rgb(0, 0, 0),
+        borderWidth: BORDER_W,
+        color: isFilled ? hexToRgb(VAL_BG) : undefined,
+        opacity: isFilled ? BG_OPACITY : undefined,
+      });
+
+      const font = isFilled ? this.fontBold : this.fontRegular;
+      const fs = 8.5;
+      const tw = font.widthOfTextAtSize(char, fs);
+      this.page.drawText(char, {
+        x: cellX + (cellW - tw) / 2,
+        y: y - cellH + (cellH - fs) / 2,
+        size: fs,
+        font,
+        color: isFilled ? rgb(0, 0, 0) : rgb(0.4, 0.4, 0.4),
+      });
+    }
+  }
+
+  /**
+   * Main 10-Page Generator for Axis Bank AGRI (Non-Agri Format)
+   */
+  async generateAxisAgriReport(
+    fields: AxisAgriReportFields,
+    images: {
+      photos?: { bytes: Uint8Array; label?: string }[];
+      locationMaps?: Uint8Array[];
+      cadastralMaps?: Uint8Array[];
+      benchmarkImages?: Uint8Array[];
+    } = {}
+  ): Promise<Uint8Array> {
+    const W = CONTENT_W; // 487.28pt
+    const check = (val: boolean) => (val ? '[X]' : '[ ]');
+
+    // =========================================================================
+    // PAGE 1: HEADER, TECHNICAL INITIATION, DETAILS OF PROPERTY, TOPOGRAPHY
+    // =========================================================================
+    this.cursorY = 0;
+
+    // Ref No & Date
+    const refDateH = 18;
+    const refDateY = this.pdfY(this.cursorY);
+    const refText = `REF NO - ${fields.refNo || 'SMA/08/2026/07'}`;
+    const dateText = `DATE - ${formatReportDate(fields.reportDate, '06.08.2026')}`;
+
+    this.page.drawText(this.sanitizeText(refText), {
+      x: MARGIN_L,
+      y: refDateY - 12,
+      size: FONT_SIZE,
+      font: this.fontBold,
+      color: rgb(0, 0, 0),
+    });
+
+    const dateTw = this.fontBold.widthOfTextAtSize(this.sanitizeText(dateText), FONT_SIZE);
+    this.page.drawText(this.sanitizeText(dateText), {
+      x: MARGIN_L + W - dateTw,
+      y: refDateY - 12,
+      size: FONT_SIZE,
+      font: this.fontBold,
+      color: rgb(0, 0, 0),
+    });
+    this.cursorY += refDateH + 4;
+
+    // Header Banner: VALUATION REPORT FORMAT (NON-AGRI) | DATE OF VISIT
+    const visitDate = formatReportDate(fields.dateOfVisit, '02.08.2026');
+    this.drawRow([
+      {
+        text: fields.reportTitle || 'VALUATION REPORT FORMAT (NON-AGRI)',
+        width: W * 0.65,
+        isHeader: true,
+        bold: true,
+      },
+      {
+        text: `DATE OF VISIT: ${visitDate}`,
+        width: W * 0.35,
+        isHeader: true,
+        bold: true,
+        align: 'right',
+      },
+    ], 20, 4);
+
+    // Section 1 — Technical Initiation Details (4 Columns)
+    const col4_w1 = W * 0.25;
+    const col4_w2 = W * 0.25;
+    const col4_w3 = W * 0.25;
+    const col4_w4 = W * 0.25;
+
+    this.drawRow([
+      { text: 'Report Initiated by Area', width: col4_w1, isLabel: true },
+      { text: fields.reportInitiatedByArea || '', width: col4_w2 },
+      { text: 'Name of Area', width: col4_w3, isLabel: true },
+      { text: fields.nameOfArea || '', width: col4_w4 },
+    ], 20, 4);
+
+    this.drawRow([
+      { text: 'Name of Owner & Address:', width: col4_w1, isLabel: true },
+      { text: fields.ownerNameAndAddress || '', width: col4_w2, bold: true },
+      { text: 'Name of Borrower & Address', width: col4_w3, isLabel: true },
+      { text: fields.borrowerNameAndAddress || '', width: col4_w4, bold: true },
+    ], 28, 4);
+
+    this.drawRow([
+      { text: 'Proposal No', width: col4_w1, isLabel: true },
+      { text: fields.proposalNo || 'Not Available', width: col4_w2 },
+      { text: 'Name of the Representative & Mobile No.', width: col4_w3, isLabel: true },
+      { text: fields.representativeNameMobile || 'Local People', width: col4_w4 },
+    ], 20, 4);
+
+    // Section Banner: Details of the Property Being Valued
+    this.drawRow([{ text: 'Details of the Property Being Valued', width: W, isHeader: true, bold: true }], 18, 4);
+
+    // Location of Property: Rural / Semi Urban / Urban
+    const loc = (fields.locationOfProperty || 'Rural').toLowerCase();
+    const locText = `${check(loc.includes('rural'))} Rural   ${check(loc.includes('semi'))} Semi Urban   ${check(loc.includes('urban') && !loc.includes('semi'))} Urban`;
+    this.drawRow([
+      { text: 'Location of Property', width: col4_w1 * 2, isLabel: true },
+      { text: locText, width: col4_w1 * 2, bold: true },
+    ], 20, 4);
+
+    // Documents Provided
+    const docs = fields.documentsProvided || [];
+    const hasDoc = (d: string) => docs.some(item => item.toLowerCase().includes(d.toLowerCase()));
+    const docStr = `Documents Provided: ${check(hasDoc('sale deed'))} Copy of Sale Deed   ${check(hasDoc('naksha'))} Bhu-Naksha   ${check(hasDoc('approved plan'))} Approved Plan   ${check(hasDoc('commencement'))} Commencement Certificate   ${check(hasDoc('occupancy'))} Occupancy Certificate   ${check(hasDoc('ror'))} ROR   ${check(hasDoc('previous'))} Previous Valuation Report`;
+    this.drawRow([{ text: docStr, width: W, bold: true }], 20, 4);
+
+    // Plot No / Khata & Road Facility
+    this.drawRow([
+      { text: 'Plot No / S.NO/ G. No/ Khasra No:', width: col4_w1, isLabel: true },
+      { text: fields.plotKhataDetails || '', width: col4_w2, bold: true },
+      { text: 'Road Facility at the site', width: col4_w3, isLabel: true },
+      { text: fields.roadFacilityAtSite || '20-ft wide Road', width: col4_w4, bold: true },
+    ], 36, 4);
+
+    // Colony & Locality/Landmark
+    this.drawRow([
+      { text: 'Colony/Nagar/Sector', width: col4_w1, isLabel: true },
+      { text: fields.colonyNagarSector || '', width: col4_w2 },
+      { text: 'Locality/ Landmark :', width: col4_w3, isLabel: true },
+      { text: fields.localityLandmark || '', width: col4_w4 },
+    ], 24, 4);
+
+    // Village & District
+    this.drawRow([
+      { text: 'Village/Town/City/Market', width: col4_w1, isLabel: true },
+      { text: fields.villageTownCityMarket || 'Village', width: col4_w2 },
+      { text: 'District', width: col4_w3, isLabel: true },
+      { text: fields.district || 'Ganjam', width: col4_w4 },
+    ], 20, 4);
+
+    // State & Pincode
+    this.drawRow([
+      { text: 'State', width: col4_w1, isLabel: true },
+      { text: fields.state || 'Odisha', width: col4_w2 },
+      { text: 'Pincode', width: col4_w3, isLabel: true },
+      { text: fields.pincode || '761018', width: col4_w4 },
+    ], 20, 4);
+
+    // Distance from Area Office
+    this.drawRow([
+      { text: 'Distance from Area Office', width: col4_w1 * 2, isLabel: true },
+      { text: fields.distanceFromAreaOffice || '', width: col4_w1 * 2 },
+    ], 20, 4);
+
+    // Latitude, Longitude and Coordinates
+    const coordsFull = `Latitude: ${fields.latitude || ''}, Longitude: ${fields.longitude || ''}\nCoordinates: ${fields.coordinates || ''}`;
+    this.drawRow([
+      { text: 'Latitude, Longitude and Coordinates of the site', width: col4_w1 * 2, isLabel: true },
+      { text: coordsFull, width: col4_w1 * 2, bold: true },
+    ], 24, 4);
+
+    // Section Banner: Type of Property
+    this.drawRow([{ text: 'Type of Property', width: W, isHeader: true, bold: true }], 18, 4);
+
+    // (A) Plot
+    const plotType = (fields.typeOfPropertyPlot || 'Residential').toLowerCase();
+    const plotText = `${check(plotType.includes('na'))} NA   ${check(plotType.includes('residential'))} Residential   ${check(plotType.includes('commercial'))} Commercial   ${check(plotType.includes('industrial'))} Industrial`;
+    this.drawRow([
+      { text: '(A) Plot:', width: col4_w1 * 2, isLabel: true },
+      { text: plotText, width: col4_w1 * 2, bold: true },
+    ], 20, 4);
+
+    // Level of Land
+    this.drawRow([
+      { text: 'Level of land with topographical conditions', width: col4_w1 * 2, isLabel: true },
+      { text: fields.levelOfLand || 'Existing Road Level', width: col4_w1 * 2 },
+    ], 20, 4);
+
+    // Municipal Limit
+    const isMuni = (fields.situatedInMunicipalLimit || 'No').toLowerCase() === 'yes';
+    const muniText = `${check(isMuni)} Yes   ${check(!isMuni)} No ${fields.municipalLimitDetails ? `(${fields.municipalLimitDetails})` : ''}`;
+    this.drawRow([
+      { text: 'Whether situated in Municipal/Corporation Limit:', width: col4_w1 * 2, isLabel: true },
+      { text: muniText, width: col4_w1 * 2 },
+    ], 20, 4);
+
+    // Any construction observed on plot
+    this.drawRow([
+      { text: 'Any construction observed on plot', width: col4_w1 * 2, isLabel: true },
+      { text: fields.constructionObservedOnPlot || 'Yes', width: col4_w1 * 2, bold: true },
+    ], 20, 4);
+
+    // (B) Residential Property options
+    const resSub = (fields.residentialPropertySubtype || 'Independent house').toLowerCase();
+    const resText = `${check(resSub.includes('independent'))} Independent house   ${check(resSub.includes('bungalow'))} Bungalow   ${check(resSub.includes('row'))} Row House`;
+    this.drawRow([
+      { text: '(B) Residential Property: [X] Residential', width: col4_w1 * 2, isLabel: true },
+      { text: resText, width: col4_w1 * 2, bold: true },
+    ], 20, 4);
+
+    // =========================================================================
+    // PAGE 2: BOUNDARIES, LOCALITY, INFRASTRUCTURE, OCCUPANCY, LEASEHOLD, RERA
+    // =========================================================================
+    this.addPage();
+
+    // Completing residential subtypes & Civic amenities
+    const resText2 = `${check(resSub.includes('flat'))} Flat   ${check(resSub.includes('commercial'))} Commercial`;
+    this.drawRow([
+      { text: '', width: col4_w1 * 2, isLabel: true },
+      { text: resText2, width: col4_w1 * 2, bold: true },
+    ], 18, 4);
+
+    const civText = `${check(true)} Available within the radius of 2-3 Kms\n${check(false)} Not Available`;
+    this.drawRow([
+      { text: 'Civic Amenities like school, hospital, market, etc.', width: col4_w1 * 2, isLabel: true },
+      { text: civText, width: col4_w1 * 2 },
+    ], 24, 4);
+
+    // (C) Commercial/Industrial Property
+    const commSub = (fields.commercialPropertySubtype || 'Godown').toLowerCase();
+    const commText = `${check(commSub.includes('independent'))} Independent house   ${check(commSub.includes('row'))} Row House   ${check(commSub.includes('mall'))} Unit in a mall   ${check(commSub.includes('godown'))} Godown   ${check(commSub.includes('industrial'))} Industrial   ${check(commSub.includes('shop'))} Shop`;
+    this.drawRow([
+      { text: '(C) Commercial/Industrial Property: [X] Commercial', width: col4_w1 * 2, isLabel: true },
+      { text: commText, width: col4_w1 * 2, bold: true },
+    ], 22, 4);
+
+    // Availability of local transport
+    const trans = fields.availabilityLocalTransport || ['Personal Transport'];
+    const hasTrans = (t: string) => trans.some(item => item.toLowerCase().includes(t.toLowerCase()));
+    const transText = `${check(hasTrans('metro'))} Metro   ${check(hasTrans('train'))} Local Train   ${check(hasTrans('bus'))} Bus   ${check(hasTrans('personal'))} Personal Transport`;
+    this.drawRow([
+      { text: 'Availability of local transport', width: col4_w1 * 2, isLabel: true },
+      { text: transText, width: col4_w1 * 2, bold: true },
+    ], 20, 4);
+
+    // Distance from Railway Station & Bus Stop
+    this.drawRow([
+      { text: `Distance from Railway Station: ${fields.distanceFromRailwayStation || '27 Km from Khallikote'}`, width: col4_w1 * 2 },
+      { text: `Bus stop/ Taxi/ Auto Stand( ${fields.busStopTaxiStand || 'Within 2-3 Kms'})`, width: col4_w1 * 2 },
+    ], 20, 4);
+
+    // Approach road & Fire extinguisher
+    const isAppr = (fields.independentApproachRoad || 'Yes').toLowerCase() === 'yes';
+    const isFire = (fields.accommodateFireExtinguisher || 'No').toLowerCase() === 'yes';
+    this.drawRow([
+      { text: 'Does the approach road to the Property / Building is independent and accessible', width: col4_w1 * 1.5, isLabel: true },
+      { text: `${check(isAppr)} Yes   ${check(!isAppr)} No`, width: col4_w1 * 0.5, bold: true },
+      { text: 'Will it be able to accommodate a fire extinguisher', width: col4_w1 * 1.5, isLabel: true },
+      { text: `${check(isFire)} Yes   ${check(!isFire)} No`, width: col4_w1 * 0.5, bold: true },
+    ], 24, 4);
+
+    // Landlocked area
+    const isLocked = (fields.landLockedArea || 'No').toLowerCase() === 'yes';
+    this.drawRow([
+      { text: 'Does the property falls under land locked area', width: col4_w1 * 1.5, isLabel: true },
+      { text: `${check(isLocked)} Yes   ${check(!isLocked)} No`, width: col4_w1 * 0.5, bold: true },
+      { text: '', width: col4_w1 * 2 },
+    ], 20, 4);
+
+    // Cornered/Intermittent
+    const isCorner = (fields.corneredOrIntermittentVal || 'No').toLowerCase() === 'yes';
+    this.drawRow([
+      { text: `Cornered/Intermittent Plot - ${fields.corneredOrIntermittent || 'Intermittent plot'}`, width: col4_w1 * 2, isLabel: true },
+      { text: `${check(isCorner)} Yes   ${check(!isCorner)} No`, width: col4_w1 * 2, bold: true },
+    ], 20, 4);
+
+    // Boundaries Table (3 Columns)
+    const bW1 = W * 0.2;
+    const bW2 = W * 0.4;
+    const bW3 = W * 0.4;
+
+    this.drawRow([
+      { text: 'Boundaries', width: bW1, isHeader: true, bold: true },
+      { text: 'As per Verification', width: bW2, isHeader: true, bold: true },
+      { text: 'As per Document', width: bW3, isHeader: true, bold: true },
+    ], 18, 4);
+
+    this.drawRow([
+      { text: 'East', width: bW1, isLabel: true, bold: true },
+      { text: fields.boundaryEastVerification || 'Road', width: bW2 },
+      { text: fields.boundaryEastDocument || 'Road', width: bW3 },
+    ], 18, 4);
+
+    this.drawRow([
+      { text: 'West', width: bW1, isLabel: true, bold: true },
+      { text: fields.boundaryWestVerification || "Other's Vacant land", width: bW2 },
+      { text: fields.boundaryWestDocument || 'Hemanta Kumar Panda', width: bW3 },
+    ], 18, 4);
+
+    this.drawRow([
+      { text: 'North', width: bW1, isLabel: true, bold: true },
+      { text: fields.boundaryNorthVerification || "Other's Vacant land", width: bW2 },
+      { text: fields.boundaryNorthDocument || 'Kirtan Behera', width: bW3 },
+    ], 18, 4);
+
+    this.drawRow([
+      { text: 'South', width: bW1, isLabel: true, bold: true },
+      { text: fields.boundarySouthVerification || "Other's Vacant land", width: bW2 },
+      { text: fields.boundarySouthDocument || 'Gobinda Behera', width: bW3 },
+    ], 18, 4);
+
+    // Class of locality
+    const locClass = (fields.classOfLocality || 'Middle class').toLowerCase();
+    const locClassText = `${check(locClass.includes('posh'))} Posh   ${check(locClass.includes('higher'))} Higher Middle Class   ${check(locClass.includes('middle') && !locClass.includes('higher') && !locClass.includes('lower'))} Middle class   ${check(locClass.includes('lower'))} Lower middle Class   ${check(locClass.includes('poor'))} Poor`;
+    this.drawRow([
+      { text: 'Class of locality', width: col4_w1 * 1.5, isLabel: true },
+      { text: locClassText, width: W - col4_w1 * 1.5, bold: true },
+    ], 20, 4);
+
+    // Quality of Infrastructure & Ownership Status
+    const infra = (fields.qualityOfInfrastructure || 'Good').toLowerCase();
+    const infraText = `${check(infra.includes('excellent'))} Excellent   ${check(infra.includes('good'))} Good   ${check(infra.includes('average'))} Average   ${check(infra.includes('poor'))} Poor`;
+    this.drawRow([
+      { text: 'Quality of Infrastructure in the vicinity', width: col4_w1 * 1.5, isLabel: true },
+      { text: infraText, width: W - col4_w1 * 1.5, bold: true },
+    ], 20, 4);
+
+    const own = (fields.ownershipStatus || 'Free Hold').toLowerCase();
+    const ownText = `${check(own.includes('free'))} Free Hold   ${check(own.includes('lease'))} Reg. Lease   ${check(own.includes('govt'))} Govt. Authority`;
+    this.drawRow([
+      { text: 'Ownership Status of the Property', width: col4_w1 * 1.5, isLabel: true },
+      { text: ownText, width: W - col4_w1 * 1.5, bold: true },
+    ], 20, 4);
+
+    // Approved & Actual Usage
+    const appUsage = fields.approvedUsage || ['Residential'];
+    const actUsage = fields.actualUsage || ['Commercial', 'Residential'];
+    const hasApp = (u: string) => appUsage.some(item => item.toLowerCase().includes(u.toLowerCase()));
+    const hasAct = (u: string) => actUsage.some(item => item.toLowerCase().includes(u.toLowerCase()));
+
+    const appUsageText = `${check(hasApp('industrial'))} Industrial   ${check(hasApp('commercial'))} Commercial   ${check(hasApp('residential'))} Residential   ${check(hasApp('mix'))} Mix`;
+    const actUsageText = `${check(hasAct('industrial'))} Industrial   ${check(hasAct('commercial'))} Commercial   ${check(hasAct('residential'))} Residential   ${check(hasAct('mix'))} Mix`;
+
+    this.drawRow([
+      { text: 'Approved usage of property', width: col4_w1, isLabel: true },
+      { text: appUsageText, width: col4_w2, bold: true },
+      { text: 'Actual usage of property', width: col4_w3, isLabel: true },
+      { text: actUsageText, width: col4_w4, bold: true },
+    ], 22, 4);
+
+    // Restrictive Covenants
+    this.drawRow([
+      { text: 'Restrictive covenants in regards to Land Use, (if any)', width: col4_w1 * 2, isLabel: true },
+      { text: fields.restrictiveCovenants || 'Not Applicable', width: col4_w1 * 2 },
+    ], 20, 4);
+
+    // Structure & No of Floors
+    this.drawRow([
+      { text: 'Type of Structure\nNo of Floors:', width: col4_w1 * 2, isLabel: true },
+      { text: `${fields.typeOfStructure || 'Load Bearing/RCC/GCI/Aluform shuttering'}\n${fields.noOfFloors || 'G+2 Storied building'}`, width: col4_w1 * 2, bold: true },
+    ], 24, 4);
+
+    // Occupancy Details
+    const occ = (fields.occupancyDetails || 'Self-Occupied').toLowerCase();
+    const occText = `${check(occ.includes('self'))} Self-Occupied   ${check(occ.includes('rent'))} Rented   ${check(occ.includes('vacant'))} Vacant`;
+    this.drawRow([
+      { text: 'Occupancy Details', width: col4_w1 * 2, isLabel: true },
+      { text: occText, width: col4_w1 * 2, bold: true },
+    ], 20, 4);
+
+    // Tenancy Details
+    this.drawRow([{ text: 'If the property is on rent:', width: W, isHeader: true, bold: true }], 18, 4);
+    this.drawRow([
+      { text: `Name of tenant/leasee: ${fields.tenantName || 'NA'}`, width: W * 0.5 },
+      { text: `Number of years in tenancy: ${fields.yearsInTenancy || 'NA'}`, width: W * 0.5 },
+    ], 20, 4);
+
+    // Resistance
+    const hasResVal = (fields.resistanceForValuation || 'No').toLowerCase() === 'yes';
+    const hasResOcc = (fields.resistanceFromOccupants || 'No').toLowerCase() === 'yes';
+    this.drawRow([
+      { text: `Was there any resistance for valuation: ${check(hasResVal)} Yes  ${check(!hasResVal)} No`, width: W * 0.5 },
+      { text: `If yes, from the current occupants: ${check(hasResOcc)} Yes  ${check(!hasResOcc)} No`, width: W * 0.5 },
+    ], 20, 4);
+
+    // Basic Amenities & Development
+    const am = fields.basicAmenities || ['Electricity', 'Water', 'Drainage connection'];
+    const hasAm = (a: string) => am.some(item => item.toLowerCase().includes(a.toLowerCase()));
+    const amText = `${check(hasAm('electricity'))} Electricity   ${check(hasAm('water'))} Water   ${check(hasAm('drainage'))} Drainage connection`;
+    const dev = (fields.developmentSurroundingArea || 'Developing').toLowerCase();
+    const devText = `${check(dev.includes('under'))} Underdeveloped   ${check(dev.includes('developing'))} Developing   ${check(dev.includes('developed') && !dev.includes('under'))} Developed`;
+
+    this.drawRow([
+      { text: 'Does property have basic amenities', width: col4_w1, isLabel: true },
+      { text: amText, width: col4_w2, bold: true },
+      { text: 'Development of surrounding area', width: col4_w3, isLabel: true },
+      { text: devText, width: col4_w4, bold: true },
+    ], 22, 4);
+
+    // Leasehold Details
+    this.drawRow([
+      { text: `If the property is Leasehold (${fields.isLeasehold || 'The Property is Free Hold Land'})`, width: W, isHeader: true, bold: true },
+    ], 18, 4);
+
+    this.drawRow([
+      { text: `Name of Lesser: ${fields.lessorName || 'NA'}`, width: W * 0.5 },
+      { text: `Nature of Lease: ${fields.natureOfLease || 'NA'}`, width: W * 0.5 },
+    ], 20, 4);
+
+    this.drawRow([
+      { text: `Total Period of Lease: ${fields.totalPeriodOfLease || 'NA'}`, width: W * 0.5 },
+      { text: `If yes, from the current occupants: ${check(false)} Yes  ${check(true)} No`, width: W * 0.5 },
+    ], 20, 4);
+
+    // RERA & Occupancy Certificate
+    this.drawRow([{ text: 'Approval Details:-', width: W, isHeader: true, bold: true }], 18, 4);
+    this.drawRow([
+      { text: `RERA Registration Number: ${fields.reraRegNo || 'Not Applicable.'}`, width: W * 0.5 },
+      { text: `Occupancy Certificate: ${fields.occupancyCertificate || 'Not Available'}`, width: W * 0.5 },
+    ], 20, 4);
+
+    // =========================================================================
+    // PAGE 3: STATUTORY APPROVALS (8-BOX CELLS) & CONSTRUCTION DETAILS
+    // =========================================================================
+    this.addPage();
+
+    // Layout Approval Row
+    this.drawRow([
+      { text: `Layout Approval Number : ${fields.layoutApprovalNo || 'Not Mentioned'}`, width: W * 0.5, isLabel: true },
+      { text: '', width: W * 0.5 },
+    ], 20, 4);
+
+    // Layout Date Box Row
+    const boxRowH = 22;
+    const boxY = this.pdfY(this.cursorY);
+    this.drawCell(MARGIN_L, boxY, W * 0.25, boxRowH, 'Date of Approval', { isLabel: true, align: 'center', vAlign: 'middle' });
+    this.draw8BoxDate(MARGIN_L + W * 0.25 + 4, boxY - 3, fields.layoutApprovalDate || '');
+    this.drawCell(MARGIN_L + W * 0.5, boxY, W * 0.25, boxRowH, 'Expiry Date', { isLabel: true, align: 'center', vAlign: 'middle' });
+    this.draw8BoxDate(MARGIN_L + W * 0.75 + 4, boxY - 3, fields.layoutExpiryDate || '');
+    this.cursorY += boxRowH;
+
+    // Building Plan Approval Row
+    this.drawRow([
+      { text: `Building Plan Approval Number: ${fields.buildingPlanApprovalNo || 'Not Available'}`, width: W * 0.5, isLabel: true },
+      { text: '', width: W * 0.5 },
+    ], 20, 4);
+
+    // Building Plan Date Box Row
+    const boxY2 = this.pdfY(this.cursorY);
+    this.drawCell(MARGIN_L, boxY2, W * 0.25, boxRowH, 'Date of Approval', { isLabel: true, align: 'center', vAlign: 'middle' });
+    this.draw8BoxDate(MARGIN_L + W * 0.25 + 4, boxY2 - 3, fields.buildingPlanApprovalDate || '');
+    this.drawCell(MARGIN_L + W * 0.5, boxY2, W * 0.25, boxRowH, 'Expiry Date', { isLabel: true, align: 'center', vAlign: 'middle' });
+    this.draw8BoxDate(MARGIN_L + W * 0.75 + 4, boxY2 - 3, fields.buildingPlanExpiryDate || '');
+    this.cursorY += boxRowH;
+
+    // Construction Details Header
+    this.drawRow([{ text: 'Construction Details', width: W, isHeader: true, bold: true }], 18, 4);
+
+    this.drawRow([
+      { text: 'Area of the Plot As per ROR', width: col4_w1, isLabel: true },
+      { text: fields.areaOfPlotRor || 'Total Area = Ac.0.013 Dec i.e. 566.00 Sft', width: col4_w2, bold: true },
+      { text: 'Approved Built Up Area (In Sq.Ft.)', width: col4_w3, isLabel: true },
+      { text: fields.approvedBUA || 'Not Available', width: col4_w4 },
+    ], 28, 4);
+
+    this.drawRow([
+      { text: 'Area of the Plot As per Document', width: col4_w1, isLabel: true },
+      { text: fields.areaOfPlotDoc || 'Total Area = Ac.0.013 Dec i.e. 566.00 Sft', width: col4_w2, bold: true },
+      { text: 'Actual Built Up Area (In Sq.Ft.)', width: col4_w3, isLabel: true },
+      { text: fields.actualBUA || 'RCC GF: 525.00 Sft\nRCC FF: 525.00 Sft\nRCC SF: 204.00 Sft\nTotal BUA: 1254.00 Sft', width: col4_w4, bold: true },
+    ], 38, 4);
+
+    this.drawRow([
+      { text: 'Demarcation at Site', width: col4_w1 * 2, isLabel: true },
+      { text: fields.demarcationAtSite || 'Yes', width: col4_w1 * 2, bold: true },
+    ], 20, 4);
+
+    // Floor Wise Break up Table
+    this.drawRow([
+      { text: 'Floor wise break up as follows', width: W * 0.5, isHeader: true, bold: true },
+      { text: 'Current Usage', width: W * 0.5, isHeader: true, bold: true },
+    ], 18, 4);
+
+    // Basement & Stilt
+    this.drawRow([
+      { text: 'Basement (in Sq.Ft.)', width: W * 0.3, isLabel: true },
+      { text: fields.basementArea || 'Not Applicable', width: W * 0.2 },
+      { text: `${check(false)} Storage  ${check(false)} Parking  ${check(false)} Commercial  ${check(false)} Residential`, width: W * 0.5 },
+    ], 18, 4);
+
+    this.drawRow([
+      { text: 'Stilt (in Sq.Ft.)', width: W * 0.3, isLabel: true },
+      { text: fields.stiltArea || 'Not Applicable', width: W * 0.2 },
+      { text: `${check(false)} Storage  ${check(false)} Parking  ${check(false)} Commercial  ${check(false)} Residential`, width: W * 0.5 },
+    ], 18, 4);
+
+    // Floor rows
+    const floors = fields.floors && fields.floors.length > 0 ? fields.floors : [
+      { floorName: 'Ground Floor', plinthArea: '525.00 Sft', usage: 'Commercial, Residential' },
+      { floorName: 'First Floor', plinthArea: '525.00 Sft', usage: 'Residential' },
+      { floorName: 'Second Floor', plinthArea: '204.00 Sft', usage: 'Residential' },
+    ];
+
+    for (const fl of floors) {
+      const u = (fl.usage || '').toLowerCase();
+      const uText = `${check(u.includes('office') || u.includes('industrial'))} ${u.includes('industrial') ? 'Industrial' : 'Office'}   ${check(u.includes('parking'))} Parking   ${check(u.includes('commercial'))} Commercial   ${check(u.includes('residential'))} Residential`;
+      this.drawRow([
+        { text: `${fl.floorName} (in Sq.Ft.) Measured (RCC)`, width: W * 0.3, isLabel: true, bold: true },
+        { text: fl.plinthArea.includes('Sft') ? fl.plinthArea : `${fl.plinthArea} Sft`, width: W * 0.2, bold: true },
+        { text: uText, width: W * 0.5, bold: true },
+      ], 18, 4);
+    }
+
+    // Totals
+    this.drawRow([
+      { text: 'Total Built Up area (in Sq.Ft.)', width: col4_w1, isLabel: true, bold: true },
+      { text: fields.totalBUA || '1254.00 Sft', width: col4_w2, bold: true, highlight: true },
+      { text: 'Total Carpet area (in Sq.Ft.)', width: col4_w3, isLabel: true },
+      { text: fields.totalCarpetArea || '1090.00 Sft (Approx.)', width: col4_w4 },
+    ], 20, 4);
+
+    this.drawRow([
+      { text: 'Total Saleable area (in Sq.Ft.)', width: col4_w1 * 2, isLabel: true },
+      { text: fields.totalSaleableArea || '566.00 Sft (Land) & 1254.00 Sft (Building)', width: col4_w1 * 2, bold: true },
+    ], 20, 4);
+
+    this.drawRow([
+      { text: 'Amenities Details (if any):', width: col4_w1 * 2, isLabel: true },
+      { text: fields.amenitiesDetails || 'Nil', width: col4_w1 * 2 },
+    ], 18, 4);
+
+    this.drawRow([
+      { text: 'Floor Space Index permissible and percentage actually utilized:', width: col4_w1 * 2, isLabel: true },
+      { text: fields.farPermissibleUtilized || 'FAR:2.21', width: col4_w1 * 2 },
+    ], 18, 4);
+
+    this.drawRow([
+      { text: 'Whether the construction is as per approved building plan and / or local building bye laws:', width: col4_w1 * 2, isLabel: true },
+      { text: fields.constructionAsPerApprovedPlan || 'Plan is not Available', width: col4_w1 * 2 },
+    ], 18, 4);
+
+    this.drawRow([
+      { text: 'Details of Extra Construction', width: col4_w1 * 2, isLabel: true },
+      { text: fields.extraConstructionDetails || 'Not Applicable', width: col4_w1 * 2 },
+    ], 18, 4);
+
+    this.drawRow([
+      { text: 'Percentage of Extra Construction', width: col4_w1 * 2, isLabel: true },
+      { text: fields.extraConstructionPercentage || 'Not Applicable', width: col4_w1 * 2 },
+    ], 18, 4);
+
+    this.drawRow([
+      { text: 'Whether the extra construction is Compoundable OR Non-Compoundable?', width: col4_w1 * 2, isLabel: true },
+      { text: fields.extraConstructionCompoundable || 'Not Applicable', width: col4_w1 * 2 },
+    ], 18, 4);
+
+    this.drawRow([
+      { text: 'Quality of construction', width: col4_w1 * 2, isLabel: true },
+      { text: fields.qualityOfConstruction || 'Good', width: col4_w1 * 2 },
+    ], 18, 4);
+
+    this.drawRow([
+      { text: 'Maintenance of the Property', width: col4_w1 * 2, isLabel: true },
+      { text: fields.maintenanceOfProperty || 'Good', width: col4_w1 * 2 },
+    ], 18, 4);
+
+    // =========================================================================
+    // PAGE 4: BUILDING CONDITION, LIFE, LAND RATE ADOPTED & COST BREAKDOWN
+    // =========================================================================
+    this.addPage();
+
+    this.drawRow([
+      { text: 'Condition Of Building', width: W * 0.5, isLabel: true },
+      { text: fields.conditionOfBuilding || 'Good', width: W * 0.5, bold: true },
+    ], 20, 4);
+
+    this.drawRow([
+      { text: 'Current Life of the structure', width: col4_w1, isLabel: true },
+      { text: fields.currentLifeStructure || '8 Years', width: col4_w2 },
+      { text: 'Projected Life of the Structure', width: col4_w3, isLabel: true },
+      { text: fields.projectedLifeStructure || '52 Years', width: col4_w4 },
+    ], 20, 4);
+
+    this.drawRow([
+      { text: 'Land Revenue/Taxes Paid upto (for Land)', width: col4_w1, isLabel: true },
+      { text: fields.landRevenueTaxesPaid || 'Recent rent receipt is not provided', width: col4_w2 },
+      { text: 'Municipal Taxes Paid upto (for Building)', width: col4_w3, isLabel: true },
+      { text: fields.municipalTaxesPaid || 'Not Applicable', width: col4_w4 },
+    ], 22, 4);
+
+    this.cursorY += 12;
+
+    // Land Rate Adopted narrative
+    const landHeader = 'THE LAND RATE ADOPTED IN THIS VALUATION:';
+    this.page.drawText(landHeader, {
+      x: MARGIN_L,
+      y: this.pdfY(this.cursorY) - 10,
+      size: FONT_SIZE_SMALL + 1,
+      font: this.fontBold,
+      color: rgb(0, 0, 0),
+    });
+    this.cursorY += 16;
+
+    const landBullets = [
+      `THE GOVT. BENCHMARK VALUE: RS.${fields.govtBenchmarkRateAcre || '86,55,000'}/- PER ACRE I.E. RS.${fields.govtBenchmarkRateSft || '199'}/- PER SFT`,
+      `TOTAL LAND AREA: AC.${fields.totalLandAreaDec || '0.013'} DEC I.E. ${fields.totalLandAreaSft || '566.00'} SFT`,
+      `TOTAL GOVT. VALUE OF LAND: ${fields.totalLandAreaSft || '566.00'} SFT X RS.${fields.govtBenchmarkRateSft || '199'}/- PER SFT = RS.${fields.totalGovtValueLand || '1,12,634'}/-`,
+      `THE PREVAILING MARKET RATE OF THE LAND IS RS.${fields.prevailingMarketRateMin || '500'}/- TO RS.${fields.prevailingMarketRateMax || '600'}/- PER SFT.`,
+      `THE ADOPTED MARKET RATE OF THE LAND IS RS.${fields.adoptedMarketRateSft || '550'}/- PER SFT FOR VALUATION PURPOSE.`,
+      `TOTAL MARKET VALUE: ${fields.totalLandAreaSft || '566.00'} SFT X RS.${fields.adoptedMarketRateSft || '550'}/- PER SFT = RS.${fields.totalMarketValueLand || '5,98,950'}/-`,
+    ];
+
+    for (const b of landBullets) {
+      const bY = this.pdfY(this.cursorY) - 9;
+      this.page.drawText('•', { x: MARGIN_L + 10, y: bY, size: FONT_SIZE_SMALL, font: this.fontBold, color: rgb(0, 0, 0) });
+      this.page.drawText(this.sanitizeText(b), {
+        x: MARGIN_L + 24,
+        y: bY,
+        size: FONT_SIZE_SMALL,
+        font: this.fontBold,
+        color: rgb(0, 0, 0),
+      });
+      this.cursorY += 14;
+    }
+
+    this.cursorY += 14;
+
+    // Details of Valuation Table (8 columns)
+    const valTitle = 'Details of Valuation:-';
+    this.page.drawText(valTitle, {
+      x: MARGIN_L,
+      y: this.pdfY(this.cursorY) - 10,
+      size: FONT_SIZE_SMALL + 1,
+      font: this.fontBold,
+      color: rgb(0, 0, 0),
+    });
+    this.cursorY += 16;
+
+    const tW = [
+      W * 0.18, // PERTICULARS OF ITEMS
+      W * 0.10, // PLINTH AREA
+      W * 0.10, // ROOF HEIGHT
+      W * 0.10, // AGE OF BUILDING
+      W * 0.13, // REPLACEMENT RATE
+      W * 0.14, // ESTIMATED COST
+      W * 0.12, // DEPRECIATION
+      W * 0.13, // NET VALUE
+    ];
+
+    this.drawRow([
+      { text: 'PERTICULARS OF ITEMS', width: tW[0], isHeader: true, bold: true, fontSize: 8 },
+      { text: 'PLINTH AREA IN SQFT', width: tW[1], isHeader: true, bold: true, fontSize: 8 },
+      { text: 'ROOF HEIGHT', width: tW[2], isHeader: true, bold: true, fontSize: 8 },
+      { text: 'AGE OF THE BUILDING IN YEARS', width: tW[3], isHeader: true, bold: true, fontSize: 8 },
+      { text: 'REPLACEMENT RATE OF CONSTRUCTION', width: tW[4], isHeader: true, bold: true, fontSize: 8 },
+      { text: 'ESTIMATED REPLACEMENT COST OF CONSTRUCTION', width: tW[5], isHeader: true, bold: true, fontSize: 8 },
+      { text: 'DEPRECIATION AMOUNT IN RS. (1% per Anm)', width: tW[6], isHeader: true, bold: true, fontSize: 8 },
+      { text: 'NET VALUE AFTER DEPRECIATION', width: tW[7], isHeader: true, bold: true, fontSize: 8 },
+    ], 26, 4);
+
+    const costFloors = fields.floors && fields.floors.length > 0 ? fields.floors : [
+      { floorName: 'RCC GROUND FLOOR', plinthArea: '525.00', roofHeight: "10'-6\"", ageYears: '8Yrs', replacementRate: '1,500.00', estimatedCost: '7,87,500.00', depreciationAmount: '63,000.00', netValue: '7,24,500.00' },
+      { floorName: 'RCC FIRST FLOOR', plinthArea: '525.00', roofHeight: "10'-6\"", ageYears: '8Yrs', replacementRate: '1,300.00', estimatedCost: '6,82,500.00', depreciationAmount: '54,600.00', netValue: '6,27,900.00' },
+      { floorName: 'RCC SECOND FLOOR', plinthArea: '204.00', roofHeight: "10'-6\"", ageYears: '8Yrs', replacementRate: '1,300.00', estimatedCost: '2,65,200.00', depreciationAmount: '21,216.00', netValue: '2,43,984.00' },
+    ];
+
+    for (const cf of costFloors) {
+      this.drawRow([
+        { text: cf.floorName.toUpperCase(), width: tW[0], bold: true, fontSize: 8.5 },
+        { text: cf.plinthArea, width: tW[1], align: 'right', fontSize: 8.5 },
+        { text: cf.roofHeight || "10'-6\"", width: tW[2], align: 'center', fontSize: 8.5 },
+        { text: cf.ageYears || '8Yrs', width: tW[3], align: 'center', fontSize: 8.5 },
+        { text: `Rs. ${cf.replacementRate || '0.00'}`, width: tW[4], align: 'right', fontSize: 8.5 },
+        { text: `Rs. ${cf.estimatedCost || '0.00'}`, width: tW[5], align: 'right', fontSize: 8.5 },
+        { text: `Rs. ${cf.depreciationAmount || '0.00'}`, width: tW[6], align: 'right', fontSize: 8.5 },
+        { text: `Rs. ${cf.netValue || '0.00'}`, width: tW[7], align: 'right', bold: true, fontSize: 8.5 },
+      ], 18, 4);
+    }
+
+    // Total Row
+    const nonNetWidth = tW.slice(0, 7).reduce((a, b) => a + b, 0);
+    this.drawRow([
+      { text: 'Total', width: nonNetWidth, align: 'right', bold: true, isLabel: true },
+      { text: `Rs. ${fields.totalBasicValueBuilding || '21,96,285.00'}`, width: tW[7], align: 'right', bold: true, highlight: true },
+    ], 20, 4);
+
+    this.cursorY += 16;
+
+    // Total Basic Value statement
+    const bldgValSummary = `TOTAL BASIC VALUE OF THE BUILDING- Rs.${fields.totalBasicValueBuilding || '21,96,285.00'}/- OR SAY Rs.${fields.totalBasicValueBuildingSay || '21,96,000.00'}/- (${fields.totalBasicValueBuildingWords || 'RUPEES TWENTY ONE LAKHS NINETY SIX THOUSANDS ONLY'}).`;
+    this.drawRow([{ text: bldgValSummary, width: W, bold: true, highlight: true }], 24, 6);
+
+    // =========================================================================
+    // PAGE 5: VALUE OF PROPERTY SUMMARY MATRIX, ESTIMATIONS, REMARKS
+    // =========================================================================
+    this.addPage();
+
+    this.drawRow([{ text: 'VALUE OF THE PROPERTY', width: W, isHeader: true, bold: true }], 20, 4);
+
+    const mColW = [W * 0.34, W * 0.17, W * 0.17, W * 0.15, W * 0.17];
+    this.drawRow([
+      { text: '', width: mColW[0], isHeader: true },
+      { text: 'LAND', width: mColW[1], isHeader: true, bold: true, align: 'center' },
+      { text: 'BUILDING', width: mColW[2], isHeader: true, bold: true, align: 'center' },
+      { text: 'AMENITIES', width: mColW[3], isHeader: true, bold: true, align: 'center' },
+      { text: 'TOTAL IN RS', width: mColW[4], isHeader: true, bold: true, align: 'center' },
+    ], 18, 4);
+
+    this.drawRow([
+      { text: 'GOVT. GUIDE LINE VALUE', width: mColW[0], isLabel: true, bold: true },
+      { text: fields.govtGuideLand ? `Rs. ${fields.govtGuideLand}` : `Rs. ${fields.totalGovtValueLand || '1,12,634.00'}`, width: mColW[1], align: 'right' },
+      { text: fields.govtGuideBuilding ? `Rs. ${fields.govtGuideBuilding}` : '', width: mColW[2], align: 'right' },
+      { text: fields.govtGuideAmenities || '-', width: mColW[3], align: 'center' },
+      { text: fields.govtGuideTotal ? `Rs. ${fields.govtGuideTotal}` : `Rs. ${fields.totalGovtValueLand || '1,12,634.00'}`, width: mColW[4], align: 'right', bold: true },
+    ], 18, 4);
+
+    this.drawRow([
+      { text: 'MARKET VALUE IN RS', width: mColW[0], isLabel: true, bold: true },
+      { text: `Rs. ${fields.marketValueLand || fields.totalMarketValueLand || '5,98,950.00'}`, width: mColW[1], align: 'right' },
+      { text: `Rs. ${fields.marketValueBuilding || fields.totalBasicValueBuilding || '21,96,285.00'}`, width: mColW[2], align: 'right' },
+      { text: fields.marketValueAmenities || '-', width: mColW[3], align: 'center' },
+      { text: `Rs. ${fields.marketValueTotal || '27,95,235.00'}`, width: mColW[4], align: 'right', bold: true, highlight: true },
+    ], 18, 4);
+
+    this.drawRow([
+      { text: 'REALISABLE VALUE (95%)', width: mColW[0], isLabel: true, bold: true },
+      { text: `Rs. ${fields.realisableValueLand || '5,69,002.50'}`, width: mColW[1], align: 'right' },
+      { text: `Rs. ${fields.realisableValueBuilding || '20,86,470.75'}`, width: mColW[2], align: 'right' },
+      { text: fields.realisableValueAmenities || '-', width: mColW[3], align: 'center' },
+      { text: `Rs. ${fields.realisableValueTotal || '26,55,473.25'}`, width: mColW[4], align: 'right', bold: true },
+    ], 18, 4);
+
+    this.drawRow([
+      { text: 'DISTRESS/FORCED SALE VALUE (85%)', width: mColW[0], isLabel: true, bold: true },
+      { text: `Rs. ${fields.distressValueLand || '5,09,107.50'}`, width: mColW[1], align: 'right' },
+      { text: `Rs. ${fields.distressValueBuilding || '18,66,842.25'}`, width: mColW[2], align: 'right' },
+      { text: fields.distressValueAmenities || '-', width: mColW[3], align: 'center' },
+      { text: `Rs. ${fields.distressValueTotal || '23,75,949.75'}`, width: mColW[4], align: 'right', bold: true },
+    ], 18, 4);
+
+    this.drawRow([
+      { text: 'INSURABLE VALUE', width: mColW[0], isLabel: true, bold: true },
+      { text: fields.insurableValueLand || '-', width: mColW[1], align: 'center' },
+      { text: `Rs. ${fields.insurableValueBuilding || '18,66,842.25'}`, width: mColW[2], align: 'right' },
+      { text: fields.insurableValueAmenities || '', width: mColW[3], align: 'center' },
+      { text: `Rs. ${fields.insurableValueTotal || '18,66,842.25'}`, width: mColW[4], align: 'right', bold: true },
+    ], 18, 4);
+
+    this.cursorY += 10;
+
+    // Narrative statements
+    const text1 = fields.realizableEstimationText || 'REALIZABLE ESTIMATION OF THE PROPERTY IN CASE OF DISTRESS SALE, IN CASE, THE BANK WILL SELL THE PROPERTY THROUGH PROCEEDINGS.';
+    this.drawRow([{ text: text1, width: W, fontSize: 8.5 }], 16, 2);
+
+    const mvLine = `MARKET VALUE OF THE PROPERTY: Rs.${fields.marketValueTotal || '27,95,235.00'}/- OR SAY Rs.${fields.marketValueSay || '27,95,000.00'}/- (${fields.marketValueWords || 'RUPEES TWENTY SEVEN LAKHS NINETY FIVE THOUSANDS ONLY'}).`;
+    this.drawRow([{ text: mvLine, width: W, bold: true, fontSize: 8.5 }], 16, 2);
+
+    const rvLine = `REALIZABLE VALUE OF THE PROPERTY: Rs.${fields.realisableValueTotal || '26,55,473.25'}/- OR SAY Rs.${fields.realizableValueSay || '26,55,000.00'}/- (${fields.realizableValueWords || 'RUPEES TWENTY SIX LAKHS FIFTY THOUSAND ONLY'}).`;
+    this.drawRow([{ text: rvLine, width: W, bold: true, fontSize: 8.5 }], 16, 2);
+
+    const dvLine = `DISTRESS SALE VALUE OF THE PROPERTY WILL BE: Rs.${fields.distressValueTotal || '23,75,949.75'}/- OR SAY Rs.${fields.distressValueSay || '23,76,000.00'}/- (${fields.distressValueWords || 'RUPEES TWENTY THREE LAKHS SEVENTY FIVE THOUSAND ONLY'}).`;
+    this.drawRow([{ text: dvLine, width: W, bold: true, fontSize: 8.5 }], 16, 2);
+
+    const basisLine = `BASIS OF VALUATION:- ${fields.basisOfValuation || 'AS PER MARKET FEEDBACK, FREE HOLD SMALL SIZE RESIDENTIAL LANDS PATCH IN ACHHULI, PURUSOTTAMPUR & GANJAM. APPROACHING 20-FT WIDE ROAD ARE GETTING TRANSACTED IN A RANGE OF RS.500/- TO RS.600/- PER SFT. OUR LAND PATCH APPROACHES 20-FT WIDE ROAD, SHOULD BE GETTING TRANSACTED IN A RATE OF RS.550/- PER SFT INCLUDING ALL LAND DEVELOPMENT CHARGES.'}`;
+    this.drawRow([{ text: basisLine, width: W, fontSize: 8.5 }], 28, 4);
+
+    const opLine = fields.opinionOfMarketValue || `AS A RESULT OF MY / OUR APPRAISAL AND ANALYSIS IT IS MY/OUR CONSIDERED OPINION THAT THE PRESENT MARKET VALUE OF THE ABOVE PROPERTY IN THE PREVAILING CONDITION WITH AFORESAID SPECIFICATIONS IS SAY : Rs.${fields.marketValueSay || '27,95,000.00'}/- (${fields.marketValueWords || 'RUPEES TWENTY SEVEN LAKHS NINETY FIVE THOUSANDS ONLY'}).`;
+    this.drawRow([{ text: opLine, width: W, bold: true, fontSize: 8.5 }], 24, 4);
+
+    // Remarks Box
+    const remHeader = 'REMARKS:-';
+    const remBody = fields.remarksText || 'THE SUBJECT PROPERTY IS AN EXISTING CASE WITH AXIS BANK. SUBJECT PROPERTY IS A G+2 STORIED RESIDENTIAL CUM COMMERCIAL BUILDING, LAND EXTENT OF (AC.0.013 DEC I.E. 566.00 SFT). THE BUILDING IS APPROXIMATELY 8 YEARS OLD AND IS LOCATED IN A DEVELOPED RESIDENTIAL AREA AT ACHHULI, PURUSOTTAMPUR & GANJAM, WITHIN THE JURISDICTION OF ACHHULI GRAM PANCHAYAT AREA LIMIT. THE PROPERTY IS PRESENTLY OWNER-OCCUPIED. BASIC CIVIC AMENITIES SUCH AS SCHOOLS, HOSPITALS, MARKETS, BANKS, AND PUBLIC TRANSPORTATION ARE AVAILABLE WITHIN A RADIUS OF APPROXIMATELY 2-3 KM. VALUATION HAS BEEN DONE FOR LAND & BUA OF THE G+2 STORIED RESIDENTIAL CUM COMMERCIAL BUILDING';
+    const remNB = 'NB: WE HAVE NOT VERIFIED ANY SALE DEED, ROR, SKETCH MAP, AND APPROVAL PLAN. ALL THE DATA';
+
+    this.drawRow([
+      { text: `${remHeader}\n${remBody}\n\n${remNB}`, width: W, fontSize: 8.5 },
+    ], 90, 6);
+
+    // =========================================================================
+    // PAGE 6: TOP NOTICE, UNDERTAKING, SIGNATURE, ANNEXURE "A"
+    // =========================================================================
+    this.addPage();
+
+    // Top Notice Box
+    const topNotice = 'LIKE KHATA NO, PLOT NO, PLOT AREA, BUILT UP AREA, BOUNDARIES DETAILS ARE SHARED BY AXIS BANK LIMITED. REPORT IS RELEASED BASING UPON THE DATA SHARED BY AXIS BANK LIMITED.';
+    this.drawRow([{ text: topNotice, width: W, bold: true, fontSize: 8.5, isLabel: true }], 24, 4);
+
+    this.cursorY += 10;
+
+    // Undertaking
+    this.page.drawText('Undertaking:', {
+      x: MARGIN_L,
+      y: this.pdfY(this.cursorY) - 10,
+      size: FONT_SIZE_SMALL + 1,
+      font: this.fontBold,
+      color: rgb(0, 0, 0),
+    });
+    this.cursorY += 16;
+
+    const undertakings = [
+      'I have personally visited the property & identified the same based on the documents provided.',
+      'I/We have no direct or indirect interest in the property being valued.',
+      'The information furnished above is true and correct to my/our knowledge.',
+      'I/ we have not been dismissed or removed from govt. Service or convicted of an offence connected with any proceedings of income tax act, wealth tax act or gift tax act or have been blacklisted by any bank/ financial institution/ govt. Department/ public sector enterprise/ body corporate etc.',
+      'This valuation is prepared without any prejudice or bias to any person or institution',
+      'The value of land is taken into account by making due enquires in the locality and ascertaining the sales value of the properties in the locality',
+      'Any additions/alterations made to the property after the date of valuations shall not fall under the scope of this report',
+    ];
+
+    for (const u of undertakings) {
+      const uY = this.pdfY(this.cursorY) - 9;
+      this.page.drawText('•', { x: MARGIN_L + 8, y: uY, size: FONT_SIZE_SMALL, font: this.fontBold, color: rgb(0, 0, 0) });
+      const uLines = this.wrapText(this.sanitizeText(u), W - 28, FONT_SIZE_SMALL, false);
+      let lineOff = 0;
+      for (const ul of uLines) {
+        this.page.drawText(ul, {
+          x: MARGIN_L + 22,
+          y: uY - lineOff,
+          size: FONT_SIZE_SMALL,
+          font: this.fontRegular,
+          color: rgb(0, 0, 0),
+        });
+        lineOff += FONT_SIZE_SMALL * LINE_HEIGHT;
+      }
+      this.cursorY += Math.max(14, uLines.length * FONT_SIZE_SMALL * LINE_HEIGHT + 2);
+    }
+
+    this.cursorY += 12;
+
+    // Authorized Signatory block (right aligned)
+    const sigY = this.pdfY(this.cursorY);
+    const sigLines = [
+      'Authorized Signatory',
+      '(Name and Seal of the Agency)',
+      `Date: ${formatReportDate(fields.reportDate, '06.08.2026')}`,
+    ];
+    let sigCurY = sigY - 10;
+    for (const sl of sigLines) {
+      const slTw = this.fontBold.widthOfTextAtSize(sl, FONT_SIZE_SMALL);
+      this.page.drawText(sl, {
+        x: MARGIN_L + W - slTw - 10,
+        y: sigCurY,
+        size: FONT_SIZE_SMALL,
+        font: this.fontBold,
+        color: rgb(0, 0, 0),
+      });
+      sigCurY -= 13;
+    }
+    this.cursorY += 50;
+
+    // ANNEXURE - "A"
+    const annTitle = 'ANNEXURE - "A"';
+    const annTw = this.fontBold.widthOfTextAtSize(annTitle, FONT_SIZE_HEADER);
+    this.page.drawText(annTitle, {
+      x: MARGIN_L + (W - annTw) / 2,
+      y: this.pdfY(this.cursorY) - 10,
+      size: FONT_SIZE_HEADER,
+      font: this.fontBold,
+      color: rgb(0, 0, 0),
+    });
+    this.cursorY += 18;
+
+    this.page.drawText('"LAND AND BUILDING" METHOD OF VALUATION HAS BEEN ADOPTED.', {
+      x: MARGIN_L,
+      y: this.pdfY(this.cursorY) - 9,
+      size: FONT_SIZE_SMALL,
+      font: this.fontBold,
+      color: rgb(0, 0, 0),
+    });
+    this.cursorY += 14;
+
+    this.page.drawText('THE BUILDING VALUE HAS BEEN CONSIDERED AS PER MEASURED BUA AREA OF THE STRUCTURES.', {
+      x: MARGIN_L,
+      y: this.pdfY(this.cursorY) - 9,
+      size: FONT_SIZE_SMALL,
+      font: this.fontBold,
+      color: rgb(0, 0, 0),
+    });
+    this.cursorY += 16;
+
+    // Regarding Land
+    this.page.drawText('REGARDING LAND:', {
+      x: MARGIN_L,
+      y: this.pdfY(this.cursorY) - 9,
+      size: FONT_SIZE_SMALL,
+      font: this.fontBold,
+      color: rgb(0, 0, 0),
+    });
+    this.cursorY += 14;
+
+    const landText = fields.annexureARegardingLand || 'THERE IS A VERY HIGH DIFFERENCE BETWEEN GOVT. VALUE AND MARKET VALUE. GOVT. BENCHMARK VALUE NOT REVISED FOR THAT LOCALITY RECENTLY AND TO AVIOD HIGH STAMP DUTY/REGISTRACTION CHARGES SALE DEED EXECUTED IN UNDER-VALUED RATE.';
+    const landLines = this.wrapText(this.sanitizeText(landText), W - 28, FONT_SIZE_SMALL, false);
+    this.page.drawText('•', { x: MARGIN_L + 8, y: this.pdfY(this.cursorY) - 9, size: FONT_SIZE_SMALL, font: this.fontBold, color: rgb(0, 0, 0) });
+    let lOff = 0;
+    for (const ll of landLines) {
+      this.page.drawText(ll, {
+        x: MARGIN_L + 22,
+        y: this.pdfY(this.cursorY) - 9 - lOff,
+        size: FONT_SIZE_SMALL,
+        font: this.fontRegular,
+        color: rgb(0, 0, 0),
+      });
+      lOff += FONT_SIZE_SMALL * LINE_HEIGHT;
+    }
+    this.cursorY += Math.max(16, landLines.length * FONT_SIZE_SMALL * LINE_HEIGHT + 6);
+
+    // Regarding Building
+    this.page.drawText('REGARDING BUILDING:', {
+      x: MARGIN_L,
+      y: this.pdfY(this.cursorY) - 9,
+      size: FONT_SIZE_SMALL,
+      font: this.fontBold,
+      color: rgb(0, 0, 0),
+    });
+    this.cursorY += 14;
+
+    const bldgText = fields.annexureARegardingBuilding || 'BUILDING VALUE IS ARRIVED BY ANALYSIS OF RATE OF MATERIAL, LABOUR ETC.THIS A RCC ROOFING BUILDING WITH GOOD MAINTENACE LEVEL & QUALITY OF CONSTRUCTION.';
+    const bldgLines = this.wrapText(this.sanitizeText(bldgText), W - 28, FONT_SIZE_SMALL, false);
+    this.page.drawText('•', { x: MARGIN_L + 8, y: this.pdfY(this.cursorY) - 9, size: FONT_SIZE_SMALL, font: this.fontBold, color: rgb(0, 0, 0) });
+    let bOff = 0;
+    for (const bl of bldgLines) {
+      this.page.drawText(bl, {
+        x: MARGIN_L + 22,
+        y: this.pdfY(this.cursorY) - 9 - bOff,
+        size: FONT_SIZE_SMALL,
+        font: this.fontRegular,
+        color: rgb(0, 0, 0),
+      });
+      bOff += FONT_SIZE_SMALL * LINE_HEIGHT;
+    }
+    this.cursorY += Math.max(16, bldgLines.length * FONT_SIZE_SMALL * LINE_HEIGHT + 6);
+
+    // Basis of arriving at the land rate
+    this.page.drawText('BASIS OF ARRIVING AT THE LAND RATE:', {
+      x: MARGIN_L,
+      y: this.pdfY(this.cursorY) - 9,
+      size: FONT_SIZE_SMALL,
+      font: this.fontBold,
+      color: rgb(0, 0, 0),
+    });
+    this.cursorY += 14;
+
+    const basisRateText = fields.annexureABasisLandRate || 'AS PER MARKET FEEDBACK, FREE HOLD SMALL SIZE RESIDENTIAL LANDS PATCH IN ACHHULI, PURUSOTTAMPUR & GANJAM. APPROACHING 20-FT WIDE ROAD ARE GETTING TRANSACTED IN A RANGE OF RS.500/- TO RS.600/- PER SFT. OUR LAND PATCH APPROACHES 20-FT WIDE ROAD, SHOULD BE GETTING TRANSACTED IN A RATE OF RS.550/- PER SFT INCLUDING ALL LAND DEVELOPMENT CHARGES.';
+    const basisRateLines = this.wrapText(this.sanitizeText(basisRateText), W, FONT_SIZE_SMALL, false);
+    let brOff = 0;
+    for (const brl of basisRateLines) {
+      this.page.drawText(brl, {
+        x: MARGIN_L,
+        y: this.pdfY(this.cursorY) - 9 - brOff,
+        size: FONT_SIZE_SMALL,
+        font: this.fontRegular,
+        color: rgb(0, 0, 0),
+      });
+      brOff += FONT_SIZE_SMALL * LINE_HEIGHT;
+    }
+    this.cursorY += basisRateLines.length * FONT_SIZE_SMALL * LINE_HEIGHT + 6;
+
+    // =========================================================================
+    // PAGE 7: PROPERTY PHOTOGRAPHS (2x2 PHOTO GRID)
+    // =========================================================================
+    this.addPage();
+    this.drawRow([{ text: 'PHOTOGRAPHS', width: W, isHeader: true, bold: true }], 20, 4);
+    this.cursorY += 10;
+
+    const photoList = images.photos || [];
+    const cellW = (W - 10) / 2;
+    const cellH = 260;
+
+    // Lay out up to 4 photos in a 2x2 grid
+    for (let row = 0; row < 2; row++) {
+      const rowY = this.pdfY(this.cursorY);
+      for (let col = 0; col < 2; col++) {
+        const pIdx = row * 2 + col;
+        const curX = MARGIN_L + col * (cellW + 10);
+
+        // Border rectangle
+        this.page.drawRectangle({
+          x: curX,
+          y: rowY - cellH,
+          width: cellW,
+          height: cellH,
+          borderColor: rgb(0, 0, 0),
+          borderWidth: BORDER_W,
+        });
+
+        if (pIdx < photoList.length && photoList[pIdx].bytes) {
+          try {
+            const pBytes = photoList[pIdx].bytes;
+            let pImg: any = null;
+            try { pImg = await this.doc.embedJpg(pBytes); } catch { /* ignore */ }
+            if (!pImg) {
+              try { pImg = await this.doc.embedPng(pBytes); } catch { /* ignore */ }
+            }
+            if (pImg) {
+              const maxImgW = cellW - 6;
+              const maxImgH = cellH - 24;
+              const scale = Math.min(maxImgW / pImg.width, maxImgH / pImg.height);
+              const imgW = pImg.width * scale;
+              const imgH = pImg.height * scale;
+              const imgX = curX + (cellW - imgW) / 2;
+              const imgY = rowY - cellH + 20 + (maxImgH - imgH) / 2;
+
+              this.page.drawImage(pImg, { x: imgX, y: imgY, width: imgW, height: imgH });
+
+              // Label
+              const pLabel = photoList[pIdx].label || `Photograph ${pIdx + 1}`;
+              const tw = this.fontItalic.widthOfTextAtSize(pLabel, FONT_SIZE_CAPTION);
+              this.page.drawText(this.sanitizeText(pLabel), {
+                x: curX + (cellW - tw) / 2,
+                y: rowY - cellH + 6,
+                size: FONT_SIZE_CAPTION,
+                font: this.fontItalic,
+                color: rgb(0, 0, 0),
+              });
+            }
+          } catch {}
+        }
+      }
+      this.cursorY += cellH + 10;
+    }
+
+    // =========================================================================
+    // PAGE 8: LOCATIONAL DIAGRAM & BENCHMARK VALUATION
+    // =========================================================================
+    this.addPage();
+
+    this.drawRow([{ text: 'LOCATIONAL DIAGRAM WITH GPS CO-ORDINATES', width: W, isHeader: true, bold: true }], 20, 4);
+    this.cursorY += 8;
+
+    const locMapBytes = images.locationMaps?.[0];
+    const locMapH = 260;
+    const locMapY = this.pdfY(this.cursorY);
+
+    this.page.drawRectangle({
+      x: MARGIN_L,
+      y: locMapY - locMapH,
+      width: W,
+      height: locMapH,
+      borderColor: rgb(0, 0, 0),
+      borderWidth: BORDER_W,
+    });
+
+    if (locMapBytes) {
+      try {
+        let lmImg: any = null;
+        try { lmImg = await this.doc.embedJpg(locMapBytes); } catch { /* ignore */ }
+        if (!lmImg) {
+          try { lmImg = await this.doc.embedPng(locMapBytes); } catch { /* ignore */ }
+        }
+        if (lmImg) {
+          const scale = Math.min(W / lmImg.width, locMapH / lmImg.height);
+          const iW = lmImg.width * scale;
+          const iH = lmImg.height * scale;
+          this.page.drawImage(lmImg, {
+            x: MARGIN_L + (W - iW) / 2,
+            y: locMapY - locMapH + (locMapH - iH) / 2,
+            width: iW,
+            height: iH,
+          });
+        }
+      } catch {}
+    }
+    this.cursorY += locMapH + 14;
+
+    // Benchmark Valuation
+    this.drawRow([{ text: 'BENCHMARK VALUATION', width: W, isHeader: true, bold: true }], 20, 4);
+    this.cursorY += 8;
+
+    const benchBytes = images.benchmarkImages?.[0];
+    const benchH = 230;
+    const benchY = this.pdfY(this.cursorY);
+
+    this.page.drawRectangle({
+      x: MARGIN_L,
+      y: benchY - benchH,
+      width: W,
+      height: benchH,
+      borderColor: rgb(0, 0, 0),
+      borderWidth: BORDER_W,
+    });
+
+    if (benchBytes) {
+      try {
+        let bmImg: any = null;
+        try { bmImg = await this.doc.embedJpg(benchBytes); } catch { /* ignore */ }
+        if (!bmImg) {
+          try { bmImg = await this.doc.embedPng(benchBytes); } catch { /* ignore */ }
+        }
+        if (bmImg) {
+          const scale = Math.min(W / bmImg.width, benchH / bmImg.height);
+          const iW = bmImg.width * scale;
+          const iH = bmImg.height * scale;
+          this.page.drawImage(bmImg, {
+            x: MARGIN_L + (W - iW) / 2,
+            y: benchY - benchH + (benchH - iH) / 2,
+            width: iW,
+            height: iH,
+          });
+        }
+      } catch {}
+    }
+    this.cursorY += benchH;
+
+    // =========================================================================
+    // PAGE 9: CADASTRAL MAP (BHULEKH SCREENSHOT)
+    // =========================================================================
+    this.addPage();
+
+    this.drawRow([{ text: 'CADASTRAL MAP', width: W, isHeader: true, bold: true }], 20, 4);
+    this.cursorY += 10;
+
+    const cadMapBytes = images.cadastralMaps?.[0];
+    const cadMapH = 540;
+    const cadMapY = this.pdfY(this.cursorY);
+
+    this.page.drawRectangle({
+      x: MARGIN_L,
+      y: cadMapY - cadMapH,
+      width: W,
+      height: cadMapH,
+      borderColor: rgb(0, 0, 0),
+      borderWidth: BORDER_W,
+    });
+
+    if (cadMapBytes) {
+      try {
+        let cmImg: any = null;
+        try { cmImg = await this.doc.embedJpg(cadMapBytes); } catch { /* ignore */ }
+        if (!cmImg) {
+          try { cmImg = await this.doc.embedPng(cadMapBytes); } catch { /* ignore */ }
+        }
+        if (cmImg) {
+          const scale = Math.min(W / cmImg.width, cadMapH / cmImg.height);
+          const iW = cmImg.width * scale;
+          const iH = cmImg.height * scale;
+          this.page.drawImage(cmImg, {
+            x: MARGIN_L + (W - iW) / 2,
+            y: cadMapY - cadMapH + (cadMapH - iH) / 2,
+            width: iW,
+            height: iH,
+          });
+        }
+      } catch {}
+    }
+    this.cursorY += cadMapH;
+
+    // =========================================================================
+    // PAGE 10: VALUATION REPORT CHECKLIST & SIGNATURE BLOCK
+    // =========================================================================
+    this.addPage();
+
+    const chkTitle = 'VALUATION REPORT CHECK LIST';
+    const chkTw = this.fontBold.widthOfTextAtSize(chkTitle, FONT_SIZE_TITLE);
+    this.page.drawText(chkTitle, {
+      x: MARGIN_L + (W - chkTw) / 2,
+      y: this.pdfY(this.cursorY) - 10,
+      size: FONT_SIZE_TITLE,
+      font: this.fontBold,
+      color: rgb(0, 0, 0),
+    });
+    this.cursorY += 16;
+
+    // Subtitle
+    const chkSub = `(FOR THE PROPERTY VALUATION OF LAND & BUILDING BEARING KHATA NO: 405/107, PLOT NO: 191/1095, TOTAL AREA AC.0.013 DEC I.E. 566.00 SFT, KISSAM: GHARABARI, MOUZA: ACHHULI, PS- PURUSOTTAMPUR, NO-223, TS: PURUSOTTAMPUR NO-139, DIST- GANJAM, ODISHA.`;
+    const chkSubLines = this.wrapText(this.sanitizeText(chkSub), W, 7.5, false);
+    let csOff = 0;
+    for (const csl of chkSubLines) {
+      const cslTw = this.fontRegular.widthOfTextAtSize(csl, 7.5);
+      this.page.drawText(csl, {
+        x: MARGIN_L + (W - cslTw) / 2,
+        y: this.pdfY(this.cursorY) - 8 - csOff,
+        size: 7.5,
+        font: this.fontRegular,
+        color: rgb(0, 0, 0),
+      });
+      csOff += 7.5 * LINE_HEIGHT;
+    }
+    this.cursorY += chkSubLines.length * 7.5 * LINE_HEIGHT + 4;
+
+    const noticeText = 'Please ensure that the following important points are in order in the submitted report.';
+    const nTw = this.fontItalic.widthOfTextAtSize(noticeText, 8.5);
+    this.page.drawText(noticeText, {
+      x: MARGIN_L + (W - nTw) / 2,
+      y: this.pdfY(this.cursorY) - 8,
+      size: 8.5,
+      font: this.fontItalic,
+      color: rgb(0, 0, 0),
+    });
+    this.cursorY += 14;
+
+    // 12 Checklist Items
+    const checklistItems = [
+      {
+        id: '1',
+        title: 'FULL NAMES OF ALL PROPERTY OWNERS ARE MENTIONED. ADDRESS OF THE PROPERTY IS MENTIONED AND IS SAME AS LATEST TITLE DEED :',
+        defaultResp: 'YES.',
+      },
+      {
+        id: '2',
+        title: 'BOUNDARIES OF THE PROPERTY ARE MENTIONED AS PER BOTH, TITLE DEED AND ACTUAL OBSERVATIONS :',
+        defaultResp: 'YES.',
+      },
+      {
+        id: '3',
+        title: 'CLEARLY MENTIONED THAT PROPERTY HAS BEEN IDENTIFIED BY THE BORROWER ON HIS OWN BASED ON THE ADDRESS :',
+        defaultResp: 'YES.',
+      },
+      {
+        id: '4',
+        title: 'TYPE OF PROPERTY IS CLEARLY MENTIONED (AMONGEST AGRICULTURAL, RESIDENTIAL, COMMERCIAL, INDUSTRIAL ETC.):',
+        defaultResp: 'YES.',
+      },
+      {
+        id: '5',
+        title: 'IF LAND, CLEARLY MENTIONED WHETHER THE LAND IS LAND BLOCKED PLOT OR INDEPENDENT LAND :\n• ONLY "YES" OR "NO" SHOULD BE MENTIONED. "NOT APPLICABLE" SHOULD NOT BE MENTIONED HERE.',
+        defaultResp: 'YES.',
+      },
+      {
+        id: '6',
+        title: 'IF VACANT LAND, CLEARLY MENTIONED THAT PROPER DEMARCATION AND FENCING HAS BEEN DONE:',
+        defaultResp: 'YES.',
+      },
+      {
+        id: '7',
+        title: 'IF BUILDING, CLEARLY MENTIONED THAT CONSTRUCTION HAS BEEN DONE ACCORDING TO THE BUILDING PLAN APPROVAL:\n• IF NOT, DEVIATION SHOULD BE CLEARLY SPECIFIED:',
+        defaultResp: 'NO',
+      },
+      {
+        id: '8',
+        title: 'IF BUILDING, CLEARLY MENTIONED THAT BUILDING USE/COMPLETION CERTIFICATE HAS BEEN OBTAINED FROM COMPETENT AUTHORITY',
+        defaultResp: 'NO.',
+      },
+      {
+        id: '9',
+        title: 'CLEARLY MENTIONED WHETHER ACCESS TO THE PROPERTY IS AVAILABLE\n• ONLY "YES" OR "NO" SHOULD BE MENTIONED. "NOT APPLICABLE" SHOULD NOT BE MENTIONED HERE :',
+        defaultResp: 'YES.',
+      },
+      {
+        id: '10',
+        title: 'BASIS FOR ARRIVING AT GOVERNMENT VALUE HAS BEEN MENTIONED AND NECESSARY DOCUMENTS HAVE BEEN ENCLOSED :',
+        defaultResp: 'YES.',
+      },
+      {
+        id: '11',
+        title: 'WHETHER THE SITE IS SITUATED ABOVE THE WATER TANK LEVEL. IF THE SAME IS BELOW THE WATER TANK LEVEL, THEN THE NEGATIVE EFFECT ON THE VALUATION OF THE SITE BE MENTIONED.',
+        defaultResp: 'NO.',
+      },
+      {
+        id: '12',
+        title: 'ANY HIGH TENSION ELECTRICITY WIRES ARE PASSING ABOVE THE SITE. IF SO, WHAT SHALL BE THE NEGATIVE EFFECT ON THE VALUATION OF THE SITE',
+        defaultResp: 'NO.',
+      },
+    ];
+
+    const responses = fields.checklistResponses || {};
+
+    for (const item of checklistItems) {
+      const resp = responses[item.id] || item.defaultResp;
+      const tLines = this.wrapText(this.sanitizeText(`${item.id}.  ${item.title}`), W - 15, 7.5, false);
+
+      let off = 0;
+      for (const tl of tLines) {
+        this.page.drawText(tl, {
+          x: MARGIN_L + 6,
+          y: this.pdfY(this.cursorY) - 7 - off,
+          size: 7.5,
+          font: this.fontRegular,
+          color: rgb(0, 0, 0),
+        });
+        off += 7.5 * LINE_HEIGHT;
+      }
+      this.cursorY += tLines.length * 7.5 * LINE_HEIGHT + 1;
+
+      // Bullet Response
+      this.page.drawText('•', {
+        x: MARGIN_L + 20,
+        y: this.pdfY(this.cursorY) - 7,
+        size: 7.5,
+        font: this.fontBold,
+        color: rgb(0, 0, 0),
+      });
+      this.page.drawText(this.sanitizeText(resp), {
+        x: MARGIN_L + 30,
+        y: this.pdfY(this.cursorY) - 7,
+        size: 7.5,
+        font: this.fontBold,
+        color: rgb(0, 0, 0),
+      });
+      this.cursorY += 12;
+    }
+
+    this.cursorY += 10;
+
+    // Signature Block at Bottom
+    const prepBy = 'Prepared By';
+    const pbTw = this.fontBold.widthOfTextAtSize(prepBy, 9);
+    this.page.drawText(prepBy, {
+      x: MARGIN_L + (W - pbTw) / 2,
+      y: this.pdfY(this.cursorY) - 8,
+      size: 9,
+      font: this.fontBold,
+      color: rgb(0, 0, 0),
+    });
+    this.cursorY += 14;
+
+    const sigDetails = [
+      { text: 'Er. Satyajit Mohanty (B.E,Civil) FIV', bold: true, size: 9.5 },
+      { text: 'Registered Valuer, Govt. of India (Regd. No.-107/2016-17,Cat -I)', bold: true, size: 9 },
+      { text: 'B.E.(Civil) Utkal, M. Tech(Civil),MBA(HR), Approved Valuer', bold: false, size: 8 },
+      { text: 'Life, Fellow & Approved Valuer from Institution of Valuers (New Delhi), Membership No.F-26377', bold: false, size: 8 },
+      { text: 'Member in Institution of Engineer (India)', bold: false, size: 8 },
+      { text: 'Chartered Engineer (Regd. No.-M-156096-9)', bold: true, size: 8 },
+      { text: 'Empanelled Valuer of Axis Bank', bold: true, size: 8.5 },
+    ];
+
+    for (const sd of sigDetails) {
+      const sFont = sd.bold ? this.fontBold : this.fontRegular;
+      const sTw = sFont.widthOfTextAtSize(sd.text, sd.size);
+      this.page.drawText(sd.text, {
+        x: MARGIN_L + (W - sTw) / 2,
+        y: this.pdfY(this.cursorY) - 8,
+        size: sd.size,
+        font: sFont,
+        color: rgb(0, 0, 0),
+      });
+      this.cursorY += 11;
+    }
+
+    return await this.save();
+  }
 }
+
+export default PDFAxisAgriRenderer;

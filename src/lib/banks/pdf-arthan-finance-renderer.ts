@@ -332,9 +332,16 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
 
   /**
    * Draw a full-width section header banner (salmon-pink in XLSX, standard #DDE9F6 in PDF).
+   * Inserts a line break after preceding sections (when not at the top of a page)
+   * and ensures title + content fit together without being orphaned.
    */
   drawSectionBanner(title: string): void {
-    this.checkPageBreak(24);
+    // Line break after each section (when not at the very top of a new page)
+    if (this.cursorY > MARGIN_T + 5) {
+      this.cursorY += 10;
+    }
+    // Title and content should be together: ensure at least banner + 2 content rows fit
+    this.checkPageBreak(64);
     const y = this.pdfY(this.cursorY);
     this.drawCell(MARGIN_L, y, CONTENT_W, 22, title, {
       isHeader: true,
@@ -907,7 +914,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
 
     this.drawRow([
       { text: 'Date of Visit', width: vcW1, isLabel: true },
-      { text: formatReportDate(fields.dateOfVisit, ''), width: vcV },
+      { text: formatReportDate(fields.dateOfInspection || fields.dateOfVisit, ''), width: vcV },
       { text: 'Date of Report Submission', width: vcW2, isLabel: true },
       { text: formatReportDate(fields.dateOfReportSubmission || fields.dateOfValuation, ''), width: vcV2 },
     ], 22, 4);

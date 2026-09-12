@@ -375,6 +375,7 @@ export const DEFAULT_PHOTO_LABEL = 'Site Picture';
 
 // ─── Standard Photographs Section (Boxed UI with Drag & Drop Reordering) ───
 export function BasePhotographsSection({
+  title = 'Photographs',
   propertyImages = [],
   propertyImageNames = [],
   isReadOnly = false,
@@ -388,7 +389,9 @@ export function BasePhotographsSection({
   sectionNumber = 11,
   sectionId = 'section-11',
   withoutSectionWrapper = false,
+  defaultOpen = false,
 }: {
+  title?: string;
   propertyImages: string[];
   propertyImageNames: string[];
   isReadOnly?: boolean;
@@ -402,6 +405,7 @@ export function BasePhotographsSection({
   sectionNumber?: number | string;
   sectionId?: string;
   withoutSectionWrapper?: boolean;
+  defaultOpen?: boolean;
 }) {
   const validPhotos = propertyImages.filter(Boolean);
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
@@ -573,7 +577,7 @@ export function BasePhotographsSection({
   }
 
   return (
-    <Section title="Photographs" number={sectionNumber} id={sectionId} defaultOpen={false}>
+    <Section title={title} number={sectionNumber} id={sectionId} defaultOpen={defaultOpen}>
       {content}
     </Section>
   );
@@ -593,7 +597,6 @@ export function BaseMapsSection({
   cadastralMapImages,
   isReadOnly = false,
   uploading = false,
-  bucketCount = 0,
   hasExternalCoordinatesField = false,
   coordinatesSectionName = '',
   onLatitudeChange,
@@ -628,7 +631,6 @@ export function BaseMapsSection({
   cadastralMapImages?: string[];
   isReadOnly?: boolean;
   uploading?: boolean;
-  bucketCount?: number;
   hasExternalCoordinatesField?: boolean;
   coordinatesSectionName?: string;
   onLatitudeChange?: (val: string) => void;
@@ -645,7 +647,6 @@ export function BaseMapsSection({
   onReorderMouzaMap?: (newImages: string[]) => void;
   onReorderSketchMap?: (newImages: string[]) => void;
   onReorderCadastralMap?: (newImages: string[]) => void;
-  onOpenBucketPicker?: any;
   sectionNumber?: number | string;
   sectionId?: string;
   title?: string;
@@ -1108,12 +1109,7 @@ export function BasePhotoBucketModal({
 
   if (!isOpen) return null;
 
-  const toggleSelect = (id: string, url: string) => {
-    if (mode === 'locationMapImage') {
-      onConfirm([url]);
-      onClose();
-      return;
-    }
+  const toggleSelect = (id: string, _url?: string) => {
     const next = new Set(selectedIds);
     if (next.has(id)) next.delete(id);
     else next.add(id);
@@ -1139,9 +1135,7 @@ export function BasePhotoBucketModal({
               📸 Pick from Photo Bucket
             </h2>
             <p className="text-xs text-[#6c757d] mt-1">
-              {mode === 'propertyImages'
-                ? 'Select photos to add to the valuation report'
-                : 'Select images to add as sketch maps'}
+              Select one or more inspection photos to add to the valuation report
             </p>
           </div>
           <button

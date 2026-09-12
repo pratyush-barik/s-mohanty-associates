@@ -22,6 +22,7 @@ import {
   formatAssignedEngineers,
   formatReportDate,
   BasePhotographsSection,
+  BaseMapsSection,
   BasePhotoBucketModal,
   fetchBytes,
 } from '../BaseBankReportComponents';
@@ -189,12 +190,12 @@ export default function ArthanFinance({
       remarks: raw.remarks || '',
 
       // Section 11 — Valuer Certification
-      dateOfVisit: formatReportDate(raw.dateOfVisit || raw.dateOfInspection || prefill?.inspectionDate || ''),
+      dateOfVisit: formatReportDate(raw.dateOfInspection || raw.dateOfVisit || prefill?.inspectionDate || ''),
       dateOfReportSubmission: formatReportDate(raw.dateOfReportSubmission || raw.dateOfValuation || new Date()),
       visitingEngineer: (raw.visitingEngineer && raw.visitingEngineer !== 'Visiting Engineer')
         ? raw.visitingEngineer
         : (formatAssignedEngineers(prefill?.fieldEmployees || prefill?.assignedFieldEmployees || prefill?.assignedEngineers) || raw.visitingEngineer || ''),
-      authorizedSignatory: raw.authorizedSignatory || 'Er. Satyajit Mohanty',
+      authorizedSignatory: 'Er. Satyajit Mohanty',
 
       // Photos & Maps
       propertyImages: Array.isArray(raw.propertyImages) ? raw.propertyImages : [],
@@ -250,6 +251,12 @@ export default function ArthanFinance({
   const handleChange = useCallback((key: keyof ArthanFinanceReportFields, value: any) => {
     setFields(prev => {
       const next = { ...prev, [key]: value };
+
+      // Sync dateOfInspection to dateOfVisit and dateOfInspectionSite
+      if (key === 'dateOfInspection') {
+        next.dateOfVisit = value;
+        next.dateOfInspectionSite = value;
+      }
 
       // Auto-calculate Total Land Value
       if (key === 'landAreaSqft' || key === 'recommendedRateOfLand') {
@@ -352,9 +359,17 @@ export default function ArthanFinance({
     }
   };
 
-  const handleMapRemove = (key: 'locationMapImages' | 'cadastralMapImages', index: number) => {
+  const handleMapRemove = (key: 'locationMapImages' | 'cadastralMapImages', index?: number) => {
+    if (index === undefined) {
+      handleChange(key, []);
+      return;
+    }
     const updated = (fields[key] || []).filter((_, i) => i !== index);
     handleChange(key, updated);
+  };
+
+  const handleReorderMap = (key: 'locationMapImages' | 'cadastralMapImages', newImgs: string[]) => {
+    handleChange(key, newImgs);
   };
 
   // Photo Handlers
@@ -368,6 +383,37 @@ export default function ArthanFinance({
     const updatedNames = (fields.propertyImageNames || []).filter((_, i) => i !== idx);
     handleChange('propertyImages', updated);
     handleChange('propertyImageNames', updatedNames);
+  };
+
+  const handleReorderPhotos = (newImgs: string[], newNames: string[]) => {
+    handleChange('propertyImages', newImgs);
+    handleChange('propertyImageNames', newNames);
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      const uploadedUrls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.size > 10 * 1024 * 1024) continue;
+        const ext = file.name.split('.').pop() || 'jpg';
+        const path = `temp-photos/${projectId}/photo-${Date.now()}-${i}.${ext}`;
+        const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(path, file);
+        if (!error) {
+          const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(path);
+          uploadedUrls.push(data.publicUrl);
+        }
+      }
+      const existing = fields.propertyImages || [];
+      handleChange('propertyImages', [...existing, ...uploadedUrls]);
+    } catch (err: any) {
+      alert(`Upload error: ${err.message}`);
+    } finally {
+      setUploading(false);
+    }
   };
 
   // Save Draft
@@ -515,7 +561,7 @@ export default function ArthanFinance({
   return (
     <div className="flex gap-6 items-start w-full">
       {/* ── Main Form Column ── */}
-      <div className="flex-1 min-w-0 space-y-4">
+      <div className="flex-1 min-w-0 space-y-6">
         <ActiveConfigBanner
           bankName="ARTHAN FINANCE"
           formatName="Valuation Report"
@@ -524,9 +570,8 @@ export default function ArthanFinance({
         />
 
         {message && (
-          <div className={`p-4 rounded-xl text-sm font-semibold ${
-            message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
-          }`}>
+          <div className={`p-4 rounded-xl text-sm font-semibold ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
+            }`}>
             {message.text}
           </div>
         )}
@@ -581,20 +626,72 @@ export default function ArthanFinance({
                 <input className={inputCls} value={fields.personMetOnSite || ''} onChange={e => handleChange('personMetOnSite', e.target.value)} disabled={isReadOnly} placeholder="Person met & contact number" />
               </Field>
             </div>
-            <div className="md:col-span-2">
-              <Field label="Address of the property — As per TRF">
-                <textarea rows={2} className={inputCls} value={fields.addressAsPerTRF || ''} onChange={e => handleChange('addressAsPerTRF', e.target.value)} disabled={isReadOnly} placeholder="Address as per Technical Review Form" />
-              </Field>
-            </div>
-            <div className="md:col-span-2">
-              <Field label="Address of the property — As per Document">
-                <textarea rows={2} className={inputCls} value={fields.addressAsPerDocument || ''} onChange={e => handleChange('addressAsPerDocument', e.target.value)} disabled={isReadOnly} placeholder="Address as per sale deed / ROR" />
-              </Field>
-            </div>
-            <div className="md:col-span-2">
-              <Field label="Address of the property — As per Actual at Site">
-                <textarea rows={2} className={inputCls} value={fields.addressAsPerActualSite || ''} onChange={e => handleChange('addressAsPerActualSite', e.target.value)} disabled={isReadOnly} placeholder="Address as observed on site" />
-              </Field>
+            {/* Address of property being appraised — Soft Container */}
+            <div className="md:col-span-2 bg-[#f4f7f2] dark:bg-slate-900/80 p-4 rounded-xl border border-[#d8e2d2] dark:border-slate-800 shadow-xs space-y-3">
+              <div className="flex items-center justify-between border-b border-[#d8e2d2] dark:border-slate-800 pb-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#5a7d4e]"></span>
+                  <h3 className="text-xs font-bold text-[#2a4521] dark:text-emerald-300 uppercase tracking-wide">
+                    Address of property being appraised
+                  </h3>
+                </div>
+                <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                  TRF, Document & Site Observations
+                </span>
+              </div>
+
+              <div className="overflow-hidden border border-[#d8e2d2] dark:border-slate-800 rounded-lg divide-y divide-[#d8e2d2] dark:divide-slate-800 bg-white dark:bg-slate-950 shadow-xs">
+                {/* As per TRF */}
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-stretch">
+                  <div className="sm:col-span-1 p-3 bg-[#ebf1e5] dark:bg-slate-800/80 text-xs font-bold text-slate-800 dark:text-slate-200 border-b sm:border-b-0 sm:border-r border-[#d8e2d2] dark:border-slate-800 flex items-center">
+                    As per TRF
+                  </div>
+                  <div className="sm:col-span-3 p-2.5 flex items-center">
+                    <textarea
+                      rows={2}
+                      className={inputCls}
+                      value={fields.addressAsPerTRF || ''}
+                      onChange={e => handleChange('addressAsPerTRF', e.target.value)}
+                      disabled={isReadOnly}
+                      placeholder="Address as per Technical Review Form"
+                    />
+                  </div>
+                </div>
+
+                {/* As per Document */}
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-stretch">
+                  <div className="sm:col-span-1 p-3 bg-[#ebf1e5] dark:bg-slate-800/80 text-xs font-bold text-slate-800 dark:text-slate-200 border-b sm:border-b-0 sm:border-r border-[#d8e2d2] dark:border-slate-800 flex items-center">
+                    As per Document
+                  </div>
+                  <div className="sm:col-span-3 p-2.5 flex items-center">
+                    <textarea
+                      rows={2}
+                      className={inputCls}
+                      value={fields.addressAsPerDocument || ''}
+                      onChange={e => handleChange('addressAsPerDocument', e.target.value)}
+                      disabled={isReadOnly}
+                      placeholder="Address as per sale deed / ROR"
+                    />
+                  </div>
+                </div>
+
+                {/* As per Actual at site */}
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-stretch">
+                  <div className="sm:col-span-1 p-3 bg-[#ebf1e5] dark:bg-slate-800/80 text-xs font-bold text-slate-800 dark:text-slate-200 border-b sm:border-b-0 sm:border-r border-[#d8e2d2] dark:border-slate-800 flex items-center">
+                    As per Actual at site
+                  </div>
+                  <div className="sm:col-span-3 p-2.5 flex items-center">
+                    <textarea
+                      rows={2}
+                      className={inputCls}
+                      value={fields.addressAsPerActualSite || ''}
+                      onChange={e => handleChange('addressAsPerActualSite', e.target.value)}
+                      disabled={isReadOnly}
+                      placeholder="Address as observed on site"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="md:col-span-2">
               <Field label="Documents Provided">
@@ -1009,95 +1106,104 @@ export default function ArthanFinance({
         {/* ════ SECTION 11: VALUER CERTIFICATION ════ */}
         <Section title="Valuer Certification" number={11} id="sec-11">
           <div className="grid md:grid-cols-2 gap-4">
-            <DateInput fieldKey="dateOfVisit" label="Date of Visit (DD/MM/YYYY)" />
+            <Field label="Date of Visit (DD/MM/YYYY)">
+              <div className="relative flex items-center">
+                <input
+                  type="text"
+                  className={`${inputCls} bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 cursor-not-allowed font-medium pr-8`}
+                  value={fields.dateOfInspection || fields.dateOfVisit || ''}
+                  disabled
+                  readOnly
+                  placeholder="DD/MM/YYYY"
+                />
+                <span className="absolute right-2.5 text-xs text-slate-400" title="Locked: Referenced from Section 1 Date of Inspection / Site visit">
+                  🔒
+                </span>
+              </div>
+              <span className="text-[10px] text-slate-400 mt-1 block">
+                Referenced from Sec 1 (Date of Inspection / Site visit)
+              </span>
+            </Field>
+
             <DateInput fieldKey="dateOfReportSubmission" label="Date of Report Submission (DD/MM/YYYY)" />
+
             <Field label="Name of Engineer Visited the property">
               <input className={inputCls} value={fields.visitingEngineer || ''} onChange={e => handleChange('visitingEngineer', e.target.value)} disabled={isReadOnly} placeholder="Auto-filled from field inspector" />
             </Field>
+
             <Field label="Authorized Signatory Name & Signature">
-              <input className={inputCls} value={fields.authorizedSignatory || ''} onChange={e => handleChange('authorizedSignatory', e.target.value)} disabled={isReadOnly} placeholder="Er. Satyajit Mohanty" />
+              <div className="relative flex items-center">
+                <input
+                  type="text"
+                  className={`${inputCls} bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 cursor-not-allowed font-semibold pr-8`}
+                  value={fields.authorizedSignatory || 'Er. Satyajit Mohanty'}
+                  disabled
+                  readOnly
+                  placeholder="Er. Satyajit Mohanty"
+                />
+                <span className="absolute right-2.5 text-xs text-slate-400" title="Locked: Authorized Signatory">
+                  🔒
+                </span>
+              </div>
+              <span className="text-[10px] text-slate-400 mt-1 block">
+                Statutory signatory locked
+              </span>
             </Field>
           </div>
         </Section>
 
         {/* ════ SECTION 12: PROPERTY PHOTOGRAPHS ════ */}
-        <Section title="Property Photographs" number={12} id="sec-12">
-          <BasePhotographsSection
-            propertyImages={fields.propertyImages || []}
-            propertyImageNames={fields.propertyImageNames || []}
-            isReadOnly={isReadOnly}
-            uploading={uploading}
-            onRemove={handlePhotoRemove}
-            onOpenBucketPicker={() => setBucketPickerOpen(true)}
+        <BasePhotographsSection
+          title="Property Photographs"
+          propertyImages={fields.propertyImages || []}
+          propertyImageNames={fields.propertyImageNames || []}
+          isReadOnly={isReadOnly}
+          uploading={uploading}
+          bucketCount={bucketImages.length}
+          onImageNameChange={(idx, name) => {
+            const updated = [...(fields.propertyImageNames || [])];
+            while (updated.length <= idx) updated.push('');
+            updated[idx] = name;
+            handleChange('propertyImageNames', updated);
+          }}
+          onRemoveImage={handlePhotoRemove}
+          onReorderImages={handleReorderPhotos}
+          onUploadImages={handlePhotoUpload}
+          onOpenBucketPicker={() => setBucketPickerOpen(true)}
+          sectionNumber={12}
+          sectionId="sec-12"
+        />
+        {bucketPickerOpen && (
+          <BasePhotoBucketModal
+            isOpen={bucketPickerOpen}
+            bucketImages={bucketImages}
+            onConfirm={handleBucketConfirm}
+            onClose={() => setBucketPickerOpen(false)}
           />
-          {bucketPickerOpen && (
-            <BasePhotoBucketModal
-              isOpen={bucketPickerOpen}
-              bucketImages={bucketImages}
-              onConfirm={handleBucketConfirm}
-              onClose={() => setBucketPickerOpen(false)}
-            />
-          )}
-        </Section>
+        )}
 
         {/* ════ SECTION 13: MAPS ════ */}
-        <Section title="Location cum Route Map showing property Boundaries" number={13} id="sec-13">
-          <div className="space-y-6">
-            {/* Location Map */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-semibold text-slate-700">Location Map (Google Satellite)</h4>
-                {!isReadOnly && (
-                  <label className="cursor-pointer px-3 py-1 text-xs font-semibold text-blue-700 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors">
-                    + Upload Location Map
-                    <input type="file" accept="image/*" multiple className="hidden" onChange={e => handleMapUpload('locationMapImages', e)} />
-                  </label>
-                )}
-              </div>
-              {(fields.locationMapImages || []).length > 0 ? (
-                <div className="flex flex-wrap gap-3">
-                  {(fields.locationMapImages || []).map((url, i) => (
-                    <div key={i} className="relative w-48 h-32 rounded border overflow-hidden">
-                      <img src={url} alt={`Location Map ${i + 1}`} className="w-full h-full object-cover" />
-                      {!isReadOnly && (
-                        <button onClick={() => handleMapRemove('locationMapImages', i)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">×</button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-slate-400 italic">No location map uploaded</p>
-              )}
-            </div>
-
-            {/* Cadastral / Sketch Map */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-semibold text-slate-700">Cadastral / Sketch Map</h4>
-                {!isReadOnly && (
-                  <label className="cursor-pointer px-3 py-1 text-xs font-semibold text-blue-700 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors">
-                    + Upload Cadastral / Sketch Map
-                    <input type="file" accept="image/*" multiple className="hidden" onChange={e => handleMapUpload('cadastralMapImages', e)} />
-                  </label>
-                )}
-              </div>
-              {(fields.cadastralMapImages || []).length > 0 ? (
-                <div className="flex flex-wrap gap-3">
-                  {(fields.cadastralMapImages || []).map((url, i) => (
-                    <div key={i} className="relative w-48 h-32 rounded border overflow-hidden">
-                      <img src={url} alt={`Cadastral Map ${i + 1}`} className="w-full h-full object-cover" />
-                      {!isReadOnly && (
-                        <button onClick={() => handleMapRemove('cadastralMapImages', i)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">×</button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-slate-400 italic">No cadastral / sketch map uploaded</p>
-              )}
-            </div>
-          </div>
-        </Section>
+        <BaseMapsSection
+          locationMapImages={fields.locationMapImages || []}
+          cadastralMapImages={fields.cadastralMapImages || []}
+          latitude={fields.latitude}
+          longitude={fields.longitude}
+          propertyAddress={fields.addressAsPerActualSite || fields.addressAsPerDocument || fields.addressAsPerTRF || ''}
+          hasExternalCoordinatesField={true}
+          coordinatesSectionName="Section 9: Valuation of Property"
+          isReadOnly={isReadOnly}
+          uploading={uploading}
+          onLocationMapUpload={e => handleMapUpload('locationMapImages', e)}
+          onLocationMapRemove={idx => handleMapRemove('locationMapImages', idx)}
+          onCadastralMapUpload={e => handleMapUpload('cadastralMapImages', e)}
+          onCadastralMapRemove={idx => handleMapRemove('cadastralMapImages', idx)}
+          onReorderLocationMap={newImgs => handleReorderMap('locationMapImages', newImgs)}
+          onReorderCadastralMap={newImgs => handleReorderMap('cadastralMapImages', newImgs)}
+          mapOrder={['location', 'cadastral']}
+          sectionNumber={13}
+          sectionId="sec-13"
+          title="Location cum Route Map showing property Boundaries"
+        />
 
         {/* ── Action Bar ── */}
         <ReportActionBar

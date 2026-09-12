@@ -8,9 +8,10 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 
 - **Total Banks / Organizations**: 57
 - **Total Subclasses / Templates**: 73
-- **Completed Subclasses**: 3 / 73 (1.1 `MLAP`, 1.2 `STSL`, 3 `Standard` (Annapurna))
+- **Completed Subclasses**: 4 / 73 (1.1 `MLAP`, 1.2 `STSL`, 3 `Standard` (Annapurna), 8.1 `AGRI` (Axis))
 - **Current Active Bank**: 8. `AXIS BANK`
-- **Current Active Subclass**: 8.1 `AGRI` (1st Half Complete)
+- **Current Active Subclass**: 8.1 `AGRI` (Complete: 14 Sections UI & 10-Page PDF)
+- **Bucket Standard**: Enforced strictly per [docs/BUCKET_ARCHITECTURE_STANDARD.md](docs/BUCKET_ARCHITECTURE_STANDARD.md) (Cloud bucket exclusively for Property Photographs; Maps/Documents are device-upload only).
 
 ---
 
@@ -29,7 +30,7 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 | **6** | **AU SMALL FINANCE BANK** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **7** | **AVE FINANCE LTD** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **8** | **AXIS BANK** | | | | | |
-| 8.1 | AXIS BANK | `AGRI` | 🟡 In Progress (1st Half) | 🟡 7-Section Custom UI | 🟡 Dedicated PDF Types | ⏳ Pending 2nd Half |
+| 8.1 | AXIS BANK | `AGRI` | ✅ Complete | ✅ 14-Section Custom UI | ✅ Dedicated 10-Page PDF | ✅ Validated |
 | 8.2 | AXIS BANK | `HL-LAP` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | 8.3 | AXIS BANK | `SBB` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | 8.4 | AXIS BANK | `SME` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |

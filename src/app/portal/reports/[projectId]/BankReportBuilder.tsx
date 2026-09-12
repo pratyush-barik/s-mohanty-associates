@@ -2527,7 +2527,6 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
               onLongitudeChange={(val) => handleChange('longitude', val)}
               isReadOnly={isReadOnly}
               uploading={uploading}
-              bucketCount={localBucketImages?.length || 0}
               onLocationMapUpload={(e) => handleFileUpload(e, 'locationMapImages')}
               onLocationMapRemove={(idx) => removeMapImage('locationMapImages', idx)}
               onMouzaMapUpload={(e) => handleFileUpload(e, 'mouzaMapImages')}

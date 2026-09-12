@@ -800,9 +800,8 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  // Bucket Picker State
+  // Bucket Picker State (Property Photographs only)
   const [bucketPickerOpen, setBucketPickerOpen] = useState(false);
-  const [bucketPickerMode, setBucketPickerMode] = useState<'propertyImages' | 'sketchMapImages' | 'locationMapImage'>('propertyImages');
   const [bucketSelected, setBucketSelected] = useState<Set<string>>(new Set());
   const [bucketPickerAgent, setBucketPickerAgent] = useState<string | null>(null);
 
@@ -832,8 +831,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     }
   };
 
-  const openBucketPicker = async (mode: 'propertyImages' | 'sketchMapImages' | 'locationMapImage') => {
-    setBucketPickerMode(mode);
+  const openBucketPicker = async () => {
     setBucketSelected(new Set());
     setBucketPickerAgent(null);
     setBucketPickerOpen(true);
@@ -855,15 +853,8 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     const selectedImages = localBucketImages.filter(img => bucketSelected.has(img.id));
     if (selectedImages.length === 0) { setBucketPickerOpen(false); return; }
 
-    if (bucketPickerMode === 'propertyImages') {
-      const newUrls = [...(fields.propertyImages || []), ...selectedImages.map(img => img.url)];
-      handleChange('propertyImages', newUrls);
-    } else if (bucketPickerMode === 'sketchMapImages') {
-      const newUrls = [...(fields.sketchMapImages || []), ...selectedImages.map(img => img.url)];
-      handleChange('sketchMapImages', newUrls);
-    } else if (bucketPickerMode === 'locationMapImage') {
-      handleChange('locationMapImage', selectedImages[0].url);
-    }
+    const newUrls = [...(fields.propertyImages || []), ...selectedImages.map(img => img.url)];
+    handleChange('propertyImages', newUrls);
 
     setBucketPickerOpen(false);
     setBucketSelected(new Set());
@@ -874,13 +865,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
   const toggleBucketImage = (id: string) => {
     setBucketSelected(prev => {
       const next = new Set(prev);
-      if (bucketPickerMode !== 'propertyImages' && bucketPickerMode !== 'sketchMapImages') {
-        // Single select for location map
-        next.clear();
-        next.add(id);
-      } else {
-        if (next.has(id)) next.delete(id); else next.add(id);
-      }
+      if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
   };
@@ -3482,7 +3467,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
             handleChange('propertyImageNames', newNames);
           }}
           onUploadImages={(e) => handleFileUpload(e, 'propertyImages')}
-          onOpenBucketPicker={() => openBucketPicker('propertyImages')}
+          onOpenBucketPicker={openBucketPicker}
           sectionNumber={isApartmentFlat ? 11 : 12}
           sectionId="section-12"
         />
@@ -3930,11 +3915,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                   📸 Pick from Photo Bucket
                 </h2>
                 <p className="text-xs text-[#6c757d] mt-1">
-                  {bucketPickerMode === 'propertyImages'
-                    ? 'Select one or more photos to add to the report'
-                    : bucketPickerMode === 'sketchMapImages'
-                    ? 'Select one or more photos to use as Sketch Maps'
-                    : 'Select a single photo for the map'}
+                  Select one or more inspection photos to add to the valuation report
                 </p>
               </div>
               <button

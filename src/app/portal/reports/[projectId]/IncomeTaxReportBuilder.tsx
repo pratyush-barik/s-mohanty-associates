@@ -926,9 +926,8 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  // Bucket Picker State
+  // Bucket Picker State (Property Photographs only)
   const [bucketPickerOpen, setBucketPickerOpen] = useState(false);
-  const [bucketPickerMode, setBucketPickerMode] = useState<'propertyImages' | 'sketchMapImages' | 'locationMapImage' | 'benchmarkImage' | 'ciiTableImage' | 'bdaMapImage'>('propertyImages');
   const [bucketSelected, setBucketSelected] = useState<Set<string>>(new Set());
   const [bucketPickerAgent, setBucketPickerAgent] = useState<string | null>(null);
 
@@ -1048,9 +1047,8 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
     });
   }, []);
 
-  // ── Bucket Picker Handlers ──
-  const openBucketPicker = async (mode: typeof bucketPickerMode) => {
-    setBucketPickerMode(mode);
+  // ── Bucket Picker Handlers (Property Photographs Only) ──
+  const openBucketPicker = async () => {
     setBucketSelected(new Set());
     setBucketPickerAgent(null);
     setBucketPickerOpen(true);
@@ -1072,15 +1070,8 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
     const selectedImages = localBucketImages.filter(img => bucketSelected.has(img.id));
     if (selectedImages.length === 0) { setBucketPickerOpen(false); return; }
 
-    if (bucketPickerMode === 'propertyImages') {
-      const newUrls = [...(fields.propertyImages || []), ...selectedImages.map(img => img.url)];
-      handleChange('propertyImages', newUrls);
-    } else if (bucketPickerMode === 'sketchMapImages') {
-      const newUrls = [...(fields.sketchMapImages || []), ...selectedImages.map(img => img.url)];
-      handleChange('sketchMapImages', newUrls);
-    } else {
-      handleChange(bucketPickerMode, selectedImages[0].url);
-    }
+    const newUrls = [...(fields.propertyImages || []), ...selectedImages.map(img => img.url)];
+    handleChange('propertyImages', newUrls);
 
     setBucketPickerOpen(false);
     setBucketSelected(new Set());
@@ -1091,12 +1082,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
   const toggleBucketImage = (id: string) => {
     setBucketSelected(prev => {
       const next = new Set(prev);
-      if (bucketPickerMode !== 'propertyImages' && bucketPickerMode !== 'sketchMapImages') {
-        next.clear();
-        next.add(id);
-      } else {
-        if (next.has(id)) next.delete(id); else next.add(id);
-      }
+      if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
   };
@@ -2661,7 +2647,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                 handleChange('propertyImageNames' as any, newNames);
               }}
               onUploadImages={(e) => handleFileUpload(e, 'propertyImages')}
-              onOpenBucketPicker={() => openBucketPicker('propertyImages')}
+              onOpenBucketPicker={openBucketPicker}
               sectionNumber="Appx"
               sectionId="subsection-photos-grid"
               withoutSectionWrapper={true}
@@ -3101,11 +3087,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               <div>
                 <h2 className="text-lg font-bold text-[#0f2038]">📸 Pick from Field Engineer Bucket</h2>
                 <p className="text-xs text-[#6c757d] mt-1">
-                  {bucketPickerMode === 'propertyImages' 
-                    ? 'Select multiple photos' 
-                    : bucketPickerMode === 'sketchMapImages'
-                    ? 'Select one or more photos to use as Sketch Maps'
-                    : 'Select one image'}
+                  Select one or more inspection photos to add to the valuation report
                 </p>
               </div>
               <button onClick={() => setBucketPickerOpen(false)} className="text-[#6c757d] hover:text-[#0f2038] text-xl font-bold">✕</button>

@@ -1015,9 +1015,8 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
   const [editOriginalValue, setEditOriginalValue] = useState('');
   const [editError, setEditError] = useState<string | null>(null);
 
-  // Bucket Picker State
+  // Bucket Picker State (Property Photographs only)
   const [bucketPickerOpen, setBucketPickerOpen] = useState(false);
-  const [bucketPickerMode, setBucketPickerMode] = useState<'propertyImages' | 'sketchMapImages' | 'locationMapImage' | 'coverPageImage'>('propertyImages');
   const [bucketSelected, setBucketSelected] = useState<Set<string>>(new Set());
   const [bucketPickerAgent, setBucketPickerAgent] = useState<string | null>(null);
 
@@ -1339,8 +1338,8 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     setFields(prev => ({ ...prev, [field]: value }));
   }, []);
 
-  const openBucketPicker = async (mode: 'propertyImages' | 'sketchMapImages' | 'locationMapImage' | 'coverPageImage') => {
-    setBucketPickerMode(mode);
+  // ── Bucket Picker Handlers (Property Photographs Only) ──
+  const openBucketPicker = async () => {
     setBucketSelected(new Set());
     setBucketPickerAgent(null);
     setBucketPickerOpen(true);
@@ -1362,17 +1361,8 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     const selectedImages = localBucketImages.filter(img => bucketSelected.has(img.id));
     if (selectedImages.length === 0) { setBucketPickerOpen(false); return; }
 
-    if (bucketPickerMode === 'propertyImages') {
-      const newUrls = [...(fields.propertyImages || []), ...selectedImages.map(img => img.url)];
-      handleChange('propertyImages', newUrls);
-    } else if (bucketPickerMode === 'sketchMapImages') {
-      const newUrls = [...(fields.sketchMapImages || []), ...selectedImages.map(img => img.url)];
-      handleChange('sketchMapImages', newUrls);
-    } else if (bucketPickerMode === 'locationMapImage') {
-      handleChange('locationMapImage', selectedImages[0].url);
-    } else if (bucketPickerMode === 'coverPageImage') {
-      handleChange('coverPageImage', selectedImages[0].url);
-    }
+    const newUrls = [...(fields.propertyImages || []), ...selectedImages.map(img => img.url)];
+    handleChange('propertyImages', newUrls);
 
     setBucketPickerOpen(false);
     setBucketSelected(new Set());
@@ -1383,12 +1373,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
   const toggleBucketImage = (id: string) => {
     setBucketSelected(prev => {
       const next = new Set(prev);
-      if (bucketPickerMode !== 'propertyImages' && bucketPickerMode !== 'sketchMapImages') {
-        next.clear();
-        next.add(id);
-      } else {
-        if (next.has(id)) next.delete(id); else next.add(id);
-      }
+      if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
   };
@@ -1943,7 +1928,7 @@ Our valuation is based on information obtained from the client and on data gathe
       tocPageMap['4.  BRIEF DESCRIPTION OF THE PROPERTY'] = r.getPageCount();
       // Introductory prose paragraph(s)
       const paras = fields.propertyDescriptionParagraphs || [fields.propertyDescription];
-      paras.forEach(para => {
+      paras.forEach((para: string) => {
         if (para && para.trim()) {
           r.drawTextBlock(para.trim());
           r.advanceCursor(6);
@@ -3483,7 +3468,7 @@ Our valuation is based on information obtained from the client and on data gathe
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Property Description (Introductory Paragraph(s))" span={2}>
                 <div className="flex flex-col gap-3">
-                  {(fields.propertyDescriptionParagraphs || [fields.propertyDescription || '']).map((para, idx) => (
+                  {(fields.propertyDescriptionParagraphs || [fields.propertyDescription || '']).map((para: string, idx: number) => (
                     <div key={idx} className="relative flex gap-2">
                       <textarea
                         value={para}
@@ -4740,7 +4725,7 @@ Our valuation is based on information obtained from the client and on data gathe
                 handleChange('propertyImageNames', newNames);
               }}
               onUploadImages={(e) => handleFileUpload(e, 'propertyImages')}
-              onOpenBucketPicker={() => openBucketPicker('propertyImages')}
+              onOpenBucketPicker={openBucketPicker}
               sectionNumber={14}
               sectionId="section-14-photos"
               withoutSectionWrapper={true}
@@ -5355,11 +5340,7 @@ Our valuation is based on information obtained from the client and on data gathe
                   📸 Pick from Photo Bucket
                 </h2>
                 <p className="text-xs text-[#6c757d] mt-1">
-                  {bucketPickerMode === 'propertyImages'
-                    ? 'Select one or more photos to add to the report'
-                    : bucketPickerMode === 'sketchMapImages'
-                    ? 'Select one or more photos to use as Sketch Maps'
-                    : 'Select a single photo for the map'}
+                  Select one or more inspection photos to add to the valuation report
                 </p>
               </div>
               <button
