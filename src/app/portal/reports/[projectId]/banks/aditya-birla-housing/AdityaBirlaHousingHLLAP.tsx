@@ -456,7 +456,7 @@ async function generateHLLAPPDF(
     }
 
     if (locationBytes) {
-      r.addPage();
+      (r as any).addPage();
       const lat = fields.latitude || '';
       const lng = fields.longitude || '';
       r.drawSectionHeader(`Location Map(Latitude-${lat}, Longitude-${lng})`, false);
@@ -465,9 +465,9 @@ async function generateHLLAPPDF(
       const maxH = 400;
       
       let img = null;
-      try { img = await r.doc.embedPng(locationBytes); } catch { /* ignore */ }
+      try { img = await (r as any).doc.embedPng(locationBytes); } catch { /* ignore */ }
       if (!img) {
-        try { img = await r.doc.embedJpg(locationBytes); } catch { /* ignore */ }
+        try { img = await (r as any).doc.embedJpg(locationBytes); } catch { /* ignore */ }
       }
       
       if (img) {
@@ -475,30 +475,30 @@ async function generateHLLAPPDF(
         const w = img.width * scale;
         const h = img.height * scale;
         const x = MARGIN_L + (CONTENT_W - w) / 2;
-        const y = r.pdfY(r.cursorY) - h;
+        const y = (r as any).pdfY((r as any).cursorY) - h;
 
-        r.page.drawRectangle({
+        (r as any).page.drawRectangle({
           x: MARGIN_L,
-          y: r.pdfY(r.cursorY) - h,
+          y: (r as any).pdfY((r as any).cursorY) - h,
           width: CONTENT_W,
           height: h,
           borderColor: rgb(0, 0, 0),
           borderWidth: 1,
         });
 
-        r.page.drawImage(img, { x, y, width: w, height: h });
+        (r as any).page.drawImage(img, { x, y, width: w, height: h });
 
-        r.page.drawText(`Latitude:- ${lat}`, { x: x + w - 170, y: y + 30, size: 14, font: r.fontBold, color: rgb(1, 1, 0) });
-        r.page.drawText(`Longitude:- ${lng}`, { x: x + w - 170, y: y + 10, size: 14, font: r.fontBold, color: rgb(1, 1, 0) });
+        (r as any).page.drawText(`Latitude:- ${lat}`, { x: x + w - 170, y: y + 30, size: 14, font: (r as any).fontBold, color: rgb(1, 1, 0) });
+        (r as any).page.drawText(`Longitude:- ${lng}`, { x: x + w - 170, y: y + 10, size: 14, font: (r as any).fontBold, color: rgb(1, 1, 0) });
 
-        r.cursorY += h + 20;
+        (r as any).cursorY += h + 20;
       }
     }
   }
 
   // ====== DEVIATIONS / OBSERVATIONS ======
   if (fields.showDeviationsTable !== false) {
-    r.addPage();
+    (r as any).addPage();
     r.drawSectionHeader('DEVIATIONS / OBSERVATIONS');
     const devC1 = 110;
     const devC3 = (CONTENT_W - devC1 * 2) / 2;

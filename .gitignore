@@ -112,3 +112,6 @@ temp-parser
 
 # Aditya Birla Housing Finance Samples
 /Aditya_Birla_House_finance(Samples)
+
+# Ignore ARKA folder
+/ARKA

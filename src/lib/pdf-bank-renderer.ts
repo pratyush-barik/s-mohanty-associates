@@ -293,7 +293,7 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
           x: curX + pad,
           y: lineY,
           size: fontSize,
-          font: (c.labelBold !== undefined ? c.labelBold : true) ? this.fontBold : this.fontRegular,
+          font: this.fontBold,
           color: rgb(0, 0, 0),
         });
         lineY -= fontSize * LINE_HEIGHT;

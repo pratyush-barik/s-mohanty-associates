@@ -1700,21 +1700,34 @@ export default function BankReportBuilder({
                     const isNumeric = field.inputType === 'number';
                     return (
                       <td key={fIdx} colSpan={field.colSpan || 1} className="p-2 border border-slate-300 bg-white min-w-[120px]">
-                        <input
-                          className={inputCls}
-                          value={cellVal}
-                          onChange={e => {
-                            if (isNumeric) {
-                              const v = e.target.value.replace(/[^0-9.,]/g, '');
-                              handleChange(field.key as string, v);
-                            } else {
-                              handleChange(field.key as string, e.target.value);
-                            }
-                          }}
-                          disabled={isReadOnly || field.readOnly}
-                          placeholder={field.placeholder || ''}
-                          inputMode={isNumeric ? 'decimal' : undefined}
-                        />
+                        {field.inputType === 'select' ? (
+                          <select
+                            className={selectCls}
+                            value={cellVal || field.default || (field.options && field.options[0]) || ''}
+                            onChange={e => handleChange(field.key as string, e.target.value)}
+                            disabled={isReadOnly || field.readOnly}
+                          >
+                            {(field.options || []).map((opt: string) => (
+                              <option key={opt} value={opt}>{opt}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            className={inputCls}
+                            value={cellVal}
+                            onChange={e => {
+                              if (isNumeric) {
+                                const v = e.target.value.replace(/[^0-9.,]/g, '');
+                                handleChange(field.key as string, v);
+                              } else {
+                                handleChange(field.key as string, e.target.value);
+                              }
+                            }}
+                            disabled={isReadOnly || field.readOnly}
+                            placeholder={field.placeholder || ''}
+                            inputMode={isNumeric ? 'decimal' : undefined}
+                          />
+                        )}
                       </td>
                     );
                   })}
