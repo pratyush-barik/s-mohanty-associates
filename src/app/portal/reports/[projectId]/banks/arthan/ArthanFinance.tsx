@@ -152,7 +152,9 @@ export default function ArthanFinance({
 
       // Section 7 — Plan Approvals
       constructionAsPerPlan: raw.constructionAsPerPlan || 'NA',
-      approvedPlanDetails: raw.approvedPlanDetails || 'Details of approved plan with approval no and date',
+      approvedPlanDetails: (raw.approvedPlanDetails && raw.approvedPlanDetails !== 'Details of approved plan with approval no and date')
+        ? raw.approvedPlanDetails
+        : 'NA',
       constructionPermissionNumberDate: raw.constructionPermissionNumberDate || 'NA',
       violationsObserved: raw.violationsObserved || 'NA',
       structureConfirmingByelaws: raw.structureConfirmingByelaws || 'NA',
@@ -322,11 +324,21 @@ export default function ArthanFinance({
   const handleBUAFloorChange = (idx: number, field: keyof ArthanFinanceBUAFloor, value: string) => {
     const updated = (fields.buaFloors || []).map((f, i) => i === idx ? { ...f, [field]: value } : f);
     handleChange('buaFloors', updated);
+    if (field === 'adoptedBUA') {
+      const sumAdopted = updated.reduce((acc, f) => acc + parseNum(f.adoptedBUA), 0);
+      if (sumAdopted > 0) {
+        handleChange('adoptableBuiltUpArea', String(sumAdopted));
+      }
+    }
   };
 
   const handleRemoveBUAFloor = (idx: number) => {
     const updated = (fields.buaFloors || []).filter((_, i) => i !== idx);
     handleChange('buaFloors', updated);
+    const sumAdopted = updated.reduce((acc, f) => acc + parseNum(f.adoptedBUA), 0);
+    if (sumAdopted > 0) {
+      handleChange('adoptableBuiltUpArea', String(sumAdopted));
+    }
   };
 
   // Map Upload Handlers (device upload only)
@@ -541,6 +553,23 @@ export default function ArthanFinance({
     </Field>
   );
 
+  // BUA Totals calculation
+  const totalCarpet = useMemo(() => {
+    return (fields.buaFloors || []).reduce((sum, r) => sum + parseNum(r.carpetArea), 0);
+  }, [fields.buaFloors]);
+
+  const totalActualBUA = useMemo(() => {
+    return (fields.buaFloors || []).reduce((sum, r) => sum + parseNum(r.actualBUA), 0);
+  }, [fields.buaFloors]);
+
+  const totalPermissibleBUA = useMemo(() => {
+    return (fields.buaFloors || []).reduce((sum, r) => sum + parseNum(r.permissibleBUA), 0);
+  }, [fields.buaFloors]);
+
+  const totalAdoptedBUA = useMemo(() => {
+    return (fields.buaFloors || []).reduce((sum, r) => sum + parseNum(r.adoptedBUA), 0);
+  }, [fields.buaFloors]);
+
   // Nav sections
   const navSections: NavItem[] = [
     { id: 'sec-1', title: 'Technical Initiation' },
@@ -626,13 +655,13 @@ export default function ArthanFinance({
                 <input className={inputCls} value={fields.personMetOnSite || ''} onChange={e => handleChange('personMetOnSite', e.target.value)} disabled={isReadOnly} placeholder="Person met & contact number" />
               </Field>
             </div>
-            {/* Address of property being appraised — Soft Container */}
-            <div className="md:col-span-2 bg-[#f4f7f2] dark:bg-slate-900/80 p-4 rounded-xl border border-[#d8e2d2] dark:border-slate-800 shadow-xs space-y-3">
-              <div className="flex items-center justify-between border-b border-[#d8e2d2] dark:border-slate-800 pb-2">
+            {/* Address of property being appraised — Soft Container (Aditya Birla STSL Pattern) */}
+            <div className="md:col-span-2 bg-slate-50/90 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
+              <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-2">
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#5a7d4e]"></span>
-                  <h3 className="text-xs font-bold text-[#2a4521] dark:text-emerald-300 uppercase tracking-wide">
-                    Address of property being appraised
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#b8860b]"></span>
+                  <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
+                    Address of Property Being Appraised
                   </h3>
                 </div>
                 <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
@@ -640,57 +669,37 @@ export default function ArthanFinance({
                 </span>
               </div>
 
-              <div className="overflow-hidden border border-[#d8e2d2] dark:border-slate-800 rounded-lg divide-y divide-[#d8e2d2] dark:divide-slate-800 bg-white dark:bg-slate-950 shadow-xs">
-                {/* As per TRF */}
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-stretch">
-                  <div className="sm:col-span-1 p-3 bg-[#ebf1e5] dark:bg-slate-800/80 text-xs font-bold text-slate-800 dark:text-slate-200 border-b sm:border-b-0 sm:border-r border-[#d8e2d2] dark:border-slate-800 flex items-center">
-                    As per TRF
-                  </div>
-                  <div className="sm:col-span-3 p-2.5 flex items-center">
-                    <textarea
-                      rows={2}
-                      className={inputCls}
-                      value={fields.addressAsPerTRF || ''}
-                      onChange={e => handleChange('addressAsPerTRF', e.target.value)}
-                      disabled={isReadOnly}
-                      placeholder="Address as per Technical Review Form"
-                    />
-                  </div>
-                </div>
-
-                {/* As per Document */}
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-stretch">
-                  <div className="sm:col-span-1 p-3 bg-[#ebf1e5] dark:bg-slate-800/80 text-xs font-bold text-slate-800 dark:text-slate-200 border-b sm:border-b-0 sm:border-r border-[#d8e2d2] dark:border-slate-800 flex items-center">
-                    As per Document
-                  </div>
-                  <div className="sm:col-span-3 p-2.5 flex items-center">
-                    <textarea
-                      rows={2}
-                      className={inputCls}
-                      value={fields.addressAsPerDocument || ''}
-                      onChange={e => handleChange('addressAsPerDocument', e.target.value)}
-                      disabled={isReadOnly}
-                      placeholder="Address as per sale deed / ROR"
-                    />
-                  </div>
-                </div>
-
-                {/* As per Actual at site */}
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-stretch">
-                  <div className="sm:col-span-1 p-3 bg-[#ebf1e5] dark:bg-slate-800/80 text-xs font-bold text-slate-800 dark:text-slate-200 border-b sm:border-b-0 sm:border-r border-[#d8e2d2] dark:border-slate-800 flex items-center">
-                    As per Actual at site
-                  </div>
-                  <div className="sm:col-span-3 p-2.5 flex items-center">
-                    <textarea
-                      rows={2}
-                      className={inputCls}
-                      value={fields.addressAsPerActualSite || ''}
-                      onChange={e => handleChange('addressAsPerActualSite', e.target.value)}
-                      disabled={isReadOnly}
-                      placeholder="Address as observed on site"
-                    />
-                  </div>
-                </div>
+              <div className="space-y-3">
+                <Field label="As per TRF">
+                  <textarea
+                    rows={2}
+                    className={inputCls}
+                    value={fields.addressAsPerTRF || ''}
+                    onChange={e => handleChange('addressAsPerTRF', e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="Address as per Technical Review Form"
+                  />
+                </Field>
+                <Field label="As per Document">
+                  <textarea
+                    rows={2}
+                    className={inputCls}
+                    value={fields.addressAsPerDocument || ''}
+                    onChange={e => handleChange('addressAsPerDocument', e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="Address as per sale deed / ROR"
+                  />
+                </Field>
+                <Field label="As per Actual at site">
+                  <textarea
+                    rows={2}
+                    className={inputCls}
+                    value={fields.addressAsPerActualSite || ''}
+                    onChange={e => handleChange('addressAsPerActualSite', e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="Address as observed on site"
+                  />
+                </Field>
               </div>
             </div>
             <div className="md:col-span-2">
@@ -722,7 +731,24 @@ export default function ArthanFinance({
                 <option value="Rural">Rural</option>
               </select>
             </Field>
-            <DateInput fieldKey="dateOfInspectionSite" label="Date of Inspection / Site visit" />
+            <Field label="Date of Inspection / Site visit (DD/MM/YYYY)">
+              <div className="relative flex items-center">
+                <input
+                  type="text"
+                  className={`${inputCls} bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 cursor-not-allowed font-medium pr-8`}
+                  value={fields.dateOfInspection || fields.dateOfInspectionSite || ''}
+                  disabled
+                  readOnly
+                  placeholder="DD/MM/YYYY"
+                />
+                <span className="absolute right-2.5 text-xs text-slate-400" title="Locked: Referenced from Section 1 Date of Inspection / Site visit">
+                  🔒
+                </span>
+              </div>
+              <span className="text-[10px] text-slate-400 mt-1 block">
+                Referenced from Sec 1 (Date of Inspection / Site visit)
+              </span>
+            </Field>
             <Field label="Occupation Status">
               <select className={selectCls} value={fields.occupationStatus || ''} onChange={e => handleChange('occupationStatus', e.target.value)} disabled={isReadOnly}>
                 <option value="">Select...</option>
@@ -861,6 +887,11 @@ export default function ArthanFinance({
                   <option value="Yes">Yes</option>
                   <option value="No">No</option>
                 </select>
+                {fields.boundariesMatching !== 'No' && (
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 italic">
+                    PDF remark: &quot;Boundary is matching as per sketch map&quot;
+                  </p>
+                )}
               </Field>
               {fields.boundariesMatching === 'No' && (
                 <Field label="If No, reason thereon">
@@ -874,24 +905,56 @@ export default function ArthanFinance({
         {/* ════ SECTION 4: SETBACKS / MARGIN ════ */}
         <Section title="Setbacks / Margin" number={4} id="sec-4">
           <div className="space-y-4">
-            <div className="grid grid-cols-5 gap-2 text-center">
-              <div className="font-semibold text-sm text-slate-600">Source</div>
-              <div className="font-semibold text-sm text-blue-700">Front</div>
-              <div className="font-semibold text-sm text-blue-700">Rear</div>
-              <div className="font-semibold text-sm text-blue-700">Left Side</div>
-              <div className="font-semibold text-sm text-blue-700">Right Side</div>
-            </div>
-            <div className="grid grid-cols-5 gap-2 items-center">
-              <div className="text-sm font-medium text-slate-600 bg-slate-50 rounded px-2 py-1">As per sanctioned byelaws</div>
-              {(['setbackFrontSanctioned', 'setbackRearSanctioned', 'setbackLeftSanctioned', 'setbackRightSanctioned'] as const).map(k => (
-                <input key={k} className={inputCls} value={fields[k] || ''} onChange={e => handleChange(k, e.target.value)} disabled={isReadOnly} placeholder="NA" />
-              ))}
-            </div>
-            <div className="grid grid-cols-5 gap-2 items-center">
-              <div className="text-sm font-medium text-slate-600 bg-slate-50 rounded px-2 py-1">As per Site / Actual</div>
-              {(['setbackFrontSite', 'setbackRearSite', 'setbackLeftSite', 'setbackRightSite'] as const).map(k => (
-                <input key={k} className={inputCls} value={fields[k] || ''} onChange={e => handleChange(k, e.target.value)} disabled={isReadOnly} placeholder="" />
-              ))}
+            <div className="bg-slate-50/90 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
+              <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#b8860b]"></span>
+                  <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
+                    Setbacks & Margin in the Building (in Ft)
+                  </h3>
+                </div>
+                <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                  Front, Rear, Left & Right (Ft)
+                </span>
+              </div>
+
+              <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-2xs">
+                <table className="w-full text-sm border-collapse">
+                  <thead>
+                    <tr className="bg-[#0a1628] text-white">
+                      <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider w-2/5">
+                        Setbacks / Margin in the Building (in Ft)
+                      </th>
+                      <th className="px-3 py-2.5 text-center font-semibold text-xs uppercase tracking-wider">Front</th>
+                      <th className="px-3 py-2.5 text-center font-semibold text-xs uppercase tracking-wider">Rear</th>
+                      <th className="px-3 py-2.5 text-center font-semibold text-xs uppercase tracking-wider">Left Side</th>
+                      <th className="px-3 py-2.5 text-center font-semibold text-xs uppercase tracking-wider">Right Side</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-950">
+                    <tr className="hover:bg-slate-50/70 dark:hover:bg-slate-900/50 transition-colors">
+                      <td className="px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-50/60 dark:bg-slate-900/40">
+                        As per sanctioned / permissible byelaws
+                      </td>
+                      {(['setbackFrontSanctioned', 'setbackRearSanctioned', 'setbackLeftSanctioned', 'setbackRightSanctioned'] as const).map(k => (
+                        <td key={k} className="px-2 py-1.5">
+                          <input className={inputCls + ' !py-1.5 text-xs text-center font-medium'} value={fields[k] || ''} onChange={e => handleChange(k, e.target.value)} disabled={isReadOnly} placeholder="NA" />
+                        </td>
+                      ))}
+                    </tr>
+                    <tr className="hover:bg-slate-50/70 dark:hover:bg-slate-900/50 transition-colors">
+                      <td className="px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-50/60 dark:bg-slate-900/40">
+                        As per Site / Actual
+                      </td>
+                      {(['setbackFrontSite', 'setbackRearSite', 'setbackLeftSite', 'setbackRightSite'] as const).map(k => (
+                        <td key={k} className="px-2 py-1.5">
+                          <input className={inputCls + ' !py-1.5 text-xs text-center font-medium'} value={fields[k] || ''} onChange={e => handleChange(k, e.target.value)} disabled={isReadOnly} placeholder="" />
+                        </td>
+                      ))}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </Section>
@@ -910,62 +973,158 @@ export default function ArthanFinance({
 
         {/* ════ SECTION 6: BUA & ACCOMMODATION DETAILS ════ */}
         <Section title="Built-up Area & Accommodation Details" number={6} id="sec-6">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="bg-blue-50">
-                  <th className="border border-slate-300 px-2 py-2 text-left">Floor</th>
-                  <th className="border border-slate-300 px-2 py-2 text-center">Accommodation</th>
-                  <th className="border border-slate-300 px-2 py-2 text-center">Carpet Area (Sft)</th>
-                  <th className="border border-slate-300 px-2 py-2 text-center">Actual BUA / SBUA (Sft)</th>
-                  <th className="border border-slate-300 px-2 py-2 text-center">Permissible BUA (Sft)</th>
-                  <th className="border border-slate-300 px-2 py-2 text-center">Adopted BUA (Sft)</th>
-                  {!isReadOnly && <th className="border border-slate-300 px-2 py-2"></th>}
-                </tr>
-              </thead>
-              <tbody>
-                {(fields.buaFloors || []).map((fl, idx) => (
-                  <tr key={idx}>
-                    <td className="border border-slate-300 px-2 py-1">
-                      <input className={inputCls} value={fl.floor || ''} onChange={e => handleBUAFloorChange(idx, 'floor', e.target.value)} disabled={isReadOnly} />
-                    </td>
-                    <td className="border border-slate-300 px-2 py-1">
-                      <input className={inputCls} value={fl.accommodation || ''} onChange={e => handleBUAFloorChange(idx, 'accommodation', e.target.value)} disabled={isReadOnly} placeholder="NA" />
-                    </td>
-                    <td className="border border-slate-300 px-2 py-1">
-                      <input className={inputCls} value={fl.carpetArea || ''} onChange={e => handleBUAFloorChange(idx, 'carpetArea', e.target.value)} disabled={isReadOnly} placeholder="NA" />
-                    </td>
-                    <td className="border border-slate-300 px-2 py-1">
-                      <input className={inputCls} value={fl.actualBUA || ''} onChange={e => handleBUAFloorChange(idx, 'actualBUA', e.target.value)} disabled={isReadOnly} placeholder="NA" />
-                    </td>
-                    <td className="border border-slate-300 px-2 py-1">
-                      <input className={inputCls} value={fl.permissibleBUA || ''} onChange={e => handleBUAFloorChange(idx, 'permissibleBUA', e.target.value)} disabled={isReadOnly} placeholder="NA" />
-                    </td>
-                    <td className="border border-slate-300 px-2 py-1">
-                      <input className={inputCls} value={fl.adoptedBUA || ''} onChange={e => handleBUAFloorChange(idx, 'adoptedBUA', e.target.value)} disabled={isReadOnly} placeholder="NA" />
-                    </td>
-                    {!isReadOnly && (
-                      <td className="border border-slate-300 px-2 py-1 text-center">
-                        <button onClick={() => handleRemoveBUAFloor(idx)} className="text-red-500 hover:text-red-700 text-xs font-bold">✕</button>
+          <div className="space-y-4">
+            {/* Soft Container matching Aditya Birla STSL standard */}
+            <div className="bg-slate-50/90 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
+              <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#b8860b]"></span>
+                  <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
+                    Floor-Wise Built-Up Area & Usage Breakup
+                  </h3>
+                </div>
+                <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                  Carpet, Site Actual & Adopted BUA
+                </span>
+              </div>
+
+              {/* Table Container */}
+              <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-2xs">
+                <table className="w-full text-sm border-collapse">
+                  <thead>
+                    <tr className="bg-[#0a1628] text-white">
+                      <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider">Floor</th>
+                      <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider">Accommodation</th>
+                      <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">Carpet Area (Sft)</th>
+                      <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">Actual BUA / SBUA (Sft)</th>
+                      <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">Permissible BUA (Sft)</th>
+                      <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">Adopted BUA (Sft)</th>
+                      {!isReadOnly && <th className="px-2 py-2.5 w-10 text-center"></th>}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-950">
+                    {(fields.buaFloors || []).map((fl, idx) => (
+                      <tr key={idx} className="hover:bg-slate-50/70 dark:hover:bg-slate-900/50 transition-colors">
+                        <td className="px-2 py-1.5 border-b border-[#e9ecef] dark:border-slate-800">
+                          <input
+                            className={inputCls + ' !py-1.5 text-xs font-bold text-[#0f2038] dark:text-slate-100'}
+                            value={fl.floor || ''}
+                            onChange={e => handleBUAFloorChange(idx, 'floor', e.target.value)}
+                            disabled={isReadOnly}
+                            placeholder="e.g. Ground Floor"
+                          />
+                        </td>
+                        <td className="px-2 py-1.5 border-b border-[#e9ecef] dark:border-slate-800">
+                          <input
+                            className={inputCls + ' !py-1.5 text-xs'}
+                            value={fl.accommodation || ''}
+                            onChange={e => handleBUAFloorChange(idx, 'accommodation', e.target.value)}
+                            disabled={isReadOnly}
+                            placeholder="e.g. Residential / 1 Hall, 2 BHK"
+                          />
+                        </td>
+                        <td className="px-2 py-1.5 border-b border-[#e9ecef] dark:border-slate-800">
+                          <input
+                            className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
+                            value={fl.carpetArea || ''}
+                            onChange={e => handleBUAFloorChange(idx, 'carpetArea', e.target.value)}
+                            disabled={isReadOnly}
+                            placeholder="0.00"
+                          />
+                        </td>
+                        <td className="px-2 py-1.5 border-b border-[#e9ecef] dark:border-slate-800">
+                          <input
+                            className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
+                            value={fl.actualBUA || ''}
+                            onChange={e => handleBUAFloorChange(idx, 'actualBUA', e.target.value)}
+                            disabled={isReadOnly}
+                            placeholder="0.00"
+                          />
+                        </td>
+                        <td className="px-2 py-1.5 border-b border-[#e9ecef] dark:border-slate-800">
+                          <input
+                            className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
+                            value={fl.permissibleBUA || ''}
+                            onChange={e => handleBUAFloorChange(idx, 'permissibleBUA', e.target.value)}
+                            disabled={isReadOnly}
+                            placeholder="NA"
+                          />
+                        </td>
+                        <td className="px-2 py-1.5 border-b border-[#e9ecef] dark:border-slate-800">
+                          <input
+                            className={inputCls + ' !py-1.5 text-xs text-right font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/20'}
+                            value={fl.adoptedBUA || ''}
+                            onChange={e => handleBUAFloorChange(idx, 'adoptedBUA', e.target.value)}
+                            disabled={isReadOnly}
+                            placeholder="0.00"
+                          />
+                        </td>
+                        {!isReadOnly && (
+                          <td className="px-2 py-1.5 border-b border-[#e9ecef] dark:border-slate-800 text-center">
+                            {(fields.buaFloors || []).length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveBUAFloor(idx)}
+                                className="text-red-400 hover:text-red-600 text-lg leading-none cursor-pointer p-1"
+                                title="Remove Floor"
+                              >
+                                &times;
+                              </button>
+                            )}
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot className="bg-slate-50 dark:bg-slate-900/90 font-bold border-t-2 border-slate-300 dark:border-slate-700 text-xs">
+                    <tr>
+                      <td className="px-3 py-2.5 text-slate-800 dark:text-slate-200 font-bold uppercase tracking-wider">
+                        Total
                       </td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {!isReadOnly && (
-            <button
-              onClick={handleAddBUAFloor}
-              className="mt-3 px-4 py-2 text-sm font-semibold text-blue-700 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
-            >
-              + Add Floor
-            </button>
-          )}
-          <div className="mt-4">
-            <Field label="Violation observed if any">
-              <input className={inputCls} value={fields.violationObserved || ''} onChange={e => handleChange('violationObserved', e.target.value)} disabled={isReadOnly} placeholder="NA" />
-            </Field>
+                      <td className="px-3 py-2.5 text-slate-400 dark:text-slate-500 font-normal text-center">
+                        -
+                      </td>
+                      <td className="px-3 py-2.5 text-right text-slate-800 dark:text-slate-200 font-bold">
+                        {totalCarpet > 0 ? totalCarpet.toFixed(2) : '-'}
+                      </td>
+                      <td className="px-3 py-2.5 text-right text-slate-800 dark:text-slate-200 font-bold">
+                        {totalActualBUA > 0 ? totalActualBUA.toFixed(2) : '-'}
+                      </td>
+                      <td className="px-3 py-2.5 text-right text-slate-800 dark:text-slate-200 font-bold">
+                        {totalPermissibleBUA > 0 ? totalPermissibleBUA.toFixed(2) : 'NA'}
+                      </td>
+                      <td className="px-3 py-2.5 text-right text-emerald-700 dark:text-emerald-400 font-bold text-sm bg-emerald-50/70 dark:bg-emerald-950/30">
+                        {totalAdoptedBUA > 0 ? `${totalAdoptedBUA.toFixed(2)} Sft` : '-'}
+                      </td>
+                      {!isReadOnly && <td></td>}
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+
+              {!isReadOnly && (
+                <button
+                  type="button"
+                  onClick={handleAddBUAFloor}
+                  className="text-sm text-[#b8860b] hover:text-[#96700a] font-semibold flex items-center gap-1.5 pt-1 cursor-pointer transition-colors"
+                >
+                  <span className="text-lg leading-none font-bold">+</span> Add Floor Details
+                </button>
+              )}
+            </div>
+
+            {/* Violation Observed Container */}
+            <div className="bg-slate-50/70 dark:bg-slate-900/40 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
+              <Field label="Violation observed if any">
+                <input
+                  className={inputCls}
+                  value={fields.violationObserved || ''}
+                  onChange={e => handleChange('violationObserved', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="e.g. No violation observed / As per local bye-laws"
+                />
+              </Field>
+            </div>
           </div>
         </Section>
 
@@ -980,7 +1139,7 @@ export default function ArthanFinance({
               </select>
             </Field>
             <Field label="Details of approved plan with approval no. and date">
-              <input className={inputCls} value={fields.approvedPlanDetails || ''} onChange={e => handleChange('approvedPlanDetails', e.target.value)} disabled={isReadOnly} placeholder="Approval no. and date" />
+              <input className={inputCls} value={fields.approvedPlanDetails || ''} onChange={e => handleChange('approvedPlanDetails', e.target.value)} disabled={isReadOnly} placeholder="NA" />
             </Field>
             <Field label="Construction permission Number and date">
               <input className={inputCls} value={fields.constructionPermissionNumberDate || ''} onChange={e => handleChange('constructionPermissionNumberDate', e.target.value)} disabled={isReadOnly} placeholder="e.g. NA" />
@@ -1080,12 +1239,27 @@ export default function ArthanFinance({
             <Field label="Flat / Apartment Value as per Government Rate (Rs)">
               <input className={inputCls} value={fields.flatValueGovtRate || ''} onChange={e => handleChange('flatValueGovtRate', e.target.value)} disabled={isReadOnly} placeholder="NA" />
             </Field>
-            <Field label="Latitude (N)">
-              <input className={inputCls} value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 21.1705" />
-            </Field>
-            <Field label="Longitude (E)">
-              <input className={inputCls} value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 86.492417" />
-            </Field>
+            <div className="md:col-span-2 bg-slate-50/90 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3 mt-2">
+              <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#b8860b]"></span>
+                  <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
+                    Geo Coordinates (GPS Location)
+                  </h3>
+                </div>
+                <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                  Latitude & Longitude (Decimal Degrees)
+                </span>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Latitude (N)">
+                  <input className={inputCls} value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 21.1705" />
+                </Field>
+                <Field label="Longitude (E)">
+                  <input className={inputCls} value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 86.492417" />
+                </Field>
+              </div>
+            </div>
           </div>
         </Section>
 

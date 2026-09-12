@@ -194,6 +194,36 @@ export type ArthanFinanceFields = ArthanFinanceReportFields;
 
 export class PDFArthanFinanceRenderer extends PDFBankRenderer {
   /**
+   * Strip/replace characters that WinAnsi (Helvetica) cannot encode while preserving \n for manual line breaks.
+   */
+  protected override sanitizeText(text: string): string {
+    let clean = String(text ?? '');
+
+    // Decode HTML entities
+    clean = clean
+      .replace(/&amp;/g, '&')
+      .replace(/&amp/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&lt/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&gt/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&quot/g, '"')
+      .replace(/&#039;/g, "'")
+      .replace(/&#39;/g, "'");
+
+    return clean
+      .replace(/[\r\t]/g, ' ')             // carriage returns/tabs -> space (preserve \n for wrapText)
+      .replace(/[\u2018\u2019]/g, "'")     // smart single quotes
+      .replace(/[\u201C\u201D]/g, '"')     // smart double quotes
+      .replace(/\u2013/g, '-')             // en-dash
+      .replace(/\u2014/g, '--')            // em-dash
+      .replace(/\u2026/g, '...')           // ellipsis
+      .replace(/\u20B9/g, 'Rs.')           // rupee sign
+      .replace(/[^\x20-\x7E\n\u2022]/g, ''); // allow ASCII + newline + bullet •
+  }
+
+  /**
    * Draw a styled rectangular cell using the standard bank palette.
    */
   drawCell(
@@ -216,9 +246,12 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     } = {}
   ): void {
     const fontSize = options.fontSize || FONT_SIZE;
+    const isBold = options.bold !== undefined
+      ? options.bold
+      : !!(options.isHeader || options.isLabel || options.highlight);
     const font = options.italic
       ? this.fontItalic
-      : (options.bold || options.isHeader || options.isLabel || options.highlight)
+      : isBold
       ? this.fontBold
       : this.fontRegular;
     const vAlign = options.vAlign || 'middle';
@@ -253,7 +286,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     const padX = 4;
     const padY = 3;
     const maxTextW = Math.max(10, w - padX * 2);
-    const lines = this.wrapText(cleanText, maxTextW, fontSize, !!(options.bold || options.isHeader || options.isLabel || options.highlight));
+    const lines = this.wrapText(cleanText, maxTextW, fontSize, isBold);
     const lineH = fontSize * LINE_HEIGHT;
     const totalTextH = lines.length * lineH;
 
@@ -309,7 +342,9 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     let maxLines = 1;
     for (const col of cols) {
       const fs = col.fontSize || FONT_SIZE;
-      const isBold = !!(col.bold || col.isHeader || col.isLabel || col.highlight);
+      const isBold = col.bold !== undefined
+        ? col.bold
+        : !!(col.isHeader || col.isLabel || col.highlight);
       const lines = this.wrapText(this.sanitizeText(col.text), Math.max(10, col.width - 8), fs, isBold);
       if (lines.length > maxLines) maxLines = lines.length;
     }
@@ -605,27 +640,23 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       { text: fields.boundaryWestSite || '', width: bW5, align: 'center' },
     ], 22, 4);
 
-    // Boundaries Matching row
-    const bmLeft = bW1 + bW2;
-    const bmMid = bW3 + bW4;
-    const bmRight = bW5;
-    this.drawRow([
-      { text: 'Boundaries Matching', width: bmLeft, isLabel: true },
-      { text: fields.boundariesMatching || 'Yes', width: bmMid, align: 'center' },
-      { text: 'If No, then reason thereon', width: bmRight, isLabel: true },
-    ], 22, 4);
+    // Boundaries Matching row (Aligned to table columns: Boundaries | North+South | East | West)
+    const isMatching = (fields.boundariesMatching || 'Yes').trim().toLowerCase() === 'yes';
+    const reasonText = isMatching
+      ? 'Boundary is matching as per sketch map'
+      : (fields.boundariesNotMatchingReason || 'Boundary is not matching');
 
-    // If not matching, show reason spanning full width
-    if (fields.boundariesNotMatchingReason) {
-      this.drawRow([
-        { text: fields.boundariesNotMatchingReason, width: CONTENT_W },
-      ], 20, 4);
-    }
+    this.drawRow([
+      { text: 'Boundaries Matching', width: bW1, isLabel: true },
+      { text: fields.boundariesMatching || 'Yes', width: bW2 + bW3, align: 'center' },
+      { text: 'If No, then reason thereon', width: bW4, isLabel: true, fontSize: 7 },
+      { text: reasonText, width: bW5, align: 'center', fontSize: 7 },
+    ], 26, 3);
 
     // ══════════════════════════════════════════════════════════════════
     // SECTION 4 — Setbacks / Margin
     // ══════════════════════════════════════════════════════════════════
-    this.checkPageBreak(26 + 22 * 3);
+    this.checkPageBreak(26 + 26 * 2 + 20);
     this.drawSectionBanner('Setbacks / Margin');
 
     const sbW1 = 185;
@@ -635,20 +666,20 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     const sbW5 = CONTENT_W - sbW1 - sbW2 - sbW3 - sbW4;
 
     this.drawRow([
-      { text: 'Setbacks / Margin in the Building (in Ft)', width: sbW1, isHeader: true, align: 'center' },
+      { text: 'Setbacks / Margin in\nthe Building (in Ft)', width: sbW1, isHeader: true, align: 'center' },
       { text: 'Front', width: sbW2, isHeader: true, align: 'center' },
       { text: 'Rear', width: sbW3, isHeader: true, align: 'center' },
       { text: 'Left Side', width: sbW4, isHeader: true, align: 'center' },
       { text: 'Right Side', width: sbW5, isHeader: true, align: 'center' },
-    ], 22, 4);
+    ], 26, 4);
 
     this.drawRow([
-      { text: 'As per sanctioned/ permissible byelaws', width: sbW1, isLabel: true },
+      { text: 'As per sanctioned/\npermissible byelaws', width: sbW1, isLabel: true },
       { text: fields.setbackFrontSanctioned || 'NA', width: sbW2, align: 'center' },
       { text: fields.setbackRearSanctioned || 'NA', width: sbW3, align: 'center' },
       { text: fields.setbackLeftSanctioned || 'NA', width: sbW4, align: 'center' },
       { text: fields.setbackRightSanctioned || 'NA', width: sbW5, align: 'center' },
-    ], 20, 4);
+    ], 26, 4);
 
     this.drawRow([
       { text: 'As per Site / Actual', width: sbW1, isLabel: true },
@@ -661,16 +692,16 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     // ══════════════════════════════════════════════════════════════════
     // SECTION 5 — Height / Storieys
     // ══════════════════════════════════════════════════════════════════
-    this.checkPageBreak(26 + 22 * 3);
+    this.checkPageBreak(26 + 26 + 20);
     this.drawSectionBanner('Height/Storieys');
 
     const htW1 = sbW1;
     const htWRest = CONTENT_W - htW1;
 
     this.drawRow([
-      { text: 'As per sanctioned/ permissible byelaws', width: htW1, isLabel: true },
+      { text: 'As per sanctioned/\npermissible byelaws', width: htW1, isLabel: true },
       { text: fields.heightSanctioned || 'NA', width: htWRest, align: 'center' },
-    ], 20, 4);
+    ], 26, 4);
 
     this.drawRow([
       { text: 'As per Site / Actual', width: htW1, isLabel: true },
@@ -727,14 +758,14 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       ], 22, 4);
     }
 
-    // Total row
+    // Total row - no bold (regular font for all cells)
     this.drawRow([
-      { text: 'Total', width: buaW1, isLabel: true, bold: true },
-      { text: 'NA', width: buaW2, align: 'center' },
-      { text: totalCarpetArea > 0 ? String(totalCarpetArea) : 'NA', width: buaW3, align: 'center', bold: true },
-      { text: totalAdoptedBUA > 0 ? `${totalAdoptedBUA}sqft` : 'NA', width: buaW4, align: 'center' },
-      { text: 'NA', width: buaW5, align: 'center' },
-      { text: totalAdoptedBUA > 0 ? `${totalAdoptedBUA}sqft` : 'NA', width: buaW6, align: 'center', bold: true },
+      { text: 'Total', width: buaW1, isLabel: true, bold: false },
+      { text: 'NA', width: buaW2, align: 'center', bold: false },
+      { text: totalCarpetArea > 0 ? String(totalCarpetArea) : 'NA', width: buaW3, align: 'center', bold: false },
+      { text: totalAdoptedBUA > 0 ? `${totalAdoptedBUA}sqft` : 'NA', width: buaW4, align: 'center', bold: false },
+      { text: 'NA', width: buaW5, align: 'center', bold: false },
+      { text: totalAdoptedBUA > 0 ? `${totalAdoptedBUA}sqft` : 'NA', width: buaW6, align: 'center', bold: false },
     ], 22, 4);
 
     // Violation observed
@@ -746,31 +777,35 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     // ══════════════════════════════════════════════════════════════════
     // SECTION 7 — Plan Approvals
     // ══════════════════════════════════════════════════════════════════
-    this.checkPageBreak(26 + 22 * 4);
+    this.checkPageBreak(26 + 24 * 3 + 10);
     this.drawSectionBanner('Plan Approvals BP not Provided');
 
-    const paW1 = 185;
-    const paW2 = 160;
-    const paW3 = CONTENT_W - paW1 - paW2;
+    const paW1 = 175;
+    const paW2 = (CONTENT_W / 2) - paW1;
+    const paW3 = 175;
+    const paW4 = CONTENT_W - paW1 - paW2 - paW3;
 
+    // Row 1: Construction as per approved/ sanctioned plans | NA | Details of approved plan with approval no and date | NA
     this.drawRow([
       { text: 'Construction as per approved/ sanctioned plans', width: paW1, isLabel: true },
       { text: fields.constructionAsPerPlan || 'NA', width: paW2, align: 'center' },
-      { text: fields.approvedPlanDetails || '', width: paW3 },
-    ], 22, 4);
+      { text: 'Details of approved plan with approval no and date', width: paW3, isLabel: true },
+      { text: fields.approvedPlanDetails || 'NA', width: paW4, align: 'center' },
+    ], 24, 4);
 
+    // Row 2: Construction permission Number and date | NA | Violations Observed if Any | NA
     this.drawRow([
       { text: 'Construction permission Number and date', width: paW1, isLabel: true },
       { text: fields.constructionPermissionNumberDate || 'NA', width: paW2, align: 'center' },
-      { text: `Violations Observed if Any: ${fields.violationsObserved || 'NA'}`, width: paW3 },
-    ], 22, 4);
+      { text: 'Violations Observed if Any', width: paW3, isLabel: true },
+      { text: fields.violationsObserved || 'NA', width: paW4, align: 'center' },
+    ], 24, 4);
 
+    // Row 3: If plans not available then is the structure confirming to the local byelaws. | NA (spans remaining width)
     this.drawRow([
-      { text: 'If plans not available then is the structure confirming to the local byelaws.', width: CONTENT_W, isLabel: true },
-    ], 22, 4);
-    this.drawRow([
-      { text: fields.structureConfirmingByelaws || 'NA', width: CONTENT_W, align: 'center' },
-    ], 20, 4);
+      { text: 'If plans not available then is the structure confirming to the local byelaws.', width: paW1, isLabel: true },
+      { text: fields.structureConfirmingByelaws || 'NA', width: CONTENT_W - paW1, align: 'center' },
+    ], 24, 4);
 
     // ══════════════════════════════════════════════════════════════════
     // SECTION 8 — Estimate Analysis
