@@ -212,7 +212,7 @@ async function generateHLLAPPDF(
 
   r.drawKeyValueRow([{ label: '12', value: '', labelWidth: propNumW, valueWidth: 0, hideBottom: true }, { label: 'Occupant', value: '', labelWidth: propLblW, valueWidth: 0, hideBottom: true }, { label: 'Occupied By', value: fv(fields, 'occupiedBy', 'Vacant'), labelWidth: propSubLblW, valueWidth: propValW }]);
 
-  const sec12Rows = [['Name of Occupant', 'nameOfOccupant', 'NA'], ['No of Tenants', 'noOfTenants', 'NA'], ['Relation with applicant', 'relationWithApplicant', 'NA']];
+  const sec12Rows = [['Name of Occupant', 'nameOfOccupant', ''], ['No of Tenants', 'noOfTenants', ''], ['Relation with applicant', 'relationWithApplicant', '']];
   for (let i = 0; i < sec12Rows.length; i++) {
     const [lbl, key, def] = sec12Rows[i];
     const isLast = i === sec12Rows.length - 1;
@@ -281,10 +281,10 @@ async function generateHLLAPPDF(
   r.drawTable(
     ['18', 'Description', 'Approval No', 'Date of Approval', 'Expiry Date', 'Sanctioning Authority'],
     [
-      ['', 'Layout Plan', fv(fields, 'layoutPlanApprovalNo', 'N.A'), fv(fields, 'layoutPlanDateOfApproval', 'N.A'), fv(fields, 'layoutPlanExpiryDate', 'N.A'), fv(fields, 'layoutPlanSanctioningAuthority', 'N.A')],
-      ['', 'Building Plan', fv(fields, 'buildingPlanApprovalNo', ''), fv(fields, 'buildingPlanDateOfApproval', ''), fv(fields, 'buildingPlanExpiryDate', 'N.A'), fv(fields, 'buildingPlanSanctioningAuthority', '')],
-      ['', 'Construction Permission', fv(fields, 'constructionPermissionApprovalNo', 'N.A'), fv(fields, 'constructionPermissionDateOfApproval', 'N.A'), fv(fields, 'constructionPermissionExpiryDate', 'N.A'), fv(fields, 'constructionPermissionSanctioningAuthority', 'N.A')],
-      ['', 'Construction Certificate', fv(fields, 'constructionCertificateApprovalNo', 'N.A'), fv(fields, 'constructionCertificateDateOfApproval', 'N.A'), fv(fields, 'constructionCertificateExpiryDate', 'N.A'), fv(fields, 'constructionCertificateSanctioningAuthority', '')],
+      ['', 'Layout Plan', fv(fields, 'layoutPlanApprovalNo', ''), fv(fields, 'layoutPlanDateOfApproval', ''), fv(fields, 'layoutPlanExpiryDate', ''), fv(fields, 'layoutPlanSanctioningAuthority', '')],
+      ['', 'Building Plan', fv(fields, 'buildingPlanApprovalNo', ''), fv(fields, 'buildingPlanDateOfApproval', ''), fv(fields, 'buildingPlanExpiryDate', ''), fv(fields, 'buildingPlanSanctioningAuthority', '')],
+      ['', 'Construction Permission', fv(fields, 'constructionPermissionApprovalNo', ''), fv(fields, 'constructionPermissionDateOfApproval', ''), fv(fields, 'constructionPermissionExpiryDate', ''), fv(fields, 'constructionPermissionSanctioningAuthority', '')],
+      ['', 'Construction Certificate', fv(fields, 'constructionCertificateApprovalNo', ''), fv(fields, 'constructionCertificateDateOfApproval', ''), fv(fields, 'constructionCertificateExpiryDate', ''), fv(fields, 'constructionCertificateSanctioningAuthority', '')],
     ],
     [NUM_W, descW, approvalNoW, dateApprovalW, expiryW, sanctAuthW], [], [0, 1]
   );
@@ -981,9 +981,9 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
         label: '12. Occupant',
         type: 'fieldset',
         fields: [
-          { key: 'nameOfOccupant', label: 'Name of Occupant', default: 'NA' },
-          { key: 'noOfTenants', label: 'No of Tenants', default: 'NA' },
-          { key: 'relationWithApplicant', label: 'Relation with applicant', default: 'NA' }
+          { key: 'nameOfOccupant', label: 'Name of Occupant' },
+          { key: 'noOfTenants', label: 'No of Tenants' },
+          { key: 'relationWithApplicant', label: 'Relation with applicant' }
         ]
       },
       {
@@ -1044,10 +1044,10 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
           {
             label: 'Layout Plan',
             fields: [
-              { key: 'layoutPlanApprovalNo', default: 'N.A' },
-              { key: 'layoutPlanDateOfApproval', default: 'N.A' },
-              { key: 'layoutPlanExpiryDate', default: 'N.A' },
-              { key: 'layoutPlanSanctioningAuthority', default: 'N.A' }
+              { key: 'layoutPlanApprovalNo' },
+              { key: 'layoutPlanDateOfApproval' },
+              { key: 'layoutPlanExpiryDate' },
+              { key: 'layoutPlanSanctioningAuthority' }
             ]
           },
           {
@@ -1055,26 +1055,26 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
             fields: [
               { key: 'buildingPlanApprovalNo', placeholder: 'Enter building plan - approval no...' },
               { key: 'buildingPlanDateOfApproval', placeholder: 'Enter building plan - date of approval...' },
-              { key: 'buildingPlanExpiryDate', default: 'N.A' },
+              { key: 'buildingPlanExpiryDate' },
               { key: 'buildingPlanSanctioningAuthority', placeholder: 'Enter building plan - sanctioning authority...' }
             ]
           },
           {
             label: 'Construction Permission',
             fields: [
-              { key: 'constructionPermissionApprovalNo', default: 'N.A' },
-              { key: 'constructionPermissionDateOfApproval', default: 'N.A' },
-              { key: 'constructionPermissionExpiryDate', default: 'N.A' },
-              { key: 'constructionPermissionSanctioningAuthority', default: 'N.A' }
+              { key: 'constructionPermissionApprovalNo' },
+              { key: 'constructionPermissionDateOfApproval' },
+              { key: 'constructionPermissionExpiryDate' },
+              { key: 'constructionPermissionSanctioningAuthority' }
             ]
           },
           {
             label: 'Construction Certificate',
             fields: [
-              { key: 'constructionCertificateApprovalNo', default: 'N.A' },
-              { key: 'constructionCertificateDateOfApproval', default: 'N.A' },
-              { key: 'constructionCertificateExpiryDate', default: 'N.A' },
-              { key: 'constructionCertificateSanctioningAuthority', default: 'N.A' }
+              { key: 'constructionCertificateApprovalNo' },
+              { key: 'constructionCertificateDateOfApproval' },
+              { key: 'constructionCertificateExpiryDate' },
+              { key: 'constructionCertificateSanctioningAuthority' }
             ]
           }
         ]
@@ -1105,29 +1105,29 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
           {
             label: 'Front',
             fields: [
-              { key: 'setbackFrontPlan', default: 'N.A' },
-              { key: 'setbackFrontSite', default: 'N.A' }
+              { key: 'setbackFrontPlan' },
+              { key: 'setbackFrontSite' }
             ]
           },
           {
             label: 'Side1(Left)',
             fields: [
-              { key: 'setbackSide1Plan', default: 'N.A' },
-              { key: 'setbackSide1Site', default: 'N.A' }
+              { key: 'setbackSide1Plan' },
+              { key: 'setbackSide1Site' }
             ]
           },
           {
             label: 'Side2(Right)',
             fields: [
-              { key: 'setbackSide2Plan', default: 'N.A' },
-              { key: 'setbackSide2Site', default: 'N.A' }
+              { key: 'setbackSide2Plan' },
+              { key: 'setbackSide2Site' }
             ]
           },
           {
             label: 'Rear',
             fields: [
-              { key: 'setbackRearPlan', default: 'N.A' },
-              { key: 'setbackRearSite', default: 'N.A' }
+              { key: 'setbackRearPlan' },
+              { key: 'setbackRearSite' }
             ]
           }
         ]
@@ -1143,29 +1143,29 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
           {
             label: 'Ground Floor',
             fields: [
-              { key: 'buaGroundPlan', default: 'N.A' },
-              { key: 'buaGroundSite', default: 'N.A' }
+              { key: 'buaGroundPlan' },
+              { key: 'buaGroundSite' }
             ]
           },
           {
             label: 'First Floor',
             fields: [
-              { key: 'buaFirstPlan', default: 'N.A' },
-              { key: 'buaFirstSite', default: 'N.A' }
+              { key: 'buaFirstPlan' },
+              { key: 'buaFirstSite' }
             ]
           },
           {
             label: 'Second Floor',
             fields: [
-              { key: 'buaSecondPlan', default: 'N.A' },
-              { key: 'buaSecondSite', default: 'N.A' }
+              { key: 'buaSecondPlan' },
+              { key: 'buaSecondSite' }
             ]
           },
           {
             label: 'Total BUA (In sqft.)',
             fields: [
-              { key: 'buaTotalPlan', default: 'N.A' },
-              { key: 'buaTotalSite', default: 'N.A' }
+              { key: 'buaTotalPlan' },
+              { key: 'buaTotalSite' }
             ]
           }
         ]
