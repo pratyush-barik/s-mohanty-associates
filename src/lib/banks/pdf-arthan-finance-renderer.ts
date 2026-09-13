@@ -1551,7 +1551,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
 
       // Customer & Proposal row
       this.drawRow([
-        { text: 'Name of the Customer/\nApplicant', width: phW1, isLabel: true, bold: false },
+        { text: 'Name of the\nCustomer/Applicant', width: phW1, isLabel: true, bold: false },
         { text: fields.customerName || '', width: phV },
         { text: 'Proposal No.', width: phW2, isLabel: true, bold: false },
         { text: fields.proposalNo || '', width: phV2 },
@@ -1607,7 +1607,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       this.drawSectionBanner('LOCATION CUM ROUTE MAP SHOWING PROPERTY BOUNDARIES');
 
       this.drawRow([
-        { text: 'Name of the Customer/\nApplicant', width: mpW1, isLabel: true, bold: false },
+        { text: 'Name of the\nCustomer/Applicant', width: mpW1, isLabel: true, bold: false },
         { text: fields.customerName || '', width: mpV },
         { text: 'Proposal No.', width: mpW2, isLabel: true, bold: false },
         { text: fields.proposalNo || '', width: mpV2 },
