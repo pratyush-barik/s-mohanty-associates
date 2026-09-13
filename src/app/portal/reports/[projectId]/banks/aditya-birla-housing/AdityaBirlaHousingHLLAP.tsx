@@ -445,25 +445,57 @@ async function generateHLLAPPDF(
   }
 
   // ====== BOUNDARIES ======
-  // BOUNDARIES heading flush with table below
+  // ====== BOUNDARIES ======
   r.drawSectionHeader('BOUNDARIES');
-  const bndCol1 = 120; const bndDirW = (CONTENT_W - bndCol1) / 4;
+  const bndCol1 = 120;
+  const bndLabelW = bndCol1 - NUM_W;
+  const bndDirW = (CONTENT_W - bndCol1) / 4;
 
-  // Boundary table: headers + As per Docs + As per Approved plan key map
-  r.drawTable(['Boundaries', 'North', 'East', 'South', 'West'],
-    [['As per Docs', fv(fields, 'boundaryDocsNorth', 'NA'), fv(fields, 'boundaryDocsEast', 'NA'), fv(fields, 'boundaryDocsSouth', 'NA'), fv(fields, 'boundaryDocsWest', 'NA')],
-     ['As per Approved plan key map', fv(fields, 'boundaryApprovedNorth', ''), fv(fields, 'boundaryApprovedEast', ''), fv(fields, 'boundaryApprovedSouth', ''), fv(fields, 'boundaryApprovedWest', '')]],
-    [bndCol1, bndDirW, bndDirW, bndDirW, bndDirW], [], [0]);
-
-  // 28 | At site row - flush with table above via empty headers (separate number column)
-  r.drawTable([], [['28', 'At site', fv(fields, 'boundaryAtSiteNorth', ''), fv(fields, 'boundaryAtSiteEast', ''), fv(fields, 'boundaryAtSiteSouth', ''), fv(fields, 'boundaryAtSiteWest', '')]],
-    [NUM_W, bndCol1 - NUM_W, bndDirW, bndDirW, bndDirW, bndDirW], [], [0, 1]);
-
-  // Boundaries Matching row - flush
+  // Header row
   r.drawKeyValueRow([
-    { label: 'Boundaries Matching', value: fv(fields, 'boundariesMatching', ''), labelWidth: bndCol1, valueWidth: CONTENT_W - bndCol1, labelBold: true, valueBold: false }
+    { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: false, hideBottom: true },
+    { label: 'Boundaries', value: '', labelWidth: bndLabelW, valueWidth: 0, labelBold: true },
+    { label: 'North', value: '', labelWidth: bndDirW, valueWidth: 0, labelBold: true },
+    { label: 'East', value: '', labelWidth: bndDirW, valueWidth: 0, labelBold: true },
+    { label: 'South', value: '', labelWidth: bndDirW, valueWidth: 0, labelBold: true },
+    { label: 'West', value: '', labelWidth: bndDirW, valueWidth: 0, labelBold: true }
   ]);
 
+  // As per Docs
+  r.drawKeyValueRow([
+    { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true, hideBottom: true },
+    { label: 'As per Docs', value: '', labelWidth: bndLabelW, valueWidth: 0, labelBold: true },
+    { label: '', value: fv(fields, 'boundaryDocsNorth', 'NA'), labelWidth: 0, valueWidth: bndDirW, valueBold: false },
+    { label: '', value: fv(fields, 'boundaryDocsEast', 'NA'), labelWidth: 0, valueWidth: bndDirW, valueBold: false },
+    { label: '', value: fv(fields, 'boundaryDocsSouth', 'NA'), labelWidth: 0, valueWidth: bndDirW, valueBold: false },
+    { label: '', value: fv(fields, 'boundaryDocsWest', 'NA'), labelWidth: 0, valueWidth: bndDirW, valueBold: false }
+  ]);
+
+  // As per Approved plan key map
+  r.drawKeyValueRow([
+    { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true, hideBottom: true },
+    { label: 'As per Approved plan\\nkey map', value: '', labelWidth: bndLabelW, valueWidth: 0, labelBold: true },
+    { label: '', value: fv(fields, 'boundaryApprovedNorth', ''), labelWidth: 0, valueWidth: bndDirW, valueBold: false },
+    { label: '', value: fv(fields, 'boundaryApprovedEast', ''), labelWidth: 0, valueWidth: bndDirW, valueBold: false },
+    { label: '', value: fv(fields, 'boundaryApprovedSouth', ''), labelWidth: 0, valueWidth: bndDirW, valueBold: false },
+    { label: '', value: fv(fields, 'boundaryApprovedWest', ''), labelWidth: 0, valueWidth: bndDirW, valueBold: false }
+  ]);
+
+  // At site row
+  r.drawKeyValueRow([
+    { label: '28', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true, hideBottom: true, labelBold: true },
+    { label: 'At site', value: '', labelWidth: bndLabelW, valueWidth: 0, labelBold: true },
+    { label: '', value: fv(fields, 'boundaryAtSiteNorth', ''), labelWidth: 0, valueWidth: bndDirW, valueBold: false },
+    { label: '', value: fv(fields, 'boundaryAtSiteEast', ''), labelWidth: 0, valueWidth: bndDirW, valueBold: false },
+    { label: '', value: fv(fields, 'boundaryAtSiteSouth', ''), labelWidth: 0, valueWidth: bndDirW, valueBold: false },
+    { label: '', value: fv(fields, 'boundaryAtSiteWest', ''), labelWidth: 0, valueWidth: bndDirW, valueBold: false }
+  ]);
+
+  // Boundaries Matching row
+  r.drawKeyValueRow([
+    { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true, hideBottom: false },
+    { label: 'Boundaries Matching', value: fv(fields, 'boundariesMatching', ''), labelWidth: bndLabelW, valueWidth: CONTENT_W - bndCol1, labelBold: true, valueBold: false }
+  ]);
   // ====== REMARKS & DECLARATION ======
   r.drawRemarksBox('Remarks-:', fv(fields, 'remarksText', fv(fields, 'remarks', '')));
   r.drawRemarksBox('Declaration-:', fv(fields, 'declarationText', 'We hereby declare that we have no direct or indirect interest in the valued and the information furnished in the report is true and correct to the best of my knowledge of belief.'));
