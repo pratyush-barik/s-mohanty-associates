@@ -6,6 +6,7 @@ import { BankConfig, normalizeMapImages } from '@/lib/bank-fields';
 import { PDFAdityaBirlaHousingRenderer, HLLAPReportFields } from '@/lib/banks/pdf-aditya-birla-housing-renderer';
 import { rgb } from 'pdf-lib';
 import { CONTENT_W, MARGIN_L, fetchBytes } from '@/lib/pdf-bank-renderer';
+import { LBL_BG, BG_OPACITY, hexToRgb } from '@/lib/pdf-general-renderer';
 
 
 /** Helper: get field value with fallback */
@@ -456,7 +457,7 @@ async function generateHLLAPPDF(
     ]);
   }
 
-  // ====== BOUNDARIES ======
+  // ====== BOUNDARIES + REMARKS & DECLARATION (merged into one table) ======
   r.drawSectionHeader('BOUNDARIES');
   const bndCol1 = 120;
   const bndLabelW = bndCol1 - NUM_W;
@@ -466,7 +467,6 @@ async function generateHLLAPPDF(
   const bndStartY = (r as any).cursorY;
 
   // Unified table with 6 columns: [NUM_W, bndLabelW, bndDirW x4]
-  // Header row
   r.drawTable(
     ['', 'Boundaries', 'North', 'East', 'South', 'West'],
     [
@@ -478,7 +478,7 @@ async function generateHLLAPPDF(
     [0, 1]
   );
 
-  // Boundaries Matching row (flush with table, 3 columns: NUM_W + bndLabelW + rest)
+  // Boundaries Matching row (flush with table)
   r.drawTable(
     [],
     [['', 'Boundaries Matching', fv(fields, 'boundariesMatching', '')]],
@@ -487,23 +487,50 @@ async function generateHLLAPPDF(
     [0, 1]
   );
 
+  // Remarks row (flush, no gap - merged into boundaries section)
+  {
+    const remarksText = fv(fields, 'remarksText', fv(fields, 'remarks', 'N/A'));
+    r.drawKeyValueRow([
+      { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideBottom: true },
+      { label: 'Remarks-:', value: remarksText, labelWidth: Math.round((CONTENT_W - NUM_W) * 0.25), valueWidth: Math.round((CONTENT_W - NUM_W) * 0.75), labelBold: true, valueBold: false }
+    ]);
+  }
+
+  // Declaration row (flush)
+  {
+    const declText = fv(fields, 'declarationText', 'We hereby declare that we have no direct or indirect interest in the valued and the information furnished in the report is true and correct to the best of my knowledge of belief.');
+    r.drawKeyValueRow([
+      { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true, hideBottom: true },
+      { label: 'Declaration-:', value: declText, labelWidth: Math.round((CONTENT_W - NUM_W) * 0.25), valueWidth: Math.round((CONTENT_W - NUM_W) * 0.75), labelBold: true, valueBold: false }
+    ]);
+  }
+
+  // Name of Engineer row (flush, closes the table)
+  {
+    const engName = fv(fields, 'nameOfEngineerVisitingProperty', '');
+    r.drawKeyValueRow([
+      { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true },
+      { label: 'Name of Engineer who visited the property-:', value: engName, labelWidth: Math.round((CONTENT_W - NUM_W) * 0.60), valueWidth: Math.round((CONTENT_W - NUM_W) * 0.40) }
+    ]);
+  }
+
   const bndEndY = (r as any).cursorY;
 
-  // Overlay the merged '28' cell on the left NUM_W column, spanning all rows
+  // Overlay the merged '28' cell on the left NUM_W column, spanning ALL rows (boundaries + remarks + declaration + engineer)
   {
     const renderer = r as any;
     const mergeTopY = renderer.pdfY(bndStartY);
     const mergeBottomY = renderer.pdfY(bndEndY);
     const mergeH = mergeTopY - mergeBottomY;
 
-    // White-out to clear internal horizontal lines in the first column
+    // Fill with LBL_BG blue to clear internal lines and apply blue background
     renderer.page.drawRectangle({
       x: MARGIN_L + 0.5,
       y: mergeBottomY + 0.5,
       width: NUM_W - 1,
       height: mergeH - 1,
-      color: rgb(1, 1, 1),
-      opacity: 1,
+      color: hexToRgb(LBL_BG),
+      opacity: BG_OPACITY,
     });
 
     // Redraw the merged cell outer border
@@ -529,12 +556,6 @@ async function generateHLLAPPDF(
       color: rgb(0, 0, 0),
     });
   }
-  // ====== REMARKS & DECLARATION ======
-  r.drawRemarksBox('Remarks-:', fv(fields, 'remarksText', fv(fields, 'remarks', '')));
-  r.drawRemarksBox('Declaration-:', fv(fields, 'declarationText', 'We hereby declare that we have no direct or indirect interest in the valued and the information furnished in the report is true and correct to the best of my knowledge of belief.'));
-
-  const engName = fv(fields, 'nameOfEngineerVisitingProperty', '');
-  r.drawKeyValueRow([{ label: 'Name of Engineer who visited the property-:', value: engName, labelWidth: Math.round(CONTENT_W * 0.60), valueWidth: Math.round(CONTENT_W * 0.40) }]);
 
 
 
