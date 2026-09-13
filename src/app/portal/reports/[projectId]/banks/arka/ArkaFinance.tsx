@@ -422,7 +422,7 @@ export default function ArkaFinance({
               />
             </Field>
           </div>
-          <div className="border border-orange-200 bg-[#fff9f2] rounded-xl p-4 mb-4">
+          <div className="border border-red-200 bg-[#fff5f5] rounded-xl p-4 mb-4">
             <h3 className="font-bold text-gray-700 mb-4">VALUE OF THE PROPERTY</h3>
             <div className="bg-white border border-gray-200 rounded-md shadow-sm">
               <div className="flex border-b border-gray-200">
