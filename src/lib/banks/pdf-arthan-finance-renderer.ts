@@ -1231,7 +1231,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       { text: 'Carpet Area (Sft)', width: buaW3, isHeader: true, align: 'center', bold: false },
       { text: 'Actual BUA /\nSBUA (Sft)', width: buaW4, isHeader: true, align: 'center', bold: false },
       { text: 'Permissible\nBUA (Sft)', width: buaW5, isHeader: true, align: 'center', bold: false },
-      { text: 'Adopted Built-up\narea (Sft)', width: buaW6, isHeader: true, align: 'center', bold: false },
+      { text: 'Adopted Built-up\narea (Sft)', width: buaW6, isHeader: true, align: 'center', bold: true },
     ], 36, 4);
 
     if (buaFloors.length > 0) {
