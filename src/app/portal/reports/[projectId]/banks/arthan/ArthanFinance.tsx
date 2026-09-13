@@ -701,13 +701,48 @@ export default function ArthanFinance({
   };
 
   const handlePreviewPDF = async () => {
+    // Open a blank tab synchronously in the click handler to bypass browser pop-up blockers
+    const previewWindow = window.open('', '_blank');
+    if (previewWindow) {
+      previewWindow.document.write(`
+        <html>
+          <head><title>Generating Arthan Finance PDF Preview...</title></head>
+          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f8f9fa; color: #495057;">
+            <div style="text-align: center;">
+              <div style="border: 4px solid #dee2e6; border-top: 4px solid #1e3a5f; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px;"></div>
+              <p style="font-size: 16px; font-weight: 600; margin: 0;">Generating Arthan Finance PDF Preview...</p>
+              <p style="font-size: 12px; color: #6c757d; margin: 8px 0 0;">Please wait while the document compiles.</p>
+            </div>
+            <style>
+              @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            </style>
+          </body>
+        </html>
+      `);
+      previewWindow.document.close();
+    }
+
     setLoading(true);
     try {
       const bytes = await generatePDFBytes();
       const blob = new Blob([bytes as any], { type: 'application/pdf' });
-      window.open(URL.createObjectURL(blob), '_blank');
+      const url = URL.createObjectURL(blob);
+      if (previewWindow && !previewWindow.closed) {
+        previewWindow.location.href = url;
+      } else {
+        const a = document.createElement('a');
+        a.href = url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
     } catch (err: any) {
-      alert(`PDF Preview Failed: ${err.message}`);
+      console.error('PDF Preview failed:', err);
+      if (previewWindow && !previewWindow.closed) previewWindow.close();
+      setMessage({ text: `PDF Preview Failed: ${err?.message || String(err)}`, type: 'error' });
+      alert(`PDF Preview Failed: ${err?.message || String(err)}`);
     } finally {
       setLoading(false);
     }
@@ -725,9 +760,11 @@ export default function ArthanFinance({
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
     } catch (err: any) {
-      alert(`PDF Download Failed: ${err.message}`);
+      console.error('PDF Download failed:', err);
+      setMessage({ text: `PDF Download Failed: ${err?.message || String(err)}`, type: 'error' });
+      alert(`PDF Download Failed: ${err?.message || String(err)}`);
     } finally {
       setLoading(false);
     }
