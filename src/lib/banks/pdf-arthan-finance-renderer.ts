@@ -1412,7 +1412,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
         isLabel: true,
       },
       { text: fields.flatSBUA || 'NA', width: vlV },
-      { text: 'Composite sale rate (Rs per sqft)', width: vlW2, isLabel: true },
+      { text: 'Composite sale rate (Rs per\nsqft)', width: vlW2, isLabel: true, bold: false },
       { text: fields.compositeSaleRate || 'NA', width: vlV2 },
     ], 20, 4);
 
@@ -1457,16 +1457,16 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     );
 
     this.drawRow([
-      { text: 'Government Guideline / Circle rate\nfor Land (Rs per sqft)', width: vlW1, isLabel: true },
+      { text: 'Government Guideline /\nCircle rate\nfor Land (Rs per sqft)', width: vlW1, isLabel: true, bold: false },
       { text: fields.govtGuidelineRateLand || '', width: vlV },
-      { text: 'Land Value as per\nGovernment Rate (Rs)', width: vlW2, isLabel: true },
+      { text: 'Land Value as per\nGovernment Rate (Rs)', width: vlW2, isLabel: true, bold: false },
       { text: landGovtVal, width: vlV2 },
     ], 20, 4);
 
     this.drawRow([
-      { text: 'Government Guideline / Circle rate\nfor Flats (Rs per sqft)', width: vlW1, isLabel: true },
+      { text: 'Government Guideline /\nCircle rate\nfor Flats (Rs per sqft)', width: vlW1, isLabel: true, bold: false },
       { text: fields.govtGuidelineRateFlats || 'NA', width: vlV },
-      { text: 'Flat / Apartment Value as\nper Government Rate (Rs)', width: vlW2, isLabel: true },
+      { text: 'Flat / Apartment Value as\nper Government Rate (Rs)', width: vlW2, isLabel: true, bold: false },
       { text: flatGovtVal, width: vlV2 },
     ], 20, 4);
 
