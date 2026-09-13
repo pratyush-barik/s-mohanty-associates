@@ -456,7 +456,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       bold?: boolean;
       italic?: boolean;
       fontSize?: number;
-      align?: 'left' | 'center' | 'right';
+      align?: 'left' | 'center' | 'right' | 'justify';
       vAlign?: 'top' | 'middle';
       bg?: string;
       opacity?: number;
@@ -611,7 +611,8 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       startY = y - padY - (fontSize * 0.82);
     }
 
-    for (const line of lines) {
+    for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
+      const line = lines[lineIdx];
       let lineX = x + padX;
       if (align === 'center') {
         const tw = font.widthOfTextAtSize(line, fontSize);
@@ -619,6 +620,29 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       } else if (align === 'right') {
         const tw = font.widthOfTextAtSize(line, fontSize);
         lineX = x + w - padX - tw;
+      } else if (align === 'justify' && lineIdx < lines.length - 1) {
+        const words = line.trim().split(/\s+/);
+        if (words.length > 1) {
+          let wordsW = 0;
+          for (const word of words) {
+            wordsW += font.widthOfTextAtSize(word, fontSize);
+          }
+          const availableSpace = maxTextW - wordsW;
+          const spaceW = Math.max(0, availableSpace / (words.length - 1));
+          let curWordX = lineX;
+          for (const word of words) {
+            this.page.drawText(word, {
+              x: Math.max(x + 1, curWordX),
+              y: startY,
+              size: fontSize,
+              font,
+              color: rgb(0, 0, 0),
+            });
+            curWordX += font.widthOfTextAtSize(word, fontSize) + spaceW;
+          }
+          startY -= lineH;
+          continue;
+        }
       }
 
       this.page.drawText(line, {
@@ -1392,21 +1416,34 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       { text: fields.distressValuePresent || '', width: vlV2 },
     ], 20, 4);
 
-    const flatType = fields.flatPropertyType || (fields.flatSBUA === 'NA' || !fields.flatSBUA ? 'NA' : 'Flat');
-    const isFlatNA = flatType === 'NA' || fields.flatSBUA === 'NA';
+    // Resolve the selected property type among: 'Flat' | 'Apartment' | 'Shop' | 'Office'
+    let selectedType: 'Flat' | 'Apartment' | 'Shop' | 'Office' = 'Flat';
+    const explicitType = (fields.flatPropertyType || '').trim();
+    if (explicitType === 'Flat' || explicitType === 'Apartment' || explicitType === 'Shop' || explicitType === 'Office') {
+      selectedType = explicitType;
+    } else {
+      const propType = String(fields.typeOfProperty || '').toLowerCase();
+      if (propType.includes('apartment')) {
+        selectedType = 'Apartment';
+      } else if (propType.includes('shop')) {
+        selectedType = 'Shop';
+      } else if (propType.includes('office')) {
+        selectedType = 'Office';
+      } else {
+        selectedType = 'Flat';
+      }
+    }
 
-    const flatSegments = isFlatNA
-      ? undefined
-      : [
-          { text: 'Flat', bold: flatType === 'Flat' },
-          { text: ' / ', bold: false },
-          { text: 'Apartment', bold: flatType === 'Apartment' },
-          { text: ' / ', bold: false },
-          { text: 'Shop', bold: flatType === 'Shop' },
-          { text: ' / ', bold: false },
-          { text: 'Office', bold: flatType === 'Office' },
-          { text: ' SBUA (in Sqft)', bold: false },
-        ];
+    const flatSegments = [
+      { text: 'Flat', bold: selectedType === 'Flat' },
+      { text: ' / ', bold: false },
+      { text: 'Apartment', bold: selectedType === 'Apartment' },
+      { text: ' / ', bold: false },
+      { text: 'Shop', bold: selectedType === 'Shop' },
+      { text: ' / ', bold: false },
+      { text: 'Office', bold: selectedType === 'Office' },
+      { text: '\nSBUA (in Sqft)', bold: false },
+    ];
 
     this.drawRow([
       {
@@ -1421,19 +1458,17 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       { text: fields.compositeSaleRate || 'NA', width: vlV2 },
     ], 20, 4);
 
-    const tmvSegments = isFlatNA
-      ? undefined
-      : [
-          { text: 'Total Market Value of ', bold: false },
-          { text: 'Apartment', bold: flatType === 'Apartment' },
-          { text: ' / ', bold: false },
-          { text: 'Shop', bold: flatType === 'Shop' },
-          { text: ' / ', bold: false },
-          { text: 'Flat', bold: flatType === 'Flat' },
-          { text: ' /\n', bold: false },
-          { text: 'Office', bold: flatType === 'Office' },
-          { text: ' (Rs per sqft)', bold: false },
-        ];
+    const tmvSegments = [
+      { text: 'Total Market Value of ', bold: false },
+      { text: 'Apartment', bold: selectedType === 'Apartment' },
+      { text: ' / ', bold: false },
+      { text: 'Shop', bold: selectedType === 'Shop' },
+      { text: ' / ', bold: false },
+      { text: 'Flat', bold: selectedType === 'Flat' },
+      { text: ' /\n', bold: false },
+      { text: 'Office', bold: selectedType === 'Office' },
+      { text: ' (Rs per sqft)', bold: false },
+    ];
 
     this.drawRow([
       {
@@ -1443,7 +1478,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
         isLabel: true,
         bold: false,
       },
-      { text: fields.totalMarketValueApartment || 'NA', width: CONTENT_W - (vlW1 + vlV), align: 'center' },
+      { text: fields.totalMarketValueApartment || 'NA', width: CONTENT_W - (vlW1 + vlV) },
     ], 20, 4);
 
     const landGovtVal = fields.landValueGovtRate || (
@@ -1498,7 +1533,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     this.checkPageBreak(remH);
     curY = this.pdfY(this.cursorY);
     this.drawCell(MARGIN_L, curY, remLabelW, remH, 'Remarks / Observation', { isLabel: true, align: 'center', vAlign: 'middle', bold: true });
-    this.drawCell(MARGIN_L + remLabelW, curY, remValW, remH, remarksText, { vAlign: 'top' });
+    this.drawCell(MARGIN_L + remLabelW, curY, remValW, remH, remarksText, { vAlign: 'top', align: 'justify' });
     this.cursorY += remH;
 
     // ══════════════════════════════════════════════════════════════════

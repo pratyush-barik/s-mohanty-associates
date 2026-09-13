@@ -1825,48 +1825,62 @@ export default function ArthanFinance({
               <div className="grid md:grid-cols-2 gap-4">
                 {/* Dropdown to select option + input for Sqft */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-black">
-                    <span className={(fields.flatPropertyType || (fields.flatSBUA === 'NA' ? 'NA' : 'Flat')) === 'Flat' ? 'font-black text-black underline decoration-black underline-offset-2' : 'font-medium text-black'}>Flat</span>
-                    {' / '}
-                    <span className={fields.flatPropertyType === 'Apartment' ? 'font-black text-black underline decoration-black underline-offset-2' : 'font-medium text-black'}>Apartment</span>
-                    {' / '}
-                    <span className={fields.flatPropertyType === 'Shop' ? 'font-black text-black underline decoration-black underline-offset-2' : 'font-medium text-black'}>Shop</span>
-                    {' / '}
-                    <span className={fields.flatPropertyType === 'Office' ? 'font-black text-black underline decoration-black underline-offset-2' : 'font-medium text-black'}>Office</span>
-                    {' SBUA (in Sqft)'}
-                  </label>
+                  {(() => {
+                    const activeType = (fields.flatPropertyType && fields.flatPropertyType !== 'NA')
+                      ? fields.flatPropertyType
+                      : (String(fields.typeOfProperty || '').toLowerCase().includes('apartment')
+                          ? 'Apartment'
+                          : String(fields.typeOfProperty || '').toLowerCase().includes('shop')
+                          ? 'Shop'
+                          : String(fields.typeOfProperty || '').toLowerCase().includes('office')
+                          ? 'Office'
+                          : 'Flat');
+                    return (
+                      <>
+                        <label className="block text-xs font-semibold text-black">
+                          <span className={activeType === 'Flat' ? 'font-black text-black underline decoration-black underline-offset-2' : 'font-medium text-black'}>Flat</span>
+                          {' / '}
+                          <span className={activeType === 'Apartment' ? 'font-black text-black underline decoration-black underline-offset-2' : 'font-medium text-black'}>Apartment</span>
+                          {' / '}
+                          <span className={activeType === 'Shop' ? 'font-black text-black underline decoration-black underline-offset-2' : 'font-medium text-black'}>Shop</span>
+                          {' / '}
+                          <span className={activeType === 'Office' ? 'font-black text-black underline decoration-black underline-offset-2' : 'font-medium text-black'}>Office</span>
+                          {' SBUA (in Sqft)'}
+                        </label>
 
-                  <div className="grid grid-cols-5 gap-2">
-                    <div className="col-span-2">
-                      <select
-                        className={selectCls}
-                        value={fields.flatPropertyType || (fields.flatSBUA === 'NA' ? 'NA' : 'Flat')}
-                        onChange={e => handleChange('flatPropertyType', e.target.value)}
-                        disabled={isReadOnly}
-                      >
-                        <option value="NA">NA</option>
-                        <option value="Flat">Flat</option>
-                        <option value="Apartment">Apartment</option>
-                        <option value="Shop">Shop</option>
-                        <option value="Office">Office</option>
-                      </select>
-                    </div>
-                    <div className="col-span-3">
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        className={inputCls}
-                        value={fields.flatSBUA || ''}
-                        onChange={e => handleChange('flatSBUA', e.target.value)}
-                        disabled={isReadOnly || fields.flatPropertyType === 'NA'}
-                        placeholder={fields.flatPropertyType === 'NA' ? 'NA' : 'Area in Sqft e.g. 1050'}
-                      />
-                    </div>
-                  </div>
+                        <div className="grid grid-cols-5 gap-2">
+                          <div className="col-span-2">
+                            <select
+                              className={selectCls}
+                              value={activeType}
+                              onChange={e => handleChange('flatPropertyType', e.target.value)}
+                              disabled={isReadOnly}
+                            >
+                              <option value="Flat">Flat</option>
+                              <option value="Apartment">Apartment</option>
+                              <option value="Shop">Shop</option>
+                              <option value="Office">Office</option>
+                            </select>
+                          </div>
+                          <div className="col-span-3">
+                            <input
+                              type="text"
+                              inputMode="decimal"
+                              className={inputCls}
+                              value={fields.flatSBUA || ''}
+                              onChange={e => handleChange('flatSBUA', e.target.value)}
+                              disabled={isReadOnly || fields.flatPropertyType === 'NA'}
+                              placeholder={fields.flatPropertyType === 'NA' ? 'NA' : 'Area in Sqft e.g. 1050'}
+                            />
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
                   <p className="text-[11px] text-black font-medium italic">
                     {(fields.flatPropertyType === 'NA' || fields.flatSBUA === 'NA')
                       ? 'Status: NA'
-                      : <><strong className="font-black not-italic">{fields.flatPropertyType || 'Flat'}</strong>{' selected — bolded in rendered report'}</>}
+                      : <><strong className="font-black not-italic">{fields.flatPropertyType || 'Flat'}</strong>{' selected - bolded in rendered report'}</>}
                   </p>
                 </div>
 
@@ -1890,17 +1904,30 @@ export default function ArthanFinance({
 
                 {/* Total Market Value of Apartment / Shop / Flat / Office (Rs per sqft) */}
                 <div className="md:col-span-2 space-y-1.5">
-                  <label className="block text-xs font-semibold text-black">
-                    {'Total Market Value of '}
-                    <span className={fields.flatPropertyType === 'Apartment' ? 'font-black text-black underline decoration-black underline-offset-2' : 'font-medium text-black'}>Apartment</span>
-                    {' / '}
-                    <span className={fields.flatPropertyType === 'Shop' ? 'font-black text-black underline decoration-black underline-offset-2' : 'font-medium text-black'}>Shop</span>
-                    {' / '}
-                    <span className={(fields.flatPropertyType || (fields.flatSBUA === 'NA' ? 'NA' : 'Flat')) === 'Flat' ? 'font-black text-black underline decoration-black underline-offset-2' : 'font-medium text-black'}>Flat</span>
-                    {' / '}
-                    <span className={fields.flatPropertyType === 'Office' ? 'font-black text-black underline decoration-black underline-offset-2' : 'font-medium text-black'}>Office</span>
-                    {' (Rs per sqft)'}
-                  </label>
+                  {(() => {
+                    const activeType = (fields.flatPropertyType && fields.flatPropertyType !== 'NA')
+                      ? fields.flatPropertyType
+                      : (String(fields.typeOfProperty || '').toLowerCase().includes('apartment')
+                          ? 'Apartment'
+                          : String(fields.typeOfProperty || '').toLowerCase().includes('shop')
+                          ? 'Shop'
+                          : String(fields.typeOfProperty || '').toLowerCase().includes('office')
+                          ? 'Office'
+                          : 'Flat');
+                    return (
+                      <label className="block text-xs font-semibold text-black">
+                        {'Total Market Value of '}
+                        <span className={activeType === 'Apartment' ? 'font-black text-black underline decoration-black underline-offset-2' : 'font-medium text-black'}>Apartment</span>
+                        {' / '}
+                        <span className={activeType === 'Shop' ? 'font-black text-black underline decoration-black underline-offset-2' : 'font-medium text-black'}>Shop</span>
+                        {' / '}
+                        <span className={activeType === 'Flat' ? 'font-black text-black underline decoration-black underline-offset-2' : 'font-medium text-black'}>Flat</span>
+                        {' / '}
+                        <span className={activeType === 'Office' ? 'font-black text-black underline decoration-black underline-offset-2' : 'font-medium text-black'}>Office</span>
+                        {' (Rs per sqft)'}
+                      </label>
+                    );
+                  })()}
                   <input
                     className={`${inputCls} bg-white font-bold text-black border border-indigo-300`}
                     value={fields.totalMarketValueApartment || 'NA'}
