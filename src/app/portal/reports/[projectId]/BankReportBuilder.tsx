@@ -390,6 +390,7 @@ export interface BankReportBuilderProps {
     contactName?: string;
     contactPhone?: string;
     contactEmail?: string;
+    fieldEmployees?: { name: string }[];
   };
   config?: BankConfig;
   onResetWizard?: () => void;
@@ -441,6 +442,7 @@ export default function BankReportBuilder({
     organisationSubTemplate: initialFields?.organisationSubTemplate || defaultSub,
     clientType: 'organisation',
     institutionCategory: initialFields?.institutionCategory || 'Bank & FIS',
+    nameOfEngineerVisitingProperty: initialFields?.nameOfEngineerVisitingProperty || (prefill?.fieldEmployees || []).map((e: any) => e.name).filter(Boolean).join(', ') || '',
     propertyImages: Array.isArray(initialFields?.propertyImages) ? initialFields.propertyImages : (typeof initialFields?.propertyImages === 'string' && initialFields.propertyImages ? [initialFields.propertyImages] : DEFAULT_BASE_FIELDS.propertyImages),
     propertyImageNames: Array.isArray(initialFields?.propertyImageNames) ? initialFields.propertyImageNames : DEFAULT_BASE_FIELDS.propertyImageNames,
     sketchMapImages: Array.isArray(initialFields?.sketchMapImages) 

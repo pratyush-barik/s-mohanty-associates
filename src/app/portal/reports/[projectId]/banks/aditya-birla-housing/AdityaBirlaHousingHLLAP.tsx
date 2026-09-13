@@ -510,7 +510,7 @@ async function generateHLLAPPDF(
     const engName = fv(fields, 'nameOfEngineerVisitingProperty', '');
     r.drawKeyValueRow([
       { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true },
-      { label: 'Name of Engineer who visited the property-:', value: engName, labelWidth: Math.round((CONTENT_W - NUM_W) * 0.60), valueWidth: Math.round((CONTENT_W - NUM_W) * 0.40) }
+      { label: 'Name of Engineer who visited the property:-', value: engName, labelWidth: Math.round((CONTENT_W - NUM_W) * 0.60), valueWidth: Math.round((CONTENT_W - NUM_W) * 0.40) }
     ]);
   }
 
