@@ -36,6 +36,8 @@ export default function ArkaFinance({
     addressOfTheProperty: '',
     presentMarketValue: '',
     distressSaleValue: '',
+    purposeOfValuationDropdown: 'default',
+    purposeOfValuation: 'TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY',
     refNo: '',
     dateOfReport: '',
     nameOfCustomer: '',
@@ -449,6 +451,39 @@ export default function ArkaFinance({
                 </div>
               </div>
             </div>
+          </div>
+          <div className="mt-4 mb-4">
+            <Field label="PURPOSE OF VALUATION">
+              <select
+                className={inputCls}
+                value={fields.purposeOfValuationDropdown || 'default'}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  handleChange('purposeOfValuationDropdown', val);
+                  if (val === 'default') {
+                    handleChange('purposeOfValuation', 'TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY');
+                  } else {
+                    handleChange('purposeOfValuation', '');
+                  }
+                }}
+                disabled={isReadOnly}
+              >
+                <option value="default">TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY</option>
+                <option value="other">Other</option>
+              </select>
+            </Field>
+            {fields.purposeOfValuationDropdown === 'other' && (
+              <div className="mt-3">
+                <textarea
+                  className={inputCls}
+                  rows={3}
+                  placeholder="Enter custom purpose of valuation..."
+                  value={fields.purposeOfValuation || ''}
+                  onChange={(e) => handleChange('purposeOfValuation', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </div>
+            )}
           </div>
         </Section>
 
