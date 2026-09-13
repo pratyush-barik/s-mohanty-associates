@@ -8,7 +8,7 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 
 - **Total Banks / Organizations**: 57
 - **Total Subclasses / Templates**: 73
-- **Completed Subclasses**: 4 / 73 (1.1 `MLAP`, 1.2 `STSL`, 3 `Standard` (Annapurna), 8.1 `AGRI` (Axis))
+- **Completed Subclasses**: 5 / 73 (1.1 `MLAP`, 1.2 `STSL`, 3 `Standard` (Annapurna), 5 `Standard` (Arthan), 8.1 `AGRI` (Axis))
 - **Current Active Bank**: 8. `AXIS BANK`
 - **Current Active Subclass**: 8.1 `AGRI` (Complete: 14 Sections UI & 10-Page PDF)
 - **Bucket Standard**: Enforced strictly per [docs/BUCKET_ARCHITECTURE_STANDARD.md](docs/BUCKET_ARCHITECTURE_STANDARD.md) (Cloud bucket exclusively for Property Photographs; Maps/Documents are device-upload only).
@@ -26,7 +26,7 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 | 2.1 | ADITYA BIRLA HOUSING FINANCE LTD | `HL-LAP` | 🟡 Ready for Review | 🟡 Configured | 🟡 Custom Fields | ⏳ Pending |
 | **3** | **ANNAPURNA MICRO FINANCE LTD** | `Standard` | ✅ Complete | ✅ 8-Section Custom UI | ✅ Dedicated PDF Renderer | ✅ Validated |
 | **4** | **ARKA FINANCE LTD** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
-| **5** | **ARTHAN FINANCE** | `Standard` | 🟡 In Progress | 🟡 Configuring | 🟡 Dedicated PDF Renderer | ⏳ Pending |
+| **5** | **ARTHAN FINANCE** | `Standard` | ✅ Complete | ✅ 13-Section Custom UI | ✅ Dedicated PDF Renderer | ✅ Validated |
 | **6** | **AU SMALL FINANCE BANK** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **7** | **AVE FINANCE LTD** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **8** | **AXIS BANK** | | | | | |

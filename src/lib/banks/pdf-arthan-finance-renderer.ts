@@ -1598,7 +1598,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       // Address row
       curY = this.pdfY(this.cursorY);
       this.drawCell(MARGIN_L, curY, phW1, phAddrH, 'Address of the property\nbeing appraised', { isLabel: true, align: 'center', vAlign: 'middle', bold: false });
-      this.drawCell(MARGIN_L + phW1, curY, CONTENT_W - phW1, phAddrH, phAddrText, { align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + phW1, curY, CONTENT_W - phW1, phAddrH, phAddrText, { align: 'justify', vAlign: 'middle' });
       this.cursorY += phAddrH + 6;
 
       // Photo grid — renders immediately continuing below address row without empty page gaps or empty headers
@@ -1653,7 +1653,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
 
       curY = this.pdfY(this.cursorY);
       this.drawCell(MARGIN_L, curY, mpW1, mpAddrH, 'Address of the property\nbeing appraised', { isLabel: true, align: 'center', vAlign: 'middle', bold: false });
-      this.drawCell(MARGIN_L + mpW1, curY, CONTENT_W - mpW1, mpAddrH, mpAddrText, { align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + mpW1, curY, CONTENT_W - mpW1, mpAddrH, mpAddrText, { align: 'justify', vAlign: 'middle' });
       this.cursorY += mpAddrH + 8;
 
       // Maps rendered standalone, placed one by one (no caption, no box)
