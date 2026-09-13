@@ -19,7 +19,15 @@ export interface ArkaReportFields extends BaseReportFields {
   presentMarketValue: string;
   distressSaleValue: string;
   purposeOfValuation: string;
-  preparedBy: string;
+  preparedByCompany: string;
+  preparedByDesignation: string;
+  preparedByPlotNo: string;
+  preparedByStreet: string;
+  preparedByCity: string;
+  preparedByState: string;
+  preparedByPinCode: string;
+  preparedByPhone: string;
+  preparedByMobile: string;
 
   refNo: string;
   dateOfReport: string;
@@ -175,12 +183,28 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
     drawCenteredBold(fv('purposeOfValuation', 'TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY'), FONT_SIZE, 40);
 
     drawCenteredBold('PREPARED BY', FONT_SIZE_HEADER, 16, true);
-    const preparedByText = fv('preparedBy', 'M/s. S MOHANTY ASSOCIATES\nEMPANELLED VALUER & CHARTERED ENGINEER\nPlot no-859/2494/3232 & 858/2493/3295,\nShiv Nagar Tankapani Road,\nBhubaneswar, Odisha,Pin-751018\nPHONE- 0674-2381145\nMOBILE-9937023855/9437074855');
-    const preparedByLines = preparedByText.split('\n');
-    preparedByLines.forEach((line, index) => {
-      const isLast = index === preparedByLines.length - 1;
-      drawCenteredBold(line.trim(), FONT_SIZE, isLast ? 0 : 14);
-    });
+    
+    drawCenteredBold(fv('preparedByCompany', 'M/s. S MOHANTY ASSOCIATES'), FONT_SIZE, 14);
+    drawCenteredBold(fv('preparedByDesignation', 'EMPANELLED VALUER & CHARTERED ENGINEER'), FONT_SIZE, 14);
+    
+    const plotNo = fv('preparedByPlotNo', 'Plot no-859/2494/3232 & 858/2493/3295');
+    if (plotNo) drawCenteredBold(`${plotNo},`, FONT_SIZE, 14);
+
+    const street = fv('preparedByStreet', 'Shiv Nagar Tankapani Road');
+    if (street) drawCenteredBold(`${street},`, FONT_SIZE, 14);
+
+    const cityStatePin = [
+      fv('preparedByCity', 'Bhubaneswar'),
+      fv('preparedByState', 'Odisha'),
+      fv('preparedByPinCode', '751018') ? `Pin-${fv('preparedByPinCode', '751018')}` : ''
+    ].filter(Boolean).join(', ');
+    if (cityStatePin) drawCenteredBold(cityStatePin, FONT_SIZE, 14);
+
+    drawCenteredBold(`PHONE- ${fv('preparedByPhone', '06742381145')}`, FONT_SIZE, 14);
+    
+    let rawMobile = fv('preparedByMobile', '9937023855/9437074855');
+    let processedMobile = rawMobile.replace(/[^0-9]+/g, '/').replace(/(^\/|\/$)/g, '');
+    drawCenteredBold(`MOBILE-${processedMobile}`, FONT_SIZE, 0);
 
     // PAGE 2: Report details
     this.addPage();

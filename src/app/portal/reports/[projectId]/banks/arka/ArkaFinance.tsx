@@ -38,7 +38,15 @@ export default function ArkaFinance({
     distressSaleValue: '',
     purposeOfValuationDropdown: 'default',
     purposeOfValuation: 'TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY',
-    preparedBy: 'M/s. S MOHANTY ASSOCIATES\nEMPANELLED VALUER & CHARTERED ENGINEER\nPlot no-859/2494/3232 & 858/2493/3295,\nShiv Nagar Tankapani Road,\nBhubaneswar, Odisha,Pin-751018\nPHONE- 0674-2381145\nMOBILE-9937023855/9437074855',
+    preparedByCompany: 'M/s. S MOHANTY ASSOCIATES',
+    preparedByDesignation: 'EMPANELLED VALUER & CHARTERED ENGINEER',
+    preparedByPlotNo: 'Plot no-859/2494/3232 & 858/2493/3295',
+    preparedByStreet: 'Shiv Nagar Tankapani Road',
+    preparedByCity: 'Bhubaneswar',
+    preparedByState: 'Odisha',
+    preparedByPinCode: '751018',
+    preparedByPhone: '06742381145',
+    preparedByMobile: '9937023855/9437074855',
     refNo: '',
     dateOfReport: '',
     nameOfCustomer: '',
@@ -486,17 +494,52 @@ export default function ArkaFinance({
               </div>
             )}
           </div>
-          <div className="mt-4 mb-4">
-            <Field label="PREPARED BY">
-              <textarea
-                className={inputCls}
-                rows={7}
-                placeholder="Enter prepared by details..."
-                value={fields.preparedBy || ''}
-                onChange={(e) => handleChange('preparedBy', e.target.value)}
-                disabled={isReadOnly}
-              />
-            </Field>
+          <div className="border border-green-200 bg-green-50 rounded-xl p-4 mb-4">
+            <h3 className="font-bold text-gray-700 mb-4">PREPARED BY</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Company/Entity Name">
+                <input className={inputCls} value={fields.preparedByCompany || ''} onChange={e => handleChange('preparedByCompany', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Professional Designation">
+                <input className={inputCls} value={fields.preparedByDesignation || ''} onChange={e => handleChange('preparedByDesignation', e.target.value)} disabled={isReadOnly} />
+              </Field>
+            </div>
+            
+            <div className="border border-blue-200 bg-blue-50 rounded-md p-4 mt-4 mb-4">
+              <h4 className="font-bold text-gray-700 mb-3">Address</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="Plot Number"><input className={inputCls} value={fields.preparedByPlotNo || ''} onChange={e => handleChange('preparedByPlotNo', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="Street/Locality"><input className={inputCls} value={fields.preparedByStreet || ''} onChange={e => handleChange('preparedByStreet', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="City"><input className={inputCls} value={fields.preparedByCity || ''} onChange={e => handleChange('preparedByCity', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="State"><input className={inputCls} value={fields.preparedByState || ''} onChange={e => handleChange('preparedByState', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="PIN Code"><input className={inputCls} value={fields.preparedByPinCode || ''} onChange={e => handleChange('preparedByPinCode', e.target.value)} disabled={isReadOnly} /></Field>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Phone (Landline)">
+                <input 
+                  className={inputCls} 
+                  value={fields.preparedByPhone || ''} 
+                  onChange={e => {
+                     const val = e.target.value.replace(/[^0-9]/g, '');
+                     handleChange('preparedByPhone', val);
+                  }} 
+                  disabled={isReadOnly} 
+                />
+              </Field>
+              <Field label="Mobile Number">
+                <input 
+                  className={inputCls} 
+                  value={fields.preparedByMobile || ''} 
+                  onChange={e => {
+                     const val = e.target.value.replace(/[a-zA-Z]/g, '');
+                     handleChange('preparedByMobile', val);
+                  }} 
+                  disabled={isReadOnly} 
+                />
+              </Field>
+            </div>
           </div>
         </Section>
 
