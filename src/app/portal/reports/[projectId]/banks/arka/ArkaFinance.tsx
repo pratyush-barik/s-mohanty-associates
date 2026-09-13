@@ -274,7 +274,6 @@ export default function ArkaFinance({
           }}
           onUploadImages={async (e: any) => {}}
           onReorderImages={(newImgs: any) => {}}
-          onOpenBucketPicker={() => setBucketPickerOpen(true)}
           withoutSectionWrapper={false}
         />
 
@@ -302,7 +301,6 @@ export default function ArkaFinance({
           onReorderMouzaMap={(newImgs: any) => {}}
           onReorderSketchMap={(newImgs: any) => {}}
           onReorderCadastralMap={(newImgs: any) => {}}
-          onOpenBucketPicker={() => setBucketPickerOpen(true)}
         />
       </div>
 
