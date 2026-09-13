@@ -419,26 +419,34 @@ export default function ArkaFinance({
               />
             </Field>
           </div>
-          <div className="border border-orange-200 bg-orange-50 rounded-md p-4 mb-4">
+          <div className="border border-orange-200 bg-[#fff9f2] rounded-xl p-4 mb-4">
             <h3 className="font-bold text-gray-700 mb-4">VALUE OF THE PROPERTY</h3>
-            <div className="grid grid-cols-2 gap-4 items-center bg-white p-4 rounded-md border border-gray-100 shadow-sm">
-              <div className="font-semibold text-sm text-gray-600">PRESENT MARKET VALUE</div>
-              <div>
-                <input
-                  className={inputCls}
-                  value={fields.presentMarketValue || ''}
-                  onChange={(e) => handleChange('presentMarketValue', e.target.value)}
-                  disabled={isReadOnly}
-                />
+            <div className="bg-white border border-gray-200 rounded-md shadow-sm">
+              <div className="flex border-b border-gray-200">
+                <div className="w-1/2 md:w-[40%] p-3 border-r border-gray-200 flex items-center">
+                  <span className="text-sm font-medium text-gray-700">PRESENT MARKET VALUE</span>
+                </div>
+                <div className="w-1/2 md:w-[60%] p-2">
+                  <input
+                    className={inputCls}
+                    value={fields.presentMarketValue || ''}
+                    onChange={(e) => handleChange('presentMarketValue', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </div>
               </div>
-              <div className="font-semibold text-sm text-gray-600">DISTRESS SALE VALUE</div>
-              <div>
-                <input
-                  className={inputCls}
-                  value={fields.distressSaleValue || ''}
-                  onChange={(e) => handleChange('distressSaleValue', e.target.value)}
-                  disabled={isReadOnly}
-                />
+              <div className="flex">
+                <div className="w-1/2 md:w-[40%] p-3 border-r border-gray-200 flex items-center">
+                  <span className="text-sm font-medium text-gray-700">DISTRESS SALE VALUE</span>
+                </div>
+                <div className="w-1/2 md:w-[60%] p-2">
+                  <input
+                    className={inputCls}
+                    value={fields.distressSaleValue || ''}
+                    onChange={(e) => handleChange('distressSaleValue', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </div>
               </div>
             </div>
           </div>
