@@ -34,6 +34,8 @@ export default function ArkaFinance({
   const [fields, setFields] = useState<any>({
     propertyOwners: [{ name: '', fatherName: '' }],
     addressOfTheProperty: '',
+    presentMarketValue: '',
+    distressSaleValue: '',
     refNo: '',
     dateOfReport: '',
     nameOfCustomer: '',
@@ -406,7 +408,7 @@ export default function ArkaFinance({
               ))}
             </div>
           </div>
-          <div className="mt-4">
+          <div className="mt-4 mb-4">
             <Field label="ADDRESS OF THE PROPERTY">
               <textarea
                 className={inputCls}
@@ -416,6 +418,29 @@ export default function ArkaFinance({
                 disabled={isReadOnly}
               />
             </Field>
+          </div>
+          <div className="border border-orange-200 bg-orange-50 rounded-md p-4 mb-4">
+            <h3 className="font-bold text-gray-700 mb-4">VALUE OF THE PROPERTY</h3>
+            <div className="grid grid-cols-2 gap-4 items-center bg-white p-4 rounded-md border border-gray-100 shadow-sm">
+              <div className="font-semibold text-sm text-gray-600">PRESENT MARKET VALUE</div>
+              <div>
+                <input
+                  className={inputCls}
+                  value={fields.presentMarketValue || ''}
+                  onChange={(e) => handleChange('presentMarketValue', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </div>
+              <div className="font-semibold text-sm text-gray-600">DISTRESS SALE VALUE</div>
+              <div>
+                <input
+                  className={inputCls}
+                  value={fields.distressSaleValue || ''}
+                  onChange={(e) => handleChange('distressSaleValue', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </div>
+            </div>
           </div>
         </Section>
 
