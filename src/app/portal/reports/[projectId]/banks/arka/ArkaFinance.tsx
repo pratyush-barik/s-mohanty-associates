@@ -38,6 +38,7 @@ export default function ArkaFinance({
     distressSaleValue: '',
     purposeOfValuationDropdown: 'default',
     purposeOfValuation: 'TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY',
+    preparedBy: 'M/s. S MOHANTY ASSOCIATES\nEMPANELLED VALUER & CHARTERED ENGINEER\nPlot no-859/2494/3232 & 858/2493/3295,\nShiv Nagar Tankapani Road,\nBhubaneswar, Odisha,Pin-751018\nPHONE- 0674-2381145\nMOBILE-9937023855/9437074855',
     refNo: '',
     dateOfReport: '',
     nameOfCustomer: '',
@@ -484,6 +485,18 @@ export default function ArkaFinance({
                 />
               </div>
             )}
+          </div>
+          <div className="mt-4 mb-4">
+            <Field label="PREPARED BY">
+              <textarea
+                className={inputCls}
+                rows={7}
+                placeholder="Enter prepared by details..."
+                value={fields.preparedBy || ''}
+                onChange={(e) => handleChange('preparedBy', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
           </div>
         </Section>
 

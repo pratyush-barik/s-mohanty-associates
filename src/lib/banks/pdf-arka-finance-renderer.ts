@@ -16,6 +16,7 @@ export interface ArkaReportFields extends BaseReportFields {
   presentMarketValue: string;
   distressSaleValue: string;
   purposeOfValuation: string;
+  preparedBy: string;
 
   refNo: string;
   dateOfReport: string;
@@ -142,13 +143,12 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
     drawCenteredBold(fv('purposeOfValuation', 'TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY'), FONT_SIZE, 40);
 
     drawCenteredBold('PREPARED BY', FONT_SIZE_HEADER, 16);
-    drawCenteredBold('M/s. S MOHANTY ASSOCIATES', FONT_SIZE, 14);
-    drawCenteredBold('EMPANELLED VALUER & CHARTERED ENGINEER', FONT_SIZE, 14);
-    drawCenteredBold('Plot no-859/2494/3232 & 858/2493/3295,', FONT_SIZE, 14);
-    drawCenteredBold('Shiv Nagar Tankapani Road,', FONT_SIZE, 14);
-    drawCenteredBold('Bhubaneswar, Odisha,Pin-751018', FONT_SIZE, 14);
-    drawCenteredBold('PHONE- 0674-2381145', FONT_SIZE, 14);
-    drawCenteredBold('MOBILE-9937023855/9437074855', FONT_SIZE, 0);
+    const preparedByText = fv('preparedBy', 'M/s. S MOHANTY ASSOCIATES\nEMPANELLED VALUER & CHARTERED ENGINEER\nPlot no-859/2494/3232 & 858/2493/3295,\nShiv Nagar Tankapani Road,\nBhubaneswar, Odisha,Pin-751018\nPHONE- 0674-2381145\nMOBILE-9937023855/9437074855');
+    const preparedByLines = preparedByText.split('\n');
+    preparedByLines.forEach((line, index) => {
+      const isLast = index === preparedByLines.length - 1;
+      drawCenteredBold(line.trim(), FONT_SIZE, isLast ? 0 : 14);
+    });
 
     // PAGE 2: Report details
     this.addPage();
