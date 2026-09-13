@@ -11,6 +11,7 @@ import {
   selectCls,
   FloatingNavigator,
   ReportActionBar,
+  ActiveConfigBanner,
   NavItem,
   BasePhotographsSection,
   BaseMapsSection
