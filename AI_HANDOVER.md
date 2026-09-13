@@ -471,3 +471,6 @@ Outstanding items in **priority order**:
 - **IBBI PDF Font Consistency** — The rendering of font sizes is not consistent across the entire IBBI PDF/preview output. Needs a pass to standardize all font sizes.
 - **IBBI Cover Page Blue Box** — The 1st page of the IBBI PDF must contain a blue rectangular box shown exactly as in the samples. It should dynamically create and adjust spacing of that box outside the content of that page.
 - **Remaining Bank Report Builders** — 54 other bank stubs need to be populated with their specific fields once samples are provided.
+
+### Technical Gotchas & Formatting Rules
+- **PDF Sub-table Merging**: When asked to merge/combine sub-tables vertically (e.g. rendering flush against each other with no gaps), remember that `PDFBankRenderer.drawTable` takes a `headers` array. If multiple tables are drawn consecutively with `[]` (empty headers), they will seamlessly connect without top padding because of the `if (headers.length > 0)` check added in `src/lib/pdf-bank-renderer.ts`. Always call `drawTable([], ...)` to append rows to a preceding table seamlessly without header gaps.

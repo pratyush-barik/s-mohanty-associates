@@ -354,56 +354,115 @@ async function generateHLLAPPDF(
 
   // ====== VALUATION DETAILS ======
   r.drawSectionHeader('VALUATION DETAILS');
-  
-  const s27LblW = Math.round(CONTENT_W * 0.40);
-  const s27ValW = CONTENT_W - s27LblW;
-  
-  r.drawKeyValueRow([{ label: '(A)Description of Land & Constructed Area and Rates', value: '', labelWidth: CONTENT_W, valueWidth: 0, labelBold: true }]);
-  r.drawKeyValueRow([{ label: 'Property Type', value: fv(fields, 'propertyTypeBungalow', ''), labelWidth: NUM_W + LABEL_W, valueWidth: CONTENT_W - (NUM_W + LABEL_W), labelBold: true, valueBold: false }]);
 
-  const valDescW2 = 100; 
-  const valUnitW = NUM_W + LABEL_W - valDescW2; 
-  const valAreaW = 70; 
-  const valRateW = (CONTENT_W - NUM_W - LABEL_W) / 2 - valAreaW;
-  const valAmtW = CONTENT_W - valDescW2 - valUnitW - valAreaW - valRateW;
-
-  r.drawTable(['Description', 'Unit of Measurement', 'Area', 'Rate/unit', 'Amount'],
-    [['Land Area', fv(fields, 'valLandUnit', 'Sqft'), fv(fields, 'valLandArea', '0'), fv(fields, 'valLandRate', '0'), fv(fields, 'valLandAmount', '0')],
-     ['Parking/Stilt BUA', fv(fields, 'valParkingUnit', 'Sqft'), fv(fields, 'valParkingArea', '0'), fv(fields, 'valParkingRate', '0'), fv(fields, 'valParkingAmount', '0')],
-     ['BUA/SBUA', fv(fields, 'valBuaUnit', 'Sqft'), fv(fields, 'valBuaArea', ''), fv(fields, 'valBuaRate', ''), fv(fields, 'valBuaAmount', '')]],
-    [valDescW2, valUnitW, valAreaW, valRateW, valAmtW], [], [0]);
-
-  r.drawKeyValueRow([{ label: 'Construction Progress', value: fv(fields, 'valConstructionProgress', 'Complete in all respect'), labelWidth: s27LblW, valueWidth: s27ValW, labelBold: true, valueBold: false }]);
+  // Widths for section 27 - all rows use a NUM_W left number column
+  const s27InnerLblW = Math.round((CONTENT_W - NUM_W) * 0.42);
+  const s27InnerValW = CONTENT_W - NUM_W - s27InnerLblW;
 
   r.drawKeyValueRow([
-    { label: '27', value: '', labelWidth: NUM_W, valueWidth: 0, labelBold: true }, 
-    { label: '% Completion', value: fv(fields, 'valPercentCompletion', '100'), labelWidth: 130, valueWidth: 40, labelBold: true, valueBold: false }, 
-    { label: '% Recommendation', value: fv(fields, 'valPercentRecommendation', '100'), labelWidth: 130, valueWidth: CONTENT_W - NUM_W - 130 - 40 - 130, labelBold: true, valueBold: false }
+    { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideBottom: true },
+    { label: '(A)Description of Land & Constructed Area and Rates', value: '', labelWidth: CONTENT_W - NUM_W, valueWidth: 0, labelBold: true }
+  ]);
+  r.drawKeyValueRow([
+    { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true, hideBottom: true },
+    { label: 'Property Type', value: fv(fields, 'propertyTypeBungalow', ''), labelWidth: LABEL_W, valueWidth: CONTENT_W - NUM_W - LABEL_W, labelBold: true, valueBold: false }
   ]);
 
-  r.drawKeyValueRow([{ label: '(B)Value of Extra Amenities if applicable', value: '', labelWidth: CONTENT_W, valueWidth: 0, labelBold: true }]);
+  // Description / Unit / Area / Rate / Amount table - indented by NUM_W
+  const valDescW2 = 100;
+  const valUnitW = LABEL_W - valDescW2;
+  const valAreaW = 70;
+  const valRemaining = CONTENT_W - NUM_W - valDescW2 - valUnitW - valAreaW;
+  const valRateW = Math.round(valRemaining / 2);
+  const valAmtW = valRemaining - valRateW;
 
-  for (const [label, value] of [['No of Car Parks', fv(fields, 'noOfCarParks', '0')], ['Car Parking Charges Lumpsum (INR)', fv(fields, 'carParkingCharges', '0')], ['EDC,IDC Lumpsum(INR)', fv(fields, 'edcIdcLumpsum', '0')], ['PLC Charges Lumpsum(INR)', fv(fields, 'plcChargesLumpsum', '0')], ['Power Backup', fv(fields, 'powerBackup', '0')], ['Interiors/Amenities', fv(fields, 'interiorsAmenities', '0')], ['Interiors % completion', fv(fields, 'interiorsPercentCompletion', '0')]]) {
-    r.drawKeyValueRow([{ label, value, labelWidth: s27LblW, valueWidth: s27ValW, labelBold: true, valueBold: false }]);
+  // Header row with NUM_W prefix
+  r.drawKeyValueRow([
+    { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true, hideBottom: true },
+    { label: 'Description', value: '', labelWidth: valDescW2, valueWidth: 0, labelBold: true },
+    { label: 'Unit of Measurement', value: '', labelWidth: valUnitW, valueWidth: 0, labelBold: true },
+    { label: 'Area', value: '', labelWidth: valAreaW, valueWidth: 0, labelBold: true },
+    { label: 'Rate/unit', value: '', labelWidth: valRateW, valueWidth: 0, labelBold: true },
+    { label: 'Amount', value: '', labelWidth: valAmtW, valueWidth: 0, labelBold: true }
+  ]);
+
+  // Data rows for land/parking/BUA
+  const valTableData = [
+    ['Land Area', fv(fields, 'valLandUnit', 'Sqft'), fv(fields, 'valLandArea', '0'), fv(fields, 'valLandRate', '0'), fv(fields, 'valLandAmount', '0')],
+    ['Parking/Stilt BUA', fv(fields, 'valParkingUnit', 'Sqft'), fv(fields, 'valParkingArea', '0'), fv(fields, 'valParkingRate', '0'), fv(fields, 'valParkingAmount', '0')],
+    ['BUA/SBUA', fv(fields, 'valBuaUnit', 'Sqft'), fv(fields, 'valBuaArea', ''), fv(fields, 'valBuaRate', ''), fv(fields, 'valBuaAmount', '')]
+  ];
+  for (const row of valTableData) {
+    r.drawKeyValueRow([
+      { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true, hideBottom: true },
+      { label: row[0], value: '', labelWidth: valDescW2, valueWidth: 0 },
+      { label: '', value: row[1], labelWidth: 0, valueWidth: valUnitW, valueBold: false },
+      { label: '', value: row[2], labelWidth: 0, valueWidth: valAreaW, valueBold: false },
+      { label: '', value: row[3], labelWidth: 0, valueWidth: valRateW, valueBold: false },
+      { label: '', value: row[4], labelWidth: 0, valueWidth: valAmtW, valueBold: false }
+    ]);
   }
 
+  // Construction Progress row
+  r.drawKeyValueRow([
+    { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true, hideBottom: true },
+    { label: 'Construction Progress', value: fv(fields, 'valConstructionProgress', 'Complete in all respect'), labelWidth: s27InnerLblW, valueWidth: s27InnerValW, labelBold: true, valueBold: false }
+  ]);
+
+  // 27 | % Completion | value | % Recommendation | value
+  const pctLblW = 120;
+  const pctValW = 40;
+  const recLblW = 120;
+  const recValW = CONTENT_W - NUM_W - pctLblW - pctValW - recLblW;
+  r.drawKeyValueRow([
+    { label: '27', value: '', labelWidth: NUM_W, valueWidth: 0, labelBold: true, hideTop: true, hideBottom: true },
+    { label: '% Completion', value: fv(fields, 'valPercentCompletion', '100'), labelWidth: pctLblW, valueWidth: pctValW, labelBold: true, valueBold: false },
+    { label: '% Recommendation', value: fv(fields, 'valPercentRecommendation', '100'), labelWidth: recLblW, valueWidth: recValW, labelBold: true, valueBold: false }
+  ]);
+
+  // (B) Value of Extra Amenities header
+  r.drawKeyValueRow([
+    { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true, hideBottom: true },
+    { label: '(B)Value of Extra Amenities if applicable', value: '', labelWidth: CONTENT_W - NUM_W, valueWidth: 0, labelBold: true }
+  ]);
+
+  // Amenity rows
+  for (const [label, value] of [['No of Car Parks', fv(fields, 'noOfCarParks', '0')], ['Car Parking Charges Lumpsum (INR)', fv(fields, 'carParkingCharges', '0')], ['EDC,IDC Lumpsum(INR)', fv(fields, 'edcIdcLumpsum', '0')], ['PLC Charges Lumpsum(INR)', fv(fields, 'plcChargesLumpsum', '0')], ['Power Backup', fv(fields, 'powerBackup', '0')], ['Interiors/Amenities', fv(fields, 'interiorsAmenities', '0')], ['Interiors % completion', fv(fields, 'interiorsPercentCompletion', '0')]]) {
+    r.drawKeyValueRow([
+      { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true, hideBottom: true },
+      { label, value, labelWidth: s27InnerLblW, valueWidth: s27InnerValW, labelBold: true, valueBold: false }
+    ]);
+  }
+
+  // Total / Market Value rows
+  const totalLblW = Math.round((CONTENT_W - NUM_W) * 0.65);
+  const totalValW = CONTENT_W - NUM_W - totalLblW;
   for (const [label, value] of [['Total of Component A on Completion', fv(fields, 'totalComponentA', '')], ['Total of Component B on Completion', fv(fields, 'totalComponentB', '0')], ['Total Market Value of Property on Completion (A+B) 100%', fv(fields, 'totalMarketValueOnCompletion', '')], ['Total Market Value of Property on Completion in Words 100%', fv(fields, 'totalMarketValueOnCompletionWords', '')], ['Total Market Value of Property as on Date (95%)', fv(fields, 'totalMarketValueAsOnDate', '')], ['Guideline Value of The Property', fv(fields, 'guidelineValueOfProperty', 'NA')], ['Distress Sale Value as on date', fv(fields, 'distressSaleValue', '')], ['Approx. Rentals in case of 100% complete property', fv(fields, 'approxRentals', '')]]) {
-    r.drawKeyValueRow([{ label, value, labelWidth: Math.round(CONTENT_W * 0.65), valueWidth: Math.round(CONTENT_W * 0.35), bold: true }]);
+    r.drawKeyValueRow([
+      { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true },
+      { label, value, labelWidth: totalLblW, valueWidth: totalValW, bold: true }
+    ]);
   }
 
   // ====== BOUNDARIES ======
+  // BOUNDARIES heading flush with table below
   r.drawSectionHeader('BOUNDARIES');
   const bndCol1 = 120; const bndDirW = (CONTENT_W - bndCol1) / 4;
 
+  // Boundary table: headers + As per Docs + As per Approved plan key map
   r.drawTable(['Boundaries', 'North', 'East', 'South', 'West'],
     [['As per Docs', fv(fields, 'boundaryDocsNorth', 'NA'), fv(fields, 'boundaryDocsEast', 'NA'), fv(fields, 'boundaryDocsSouth', 'NA'), fv(fields, 'boundaryDocsWest', 'NA')],
      ['As per Approved plan key map', fv(fields, 'boundaryApprovedNorth', ''), fv(fields, 'boundaryApprovedEast', ''), fv(fields, 'boundaryApprovedSouth', ''), fv(fields, 'boundaryApprovedWest', '')]],
     [bndCol1, bndDirW, bndDirW, bndDirW, bndDirW], [], [0]);
 
+  // 28 | At site row - flush with table above via empty headers (separate number column)
   r.drawTable([], [['28', 'At site', fv(fields, 'boundaryAtSiteNorth', ''), fv(fields, 'boundaryAtSiteEast', ''), fv(fields, 'boundaryAtSiteSouth', ''), fv(fields, 'boundaryAtSiteWest', '')]],
     [NUM_W, bndCol1 - NUM_W, bndDirW, bndDirW, bndDirW, bndDirW], [], [0, 1]);
 
-  r.drawSimpleRow('Boundaries Matching', fv(fields, 'boundariesMatching', 'Yes as per Approved plan key map.'));
+  // Boundaries Matching row - flush
+  r.drawKeyValueRow([
+    { label: 'Boundaries Matching', value: fv(fields, 'boundariesMatching', 'Yes as per Approved plan key map.'), labelWidth: bndCol1, valueWidth: CONTENT_W - bndCol1, labelBold: true, valueBold: true }
+  ]);
 
   // ====== REMARKS & DECLARATION ======
   r.drawRemarksBox('Remarks-:', fv(fields, 'remarksText', fv(fields, 'remarks', '')));
