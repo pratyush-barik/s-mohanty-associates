@@ -1430,14 +1430,14 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
           { text: 'Shop', bold: flatType === 'Shop' },
           { text: ' / ', bold: false },
           { text: 'Flat', bold: flatType === 'Flat' },
-          { text: ' / ', bold: false },
+          { text: ' /\n', bold: false },
           { text: 'Office', bold: flatType === 'Office' },
-          { text: '\n(Rs per sqft)', bold: false },
+          { text: ' (Rs per sqft)', bold: false },
         ];
 
     this.drawRow([
       {
-        text: 'Total Market Value of Apartment / Shop / Flat / Office\n(Rs per sqft)',
+        text: 'Total Market Value of Apartment / Shop / Flat /\nOffice (Rs per sqft)',
         segments: tmvSegments,
         width: vlW1 + vlV,
         isLabel: true,
@@ -1453,7 +1453,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     );
 
     const flatGovtVal = fields.flatValueGovtRate || (
-      fields.govtGuidelineRateFlats === 'NA' || !fields.govtGuidelineRateFlats
+      (fields.flatPropertyType === 'NA' || fields.govtGuidelineRateFlats === 'NA' || !fields.govtGuidelineRateFlats)
         ? 'NA'
         : (
           (fields.adoptableBuiltUpArea || fields.flatSBUA)
@@ -1497,7 +1497,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
 
     this.checkPageBreak(remH);
     curY = this.pdfY(this.cursorY);
-    this.drawCell(MARGIN_L, curY, remLabelW, remH, 'Remarks / Observation', { isLabel: true, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L, curY, remLabelW, remH, 'Remarks / Observation', { isLabel: true, align: 'center', vAlign: 'middle', bold: true });
     this.drawCell(MARGIN_L + remLabelW, curY, remValW, remH, remarksText, { vAlign: 'top' });
     this.cursorY += remH;
 

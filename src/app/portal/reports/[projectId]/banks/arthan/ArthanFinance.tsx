@@ -2032,16 +2032,18 @@ export default function ArthanFinance({
 
         {/* ════ SECTION 10: REMARKS ════ */}
         <Section title="PROPERTY SPECIFIC REMARKS & OBSERVATION" number={10} id="sec-10">
-          <Field label="Remarks / Observation">
-            <textarea
-              rows={5}
-              className={inputCls}
-              value={fields.remarks || ''}
-              onChange={e => handleChange('remarks', e.target.value)}
-              disabled={isReadOnly}
-              placeholder="Describe the property observations, access, amenities, and basis of valuation..."
-            />
-          </Field>
+          <div className="[&_label]:!font-bold">
+            <Field label="Remarks / Observation">
+              <textarea
+                rows={5}
+                className={inputCls}
+                value={fields.remarks || ''}
+                onChange={e => handleChange('remarks', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="Describe the property observations, access, amenities, and basis of valuation..."
+              />
+            </Field>
+          </div>
         </Section>
 
         {/* ════ SECTION 11: VALUER CERTIFICATION ════ */}
