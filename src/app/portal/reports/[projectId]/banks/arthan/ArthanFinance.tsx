@@ -598,33 +598,45 @@ export default function ArthanFinance({
 
   const handleMapRemove = (key: 'locationMapImages' | 'cadastralMapImages', index?: number) => {
     if (index === undefined) {
-      handleChange(key, []);
+      setFields(prev => ({ ...prev, [key]: [] }));
       return;
     }
     const updated = (fields[key] || []).filter((_, i) => i !== index);
-    handleChange(key, updated);
+    setFields(prev => ({ ...prev, [key]: updated }));
   };
 
   const handleReorderMap = (key: 'locationMapImages' | 'cadastralMapImages', newImgs: string[]) => {
-    handleChange(key, newImgs);
+    setFields(prev => ({
+      ...prev,
+      [key]: newImgs,
+    }));
   };
 
   // Photo Handlers
   const handleBucketConfirm = (selectedUrls: string[]) => {
     const existing = fields.propertyImages || [];
-    handleChange('propertyImages', [...existing, ...selectedUrls]);
+    setFields(prev => ({
+      ...prev,
+      propertyImages: [...existing, ...selectedUrls],
+    }));
   };
 
   const handlePhotoRemove = (idx: number) => {
     const updated = (fields.propertyImages || []).filter((_, i) => i !== idx);
     const updatedNames = (fields.propertyImageNames || []).filter((_, i) => i !== idx);
-    handleChange('propertyImages', updated);
-    handleChange('propertyImageNames', updatedNames);
+    setFields(prev => ({
+      ...prev,
+      propertyImages: updated,
+      propertyImageNames: updatedNames,
+    }));
   };
 
   const handleReorderPhotos = (newImgs: string[], newNames: string[]) => {
-    handleChange('propertyImages', newImgs);
-    handleChange('propertyImageNames', newNames);
+    setFields(prev => ({
+      ...prev,
+      propertyImages: newImgs,
+      propertyImageNames: newNames,
+    }));
   };
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {

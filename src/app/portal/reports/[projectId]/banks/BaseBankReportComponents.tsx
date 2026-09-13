@@ -411,27 +411,11 @@ export function BasePhotographsSection({
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
-  const handleDragStart = (idx: number) => {
-    if (isReadOnly) return;
-    setDraggedIdx(idx);
-  };
-
-  const handleDragOver = (e: React.DragEvent, idx: number) => {
-    e.preventDefault();
-    if (draggedIdx === null || draggedIdx === idx) return;
-    setDragOverIdx(idx);
-  };
-
-  const handleDragLeave = () => {
-    setDragOverIdx(null);
-  };
-
-  const handleDrop = (targetIdx: number) => {
-    if (draggedIdx === null || draggedIdx === targetIdx) {
-      setDraggedIdx(null);
-      setDragOverIdx(null);
-      return;
-    }
+  const movePhoto = (fromIdx: number, toIdx: number) => {
+    if (isReadOnly || !onReorderImages) return;
+    if (fromIdx < 0 || fromIdx >= propertyImages.length) return;
+    if (toIdx < 0 || toIdx >= propertyImages.length) return;
+    if (fromIdx === toIdx) return;
 
     const reorderedImages = [...propertyImages];
     const reorderedNames = [...(propertyImageNames || [])];
@@ -439,18 +423,67 @@ export function BasePhotographsSection({
       reorderedNames.push(DEFAULT_PHOTO_LABEL);
     }
 
-    const [movedImg] = reorderedImages.splice(draggedIdx, 1);
-    const [movedName] = reorderedNames.splice(draggedIdx, 1);
+    const [movedImg] = reorderedImages.splice(fromIdx, 1);
+    const [movedName] = reorderedNames.splice(fromIdx, 1);
 
-    reorderedImages.splice(targetIdx, 0, movedImg);
-    reorderedNames.splice(targetIdx, 0, movedName);
+    reorderedImages.splice(toIdx, 0, movedImg);
+    reorderedNames.splice(toIdx, 0, movedName);
 
     setDraggedIdx(null);
     setDragOverIdx(null);
 
-    if (onReorderImages) {
-      onReorderImages(reorderedImages, reorderedNames);
+    onReorderImages(reorderedImages, reorderedNames);
+  };
+
+  const handleDragStart = (e: React.DragEvent, idx: number) => {
+    if (isReadOnly) return;
+    try {
+      e.dataTransfer.setData('text/plain', String(idx));
+      e.dataTransfer.effectAllowed = 'move';
+    } catch {
+      /* ignore */
     }
+    setDraggedIdx(idx);
+  };
+
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    try {
+      e.dataTransfer.dropEffect = 'move';
+    } catch {
+      /* ignore */
+    }
+    if (draggedIdx === null || draggedIdx === idx) return;
+    if (dragOverIdx !== idx) {
+      setDragOverIdx(idx);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIdx(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, targetIdx: number) => {
+    e.preventDefault();
+    let fromIdx = draggedIdx;
+    try {
+      const data = e.dataTransfer.getData('text/plain');
+      if (data !== '') {
+        const parsed = parseInt(data, 10);
+        if (!isNaN(parsed)) fromIdx = parsed;
+      }
+    } catch {
+      /* fallback */
+    }
+
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+
+    if (fromIdx === null || isNaN(fromIdx) || fromIdx === targetIdx) {
+      return;
+    }
+
+    movePhoto(fromIdx, targetIdx);
   };
 
   const content = (
@@ -467,15 +500,16 @@ export function BasePhotographsSection({
 
             const isDragging = draggedIdx === idx;
             const isDragOver = dragOverIdx === idx;
+            const canReorder = !isReadOnly && propertyImages.length > 1;
 
             return (
               <div
-                key={idx}
+                key={`${url}-${idx}`}
                 draggable={!isReadOnly}
-                onDragStart={() => handleDragStart(idx)}
+                onDragStart={(e) => handleDragStart(e, idx)}
                 onDragOver={(e) => handleDragOver(e, idx)}
                 onDragLeave={handleDragLeave}
-                onDrop={() => handleDrop(idx)}
+                onDrop={(e) => handleDrop(e, idx)}
                 onDragEnd={() => {
                   setDraggedIdx(null);
                   setDragOverIdx(null);
@@ -484,17 +518,20 @@ export function BasePhotographsSection({
                   isDragging ? 'opacity-40 scale-[0.98]' : 'opacity-100'
                 } ${
                   isDragOver
-                    ? 'border-2 border-dashed border-[#b8860b] ring-2 ring-[#b8860b]/20 shadow-md'
+                    ? 'border-2 border-dashed border-[#b8860b] ring-2 ring-[#b8860b]/20 shadow-md bg-amber-50/20'
                     : 'border-[#dee2e6] shadow-xs hover:border-slate-300'
                 }`}
               >
-                {/* Header: Drag Handle + Editable Label Input (First order) on Left, Remove Cross on Right */}
-                <div className="flex items-center justify-between gap-3">
+                {/* Header: Photo Number Badge + Drag Handle + Label Input + Reorder Arrows + Remove Button */}
+                <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200 shrink-0 select-none">
+                      #{idx + 1}
+                    </span>
                     {!isReadOnly && (
                       <span
-                        className="text-slate-400 hover:text-slate-600 cursor-grab active:cursor-grabbing select-none text-base font-bold px-0.5"
-                        title="Drag to reorder photograph"
+                        className="text-slate-400 hover:text-slate-600 cursor-grab active:cursor-grabbing select-none text-base font-bold px-0.5 shrink-0"
+                        title="Drag to reposition photograph"
                       >
                         ⠿
                       </span>
@@ -505,24 +542,49 @@ export function BasePhotographsSection({
                       value={propertyImageNames?.[idx] !== undefined ? propertyImageNames[idx] : DEFAULT_PHOTO_LABEL}
                       disabled={isReadOnly}
                       onChange={(e) => onImageNameChange(idx, e.target.value)}
+                      onMouseDown={(e) => e.stopPropagation()}
                       className="text-xs font-bold text-slate-800 bg-white border border-[#dee2e6] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#b8860b] w-full max-w-sm"
                     />
                   </div>
                   {!isReadOnly && (
-                    <button
-                      type="button"
-                      onClick={() => onRemoveImage(idx)}
-                      className="w-7 h-7 flex items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors text-xs font-bold shrink-0 shadow-2xs cursor-pointer"
-                      title="Remove Photo"
-                    >
-                      ✕
-                    </button>
+                    <div className="flex items-center gap-1 shrink-0" onMouseDown={(e) => e.stopPropagation()}>
+                      {canReorder && onReorderImages && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => movePhoto(idx, idx - 1)}
+                            disabled={idx === 0}
+                            className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-xs font-bold shadow-2xs cursor-pointer"
+                            title="Move Photo Left / Previous"
+                          >
+                            ◀
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => movePhoto(idx, idx + 1)}
+                            disabled={idx === propertyImages.length - 1}
+                            className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-xs font-bold shadow-2xs cursor-pointer"
+                            title="Move Photo Right / Next"
+                          >
+                            ▶
+                          </button>
+                        </>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => onRemoveImage(idx)}
+                        className="w-7 h-7 flex items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors text-xs font-bold shadow-2xs cursor-pointer ml-0.5"
+                        title="Remove Photo"
+                      >
+                        ✕
+                      </button>
+                    </div>
                   )}
                 </div>
 
                 {/* Body: Uploaded Photo Preview */}
                 <div className="relative rounded-xl overflow-hidden border border-[#dee2e6] bg-slate-100 h-52 flex items-center justify-center cursor-grab active:cursor-grabbing">
-                  <img src={url} alt={currentLabel} className="w-full h-full object-cover pointer-events-none" />
+                  <img src={url} alt={currentLabel} className="w-full h-full object-cover pointer-events-none select-none" />
                 </div>
               </div>
             );
@@ -942,7 +1004,7 @@ export function BaseMapsSection({
   );
 }
 
-// ─── Standardized Map Category Card with Drag & Drop Repositioning ───
+// ─── Standardized Map Category Card with Drag & Drop + 1-Click Arrow Repositioning ───
 function MapImageCategoryCard({
   images,
   categoryLabel,
@@ -973,35 +1035,68 @@ function MapImageCategoryCard({
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
-  const handleDragStart = (idx: number) => {
+  const moveMap = (fromIdx: number, toIdx: number) => {
+    if (isReadOnly || !onReorder) return;
+    if (fromIdx < 0 || fromIdx >= images.length) return;
+    if (toIdx < 0 || toIdx >= images.length) return;
+    if (fromIdx === toIdx) return;
+
+    const reordered = [...images];
+    const [moved] = reordered.splice(fromIdx, 1);
+    reordered.splice(toIdx, 0, moved);
+
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+    onReorder(reordered);
+  };
+
+  const handleDragStart = (e: React.DragEvent, idx: number) => {
     if (isReadOnly) return;
+    try {
+      e.dataTransfer.setData('text/plain', String(idx));
+      e.dataTransfer.effectAllowed = 'move';
+    } catch {
+      /* ignore */
+    }
     setDraggedIdx(idx);
   };
 
   const handleDragOver = (e: React.DragEvent, idx: number) => {
     e.preventDefault();
+    try {
+      e.dataTransfer.dropEffect = 'move';
+    } catch {
+      /* ignore */
+    }
     if (draggedIdx === null || draggedIdx === idx) return;
-    setDragOverIdx(idx);
+    if (dragOverIdx !== idx) {
+      setDragOverIdx(idx);
+    }
   };
 
   const handleDragLeave = () => {
     setDragOverIdx(null);
   };
 
-  const handleDrop = (targetIdx: number) => {
-    if (draggedIdx === null || draggedIdx === targetIdx) {
-      setDraggedIdx(null);
-      setDragOverIdx(null);
-      return;
+  const handleDrop = (e: React.DragEvent, targetIdx: number) => {
+    e.preventDefault();
+    let fromIdx = draggedIdx;
+    try {
+      const data = e.dataTransfer.getData('text/plain');
+      if (data !== '') {
+        const parsed = parseInt(data, 10);
+        if (!isNaN(parsed)) fromIdx = parsed;
+      }
+    } catch {
+      /* fallback */
     }
-    const reordered = [...images];
-    const [moved] = reordered.splice(draggedIdx, 1);
-    reordered.splice(targetIdx, 0, moved);
     setDraggedIdx(null);
     setDragOverIdx(null);
-    if (onReorder) {
-      onReorder(reordered);
+
+    if (fromIdx === null || isNaN(fromIdx) || fromIdx === targetIdx) {
+      return;
     }
+    moveMap(fromIdx, targetIdx);
   };
 
   return (
@@ -1032,12 +1127,12 @@ function MapImageCategoryCard({
 
             return (
               <div
-                key={idx}
+                key={`${url}-${idx}`}
                 draggable={canDrag}
-                onDragStart={() => handleDragStart(idx)}
+                onDragStart={(e) => handleDragStart(e, idx)}
                 onDragOver={(e) => handleDragOver(e, idx)}
                 onDragLeave={handleDragLeave}
-                onDrop={() => handleDrop(idx)}
+                onDrop={(e) => handleDrop(e, idx)}
                 onDragEnd={() => {
                   setDraggedIdx(null);
                   setDragOverIdx(null);
@@ -1046,33 +1141,60 @@ function MapImageCategoryCard({
                   isDragging ? 'opacity-40 scale-[0.98]' : 'opacity-100'
                 } ${
                   isDragOver
-                    ? 'border-2 border-dashed border-[#b8860b] ring-2 ring-[#b8860b]/20 shadow-md'
+                    ? 'border-2 border-dashed border-[#b8860b] ring-2 ring-[#b8860b]/20 shadow-md bg-amber-50/20'
                     : 'border-[#dee2e6] hover:border-slate-300'
                 }`}
               >
-                <img src={url} alt={`${categoryLabel} ${idx + 1}`} className="w-full h-full object-contain pointer-events-none" />
+                <img src={url} alt={`${categoryLabel} ${idx + 1}`} className="w-full h-full object-contain pointer-events-none select-none" />
 
-                {/* Drag Handle Indicator */}
-                {canDrag && (
-                  <span
-                    className="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/60 text-white text-[11px] font-bold cursor-grab active:cursor-grabbing select-none opacity-80 group-hover:opacity-100 transition-opacity flex items-center gap-1 shadow-xs"
-                    title="Drag to reposition map"
-                  >
-                    <span>⠿</span>
-                    <span className="text-[10px] font-medium">{idx + 1}</span>
-                  </span>
-                )}
+                {/* Left Badge: Drag Handle + Order */}
+                <span
+                  className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/70 text-white text-[11px] font-bold select-none flex items-center gap-1.5 shadow-xs backdrop-blur-xs"
+                  title="Drag to reposition or use arrow buttons"
+                >
+                  {canDrag && <span className="cursor-grab active:cursor-grabbing text-slate-300">⠿</span>}
+                  <span>#{idx + 1}</span>
+                </span>
 
-                {/* Remove button */}
-                {!isReadOnly && onRemove && (
-                  <button
-                    type="button"
-                    onClick={() => onRemove(idx)}
-                    className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full bg-red-600 text-white font-bold text-xs opacity-90 group-hover:opacity-100 hover:bg-red-700 shadow-sm transition-opacity cursor-pointer"
-                    title={`Remove ${categoryLabel}`}
+                {/* Right Action Controls: Reposition Arrows + Remove Button */}
+                {!isReadOnly && (
+                  <div
+                    className="absolute top-2 right-2 flex items-center gap-1 z-10"
+                    onMouseDown={(e) => e.stopPropagation()}
                   >
-                    ✕
-                  </button>
+                    {onReorder && images.length > 1 && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => moveMap(idx, idx - 1)}
+                          disabled={idx === 0}
+                          className="w-6 h-6 flex items-center justify-center rounded bg-black/70 hover:bg-black text-white text-[10px] font-bold disabled:opacity-30 disabled:cursor-not-allowed shadow-xs transition-all cursor-pointer backdrop-blur-xs"
+                          title="Move Left / Previous"
+                        >
+                          ◀
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveMap(idx, idx + 1)}
+                          disabled={idx === images.length - 1}
+                          className="w-6 h-6 flex items-center justify-center rounded bg-black/70 hover:bg-black text-white text-[10px] font-bold disabled:opacity-30 disabled:cursor-not-allowed shadow-xs transition-all cursor-pointer backdrop-blur-xs"
+                          title="Move Right / Next"
+                        >
+                          ▶
+                        </button>
+                      </>
+                    )}
+                    {onRemove && (
+                      <button
+                        type="button"
+                        onClick={() => onRemove(idx)}
+                        className="w-6 h-6 flex items-center justify-center rounded bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
+                        title={`Remove ${categoryLabel}`}
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             );
