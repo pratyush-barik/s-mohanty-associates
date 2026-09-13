@@ -110,7 +110,6 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
   public async render(fields: ArkaReportFields): Promise<Uint8Array> {
     const fv = (key: keyof ArkaReportFields, defaultVal = '') => (fields[key] as string) || defaultVal;
     
-    this.addPage();
     this.cursorY += 60;
     
     const drawCenteredBold = (text: string, size: number, ySpaceAfter: number) => {
