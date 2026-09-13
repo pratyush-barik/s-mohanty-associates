@@ -1142,7 +1142,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     this.drawRow([
       { text: 'Boundaries Matching', width: bW1, isLabel: true },
       { text: fields.boundariesMatching || 'Yes', width: bW2, align: 'center' },
-      { text: 'If No, then\nreason thereon', width: bW3, isLabel: true, fontSize: 8.5 },
+      { text: 'If No, then\nreason thereon', width: bW3, isLabel: true, bold: false, fontSize: 8.5 },
       { text: reasonText, width: bW4 + bW5, align: 'center', fontSize: 8.5 },
     ], 24, 3);
 
@@ -1507,9 +1507,9 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     const vcV2 = CONTENT_W / 2 - vcW2;
 
     this.drawRow([
-      { text: 'Date of Visit', width: vcW1, isLabel: true, fontSize: 9.5 },
+      { text: 'Date of Visit', width: vcW1, isLabel: true, bold: false, fontSize: 9.5 },
       { text: formatReportDate(fields.dateOfInspection || fields.dateOfVisit, ''), width: vcV, fontSize: 9.5 },
-      { text: 'Date of Report Submission', width: vcW2, isLabel: true, fontSize: 9.5 },
+      { text: 'Date of Report\nSubmission', width: vcW2, isLabel: true, bold: false, fontSize: 9.5 },
       { text: formatReportDate(fields.dateOfReportSubmission || fields.dateOfValuation, ''), width: vcV2, fontSize: 9.5 },
     ], 24, 3);
 
@@ -1545,15 +1545,15 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
 
       // Customer & Proposal row
       this.drawRow([
-        { text: 'Name of the Customer/\nApplicant', width: phW1, isLabel: true, fontSize: 9.5 },
+        { text: 'Name of the Customer/\nApplicant', width: phW1, isLabel: true, bold: false, fontSize: 9.5 },
         { text: fields.customerName || '', width: phV, fontSize: 9.5 },
-        { text: 'Proposal No.', width: phW2, isLabel: true, fontSize: 9.5 },
+        { text: 'Proposal No.', width: phW2, isLabel: true, bold: false, fontSize: 9.5 },
         { text: fields.proposalNo || '', width: phV2, fontSize: 9.5 },
       ], 24, 3);
 
       // Address row
       curY = this.pdfY(this.cursorY);
-      this.drawCell(MARGIN_L, curY, phW1, phAddrH, 'Address of the property\nbeing appraised', { isLabel: true, align: 'center', vAlign: 'middle', fontSize: 9.5 });
+      this.drawCell(MARGIN_L, curY, phW1, phAddrH, 'Address of the property\nbeing appraised', { isLabel: true, align: 'center', vAlign: 'middle', bold: false, fontSize: 9.5 });
       this.drawCell(MARGIN_L + phW1, curY, CONTENT_W - phW1, phAddrH, phAddrText, { align: 'center', vAlign: 'middle', fontSize: 9.5 });
       this.cursorY += phAddrH + 6;
 
@@ -1601,14 +1601,14 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       this.drawSectionBanner('LOCATION CUM ROUTE MAP SHOWING PROPERTY BOUNDARIES');
 
       this.drawRow([
-        { text: 'Name of the Customer/\nApplicant', width: mpW1, isLabel: true, fontSize: 9.5 },
+        { text: 'Name of the Customer/\nApplicant', width: mpW1, isLabel: true, bold: false, fontSize: 9.5 },
         { text: fields.customerName || '', width: mpV, fontSize: 9.5 },
-        { text: 'Proposal No.', width: mpW2, isLabel: true, fontSize: 9.5 },
+        { text: 'Proposal No.', width: mpW2, isLabel: true, bold: false, fontSize: 9.5 },
         { text: fields.proposalNo || '', width: mpV2, fontSize: 9.5 },
       ], 24, 3);
 
       curY = this.pdfY(this.cursorY);
-      this.drawCell(MARGIN_L, curY, mpW1, mpAddrH, 'Address of the property\nbeing appraised', { isLabel: true, align: 'center', vAlign: 'middle', fontSize: 9.5 });
+      this.drawCell(MARGIN_L, curY, mpW1, mpAddrH, 'Address of the property\nbeing appraised', { isLabel: true, align: 'center', vAlign: 'middle', bold: false, fontSize: 9.5 });
       this.drawCell(MARGIN_L + mpW1, curY, CONTENT_W - mpW1, mpAddrH, mpAddrText, { align: 'center', vAlign: 'middle', fontSize: 9.5 });
       this.cursorY += mpAddrH + 8;
 
