@@ -6,6 +6,9 @@ import {
   FONT_SIZE_HEADER,
   FONT_SIZE_TITLE,
   BORDER_W,
+  PAGE_W,
+  PAGE_H,
+  hexToRgb,
 } from '../pdf-bank-renderer';
 import { BaseReportFields } from '../bank-fields';
 import { rgb } from 'pdf-lib';
@@ -112,36 +115,66 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
     
     this.cursorY += 60;
     
-    const drawCenteredBold = (text: string, size: number, ySpaceAfter: number) => {
+    // Page 1 Border
+    const bmx = 30; // Horizontal margin
+    const bmyTop = 95; // Clear letterhead
+    const bmyBot = 45; // Clear footer
+    const borderColorHex = hexToRgb('#4a6078'); 
+
+    // Outer thick border
+    this.page.drawRectangle({
+      x: bmx,
+      y: bmyBot,
+      width: PAGE_W - 2 * bmx,
+      height: PAGE_H - bmyBot - bmyTop,
+      borderColor: borderColorHex,
+      borderWidth: 2.5,
+    });
+    // Inner thin border
+    this.page.drawRectangle({
+      x: bmx + 3,
+      y: bmyBot + 3,
+      width: PAGE_W - 2 * bmx - 6,
+      height: PAGE_H - bmyBot - bmyTop - 6,
+      borderColor: borderColorHex,
+      borderWidth: 0.75,
+    });
+
+    const drawCenteredBold = (text: string, size: number, ySpaceAfter: number, underline: boolean = false) => {
       const tw = this.fontBold.widthOfTextAtSize(text, size);
-      this.page.drawText(text, { x: MARGIN_L + (CONTENT_W - tw) / 2, y: this.pdfY(this.cursorY), size, font: this.fontBold, color: rgb(0,0,0) });
+      const startX = MARGIN_L + (CONTENT_W - tw) / 2;
+      const startY = this.pdfY(this.cursorY);
+      this.page.drawText(text, { x: startX, y: startY, size, font: this.fontBold, color: rgb(0,0,0) });
+      if (underline) {
+        this.page.drawLine({
+          start: { x: startX, y: startY - 2 },
+          end: { x: startX + tw, y: startY - 2 },
+          thickness: 1,
+          color: rgb(0,0,0)
+        });
+      }
       this.cursorY += ySpaceAfter;
     };
 
-    const boxW = Math.min(380, CONTENT_W - 20);
-    this.page.drawRectangle({
-      x: MARGIN_L + (CONTENT_W - boxW) / 2, y: this.pdfY(this.cursorY + 4) - 24, width: boxW, height: 24,
-      color: rgb(1,1,1), borderColor: rgb(0,0,0), borderWidth: BORDER_W
-    });
-    drawCenteredBold('VALUATION OF IMMOVABLE PROPERTY', FONT_SIZE_TITLE, 40);
+    drawCenteredBold('VALUATION OF IMMOVABLE PROPERTY', FONT_SIZE_TITLE + 3, 40, true);
 
-    drawCenteredBold('PROPERTY OWNER', FONT_SIZE_HEADER, 16);
+    drawCenteredBold('PROPERTY OWNER', FONT_SIZE_HEADER, 16, true);
     const po = fv('propertyOwner', 'PRASANNA NAYAK,\nS/O- PRAHALLAD NAYAK');
     drawCenteredBold(po.split('\n')[0], FONT_SIZE, 14);
     if (po.includes('\n')) drawCenteredBold(po.split('\n')[1], FONT_SIZE, 30);
     else this.cursorY += 20;
 
-    drawCenteredBold('ADDRESS OF THE PROPERTY', FONT_SIZE_HEADER, 16);
+    drawCenteredBold('ADDRESS OF THE PROPERTY', FONT_SIZE_HEADER, 16, true);
     drawCenteredBold(fv('addressOfTheProperty'), FONT_SIZE, 40);
 
-    drawCenteredBold('VALUE OF THE PROPERTY', FONT_SIZE_HEADER, 16);
+    drawCenteredBold('VALUE OF THE PROPERTY', FONT_SIZE_HEADER, 16, true);
     drawCenteredBold(`PRESENT MARKET VALUE: ${fv('presentMarketValue')}`, FONT_SIZE, 14);
     drawCenteredBold(`DISTRESS SALE VALUE: ${fv('distressSaleValue')}`, FONT_SIZE, 40);
 
-    drawCenteredBold('PURPOSE OF VALUATION', FONT_SIZE_HEADER, 16);
+    drawCenteredBold('PURPOSE OF VALUATION', FONT_SIZE_HEADER, 16, true);
     drawCenteredBold(fv('purposeOfValuation', 'TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY'), FONT_SIZE, 40);
 
-    drawCenteredBold('PREPARED BY', FONT_SIZE_HEADER, 16);
+    drawCenteredBold('PREPARED BY', FONT_SIZE_HEADER, 16, true);
     const preparedByText = fv('preparedBy', 'M/s. S MOHANTY ASSOCIATES\nEMPANELLED VALUER & CHARTERED ENGINEER\nPlot no-859/2494/3232 & 858/2493/3295,\nShiv Nagar Tankapani Road,\nBhubaneswar, Odisha,Pin-751018\nPHONE- 0674-2381145\nMOBILE-9937023855/9437074855');
     const preparedByLines = preparedByText.split('\n');
     preparedByLines.forEach((line, index) => {
