@@ -1117,7 +1117,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     ], 22, 4);
 
     this.drawRow([
-      { text: 'As per Documents\n(Sale Deed)', width: bW1, isLabel: true },
+      { text: 'As per Documents\n(Sale Deed)', width: bW1, isLabel: true, bold: false },
       { text: fields.boundaryNorthDocs || 'Not provided', width: bW2, align: 'center' },
       { text: fields.boundarySouthDocs || 'Not provided', width: bW3, align: 'center' },
       { text: fields.boundaryEastDocs || 'Not provided', width: bW4, align: 'center' },
@@ -1125,7 +1125,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     ], 22, 4);
 
     this.drawRow([
-      { text: 'As per Sketch map', width: bW1, isLabel: true },
+      { text: 'As per Sketch map', width: bW1, isLabel: true, bold: false },
       { text: fields.boundaryNorthSketch || '', width: bW2, align: 'center' },
       { text: fields.boundarySouthSketch || '', width: bW3, align: 'center' },
       { text: fields.boundaryEastSketch || '', width: bW4, align: 'center' },
@@ -1133,7 +1133,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     ], 22, 4);
 
     this.drawRow([
-      { text: 'As per Site / Actual', width: bW1, isLabel: true },
+      { text: 'As per Site / Actual', width: bW1, isLabel: true, bold: false },
       { text: fields.boundaryNorthSite || '', width: bW2, align: 'center' },
       { text: fields.boundarySouthSite || '', width: bW3, align: 'center' },
       { text: fields.boundaryEastSite || '', width: bW4, align: 'center' },
@@ -1148,10 +1148,10 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       : (fields.boundariesNotMatchingReason || 'Boundary is not matching');
 
     this.drawRow([
-      { text: 'Boundaries Matching', width: bW1, isLabel: true },
+      { text: 'Boundaries Matching', width: bW1, isLabel: true, bold: false },
       { text: fields.boundariesMatching || 'Yes', width: bW2, align: 'center' },
-      { text: 'If No, then\nreason thereon', width: bW3, isLabel: true, bold: false, fontSize: 8.5 },
-      { text: reasonText, width: bW4 + bW5, align: 'center', fontSize: 8.5 },
+      { text: 'If No, then\nreason thereon', width: bW3, isLabel: true, bold: false },
+      { text: reasonText, width: bW4 + bW5, align: 'center' },
     ], 24, 3);
 
     // ══════════════════════════════════════════════════════════════════
@@ -1175,7 +1175,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     ], 26, 4);
 
     this.drawRow([
-      { text: 'As per sanctioned /\npermissible byelaws', width: sbW1, isLabel: true },
+      { text: 'As per sanctioned /\npermissible byelaws', width: sbW1, isLabel: true, bold: false },
       { text: fields.setbackFrontSanctioned || 'NA', width: sbW2, align: 'center' },
       { text: fields.setbackRearSanctioned || 'NA', width: sbW3, align: 'center' },
       { text: fields.setbackLeftSanctioned || 'NA', width: sbW4, align: 'center' },
@@ -1183,7 +1183,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     ], 26, 4);
 
     this.drawRow([
-      { text: 'As per Site / Actual', width: sbW1, isLabel: true },
+      { text: 'As per Site / Actual', width: sbW1, isLabel: true, bold: false },
       { text: fields.setbackFrontSite || '', width: sbW2, align: 'center' },
       { text: fields.setbackRearSite || '', width: sbW3, align: 'center' },
       { text: fields.setbackLeftSite || '', width: sbW4, align: 'center' },
@@ -1200,12 +1200,12 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     const htWRest = CONTENT_W - htW1;
 
     this.drawRow([
-      { text: 'As per sanctioned /\npermissible byelaws', width: htW1, isLabel: true },
+      { text: 'As per sanctioned /\npermissible byelaws', width: htW1, isLabel: true, bold: false },
       { text: fields.heightSanctioned || 'NA', width: htWRest, align: 'center' },
     ], 26, 4);
 
     this.drawRow([
-      { text: 'As per Site / Actual', width: htW1, isLabel: true },
+      { text: 'As per Site / Actual', width: htW1, isLabel: true, bold: false },
       { text: fields.heightSite || '', width: htWRest, align: 'center' },
     ], 20, 4);
 
@@ -1222,20 +1222,20 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     this.checkPageBreak(buaFloors.length > 0 ? (26 + 22 * (buaFloors.length + 2)) : 65);
     this.drawSectionBanner('BUILT-UP AREA & ACCOMMODATION DETAILS');
 
-    const buaW1 = 90;  // Floor
-    const buaW2 = 80;  // Accommodation
-    const buaW3 = 75;  // Carpet Area (Sft)
-    const buaW4 = 100; // Actual BUA / SBUA (Sft)
-    const buaW5 = 72;  // Permissible BUA (Sft)
+    const buaW1 = 82;  // Floor
+    const buaW2 = 88;  // Accommodation
+    const buaW3 = 72;  // Carpet Area (Sft)
+    const buaW4 = 92;  // Actual BUA / SBUA (Sft)
+    const buaW5 = 76;  // Permissible BUA (Sft)
     const buaW6 = CONTENT_W - buaW1 - buaW2 - buaW3 - buaW4 - buaW5; // Adopted Built-up area
 
     this.drawRow([
-      { text: 'Floor\n(Pl mention floor wise)', width: buaW1, isHeader: true, align: 'center' },
-      { text: 'Accomodation', width: buaW2, isHeader: true, align: 'center' },
-      { text: 'Carpet Area (Sft)', width: buaW3, isHeader: true, align: 'center' },
-      { text: 'Actual BUA / SBUA (Sft)', width: buaW4, isHeader: true, align: 'center' },
-      { text: 'Permissible BUA (Sft)', width: buaW5, isHeader: true, align: 'center' },
-      { text: 'Adopted Built-up area (Sft)', width: buaW6, isHeader: true, align: 'center', bold: true },
+      { text: 'Floor\n(Pl mention floor wise)', width: buaW1, isHeader: true, align: 'center', bold: false },
+      { text: 'Accomodation', width: buaW2, isHeader: true, align: 'center', bold: false },
+      { text: 'Carpet Area (Sft)', width: buaW3, isHeader: true, align: 'center', bold: false },
+      { text: 'Actual BUA /\nSBUA (Sft)', width: buaW4, isHeader: true, align: 'center', bold: false },
+      { text: 'Permissible\nBUA (Sft)', width: buaW5, isHeader: true, align: 'center', bold: false },
+      { text: 'Adopted Built-up\narea (Sft)', width: buaW6, isHeader: true, align: 'center', bold: false },
     ], 36, 4);
 
     if (buaFloors.length > 0) {
@@ -1247,7 +1247,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
 
       for (const fl of buaFloors) {
         this.drawRow([
-          { text: fl.floor, width: buaW1, isLabel: true },
+          { text: fl.floor, width: buaW1, isLabel: true, bold: false },
           { text: fl.accommodation || 'NA', width: buaW2, align: 'center' },
           { text: fl.carpetArea ? (fl.carpetArea === 'NA' ? 'NA' : `${fl.carpetArea}`) : 'NA', width: buaW3, align: 'center' },
           { text: fl.actualBUA ? (fl.actualBUA === 'NA' ? 'NA' : `${fl.actualBUA}`) : 'NA', width: buaW4, align: 'center' },
@@ -1256,9 +1256,9 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
         ], 22, 4);
       }
 
-      // Total row - bold label
+      // Total row - no bold
       this.drawRow([
-        { text: 'Total', width: buaW1, isLabel: true, bold: true },
+        { text: 'Total', width: buaW1, isLabel: true, bold: false },
         { text: 'NA', width: buaW2, align: 'center' },
         { text: totalCarpetArea > 0 ? formatExactDecimal(totalCarpetArea) : 'NA', width: buaW3, align: 'center' },
         { text: totalActualBUA > 0 ? `${formatExactDecimal(totalActualBUA)}sqft` : 'NA', width: buaW4, align: 'center' },
@@ -1269,7 +1269,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
 
     // Violation observed
     this.drawRow([
-      { text: 'Violation observed if any', width: buaW1 + buaW2, isLabel: true },
+      { text: 'Violation observed if any', width: buaW1 + buaW2, isLabel: true, bold: false },
       { text: fields.violationObserved || 'NA', width: CONTENT_W - buaW1 - buaW2, align: 'center' },
     ], 20, 4);
 
@@ -1286,23 +1286,23 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
 
     // Row 1: Construction as per approved/ sanctioned plans | NA | Details of approved plan with approval no and date | NA
     this.drawRow([
-      { text: 'Construction as per approved /\nsanctioned plans', width: paW1, isLabel: true },
+      { text: 'Construction as per approved /\nsanctioned plans', width: paW1, isLabel: true, bold: false },
       { text: fields.constructionAsPerPlan || 'NA', width: paW2, align: 'center' },
-      { text: 'Details of approved plan with\napproval no and date', width: paW3, isLabel: true },
+      { text: 'Details of approved plan with\napproval no and date', width: paW3, isLabel: true, bold: false },
       { text: fields.approvedPlanDetails || 'NA', width: paW4, align: 'center' },
     ], 24, 4);
 
     // Row 2: Construction permission Number and date | NA | Violations Observed if Any | NA
     this.drawRow([
-      { text: 'Construction permission\nNumber and date', width: paW1, isLabel: true },
+      { text: 'Construction permission\nNumber and date', width: paW1, isLabel: true, bold: false },
       { text: fields.constructionPermissionNumberDate || 'NA', width: paW2, align: 'center' },
-      { text: 'Violations Observed if Any', width: paW3, isLabel: true },
+      { text: 'Violations Observed if Any', width: paW3, isLabel: true, bold: false },
       { text: fields.violationsObserved || 'NA', width: paW4, align: 'center' },
     ], 24, 4);
 
     // Row 3: If plans not available then is the structure confirming to the local byelaws. | NA (spans remaining width)
     this.drawRow([
-      { text: 'If plans not available then is the structure\nconfirming to the local byelaws.', width: paW1, isLabel: true },
+      { text: 'If plans not available then is the structure\nconfirming to the local byelaws.', width: paW1, isLabel: true, bold: false },
       { text: fields.structureConfirmingByelaws || 'NA', width: CONTENT_W - paW1, align: 'center' },
     ], 24, 4);
 
@@ -1318,16 +1318,16 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     const eaV2 = CONTENT_W - eaW1 - eaV - eaW2;
 
     this.drawRow([
-      { text: 'Estimated Cost (In Rs)', width: eaW1, isLabel: true },
+      { text: 'Estimated Cost (In Rs)', width: eaW1, isLabel: true, bold: false },
       { text: fields.estimatedCostTotal || 'NA', width: eaV },
-      { text: 'Estimated Cost (in Rs per Sqft)', width: eaW2, isLabel: true },
+      { text: 'Estimated Cost (in Rs per Sqft)', width: eaW2, isLabel: true, bold: false },
       { text: fields.estimatedCostPerSqft || 'NA', width: eaV2 },
     ], 20, 4);
 
     this.drawRow([
-      { text: 'Justified Estimated Cost\n(in Rs per Sqft)', width: eaW1, isLabel: true },
+      { text: 'Justified Estimated Cost\n(in Rs per Sqft)', width: eaW1, isLabel: true, bold: false },
       { text: fields.justifiedEstimatedCostPerSqft || 'NA', width: eaV },
-      { text: 'Adoptable / Justified\nEstimated Cost (In Rs)', width: eaW2, isLabel: true },
+      { text: 'Adoptable / Justified\nEstimated Cost (In Rs)', width: eaW2, isLabel: true, bold: false },
       { text: fields.adoptableJustifiedEstimatedCost || 'NA', width: eaV2 },
     ], 20, 4);
 
@@ -1342,36 +1342,36 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     const vlW2 = 165;
     const vlV2 = CONTENT_W - vlW1 - vlV - vlW2;
 
-    const buaSpec = (fields.adoptableBUASpec !== undefined ? fields.adoptableBUASpec : 'GF RCC').trim();
+    const buaSpec = (fields.adoptableBUASpec !== undefined && fields.adoptableBUASpec !== null ? fields.adoptableBUASpec : '').trim();
     const buaLabel = buaSpec
       ? `Adoptable Built-up Area (in Sqft) ${buaSpec}`
       : 'Adoptable Built-up Area (in Sqft)';
 
     this.drawRow([
-      { text: 'Land Area (In Sqft)', width: vlW1, isLabel: true },
+      { text: 'Land Area (In Sqft)', width: vlW1, isLabel: true, bold: false },
       { text: fields.landAreaSqft || '', width: vlV },
-      { text: buaLabel, width: vlW2, isLabel: true },
+      { text: buaLabel, width: vlW2, isLabel: true, bold: false },
       { text: fields.adoptableBuiltUpArea || '', width: vlV2 },
     ], 20, 4);
 
     this.drawRow([
-      { text: 'Current Market Rate of land in\nthe locality (Range) in Rs Per Sqft', width: vlW1, isLabel: true },
+      { text: 'Current Market Rate of land in\nthe locality (Range) in Rs Per Sqft', width: vlW1, isLabel: true, bold: false },
       { text: fields.currentMarketRateRange || '', width: vlV },
-      { text: 'Construction Cost (Rs per sft)', width: vlW2, isLabel: true },
+      { text: 'Construction Cost (Rs per sft)', width: vlW2, isLabel: true, bold: false },
       { text: fields.constructionCostPerSqft || '', width: vlV2 },
     ], 20, 4);
 
     this.drawRow([
-      { text: 'Recommended Rate of Land\n(Rs per sqft)', width: vlW1, isLabel: true },
+      { text: 'Recommended Rate of Land\n(Rs per sqft)', width: vlW1, isLabel: true, bold: false },
       { text: fields.recommendedRateOfLand || '', width: vlV },
-      { text: 'Total Construction Value for\n100% complete building (in Rs)', width: vlW2, isLabel: true },
+      { text: 'Total Construction Value for\n100% complete building (in Rs)', width: vlW2, isLabel: true, bold: false },
       { text: fields.totalConstructionValue100 || '', width: vlV2 },
     ], 20, 4);
 
     this.drawRow([
       { text: 'Total Land Value (in Rs)', width: vlW1, isLabel: true, bold: true },
       { text: fields.totalLandValue || '', width: vlV, bold: true },
-      { text: 'Total Construction Value for\npresent construction stage (in Rs)', width: vlW2, isLabel: true },
+      { text: 'Total Construction Value for\npresent construction stage (in Rs)', width: vlW2, isLabel: true, bold: false },
       { text: fields.totalConstructionValuePresent || '', width: vlV2 },
     ], 20, 4);
 
@@ -1418,6 +1418,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
         segments: flatSegments,
         width: vlW1,
         isLabel: true,
+        bold: false,
       },
       { text: fields.flatSBUA || 'NA', width: vlV },
       { text: 'Composite sale rate (Rs per\nsqft)', width: vlW2, isLabel: true, bold: false },
@@ -1444,6 +1445,8 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
         segments: tmvSegments,
         width: vlW1 + vlV,
         isLabel: true,
+        bold: false,
+        fontSize: 10,
       },
       { text: fields.totalMarketValueApartment || 'NA', width: CONTENT_W - (vlW1 + vlV), align: 'center' },
     ], 20, 4);
