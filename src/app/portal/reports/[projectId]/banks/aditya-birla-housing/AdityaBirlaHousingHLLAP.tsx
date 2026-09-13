@@ -461,7 +461,7 @@ async function generateHLLAPPDF(
 
   // Boundaries Matching row - flush
   r.drawKeyValueRow([
-    { label: 'Boundaries Matching', value: fv(fields, 'boundariesMatching', 'Yes as per Approved plan key map.'), labelWidth: bndCol1, valueWidth: CONTENT_W - bndCol1, labelBold: true, valueBold: true }
+    { label: 'Boundaries Matching', value: fv(fields, 'boundariesMatching', ''), labelWidth: bndCol1, valueWidth: CONTENT_W - bndCol1, labelBold: true, valueBold: false }
   ]);
 
   // ====== REMARKS & DECLARATION ======
@@ -574,9 +574,27 @@ async function generateHLLAPPDF(
       ['Property Address', fv(fields, 'addressAsPerDocument', '')]
     ], [devC1, devC3 + devC1 + devC3], [], [0]);
 
-    r.drawTable([], [
-      [`Deviations/Observations:\n\n${fv(fields, 'deviationsObservations', '')}\n`]
-    ], [CONTENT_W], [], []);
+    const devObsText = fv(fields, 'deviationsObservations', '');
+    const devLines = (r as any).wrapText(devObsText, CONTENT_W - 8, 10, false);
+    const devH = Math.max(16, (2 + devLines.length) * 10 * 1.5 + 8);
+    (r as any).checkPageBreak(devH);
+    const cy = (r as any).pdfY((r as any).cursorY);
+
+    (r as any).page.drawRectangle({
+      x: MARGIN_L, y: cy - devH, width: CONTENT_W, height: devH,
+      borderColor: rgb(0,0,0), borderWidth: 1
+    });
+
+    (r as any).page.drawText('Deviations/Observations:', {
+      x: MARGIN_L + 4, y: cy - 4 - 10 * 0.85, size: 10, font: (r as any).fontBold, color: rgb(0,0,0)
+    });
+
+    let lineY = cy - 4 - 10 * 0.85 - 10 * 1.5 * 2;
+    for (const l of devLines) {
+      (r as any).page.drawText(l, { x: MARGIN_L + 4, y: lineY, size: 10, font: (r as any).fontRegular, color: rgb(0,0,0) });
+      lineY -= 10 * 1.5;
+    }
+    (r as any).cursorY += devH;
   }
 
   // ====== FINALIZE ======
