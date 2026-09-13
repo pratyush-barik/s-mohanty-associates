@@ -356,46 +356,51 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
       ? colWidths.map(w => (w / totalW) * CONTENT_W)
       : colWidths;
 
-    // 1. Draw Table Header
-    let headerMaxLines = 1;
-    const headerWrapped = headers.map((h, i) => {
-      const lines = this.wrapText(h, normalizedColWidths[i] - pad * 2, fontSize, true);
-      headerMaxLines = Math.max(headerMaxLines, lines.length);
-      return lines;
-    });
-
-    const headerH = Math.max(18, headerMaxLines * fontSize * LINE_HEIGHT + pad * 2);
-    this.checkPageBreak(headerH);
-
     let y = this.pdfY(this.cursorY);
     let curX = MARGIN_L;
 
-    for (let i = 0; i < headers.length; i++) {
-      this.page.drawRectangle({
-        x: curX,
-        y: y - headerH,
-        width: normalizedColWidths[i],
-        height: headerH,
-        color: hexToRgb(OPT_BG),
-        opacity: BG_OPACITY,
-        borderColor: rgb(0, 0, 0),
-        borderWidth: BORDER_W,
+    // 1. Draw Table Header (skip entirely when no headers provided)
+    if (headers.length > 0) {
+      let headerMaxLines = 1;
+      const headerWrapped = headers.map((h, i) => {
+        const lines = this.wrapText(h, normalizedColWidths[i] - pad * 2, fontSize, true);
+        headerMaxLines = Math.max(headerMaxLines, lines.length);
+        return lines;
       });
-
-      let lineY = y - pad - fontSize * 0.85;
-      for (const line of headerWrapped[i]) {
-        this.page.drawText(line, {
-          x: curX + pad,
-          y: lineY,
-          size: fontSize,
-          font: this.fontBold,
-          color: rgb(0, 0, 0),
+  
+      const headerH = Math.max(18, headerMaxLines * fontSize * LINE_HEIGHT + pad * 2);
+      this.checkPageBreak(headerH);
+  
+      y = this.pdfY(this.cursorY);
+      curX = MARGIN_L;
+  
+      for (let i = 0; i < headers.length; i++) {
+        this.page.drawRectangle({
+          x: curX,
+          y: y - headerH,
+          width: normalizedColWidths[i],
+          height: headerH,
+          color: hexToRgb(OPT_BG),
+          opacity: BG_OPACITY,
+          borderColor: rgb(0, 0, 0),
+          borderWidth: BORDER_W,
         });
-        lineY -= fontSize * LINE_HEIGHT;
+  
+        let lineY = y - pad - fontSize * 0.85;
+        for (const line of headerWrapped[i]) {
+          this.page.drawText(line, {
+            x: curX + pad,
+            y: lineY,
+            size: fontSize,
+            font: this.fontBold,
+            color: rgb(0, 0, 0),
+          });
+          lineY -= fontSize * LINE_HEIGHT;
+        }
+        curX += normalizedColWidths[i];
       }
-      curX += normalizedColWidths[i];
+      this.cursorY += headerH;
     }
-    this.cursorY += headerH;
 
     // 2. Draw Data Rows
     for (const row of rows) {
