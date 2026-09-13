@@ -1463,14 +1463,16 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     );
 
     this.drawRow([
-      { text: 'Government Guideline / Circle rate\nfor Land (Rs per sqft)', width: vlW1, isLabel: true, bold: false },
+      { text: 'Government Guideline /
+Circle rate for Land (Rs/sqft)', width: vlW1, isLabel: true, bold: false },
       { text: fields.govtGuidelineRateLand || '', width: vlV },
       { text: 'Land Value as per\nGovernment Rate (Rs)', width: vlW2, isLabel: true, bold: false },
       { text: landGovtVal, width: vlV2 },
     ], 20, 4);
 
     this.drawRow([
-      { text: 'Government Guideline / Circle rate\nfor Flats (Rs per sqft)', width: vlW1, isLabel: true, bold: false },
+      { text: 'Government Guideline /
+Circle rate for Flats (Rs/sqft)', width: vlW1, isLabel: true, bold: false },
       { text: fields.govtGuidelineRateFlats || 'NA', width: vlV },
       { text: 'Flat / Apartment Value as\nper Government Rate (Rs)', width: vlW2, isLabel: true, bold: false },
       { text: flatGovtVal, width: vlV2 },
