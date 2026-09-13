@@ -423,7 +423,11 @@ Outstanding items in **priority order**:
 - `latest` - update(Resume): update CGPA to 7.43 and S Mohanty Associates full-stack internship details with 5 priority bullet points
 
 ## Recent Changes
-- `latest` - fix(pdf/ui): complete all final Aditya Birla Housing HL-LAP formatting adjustments including precise boundary table borders, strict NA/N.A field default removals across 4 tables, and perfect width/alignment for Relation with Customer and Contact No.
+- `latest` — style(arka): add sequential numbering to all sections to match photographs formatting
+- `previous` — feat(arka): restructure PREPARED BY section into nested containers and individual fields
+- `previous` — style(arka-pdf): adjust vertical margins of cover page border to prevent letterhead overlap
+- `previous` — style(arka-pdf): add blue borders, remove bg box, and underline headers on cover page
+- `previous` - fix(pdf/ui): complete all final Aditya Birla Housing HL-LAP formatting adjustments including precise boundary table borders, strict NA/N.A field default removals across 4 tables, and perfect width/alignment for Relation with Customer and Contact No.
 
 - `87729f4` — feat(ui): remove Premises Type, Occupied By, and Boundaries from Section 5 in Aditya Birla Housing
 - `600cc9f` — feat(ui): rename Age of property fields, remove Usage Type/Legal Status, and introduce dedicated PDFAdityaBirlaHousingRenderer
@@ -466,6 +470,7 @@ Outstanding items in **priority order**:
 - **Aditya Birla Capital Ltd (STSL / MLAP)** — Bank report builder fully completed with custom PDF renderer, standardized map uploads/reordering, unified bucket modals, and runtime loader stability.
 - **Aditya Birla Housing Finance Ltd (HL-LAP)** — Config-driven bank report builder populated with 130+ fields across 11 sections. Now supported by dedicated `PDFAdityaBirlaHousingRenderer` for layout fidelity.
 - **Annapurna Micro Finance Ltd (Standard)** — Bank report builder and dedicated PDF renderer (`PDFAnnapurnaMicroFinanceRenderer`) fully completed with 8-section custom UI, exact sample table alignments, strict DD/MM/YYYY date formatting, dynamic photos & maps layout, and integrated sign-off / statutory declaration.
+- **Arka Finance Ltd** — Bank report builder completed with 7-section custom UI (sequential numbered sections) and dedicated PDF renderer (double-blue borders, underlined headers, structured PREPARED BY section with strict input constraints).
 - **Dynamic UI Section Numbering** — All bank builders dynamically compute section numbering matching their specific `navSections` sequence.
 - **57 Bank/Sub-template Stubs** — Scalable OOP architecture with BankConfig-driven system, dynamic lazy-loading in BuilderSelector.
 
