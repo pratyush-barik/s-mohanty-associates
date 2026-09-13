@@ -33,6 +33,7 @@ export default function ArkaFinance({
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
   const [fields, setFields] = useState<any>({
     propertyOwners: [{ name: '', fatherName: '' }],
+    addressOfTheProperty: '',
     refNo: '',
     dateOfReport: '',
     nameOfCustomer: '',
@@ -404,6 +405,17 @@ export default function ArkaFinance({
                 </div>
               ))}
             </div>
+          </div>
+          <div className="mt-4">
+            <Field label="ADDRESS OF THE PROPERTY">
+              <textarea
+                className={inputCls}
+                rows={3}
+                value={fields.addressOfTheProperty || ''}
+                onChange={e => handleChange('addressOfTheProperty', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
           </div>
         </Section>
 
