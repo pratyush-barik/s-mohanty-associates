@@ -1507,9 +1507,9 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     const vcV2 = CONTENT_W / 2 - vcW2;
 
     this.drawRow([
-      { text: 'Date of Visit', width: vcW1, isLabel: true, bold: false, fontSize: 9.5 },
+      { text: 'Date of Visit', width: vcW1, isLabel: true, fontSize: 9.5 },
       { text: formatReportDate(fields.dateOfInspection || fields.dateOfVisit, ''), width: vcV, fontSize: 9.5 },
-      { text: 'Date of Report\nSubmission', width: vcW2, isLabel: true, bold: false, fontSize: 9.5 },
+      { text: 'Date of Report\nSubmission', width: vcW2, isLabel: true, fontSize: 9.5 },
       { text: formatReportDate(fields.dateOfReportSubmission || fields.dateOfValuation, ''), width: vcV2, fontSize: 9.5 },
     ], 24, 3);
 
