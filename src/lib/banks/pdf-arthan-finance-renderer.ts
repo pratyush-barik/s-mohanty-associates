@@ -513,18 +513,20 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
         bold?: boolean;
         width: number;
         isSpace: boolean;
+        isNewline?: boolean;
       }
       const tokens: FormattedToken[] = [];
       for (const seg of options.segments) {
         const segClean = this.sanitizeText(seg.text);
         if (!segClean) continue;
         const font = seg.bold ? this.fontBold : this.fontRegular;
-        const rawParts = segClean.split(/(\s+)/);
+        const rawParts = segClean.split(/(\n|\s+)/);
         for (const part of rawParts) {
           if (!part) continue;
+          const isNewline = part === '\n';
           const isSpace = /^\s+$/.test(part);
-          const tw = font.widthOfTextAtSize(part, fontSize);
-          tokens.push({ text: part, bold: seg.bold, width: tw, isSpace });
+          const tw = isNewline ? 0 : font.widthOfTextAtSize(part, fontSize);
+          tokens.push({ text: part, bold: seg.bold, width: tw, isSpace, isNewline });
         }
       }
 
@@ -533,6 +535,12 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       let curLineW = 0;
 
       for (const token of tokens) {
+        if (token.isNewline) {
+          lines.push(curLine);
+          curLine = [];
+          curLineW = 0;
+          continue;
+        }
         if (curLine.length === 0 && token.isSpace) {
           continue; // skip leading spaces on a line
         }
@@ -1427,17 +1435,17 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
           { text: 'Flat', bold: flatType === 'Flat' },
           { text: ' / ', bold: false },
           { text: 'Office', bold: flatType === 'Office' },
-          { text: ' (Rs per sqft)', bold: false },
+          { text: '\n(Rs per sqft)', bold: false },
         ];
 
     this.drawRow([
       {
-        text: 'Total Market Value of Apartment /\nShop / Flat / Office (Rs per sqft)',
+        text: 'Total Market Value of Apartment / Shop / Flat / Office\n(Rs per sqft)',
         segments: tmvSegments,
-        width: vlW1,
+        width: vlW1 + vlV,
         isLabel: true,
       },
-      { text: fields.totalMarketValueApartment || 'NA', width: CONTENT_W - vlW1, align: 'center' },
+      { text: fields.totalMarketValueApartment || 'NA', width: CONTENT_W - (vlW1 + vlV), align: 'center' },
     ], 20, 4);
 
     const landGovtVal = fields.landValueGovtRate || (
