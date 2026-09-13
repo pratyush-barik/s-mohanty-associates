@@ -123,13 +123,15 @@ export function Field({
   label,
   children,
   span = 1,
+  className = '',
 }: {
   label: string;
   children: React.ReactNode;
   span?: number;
+  className?: string;
 }) {
   return (
-    <div className={span === 2 ? 'md:col-span-2' : span === 3 ? 'md:col-span-3' : ''}>
+    <div className={`${span === 2 ? 'md:col-span-2' : span === 3 ? 'md:col-span-3' : ''} ${className}`.trim()}>
       <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider mb-1.5">{label}</label>
       {children}
     </div>

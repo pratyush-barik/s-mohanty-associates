@@ -30,6 +30,7 @@ export default function ArkaFinance({
   onResetWizard
 }: any) {
   const router = useRouter();
+  const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
   const [fields, setFields] = useState<any>({
     propertyOwners: [{ name: '', fatherName: '' }],
     refNo: '',
@@ -212,7 +213,7 @@ export default function ArkaFinance({
       const existing = fields.propertyImages || [];
       handleChange('propertyImages', [...existing, ...uploadedUrls]);
     } catch (err) {
-      alert(`Upload error: ${err.message}`);
+      alert(`Upload error: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setUploading(false);
     }
@@ -229,7 +230,7 @@ export default function ArkaFinance({
       const renderer = new PDFArkaFinanceRenderer();
       await renderer.init();
       const bytes = await renderer.render(fields);
-      const blob = new Blob([bytes], { type: 'application/pdf' });
+      const blob = new Blob([bytes as any], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -239,7 +240,7 @@ export default function ArkaFinance({
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (err) {
-      alert(`PDF Download Failed: ${err.message}`);
+      alert(`PDF Download Failed: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setLoading(false);
     }
@@ -260,7 +261,7 @@ export default function ArkaFinance({
         router.refresh();
       }
     } catch (err) {
-      alert(`Submission failed: ${err.message}`);
+      alert(`Submission failed: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setLoading(false);
     }
@@ -327,8 +328,6 @@ export default function ArkaFinance({
     }
   };
 
-  const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
-
   return (
     <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full">
       <div className="flex-1 min-w-0 space-y-6 w-full">
@@ -388,7 +387,7 @@ export default function ArkaFinance({
                       placeholder="e.g. PRAHALLAD NAYAK"
                     />
                   </Field>
-                  (fields.propertyOwners?.length > 1 || idx > 0) && (
+                  {(fields.propertyOwners?.length > 1 || idx > 0) && (
                     <button
                       type="button"
                       className="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 text-sm rounded-md shadow-sm transition-colors h-[42px]"
@@ -401,8 +400,7 @@ export default function ArkaFinance({
                     >
                       Remove
                     </button>
-                  )
-}
+                  )}
                 </div>
               ))}
             </div>
