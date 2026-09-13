@@ -1866,7 +1866,7 @@ export default function ArthanFinance({
                   <p className="text-[11px] text-black font-medium italic">
                     {(fields.flatPropertyType === 'NA' || fields.flatSBUA === 'NA')
                       ? 'Status: NA'
-                      : `Selected: ${fields.flatPropertyType || 'Flat'} (bolded in rendered report)`}
+                      : <><strong className="font-black not-italic">{fields.flatPropertyType || 'Flat'}</strong>{' selected — bolded in rendered report'}</>}
                   </p>
                 </div>
 
@@ -1911,7 +1911,7 @@ export default function ArthanFinance({
                   <p className="text-[11px] text-black font-medium italic">
                     {(fields.flatPropertyType === 'NA' || fields.flatSBUA === 'NA' || fields.totalMarketValueApartment === 'NA')
                       ? 'Referenced from above: Property is NA (Not Applicable)'
-                      : `Auto-calculated & referenced from above: ${fields.flatPropertyType || 'Flat'} SBUA (${fields.flatSBUA || '0'} sqft) × Composite sale rate (${fields.compositeSaleRate || '0'} Rs/sqft)`}
+                      : <><strong className="font-black not-italic">{fields.flatPropertyType || 'Flat'}</strong>{` SBUA (${fields.flatSBUA || '0'} sqft) × Composite sale rate (${fields.compositeSaleRate || '0'} Rs/sqft)`}</>}
                   </p>
                 </div>
               </div>
