@@ -467,9 +467,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     } = {}
   ): void {
     const fontSize = options.fontSize || FONT_SIZE;
-    const isBold = options.bold !== undefined
-      ? options.bold
-      : !!(options.isHeader || options.isLabel || options.highlight);
+    const isBold = options.bold === true;
     const font = options.italic
       ? this.fontItalic
       : isBold
@@ -659,9 +657,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     let maxLines = 1;
     for (const col of cols) {
       const fs = col.fontSize || FONT_SIZE;
-      const isBold = col.bold !== undefined
-        ? col.bold
-        : !!(col.isHeader || col.isLabel || col.highlight);
+      const isBold = col.bold === true;
       const lines = this.wrapText(this.sanitizeText(col.text), Math.max(10, col.width - 8), fs, isBold);
       if (lines.length > maxLines) maxLines = lines.length;
     }
@@ -973,7 +969,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     ];
 
     const addrRowHeights = addrRows.map(r => {
-      const linesL = this.wrapText(this.sanitizeText(r.sub), addrSubLabelW - 8, FONT_SIZE, true);
+      const linesL = this.wrapText(this.sanitizeText(r.sub), addrSubLabelW - 8, FONT_SIZE, false);
       const linesV = this.wrapText(this.sanitizeText(r.val), addrValW - 8, FONT_SIZE, false);
       return Math.max(22, Math.max(linesL.length, linesV.length) * FONT_SIZE * LINE_HEIGHT + 8);
     });
@@ -1300,10 +1296,10 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       { text: fields.violationsObserved || 'NA', width: paW4, align: 'center' },
     ], 24, 4);
 
-    // Row 3: If plans not available then is the structure confirming to the local byelaws. | NA (spans remaining width)
+    // Row 3: If plans not available then is the structure confirming to the local byelaws. | NA (spans 2 columns each)
     this.drawRow([
-      { text: 'If plans not available then is the structure\nconfirming to the local byelaws.', width: paW1, isLabel: true, bold: false },
-      { text: fields.structureConfirmingByelaws || 'NA', width: CONTENT_W - paW1, align: 'center' },
+      { text: 'If plans not available then is the structure\nconfirming to the local byelaws.', width: paW1 + paW2, isLabel: true, bold: false },
+      { text: fields.structureConfirmingByelaws || 'NA', width: CONTENT_W - (paW1 + paW2), align: 'center' },
     ], 24, 4);
 
     // ══════════════════════════════════════════════════════════════════
@@ -1369,17 +1365,17 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     ], 20, 4);
 
     this.drawRow([
-      { text: 'Total Land Value (in Rs)', width: vlW1, isLabel: true, bold: true },
-      { text: fields.totalLandValue || '', width: vlV, bold: true },
+      { text: 'Total Land Value (in Rs)', width: vlW1, isLabel: true },
+      { text: fields.totalLandValue || '', width: vlV },
       { text: 'Total Construction Value for\npresent construction stage (in Rs)', width: vlW2, isLabel: true, bold: false },
       { text: fields.totalConstructionValuePresent || '', width: vlV2 },
     ], 20, 4);
 
     this.drawRow([
-      { text: 'Market Value of Land &\nBuilding Only (in Rs)', width: vlW1, isLabel: true, bold: true },
-      { text: fields.marketValueLandBuilding || '', width: vlV, bold: true, highlight: true },
-      { text: 'Market Value of Land &\nBuilding Only (in Rs)', width: vlW2, isLabel: true, bold: true },
-      { text: fields.marketValueLandBuildingRight || '', width: vlV2, bold: true, highlight: true },
+      { text: 'Market Value of Land &\nBuilding Only (in Rs)', width: vlW1, isLabel: true },
+      { text: fields.marketValueLandBuilding || '', width: vlV, highlight: true },
+      { text: 'Market Value of Land &\nBuilding Only (in Rs)', width: vlW2, isLabel: true },
+      { text: fields.marketValueLandBuildingRight || '', width: vlV2, highlight: true },
     ], 20, 4);
 
     const pct100 = (fields.distressPct100 !== undefined && fields.distressPct100 !== null && fields.distressPct100 !== '')
@@ -1390,9 +1386,9 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       : '0';
 
     this.drawRow([
-      { text: `Distress Value of 100% complete\nproperty @ ${pct100}% of MV`, width: vlW1, isLabel: true, bold: true },
-      { text: fields.distressValue100 || '', width: vlV, bold: true },
-      { text: `Distress Value of present completed\nproperty @ ${pctPresent}% of MV`, width: vlW2, isLabel: true, bold: true },
+      { text: `Distress Value of 100% complete\nproperty @ ${pct100}% of MV`, width: vlW1, isLabel: true },
+      { text: fields.distressValue100 || '', width: vlV },
+      { text: `Distress Value of present completed\nproperty @ ${pctPresent}% of MV`, width: vlW2, isLabel: true },
       { text: fields.distressValuePresent || '', width: vlV2 },
     ], 20, 4);
 
@@ -1482,10 +1478,10 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     ], 20, 4);
 
     this.drawRow([
-      { text: 'Latitude(N)', width: vlW1, isLabel: true, bold: true },
-      { text: fields.latitude || '', width: vlV, bold: true },
-      { text: 'Longitude(E)', width: vlW2, isLabel: true, bold: true },
-      { text: fields.longitude || '', width: vlV2, bold: true },
+      { text: 'Latitude(N)', width: vlW1, isLabel: true },
+      { text: fields.latitude || '', width: vlV },
+      { text: 'Longitude(E)', width: vlW2, isLabel: true },
+      { text: fields.longitude || '', width: vlV2 },
     ], 20, 4);
 
     // ══════════════════════════════════════════════════════════════════
