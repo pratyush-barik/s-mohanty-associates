@@ -1373,9 +1373,9 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
 
     this.drawRow([
       { text: 'Market Value of Land &\nBuilding Only (in Rs)', width: vlW1, isLabel: true, bold: true },
-      { text: fields.marketValueLandBuilding || '', width: vlV, highlight: true, bold: true },
+      { text: fields.marketValueLandBuilding || '', width: vlV, bold: true },
       { text: 'Market Value of Land &\nBuilding Only (in Rs)', width: vlW2, isLabel: true, bold: true },
-      { text: fields.marketValueLandBuildingRight || '', width: vlV2, highlight: true, bold: true },
+      { text: fields.marketValueLandBuildingRight || '', width: vlV2, bold: true },
     ], 20, 4);
 
     const pct100 = (fields.distressPct100 !== undefined && fields.distressPct100 !== null && fields.distressPct100 !== '')
@@ -1463,26 +1463,24 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     );
 
     this.drawRow([
-      { text: 'Government Guideline /
-Circle rate for Land (Rs/sqft)', width: vlW1, isLabel: true, bold: false },
+      { text: 'Government Guideline /\nCircle rate for Land (Rs/sqft)', width: vlW1, isLabel: true, bold: false },
       { text: fields.govtGuidelineRateLand || '', width: vlV },
       { text: 'Land Value as per\nGovernment Rate (Rs)', width: vlW2, isLabel: true, bold: false },
       { text: landGovtVal, width: vlV2 },
     ], 20, 4);
 
     this.drawRow([
-      { text: 'Government Guideline /
-Circle rate for Flats (Rs/sqft)', width: vlW1, isLabel: true, bold: false },
+      { text: 'Government Guideline /\nCircle rate for Flats (Rs/sqft)', width: vlW1, isLabel: true, bold: false },
       { text: fields.govtGuidelineRateFlats || 'NA', width: vlV },
       { text: 'Flat / Apartment Value as\nper Government Rate (Rs)', width: vlW2, isLabel: true, bold: false },
       { text: flatGovtVal, width: vlV2 },
     ], 20, 4);
 
     this.drawRow([
-      { text: 'Latitude(N)', width: vlW1, isLabel: true, bold: false },
-      { text: fields.latitude || '', width: vlV },
-      { text: 'Longitude(E)', width: vlW2, isLabel: true, bold: false },
-      { text: fields.longitude || '', width: vlV2 },
+      { text: 'Latitude(N)', width: vlW1, isLabel: true, bold: true },
+      { text: fields.latitude || '', width: vlV, bold: true },
+      { text: 'Longitude(E)', width: vlW2, isLabel: true, bold: true },
+      { text: fields.longitude || '', width: vlV2, bold: true },
     ], 20, 4);
 
     // ══════════════════════════════════════════════════════════════════
