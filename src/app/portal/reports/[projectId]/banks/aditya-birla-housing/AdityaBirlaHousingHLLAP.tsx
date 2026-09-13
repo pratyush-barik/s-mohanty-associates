@@ -492,7 +492,7 @@ async function generateHLLAPPDF(
 
   // Row 2: At site (bottom of '28')
   r.drawKeyValueRow([
-    { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true },
+    { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true, hideBottom: true },
     { label: 'At site', value: '', labelWidth: bndLabelW, valueWidth: 0, labelBold: true },
     { label: '', value: fv(fields, 'boundaryAtSiteNorth', ''), labelWidth: 0, valueWidth: bndDirW },
     { label: '', value: fv(fields, 'boundaryAtSiteEast', ''), labelWidth: 0, valueWidth: bndDirW },
@@ -502,7 +502,7 @@ async function generateHLLAPPDF(
 
   // Boundaries Matching row (no '28', just an empty cell)
   r.drawKeyValueRow([
-    { label: '', value: '', labelWidth: NUM_W, valueWidth: 0 },
+    { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true },
     { label: 'Boundaries Matching', value: fv(fields, 'boundariesMatching', ''), labelWidth: bndLabelW, valueWidth: CONTENT_W - bndCol1, labelBold: true, valueBold: false },
   ]);
 
