@@ -620,7 +620,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       } else if (align === 'right') {
         const tw = font.widthOfTextAtSize(line, fontSize);
         lineX = x + w - padX - tw;
-      } else if (align === 'justify' && lineIdx < lines.length - 1) {
+      } else if (align === 'justify' && (lines.length === 1 || lineIdx < lines.length - 1)) {
         const words = line.trim().split(/\s+/);
         if (words.length > 1) {
           let wordsW = 0;
@@ -1532,7 +1532,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
 
     this.checkPageBreak(remH);
     curY = this.pdfY(this.cursorY);
-    this.drawCell(MARGIN_L, curY, remLabelW, remH, 'Remarks / Observation', { isLabel: true, align: 'center', vAlign: 'middle', bold: true });
+    this.drawCell(MARGIN_L, curY, remLabelW, remH, 'Remarks / Observation', { isLabel: true, align: 'justify', vAlign: 'middle', bold: true });
     this.drawCell(MARGIN_L + remLabelW, curY, remValW, remH, remarksText, { vAlign: 'top', align: 'justify' });
     this.cursorY += remH;
 
