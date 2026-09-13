@@ -472,7 +472,7 @@ async function generateHLLAPPDF(
 
   // Header Row
   r.drawKeyValueRow([
-    { label: '', value: '', labelWidth: NUM_W, valueWidth: 0 },
+    { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideBottom: true },
     { label: 'Boundaries', value: '', labelWidth: bndLabelW, valueWidth: 0, labelBold: true },
     { label: 'North', value: '', labelWidth: bndDirW, valueWidth: 0, labelBold: true },
     { label: 'East', value: '', labelWidth: bndDirW, valueWidth: 0, labelBold: true },
@@ -482,7 +482,7 @@ async function generateHLLAPPDF(
 
   // Row 1: As per Approved (top of '28')
   r.drawKeyValueRow([
-    { label: '28', value: '', labelWidth: NUM_W, valueWidth: 0, labelBold: true, hideBottom: true },
+    { label: '28', value: '', labelWidth: NUM_W, valueWidth: 0, labelBold: true, hideTop: true, hideBottom: true },
     { label: 'As per Approved\nplan key map', value: '', labelWidth: bndLabelW, valueWidth: 0, labelBold: true },
     { label: '', value: fv(fields, 'boundaryApprovedNorth', ''), labelWidth: 0, valueWidth: bndDirW },
     { label: '', value: fv(fields, 'boundaryApprovedEast', ''), labelWidth: 0, valueWidth: bndDirW },
