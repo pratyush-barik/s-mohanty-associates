@@ -59,12 +59,19 @@ async function generateHLLAPPDF(
   }
 
   // Contacted Person row
-  r.drawKeyValueRow([
-    { label: 'Contacted Person', value: fv(fields, 'contactedPerson', ''), labelWidth: 95, valueWidth: 100 },
-    { label: 'Relation with Customer', value: fv(fields, 'relationWithCustomer', ''), labelWidth: 120, valueWidth: 60 },
-    { label: 'Contact No', value: fv(fields, 'contactNo', ''), labelWidth: 65, valueWidth: CONTENT_W - 95 - 100 - 120 - 60 - 65 },
-  ]);
+  const cpLblW = 95;
+  const cpValW = 100;
+  const relLblW = Math.round(120 * 0.65);
+  const contactNoStartX = (CONTENT_W / 2) + labelW2;
+  const relValW = contactNoStartX - (cpLblW + cpValW + relLblW);
+  const cnLblW = 65;
+  const cnValW = CONTENT_W - contactNoStartX - cnLblW;
 
+  r.drawKeyValueRow([
+    { label: 'Contacted Person', value: fv(fields, 'contactedPerson', ''), labelWidth: cpLblW, valueWidth: cpValW },
+    { label: 'Relation with Customer', value: fv(fields, 'relationWithCustomer', ''), labelWidth: relLblW, valueWidth: relValW },
+    { label: 'Contact No', value: fv(fields, 'contactNo', ''), labelWidth: cnLblW, valueWidth: cnValW },
+  ]);
   // ====== BASIC DETAILS ======
   r.drawSectionHeader('BASIC DETAILS');
 
