@@ -833,12 +833,12 @@ export default function ArthanFinance({
         {/* ════ SECTION 1: TECHNICAL INITIATION REQUEST FORM DATA ════ */}
         <Section title="TECHNICAL INITIATION REQUEST FORM DATA" number={1} id="sec-1" defaultOpen={true}>
           {/* Date of Valuation (header field) */}
-          <div className="mb-4 flex justify-end items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <span className="text-sm font-semibold text-blue-700">Date of Valuation:</span>
+          <div className="mb-4 flex justify-end items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg text-black">
+            <span className="text-sm font-semibold text-black">Date of Valuation:</span>
             <div className="relative flex items-center">
               <input
                 type="text"
-                className={`${inputCls} w-40`}
+                className={`${inputCls} w-40 font-semibold text-black`}
                 value={fields.dateOfValuation || ''}
                 onChange={e => handleChange('dateOfValuation', e.target.value)}
                 disabled={isReadOnly}
@@ -867,9 +867,9 @@ export default function ArthanFinance({
             </Field>
 
             {/* Customer, Owner / Seller & Person Met at Site — Soft Container */}
-            <div className="md:col-span-2 bg-amber-50/80 p-4 rounded-xl border border-amber-200 shadow-xs space-y-3">
+            <div className="md:col-span-2 bg-amber-50/80 p-4 rounded-xl border border-amber-200 shadow-xs space-y-3 text-black [&_label]:!text-black">
               <div className="border-b border-amber-200/80 pb-2">
-                <h3 className="text-xs font-bold text-amber-900 uppercase tracking-wide">
+                <h3 className="text-xs font-bold text-black uppercase tracking-wide">
                   Customer & Ownership Details
                 </h3>
               </div>
@@ -887,13 +887,13 @@ export default function ArthanFinance({
 
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider">
+                    <label className="block text-xs font-semibold text-black uppercase tracking-wider">
                       Name of Current{' '}
-                      <span className={(fields.ownerOrSeller || 'Owner') === 'Owner' ? 'font-black text-amber-950 underline decoration-amber-600 underline-offset-2' : 'font-normal text-slate-500'}>
+                      <span className={(fields.ownerOrSeller || 'Owner') === 'Owner' ? 'font-black text-black underline decoration-black underline-offset-2' : 'font-medium text-black'}>
                         Owner
                       </span>
                       {' / '}
-                      <span className={fields.ownerOrSeller === 'Seller' ? 'font-black text-amber-950 underline decoration-amber-600 underline-offset-2' : 'font-normal text-slate-500'}>
+                      <span className={fields.ownerOrSeller === 'Seller' ? 'font-black text-black underline decoration-black underline-offset-2' : 'font-medium text-black'}>
                         Seller
                       </span>
                     </label>
@@ -906,7 +906,7 @@ export default function ArthanFinance({
                           className={`px-2.5 py-0.5 rounded-md transition-all ${
                             (fields.ownerOrSeller || 'Owner') === 'Owner'
                               ? 'bg-amber-600 text-white font-bold shadow-xs'
-                              : 'text-amber-800 hover:bg-amber-100/60'
+                              : 'text-black hover:bg-amber-100/60'
                           }`}
                         >
                           Owner
@@ -917,7 +917,7 @@ export default function ArthanFinance({
                           className={`px-2.5 py-0.5 rounded-md transition-all ${
                             fields.ownerOrSeller === 'Seller'
                               ? 'bg-amber-600 text-white font-bold shadow-xs'
-                              : 'text-amber-800 hover:bg-amber-100/60'
+                              : 'text-black hover:bg-amber-100/60'
                           }`}
                         >
                           Seller
@@ -947,9 +947,9 @@ export default function ArthanFinance({
             </div>
 
             {/* Address of property being appraised — Soft Container (Aditya Birla STSL Pattern) */}
-            <div className="md:col-span-2 bg-amber-50/80 p-4 rounded-xl border border-amber-200 shadow-xs space-y-3">
+            <div className="md:col-span-2 bg-amber-50/80 p-4 rounded-xl border border-amber-200 shadow-xs space-y-3 text-black [&_label]:!text-black">
               <div className="border-b border-amber-200/80 pb-2">
-                <h3 className="text-xs font-bold text-amber-900 uppercase tracking-wide">
+                <h3 className="text-xs font-bold text-black uppercase tracking-wide">
                   Address of Property Being Appraised
                 </h3>
               </div>
@@ -999,7 +999,7 @@ export default function ArthanFinance({
         <Section title="LOCATIONAL & PROPERTY SPECIFIC DETAILS (BASED ON SITE VISIT)" number={2} id="sec-2">
           <div className="space-y-4">
             {/* Category 1: Land Holding & Property Details */}
-            <div className="bg-indigo-50/70 p-4 rounded-xl border border-indigo-200/80 shadow-xs">
+            <div className="bg-indigo-50/70 p-4 rounded-xl border border-indigo-200/80 shadow-xs text-black [&_label]:!text-black">
               <div className="grid md:grid-cols-2 gap-4">
                 <Field label="Status of Land Holding">
                   <input className={`${inputCls} font-bold`} value={fields.statusOfLandHolding || ''} onChange={e => handleChange('statusOfLandHolding', e.target.value)} disabled={isReadOnly} placeholder="e.g. Freehold(Homestead)" />
@@ -1024,22 +1024,22 @@ export default function ArthanFinance({
             </div>
 
             {/* Solo fields: Inspection Date & Master Plan Zoning */}
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-4 text-black [&_label]:!text-black">
               <Field label="Date of Inspection / Site visit (DD/MM/YYYY)">
                 <div className="relative flex items-center">
                   <input
                     type="text"
-                    className={`${inputCls} bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 cursor-not-allowed font-medium pr-8`}
+                    className={`${inputCls} bg-slate-100 text-black cursor-not-allowed font-semibold pr-8`}
                     value={fields.dateOfInspection || fields.dateOfInspectionSite || ''}
                     disabled
                     readOnly
                     placeholder="DD/MM/YYYY"
                   />
-                  <span className="absolute right-2.5 text-xs text-slate-400" title="Locked: Referenced from Section 1 Date of Inspection / Site visit">
+                  <span className="absolute right-2.5 text-xs text-black" title="Locked: Referenced from Section 1 Date of Inspection / Site visit">
                     🔒
                   </span>
                 </div>
-                <span className="text-[10px] text-slate-400 mt-1 block">
+                <span className="text-[11px] text-black font-medium mt-1 block">
                   Referenced from Sec 1 (Date of Inspection / Site visit)
                 </span>
               </Field>
@@ -1049,7 +1049,7 @@ export default function ArthanFinance({
             </div>
 
             {/* Category 2: Occupancy & Usage */}
-            <div className="bg-emerald-50/70 p-4 rounded-xl border border-emerald-200/80 shadow-xs">
+            <div className="bg-emerald-50/70 p-4 rounded-xl border border-emerald-200/80 shadow-xs text-black [&_label]:!text-black">
               <div className="grid md:grid-cols-2 gap-4">
                 <Field label="Occupation Status">
                   <select className={selectCls} value={fields.occupationStatus || ''} onChange={e => handleChange('occupationStatus', e.target.value)} disabled={isReadOnly}>
@@ -1076,7 +1076,7 @@ export default function ArthanFinance({
             </div>
 
             {/* Category 3: Demarcation & Site Identification */}
-            <div className="bg-amber-50/70 p-4 rounded-xl border border-amber-200/80 shadow-xs">
+            <div className="bg-amber-50/70 p-4 rounded-xl border border-amber-200/80 shadow-xs text-black [&_label]:!text-black">
               <div className="grid md:grid-cols-2 gap-4">
                 <Field label="Plot Demarcation">
                   <select className={selectCls} value={fields.plotDemarcation || ''} onChange={e => handleChange('plotDemarcation', e.target.value)} disabled={isReadOnly}>
@@ -1111,7 +1111,7 @@ export default function ArthanFinance({
             </div>
 
             {/* Category 4: Structure, Floors & Finishing Specifications */}
-            <div className="bg-sky-50/70 p-4 rounded-xl border border-sky-200/80 shadow-xs">
+            <div className="bg-sky-50/70 p-4 rounded-xl border border-sky-200/80 shadow-xs text-black [&_label]:!text-black">
               <div className="grid md:grid-cols-2 gap-4">
                 <Field label="Internal Finishing">
                   <select className={selectCls} value={fields.internalFinishing || ''} onChange={e => handleChange('internalFinishing', e.target.value)} disabled={isReadOnly}>
@@ -1162,7 +1162,7 @@ export default function ArthanFinance({
             </div>
 
             {/* Category 5: Completion & Construction Progress */}
-            <div className="bg-rose-50/70 p-4 rounded-xl border border-rose-200/80 shadow-xs">
+            <div className="bg-rose-50/70 p-4 rounded-xl border border-rose-200/80 shadow-xs text-black [&_label]:!text-black">
               <div className="grid md:grid-cols-3 gap-4">
                 <Field label="Year of Completion of Property">
                   <input type="text" inputMode="numeric" className={inputCls} value={fields.yearOfCompletion || ''} onChange={e => handleChange('yearOfCompletion', e.target.value)} disabled={isReadOnly} placeholder="e.g. 2018 / NA" />
@@ -1177,7 +1177,7 @@ export default function ArthanFinance({
             </div>
 
             {/* Category 6: Property Age & Physical Life */}
-            <div className="bg-teal-50/70 p-4 rounded-xl border border-teal-200/80 shadow-xs">
+            <div className="bg-teal-50/70 p-4 rounded-xl border border-teal-200/80 shadow-xs text-black [&_label]:!text-black">
               <div className="grid md:grid-cols-2 gap-4">
                 <Field label="Age of the Property">
                   <input type="text" className={inputCls} value={fields.ageOfProperty || ''} onChange={e => handleChange('ageOfProperty', e.target.value)} disabled={isReadOnly} placeholder="e.g. 7 Years" />
@@ -1195,29 +1195,29 @@ export default function ArthanFinance({
           <div className="space-y-4">
             {/* Column headers */}
             <div className="grid grid-cols-5 gap-2 text-center">
-              <div className="font-semibold text-sm text-slate-600">Source</div>
-              <div className="font-semibold text-sm text-blue-700">North</div>
-              <div className="font-semibold text-sm text-blue-700">South</div>
-              <div className="font-semibold text-sm text-blue-700">East</div>
-              <div className="font-semibold text-sm text-blue-700">West</div>
+              <div className="font-semibold text-sm text-black">Source</div>
+              <div className="font-semibold text-sm text-black">North</div>
+              <div className="font-semibold text-sm text-black">South</div>
+              <div className="font-semibold text-sm text-black">East</div>
+              <div className="font-semibold text-sm text-black">West</div>
             </div>
             {/* As per Documents */}
             <div className="grid grid-cols-5 gap-2 items-center">
-              <div className="text-sm font-medium text-slate-600 bg-slate-50 rounded px-2 py-1">As per Documents (Sale Deed)</div>
+              <div className="text-sm font-semibold text-black bg-slate-100 rounded px-2 py-1">As per Documents (Sale Deed)</div>
               {(['boundaryNorthDocs', 'boundarySouthDocs', 'boundaryEastDocs', 'boundaryWestDocs'] as const).map(k => (
                 <input key={k} className={inputCls} value={fields[k] || ''} onChange={e => handleChange(k, e.target.value)} disabled={isReadOnly} placeholder="Not provided" />
               ))}
             </div>
             {/* As per Sketch Map */}
             <div className="grid grid-cols-5 gap-2 items-center">
-              <div className="text-sm font-medium text-slate-600 bg-slate-50 rounded px-2 py-1">As per Sketch Map</div>
+              <div className="text-sm font-semibold text-black bg-slate-100 rounded px-2 py-1">As per Sketch Map</div>
               {(['boundaryNorthSketch', 'boundarySouthSketch', 'boundaryEastSketch', 'boundaryWestSketch'] as const).map(k => (
                 <input key={k} className={inputCls} value={fields[k] || ''} onChange={e => handleChange(k, e.target.value)} disabled={isReadOnly} placeholder="" />
               ))}
             </div>
             {/* As per Site / Actual */}
             <div className="grid grid-cols-5 gap-2 items-center">
-              <div className="text-sm font-medium text-slate-600 bg-slate-50 rounded px-2 py-1">As per Site / Actual</div>
+              <div className="text-sm font-semibold text-black bg-slate-100 rounded px-2 py-1">As per Site / Actual</div>
               {(['boundaryNorthSite', 'boundarySouthSite', 'boundaryEastSite', 'boundaryWestSite'] as const).map(k => (
                 <input key={k} className={inputCls} value={fields[k] || ''} onChange={e => handleChange(k, e.target.value)} disabled={isReadOnly} placeholder="" />
               ))}
@@ -1479,7 +1479,7 @@ export default function ArthanFinance({
         <Section title="ESTIMATE ANALYSIS (APPLICABLE ONLY IN SELF CONSTRUCTION CASES)" number={8} id="sec-8">
           <div className="space-y-4">
             {/* Soft Container 1: Estimated Cost */}
-            <div className="bg-indigo-50/70 p-4 rounded-xl border border-indigo-200/80 shadow-xs">
+            <div className="bg-indigo-50/70 p-4 rounded-xl border border-indigo-200/80 shadow-xs text-black [&_label]:!text-black">
               <div className="grid md:grid-cols-2 gap-4">
                 <Field label="Estimated Cost (In Rs)">
                   <input type="text" inputMode="decimal" className={inputCls} value={fields.estimatedCostTotal || ''} onChange={e => handleChange('estimatedCostTotal', e.target.value)} disabled={isReadOnly} placeholder="NA" />
@@ -1491,7 +1491,7 @@ export default function ArthanFinance({
             </div>
 
             {/* Soft Container 2: Justified & Adoptable Cost */}
-            <div className="bg-emerald-50/70 p-4 rounded-xl border border-emerald-200/80 shadow-xs">
+            <div className="bg-emerald-50/70 p-4 rounded-xl border border-emerald-200/80 shadow-xs text-black [&_label]:!text-black">
               <div className="grid md:grid-cols-2 gap-4">
                 <Field label="Justified Estimated Cost (in Rs per Sqft)">
                   <input type="text" inputMode="decimal" className={inputCls} value={fields.justifiedEstimatedCostPerSqft || ''} onChange={e => handleChange('justifiedEstimatedCostPerSqft', e.target.value)} disabled={isReadOnly} placeholder="NA" />
@@ -1510,9 +1510,9 @@ export default function ArthanFinance({
             {/* Top Row: Land Valuation & Building Valuation side-by-side soft containers */}
             <div className="grid md:grid-cols-2 gap-4">
               {/* Left Soft Container: Land Valuation */}
-              <div className="bg-amber-50/70 p-4 rounded-xl border border-amber-200/80 shadow-xs space-y-4">
+              <div className="bg-amber-50/70 p-4 rounded-xl border border-amber-200/80 shadow-xs space-y-4 text-black [&_label]:!text-black">
                 <div className="border-b border-amber-200/80 pb-2">
-                  <h3 className="text-xs font-bold text-amber-900 uppercase tracking-wide">
+                  <h3 className="text-xs font-bold text-black uppercase tracking-wide">
                     Land Valuation
                   </h3>
                 </div>
@@ -1527,23 +1527,23 @@ export default function ArthanFinance({
                     <input type="text" inputMode="decimal" className={inputCls} value={fields.recommendedRateOfLand || ''} onChange={e => handleChange('recommendedRateOfLand', e.target.value)} disabled={isReadOnly} placeholder="e.g. 150" />
                   </Field>
                   <Field label="Total Land Value (in Rs)">
-                    <input className={`${inputCls} bg-yellow-50 font-semibold`} value={fields.totalLandValue || ''} onChange={e => handleChange('totalLandValue', e.target.value)} disabled={isReadOnly} placeholder="Auto-calculated" readOnly />
+                    <input className={`${inputCls} bg-yellow-50 font-bold text-black`} value={fields.totalLandValue || ''} onChange={e => handleChange('totalLandValue', e.target.value)} disabled={isReadOnly} placeholder="Auto-calculated" readOnly />
                   </Field>
                 </div>
               </div>
 
               {/* Right Soft Container: Building Valuation */}
-              <div className="bg-sky-50/70 p-4 rounded-xl border border-sky-200/80 shadow-xs space-y-4">
+              <div className="bg-sky-50/70 p-4 rounded-xl border border-sky-200/80 shadow-xs space-y-4 text-black [&_label]:!text-black">
                 <div className="border-b border-sky-200/80 pb-2">
-                  <h3 className="text-xs font-bold text-sky-900 uppercase tracking-wide">
+                  <h3 className="text-xs font-bold text-black uppercase tracking-wide">
                     Building Valuation
                   </h3>
                 </div>
                 <div className="space-y-4">
                   <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-200">
+                    <div className="flex items-center justify-between text-xs font-semibold text-black">
                       <span>Adoptable Built-up Area (in Sqft)</span>
-                      <span className="text-[11px] font-normal text-slate-500">Floor / Structure Spec</span>
+                      <span className="text-[11px] font-medium text-black">Floor / Structure Spec</span>
                     </div>
                     <div className="grid grid-cols-5 gap-2">
                       <div className="col-span-3">
@@ -1560,7 +1560,7 @@ export default function ArthanFinance({
                       <div className="col-span-2">
                         <input
                           type="text"
-                          className={inputCls + ' font-medium text-center'}
+                          className={inputCls + ' font-medium text-center text-black'}
                           value={fields.adoptableBUASpec !== undefined ? fields.adoptableBUASpec : 'GF RCC'}
                           onChange={e => handleChange('adoptableBUASpec', e.target.value)}
                           disabled={isReadOnly}
@@ -1569,7 +1569,7 @@ export default function ArthanFinance({
                         />
                       </div>
                     </div>
-                    <p className="text-[10px] text-slate-400 italic">
+                    <p className="text-[11px] text-black font-medium italic">
                       Renders as: &quot;Adoptable Built-up Area (in Sqft){(fields.adoptableBUASpec !== undefined ? fields.adoptableBUASpec : 'GF RCC').trim() ? ` ${(fields.adoptableBUASpec !== undefined ? fields.adoptableBUASpec : 'GF RCC').trim()}` : ''}&quot;
                     </p>
                   </div>
@@ -1578,7 +1578,7 @@ export default function ArthanFinance({
                   </Field>
                   <Field label="Total Construction Value for 100% complete building (in Rs)">
                     <input
-                      className={`${inputCls} bg-yellow-50 font-semibold`}
+                      className={`${inputCls} bg-yellow-50 font-bold text-black`}
                       value={fields.totalConstructionValue100 || ''}
                       onChange={e => handleChange('totalConstructionValue100', e.target.value)}
                       disabled={isReadOnly}
@@ -1587,41 +1587,41 @@ export default function ArthanFinance({
                     />
                   </Field>
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200">
+                    <label className="block text-xs font-semibold text-black">
                       Total Construction Value for Present Construction Stage (in Rs)
                     </label>
                     <div className="grid grid-cols-5 gap-2">
                       <div className="col-span-2 space-y-1">
-                        <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block">
+                        <span className="text-[11px] font-semibold text-black block">
                           Work Done (%)
                         </span>
                         <div className="relative">
                           <input
                             type="text"
                             inputMode="decimal"
-                            className={`${inputCls} pr-7 font-semibold text-slate-800 text-center`}
+                            className={`${inputCls} pr-7 font-bold text-black text-center`}
                             value={(fields.constructionStage || '').replace('%', '')}
                             onChange={e => handleChange('constructionStage', e.target.value)}
                             disabled={isReadOnly}
                             placeholder="e.g. 100"
                             title="Enter percentage of work completed (positive float, no negative values)"
                           />
-                          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 pointer-events-none">%</span>
+                          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-black pointer-events-none">%</span>
                         </div>
                       </div>
                       <div className="col-span-3 space-y-1">
-                        <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block">
+                        <span className="text-[11px] font-semibold text-black block">
                           Present Value (in Rs)
                         </span>
                         <input
-                          className={`${inputCls} bg-yellow-50 font-semibold`}
+                          className={`${inputCls} bg-yellow-50 font-bold text-black`}
                           value={fields.totalConstructionValuePresent || ''}
                           placeholder="Auto-calculated"
                           readOnly
                         />
                       </div>
                     </div>
-                    <p className="text-[10px] text-slate-400 italic">
+                    <p className="text-[11px] text-black font-medium italic">
                       Auto-calculated from {fields.constructionStage ? `${(fields.constructionStage || '').replace(/[^0-9.]/g, '')}%` : '100%'} of 100% complete building value ({fields.totalConstructionValue100 || '0'} Rs)
                     </p>
                   </div>
@@ -1630,12 +1630,12 @@ export default function ArthanFinance({
             </div>
 
             {/* Soft Container: Market Value of Land & Building Only */}
-            <div className="bg-emerald-50/70 p-4 rounded-xl border border-emerald-200/80 shadow-xs space-y-4">
+            <div className="bg-emerald-50/70 p-4 rounded-xl border border-emerald-200/80 shadow-xs space-y-4 text-black [&_label]:!text-black">
               <div className="border-b border-emerald-200/80 pb-2 flex items-center justify-between">
-                <h3 className="text-xs font-bold text-emerald-900 uppercase tracking-wide">
+                <h3 className="text-xs font-bold text-black uppercase tracking-wide">
                   Market Value of Land & Building Only
                 </h3>
-                <span className="text-[11px] font-medium text-emerald-700 bg-emerald-100/90 px-2 py-0.5 rounded-full">
+                <span className="text-[11px] font-bold text-black bg-emerald-200/90 px-2 py-0.5 rounded-full">
                   Auto-Calculated
                 </span>
               </div>
@@ -1643,14 +1643,14 @@ export default function ArthanFinance({
                 <div className="space-y-1.5">
                   <Field label="Market Value for 100% Complete Property (in Rs)">
                     <input
-                      className={`${inputCls} bg-green-50 font-bold text-emerald-950`}
+                      className={`${inputCls} bg-green-50 font-bold text-black`}
                       value={fields.marketValueLandBuilding || ''}
                       disabled={isReadOnly}
                       placeholder="Auto-calculated"
                       readOnly
                     />
                   </Field>
-                  <p className="text-[10px] text-emerald-800/80 italic">
+                  <p className="text-[11px] text-black font-medium italic">
                     Referenced from: Land Value ({fields.totalLandValue || '0'} Rs) + 100% Construction Value ({fields.totalConstructionValue100 || '0'} Rs)
                   </p>
                 </div>
@@ -1658,14 +1658,14 @@ export default function ArthanFinance({
                 <div className="space-y-1.5">
                   <Field label="Market Value for Present Stage Completed Property (in Rs)">
                     <input
-                      className={`${inputCls} bg-green-50 font-bold text-emerald-950`}
+                      className={`${inputCls} bg-green-50 font-bold text-black`}
                       value={fields.marketValueLandBuildingRight || ''}
                       disabled={isReadOnly}
                       placeholder="Auto-calculated"
                       readOnly
                     />
                   </Field>
-                  <p className="text-[10px] text-emerald-800/80 italic">
+                  <p className="text-[11px] text-black font-medium italic">
                     Referenced from: Land Value ({fields.totalLandValue || '0'} Rs) + Present Stage Construction Value ({fields.totalConstructionValuePresent || '0'} Rs) based on {(fields.constructionStage || '100%').replace(/[^0-9.]/g, '') || '100'}% work completed
                   </p>
                 </div>
@@ -1673,24 +1673,24 @@ export default function ArthanFinance({
             </div>
 
             {/* Soft Container: Distress Value of Property */}
-            <div className="bg-orange-50/70 p-4 rounded-xl border border-orange-200/80 shadow-xs space-y-4">
+            <div className="bg-orange-50/70 p-4 rounded-xl border border-orange-200/80 shadow-xs space-y-4 text-black [&_label]:!text-black">
               <div className="border-b border-orange-200/80 pb-2 flex items-center justify-between">
-                <h3 className="text-xs font-bold text-orange-900 uppercase tracking-wide">
+                <h3 className="text-xs font-bold text-black uppercase tracking-wide">
                   Distress Value of Property
                 </h3>
-                <span className="text-[11px] font-medium text-orange-700 bg-orange-100/90 px-2 py-0.5 rounded-full">
+                <span className="text-[11px] font-bold text-black bg-orange-200/90 px-2 py-0.5 rounded-full">
                   Auto-Calculated
                 </span>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <div className="flex items-center flex-wrap gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200">
+                  <div className="flex items-center flex-wrap gap-1.5 text-xs font-semibold text-black">
                     <span>Distress Value of 100% complete property @</span>
                     <div className="relative inline-flex items-center">
                       <input
                         type="text"
                         inputMode="decimal"
-                        className="w-16 text-center py-0.5 px-1 pr-5 text-xs font-bold text-orange-950 bg-white border border-orange-300 rounded shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-orange-400"
+                        className="w-16 text-center py-0.5 px-1 pr-5 text-xs font-bold text-black bg-white border border-orange-300 rounded shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-orange-400"
                         value={fields.distressPct100 !== undefined && fields.distressPct100 !== null && fields.distressPct100 !== '' ? fields.distressPct100 : '0'}
                         onChange={e => handleChange('distressPct100', e.target.value)}
                         onBlur={() => { if (!fields.distressPct100) handleChange('distressPct100', '0'); }}
@@ -1698,30 +1698,30 @@ export default function ArthanFinance({
                         placeholder="0"
                         title="Enter percentage of MV for 100% complete property"
                       />
-                      <span className="absolute right-1 text-[11px] font-bold text-slate-400 pointer-events-none">%</span>
+                      <span className="absolute right-1 text-[11px] font-bold text-black pointer-events-none">%</span>
                     </div>
                     <span>of MV</span>
                   </div>
                   <input
-                    className={`${inputCls} bg-orange-50 font-bold text-orange-950`}
+                    className={`${inputCls} bg-orange-50 font-bold text-black`}
                     value={fields.distressValue100 || ''}
                     disabled={isReadOnly}
                     placeholder="Auto-calculated"
                     readOnly
                   />
-                  <p className="text-[10px] text-orange-800/80 italic">
+                  <p className="text-[11px] text-black font-medium italic">
                     Auto-calculated as {(fields.distressPct100 !== undefined && fields.distressPct100 !== null && fields.distressPct100 !== '') ? fields.distressPct100 : '0'}% of 100% complete MV ({fields.marketValueLandBuilding || '0'} Rs)
                   </p>
                 </div>
 
                 <div className="space-y-1.5">
-                  <div className="flex items-center flex-wrap gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200">
+                  <div className="flex items-center flex-wrap gap-1.5 text-xs font-semibold text-black">
                     <span>Distress Value of present completed property @</span>
                     <div className="relative inline-flex items-center">
                       <input
                         type="text"
                         inputMode="decimal"
-                        className="w-16 text-center py-0.5 px-1 pr-5 text-xs font-bold text-orange-950 bg-white border border-orange-300 rounded shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-orange-400"
+                        className="w-16 text-center py-0.5 px-1 pr-5 text-xs font-bold text-black bg-white border border-orange-300 rounded shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-orange-400"
                         value={fields.distressPctPresent !== undefined && fields.distressPctPresent !== null && fields.distressPctPresent !== '' ? fields.distressPctPresent : '0'}
                         onChange={e => handleChange('distressPctPresent', e.target.value)}
                         onBlur={() => { if (!fields.distressPctPresent) handleChange('distressPctPresent', '0'); }}
@@ -1729,18 +1729,18 @@ export default function ArthanFinance({
                         placeholder="0"
                         title="Enter percentage of MV for present completed property"
                       />
-                      <span className="absolute right-1 text-[11px] font-bold text-slate-400 pointer-events-none">%</span>
+                      <span className="absolute right-1 text-[11px] font-bold text-black pointer-events-none">%</span>
                     </div>
                     <span>of MV</span>
                   </div>
                   <input
-                    className={`${inputCls} bg-orange-50 font-bold text-orange-950`}
+                    className={`${inputCls} bg-orange-50 font-bold text-black`}
                     value={fields.distressValuePresent || ''}
                     disabled={isReadOnly}
                     placeholder="Auto-calculated"
                     readOnly
                   />
-                  <p className="text-[10px] text-orange-800/80 italic">
+                  <p className="text-[11px] text-black font-medium italic">
                     Auto-calculated as {(fields.distressPctPresent !== undefined && fields.distressPctPresent !== null && fields.distressPctPresent !== '') ? fields.distressPctPresent : '0'}% of present stage MV ({fields.marketValueLandBuildingRight || '0'} Rs)
                   </p>
                 </div>
@@ -1748,13 +1748,13 @@ export default function ArthanFinance({
             </div>
 
             {/* Soft Container: Flat / Apartment / Shop / Office Valuation */}
-            <div className="bg-indigo-50/70 p-4 rounded-xl border border-indigo-200/80 shadow-xs space-y-4">
+            <div className="bg-indigo-50/70 p-4 rounded-xl border border-indigo-200/80 shadow-xs space-y-4 text-black [&_label]:!text-black">
               <div className="border-b border-indigo-200/80 pb-2 flex items-center justify-between">
-                <h3 className="text-xs font-bold text-indigo-900 uppercase tracking-wide">
+                <h3 className="text-xs font-bold text-black uppercase tracking-wide">
                   Flat / Apartment / Shop / Office Valuation
                 </h3>
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-semibold text-indigo-950">Status:</span>
+                  <span className="text-[11px] font-bold text-black">Status:</span>
                   <button
                     type="button"
                     onClick={() => {
@@ -1776,14 +1776,14 @@ export default function ArthanFinance({
               <div className="grid md:grid-cols-2 gap-4">
                 {/* Dropdown to select option + input for Sqft */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200">
-                    <span className={(fields.flatPropertyType || (fields.flatSBUA === 'NA' ? 'NA' : 'Flat')) === 'Flat' ? 'font-black text-indigo-950 dark:text-indigo-200 underline decoration-indigo-600 underline-offset-2' : 'text-slate-500 font-normal'}>Flat</span>
+                  <label className="block text-xs font-semibold text-black">
+                    <span className={(fields.flatPropertyType || (fields.flatSBUA === 'NA' ? 'NA' : 'Flat')) === 'Flat' ? 'font-black text-black underline decoration-black underline-offset-2' : 'font-medium text-black'}>Flat</span>
                     {' / '}
-                    <span className={fields.flatPropertyType === 'Apartment' ? 'font-black text-indigo-950 dark:text-indigo-200 underline decoration-indigo-600 underline-offset-2' : 'text-slate-500 font-normal'}>Apartment</span>
+                    <span className={fields.flatPropertyType === 'Apartment' ? 'font-black text-black underline decoration-black underline-offset-2' : 'font-medium text-black'}>Apartment</span>
                     {' / '}
-                    <span className={fields.flatPropertyType === 'Shop' ? 'font-black text-indigo-950 dark:text-indigo-200 underline decoration-indigo-600 underline-offset-2' : 'text-slate-500 font-normal'}>Shop</span>
+                    <span className={fields.flatPropertyType === 'Shop' ? 'font-black text-black underline decoration-black underline-offset-2' : 'font-medium text-black'}>Shop</span>
                     {' / '}
-                    <span className={fields.flatPropertyType === 'Office' ? 'font-black text-indigo-950 dark:text-indigo-200 underline decoration-indigo-600 underline-offset-2' : 'text-slate-500 font-normal'}>Office</span>
+                    <span className={fields.flatPropertyType === 'Office' ? 'font-black text-black underline decoration-black underline-offset-2' : 'font-medium text-black'}>Office</span>
                     {' SBUA (in Sqft)'}
                   </label>
 
@@ -1814,7 +1814,7 @@ export default function ArthanFinance({
                       />
                     </div>
                   </div>
-                  <p className="text-[10px] text-slate-400 italic">
+                  <p className="text-[11px] text-black font-medium italic">
                     {(fields.flatPropertyType === 'NA' || fields.flatSBUA === 'NA')
                       ? 'Status: NA'
                       : `Selected: ${fields.flatPropertyType || 'Flat'} (bolded in rendered report)`}
@@ -1834,32 +1834,32 @@ export default function ArthanFinance({
                       placeholder={fields.flatPropertyType === 'NA' ? 'NA' : 'e.g. 3500'}
                     />
                   </Field>
-                  <p className="text-[10px] text-slate-400 italic">
+                  <p className="text-[11px] text-black font-medium italic">
                     {(fields.flatPropertyType === 'NA' || fields.compositeSaleRate === 'NA') ? 'Status: NA' : 'Rate per sqft for composite valuation'}
                   </p>
                 </div>
 
                 {/* Total Market Value of Apartment / Shop / Flat / Office (Rs per sqft) */}
                 <div className="md:col-span-2 space-y-1.5">
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200">
+                  <label className="block text-xs font-semibold text-black">
                     {'Total Market Value of '}
-                    <span className={fields.flatPropertyType === 'Apartment' ? 'font-black text-indigo-950 dark:text-indigo-200 underline decoration-indigo-600 underline-offset-2' : 'text-slate-500 font-normal'}>Apartment</span>
+                    <span className={fields.flatPropertyType === 'Apartment' ? 'font-black text-black underline decoration-black underline-offset-2' : 'font-medium text-black'}>Apartment</span>
                     {' / '}
-                    <span className={fields.flatPropertyType === 'Shop' ? 'font-black text-indigo-950 dark:text-indigo-200 underline decoration-indigo-600 underline-offset-2' : 'text-slate-500 font-normal'}>Shop</span>
+                    <span className={fields.flatPropertyType === 'Shop' ? 'font-black text-black underline decoration-black underline-offset-2' : 'font-medium text-black'}>Shop</span>
                     {' / '}
-                    <span className={(fields.flatPropertyType || (fields.flatSBUA === 'NA' ? 'NA' : 'Flat')) === 'Flat' ? 'font-black text-indigo-950 dark:text-indigo-200 underline decoration-indigo-600 underline-offset-2' : 'text-slate-500 font-normal'}>Flat</span>
+                    <span className={(fields.flatPropertyType || (fields.flatSBUA === 'NA' ? 'NA' : 'Flat')) === 'Flat' ? 'font-black text-black underline decoration-black underline-offset-2' : 'font-medium text-black'}>Flat</span>
                     {' / '}
-                    <span className={fields.flatPropertyType === 'Office' ? 'font-black text-indigo-950 dark:text-indigo-200 underline decoration-indigo-600 underline-offset-2' : 'text-slate-500 font-normal'}>Office</span>
+                    <span className={fields.flatPropertyType === 'Office' ? 'font-black text-black underline decoration-black underline-offset-2' : 'font-medium text-black'}>Office</span>
                     {' (Rs per sqft)'}
                   </label>
                   <input
-                    className={`${inputCls} bg-indigo-50/90 dark:bg-indigo-950/40 font-bold text-indigo-950 dark:text-indigo-200`}
+                    className={`${inputCls} bg-white font-bold text-black border border-indigo-300`}
                     value={fields.totalMarketValueApartment || 'NA'}
                     disabled={isReadOnly}
                     placeholder="Auto-calculated"
                     readOnly
                   />
-                  <p className="text-[10px] text-indigo-800/80 dark:text-indigo-300/80 italic">
+                  <p className="text-[11px] text-black font-medium italic">
                     {(fields.flatPropertyType === 'NA' || fields.flatSBUA === 'NA' || fields.totalMarketValueApartment === 'NA')
                       ? 'Referenced from above: Property is NA (Not Applicable)'
                       : `Auto-calculated & referenced from above: ${fields.flatPropertyType || 'Flat'} SBUA (${fields.flatSBUA || '0'} sqft) × Composite sale rate (${fields.compositeSaleRate || '0'} Rs/sqft)`}
@@ -1869,9 +1869,9 @@ export default function ArthanFinance({
             </div>
 
             {/* Soft Container: Government Guideline / Circle Rate Valuation */}
-            <div className="bg-teal-50/70 dark:bg-teal-950/20 p-4 rounded-xl border border-teal-200/80 dark:border-teal-900/60 shadow-xs space-y-4">
-              <div className="border-b border-teal-200/80 dark:border-teal-900/60 pb-2">
-                <h3 className="text-xs font-bold text-teal-900 dark:text-teal-200 uppercase tracking-wide">
+            <div className="bg-teal-50/70 p-4 rounded-xl border border-teal-200/80 shadow-xs space-y-4 text-black [&_label]:!text-black">
+              <div className="border-b border-teal-200/80 pb-2">
+                <h3 className="text-xs font-bold text-black uppercase tracking-wide">
                   Government Guideline / Circle Rate Valuation
                 </h3>
               </div>
@@ -1890,7 +1890,7 @@ export default function ArthanFinance({
                       placeholder="e.g. 28.00"
                     />
                   </Field>
-                  <p className="text-[10px] text-slate-400 italic">
+                  <p className="text-[11px] text-black font-medium italic">
                     Guideline / circle rate per sqft for land valuation
                   </p>
                 </div>
@@ -1899,14 +1899,14 @@ export default function ArthanFinance({
                 <div className="space-y-1.5">
                   <Field label="Land Value as per Government Rate (Rs)">
                     <input
-                      className={`${inputCls} bg-teal-50/90 dark:bg-teal-950/40 font-bold text-teal-950 dark:text-teal-200`}
+                      className={`${inputCls} bg-white font-bold text-black border border-teal-300`}
                       value={fields.landValueGovtRate || ''}
                       disabled={isReadOnly}
                       placeholder="Auto-calculated"
                       readOnly
                     />
                   </Field>
-                  <p className="text-[10px] text-teal-800/80 dark:text-teal-300/80 italic">
+                  <p className="text-[11px] text-black font-medium italic">
                     {fields.govtGuidelineRateLand && fields.landAreaSqft
                       ? `Auto-calculated & referenced from: Land Area (${fields.landAreaSqft} sqft) × Govt Guideline Rate for Land (${fields.govtGuidelineRateLand} Rs/sqft)`
                       : 'Auto-calculated: uses Land Area (In Sqft) × Govt Guideline rate for Land'}
@@ -1930,14 +1930,14 @@ export default function ArthanFinance({
                         type="button"
                         onClick={() => handleChange('govtGuidelineRateFlats', fields.govtGuidelineRateFlats === 'NA' ? '' : 'NA')}
                         disabled={isReadOnly}
-                        className="absolute right-1.5 px-2 py-0.5 text-[10px] font-bold rounded bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-colors"
+                        className="absolute right-1.5 px-2 py-0.5 text-[10px] font-bold rounded bg-slate-200 hover:bg-slate-300 text-black transition-colors"
                         title="Toggle NA"
                       >
                         {fields.govtGuidelineRateFlats === 'NA' ? 'Clear NA' : 'Set NA'}
                       </button>
                     </div>
                   </Field>
-                  <p className="text-[10px] text-slate-400 italic">
+                  <p className="text-[11px] text-black font-medium italic">
                     {fields.govtGuidelineRateFlats === 'NA' ? 'Status: NA (Not applicable)' : 'Rate per sqft for flats/apartments'}
                   </p>
                 </div>
@@ -1946,14 +1946,14 @@ export default function ArthanFinance({
                 <div className="space-y-1.5">
                   <Field label="Flat / Apartment Value as per Government Rate (Rs)">
                     <input
-                      className={`${inputCls} bg-teal-50/90 dark:bg-teal-950/40 font-bold text-teal-950 dark:text-teal-200`}
+                      className={`${inputCls} bg-white font-bold text-black border border-teal-300`}
                       value={fields.flatValueGovtRate || 'NA'}
                       disabled={isReadOnly}
                       placeholder="NA"
                       readOnly
                     />
                   </Field>
-                  <p className="text-[10px] text-teal-800/80 dark:text-teal-300/80 italic">
+                  <p className="text-[11px] text-black font-medium italic">
                     {fields.govtGuidelineRateFlats === 'NA' || fields.flatValueGovtRate === 'NA'
                       ? 'Referenced from above: Govt Guideline Rate for Flats is NA'
                       : (fields.govtGuidelineRateFlats && (fields.adoptableBuiltUpArea || fields.flatSBUA)
@@ -1963,9 +1963,9 @@ export default function ArthanFinance({
                 </div>
               </div>
             </div>
-              <div className="bg-amber-50/80 p-4 rounded-xl border border-amber-200 shadow-xs space-y-3">
+              <div className="bg-amber-50/80 p-4 rounded-xl border border-amber-200 shadow-xs space-y-3 text-black [&_label]:!text-black">
                 <div className="border-b border-amber-200/80 pb-2">
-                  <h3 className="text-xs font-bold text-amber-900 uppercase tracking-wide">
+                  <h3 className="text-xs font-bold text-black uppercase tracking-wide">
                     Geo Coordinates (GPS Location)
                   </h3>
                 </div>
@@ -1997,22 +1997,22 @@ export default function ArthanFinance({
 
         {/* ════ SECTION 11: VALUER CERTIFICATION ════ */}
         <Section title="VALUER CERTIFICATION" number={11} id="sec-11">
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-2 gap-4 text-black [&_label]:!text-black">
             <Field label="Date of Visit (DD/MM/YYYY)">
               <div className="relative flex items-center">
                 <input
                   type="text"
-                  className={`${inputCls} bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 cursor-not-allowed font-medium pr-8`}
+                  className={`${inputCls} bg-slate-100 text-black cursor-not-allowed font-semibold pr-8`}
                   value={fields.dateOfInspection || fields.dateOfVisit || ''}
                   disabled
                   readOnly
                   placeholder="DD/MM/YYYY"
                 />
-                <span className="absolute right-2.5 text-xs text-slate-400" title="Locked: Referenced from Section 1 Date of Inspection / Site visit">
+                <span className="absolute right-2.5 text-xs text-black" title="Locked: Referenced from Section 1 Date of Inspection / Site visit">
                   🔒
                 </span>
               </div>
-              <span className="text-[10px] text-slate-400 mt-1 block">
+              <span className="text-[11px] text-black font-medium mt-1 block">
                 Referenced from Sec 1 (Date of Inspection / Site visit)
               </span>
             </Field>
@@ -2027,17 +2027,17 @@ export default function ArthanFinance({
               <div className="relative flex items-center">
                 <input
                   type="text"
-                  className={`${inputCls} bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 cursor-not-allowed font-semibold pr-8`}
+                  className={`${inputCls} bg-slate-100 text-black cursor-not-allowed font-semibold pr-8`}
                   value={fields.authorizedSignatory || 'Er. Satyajit Mohanty'}
                   disabled
                   readOnly
                   placeholder="Er. Satyajit Mohanty"
                 />
-                <span className="absolute right-2.5 text-xs text-slate-400" title="Locked: Authorized Signatory">
+                <span className="absolute right-2.5 text-xs text-black" title="Locked: Authorized Signatory">
                   🔒
                 </span>
               </div>
-              <span className="text-[10px] text-slate-400 mt-1 block">
+              <span className="text-[11px] text-black font-medium mt-1 block">
                 Statutory signatory locked
               </span>
             </Field>
@@ -2047,12 +2047,12 @@ export default function ArthanFinance({
         {/* ════ SECTION 12: PROPERTY PHOTOGRAPHS ════ */}
         <Section title="PROPERTY PHOTOGRAPHS" number={12} id="sec-12">
           {/* Header Reference Card (Printed Above Photos in Bank Report) */}
-          <div className="bg-slate-50/90 dark:bg-slate-900/40 p-4 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs space-y-3 mb-4">
-            <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-2">
-              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide flex items-center gap-1.5">
+          <div className="bg-slate-50/90 p-4 rounded-xl border border-slate-200/90 shadow-2xs space-y-3 mb-4 text-black [&_label]:!text-black">
+            <div className="flex items-center justify-between border-b border-slate-200/80 pb-2">
+              <h4 className="text-xs font-bold text-black uppercase tracking-wide flex items-center gap-1.5">
                 <span>📋</span> Header Reference Details (Printed Above Images in Bank Report)
               </h4>
-              <span className="text-[10px] font-semibold text-slate-500 bg-slate-200/70 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold text-black bg-slate-200 px-2 py-0.5 rounded-full">
                 Referenced from Sec 1
               </span>
             </div>
@@ -2062,16 +2062,16 @@ export default function ArthanFinance({
                   <div className="relative flex items-center">
                     <input
                       type="text"
-                      className={`${inputCls} bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium pr-8 cursor-not-allowed`}
+                      className={`${inputCls} bg-slate-100 text-black font-semibold pr-8 cursor-not-allowed`}
                       value={fields.customerName || ''}
                       disabled
                       readOnly
                       placeholder="Referenced from Sec 1"
                     />
-                    <span className="absolute right-2.5 text-xs text-slate-400" title="Locked: Referenced from Section 1">🔒</span>
+                    <span className="absolute right-2.5 text-xs text-black" title="Locked: Referenced from Section 1">🔒</span>
                   </div>
                 </Field>
-                <p className="text-[10px] text-slate-400 italic">
+                <p className="text-[11px] text-black font-medium italic">
                   Referenced from Sec 1: Name of Customer/Applicant & Contact Details
                 </p>
               </div>
@@ -2081,16 +2081,16 @@ export default function ArthanFinance({
                   <div className="relative flex items-center">
                     <input
                       type="text"
-                      className={`${inputCls} bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium pr-8 cursor-not-allowed`}
+                      className={`${inputCls} bg-slate-100 text-black font-semibold pr-8 cursor-not-allowed`}
                       value={fields.proposalNo || 'NA'}
                       disabled
                       readOnly
                       placeholder="NA"
                     />
-                    <span className="absolute right-2.5 text-xs text-slate-400" title="Locked: Referenced from Section 1">🔒</span>
+                    <span className="absolute right-2.5 text-xs text-black" title="Locked: Referenced from Section 1">🔒</span>
                   </div>
                 </Field>
-                <p className="text-[10px] text-slate-400 italic">
+                <p className="text-[11px] text-black font-medium italic">
                   Referenced from Sec 1: Proposal No.
                 </p>
               </div>
@@ -2100,16 +2100,16 @@ export default function ArthanFinance({
                   <div className="relative flex items-center">
                     <textarea
                       rows={2}
-                      className={`${inputCls} bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium pr-8 cursor-not-allowed resize-none`}
+                      className={`${inputCls} bg-slate-100 text-black font-semibold pr-8 cursor-not-allowed resize-none`}
                       value={fields.addressAsPerActualSite || fields.addressAsPerDocument || fields.addressAsPerTRF || ''}
                       disabled
                       readOnly
                       placeholder="Referenced from Sec 1"
                     />
-                    <span className="absolute right-2.5 top-2.5 text-xs text-slate-400" title="Locked: Referenced from Section 1">🔒</span>
+                    <span className="absolute right-2.5 top-2.5 text-xs text-black" title="Locked: Referenced from Section 1">🔒</span>
                   </div>
                 </Field>
-                <p className="text-[10px] text-slate-400 italic">
+                <p className="text-[11px] text-black font-medium italic">
                   Referenced from Sec 1: Address of the property being appraised
                 </p>
               </div>
@@ -2140,12 +2140,12 @@ export default function ArthanFinance({
           />
 
           {/* Footer Reference Card (Printed Below Images in Bank Report) */}
-          <div className="bg-slate-50/90 dark:bg-slate-900/40 p-4 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs space-y-3 mt-4">
-            <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-2">
-              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide flex items-center gap-1.5">
+          <div className="bg-slate-50/90 p-4 rounded-xl border border-slate-200/90 shadow-2xs space-y-3 mt-4 text-black [&_label]:!text-black">
+            <div className="flex items-center justify-between border-b border-slate-200/80 pb-2">
+              <h4 className="text-xs font-bold text-black uppercase tracking-wide flex items-center gap-1.5">
                 <span>✍️</span> Signatory & Inspection Details (Printed Below Images in Bank Report)
               </h4>
-              <span className="text-[10px] font-semibold text-slate-500 bg-slate-200/70 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold text-black bg-slate-200 px-2 py-0.5 rounded-full">
                 Referenced from Sec 11 (Valuer Certification)
               </span>
             </div>
@@ -2155,16 +2155,16 @@ export default function ArthanFinance({
                   <div className="relative flex items-center">
                     <input
                       type="text"
-                      className={`${inputCls} bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium pr-8 cursor-not-allowed`}
+                      className={`${inputCls} bg-slate-100 text-black font-semibold pr-8 cursor-not-allowed`}
                       value={fields.visitingEngineer || ''}
                       disabled
                       readOnly
                       placeholder="Referenced from Sec 11"
                     />
-                    <span className="absolute right-2.5 text-xs text-slate-400" title="Locked: Referenced from Section 11">🔒</span>
+                    <span className="absolute right-2.5 text-xs text-black" title="Locked: Referenced from Section 11">🔒</span>
                   </div>
                 </Field>
-                <p className="text-[10px] text-slate-400 italic">
+                <p className="text-[11px] text-black font-medium italic">
                   Referenced from Sec 11 (Valuer Certification): Name of Engineer Visited the property
                 </p>
               </div>
@@ -2174,16 +2174,16 @@ export default function ArthanFinance({
                   <div className="relative flex items-center">
                     <input
                       type="text"
-                      className={`${inputCls} bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold pr-8 cursor-not-allowed`}
+                      className={`${inputCls} bg-slate-100 text-black font-semibold pr-8 cursor-not-allowed`}
                       value={fields.authorizedSignatory || 'Er. Satyajit Mohanty'}
                       disabled
                       readOnly
                       placeholder="Er. Satyajit Mohanty"
                     />
-                    <span className="absolute right-2.5 text-xs text-slate-400" title="Locked: Referenced from Section 11">🔒</span>
+                    <span className="absolute right-2.5 text-xs text-black" title="Locked: Referenced from Section 11">🔒</span>
                   </div>
                 </Field>
-                <p className="text-[10px] text-slate-400 italic">
+                <p className="text-[11px] text-black font-medium italic">
                   Referenced from Sec 11 (Valuer Certification): Authorized Signatory
                 </p>
               </div>
@@ -2202,12 +2202,12 @@ export default function ArthanFinance({
         {/* ════ SECTION 13: MAPS ════ */}
         <Section title="LOCATION CUM ROUTE MAP SHOWING PROPERTY BOUNDARIES" number={13} id="sec-13">
           {/* Header Reference Card (Printed Above Maps in Bank Report) */}
-          <div className="bg-slate-50/90 dark:bg-slate-900/40 p-4 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs space-y-3 mb-4">
-            <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-2">
-              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide flex items-center gap-1.5">
+          <div className="bg-slate-50/90 p-4 rounded-xl border border-slate-200/90 shadow-2xs space-y-3 mb-4 text-black [&_label]:!text-black">
+            <div className="flex items-center justify-between border-b border-slate-200/80 pb-2">
+              <h4 className="text-xs font-bold text-black uppercase tracking-wide flex items-center gap-1.5">
                 <span>📋</span> Header Reference Details (Printed Above Maps in Bank Report)
               </h4>
-              <span className="text-[10px] font-semibold text-slate-500 bg-slate-200/70 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold text-black bg-slate-200 px-2 py-0.5 rounded-full">
                 Referenced from Sec 1
               </span>
             </div>
@@ -2217,16 +2217,16 @@ export default function ArthanFinance({
                   <div className="relative flex items-center">
                     <input
                       type="text"
-                      className={`${inputCls} bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium pr-8 cursor-not-allowed`}
+                      className={`${inputCls} bg-slate-100 text-black font-semibold pr-8 cursor-not-allowed`}
                       value={fields.customerName || ''}
                       disabled
                       readOnly
                       placeholder="Referenced from Sec 1"
                     />
-                    <span className="absolute right-2.5 text-xs text-slate-400" title="Locked: Referenced from Section 1">🔒</span>
+                    <span className="absolute right-2.5 text-xs text-black" title="Locked: Referenced from Section 1">🔒</span>
                   </div>
                 </Field>
-                <p className="text-[10px] text-slate-400 italic">
+                <p className="text-[11px] text-black font-medium italic">
                   Referenced from Sec 1: Name of Customer/Applicant & Contact Details
                 </p>
               </div>
@@ -2236,16 +2236,16 @@ export default function ArthanFinance({
                   <div className="relative flex items-center">
                     <input
                       type="text"
-                      className={`${inputCls} bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium pr-8 cursor-not-allowed`}
+                      className={`${inputCls} bg-slate-100 text-black font-semibold pr-8 cursor-not-allowed`}
                       value={fields.proposalNo || 'NA'}
                       disabled
                       readOnly
                       placeholder="NA"
                     />
-                    <span className="absolute right-2.5 text-xs text-slate-400" title="Locked: Referenced from Section 1">🔒</span>
+                    <span className="absolute right-2.5 text-xs text-black" title="Locked: Referenced from Section 1">🔒</span>
                   </div>
                 </Field>
-                <p className="text-[10px] text-slate-400 italic">
+                <p className="text-[11px] text-black font-medium italic">
                   Referenced from Sec 1: Proposal No.
                 </p>
               </div>
@@ -2255,16 +2255,16 @@ export default function ArthanFinance({
                   <div className="relative flex items-center">
                     <textarea
                       rows={2}
-                      className={`${inputCls} bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium pr-8 cursor-not-allowed resize-none`}
+                      className={`${inputCls} bg-slate-100 text-black font-semibold pr-8 cursor-not-allowed resize-none`}
                       value={fields.addressAsPerActualSite || fields.addressAsPerDocument || fields.addressAsPerTRF || ''}
                       disabled
                       readOnly
                       placeholder="Referenced from Sec 1"
                     />
-                    <span className="absolute right-2.5 top-2.5 text-xs text-slate-400" title="Locked: Referenced from Section 1">🔒</span>
+                    <span className="absolute right-2.5 top-2.5 text-xs text-black" title="Locked: Referenced from Section 1">🔒</span>
                   </div>
                 </Field>
-                <p className="text-[10px] text-slate-400 italic">
+                <p className="text-[11px] text-black font-medium italic">
                   Referenced from Sec 1: Address of the property being appraised
                 </p>
               </div>
@@ -2296,12 +2296,12 @@ export default function ArthanFinance({
           />
 
           {/* Footer Reference Card (Printed Below Maps in Bank Report) */}
-          <div className="bg-slate-50/90 dark:bg-slate-900/40 p-4 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs space-y-3 mt-4">
-            <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-2">
-              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide flex items-center gap-1.5">
+          <div className="bg-slate-50/90 p-4 rounded-xl border border-slate-200/90 shadow-2xs space-y-3 mt-4 text-black [&_label]:!text-black">
+            <div className="flex items-center justify-between border-b border-slate-200/80 pb-2">
+              <h4 className="text-xs font-bold text-black uppercase tracking-wide flex items-center gap-1.5">
                 <span>✍️</span> Signatory & Inspection Details (Printed Below Maps in Bank Report)
               </h4>
-              <span className="text-[10px] font-semibold text-slate-500 bg-slate-200/70 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold text-black bg-slate-200 px-2 py-0.5 rounded-full">
                 Referenced from Sec 11 (Valuer Certification)
               </span>
             </div>
@@ -2311,16 +2311,16 @@ export default function ArthanFinance({
                   <div className="relative flex items-center">
                     <input
                       type="text"
-                      className={`${inputCls} bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium pr-8 cursor-not-allowed`}
+                      className={`${inputCls} bg-slate-100 text-black font-semibold pr-8 cursor-not-allowed`}
                       value={fields.visitingEngineer || ''}
                       disabled
                       readOnly
                       placeholder="Referenced from Sec 11"
                     />
-                    <span className="absolute right-2.5 text-xs text-slate-400" title="Locked: Referenced from Section 11">🔒</span>
+                    <span className="absolute right-2.5 text-xs text-black" title="Locked: Referenced from Section 11">🔒</span>
                   </div>
                 </Field>
-                <p className="text-[10px] text-slate-400 italic">
+                <p className="text-[11px] text-black font-medium italic">
                   Referenced from Sec 11 (Valuer Certification): Name of Engineer Visited the property
                 </p>
               </div>
@@ -2330,16 +2330,18 @@ export default function ArthanFinance({
                   <div className="relative flex items-center">
                     <input
                       type="text"
-                      className={`${inputCls} bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold pr-8 cursor-not-allowed`}
+                      className={`${inputCls} bg-slate-100 text-black font-semibold pr-8 cursor-not-allowed`}
                       value={fields.authorizedSignatory || 'Er. Satyajit Mohanty'}
                       disabled
                       readOnly
                       placeholder="Er. Satyajit Mohanty"
                     />
-                    <span className="absolute right-2.5 text-xs text-slate-400" title="Locked: Referenced from Section 11">🔒</span>
+                    <span className="absolute right-2.5 text-xs text-black" title="Locked: Authorized Signatory">
+                  🔒
+                    </span>
                   </div>
                 </Field>
-                <p className="text-[10px] text-slate-400 italic">
+                <p className="text-[11px] text-black font-medium italic">
                   Referenced from Sec 11 (Valuer Certification): Authorized Signatory
                 </p>
               </div>
