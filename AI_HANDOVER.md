@@ -423,6 +423,8 @@ Outstanding items in **priority order**:
 - `latest` - update(Resume): update CGPA to 7.43 and S Mohanty Associates full-stack internship details with 5 priority bullet points
 
 ## Recent Changes
+- `latest` - fix(pdf/ui): complete all final Aditya Birla Housing HL-LAP formatting adjustments including precise boundary table borders, strict NA/N.A field default removals across 4 tables, and perfect width/alignment for Relation with Customer and Contact No.
+
 - `87729f4` — feat(ui): remove Premises Type, Occupied By, and Boundaries from Section 5 in Aditya Birla Housing
 - `600cc9f` — feat(ui): rename Age of property fields, remove Usage Type/Legal Status, and introduce dedicated PDFAdityaBirlaHousingRenderer
 - `acd365b` — fix(mlap): resolve ReferenceError on handleDeleteBucketImage and restore builder loading; fix TDZ for drawExtraPDFFields in BankReportBuilder; type AnnexureRefSelector optional props
