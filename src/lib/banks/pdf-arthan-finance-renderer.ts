@@ -225,6 +225,57 @@ export const formatExactDecimal = (n: number): string => {
   return String(n);
 };
 
+/**
+ * Exact decimal multiplication to avoid IEEE-754 floating point imprecision without roundoff.
+ * Returns empty string if either value is missing, non-numeric, or <= 0.
+ */
+export const multiplyExactDecimals = (
+  val1: string | number | undefined | null,
+  val2: string | number | undefined | null
+): string => {
+  if (val1 === undefined || val1 === null || val2 === undefined || val2 === null) return '';
+  const s1 = String(val1).trim().replace(/[^0-9.]/g, '');
+  const s2 = String(val2).trim().replace(/[^0-9.]/g, '');
+  if (!s1 || !s2) return '';
+  const n1 = parseFloat(s1);
+  const n2 = parseFloat(s2);
+  if (isNaN(n1) || isNaN(n2) || n1 <= 0 || n2 <= 0) return '';
+
+  const dec1 = s1.includes('.') ? s1.split('.')[1].length : 0;
+  const dec2 = s2.includes('.') ? s2.split('.')[1].length : 0;
+  const maxDec = Math.min(dec1 + dec2, 8);
+  const raw = n1 * n2;
+  const factor = Math.pow(10, maxDec);
+  const clean = Math.round(raw * factor) / factor;
+  return String(clean);
+};
+
+/**
+ * Exact percentage calculation (baseValue * percentage / 100) without roundoff.
+ * Accepts only positive float values (>= 0). Rejects negative numbers.
+ */
+export const calculatePercentageValue = (
+  baseValue: string | number | undefined | null,
+  percentage: string | number | undefined | null
+): string => {
+  if (baseValue === undefined || baseValue === null || percentage === undefined || percentage === null) return '';
+  const bStr = String(baseValue).trim().replace(/[^0-9.]/g, '');
+  const pStr = String(percentage).trim().replace(/[^0-9.]/g, '');
+  if (!bStr || !pStr) return '';
+  const b = parseFloat(bStr);
+  const p = parseFloat(pStr);
+  if (isNaN(b) || isNaN(p) || b <= 0 || p < 0) return '';
+  if (p === 0) return '0';
+
+  const bDec = bStr.includes('.') ? bStr.split('.')[1].length : 0;
+  const pDec = pStr.includes('.') ? pStr.split('.')[1].length : 0;
+  const maxDec = Math.min(bDec + pDec + 2, 8);
+  const raw = (b * p) / 100;
+  const factor = Math.pow(10, maxDec);
+  const clean = Math.round(raw * factor) / factor;
+  return String(clean);
+};
+
 export interface ArthanFinanceReportFields {
   // Header
   dateOfValuation?: string;
@@ -319,6 +370,7 @@ export interface ArthanFinanceReportFields {
   // Section 9 — Valuation of Property
   landAreaSqft?: string;
   adoptableBuiltUpArea?: string;
+  adoptableBUASpec?: string;
   currentMarketRateRange?: string;
   constructionCostPerSqft?: string;
   recommendedRateOfLand?: string;
@@ -327,8 +379,11 @@ export interface ArthanFinanceReportFields {
   totalConstructionValuePresent?: string;
   marketValueLandBuilding?: string;
   marketValueLandBuildingRight?: string;
+  distressPct100?: string;
+  distressPctPresent?: string;
   distressValue100?: string;
   distressValuePresent?: string;
+  flatPropertyType?: 'Flat' | 'Apartment' | 'Shop' | 'Office' | 'NA';
   flatSBUA?: string;
   compositeSaleRate?: string;
   totalMarketValueApartment?: string;
@@ -446,31 +501,89 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
 
     this.page.drawRectangle(rectOpts);
 
-    // Multi-segment text support (e.g. mixed regular and bold in the same cell)
+    // Multi-segment text support (e.g. mixed regular and bold in the same cell with word wrapping)
     if (options.segments && options.segments.length > 0) {
       const padX = 4;
       const padY = 3;
+      const maxTextW = Math.max(10, w - padX * 2);
       const lineH = fontSize * LINE_HEIGHT;
+
+      interface FormattedToken {
+        text: string;
+        bold?: boolean;
+        width: number;
+        isSpace: boolean;
+      }
+      const tokens: FormattedToken[] = [];
+      for (const seg of options.segments) {
+        const segClean = this.sanitizeText(seg.text);
+        if (!segClean) continue;
+        const font = seg.bold ? this.fontBold : this.fontRegular;
+        const rawParts = segClean.split(/(\s+)/);
+        for (const part of rawParts) {
+          if (!part) continue;
+          const isSpace = /^\s+$/.test(part);
+          const tw = font.widthOfTextAtSize(part, fontSize);
+          tokens.push({ text: part, bold: seg.bold, width: tw, isSpace });
+        }
+      }
+
+      const lines: FormattedToken[][] = [];
+      let curLine: FormattedToken[] = [];
+      let curLineW = 0;
+
+      for (const token of tokens) {
+        if (curLine.length === 0 && token.isSpace) {
+          continue; // skip leading spaces on a line
+        }
+
+        if (curLine.length > 0 && curLineW + token.width > maxTextW && !token.isSpace) {
+          lines.push(curLine);
+          curLine = [];
+          curLineW = 0;
+        }
+
+        curLine.push(token);
+        curLineW += token.width;
+      }
+      if (curLine.length > 0) {
+        lines.push(curLine);
+      }
+
+      const totalTextH = Math.max(1, lines.length) * lineH;
       let startY: number;
-      if (vAlign === 'middle' && h >= lineH + padY * 2) {
-        startY = (y - h / 2) + (lineH / 2) - (fontSize * 0.82);
+      if (vAlign === 'middle' && h >= totalTextH + padY * 2) {
+        startY = (y - h / 2) + (totalTextH / 2) - (fontSize * 0.82);
       } else {
         startY = y - padY - (fontSize * 0.82);
       }
 
-      let lineX = x + padX;
-      for (const seg of options.segments) {
-        const segClean = this.sanitizeText(seg.text);
-        if (!segClean) continue;
-        const segFont = seg.bold ? this.fontBold : this.fontRegular;
-        this.page.drawText(segClean, {
-          x: Math.max(x + 1, lineX),
-          y: startY,
-          size: fontSize,
-          font: segFont,
-          color: rgb(0, 0, 0),
-        });
-        lineX += segFont.widthOfTextAtSize(segClean, fontSize);
+      let lineY = startY;
+      for (const line of lines) {
+        let measuredW = 0;
+        for (const tok of line) {
+          measuredW += tok.width;
+        }
+
+        let lineX = x + padX;
+        if (align === 'center') {
+          lineX = x + (w - measuredW) / 2;
+        } else if (align === 'right') {
+          lineX = x + w - padX - measuredW;
+        }
+
+        for (const tok of line) {
+          const tokFont = tok.bold ? this.fontBold : this.fontRegular;
+          this.page.drawText(tok.text, {
+            x: Math.max(x + 1, lineX),
+            y: lineY,
+            size: fontSize,
+            font: tokFont,
+            color: rgb(0, 0, 0),
+          });
+          lineX += tok.width;
+        }
+        lineY -= lineH;
       }
       return;
     }
@@ -922,7 +1035,14 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     // ══════════════════════════════════════════════════════════════════
     // SECTION 6 — Built-up Area & Accommodation Details
     // ══════════════════════════════════════════════════════════════════
-    this.checkPageBreak(26 + 22 * 6);
+    const defaultBuaFloors: ArthanFinanceBUAFloor[] = [
+      { floor: 'Basement / Stilt', accommodation: 'NA', carpetArea: '', actualBUA: '', permissibleBUA: 'NA', adoptedBUA: '' },
+      { floor: 'Ground Floor', accommodation: 'NA', carpetArea: '', actualBUA: '', permissibleBUA: 'NA', adoptedBUA: '' },
+      { floor: 'First Floor', accommodation: 'NA', carpetArea: '', actualBUA: '', permissibleBUA: 'NA', adoptedBUA: '' },
+    ];
+    const buaFloors = Array.isArray(fields.buaFloors) ? fields.buaFloors : defaultBuaFloors;
+
+    this.checkPageBreak(buaFloors.length > 0 ? (26 + 22 * (buaFloors.length + 2)) : 65);
     this.drawSectionBanner('Built-up Area & Accommodation Details');
 
     const buaW1 = 90;  // Floor
@@ -941,39 +1061,34 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       { text: 'Adopted Built-up area (Sft)', width: buaW6, isHeader: true, align: 'center' },
     ], 36, 4);
 
-    const defaultBuaFloors: ArthanFinanceBUAFloor[] = [
-      { floor: 'Basement / Stilt', accommodation: 'NA', carpetArea: '', actualBUA: '', permissibleBUA: 'NA', adoptedBUA: '' },
-      { floor: 'Ground Floor', accommodation: 'NA', carpetArea: '', actualBUA: '', permissibleBUA: 'NA', adoptedBUA: '' },
-      { floor: 'First Floor', accommodation: 'NA', carpetArea: '', actualBUA: '', permissibleBUA: 'NA', adoptedBUA: '' },
-    ];
-    const buaFloors = (fields.buaFloors && fields.buaFloors.length > 0) ? fields.buaFloors : defaultBuaFloors;
+    if (buaFloors.length > 0) {
+      // Calculate exact totals without floating point roundoff
+      const totalAdoptedBUA = sumDecimals(buaFloors.map(fl => fl.adoptedBUA));
+      const totalActualBUA = sumDecimals(buaFloors.map(fl => fl.actualBUA));
+      const totalCarpetArea = sumDecimals(buaFloors.map(fl => fl.carpetArea));
+      const totalPermissibleBUA = sumDecimals(buaFloors.map(fl => fl.permissibleBUA));
 
-    // Calculate exact totals without floating point roundoff
-    const totalAdoptedBUA = sumDecimals(buaFloors.map(fl => fl.adoptedBUA));
-    const totalActualBUA = sumDecimals(buaFloors.map(fl => fl.actualBUA));
-    const totalCarpetArea = sumDecimals(buaFloors.map(fl => fl.carpetArea));
-    const totalPermissibleBUA = sumDecimals(buaFloors.map(fl => fl.permissibleBUA));
+      for (const fl of buaFloors) {
+        this.drawRow([
+          { text: fl.floor, width: buaW1, isLabel: true },
+          { text: fl.accommodation || 'NA', width: buaW2, align: 'center' },
+          { text: fl.carpetArea ? (fl.carpetArea === 'NA' ? 'NA' : `${fl.carpetArea}`) : 'NA', width: buaW3, align: 'center' },
+          { text: fl.actualBUA ? (fl.actualBUA === 'NA' ? 'NA' : `${fl.actualBUA}`) : 'NA', width: buaW4, align: 'center' },
+          { text: fl.permissibleBUA || 'NA', width: buaW5, align: 'center' },
+          { text: fl.adoptedBUA ? (fl.adoptedBUA === 'NA' ? 'NA' : `${fl.adoptedBUA}`) : 'NA', width: buaW6, align: 'center' },
+        ], 22, 4);
+      }
 
-    for (const fl of buaFloors) {
+      // Total row - no bold (regular font for all cells)
       this.drawRow([
-        { text: fl.floor, width: buaW1, isLabel: true },
-        { text: fl.accommodation || 'NA', width: buaW2, align: 'center' },
-        { text: fl.carpetArea ? (fl.carpetArea === 'NA' ? 'NA' : `${fl.carpetArea}`) : 'NA', width: buaW3, align: 'center' },
-        { text: fl.actualBUA ? (fl.actualBUA === 'NA' ? 'NA' : `${fl.actualBUA}`) : 'NA', width: buaW4, align: 'center' },
-        { text: fl.permissibleBUA || 'NA', width: buaW5, align: 'center' },
-        { text: fl.adoptedBUA ? (fl.adoptedBUA === 'NA' ? 'NA' : `${fl.adoptedBUA}`) : 'NA', width: buaW6, align: 'center' },
+        { text: 'Total', width: buaW1, isLabel: true, bold: false },
+        { text: 'NA', width: buaW2, align: 'center', bold: false },
+        { text: totalCarpetArea > 0 ? formatExactDecimal(totalCarpetArea) : 'NA', width: buaW3, align: 'center', bold: false },
+        { text: totalActualBUA > 0 ? `${formatExactDecimal(totalActualBUA)}sqft` : 'NA', width: buaW4, align: 'center', bold: false },
+        { text: totalPermissibleBUA > 0 ? formatExactDecimal(totalPermissibleBUA) : 'NA', width: buaW5, align: 'center', bold: false },
+        { text: totalAdoptedBUA > 0 ? `${formatExactDecimal(totalAdoptedBUA)}sqft` : 'NA', width: buaW6, align: 'center', bold: false },
       ], 22, 4);
     }
-
-    // Total row - no bold (regular font for all cells)
-    this.drawRow([
-      { text: 'Total', width: buaW1, isLabel: true, bold: false },
-      { text: 'NA', width: buaW2, align: 'center', bold: false },
-      { text: totalCarpetArea > 0 ? formatExactDecimal(totalCarpetArea) : 'NA', width: buaW3, align: 'center', bold: false },
-      { text: totalActualBUA > 0 ? `${formatExactDecimal(totalActualBUA)}sqft` : 'NA', width: buaW4, align: 'center', bold: false },
-      { text: totalPermissibleBUA > 0 ? formatExactDecimal(totalPermissibleBUA) : 'NA', width: buaW5, align: 'center', bold: false },
-      { text: totalAdoptedBUA > 0 ? `${formatExactDecimal(totalAdoptedBUA)}sqft` : 'NA', width: buaW6, align: 'center', bold: false },
-    ], 22, 4);
 
     // Violation observed
     this.drawRow([
@@ -1050,10 +1165,15 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     const vlW2 = 185;
     const vlV2 = CONTENT_W - vlW1 - vlV - vlW2;
 
+    const buaSpec = (fields.adoptableBUASpec !== undefined ? fields.adoptableBUASpec : 'GF RCC').trim();
+    const buaLabel = buaSpec
+      ? `Adoptable Built-up Area (in Sqft) ${buaSpec}`
+      : 'Adoptable Built-up Area (in Sqft)';
+
     this.drawRow([
       { text: 'Land Area (In Sqft)', width: vlW1, isLabel: true },
       { text: fields.landAreaSqft || '', width: vlV },
-      { text: 'Adoptable Built-up Area (in Sqft) GF RCC', width: vlW2, isLabel: true },
+      { text: buaLabel, width: vlW2, isLabel: true },
       { text: fields.adoptableBuiltUpArea || '', width: vlV2 },
     ], 20, 4);
 
@@ -1085,37 +1205,100 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       { text: fields.marketValueLandBuildingRight || '', width: vlV2, highlight: true },
     ], 20, 4);
 
+    const pct100 = (fields.distressPct100 !== undefined && fields.distressPct100 !== null && fields.distressPct100 !== '')
+      ? fields.distressPct100
+      : '0';
+    const pctPresent = (fields.distressPctPresent !== undefined && fields.distressPctPresent !== null && fields.distressPctPresent !== '')
+      ? fields.distressPctPresent
+      : '0';
+
     this.drawRow([
-      { text: 'Distress Value of 100% complete property @ 80% of MV', width: vlW1, isLabel: true },
+      { text: `Distress Value of 100% complete property @ ${pct100}% of MV`, width: vlW1, isLabel: true },
       { text: fields.distressValue100 || '', width: vlV },
-      { text: 'Distress Value of present completed property @ 80% of MV', width: vlW2, isLabel: true },
+      { text: `Distress Value of present completed property @ ${pctPresent}% of MV`, width: vlW2, isLabel: true },
       { text: fields.distressValuePresent || '', width: vlV2 },
     ], 20, 4);
 
-    this.drawRow([
-      { text: 'Flat / Apartment / Shop / Office SBUA (in Sqft)', width: vlW1, isLabel: true },
-      { text: fields.flatSBUA || 'NA', width: vlV },
-      { text: 'Composite sale rate (Rs per sqft)', width: vlW2, isLabel: true },
-      { text: fields.compositeSaleRate || 'NA', width: vlV2 },
-    ], 20, 4);
+    const flatType = fields.flatPropertyType || (fields.flatSBUA === 'NA' || !fields.flatSBUA ? 'NA' : 'Flat');
+    const isFlatNA = flatType === 'NA' || fields.flatSBUA === 'NA';
+
+    const flatSegments = isFlatNA
+      ? undefined
+      : [
+          { text: 'Flat', bold: flatType === 'Flat' },
+          { text: ' / ', bold: false },
+          { text: 'Apartment', bold: flatType === 'Apartment' },
+          { text: ' / ', bold: false },
+          { text: 'Shop', bold: flatType === 'Shop' },
+          { text: ' / ', bold: false },
+          { text: 'Office', bold: flatType === 'Office' },
+          { text: ' SBUA (in Sqft)', bold: false },
+        ];
 
     this.drawRow([
-      { text: 'Total Market Value of Apartment / Shop / Flat / Office (Rs per sqft)', width: vlW1, isLabel: true },
-      { text: fields.totalMarketValueApartment || 'NA', width: CONTENT_W - vlW1, align: 'center' },
+      {
+        text: 'Flat / Apartment / Shop / Office SBUA (in Sqft)',
+        segments: flatSegments,
+        width: vlW1,
+        isLabel: true,
+      },
+      { text: fields.flatSBUA || 'NA', width: vlV, bold: !isFlatNA },
+      { text: 'Composite sale rate (Rs per sqft)', width: vlW2, isLabel: true },
+      { text: fields.compositeSaleRate || 'NA', width: vlV2, bold: !isFlatNA },
     ], 20, 4);
+
+    const tmvSegments = isFlatNA
+      ? undefined
+      : [
+          { text: 'Total Market Value of ', bold: false },
+          { text: 'Apartment', bold: flatType === 'Apartment' },
+          { text: ' / ', bold: false },
+          { text: 'Shop', bold: flatType === 'Shop' },
+          { text: ' / ', bold: false },
+          { text: 'Flat', bold: flatType === 'Flat' },
+          { text: ' / ', bold: false },
+          { text: 'Office', bold: flatType === 'Office' },
+          { text: ' (Rs per sqft)', bold: false },
+        ];
+
+    this.drawRow([
+      {
+        text: 'Total Market Value of Apartment / Shop / Flat / Office (Rs per sqft)',
+        segments: tmvSegments,
+        width: vlW1,
+        isLabel: true,
+      },
+      { text: fields.totalMarketValueApartment || 'NA', width: CONTENT_W - vlW1, align: 'center', bold: !isFlatNA },
+    ], 20, 4);
+
+    const landGovtVal = fields.landValueGovtRate || (
+      fields.landAreaSqft && fields.govtGuidelineRateLand && fields.govtGuidelineRateLand !== 'NA'
+        ? multiplyExactDecimals(fields.landAreaSqft, fields.govtGuidelineRateLand)
+        : ''
+    );
+
+    const flatGovtVal = fields.flatValueGovtRate || (
+      fields.govtGuidelineRateFlats === 'NA' || !fields.govtGuidelineRateFlats
+        ? 'NA'
+        : (
+          (fields.adoptableBuiltUpArea || fields.flatSBUA)
+            ? multiplyExactDecimals(fields.adoptableBuiltUpArea || fields.flatSBUA, fields.govtGuidelineRateFlats)
+            : 'NA'
+        )
+    );
 
     this.drawRow([
       { text: 'Government Guideline/ Circle rate for Land (Rs per sqft)', width: vlW1, isLabel: true },
       { text: fields.govtGuidelineRateLand || '', width: vlV },
       { text: 'Land Value as per Government Rate (Rs)', width: vlW2, isLabel: true },
-      { text: fields.landValueGovtRate || '', width: vlV2 },
+      { text: landGovtVal, width: vlV2 },
     ], 20, 4);
 
     this.drawRow([
       { text: 'Government Guideline/ Circle rate for Flats (Rs per sqft)', width: vlW1, isLabel: true },
       { text: fields.govtGuidelineRateFlats || 'NA', width: vlV },
       { text: 'Flat / Apartment Value as per Government Rate (Rs)', width: vlW2, isLabel: true },
-      { text: fields.flatValueGovtRate || 'NA', width: vlV2 },
+      { text: flatGovtVal, width: vlV2 },
     ], 20, 4);
 
     this.drawRow([

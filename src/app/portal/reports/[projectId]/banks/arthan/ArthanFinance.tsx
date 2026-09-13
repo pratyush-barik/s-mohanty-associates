@@ -18,6 +18,8 @@ import {
   sanitizePositiveHeight,
   sumDecimals,
   formatExactDecimal,
+  multiplyExactDecimals,
+  calculatePercentageValue,
 } from '@/lib/banks/pdf-arthan-finance-renderer';
 import {
   Section,
@@ -154,7 +156,7 @@ export default function ArthanFinance({
       heightSite: raw.heightSite || '',
 
       // Section 6 — BUA (default adoptedBUA is empty string; renders as NA when empty)
-      buaFloors: Array.isArray(raw.buaFloors) && raw.buaFloors.length > 0
+      buaFloors: Array.isArray(raw.buaFloors)
         ? raw.buaFloors.map((fl: any) => ({
             ...fl,
             adoptedBUA: fl.adoptedBUA === 'NA' ? '' : (fl.adoptedBUA || ''),
@@ -187,23 +189,102 @@ export default function ArthanFinance({
       // Section 9 — Valuation
       landAreaSqft: raw.landAreaSqft || '',
       adoptableBuiltUpArea: raw.adoptableBuiltUpArea || '',
+      adoptableBUASpec: raw.adoptableBUASpec !== undefined ? raw.adoptableBUASpec : 'GF RCC',
       currentMarketRateRange: raw.currentMarketRateRange || '',
       constructionCostPerSqft: raw.constructionCostPerSqft || '',
       recommendedRateOfLand: raw.recommendedRateOfLand || '',
-      totalConstructionValue100: raw.totalConstructionValue100 || '',
-      totalLandValue: raw.totalLandValue || '',
-      totalConstructionValuePresent: raw.totalConstructionValuePresent || '',
-      marketValueLandBuilding: raw.marketValueLandBuilding || '',
-      marketValueLandBuildingRight: raw.marketValueLandBuildingRight || '',
-      distressValue100: raw.distressValue100 || '',
-      distressValuePresent: raw.distressValuePresent || '',
+      totalConstructionValue100: raw.totalConstructionValue100 || (
+        raw.adoptableBuiltUpArea && raw.constructionCostPerSqft
+          ? multiplyExactDecimals(raw.adoptableBuiltUpArea, raw.constructionCostPerSqft)
+          : ''
+      ),
+      totalLandValue: raw.totalLandValue || (
+        raw.landAreaSqft && raw.recommendedRateOfLand
+          ? multiplyExactDecimals(raw.landAreaSqft, raw.recommendedRateOfLand)
+          : ''
+      ),
+      totalConstructionValuePresent: raw.totalConstructionValuePresent || (
+        (raw.totalConstructionValue100 || (raw.adoptableBuiltUpArea && raw.constructionCostPerSqft ? multiplyExactDecimals(raw.adoptableBuiltUpArea, raw.constructionCostPerSqft) : ''))
+          ? calculatePercentageValue(
+              raw.totalConstructionValue100 || multiplyExactDecimals(raw.adoptableBuiltUpArea, raw.constructionCostPerSqft),
+              raw.constructionStage || '100%'
+            )
+          : ''
+      ),
+      marketValueLandBuilding: raw.marketValueLandBuilding || (
+        sumDecimals([
+          raw.totalLandValue || (raw.landAreaSqft && raw.recommendedRateOfLand ? multiplyExactDecimals(raw.landAreaSqft, raw.recommendedRateOfLand) : ''),
+          raw.totalConstructionValue100 || (raw.adoptableBuiltUpArea && raw.constructionCostPerSqft ? multiplyExactDecimals(raw.adoptableBuiltUpArea, raw.constructionCostPerSqft) : '')
+        ]) > 0
+          ? formatExactDecimal(sumDecimals([
+              raw.totalLandValue || (raw.landAreaSqft && raw.recommendedRateOfLand ? multiplyExactDecimals(raw.landAreaSqft, raw.recommendedRateOfLand) : ''),
+              raw.totalConstructionValue100 || (raw.adoptableBuiltUpArea && raw.constructionCostPerSqft ? multiplyExactDecimals(raw.adoptableBuiltUpArea, raw.constructionCostPerSqft) : '')
+            ]))
+          : ''
+      ),
+      marketValueLandBuildingRight: raw.marketValueLandBuildingRight || (
+        sumDecimals([
+          raw.totalLandValue || (raw.landAreaSqft && raw.recommendedRateOfLand ? multiplyExactDecimals(raw.landAreaSqft, raw.recommendedRateOfLand) : ''),
+          raw.totalConstructionValuePresent || (
+            (raw.totalConstructionValue100 || (raw.adoptableBuiltUpArea && raw.constructionCostPerSqft ? multiplyExactDecimals(raw.adoptableBuiltUpArea, raw.constructionCostPerSqft) : ''))
+              ? calculatePercentageValue(
+                  raw.totalConstructionValue100 || multiplyExactDecimals(raw.adoptableBuiltUpArea, raw.constructionCostPerSqft),
+                  raw.constructionStage || '100%'
+                )
+              : ''
+          )
+        ]) > 0
+          ? formatExactDecimal(sumDecimals([
+              raw.totalLandValue || (raw.landAreaSqft && raw.recommendedRateOfLand ? multiplyExactDecimals(raw.landAreaSqft, raw.recommendedRateOfLand) : ''),
+              raw.totalConstructionValuePresent || (
+                (raw.totalConstructionValue100 || (raw.adoptableBuiltUpArea && raw.constructionCostPerSqft ? multiplyExactDecimals(raw.adoptableBuiltUpArea, raw.constructionCostPerSqft) : ''))
+                  ? calculatePercentageValue(
+                      raw.totalConstructionValue100 || multiplyExactDecimals(raw.adoptableBuiltUpArea, raw.constructionCostPerSqft),
+                      raw.constructionStage || '100%'
+                    )
+                  : ''
+              )
+            ]))
+          : ''
+      ),
+      distressPct100: (raw.distressPct100 !== undefined && raw.distressPct100 !== null && raw.distressPct100 !== '')
+        ? raw.distressPct100
+        : '0',
+      distressPctPresent: (raw.distressPctPresent !== undefined && raw.distressPctPresent !== null && raw.distressPctPresent !== '')
+        ? raw.distressPctPresent
+        : '0',
+      distressValue100: raw.distressValue100 !== undefined && raw.distressValue100 !== null && raw.distressValue100 !== ''
+        ? raw.distressValue100
+        : '',
+      distressValuePresent: raw.distressValuePresent !== undefined && raw.distressValuePresent !== null && raw.distressValuePresent !== ''
+        ? raw.distressValuePresent
+        : '',
+      flatPropertyType: raw.flatPropertyType || (raw.flatSBUA && raw.flatSBUA !== 'NA' ? 'Flat' : 'NA'),
       flatSBUA: raw.flatSBUA || 'NA',
       compositeSaleRate: raw.compositeSaleRate || 'NA',
-      totalMarketValueApartment: raw.totalMarketValueApartment || 'NA',
+      totalMarketValueApartment: raw.totalMarketValueApartment || (
+        raw.flatSBUA && raw.compositeSaleRate && raw.flatSBUA !== 'NA' && raw.compositeSaleRate !== 'NA'
+          ? multiplyExactDecimals(raw.flatSBUA, raw.compositeSaleRate)
+          : 'NA'
+      ),
       govtGuidelineRateLand: raw.govtGuidelineRateLand || '',
-      landValueGovtRate: raw.landValueGovtRate || '',
-      govtGuidelineRateFlats: raw.govtGuidelineRateFlats || 'NA',
-      flatValueGovtRate: raw.flatValueGovtRate || 'NA',
+      landValueGovtRate: raw.landValueGovtRate || (
+        raw.landAreaSqft && raw.govtGuidelineRateLand && raw.govtGuidelineRateLand !== 'NA'
+          ? multiplyExactDecimals(raw.landAreaSqft, raw.govtGuidelineRateLand)
+          : ''
+      ),
+      govtGuidelineRateFlats: raw.govtGuidelineRateFlats !== undefined ? raw.govtGuidelineRateFlats : 'NA',
+      flatValueGovtRate: raw.flatValueGovtRate !== undefined && raw.flatValueGovtRate !== ''
+        ? raw.flatValueGovtRate
+        : (
+          raw.govtGuidelineRateFlats === 'NA' || !raw.govtGuidelineRateFlats
+            ? 'NA'
+            : (
+              (raw.adoptableBuiltUpArea || raw.flatSBUA)
+                ? multiplyExactDecimals(raw.adoptableBuiltUpArea || raw.flatSBUA, raw.govtGuidelineRateFlats)
+                : 'NA'
+            )
+        ),
       latitude: raw.latitude || '',
       longitude: raw.longitude || '',
 
@@ -298,6 +379,7 @@ export default function ArthanFinance({
         key === 'landAreaSqft' || key === 'adoptableBuiltUpArea' ||
         key === 'constructionCostPerSqft' || key === 'recommendedRateOfLand' ||
         key === 'totalConstructionValue100' || key === 'govtGuidelineRateLand' ||
+        key === 'distressPct100' || key === 'distressPctPresent' ||
         key === 'latitude' || key === 'longitude'
       ) {
         value = sanitizePositiveFloat(value);
@@ -315,57 +397,138 @@ export default function ArthanFinance({
         next.dateOfInspectionSite = value;
       }
 
-      // Auto-calculate Total Land Value
+      // Auto-calculate Total Land Value (exact decimals, no roundoff)
       if (key === 'landAreaSqft' || key === 'recommendedRateOfLand') {
-        const area = parseNum(key === 'landAreaSqft' ? value : next.landAreaSqft);
-        const rate = parseNum(key === 'recommendedRateOfLand' ? value : next.recommendedRateOfLand);
-        next.totalLandValue = area > 0 && rate > 0 ? String(area * rate) : '';
+        const area = key === 'landAreaSqft' ? value : next.landAreaSqft;
+        const rate = key === 'recommendedRateOfLand' ? value : next.recommendedRateOfLand;
+        next.totalLandValue = multiplyExactDecimals(area, rate);
       }
 
-      // Auto-calculate Total Construction Value (100% complete)
+      // Auto-calculate Total Construction Value (100% complete) & Present Value (exact decimals, no roundoff)
       if (key === 'adoptableBuiltUpArea' || key === 'constructionCostPerSqft') {
-        const bua = parseNum(key === 'adoptableBuiltUpArea' ? value : next.adoptableBuiltUpArea);
-        const cost = parseNum(key === 'constructionCostPerSqft' ? value : next.constructionCostPerSqft);
-        if (bua > 0 && cost > 0) {
-          const cv = bua * cost;
-          next.totalConstructionValue100 = String(cv);
-          const stagePct = parseNum(next.constructionStage) || 100;
-          next.totalConstructionValuePresent = String(Math.round(cv * stagePct / 100));
+        const bua = key === 'adoptableBuiltUpArea' ? value : next.adoptableBuiltUpArea;
+        const cost = key === 'constructionCostPerSqft' ? value : next.constructionCostPerSqft;
+        const cv100 = multiplyExactDecimals(bua, cost);
+        next.totalConstructionValue100 = cv100;
+        if (cv100) {
+          const stage = next.constructionStage || '100%';
+          next.totalConstructionValuePresent = calculatePercentageValue(cv100, stage);
         } else {
-          next.totalConstructionValue100 = '';
           next.totalConstructionValuePresent = '';
         }
       }
 
-      // Auto-calculate construction value when stage changes
-      if (key === 'constructionStage' && next.totalConstructionValue100) {
-        const cv = parseNum(next.totalConstructionValue100);
-        const stagePct = parseNum(value) || 100;
-        next.totalConstructionValuePresent = cv > 0 ? String(Math.round(cv * stagePct / 100)) : '';
+      // Auto-calculate construction value when stage percentage changes (exact decimals, no roundoff)
+      if (key === 'constructionStage') {
+        if (next.totalConstructionValue100 && value) {
+          next.totalConstructionValuePresent = calculatePercentageValue(next.totalConstructionValue100, value);
+        } else if (!value) {
+          next.totalConstructionValuePresent = '';
+        }
       }
 
-      // Auto-calculate Market Value = Land Value + Construction Value
-      const lv = parseNum(next.totalLandValue);
-      const cv = parseNum(next.totalConstructionValuePresent || next.totalConstructionValue100);
-      if (lv > 0 || cv > 0) {
-        const mv = lv + cv;
-        next.marketValueLandBuilding = String(mv);
-        next.marketValueLandBuildingRight = String(mv);
-        // Distress Value = 80% of MV
-        next.distressValue100 = String(Math.round(mv * 0.8));
-        next.distressValuePresent = String(Math.round(mv * 0.8));
+      // Auto-calculate distress values when distress percentages change
+      if (key === 'distressPct100') {
+        const pct = (value !== '' && value !== undefined && value !== null) ? value : '0';
+        next.distressValue100 = next.marketValueLandBuilding
+          ? calculatePercentageValue(next.marketValueLandBuilding, pct)
+          : '';
+      }
+      if (key === 'distressPctPresent') {
+        const pct = (value !== '' && value !== undefined && value !== null) ? value : '0';
+        next.distressValuePresent = next.marketValueLandBuildingRight
+          ? calculatePercentageValue(next.marketValueLandBuildingRight, pct)
+          : '';
+      }
+
+      // Auto-calculate Market Value & Distress Value (exact decimals, no roundoff):
+      // Left: 100% Complete = Total Land Value + 100% Complete Construction Value
+      // Right: Present Construction Stage = Total Land Value + Present Stage Construction Value
+      const lvStr = next.totalLandValue || '0';
+      const cv100Str = next.totalConstructionValue100 || '0';
+      const cvPresentStr = next.totalConstructionValuePresent || next.totalConstructionValue100 || '0';
+      const pct100 = (next.distressPct100 !== undefined && next.distressPct100 !== null && next.distressPct100 !== '')
+        ? next.distressPct100
+        : '0';
+      const pctPresent = (next.distressPctPresent !== undefined && next.distressPctPresent !== null && next.distressPctPresent !== '')
+        ? next.distressPctPresent
+        : '0';
+
+      const mv100Num = sumDecimals([lvStr, cv100Str]);
+      if (mv100Num > 0) {
+        const mv100Str = formatExactDecimal(mv100Num);
+        next.marketValueLandBuilding = mv100Str;
+        next.distressValue100 = calculatePercentageValue(mv100Str, pct100);
       } else {
         next.marketValueLandBuilding = '';
-        next.marketValueLandBuildingRight = '';
         next.distressValue100 = '';
+      }
+
+      const mvPresentNum = sumDecimals([lvStr, cvPresentStr]);
+      if (mvPresentNum > 0) {
+        const mvPresentStr = formatExactDecimal(mvPresentNum);
+        next.marketValueLandBuildingRight = mvPresentStr;
+        next.distressValuePresent = calculatePercentageValue(mvPresentStr, pctPresent);
+      } else {
+        next.marketValueLandBuildingRight = '';
         next.distressValuePresent = '';
       }
 
-      // Auto-calculate Land Value as per Govt Rate
+      // Auto-calculate Land Value as per Govt Rate (exact decimals, no roundoff)
       if (key === 'govtGuidelineRateLand' || key === 'landAreaSqft') {
-        const area = parseNum(key === 'landAreaSqft' ? value : next.landAreaSqft);
-        const gRate = parseNum(key === 'govtGuidelineRateLand' ? value : next.govtGuidelineRateLand);
-        next.landValueGovtRate = area > 0 && gRate > 0 ? String(area * gRate) : '';
+        const area = key === 'landAreaSqft' ? value : next.landAreaSqft;
+        const gRate = key === 'govtGuidelineRateLand' ? value : next.govtGuidelineRateLand;
+        if (gRate === 'NA' || area === 'NA') {
+          next.landValueGovtRate = 'NA';
+        } else if (area && gRate) {
+          next.landValueGovtRate = multiplyExactDecimals(area, gRate);
+        } else {
+          next.landValueGovtRate = '';
+        }
+      }
+
+      // Auto-calculate Flat / Apartment Value as per Govt Rate (exact decimals, no roundoff)
+      if (key === 'govtGuidelineRateFlats' || key === 'adoptableBuiltUpArea' || key === 'flatSBUA') {
+        const rate = key === 'govtGuidelineRateFlats' ? value : next.govtGuidelineRateFlats;
+        const bua = key === 'adoptableBuiltUpArea' ? value : (next.adoptableBuiltUpArea || next.flatSBUA);
+        if (rate === 'NA') {
+          next.flatValueGovtRate = 'NA';
+        } else if (rate && bua && bua !== 'NA') {
+          next.flatValueGovtRate = multiplyExactDecimals(bua, rate);
+        } else if (!rate) {
+          next.flatValueGovtRate = '';
+        }
+      }
+
+      // Auto-calculate Total Market Value of Flat / Apartment / Shop / Office
+      if (key === 'flatPropertyType') {
+        if (value === 'NA') {
+          next.flatPropertyType = 'NA';
+          next.flatSBUA = 'NA';
+          next.compositeSaleRate = 'NA';
+          next.totalMarketValueApartment = 'NA';
+        } else {
+          next.flatPropertyType = value;
+          if (next.flatSBUA === 'NA') next.flatSBUA = '';
+          if (next.compositeSaleRate === 'NA') next.compositeSaleRate = '';
+          if (next.flatSBUA && next.compositeSaleRate && next.flatSBUA !== 'NA' && next.compositeSaleRate !== 'NA') {
+            next.totalMarketValueApartment = multiplyExactDecimals(next.flatSBUA, next.compositeSaleRate);
+          } else {
+            next.totalMarketValueApartment = '';
+          }
+        }
+      }
+
+      if (key === 'flatSBUA' || key === 'compositeSaleRate') {
+        const sbua = key === 'flatSBUA' ? value : next.flatSBUA;
+        const rate = key === 'compositeSaleRate' ? value : next.compositeSaleRate;
+        if (sbua === 'NA' || rate === 'NA') {
+          next.totalMarketValueApartment = 'NA';
+        } else if (sbua && rate) {
+          next.totalMarketValueApartment = multiplyExactDecimals(sbua, rate);
+        } else {
+          next.totalMarketValueApartment = '';
+        }
       }
 
       return next;
@@ -1218,44 +1381,44 @@ export default function ArthanFinance({
                       </td>
                       {!isReadOnly && (
                         <td className="px-2 py-1.5 border-b border-[#e9ecef] text-center">
-                          {(fields.buaFloors || []).length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveBUAFloor(idx)}
-                              className="text-red-400 hover:text-red-600 text-lg leading-none cursor-pointer p-1"
-                              title="Remove Floor"
-                            >
-                              &times;
-                            </button>
-                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveBUAFloor(idx)}
+                            className="text-red-400 hover:text-red-600 text-lg leading-none cursor-pointer p-1"
+                            title="Remove Floor"
+                          >
+                            &times;
+                          </button>
                         </td>
                       )}
                     </tr>
                   ))}
                 </tbody>
-                <tfoot className="bg-slate-50 font-bold border-t-2 border-slate-300 text-xs">
-                  <tr>
-                    <td className="px-3 py-2.5 text-slate-800 font-bold uppercase tracking-wider">
-                      Total
-                    </td>
-                    <td className="px-3 py-2.5 text-slate-400 font-normal text-center">
-                      NA
-                    </td>
-                    <td className="px-3 py-2.5 text-right text-slate-800 font-bold">
-                      {totalCarpet > 0 ? formatExactDecimal(totalCarpet) : 'NA'}
-                    </td>
-                    <td className="px-3 py-2.5 text-right text-slate-800 font-bold">
-                      {totalActualBUA > 0 ? formatExactDecimal(totalActualBUA) : 'NA'}
-                    </td>
-                    <td className="px-3 py-2.5 text-right text-slate-800 font-bold">
-                      {totalPermissibleBUA > 0 ? formatExactDecimal(totalPermissibleBUA) : 'NA'}
-                    </td>
-                    <td className="px-3 py-2.5 text-right text-emerald-700 font-bold text-sm bg-emerald-50/70">
-                      {totalAdoptedBUA > 0 ? `${formatExactDecimal(totalAdoptedBUA)} Sft` : 'NA'}
-                    </td>
-                    {!isReadOnly && <td></td>}
-                  </tr>
-                </tfoot>
+                {(fields.buaFloors || []).length > 0 && (
+                  <tfoot className="bg-slate-50 font-bold border-t-2 border-slate-300 text-xs">
+                    <tr>
+                      <td className="px-3 py-2.5 text-slate-800 font-bold uppercase tracking-wider">
+                        Total
+                      </td>
+                      <td className="px-3 py-2.5 text-slate-400 font-normal text-center">
+                        NA
+                      </td>
+                      <td className="px-3 py-2.5 text-right text-slate-800 font-bold">
+                        {totalCarpet > 0 ? formatExactDecimal(totalCarpet) : 'NA'}
+                      </td>
+                      <td className="px-3 py-2.5 text-right text-slate-800 font-bold">
+                        {totalActualBUA > 0 ? formatExactDecimal(totalActualBUA) : 'NA'}
+                      </td>
+                      <td className="px-3 py-2.5 text-right text-slate-800 font-bold">
+                        {totalPermissibleBUA > 0 ? formatExactDecimal(totalPermissibleBUA) : 'NA'}
+                      </td>
+                      <td className="px-3 py-2.5 text-right text-emerald-700 font-bold text-sm bg-emerald-50/70">
+                        {totalAdoptedBUA > 0 ? `${formatExactDecimal(totalAdoptedBUA)} Sft` : 'NA'}
+                      </td>
+                      {!isReadOnly && <td></td>}
+                    </tr>
+                  </tfoot>
+                )}
               </table>
             </div>
 
@@ -1314,97 +1477,506 @@ export default function ArthanFinance({
 
         {/* ════ SECTION 8: ESTIMATE ANALYSIS ════ */}
         <Section title="Estimate Analysis (Applicable only in Self Construction cases)" number={8} id="sec-8">
-          <div className="grid md:grid-cols-2 gap-4">
-            <Field label="Estimated Cost (In Rs)">
-              <input type="text" inputMode="decimal" className={inputCls} value={fields.estimatedCostTotal || ''} onChange={e => handleChange('estimatedCostTotal', e.target.value)} disabled={isReadOnly} placeholder="NA" />
-            </Field>
-            <Field label="Estimated Cost (in Rs per Sqft)">
-              <input type="text" inputMode="decimal" className={inputCls} value={fields.estimatedCostPerSqft || ''} onChange={e => handleChange('estimatedCostPerSqft', e.target.value)} disabled={isReadOnly} placeholder="NA" />
-            </Field>
-            <Field label="Justified Estimated Cost (in Rs per Sqft)">
-              <input type="text" inputMode="decimal" className={inputCls} value={fields.justifiedEstimatedCostPerSqft || ''} onChange={e => handleChange('justifiedEstimatedCostPerSqft', e.target.value)} disabled={isReadOnly} placeholder="NA" />
-            </Field>
-            <Field label="Adoptable / Justified Estimated Cost (In Rs)">
-              <input type="text" inputMode="decimal" className={inputCls} value={fields.adoptableJustifiedEstimatedCost || ''} onChange={e => handleChange('adoptableJustifiedEstimatedCost', e.target.value)} disabled={isReadOnly} placeholder="NA" />
-            </Field>
+          <div className="space-y-4">
+            {/* Soft Container 1: Estimated Cost */}
+            <div className="bg-indigo-50/70 p-4 rounded-xl border border-indigo-200/80 shadow-xs">
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Estimated Cost (In Rs)">
+                  <input type="text" inputMode="decimal" className={inputCls} value={fields.estimatedCostTotal || ''} onChange={e => handleChange('estimatedCostTotal', e.target.value)} disabled={isReadOnly} placeholder="NA" />
+                </Field>
+                <Field label="Estimated Cost (in Rs per Sqft)">
+                  <input type="text" inputMode="decimal" className={inputCls} value={fields.estimatedCostPerSqft || ''} onChange={e => handleChange('estimatedCostPerSqft', e.target.value)} disabled={isReadOnly} placeholder="NA" />
+                </Field>
+              </div>
+            </div>
+
+            {/* Soft Container 2: Justified & Adoptable Cost */}
+            <div className="bg-emerald-50/70 p-4 rounded-xl border border-emerald-200/80 shadow-xs">
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="Justified Estimated Cost (in Rs per Sqft)">
+                  <input type="text" inputMode="decimal" className={inputCls} value={fields.justifiedEstimatedCostPerSqft || ''} onChange={e => handleChange('justifiedEstimatedCostPerSqft', e.target.value)} disabled={isReadOnly} placeholder="NA" />
+                </Field>
+                <Field label="Adoptable / Justified Estimated Cost (In Rs)">
+                  <input type="text" inputMode="decimal" className={inputCls} value={fields.adoptableJustifiedEstimatedCost || ''} onChange={e => handleChange('adoptableJustifiedEstimatedCost', e.target.value)} disabled={isReadOnly} placeholder="NA" />
+                </Field>
+              </div>
+            </div>
           </div>
         </Section>
 
         {/* ════ SECTION 9: VALUATION OF PROPERTY ════ */}
         <Section title="Valuation of Property (Fair Market Valuation / Distress Valuation)" number={9} id="sec-9">
-          <div className="grid md:grid-cols-2 gap-4">
-            <Field label="Land Area (In Sqft)">
-              <input type="text" inputMode="decimal" className={inputCls} value={fields.landAreaSqft || ''} onChange={e => handleChange('landAreaSqft', e.target.value)} disabled={isReadOnly} placeholder="e.g. 8276" />
-            </Field>
-            <Field label="Adoptable Built-up Area (in Sqft) GF RCC">
-              <input type="text" inputMode="decimal" className={inputCls} value={fields.adoptableBuiltUpArea || ''} onChange={e => handleChange('adoptableBuiltUpArea', e.target.value)} disabled={isReadOnly} placeholder="e.g. 1128" />
-            </Field>
-            <Field label="Current Market Rate of land (Range) in Rs per Sqft">
-              <input type="text" className={inputCls} value={fields.currentMarketRateRange || ''} onChange={e => handleChange('currentMarketRateRange', e.target.value)} disabled={isReadOnly} placeholder="e.g. 100-200" />
-            </Field>
-            <Field label="Construction Cost (Rs per sft)">
-              <input type="text" inputMode="decimal" className={inputCls} value={fields.constructionCostPerSqft || ''} onChange={e => handleChange('constructionCostPerSqft', e.target.value)} disabled={isReadOnly} placeholder="e.g. 1300" />
-            </Field>
-            <Field label="Recommended Rate of Land (Rs per sqft)">
-              <input type="text" inputMode="decimal" className={inputCls} value={fields.recommendedRateOfLand || ''} onChange={e => handleChange('recommendedRateOfLand', e.target.value)} disabled={isReadOnly} placeholder="e.g. 150" />
-            </Field>
-            <Field label="Total Construction Value for 100% complete building (in Rs)">
-              <input type="text" inputMode="decimal" className={inputCls} value={fields.totalConstructionValue100 || ''} onChange={e => handleChange('totalConstructionValue100', e.target.value)} disabled={isReadOnly} placeholder="Auto-calculated" />
-            </Field>
-            <Field label="Total Land Value (in Rs)">
-              <input className={`${inputCls} bg-yellow-50`} value={fields.totalLandValue || ''} onChange={e => handleChange('totalLandValue', e.target.value)} disabled={isReadOnly} placeholder="Auto-calculated" readOnly />
-            </Field>
-            <Field label="Total Construction Value for present construction stage (in Rs)">
-              <input className={`${inputCls} bg-yellow-50`} value={fields.totalConstructionValuePresent || ''} onChange={e => handleChange('totalConstructionValuePresent', e.target.value)} disabled={isReadOnly} placeholder="Auto-calculated" readOnly />
-            </Field>
-            <Field label="Market Value of Land & Building Only (in Rs)">
-              <input className={`${inputCls} bg-green-50 font-semibold`} value={fields.marketValueLandBuilding || ''} onChange={e => handleChange('marketValueLandBuilding', e.target.value)} disabled={isReadOnly} placeholder="Auto-calculated" readOnly />
-            </Field>
-            <Field label="Market Value of Land & Building Only (in Rs) [right]">
-              <input className={`${inputCls} bg-green-50 font-semibold`} value={fields.marketValueLandBuildingRight || ''} onChange={e => handleChange('marketValueLandBuildingRight', e.target.value)} disabled={isReadOnly} placeholder="Auto-calculated" readOnly />
-            </Field>
-            <Field label="Distress Value of 100% complete property @ 80% of MV">
-              <input className={`${inputCls} bg-orange-50`} value={fields.distressValue100 || ''} onChange={e => handleChange('distressValue100', e.target.value)} disabled={isReadOnly} placeholder="Auto-calculated" readOnly />
-            </Field>
-            <Field label="Distress Value of present completed property @ 80% of MV">
-              <input className={`${inputCls} bg-orange-50`} value={fields.distressValuePresent || ''} onChange={e => handleChange('distressValuePresent', e.target.value)} disabled={isReadOnly} placeholder="Auto-calculated" readOnly />
-            </Field>
-            <Field label="Flat / Apartment / Shop / Office SBUA (in Sqft)">
-              <input type="text" inputMode="decimal" className={inputCls} value={fields.flatSBUA || ''} onChange={e => handleChange('flatSBUA', e.target.value)} disabled={isReadOnly} placeholder="NA" />
-            </Field>
-            <Field label="Composite sale rate (Rs per sqft)">
-              <input type="text" inputMode="decimal" className={inputCls} value={fields.compositeSaleRate || ''} onChange={e => handleChange('compositeSaleRate', e.target.value)} disabled={isReadOnly} placeholder="NA" />
-            </Field>
-            <div className="md:col-span-2">
-              <Field label="Total Market Value of Apartment / Shop / Flat / Office (Rs per sqft)">
-                <input type="text" inputMode="decimal" className={inputCls} value={fields.totalMarketValueApartment || ''} onChange={e => handleChange('totalMarketValueApartment', e.target.value)} disabled={isReadOnly} placeholder="NA" />
-              </Field>
+          <div className="space-y-4">
+            {/* Top Row: Land Valuation & Building Valuation side-by-side soft containers */}
+            <div className="grid md:grid-cols-2 gap-4">
+              {/* Left Soft Container: Land Valuation */}
+              <div className="bg-amber-50/70 p-4 rounded-xl border border-amber-200/80 shadow-xs space-y-4">
+                <div className="border-b border-amber-200/80 pb-2">
+                  <h3 className="text-xs font-bold text-amber-900 uppercase tracking-wide">
+                    Land Valuation
+                  </h3>
+                </div>
+                <div className="space-y-4">
+                  <Field label="Land Area (In Sqft)">
+                    <input type="text" inputMode="decimal" className={inputCls} value={fields.landAreaSqft || ''} onChange={e => handleChange('landAreaSqft', e.target.value)} disabled={isReadOnly} placeholder="e.g. 8276" />
+                  </Field>
+                  <Field label="Current Market Rate of land (Range) in Rs per Sqft">
+                    <input type="text" className={inputCls} value={fields.currentMarketRateRange || ''} onChange={e => handleChange('currentMarketRateRange', e.target.value)} disabled={isReadOnly} placeholder="e.g. 100-200" />
+                  </Field>
+                  <Field label="Recommended Rate of Land (Rs per sqft)">
+                    <input type="text" inputMode="decimal" className={inputCls} value={fields.recommendedRateOfLand || ''} onChange={e => handleChange('recommendedRateOfLand', e.target.value)} disabled={isReadOnly} placeholder="e.g. 150" />
+                  </Field>
+                  <Field label="Total Land Value (in Rs)">
+                    <input className={`${inputCls} bg-yellow-50 font-semibold`} value={fields.totalLandValue || ''} onChange={e => handleChange('totalLandValue', e.target.value)} disabled={isReadOnly} placeholder="Auto-calculated" readOnly />
+                  </Field>
+                </div>
+              </div>
+
+              {/* Right Soft Container: Building Valuation */}
+              <div className="bg-sky-50/70 p-4 rounded-xl border border-sky-200/80 shadow-xs space-y-4">
+                <div className="border-b border-sky-200/80 pb-2">
+                  <h3 className="text-xs font-bold text-sky-900 uppercase tracking-wide">
+                    Building Valuation
+                  </h3>
+                </div>
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-200">
+                      <span>Adoptable Built-up Area (in Sqft)</span>
+                      <span className="text-[11px] font-normal text-slate-500">Floor / Structure Spec</span>
+                    </div>
+                    <div className="grid grid-cols-5 gap-2">
+                      <div className="col-span-3">
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          className={inputCls}
+                          value={fields.adoptableBuiltUpArea || ''}
+                          onChange={e => handleChange('adoptableBuiltUpArea', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="Area e.g. 1128"
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <input
+                          type="text"
+                          className={inputCls + ' font-medium text-center'}
+                          value={fields.adoptableBUASpec !== undefined ? fields.adoptableBUASpec : 'GF RCC'}
+                          onChange={e => handleChange('adoptableBUASpec', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="e.g. GF RCC"
+                          title="Floor / Structure specification (will appear in report label)"
+                        />
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-slate-400 italic">
+                      Renders as: &quot;Adoptable Built-up Area (in Sqft){(fields.adoptableBUASpec !== undefined ? fields.adoptableBUASpec : 'GF RCC').trim() ? ` ${(fields.adoptableBUASpec !== undefined ? fields.adoptableBUASpec : 'GF RCC').trim()}` : ''}&quot;
+                    </p>
+                  </div>
+                  <Field label="Construction Cost (Rs per sft)">
+                    <input type="text" inputMode="decimal" className={inputCls} value={fields.constructionCostPerSqft || ''} onChange={e => handleChange('constructionCostPerSqft', e.target.value)} disabled={isReadOnly} placeholder="e.g. 1300" />
+                  </Field>
+                  <Field label="Total Construction Value for 100% complete building (in Rs)">
+                    <input
+                      className={`${inputCls} bg-yellow-50 font-semibold`}
+                      value={fields.totalConstructionValue100 || ''}
+                      onChange={e => handleChange('totalConstructionValue100', e.target.value)}
+                      disabled={isReadOnly}
+                      placeholder="Auto-calculated"
+                      readOnly
+                    />
+                  </Field>
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200">
+                      Total Construction Value for Present Construction Stage (in Rs)
+                    </label>
+                    <div className="grid grid-cols-5 gap-2">
+                      <div className="col-span-2 space-y-1">
+                        <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block">
+                          Work Done (%)
+                        </span>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            className={`${inputCls} pr-7 font-semibold text-slate-800 text-center`}
+                            value={(fields.constructionStage || '').replace('%', '')}
+                            onChange={e => handleChange('constructionStage', e.target.value)}
+                            disabled={isReadOnly}
+                            placeholder="e.g. 100"
+                            title="Enter percentage of work completed (positive float, no negative values)"
+                          />
+                          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 pointer-events-none">%</span>
+                        </div>
+                      </div>
+                      <div className="col-span-3 space-y-1">
+                        <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block">
+                          Present Value (in Rs)
+                        </span>
+                        <input
+                          className={`${inputCls} bg-yellow-50 font-semibold`}
+                          value={fields.totalConstructionValuePresent || ''}
+                          placeholder="Auto-calculated"
+                          readOnly
+                        />
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-slate-400 italic">
+                      Auto-calculated from {fields.constructionStage ? `${(fields.constructionStage || '').replace(/[^0-9.]/g, '')}%` : '100%'} of 100% complete building value ({fields.totalConstructionValue100 || '0'} Rs)
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
-            <Field label="Government Guideline / Circle rate for Land (Rs per sqft)">
-              <input type="text" inputMode="decimal" className={inputCls} value={fields.govtGuidelineRateLand || ''} onChange={e => handleChange('govtGuidelineRateLand', e.target.value)} disabled={isReadOnly} placeholder="e.g. 28.00" />
-            </Field>
-            <Field label="Land Value as per Government Rate (Rs)">
-              <input className={`${inputCls} bg-yellow-50`} value={fields.landValueGovtRate || ''} onChange={e => handleChange('landValueGovtRate', e.target.value)} disabled={isReadOnly} placeholder="Auto-calculated" readOnly />
-            </Field>
-            <Field label="Government Guideline / Circle rate for Flats (Rs per sqft)">
-              <input type="text" inputMode="decimal" className={inputCls} value={fields.govtGuidelineRateFlats || ''} onChange={e => handleChange('govtGuidelineRateFlats', e.target.value)} disabled={isReadOnly} placeholder="NA" />
-            </Field>
-            <Field label="Flat / Apartment Value as per Government Rate (Rs)">
-              <input type="text" inputMode="decimal" className={inputCls} value={fields.flatValueGovtRate || ''} onChange={e => handleChange('flatValueGovtRate', e.target.value)} disabled={isReadOnly} placeholder="NA" />
-            </Field>
-            <div className="md:col-span-2 bg-amber-50/80 p-4 rounded-xl border border-amber-200 shadow-xs space-y-3 mt-2">
-              <div className="border-b border-amber-200/80 pb-2">
-                <h3 className="text-xs font-bold text-amber-900 uppercase tracking-wide">
-                  Geo Coordinates (GPS Location)
+
+            {/* Soft Container: Market Value of Land & Building Only */}
+            <div className="bg-emerald-50/70 p-4 rounded-xl border border-emerald-200/80 shadow-xs space-y-4">
+              <div className="border-b border-emerald-200/80 pb-2 flex items-center justify-between">
+                <h3 className="text-xs font-bold text-emerald-900 uppercase tracking-wide">
+                  Market Value of Land & Building Only
                 </h3>
+                <span className="text-[11px] font-medium text-emerald-700 bg-emerald-100/90 px-2 py-0.5 rounded-full">
+                  Auto-Calculated
+                </span>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
-                <Field label="Latitude (N)">
-                  <input type="text" inputMode="decimal" className={inputCls} value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 21.1705" />
-                </Field>
-                <Field label="Longitude (E)">
-                  <input type="text" inputMode="decimal" className={inputCls} value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 86.492417" />
-                </Field>
+                <div className="space-y-1.5">
+                  <Field label="Market Value for 100% Complete Property (in Rs)">
+                    <input
+                      className={`${inputCls} bg-green-50 font-bold text-emerald-950`}
+                      value={fields.marketValueLandBuilding || ''}
+                      disabled={isReadOnly}
+                      placeholder="Auto-calculated"
+                      readOnly
+                    />
+                  </Field>
+                  <p className="text-[10px] text-emerald-800/80 italic">
+                    Referenced from: Land Value ({fields.totalLandValue || '0'} Rs) + 100% Construction Value ({fields.totalConstructionValue100 || '0'} Rs)
+                  </p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Field label="Market Value for Present Stage Completed Property (in Rs)">
+                    <input
+                      className={`${inputCls} bg-green-50 font-bold text-emerald-950`}
+                      value={fields.marketValueLandBuildingRight || ''}
+                      disabled={isReadOnly}
+                      placeholder="Auto-calculated"
+                      readOnly
+                    />
+                  </Field>
+                  <p className="text-[10px] text-emerald-800/80 italic">
+                    Referenced from: Land Value ({fields.totalLandValue || '0'} Rs) + Present Stage Construction Value ({fields.totalConstructionValuePresent || '0'} Rs) based on {(fields.constructionStage || '100%').replace(/[^0-9.]/g, '') || '100'}% work completed
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Soft Container: Distress Value of Property */}
+            <div className="bg-orange-50/70 p-4 rounded-xl border border-orange-200/80 shadow-xs space-y-4">
+              <div className="border-b border-orange-200/80 pb-2 flex items-center justify-between">
+                <h3 className="text-xs font-bold text-orange-900 uppercase tracking-wide">
+                  Distress Value of Property
+                </h3>
+                <span className="text-[11px] font-medium text-orange-700 bg-orange-100/90 px-2 py-0.5 rounded-full">
+                  Auto-Calculated
+                </span>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <div className="flex items-center flex-wrap gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200">
+                    <span>Distress Value of 100% complete property @</span>
+                    <div className="relative inline-flex items-center">
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        className="w-16 text-center py-0.5 px-1 pr-5 text-xs font-bold text-orange-950 bg-white border border-orange-300 rounded shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-orange-400"
+                        value={fields.distressPct100 !== undefined && fields.distressPct100 !== null && fields.distressPct100 !== '' ? fields.distressPct100 : '0'}
+                        onChange={e => handleChange('distressPct100', e.target.value)}
+                        onBlur={() => { if (!fields.distressPct100) handleChange('distressPct100', '0'); }}
+                        disabled={isReadOnly}
+                        placeholder="0"
+                        title="Enter percentage of MV for 100% complete property"
+                      />
+                      <span className="absolute right-1 text-[11px] font-bold text-slate-400 pointer-events-none">%</span>
+                    </div>
+                    <span>of MV</span>
+                  </div>
+                  <input
+                    className={`${inputCls} bg-orange-50 font-bold text-orange-950`}
+                    value={fields.distressValue100 || ''}
+                    disabled={isReadOnly}
+                    placeholder="Auto-calculated"
+                    readOnly
+                  />
+                  <p className="text-[10px] text-orange-800/80 italic">
+                    Auto-calculated as {(fields.distressPct100 !== undefined && fields.distressPct100 !== null && fields.distressPct100 !== '') ? fields.distressPct100 : '0'}% of 100% complete MV ({fields.marketValueLandBuilding || '0'} Rs)
+                  </p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center flex-wrap gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200">
+                    <span>Distress Value of present completed property @</span>
+                    <div className="relative inline-flex items-center">
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        className="w-16 text-center py-0.5 px-1 pr-5 text-xs font-bold text-orange-950 bg-white border border-orange-300 rounded shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-orange-400"
+                        value={fields.distressPctPresent !== undefined && fields.distressPctPresent !== null && fields.distressPctPresent !== '' ? fields.distressPctPresent : '0'}
+                        onChange={e => handleChange('distressPctPresent', e.target.value)}
+                        onBlur={() => { if (!fields.distressPctPresent) handleChange('distressPctPresent', '0'); }}
+                        disabled={isReadOnly}
+                        placeholder="0"
+                        title="Enter percentage of MV for present completed property"
+                      />
+                      <span className="absolute right-1 text-[11px] font-bold text-slate-400 pointer-events-none">%</span>
+                    </div>
+                    <span>of MV</span>
+                  </div>
+                  <input
+                    className={`${inputCls} bg-orange-50 font-bold text-orange-950`}
+                    value={fields.distressValuePresent || ''}
+                    disabled={isReadOnly}
+                    placeholder="Auto-calculated"
+                    readOnly
+                  />
+                  <p className="text-[10px] text-orange-800/80 italic">
+                    Auto-calculated as {(fields.distressPctPresent !== undefined && fields.distressPctPresent !== null && fields.distressPctPresent !== '') ? fields.distressPctPresent : '0'}% of present stage MV ({fields.marketValueLandBuildingRight || '0'} Rs)
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Soft Container: Flat / Apartment / Shop / Office Valuation */}
+            <div className="bg-indigo-50/70 p-4 rounded-xl border border-indigo-200/80 shadow-xs space-y-4">
+              <div className="border-b border-indigo-200/80 pb-2 flex items-center justify-between">
+                <h3 className="text-xs font-bold text-indigo-900 uppercase tracking-wide">
+                  Flat / Apartment / Shop / Office Valuation
+                </h3>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-semibold text-indigo-950">Status:</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const isCurrentlyNA = (fields.flatPropertyType === 'NA' || fields.flatSBUA === 'NA');
+                      handleChange('flatPropertyType', isCurrentlyNA ? 'Flat' : 'NA');
+                    }}
+                    disabled={isReadOnly}
+                    className={`px-2.5 py-0.5 text-xs font-bold rounded-md transition-all ${
+                      (fields.flatPropertyType === 'NA' || fields.flatSBUA === 'NA')
+                        ? 'bg-slate-700 text-white shadow-xs'
+                        : 'bg-indigo-600 text-white shadow-xs'
+                    }`}
+                  >
+                    {(fields.flatPropertyType === 'NA' || fields.flatSBUA === 'NA') ? 'NA Active (Click to Enable)' : '✓ Applicable (Click for NA)'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                {/* Dropdown to select option + input for Sqft */}
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200">
+                    <span className={(fields.flatPropertyType || (fields.flatSBUA === 'NA' ? 'NA' : 'Flat')) === 'Flat' ? 'font-black text-indigo-950 dark:text-indigo-200 underline decoration-indigo-600 underline-offset-2' : 'text-slate-500 font-normal'}>Flat</span>
+                    {' / '}
+                    <span className={fields.flatPropertyType === 'Apartment' ? 'font-black text-indigo-950 dark:text-indigo-200 underline decoration-indigo-600 underline-offset-2' : 'text-slate-500 font-normal'}>Apartment</span>
+                    {' / '}
+                    <span className={fields.flatPropertyType === 'Shop' ? 'font-black text-indigo-950 dark:text-indigo-200 underline decoration-indigo-600 underline-offset-2' : 'text-slate-500 font-normal'}>Shop</span>
+                    {' / '}
+                    <span className={fields.flatPropertyType === 'Office' ? 'font-black text-indigo-950 dark:text-indigo-200 underline decoration-indigo-600 underline-offset-2' : 'text-slate-500 font-normal'}>Office</span>
+                    {' SBUA (in Sqft)'}
+                  </label>
+
+                  <div className="grid grid-cols-5 gap-2">
+                    <div className="col-span-2">
+                      <select
+                        className={selectCls}
+                        value={fields.flatPropertyType || (fields.flatSBUA === 'NA' ? 'NA' : 'Flat')}
+                        onChange={e => handleChange('flatPropertyType', e.target.value)}
+                        disabled={isReadOnly}
+                      >
+                        <option value="NA">NA</option>
+                        <option value="Flat">Flat</option>
+                        <option value="Apartment">Apartment</option>
+                        <option value="Shop">Shop</option>
+                        <option value="Office">Office</option>
+                      </select>
+                    </div>
+                    <div className="col-span-3">
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        className={inputCls}
+                        value={fields.flatSBUA || ''}
+                        onChange={e => handleChange('flatSBUA', e.target.value)}
+                        disabled={isReadOnly || fields.flatPropertyType === 'NA'}
+                        placeholder={fields.flatPropertyType === 'NA' ? 'NA' : 'Area in Sqft e.g. 1050'}
+                      />
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-slate-400 italic">
+                    {(fields.flatPropertyType === 'NA' || fields.flatSBUA === 'NA')
+                      ? 'Status: NA'
+                      : `Selected: ${fields.flatPropertyType || 'Flat'} (bolded in rendered report)`}
+                  </p>
+                </div>
+
+                {/* Composite sale rate */}
+                <div className="space-y-1.5">
+                  <Field label="Composite sale rate (Rs per sqft)">
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      className={inputCls}
+                      value={fields.compositeSaleRate || ''}
+                      onChange={e => handleChange('compositeSaleRate', e.target.value)}
+                      disabled={isReadOnly || fields.flatPropertyType === 'NA'}
+                      placeholder={fields.flatPropertyType === 'NA' ? 'NA' : 'e.g. 3500'}
+                    />
+                  </Field>
+                  <p className="text-[10px] text-slate-400 italic">
+                    {(fields.flatPropertyType === 'NA' || fields.compositeSaleRate === 'NA') ? 'Status: NA' : 'Rate per sqft for composite valuation'}
+                  </p>
+                </div>
+
+                {/* Total Market Value of Apartment / Shop / Flat / Office (Rs per sqft) */}
+                <div className="md:col-span-2 space-y-1.5">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200">
+                    {'Total Market Value of '}
+                    <span className={fields.flatPropertyType === 'Apartment' ? 'font-black text-indigo-950 dark:text-indigo-200 underline decoration-indigo-600 underline-offset-2' : 'text-slate-500 font-normal'}>Apartment</span>
+                    {' / '}
+                    <span className={fields.flatPropertyType === 'Shop' ? 'font-black text-indigo-950 dark:text-indigo-200 underline decoration-indigo-600 underline-offset-2' : 'text-slate-500 font-normal'}>Shop</span>
+                    {' / '}
+                    <span className={(fields.flatPropertyType || (fields.flatSBUA === 'NA' ? 'NA' : 'Flat')) === 'Flat' ? 'font-black text-indigo-950 dark:text-indigo-200 underline decoration-indigo-600 underline-offset-2' : 'text-slate-500 font-normal'}>Flat</span>
+                    {' / '}
+                    <span className={fields.flatPropertyType === 'Office' ? 'font-black text-indigo-950 dark:text-indigo-200 underline decoration-indigo-600 underline-offset-2' : 'text-slate-500 font-normal'}>Office</span>
+                    {' (Rs per sqft)'}
+                  </label>
+                  <input
+                    className={`${inputCls} bg-indigo-50/90 dark:bg-indigo-950/40 font-bold text-indigo-950 dark:text-indigo-200`}
+                    value={fields.totalMarketValueApartment || 'NA'}
+                    disabled={isReadOnly}
+                    placeholder="Auto-calculated"
+                    readOnly
+                  />
+                  <p className="text-[10px] text-indigo-800/80 dark:text-indigo-300/80 italic">
+                    {(fields.flatPropertyType === 'NA' || fields.flatSBUA === 'NA' || fields.totalMarketValueApartment === 'NA')
+                      ? 'Referenced from above: Property is NA (Not Applicable)'
+                      : `Auto-calculated & referenced from above: ${fields.flatPropertyType || 'Flat'} SBUA (${fields.flatSBUA || '0'} sqft) × Composite sale rate (${fields.compositeSaleRate || '0'} Rs/sqft)`}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Soft Container: Government Guideline / Circle Rate Valuation */}
+            <div className="bg-teal-50/70 dark:bg-teal-950/20 p-4 rounded-xl border border-teal-200/80 dark:border-teal-900/60 shadow-xs space-y-4">
+              <div className="border-b border-teal-200/80 dark:border-teal-900/60 pb-2">
+                <h3 className="text-xs font-bold text-teal-900 dark:text-teal-200 uppercase tracking-wide">
+                  Government Guideline / Circle Rate Valuation
+                </h3>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                {/* Government Guideline / Circle rate for Land */}
+                <div className="space-y-1.5">
+                  <Field label="Government Guideline / Circle rate for Land (Rs per sqft)">
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      className={inputCls}
+                      value={fields.govtGuidelineRateLand || ''}
+                      onChange={e => handleChange('govtGuidelineRateLand', e.target.value)}
+                      disabled={isReadOnly}
+                      placeholder="e.g. 28.00"
+                    />
+                  </Field>
+                  <p className="text-[10px] text-slate-400 italic">
+                    Guideline / circle rate per sqft for land valuation
+                  </p>
+                </div>
+
+                {/* Land Value as per Government Rate (Auto-calculated) */}
+                <div className="space-y-1.5">
+                  <Field label="Land Value as per Government Rate (Rs)">
+                    <input
+                      className={`${inputCls} bg-teal-50/90 dark:bg-teal-950/40 font-bold text-teal-950 dark:text-teal-200`}
+                      value={fields.landValueGovtRate || ''}
+                      disabled={isReadOnly}
+                      placeholder="Auto-calculated"
+                      readOnly
+                    />
+                  </Field>
+                  <p className="text-[10px] text-teal-800/80 dark:text-teal-300/80 italic">
+                    {fields.govtGuidelineRateLand && fields.landAreaSqft
+                      ? `Auto-calculated & referenced from: Land Area (${fields.landAreaSqft} sqft) × Govt Guideline Rate for Land (${fields.govtGuidelineRateLand} Rs/sqft)`
+                      : 'Auto-calculated: uses Land Area (In Sqft) × Govt Guideline rate for Land'}
+                  </p>
+                </div>
+
+                {/* Government Guideline / Circle rate for Flats */}
+                <div className="space-y-1.5">
+                  <Field label="Government Guideline / Circle rate for Flats (Rs per sqft)">
+                    <div className="relative flex items-center">
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        className={inputCls}
+                        value={fields.govtGuidelineRateFlats || ''}
+                        onChange={e => handleChange('govtGuidelineRateFlats', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="NA"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleChange('govtGuidelineRateFlats', fields.govtGuidelineRateFlats === 'NA' ? '' : 'NA')}
+                        disabled={isReadOnly}
+                        className="absolute right-1.5 px-2 py-0.5 text-[10px] font-bold rounded bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-colors"
+                        title="Toggle NA"
+                      >
+                        {fields.govtGuidelineRateFlats === 'NA' ? 'Clear NA' : 'Set NA'}
+                      </button>
+                    </div>
+                  </Field>
+                  <p className="text-[10px] text-slate-400 italic">
+                    {fields.govtGuidelineRateFlats === 'NA' ? 'Status: NA (Not applicable)' : 'Rate per sqft for flats/apartments'}
+                  </p>
+                </div>
+
+                {/* Flat / Apartment Value as per Government Rate (Auto-calculated) */}
+                <div className="space-y-1.5">
+                  <Field label="Flat / Apartment Value as per Government Rate (Rs)">
+                    <input
+                      className={`${inputCls} bg-teal-50/90 dark:bg-teal-950/40 font-bold text-teal-950 dark:text-teal-200`}
+                      value={fields.flatValueGovtRate || 'NA'}
+                      disabled={isReadOnly}
+                      placeholder="NA"
+                      readOnly
+                    />
+                  </Field>
+                  <p className="text-[10px] text-teal-800/80 dark:text-teal-300/80 italic">
+                    {fields.govtGuidelineRateFlats === 'NA' || fields.flatValueGovtRate === 'NA'
+                      ? 'Referenced from above: Govt Guideline Rate for Flats is NA'
+                      : (fields.govtGuidelineRateFlats && (fields.adoptableBuiltUpArea || fields.flatSBUA)
+                          ? `Auto-calculated & referenced from: Adoptable Built-up Area (${fields.adoptableBuiltUpArea || fields.flatSBUA} sqft) × Govt Guideline Rate for Flats (${fields.govtGuidelineRateFlats} Rs/sqft)`
+                          : 'Auto-calculated: uses Adoptable Built-up Area (in Sqft) × Govt Guideline rate for Flats')}
+                  </p>
+                </div>
+              </div>
+            </div>
+              <div className="md:col-span-2 bg-amber-50/80 p-4 rounded-xl border border-amber-200 shadow-xs space-y-3 mt-2">
+                <div className="border-b border-amber-200/80 pb-2">
+                  <h3 className="text-xs font-bold text-amber-900 uppercase tracking-wide">
+                    Geo Coordinates (GPS Location)
+                  </h3>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Field label="Latitude (N)">
+                    <input type="text" inputMode="decimal" className={inputCls} value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 21.1705" />
+                  </Field>
+                  <Field label="Longitude (E)">
+                    <input type="text" inputMode="decimal" className={inputCls} value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 86.492417" />
+                  </Field>
+                </div>
               </div>
             </div>
           </div>
