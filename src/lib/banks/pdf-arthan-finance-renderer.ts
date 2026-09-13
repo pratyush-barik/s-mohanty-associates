@@ -620,7 +620,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       } else if (align === 'right') {
         const tw = font.widthOfTextAtSize(line, fontSize);
         lineX = x + w - padX - tw;
-      } else if (align === 'justify' && (lines.length === 1 || lineIdx < lines.length - 1)) {
+      } else if (align === 'justify' && lineIdx < lines.length - 1) {
         const words = line.trim().split(/\s+/);
         if (words.length > 1) {
           let wordsW = 0;
@@ -628,20 +628,23 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
             wordsW += font.widthOfTextAtSize(word, fontSize);
           }
           const availableSpace = maxTextW - wordsW;
-          const spaceW = Math.max(0, availableSpace / (words.length - 1));
-          let curWordX = lineX;
-          for (const word of words) {
-            this.page.drawText(word, {
-              x: Math.max(x + 1, curWordX),
-              y: startY,
-              size: fontSize,
-              font,
-              color: rgb(0, 0, 0),
-            });
-            curWordX += font.widthOfTextAtSize(word, fontSize) + spaceW;
+          const spaceW = availableSpace / (words.length - 1);
+          // Only justify if the gap per space is reasonable (max 10pt) to avoid sparse stretching
+          if (spaceW >= 0 && spaceW <= 10) {
+            let curWordX = lineX;
+            for (const word of words) {
+              this.page.drawText(word, {
+                x: Math.max(x + 1, curWordX),
+                y: startY,
+                size: fontSize,
+                font,
+                color: rgb(0, 0, 0),
+              });
+              curWordX += font.widthOfTextAtSize(word, fontSize) + spaceW;
+            }
+            startY -= lineH;
+            continue;
           }
-          startY -= lineH;
-          continue;
         }
       }
 
@@ -1412,8 +1415,8 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     this.drawRow([
       { text: `Distress Value of 100% complete\nproperty @ ${pct100}% of MV`, width: vlW1, isLabel: true, bold: true },
       { text: fields.distressValue100 || '', width: vlV, bold: true },
-      { text: `Distress Value of present completed\nproperty @ ${pctPresent}% of MV`, width: vlW2, isLabel: true, bold: false },
-      { text: fields.distressValuePresent || '', width: vlV2 },
+      { text: `Distress Value of present completed\nproperty @ ${pctPresent}% of MV`, width: vlW2, isLabel: true, bold: true },
+      { text: fields.distressValuePresent || '', width: vlV2, bold: true },
     ], 20, 4);
 
     // Resolve the selected property type among: 'Flat' | 'Apartment' | 'Shop' | 'Office'
@@ -1532,7 +1535,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
 
     this.checkPageBreak(remH);
     curY = this.pdfY(this.cursorY);
-    this.drawCell(MARGIN_L, curY, remLabelW, remH, 'Remarks / Observation', { isLabel: true, align: 'justify', vAlign: 'middle', bold: true });
+    this.drawCell(MARGIN_L, curY, remLabelW, remH, 'Remarks / Observation', { isLabel: true, vAlign: 'middle', bold: true });
     this.drawCell(MARGIN_L + remLabelW, curY, remValW, remH, remarksText, { vAlign: 'top', align: 'justify' });
     this.cursorY += remH;
 

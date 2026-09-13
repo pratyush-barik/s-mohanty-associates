@@ -1764,7 +1764,7 @@ export default function ArthanFinance({
                 </div>
 
                 <div className="space-y-1.5">
-                  <div className="flex items-center flex-wrap gap-1.5 text-xs font-semibold text-black">
+                  <div className="flex items-center flex-wrap gap-1.5 text-xs font-bold text-black">
                     <span>Distress Value of present completed property @</span>
                     <div className="relative inline-flex items-center">
                       <input
