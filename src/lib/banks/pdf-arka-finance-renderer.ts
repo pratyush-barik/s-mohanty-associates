@@ -125,8 +125,8 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
     
     // Page 1 Border
     const bmx = 30; // Horizontal margin
-    const bmyTop = 95; // Clear letterhead
-    const bmyBot = 45; // Clear footer
+    const bmyTop = 105; // Clear letterhead (shrunk upper part)
+    const bmyBot = 85; // Clear footer (shrunk lower part)
     const borderColorHex = hexToRgb('#4a6078'); 
 
     // Outer thick border
