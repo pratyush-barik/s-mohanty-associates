@@ -27,11 +27,7 @@ export default function ArkaFinance({
 }: any) {
   const router = useRouter();
   const [fields, setFields] = useState<any>({
-    propertyOwner: '',
-    addressOfTheProperty: '',
-    presentMarketValue: '',
-    distressSaleValue: '',
-    purposeOfValuation: '',
+    propertyOwners: [{ name: '', fatherName: '' }],
     refNo: '',
     dateOfReport: '',
     nameOfCustomer: '',

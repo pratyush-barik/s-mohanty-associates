@@ -11,7 +11,7 @@ import { BaseReportFields } from '../bank-fields';
 import { rgb } from 'pdf-lib';
 
 export interface ArkaReportFields extends BaseReportFields {
-  propertyOwner: string;
+  propertyOwners?: { name: string; fatherName: string }[];
   addressOfTheProperty: string;
   presentMarketValue: string;
   distressSaleValue: string;
