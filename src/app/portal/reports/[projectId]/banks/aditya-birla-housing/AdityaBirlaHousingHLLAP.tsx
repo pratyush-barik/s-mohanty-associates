@@ -437,9 +437,21 @@ async function generateHLLAPPDF(
   // Total / Market Value rows
   const totalLblW = Math.round((CONTENT_W - NUM_W) * 0.65);
   const totalValW = CONTENT_W - NUM_W - totalLblW;
-  for (const [label, value] of [['Total of Component A on Completion', fv(fields, 'totalComponentA', '')], ['Total of Component B on Completion', fv(fields, 'totalComponentB', '0')], ['Total Market Value of Property on Completion (A+B) 100%', fv(fields, 'totalMarketValueOnCompletion', '')], ['Total Market Value of Property on Completion in Words 100%', fv(fields, 'totalMarketValueOnCompletionWords', '')], ['Total Market Value of Property as on Date (95%)', fv(fields, 'totalMarketValueAsOnDate', '')], ['Guideline Value of The Property', fv(fields, 'guidelineValueOfProperty', 'NA')], ['Distress Sale Value as on date', fv(fields, 'distressSaleValue', '')], ['Approx. Rentals in case of 100% complete property', fv(fields, 'approxRentals', '')]]) {
+  const totalRowsData = [
+    ['Total of Component A on Completion', fv(fields, 'totalComponentA', '')],
+    ['Total of Component B on Completion', fv(fields, 'totalComponentB', '0')],
+    ['Total Market Value of Property on Completion (A+B) 100%', fv(fields, 'totalMarketValueOnCompletion', '')],
+    ['Total Market Value of Property on Completion in Words 100%', fv(fields, 'totalMarketValueOnCompletionWords', '')],
+    ['Total Market Value of Property as on Date (95%)', fv(fields, 'totalMarketValueAsOnDate', '')],
+    ['Guideline Value of The Property', fv(fields, 'guidelineValueOfProperty', 'NA')],
+    ['Distress Sale Value as on date', fv(fields, 'distressSaleValue', '')],
+    ['Approx. Rentals in case of 100% complete property', fv(fields, 'approxRentals', '')]
+  ];
+  for (let i = 0; i < totalRowsData.length; i++) {
+    const isLast = i === totalRowsData.length - 1;
+    const [label, value] = totalRowsData[i];
     r.drawKeyValueRow([
-      { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true },
+      { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true, hideBottom: !isLast },
       { label, value, labelWidth: totalLblW, valueWidth: totalValW, bold: true }
     ]);
   }
