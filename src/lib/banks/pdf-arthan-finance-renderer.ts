@@ -906,23 +906,23 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
 
     // Row: Proposal No | Case Type
     this.drawRow([
-      { text: 'Proposal No', width: s1L, isLabel: true, bold: false },
+      { text: 'Proposal No', width: s1L, isLabel: true },
       { text: fields.proposalNo || '', width: s1V },
-      { text: 'Case Type', width: s1L2, isLabel: true, bold: false },
+      { text: 'Case Type', width: s1L2, isLabel: true },
       { text: fields.caseType || '', width: s1V2 },
     ], 20, 4);
 
     // Row: Date of Inspection / Site visit | Nearest Landmark
     this.drawRow([
-      { text: 'Date of Inspection / Site visit', width: s1L, isLabel: true, bold: false },
+      { text: 'Date of Inspection /\nSite visit', width: s1L, isLabel: true },
       { text: formatReportDate(fields.dateOfInspection, ''), width: s1V },
-      { text: 'Nearest Landmark', width: s1L2, isLabel: true, bold: false },
+      { text: 'Nearest Landmark', width: s1L2, isLabel: true },
       { text: fields.nearestLandmark || '', width: s1V2 },
     ], 20, 4);
 
     // Row: Customer / Applicant Name & Contact (full width value)
     this.drawRow([
-      { text: 'Name of the Customer/ Applicant & Contact Details', width: s1L, isLabel: true, bold: false },
+      { text: 'Name of the Customer/\nApplicant & Contact Details', width: s1L, isLabel: true },
       { text: fields.customerName || '', width: CONTENT_W - s1L },
     ], 20, 4);
 
@@ -943,14 +943,13 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
             ],
         width: s1L,
         isLabel: true,
-        bold: false,
       },
       { text: fields.ownerName || '', width: CONTENT_W - s1L },
     ], 20, 4);
 
     // Row: Person met at site & Contact No.
     this.drawRow([
-      { text: 'Name of the Person met at site & Contact No.', width: s1L, isLabel: true, bold: false },
+      { text: 'Name of the Person met\nat site & Contact No.', width: s1L, isLabel: true },
       { text: fields.personMetOnSite || '', width: CONTENT_W - s1L },
     ], 20, 4);
 
@@ -966,7 +965,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     ];
 
     const addrRowHeights = addrRows.map(r => {
-      const linesL = this.wrapText(this.sanitizeText(r.sub), addrSubLabelW - 8, FONT_SIZE, false);
+      const linesL = this.wrapText(this.sanitizeText(r.sub), addrSubLabelW - 8, FONT_SIZE, true);
       const linesV = this.wrapText(this.sanitizeText(r.val), addrValW - 8, FONT_SIZE, false);
       return Math.max(22, Math.max(linesL.length, linesV.length) * FONT_SIZE * LINE_HEIGHT + 8);
     });
@@ -977,13 +976,13 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
 
     // Merged left label
     this.drawCell(MARGIN_L, curY, addrLabelW, totalAddrH, 'Address of the property\nbeing appraised', {
-      isLabel: true, align: 'center', vAlign: 'middle', bold: false,
+      isLabel: true, align: 'center', vAlign: 'middle',
     });
 
     let subY = curY;
     for (let i = 0; i < addrRows.length; i++) {
       const rh = addrRowHeights[i];
-      this.drawCell(MARGIN_L + addrLabelW, subY, addrSubLabelW, rh, addrRows[i].sub, { isLabel: true, bold: false });
+      this.drawCell(MARGIN_L + addrLabelW, subY, addrSubLabelW, rh, addrRows[i].sub, { isLabel: true });
       this.drawCell(MARGIN_L + addrLabelW + addrSubLabelW, subY, addrValW, rh, addrRows[i].val);
       subY -= rh;
     }
@@ -991,7 +990,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
 
     // Documents Provided
     this.drawRow([
-      { text: 'Documents Provided', width: s1L, isLabel: true, bold: false },
+      { text: 'Documents Provided', width: s1L, isLabel: true },
       { text: fields.documentsProvided || '', width: CONTENT_W - s1L, align: 'center' },
     ], 20, 4);
 
@@ -1006,86 +1005,86 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     const s2V2 = CONTENT_W - s2L - s2V - s2L2;
 
     this.drawRow([
-      { text: 'Status of Land Holding', width: s2L, isLabel: true, bold: false },
+      { text: 'Status of Land Holding', width: s2L, isLabel: true },
       { text: fields.statusOfLandHolding || '', width: s2V },
-      { text: 'Developed By', width: s2L2, isLabel: true, bold: false },
+      { text: 'Developed By', width: s2L2, isLabel: true },
       { text: fields.developedBy || 'NA', width: s2V2 },
     ], 20, 4);
 
     this.drawRow([
-      { text: 'Type of Property', width: s2L, isLabel: true, bold: false },
+      { text: 'Type of Property', width: s2L, isLabel: true },
       { text: fields.typeOfProperty || '', width: s2V },
-      { text: 'Type of Locality', width: s2L2, isLabel: true, bold: false },
+      { text: 'Type of Locality', width: s2L2, isLabel: true },
       { text: fields.typeOfLocality || '', width: s2V2 },
     ], 20, 4);
 
     this.drawRow([
-      { text: 'Date of Inspection / Site visit', width: s2L, isLabel: true, bold: false },
+      { text: 'Date of Inspection /\nSite visit', width: s2L, isLabel: true },
       { text: formatReportDate(fields.dateOfInspectionSite || fields.dateOfInspection, ''), width: s2V },
-      { text: 'Occupation Status', width: s2L2, isLabel: true, bold: false },
+      { text: 'Occupation Status', width: s2L2, isLabel: true },
       { text: fields.occupationStatus || '', width: s2V2 },
     ], 20, 4);
 
     this.drawRow([
-      { text: 'Location/Zoning as per Master Plan', width: s2L, isLabel: true, bold: false },
+      { text: 'Location / Zoning as\nper Master Plan', width: s2L, isLabel: true },
       { text: fields.locationZoningMasterPlan || 'NA', width: s2V },
-      { text: 'Property Usage', width: s2L2, isLabel: true, bold: false },
+      { text: 'Property Usage', width: s2L2, isLabel: true },
       { text: fields.propertyUsage || '', width: s2V2 },
     ], 20, 4);
 
     this.drawRow([
-      { text: 'Plot Demarcation', width: s2L, isLabel: true, bold: false },
+      { text: 'Plot Demarcation', width: s2L, isLabel: true },
       { text: fields.plotDemarcation || 'NA', width: s2V },
-      { text: 'Property Identifiable', width: s2L2, isLabel: true, bold: false },
+      { text: 'Property Identifiable', width: s2L2, isLabel: true },
       { text: fields.propertyIdentifiable || 'NA', width: s2V2 },
     ], 20, 4);
 
     this.drawRow([
-      { text: 'Identified Through', width: s2L, isLabel: true, bold: false },
+      { text: 'Identified Through', width: s2L, isLabel: true },
       { text: fields.identifiedThrough || 'NA', width: s2V },
-      { text: 'Within MC / GP Limit & Distance From Nearest M.C', width: s2L2, isLabel: true, bold: false },
+      { text: 'Within MC / GP Limit &\nDistance From Nearest M.C', width: s2L2, isLabel: true },
       { text: fields.withinMCLimit || '', width: s2V2 },
     ], 20, 4);
 
     this.drawRow([
-      { text: 'Internal Finishing', width: s2L, isLabel: true, bold: false },
+      { text: 'Internal Finishing', width: s2L, isLabel: true },
       { text: fields.internalFinishing || '', width: s2V },
-      { text: 'Type of Structure', width: s2L2, isLabel: true, bold: false },
+      { text: 'Type of Structure', width: s2L2, isLabel: true },
       { text: fields.typeOfStructure || '', width: s2V2 },
     ], 20, 4);
 
     this.drawRow([
-      { text: 'No. of Floors in the building', width: s2L, isLabel: true, bold: false },
+      { text: 'No. of Floors in\nthe building', width: s2L, isLabel: true },
       { text: fields.noOfFloors || '', width: s2V },
-      { text: 'Located on Floor No.', width: s2L2, isLabel: true, bold: false },
+      { text: 'Located on Floor No.', width: s2L2, isLabel: true },
       { text: fields.locatedOnFloorNo || '', width: s2V2 },
     ], 20, 4);
 
     this.drawRow([
-      { text: 'Total No. of Flats / Unit in building', width: s2L, isLabel: true, bold: false },
+      { text: 'Total No. of Flats / Unit\nin building', width: s2L, isLabel: true },
       { text: fields.totalFlatsUnits || '', width: s2V },
-      { text: 'External Finishing', width: s2L2, isLabel: true, bold: false },
+      { text: 'External Finishing', width: s2L2, isLabel: true },
       { text: fields.externalFinishing || '', width: s2V2 },
     ], 20, 4);
 
     this.drawRow([
-      { text: 'External Finishing', width: s2L, isLabel: true, bold: false },
+      { text: 'External Finishing', width: s2L, isLabel: true },
       { text: fields.externalFinishingDetail || '', width: s2V },
-      { text: 'Year of Completion of Property', width: s2L2, isLabel: true, bold: false },
+      { text: 'Year of Completion\nof Property', width: s2L2, isLabel: true },
       { text: fields.yearOfCompletion || '', width: s2V2 },
     ], 20, 4);
 
     this.drawRow([
-      { text: 'Construction Stage of the Property (in 100%)', width: s2L, isLabel: true, bold: false },
+      { text: 'Construction Stage of\nthe Property (in 100%)', width: s2L, isLabel: true },
       { text: fields.constructionStage || 'NA', width: s2V },
-      { text: 'Disbursement Recommended (in %)', width: s2L2, isLabel: true, bold: false },
+      { text: 'Disbursement\nRecommended (in %)', width: s2L2, isLabel: true },
       { text: fields.disbursementRecommended || 'NA', width: s2V2 },
     ], 20, 4);
 
     this.drawRow([
-      { text: 'Age of the Property', width: s2L, isLabel: true, bold: false },
+      { text: 'Age of the Property', width: s2L, isLabel: true },
       { text: fields.ageOfProperty || '', width: s2V },
-      { text: 'Future Physical Life of Property', width: s2L2, isLabel: true, bold: false },
+      { text: 'Future Physical Life\nof Property', width: s2L2, isLabel: true },
       { text: fields.futurePhysicalLife || '', width: s2V2 },
     ], 20, 4);
 
@@ -1095,11 +1094,11 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     this.checkPageBreak(26 + 22 * 5);
     this.drawSectionBanner('BOUNDARIES');
 
-    const bW1 = 140; // "Boundaries" label
-    const bW2 = (CONTENT_W - bW1) / 4; // North
-    const bW3 = (CONTENT_W - bW1) / 4; // South
-    const bW4 = (CONTENT_W - bW1) / 4; // East
-    const bW5 = CONTENT_W - bW1 - bW2 - bW3 - bW4; // West
+    const bW1 = 135; // "Boundaries" label
+    const bW2 = Math.round((CONTENT_W - bW1) / 4); // 88 pt - North
+    const bW3 = bW2; // 88 pt - South
+    const bW4 = bW2; // 88 pt - East
+    const bW5 = CONTENT_W - bW1 - bW2 - bW3 - bW4; // 88.28 pt - West
 
     this.drawRow([
       { text: 'Boundaries', width: bW1, isHeader: true, align: 'center' },
@@ -1110,7 +1109,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     ], 22, 4);
 
     this.drawRow([
-      { text: 'As per Documents(Sale Deed)', width: bW1, isLabel: true, bold: false },
+      { text: 'As per Documents\n(Sale Deed)', width: bW1, isLabel: true },
       { text: fields.boundaryNorthDocs || 'Not provided', width: bW2, align: 'center' },
       { text: fields.boundarySouthDocs || 'Not provided', width: bW3, align: 'center' },
       { text: fields.boundaryEastDocs || 'Not provided', width: bW4, align: 'center' },
@@ -1118,7 +1117,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     ], 22, 4);
 
     this.drawRow([
-      { text: 'As per Sketch map', width: bW1, isLabel: true, bold: false },
+      { text: 'As per Sketch map', width: bW1, isLabel: true },
       { text: fields.boundaryNorthSketch || '', width: bW2, align: 'center' },
       { text: fields.boundarySouthSketch || '', width: bW3, align: 'center' },
       { text: fields.boundaryEastSketch || '', width: bW4, align: 'center' },
@@ -1126,7 +1125,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     ], 22, 4);
 
     this.drawRow([
-      { text: 'As per Site / Actual', width: bW1, isLabel: true, bold: false },
+      { text: 'As per Site / Actual', width: bW1, isLabel: true },
       { text: fields.boundaryNorthSite || '', width: bW2, align: 'center' },
       { text: fields.boundarySouthSite || '', width: bW3, align: 'center' },
       { text: fields.boundaryEastSite || '', width: bW4, align: 'center' },
@@ -1134,17 +1133,17 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     ], 22, 4);
 
     // Boundaries Matching row:
-    // Boundaries (bW1) | North (bW2: Yes/No) | South (bW3: "If No, then reason thereon") | East + West (bW4 + bW5: reasonText)
+    // Boundaries (bW1) | North (bW2: Yes/No) | South (bW3: "If No, then\nreason thereon") | East + West (bW4 + bW5: reasonText)
     const isMatching = (fields.boundariesMatching || 'Yes').trim().toLowerCase() === 'yes';
     const reasonText = isMatching
       ? 'Boundary is matching as per sketch map'
       : (fields.boundariesNotMatchingReason || 'Boundary is not matching');
 
     this.drawRow([
-      { text: 'Boundaries Matching', width: bW1, isLabel: true, bold: false },
-      { text: fields.boundariesMatching || 'Yes', width: bW2, align: 'center', bold: false },
-      { text: 'If No, then reason thereon', width: bW3, isLabel: true, bold: false, fontSize: 8 },
-      { text: reasonText, width: bW4 + bW5, align: 'center', bold: false, fontSize: 8.5 },
+      { text: 'Boundaries Matching', width: bW1, isLabel: true },
+      { text: fields.boundariesMatching || 'Yes', width: bW2, align: 'center' },
+      { text: 'If No, then\nreason thereon', width: bW3, isLabel: true, fontSize: 8.5 },
+      { text: reasonText, width: bW4 + bW5, align: 'center', fontSize: 8.5 },
     ], 24, 3);
 
     // ══════════════════════════════════════════════════════════════════
@@ -1168,7 +1167,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     ], 26, 4);
 
     this.drawRow([
-      { text: 'As per sanctioned/\npermissible byelaws', width: sbW1, isLabel: true, bold: false },
+      { text: 'As per sanctioned /\npermissible byelaws', width: sbW1, isLabel: true },
       { text: fields.setbackFrontSanctioned || 'NA', width: sbW2, align: 'center' },
       { text: fields.setbackRearSanctioned || 'NA', width: sbW3, align: 'center' },
       { text: fields.setbackLeftSanctioned || 'NA', width: sbW4, align: 'center' },
@@ -1176,7 +1175,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     ], 26, 4);
 
     this.drawRow([
-      { text: 'As per Site / Actual', width: sbW1, isLabel: true, bold: false },
+      { text: 'As per Site / Actual', width: sbW1, isLabel: true },
       { text: fields.setbackFrontSite || '', width: sbW2, align: 'center' },
       { text: fields.setbackRearSite || '', width: sbW3, align: 'center' },
       { text: fields.setbackLeftSite || '', width: sbW4, align: 'center' },
@@ -1193,12 +1192,12 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     const htWRest = CONTENT_W - htW1;
 
     this.drawRow([
-      { text: 'As per sanctioned/\npermissible byelaws', width: htW1, isLabel: true, bold: false },
+      { text: 'As per sanctioned /\npermissible byelaws', width: htW1, isLabel: true },
       { text: fields.heightSanctioned || 'NA', width: htWRest, align: 'center' },
     ], 26, 4);
 
     this.drawRow([
-      { text: 'As per Site / Actual', width: htW1, isLabel: true, bold: false },
+      { text: 'As per Site / Actual', width: htW1, isLabel: true },
       { text: fields.heightSite || '', width: htWRest, align: 'center' },
     ], 20, 4);
 
@@ -1223,11 +1222,11 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     const buaW6 = CONTENT_W - buaW1 - buaW2 - buaW3 - buaW4 - buaW5; // Adopted Built-up area
 
     this.drawRow([
-      { text: 'Floor\n(Pl mention floor wise)', width: buaW1, isHeader: true, align: 'center', bold: false },
-      { text: 'Accomodation', width: buaW2, isHeader: true, align: 'center', bold: false },
-      { text: 'Carpet Area (Sft)', width: buaW3, isHeader: true, align: 'center', bold: false },
-      { text: 'Actual BUA / SBUA (Sft)', width: buaW4, isHeader: true, align: 'center', bold: false },
-      { text: 'Permissible BUA (Sft)', width: buaW5, isHeader: true, align: 'center', bold: false },
+      { text: 'Floor\n(Pl mention floor wise)', width: buaW1, isHeader: true, align: 'center' },
+      { text: 'Accomodation', width: buaW2, isHeader: true, align: 'center' },
+      { text: 'Carpet Area (Sft)', width: buaW3, isHeader: true, align: 'center' },
+      { text: 'Actual BUA / SBUA (Sft)', width: buaW4, isHeader: true, align: 'center' },
+      { text: 'Permissible BUA (Sft)', width: buaW5, isHeader: true, align: 'center' },
       { text: 'Adopted Built-up area (Sft)', width: buaW6, isHeader: true, align: 'center', bold: true },
     ], 36, 4);
 
@@ -1240,30 +1239,30 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
 
       for (const fl of buaFloors) {
         this.drawRow([
-          { text: fl.floor, width: buaW1, isLabel: true, bold: false },
-          { text: fl.accommodation || 'NA', width: buaW2, align: 'center', bold: false },
-          { text: fl.carpetArea ? (fl.carpetArea === 'NA' ? 'NA' : `${fl.carpetArea}`) : 'NA', width: buaW3, align: 'center', bold: false },
-          { text: fl.actualBUA ? (fl.actualBUA === 'NA' ? 'NA' : `${fl.actualBUA}`) : 'NA', width: buaW4, align: 'center', bold: false },
-          { text: fl.permissibleBUA ? (fl.permissibleBUA === 'NA' ? 'NA' : `${fl.permissibleBUA}`) : 'NA', width: buaW5, align: 'center', bold: false },
-          { text: fl.adoptedBUA ? (fl.adoptedBUA === 'NA' ? 'NA' : `${fl.adoptedBUA}`) : 'NA', width: buaW6, align: 'center', bold: false },
+          { text: fl.floor, width: buaW1, isLabel: true },
+          { text: fl.accommodation || 'NA', width: buaW2, align: 'center' },
+          { text: fl.carpetArea ? (fl.carpetArea === 'NA' ? 'NA' : `${fl.carpetArea}`) : 'NA', width: buaW3, align: 'center' },
+          { text: fl.actualBUA ? (fl.actualBUA === 'NA' ? 'NA' : `${fl.actualBUA}`) : 'NA', width: buaW4, align: 'center' },
+          { text: fl.permissibleBUA ? (fl.permissibleBUA === 'NA' ? 'NA' : `${fl.permissibleBUA}`) : 'NA', width: buaW5, align: 'center' },
+          { text: fl.adoptedBUA ? (fl.adoptedBUA === 'NA' ? 'NA' : `${fl.adoptedBUA}`) : 'NA', width: buaW6, align: 'center' },
         ], 22, 4);
       }
 
-      // Total row - no bold (regular font for all cells)
+      // Total row - bold label
       this.drawRow([
-        { text: 'Total', width: buaW1, isLabel: true, bold: false },
-        { text: 'NA', width: buaW2, align: 'center', bold: false },
-        { text: totalCarpetArea > 0 ? formatExactDecimal(totalCarpetArea) : 'NA', width: buaW3, align: 'center', bold: false },
-        { text: totalActualBUA > 0 ? `${formatExactDecimal(totalActualBUA)}sqft` : 'NA', width: buaW4, align: 'center', bold: false },
-        { text: totalPermissibleBUA > 0 ? `${formatExactDecimal(totalPermissibleBUA)}sqft` : 'NA', width: buaW5, align: 'center', bold: false },
-        { text: totalAdoptedBUA > 0 ? `${formatExactDecimal(totalAdoptedBUA)}sqft` : 'NA', width: buaW6, align: 'center', bold: false },
+        { text: 'Total', width: buaW1, isLabel: true, bold: true },
+        { text: 'NA', width: buaW2, align: 'center' },
+        { text: totalCarpetArea > 0 ? formatExactDecimal(totalCarpetArea) : 'NA', width: buaW3, align: 'center' },
+        { text: totalActualBUA > 0 ? `${formatExactDecimal(totalActualBUA)}sqft` : 'NA', width: buaW4, align: 'center' },
+        { text: totalPermissibleBUA > 0 ? `${formatExactDecimal(totalPermissibleBUA)}sqft` : 'NA', width: buaW5, align: 'center' },
+        { text: totalAdoptedBUA > 0 ? `${formatExactDecimal(totalAdoptedBUA)}sqft` : 'NA', width: buaW6, align: 'center' },
       ], 22, 4);
     }
 
     // Violation observed
     this.drawRow([
-      { text: 'Violation observed if any', width: buaW1 + buaW2, isLabel: true, bold: false },
-      { text: fields.violationObserved || 'NA', width: CONTENT_W - buaW1 - buaW2, align: 'center', bold: false },
+      { text: 'Violation observed if any', width: buaW1 + buaW2, isLabel: true },
+      { text: fields.violationObserved || 'NA', width: CONTENT_W - buaW1 - buaW2, align: 'center' },
     ], 20, 4);
 
     // ══════════════════════════════════════════════════════════════════
@@ -1279,23 +1278,23 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
 
     // Row 1: Construction as per approved/ sanctioned plans | NA | Details of approved plan with approval no and date | NA
     this.drawRow([
-      { text: 'Construction as per approved/ sanctioned plans', width: paW1, isLabel: true, bold: false },
+      { text: 'Construction as per approved /\nsanctioned plans', width: paW1, isLabel: true },
       { text: fields.constructionAsPerPlan || 'NA', width: paW2, align: 'center' },
-      { text: 'Details of approved plan with approval no and date', width: paW3, isLabel: true, bold: false },
+      { text: 'Details of approved plan with\napproval no and date', width: paW3, isLabel: true },
       { text: fields.approvedPlanDetails || 'NA', width: paW4, align: 'center' },
     ], 24, 4);
 
     // Row 2: Construction permission Number and date | NA | Violations Observed if Any | NA
     this.drawRow([
-      { text: 'Construction permission Number and date', width: paW1, isLabel: true, bold: false },
+      { text: 'Construction permission\nNumber and date', width: paW1, isLabel: true },
       { text: fields.constructionPermissionNumberDate || 'NA', width: paW2, align: 'center' },
-      { text: 'Violations Observed if Any', width: paW3, isLabel: true, bold: false },
+      { text: 'Violations Observed if Any', width: paW3, isLabel: true },
       { text: fields.violationsObserved || 'NA', width: paW4, align: 'center' },
     ], 24, 4);
 
     // Row 3: If plans not available then is the structure confirming to the local byelaws. | NA (spans remaining width)
     this.drawRow([
-      { text: 'If plans not available then is the structure confirming to the local byelaws.', width: paW1, isLabel: true, bold: false },
+      { text: 'If plans not available then is the structure\nconfirming to the local byelaws.', width: paW1, isLabel: true },
       { text: fields.structureConfirmingByelaws || 'NA', width: CONTENT_W - paW1, align: 'center' },
     ], 24, 4);
 
@@ -1318,9 +1317,9 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     ], 20, 4);
 
     this.drawRow([
-      { text: 'Justified Estimated Cost (in Rs per Sqft)', width: eaW1, isLabel: true },
+      { text: 'Justified Estimated Cost\n(in Rs per Sqft)', width: eaW1, isLabel: true },
       { text: fields.justifiedEstimatedCostPerSqft || 'NA', width: eaV },
-      { text: 'Adoptable / Justified Estimated Cost (In Rs)', width: eaW2, isLabel: true },
+      { text: 'Adoptable / Justified\nEstimated Cost (In Rs)', width: eaW2, isLabel: true },
       { text: fields.adoptableJustifiedEstimatedCost || 'NA', width: eaV2 },
     ], 20, 4);
 
@@ -1341,38 +1340,38 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       : 'Adoptable Built-up Area (in Sqft)';
 
     this.drawRow([
-      { text: 'Land Area (In Sqft)', width: vlW1, isLabel: true, bold: false },
+      { text: 'Land Area (In Sqft)', width: vlW1, isLabel: true },
       { text: fields.landAreaSqft || '', width: vlV },
-      { text: buaLabel, width: vlW2, isLabel: true, bold: false },
+      { text: buaLabel, width: vlW2, isLabel: true },
       { text: fields.adoptableBuiltUpArea || '', width: vlV2 },
     ], 20, 4);
 
     this.drawRow([
-      { text: 'Current Market Rate of land in the locality (Range) in Rs Per Sqft', width: vlW1, isLabel: true, bold: false },
+      { text: 'Current Market Rate of land in\nthe locality (Range) in Rs Per Sqft', width: vlW1, isLabel: true },
       { text: fields.currentMarketRateRange || '', width: vlV },
-      { text: 'Construction Cost (Rs per sft)', width: vlW2, isLabel: true, bold: false },
+      { text: 'Construction Cost (Rs per sft)', width: vlW2, isLabel: true },
       { text: fields.constructionCostPerSqft || '', width: vlV2 },
     ], 20, 4);
 
     this.drawRow([
-      { text: 'Recommended Rate of Land (Rs per sqft)', width: vlW1, isLabel: true, bold: false },
+      { text: 'Recommended Rate of Land\n(Rs per sqft)', width: vlW1, isLabel: true },
       { text: fields.recommendedRateOfLand || '', width: vlV },
-      { text: 'Total Construction Value for 100% complete building (in Rs)', width: vlW2, isLabel: true, bold: true },
+      { text: 'Total Construction Value for\n100% complete building (in Rs)', width: vlW2, isLabel: true },
       { text: fields.totalConstructionValue100 || '', width: vlV2 },
     ], 20, 4);
 
     this.drawRow([
       { text: 'Total Land Value (in Rs)', width: vlW1, isLabel: true, bold: true },
       { text: fields.totalLandValue || '', width: vlV, bold: true },
-      { text: 'Total Construction Value for present construction stage (in Rs)', width: vlW2, isLabel: true, bold: false },
+      { text: 'Total Construction Value for\npresent construction stage (in Rs)', width: vlW2, isLabel: true },
       { text: fields.totalConstructionValuePresent || '', width: vlV2 },
     ], 20, 4);
 
     this.drawRow([
-      { text: 'Market Value of Land & Building Only (in Rs)', width: vlW1, isLabel: true, bold: true },
+      { text: 'Market Value of Land &\nBuilding Only (in Rs)', width: vlW1, isLabel: true, bold: true },
       { text: fields.marketValueLandBuilding || '', width: vlV, bold: true, highlight: true },
-      { text: 'Market Value of Land & Building Only (in Rs)', width: vlW2, isLabel: true, bold: true },
-      { text: fields.marketValueLandBuildingRight || '', width: vlV2, bold: false, highlight: true },
+      { text: 'Market Value of Land &\nBuilding Only (in Rs)', width: vlW2, isLabel: true, bold: true },
+      { text: fields.marketValueLandBuildingRight || '', width: vlV2, bold: true, highlight: true },
     ], 20, 4);
 
     const pct100 = (fields.distressPct100 !== undefined && fields.distressPct100 !== null && fields.distressPct100 !== '')
@@ -1383,10 +1382,10 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       : '0';
 
     this.drawRow([
-      { text: `Distress Value of 100% complete property @ ${pct100}% of MV`, width: vlW1, isLabel: true, bold: true },
+      { text: `Distress Value of 100% complete\nproperty @ ${pct100}% of MV`, width: vlW1, isLabel: true, bold: true },
       { text: fields.distressValue100 || '', width: vlV, bold: true },
-      { text: `Distress Value of present completed property @ ${pctPresent}% of MV`, width: vlW2, isLabel: true, bold: true },
-      { text: fields.distressValuePresent || '', width: vlV2, bold: false },
+      { text: `Distress Value of present completed\nproperty @ ${pctPresent}% of MV`, width: vlW2, isLabel: true, bold: true },
+      { text: fields.distressValuePresent || '', width: vlV2 },
     ], 20, 4);
 
     const flatType = fields.flatPropertyType || (fields.flatSBUA === 'NA' || !fields.flatSBUA ? 'NA' : 'Flat');
@@ -1407,15 +1406,14 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
 
     this.drawRow([
       {
-        text: 'Flat / Apartment / Shop / Office SBUA (in Sqft)',
+        text: 'Flat / Apartment / Shop / Office\nSBUA (in Sqft)',
         segments: flatSegments,
         width: vlW1,
         isLabel: true,
-        bold: false,
       },
-      { text: fields.flatSBUA || 'NA', width: vlV, bold: false },
-      { text: 'Composite sale rate (Rs per sqft)', width: vlW2, isLabel: true, bold: false },
-      { text: fields.compositeSaleRate || 'NA', width: vlV2, bold: false },
+      { text: fields.flatSBUA || 'NA', width: vlV },
+      { text: 'Composite sale rate (Rs per sqft)', width: vlW2, isLabel: true },
+      { text: fields.compositeSaleRate || 'NA', width: vlV2 },
     ], 20, 4);
 
     const tmvSegments = isFlatNA
@@ -1434,13 +1432,12 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
 
     this.drawRow([
       {
-        text: 'Total Market Value of Apartment / Shop / Flat / Office (Rs per sqft)',
+        text: 'Total Market Value of Apartment /\nShop / Flat / Office (Rs per sqft)',
         segments: tmvSegments,
         width: vlW1,
         isLabel: true,
-        bold: false,
       },
-      { text: fields.totalMarketValueApartment || 'NA', width: CONTENT_W - vlW1, align: 'center', bold: false },
+      { text: fields.totalMarketValueApartment || 'NA', width: CONTENT_W - vlW1, align: 'center' },
     ], 20, 4);
 
     const landGovtVal = fields.landValueGovtRate || (
@@ -1460,17 +1457,17 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     );
 
     this.drawRow([
-      { text: 'Government Guideline/ Circle rate for Land (Rs per sqft)', width: vlW1, isLabel: true, bold: false },
-      { text: fields.govtGuidelineRateLand || '', width: vlV, bold: false },
-      { text: 'Land Value as per Government Rate (Rs)', width: vlW2, isLabel: true, bold: false },
-      { text: landGovtVal, width: vlV2, bold: false },
+      { text: 'Government Guideline / Circle rate\nfor Land (Rs per sqft)', width: vlW1, isLabel: true },
+      { text: fields.govtGuidelineRateLand || '', width: vlV },
+      { text: 'Land Value as per\nGovernment Rate (Rs)', width: vlW2, isLabel: true },
+      { text: landGovtVal, width: vlV2 },
     ], 20, 4);
 
     this.drawRow([
-      { text: 'Government Guideline/ Circle rate for Flats (Rs per sqft)', width: vlW1, isLabel: true, bold: false },
-      { text: fields.govtGuidelineRateFlats || 'NA', width: vlV, bold: false },
-      { text: 'Flat / Apartment Value as per Government Rate (Rs)', width: vlW2, isLabel: true, bold: false },
-      { text: flatGovtVal, width: vlV2, bold: false },
+      { text: 'Government Guideline / Circle rate\nfor Flats (Rs per sqft)', width: vlW1, isLabel: true },
+      { text: fields.govtGuidelineRateFlats || 'NA', width: vlV },
+      { text: 'Flat / Apartment Value as\nper Government Rate (Rs)', width: vlW2, isLabel: true },
+      { text: flatGovtVal, width: vlV2 },
     ], 20, 4);
 
     this.drawRow([
@@ -1510,9 +1507,9 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     const vcV2 = CONTENT_W / 2 - vcW2;
 
     this.drawRow([
-      { text: 'Date of Visit', width: vcW1, isLabel: true, bold: false, fontSize: 9.5 },
+      { text: 'Date of Visit', width: vcW1, isLabel: true, fontSize: 9.5 },
       { text: formatReportDate(fields.dateOfInspection || fields.dateOfVisit, ''), width: vcV, fontSize: 9.5 },
-      { text: 'Date of Report Submission', width: vcW2, isLabel: true, bold: false, fontSize: 9.5 },
+      { text: 'Date of Report Submission', width: vcW2, isLabel: true, fontSize: 9.5 },
       { text: formatReportDate(fields.dateOfReportSubmission || fields.dateOfValuation, ''), width: vcV2, fontSize: 9.5 },
     ], 24, 3);
 
@@ -1527,10 +1524,10 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     // SECTION 12 — Property Photographs
     // ══════════════════════════════════════════════════════════════════
     if (images.photos && images.photos.length > 0) {
-      const phW1 = 115; // Uniform reduced cell width for "Name of the Customer/\nApplicant" & "Address of the property\nbeing appraised"
-      const phV = CONTENT_W / 2 - phW1; // 128.64 pt for customer name (ample space!)
-      const phW2 = 75; // Uniform reduced cell width for "Proposal No."
-      const phV2 = CONTENT_W / 2 - phW2; // 168.64 pt for proposal number (no awkward wrapping!)
+      const phW1 = 115; // Uniform column width matching Engineer (115 pt)
+      const phV = CONTENT_W / 2 - phW1; // 128.64 pt
+      const phW2 = 115; // Uniform column width matching Authorized Signatory (115 pt)
+      const phV2 = CONTENT_W / 2 - phW2; // 128.64 pt
 
       // Address row height calculation
       const phAddrText = fields.addressAsPerActualSite || fields.addressAsPerDocument || '';
@@ -1548,15 +1545,15 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
 
       // Customer & Proposal row
       this.drawRow([
-        { text: 'Name of the Customer/\nApplicant', width: phW1, isLabel: true, bold: false, fontSize: 9.5 },
+        { text: 'Name of the Customer/\nApplicant', width: phW1, isLabel: true, fontSize: 9.5 },
         { text: fields.customerName || '', width: phV, fontSize: 9.5 },
-        { text: 'Proposal No.', width: phW2, isLabel: true, bold: false, fontSize: 9.5 },
+        { text: 'Proposal No.', width: phW2, isLabel: true, fontSize: 9.5 },
         { text: fields.proposalNo || '', width: phV2, fontSize: 9.5 },
       ], 24, 3);
 
       // Address row
       curY = this.pdfY(this.cursorY);
-      this.drawCell(MARGIN_L, curY, phW1, phAddrH, 'Address of the property\nbeing appraised', { isLabel: true, align: 'center', vAlign: 'middle', bold: false, fontSize: 9.5 });
+      this.drawCell(MARGIN_L, curY, phW1, phAddrH, 'Address of the property\nbeing appraised', { isLabel: true, align: 'center', vAlign: 'middle', fontSize: 9.5 });
       this.drawCell(MARGIN_L + phW1, curY, CONTENT_W - phW1, phAddrH, phAddrText, { align: 'center', vAlign: 'middle', fontSize: 9.5 });
       this.cursorY += phAddrH + 6;
 
@@ -1588,8 +1585,8 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     if (hasMaps) {
       const mpW1 = 115;
       const mpV = CONTENT_W / 2 - mpW1; // 128.64 pt
-      const mpW2 = 75;
-      const mpV2 = CONTENT_W / 2 - mpW2; // 168.64 pt
+      const mpW2 = 115; // Uniform column width matching Authorized Signatory (115 pt)
+      const mpV2 = CONTENT_W / 2 - mpW2; // 128.64 pt
 
       const mpAddrText = fields.addressAsPerActualSite || fields.addressAsPerDocument || '';
       const mpAddrLines = this.wrapText(mpAddrText, CONTENT_W - mpW1 - 8, FONT_SIZE);
@@ -1604,14 +1601,14 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       this.drawSectionBanner('LOCATION CUM ROUTE MAP SHOWING PROPERTY BOUNDARIES');
 
       this.drawRow([
-        { text: 'Name of the Customer/\nApplicant', width: mpW1, isLabel: true, bold: false, fontSize: 9.5 },
+        { text: 'Name of the Customer/\nApplicant', width: mpW1, isLabel: true, fontSize: 9.5 },
         { text: fields.customerName || '', width: mpV, fontSize: 9.5 },
-        { text: 'Proposal No.', width: mpW2, isLabel: true, bold: false, fontSize: 9.5 },
+        { text: 'Proposal No.', width: mpW2, isLabel: true, fontSize: 9.5 },
         { text: fields.proposalNo || '', width: mpV2, fontSize: 9.5 },
       ], 24, 3);
 
       curY = this.pdfY(this.cursorY);
-      this.drawCell(MARGIN_L, curY, mpW1, mpAddrH, 'Address of the property\nbeing appraised', { isLabel: true, align: 'center', vAlign: 'middle', bold: false, fontSize: 9.5 });
+      this.drawCell(MARGIN_L, curY, mpW1, mpAddrH, 'Address of the property\nbeing appraised', { isLabel: true, align: 'center', vAlign: 'middle', fontSize: 9.5 });
       this.drawCell(MARGIN_L + mpW1, curY, CONTENT_W - mpW1, mpAddrH, mpAddrText, { align: 'center', vAlign: 'middle', fontSize: 9.5 });
       this.cursorY += mpAddrH + 8;
 
