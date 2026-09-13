@@ -162,12 +162,12 @@ export default function ArthanFinance({
             adoptedBUA: fl.adoptedBUA === 'NA' ? '' : (fl.adoptedBUA || ''),
             carpetArea: fl.carpetArea === 'NA' ? '' : (fl.carpetArea || ''),
             actualBUA: fl.actualBUA === 'NA' ? '' : (fl.actualBUA || ''),
-            permissibleBUA: fl.permissibleBUA || 'NA',
+            permissibleBUA: fl.permissibleBUA === 'NA' ? '' : (fl.permissibleBUA || ''),
           }))
         : [
-            { floor: 'Basement / Stilt', accommodation: 'NA', carpetArea: '', actualBUA: '', permissibleBUA: 'NA', adoptedBUA: '' },
-            { floor: 'Ground Floor', accommodation: 'NA', carpetArea: '', actualBUA: '', permissibleBUA: 'NA', adoptedBUA: '' },
-            { floor: 'First Floor', accommodation: 'NA', carpetArea: '', actualBUA: '', permissibleBUA: 'NA', adoptedBUA: '' },
+            { floor: 'Basement / Stilt', accommodation: 'NA', carpetArea: '', actualBUA: '', permissibleBUA: '', adoptedBUA: '' },
+            { floor: 'Ground Floor', accommodation: 'NA', carpetArea: '', actualBUA: '', permissibleBUA: '', adoptedBUA: '' },
+            { floor: 'First Floor', accommodation: 'NA', carpetArea: '', actualBUA: '', permissibleBUA: '', adoptedBUA: '' },
           ],
       violationObserved: raw.violationObserved || 'NA',
 
@@ -541,7 +541,7 @@ export default function ArthanFinance({
     const nextFloor = getFloorName(current.length);
     const updated: ArthanFinanceBUAFloor[] = [
       ...current,
-      { floor: nextFloor, accommodation: 'NA', carpetArea: '', actualBUA: '', permissibleBUA: 'NA', adoptedBUA: '' },
+      { floor: nextFloor, accommodation: 'NA', carpetArea: '', actualBUA: '', permissibleBUA: '', adoptedBUA: '' },
     ];
     handleChange('buaFloors', updated);
   };
@@ -1305,12 +1305,12 @@ export default function ArthanFinance({
               <table className="w-full text-sm border-collapse">
                 <thead>
                   <tr className="bg-[#0a1628] text-white">
-                    <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider">Floor</th>
-                    <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider">Accommodation</th>
-                    <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">Carpet Area (Sft)</th>
-                    <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">Actual BUA / SBUA (Sft)</th>
-                    <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">Permissible BUA (Sft)</th>
-                    <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider">Adopted BUA (Sft)</th>
+                    <th className="px-3 py-2.5 text-left font-normal text-xs uppercase tracking-wider">Floor</th>
+                    <th className="px-3 py-2.5 text-left font-normal text-xs uppercase tracking-wider">Accommodation</th>
+                    <th className="px-3 py-2.5 text-right font-normal text-xs uppercase tracking-wider">Carpet Area (Sft)</th>
+                    <th className="px-3 py-2.5 text-right font-normal text-xs uppercase tracking-wider">Actual BUA / SBUA (Sft)</th>
+                    <th className="px-3 py-2.5 text-right font-normal text-xs uppercase tracking-wider">Permissible BUA (Sft)</th>
+                    <th className="px-3 py-2.5 text-right font-bold text-xs uppercase tracking-wider text-emerald-400">Adopted BUA (Sft)</th>
                     {!isReadOnly && <th className="px-2 py-2.5 w-10 text-center"></th>}
                   </tr>
                 </thead>
@@ -1319,7 +1319,7 @@ export default function ArthanFinance({
                     <tr key={idx} className="bg-white hover:bg-neutral-50/50 transition-colors">
                       <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                         <input
-                          className={inputCls + ' !py-1.5 text-xs font-bold text-[#0f2038]'}
+                          className={inputCls + ' !py-1.5 text-xs font-normal text-[#0f2038]'}
                           value={fl.floor || ''}
                           onChange={e => handleBUAFloorChange(idx, 'floor', e.target.value)}
                           disabled={isReadOnly}
@@ -1505,7 +1505,7 @@ export default function ArthanFinance({
         </Section>
 
         {/* ════ SECTION 9: VALUATION OF PROPERTY ════ */}
-        <Section title="VALUATION OF PROPERTY (FAIR MARKET VALUATION / DISTRESS VALUATION)" number={9} id="sec-9">
+        <Section title={"VALUATION OF PROPERTY\n(FAIR MARKET VALUATION / DISTRESS VALUATION)"} number={9} id="sec-9">
           <div className="space-y-4">
             {/* Top Row: Land Valuation & Building Valuation side-by-side soft containers */}
             <div className="grid md:grid-cols-2 gap-4">
