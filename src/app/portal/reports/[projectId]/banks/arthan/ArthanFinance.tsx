@@ -846,19 +846,19 @@ export default function ArthanFinance({
 
   // Nav sections
   const navSections: NavItem[] = [
-    { id: 'sec-1', title: 'Technical Initiation' },
-    { id: 'sec-2', title: 'Locational & Property' },
+    { id: 'sec-1', title: 'Technical Initiation Request Form Data' },
+    { id: 'sec-2', title: 'Locational & Property Specific Details' },
     { id: 'sec-3', title: 'Boundaries' },
     { id: 'sec-4', title: 'Setbacks / Margin' },
-    { id: 'sec-5', title: 'Height / Storieys' },
-    { id: 'sec-6', title: 'BUA & Accommodation' },
-    { id: 'sec-7', title: 'Plan Approvals' },
+    { id: 'sec-5', title: 'Height / Storeys' },
+    { id: 'sec-6', title: 'Built-Up Area & Accommodation Details' },
+    { id: 'sec-7', title: 'Plan Approvals BP Not Provided' },
     { id: 'sec-8', title: 'Estimate Analysis' },
-    { id: 'sec-9', title: 'Valuation' },
-    { id: 'sec-10', title: 'Remarks' },
+    { id: 'sec-9', title: 'Valuation of Property' },
+    { id: 'sec-10', title: 'Property Specific Remarks & Observation' },
     { id: 'sec-11', title: 'Valuer Certification' },
-    { id: 'sec-12', title: 'Photographs' },
-    { id: 'sec-13', title: 'Maps' },
+    { id: 'sec-12', title: 'Property Photographs' },
+    { id: 'sec-13', title: 'Location Cum Route Map Showing Property Boundaries' },
   ];
 
   return (
@@ -2012,18 +2012,18 @@ export default function ArthanFinance({
                 </div>
               </div>
             </div>
-              <div className="bg-amber-50/80 p-4 rounded-xl border border-amber-200 shadow-xs space-y-3 text-black [&_label]:!text-black">
+              <div className="bg-amber-50/80 p-4 rounded-xl border border-amber-200 shadow-xs space-y-3 text-black [&_label]:!text-black [&_label]:!font-bold">
                 <div className="border-b border-amber-200/80 pb-2">
                   <h3 className="text-xs font-bold text-black uppercase tracking-wide">
                     Geo Coordinates (GPS Location)
                   </h3>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <Field label="Latitude (N)">
-                    <input type="text" inputMode="decimal" className={inputCls} value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 21.1705" />
+                  <Field label="Latitude(N)">
+                    <input type="text" inputMode="decimal" className={`${inputCls} font-bold text-black`} value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 21.1705" />
                   </Field>
-                  <Field label="Longitude (E)">
-                    <input type="text" inputMode="decimal" className={inputCls} value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 86.492417" />
+                  <Field label="Longitude(E)">
+                    <input type="text" inputMode="decimal" className={`${inputCls} font-bold text-black`} value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 86.492417" />
                   </Field>
                 </div>
               </div>
