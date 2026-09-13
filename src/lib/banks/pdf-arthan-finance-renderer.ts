@@ -675,25 +675,193 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
   }
 
   /**
-   * Draw a full-width section header banner (salmon-pink in XLSX, standard #DDE9F6 in PDF).
-   * Inserts a line break after preceding sections (when not at the top of a page)
-   * and ensures title + content fit together without being orphaned.
+   * Safely embed an image as PNG or JPG into pdf-lib document.
    */
-  drawSectionBanner(title: string): void {
-    // Line break after each section (when not at the very top of a new page)
-    if (this.cursorY > MARGIN_T + 5) {
-      this.cursorY += 10;
+  private async embedImageSafe(bytes: Uint8Array): Promise<any> {
+    try {
+      return await this.doc.embedPng(bytes);
+    } catch {
+      try {
+        return await this.doc.embedJpg(bytes);
+      } catch {
+        return null;
+      }
     }
+  }
+
+  /**
+   * Draw a full-width section header banner (standard #DDE9F6 in PDF).
+   * Formatted with prominent section heading typography (13.5pt bold, 25pt+ height)
+   * instead of regular cell text constraints.
+   * Inserts proper spacing before sections and protects against orphan headers.
+   */
+  drawSectionBanner(title: string, options: { fontSize?: number; height?: number } = {}): void {
+    if (this.cursorY > 10) {
+      this.cursorY += 12;
+    }
+    const cleanTitle = this.sanitizeText(title).toUpperCase();
+    const bannerFs = options.fontSize || FONT_SIZE_HEADER;
+    const padX = 8;
+    const padY = 4;
+    const maxTextW = CONTENT_W - padX * 2;
+    const lines = this.wrapText(cleanTitle, maxTextW, bannerFs, true);
+    const lineH = bannerFs * LINE_HEIGHT;
+    const totalTextH = lines.length * lineH;
+    const bannerH = Math.max(options.height || 25, totalTextH + padY * 2);
+
     // Title and content should be together: ensure at least banner + 2 content rows fit
-    this.checkPageBreak(64);
+    this.checkPageBreak(bannerH + 50);
     const y = this.pdfY(this.cursorY);
-    this.drawCell(MARGIN_L, y, CONTENT_W, 22, title, {
-      isHeader: true,
-      bold: true,
-      align: 'left',
-      vAlign: 'middle',
+
+    this.page.drawRectangle({
+      x: MARGIN_L,
+      y: y - bannerH,
+      width: CONTENT_W,
+      height: bannerH,
+      color: hexToRgb(OPT_BG),
+      opacity: BG_OPACITY,
+      borderColor: rgb(0, 0, 0),
+      borderWidth: BORDER_W,
     });
-    this.cursorY += 22;
+
+    let startY = (y - bannerH / 2) + (totalTextH / 2) - (bannerFs * 0.82);
+    for (const line of lines) {
+      this.page.drawText(line, {
+        x: MARGIN_L + padX,
+        y: startY,
+        size: bannerFs,
+        font: this.fontBold,
+        color: rgb(0, 0, 0),
+      });
+      startY -= lineH;
+    }
+
+    this.cursorY += bannerH;
+  }
+
+  /**
+   * Draw a 2-column Photograph Grid directly continuing below the address table.
+   * Eliminates addPage() and drawSectionHeader() calls that cause blank page waste.
+   */
+  async drawArthanPhotoGrid(
+    photos: (Uint8Array | { bytes: Uint8Array; label?: string })[]
+  ): Promise<void> {
+    const normalizedPhotos = (photos || []).map(p => {
+      if (p instanceof Uint8Array || (p as any)?.byteLength !== undefined) {
+        return { bytes: p as Uint8Array, label: '' };
+      }
+      return { bytes: (p as any)?.bytes as Uint8Array, label: (p as any)?.label || '' };
+    }).filter(p => p.bytes && p.bytes.length > 0);
+
+    if (normalizedPhotos.length === 0) return;
+
+    const cellW = (CONTENT_W - 10) / 2;
+    const cellH = 175;
+
+    for (let i = 0; i < normalizedPhotos.length; i += 2) {
+      this.checkPageBreak(cellH + 15);
+      const rowPhotos = normalizedPhotos.slice(i, i + 2);
+      const y = this.pdfY(this.cursorY);
+
+      for (let j = 0; j < rowPhotos.length; j++) {
+        const p = rowPhotos[j];
+        const curX = MARGIN_L + j * (cellW + 10);
+
+        try {
+          const img = await this.embedImageSafe(p.bytes);
+          if (img) {
+            const hasLabel = !!(p.label && p.label.trim().length > 0);
+            const labelReserve = hasLabel ? 20 : 6;
+            const availH = cellH - labelReserve - 8;
+            const availW = cellW - 8;
+            const scale = Math.min(availW / img.width, availH / img.height, 1);
+            const w = img.width * scale;
+            const h = img.height * scale;
+            const imgX = curX + (cellW - w) / 2;
+            const imgY = y - cellH + labelReserve + (availH - h) / 2 + 4;
+
+            // Cell border with white fill
+            this.page.drawRectangle({
+              x: curX,
+              y: y - cellH,
+              width: cellW,
+              height: cellH,
+              color: rgb(1, 1, 1),
+              borderColor: rgb(0, 0, 0),
+              borderWidth: BORDER_W,
+            });
+
+            this.page.drawImage(img, { x: imgX, y: imgY, width: w, height: h });
+
+            // Label (Times-Italic, 10pt)
+            if (hasLabel) {
+              const text = this.sanitizeText(p.label!.trim());
+              const tw = this.fontItalic.widthOfTextAtSize(text, FONT_SIZE_CAPTION);
+              this.page.drawText(text, {
+                x: curX + (cellW - tw) / 2,
+                y: y - cellH + 6,
+                size: FONT_SIZE_CAPTION,
+                font: this.fontItalic,
+                color: rgb(0, 0, 0),
+              });
+            }
+          }
+        } catch { /* ignore */ }
+      }
+      this.cursorY += cellH + 8;
+    }
+  }
+
+  /**
+   * Draw a single map card with clean outer border, centered scaling, and optional italic caption.
+   */
+  async drawArthanMapCard(
+    mapBytes: Uint8Array,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    caption?: string
+  ): Promise<void> {
+    const img = await this.embedImageSafe(mapBytes);
+    if (!img) return;
+
+    const hasCaption = !!(caption && caption.trim().length > 0);
+    const labelReserve = hasCaption ? 18 : 0;
+    const availH = h - labelReserve - 8;
+    const availW = w - 8;
+    const scale = Math.min(availW / img.width, availH / img.height, 1);
+    const imgW = img.width * scale;
+    const imgH = img.height * scale;
+
+    // Outer border with white fill
+    this.page.drawRectangle({
+      x,
+      y: y - h,
+      width: w,
+      height: h,
+      color: rgb(1, 1, 1),
+      borderColor: rgb(0, 0, 0),
+      borderWidth: BORDER_W,
+    });
+
+    // Image centered within upper area
+    const imgX = x + (w - imgW) / 2;
+    const imgY = y - h + labelReserve + (availH - imgH) / 2 + 4;
+    this.page.drawImage(img, { x: imgX, y: imgY, width: imgW, height: imgH });
+
+    // Caption below image (9.5pt Times-Italic)
+    if (hasCaption) {
+      const text = this.sanitizeText(caption!.trim());
+      const tw = this.fontItalic.widthOfTextAtSize(text, FONT_SIZE_CAPTION);
+      this.page.drawText(text, {
+        x: x + (w - tw) / 2,
+        y: y - h + 5,
+        size: FONT_SIZE_CAPTION,
+        font: this.fontItalic,
+        color: rgb(0, 0, 0),
+      });
+    }
   }
 
   /**
@@ -729,7 +897,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     // ══════════════════════════════════════════════════════════════════
     // SECTION 1 — Technical Initiation Request Form Data
     // ══════════════════════════════════════════════════════════════════
-    this.drawSectionBanner('Technical Initiation Request Form Data');
+    this.drawSectionBanner('TECHNICAL INITIATION REQUEST FORM DATA');
 
     const s1L = 155; // label col width
     const s1V = CONTENT_W / 2 - s1L; // value col width (left half)
@@ -829,7 +997,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     // ══════════════════════════════════════════════════════════════════
     // SECTION 2 — Locational & Property Specific Details
     // ══════════════════════════════════════════════════════════════════
-    this.drawSectionBanner('Locational & Property Specific Details (based on site visit)');
+    this.drawSectionBanner('LOCATIONAL & PROPERTY SPECIFIC DETAILS (BASED ON SITE VISIT)');
 
     const s2L = 155;
     const s2V = CONTENT_W / 2 - s2L;
@@ -924,7 +1092,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     // SECTION 3 — Boundaries
     // ══════════════════════════════════════════════════════════════════
     this.checkPageBreak(26 + 22 * 5);
-    this.drawSectionBanner('Boundaries');
+    this.drawSectionBanner('BOUNDARIES');
 
     const bW1 = 140; // "Boundaries" label
     const bW2 = (CONTENT_W - bW1) / 4; // North
@@ -981,7 +1149,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     // SECTION 4 — Setbacks / Margin
     // ══════════════════════════════════════════════════════════════════
     this.checkPageBreak(26 + 26 * 2 + 20);
-    this.drawSectionBanner('Setbacks / Margin');
+    this.drawSectionBanner('SETBACKS / MARGIN');
 
     const sbW1 = 185;
     const sbW2 = (CONTENT_W - sbW1) / 4;
@@ -1017,7 +1185,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     // SECTION 5 — Height / Storieys
     // ══════════════════════════════════════════════════════════════════
     this.checkPageBreak(26 + 26 + 20);
-    this.drawSectionBanner('Height/Storieys');
+    this.drawSectionBanner('HEIGHT / STOREYS');
 
     const htW1 = sbW1;
     const htWRest = CONTENT_W - htW1;
@@ -1043,7 +1211,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     const buaFloors = Array.isArray(fields.buaFloors) ? fields.buaFloors : defaultBuaFloors;
 
     this.checkPageBreak(buaFloors.length > 0 ? (26 + 22 * (buaFloors.length + 2)) : 65);
-    this.drawSectionBanner('Built-up Area & Accommodation Details');
+    this.drawSectionBanner('BUILT-UP AREA & ACCOMMODATION DETAILS');
 
     const buaW1 = 90;  // Floor
     const buaW2 = 80;  // Accommodation
@@ -1100,7 +1268,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     // SECTION 7 — Plan Approvals
     // ══════════════════════════════════════════════════════════════════
     this.checkPageBreak(26 + 24 * 3 + 10);
-    this.drawSectionBanner('Plan Approvals BP not Provided');
+    this.drawSectionBanner('PLAN APPROVALS BP NOT PROVIDED');
 
     const paW1 = 175;
     const paW2 = (CONTENT_W / 2) - paW1;
@@ -1133,7 +1301,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     // SECTION 8 — Estimate Analysis
     // ══════════════════════════════════════════════════════════════════
     this.checkPageBreak(26 + 22 * 3);
-    this.drawSectionBanner('Estimate Analysis (Applicable only in Self Construction cases)');
+    this.drawSectionBanner('ESTIMATE ANALYSIS (APPLICABLE ONLY IN SELF CONSTRUCTION CASES)');
 
     const eaW1 = 185;
     const eaV = CONTENT_W / 2 - eaW1;
@@ -1158,7 +1326,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     // SECTION 9 — Valuation of Property (Fair Market / Distress)
     // ══════════════════════════════════════════════════════════════════
     this.checkPageBreak(26 + 22 * 12);
-    this.drawSectionBanner('Valuation of Property (Fair Market Valuation / Distress Valuation)');
+    this.drawSectionBanner('VALUATION OF PROPERTY (FAIR MARKET VALUATION / DISTRESS VALUATION)');
 
     const vlW1 = 185;
     const vlV = CONTENT_W / 2 - vlW1;
@@ -1312,7 +1480,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     // SECTION 10 — Property Specific Remarks & Observation
     // ══════════════════════════════════════════════════════════════════
     this.checkPageBreak(26 + 50);
-    this.drawSectionBanner('Property Specific Remarks & Observation');
+    this.drawSectionBanner('PROPERTY SPECIFIC REMARKS & OBSERVATION');
 
     const remLabelW = 120;
     const remValW = CONTENT_W - remLabelW;
@@ -1330,7 +1498,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     // SECTION 11 — Valuer Certification
     // ══════════════════════════════════════════════════════════════════
     this.checkPageBreak(26 + 22 * 3);
-    this.drawSectionBanner('Valuer Certification');
+    this.drawSectionBanner('VALUER CERTIFICATION');
 
     const vcW1 = vlW1;
     const vcV = vlV;
@@ -1355,18 +1523,26 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     // SECTION 12 — Property Photographs
     // ══════════════════════════════════════════════════════════════════
     if (images.photos && images.photos.length > 0) {
-      // Header info rows before photo grid (Arthan XLSX format)
-      const phPageMinH = 26 + 22 * 3 + 200;
-      this.checkPageBreak(phPageMinH);
-
-      this.drawSectionBanner('PROPERTY PHOTOGRAPHS');
-
-      // Customer & Proposal row
       const phW1 = vlW1;
       const phV = vlV;
       const phW2 = vlW2;
       const phV2 = vlV2;
 
+      // Address row height calculation
+      const phAddrText = fields.addressAsPerActualSite || fields.addressAsPerDocument || '';
+      const phAddrLines = this.wrapText(phAddrText, CONTENT_W - phW1 - 8, FONT_SIZE);
+      const phAddrH = Math.max(24, phAddrLines.length * FONT_SIZE * LINE_HEIGHT + 10);
+
+      // Section header + customer row + address row + at least 1 row of photos MUST start together
+      // to prevent orphaned headers or address alone on a page:
+      const neededForSection12 = 25 + 22 + phAddrH + 180;
+      if (this.availableHeight < neededForSection12) {
+        this.addPage();
+      }
+
+      this.drawSectionBanner('PROPERTY PHOTOGRAPHS');
+
+      // Customer & Proposal row
       this.drawRow([
         { text: 'Name of the Customer/ Applicant', width: phW1, isLabel: true },
         { text: fields.customerName || '', width: phV },
@@ -1374,17 +1550,14 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
         { text: fields.proposalNo || '', width: phV2 },
       ], 22, 4);
 
-      // Address
-      const phAddrLines = this.wrapText(fields.addressAsPerActualSite || fields.addressAsPerDocument || '', CONTENT_W - phW1 - 8, FONT_SIZE);
-      const phAddrH = Math.max(24, phAddrLines.length * FONT_SIZE * LINE_HEIGHT + 10);
-      this.checkPageBreak(phAddrH);
+      // Address row
       curY = this.pdfY(this.cursorY);
       this.drawCell(MARGIN_L, curY, phW1, phAddrH, 'Address of the property being appraised', { isLabel: true, align: 'center', vAlign: 'middle' });
-      this.drawCell(MARGIN_L + phW1, curY, CONTENT_W - phW1, phAddrH, fields.addressAsPerActualSite || fields.addressAsPerDocument || '', { align: 'center', vAlign: 'middle' });
-      this.cursorY += phAddrH;
+      this.drawCell(MARGIN_L + phW1, curY, CONTENT_W - phW1, phAddrH, phAddrText, { align: 'center', vAlign: 'middle' });
+      this.cursorY += phAddrH + 6;
 
-      // Photo grid
-      await this.drawPhotoGrid(images.photos, '');
+      // Photo grid — renders immediately continuing below address row without empty page gaps or empty headers
+      await this.drawArthanPhotoGrid(images.photos);
 
       // Engineer row after photos
       this.checkPageBreak(24);
@@ -1399,18 +1572,27 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     // ══════════════════════════════════════════════════════════════════
     // SECTION 13 — Location cum Route Map showing property Boundaries
     // ══════════════════════════════════════════════════════════════════
-    const hasMaps = (images.locationMaps && images.locationMaps.length > 0) ||
-                    (images.cadastralMaps && images.cadastralMaps.length > 0);
+    const locImgs = images.locationMaps || [];
+    const cadImgs = images.cadastralMaps || [];
+    const hasMaps = locImgs.length > 0 || cadImgs.length > 0;
 
     if (hasMaps) {
-      this.checkPageBreak(26 + 22 * 2 + 200);
-
-      this.drawSectionBanner('Location cum Route map showing property Boundaries');
-
       const mpW1 = vlW1;
       const mpV = vlV;
       const mpW2 = vlW2;
       const mpV2 = vlV2;
+
+      const mpAddrText = fields.addressAsPerActualSite || fields.addressAsPerDocument || '';
+      const mpAddrLines = this.wrapText(mpAddrText, CONTENT_W - mpW1 - 8, FONT_SIZE);
+      const mpAddrH = Math.max(24, mpAddrLines.length * FONT_SIZE * LINE_HEIGHT + 10);
+
+      // Ensure banner + customer row + address row + at least 1 map fit together
+      const neededForSection13 = 25 + 22 + mpAddrH + 190;
+      if (this.availableHeight < neededForSection13) {
+        this.addPage();
+      }
+
+      this.drawSectionBanner('LOCATION CUM ROUTE MAP SHOWING PROPERTY BOUNDARIES');
 
       this.drawRow([
         { text: 'Name of the Customer/ Applicant', width: mpW1, isLabel: true },
@@ -1419,61 +1601,49 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
         { text: fields.proposalNo || '', width: mpV2 },
       ], 22, 4);
 
-      const mpAddrLines = this.wrapText(fields.addressAsPerActualSite || fields.addressAsPerDocument || '', CONTENT_W - mpW1 - 8, FONT_SIZE);
-      const mpAddrH = Math.max(24, mpAddrLines.length * FONT_SIZE * LINE_HEIGHT + 10);
-      this.checkPageBreak(mpAddrH);
       curY = this.pdfY(this.cursorY);
       this.drawCell(MARGIN_L, curY, mpW1, mpAddrH, 'Address of the property being appraised', { isLabel: true, align: 'center', vAlign: 'middle' });
-      this.drawCell(MARGIN_L + mpW1, curY, CONTENT_W - mpW1, mpAddrH, fields.addressAsPerActualSite || fields.addressAsPerDocument || '', { align: 'center', vAlign: 'middle' });
-      this.cursorY += mpAddrH;
+      this.drawCell(MARGIN_L + mpW1, curY, CONTENT_W - mpW1, mpAddrH, mpAddrText, { align: 'center', vAlign: 'middle' });
+      this.cursorY += mpAddrH + 8;
 
-      // Draw Location & Cadastral maps side-by-side on same page when both present
-      const locImgs = images.locationMaps || [];
-      const cadImgs = images.cadastralMaps || [];
+      // Collect all maps under the common heading without sub-header banners
+      const allMapItems: { bytes: Uint8Array; caption?: string }[] = [];
+      for (let i = 0; i < locImgs.length; i++) {
+        allMapItems.push({
+          bytes: locImgs[i],
+          caption: locImgs.length > 1 ? `Location Map (${i + 1})` : 'Location Map',
+        });
+      }
+      for (let i = 0; i < cadImgs.length; i++) {
+        allMapItems.push({
+          bytes: cadImgs[i],
+          caption: cadImgs.length > 1 ? `Cadastral Map (${i + 1})` : 'Cadastral Map',
+        });
+      }
 
-      if (locImgs.length > 0 && cadImgs.length > 0) {
-        // Side-by-side layout: loc map left half, cadastral map right half
-        const mapW = (CONTENT_W / 2) - 4;
-        const mapH = 200;
-        this.checkPageBreak(mapH + 20);
+      if (allMapItems.length === 1) {
+        // Single map: full-width centered card
+        const mapW = CONTENT_W;
+        const mapH = 220;
+        this.checkPageBreak(mapH + 15);
         curY = this.pdfY(this.cursorY);
-
-        try {
-          const locImg = await this.doc.embedJpg(locImgs[0]).catch(() => this.doc.embedPng(locImgs[0]));
-          this.page.drawImage(locImg, {
-            x: MARGIN_L,
-            y: curY - mapH,
-            width: mapW,
-            height: mapH,
-          });
-        } catch {}
-
-        try {
-          const cadImg = await this.doc.embedJpg(cadImgs[0]).catch(() => this.doc.embedPng(cadImgs[0]));
-          this.page.drawImage(cadImg, {
-            x: MARGIN_L + mapW + 8,
-            y: curY - mapH,
-            width: mapW,
-            height: mapH,
-          });
-        } catch {}
-
+        await this.drawArthanMapCard(allMapItems[0].bytes, MARGIN_L, curY, mapW, mapH, allMapItems[0].caption);
         this.cursorY += mapH + 8;
-
-        // Additional location maps
-        for (let i = 1; i < locImgs.length; i++) {
-          await this.drawMapGallery([locImgs[i]], 'LOCATION MAP', 220, false);
-        }
-        for (let i = 1; i < cadImgs.length; i++) {
-          await this.drawMapGallery([cadImgs[i]], 'CADASTRAL MAP', 220, false);
-        }
       } else {
-        // Single map type only — full width
-        if (locImgs.length > 0) {
-          await this.drawMapGallery(locImgs, 'LOCATION MAP', 220, false);
-        }
-        if (cadImgs.length > 0) {
-          await this.drawMapGallery(cadImgs, 'CADASTRAL MAP', 220, false);
+        // 2 or more maps: 2-column grid side-by-side
+        const mapW = (CONTENT_W - 10) / 2;
+        const mapH = 200;
+        for (let i = 0; i < allMapItems.length; i += 2) {
+          this.checkPageBreak(mapH + 15);
+          const rowMaps = allMapItems.slice(i, i + 2);
+          curY = this.pdfY(this.cursorY);
+
+          for (let j = 0; j < rowMaps.length; j++) {
+            const item = rowMaps[j];
+            const curX = MARGIN_L + j * (mapW + 10);
+            await this.drawArthanMapCard(item.bytes, curX, curY, mapW, mapH, item.caption);
+          }
+          this.cursorY += mapH + 8;
         }
       }
 

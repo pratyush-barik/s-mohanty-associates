@@ -260,7 +260,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       isLabel?: boolean;
     } = {}
   ): void {
-    const fontSize = options.fontSize || FONT_SIZE;
+    const fontSize = options.fontSize || (options.isHeader && w >= CONTENT_W * 0.9 ? FONT_SIZE_HEADER : FONT_SIZE);
     const font = options.italic
       ? this.fontItalic
       : options.bold || options.isHeader || options.isLabel || options.highlight
@@ -358,21 +358,23 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
   ): number {
     let maxLines = 1;
     for (const col of cols) {
-      const fs = col.fontSize || FONT_SIZE;
+      const fs = col.fontSize || (col.isHeader && col.width >= CONTENT_W * 0.9 ? FONT_SIZE_HEADER : FONT_SIZE);
       const isBold = !!(col.bold || col.isHeader || col.isLabel || col.highlight);
       const lines = this.wrapText(this.sanitizeText(col.text), Math.max(10, col.width - 8), fs, isBold);
       if (lines.length > maxLines) maxLines = lines.length;
     }
 
-    const maxFs = Math.max(...cols.map(c => c.fontSize || FONT_SIZE));
-    const rowH = Math.max(minH, maxLines * maxFs * LINE_HEIGHT + rowPad);
+    const maxFs = Math.max(...cols.map(c => c.fontSize || (c.isHeader && c.width >= CONTENT_W * 0.9 ? FONT_SIZE_HEADER : FONT_SIZE)));
+    const actualMinH = cols.some(c => c.isHeader && c.width >= CONTENT_W * 0.9) ? Math.max(minH, 22) : minH;
+    const rowH = Math.max(actualMinH, maxLines * maxFs * LINE_HEIGHT + rowPad);
     this.checkPageBreak(rowH);
 
     const y = this.pdfY(this.cursorY);
     let curX = MARGIN_L;
 
     for (const col of cols) {
-      this.drawCell(curX, y, col.width, rowH, col.text, col);
+      const colFs = col.fontSize || (col.isHeader && col.width >= CONTENT_W * 0.9 ? FONT_SIZE_HEADER : FONT_SIZE);
+      this.drawCell(curX, y, col.width, rowH, col.text, { ...col, fontSize: colFs });
       curX += col.width;
     }
 

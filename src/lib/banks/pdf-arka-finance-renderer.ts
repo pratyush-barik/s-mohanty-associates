@@ -1,4 +1,12 @@
-import { PDFBankRenderer } from '../pdf-bank-renderer';
+import {
+  PDFBankRenderer,
+  MARGIN_L,
+  CONTENT_W,
+  FONT_SIZE,
+  FONT_SIZE_HEADER,
+  FONT_SIZE_TITLE,
+  BORDER_W,
+} from '../pdf-bank-renderer';
 import { BaseReportFields } from '../bank-fields';
 import { rgb } from 'pdf-lib';
 
@@ -106,57 +114,57 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
     
     const drawCenteredBold = (text: string, size: number, ySpaceAfter: number) => {
       const tw = this.fontBold.widthOfTextAtSize(text, size);
-      this.page.drawText(text, { x: 35 + (525 - tw) / 2, y: this.pdfY(this.cursorY), size, font: this.fontBold, color: rgb(0,0,0) });
+      this.page.drawText(text, { x: MARGIN_L + (CONTENT_W - tw) / 2, y: this.pdfY(this.cursorY), size, font: this.fontBold, color: rgb(0,0,0) });
       this.cursorY += ySpaceAfter;
     };
 
+    const boxW = Math.min(380, CONTENT_W - 20);
     this.page.drawRectangle({
-      x: 35 + (525 - 380) / 2, y: this.pdfY(this.cursorY + 4) - 20, width: 380, height: 24,
-      color: rgb(1,1,1), borderColor: rgb(0,0,0), borderWidth: 1
+      x: MARGIN_L + (CONTENT_W - boxW) / 2, y: this.pdfY(this.cursorY + 4) - 24, width: boxW, height: 24,
+      color: rgb(1,1,1), borderColor: rgb(0,0,0), borderWidth: BORDER_W
     });
-    drawCenteredBold('VALUATION OF IMMOVABLE PROPERTY', 16, 40);
+    drawCenteredBold('VALUATION OF IMMOVABLE PROPERTY', FONT_SIZE_TITLE, 40);
 
-    drawCenteredBold('PROPERTY OWNER', 12, 16);
+    drawCenteredBold('PROPERTY OWNER', FONT_SIZE_HEADER, 16);
     const po = fv('propertyOwner', 'PRASANNA NAYAK,\nS/O- PRAHALLAD NAYAK');
-    drawCenteredBold(po.split('\n')[0], 10, 14);
-    if (po.includes('\n')) drawCenteredBold(po.split('\n')[1], 10, 30);
+    drawCenteredBold(po.split('\n')[0], FONT_SIZE, 14);
+    if (po.includes('\n')) drawCenteredBold(po.split('\n')[1], FONT_SIZE, 30);
     else this.cursorY += 20;
 
-    drawCenteredBold('ADDRESS OF THE PROPERTY', 12, 16);
-    drawCenteredBold(fv('addressOfTheProperty'), 10, 40);
+    drawCenteredBold('ADDRESS OF THE PROPERTY', FONT_SIZE_HEADER, 16);
+    drawCenteredBold(fv('addressOfTheProperty'), FONT_SIZE, 40);
 
-    drawCenteredBold('VALUE OF THE PROPERTY', 12, 16);
-    drawCenteredBold(`PRESENT MARKET VALUE: ${fv('presentMarketValue')}`, 10, 14);
-    drawCenteredBold(`DISTRESS SALE VALUE: ${fv('distressSaleValue')}`, 10, 40);
+    drawCenteredBold('VALUE OF THE PROPERTY', FONT_SIZE_HEADER, 16);
+    drawCenteredBold(`PRESENT MARKET VALUE: ${fv('presentMarketValue')}`, FONT_SIZE, 14);
+    drawCenteredBold(`DISTRESS SALE VALUE: ${fv('distressSaleValue')}`, FONT_SIZE, 40);
 
-    drawCenteredBold('PURPOSE OF VALUATION', 12, 16);
-    drawCenteredBold(fv('purposeOfValuation', 'TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY'), 10, 40);
+    drawCenteredBold('PURPOSE OF VALUATION', FONT_SIZE_HEADER, 16);
+    drawCenteredBold(fv('purposeOfValuation', 'TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY'), FONT_SIZE, 40);
 
-    drawCenteredBold('PREPARED BY', 12, 16);
-    drawCenteredBold('M/s. S MOHANTY ASSOCIATES', 10, 14);
-    drawCenteredBold('EMPANELLED VALUER & CHARTERED ENGINEER', 10, 14);
-    drawCenteredBold('Plot no-859/2494/3232 & 858/2493/3295,', 10, 14);
-    drawCenteredBold('Shiv Nagar Tankapani Road,', 10, 14);
-    drawCenteredBold('Bhubaneswar, Odisha,Pin-751018', 10, 14);
-    drawCenteredBold('PHONE- 0674-2381145', 10, 14);
-    drawCenteredBold('MOBILE-9937023855/9437074855', 10, 0);
+    drawCenteredBold('PREPARED BY', FONT_SIZE_HEADER, 16);
+    drawCenteredBold('M/s. S MOHANTY ASSOCIATES', FONT_SIZE, 14);
+    drawCenteredBold('EMPANELLED VALUER & CHARTERED ENGINEER', FONT_SIZE, 14);
+    drawCenteredBold('Plot no-859/2494/3232 & 858/2493/3295,', FONT_SIZE, 14);
+    drawCenteredBold('Shiv Nagar Tankapani Road,', FONT_SIZE, 14);
+    drawCenteredBold('Bhubaneswar, Odisha,Pin-751018', FONT_SIZE, 14);
+    drawCenteredBold('PHONE- 0674-2381145', FONT_SIZE, 14);
+    drawCenteredBold('MOBILE-9937023855/9437074855', FONT_SIZE, 0);
 
     // PAGE 2: Report details
     this.addPage();
     
-    const wRef = this.fontBold.widthOfTextAtSize(`Ref No: ${fv('refNo')}`, 10);
-    this.page.drawText(`Ref No: ${fv('refNo')}`, { x: 35, y: this.pdfY(this.cursorY), size: 10, font: this.fontBold, color: rgb(0,0,0) });
+    this.page.drawText(`Ref No: ${fv('refNo')}`, { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
     const dateStr = `Date: ${fv('dateOfReport')}`;
-    const wDate = this.fontBold.widthOfTextAtSize(dateStr, 10);
-    this.page.drawText(dateStr, { x: 560 - wDate, y: this.pdfY(this.cursorY), size: 10, font: this.fontBold, color: rgb(0,0,0) });
+    const wDate = this.fontBold.widthOfTextAtSize(dateStr, FONT_SIZE);
+    this.page.drawText(dateStr, { x: MARGIN_L + CONTENT_W - wDate, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
     this.cursorY += 20;
 
-    const C1 = 40; const C2 = 250; const C3 = 235;
+    const C1 = 30; const C2 = 230; const C3 = CONTENT_W - C1 - C2;
 
     this.drawTable([], [
       ['1.', 'Name of the Customer', fv('nameOfCustomer')],
       ['', 'Customer Contact Details', fv('customerContactDetails')],
-      ['2.', 'AP��D/Loan Account No', fv('appIdLoanAccountNo')],
+      ['2.', 'APP ID / Loan Account No', fv('appIdLoanAccountNo')],
       ['3.', 'Documents Provided: Approved Layout/ Approved Building Plan/ NA order/ Four Boundaries Details', fv('documentsProvided')],
       ['4.', 'Property Details', fv('propertyDetailsAddress')],
       ['a.', 'Plot No', fv('plotNo')],
@@ -264,51 +272,52 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
     ], [C1, C2, C3], [], [4, 8, 11]);
 
     this.cursorY += 20;
-    this.page.drawText('Undertaking:', { x: 35, y: this.pdfY(this.cursorY), size: 10, font: this.fontRegular, color: rgb(0,0,0) });
-    this.cursorY += 14;
-    this.page.drawText('I have personally visited the property & identified the same based on the documents provided.', { x: 35, y: this.pdfY(this.cursorY), size: 10, font: this.fontRegular, color: rgb(0,0,0) });
-    this.cursorY += 30;
-    this.page.drawText('I/We have no direct or Indirect Interest in the property being valued.', { x: 35, y: this.pdfY(this.cursorY), size: 10, font: this.fontRegular, color: rgb(0,0,0) });
-    this.cursorY += 14;
-    this.page.drawText('The information furnished above is true and correct to my/our knowledge.', { x: 35, y: this.pdfY(this.cursorY), size: 10, font: this.fontRegular, color: rgb(0,0,0) });
-    this.cursorY += 14;
-    this.page.drawText('Authorized Signatory', { x: 35, y: this.pdfY(this.cursorY), size: 10, font: this.fontRegular, color: rgb(0,0,0) });
-    this.cursorY += 14;
-    this.page.drawText('Name & Seal of the Agency', { x: 35, y: this.pdfY(this.cursorY), size: 10, font: this.fontRegular, color: rgb(0,0,0) });
-    this.cursorY += 30;
-    this.page.drawText('Er. Satyajit Mohanty', { x: 35, y: this.pdfY(this.cursorY), size: 10, font: this.fontRegular, color: rgb(0,0,0) });
-    this.cursorY += 14;
-    this.page.drawText('Approved Panel Valuer', { x: 35, y: this.pdfY(this.cursorY), size: 10, font: this.fontRegular, color: rgb(0,0,0) });
+    this.page.drawText('Undertaking:', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
+    this.cursorY += 16;
+    this.page.drawText('I have personally visited the property & identified the same based on the documents provided.', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
+    this.cursorY += 20;
+    this.page.drawText('I/We have no direct or Indirect Interest in the property being valued.', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
+    this.cursorY += 16;
+    this.page.drawText('The information furnished above is true and correct to my/our knowledge.', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
+    this.cursorY += 20;
+    this.page.drawText('Authorized Signatory', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
+    this.cursorY += 16;
+    this.page.drawText('Name & Seal of the Agency', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
+    this.cursorY += 24;
+    this.page.drawText('Er. Satyajit Mohanty', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
+    this.cursorY += 16;
+    this.page.drawText('Approved Panel Valuer', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
 
     const imgs = Array.isArray(fields.propertyImages) ? fields.propertyImages : [];
     if (imgs.length > 0) {
       this.addPage();
-      this.page.drawText('PHOTOGRAPHS', { x: 35, y: this.pdfY(this.cursorY), size: 12, font: this.fontBold, color: rgb(0,0,0) });
-      this.page.drawLine({ start: {x: 35, y: this.pdfY(this.cursorY)-2}, end: {x: 125, y: this.pdfY(this.cursorY)-2}, color: rgb(0,0,0), thickness: 1});
-      this.cursorY += 20;
+      this.page.drawText('PHOTOGRAPHS', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE_HEADER, font: this.fontBold, color: rgb(0,0,0) });
+      const photoHdrW = this.fontBold.widthOfTextAtSize('PHOTOGRAPHS', FONT_SIZE_HEADER);
+      this.page.drawLine({ start: { x: MARGIN_L, y: this.pdfY(this.cursorY) - 2 }, end: { x: MARGIN_L + photoHdrW, y: this.pdfY(this.cursorY) - 2 }, color: rgb(0,0,0), thickness: 1 });
+      this.cursorY += 24;
       await this.drawPhotoGrid(imgs);
     }
 
     if (fields.locationMapImage) {
       this.addPage();
-      const text = `LOCATION MAP (LAT:-${fv('latitude')}, LONG:-${fv ('longitude')})`;
-      this.page.drawText(text, { x: 35, y: this.pdfY(this.cursorY), size: 12, font: this.fontBold, color: rgb(0,0,0) });
-      this.cursorY += 20;
+      const text = `LOCATION MAP (LAT: ${fv('latitude')}, LONG: ${fv('longitude')})`;
+      this.page.drawText(text, { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE_HEADER, font: this.fontBold, color: rgb(0,0,0) });
+      this.cursorY += 24;
       await this.drawImageBlock(fields.locationMapImage);
       this.cursorY += 20;
     }
 
     if (fields.mouzaMapImage) {
       if (this.cursorY > 600) this.addPage();
-      this.page.drawText('MOUZA MAP', { x: 35, y: this.pdfY(this.cursorY), size: 12, font: this.fontBold, color: rgb(0,0,0) });
-      this.cursorY += 20;
+      this.page.drawText('MOUZA MAP', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE_HEADER, font: this.fontBold, color: rgb(0,0,0) });
+      this.cursorY += 24;
       await this.drawImageBlock(fields.mouzaMapImage);
     }
 
     if (fields.sketchMapImage) {
       this.addPage();
-      this.page.drawText('SKETCH MAP', { x: 35, y: this.pdfY(this.cursorY), size: 12, font: this.fontBold, color: rgb(0,0,0) });
-      this.cursorY += 20;
+      this.page.drawText('SKETCH MAP', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE_HEADER, font: this.fontBold, color: rgb(0,0,0) });
+      this.cursorY += 24;
       await this.drawImageBlock(fields.sketchMapImage);
     }
 

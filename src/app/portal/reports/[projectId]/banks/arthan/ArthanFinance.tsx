@@ -831,7 +831,7 @@ export default function ArthanFinance({
         )}
 
         {/* ════ SECTION 1: TECHNICAL INITIATION REQUEST FORM DATA ════ */}
-        <Section title="Technical Initiation Request Form Data" number={1} id="sec-1" defaultOpen={true}>
+        <Section title="TECHNICAL INITIATION REQUEST FORM DATA" number={1} id="sec-1" defaultOpen={true}>
           {/* Date of Valuation (header field) */}
           <div className="mb-4 flex justify-end items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <span className="text-sm font-semibold text-blue-700">Date of Valuation:</span>
@@ -996,7 +996,7 @@ export default function ArthanFinance({
         </Section>
 
         {/* ════ SECTION 2: LOCATIONAL & PROPERTY SPECIFIC DETAILS ════ */}
-        <Section title="Locational & Property Specific Details (based on site visit)" number={2} id="sec-2">
+        <Section title="LOCATIONAL & PROPERTY SPECIFIC DETAILS (BASED ON SITE VISIT)" number={2} id="sec-2">
           <div className="space-y-4">
             {/* Category 1: Land Holding & Property Details */}
             <div className="bg-indigo-50/70 p-4 rounded-xl border border-indigo-200/80 shadow-xs">
@@ -1191,7 +1191,7 @@ export default function ArthanFinance({
         </Section>
 
         {/* ════ SECTION 3: BOUNDARIES ════ */}
-        <Section title="Boundaries" number={3} id="sec-3">
+        <Section title="BOUNDARIES" number={3} id="sec-3">
           <div className="space-y-4">
             {/* Column headers */}
             <div className="grid grid-cols-5 gap-2 text-center">
@@ -1244,7 +1244,7 @@ export default function ArthanFinance({
         </Section>
 
         {/* ════ SECTION 4: SETBACKS / MARGIN ════ */}
-        <Section title="Setbacks / Margin" number={4} id="sec-4">
+        <Section title="SETBACKS / MARGIN" number={4} id="sec-4">
           <div className="space-y-4">
             <div className="overflow-x-auto">
               <table className="w-full text-sm border-collapse">
@@ -1286,8 +1286,8 @@ export default function ArthanFinance({
           </div>
         </Section>
 
-        {/* ════ SECTION 5: HEIGHT / STORIEYS ════ */}
-        <Section title="Height / Storieys" number={5} id="sec-5">
+        {/* ════ SECTION 5: HEIGHT / STOREYS ════ */}
+        <Section title="HEIGHT / STOREYS" number={5} id="sec-5">
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="As per sanctioned / permissible byelaws">
               <input className={inputCls} value={fields.heightSanctioned || ''} onChange={e => handleChange('heightSanctioned', e.target.value)} disabled={isReadOnly} placeholder="e.g. NA" />
@@ -1299,7 +1299,7 @@ export default function ArthanFinance({
         </Section>
 
         {/* ════ SECTION 6: BUA & ACCOMMODATION DETAILS ════ */}
-        <Section title="Built-up Area & Accommodation Details" number={6} id="sec-6">
+        <Section title="BUILT-UP AREA & ACCOMMODATION DETAILS" number={6} id="sec-6">
           <div className="space-y-4">
             <div className="overflow-x-auto">
               <table className="w-full text-sm border-collapse">
@@ -1445,7 +1445,7 @@ export default function ArthanFinance({
         </Section>
 
         {/* ════ SECTION 7: PLAN APPROVALS ════ */}
-        <Section title="Plan Approvals BP not Provided" number={7} id="sec-7">
+        <Section title="PLAN APPROVALS BP NOT PROVIDED" number={7} id="sec-7">
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="Construction as per approved / sanctioned plans">
               <select className={selectCls} value={fields.constructionAsPerPlan || 'NA'} onChange={e => handleChange('constructionAsPerPlan', e.target.value)} disabled={isReadOnly}>
@@ -1476,7 +1476,7 @@ export default function ArthanFinance({
         </Section>
 
         {/* ════ SECTION 8: ESTIMATE ANALYSIS ════ */}
-        <Section title="Estimate Analysis (Applicable only in Self Construction cases)" number={8} id="sec-8">
+        <Section title="ESTIMATE ANALYSIS (APPLICABLE ONLY IN SELF CONSTRUCTION CASES)" number={8} id="sec-8">
           <div className="space-y-4">
             {/* Soft Container 1: Estimated Cost */}
             <div className="bg-indigo-50/70 p-4 rounded-xl border border-indigo-200/80 shadow-xs">
@@ -1505,7 +1505,7 @@ export default function ArthanFinance({
         </Section>
 
         {/* ════ SECTION 9: VALUATION OF PROPERTY ════ */}
-        <Section title="Valuation of Property (Fair Market Valuation / Distress Valuation)" number={9} id="sec-9">
+        <Section title="VALUATION OF PROPERTY (FAIR MARKET VALUATION / DISTRESS VALUATION)" number={9} id="sec-9">
           <div className="space-y-4">
             {/* Top Row: Land Valuation & Building Valuation side-by-side soft containers */}
             <div className="grid md:grid-cols-2 gap-4">
@@ -1963,7 +1963,7 @@ export default function ArthanFinance({
                 </div>
               </div>
             </div>
-              <div className="md:col-span-2 bg-amber-50/80 p-4 rounded-xl border border-amber-200 shadow-xs space-y-3 mt-2">
+              <div className="bg-amber-50/80 p-4 rounded-xl border border-amber-200 shadow-xs space-y-3">
                 <div className="border-b border-amber-200/80 pb-2">
                   <h3 className="text-xs font-bold text-amber-900 uppercase tracking-wide">
                     Geo Coordinates (GPS Location)
@@ -1979,11 +1979,10 @@ export default function ArthanFinance({
                 </div>
               </div>
             </div>
-          </div>
         </Section>
 
         {/* ════ SECTION 10: REMARKS ════ */}
-        <Section title="Property Specific Remarks & Observation" number={10} id="sec-10">
+        <Section title="PROPERTY SPECIFIC REMARKS & OBSERVATION" number={10} id="sec-10">
           <Field label="Remarks / Observation">
             <textarea
               rows={5}
@@ -1997,7 +1996,7 @@ export default function ArthanFinance({
         </Section>
 
         {/* ════ SECTION 11: VALUER CERTIFICATION ════ */}
-        <Section title="Valuer Certification" number={11} id="sec-11">
+        <Section title="VALUER CERTIFICATION" number={11} id="sec-11">
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="Date of Visit (DD/MM/YYYY)">
               <div className="relative flex items-center">
@@ -2046,26 +2045,151 @@ export default function ArthanFinance({
         </Section>
 
         {/* ════ SECTION 12: PROPERTY PHOTOGRAPHS ════ */}
-        <BasePhotographsSection
-          title="Property Photographs"
-          propertyImages={fields.propertyImages || []}
-          propertyImageNames={fields.propertyImageNames || []}
-          isReadOnly={isReadOnly}
-          uploading={uploading}
-          bucketCount={bucketImages.length}
-          onImageNameChange={(idx, name) => {
-            const updated = [...(fields.propertyImageNames || [])];
-            while (updated.length <= idx) updated.push('');
-            updated[idx] = name;
-            handleChange('propertyImageNames', updated);
-          }}
-          onRemoveImage={handlePhotoRemove}
-          onReorderImages={handleReorderPhotos}
-          onUploadImages={handlePhotoUpload}
-          onOpenBucketPicker={() => setBucketPickerOpen(true)}
-          sectionNumber={12}
-          sectionId="sec-12"
-        />
+        <Section title="PROPERTY PHOTOGRAPHS" number={12} id="sec-12">
+          {/* Header Reference Card (Printed Above Photos in Bank Report) */}
+          <div className="bg-slate-50/90 dark:bg-slate-900/40 p-4 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs space-y-3 mb-4">
+            <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-2">
+              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide flex items-center gap-1.5">
+                <span>📋</span> Header Reference Details (Printed Above Images in Bank Report)
+              </h4>
+              <span className="text-[10px] font-semibold text-slate-500 bg-slate-200/70 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+                Referenced from Sec 1
+              </span>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Field label="Name of the Customer/ Applicant">
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      className={`${inputCls} bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium pr-8 cursor-not-allowed`}
+                      value={fields.customerName || ''}
+                      disabled
+                      readOnly
+                      placeholder="Referenced from Sec 1"
+                    />
+                    <span className="absolute right-2.5 text-xs text-slate-400" title="Locked: Referenced from Section 1">🔒</span>
+                  </div>
+                </Field>
+                <p className="text-[10px] text-slate-400 italic">
+                  Referenced from Sec 1: Name of Customer/Applicant & Contact Details
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <Field label="Proposal No.">
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      className={`${inputCls} bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium pr-8 cursor-not-allowed`}
+                      value={fields.proposalNo || 'NA'}
+                      disabled
+                      readOnly
+                      placeholder="NA"
+                    />
+                    <span className="absolute right-2.5 text-xs text-slate-400" title="Locked: Referenced from Section 1">🔒</span>
+                  </div>
+                </Field>
+                <p className="text-[10px] text-slate-400 italic">
+                  Referenced from Sec 1: Proposal No.
+                </p>
+              </div>
+
+              <div className="md:col-span-2 space-y-1">
+                <Field label="Address of the property being appraised">
+                  <div className="relative flex items-center">
+                    <textarea
+                      rows={2}
+                      className={`${inputCls} bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium pr-8 cursor-not-allowed resize-none`}
+                      value={fields.addressAsPerActualSite || fields.addressAsPerDocument || fields.addressAsPerTRF || ''}
+                      disabled
+                      readOnly
+                      placeholder="Referenced from Sec 1"
+                    />
+                    <span className="absolute right-2.5 top-2.5 text-xs text-slate-400" title="Locked: Referenced from Section 1">🔒</span>
+                  </div>
+                </Field>
+                <p className="text-[10px] text-slate-400 italic">
+                  Referenced from Sec 1: Address of the property being appraised
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Photographs Gallery & Upload */}
+          <BasePhotographsSection
+            title="Property Photographs"
+            propertyImages={fields.propertyImages || []}
+            propertyImageNames={fields.propertyImageNames || []}
+            isReadOnly={isReadOnly}
+            uploading={uploading}
+            bucketCount={bucketImages.length}
+            onImageNameChange={(idx, name) => {
+              const updated = [...(fields.propertyImageNames || [])];
+              while (updated.length <= idx) updated.push('');
+              updated[idx] = name;
+              handleChange('propertyImageNames', updated);
+            }}
+            onRemoveImage={handlePhotoRemove}
+            onReorderImages={handleReorderPhotos}
+            onUploadImages={handlePhotoUpload}
+            onOpenBucketPicker={() => setBucketPickerOpen(true)}
+            sectionNumber={12}
+            sectionId="sec-12"
+            withoutSectionWrapper={true}
+          />
+
+          {/* Footer Reference Card (Printed Below Images in Bank Report) */}
+          <div className="bg-slate-50/90 dark:bg-slate-900/40 p-4 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs space-y-3 mt-4">
+            <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-2">
+              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide flex items-center gap-1.5">
+                <span>✍️</span> Signatory & Inspection Details (Printed Below Images in Bank Report)
+              </h4>
+              <span className="text-[10px] font-semibold text-slate-500 bg-slate-200/70 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+                Referenced from Sec 11 (Valuer Certification)
+              </span>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Field label="Name of Engineer Visted the property">
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      className={`${inputCls} bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium pr-8 cursor-not-allowed`}
+                      value={fields.visitingEngineer || ''}
+                      disabled
+                      readOnly
+                      placeholder="Referenced from Sec 11"
+                    />
+                    <span className="absolute right-2.5 text-xs text-slate-400" title="Locked: Referenced from Section 11">🔒</span>
+                  </div>
+                </Field>
+                <p className="text-[10px] text-slate-400 italic">
+                  Referenced from Sec 11 (Valuer Certification): Name of Engineer Visited the property
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <Field label="Authorized Signatory Name & Signature">
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      className={`${inputCls} bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold pr-8 cursor-not-allowed`}
+                      value={fields.authorizedSignatory || 'Er. Satyajit Mohanty'}
+                      disabled
+                      readOnly
+                      placeholder="Er. Satyajit Mohanty"
+                    />
+                    <span className="absolute right-2.5 text-xs text-slate-400" title="Locked: Referenced from Section 11">🔒</span>
+                  </div>
+                </Field>
+                <p className="text-[10px] text-slate-400 italic">
+                  Referenced from Sec 11 (Valuer Certification): Authorized Signatory
+                </p>
+              </div>
+            </div>
+          </div>
+        </Section>
         {bucketPickerOpen && (
           <BasePhotoBucketModal
             isOpen={bucketPickerOpen}
@@ -2076,27 +2200,152 @@ export default function ArthanFinance({
         )}
 
         {/* ════ SECTION 13: MAPS ════ */}
-        <BaseMapsSection
-          locationMapImages={fields.locationMapImages || []}
-          cadastralMapImages={fields.cadastralMapImages || []}
-          latitude={fields.latitude}
-          longitude={fields.longitude}
-          propertyAddress={fields.addressAsPerActualSite || fields.addressAsPerDocument || fields.addressAsPerTRF || ''}
-          hasExternalCoordinatesField={true}
-          coordinatesSectionName="Section 9: Valuation of Property"
-          isReadOnly={isReadOnly}
-          uploading={uploading}
-          onLocationMapUpload={e => handleMapUpload('locationMapImages', e)}
-          onLocationMapRemove={idx => handleMapRemove('locationMapImages', idx)}
-          onCadastralMapUpload={e => handleMapUpload('cadastralMapImages', e)}
-          onCadastralMapRemove={idx => handleMapRemove('cadastralMapImages', idx)}
-          onReorderLocationMap={newImgs => handleReorderMap('locationMapImages', newImgs)}
-          onReorderCadastralMap={newImgs => handleReorderMap('cadastralMapImages', newImgs)}
-          mapOrder={['location', 'cadastral']}
-          sectionNumber={13}
-          sectionId="sec-13"
-          title="Location cum Route Map showing property Boundaries"
-        />
+        <Section title="LOCATION CUM ROUTE MAP SHOWING PROPERTY BOUNDARIES" number={13} id="sec-13">
+          {/* Header Reference Card (Printed Above Maps in Bank Report) */}
+          <div className="bg-slate-50/90 dark:bg-slate-900/40 p-4 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs space-y-3 mb-4">
+            <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-2">
+              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide flex items-center gap-1.5">
+                <span>📋</span> Header Reference Details (Printed Above Maps in Bank Report)
+              </h4>
+              <span className="text-[10px] font-semibold text-slate-500 bg-slate-200/70 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+                Referenced from Sec 1
+              </span>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Field label="Name of the Customer/ Applicant">
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      className={`${inputCls} bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium pr-8 cursor-not-allowed`}
+                      value={fields.customerName || ''}
+                      disabled
+                      readOnly
+                      placeholder="Referenced from Sec 1"
+                    />
+                    <span className="absolute right-2.5 text-xs text-slate-400" title="Locked: Referenced from Section 1">🔒</span>
+                  </div>
+                </Field>
+                <p className="text-[10px] text-slate-400 italic">
+                  Referenced from Sec 1: Name of Customer/Applicant & Contact Details
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <Field label="Proposal No.">
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      className={`${inputCls} bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium pr-8 cursor-not-allowed`}
+                      value={fields.proposalNo || 'NA'}
+                      disabled
+                      readOnly
+                      placeholder="NA"
+                    />
+                    <span className="absolute right-2.5 text-xs text-slate-400" title="Locked: Referenced from Section 1">🔒</span>
+                  </div>
+                </Field>
+                <p className="text-[10px] text-slate-400 italic">
+                  Referenced from Sec 1: Proposal No.
+                </p>
+              </div>
+
+              <div className="md:col-span-2 space-y-1">
+                <Field label="Address of the property being appraised">
+                  <div className="relative flex items-center">
+                    <textarea
+                      rows={2}
+                      className={`${inputCls} bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium pr-8 cursor-not-allowed resize-none`}
+                      value={fields.addressAsPerActualSite || fields.addressAsPerDocument || fields.addressAsPerTRF || ''}
+                      disabled
+                      readOnly
+                      placeholder="Referenced from Sec 1"
+                    />
+                    <span className="absolute right-2.5 top-2.5 text-xs text-slate-400" title="Locked: Referenced from Section 1">🔒</span>
+                  </div>
+                </Field>
+                <p className="text-[10px] text-slate-400 italic">
+                  Referenced from Sec 1: Address of the property being appraised
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Maps Gallery & Upload */}
+          <BaseMapsSection
+            locationMapImages={fields.locationMapImages || []}
+            cadastralMapImages={fields.cadastralMapImages || []}
+            latitude={fields.latitude}
+            longitude={fields.longitude}
+            propertyAddress={fields.addressAsPerActualSite || fields.addressAsPerDocument || fields.addressAsPerTRF || ''}
+            hasExternalCoordinatesField={true}
+            coordinatesSectionName="Section 9: Valuation of Property"
+            isReadOnly={isReadOnly}
+            uploading={uploading}
+            onLocationMapUpload={e => handleMapUpload('locationMapImages', e)}
+            onLocationMapRemove={idx => handleMapRemove('locationMapImages', idx)}
+            onCadastralMapUpload={e => handleMapUpload('cadastralMapImages', e)}
+            onCadastralMapRemove={idx => handleMapRemove('cadastralMapImages', idx)}
+            onReorderLocationMap={newImgs => handleReorderMap('locationMapImages', newImgs)}
+            onReorderCadastralMap={newImgs => handleReorderMap('cadastralMapImages', newImgs)}
+            mapOrder={['location', 'cadastral']}
+            sectionNumber={13}
+            sectionId="sec-13"
+            title="LOCATION CUM ROUTE MAP SHOWING PROPERTY BOUNDARIES"
+            withoutSectionWrapper={true}
+          />
+
+          {/* Footer Reference Card (Printed Below Maps in Bank Report) */}
+          <div className="bg-slate-50/90 dark:bg-slate-900/40 p-4 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs space-y-3 mt-4">
+            <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-2">
+              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide flex items-center gap-1.5">
+                <span>✍️</span> Signatory & Inspection Details (Printed Below Maps in Bank Report)
+              </h4>
+              <span className="text-[10px] font-semibold text-slate-500 bg-slate-200/70 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+                Referenced from Sec 11 (Valuer Certification)
+              </span>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Field label="Name of Engineer Visted the property">
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      className={`${inputCls} bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium pr-8 cursor-not-allowed`}
+                      value={fields.visitingEngineer || ''}
+                      disabled
+                      readOnly
+                      placeholder="Referenced from Sec 11"
+                    />
+                    <span className="absolute right-2.5 text-xs text-slate-400" title="Locked: Referenced from Section 11">🔒</span>
+                  </div>
+                </Field>
+                <p className="text-[10px] text-slate-400 italic">
+                  Referenced from Sec 11 (Valuer Certification): Name of Engineer Visited the property
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <Field label="Authorized Signatory Name & Signature">
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      className={`${inputCls} bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold pr-8 cursor-not-allowed`}
+                      value={fields.authorizedSignatory || 'Er. Satyajit Mohanty'}
+                      disabled
+                      readOnly
+                      placeholder="Er. Satyajit Mohanty"
+                    />
+                    <span className="absolute right-2.5 text-xs text-slate-400" title="Locked: Referenced from Section 11">🔒</span>
+                  </div>
+                </Field>
+                <p className="text-[10px] text-slate-400 italic">
+                  Referenced from Sec 11 (Valuer Certification): Authorized Signatory
+                </p>
+              </div>
+            </div>
+          </div>
+        </Section>
 
         {/* ── Action Bar ── */}
         <ReportActionBar
