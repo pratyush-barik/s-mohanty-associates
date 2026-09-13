@@ -346,7 +346,7 @@ export default function ArkaFinance({
         )}
 
        <Section id="arka-cover" title="Cover Page Details" defaultOpen>
-          <div className="border border-gray-300 rounded-md p-4 mb-4">
+          <div className="border border-blue-200 bg-[#f8fafc] rounded-md p-4 mb-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-bold text-gray-700">PROPERTY OWNER</h3>
               <button
@@ -361,7 +361,7 @@ export default function ArkaFinance({
             
             <div className="space-y-4">
               {(fields.propertyOwners || [{ name: '', fatherName: '' }]).map((owner: any, idx: number) => (
-                <div key={idx} className="flex gap-4 items-end bg-gray-50 p-3 rounded-md border border-gray-100">
+                <div key={idx} className="flex gap-4 items-end bg-white p-3 rounded-md border border-gray-100 shadow-sm">
                   <Field label="OWNER'S NAME" className="flex-1">
                     <input
                       className={inputCls}
