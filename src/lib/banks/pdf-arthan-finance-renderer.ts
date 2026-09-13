@@ -1365,17 +1365,17 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     ], 20, 4);
 
     this.drawRow([
-      { text: 'Total Land Value (in Rs)', width: vlW1, isLabel: true, bold: false },
-      { text: fields.totalLandValue || '', width: vlV },
+      { text: 'Total Land Value (in Rs)', width: vlW1, isLabel: true, bold: true },
+      { text: fields.totalLandValue || '', width: vlV, bold: true },
       { text: 'Total Construction Value for\npresent construction stage (in Rs)', width: vlW2, isLabel: true, bold: false },
       { text: fields.totalConstructionValuePresent || '', width: vlV2 },
     ], 20, 4);
 
     this.drawRow([
-      { text: 'Market Value of Land &\nBuilding Only (in Rs)', width: vlW1, isLabel: true, bold: false },
-      { text: fields.marketValueLandBuilding || '', width: vlV, highlight: true },
-      { text: 'Market Value of Land &\nBuilding Only (in Rs)', width: vlW2, isLabel: true, bold: false },
-      { text: fields.marketValueLandBuildingRight || '', width: vlV2, highlight: true },
+      { text: 'Market Value of Land &\nBuilding Only (in Rs)', width: vlW1, isLabel: true, bold: true },
+      { text: fields.marketValueLandBuilding || '', width: vlV, highlight: true, bold: true },
+      { text: 'Market Value of Land &\nBuilding Only (in Rs)', width: vlW2, isLabel: true, bold: true },
+      { text: fields.marketValueLandBuildingRight || '', width: vlV2, highlight: true, bold: true },
     ], 20, 4);
 
     const pct100 = (fields.distressPct100 !== undefined && fields.distressPct100 !== null && fields.distressPct100 !== '')
@@ -1386,8 +1386,8 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       : '0';
 
     this.drawRow([
-      { text: `Distress Value of 100% complete\nproperty @ ${pct100}% of MV`, width: vlW1, isLabel: true, bold: false },
-      { text: fields.distressValue100 || '', width: vlV },
+      { text: `Distress Value of 100% complete\nproperty @ ${pct100}% of MV`, width: vlW1, isLabel: true, bold: true },
+      { text: fields.distressValue100 || '', width: vlV, bold: true },
       { text: `Distress Value of present completed\nproperty @ ${pctPresent}% of MV`, width: vlW2, isLabel: true, bold: false },
       { text: fields.distressValuePresent || '', width: vlV2 },
     ], 20, 4);
