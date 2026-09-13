@@ -1507,9 +1507,9 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     this.checkPageBreak(26 + 22 * 3);
     this.drawSectionBanner('VALUER CERTIFICATION');
 
-    const vcW1 = 115;
+    const vcW1 = 135;
     const vcV = CONTENT_W / 2 - vcW1;
-    const vcW2 = 115;
+    const vcW2 = 135;
     const vcV2 = CONTENT_W / 2 - vcW2;
 
     this.drawRow([
@@ -1567,9 +1567,9 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       await this.drawArthanPhotoGrid(images.photos);
 
       // Engineer row after photos
-      const engW1 = 115;
+      const engW1 = 135;
       const engV1 = CONTENT_W / 2 - engW1;
-      const engW2 = 115;
+      const engW2 = 135;
       const engV2 = CONTENT_W / 2 - engW2;
 
       this.checkPageBreak(26);
@@ -1646,9 +1646,9 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       }
 
       // Engineer row after maps
-      const engW1 = 115;
+      const engW1 = 135;
       const engV1 = CONTENT_W / 2 - engW1;
-      const engW2 = 115;
+      const engW2 = 135;
       const engV2 = CONTENT_W / 2 - engW2;
 
       this.checkPageBreak(26);
