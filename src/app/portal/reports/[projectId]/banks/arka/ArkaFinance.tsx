@@ -358,7 +358,7 @@ export default function ArkaFinance({
           </div>
         )}
 
-       <Section id="arka-cover" title="Cover Page Details" defaultOpen>
+       <Section id="arka-cover" title="Cover Page Details" number={1} defaultOpen>
           <div className="border border-blue-200 bg-[#f8fafc] rounded-md p-4 mb-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-bold text-gray-700">PROPERTY OWNER</h3>
@@ -543,7 +543,7 @@ export default function ArkaFinance({
           </div>
         </Section>
 
-        <Section id="arka-details" title="Property & Customer Details" defaultOpen>
+        <Section id="arka-details" title="Property & Customer Details" number={2} defaultOpen>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <Field label="Ref No"><input className={inputCls} value={fields.refNo || ''} onChange={e => handleChange('refNo', e.target.value)} disabled={isReadOnly} /></Field>
             <Field label="Date of Report"><input type="date" className={inputCls} value={fields.dateOfReport || ''} onChange={e => handleChange('dateOfReport', e.target.value)} disabled={isReadOnly} /></Field>
@@ -568,7 +568,7 @@ export default function ArkaFinance({
           </div>
         </Section>
 
-        <Section id="arka-boundaries" title="Boundaries">
+        <Section id="arka-boundaries" title="Boundaries" number={3}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <Field label="East (Sale Deed)"><input className={inputCls} value={fields.eastSaleDeed || ''} onChange={e => handleChange('eastSaleDeed', e.target.value)} disabled={isReadOnly} /></Field>
             <Field label="East (Actual)"><input className={inputCls} value={fields.eastActual || ''} onChange={e => handleChange('eastActual', e.target.value)} disabled={isReadOnly} /></Field>
@@ -581,7 +581,7 @@ export default function ArkaFinance({
           </div>
         </Section>
 
-        <Section id="arka-documents" title="Document Details">
+        <Section id="arka-documents" title="Document Details" number={4}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <Field span={3} label="Occupancy Status"><input className={inputCls} value={fields.occupancyStatus || ''} onChange={e => handleChange('occupancyStatus', e.target.value)} disabled={isReadOnly} /></Field>
             <Field span={3} label="Proximity to civic amenities"><input className={inputCls} value={fields.proximityToCivicAmenities || ''} onChange={e => handleChange('proximityToCivicAmenities', e.target.value)} disabled={isReadOnly} /></Field>
@@ -603,7 +603,7 @@ export default function ArkaFinance({
           </div>
         </Section>
 
-        <Section id="arka-valuation" title="Recommended Valuation">
+        <Section id="arka-valuation" title="Recommended Valuation" number={5}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <Field label="Recommended rate of Plot/Flat"><input className={inputCls} value={fields.recommendedRateOfPlot || ''} onChange={e => handleChange('recommendedRateOfPlot', e.target.value)} disabled={isReadOnly} /></Field>
             <Field label="Value of Plot/Flat"><input className={inputCls} value={fields.valueOfPlot || ''} onChange={e => handleChange('valueOfPlot', e.target.value)} disabled={isReadOnly} /></Field>
@@ -623,6 +623,7 @@ export default function ArkaFinance({
         </Section>
 
         <BasePhotographsSection
+          sectionNumber={6}
           propertyImages={fields.propertyImages || []}
           propertyImageNames={fields.propertyImageNames || []}
           isReadOnly={isReadOnly}
@@ -648,6 +649,7 @@ export default function ArkaFinance({
         />
 
         <BaseMapsSection
+          sectionNumber={7}
           locationMapImages={fields.locationMapImages || []}
           mouzaMapImages={fields.mouzaMapImages || []}
           sketchMapImages={fields.sketchMapImages || []}
