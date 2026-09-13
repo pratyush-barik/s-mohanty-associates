@@ -445,57 +445,78 @@ async function generateHLLAPPDF(
   }
 
   // ====== BOUNDARIES ======
-  // ====== BOUNDARIES ======
   r.drawSectionHeader('BOUNDARIES');
   const bndCol1 = 120;
   const bndLabelW = bndCol1 - NUM_W;
   const bndDirW = (CONTENT_W - bndCol1) / 4;
 
+  // Record cursorY before drawing the table so we can overlay the merged '28' cell
+  const bndStartY = (r as any).cursorY;
+
+  // Unified table with 6 columns: [NUM_W, bndLabelW, bndDirW x4]
   // Header row
-  r.drawKeyValueRow([
-    { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: false, hideBottom: true },
-    { label: 'Boundaries', value: '', labelWidth: bndLabelW, valueWidth: 0, labelBold: true },
-    { label: 'North', value: '', labelWidth: bndDirW, valueWidth: 0, labelBold: true },
-    { label: 'East', value: '', labelWidth: bndDirW, valueWidth: 0, labelBold: true },
-    { label: 'South', value: '', labelWidth: bndDirW, valueWidth: 0, labelBold: true },
-    { label: 'West', value: '', labelWidth: bndDirW, valueWidth: 0, labelBold: true }
-  ]);
+  r.drawTable(
+    ['', 'Boundaries', 'North', 'East', 'South', 'West'],
+    [
+      ['', 'As per Approved\nplan key map', fv(fields, 'boundaryApprovedNorth', ''), fv(fields, 'boundaryApprovedEast', ''), fv(fields, 'boundaryApprovedSouth', ''), fv(fields, 'boundaryApprovedWest', '')],
+      ['', 'At site', fv(fields, 'boundaryAtSiteNorth', ''), fv(fields, 'boundaryAtSiteEast', ''), fv(fields, 'boundaryAtSiteSouth', ''), fv(fields, 'boundaryAtSiteWest', '')],
+    ],
+    [NUM_W, bndLabelW, bndDirW, bndDirW, bndDirW, bndDirW],
+    [],
+    [0, 1]
+  );
 
-  // As per Docs
-  r.drawKeyValueRow([
-    { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true, hideBottom: true },
-    { label: 'As per Docs', value: '', labelWidth: bndLabelW, valueWidth: 0, labelBold: true },
-    { label: '', value: fv(fields, 'boundaryDocsNorth', 'NA'), labelWidth: 0, valueWidth: bndDirW, valueBold: false },
-    { label: '', value: fv(fields, 'boundaryDocsEast', 'NA'), labelWidth: 0, valueWidth: bndDirW, valueBold: false },
-    { label: '', value: fv(fields, 'boundaryDocsSouth', 'NA'), labelWidth: 0, valueWidth: bndDirW, valueBold: false },
-    { label: '', value: fv(fields, 'boundaryDocsWest', 'NA'), labelWidth: 0, valueWidth: bndDirW, valueBold: false }
-  ]);
+  // Boundaries Matching row (flush with table, 3 columns: NUM_W + bndLabelW + rest)
+  r.drawTable(
+    [],
+    [['', 'Boundaries Matching', fv(fields, 'boundariesMatching', '')]],
+    [NUM_W, bndLabelW, CONTENT_W - bndCol1],
+    [],
+    [0, 1]
+  );
 
-  // As per Approved plan key map
-  r.drawKeyValueRow([
-    { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true, hideBottom: true },
-    { label: 'As per Approved plan\\nkey map', value: '', labelWidth: bndLabelW, valueWidth: 0, labelBold: true },
-    { label: '', value: fv(fields, 'boundaryApprovedNorth', ''), labelWidth: 0, valueWidth: bndDirW, valueBold: false },
-    { label: '', value: fv(fields, 'boundaryApprovedEast', ''), labelWidth: 0, valueWidth: bndDirW, valueBold: false },
-    { label: '', value: fv(fields, 'boundaryApprovedSouth', ''), labelWidth: 0, valueWidth: bndDirW, valueBold: false },
-    { label: '', value: fv(fields, 'boundaryApprovedWest', ''), labelWidth: 0, valueWidth: bndDirW, valueBold: false }
-  ]);
+  const bndEndY = (r as any).cursorY;
 
-  // At site row
-  r.drawKeyValueRow([
-    { label: '28', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true, hideBottom: true, labelBold: true },
-    { label: 'At site', value: '', labelWidth: bndLabelW, valueWidth: 0, labelBold: true },
-    { label: '', value: fv(fields, 'boundaryAtSiteNorth', ''), labelWidth: 0, valueWidth: bndDirW, valueBold: false },
-    { label: '', value: fv(fields, 'boundaryAtSiteEast', ''), labelWidth: 0, valueWidth: bndDirW, valueBold: false },
-    { label: '', value: fv(fields, 'boundaryAtSiteSouth', ''), labelWidth: 0, valueWidth: bndDirW, valueBold: false },
-    { label: '', value: fv(fields, 'boundaryAtSiteWest', ''), labelWidth: 0, valueWidth: bndDirW, valueBold: false }
-  ]);
+  // Overlay the merged '28' cell on the left NUM_W column, spanning all rows
+  {
+    const renderer = r as any;
+    const mergeTopY = renderer.pdfY(bndStartY);
+    const mergeBottomY = renderer.pdfY(bndEndY);
+    const mergeH = mergeTopY - mergeBottomY;
 
-  // Boundaries Matching row
-  r.drawKeyValueRow([
-    { label: '', value: '', labelWidth: NUM_W, valueWidth: 0, hideTop: true, hideBottom: false },
-    { label: 'Boundaries Matching', value: fv(fields, 'boundariesMatching', ''), labelWidth: bndLabelW, valueWidth: CONTENT_W - bndCol1, labelBold: true, valueBold: false }
-  ]);
+    // White-out to clear internal horizontal lines in the first column
+    renderer.page.drawRectangle({
+      x: MARGIN_L + 0.5,
+      y: mergeBottomY + 0.5,
+      width: NUM_W - 1,
+      height: mergeH - 1,
+      color: rgb(1, 1, 1),
+      opacity: 1,
+    });
+
+    // Redraw the merged cell outer border
+    renderer.page.drawRectangle({
+      x: MARGIN_L,
+      y: mergeBottomY,
+      width: NUM_W,
+      height: mergeH,
+      borderColor: rgb(0, 0, 0),
+      borderWidth: 0.5,
+    });
+
+    // Draw '28' text vertically centred in the merged cell
+    const text28 = '28';
+    const font28 = renderer.fontBold;
+    const fontSize28 = 12;
+    const tw28 = font28.widthOfTextAtSize(text28, fontSize28);
+    renderer.page.drawText(text28, {
+      x: MARGIN_L + (NUM_W - tw28) / 2,
+      y: mergeBottomY + mergeH / 2 - fontSize28 * 0.35,
+      size: fontSize28,
+      font: font28,
+      color: rgb(0, 0, 0),
+    });
+  }
   // ====== REMARKS & DECLARATION ======
   r.drawRemarksBox('Remarks-:', fv(fields, 'remarksText', fv(fields, 'remarks', '')));
   r.drawRemarksBox('Declaration-:', fv(fields, 'declarationText', 'We hereby declare that we have no direct or indirect interest in the valued and the information furnished in the report is true and correct to the best of my knowledge of belief.'));
