@@ -390,7 +390,7 @@ export default function ArkaFinance({
                   {(fields.propertyOwners?.length > 1 || idx > 0) && (
                     <button
                       type="button"
-                      className="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 text-sm rounded-md shadow-sm transition-colors h-[42px]"
+                      className="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 text-sm rounded-md shadow-sm transition-colors h-10.5"
                       onClick={() => {
                         const arr = [...fields.propertyOwners];
                         arr.splice(idx, 1);
@@ -492,7 +492,7 @@ export default function ArkaFinance({
           isReadOnly={isReadOnly}
           uploading={uploading}
           bucketCount={bucketImages?.length || 0}
-          onOpenBucket={() => setBucketPickerOpen(true)}
+          onOpenBucketPicker={() => setBucketPickerOpen(true)}
           onImageNameChange={(idx: number, name: string) => {
             const updated = [...(fields.propertyImageNames || [])];
             while (updated.length <= idx) updated.push("");
@@ -504,7 +504,10 @@ export default function ArkaFinance({
             handleChange("propertyImageNames", (fields.propertyImageNames || []).filter((_: any, i: number) => i !== idx));
           }}
           onUploadImages={handlePhotoUpload}
-          onReorderImages={(newImgs: any) => handleChange('propertyImages', newImgs)}
+          onReorderImages={(newImgs: string[], newNames: string[]) => {
+            handleChange('propertyImages', newImgs);
+            handleChange('propertyImageNames', newNames);
+          }}
           withoutSectionWrapper={false}
         />
 
