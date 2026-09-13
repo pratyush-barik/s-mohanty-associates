@@ -2,7 +2,9 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { saveReportDraft } from '@/app/actions/project';
+import { useRef, useEffect } from 'react';
+import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
+import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { PDFArkaFinanceRenderer, ArkaReportFields } from '@/lib/banks/pdf-arka-finance-renderer';
 import {
   Section,
@@ -14,7 +16,8 @@ import {
   ActiveConfigBanner,
   NavItem,
   BasePhotographsSection,
-  BaseMapsSection
+  BaseMapsSection,
+  BasePhotoBucketModal
 } from '../BaseBankReportComponents';
 
 export default function ArkaFinance({
@@ -96,6 +99,42 @@ export default function ArkaFinance({
   const [loading, setLoading] = useState(false);
   const [bucketPickerOpen, setBucketPickerOpen] = useState(false);
   const [message, setMessage] = useState<any>(null);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle'|'saving'|'saved'|'error'>('idle');
+  const [uploading, setUploading] = useState(false);
+  const debouncedTimer = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (isReadOnly) return;
+    setAutoSaveStatus('saving');
+    if (debouncedTimer.current) clearTimeout(debouncedTimer.current);
+
+    debouncedTimer.current = setTimeout(async () => {
+      try {
+        const res = await saveReportDraft(projectId, fields);
+        if (res && 'error' in res && res.error) {
+          setAutoSaveStatus('error');
+        } else {
+          setAutoSaveStatus('saved');
+        }
+      } catch (err) {
+        console.error('Auto-save error:', err);
+        setAutoSaveStatus('error');
+      }
+    }, 1200);
+
+    return () => {
+      if (debouncedTimer.current) clearTimeout(debouncedTimer.current);
+    };
+  }, [fields, projectId, isReadOnly]);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (isReadOnly) return;
+      saveReportDraft(projectId, fields).catch(e => console.error(e));
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [projectId, fields, isReadOnly]);
 
   const handleChange = (k: string, v: any) => {
     setFields((p: any) => ({ ...p, [k]: v }));
@@ -110,6 +149,122 @@ export default function ArkaFinance({
     { id: 'arka-photos', title: 'Photographs' },
     { id: 'arka-maps', title: 'Sketch & Location Maps' }
   ];
+
+
+  const handleMapUpload = async (key: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const ext = file.name.split('.').pop() || 'png';
+      const fileName = `map-${key}-${Date.now()}.${ext}`;
+      const path = `maps/${projectId}/${fileName}`;
+      const { error } = await supabaseBrowser.storage
+        .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+        .upload(path, file);
+      if (error) throw error;
+      const { data } = supabaseBrowser.storage
+        .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+        .getPublicUrl(path);
+      const existing = fields[key] || [];
+      handleChange(key, [...existing, data.publicUrl]);
+    } catch (err: any) {
+      alert(`Upload failed: ${err.message}`);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleMapRemove = (key: string, idx?: number) => {
+    if (idx === undefined) {
+      handleChange(key, []);
+    } else {
+      const existing = fields[key] || [];
+      handleChange(key, existing.filter((_: any, i: number) => i !== idx));
+    }
+  };
+
+  const handleReorderMap = (key: string, newImgs: any[]) => {
+    handleChange(key, newImgs);
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      const uploadedUrls = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const ext = file.name.split('.').pop() || 'png';
+        const fileName = `photo-${Date.now()}-${i}.${ext}`;
+        const path = `property-images/${projectId}/${fileName}`;
+        const { error } = await supabaseBrowser.storage
+          .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+          .upload(path, file);
+        if (!error) {
+          const { data } = supabaseBrowser.storage
+            .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+            .getPublicUrl(path);
+          uploadedUrls.push(data.publicUrl);
+        }
+      }
+      const existing = fields.propertyImages || [];
+      handleChange('propertyImages', [...existing, ...uploadedUrls]);
+    } catch (err) {
+      alert(`Upload error: ${err.message}`);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleBucketConfirm = (selectedUrls: string[]) => {
+    const existing = fields.propertyImages || [];
+    handleChange('propertyImages', [...existing, ...selectedUrls]);
+  };
+
+  const handleDownloadPDF = async () => {
+    setLoading(true);
+    try {
+      const renderer = new PDFArkaFinanceRenderer();
+      await renderer.init();
+      const bytes = await renderer.render(fields);
+      const blob = new Blob([bytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Arka_Valuation_${fields.refNo || 'Report'}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(`PDF Download Failed: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmitForVerification = async () => {
+    if ((fields.propertyImages || []).length < 2) {
+      alert('Please upload at least 2 photographs of the property before submitting.');
+      return;
+    }
+    setLoading(true);
+    try {
+      await saveReportDraft(projectId, fields);
+      const res = await submitReportForVerification(projectId);
+      if (res && typeof res === 'object' && 'error' in res && res.error) {
+        setMessage({ text: res.error, type: 'error' });
+      } else {
+        router.refresh();
+      }
+    } catch (err) {
+      alert(`Submission failed: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handlePreviewPDF = async () => {
     // Open a blank tab synchronously in the click handler to bypass browser pop-up blockers
@@ -175,19 +330,13 @@ export default function ArkaFinance({
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
 
   return (
-    <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative">
-      <div className="flex-1 w-full space-y-6 max-w-[1000px] mx-auto xl:mx-0">
-        
-        <ReportActionBar
-          isReadOnly={isReadOnly}
-          userRole={userRole}
-          autoSaveStatus={loading ? 'saving' : 'idle'}
-          message={message}
-          loading={loading}
-          onSaveDraft={handleSaveDraft}
-          onSubmit={async () => {}}
-          onPreviewPDF={handlePreviewPDF}
-          onDownloadPDF={async () => {}}
+    <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full">
+      <div className="flex-1 min-w-0 space-y-6 w-full">
+        <ActiveConfigBanner
+          bankName="ARKA FINANCE LTD"
+          formatName="Valuation Report"
+          category="Bank & FIS"
+          onResetWizard={onResetWizard}
         />
 
         {message && (
@@ -196,13 +345,67 @@ export default function ArkaFinance({
           </div>
         )}
 
-        <Section id="arka-cover" title="Cover Page Details" defaultOpen>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <Field label="Property Owner"><input className={inputCls} value={fields.propertyOwner || ''} onChange={e => handleChange('propertyOwner', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Present Market Value"><input className={inputCls} value={fields.presentMarketValue || ''} onChange={e => handleChange('presentMarketValue', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Distress Sale Value"><input className={inputCls} value={fields.distressSaleValue || ''} onChange={e => handleChange('distressSaleValue', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field span={2} label="Address of the Property"><textarea className={inputCls} rows={3} value={fields.addressOfTheProperty || ''} onChange={e => handleChange('addressOfTheProperty', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field span={2} label="Purpose of Valuation"><textarea className={inputCls} rows={2} value={fields.purposeOfValuation || ''} onChange={e => handleChange('purposeOfValuation', e.target.value)} disabled={isReadOnly} /></Field>
+       <Section id="arka-cover" title="Cover Page Details" defaultOpen>
+          <div className="border border-gray-300 rounded-md p-4 mb-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-gray-700">PROPERTY OWNER</h3>
+              <button
+                type="button"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 text-sm rounded-md shadow-sm transition-colors"
+                onClick={() => handleChange('propertyOwners', [...(fields.propertyOwners || []), { name: '', fatherName: '' }])}
+                disabled={isReadOnly}
+              >
+                + Add Row
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              {(fields.propertyOwners || [{ name: '', fatherName: '' }]).map((owner: any, idx: number) => (
+                <div key={idx} className="flex gap-4 items-end bg-gray-50 p-3 rounded-md border border-gray-100">
+                  <Field label="OWNER'S NAME" className="flex-1">
+                    <input
+                      className={inputCls}
+                      value={owner.name}
+                      onChange={(e) => {
+                        const arr = [...(fields.propertyOwners || [])];
+                        arr[idx] = { ...arr[idx], name: e.target.value };
+                        handleChange('propertyOwners', arr);
+                      }}
+                      disabled={isReadOnly}
+                      placeholder="e.g. PRASANNA NAYAK"
+                    />
+                  </Field>
+                  <Field label="OWNER'S FATHER'S NAME" className="flex-1">
+                    <input
+                      className={inputCls}
+                      value={owner.fatherName}
+                      onChange={(e) => {
+                        const arr = [...(fields.propertyOwners || [])];
+                        arr[idx] = { ...arr[idx], fatherName: e.target.value };
+                        handleChange('propertyOwners', arr);
+                      }}
+                      disabled={isReadOnly}
+                      placeholder="e.g. PRAHALLAD NAYAK"
+                    />
+                  </Field>
+                  (fields.propertyOwners?.length > 1 || idx > 0) && (
+                    <button
+                      type="button"
+                      className="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 text-sm rounded-md shadow-sm transition-colors h-[42px]"
+                      onClick={() => {
+                        const arr = [...fields.propertyOwners];
+                        arr.splice(idx, 1);
+                        handleChange('propertyOwners', arr);
+                      }}
+                      disabled={isReadOnly}
+                    >
+                      Remove
+                    </button>
+                  )
+}
+                </div>
+              ))}
+            </div>
           </div>
         </Section>
 
@@ -289,8 +492,9 @@ export default function ArkaFinance({
           propertyImages={fields.propertyImages || []}
           propertyImageNames={fields.propertyImageNames || []}
           isReadOnly={isReadOnly}
-          uploading={loading}
+          uploading={uploading}
           bucketCount={bucketImages?.length || 0}
+          onOpenBucket={() => setBucketPickerOpen(true)}
           onImageNameChange={(idx: number, name: string) => {
             const updated = [...(fields.propertyImageNames || [])];
             while (updated.length <= idx) updated.push("");
@@ -301,8 +505,8 @@ export default function ArkaFinance({
             handleChange("propertyImages", (fields.propertyImages || []).filter((_: any, i: number) => i !== idx));
             handleChange("propertyImageNames", (fields.propertyImageNames || []).filter((_: any, i: number) => i !== idx));
           }}
-          onUploadImages={async (e: any) => {}}
-          onReorderImages={(newImgs: any) => {}}
+          onUploadImages={handlePhotoUpload}
+          onReorderImages={(newImgs: any) => handleChange('propertyImages', newImgs)}
           withoutSectionWrapper={false}
         />
 
@@ -317,23 +521,43 @@ export default function ArkaFinance({
           hasExternalCoordinatesField={true}
           coordinatesSectionName="Cover Page Details"
           isReadOnly={isReadOnly}
-          uploading={loading}
-          onLocationMapUpload={(e: any) => {}}
-          onLocationMapRemove={(idx?: number) => {}}
-          onMouzaMapUpload={(e: any) => {}}
-          onMouzaMapRemove={(idx?: number) => {}}
-          onSketchMapUpload={(e: any) => {}}
-          onSketchMapRemove={(idx?: number) => {}}
-          onCadastralMapUpload={(e: any) => {}}
-          onCadastralMapRemove={(idx?: number) => {}}
-          onReorderLocationMap={(newImgs: any) => {}}
-          onReorderMouzaMap={(newImgs: any) => {}}
-          onReorderSketchMap={(newImgs: any) => {}}
-          onReorderCadastralMap={(newImgs: any) => {}}
+          uploading={uploading}
+          onLocationMapUpload={e => handleMapUpload('locationMapImages', e)}
+          onLocationMapRemove={idx => handleMapRemove('locationMapImages', idx)}
+          onMouzaMapUpload={e => handleMapUpload('mouzaMapImages', e)}
+          onMouzaMapRemove={idx => handleMapRemove('mouzaMapImages', idx)}
+          onSketchMapUpload={e => handleMapUpload('sketchMapImages', e)}
+          onSketchMapRemove={idx => handleMapRemove('sketchMapImages', idx)}
+          onCadastralMapUpload={e => handleMapUpload('cadastralMapImages', e)}
+          onCadastralMapRemove={idx => handleMapRemove('cadastralMapImages', idx)}
+          onReorderLocationMap={newImgs => handleReorderMap('locationMapImages', newImgs)}
+          onReorderMouzaMap={newImgs => handleReorderMap('mouzaMapImages', newImgs)}
+          onReorderSketchMap={newImgs => handleReorderMap('sketchMapImages', newImgs)}
+          onReorderCadastralMap={newImgs => handleReorderMap('cadastralMapImages', newImgs)}
+        />
+
+        {/* STANDARDIZED ACTION BAR */}
+        <ReportActionBar
+          isReadOnly={isReadOnly}
+          userRole={userRole}
+          autoSaveStatus={autoSaveStatus}
+          message={message}
+          loading={loading || uploading}
+          onSaveDraft={handleSaveDraft}
+          onSubmit={handleSubmitForVerification}
+          onPreviewPDF={handlePreviewPDF}
+          onDownloadPDF={handleDownloadPDF}
         />
       </div>
 
       <FloatingNavigator sections={navSections} />
+      <BasePhotoBucketModal
+        isOpen={bucketPickerOpen}
+        bucketImages={bucketImages}
+        mode="propertyImages"
+        onClose={() => setBucketPickerOpen(false)}
+        onConfirm={handleBucketConfirm}
+      />
     </div>
   );
 }
