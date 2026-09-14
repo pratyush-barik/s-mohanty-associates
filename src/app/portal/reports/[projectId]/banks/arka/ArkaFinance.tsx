@@ -149,6 +149,8 @@ export default function ArkaFinance({
     distressedValuation: '',
     rentalValuePerMonth: '',
     remarks: '',
+    photosAttached: 'Attached',
+    locationSketchAttached: 'Attached',
     // Media
     propertyImages: [],
     propertyImageNames: [],
@@ -1283,6 +1285,26 @@ export default function ArkaFinance({
               </Field>
               <Field label="Rental Value per Month">
                 <input className={inputCls} value={fields.rentalValuePerMonth || ''} onChange={e => handleChange('rentalValuePerMonth', e.target.value)} disabled={isReadOnly} placeholder="&#8377; / month" />
+              </Field>
+            </div>
+          </div>
+          {/* Container: Attachments - light orange */}
+          <div className="border border-orange-200 bg-orange-50 rounded-xl p-5 mt-5">
+            <h3 className="font-semibold text-orange-800 mb-4 text-sm tracking-wide uppercase">Attachments</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="4 photos of the Property from inside/outside are attached">
+                <select className={selectCls} value={fields.photosAttached || 'Attached'} onChange={e => handleChange('photosAttached', e.target.value)} disabled={isReadOnly}>
+                  <option value="Attached">Attached</option>
+                  <option value="Not Attached">Not Attached</option>
+                  <option value="NA">NA</option>
+                </select>
+              </Field>
+              <Field label="Location sketch for the property">
+                <select className={selectCls} value={fields.locationSketchAttached || 'Attached'} onChange={e => handleChange('locationSketchAttached', e.target.value)} disabled={isReadOnly}>
+                  <option value="Attached">Attached</option>
+                  <option value="Not Attached">Not Attached</option>
+                  <option value="NA">NA</option>
+                </select>
               </Field>
             </div>
           </div>
