@@ -258,14 +258,14 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
       ['l.', 'Class Of Locality : Posh/ Higher Middle Class/Middle class/Lower middle Class/ Poor', fv('classOfLocality')],
       ['m.', 'Quality of Infrastructure in the vicinity', fv('qualityOfInfrastructure')],
     ], [C1, C2, C3], [], [], [], 
-    [{r:0,c:1}, {r:1,c:1}, {r:2,c:1}, {r:3,c:1}, {r:4,c:1}], 
-    [{r:0,c:1}, {r:1,c:1}, {r:2,c:1}, {r:3,c:1}, {r:4,c:1}]
+    [{r:0,c:0},{r:0,c:1}, {r:1,c:1}, {r:2,c:0},{r:2,c:1}, {r:3,c:0},{r:3,c:1}, {r:4,c:0},{r:4,c:1}], 
+    [{r:0,c:0},{r:0,c:1}, {r:1,c:1}, {r:2,c:0},{r:2,c:1}, {r:3,c:0},{r:3,c:1}, {r:4,c:0},{r:4,c:1}]
     );
 
     // Boundaries header
     this.drawTable([], [
       ['n.', 'Boundaries of Property as sale deed', 'Boundaries of Property as per Actual']
-    ], [C1, C2, C3], [], [1, 2]);
+    ], [C1, C2, C3], [], [], [], [{r:0,c:0},{r:0,c:1},{r:0,c:2}], [{r:0,c:0},{r:0,c:1},{r:0,c:2}]);
 
     // Boundary rows
     this.drawTable([], [
@@ -295,7 +295,7 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
     // Match boundaries question
     this.drawTable([], [
       ['o.', 'Does the Boundaries at Site match, as mentioned in documentation?', fv('boundariesMatch')]
-    ], [C1, C2, C3], [], [1]);
+    ], [C1, C2, C3], [], [], [], [{r:0,c:0},{r:0,c:1}], [{r:0,c:0},{r:0,c:1}]);
 
     // Property characteristics (p-z)
     this.drawTable([], [
@@ -311,8 +311,8 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
       ['y.', 'Development of surrounding area', fv('developmentOfSurroundingArea')],
       ['z.', 'Longitude & latitude of the property', ''],
     ], [C1, C2, C3], [], [], [],
-    [{r: 10, c: 1}], 
-    [{r: 10, c: 1}]
+    [{r: 10, c: 0}, {r: 10, c: 1}], 
+    [{r: 10, c: 0}, {r: 10, c: 1}]
     );
 
     this.drawTable([], [
@@ -409,15 +409,23 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
     // Bold row indices: the 'c.' header row (index 2) and the 'd.' header row
     const cIdx = 2;
     const dIdx = 3 + approvedBuaRows.length;
+    
+    const highlightCells = [
+      {r: cIdx, c: 0}, {r: cIdx, c: 1}, 
+      {r: dIdx, c: 0}, {r: dIdx, c: 1}
+    ];
+    for (let i = 0; i < approvedBuaRows.length; i++) highlightCells.push({r: cIdx + 1 + i, c: 1});
+    for (let i = 0; i < measuredBuaRows.length; i++) highlightCells.push({r: dIdx + 1 + i, c: 1});
+
     this.drawTable([], constructionRows, [C1, C2, C3], [], [], [], 
-      [{r: cIdx, c: 1}, {r: dIdx, c: 1}], 
-      [{r: cIdx, c: 1}, {r: dIdx, c: 1}]
+      highlightCells, 
+      highlightCells
     );
 
     // 7. Recommended Valuation
     this.drawTable([], [
       ['7.', 'Recommended Valuation of the Property', '']
-    ], [C1, C2, C3], [], [], [], [{r:0,c:1}], [{r:0,c:1}]);
+    ], [C1, C2, C3], [], [], [], [{r:0,c:0}, {r:0,c:1}], [{r:0,c:0}, {r:0,c:1}]);
 
     this.drawTable([], [
       ['a.', 'Recommended rate of the Plot/Flat', fv('recommendedRateOfPlot')],
@@ -439,8 +447,22 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
       ['12.', 'Remarks :', ''],
       ['', fv('commentOn', ''), fv('remarksDetails', '')],
     ], [C1, C2, C3], [], [], [], 
-    [{r:8,c:1},{r:8,c:2}, {r:10,c:1}, {r:11,c:1}, {r:12,c:1}, {r:13,c:1}, {r:16,c:1}], 
-    [{r:8,c:1},{r:8,c:2}, {r:10,c:1}, {r:11,c:1}, {r:12,c:1}, {r:13,c:1}, {r:16,c:1}]
+    [
+      {r:8,c:0},{r:8,c:1},{r:8,c:2}, 
+      {r:10,c:0},{r:10,c:1}, 
+      {r:11,c:0},{r:11,c:1},{r:11,c:2}, 
+      {r:12,c:0},{r:12,c:1}, 
+      {r:13,c:0},{r:13,c:1}, 
+      {r:16,c:0},{r:16,c:1}
+    ], 
+    [
+      {r:8,c:0},{r:8,c:1},{r:8,c:2}, 
+      {r:10,c:0},{r:10,c:1}, 
+      {r:11,c:0},{r:11,c:1},{r:11,c:2}, 
+      {r:12,c:0},{r:12,c:1}, 
+      {r:13,c:0},{r:13,c:1}, 
+      {r:16,c:0},{r:16,c:1}
+    ]
     );
 
     this.addPage();
