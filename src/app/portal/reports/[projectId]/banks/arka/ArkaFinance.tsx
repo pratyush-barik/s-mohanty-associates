@@ -67,9 +67,11 @@ export default function ArkaFinance({
     nearbyLandMark: '',
     distanceFromCityCenter: '',
     availabilityOfLocalTransport: '',
+    availabilityOfLocalTransportOther: '',
     levelOfLand: '',
     classOfLocality: '',
     qualityOfInfrastructure: '',
+    qualityOfInfrastructureOther: '',
     // Section 4: Boundary Details & Property Characteristics
     eastSaleDeed: '',
     eastActual: '',
@@ -186,16 +188,16 @@ export default function ArkaFinance({
   };
 
   // Auto-extract Plot No and Khasra/Khata No from Property Details address text
-  const extractPlotAndKhasra = (text: string) => {
-    if (plotKhasraEditMode) return; // Skip extraction when manual edit is on
+  const extractPlotAndKhasra = (text: string, force?: boolean) => {
+    if (!force && plotKhasraEditMode) return; // Skip extraction when manual edit is on
 
     // Plot No extraction: Plot no-XXX/YYY or Plot No XXX
-    const plotMatches = [...text.matchAll(/Plot\s*no[-\s]*([0-9\/]+)/gi)];
+    const plotMatches = [...text.matchAll(/Plot\s*no[-\s.:]*([0-9\/]+)/gi)];
     const plotValues = plotMatches.map(m => m[1]).filter(Boolean);
     const plotResult = plotValues.join(', ');
 
     // Khasra/Khata extraction: Khata No-XXX, Khasra No XXX, S.No XXX, G.No XXX
-    const khasraMatches = [...text.matchAll(/(?:Khata|Khasra|S|G)\.?\s*No[-.\s]*([0-9\/]+)/gi)];
+    const khasraMatches = [...text.matchAll(/(?:Khata|Khasra|\bS|\bG)\.?\s*No[-.:\s]*([0-9\/]+)/gi)];
     const khasraValues = khasraMatches.map(m => m[1]).filter(Boolean);
     const khasraResult = khasraValues.join(', ');
 
@@ -205,6 +207,15 @@ export default function ArkaFinance({
       khasraNoKhataNo: khasraResult || p.khasraNoKhataNo,
     }));
   };
+
+  // Auto-extract on initial load when address exists but plotNo/khasraNoKhataNo are empty
+  useEffect(() => {
+    const address = fields.propertyDetailsAddress;
+    if (address && (!fields.plotNo || !fields.khasraNoKhataNo)) {
+      extractPlotAndKhasra(address, true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const navSections: NavItem[] = [
     { id: 'arka-cover', title: '1. Cover Page Details' },
@@ -641,7 +652,7 @@ export default function ArkaFinance({
                   value={fields.plotNo || ''} 
                   onChange={e => handleChange('plotNo', e.target.value)} 
                   disabled={isReadOnly || !plotKhasraEditMode} 
-                  placeholder={plotKhasraEditMode ? 'Enter plot number' : 'Auto-filled from address'}
+                  placeholder={plotKhasraEditMode ? 'Enter plot number' : ''}
                 />
               </Field>
               <Field label="S No / G. No / Khasra No / Khata No">
@@ -650,7 +661,7 @@ export default function ArkaFinance({
                   value={fields.khasraNoKhataNo || ''} 
                   onChange={e => handleChange('khasraNoKhataNo', e.target.value)} 
                   disabled={isReadOnly || !plotKhasraEditMode} 
-                  placeholder={plotKhasraEditMode ? 'Enter Khasra/Khata number' : 'Auto-filled from address'}
+                  placeholder={plotKhasraEditMode ? 'Enter Khasra/Khata number' : ''}
                 />
               </Field>
               <Field label="Locality">
@@ -706,7 +717,13 @@ export default function ArkaFinance({
                   <option value="Bus">Bus</option>
                   <option value="Auto/Taxi">Auto / Taxi</option>
                   <option value="Multiple">Multiple Modes</option>
+                  <option value="custom">custom</option>
                 </select>
+                {fields.availabilityOfLocalTransport === 'custom' && (
+                  <div className="mt-3">
+                    <input className={inputCls} value={fields.availabilityOfLocalTransportOther || ''} onChange={e => handleChange('availabilityOfLocalTransportOther', e.target.value)} disabled={isReadOnly} placeholder="Describe local transport..." />
+                  </div>
+                )}
               </Field>
               <Field label="Level of Land (Topographical Conditions)">
                 <input className={inputCls} value={fields.levelOfLand || ''} onChange={e => handleChange('levelOfLand', e.target.value)} disabled={isReadOnly} placeholder="e.g. Plain / Elevated / Sloping" />
@@ -722,7 +739,18 @@ export default function ArkaFinance({
                 </select>
               </Field>
               <Field span={2} label="Quality of Infrastructure in the Vicinity">
-                <input className={inputCls} value={fields.qualityOfInfrastructure || ''} onChange={e => handleChange('qualityOfInfrastructure', e.target.value)} disabled={isReadOnly} placeholder="Describe infrastructure quality..." />
+                <select className={selectCls} value={fields.qualityOfInfrastructure || ''} onChange={e => handleChange('qualityOfInfrastructure', e.target.value)} disabled={isReadOnly}>
+                  <option value="">-- Select --</option>
+                  <option value="Good">Good</option>
+                  <option value="Average">Average</option>
+                  <option value="Bad">Bad</option>
+                  <option value="custom">custom</option>
+                </select>
+                {fields.qualityOfInfrastructure === 'custom' && (
+                  <div className="mt-3">
+                    <input className={inputCls} value={fields.qualityOfInfrastructureOther || ''} onChange={e => handleChange('qualityOfInfrastructureOther', e.target.value)} disabled={isReadOnly} placeholder="Describe infrastructure quality..." />
+                  </div>
+                )}
               </Field>
             </div>
           </div>
