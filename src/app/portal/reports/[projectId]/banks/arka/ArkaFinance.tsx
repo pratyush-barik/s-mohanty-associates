@@ -217,6 +217,14 @@ export default function ArkaFinance({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Auto-fill refNo from projectId
+  useEffect(() => {
+    if (!fields.refNo && projectId) {
+      setFields((p: any) => ({ ...p, refNo: projectId }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId]);
+
   const navSections: NavItem[] = [
     { id: 'arka-cover', title: '1. Cover Page Details' },
     { id: 'arka-sec2', title: '2. Client & Application' },
@@ -577,6 +585,18 @@ export default function ArkaFinance({
         </Section>
         {/* SECTION 2: CLIENT & APPLICATION DETAILS */}
         <Section id="arka-sec2" title="Client & Application Details" number={2}>
+          {/* Container: Report Reference & Date - light orange */}
+          <div className="border border-orange-200 bg-orange-50 rounded-xl p-5 mb-5">
+            <h3 className="font-semibold text-orange-800 mb-4 text-sm tracking-wide uppercase">Report Reference & Date</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Reference No">
+                <input className={inputCls} value={fields.refNo || ''} onChange={e => handleChange('refNo', e.target.value)} disabled={isReadOnly} placeholder="e.g. SMA-2026-001" />
+              </Field>
+              <Field label="Date of Valuation Report">
+                <input type="date" className={inputCls} value={fields.dateOfReport || ''} onChange={e => handleChange('dateOfReport', e.target.value)} disabled={isReadOnly} />
+              </Field>
+            </div>
+          </div>
           {/* Container: Customer Information - light blue */}
           <div className="border border-sky-200 bg-sky-50 rounded-xl p-5 mb-5">
             <h3 className="font-semibold text-sky-800 mb-4 text-sm tracking-wide uppercase">Customer Information</h3>
