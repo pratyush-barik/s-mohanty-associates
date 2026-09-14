@@ -112,6 +112,11 @@ export interface ArkaReportFields extends BaseReportFields {
   distressedValuation: string;
   rentalValuePerMonth: string;
   remarks: string;
+  remarksDetails?: string;
+  commentOn?: string;
+  undertakingDetails?: string;
+  nameOfValuer?: string;
+  designation?: string;
 
   propertyImages: any[];
   propertyImageNames: string[];
@@ -419,25 +424,29 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
       ['a.', '4 photos of the Property from inside/outside are attached', 'Attached'],
       ['b.', 'Location sketch for the property', 'Attached'],
       ['12.', 'Remarks :', ''],
-      ['', fv('remarks', ''), fv('remarks')],
+      ['', fv('commentOn', ''), fv('remarksDetails', '')],
     ], [C1, C2, C3], [], [4, 8, 11]);
 
     this.cursorY += 20;
     this.page.drawText('Undertaking:', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
     this.cursorY += 16;
-    this.page.drawText('I have personally visited the property & identified the same based on the documents provided.', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
-    this.cursorY += 20;
-    this.page.drawText('I/We have no direct or Indirect Interest in the property being valued.', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
-    this.cursorY += 16;
-    this.page.drawText('The information furnished above is true and correct to my/our knowledge.', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
-    this.cursorY += 20;
+    
+    const undertakingText = fields.undertakingDetails || 'I have personally visited the property & identified the same based on the documents provided.\nI/We have no direct or Indirect Interest in the property being valued.\nThe information furnished above is true and correct to my/our knowledge.';
+    const undertakingLines = undertakingText.split('\n');
+    for (const line of undertakingLines) {
+      if (!line.trim()) continue;
+      this.page.drawText(line, { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
+      this.cursorY += 20;
+    }
+    
+    this.cursorY += 4;
     this.page.drawText('Authorized Signatory', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
     this.cursorY += 16;
     this.page.drawText('Name & Seal of the Agency', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
     this.cursorY += 24;
-    this.page.drawText('Er. Satyajit Mohanty', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
+    this.page.drawText(fields.nameOfValuer || 'Er. Satyajit Mohanty', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
     this.cursorY += 16;
-    this.page.drawText('Approved Panel Valuer', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
+    this.page.drawText(fields.designation || 'Approved Panel Valuer', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
 
     // PHOTOGRAPHS
     const imgs = Array.isArray(fields.propertyImages) ? fields.propertyImages : [];
