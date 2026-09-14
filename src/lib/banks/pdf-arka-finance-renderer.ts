@@ -489,52 +489,21 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
     this.cursorY += 16;
     this.page.drawText(fields.designation || 'Approved Panel Valuer', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
 
-    // PHOTOGRAPHS
+    // PHOTOGRAPHS — drawPhotoGrid handles its own page break & section header
     const imgs = Array.isArray(fields.propertyImages) ? fields.propertyImages : [];
     if (imgs.length > 0) {
-      this.addPage();
-      this.page.drawText('PHOTOGRAPHS', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE_HEADER, font: this.fontBold, color: rgb(0,0,0) });
-      const photoHdrW = this.fontBold.widthOfTextAtSize('PHOTOGRAPHS', FONT_SIZE_HEADER);
-      this.page.drawLine({ start: { x: MARGIN_L, y: this.pdfY(this.cursorY) - 2 }, end: { x: MARGIN_L + photoHdrW, y: this.pdfY(this.cursorY) - 2 }, color: rgb(0,0,0), thickness: 1 });
-      this.cursorY += 24;
-      await this.drawPhotoGrid(imgs);
+      await this.drawPhotoGrid(imgs, 'PHOTOGRAPHS OF PROPERTY');
     }
 
-    // MAPS - support arrays (locationMapImages, mouzaMapImages, sketchMapImages)
+    // MAPS — drawMapGallery handles page breaks & bordered centered section headers
     const locationMaps = Array.isArray(fields.locationMapImages) ? fields.locationMapImages : (fields as any).locationMapImage ? [(fields as any).locationMapImage] : [];
     const mouzaMaps = Array.isArray(fields.mouzaMapImages) ? fields.mouzaMapImages : (fields as any).mouzaMapImage ? [(fields as any).mouzaMapImage] : [];
     const sketchMaps = Array.isArray(fields.sketchMapImages) ? fields.sketchMapImages : (fields as any).sketchMapImage ? [(fields as any).sketchMapImage] : [];
 
-    if (locationMaps.length > 0) {
-      this.addPage();
-      const text = `LOCATION MAP (LAT: ${fv('latitude')}, LONG: ${fv('longitude')})`;
-      this.page.drawText(text, { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE_HEADER, font: this.fontBold, color: rgb(0,0,0) });
-      this.cursorY += 24;
-      for (const mapImg of locationMaps) {
-        await this.drawImageBlock(mapImg);
-        this.cursorY += 20;
-      }
-    }
-
-    if (mouzaMaps.length > 0) {
-      if (this.cursorY > 600) this.addPage();
-      this.page.drawText('MOUZA MAP', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE_HEADER, font: this.fontBold, color: rgb(0,0,0) });
-      this.cursorY += 24;
-      for (const mapImg of mouzaMaps) {
-        await this.drawImageBlock(mapImg);
-        this.cursorY += 20;
-      }
-    }
-
-    if (sketchMaps.length > 0) {
-      this.addPage();
-      this.page.drawText('SKETCH MAP', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE_HEADER, font: this.fontBold, color: rgb(0,0,0) });
-      this.cursorY += 24;
-      for (const mapImg of sketchMaps) {
-        await this.drawImageBlock(mapImg);
-        this.cursorY += 20;
-      }
-    }
+    const locTitle = `LOCATION MAP (LAT: ${fv('latitude')}, LONG: ${fv('longitude')})`;
+    await this.drawMapGallery(locationMaps, locTitle, 230, true);
+    await this.drawMapGallery(mouzaMaps, 'MOUZA MAP', 230, false);
+    await this.drawMapGallery(sketchMaps, 'SKETCH MAP', 230, true);
 
     return await this.save();
   }
