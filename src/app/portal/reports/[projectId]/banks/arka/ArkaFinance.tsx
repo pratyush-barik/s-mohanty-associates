@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -54,7 +54,6 @@ export default function ArkaFinance({
     nameOfCustomer: '',
     customerContactDetails: '',
     appIdLoanAccountNo: '',
-    documentsProvided: '',
     documentsProvidedOther: '',
     // Section 3: Property Overview & Location
     propertyDetailsAddress: '',
@@ -139,7 +138,8 @@ export default function ArkaFinance({
     sketchMapImages: [],
     mouzaMapImages: [],
     cadastralMapImages: [],
-    ...initialFields
+    ...initialFields,
+    documentsProvided: initialFields?.documentsProvided || 'Multiple'
   });
 
   const [loading, setLoading] = useState(false);
@@ -147,6 +147,7 @@ export default function ArkaFinance({
   const [message, setMessage] = useState<any>(null);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle'|'saving'|'saved'|'error'>('idle');
   const [uploading, setUploading] = useState(false);
+  const [plotKhasraEditMode, setPlotKhasraEditMode] = useState(false);
   const debouncedTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -182,6 +183,27 @@ export default function ArkaFinance({
 
   const handleChange = (k: string, v: any) => {
     setFields((p: any) => ({ ...p, [k]: v }));
+  };
+
+  // Auto-extract Plot No and Khasra/Khata No from Property Details address text
+  const extractPlotAndKhasra = (text: string) => {
+    if (plotKhasraEditMode) return; // Skip extraction when manual edit is on
+
+    // Plot No extraction: Plot no-XXX/YYY or Plot No XXX
+    const plotMatches = [...text.matchAll(/Plot\s*no[-\s]*([0-9\/]+)/gi)];
+    const plotValues = plotMatches.map(m => m[1]).filter(Boolean);
+    const plotResult = plotValues.join(', ');
+
+    // Khasra/Khata extraction: Khata No-XXX, Khasra No XXX, S.No XXX, G.No XXX
+    const khasraMatches = [...text.matchAll(/(?:Khata|Khasra|S|G)\.?\s*No[-.\s]*([0-9\/]+)/gi)];
+    const khasraValues = khasraMatches.map(m => m[1]).filter(Boolean);
+    const khasraResult = khasraValues.join(', ');
+
+    setFields((p: any) => ({
+      ...p,
+      plotNo: plotResult || p.plotNo,
+      khasraNoKhataNo: khasraResult || p.khasraNoKhataNo,
+    }));
   };
 
   const navSections: NavItem[] = [
@@ -290,6 +312,10 @@ export default function ArkaFinance({
   };
 
   const handleSubmitForVerification = async () => {
+    if (fields.pinCode && fields.pinCode.length > 0 && fields.pinCode.length < 6) {
+      alert('PIN code must be exactly 6 digits');
+      return;
+    }
     if ((fields.propertyImages || []).length < 2) {
       alert('Please upload at least 2 photographs of the property before submitting.');
       return;
@@ -585,13 +611,47 @@ export default function ArkaFinance({
             <h3 className="font-semibold text-emerald-800 mb-4 text-sm tracking-wide uppercase">Property Identification</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Field span={3} label="Property Details (Address)">
-                <textarea className={inputCls} rows={3} value={fields.propertyDetailsAddress || ''} onChange={e => handleChange('propertyDetailsAddress', e.target.value)} disabled={isReadOnly} placeholder="Full address of the property" />
+                <textarea 
+                  className={inputCls} 
+                  rows={3} 
+                  value={fields.propertyDetailsAddress || ''} 
+                  onChange={e => handleChange('propertyDetailsAddress', e.target.value)}
+                  onBlur={e => extractPlotAndKhasra(e.target.value)}
+                  disabled={isReadOnly} 
+                  placeholder="Full address of the property" 
+                />
               </Field>
+              {/* Edit Switch for Plot No / Khasra No auto-extraction */}
+              <div className="col-span-1 md:col-span-3 flex items-center gap-3 -mt-2 mb-1">
+                <button
+                  type="button"
+                  onClick={() => setPlotKhasraEditMode(!plotKhasraEditMode)}
+                  disabled={isReadOnly}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${plotKhasraEditMode ? 'bg-emerald-500' : 'bg-gray-300'}`}
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 shadow ${plotKhasraEditMode ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+                <span className={`text-xs font-medium ${plotKhasraEditMode ? 'text-emerald-700' : 'text-gray-500'}`}>
+                  {plotKhasraEditMode ? 'Edit On' : 'Edit Off'} — Plot No & Khasra/Khata No {plotKhasraEditMode ? '(Manual Override)' : '(Auto-extracted from Address)'}
+                </span>
+              </div>
               <Field label="Plot No">
-                <input className={inputCls} value={fields.plotNo || ''} onChange={e => handleChange('plotNo', e.target.value)} disabled={isReadOnly} />
+                <input 
+                  className={`${inputCls} ${!plotKhasraEditMode ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
+                  value={fields.plotNo || ''} 
+                  onChange={e => handleChange('plotNo', e.target.value)} 
+                  disabled={isReadOnly || !plotKhasraEditMode} 
+                  placeholder={plotKhasraEditMode ? 'Enter plot number' : 'Auto-filled from address'}
+                />
               </Field>
               <Field label="S No / G. No / Khasra No / Khata No">
-                <input className={inputCls} value={fields.khasraNoKhataNo || ''} onChange={e => handleChange('khasraNoKhataNo', e.target.value)} disabled={isReadOnly} />
+                <input 
+                  className={`${inputCls} ${!plotKhasraEditMode ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
+                  value={fields.khasraNoKhataNo || ''} 
+                  onChange={e => handleChange('khasraNoKhataNo', e.target.value)} 
+                  disabled={isReadOnly || !plotKhasraEditMode} 
+                  placeholder={plotKhasraEditMode ? 'Enter Khasra/Khata number' : 'Auto-filled from address'}
+                />
               </Field>
               <Field label="Locality">
                 <input className={inputCls} value={fields.locality || ''} onChange={e => handleChange('locality', e.target.value)} disabled={isReadOnly} />
@@ -606,7 +666,25 @@ export default function ArkaFinance({
                 <input className={inputCls} value={fields.district || ''} onChange={e => handleChange('district', e.target.value)} disabled={isReadOnly} />
               </Field>
               <Field label="Pin Code">
-                <input className={inputCls} value={fields.pinCode || ''} onChange={e => handleChange('pinCode', e.target.value)} disabled={isReadOnly} />
+                <input 
+                  className={`${inputCls} ${fields.pinCode && fields.pinCode.length > 0 && fields.pinCode.length < 6 ? 'border-red-500' : ''}`} 
+                  value={fields.pinCode || ''} 
+                  onChange={e => {
+                    const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                    handleChange('pinCode', val);
+                  }}
+                  onBlur={() => {
+                    if (fields.pinCode && fields.pinCode.length > 0 && fields.pinCode.length < 6) {
+                      setMessage({ type: 'error', text: 'PIN code must be exactly 6 digits' });
+                      setTimeout(() => setMessage(null), 3000);
+                    }
+                  }}
+                  disabled={isReadOnly} 
+                  maxLength={6}
+                />
+                {fields.pinCode && fields.pinCode.length > 0 && fields.pinCode.length < 6 && (
+                  <span className="text-red-500 text-xs mt-1">PIN code must be exactly 6 digits</span>
+                )}
               </Field>
               <Field label="Nearby Land Mark">
                 <input className={inputCls} value={fields.nearbyLandMark || ''} onChange={e => handleChange('nearbyLandMark', e.target.value)} disabled={isReadOnly} />
