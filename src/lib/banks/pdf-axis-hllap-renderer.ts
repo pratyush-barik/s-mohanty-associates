@@ -54,7 +54,7 @@ export interface AxisHLLAPReportFields extends Partial<BaseReportFields> {
   classOfLocality: string;
   qualityOfInfrastructure: string;
 
-  // 4n. Boundaries
+  // 4n. Boundaries (Deed, Actual, and optional Sketch Map)
   boundaryEastDeed: string;
   boundaryEastActual: string;
   boundaryWestDeed: string;
@@ -63,6 +63,11 @@ export interface AxisHLLAPReportFields extends Partial<BaseReportFields> {
   boundaryNorthActual: string;
   boundarySouthDeed: string;
   boundarySouthActual: string;
+
+  boundaryEastSketch?: string;
+  boundaryWestSketch?: string;
+  boundaryNorthSketch?: string;
+  boundarySouthSketch?: string;
 
   // 4o - 4z
   boundariesMatch: string;
@@ -114,10 +119,13 @@ export interface AxisHLLAPReportFields extends Partial<BaseReportFields> {
   valueOfPlotFlat: string;
   estimatedCostOfConstruction: string;
   totalCostOfConstruction: string;
+  isUnderConstruction?: boolean;
+  constructionCostAsOnDate?: string;
   stageOfConstruction: string;
   percentWorkCompleted: string;
   percentDisbursementRecommended: string;
   currentValueOfProperty: string;
+  currentValueAsOnDate?: string;
   dateOfPropertyVisit: string;
 
   // 8 - 12
@@ -262,8 +270,8 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     fontSize: number = 8.5
   ): void {
     const totalLblW = this.colSl + this.colLbl;
-    const leftText = `${direction}: -${deedVal || 'NA'}`;
-    const rightText = `${direction}: -${actualVal || 'NA'}`;
+    const leftText = `${direction}: - ${deedVal || 'NA'}`;
+    const rightText = `${direction}: - ${actualVal || 'NA'}`;
 
     const hLeft = this.cellHeight(leftText, totalLblW, { bold: false, fontSize });
     const hRight = this.cellHeight(rightText, this.colVal, { bold: false, fontSize });
@@ -286,6 +294,31 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     });
 
     this.cursorY += rowH;
+  }
+
+  /**
+   * Draw single sketch boundary direction row spanning columns
+   */
+  private drawSketchBoundaryDirection(direction: string, val: string, fontSize: number = 8.5): void {
+    const totalLblW = this.colSl + this.colLbl;
+    const text = `${direction}: - ${val || 'NA'}`;
+    const h = Math.max(16, this.cellHeight(text, totalLblW, { bold: false, fontSize }));
+
+    this.checkPageBreak(h);
+
+    this.drawCell(MARGIN_L, this.cursorY, totalLblW, h, text, {
+      bold: false,
+      fontSize,
+      align: 'left',
+      vAlign: 'middle',
+    });
+    this.drawCell(MARGIN_L + totalLblW, this.cursorY, this.colVal, h, '', {
+      fontSize,
+      align: 'left',
+      vAlign: 'middle',
+    });
+
+    this.cursorY += h;
   }
 
   /**
@@ -495,10 +528,40 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.drawBoundaryRow('North', fields.boundaryNorthDeed, fields.boundaryNorthActual);
     this.drawBoundaryRow('South', fields.boundarySouthDeed, fields.boundarySouthActual);
 
+    // Optional: Boundaries of Property as per sketch map
+    const hasSketchBoundaries = !!(
+      fields.boundaryEastSketch ||
+      fields.boundaryWestSketch ||
+      fields.boundaryNorthSketch ||
+      fields.boundarySouthSketch
+    );
+    if (hasSketchBoundaries) {
+      this.checkPageBreak(16);
+      this.drawCell(MARGIN_L, this.cursorY, bHeaderW1, 16, 'Boundaries of Property as per sketch map', {
+        bold: false,
+        fontSize: 8.5,
+        fillColor: LBL_BG,
+        bgOpacity: 0.5,
+        align: 'left',
+        vAlign: 'middle',
+      });
+      this.drawCell(MARGIN_L + bHeaderW1, this.cursorY, bHeaderW2, 16, '', {
+        fontSize: 8.5,
+        align: 'left',
+        vAlign: 'middle',
+      });
+      this.cursorY += 16;
+
+      this.drawSketchBoundaryDirection('East', fields.boundaryEastSketch || '');
+      this.drawSketchBoundaryDirection('West', fields.boundaryWestSketch || '');
+      this.drawSketchBoundaryDirection('North', fields.boundaryNorthSketch || '');
+      this.drawSketchBoundaryDirection('South', fields.boundarySouthSketch || '');
+    }
+
     // 4o - 4y
     this.drawHLLAPRow('o.', 'Does the Boundaries at Site match, as mentioned in documentation?', fields.boundariesMatch || 'Yes(Boundary matching as per documents)');
     this.drawHLLAPRow('p.', 'Status of the Land/ Flat : Free Hold/Leased / Development Authority', fields.statusOfLand || 'Free Hold');
-    this.drawHLLAPRow('q.', 'Type of Property : Bungalow/row house/Plot/ flat (1BHK/2BHK/3BHK) /commercial', fields.typeOfProperty || 'Residential');
+    this.drawHLLAPRow('q.', 'Type of Property : Bungalow/row house/Plot/ flat (1BHK/2BHK/3BHK)/Residential', fields.typeOfProperty || 'Residential');
     this.drawHLLAPRow('r.', 'Approved usage of Property: Agri/ Mix /Industrial/commercial/Residential (Restrictive covenants in regards to Land Use, if any)', fields.approvedUsage || 'Residential');
     this.drawHLLAPRow('s.', 'Actual Usage of the Property', fields.actualUsage || 'Residential');
     this.drawHLLAPRow('t.', 'Type of Structure : Load Bearing/RCC/Aluform shuttering', fields.typeOfStructure || 'RCC Framed Structure');
@@ -510,8 +573,8 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
 
     // 4z. Longitude & Latitude
     this.drawHLLAPRow('z.', 'Longitude & latitude of the property', '');
-    this.drawHLLAPRow('i.', 'Latitude', fields.latitude || 'NA');
-    this.drawHLLAPRow('ii.', 'Longitude', fields.longitude || 'NA');
+    this.drawHLLAPRow('i.', 'Longitude', fields.longitude || 'NA');
+    this.drawHLLAPRow('ii.', 'Latitude', fields.latitude || 'NA');
 
     // --- Section 5: APPROVAL DETAILS ---
     this.drawSectionBanner('5.', 'APPROVAL DETAILS');
@@ -573,16 +636,46 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.drawHLLAPRow('a.', 'Recommended rate of the Plot/Flat', fields.recommendedRatePerSqft || 'NA');
     this.drawHLLAPRow('b.', 'Value of the Plot/Flat', fields.valueOfPlotFlat || 'NA');
     this.drawHLLAPRow('c.', 'Estimated Cost of construction', fields.estimatedCostOfConstruction || 'NA');
-    this.drawHLLAPRow('d.', 'Total Cost of construction(approved G+1)', fields.totalCostOfConstruction || 'NA');
+    this.drawHLLAPRow(
+      'd.',
+      fields.isUnderConstruction
+        ? 'Total Cost of construction(Proposed G+2) on 100% completion'
+        : 'Total Cost of construction(approved G+1)',
+      fields.totalCostOfConstruction || 'NA'
+    );
+
+    // If Under-Construction, show "As on date (X%)" construction cost
+    if (fields.isUnderConstruction && fields.constructionCostAsOnDate) {
+      this.drawMergedLabelRow(
+        `As on date (${fields.percentWorkCompleted || '0%'})`,
+        fields.constructionCostAsOnDate
+      );
+    }
+
     this.drawHLLAPRow('e.', 'Stage of Construction', fields.stageOfConstruction || '100%');
     this.drawHLLAPRow('f.', '% Work completed', fields.percentWorkCompleted || '100%');
     this.drawHLLAPRow('g.', '% Disbursement Recommended', fields.percentDisbursementRecommended || '100%');
+
+    // Current Value 100% completion
     this.drawMergedLabelRow(
-      'Current Value of the Property (Plot + construction) on 100% completion',
+      fields.isUnderConstruction
+        ? 'Current Value of the Property (Plot + construction) on 100% completion'
+        : 'Current Value of the Property (Plot + construction) on 100% completion',
       fields.currentValueOfProperty || 'NA',
       true,
       true
     );
+
+    // If Under-Construction, show "As on date X% completion" Current Value
+    if (fields.isUnderConstruction && fields.currentValueAsOnDate) {
+      this.drawMergedLabelRow(
+        `As on date ${fields.percentWorkCompleted || ''} completion`,
+        fields.currentValueAsOnDate,
+        true,
+        true
+      );
+    }
+
     this.drawHLLAPRow('i.', 'Date of Property Visit', formatReportDate(fields.dateOfPropertyVisit || fields.reportDate));
 
     // --- Section 8 - 11 ---
@@ -642,16 +735,16 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     }
     this.cursorY += undertakingH;
 
-    // --- Page 3: Photographs & Maps Page ---
+    // --- Page 3+: Photographs & Maps Pages ---
     await this.drawPhotosAndMaps(fields, images);
 
     return await this.save();
   }
 
   /**
-   * Draw the 2-column final page:
-   * LEFT column (57%): Photographs grid
-   * RIGHT column (43%): Location Map stacked above Mouza Map
+   * Draw the Photographs and Maps annexure pages:
+   * Multi-page dedicated layout matching Report 2 if sketch map is present or photos > 4;
+   * Otherwise compact 2-column layout matching Report 1.
    */
   private async drawPhotosAndMaps(
     fields: AxisHLLAPReportFields,
@@ -662,146 +755,277 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       sketchMaps?: Uint8Array[];
     }
   ) {
-    this.addPage();
-    this.cursorY = MARGIN_T;
+    const hasSketchMap = (images.sketchMaps && images.sketchMaps.length > 0) || false;
+    const photoCount = images.photos.length;
 
-    const leftColW = CONTENT_W * 0.56;  // ~272pt
-    const rightColW = CONTENT_W * 0.42; // ~204pt
-    const gap = CONTENT_W - leftColW - rightColW; // ~11pt
+    if (hasSketchMap || photoCount > 4) {
+      // ═════════════════════════════════════════════════════════════════
+      // MODE A: MULTI-PAGE DEDICATED ANNEXURES (Matching Report 2)
+      // ═════════════════════════════════════════════════════════════════
 
-    const leftX = MARGIN_L;
-    const rightX = MARGIN_L + leftColW + gap;
-    const startY = this.pdfY(this.cursorY);
+      // 1. Page of Photographs
+      if (photoCount > 0) {
+        this.addPage();
+        this.cursorY = MARGIN_T;
+        const startY = this.pdfY(this.cursorY);
 
-    // 1. LEFT COLUMN: PHOTOGRAPHS
-    const photoHeading = 'PHOTOGRAPHS';
-    const photoHw = this.fontBold.widthOfTextAtSize(photoHeading, 10);
-    this.page.drawText(photoHeading, {
-      x: leftX,
-      y: startY - 10,
-      size: 10,
-      font: this.fontBold,
-      color: rgb(0, 0, 0),
-    });
-    this.page.drawLine({
-      start: { x: leftX, y: startY - 12 },
-      end: { x: leftX + photoHw, y: startY - 12 },
-      thickness: 1,
-      color: rgb(0, 0, 0),
-    });
+        const photoHeading = 'PHOTOGRAPHS';
+        const photoHw = this.fontBold.widthOfTextAtSize(photoHeading, 10);
+        this.page.drawText(photoHeading, { x: MARGIN_L, y: startY - 10, size: 10, font: this.fontBold, color: rgb(0,0,0) });
+        this.page.drawLine({ start: { x: MARGIN_L, y: startY - 12 }, end: { x: MARGIN_L + photoHw, y: startY - 12 }, thickness: 1, color: rgb(0,0,0) });
 
-    const photoStartY = startY - 20;
-    const availablePhotoH = PAGE_H - MARGIN_T - MARGIN_B - 25; // ~590pt
+        const photoStartY = startY - 22;
+        const availablePhotoH = PAGE_H - MARGIN_T - MARGIN_B - 25;
+        const pGridCols = 2;
+        const pGridRows = Math.min(4, Math.ceil(photoCount / pGridCols));
+        const pGap = 8;
+        const pW = (CONTENT_W - pGap * (pGridCols - 1)) / pGridCols;
+        const pH = Math.min(160, (availablePhotoH - pGap * (pGridRows - 1)) / pGridRows);
 
-    // Arrange up to 8 photos in a 2-column grid inside leftColW
-    const numPhotos = Math.min(8, images.photos.length);
-    if (numPhotos > 0) {
-      const pGridCols = 2;
-      const pGridRows = Math.min(4, Math.ceil(numPhotos / pGridCols));
-      const pGap = 6;
-      const pW = (leftColW - pGap * (pGridCols - 1)) / pGridCols;
-      const pH = Math.min(135, (availablePhotoH - pGap * (pGridRows - 1)) / pGridRows);
+        for (let i = 0; i < Math.min(8, photoCount); i++) {
+          const colIdx = i % pGridCols;
+          const rowIdx = Math.floor(i / pGridCols);
+          const px = MARGIN_L + colIdx * (pW + pGap);
+          const py = photoStartY - rowIdx * (pH + pGap) - pH;
 
-      for (let i = 0; i < numPhotos; i++) {
-        const colIdx = i % pGridCols;
-        const rowIdx = Math.floor(i / pGridCols);
-        const px = leftX + colIdx * (pW + pGap);
-        const py = photoStartY - rowIdx * (pH + pGap) - pH;
+          const photoItem = images.photos[i];
+          const embeddedImg = await this.embedImgSafe(photoItem.bytes);
 
-        const photoItem = images.photos[i];
-        const embeddedImg = await this.embedImgSafe(photoItem.bytes);
+          this.page.drawRectangle({
+            x: px,
+            y: py,
+            width: pW,
+            height: pH,
+            borderColor: rgb(0, 0, 0),
+            borderWidth: 0.5,
+          });
 
-        // Draw outer border
+          if (embeddedImg) {
+            this.page.drawImage(embeddedImg, {
+              x: px + 1,
+              y: py + 1,
+              width: pW - 2,
+              height: pH - 2,
+            });
+          }
+        }
+      }
+
+      // 2. Dedicated Maps Page: Mouza Map (top) & Location Map (bottom)
+      if (images.mouzaMaps.length > 0 || images.locationMaps.length > 0) {
+        this.addPage();
+        this.cursorY = MARGIN_T;
+        const mapPageStartY = this.pdfY(this.cursorY);
+        const halfH = (PAGE_H - MARGIN_T - MARGIN_B - 65) / 2;
+
+        // Top: Mouza Map
+        this.page.drawText('MOUZA MAP', { x: MARGIN_L, y: mapPageStartY - 10, size: 9, font: this.fontBold, color: rgb(0,0,0) });
+        const mouzaBoxY = mapPageStartY - 20 - halfH;
         this.page.drawRectangle({
-          x: px,
-          y: py,
-          width: pW,
-          height: pH,
-          borderColor: rgb(0, 0, 0),
+          x: MARGIN_L,
+          y: mouzaBoxY,
+          width: CONTENT_W,
+          height: halfH,
+          borderColor: rgb(0,0,0),
           borderWidth: 0.5,
         });
+        if (images.mouzaMaps.length > 0) {
+          const mImg = await this.embedImgSafe(images.mouzaMaps[0]);
+          if (mImg) {
+            this.page.drawImage(mImg, {
+              x: MARGIN_L + 1,
+              y: mouzaBoxY + 1,
+              width: CONTENT_W - 2,
+              height: halfH - 2,
+            });
+          }
+        }
 
-        if (embeddedImg) {
-          this.page.drawImage(embeddedImg, {
-            x: px + 1,
-            y: py + 1,
-            width: pW - 2,
-            height: pH - 2,
+        // Bottom: Location Map
+        const locHeadingText = `LOCATION MAP (LAT: ${fields.latitude || 'NA'}, LONG: ${fields.longitude || 'NA'})`;
+        const locBoxTop = mouzaBoxY - 20;
+        this.page.drawText(this.sanitizeText(locHeadingText), { x: MARGIN_L, y: locBoxTop, size: 9, font: this.fontBold, color: rgb(0,0,0) });
+        const locBoxY = locBoxTop - 10 - halfH;
+        this.page.drawRectangle({
+          x: MARGIN_L,
+          y: locBoxY,
+          width: CONTENT_W,
+          height: halfH,
+          borderColor: rgb(0,0,0),
+          borderWidth: 0.5,
+        });
+        if (images.locationMaps.length > 0) {
+          const lImg = await this.embedImgSafe(images.locationMaps[0]);
+          if (lImg) {
+            this.page.drawImage(lImg, {
+              x: MARGIN_L + 1,
+              y: locBoxY + 1,
+              width: CONTENT_W - 2,
+              height: halfH - 2,
+            });
+          }
+        }
+      }
+
+      // 3. Dedicated Sketch Map Page
+      if (hasSketchMap) {
+        this.addPage();
+        this.cursorY = MARGIN_T;
+        const sketchStartY = this.pdfY(this.cursorY);
+        this.page.drawText('SKETCH MAP', { x: MARGIN_L, y: sketchStartY - 10, size: 10, font: this.fontBold, color: rgb(0,0,0) });
+        const sketchBoxH = PAGE_H - MARGIN_T - MARGIN_B - 30;
+        const sketchBoxY = sketchStartY - 20 - sketchBoxH;
+        this.page.drawRectangle({
+          x: MARGIN_L,
+          y: sketchBoxY,
+          width: CONTENT_W,
+          height: sketchBoxH,
+          borderColor: rgb(0,0,0),
+          borderWidth: 0.5,
+        });
+        const sImg = await this.embedImgSafe(images.sketchMaps![0]);
+        if (sImg) {
+          this.page.drawImage(sImg, {
+            x: MARGIN_L + 1,
+            y: sketchBoxY + 1,
+            width: CONTENT_W - 2,
+            height: sketchBoxH - 2,
           });
         }
       }
-    }
+    } else {
+      // ═════════════════════════════════════════════════════════════════
+      // MODE B: COMPACT 2-COLUMN FINAL PAGE (Matching Report 1)
+      // ═════════════════════════════════════════════════════════════════
+      this.addPage();
+      this.cursorY = MARGIN_T;
 
-    // 2. RIGHT COLUMN: LOCATION MAP & MOUZA MAP
-    const mapH = (availablePhotoH - 45) / 2; // Each map gets ~270pt
+      const leftColW = CONTENT_W * 0.56;  // ~272pt
+      const rightColW = CONTENT_W * 0.42; // ~204pt
+      const gap = CONTENT_W - leftColW - rightColW; // ~11pt
 
-    // Top: Location Map
-    const locHeading = `LOCATION MAP (LAT: ${fields.latitude || 'NA'}, LONG: ${fields.longitude || 'NA'})`;
-    this.page.drawText(this.sanitizeText(locHeading), {
-      x: rightX,
-      y: startY - 10,
-      size: 8.5,
-      font: this.fontBold,
-      color: rgb(0, 0, 0),
-    });
-    const locY = startY - 20 - mapH;
-    this.page.drawRectangle({
-      x: rightX,
-      y: locY,
-      width: rightColW,
-      height: mapH,
-      borderColor: rgb(0, 0, 0),
-      borderWidth: 0.5,
-    });
-    if (images.locationMaps.length > 0) {
-      const locImg = await this.embedImgSafe(images.locationMaps[0]);
-      if (locImg) {
-        this.page.drawImage(locImg, {
-          x: rightX + 1,
-          y: locY + 1,
-          width: rightColW - 2,
-          height: mapH - 2,
-        });
+      const leftX = MARGIN_L;
+      const rightX = MARGIN_L + leftColW + gap;
+      const startY = this.pdfY(this.cursorY);
+
+      // 1. LEFT COLUMN: PHOTOGRAPHS
+      const photoHeading = 'PHOTOGRAPHS';
+      const photoHw = this.fontBold.widthOfTextAtSize(photoHeading, 10);
+      this.page.drawText(photoHeading, {
+        x: leftX,
+        y: startY - 10,
+        size: 10,
+        font: this.fontBold,
+        color: rgb(0, 0, 0),
+      });
+      this.page.drawLine({
+        start: { x: leftX, y: startY - 12 },
+        end: { x: leftX + photoHw, y: startY - 12 },
+        thickness: 1,
+        color: rgb(0, 0, 0),
+      });
+
+      const photoStartY = startY - 20;
+      const availablePhotoH = PAGE_H - MARGIN_T - MARGIN_B - 25;
+
+      const numPhotos = Math.min(8, images.photos.length);
+      if (numPhotos > 0) {
+        const pGridCols = 2;
+        const pGridRows = Math.min(4, Math.ceil(numPhotos / pGridCols));
+        const pGap = 6;
+        const pW = (leftColW - pGap * (pGridCols - 1)) / pGridCols;
+        const pH = Math.min(135, (availablePhotoH - pGap * (pGridRows - 1)) / pGridRows);
+
+        for (let i = 0; i < numPhotos; i++) {
+          const colIdx = i % pGridCols;
+          const rowIdx = Math.floor(i / pGridCols);
+          const px = leftX + colIdx * (pW + pGap);
+          const py = photoStartY - rowIdx * (pH + pGap) - pH;
+
+          const photoItem = images.photos[i];
+          const embeddedImg = await this.embedImgSafe(photoItem.bytes);
+
+          this.page.drawRectangle({
+            x: px,
+            y: py,
+            width: pW,
+            height: pH,
+            borderColor: rgb(0, 0, 0),
+            borderWidth: 0.5,
+          });
+
+          if (embeddedImg) {
+            this.page.drawImage(embeddedImg, {
+              x: px + 1,
+              y: py + 1,
+              width: pW - 2,
+              height: pH - 2,
+            });
+          }
+        }
       }
-    }
 
-    // Bottom: Mouza Map
-    const mouzaHeadingY = locY - 16;
-    this.page.drawText('MOUZA MAP', {
-      x: rightX,
-      y: mouzaHeadingY,
-      size: 8.5,
-      font: this.fontBold,
-      color: rgb(0, 0, 0),
-    });
-    const mouzaY = mouzaHeadingY - 8 - mapH;
-    this.page.drawRectangle({
-      x: rightX,
-      y: mouzaY,
-      width: rightColW,
-      height: mapH,
-      borderColor: rgb(0, 0, 0),
-      borderWidth: 0.5,
-    });
-    if (images.mouzaMaps.length > 0) {
-      const mouzaImg = await this.embedImgSafe(images.mouzaMaps[0]);
-      if (mouzaImg) {
-        this.page.drawImage(mouzaImg, {
-          x: rightX + 1,
-          y: mouzaY + 1,
-          width: rightColW - 2,
-          height: mapH - 2,
-        });
+      // 2. RIGHT COLUMN: LOCATION MAP & MOUZA MAP
+      const mapH = (availablePhotoH - 45) / 2;
+
+      // Top: Location Map
+      const locHeading = `LOCATION MAP (LAT: ${fields.latitude || 'NA'}, LONG: ${fields.longitude || 'NA'})`;
+      this.page.drawText(this.sanitizeText(locHeading), {
+        x: rightX,
+        y: startY - 10,
+        size: 8.5,
+        font: this.fontBold,
+        color: rgb(0, 0, 0),
+      });
+      const locY = startY - 20 - mapH;
+      this.page.drawRectangle({
+        x: rightX,
+        y: locY,
+        width: rightColW,
+        height: mapH,
+        borderColor: rgb(0, 0, 0),
+        borderWidth: 0.5,
+      });
+      if (images.locationMaps.length > 0) {
+        const locImg = await this.embedImgSafe(images.locationMaps[0]);
+        if (locImg) {
+          this.page.drawImage(locImg, {
+            x: rightX + 1,
+            y: locY + 1,
+            width: rightColW - 2,
+            height: mapH - 2,
+          });
+        }
       }
-    } else if (images.sketchMaps && images.sketchMaps.length > 0) {
-      const sketchImg = await this.embedImgSafe(images.sketchMaps[0]);
-      if (sketchImg) {
-        this.page.drawImage(sketchImg, {
-          x: rightX + 1,
-          y: mouzaY + 1,
-          width: rightColW - 2,
-          height: mapH - 2,
-        });
+
+      // Bottom: Mouza Map
+      const mouzaHeadingY = locY - 16;
+      this.page.drawText('MOUZA MAP', {
+        x: rightX,
+        y: mouzaHeadingY,
+        size: 8.5,
+        font: this.fontBold,
+        color: rgb(0, 0, 0),
+      });
+      const mouzaY = mouzaHeadingY - 8 - mapH;
+      this.page.drawRectangle({
+        x: rightX,
+        y: mouzaY,
+        width: rightColW,
+        height: mapH,
+        borderColor: rgb(0, 0, 0),
+        borderWidth: 0.5,
+      });
+      if (images.mouzaMaps.length > 0) {
+        const mouzaImg = await this.embedImgSafe(images.mouzaMaps[0]);
+        if (mouzaImg) {
+          this.page.drawImage(mouzaImg, {
+            x: rightX + 1,
+            y: mouzaY + 1,
+            width: rightColW - 2,
+            height: mapH - 2,
+          });
+        }
       }
     }
   }

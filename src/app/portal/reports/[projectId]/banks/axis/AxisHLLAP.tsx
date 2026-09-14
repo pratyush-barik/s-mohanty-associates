@@ -122,7 +122,7 @@ export default function AxisHLLAP({
       classOfLocality: raw.classOfLocality || 'Middle Class',
       qualityOfInfrastructure: raw.qualityOfInfrastructure || 'Good',
 
-      // 4n. Boundaries
+      // 4n. Boundaries (Deed vs Actual vs Sketch Map)
       boundaryEastDeed: raw.boundaryEastDeed || 'Seller',
       boundaryEastActual: raw.boundaryEastActual || 'Vacant land',
       boundaryWestDeed: raw.boundaryWestDeed || '',
@@ -131,6 +131,11 @@ export default function AxisHLLAP({
       boundaryNorthActual: raw.boundaryNorthActual || '',
       boundarySouthDeed: raw.boundarySouthDeed || 'Road',
       boundarySouthActual: raw.boundarySouthActual || '15 feet wide Road',
+
+      boundaryEastSketch: raw.boundaryEastSketch || '',
+      boundaryWestSketch: raw.boundaryWestSketch || '',
+      boundaryNorthSketch: raw.boundaryNorthSketch || '',
+      boundarySouthSketch: raw.boundarySouthSketch || '',
 
       // 4o - 4z
       boundariesMatch: raw.boundariesMatch || 'Yes(Boundary matching as per documents)',
@@ -176,16 +181,19 @@ export default function AxisHLLAP({
       projectedLifeOfStructure: raw.projectedLifeOfStructure || '58-Years',
 
       // 7. Recommended Valuation
+      isUnderConstruction: raw.isUnderConstruction !== undefined ? !!raw.isUnderConstruction : false,
       recommendedRatePerSqft: raw.recommendedRatePerSqft || '500',
       plotAreaForValuation: raw.plotAreaForValuation || '522',
       plotRateForValuation: raw.plotRateForValuation || '500',
       valueOfPlotFlat: raw.valueOfPlotFlat || 'Value of Plot- 522sqft X Rs.500/- = Rs.2,61,000/-',
       estimatedCostOfConstruction: raw.estimatedCostOfConstruction || 'NA',
       totalCostOfConstruction: raw.totalCostOfConstruction || '1020sqft X Rs.1800/-=Rs.18,36,000/-',
+      constructionCostAsOnDate: raw.constructionCostAsOnDate || '',
       stageOfConstruction: raw.stageOfConstruction || '100%',
       percentWorkCompleted: raw.percentWorkCompleted || '100%',
       percentDisbursementRecommended: raw.percentDisbursementRecommended || '100%',
       currentValueOfProperty: raw.currentValueOfProperty || 'Rs.2,61,000/-+ Rs.18,36,000/-=Rs.20,97,000/-',
+      currentValueAsOnDate: raw.currentValueAsOnDate || '',
       dateOfPropertyVisit: raw.dateOfPropertyVisit || new Date().toISOString().split('T')[0],
 
       // 8 - 12
@@ -215,6 +223,14 @@ export default function AxisHLLAP({
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [uploading, setUploading] = useState(false);
   const [showBucketModal, setShowBucketModal] = useState(false);
+  const [showSketchBoundaries, setShowSketchBoundaries] = useState(() => {
+    return !!(
+      initialFields?.boundaryEastSketch ||
+      initialFields?.boundaryWestSketch ||
+      initialFields?.boundaryNorthSketch ||
+      initialFields?.boundarySouthSketch
+    );
+  });
 
   // Field change handler
   const handleChange = (key: keyof AxisHLLAPReportFields, val: any) => {
@@ -278,24 +294,38 @@ export default function AxisHLLAP({
     // Parse construction rate from totalCostOfConstruction string or default 1800
     const constRateMatch = String(fields.totalCostOfConstruction).match(/Rs\.?\s*([0-9]+)/i);
     const constRate = constRateMatch ? parseNum(constRateMatch[1]) : 1800;
-    const constTotal = appSum * constRate;
+    const constTotal100 = appSum * constRate;
+    const currentTotal100 = plotTotal + constTotal100;
 
-    // 3. Current Market Value = Plot Value + Construction Value
-    const currentTotal = plotTotal + constTotal;
+    let asOnDateConstStr = '';
+    let asOnDateCurrentStr = '';
+    let distressedTotal = 0;
 
-    // 4. Distressed Value = Exactly 80% of Current Value
-    const distressedTotal = Math.round(currentTotal * 0.80);
+    if (fields.isUnderConstruction) {
+      const workPct = parseNum(fields.percentWorkCompleted) || 35;
+      const constAsOnDate = Math.round(constTotal100 * (workPct / 100));
+      const rateAsOnDate = Math.round(constRate * (workPct / 100));
+      const currentTotalAsOnDate = plotTotal + constAsOnDate;
+
+      asOnDateConstStr = `${appSum}sqft@ Rs.${rateAsOnDate}/-= Rs.${formatIndianCurrency(constAsOnDate)}/-`;
+      asOnDateCurrentStr = `Rs.${formatIndianCurrency(plotTotal)}/- + Rs.${formatIndianCurrency(constAsOnDate)}/- =Rs.${formatIndianCurrency(currentTotalAsOnDate)}/-`;
+      distressedTotal = Math.round(currentTotalAsOnDate * 0.80);
+    } else {
+      distressedTotal = Math.round(currentTotal100 * 0.80);
+    }
 
     setFields(prev => ({
       ...prev,
       approvedBUATotal: `${appSum}sqft`,
       valueOfPlotFlat: `Value of Plot- ${plotArea}sqft X Rs.${plotRate}/- = Rs.${formatIndianCurrency(plotTotal)}/-`,
-      totalCostOfConstruction: `${appSum}sqft X Rs.${constRate}/-=Rs.${formatIndianCurrency(constTotal)}/-`,
-      currentValueOfProperty: `Rs.${formatIndianCurrency(plotTotal)}/-+ Rs.${formatIndianCurrency(constTotal)}/-=Rs.${formatIndianCurrency(currentTotal)}/-`,
+      totalCostOfConstruction: `${appSum}sqft@ Rs.${constRate}/-=Rs.${formatIndianCurrency(constTotal100)}/-`,
+      constructionCostAsOnDate: asOnDateConstStr,
+      currentValueOfProperty: `Rs.${formatIndianCurrency(plotTotal)}/- + Rs.${formatIndianCurrency(constTotal100)}/- =Rs.${formatIndianCurrency(currentTotal100)}/-`,
+      currentValueAsOnDate: asOnDateCurrentStr,
       distressedValuation: `Rs.${formatIndianCurrency(distressedTotal)}/-`,
     }));
 
-    setMessage({ text: 'Calculations updated successfully!', type: 'success' });
+    setMessage({ text: 'Calculations updated successfully (Distressed = 80%)!', type: 'success' });
     setTimeout(() => setMessage(null), 3000);
   };
 
@@ -462,14 +492,46 @@ export default function AxisHLLAP({
   };
 
   const handlePreviewPDF = async () => {
+    // Open a blank tab synchronously in click handler to bypass popup blockers
+    const previewWindow = window.open('', '_blank');
+    if (previewWindow) {
+      previewWindow.document.write(`
+        <html>
+          <head><title>Generating Axis Bank HL-LAP PDF Preview...</title></head>
+          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f8f9fa; color: #495057;">
+            <div style="text-align: center;">
+              <div style="border: 4px solid #dee2e6; border-top: 4px solid #97144d; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px;"></div>
+              <p style="font-size: 16px; font-weight: 600; margin: 0;">Generating Axis Bank HL-LAP PDF Preview...</p>
+              <p style="font-size: 12px; color: #6c757d; margin: 8px 0 0;">Please wait while the document compiles.</p>
+            </div>
+            <style>
+              @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            </style>
+          </body>
+        </html>
+      `);
+      previewWindow.document.close();
+    }
+
     setLoading(true);
     try {
       const pdfBytes = await buildPDF();
       const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
-      window.open(url, '_blank');
+      if (previewWindow && !previewWindow.closed) {
+        previewWindow.location.href = url;
+      } else {
+        const a = document.createElement('a');
+        a.href = url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
     } catch (err: any) {
-      alert('Error generating PDF preview: ' + err.message);
+      if (previewWindow && !previewWindow.closed) previewWindow.close();
+      alert('Error generating PDF preview: ' + (err?.message || String(err)));
     } finally {
       setLoading(false);
     }
@@ -499,7 +561,7 @@ export default function AxisHLLAP({
     { id: 'sec-1', title: '1. Customer & Loan Details' },
     { id: 'sec-2', title: '2. Documents Provided' },
     { id: 'sec-3', title: '3. Property Overview & Location' },
-    { id: 'sec-4', title: '4. Boundaries (Deed vs Actual)' },
+    { id: 'sec-4', title: '4. Boundaries (Deed / Actual / Sketch)' },
     { id: 'sec-5', title: '5. Site & Structure Attributes' },
     { id: 'sec-6', title: '6. Approval Details' },
     { id: 'sec-7', title: '7. Construction Details & Dynamic BUA' },
@@ -757,125 +819,186 @@ export default function AxisHLLAP({
             </div>
           </Section>
 
-          {/* Section 4: Boundaries (Deed vs Actual) */}
-          <Section title="4. Boundaries (Deed vs Actual)" id="sec-4" defaultOpen={true}>
-            <div className="overflow-x-auto rounded-xl border border-slate-200">
-              <table className="w-full text-sm text-left border-collapse">
-                <thead className="bg-slate-100 text-slate-700 font-bold">
-                  <tr>
-                    <th className="p-3 border-b border-r w-24">Direction</th>
-                    <th className="p-3 border-b border-r">As Per Sale Deed</th>
-                    <th className="p-3 border-b">As Per Actual (Site)</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 bg-white">
-                  <tr>
-                    <td className="p-3 font-semibold text-slate-600 bg-slate-50 border-r">East</td>
-                    <td className="p-2 border-r">
-                      <input
-                        type="text"
-                        value={fields.boundaryEastDeed}
-                        onChange={e => handleChange('boundaryEastDeed', e.target.value)}
-                        className={inputCls}
-                        placeholder="e.g. Seller"
-                        disabled={isReadOnly}
-                      />
-                    </td>
-                    <td className="p-2">
-                      <input
-                        type="text"
-                        value={fields.boundaryEastActual}
-                        onChange={e => handleChange('boundaryEastActual', e.target.value)}
-                        className={inputCls}
-                        placeholder="e.g. Vacant land"
-                        disabled={isReadOnly}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="p-3 font-semibold text-slate-600 bg-slate-50 border-r">West</td>
-                    <td className="p-2 border-r">
-                      <input
-                        type="text"
-                        value={fields.boundaryWestDeed}
-                        onChange={e => handleChange('boundaryWestDeed', e.target.value)}
-                        className={inputCls}
-                        placeholder="e.g. Balaram Swain"
-                        disabled={isReadOnly}
-                      />
-                    </td>
-                    <td className="p-2">
-                      <input
-                        type="text"
-                        value={fields.boundaryWestActual}
-                        onChange={e => handleChange('boundaryWestActual', e.target.value)}
-                        className={inputCls}
-                        placeholder="e.g. House of Balaram Swain"
-                        disabled={isReadOnly}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="p-3 font-semibold text-slate-600 bg-slate-50 border-r">North</td>
-                    <td className="p-2 border-r">
-                      <input
-                        type="text"
-                        value={fields.boundaryNorthDeed}
-                        onChange={e => handleChange('boundaryNorthDeed', e.target.value)}
-                        className={inputCls}
-                        placeholder="e.g. Laxman Swain"
-                        disabled={isReadOnly}
-                      />
-                    </td>
-                    <td className="p-2">
-                      <input
-                        type="text"
-                        value={fields.boundaryNorthActual}
-                        onChange={e => handleChange('boundaryNorthActual', e.target.value)}
-                        className={inputCls}
-                        placeholder="e.g. Land of Laxman Swain"
-                        disabled={isReadOnly}
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="p-3 font-semibold text-slate-600 bg-slate-50 border-r">South</td>
-                    <td className="p-2 border-r">
-                      <input
-                        type="text"
-                        value={fields.boundarySouthDeed}
-                        onChange={e => handleChange('boundarySouthDeed', e.target.value)}
-                        className={inputCls}
-                        placeholder="e.g. Road"
-                        disabled={isReadOnly}
-                      />
-                    </td>
-                    <td className="p-2">
-                      <input
-                        type="text"
-                        value={fields.boundarySouthActual}
-                        onChange={e => handleChange('boundarySouthActual', e.target.value)}
-                        className={inputCls}
-                        placeholder="e.g. 15 feet wide Road"
-                        disabled={isReadOnly}
-                      />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+          {/* Section 4: Boundaries (Deed vs Actual vs Sketch Map) */}
+          <Section title="4. Boundaries (Deed / Actual / Sketch Map)" id="sec-4" defaultOpen={true}>
+            <div className="space-y-4">
+              <div className="overflow-x-auto rounded-xl border border-slate-200">
+                <table className="w-full text-sm text-left border-collapse">
+                  <thead className="bg-slate-100 text-slate-700 font-bold">
+                    <tr>
+                      <th className="p-3 border-b border-r w-24">Direction</th>
+                      <th className="p-3 border-b border-r">As Per Sale Deed</th>
+                      <th className="p-3 border-b border-r">As Per Actual (Site)</th>
+                      {showSketchBoundaries && <th className="p-3 border-b">As Per Sketch Map</th>}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 bg-white">
+                    <tr>
+                      <td className="p-3 font-semibold text-slate-600 bg-slate-50 border-r">East</td>
+                      <td className="p-2 border-r">
+                        <input
+                          type="text"
+                          value={fields.boundaryEastDeed}
+                          onChange={e => handleChange('boundaryEastDeed', e.target.value)}
+                          className={inputCls}
+                          placeholder="e.g. Seller"
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="p-2 border-r">
+                        <input
+                          type="text"
+                          value={fields.boundaryEastActual}
+                          onChange={e => handleChange('boundaryEastActual', e.target.value)}
+                          className={inputCls}
+                          placeholder="e.g. Vacant land"
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      {showSketchBoundaries && (
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            value={fields.boundaryEastSketch || ''}
+                            onChange={e => handleChange('boundaryEastSketch', e.target.value)}
+                            className={inputCls}
+                            placeholder="e.g. Mukesh Kumar Biswal"
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                      )}
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-semibold text-slate-600 bg-slate-50 border-r">West</td>
+                      <td className="p-2 border-r">
+                        <input
+                          type="text"
+                          value={fields.boundaryWestDeed}
+                          onChange={e => handleChange('boundaryWestDeed', e.target.value)}
+                          className={inputCls}
+                          placeholder="e.g. Balaram Swain"
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="p-2 border-r">
+                        <input
+                          type="text"
+                          value={fields.boundaryWestActual}
+                          onChange={e => handleChange('boundaryWestActual', e.target.value)}
+                          className={inputCls}
+                          placeholder="e.g. House of Balaram Swain"
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      {showSketchBoundaries && (
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            value={fields.boundaryWestSketch || ''}
+                            onChange={e => handleChange('boundaryWestSketch', e.target.value)}
+                            className={inputCls}
+                            placeholder="e.g. Pranjana Prava Rout"
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                      )}
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-semibold text-slate-600 bg-slate-50 border-r">North</td>
+                      <td className="p-2 border-r">
+                        <input
+                          type="text"
+                          value={fields.boundaryNorthDeed}
+                          onChange={e => handleChange('boundaryNorthDeed', e.target.value)}
+                          className={inputCls}
+                          placeholder="e.g. Laxman Swain"
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="p-2 border-r">
+                        <input
+                          type="text"
+                          value={fields.boundaryNorthActual}
+                          onChange={e => handleChange('boundaryNorthActual', e.target.value)}
+                          className={inputCls}
+                          placeholder="e.g. Land of Laxman Swain"
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      {showSketchBoundaries && (
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            value={fields.boundaryNorthSketch || ''}
+                            onChange={e => handleChange('boundaryNorthSketch', e.target.value)}
+                            className={inputCls}
+                            placeholder="e.g. Rest part Plot No-1854"
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                      )}
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-semibold text-slate-600 bg-slate-50 border-r">South</td>
+                      <td className="p-2 border-r">
+                        <input
+                          type="text"
+                          value={fields.boundarySouthDeed}
+                          onChange={e => handleChange('boundarySouthDeed', e.target.value)}
+                          className={inputCls}
+                          placeholder="e.g. Road"
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="p-2 border-r">
+                        <input
+                          type="text"
+                          value={fields.boundarySouthActual}
+                          onChange={e => handleChange('boundarySouthActual', e.target.value)}
+                          className={inputCls}
+                          placeholder="e.g. 15 feet wide Road"
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      {showSketchBoundaries && (
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            value={fields.boundarySouthSketch || ''}
+                            onChange={e => handleChange('boundarySouthSketch', e.target.value)}
+                            className={inputCls}
+                            placeholder="e.g. Proposed Road"
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                      )}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
 
-            <div className="mt-4">
-              <Field label="o. Does the Boundaries at Site match, as mentioned in documentation?">
-                <input
-                  type="text"
-                  value={fields.boundariesMatch}
-                  onChange={e => handleChange('boundariesMatch', e.target.value)}
-                  className={inputCls}
-                  placeholder="Yes(Boundary matching as per documents)"
-                  disabled={isReadOnly}
-                />
-              </Field>
+              <div className="flex items-center justify-between pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowSketchBoundaries(!showSketchBoundaries)}
+                  className="text-xs font-bold text-[#1e3a5f] hover:underline"
+                >
+                  {showSketchBoundaries ? '− Hide Sketch Map Boundaries' : '+ Add Sketch Map Boundaries (3rd Boundary Set)'}
+                </button>
+              </div>
+
+              <div>
+                <Field label="o. Does the Boundaries at Site match, as mentioned in documentation?">
+                  <input
+                    type="text"
+                    value={fields.boundariesMatch}
+                    onChange={e => handleChange('boundariesMatch', e.target.value)}
+                    className={inputCls}
+                    placeholder="Yes(Boundary matching as per documents)"
+                    disabled={isReadOnly}
+                  />
+                </Field>
+              </div>
             </div>
           </Section>
 
@@ -1166,7 +1289,7 @@ export default function AxisHLLAP({
                         value={fl.floor}
                         onChange={e => updateApprovedFloor(idx, { floor: e.target.value })}
                         className="flex-1 px-3 py-2 text-xs border rounded-lg bg-white"
-                        placeholder="e.g. G.F. (ground floor)"
+                        placeholder="e.g. G.F. (ground floor), S.F. (Stilt floor)"
                         disabled={isReadOnly}
                       />
                       <input
@@ -1376,17 +1499,27 @@ export default function AxisHLLAP({
           {/* Section 8: Recommended Valuation */}
           <Section title="8. Recommended Valuation of Property" id="sec-8" defaultOpen={true}>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-500 font-medium">
-                  Enter parameters below and click &quot;Auto-Calculate&quot; to update land, construction &amp; distressed values.
-                </span>
+              <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-indigo-50/70 border border-indigo-100 rounded-xl">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={!!fields.isUnderConstruction}
+                    onChange={e => handleChange('isUnderConstruction', e.target.checked)}
+                    className="w-4 h-4 rounded text-[#1e3a5f] focus:ring-[#1e3a5f]"
+                    disabled={isReadOnly}
+                  />
+                  <span className="text-xs font-bold text-[#1e3a5f]">
+                    Property is Under-Construction (Enable &apos;As On Date&apos; dual-row valuation)
+                  </span>
+                </label>
+
                 {!isReadOnly && (
                   <button
                     type="button"
                     onClick={handleAutoCalculateValuation}
                     className="px-4 py-1.5 text-xs font-bold bg-[#b8860b] text-white rounded-lg hover:bg-[#8a6507] transition-all shadow-xs"
                   >
-                    ⚡ Auto-Calculate Values
+                    ⚡ Auto-Calculate Values (Distressed = 80%)
                   </button>
                 )}
               </div>
@@ -1438,7 +1571,7 @@ export default function AxisHLLAP({
                   />
                 </Field>
 
-                <Field label="d. Total Cost of construction (approved G+1)">
+                <Field label="d. Total Cost of construction (on 100% completion)">
                   <input
                     type="text"
                     value={fields.totalCostOfConstruction}
@@ -1449,6 +1582,21 @@ export default function AxisHLLAP({
                   />
                 </Field>
               </div>
+
+              {fields.isUnderConstruction && (
+                <div className="p-3 bg-amber-50/60 border border-amber-200 rounded-xl">
+                  <Field label="Cost of Construction As on Date (Partial Stage)">
+                    <input
+                      type="text"
+                      value={fields.constructionCostAsOnDate || ''}
+                      onChange={e => handleChange('constructionCostAsOnDate', e.target.value)}
+                      className={inputCls}
+                      placeholder="e.g. 3993sqft@ Rs.700/-= Rs.27,95,100/-"
+                      disabled={isReadOnly}
+                    />
+                  </Field>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <Field label="e. Stage of Construction">
@@ -1485,7 +1633,7 @@ export default function AxisHLLAP({
                 </Field>
               </div>
 
-              <div className="p-4 bg-amber-50/50 border border-amber-200 rounded-xl space-y-2">
+              <div className="p-4 bg-amber-50/50 border border-amber-200 rounded-xl space-y-3">
                 <Field label="Current Value of the Property (Plot + Construction) on 100% Completion">
                   <input
                     type="text"
@@ -1496,6 +1644,19 @@ export default function AxisHLLAP({
                     disabled={isReadOnly}
                   />
                 </Field>
+
+                {fields.isUnderConstruction && (
+                  <Field label="Current Value As on Date Completion">
+                    <input
+                      type="text"
+                      value={fields.currentValueAsOnDate || ''}
+                      onChange={e => handleChange('currentValueAsOnDate', e.target.value)}
+                      className={`${inputCls} font-bold text-indigo-900`}
+                      placeholder="e.g. Rs.44,06,600/- + Rs.27,95,100/- =Rs.72,01,700/-"
+                      disabled={isReadOnly}
+                    />
+                  </Field>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1526,7 +1687,7 @@ export default function AxisHLLAP({
                 />
               </Field>
 
-              <Field label="9. Distressed Valuation of Property (80% of Current Market Value)">
+              <Field label="9. Distressed Valuation of Property (Exactly 80% of Current Market Value)">
                 <input
                   type="text"
                   value={fields.distressedValuation}
@@ -1617,7 +1778,7 @@ export default function AxisHLLAP({
               {/* Maps & Documents (Device Upload Only) */}
               <div className="pt-6 border-t border-slate-200">
                 <span className="text-sm font-bold text-slate-800 mb-4 block">
-                  Maps (Location Map &amp; Mouza Map)
+                  Maps (Location Map, Mouza Map &amp; Sketch Map)
                 </span>
                 <BaseMapsSection
                   locationMapImages={fields.locationMapImages || []}
@@ -1647,7 +1808,7 @@ export default function AxisHLLAP({
                   onSketchMapRemove={idx => {
                     setFields(prev => ({
                       ...prev,
-                      sketchMapImages: prev.sketchMapImages?.filter((_, i) => i !== idx) || [],
+                      sketchMapImages: (prev.sketchMapImages || []).filter((_, i) => i !== idx),
                     }));
                   }}
                   withoutSectionWrapper={true}
