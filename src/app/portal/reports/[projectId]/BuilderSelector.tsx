@@ -47,8 +47,8 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   'ANNAPURNA MICRO FINANCE LTD': dynamic(() => import('./banks/annapurna/AnnapurnaMicroFinance')),
   'ARKA FINANCE LTD': dynamic(() => import('./banks/arka/ArkaFinance')),
   'ARTHAN FINANCE': dynamic(() => import('./banks/arthan/ArthanFinance')),
-  'AU SMALL FINANCE BANK': dynamic(() => import('./banks/au-sfb/AUSmallFinanceBank')),
-  'AVE FINANCE LTD': dynamic(() => import('./banks/ave/AveFinance')),
+  'AYE FINANCE LTD': dynamic(() => import('./banks/aye/AyeFinance')),
+  'AVE FINANCE LTD': dynamic(() => import('./banks/aye/AyeFinance')), // Backward compatibility alias
 
   // Axis
   'AXIS BANK::AGRI': dynamic(() => import('./banks/axis/AxisAGRI')),

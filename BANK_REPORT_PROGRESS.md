@@ -28,7 +28,7 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 | **4** | **ARKA FINANCE LTD** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **5** | **ARTHAN FINANCE** | `Standard` | ✅ Complete | ✅ 13-Section Custom UI | ✅ Dedicated PDF Renderer | ✅ Validated |
 | **6** | **AU SMALL FINANCE BANK** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
-| **7** | **AVE FINANCE LTD** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
+| **7** | **AYE FINANCE LTD** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **8** | **AXIS BANK** | | | | | |
 | 8.1 | AXIS BANK | `AGRI` | ✅ Complete | ✅ 14-Section Custom UI | ✅ Dedicated 10-Page PDF | ✅ Validated |
 | 8.2 | AXIS BANK | `HL-LAP` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
