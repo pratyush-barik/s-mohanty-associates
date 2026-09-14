@@ -8,6 +8,7 @@ import GeneralReportBuilder from "./GeneralReportBuilder";
 import IBBIReportBuilder from "./IBBIReportBuilder";
 import IncomeTaxReportBuilder from "./IncomeTaxReportBuilder";
 import BankReportBuilder from "./BankReportBuilder";
+import ReportSetupWizard from "./ReportSetupWizard";
 import { decodeHtmlEntitiesDeep } from "@/lib/html-entities";
 
 interface BuilderSelectorProps {
@@ -32,7 +33,7 @@ interface BuilderSelectorProps {
   };
 }
 
-type BuilderType = "general" | "ibbi" | "income_tax" | "bank";
+type BuilderType = "wizard" | "general" | "ibbi" | "income_tax" | "bank";
 
 // Dynamic map for lazy-loading individual bank builders on demand
 const BANK_BUILDER_MAP: Record<string, any> = {
@@ -174,13 +175,23 @@ export default function BuilderSelector({
     if (fields?.clientType === "organisation" && fields?.organisationTemplate) {
       return "bank";
     }
-    if (queryParam && !["INCOME_TAX", "IBBI_IVS", "BANK", "bank", "general"].includes(queryParam)) {
+    if (queryParam && !["INCOME_TAX", "IBBI_IVS", "BANK", "bank", "general", "wizard"].includes(queryParam)) {
       return "bank";
     }
     if (fields?.clientType === "individual") {
       return "general";
     }
-    return "general";
+    // Safe data migration fallback:
+    // If fields contains pre-existing filled report data (ownerName, propertyAddress, etc.)
+    // but lacks explicit clientType:
+    if (fields?.organisationTemplate) {
+      return "bank";
+    }
+    if (fields?.ownerName || fields?.propertyAddress || fields?.propertyType || fields?.documentHolderName) {
+      return "general";
+    }
+    // Truly unconfigured / new report:
+    return "wizard";
   };
 
   const cleanPrefill = useMemo(() => decodeHtmlEntitiesDeep(prefill), [prefill]);
@@ -188,7 +199,7 @@ export default function BuilderSelector({
   const computedInitialFields = useMemo(() => {
     const decodedFields = decodeHtmlEntitiesDeep(initialFields);
     if (decodedFields?.organisationTemplate) return decodedFields;
-    if (initialBuilder && !["INCOME_TAX", "IBBI_IVS", "BANK", "bank", "general"].includes(initialBuilder)) {
+    if (initialBuilder && !["INCOME_TAX", "IBBI_IVS", "BANK", "bank", "general", "wizard"].includes(initialBuilder)) {
       const decoded = decodeURIComponent(initialBuilder);
       const [qOrg, qSub] = decoded.includes("::") ? decoded.split("::") : [decoded, ""];
       return {
@@ -232,30 +243,63 @@ export default function BuilderSelector({
     }
   }, []);
 
-  const navigateToBuilder = async (target: BuilderType, updatedFields: any) => {
+  const handleWizardComplete = async (config: {
+    clientType: 'individual' | 'organisation';
+    organisationTemplate?: string;
+    organisationSubTemplate?: string;
+    institutionCategory?: string;
+    bankName?: string;
+    to?: string;
+  }) => {
+    const updatedFields = {
+      ...(activeFields || {}),
+      ...config,
+    };
     setActiveFields(updatedFields);
-    setActiveBuilder(target);
-    const org = updatedFields?.organisationTemplate || "";
-    const sub = updatedFields?.organisationSubTemplate || "";
+
+    let targetBuilder: BuilderType = 'general';
+    if (config.organisationTemplate === 'INCOME_TAX') {
+      targetBuilder = 'income_tax';
+    } else if (config.organisationTemplate === 'IBBI_IVS') {
+      targetBuilder = 'ibbi';
+    } else if (config.clientType === 'organisation') {
+      targetBuilder = 'bank';
+    } else {
+      targetBuilder = 'general';
+    }
+
+    setActiveBuilder(targetBuilder);
+
+    // Update URL
+    const org = config.organisationTemplate || '';
+    const sub = config.organisationSubTemplate || '';
     const bankParam = sub ? `${org}::${sub}` : org;
     const url =
-      target === "general"
+      targetBuilder === 'general'
         ? window.location.pathname
-        : target === "bank"
-        ? window.location.pathname + (bankParam ? `?builder=${encodeURIComponent(bankParam)}` : "")
-        : window.location.pathname + "?builder=" + (target === "ibbi" ? "IBBI_IVS" : "INCOME_TAX");
-    window.history.replaceState(null, "", url);
+        : targetBuilder === 'bank'
+        ? window.location.pathname + (bankParam ? `?builder=${encodeURIComponent(bankParam)}` : '')
+        : window.location.pathname + '?builder=' + (targetBuilder === 'ibbi' ? 'IBBI_IVS' : 'INCOME_TAX');
+    window.history.replaceState(null, '', url);
+
     try {
       await saveReportDraft(projectId, updatedFields);
     } catch (e) {
-      console.error("Save draft in background failed:", e);
+      console.error('Save draft on wizard complete failed:', e);
     }
   };
 
   const handleReset = async () => {
-    const clearedFields = { clientType: "", organisationTemplate: "", institutionCategory: "", organisationSubTemplate: "" };
+    const clearedFields = {
+      ...(activeFields || {}),
+      clientType: "",
+      organisationTemplate: "",
+      institutionCategory: "",
+      organisationSubTemplate: "",
+      bankName: "",
+    };
     setActiveFields(clearedFields);
-    setActiveBuilder("general");
+    setActiveBuilder("wizard");
     setResetKey((prev) => prev + 1);
     window.history.replaceState(null, "", window.location.pathname);
 
@@ -296,6 +340,18 @@ export default function BuilderSelector({
 
     return BankReportBuilder;
   }, [activeBuilder, activeFields?.organisationTemplate, activeFields?.organisationSubTemplate]);
+
+  if (activeBuilder === "wizard") {
+    return (
+      <ReportSetupWizard
+        key={`wizard-${resetKey}`}
+        projectId={projectId}
+        projectCode={projectCode}
+        prefill={cleanPrefill}
+        onComplete={handleWizardComplete}
+      />
+    );
+  }
 
   if (activeBuilder === "income_tax") {
     return (
@@ -356,8 +412,8 @@ export default function BuilderSelector({
       userRole={userRole}
       bucketImages={bucketImages}
       prefill={cleanPrefill}
-      onNavigateToBuilder={(target: 'ibbi' | 'income_tax' | 'bank', updatedFields: any) => navigateToBuilder(target === "income_tax" ? "income_tax" : target === "ibbi" ? "ibbi" : "bank", updatedFields)}
       onResetWizard={handleReset}
     />
   );
 }
+

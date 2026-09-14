@@ -9,7 +9,7 @@ import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
 import { PDFGeneralRenderer } from '@/lib/pdf-general-renderer';
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
-import { getFloorName, BasePhotographsSection, ActiveConfigBanner, formatReportDate } from './banks/BaseBankReportComponents';
+import { getFloorName, BasePhotographsSection, formatReportDate } from './banks/BaseBankReportComponents';
 import { reorderAndLabelAnnexures, type AnnexureItem } from '@/lib/bank-fields';
 import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 // @ts-ignore
@@ -575,69 +575,6 @@ function LandmarkField({ label, rows, disabled }: {
   );
 }
 
-
-
-const BANK_FIS_LIST = [
-  'ADITYA BIRLA CAPITAL LTD','ADITYA BIRLA HOUSING FINANCE LTD','ANNAPURNA MICRO FINANCE LTD',
-  'ARKA FINANCE LTD','ARTHAN FINANCE','AU SMALL FINANCE BANK',
-  'AXIS BANK','AXIS FINANCE LTD','AYE FINANCE LTD',
-  'BAJAJ HOUSING FINANCE LTD','BANDHAN BANK',
-  'BANK OF BARODA-BOB','BANK OF INDIA-BOI','BANK OF MAHARASHTRA-BOM','CANARA BANK',
-  'CANFIN HOMES LTD','CHOLAMANDALAM INVESTMENT COMPANY LTD','CLIX CAPITAL LTD',
-  'DCB BANK','GIC HOUSING FINANCE','GRIHAM HOUSING FINANCE','HDB FINANCIAL SERVICES',
-  'HDFC BANK','ICICI BANK','IDBI BANK','IDFC FIRST BANK','IKF FINANCE',
-  'INDIAN BANK','INDUSIND BANK','ISFC','JANA SMALL FINANCE BANK','KOTAK MAHINDRA BANK',
-  'L&T FINANCIAL SERVICES','LIC HOUSING FINANCE LTD','MAHINDRA FINANCE LTD',
-  'MANAPPURAM HOUSING FINANCE','NAVDHAN FINANCE','NEO GROWTH','PNB HOUSING FINANCE LTD',
-  'POONAWALLA FINANCE','PROTEUM FINANCE','PUNJAB & SIND BANK','PUNJAB NATIONAL BANK',
-  'PURPLE FINANCE','SAMMUNATI FINANCE','SHRIRAM FINANCE','SMFG INDIA-FULLERTON',
-  'STATE BANK OF INDIA-SBI','SURYODAY SMALL FINANCE BANK','SWARNA FINANCE',
-  'TATA CAPITAL LTD','TATA HOUSING FINANCE LTD','UCO BANK','UJJIVAN SMALL FINANCE BANK',
-  'UNION BANK OF INDIA-UBI','UNITY SMALL FINANCE BANK','UTKARSH SMALL FINANCE BANK',
-  'VARTHANA FINANCE','VISTAAR FINANCE','YES BANK',
-];
-
-const APF_LIST = [
-  'AXIS BANK','IDBI BANK','IDFC FIRST BANK','KOTAK MAHINDRA BANK',
-  'LIC HOUSING FINANCE LTD','OTHER PSU BANKS','PNB HOUSING FINANCE LTD','STATE BANK OF INDIA',
-  'YES BANK',
-];
-
-const CF_LIST = [
-  'FOR UNSOLD STOCKS FLAT UNITS OF PROJECT',
-  'LIC HOUSING FINANCE LTD FORMAT',
-  'TOTAL FLAT UNITS OF PROJECT',
-];
-
-const INSTITUTE_CATEGORIES = [
-  { id: 'bank_fis', label: 'Bank & FIS', icon: '🏦', list: BANK_FIS_LIST },
-  { id: 'apf', label: 'Advance Processing Facility', icon: '💼', list: APF_LIST },
-  { id: 'cf', label: 'Construction Funding', icon: '🏗️', list: CF_LIST },
-  { id: 'income_tax', label: 'Income Tax Capital Gain', icon: '📊', direct: true },
-  { id: 'ibbi', label: 'IBBI - IVS', icon: '⚖️', direct: true },
-];
-
-const BANK_SUB_TEMPLATES: Record<string, string[]> = {
-  'ADITYA BIRLA CAPITAL LTD': ['MLAP', 'STSL'],
-  'ADITYA BIRLA HOUSING FINANCE LTD': ['HL-LAP'],
-  'AXIS BANK': ['AGRI', 'HL-LAP', 'SBB', 'SME'],
-  'BAJAJ HOUSING FINANCE LTD': ['HL-LAP'],
-  'BANDHAN BANK': ['HL-LAP', 'SME'],
-  'DCB BANK': ['Desktop valuation format', 'HL-LAP-SME'],
-  'HDFC BANK': ['HL-LAP-BLG'],
-  'ICICI BANK': ['HL-LAP-BBG', 'NPA'],
-  'KOTAK MAHINDRA BANK': ['BUSINESS BANKING GROUP', 'HL-LAP'],
-  'LIC HOUSING FINANCE LTD': [
-    'NPA-DEFAULT CASES',
-    'PVR-1(SELF CONSTRUCTIONLA-L & B)',
-    'PVR-2(FLAT-UNDERCONSTRUCTION)',
-    'PVR-3(LAP-RENNOVATION-BOTH L&B-FLAT)',
-    'PVR-4(LAND PURCHSASE ONLY)',
-    'PVR-5 (SUBSEQUENT VALUATION REPORT)'
-  ],
-  'TATA CAPITAL LTD': ['SME-BLG'],
-};
-
 const FloatingNavigator = ({ isApartmentFlat, annexureEnabled }: { isApartmentFlat: boolean; annexureEnabled: boolean }) => {
   const [activeId, setActiveId] = useState<string>('');
 
@@ -954,124 +891,6 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
 
   const reportRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-
-  // If clientType was already set to 'organisation' but no bank was chosen,
-  // skip straight to the org-selector panel when wizard opens
-  const [selectingOrg, setSelectingOrg] = useState(
-    initialFields?.clientType === 'organisation' && !initialFields?.organisationTemplate
-  );
-  const isWizardComplete =
-    initialFields?.clientType === 'individual' ||
-    (initialFields?.clientType === 'organisation' && !!initialFields?.organisationTemplate);
-  const [wizardStep, setWizardStep] = useState<'setup' | 'completed'>(isWizardComplete ? 'completed' : 'setup');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [showBankList, setShowBankList] = useState(false);
-  const [selectedBank, setSelectedBank] = useState<string | null>(null);
-  const [showSubList, setShowSubList] = useState(false);
-
-  const completeWizardAndSave = async (updates: Partial<typeof fields>) => {
-    const updatedFields = { ...fields, ...updates };
-    
-    const isSpecialTemplate = ['INCOME_TAX', 'IBBI_IVS'].includes(updatedFields.organisationTemplate || '');
-    const isBankTemplate = updatedFields.clientType === 'organisation' && updatedFields.organisationTemplate && !isSpecialTemplate;
-    
-    if (isSpecialTemplate) {
-      if (onNavigateToBuilder) {
-        onNavigateToBuilder(updatedFields.organisationTemplate === 'IBBI_IVS' ? 'ibbi' : 'income_tax', updatedFields);
-      } else {
-        saveReportDraft(projectId, updatedFields).catch(e => console.error("Auto-save draft failed:", e));
-        const builderParam = updatedFields.organisationTemplate === 'IBBI_IVS' ? 'IBBI_IVS' : 'INCOME_TAX';
-        bypassUnloadRef.current = true;
-        window.location.href = `${window.location.pathname}?builder=${builderParam}`;
-      }
-    } else if (isBankTemplate && onNavigateToBuilder) {
-      onNavigateToBuilder('bank', updatedFields);
-    } else {
-      // For general templates, update local state and show the form
-      setFields(updatedFields);
-      setWizardStep('completed');
-      saveReportDraft(projectId, updatedFields).catch(e => console.error("Auto-save draft failed:", e));
-    }
-  };
-  const handleSelectClientType = (type: 'individual' | 'organisation') => {
-    if (type === 'individual') {
-      completeWizardAndSave({ clientType: 'individual', organisationTemplate: '' });
-    } else {
-      setSelectingOrg(true);
-    }
-  };
-
-  const handleSelectOrganisation = (value: string) => {
-    // Normalize or match spelling to BANK_SUB_TEMPLATES key
-    const normalizedKey = Object.keys(BANK_SUB_TEMPLATES).find(k => k.replace(/\s+/g, ' ').trim() === value.replace(/\s+/g, ' ').trim());
-    if (normalizedKey && BANK_SUB_TEMPLATES[normalizedKey]) {
-      setSelectedBank(normalizedKey);
-      setShowBankList(false);
-      setShowSubList(true);
-    } else {
-      completeWizardAndSave({
-        clientType: 'organisation',
-        organisationTemplate: value,
-        organisationSubTemplate: '',
-        bankName: value,
-        to: fields.to || value,
-      });
-      setSelectingOrg(false);
-      setSelectedCategory(null);
-      setShowBankList(false);
-    }
-  };
-
-  const handleSelectSubTemplate = (subOpt: string) => {
-    const fullBankName = `${selectedBank} - ${subOpt}`;
-    completeWizardAndSave({
-      clientType: 'organisation',
-      organisationTemplate: selectedBank || '',
-      organisationSubTemplate: subOpt,
-      bankName: selectedBank || '',
-      to: fields.to || fullBankName,
-    });
-    setSelectingOrg(false);
-    setSelectedCategory(null);
-    setShowBankList(false);
-    setShowSubList(false);
-    setSelectedBank(null);
-  };
-
-  const handleCategoryClick = (category: string) => {
-    const categoryLabel = INSTITUTE_CATEGORIES.find(c => c.id === category)?.label || category;
-    if (category === 'income_tax' || category === 'ibbi') {
-      completeWizardAndSave({
-        clientType: 'organisation',
-        organisationTemplate: category === 'income_tax' ? 'INCOME_TAX' : 'IBBI_IVS',
-        institutionCategory: categoryLabel,
-      });
-    } else {
-      setFields(prev => ({
-        ...prev,
-        institutionCategory: categoryLabel,
-      }));
-      setSelectedCategory(category);
-      setShowBankList(true);
-    }
-  };
-
-  const handleBackFromBanks = () => {
-    setShowBankList(false);
-    setSelectedCategory(null);
-  };
-
-  const handleWizardBack = () => {
-    if (showSubList) {
-      setShowSubList(false);
-      setSelectedBank(null);
-    } else if (showBankList) {
-      setShowBankList(false);
-      setSelectedCategory(null);
-    } else if (selectingOrg) {
-      setSelectingOrg(false);
-    }
-  };
 
   const getSelectedAmenities = () => {
     const valStr = fields.additionalAmenities || '';
@@ -2351,128 +2170,6 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     );
   }
 
-  if (wizardStep === 'setup') {
-    return (
-      <div className="min-h-[500px] flex items-center justify-center bg-gradient-to-br from-[#f8f9fa] to-[#e9ecef] p-8 rounded-2xl border border-neutral-200">
-        <div className={`${selectingOrg ? 'max-w-5xl' : 'max-w-2xl'} w-full text-center space-y-8 transition-all duration-300`}>
-          <div>
-            <h2 className="text-3xl font-extrabold text-[#0f2038] tracking-tight">
-              Draft New Valuation Report
-            </h2>
-            <p className="text-[#6c757d] mt-2 text-base">
-              Set up the report parameters for Project <span className="font-mono font-bold text-[#b8860b]">{projectCode}</span>
-            </p>
-            {/* Step Indicators */}
-            <div className="flex items-center justify-center gap-2 mt-4">
-              <span className={`w-2.5 h-2.5 rounded-full ${!fields.clientType ? 'bg-[#b8860b]' : 'bg-[#dee2e6]'}`}></span>
-              <span className={`w-8 h-[2px] ${fields.clientType ? 'bg-[#b8860b]' : 'bg-[#dee2e6]'}`}></span>
-              <span className={`w-2.5 h-2.5 rounded-full ${fields.clientType ? 'bg-[#b8860b]' : 'bg-[#dee2e6]'}`}></span>
-            </div>
-          </div>
-
-          {/* Step 1: Choose client type — only when clientType not yet decided */}
-          {!fields.clientType && !selectingOrg && (
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Individual Card */}
-              <button
-                type="button"
-                onClick={() => handleSelectClientType('individual')}
-                className="flex flex-col items-center p-8 bg-white rounded-2xl border-2 border-transparent hover:border-[#b8860b] shadow-lg hover:shadow-xl transition-all duration-300 group text-center w-full"
-              >
-                <div className="w-16 h-16 rounded-full bg-[#fcf8ee] flex items-center justify-center mb-5 text-[#b8860b] group-hover:scale-110 transition-transform">
-                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-[#0f2038] mb-2">Individual Client</h3>
-                <p className="text-sm text-[#6c757d]">
-                  Generate a standard valuation report formatted for individual owners and standard purposes.
-                </p>
-              </button>
-
-              {/* Organisation Card */}
-              <button
-                type="button"
-                onClick={() => handleSelectClientType('organisation')}
-                className="flex flex-col items-center p-8 bg-white rounded-2xl border-2 border-transparent hover:border-[#b8860b] shadow-lg hover:shadow-xl transition-all duration-300 group text-center w-full"
-              >
-                <div className="w-16 h-16 rounded-full bg-[#e8f0f8] flex items-center justify-center mb-5 text-[#0f2038] group-hover:scale-110 transition-transform">
-                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-[#0f2038] mb-2">Organisation / Bank</h3>
-                <p className="text-sm text-[#6c757d]">
-                  Select an institutional layout mapped to specific banking and credit organisation requirements.
-                </p>
-              </button>
-            </div>
-          )}
-
-          {/* Step 2: Org/bank selector — shown when organisation chosen but no bank yet */}
-          {(selectingOrg || (fields.clientType === 'organisation' && !fields.organisationTemplate)) && (
-            <div className="bg-white p-8 rounded-2xl shadow-lg border border-[#e9ecef] space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-[#e9ecef]">
-                <h3 className="text-lg font-bold text-[#0f2038]">
-                  {showSubList ? `Select Format for ${selectedBank}` : showBankList ? 'Select Bank / Institution' : 'Select Institution Category'}
-                </h3>
-                <button
-                  type="button"
-                  onClick={handleWizardBack}
-                  className="text-sm text-[#b8860b] hover:text-[#8a6507] font-medium"
-                >
-                  ← Back
-                </button>
-              </div>
-
-              {showSubList && selectedBank ? (
-                <div className="flex flex-wrap gap-3 max-h-[420px] overflow-y-auto p-3 border border-[#dee2e6] rounded-xl bg-neutral-50/50 justify-center">
-                  {BANK_SUB_TEMPLATES[selectedBank]?.map((subOpt) => (
-                    <button
-                      key={subOpt}
-                      type="button"
-                      onClick={() => handleSelectSubTemplate(subOpt)}
-                      className="flex-1 min-w-[200px] max-w-[280px] p-3 min-h-[84px] rounded-xl border border-[#dee2e6] bg-white hover:border-[#b8860b] hover:bg-[#fffbf0] hover:shadow-md text-center transition-all duration-200 flex items-center justify-center text-xs sm:text-sm font-semibold text-[#0f2038] shadow-sm break-words leading-tight"
-                    >
-                      <span className="w-full line-clamp-3 hyphens-auto">{subOpt}</span>
-                    </button>
-                  ))}
-                </div>
-              ) : showBankList && selectedCategory ? (
-                <div className="flex flex-wrap gap-3 max-h-[420px] overflow-y-auto p-3 border border-[#dee2e6] rounded-xl bg-neutral-50/50 justify-center">
-                  {INSTITUTE_CATEGORIES.find(c => c.id === selectedCategory)?.list?.map((bank) => (
-                    <button
-                      key={bank}
-                      type="button"
-                      onClick={() => handleSelectOrganisation(bank)}
-                      className="flex-1 min-w-[200px] max-w-[280px] p-3 min-h-[84px] rounded-xl border border-[#dee2e6] bg-white hover:border-[#b8860b] hover:bg-[#fffbf0] hover:shadow-md text-center transition-all duration-200 flex items-center justify-center text-xs sm:text-sm font-semibold text-[#0f2038] shadow-sm break-words leading-tight"
-                    >
-                      <span className="w-full line-clamp-3 hyphens-auto">{bank}</span>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-wrap gap-4 justify-center">
-                  {INSTITUTE_CATEGORIES.map((cat) => (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => handleCategoryClick(cat.id)}
-                      className="flex-1 min-w-[140px] max-w-[180px] p-4 min-h-[100px] rounded-xl border border-[#dee2e6] bg-white hover:border-[#b8860b] hover:bg-[#fffbf0] hover:shadow-md text-center transition-all duration-200 flex flex-col items-center justify-center gap-2 shadow-sm"
-                    >
-                      <span className="text-2xl">{cat.icon}</span>
-                      <span className="text-xs font-bold text-[#0f2038] leading-tight break-words max-w-full">{cat.label}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
   // Feature flag: AI Assist panel visibility
   const aiAssistEnabled = process.env.NEXT_PUBLIC_AI_ASSIST_ENABLED === 'true';
 
@@ -2480,50 +2177,41 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     <div className={`flex ${aiAssistEnabled ? 'gap-4' : 'gap-6'} items-start w-full`} ref={reportRef}>
       {/* ── Main Form Column ── */}
       <div className="flex-1 min-w-0 space-y-4">
-      {/* Template Info Banner */}
-      {fields.clientType === 'organisation' && !['INCOME_TAX', 'IBBI_IVS'].includes(fields.organisationTemplate || '') ? (
-        <ActiveConfigBanner
-          bankName={fields.organisationTemplate || ''}
-          formatName={fields.organisationSubTemplate || undefined}
-          category={fields.institutionCategory || undefined}
-          serviceType={SERVICES_LIST.find(s => s.id === fields.serviceType)?.title || fields.serviceType}
-          subjectType={fields.subjectType}
-          onResetWizard={onResetWizard}
-        />
-      ) : (
-      <div className="p-4 bg-white border border-[#dee2e6] flex flex-row items-center justify-between gap-4 shadow-md rounded-2xl sticky top-2 z-50">
-        <div className="flex items-center gap-4">
-          <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider leading-tight min-w-[90px] select-none">
-            Active<br />Configuration
-          </div>
-          <div className="flex flex-wrap gap-2">
-             <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-               <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-               Individual
-             </span>
-             <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-               Service: {(SERVICES_LIST.find(s => s.id === fields.serviceType)?.title || fields.serviceType || '').replace(/_/g, ' ')}
-             </span>
-             <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-               Subject: {(fields.subjectType || '').replace(/_/g, ' ')}
-             </span>
+        {/* Active Configuration Banner (Individual Report) */}
+        <div className="p-4 bg-white border border-[#dee2e6] flex flex-row items-center justify-between gap-4 shadow-md rounded-2xl sticky top-2 z-50">
+          <div className="flex items-center gap-4">
+            <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider leading-tight min-w-[90px] select-none">
+              Active<br />Configuration
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                Individual
+              </span>
+              <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
+                Service: {(SERVICES_LIST.find(s => s.id === fields.serviceType)?.title || fields.serviceType || '').replace(/_/g, ' ')}
+              </span>
+              <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
+                Subject: {(fields.subjectType || '').replace(/_/g, ' ')}
+              </span>
               {fields.valuationLayout && (
                 <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
                   <span className={`w-1.5 h-1.5 rounded-full ${fields.valuationLayout === 'apartment' ? 'bg-purple-500' : 'bg-green-500'}`}></span>
                   {fields.valuationLayout === 'apartment' ? 'Flat / Apartment' : 'Land & Building'}
                 </span>
               )}
+            </div>
           </div>
+          {onResetWizard && (
+            <button
+              type="button"
+              onClick={onResetWizard}
+              className="text-xs text-[#b8860b] hover:text-[#8a6507] hover:underline font-bold transition-colors shrink-0 pr-2 uppercase cursor-pointer"
+            >
+              Change Parameters
+            </button>
+          )}
         </div>
-        <button
-          type="button"
-          onClick={handleResetWizard}
-          className="text-xs text-[#b8860b] hover:text-[#8a6507] hover:underline font-bold transition-colors shrink-0 pr-2 uppercase"
-        >
-          Change Parameters
-        </button>
-      </div>
-      )}
 
       {/* Rework Banner */}
       {fields.reworkNotes && status === 'REPORT_DRAFTING' && (

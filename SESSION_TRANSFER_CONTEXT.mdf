@@ -1,0 +1,142 @@
+# MODEL DEFINITION & CONTEXT SPECIFICATION FILE (.mdf)
+# Project: S. Mohanty & Associates — Valuation Portal & Bank Report Engine
+# Format: Machine-Readable Context Definition File (MDF)
+# Version: 2.4.0
+# Target Model: Claude Sonnet 4.6 / Gemini 3.8 / GPT-4o
+
+================================================================================
+SECTION 1: HYPERPARAMETER & INFERENCE CONFIGURATION (TEMPERATURE CONTROL)
+================================================================================
+
+[INFERENCE_PARAMETERS]
+temperature: 0.15
+top_p: 0.95
+presence_penalty: 0.0
+frequency_penalty: 0.0
+max_tokens: 8192
+response_format: markdown_code_strict
+
+[TEMPERATURE_RATIONALE]
+- A low temperature (0.10 - 0.20) is strictly mandated because bank valuation reports are legal, statutory, and audit-sensitive documents.
+- Any model hallucination in mathematical formulas (e.g. 80% distressed value, BUA summation, boundary alignments, or PDF cell dimensions) causes immediate statutory non-compliance.
+- High precision and deterministic AST generation are required for TypeScript strict typing across all bank schemas.
+
+================================================================================
+SECTION 2: NEGATIVE CONTROLS (ANTI-PATTERNS & STRICT CONSTRAINTS — WHAT NOT TO DO)
+================================================================================
+
+[NEGATIVE_CONSTRAINTS]
+1. [NO_DARK_MODE_CLASSES]:
+   - DO NOT introduce any dark-mode classes (`dark:bg-*`, `dark:text-*`, `dark:border-*`, `dark:bg-slate-950`, etc.).
+   - All forms must render on a clean, professional `#f8f9fa` warm neutral canvas with slate-900 typography.
+
+2. [NO_DUPLICATE_SECTION_NUMBERING]:
+   - DO NOT prefix section title strings with numbers (e.g., NEVER use `title="1. Property Details"`).
+   - Use clean strings (e.g., `title="Property Details"`) and pass `number={1}` to the `<Section>` component to avoid double numbering badges (`"1 1. Property Details"`).
+
+3. [NO_HARDCODED_FLOORS]:
+   - DO NOT hardcode floor counts (e.g., only Ground and First floor).
+   - Dynamic floor arrays with add/remove actions, custom floor labels (Stilt, Mezzanine, Basement, Typical Floors), and auto-summed BUA footers are required.
+
+4. [NO_AD_HOC_NAVIGATOR_POSITIONING]:
+   - DO NOT position `FloatingNavigator` on the left side or inline above content where it obscures fields.
+   - It MUST always be placed on the RIGHT side as a sibling after the main `flex-1` column in a `flex flex-col xl:flex-row gap-6 items-start` layout.
+
+5. [NO_BUCKET_MIXING]:
+   - DO NOT store or upload Location Maps, Mouza Maps, Sketch Maps, or Title Deeds into the Cloud Photo Bucket.
+   - Per `docs/BUCKET_ARCHITECTURE_STANDARD.md`, the Cloud Photo Bucket is strictly reserved for on-site property photographs. Maps and documents are local device uploads only.
+
+6. [NO_UNPROTECTED_UNDER_CONSTRUCTION_VALUATION]:
+   - DO NOT compute distressed value solely on 100% completion when a property is under construction (< 100%).
+   - If `completionPercentage < 100%` or `isUnderConstruction` is true, the distressed value MUST be computed as 80% of `currentValueAsOnDate`, and both 100% and As-On-Date rows must be displayed in the valuation table.
+
+7. [NO_BREAKING_STATUTORY_PDF_GRID]:
+   - DO NOT alter bank-mandated PDF column widths or table geometry.
+   - For Axis Bank: strictly maintain the statutory 3-column format (`Sl. No` [24pt] | `Label` [210pt] | `Value` [253pt], total printable width ~487-490pt).
+
+8. [NO_UNCHECKED_TYPESCRIPT]:
+   - DO NOT commit or deliver code without validating `npx tsc --noEmit`. Zero TypeScript errors is the mandatory baseline.
+
+================================================================================
+SECTION 3: POSITIVE CONTROLS (PRESCRIBED PATTERNS & ARCHITECTURAL RULES — WHAT TO DO)
+================================================================================
+
+[POSITIVE_PATTERNS]
+1. [SOFT_CONTAINERING_SYSTEM]:
+   Group form fields into thematic pastel containers with subtle 1px borders and uppercase tracking headers:
+   - Blue (`border-blue-200 bg-blue-50/50 text-blue-800`): Initiation, Loan details, Address, Coordinates, Approvals, Undertaking.
+   - Emerald (`border-emerald-200 bg-emerald-50/50 text-emerald-800`): Classification, Identification, Occupancy, Replacement Cost.
+   - Purple (`border-purple-200 bg-purple-50/50 text-purple-800`): Boundaries (Site vs Document verification matrix).
+   - Indigo (`border-indigo-200 bg-indigo-50/50 text-indigo-800`): Topography, Locality Class, Infrastructure, Multi-Tier Valuation, Statutory Checklist.
+   - Amber (`border-amber-200 bg-amber-50/50 text-amber-800`): Plot Demarcation, Adopted Rates, Benchmark Valuation.
+   - Cyan (`border-cyan-200 bg-cyan-50/50 text-cyan-800`): Dynamic BUA Floor tables with auto-summed footers.
+   - Lime (`border-lime-200 bg-lime-50/50 text-lime-800`): Land Rates & Calculation Matrices.
+   - Yellow (`border-yellow-200 bg-yellow-50/50 text-yellow-800`): Remarks, Market Opinions & Observations.
+
+2. [STANDARD_PAGE_LAYOUT]:
+   ```tsx
+   <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
+     <div className="flex-1 w-full space-y-6 min-w-0">
+       <ActiveConfigBanner bankName={...} templateName={...} onReset={...} />
+       {/* 1..N Soft Container Sections */}
+       <ReportActionBar
+         onSaveDraft={handleSaveDraft}
+         onSubmit={handleSubmit}
+         onPreviewPDF={handlePreviewPDF}
+         onDownloadPDF={handleDownloadPDF}
+         isSaving={isSaving}
+         lastSaved={lastSaved}
+       />
+     </div>
+     <FloatingNavigator sections={NAV_SECTIONS} activeSection={activeSection} />
+   </div>
+   ```
+
+3. [PDF_BANK_RENDERER_INHERITANCE]:
+   - All custom bank PDF renderers extend `PDFBankRenderer` located at `src/lib/banks/pdf-bank-renderer.ts`.
+   - Reuse base primitives: `drawCell()`, `cellHeight()`, `wrapText()`, `sanitizeText()`, `checkPageBreak()`, and `init()`.
+   - Implement dedicated Annexure engines: Geostamped Photographs Grid (2-column cards), Mouza & Location Maps stacked layout, and dedicated Sketch Map full-page view.
+
+4. [VALUATION_MATHEMATICS]:
+   - Plot Value = `Plot Area` * `Plot Rate`
+   - Total Cost of Construction = `Total Approved BUA` * `Rate per sqft`
+   - Total Cost As On Date = `Total Cost of Construction` * (`% Completed` / 100)
+   - Current Market Value (100%) = `Plot Value` + `Total Cost of Construction`
+   - Current Market Value (As On Date) = `Plot Value` + `Total Cost As On Date`
+   - Distressed Value = 0.80 * (isUnderConstruction ? `Current Market Value (As On Date)` : `Current Market Value (100%)`)
+   - Include manual override toggle for distressed value when required by valuer discretion.
+
+5. [ROUTING_AND_REGISTRATION]:
+   - Register all bank builders in `BuilderSelector.tsx` (`BANK_BUILDER_MAP`) using Next.js `dynamic()` lazy loading.
+   - Keep `GeneralReportBuilder.tsx` as fallback and maintain wizard routing in sync with `BANK_SUB_TEMPLATES`.
+
+================================================================================
+SECTION 4: CURRENT REPOSITORY STATE & RECENT WORK
+================================================================================
+
+[REPOSITORY_CONTEXT]
+- Workspace: `d:\Projects\s-mohanty-associates`
+- Git Branch: `main` (clean working tree, up to date with `origin/main`)
+- Latest Commit: `9beb07e fix(axis): refactor Axis AGRI and HL-LAP UI to standard layout, soft containers, and clean positioning`
+- Progress Tracker: `BANK_REPORT_PROGRESS.md`
+- Active Completed Banks:
+  - Bank 1: Aditya Birla Capital (`MLAP`, `STSL`) — Complete
+  - Bank 3: Annapurna Micro Finance (`Standard`) — Complete
+  - Bank 4: Arka Finance (`Standard`) — Complete
+  - Bank 5: Arthan Finance (`Standard`) — Complete
+  - Bank 7: Axis Bank (`HL-LAP`, `AGRI`) — Refactored, typed, PDF generated, ready for final review
+  - Bank 8: Axis Finance — Complete (Arka-identical cover page & PDF)
+- Immediate Next Focus in Progress:
+  - Axis Bank remaining subclasses: 7.3 `SBB`, 7.4 `SME`
+  - Next Bank: 9. `AYE FINANCE LTD`
+  - Refactoring wizard constants in `GeneralReportBuilder.tsx` to separate modular config if needed.
+
+================================================================================
+SECTION 5: VERIFICATION COMMANDS
+================================================================================
+
+[COMMANDS]
+- TypeScript compilation check: `npx tsc --noEmit`
+- Test PDF Generation (Axis): `npx tsx scratch/test-axis-hllap.ts`
+- Verify progress order: `node scratch/verify-progress-order.js`
+- Git status check: `git status`
