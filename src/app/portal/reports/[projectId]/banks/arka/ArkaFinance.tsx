@@ -325,9 +325,10 @@ export default function ArkaFinance({
     { id: 'arka-sec3', title: '3. Property Overview' },
     { id: 'arka-sec4', title: '4. Boundaries & Characteristics' },
     { id: 'arka-sec5', title: '5. Construction & Approvals' },
-        { id: 'arka-sec6', title: '6. Valuation Details' },
-    { id: 'arka-photos', title: '7. Photographs' },
-    { id: 'arka-maps', title: '8. Sketch & Location Maps' },
+    { id: 'arka-sec6', title: '6. Valuation Details' },
+    { id: 'arka-sec7', title: '7. Remarks & Undertaking' },
+    { id: 'arka-photos', title: '8. Photographs' },
+    { id: 'arka-maps', title: '9. Sketch & Location Maps' },
   ];
 
   const handleMapUpload = async (key: string, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1283,15 +1284,23 @@ export default function ArkaFinance({
               <Field label="Rental Value per Month">
                 <input className={inputCls} value={fields.rentalValuePerMonth || ''} onChange={e => handleChange('rentalValuePerMonth', e.target.value)} disabled={isReadOnly} placeholder="&#8377; / month" />
               </Field>
+            </div>
+          </div>
+        </Section>
+
+        {/* SECTION 7: REMARKS & UNDERTAKING */}
+        <Section id="arka-sec7" title="Remarks & Undertaking" number={7}>
+          <div className="border border-slate-200 bg-slate-50 rounded-xl p-5">
+            <div className="grid grid-cols-1 gap-4">
               <Field label="Remarks">
-                <textarea className={inputCls} rows={3} value={fields.remarks || ''} onChange={e => handleChange('remarks', e.target.value)} disabled={isReadOnly} placeholder="Any additional remarks..." />
+                <textarea className={inputCls} rows={4} value={fields.remarks || ''} onChange={e => handleChange('remarks', e.target.value)} disabled={isReadOnly} placeholder="Any additional remarks..." />
               </Field>
             </div>
           </div>
         </Section>
 
-                <BasePhotographsSection
-          sectionNumber={7}
+        <BasePhotographsSection
+          sectionNumber={8}
           propertyImages={fields.propertyImages || []}
           propertyImageNames={fields.propertyImageNames || []}
           isReadOnly={isReadOnly}
@@ -1317,7 +1326,7 @@ export default function ArkaFinance({
         />
 
         <BaseMapsSection
-          sectionNumber={8}
+          sectionNumber={9}
           locationMapImages={fields.locationMapImages || []}
           mouzaMapImages={fields.mouzaMapImages || []}
           sketchMapImages={fields.sketchMapImages || []}
