@@ -1004,6 +1004,12 @@ export default function BankReportBuilder({
       if (fields.sketchMapImages?.length) imgIdx += fields.sketchMapImages.length;
       const locationBytes = fields.locationMapImage ? imageResults[imgIdx++] : null;
 
+      const mouzaBytesList = normMouzaImages.length > 0 ? imageResults.slice(imgIdx, imgIdx + normMouzaImages.length).filter(Boolean) as Uint8Array[] : null;
+      if (normMouzaImages.length) imgIdx += normMouzaImages.length;
+
+      const cadastralBytesList = normCadastralImages.length > 0 ? imageResults.slice(imgIdx, imgIdx + normCadastralImages.length).filter(Boolean) as Uint8Array[] : null;
+      if (normCadastralImages.length) imgIdx += normCadastralImages.length;
+
       // Date formatter: YYYY-MM-DD → DD/MM/YYYY
       const fmtDate = (d: string) => {
         if (!d || !d.trim()) return '________';
@@ -1325,6 +1331,36 @@ export default function BankReportBuilder({
             r.drawSectionHeader(`SKETCH MAP${sketchBytesList.length > 1 ? ` ${i + 1}` : ''}`);
             r.advanceCursor(8);
             await r.drawImageBlock(sBytes, {
+              maxWidth: 450, maxHeight: 500, centered: true,
+            });
+          }
+        }
+      }
+
+      // ── Mouza Map ──
+      if (mouzaBytesList && mouzaBytesList.length > 0) {
+        for (let i = 0; i < mouzaBytesList.length; i++) {
+          const mBytes = mouzaBytesList[i];
+          if (mBytes) {
+            r.newPage();
+            r.drawSectionHeader(`MOUZA MAP${mouzaBytesList.length > 1 ? ` ${i + 1}` : ''}`);
+            r.advanceCursor(8);
+            await r.drawImageBlock(mBytes, {
+              maxWidth: 450, maxHeight: 500, centered: true,
+            });
+          }
+        }
+      }
+
+      // ── Cadastral Map ──
+      if (cadastralBytesList && cadastralBytesList.length > 0) {
+        for (let i = 0; i < cadastralBytesList.length; i++) {
+          const cBytes = cadastralBytesList[i];
+          if (cBytes) {
+            r.newPage();
+            r.drawSectionHeader(`CADASTRAL MAP${cadastralBytesList.length > 1 ? ` ${i + 1}` : ''}`);
+            r.advanceCursor(8);
+            await r.drawImageBlock(cBytes, {
               maxWidth: 450, maxHeight: 500, centered: true,
             });
           }
