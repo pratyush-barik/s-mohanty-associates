@@ -6,11 +6,11 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 
 ## 📊 Summary & Status Overview
 
-- **Total Banks / Organizations**: 57
+- **Total Banks / Organizations**: 60
 - **Total Subclasses / Templates**: 73
 - **Completed Subclasses**: 4 / 73 (1.1 `MLAP`, 1.2 `STSL`, 3 `Standard` (Annapurna), 5 `Standard` (Arthan))
-- **Current Active Bank**: 8. `AXIS BANK`
-- **Current Active Subclass**: 8.2 `HL-LAP` (Started / In Progress)
+- **Current Active Bank**: 7. `AXIS BANK`
+- **Current Active Subclass**: 7.2 `HL-LAP` (Started / In Progress)
 - **Bucket Standard**: Enforced strictly per [docs/BUCKET_ARCHITECTURE_STANDARD.md](docs/BUCKET_ARCHITECTURE_STANDARD.md) (Cloud bucket exclusively for Property Photographs; Maps/Documents are device-upload only).
 
 ---
@@ -28,13 +28,13 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 | **4** | **ARKA FINANCE LTD** | `Standard` | 🟡 Started | 🟡 Custom UI | 🟡 Dedicated PDF | ⏳ Pending |
 | **5** | **ARTHAN FINANCE** | `Standard` | ✅ Complete | ✅ 13-Section Custom UI | ✅ Dedicated PDF Renderer | ✅ Validated |
 | **6** | **AU SMALL FINANCE BANK** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
-| **7** | **AYE FINANCE LTD** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
-| **8** | **AXIS BANK** | | | | | |
-| 8.1 | AXIS BANK | `AGRI` | 🟡 Started | 🟡 14-Section Custom UI | 🟡 Dedicated 10-Page PDF | ⏳ Pending |
-| 8.2 | AXIS BANK | `HL-LAP` | 🟡 Started | 🟡 12-Section Custom UI | 🟡 Dedicated PDF Renderer | ⏳ Pending |
-| 8.3 | AXIS BANK | `SBB` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
-| 8.4 | AXIS BANK | `SME` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
-| **9** | **AXIS FINANCE LTD** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
+| **7** | **AXIS BANK** | | | | | |
+| 7.1 | AXIS BANK | `AGRI` | 🟡 Started | 🟡 14-Section Custom UI | 🟡 Dedicated 10-Page PDF | ⏳ Pending |
+| 7.2 | AXIS BANK | `HL-LAP` | 🟡 Started | 🟡 12-Section Custom UI | 🟡 Dedicated PDF Renderer | ⏳ Pending |
+| 7.3 | AXIS BANK | `SBB` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
+| 7.4 | AXIS BANK | `SME` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
+| **8** | **AXIS FINANCE LTD** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
+| **9** | **AYE FINANCE LTD** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **10** | **BAJAJ HOUSING FINANCE LTD** | `HL-LAP` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **11** | **BANDHAN BANK** | | | | | |
 | 11.1 | BANDHAN BANK | `HL-LAP` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
@@ -81,13 +81,13 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 | **39** | **PNB HOUSING FINANCE LTD** | `HL-LAP` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **40** | **POONAWALLA FINANCE** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **41** | **PROTEUM FINANCE** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
-| **42** | **PUNJAB NATIONAL BANK** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
-| **43** | **PUNJAB & SIND BANK** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
+| **42** | **PUNJAB & SIND BANK** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
+| **43** | **PUNJAB NATIONAL BANK** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **44** | **PURPLE FINANCE** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **45** | **SAMMUNATI FINANCE** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
-| **46** | **STATE BANK OF INDIA-SBI** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
-| **47** | **SHRIRAM FINANCE** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
-| **48** | **SMFG INDIA-FULLERTON** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
+| **46** | **SHRIRAM FINANCE** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
+| **47** | **SMFG INDIA-FULLERTON** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
+| **48** | **STATE BANK OF INDIA-SBI** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **49** | **SURYODAY SMALL FINANCE BANK** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **50** | **SWARNA FINANCE** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **51** | **TATA CAPITAL LTD** | `SME-BLG` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |

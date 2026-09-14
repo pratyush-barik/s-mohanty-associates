@@ -43,12 +43,10 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   'ADITYA BIRLA HOUSING FINANCE LTD::HL-LAP': dynamic(() => import('./banks/aditya-birla-housing/AdityaBirlaHousingHLLAP')),
   'ADITYA BIRLA HOUSING FINANCE LTD': dynamic(() => import('./banks/aditya-birla-housing/AdityaBirlaHousingHLLAP')),
 
-  // Annapurna, Arka, Arthan, AU, Ave
+  // Annapurna, Arka, Arthan, AU
   'ANNAPURNA MICRO FINANCE LTD': dynamic(() => import('./banks/annapurna/AnnapurnaMicroFinance')),
   'ARKA FINANCE LTD': dynamic(() => import('./banks/arka/ArkaFinance')),
   'ARTHAN FINANCE': dynamic(() => import('./banks/arthan/ArthanFinance')),
-  'AYE FINANCE LTD': dynamic(() => import('./banks/aye/AyeFinance')),
-  'AVE FINANCE LTD': dynamic(() => import('./banks/aye/AyeFinance')), // Backward compatibility alias
 
   // Axis
   'AXIS BANK::AGRI': dynamic(() => import('./banks/axis/AxisAGRI')),
@@ -57,6 +55,10 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   'AXIS BANK::SME': dynamic(() => import('./banks/axis/AxisSME')),
   'AXIS BANK': dynamic(() => import('./banks/axis/AxisHLLAP')),
   'AXIS FINANCE LTD': dynamic(() => import('./banks/axis-finance/AxisFinance')),
+
+  // Aye
+  'AYE FINANCE LTD': dynamic(() => import('./banks/aye/AyeFinance')),
+  'AVE FINANCE LTD': dynamic(() => import('./banks/aye/AyeFinance')), // Backward compatibility alias
 
   // Bajaj & Bandhan
   'BAJAJ HOUSING FINANCE LTD::HL-LAP': dynamic(() => import('./banks/bajaj-housing/BajajHousingHLLAP')),
