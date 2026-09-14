@@ -179,11 +179,15 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
     drawCenteredBold('PROPERTY OWNER', FONT_SIZE_HEADER, 16, true);
     const owners = Array.isArray(fields.propertyOwners) && fields.propertyOwners.length > 0
       ? fields.propertyOwners
-      : [{ name: '', fatherName: '' }];
+      : [{ name: '', relationship: 'S/O', relativeName: '', fatherName: '' }];
     for (const owner of owners) {
       if (owner.name) {
         drawCenteredBold(owner.name, FONT_SIZE, 14);
-        if (owner.fatherName) drawCenteredBold(`S/O- ${owner.fatherName}`, FONT_SIZE, 14);
+        const rel = owner.relationship || 'S/O';
+        const relName = owner.relativeName || owner.fatherName;
+        if (relName) {
+          drawCenteredBold(`${rel}- ${relName}`, FONT_SIZE, 14);
+        }
       }
     }
     this.cursorY += 16;

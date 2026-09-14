@@ -470,7 +470,7 @@ Outstanding items in **priority order**:
 - **Aditya Birla Capital Ltd (STSL / MLAP)** — Bank report builder fully completed with custom PDF renderer, standardized map uploads/reordering, unified bucket modals, and runtime loader stability.
 - **Aditya Birla Housing Finance Ltd (HL-LAP)** — Config-driven bank report builder populated with 130+ fields across 11 sections. Now supported by dedicated `PDFAdityaBirlaHousingRenderer` for layout fidelity.
 - **Annapurna Micro Finance Ltd (Standard)** — Bank report builder and dedicated PDF renderer (`PDFAnnapurnaMicroFinanceRenderer`) fully completed with 8-section custom UI, exact sample table alignments, strict DD/MM/YYYY date formatting, dynamic photos & maps layout, and integrated sign-off / statutory declaration.
-- **Arka Finance Ltd** — Bank report builder completed with 7-section custom UI (sequential numbered sections) and dedicated PDF renderer (double-blue borders, underlined headers, structured PREPARED BY section with strict input constraints).
+- **Arka Finance Ltd** — Bank report builder and its UI is fully completed and verified with 7-section custom UI (sequential numbered sections) and dedicated PDF renderer (double-blue borders, underlined headers, dynamic multi-field property owners, custom highlights).
 - **Dynamic UI Section Numbering** — All bank builders dynamically compute section numbering matching their specific `navSections` sequence.
 - **57 Bank/Sub-template Stubs** — Scalable OOP architecture with BankConfig-driven system, dynamic lazy-loading in BuilderSelector.
 

@@ -616,14 +616,14 @@ export default function ArkaFinance({
               <button
                 type="button"
                 className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 text-sm rounded-md shadow-sm transition-colors"
-                onClick={() => handleChange('propertyOwners', [...(fields.propertyOwners || []), { name: '', fatherName: '' }])}
+                onClick={() => handleChange('propertyOwners', [...(fields.propertyOwners || []), { name: '', relationship: 'S/O', relativeName: '' }])}
                 disabled={isReadOnly}
               >
                 + Add Row
               </button>
             </div>
             <div className="space-y-4">
-              {(fields.propertyOwners || [{ name: '', fatherName: '' }]).map((owner: any, idx: number) => (
+              {(fields.propertyOwners || [{ name: '', relationship: 'S/O', relativeName: '' }]).map((owner: any, idx: number) => (
                 <div key={idx} className="flex gap-4 items-end bg-white p-3 rounded-md border border-gray-100 shadow-sm">
                   <Field label="OWNER'S NAME" className="flex-1">
                     <input
@@ -638,13 +638,33 @@ export default function ArkaFinance({
                       placeholder="e.g. PRASANNA NAYAK"
                     />
                   </Field>
-                  <Field label="OWNER'S FATHER'S NAME" className="flex-1">
+                  <Field label="Relationship" className="w-40">
                     <input
+                      list={`relations-${idx}`}
                       className={inputCls}
-                      value={owner.fatherName}
+                      value={owner.relationship || ''}
                       onChange={(e) => {
                         const arr = [...(fields.propertyOwners || [])];
-                        arr[idx] = { ...arr[idx], fatherName: e.target.value };
+                        arr[idx] = { ...arr[idx], relationship: e.target.value };
+                        handleChange('propertyOwners', arr);
+                      }}
+                      disabled={isReadOnly}
+                      placeholder="e.g. S/O"
+                    />
+                    <datalist id={`relations-${idx}`}>
+                      <option value="S/O" />
+                      <option value="D/O" />
+                      <option value="W/O" />
+                      <option value="C/O" />
+                    </datalist>
+                  </Field>
+                  <Field label="OWNER'S RELATIVE'S NAME" className="flex-1">
+                    <input
+                      className={inputCls}
+                      value={owner.relativeName || owner.fatherName || ''}
+                      onChange={(e) => {
+                        const arr = [...(fields.propertyOwners || [])];
+                        arr[idx] = { ...arr[idx], relativeName: e.target.value, fatherName: e.target.value };
                         handleChange('propertyOwners', arr);
                       }}
                       disabled={isReadOnly}
