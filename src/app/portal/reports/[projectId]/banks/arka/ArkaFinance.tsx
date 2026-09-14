@@ -349,8 +349,8 @@ export default function ArkaFinance({
     { id: 'arka-sec5', title: '5. Construction & Approvals' },
     { id: 'arka-sec6', title: '6. Valuation Details' },
     { id: 'arka-sec7', title: '7. Remarks & Undertaking' },
-    { id: 'arka-photos', title: '8. Photographs' },
-    { id: 'arka-maps', title: '9. Sketch & Location Maps' },
+    { id: 'arka-photos', title: '8. Property Photographs' },
+    { id: 'arka-maps', title: '9. Location and Sketch Maps' },
   ];
 
   const handleMapUpload = async (key: string, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1451,9 +1451,16 @@ export default function ArkaFinance({
           <div className="border border-yellow-200 bg-yellow-50 rounded-xl p-5 mb-5">
             <h3 className="font-semibold text-yellow-800 mb-4 text-sm tracking-wide uppercase">Remarks</h3>
             <div className="grid grid-cols-1 gap-4">
-              <div className="text-xs text-gray-500 mb-2">
-                (Comment on - resistance for valuation if any from the current occupants for rented property, if the property falls in a community dominated areas, if the approach road to the building is small and will not be able to accommodate a fire extinguisher, does the property falls under land locked area or is prone to frequent floods & any other critical observation.)
-              </div>
+              <Field label="COMMENT ON">
+                <textarea 
+                  className={inputCls} 
+                  rows={3} 
+                  value={fields.commentOn ?? '(Comment on - resistance for valuation if any from the current occupants for rented property, if the property falls in a community dominated areas, if the approach road to the building is small and will not be able to accommodate a fire extinguisher, does the property falls under land locked area or is prone to frequent floods & any other critical observation.)'} 
+                  onChange={e => handleChange('commentOn', e.target.value)} 
+                  disabled={isReadOnly} 
+                  placeholder="Enter comments..." 
+                />
+              </Field>
               <Field label="Remarks Details">
                 <textarea 
                   className={inputCls} 
@@ -1504,6 +1511,8 @@ export default function ArkaFinance({
         </Section>
 
         <BasePhotographsSection
+          title="Property Photographs"
+          sectionId="arka-photos"
           sectionNumber={8}
           propertyImages={fields.propertyImages || []}
           propertyImageNames={fields.propertyImageNames || []}
@@ -1530,6 +1539,8 @@ export default function ArkaFinance({
         />
 
         <BaseMapsSection
+          title="Location and Sketch Maps"
+          sectionId="arka-maps"
           sectionNumber={9}
           locationMapImages={fields.locationMapImages || []}
           mouzaMapImages={fields.mouzaMapImages || []}
