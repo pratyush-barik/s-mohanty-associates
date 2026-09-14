@@ -792,18 +792,17 @@ export default function ArkaFinance({
                 />
               </Field>
               {/* Edit Switch for Plot No / Khasra No auto-extraction */}
-              <div className="col-span-1 md:col-span-3 flex items-center gap-2 -mt-2 mb-1">
-                <span className={`text-xs font-semibold ${plotKhasraEditMode ? 'text-gray-400' : 'text-gray-700'}`}>Edit Off</span>
+              <div className="col-span-1 md:col-span-3 flex items-center gap-3 -mt-2 mb-1">
                 <button
                   type="button"
                   onClick={() => setPlotKhasraEditMode(!plotKhasraEditMode)}
                   disabled={isReadOnly}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${plotKhasraEditMode ? 'bg-green-500' : 'bg-gray-200'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${plotKhasraEditMode ? 'bg-emerald-500' : 'bg-gray-300'}`}
                 >
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${plotKhasraEditMode ? 'translate-x-6' : 'translate-x-1'}`} />
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 shadow ${plotKhasraEditMode ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
-                <span className={`text-xs font-semibold ${plotKhasraEditMode ? 'text-green-600' : 'text-gray-400'}`}>
-                  Edit On — Plot No & Khasra/Khata No {plotKhasraEditMode ? '(Manual Override)' : '(Auto-extracted from Address)'}
+                <span className={`text-xs font-medium ${plotKhasraEditMode ? 'text-emerald-700' : 'text-gray-500'}`}>
+                  {plotKhasraEditMode ? 'Edit On' : 'Edit Off'} — Plot No & Khasra/Khata No {plotKhasraEditMode ? '(Manual Override)' : '(Auto-extracted from Address)'}
                 </span>
               </div>
               <Field label="Plot No">
