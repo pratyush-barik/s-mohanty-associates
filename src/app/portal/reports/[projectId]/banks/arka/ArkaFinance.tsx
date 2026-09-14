@@ -112,13 +112,18 @@ export default function ArkaFinance({
     expectedCompletion: '',
     areaOfPlot: '',
     demarcationAtSite: '',
+    demarcationAtSiteOther: '',
     approvedBuaFloors: [
-      { floor: 'Ground Floor (GF)', area: '' },
-      { floor: 'First Floor (FF)', area: '' },
+      { floor: 'G.F. (ground floor)', area: '' },
+      { floor: 'F.F. (first floor)', area: '' },
+      { floor: 'M.F. (mezzanine floor)', area: '' },
+      { floor: 'S.F(second floor)', area: '' },
     ],
     measuredBuaFloors: [
-      { floor: 'Ground Floor (GF)', area: '' },
-      { floor: 'First Floor (FF)', area: '' },
+      { floor: 'G.F. (ground floor)', area: '' },
+      { floor: 'F.F. (first floor)', area: '' },
+      { floor: 'S.F. (second floor)', area: '' },
+      { floor: 'T.F(third floor)', area: '' },
     ],
     constructionAsPerPlan: '',
     qualityOfConstruction: '',
@@ -972,7 +977,7 @@ export default function ArkaFinance({
               <Field label={
                 <div className="flex items-center gap-3">
                   <span>Date of Approval</span>
-                  <label className="flex items-center gap-1 text-[10px] lowercase font-semibold text-gray-600 cursor-pointer bg-gray-100 hover:bg-gray-200 px-1.5 py-0.5 rounded border border-gray-200 transition-colors">
+                  <label className="flex items-center gap-1 text-[10px] font-semibold text-gray-600 cursor-pointer bg-gray-100 hover:bg-gray-200 px-1.5 py-0.5 rounded border border-gray-200 transition-colors">
                     <input type="checkbox" className="w-3 h-3 rounded border-gray-300 text-orange-600 focus:ring-orange-500" checked={fields.dateOfApproval === 'NA'} onChange={e => handleChange('dateOfApproval', e.target.checked ? 'NA' : '')} disabled={isReadOnly} />
                     NA
                   </label>
@@ -983,7 +988,7 @@ export default function ArkaFinance({
               <Field label={
                 <div className="flex items-center gap-3">
                   <span>Expiry Date</span>
-                  <label className="flex items-center gap-1 text-[10px] lowercase font-semibold text-gray-600 cursor-pointer bg-gray-100 hover:bg-gray-200 px-1.5 py-0.5 rounded border border-gray-200 transition-colors">
+                  <label className="flex items-center gap-1 text-[10px] font-semibold text-gray-600 cursor-pointer bg-gray-100 hover:bg-gray-200 px-1.5 py-0.5 rounded border border-gray-200 transition-colors">
                     <input type="checkbox" className="w-3 h-3 rounded border-gray-300 text-orange-600 focus:ring-orange-500" checked={fields.expiryDate === 'NA'} onChange={e => handleChange('expiryDate', e.target.checked ? 'NA' : '')} disabled={isReadOnly} />
                     NA
                   </label>
@@ -1004,7 +1009,19 @@ export default function ArkaFinance({
                 <input className={inputCls} value={fields.areaOfPlot || ''} onChange={e => handleChange('areaOfPlot', e.target.value)} disabled={isReadOnly} placeholder="in sq. ft." />
               </Field>
               <Field label="Demarcation at Site">
-                <input className={inputCls} value={fields.demarcationAtSite || ''} onChange={e => handleChange('demarcationAtSite', e.target.value)} disabled={isReadOnly} />
+                <select className={selectCls} value={fields.demarcationAtSite || ''} onChange={e => handleChange('demarcationAtSite', e.target.value)} disabled={isReadOnly}>
+                  <option value="">-- Select --</option>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                  <option value="Partially">Partially</option>
+                  <option value="NA">NA</option>
+                  <option value="Custom">Custom</option>
+                </select>
+                {fields.demarcationAtSite === 'Custom' && (
+                  <div className="mt-3">
+                    <input className={inputCls} value={fields.demarcationAtSiteOther || ''} onChange={e => handleChange('demarcationAtSiteOther', e.target.value)} disabled={isReadOnly} placeholder="Describe demarcation..." />
+                  </div>
+                )}
               </Field>
             </div>
             {/* Approved BUA Table */}
@@ -1017,7 +1034,7 @@ export default function ArkaFinance({
                 {(fields.approvedBuaFloors || []).map((f: any, idx: number) => (
                   <div key={idx} className="flex gap-3 items-center">
                     <input className={`${inputCls} flex-1`} value={f.floor} onChange={e => { const arr = [...fields.approvedBuaFloors]; arr[idx] = { ...arr[idx], floor: e.target.value }; handleChange('approvedBuaFloors', arr); }} disabled={isReadOnly} placeholder="Floor name" />
-                    <input className={`${inputCls} flex-1`} value={f.area} onChange={e => { const arr = [...fields.approvedBuaFloors]; arr[idx] = { ...arr[idx], area: e.target.value }; handleChange('approvedBuaFloors', arr); }} disabled={isReadOnly} placeholder="Area (sq. ft.)" />
+                    <input className={`${inputCls} flex-1`} value={f.area} onChange={e => { const arr = [...fields.approvedBuaFloors]; arr[idx] = { ...arr[idx], area: e.target.value }; handleChange('approvedBuaFloors', arr); }} disabled={isReadOnly} placeholder="Sq Ft Description" />
                     {(fields.approvedBuaFloors?.length > 1) && (
                       <button type="button" className="text-red-500 hover:text-red-700 text-xs font-bold px-2 py-1" onClick={() => handleRemoveBuaFloor('approvedBuaFloors', idx)} disabled={isReadOnly}>&#x2715;</button>
                     )}
@@ -1035,7 +1052,7 @@ export default function ArkaFinance({
                 {(fields.measuredBuaFloors || []).map((f: any, idx: number) => (
                   <div key={idx} className="flex gap-3 items-center">
                     <input className={`${inputCls} flex-1`} value={f.floor} onChange={e => { const arr = [...fields.measuredBuaFloors]; arr[idx] = { ...arr[idx], floor: e.target.value }; handleChange('measuredBuaFloors', arr); }} disabled={isReadOnly} placeholder="Floor name" />
-                    <input className={`${inputCls} flex-1`} value={f.area} onChange={e => { const arr = [...fields.measuredBuaFloors]; arr[idx] = { ...arr[idx], area: e.target.value }; handleChange('measuredBuaFloors', arr); }} disabled={isReadOnly} placeholder="Area (sq. ft.)" />
+                    <input className={`${inputCls} flex-1`} value={f.area} onChange={e => { const arr = [...fields.measuredBuaFloors]; arr[idx] = { ...arr[idx], area: e.target.value }; handleChange('measuredBuaFloors', arr); }} disabled={isReadOnly} placeholder="Sq Ft Description" />
                     {(fields.measuredBuaFloors?.length > 1) && (
                       <button type="button" className="text-red-500 hover:text-red-700 text-xs font-bold px-2 py-1" onClick={() => handleRemoveBuaFloor('measuredBuaFloors', idx)} disabled={isReadOnly}>&#x2715;</button>
                     )}

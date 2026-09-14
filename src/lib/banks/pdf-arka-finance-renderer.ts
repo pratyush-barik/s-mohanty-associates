@@ -324,20 +324,56 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
 
     // Build dynamic BUA rows from approvedBuaFloors array
     const approvedFloors = Array.isArray(fields.approvedBuaFloors) ? fields.approvedBuaFloors : [];
-    const approvedBuaRows: string[][] = approvedFloors.map((f: any) => ['', `${f.floor || ''} - Sq Ft Description`, f.area || '']);
+    const approvedBuaRows: string[][] = approvedFloors.map((f: any) => ['', f.floor || '', f.area || '']);
     const measuredFloors = Array.isArray(fields.measuredBuaFloors) ? fields.measuredBuaFloors : [];
-    const measuredBuaRows: string[][] = measuredFloors.map((f: any) => ['', `${f.floor || ''} - Sq Ft Description`, f.area || '']);
+    const measuredBuaRows: string[][] = measuredFloors.map((f: any) => ['', f.floor || '', f.area || '']);
 
-    // Compute total approved area for the header
-    const totalApprovedArea = approvedFloors.reduce((sum: number, f: any) => sum + (parseFloat(f.area) || 0), 0);
-    const totalMeasuredArea = measuredFloors.reduce((sum: number, f: any) => sum + (parseFloat(f.area) || 0), 0);
+    // Advanced Regex Auto-Sum Logic
+    const calculateFloorSums = (floors: any[], labelPrefix: string) => {
+      let hasAnyValue = false;
+      const formattedSums: string[] = [];
+
+      for (const f of floors) {
+        const text = String(f.area || '').trim();
+        if (!text) continue;
+        
+        if (text.toUpperCase() === 'NA') {
+          continue; 
+        } else {
+          hasAnyValue = true;
+          const numbers = text.match(/\d+(\.\d+)?/g);
+          if (numbers && numbers.length > 0) {
+            const sum = numbers.reduce((acc, val) => acc + parseFloat(val), 0);
+            
+            // Extract abbreviation logically
+            let floorAbbr = '';
+            const floorNameLower = (f.floor || '').toLowerCase();
+            if (floorNameLower.includes('g.f.') || floorNameLower.includes('ground')) floorAbbr = 'GF';
+            else if (floorNameLower.includes('f.f.') || floorNameLower.includes('first')) floorAbbr = 'FF';
+            else if (floorNameLower.includes('s.f') || floorNameLower.includes('second')) floorAbbr = 'SF';
+            else if (floorNameLower.includes('t.f') || floorNameLower.includes('third')) floorAbbr = 'TF';
+            else if (floorNameLower.includes('m.f.') || floorNameLower.includes('mezzanine')) floorAbbr = 'MF';
+            else floorAbbr = (f.floor || '').substring(0, 2).toUpperCase();
+            
+            formattedSums.push(`${sum}sqft(${labelPrefix} ${floorAbbr})`);
+          }
+        }
+      }
+
+      if (hasAnyValue && formattedSums.length > 0) return formattedSums.join(', ');
+      if (!hasAnyValue && floors.some((f: any) => String(f.area || '').trim().toUpperCase() === 'NA')) return 'NA';
+      return '';
+    };
+
+    const approvedSumsStr = calculateFloorSums(approvedFloors, 'Approved');
+    const measuredSumsStr = calculateFloorSums(measuredFloors, 'Measured');
 
     const constructionRows: string[][] = [
       ['a.', 'Area of the Plot/flat', fv('areaOfPlot')],
       ['b.', 'Demarcation at Site', fv('demarcationAtSite')],
-      ['c.', `Approved Built up Area: ${totalApprovedArea || '____'}sqft floor wise break up (for Bungalow/Twin /Row-house) as follows`, totalApprovedArea ? `${totalApprovedArea}sqft` : ''],
+      ['c.', 'Approved Built up Area:_______sqft floor wise break up (for Bungalow/Twin /Row-house) as follows', approvedSumsStr],
       ...approvedBuaRows,
-      ['d.', `Measured Built up Area: ${totalMeasuredArea || '____'}sqft floor wise break up (for Bungalow/Twin /Row-house) as follows`, totalMeasuredArea ? `${totalMeasuredArea}sqft` : ''],
+      ['d.', 'Measured Built up Area:_______sqft floor wise break up (for Bungalow/Twin /Row-house) as follows', measuredSumsStr],
       ...measuredBuaRows,
       ['e.', 'Whether the construction is as per approved building plan and / or local building bye laws', fv('constructionAsPerPlan')],
       ['f.', 'Quality of construction', fv('qualityOfConstruction')],
