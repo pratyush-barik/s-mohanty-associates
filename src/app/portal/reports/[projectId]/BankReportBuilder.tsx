@@ -1020,7 +1020,7 @@ export default function BankReportBuilder({
       }
 
       // Instantiate renderer: use config custom renderer or default base renderer (automatically defaults letterhead)
-      const r = config?.getPDFRenderer ? config.getPDFRenderer() : new PDFBankRenderer();
+      const r = config?.getPDFRenderer ? config.getPDFRenderer(fields) : new PDFBankRenderer();
       await r.init();
 
       let titleText = 'VALUATION REPORT';
