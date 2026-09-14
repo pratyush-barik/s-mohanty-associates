@@ -256,7 +256,7 @@ export default function ArkaFinance({
   useEffect(() => {
     const extractNum = (val: any) => {
       if (!val) return 0;
-      const str = String(val).replace(/[^0-9.]/g, '');
+      const str = String(val).replace(/Rs\.?\s*/ig, '').replace(/[^0-9.]/g, '');
       const parsed = parseFloat(str);
       return isNaN(parsed) ? 0 : parsed;
     };
