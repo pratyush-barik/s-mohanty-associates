@@ -1037,6 +1037,14 @@ export default function ArkaFinance({
                 <button type="button" className="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1 text-xs rounded-md shadow-sm transition-colors mt-1" onClick={() => handleAddBuaFloor('approvedBuaFloors')} disabled={isReadOnly}>+ Add Floor</button>
               </div>
               <div className="space-y-2">
+                <div className="flex gap-3 items-center px-1 mb-[-4px]">
+                  <div className="flex-1"></div>
+                  <div className="flex flex-1 gap-2">
+                    <span className="flex-1 text-[11px] font-semibold text-teal-800">RCC Area(sqft)</span>
+                    <span className="flex-1 text-[11px] font-semibold text-teal-800">ACC Area(sqft)</span>
+                  </div>
+                  {(fields.approvedBuaFloors?.length > 1) && <div className="w-[20px]"></div>}
+                </div>
                 {(fields.approvedBuaFloors || []).map((f: any, idx: number) => (
                   <div key={idx} className="flex gap-3 items-center">
                     <input className={`${inputCls} flex-1`} value={f.floor} onChange={e => { const arr = [...fields.approvedBuaFloors]; arr[idx] = { ...arr[idx], floor: e.target.value }; handleChange('approvedBuaFloors', arr); }} disabled={isReadOnly} placeholder="Floor name" />
@@ -1061,6 +1069,14 @@ export default function ArkaFinance({
                 <button type="button" className="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1 text-xs rounded-md shadow-sm transition-colors mt-1" onClick={() => handleAddBuaFloor('measuredBuaFloors')} disabled={isReadOnly}>+ Add Floor</button>
               </div>
               <div className="space-y-2">
+                <div className="flex gap-3 items-center px-1 mb-[-4px]">
+                  <div className="flex-1"></div>
+                  <div className="flex flex-1 gap-2">
+                    <span className="flex-1 text-[11px] font-semibold text-teal-800">RCC Area(sqft)</span>
+                    <span className="flex-1 text-[11px] font-semibold text-teal-800">ACC Area(sqft)</span>
+                  </div>
+                  {(fields.measuredBuaFloors?.length > 1) && <div className="w-[20px]"></div>}
+                </div>
                 {(fields.measuredBuaFloors || []).map((f: any, idx: number) => (
                   <div key={idx} className="flex gap-3 items-center">
                     <input className={`${inputCls} flex-1`} value={f.floor} onChange={e => { const arr = [...fields.measuredBuaFloors]; arr[idx] = { ...arr[idx], floor: e.target.value }; handleChange('measuredBuaFloors', arr); }} disabled={isReadOnly} placeholder="Floor name" />
