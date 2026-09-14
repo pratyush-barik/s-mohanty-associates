@@ -258,8 +258,8 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
       ['l.', 'Class Of Locality : Posh/ Higher Middle Class/Middle class/Lower middle Class/ Poor', fv('classOfLocality')],
       ['m.', 'Quality of Infrastructure in the vicinity', fv('qualityOfInfrastructure')],
     ], [C1, C2, C3], [], [], [], 
-    [{r:0,c:0},{r:0,c:1}, {r:1,c:1}, {r:2,c:0},{r:2,c:1}, {r:3,c:0},{r:3,c:1}, {r:4,c:0},{r:4,c:1}], 
-    [{r:0,c:0},{r:0,c:1}, {r:1,c:1}, {r:2,c:0},{r:2,c:1}, {r:3,c:0},{r:3,c:1}, {r:4,c:0},{r:4,c:1}]
+    [{r:0,c:0},{r:0,c:1}, {r:1,c:0},{r:1,c:1}, {r:2,c:0},{r:2,c:1}, {r:3,c:0},{r:3,c:1}, {r:4,c:0},{r:4,c:1}], 
+    [{r:0,c:0},{r:0,c:1}, {r:1,c:0},{r:1,c:1}, {r:2,c:0},{r:2,c:1}, {r:3,c:0},{r:3,c:1}, {r:4,c:0},{r:4,c:1}]
     );
 
     // Boundaries header
@@ -274,13 +274,14 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
       ['', `North:- ${fv('northSaleDeed')}`, `North:- ${fv('northActual')}`],
       ['', `South:- ${fv('southSaleDeed')}`, `South:- ${fv('southActual')}`],
     ], [C1, C2, C3], [], [], [],
+    [{r:0,c:0},{r:0,c:1},{r:0,c:2}, {r:1,c:0},{r:1,c:1},{r:1,c:2}, {r:2,c:0},{r:2,c:1},{r:2,c:2}, {r:3,c:0},{r:3,c:1},{r:3,c:2}],
     [{r:0,c:1},{r:0,c:2}, {r:1,c:1},{r:1,c:2}, {r:2,c:1},{r:2,c:2}, {r:3,c:1},{r:3,c:2}]
     );
 
     // Sketch map header
     this.drawTable([], [
       ['', 'Boundaries of Property as per sketch map', '']
-    ], [C1, C2, C3], [], [1]);
+    ], [C1, C2, C3], [], [], [], [{r:0,c:0}, {r:0,c:1}], [{r:0,c:1}]);
 
     // Sketch map rows
     this.drawTable([], [
@@ -288,7 +289,8 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
       ['', `West:- ${fv('westSketchMap')}`, ''],
       ['', `North:- ${fv('northSketchMap')}`, ''],
       ['', `South:- ${fv('southSketchMap')}`, ''],
-    ], [C1, C2, C3], [], [], [], [],
+    ], [C1, C2, C3], [], [], [], 
+    [{r:0,c:0},{r:0,c:1}, {r:1,c:0},{r:1,c:1}, {r:2,c:0},{r:2,c:1}, {r:3,c:0},{r:3,c:1}],
     [{r:0,c:1}, {r:1,c:1}, {r:2,c:1}, {r:3,c:1}]
     );
 

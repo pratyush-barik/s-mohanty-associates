@@ -6,6 +6,7 @@ import { useRef, useEffect } from 'react';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { PDFArkaFinanceRenderer, ArkaReportFields } from '@/lib/banks/pdf-arka-finance-renderer';
+import { fetchBytes } from '@/lib/pdf-bank-renderer';
 import {
   Section,
   Field,
@@ -428,9 +429,32 @@ export default function ArkaFinance({
   const handleDownloadPDF = async () => {
     setLoading(true);
     try {
+      // Convert image URLs to byte arrays for the PDF renderer
+      const propImages = fields.propertyImages || [];
+      const photoBytesList = await Promise.all(propImages.map(fetchBytes));
+      const photos = propImages.map((url: string, idx: number) => ({
+        bytes: photoBytesList[idx] as Uint8Array,
+        label: fields.propertyImageNames?.[idx] || 'Site Picture',
+      })).filter((p: any) => p.bytes && p.bytes.length > 0);
+
+      const locImages = fields.locationMapImages || [];
+      const locBytes = (await Promise.all(locImages.map(fetchBytes))).filter((b: Uint8Array | null): b is Uint8Array => b !== null);
+
+      const mouzaImages = fields.mouzaMapImages || [];
+      const mouzaBytes = (await Promise.all(mouzaImages.map(fetchBytes))).filter((b: Uint8Array | null): b is Uint8Array => b !== null);
+
+      const sketchImages = fields.sketchMapImages || [];
+      const sketchBytes = (await Promise.all(sketchImages.map(fetchBytes))).filter((b: Uint8Array | null): b is Uint8Array => b !== null);
+
       const renderer = new PDFArkaFinanceRenderer();
       await renderer.init();
-      const bytes = await renderer.render(fields);
+      const bytes = await renderer.render({
+        ...fields,
+        propertyImages: photos,
+        locationMapImages: locBytes,
+        mouzaMapImages: mouzaBytes,
+        sketchMapImages: sketchBytes,
+      } as ArkaReportFields);
       const blob = new Blob([bytes as any], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -494,9 +518,32 @@ export default function ArkaFinance({
     }
     setLoading(true);
     try {
+      // Convert image URLs to byte arrays for the PDF renderer
+      const propImages = fields.propertyImages || [];
+      const photoBytesList = await Promise.all(propImages.map(fetchBytes));
+      const photos = propImages.map((url: string, idx: number) => ({
+        bytes: photoBytesList[idx] as Uint8Array,
+        label: fields.propertyImageNames?.[idx] || 'Site Picture',
+      })).filter((p: any) => p.bytes && p.bytes.length > 0);
+
+      const locImages = fields.locationMapImages || [];
+      const locBytes = (await Promise.all(locImages.map(fetchBytes))).filter((b: Uint8Array | null): b is Uint8Array => b !== null);
+
+      const mouzaImages = fields.mouzaMapImages || [];
+      const mouzaBytes = (await Promise.all(mouzaImages.map(fetchBytes))).filter((b: Uint8Array | null): b is Uint8Array => b !== null);
+
+      const sketchImages = fields.sketchMapImages || [];
+      const sketchBytes = (await Promise.all(sketchImages.map(fetchBytes))).filter((b: Uint8Array | null): b is Uint8Array => b !== null);
+
       const renderer = new PDFArkaFinanceRenderer();
       await renderer.init();
-      const bytes = await renderer.render(fields as ArkaReportFields);
+      const bytes = await renderer.render({
+        ...fields,
+        propertyImages: photos,
+        locationMapImages: locBytes,
+        mouzaMapImages: mouzaBytes,
+        sketchMapImages: sketchBytes,
+      } as ArkaReportFields);
       const blob = new Blob([bytes as any], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       if (previewWindow && !previewWindow.closed) {
