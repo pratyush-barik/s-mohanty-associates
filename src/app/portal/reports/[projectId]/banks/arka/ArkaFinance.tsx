@@ -651,16 +651,18 @@ export default function ArkaFinance({
                 <div className="w-1/2 md:w-[40%] p-3 border-r border-gray-200 flex items-center">
                   <span className="text-sm font-medium text-gray-700">PRESENT MARKET VALUE</span>
                 </div>
-                <div className="w-1/2 md:w-[60%] p-2">
+                <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
                   <input className={`${inputCls} ${!fields.enableCoverPageValueEdit ? 'bg-gray-50' : ''}`} value={fields.presentMarketValue || ''} onChange={(e) => handleChange('presentMarketValue', e.target.value)} disabled={isReadOnly || !fields.enableCoverPageValueEdit} />
+                  <span className="text-[10px] text-gray-500 mt-1 pl-1">Current Value of Property (Plot + Construction) field from Section 6.</span>
                 </div>
               </div>
               <div className="flex">
                 <div className="w-1/2 md:w-[40%] p-3 border-r border-gray-200 flex items-center">
                   <span className="text-sm font-medium text-gray-700">DISTRESS SALE VALUE</span>
                 </div>
-                <div className="w-1/2 md:w-[60%] p-2">
+                <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
                   <input className={`${inputCls} ${!fields.enableCoverPageValueEdit ? 'bg-gray-50' : ''}`} value={fields.distressSaleValue || ''} onChange={(e) => handleChange('distressSaleValue', e.target.value)} disabled={isReadOnly || !fields.enableCoverPageValueEdit} />
+                  <span className="text-[10px] text-gray-500 mt-1 pl-1">Distressed Valuation of the Property field from Section 6</span>
                 </div>
               </div>
             </div>
@@ -1281,7 +1283,10 @@ export default function ArkaFinance({
               <Field 
                 label={
                   <>
-                    <span>Value of the Plot / Flat</span>
+                    <div>
+                      <span>Value of the Plot / Flat</span>
+                      <span className="block normal-case mt-0.5">(Area of the Plot / Flat * Recommended Rate of the Plot / Flat)</span>
+                    </div>
                     <div className="flex items-center gap-3">
                       <button type="button" onClick={() => handleChange('enableEditValueOfPlot', !fields.enableEditValueOfPlot)} disabled={isReadOnly} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.enableEditValueOfPlot ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}>
                         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.enableEditValueOfPlot ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -1304,7 +1309,10 @@ export default function ArkaFinance({
               <Field 
                 label={
                   <>
-                    <span>Total Cost of Construction (Measured)</span>
+                    <div>
+                      <span>Total Cost of Construction (Total Measured RCC)</span>
+                      <span className="block normal-case mt-0.5">(Total of RCC Area(sqft) column * Construction Rate)</span>
+                    </div>
                     <div className="flex items-center gap-3">
                       <button type="button" onClick={() => handleChange('enableEditTotalCost', !fields.enableEditTotalCost)} disabled={isReadOnly} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.enableEditTotalCost ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}>
                         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.enableEditTotalCost ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -1322,7 +1330,10 @@ export default function ArkaFinance({
                 span={2} 
                 label={
                   <>
-                    <span>Depreciation Value</span>
+                    <div>
+                      <span>Depreciation Value</span>
+                      <span className="block normal-case mt-0.5">Total Cost of Construction - (Total Cost of Construction &times; 1% &times; Current Life of Structure (Age))</span>
+                    </div>
                     <div className="flex items-center gap-3">
                       <button type="button" onClick={() => handleChange('enableEditDepreciation', !fields.enableEditDepreciation)} disabled={isReadOnly} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.enableEditDepreciation ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}>
                         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.enableEditDepreciation ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -1348,7 +1359,10 @@ export default function ArkaFinance({
               <Field 
                 label={
                   <>
-                    <span>Current Value of Property (Plot + Construction)</span>
+                    <div>
+                      <span>Current Value of Property (Plot + Construction)</span>
+                      <span className="block normal-case mt-0.5">(Value of the Plot / Flat + Depreciation Value)</span>
+                    </div>
                     <div className="flex items-center gap-3">
                       <button type="button" onClick={() => handleChange('enableEditCurrentValue', !fields.enableEditCurrentValue)} disabled={isReadOnly} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.enableEditCurrentValue ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}>
                         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.enableEditCurrentValue ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -1377,7 +1391,10 @@ export default function ArkaFinance({
               <Field 
                 label={
                   <>
-                    <span>Distressed Valuation of the Property</span>
+                    <div>
+                      <span>Distressed Valuation of the Property</span>
+                      <span className="block normal-case mt-0.5">([CURRENT VALUE OF PROPERTY (PLOT + CONSTRUCTION)] * 0.80 (Standard 80% distress factor))</span>
+                    </div>
                     <div className="flex items-center gap-3">
                       <button type="button" onClick={() => handleChange('enableEditDistressed', !fields.enableEditDistressed)} disabled={isReadOnly} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.enableEditDistressed ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}>
                         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.enableEditDistressed ? 'translate-x-6' : 'translate-x-1'}`} />
