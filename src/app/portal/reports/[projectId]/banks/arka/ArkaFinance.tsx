@@ -126,8 +126,11 @@ export default function ArkaFinance({
       { floor: 'T.F(third floor)', area: '' },
     ],
     constructionAsPerPlan: '',
+    constructionAsPerPlanOther: '',
     qualityOfConstruction: '',
+    qualityOfConstructionOther: '',
     maintenanceOfProperty: '',
+    maintenanceOfPropertyOther: '',
     currentLifeOfStructure: '',
     projectedLifeOfStructure: '',
     // Section 6: Valuation Details
@@ -1026,9 +1029,12 @@ export default function ArkaFinance({
             </div>
             {/* Approved BUA Table */}
             <div className="border border-teal-200 bg-white rounded-lg p-4 mb-4">
-              <div className="flex justify-between items-center mb-3">
-                <h4 className="font-semibold text-teal-700 text-sm">Approved Built Up Area (Floor-wise)</h4>
-                <button type="button" className="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1 text-xs rounded-md shadow-sm transition-colors" onClick={() => handleAddBuaFloor('approvedBuaFloors')} disabled={isReadOnly}>+ Add Floor</button>
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <h4 className="font-semibold text-teal-700 text-sm">Approved Built Up Area (Floor-wise)</h4>
+                  <p className="text-red-500 text-[10px] mt-0.5">(Floor names given below can be rename/ editable)</p>
+                </div>
+                <button type="button" className="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1 text-xs rounded-md shadow-sm transition-colors mt-1" onClick={() => handleAddBuaFloor('approvedBuaFloors')} disabled={isReadOnly}>+ Add Floor</button>
               </div>
               <div className="space-y-2">
                 {(fields.approvedBuaFloors || []).map((f: any, idx: number) => (
@@ -1044,9 +1050,12 @@ export default function ArkaFinance({
             </div>
             {/* Measured BUA Table */}
             <div className="border border-teal-200 bg-white rounded-lg p-4 mb-4">
-              <div className="flex justify-between items-center mb-3">
-                <h4 className="font-semibold text-teal-700 text-sm">Measured Built Up Area (Floor-wise)</h4>
-                <button type="button" className="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1 text-xs rounded-md shadow-sm transition-colors" onClick={() => handleAddBuaFloor('measuredBuaFloors')} disabled={isReadOnly}>+ Add Floor</button>
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <h4 className="font-semibold text-teal-700 text-sm">Measured Built Up Area (Floor-wise)</h4>
+                  <p className="text-red-500 text-[10px] mt-0.5">(Floor names given below can be rename/ editable)</p>
+                </div>
+                <button type="button" className="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1 text-xs rounded-md shadow-sm transition-colors mt-1" onClick={() => handleAddBuaFloor('measuredBuaFloors')} disabled={isReadOnly}>+ Add Floor</button>
               </div>
               <div className="space-y-2">
                 {(fields.measuredBuaFloors || []).map((f: any, idx: number) => (
@@ -1064,10 +1073,18 @@ export default function ArkaFinance({
               <Field span={2} label="Is the construction as per approved building plan / local bye laws?">
                 <select className={selectCls} value={fields.constructionAsPerPlan || ''} onChange={e => handleChange('constructionAsPerPlan', e.target.value)} disabled={isReadOnly}>
                   <option value="">-- Select --</option>
-                  <option value="Yes">Yes</option>
+                  <option value="Yes (As per approved plan)">Yes (As per approved plan)</option>
+                  <option value="Yes (As per local byelaws)">Yes (As per local byelaws)</option>
+                  <option value="Yes (As per both approved plan and local byelaws)">Yes (As per both approved plan and local byelaws)</option>
                   <option value="No">No</option>
-                  <option value="Partially">Partially</option>
+                  <option value="NA">NA</option>
+                  <option value="Custom">Custom</option>
                 </select>
+                {fields.constructionAsPerPlan === 'Custom' && (
+                  <div className="mt-3">
+                    <input className={inputCls} value={fields.constructionAsPerPlanOther || ''} onChange={e => handleChange('constructionAsPerPlanOther', e.target.value)} disabled={isReadOnly} placeholder="Describe details..." />
+                  </div>
+                )}
               </Field>
               <Field label="Quality of Construction">
                 <select className={selectCls} value={fields.qualityOfConstruction || ''} onChange={e => handleChange('qualityOfConstruction', e.target.value)} disabled={isReadOnly}>
@@ -1077,7 +1094,14 @@ export default function ArkaFinance({
                   <option value="Good">Good</option>
                   <option value="Average">Average</option>
                   <option value="Poor">Poor</option>
+                  <option value="NA">NA</option>
+                  <option value="Custom">Custom</option>
                 </select>
+                {fields.qualityOfConstruction === 'Custom' && (
+                  <div className="mt-3">
+                    <input className={inputCls} value={fields.qualityOfConstructionOther || ''} onChange={e => handleChange('qualityOfConstructionOther', e.target.value)} disabled={isReadOnly} placeholder="Describe quality..." />
+                  </div>
+                )}
               </Field>
               <Field label="Maintenance of the Property">
                 <select className={selectCls} value={fields.maintenanceOfProperty || ''} onChange={e => handleChange('maintenanceOfProperty', e.target.value)} disabled={isReadOnly}>
@@ -1086,7 +1110,14 @@ export default function ArkaFinance({
                   <option value="Very Good">Very Good</option>
                   <option value="Average">Average</option>
                   <option value="Poor">Poor</option>
+                  <option value="NA">NA</option>
+                  <option value="Custom">Custom</option>
                 </select>
+                {fields.maintenanceOfProperty === 'Custom' && (
+                  <div className="mt-3">
+                    <input className={inputCls} value={fields.maintenanceOfPropertyOther || ''} onChange={e => handleChange('maintenanceOfPropertyOther', e.target.value)} disabled={isReadOnly} placeholder="Describe maintenance..." />
+                  </div>
+                )}
               </Field>
               <Field label="Current Life of the Structure">
                 <input className={inputCls} value={fields.currentLifeOfStructure || ''} onChange={e => handleChange('currentLifeOfStructure', e.target.value)} disabled={isReadOnly} placeholder="e.g. 10 years" />
