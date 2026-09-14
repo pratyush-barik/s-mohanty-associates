@@ -298,9 +298,12 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
       ['x.', 'Proximity to civic amenities like school, hospital, market, etc', fv('proximityToCivicAmenities')],
       ['y.', 'Development of surrounding area', fv('developmentOfSurroundingArea')],
       ['z.', 'Longitude & latitude of the property', ''],
+    ], [C1, C2, C3], [], []);
+
+    this.drawTable([], [
       ['i.', 'Longitude', fv('longitude')],
       ['ii.', 'Latitude', fv('latitude')],
-    ], [C1, C2, C3], [], [10, 11]);
+    ], [C1, C2, C3], [2], []);
 
     // 5. APPROVAL DETAILS header
     this.drawTable([], [

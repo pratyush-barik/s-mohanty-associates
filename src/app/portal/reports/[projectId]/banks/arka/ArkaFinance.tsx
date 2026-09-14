@@ -87,13 +87,20 @@ export default function ArkaFinance({
     southSketchMap: '',
     boundariesMatch: '',
     landStatus: '',
+    landStatusOther: '',
     propertyType: '',
+    propertyTypeOther: '',
     approvedUsage: '',
+    approvedUsageOther: '',
     actualUsage: '',
+    actualUsageOther: '',
     structureType: '',
+    structureTypeOther: '',
     numberOfFloors: '',
     occupancyDetails: '',
+    occupancyDetailsOther: '',
     electricityWaterDrainage: '',
+    electricityWaterDrainageOther: '',
     proximityToCivicAmenities: '',
     developmentOfSurroundingArea: '',
     longitude: '',
@@ -825,9 +832,16 @@ export default function ArkaFinance({
                 <select className={selectCls} value={fields.landStatus || ''} onChange={e => handleChange('landStatus', e.target.value)} disabled={isReadOnly}>
                   <option value="">-- Select --</option>
                   <option value="Free Hold">Free Hold</option>
-                  <option value="Leased">Leased</option>
+                  <option value="Lease Hold">Lease Hold</option>
                   <option value="Development Authority">Development Authority</option>
+                  <option value="NA">NA</option>
+                  <option value="custom">custom</option>
                 </select>
+                {fields.landStatus === 'custom' && (
+                  <div className="mt-3">
+                    <input className={inputCls} value={fields.landStatusOther || ''} onChange={e => handleChange('landStatusOther', e.target.value)} disabled={isReadOnly} placeholder="Describe status..." />
+                  </div>
+                )}
               </Field>
               <Field label="Type of Property">
                 <select className={selectCls} value={fields.propertyType || ''} onChange={e => handleChange('propertyType', e.target.value)} disabled={isReadOnly}>
@@ -839,7 +853,14 @@ export default function ArkaFinance({
                   <option value="Flat - 2BHK">Flat (2BHK)</option>
                   <option value="Flat - 3BHK">Flat (3BHK)</option>
                   <option value="Commercial">Commercial</option>
+                  <option value="NA">NA</option>
+                  <option value="custom">custom</option>
                 </select>
+                {fields.propertyType === 'custom' && (
+                  <div className="mt-3">
+                    <input className={inputCls} value={fields.propertyTypeOther || ''} onChange={e => handleChange('propertyTypeOther', e.target.value)} disabled={isReadOnly} placeholder="Describe property type..." />
+                  </div>
+                )}
               </Field>
               <Field label="Approved Usage of Property">
                 <select className={selectCls} value={fields.approvedUsage || ''} onChange={e => handleChange('approvedUsage', e.target.value)} disabled={isReadOnly}>
@@ -849,7 +870,14 @@ export default function ArkaFinance({
                   <option value="Industrial">Industrial</option>
                   <option value="Commercial">Commercial</option>
                   <option value="Residential">Residential</option>
+                  <option value="NA">NA</option>
+                  <option value="custom">custom</option>
                 </select>
+                {fields.approvedUsage === 'custom' && (
+                  <div className="mt-3">
+                    <input className={inputCls} value={fields.approvedUsageOther || ''} onChange={e => handleChange('approvedUsageOther', e.target.value)} disabled={isReadOnly} placeholder="Describe approved usage..." />
+                  </div>
+                )}
               </Field>
               <Field label="Actual Usage of the Property">
                 <select className={selectCls} value={fields.actualUsage || ''} onChange={e => handleChange('actualUsage', e.target.value)} disabled={isReadOnly}>
@@ -859,7 +887,14 @@ export default function ArkaFinance({
                   <option value="Commercial">Commercial</option>
                   <option value="Residential">Residential</option>
                   <option value="Mixed">Mixed</option>
+                  <option value="NA">NA</option>
+                  <option value="custom">custom</option>
                 </select>
+                {fields.actualUsage === 'custom' && (
+                  <div className="mt-3">
+                    <input className={inputCls} value={fields.actualUsageOther || ''} onChange={e => handleChange('actualUsageOther', e.target.value)} disabled={isReadOnly} placeholder="Describe actual usage..." />
+                  </div>
+                )}
               </Field>
               <Field label="Type of Structure">
                 <select className={selectCls} value={fields.structureType || ''} onChange={e => handleChange('structureType', e.target.value)} disabled={isReadOnly}>
@@ -867,7 +902,14 @@ export default function ArkaFinance({
                   <option value="Load Bearing">Load Bearing</option>
                   <option value="RCC">RCC</option>
                   <option value="Aluform Shuttering">Aluform Shuttering</option>
+                  <option value="NA">NA</option>
+                  <option value="custom">custom</option>
                 </select>
+                {fields.structureType === 'custom' && (
+                  <div className="mt-3">
+                    <input className={inputCls} value={fields.structureTypeOther || ''} onChange={e => handleChange('structureTypeOther', e.target.value)} disabled={isReadOnly} placeholder="Describe structure type..." />
+                  </div>
+                )}
               </Field>
               <Field label="No. of Floors">
                 <input className={inputCls} type="number" min="0" value={fields.numberOfFloors || ''} onChange={e => handleChange('numberOfFloors', e.target.value)} disabled={isReadOnly} />
@@ -878,7 +920,14 @@ export default function ArkaFinance({
                   <option value="Self Occupied">Self Occupied</option>
                   <option value="Rented">Rented</option>
                   <option value="Vacant">Vacant</option>
+                  <option value="NA">NA</option>
+                  <option value="custom">custom</option>
                 </select>
+                {fields.occupancyDetails === 'custom' && (
+                  <div className="mt-3">
+                    <input className={inputCls} value={fields.occupancyDetailsOther || ''} onChange={e => handleChange('occupancyDetailsOther', e.target.value)} disabled={isReadOnly} placeholder="Describe occupancy..." />
+                  </div>
+                )}
               </Field>
               <Field label="Electricity / Water / Drainage Connection">
                 <select className={selectCls} value={fields.electricityWaterDrainage || ''} onChange={e => handleChange('electricityWaterDrainage', e.target.value)} disabled={isReadOnly}>
@@ -887,7 +936,14 @@ export default function ArkaFinance({
                   <option value="Electricity & Water Only">Electricity & Water Only</option>
                   <option value="Electricity Only">Electricity Only</option>
                   <option value="None">None</option>
+                  <option value="NA">NA</option>
+                  <option value="custom">custom</option>
                 </select>
+                {fields.electricityWaterDrainage === 'custom' && (
+                  <div className="mt-3">
+                    <input className={inputCls} value={fields.electricityWaterDrainageOther || ''} onChange={e => handleChange('electricityWaterDrainageOther', e.target.value)} disabled={isReadOnly} placeholder="Describe connections..." />
+                  </div>
+                )}
               </Field>
               <Field span={2} label="Proximity to Civic Amenities (School, Hospital, Market, etc.)">
                 <input className={inputCls} value={fields.proximityToCivicAmenities || ''} onChange={e => handleChange('proximityToCivicAmenities', e.target.value)} disabled={isReadOnly} placeholder="e.g. School 0.5 km, Hospital 1 km..." />
