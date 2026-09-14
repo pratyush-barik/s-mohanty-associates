@@ -257,7 +257,10 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
       ['k.', 'Level of land with topographical conditions', fv('levelOfLand')],
       ['l.', 'Class Of Locality : Posh/ Higher Middle Class/Middle class/Lower middle Class/ Poor', fv('classOfLocality')],
       ['m.', 'Quality of Infrastructure in the vicinity', fv('qualityOfInfrastructure')],
-    ], [C1, C2, C3], [], []);
+    ], [C1, C2, C3], [], [], [], 
+    [{r:0,c:1}, {r:1,c:1}, {r:2,c:1}, {r:3,c:1}, {r:4,c:1}], 
+    [{r:0,c:1}, {r:1,c:1}, {r:2,c:1}, {r:3,c:1}, {r:4,c:1}]
+    );
 
     // Boundaries header
     this.drawTable([], [
@@ -270,7 +273,9 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
       ['', `West:- ${fv('westSaleDeed')}`, `West:- ${fv('westActual')}`],
       ['', `North:- ${fv('northSaleDeed')}`, `North:- ${fv('northActual')}`],
       ['', `South:- ${fv('southSaleDeed')}`, `South:- ${fv('southActual')}`],
-    ], [C1, C2, C3], [], []);
+    ], [C1, C2, C3], [], [], [],
+    [{r:0,c:1},{r:0,c:2}, {r:1,c:1},{r:1,c:2}, {r:2,c:1},{r:2,c:2}, {r:3,c:1},{r:3,c:2}]
+    );
 
     // Sketch map header
     this.drawTable([], [
@@ -283,7 +288,9 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
       ['', `West:- ${fv('westSketchMap')}`, ''],
       ['', `North:- ${fv('northSketchMap')}`, ''],
       ['', `South:- ${fv('southSketchMap')}`, ''],
-    ], [C1, C2, C3], [], []);
+    ], [C1, C2, C3], [], [], [], [],
+    [{r:0,c:1}, {r:1,c:1}, {r:2,c:1}, {r:3,c:1}]
+    );
 
     // Match boundaries question
     this.drawTable([], [
@@ -303,7 +310,10 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
       ['x.', 'Proximity to civic amenities like school, hospital, market, etc', fv('proximityToCivicAmenities')],
       ['y.', 'Development of surrounding area', fv('developmentOfSurroundingArea')],
       ['z.', 'Longitude & latitude of the property', ''],
-    ], [C1, C2, C3], [], []);
+    ], [C1, C2, C3], [], [], [],
+    [{r: 10, c: 1}], 
+    [{r: 10, c: 1}]
+    );
 
     this.drawTable([], [
       ['i.', 'Longitude', fv('longitude')],
@@ -399,12 +409,15 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
     // Bold row indices: the 'c.' header row (index 2) and the 'd.' header row
     const cIdx = 2;
     const dIdx = 3 + approvedBuaRows.length;
-    this.drawTable([], constructionRows, [C1, C2, C3], [], [cIdx, dIdx]);
+    this.drawTable([], constructionRows, [C1, C2, C3], [], [], [], 
+      [{r: cIdx, c: 1}, {r: dIdx, c: 1}], 
+      [{r: cIdx, c: 1}, {r: dIdx, c: 1}]
+    );
 
     // 7. Recommended Valuation
     this.drawTable([], [
       ['7.', 'Recommended Valuation of the Property', '']
-    ], [C1, C2, C3], [], []);
+    ], [C1, C2, C3], [], [], [], [{r:0,c:1}], [{r:0,c:1}]);
 
     this.drawTable([], [
       ['a.', 'Recommended rate of the Plot/Flat', fv('recommendedRateOfPlot')],
@@ -425,8 +438,12 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
       ['b.', 'Location sketch for the property', 'Attached'],
       ['12.', 'Remarks :', ''],
       ['', fv('commentOn', ''), fv('remarksDetails', '')],
-    ], [C1, C2, C3], [], [4, 8, 11]);
+    ], [C1, C2, C3], [], [], [], 
+    [{r:8,c:1},{r:8,c:2}, {r:10,c:1}, {r:11,c:1}, {r:12,c:1}, {r:13,c:1}, {r:16,c:1}], 
+    [{r:8,c:1},{r:8,c:2}, {r:10,c:1}, {r:11,c:1}, {r:12,c:1}, {r:13,c:1}, {r:16,c:1}]
+    );
 
+    this.addPage();
     this.cursorY += 20;
     this.page.drawText('Undertaking:', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
     this.cursorY += 16;

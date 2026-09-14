@@ -346,7 +346,9 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
     colWidths: number[],
     highlightedCols: number[] = [],
     labelCols: number[] = [],
-    boldCols: number[] = []
+    boldCols: number[] = [],
+    highlightedCells: { r: number, c: number }[] = [],
+    boldCells: { r: number, c: number }[] = []
   ): void {
     const fontSize = FONT_SIZE;
     const pad = 3;
@@ -404,11 +406,13 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
     }
 
     // 2. Draw Data Rows
-    for (const row of rows) {
+    for (let rIdx = 0; rIdx < rows.length; rIdx++) {
+      const row = rows[rIdx];
       let rowMaxLines = 1;
       const rowWrapped = row.map((cell, i) => {
         const text = String(cell ?? '');
-        const isBold = highlightedCols.includes(i) || labelCols.includes(i) || boldCols.includes(i);
+        const isCellBold = boldCells.some(c => c.r === rIdx && c.c === i);
+        const isBold = isCellBold || highlightedCols.includes(i) || labelCols.includes(i) || boldCols.includes(i);
         const lines = this.wrapText(text, (normalizedColWidths[i] || 50) - pad * 2, fontSize, isBold);
         rowMaxLines = Math.max(rowMaxLines, lines.length);
         return lines;
@@ -421,16 +425,18 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
       curX = MARGIN_L;
 
       for (let i = 0; i < row.length; i++) {
-        const isHighlight = highlightedCols.includes(i);
+        const isCellHighlight = highlightedCells.some(c => c.r === rIdx && c.c === i);
+        const isCellBold = boldCells.some(c => c.r === rIdx && c.c === i);
+        const isHighlight = isCellHighlight || highlightedCols.includes(i);
         const isLabel = labelCols.includes(i);
         const w = normalizedColWidths[i] || 50;
-        if (isLabel) {
+        if (isCellHighlight || isLabel) {
           this.page.drawRectangle({
             x: curX,
             y: y - rowH,
             width: w,
             height: rowH,
-            color: hexToRgb(LBL_BG),
+            color: hexToRgb(OPT_BG), // Uses default blue bg matching headers
             opacity: BG_OPACITY,
             borderColor: rgb(0, 0, 0),
             borderWidth: BORDER_W,
@@ -463,7 +469,7 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
             x: curX + pad,
             y: lineY,
             size: fontSize,
-            font: (isHighlight || isLabel || boldCols.includes(i)) ? this.fontBold : this.fontRegular,
+            font: (isCellBold || isCellHighlight || isHighlight || isLabel || boldCols.includes(i)) ? this.fontBold : this.fontRegular,
             color: rgb(0, 0, 0),
           });
           lineY -= fontSize * LINE_HEIGHT;
