@@ -435,7 +435,7 @@ export default function ArkaFinance({
     const nextIdx = current.length;
     const floorNames = ['Ground Floor (GF)', 'First Floor (FF)', 'Second Floor (SF)', 'Third Floor (TF)', 'Fourth Floor', 'Fifth Floor'];
     const floorName = nextIdx < floorNames.length ? floorNames[nextIdx] : `Floor ${nextIdx + 1}`;
-    handleChange(key, [...current, { floor: floorName, area: '' }]);
+    handleChange(key, [...current, { floor: floorName, rccArea: '', accArea: '' }]);
   };
 
   const handleRemoveBuaFloor = (key: 'approvedBuaFloors' | 'measuredBuaFloors', idx: number) => {
@@ -1040,7 +1040,10 @@ export default function ArkaFinance({
                 {(fields.approvedBuaFloors || []).map((f: any, idx: number) => (
                   <div key={idx} className="flex gap-3 items-center">
                     <input className={`${inputCls} flex-1`} value={f.floor} onChange={e => { const arr = [...fields.approvedBuaFloors]; arr[idx] = { ...arr[idx], floor: e.target.value }; handleChange('approvedBuaFloors', arr); }} disabled={isReadOnly} placeholder="Floor name" />
-                    <input className={`${inputCls} flex-1`} value={f.area} onChange={e => { const arr = [...fields.approvedBuaFloors]; arr[idx] = { ...arr[idx], area: e.target.value }; handleChange('approvedBuaFloors', arr); }} disabled={isReadOnly} placeholder="Sq Ft Description" />
+                    <div className="flex flex-1 gap-2">
+                      <input className={`${inputCls} flex-1`} value={f.rccArea} onChange={e => { const arr = [...fields.approvedBuaFloors]; arr[idx] = { ...arr[idx], rccArea: e.target.value }; handleChange('approvedBuaFloors', arr); }} disabled={isReadOnly} placeholder="RCC Area" />
+                      <input className={`${inputCls} flex-1`} value={f.accArea} onChange={e => { const arr = [...fields.approvedBuaFloors]; arr[idx] = { ...arr[idx], accArea: e.target.value }; handleChange('approvedBuaFloors', arr); }} disabled={isReadOnly} placeholder="ACC Area" />
+                    </div>
                     {(fields.approvedBuaFloors?.length > 1) && (
                       <button type="button" className="text-red-500 hover:text-red-700 text-xs font-bold px-2 py-1" onClick={() => handleRemoveBuaFloor('approvedBuaFloors', idx)} disabled={isReadOnly}>&#x2715;</button>
                     )}
@@ -1061,7 +1064,10 @@ export default function ArkaFinance({
                 {(fields.measuredBuaFloors || []).map((f: any, idx: number) => (
                   <div key={idx} className="flex gap-3 items-center">
                     <input className={`${inputCls} flex-1`} value={f.floor} onChange={e => { const arr = [...fields.measuredBuaFloors]; arr[idx] = { ...arr[idx], floor: e.target.value }; handleChange('measuredBuaFloors', arr); }} disabled={isReadOnly} placeholder="Floor name" />
-                    <input className={`${inputCls} flex-1`} value={f.area} onChange={e => { const arr = [...fields.measuredBuaFloors]; arr[idx] = { ...arr[idx], area: e.target.value }; handleChange('measuredBuaFloors', arr); }} disabled={isReadOnly} placeholder="Sq Ft Description" />
+                    <div className="flex flex-1 gap-2">
+                      <input className={`${inputCls} flex-1`} value={f.rccArea} onChange={e => { const arr = [...fields.measuredBuaFloors]; arr[idx] = { ...arr[idx], rccArea: e.target.value }; handleChange('measuredBuaFloors', arr); }} disabled={isReadOnly} placeholder="RCC Area" />
+                      <input className={`${inputCls} flex-1`} value={f.accArea} onChange={e => { const arr = [...fields.measuredBuaFloors]; arr[idx] = { ...arr[idx], accArea: e.target.value }; handleChange('measuredBuaFloors', arr); }} disabled={isReadOnly} placeholder="ACC Area" />
+                    </div>
                     {(fields.measuredBuaFloors?.length > 1) && (
                       <button type="button" className="text-red-500 hover:text-red-700 text-xs font-bold px-2 py-1" onClick={() => handleRemoveBuaFloor('measuredBuaFloors', idx)} disabled={isReadOnly}>&#x2715;</button>
                     )}

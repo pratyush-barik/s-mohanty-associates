@@ -322,11 +322,20 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
       ['6.', 'CONSTRUCTION DETAILS', '']
     ], [C1, C2, C3], [], [0, 1]);
 
+    const combineAreas = (f: any) => {
+      const rcc = String(f.rccArea || '').trim();
+      const acc = String(f.accArea || '').trim();
+      if (rcc && acc) return `RCC-${rcc} & ACC-${acc}`;
+      if (rcc) return `RCC-${rcc}`;
+      if (acc) return `ACC-${acc}`;
+      return '';
+    };
+
     // Build dynamic BUA rows from approvedBuaFloors array
     const approvedFloors = Array.isArray(fields.approvedBuaFloors) ? fields.approvedBuaFloors : [];
-    const approvedBuaRows: string[][] = approvedFloors.map((f: any) => ['', f.floor || '', f.area || '']);
+    const approvedBuaRows: string[][] = approvedFloors.map((f: any) => ['', f.floor || '', combineAreas(f)]);
     const measuredFloors = Array.isArray(fields.measuredBuaFloors) ? fields.measuredBuaFloors : [];
-    const measuredBuaRows: string[][] = measuredFloors.map((f: any) => ['', f.floor || '', f.area || '']);
+    const measuredBuaRows: string[][] = measuredFloors.map((f: any) => ['', f.floor || '', combineAreas(f)]);
 
     // Advanced Regex Auto-Sum Logic
     const calculateFloorSums = (floors: any[], labelPrefix: string) => {
@@ -334,7 +343,7 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
       const formattedSums: string[] = [];
 
       for (const f of floors) {
-        const text = String(f.area || '').trim();
+        const text = combineAreas(f);
         if (!text) continue;
         
         if (text.toUpperCase() === 'NA') {
@@ -361,7 +370,7 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
       }
 
       if (hasAnyValue && formattedSums.length > 0) return formattedSums.join(', ');
-      if (!hasAnyValue && floors.some((f: any) => String(f.area || '').trim().toUpperCase() === 'NA')) return 'NA';
+      if (!hasAnyValue && floors.some((f: any) => combineAreas(f).toUpperCase() === 'NA')) return 'NA';
       return '';
     };
 
