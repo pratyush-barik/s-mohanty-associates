@@ -767,7 +767,7 @@ export default function ArkaFinance({
                     <th className="border border-violet-200 px-3 py-2 text-left font-semibold text-violet-700">Direction</th>
                     <th className="border border-violet-200 px-3 py-2 text-left font-semibold text-violet-700">As per Sale Deed</th>
                     <th className="border border-violet-200 px-3 py-2 text-left font-semibold text-violet-700">As per Actual</th>
-                    <th className="border border-violet-200 px-3 py-2 text-left font-semibold text-violet-700">As per Sketch Map</th>
+                    <th className="border border-violet-200 px-3 py-2 text-left font-semibold text-violet-700">Boundaries of Property as per sketch map</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -793,12 +793,7 @@ export default function ArkaFinance({
             </div>
             <div className="mt-4">
               <Field label="Do the boundaries at site match as mentioned in documentation?">
-                <select className={selectCls} value={fields.boundariesMatch || ''} onChange={e => handleChange('boundariesMatch', e.target.value)} disabled={isReadOnly}>
-                  <option value="">-- Select --</option>
-                  <option value="Yes">Yes</option>
-                  <option value="No">No</option>
-                  <option value="Partially">Partially</option>
-                </select>
+                <input className={inputCls} value={fields.boundariesMatch || ''} onChange={e => handleChange('boundariesMatch', e.target.value)} disabled={isReadOnly} />
               </Field>
             </div>
           </div>

@@ -1,4 +1,4 @@
-﻿import {
+import {
   PDFBankRenderer,
   MARGIN_L,
   CONTENT_W,
@@ -259,15 +259,31 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
       ['n.', 'Boundaries of Property as sale deed', 'Boundaries of Property as per Actual']
     ], [C1, C2, C3], [], [1, 2]);
 
-    // Boundary rows + sketch map
+    // Boundary rows
     this.drawTable([], [
       ['', `East:- ${fv('eastSaleDeed')}`, `East:- ${fv('eastActual')}`],
       ['', `West:- ${fv('westSaleDeed')}`, `West:- ${fv('westActual')}`],
       ['', `North:- ${fv('northSaleDeed')}`, `North:- ${fv('northActual')}`],
       ['', `South:- ${fv('southSaleDeed')}`, `South:- ${fv('southActual')}`],
-      ['', 'As per sketch map', ''],
+    ], [C1, C2, C3], [], []);
+
+    // Sketch map header
+    this.drawTable([], [
+      ['', 'Boundaries of Property as per sketch map', '']
+    ], [C1, C2, C3], [], [1]);
+
+    // Sketch map rows
+    this.drawTable([], [
+      ['', `East:- ${fv('eastSketchMap')}`, ''],
+      ['', `West:- ${fv('westSketchMap')}`, ''],
+      ['', `North:- ${fv('northSketchMap')}`, ''],
+      ['', `South:- ${fv('southSketchMap')}`, ''],
+    ], [C1, C2, C3], [], []);
+
+    // Match boundaries question
+    this.drawTable([], [
       ['o.', 'Does the Boundaries at Site match, as mentioned in documentation?', fv('boundariesMatch')]
-    ], [C1, C2, C3], [], [2]);
+    ], [C1, C2, C3], [], [1]);
 
     // Property characteristics (p-z)
     this.drawTable([], [
