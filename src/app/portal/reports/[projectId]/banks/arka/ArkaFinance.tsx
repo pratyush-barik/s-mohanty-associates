@@ -137,6 +137,7 @@ export default function ArkaFinance({
     recommendedRateOfPlot: '',
     valueOfPlot: '',
     estimatedCostOfConstruction: '',
+    constructionRate: '',
     totalCostOfConstructionMeasured: '',
     depreciationValue: '',
     stageOfConstruction: '',
@@ -239,6 +240,84 @@ export default function ArkaFinance({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
+
+  // Mathematical Dependencies & Auto-Calculation Logic
+  useEffect(() => {
+    const extractNum = (val: any) => {
+      if (!val) return 0;
+      const str = String(val).replace(/[^0-9.]/g, '');
+      const parsed = parseFloat(str);
+      return isNaN(parsed) ? 0 : parsed;
+    };
+
+    setFields((prev: any) => {
+      let next = { ...prev };
+      let changed = false;
+
+      // Helper to update field safely
+      const updateField = (key: string, value: string) => {
+        if (next[key] !== value) {
+          next[key] = value;
+          changed = true;
+        }
+      };
+
+      // 1. Plot Value = Area * Recommended Rate
+      const area = extractNum(next.areaOfPlot);
+      const rate = extractNum(next.recommendedRateOfPlot);
+      if (area > 0 && rate > 0) {
+        updateField('valueOfPlot', `Rs. ${(area * rate).toLocaleString('en-IN')}/-`);
+      }
+
+      // 2. Construction Cost = SUM(RCC Areas) * Construction Rate
+      const sumRcc = Array.isArray(next.measuredBuaFloors) 
+        ? next.measuredBuaFloors.reduce((sum: number, f: any) => sum + extractNum(f.rccArea), 0)
+        : 0;
+      const constRate = extractNum(next.constructionRate);
+      if (sumRcc > 0 && constRate > 0) {
+        updateField('totalCostOfConstructionMeasured', `Rs. ${(sumRcc * constRate).toLocaleString('en-IN')}/-`);
+      }
+
+      // 3. Depreciation Value = Total Cost - (Total Cost * 1% * Age)
+      const totalCost = extractNum(next.totalCostOfConstructionMeasured);
+      const age = extractNum(next.currentLifeOfStructure);
+      if (totalCost > 0 && age > 0) {
+        // Skip override if user explicitly typed "Nil" or similar manual text
+        if (!String(next.depreciationValue || '').toLowerCase().includes('nil')) {
+          const depVal = totalCost - (totalCost * 0.01 * age);
+          updateField('depreciationValue', `Rs. ${depVal.toLocaleString('en-IN')}/-`);
+        }
+      }
+
+      // 4. Current Value = Plot Value + Depreciation Value
+      const plotV = extractNum(next.valueOfPlot);
+      const depV = String(next.depreciationValue || '').toLowerCase().includes('nil') 
+        ? totalCost // If Nil, depreciation is 0, so depreciated value is just totalCost
+        : extractNum(next.depreciationValue); 
+
+      if (plotV > 0 || depV > 0) {
+        updateField('currentValueOfTheProperty', `Rs. ${(plotV + depV).toLocaleString('en-IN')}/-`);
+      }
+
+      // 5. Distressed Valuation = Current Value * 0.80
+      const currentVal = extractNum(next.currentValueOfTheProperty);
+      if (currentVal > 0) {
+        updateField('distressedValuation', `Rs. ${(currentVal * 0.80).toLocaleString('en-IN')}/-`);
+      }
+
+      return changed ? next : prev;
+    });
+  }, [
+    fields.areaOfPlot,
+    fields.recommendedRateOfPlot,
+    fields.measuredBuaFloors,
+    fields.constructionRate,
+    fields.totalCostOfConstructionMeasured,
+    fields.currentLifeOfStructure,
+    fields.valueOfPlot,
+    fields.depreciationValue,
+    fields.currentValueOfTheProperty
+  ]);
 
   const navSections: NavItem[] = [
     { id: 'arka-cover', title: '1. Cover Page Details' },
@@ -1164,6 +1243,9 @@ export default function ArkaFinance({
               </Field>
               <Field label="Estimated Cost of Construction">
                 <input className={inputCls} value={fields.estimatedCostOfConstruction || ''} onChange={e => handleChange('estimatedCostOfConstruction', e.target.value)} disabled={isReadOnly} placeholder="&#8377;" />
+              </Field>
+              <Field label="Construction Rate">
+                <input className={inputCls} value={fields.constructionRate || ''} onChange={e => handleChange('constructionRate', e.target.value)} disabled={isReadOnly} placeholder="&#8377; per sq. ft." />
               </Field>
               <Field label="Total Cost of Construction (Measured)">
                 <input className={inputCls} value={fields.totalCostOfConstructionMeasured || ''} onChange={e => handleChange('totalCostOfConstructionMeasured', e.target.value)} disabled={isReadOnly} placeholder="&#8377;" />
