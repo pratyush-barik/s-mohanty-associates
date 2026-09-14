@@ -37,6 +37,7 @@ export default function ArkaFinance({
     addressOfTheProperty: '',
     presentMarketValue: '',
     distressSaleValue: '',
+    enableCoverPageValueEdit: false,
     purposeOfValuationDropdown: 'default',
     purposeOfValuation: 'TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY',
     preparedByCompany: 'M/s. S MOHANTY ASSOCIATES',
@@ -150,7 +151,9 @@ export default function ArkaFinance({
     rentalValuePerMonth: '',
     remarks: '',
     photosAttached: 'Attached',
+    photosAttachedOther: '',
     locationSketchAttached: 'Attached',
+    locationSketchAttachedOther: '',
     // Media
     propertyImages: [],
     propertyImageNames: [],
@@ -307,6 +310,16 @@ export default function ArkaFinance({
         updateField('distressedValuation', `Rs. ${(currentVal * 0.80).toLocaleString('en-IN')}/-`);
       }
 
+      // 6. Cover Page Values State Mirroring
+      if (!next.enableCoverPageValueEdit) {
+        if (next.currentValueOfTheProperty) {
+          updateField('presentMarketValue', next.currentValueOfTheProperty);
+        }
+        if (next.distressedValuation) {
+          updateField('distressSaleValue', next.distressedValuation);
+        }
+      }
+
       return changed ? next : prev;
     });
   }, [
@@ -318,7 +331,9 @@ export default function ArkaFinance({
     fields.currentLifeOfStructure,
     fields.valueOfPlot,
     fields.depreciationValue,
-    fields.currentValueOfTheProperty
+    fields.currentValueOfTheProperty,
+    fields.enableCoverPageValueEdit,
+    fields.distressedValuation
   ]);
 
   const navSections: NavItem[] = [
@@ -607,15 +622,29 @@ export default function ArkaFinance({
               <textarea className={inputCls} rows={3} value={fields.addressOfTheProperty || ''} onChange={e => handleChange('addressOfTheProperty', e.target.value)} disabled={isReadOnly} />
             </Field>
           </div>
-          <div className="border border-red-200 bg-[#fff5f5] rounded-xl p-4 mb-4">
-            <h3 className="font-bold text-gray-700 mb-4">VALUE OF THE PROPERTY</h3>
+          <div className="border border-red-200 bg-[#fff5f5] rounded-xl p-4 mb-4 relative">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-gray-700">VALUE OF THE PROPERTY</h3>
+              <div className="flex items-center gap-2">
+                <span className={`text-xs font-semibold ${fields.enableCoverPageValueEdit ? 'text-gray-400' : 'text-gray-700'}`}>Edit Off</span>
+                <button
+                  type="button"
+                  onClick={() => handleChange('enableCoverPageValueEdit', !fields.enableCoverPageValueEdit)}
+                  disabled={isReadOnly}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${fields.enableCoverPageValueEdit ? 'bg-green-500' : 'bg-gray-200'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${fields.enableCoverPageValueEdit ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+                <span className={`text-xs font-semibold ${fields.enableCoverPageValueEdit ? 'text-green-600' : 'text-gray-400'}`}>Edit On</span>
+              </div>
+            </div>
             <div className="bg-white border border-gray-200 rounded-md shadow-sm">
               <div className="flex border-b border-gray-200">
                 <div className="w-1/2 md:w-[40%] p-3 border-r border-gray-200 flex items-center">
                   <span className="text-sm font-medium text-gray-700">PRESENT MARKET VALUE</span>
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2">
-                  <input className={inputCls} value={fields.presentMarketValue || ''} onChange={(e) => handleChange('presentMarketValue', e.target.value)} disabled={isReadOnly} />
+                  <input className={`${inputCls} ${!fields.enableCoverPageValueEdit ? 'bg-gray-50' : ''}`} value={fields.presentMarketValue || ''} onChange={(e) => handleChange('presentMarketValue', e.target.value)} disabled={isReadOnly || !fields.enableCoverPageValueEdit} />
                 </div>
               </div>
               <div className="flex">
@@ -623,7 +652,7 @@ export default function ArkaFinance({
                   <span className="text-sm font-medium text-gray-700">DISTRESS SALE VALUE</span>
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2">
-                  <input className={inputCls} value={fields.distressSaleValue || ''} onChange={(e) => handleChange('distressSaleValue', e.target.value)} disabled={isReadOnly} />
+                  <input className={`${inputCls} ${!fields.enableCoverPageValueEdit ? 'bg-gray-50' : ''}`} value={fields.distressSaleValue || ''} onChange={(e) => handleChange('distressSaleValue', e.target.value)} disabled={isReadOnly || !fields.enableCoverPageValueEdit} />
                 </div>
               </div>
             </div>
@@ -1297,14 +1326,26 @@ export default function ArkaFinance({
                   <option value="Attached">Attached</option>
                   <option value="Not Attached">Not Attached</option>
                   <option value="NA">NA</option>
+                  <option value="Custom">Custom</option>
                 </select>
+                {fields.photosAttached === 'Custom' && (
+                  <div className="mt-3">
+                    <input className={inputCls} value={fields.photosAttachedOther || ''} onChange={e => handleChange('photosAttachedOther', e.target.value)} disabled={isReadOnly} placeholder="Enter details..." />
+                  </div>
+                )}
               </Field>
               <Field label="Location sketch for the property">
                 <select className={selectCls} value={fields.locationSketchAttached || 'Attached'} onChange={e => handleChange('locationSketchAttached', e.target.value)} disabled={isReadOnly}>
                   <option value="Attached">Attached</option>
                   <option value="Not Attached">Not Attached</option>
                   <option value="NA">NA</option>
+                  <option value="Custom">Custom</option>
                 </select>
+                {fields.locationSketchAttached === 'Custom' && (
+                  <div className="mt-3">
+                    <input className={inputCls} value={fields.locationSketchAttachedOther || ''} onChange={e => handleChange('locationSketchAttachedOther', e.target.value)} disabled={isReadOnly} placeholder="Enter details..." />
+                  </div>
+                )}
               </Field>
             </div>
           </div>
