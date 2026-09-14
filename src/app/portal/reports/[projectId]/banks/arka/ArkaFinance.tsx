@@ -1447,10 +1447,57 @@ export default function ArkaFinance({
 
         {/* SECTION 7: REMARKS & UNDERTAKING */}
         <Section id="arka-sec7" title="Remarks & Undertaking" number={7}>
-          <div className="border border-slate-200 bg-slate-50 rounded-xl p-5">
+          {/* Container: Remarks - light yellow */}
+          <div className="border border-yellow-200 bg-yellow-50 rounded-xl p-5 mb-5">
+            <h3 className="font-semibold text-yellow-800 mb-4 text-sm tracking-wide uppercase">Remarks</h3>
             <div className="grid grid-cols-1 gap-4">
-              <Field label="Remarks">
-                <textarea className={inputCls} rows={4} value={fields.remarks || ''} onChange={e => handleChange('remarks', e.target.value)} disabled={isReadOnly} placeholder="Any additional remarks..." />
+              <div className="text-xs text-gray-500 mb-2">
+                (Comment on - resistance for valuation if any from the current occupants for rented property, if the property falls in a community dominated areas, if the approach road to the building is small and will not be able to accommodate a fire extinguisher, does the property falls under land locked area or is prone to frequent floods & any other critical observation.)
+              </div>
+              <Field label="Remarks Details">
+                <textarea 
+                  className={inputCls} 
+                  rows={4} 
+                  value={fields.remarksDetails ?? 'Subject property is a single storied residential cum commercial building, land extent of 2613sqft, having total measured BUA 923sqft (RCC-663sqft & ACC-260sqft). Approved plan is not provided. Property is accessible with 30-Feet wide road. All civic amenities are within 1-2 Kms & about 27 Kms from Nayagarh city centre. This plot is coming Ranganipatna GP limit. This Building is occupied by the customer for residential cum commercial purpose. Valuation has been done for land & measured BUA of RCC GF only. As approved plan is not provided, it is up to sole discretion of Arka Finance to consider the BUA value or not.'} 
+                  onChange={e => handleChange('remarksDetails', e.target.value)} 
+                  disabled={isReadOnly} 
+                  placeholder="Enter remarks details..." 
+                />
+              </Field>
+            </div>
+          </div>
+          
+          {/* Container: Declaration - light blue */}
+          <div className="border border-blue-200 bg-blue-50 rounded-xl p-5">
+            <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">Declaration</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Undertaking Details" span={2}>
+                <textarea 
+                  className={inputCls} 
+                  rows={4} 
+                  value={fields.undertakingDetails ?? 'I have personally visited the property & identified the same based on the documents provided.\nI/We have no direct or Indirect Interest in the property being valued.\nThe information furnished above is true and correct to my/our knowledge.'} 
+                  onChange={e => handleChange('undertakingDetails', e.target.value)} 
+                  disabled={isReadOnly} 
+                  placeholder="Enter undertaking details..." 
+                />
+              </Field>
+              <Field label="Name of Valuer">
+                <input 
+                  className={inputCls} 
+                  value={fields.nameOfValuer ?? 'Er. Satyajit Mohanty'} 
+                  onChange={e => handleChange('nameOfValuer', e.target.value)} 
+                  disabled={isReadOnly} 
+                  placeholder="Enter valuer name..." 
+                />
+              </Field>
+              <Field label="Designation">
+                <input 
+                  className={inputCls} 
+                  value={fields.designation ?? 'Approved Panel Valuer'} 
+                  onChange={e => handleChange('designation', e.target.value)} 
+                  disabled={isReadOnly} 
+                  placeholder="Enter designation..." 
+                />
               </Field>
             </div>
           </div>
