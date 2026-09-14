@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -32,6 +32,7 @@ export default function ArkaFinance({
   const router = useRouter();
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
   const [fields, setFields] = useState<any>({
+    // Section 1: Cover Page
     propertyOwners: [{ name: '', fatherName: '' }],
     addressOfTheProperty: '',
     presentMarketValue: '',
@@ -49,10 +50,13 @@ export default function ArkaFinance({
     preparedByMobile: '9937023855/9437074855',
     refNo: '',
     dateOfReport: '',
+    // Section 2: Client & Application
     nameOfCustomer: '',
     customerContactDetails: '',
     appIdLoanAccountNo: '',
     documentsProvided: '',
+    documentsProvidedOther: '',
+    // Section 3: Property Overview & Location
     propertyDetailsAddress: '',
     plotNo: '',
     khasraNoKhataNo: '',
@@ -67,33 +71,57 @@ export default function ArkaFinance({
     levelOfLand: '',
     classOfLocality: '',
     qualityOfInfrastructure: '',
+    // Section 4: Boundary Details & Property Characteristics
     eastSaleDeed: '',
     eastActual: '',
+    eastSketchMap: '',
     westSaleDeed: '',
     westActual: '',
+    westSketchMap: '',
     northSaleDeed: '',
     northActual: '',
+    northSketchMap: '',
     southSaleDeed: '',
     southActual: '',
-    occupancyStatus: '',
+    southSketchMap: '',
+    boundariesMatch: '',
+    landStatus: '',
+    propertyType: '',
+    approvedUsage: '',
+    actualUsage: '',
+    structureType: '',
+    numberOfFloors: '',
+    occupancyDetails: '',
+    electricityWaterDrainage: '',
     proximityToCivicAmenities: '',
     developmentOfSurroundingArea: '',
     longitude: '',
     latitude: '',
+    // Section 5: Construction & Regulatory Approvals
     buildingPlanApprovalNo: '',
     dateOfApproval: '',
     expiryDate: '',
     expectedCompletion: '',
     areaOfPlot: '',
     demarcationAtSite: '',
-    approvedBuaGf: '',
-    approvedBuaFf: '',
-    approvedBuaMf: '',
-    approvedBuaSf: '',
+    approvedBuaFloors: [
+      { floor: 'Ground Floor (GF)', area: '' },
+      { floor: 'First Floor (FF)', area: '' },
+    ],
+    measuredBuaFloors: [
+      { floor: 'Ground Floor (GF)', area: '' },
+      { floor: 'First Floor (FF)', area: '' },
+    ],
+    constructionAsPerPlan: '',
+    qualityOfConstruction: '',
+    maintenanceOfProperty: '',
+    currentLifeOfStructure: '',
+    projectedLifeOfStructure: '',
+    // Section 6: Valuation Details
     recommendedRateOfPlot: '',
     valueOfPlot: '',
     estimatedCostOfConstruction: '',
-    totalCostOfConstructionMeasuredGfRcc: '',
+    totalCostOfConstructionMeasured: '',
     depreciationValue: '',
     stageOfConstruction: '',
     percentWorkCompleted: '',
@@ -104,13 +132,16 @@ export default function ArkaFinance({
     distressedValuation: '',
     rentalValuePerMonth: '',
     remarks: '',
+    // Media
     propertyImages: [],
+    propertyImageNames: [],
     locationMapImages: [],
     sketchMapImages: [],
     mouzaMapImages: [],
+    cadastralMapImages: [],
     ...initialFields
   });
-  
+
   const [loading, setLoading] = useState(false);
   const [bucketPickerOpen, setBucketPickerOpen] = useState(false);
   const [message, setMessage] = useState<any>(null);
@@ -122,7 +153,6 @@ export default function ArkaFinance({
     if (isReadOnly) return;
     setAutoSaveStatus('saving');
     if (debouncedTimer.current) clearTimeout(debouncedTimer.current);
-
     debouncedTimer.current = setTimeout(async () => {
       try {
         const res = await saveReportDraft(projectId, fields);
@@ -136,7 +166,6 @@ export default function ArkaFinance({
         setAutoSaveStatus('error');
       }
     }, 1200);
-
     return () => {
       if (debouncedTimer.current) clearTimeout(debouncedTimer.current);
     };
@@ -156,15 +185,15 @@ export default function ArkaFinance({
   };
 
   const navSections: NavItem[] = [
-    { id: 'arka-cover', title: 'Cover Page Details' },
-    { id: 'arka-details', title: 'Property & Customer Details' },
-    { id: 'arka-boundaries', title: 'Boundaries' },
-    { id: 'arka-documents', title: 'Document Details' },
-    { id: 'arka-valuation', title: 'Recommended Valuation' },
-    { id: 'arka-photos', title: 'Photographs' },
-    { id: 'arka-maps', title: 'Sketch & Location Maps' }
+    { id: 'arka-cover', title: '1. Cover Page Details' },
+    { id: 'arka-sec2', title: '2. Client & Application' },
+    { id: 'arka-sec3', title: '3. Property Overview' },
+    { id: 'arka-sec4', title: '4. Boundaries & Characteristics' },
+    { id: 'arka-sec5', title: '5. Construction & Approvals' },
+        { id: 'arka-sec6', title: '6. Valuation Details' },
+    { id: 'arka-photos', title: '7. Photographs' },
+    { id: 'arka-maps', title: '8. Sketch & Location Maps' },
   ];
-
 
   const handleMapUpload = async (key: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -282,7 +311,6 @@ export default function ArkaFinance({
   };
 
   const handlePreviewPDF = async () => {
-    // Open a blank tab synchronously in the click handler to bypass browser pop-up blockers
     const previewWindow = window.open('', '_blank');
     if (previewWindow) {
       previewWindow.document.write(`
@@ -302,7 +330,6 @@ export default function ArkaFinance({
       `);
       previewWindow.document.close();
     }
-
     setLoading(true);
     try {
       const renderer = new PDFArkaFinanceRenderer();
@@ -342,6 +369,20 @@ export default function ArkaFinance({
     }
   };
 
+  // Helper: Add / Remove dynamic floor rows
+  const handleAddBuaFloor = (key: 'approvedBuaFloors' | 'measuredBuaFloors') => {
+    const current = fields[key] || [];
+    const nextIdx = current.length;
+    const floorNames = ['Ground Floor (GF)', 'First Floor (FF)', 'Second Floor (SF)', 'Third Floor (TF)', 'Fourth Floor', 'Fifth Floor'];
+    const floorName = nextIdx < floorNames.length ? floorNames[nextIdx] : `Floor ${nextIdx + 1}`;
+    handleChange(key, [...current, { floor: floorName, area: '' }]);
+  };
+
+  const handleRemoveBuaFloor = (key: 'approvedBuaFloors' | 'measuredBuaFloors', idx: number) => {
+    const current = fields[key] || [];
+    handleChange(key, current.filter((_: any, i: number) => i !== idx));
+  };
+
   return (
     <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full">
       <div className="flex-1 min-w-0 space-y-6 w-full">
@@ -358,7 +399,8 @@ export default function ArkaFinance({
           </div>
         )}
 
-       <Section id="arka-cover" title="Cover Page Details" number={1} defaultOpen>
+        {/* SECTION 1: COVER PAGE DETAILS (unchanged) */}
+        <Section id="arka-cover" title="Cover Page Details" number={1} defaultOpen>
           <div className="border border-blue-200 bg-[#f8fafc] rounded-md p-4 mb-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-bold text-gray-700">PROPERTY OWNER</h3>
@@ -371,7 +413,6 @@ export default function ArkaFinance({
                 + Add Row
               </button>
             </div>
-            
             <div className="space-y-4">
               {(fields.propertyOwners || [{ name: '', fatherName: '' }]).map((owner: any, idx: number) => (
                 <div key={idx} className="flex gap-4 items-end bg-white p-3 rounded-md border border-gray-100 shadow-sm">
@@ -404,7 +445,7 @@ export default function ArkaFinance({
                   {(fields.propertyOwners?.length > 1 || idx > 0) && (
                     <button
                       type="button"
-                      className="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 text-sm rounded-md shadow-sm transition-colors h-10.5"
+                      className="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 text-sm rounded-md shadow-sm transition-colors h-10"
                       onClick={() => {
                         const arr = [...fields.propertyOwners];
                         arr.splice(idx, 1);
@@ -421,13 +462,7 @@ export default function ArkaFinance({
           </div>
           <div className="mt-4 mb-4">
             <Field label="ADDRESS OF THE PROPERTY">
-              <textarea
-                className={inputCls}
-                rows={3}
-                value={fields.addressOfTheProperty || ''}
-                onChange={e => handleChange('addressOfTheProperty', e.target.value)}
-                disabled={isReadOnly}
-              />
+              <textarea className={inputCls} rows={3} value={fields.addressOfTheProperty || ''} onChange={e => handleChange('addressOfTheProperty', e.target.value)} disabled={isReadOnly} />
             </Field>
           </div>
           <div className="border border-red-200 bg-[#fff5f5] rounded-xl p-4 mb-4">
@@ -438,12 +473,7 @@ export default function ArkaFinance({
                   <span className="text-sm font-medium text-gray-700">PRESENT MARKET VALUE</span>
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2">
-                  <input
-                    className={inputCls}
-                    value={fields.presentMarketValue || ''}
-                    onChange={(e) => handleChange('presentMarketValue', e.target.value)}
-                    disabled={isReadOnly}
-                  />
+                  <input className={inputCls} value={fields.presentMarketValue || ''} onChange={(e) => handleChange('presentMarketValue', e.target.value)} disabled={isReadOnly} />
                 </div>
               </div>
               <div className="flex">
@@ -451,12 +481,7 @@ export default function ArkaFinance({
                   <span className="text-sm font-medium text-gray-700">DISTRESS SALE VALUE</span>
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2">
-                  <input
-                    className={inputCls}
-                    value={fields.distressSaleValue || ''}
-                    onChange={(e) => handleChange('distressSaleValue', e.target.value)}
-                    disabled={isReadOnly}
-                  />
+                  <input className={inputCls} value={fields.distressSaleValue || ''} onChange={(e) => handleChange('distressSaleValue', e.target.value)} disabled={isReadOnly} />
                 </div>
               </div>
             </div>
@@ -483,28 +508,16 @@ export default function ArkaFinance({
             </Field>
             {fields.purposeOfValuationDropdown === 'other' && (
               <div className="mt-3">
-                <textarea
-                  className={inputCls}
-                  rows={3}
-                  placeholder="Enter custom purpose of valuation..."
-                  value={fields.purposeOfValuation || ''}
-                  onChange={(e) => handleChange('purposeOfValuation', e.target.value)}
-                  disabled={isReadOnly}
-                />
+                <textarea className={inputCls} rows={3} placeholder="Enter custom purpose of valuation..." value={fields.purposeOfValuation || ''} onChange={(e) => handleChange('purposeOfValuation', e.target.value)} disabled={isReadOnly} />
               </div>
             )}
           </div>
           <div className="border border-green-200 bg-green-50 rounded-xl p-4 mb-4">
             <h3 className="font-bold text-gray-700 mb-4">PREPARED BY</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Company/Entity Name">
-                <input className={inputCls} value={fields.preparedByCompany || ''} onChange={e => handleChange('preparedByCompany', e.target.value)} disabled={isReadOnly} />
-              </Field>
-              <Field label="Professional Designation">
-                <input className={inputCls} value={fields.preparedByDesignation || ''} onChange={e => handleChange('preparedByDesignation', e.target.value)} disabled={isReadOnly} />
-              </Field>
+              <Field label="Company/Entity Name"><input className={inputCls} value={fields.preparedByCompany || ''} onChange={e => handleChange('preparedByCompany', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Professional Designation"><input className={inputCls} value={fields.preparedByDesignation || ''} onChange={e => handleChange('preparedByDesignation', e.target.value)} disabled={isReadOnly} /></Field>
             </div>
-            
             <div className="border border-blue-200 bg-blue-50 rounded-md p-4 mt-4 mb-4">
               <h4 className="font-bold text-gray-700 mb-3">Address</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -515,115 +528,425 @@ export default function ArkaFinance({
                 <Field label="PIN Code"><input className={inputCls} value={fields.preparedByPinCode || ''} onChange={e => handleChange('preparedByPinCode', e.target.value)} disabled={isReadOnly} /></Field>
               </div>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Phone (Landline)">
-                <input 
-                  className={inputCls} 
-                  value={fields.preparedByPhone || ''} 
-                  onChange={e => {
-                     const val = e.target.value.replace(/[^0-9]/g, '');
-                     handleChange('preparedByPhone', val);
-                  }} 
-                  disabled={isReadOnly} 
-                />
+                <input className={inputCls} value={fields.preparedByPhone || ''} onChange={e => { handleChange('preparedByPhone', e.target.value.replace(/[^0-9]/g, '')); }} disabled={isReadOnly} />
               </Field>
               <Field label="Mobile Number">
-                <input 
-                  className={inputCls} 
-                  value={fields.preparedByMobile || ''} 
-                  onChange={e => {
-                     const val = e.target.value.replace(/[a-zA-Z]/g, '');
-                     handleChange('preparedByMobile', val);
-                  }} 
-                  disabled={isReadOnly} 
-                />
+                <input className={inputCls} value={fields.preparedByMobile || ''} onChange={e => { handleChange('preparedByMobile', e.target.value.replace(/[a-zA-Z]/g, '')); }} disabled={isReadOnly} />
+              </Field>
+            </div>
+          </div>
+        </Section>
+        {/* SECTION 2: CLIENT & APPLICATION DETAILS */}
+        <Section id="arka-sec2" title="Client & Application Details" number={2}>
+          {/* Container: Customer Information - light blue */}
+          <div className="border border-sky-200 bg-sky-50 rounded-xl p-5 mb-5">
+            <h3 className="font-semibold text-sky-800 mb-4 text-sm tracking-wide uppercase">Customer Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Name of the Customer">
+                <input className={inputCls} value={fields.nameOfCustomer || ''} onChange={e => handleChange('nameOfCustomer', e.target.value)} disabled={isReadOnly} placeholder="Full name of the customer" />
+              </Field>
+              <Field label="Customer Contact Details">
+                <input className={inputCls} value={fields.customerContactDetails || ''} onChange={e => handleChange('customerContactDetails', e.target.value)} disabled={isReadOnly} placeholder="Phone / Email" />
+              </Field>
+            </div>
+          </div>
+          {/* Container: Application & Documents - light amber */}
+          <div className="border border-amber-200 bg-amber-50 rounded-xl p-5">
+            <h3 className="font-semibold text-amber-800 mb-4 text-sm tracking-wide uppercase">Application & Documents</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="APP ID / Loan Account No">
+                <input className={inputCls} value={fields.appIdLoanAccountNo || ''} onChange={e => handleChange('appIdLoanAccountNo', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Documents Provided">
+                <select className={selectCls} value={fields.documentsProvided || ''} onChange={e => handleChange('documentsProvided', e.target.value)} disabled={isReadOnly}>
+                  <option value="">-- Select --</option>
+                  <option value="Approved Layout">Approved Layout</option>
+                  <option value="Approved Building Plan">Approved Building Plan</option>
+                  <option value="NA Order">NA Order</option>
+                  <option value="Four Boundaries Details">Four Boundaries Details</option>
+                  <option value="Multiple">Multiple Documents</option>
+                </select>
+              </Field>
+              {fields.documentsProvided === 'Multiple' && (
+                <Field label="Specify Documents" span={2}>
+                  <textarea className={inputCls} rows={2} value={fields.documentsProvidedOther || ''} onChange={e => handleChange('documentsProvidedOther', e.target.value)} disabled={isReadOnly} placeholder="List all documents provided..." />
+                </Field>
+              )}
+            </div>
+          </div>
+        </Section>
+
+        {/* SECTION 3: PROPERTY OVERVIEW & LOCATION */}
+        <Section id="arka-sec3" title="Property Overview & Location" number={3}>
+          {/* Container: Property Identification - light green */}
+          <div className="border border-emerald-200 bg-emerald-50 rounded-xl p-5 mb-5">
+            <h3 className="font-semibold text-emerald-800 mb-4 text-sm tracking-wide uppercase">Property Identification</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Field span={3} label="Property Details (Address)">
+                <textarea className={inputCls} rows={3} value={fields.propertyDetailsAddress || ''} onChange={e => handleChange('propertyDetailsAddress', e.target.value)} disabled={isReadOnly} placeholder="Full address of the property" />
+              </Field>
+              <Field label="Plot No">
+                <input className={inputCls} value={fields.plotNo || ''} onChange={e => handleChange('plotNo', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="S No / G. No / Khasra No / Khata No">
+                <input className={inputCls} value={fields.khasraNoKhataNo || ''} onChange={e => handleChange('khasraNoKhataNo', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Locality">
+                <input className={inputCls} value={fields.locality || ''} onChange={e => handleChange('locality', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Road">
+                <input className={inputCls} value={fields.road || ''} onChange={e => handleChange('road', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="City">
+                <input className={inputCls} value={fields.city || ''} onChange={e => handleChange('city', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="District">
+                <input className={inputCls} value={fields.district || ''} onChange={e => handleChange('district', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Pin Code">
+                <input className={inputCls} value={fields.pinCode || ''} onChange={e => handleChange('pinCode', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Nearby Land Mark">
+                <input className={inputCls} value={fields.nearbyLandMark || ''} onChange={e => handleChange('nearbyLandMark', e.target.value)} disabled={isReadOnly} />
+              </Field>
+            </div>
+          </div>
+          {/* Container: Location Characteristics - light rose */}
+          <div className="border border-rose-200 bg-rose-50 rounded-xl p-5">
+            <h3 className="font-semibold text-rose-800 mb-4 text-sm tracking-wide uppercase">Location Characteristics</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Distance from City Center">
+                <input className={inputCls} value={fields.distanceFromCityCenter || ''} onChange={e => handleChange('distanceFromCityCenter', e.target.value)} disabled={isReadOnly} placeholder="e.g. 5 KM" />
+              </Field>
+              <Field label="Availability of Local Transport">
+                <select className={selectCls} value={fields.availabilityOfLocalTransport || ''} onChange={e => handleChange('availabilityOfLocalTransport', e.target.value)} disabled={isReadOnly}>
+                  <option value="">-- Select --</option>
+                  <option value="Metro">Metro</option>
+                  <option value="Local Train">Local Train</option>
+                  <option value="Bus">Bus</option>
+                  <option value="Auto/Taxi">Auto / Taxi</option>
+                  <option value="Multiple">Multiple Modes</option>
+                </select>
+              </Field>
+              <Field label="Level of Land (Topographical Conditions)">
+                <input className={inputCls} value={fields.levelOfLand || ''} onChange={e => handleChange('levelOfLand', e.target.value)} disabled={isReadOnly} placeholder="e.g. Plain / Elevated / Sloping" />
+              </Field>
+              <Field label="Class of Locality">
+                <select className={selectCls} value={fields.classOfLocality || ''} onChange={e => handleChange('classOfLocality', e.target.value)} disabled={isReadOnly}>
+                  <option value="">-- Select --</option>
+                  <option value="Posh">Posh</option>
+                  <option value="Higher Middle Class">Higher Middle Class</option>
+                  <option value="Middle Class">Middle Class</option>
+                  <option value="Lower Middle Class">Lower Middle Class</option>
+                  <option value="Poor">Poor</option>
+                </select>
+              </Field>
+              <Field span={2} label="Quality of Infrastructure in the Vicinity">
+                <input className={inputCls} value={fields.qualityOfInfrastructure || ''} onChange={e => handleChange('qualityOfInfrastructure', e.target.value)} disabled={isReadOnly} placeholder="Describe infrastructure quality..." />
+              </Field>
+            </div>
+          </div>
+        </Section>
+        {/* SECTION 4: BOUNDARY DETAILS & PROPERTY CHARACTERISTICS */}
+        <Section id="arka-sec4" title="Boundary Details & Property Characteristics" number={4}>
+          {/* Container: Boundary Details - light purple */}
+          <div className="border border-violet-200 bg-violet-50 rounded-xl p-5 mb-5">
+            <h3 className="font-semibold text-violet-800 mb-4 text-sm tracking-wide uppercase">Boundary Details</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="bg-violet-100">
+                    <th className="border border-violet-200 px-3 py-2 text-left font-semibold text-violet-700">Direction</th>
+                    <th className="border border-violet-200 px-3 py-2 text-left font-semibold text-violet-700">As per Sale Deed</th>
+                    <th className="border border-violet-200 px-3 py-2 text-left font-semibold text-violet-700">As per Actual</th>
+                    <th className="border border-violet-200 px-3 py-2 text-left font-semibold text-violet-700">As per Sketch Map</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(['East', 'West', 'North', 'South'] as const).map((dir) => {
+                    const lower = dir.toLowerCase();
+                    return (
+                      <tr key={dir} className="bg-white hover:bg-violet-50/50 transition-colors">
+                        <td className="border border-violet-200 px-3 py-2 font-medium text-gray-700">{dir}</td>
+                        <td className="border border-violet-200 px-1 py-1">
+                          <input className={inputCls} value={fields[`${lower}SaleDeed`] || ''} onChange={e => handleChange(`${lower}SaleDeed`, e.target.value)} disabled={isReadOnly} />
+                        </td>
+                        <td className="border border-violet-200 px-1 py-1">
+                          <input className={inputCls} value={fields[`${lower}Actual`] || ''} onChange={e => handleChange(`${lower}Actual`, e.target.value)} disabled={isReadOnly} />
+                        </td>
+                        <td className="border border-violet-200 px-1 py-1">
+                          <input className={inputCls} value={fields[`${lower}SketchMap`] || ''} onChange={e => handleChange(`${lower}SketchMap`, e.target.value)} disabled={isReadOnly} />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <div className="mt-4">
+              <Field label="Do the boundaries at site match as mentioned in documentation?">
+                <select className={selectCls} value={fields.boundariesMatch || ''} onChange={e => handleChange('boundariesMatch', e.target.value)} disabled={isReadOnly}>
+                  <option value="">-- Select --</option>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                  <option value="Partially">Partially</option>
+                </select>
+              </Field>
+            </div>
+          </div>
+          {/* Container: Property Specifications & Usage - light cyan */}
+          <div className="border border-cyan-200 bg-cyan-50 rounded-xl p-5">
+            <h3 className="font-semibold text-cyan-800 mb-4 text-sm tracking-wide uppercase">Property Specifications & Usage</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Status of the Land / Flat">
+                <select className={selectCls} value={fields.landStatus || ''} onChange={e => handleChange('landStatus', e.target.value)} disabled={isReadOnly}>
+                  <option value="">-- Select --</option>
+                  <option value="Free Hold">Free Hold</option>
+                  <option value="Leased">Leased</option>
+                  <option value="Development Authority">Development Authority</option>
+                </select>
+              </Field>
+              <Field label="Type of Property">
+                <select className={selectCls} value={fields.propertyType || ''} onChange={e => handleChange('propertyType', e.target.value)} disabled={isReadOnly}>
+                  <option value="">-- Select --</option>
+                  <option value="Bungalow">Bungalow</option>
+                  <option value="Row House">Row House</option>
+                  <option value="Plot">Plot</option>
+                  <option value="Flat - 1BHK">Flat (1BHK)</option>
+                  <option value="Flat - 2BHK">Flat (2BHK)</option>
+                  <option value="Flat - 3BHK">Flat (3BHK)</option>
+                  <option value="Commercial">Commercial</option>
+                </select>
+              </Field>
+              <Field label="Approved Usage of Property">
+                <select className={selectCls} value={fields.approvedUsage || ''} onChange={e => handleChange('approvedUsage', e.target.value)} disabled={isReadOnly}>
+                  <option value="">-- Select --</option>
+                  <option value="Agricultural">Agricultural</option>
+                  <option value="Mixed">Mixed</option>
+                  <option value="Industrial">Industrial</option>
+                  <option value="Commercial">Commercial</option>
+                  <option value="Residential">Residential</option>
+                </select>
+              </Field>
+              <Field label="Actual Usage of the Property">
+                <select className={selectCls} value={fields.actualUsage || ''} onChange={e => handleChange('actualUsage', e.target.value)} disabled={isReadOnly}>
+                  <option value="">-- Select --</option>
+                  <option value="Agricultural">Agricultural</option>
+                  <option value="Industrial">Industrial</option>
+                  <option value="Commercial">Commercial</option>
+                  <option value="Residential">Residential</option>
+                  <option value="Mixed">Mixed</option>
+                </select>
+              </Field>
+              <Field label="Type of Structure">
+                <select className={selectCls} value={fields.structureType || ''} onChange={e => handleChange('structureType', e.target.value)} disabled={isReadOnly}>
+                  <option value="">-- Select --</option>
+                  <option value="Load Bearing">Load Bearing</option>
+                  <option value="RCC">RCC</option>
+                  <option value="Aluform Shuttering">Aluform Shuttering</option>
+                </select>
+              </Field>
+              <Field label="No. of Floors">
+                <input className={inputCls} type="number" min="0" value={fields.numberOfFloors || ''} onChange={e => handleChange('numberOfFloors', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Occupancy Details">
+                <select className={selectCls} value={fields.occupancyDetails || ''} onChange={e => handleChange('occupancyDetails', e.target.value)} disabled={isReadOnly}>
+                  <option value="">-- Select --</option>
+                  <option value="Self Occupied">Self Occupied</option>
+                  <option value="Rented">Rented</option>
+                  <option value="Vacant">Vacant</option>
+                </select>
+              </Field>
+              <Field label="Electricity / Water / Drainage Connection">
+                <select className={selectCls} value={fields.electricityWaterDrainage || ''} onChange={e => handleChange('electricityWaterDrainage', e.target.value)} disabled={isReadOnly}>
+                  <option value="">-- Select --</option>
+                  <option value="All Available">All Available (Electricity, Water & Drainage)</option>
+                  <option value="Electricity & Water Only">Electricity & Water Only</option>
+                  <option value="Electricity Only">Electricity Only</option>
+                  <option value="None">None</option>
+                </select>
+              </Field>
+              <Field span={2} label="Proximity to Civic Amenities (School, Hospital, Market, etc.)">
+                <input className={inputCls} value={fields.proximityToCivicAmenities || ''} onChange={e => handleChange('proximityToCivicAmenities', e.target.value)} disabled={isReadOnly} placeholder="e.g. School 0.5 km, Hospital 1 km..." />
+              </Field>
+              <Field span={2} label="Development of Surrounding Area">
+                <input className={inputCls} value={fields.developmentOfSurroundingArea || ''} onChange={e => handleChange('developmentOfSurroundingArea', e.target.value)} disabled={isReadOnly} placeholder="Describe surrounding development..." />
+              </Field>
+              <Field label="Longitude">
+                <input className={inputCls} value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 85.8245" />
+              </Field>
+              <Field label="Latitude">
+                <input className={inputCls} value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 20.2961" />
+              </Field>
+            </div>
+          </div>
+        </Section>
+        {/* SECTION 5: CONSTRUCTION & REGULATORY APPROVALS */}
+        <Section id="arka-sec5" title="Construction & Regulatory Approvals" number={5}>
+          {/* Container: Approval Details - light orange */}
+          <div className="border border-orange-200 bg-orange-50 rounded-xl p-5 mb-5">
+            <h3 className="font-semibold text-orange-800 mb-4 text-sm tracking-wide uppercase">Approval Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Building Plan Approval No">
+                <input className={inputCls} value={fields.buildingPlanApprovalNo || ''} onChange={e => handleChange('buildingPlanApprovalNo', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Date of Approval">
+                <input type="date" className={inputCls} value={fields.dateOfApproval || ''} onChange={e => handleChange('dateOfApproval', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Expiry Date">
+                <input type="date" className={inputCls} value={fields.expiryDate || ''} onChange={e => handleChange('expiryDate', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Expected Completion">
+                <input className={inputCls} value={fields.expectedCompletion || ''} onChange={e => handleChange('expectedCompletion', e.target.value)} disabled={isReadOnly} placeholder="e.g. Dec 2026" />
+              </Field>
+            </div>
+          </div>
+          {/* Container: Construction Details - light teal */}
+          <div className="border border-teal-200 bg-teal-50 rounded-xl p-5">
+            <h3 className="font-semibold text-teal-800 mb-4 text-sm tracking-wide uppercase">Construction Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+              <Field label="Area of the Plot / Flat">
+                <input className={inputCls} value={fields.areaOfPlot || ''} onChange={e => handleChange('areaOfPlot', e.target.value)} disabled={isReadOnly} placeholder="in sq. ft." />
+              </Field>
+              <Field label="Demarcation at Site">
+                <input className={inputCls} value={fields.demarcationAtSite || ''} onChange={e => handleChange('demarcationAtSite', e.target.value)} disabled={isReadOnly} />
+              </Field>
+            </div>
+            {/* Approved BUA Table */}
+            <div className="border border-teal-200 bg-white rounded-lg p-4 mb-4">
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="font-semibold text-teal-700 text-sm">Approved Built Up Area (Floor-wise)</h4>
+                <button type="button" className="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1 text-xs rounded-md shadow-sm transition-colors" onClick={() => handleAddBuaFloor('approvedBuaFloors')} disabled={isReadOnly}>+ Add Floor</button>
+              </div>
+              <div className="space-y-2">
+                {(fields.approvedBuaFloors || []).map((f: any, idx: number) => (
+                  <div key={idx} className="flex gap-3 items-center">
+                    <input className={`${inputCls} flex-1`} value={f.floor} onChange={e => { const arr = [...fields.approvedBuaFloors]; arr[idx] = { ...arr[idx], floor: e.target.value }; handleChange('approvedBuaFloors', arr); }} disabled={isReadOnly} placeholder="Floor name" />
+                    <input className={`${inputCls} flex-1`} value={f.area} onChange={e => { const arr = [...fields.approvedBuaFloors]; arr[idx] = { ...arr[idx], area: e.target.value }; handleChange('approvedBuaFloors', arr); }} disabled={isReadOnly} placeholder="Area (sq. ft.)" />
+                    {(fields.approvedBuaFloors?.length > 1) && (
+                      <button type="button" className="text-red-500 hover:text-red-700 text-xs font-bold px-2 py-1" onClick={() => handleRemoveBuaFloor('approvedBuaFloors', idx)} disabled={isReadOnly}>&#x2715;</button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Measured BUA Table */}
+            <div className="border border-teal-200 bg-white rounded-lg p-4 mb-4">
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="font-semibold text-teal-700 text-sm">Measured Built Up Area (Floor-wise)</h4>
+                <button type="button" className="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1 text-xs rounded-md shadow-sm transition-colors" onClick={() => handleAddBuaFloor('measuredBuaFloors')} disabled={isReadOnly}>+ Add Floor</button>
+              </div>
+              <div className="space-y-2">
+                {(fields.measuredBuaFloors || []).map((f: any, idx: number) => (
+                  <div key={idx} className="flex gap-3 items-center">
+                    <input className={`${inputCls} flex-1`} value={f.floor} onChange={e => { const arr = [...fields.measuredBuaFloors]; arr[idx] = { ...arr[idx], floor: e.target.value }; handleChange('measuredBuaFloors', arr); }} disabled={isReadOnly} placeholder="Floor name" />
+                    <input className={`${inputCls} flex-1`} value={f.area} onChange={e => { const arr = [...fields.measuredBuaFloors]; arr[idx] = { ...arr[idx], area: e.target.value }; handleChange('measuredBuaFloors', arr); }} disabled={isReadOnly} placeholder="Area (sq. ft.)" />
+                    {(fields.measuredBuaFloors?.length > 1) && (
+                      <button type="button" className="text-red-500 hover:text-red-700 text-xs font-bold px-2 py-1" onClick={() => handleRemoveBuaFloor('measuredBuaFloors', idx)} disabled={isReadOnly}>&#x2715;</button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field span={2} label="Is the construction as per approved building plan / local bye laws?">
+                <select className={selectCls} value={fields.constructionAsPerPlan || ''} onChange={e => handleChange('constructionAsPerPlan', e.target.value)} disabled={isReadOnly}>
+                  <option value="">-- Select --</option>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                  <option value="Partially">Partially</option>
+                </select>
+              </Field>
+              <Field label="Quality of Construction">
+                <select className={selectCls} value={fields.qualityOfConstruction || ''} onChange={e => handleChange('qualityOfConstruction', e.target.value)} disabled={isReadOnly}>
+                  <option value="">-- Select --</option>
+                  <option value="Excellent">Excellent</option>
+                  <option value="Very Good">Very Good</option>
+                  <option value="Good">Good</option>
+                  <option value="Average">Average</option>
+                  <option value="Poor">Poor</option>
+                </select>
+              </Field>
+              <Field label="Maintenance of the Property">
+                <select className={selectCls} value={fields.maintenanceOfProperty || ''} onChange={e => handleChange('maintenanceOfProperty', e.target.value)} disabled={isReadOnly}>
+                  <option value="">-- Select --</option>
+                  <option value="Excellent">Excellent</option>
+                  <option value="Very Good">Very Good</option>
+                  <option value="Average">Average</option>
+                  <option value="Poor">Poor</option>
+                </select>
+              </Field>
+              <Field label="Current Life of the Structure">
+                <input className={inputCls} value={fields.currentLifeOfStructure || ''} onChange={e => handleChange('currentLifeOfStructure', e.target.value)} disabled={isReadOnly} placeholder="e.g. 10 years" />
+              </Field>
+              <Field label="Projected Life of the Structure">
+                <input className={inputCls} value={fields.projectedLifeOfStructure || ''} onChange={e => handleChange('projectedLifeOfStructure', e.target.value)} disabled={isReadOnly} placeholder="e.g. 50 years" />
+              </Field>
+            </div>
+          </div>
+        </Section>
+        {/* SECTION 6: VALUATION DETAILS */}
+        <Section id="arka-sec6" title="Valuation Details" number={6}>
+          {/* Container: Recommended Valuation - light indigo */}
+          <div className="border border-indigo-200 bg-indigo-50 rounded-xl p-5 mb-5">
+            <h3 className="font-semibold text-indigo-800 mb-4 text-sm tracking-wide uppercase">Recommended Valuation</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Recommended Rate of the Plot / Flat">
+                <input className={inputCls} value={fields.recommendedRateOfPlot || ''} onChange={e => handleChange('recommendedRateOfPlot', e.target.value)} disabled={isReadOnly} placeholder="&#8377; per sq. ft." />
+              </Field>
+              <Field label="Value of the Plot / Flat">
+                <input className={inputCls} value={fields.valueOfPlot || ''} onChange={e => handleChange('valueOfPlot', e.target.value)} disabled={isReadOnly} placeholder="&#8377;" />
+              </Field>
+              <Field label="Estimated Cost of Construction">
+                <input className={inputCls} value={fields.estimatedCostOfConstruction || ''} onChange={e => handleChange('estimatedCostOfConstruction', e.target.value)} disabled={isReadOnly} placeholder="&#8377;" />
+              </Field>
+              <Field label="Total Cost of Construction (Measured)">
+                <input className={inputCls} value={fields.totalCostOfConstructionMeasured || ''} onChange={e => handleChange('totalCostOfConstructionMeasured', e.target.value)} disabled={isReadOnly} placeholder="&#8377;" />
+              </Field>
+              <Field span={2} label="Depreciation Value">
+                <input className={`${inputCls} font-bold`} value={fields.depreciationValue || ''} onChange={e => handleChange('depreciationValue', e.target.value)} disabled={isReadOnly} placeholder="&#8377;" />
+              </Field>
+              <Field label="Stage of Construction">
+                <input className={inputCls} value={fields.stageOfConstruction || ''} onChange={e => handleChange('stageOfConstruction', e.target.value)} disabled={isReadOnly} placeholder="e.g. Completed / Plinth / Superstructure" />
+              </Field>
+              <Field label="% Work Completed">
+                <input className={inputCls} value={fields.percentWorkCompleted || ''} onChange={e => handleChange('percentWorkCompleted', e.target.value)} disabled={isReadOnly} placeholder="e.g. 100%" />
+              </Field>
+              <Field label="% Disbursement Recommended">
+                <input className={inputCls} value={fields.percentDisbursementRecommended || ''} onChange={e => handleChange('percentDisbursementRecommended', e.target.value)} disabled={isReadOnly} placeholder="e.g. 100%" />
+              </Field>
+              <Field label="Current Value of Property (Plot + Construction)">
+                <input className={`${inputCls} font-bold`} value={fields.currentValueOfTheProperty || ''} onChange={e => handleChange('currentValueOfTheProperty', e.target.value)} disabled={isReadOnly} placeholder="&#8377;" />
+              </Field>
+              <Field span={2} label="Date of Property Visit">
+                <input type="date" className={inputCls} value={fields.dateOfPropertyVisit || ''} onChange={e => handleChange('dateOfPropertyVisit', e.target.value)} disabled={isReadOnly} />
+              </Field>
+            </div>
+          </div>
+          {/* Container: Additional Valuations - light lime */}
+          <div className="border border-lime-200 bg-lime-50 rounded-xl p-5">
+            <h3 className="font-semibold text-lime-800 mb-4 text-sm tracking-wide uppercase">Additional Valuations</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Valuation as per Government Reckoner Rates">
+                <input className={inputCls} value={fields.valuationAsPerGovernmentReckoner || ''} onChange={e => handleChange('valuationAsPerGovernmentReckoner', e.target.value)} disabled={isReadOnly} placeholder="&#8377;" />
+              </Field>
+              <Field label="Distressed Valuation of the Property">
+                <input className={`${inputCls} font-bold`} value={fields.distressedValuation || ''} onChange={e => handleChange('distressedValuation', e.target.value)} disabled={isReadOnly} placeholder="&#8377;" />
+              </Field>
+              <Field label="Rental Value per Month">
+                <input className={inputCls} value={fields.rentalValuePerMonth || ''} onChange={e => handleChange('rentalValuePerMonth', e.target.value)} disabled={isReadOnly} placeholder="&#8377; / month" />
+              </Field>
+              <Field label="Remarks">
+                <textarea className={inputCls} rows={3} value={fields.remarks || ''} onChange={e => handleChange('remarks', e.target.value)} disabled={isReadOnly} placeholder="Any additional remarks..." />
               </Field>
             </div>
           </div>
         </Section>
 
-        <Section id="arka-details" title="Property & Customer Details" number={2} defaultOpen>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <Field label="Ref No"><input className={inputCls} value={fields.refNo || ''} onChange={e => handleChange('refNo', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Date of Report"><input type="date" className={inputCls} value={fields.dateOfReport || ''} onChange={e => handleChange('dateOfReport', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Name of Customer"><input className={inputCls} value={fields.nameOfCustomer || ''} onChange={e => handleChange('nameOfCustomer', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field span={3} label="Customer Contact Details"><input className={inputCls} value={fields.customerContactDetails || ''} onChange={e => handleChange('customerContactDetails', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field span={2} label="APP ID/Loan Account No"><input className={inputCls} value={fields.appIdLoanAccountNo || ''} onChange={e => handleChange('appIdLoanAccountNo', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field span={3} label="Documents Provided"><input className={inputCls} value={fields.documentsProvided || ''} onChange={e => handleChange('documentsProvided', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field span={3} label="Property Details (Address)"><textarea className={inputCls} rows={3} value={fields.propertyDetailsAddress || ''} onChange={e => handleChange('propertyDetailsAddress', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Plot No"><input className={inputCls} value={fields.plotNo || ''} onChange={e => handleChange('plotNo', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Khata/Khasra No"><input className={inputCls} value={fields.khasraNoKhataNo || ''} onChange={e => handleChange('khasraNoKhataNo', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Locality"><input className={inputCls} value={fields.locality || ''} onChange={e => handleChange('locality', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Road"><input className={inputCls} value={fields.road || ''} onChange={e => handleChange('road', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="City"><input className={inputCls} value={fields.city || ''} onChange={e => handleChange('city', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="District"><input className={inputCls} value={fields.district || ''} onChange={e => handleChange('district', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Pin Code"><input className={inputCls} value={fields.pinCode || ''} onChange={e => handleChange('pinCode', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Nearby Land Mark"><input className={inputCls} value={fields.nearbyLandMark || ''} onChange={e => handleChange('nearbyLandMark', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Distance from City Center"><input className={inputCls} value={fields.distanceFromCityCenter || ''} onChange={e => handleChange('distanceFromCityCenter', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Local Transport"><input className={inputCls} value={fields.availabilityOfLocalTransport || ''} onChange={e => handleChange('availabilityOfLocalTransport', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Level of land"><input className={inputCls} value={fields.levelOfLand || ''} onChange={e => handleChange('levelOfLand', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Class Of Locality"><input className={inputCls} value={fields.classOfLocality || ''} onChange={e => handleChange('classOfLocality', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Quality of Infrastructure"><input className={inputCls} value={fields.qualityOfInfrastructure || ''} onChange={e => handleChange('qualityOfInfrastructure', e.target.value)} disabled={isReadOnly} /></Field>
-          </div>
-        </Section>
-
-        <Section id="arka-boundaries" title="Boundaries" number={3}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <Field label="East (Sale Deed)"><input className={inputCls} value={fields.eastSaleDeed || ''} onChange={e => handleChange('eastSaleDeed', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="East (Actual)"><input className={inputCls} value={fields.eastActual || ''} onChange={e => handleChange('eastActual', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="West (Sale Deed)"><input className={inputCls} value={fields.westSaleDeed || ''} onChange={e => handleChange('westSaleDeed', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="West (Actual)"><input className={inputCls} value={fields.westActual || ''} onChange={e => handleChange('westActual', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="North (Sale Deed)"><input className={inputCls} value={fields.northSaleDeed || ''} onChange={e => handleChange('northSaleDeed', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="North (Actual)"><input className={inputCls} value={fields.northActual || ''} onChange={e => handleChange('northActual', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="South (Sale Deed)"><input className={inputCls} value={fields.southSaleDeed || ''} onChange={e => handleChange('southSaleDeed', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="South (Actual)"><input className={inputCls} value={fields.southActual || ''} onChange={e => handleChange('southActual', e.target.value)} disabled={isReadOnly} /></Field>
-          </div>
-        </Section>
-
-        <Section id="arka-documents" title="Document Details" number={4}>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <Field span={3} label="Occupancy Status"><input className={inputCls} value={fields.occupancyStatus || ''} onChange={e => handleChange('occupancyStatus', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field span={3} label="Proximity to civic amenities"><input className={inputCls} value={fields.proximityToCivicAmenities || ''} onChange={e => handleChange('proximityToCivicAmenities', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field span={3} label="Development of surrounding Area"><input className={inputCls} value={fields.developmentOfSurroundingArea || ''} onChange={e => handleChange('developmentOfSurroundingArea', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Longitude"><input className={inputCls} value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Latitude"><input className={inputCls} value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} /></Field>
-            <div className="col-span-3 border-t my-2"></div>
-            <Field label="Building Plan Approval No"><input className={inputCls} value={fields.buildingPlanApprovalNo || ''} onChange={e => handleChange('buildingPlanApprovalNo', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Date of Approval"><input className={inputCls} value={fields.dateOfApproval || ''} onChange={e => handleChange('dateOfApproval', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Expiry date"><input className={inputCls} value={fields.expiryDate || ''} onChange={e => handleChange('expiryDate', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Expected completion"><input className={inputCls} value={fields.expectedCompletion || ''} onChange={e => handleChange('expectedCompletion', e.target.value)} disabled={isReadOnly} /></Field>
-            <div className="col-span-3 border-t my-2"></div>
-            <Field label="Area of Plot"><input className={inputCls} value={fields.areaOfPlot || ''} onChange={e => handleChange('areaOfPlot', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Demarcation at site"><input className={inputCls} value={fields.demarcationAtSite || ''} onChange={e => handleChange('demarcationAtSite', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Approved BUA (GF)"><input className={inputCls} value={fields.approvedBuaGf || ''} onChange={e => handleChange('approvedBuaGf', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Approved BUA (FF)"><input className={inputCls} value={fields.approvedBuaFf || ''} onChange={e => handleChange('approvedBuaFf', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Approved BUA (MF)"><input className={inputCls} value={fields.approvedBuaMf || ''} onChange={e => handleChange('approvedBuaMf', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Approved BUA (SF)"><input className={inputCls} value={fields.approvedBuaSf || ''} onChange={e => handleChange('approvedBuaSf', e.target.value)} disabled={isReadOnly} /></Field>
-          </div>
-        </Section>
-
-        <Section id="arka-valuation" title="Recommended Valuation" number={5}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <Field label="Recommended rate of Plot/Flat"><input className={inputCls} value={fields.recommendedRateOfPlot || ''} onChange={e => handleChange('recommendedRateOfPlot', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Value of Plot/Flat"><input className={inputCls} value={fields.valueOfPlot || ''} onChange={e => handleChange('valueOfPlot', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Estimated Cost of construction"><input className={inputCls} value={fields.estimatedCostOfConstruction || ''} onChange={e => handleChange('estimatedCostOfConstruction', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Total Cost of construction"><input className={inputCls} value={fields.totalCostOfConstructionMeasuredGfRcc || ''} onChange={e => handleChange('totalCostOfConstructionMeasuredGfRcc', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field span={2} label="Depreciation value (Bold)"><input className={inputCls} value={fields.depreciationValue || ''} onChange={e => handleChange('depreciationValue', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Stage of Construction"><input className={inputCls} value={fields.stageOfConstruction || ''} onChange={e => handleChange('stageOfConstruction', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="% Work completed"><input className={inputCls} value={fields.percentWorkCompleted || ''} onChange={e => handleChange('percentWorkCompleted', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="% Disbursement Recommended"><input className={inputCls} value={fields.percentDisbursementRecommended || ''} onChange={e => handleChange('percentDisbursementRecommended', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Current Value of Property (Bold)"><input className={inputCls} value={fields.currentValueOfTheProperty || ''} onChange={e => handleChange('currentValueOfTheProperty', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Date of Property Visit"><input className={inputCls} value={fields.dateOfPropertyVisit || ''} onChange={e => handleChange('dateOfPropertyVisit', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Valuation as per Gov Reckoner"><input className={inputCls} value={fields.valuationAsPerGovernmentReckoner || ''} onChange={e => handleChange('valuationAsPerGovernmentReckoner', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Distressed valuation (Bold)"><input className={inputCls} value={fields.distressedValuation || ''} onChange={e => handleChange('distressedValuation', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field label="Rental value per month"><input className={inputCls} value={fields.rentalValuePerMonth || ''} onChange={e => handleChange('rentalValuePerMonth', e.target.value)} disabled={isReadOnly} /></Field>
-            <Field span={2} label="Remarks"><textarea className={inputCls} rows={3} value={fields.remarks || ''} onChange={e => handleChange('remarks', e.target.value)} disabled={isReadOnly} /></Field>
-          </div>
-        </Section>
-
-        <BasePhotographsSection
-          sectionNumber={6}
+                <BasePhotographsSection
+          sectionNumber={7}
           propertyImages={fields.propertyImages || []}
           propertyImageNames={fields.propertyImageNames || []}
           isReadOnly={isReadOnly}
@@ -649,7 +972,7 @@ export default function ArkaFinance({
         />
 
         <BaseMapsSection
-          sectionNumber={7}
+          sectionNumber={8}
           locationMapImages={fields.locationMapImages || []}
           mouzaMapImages={fields.mouzaMapImages || []}
           sketchMapImages={fields.sketchMapImages || []}
