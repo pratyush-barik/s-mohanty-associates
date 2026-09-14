@@ -115,16 +115,16 @@ export default function ArkaFinance({
     demarcationAtSite: '',
     demarcationAtSiteOther: '',
     approvedBuaFloors: [
-      { floor: 'G.F. (ground floor)', area: '' },
-      { floor: 'F.F. (first floor)', area: '' },
-      { floor: 'M.F. (mezzanine floor)', area: '' },
-      { floor: 'S.F(second floor)', area: '' },
+      { floor: 'G.F. (ground floor)', rccArea: '', accArea: '' },
+      { floor: 'F.F. (first floor)', rccArea: '', accArea: '' },
+      { floor: 'M.F. (mezzanine floor)', rccArea: '', accArea: '' },
+      { floor: 'S.F(second floor)', rccArea: '', accArea: '' },
     ],
     measuredBuaFloors: [
-      { floor: 'G.F. (ground floor)', area: '' },
-      { floor: 'F.F. (first floor)', area: '' },
-      { floor: 'S.F. (second floor)', area: '' },
-      { floor: 'T.F(third floor)', area: '' },
+      { floor: 'G.F. (ground floor)', rccArea: '', accArea: '' },
+      { floor: 'F.F. (first floor)', rccArea: '', accArea: '' },
+      { floor: 'S.F. (second floor)', rccArea: '', accArea: '' },
+      { floor: 'T.F(third floor)', rccArea: '', accArea: '' },
     ],
     constructionAsPerPlan: '',
     constructionAsPerPlanOther: '',
@@ -150,6 +150,12 @@ export default function ArkaFinance({
     distressedValuation: '',
     rentalValuePerMonth: '',
     remarks: '',
+    // Edit toggles for dependent fields
+    enableEditValueOfPlot: false,
+    enableEditTotalCost: false,
+    enableEditDepreciation: false,
+    enableEditCurrentValue: false,
+    enableEditDistressed: false,
     photosAttached: 'Attached',
     photosAttachedOther: '',
     locationSketchAttached: 'Attached',
@@ -247,6 +253,7 @@ export default function ArkaFinance({
   }, [projectId]);
 
   // Mathematical Dependencies & Auto-Calculation Logic
+  // Only depend on SOURCE input fields to avoid circular updates
   useEffect(() => {
     const extractNum = (val: any) => {
       if (!val) return 0;
@@ -256,10 +263,9 @@ export default function ArkaFinance({
     };
 
     setFields((prev: any) => {
-      let next = { ...prev };
+      const next = { ...prev };
       let changed = false;
 
-      // Helper to update field safely
       const updateField = (key: string, value: string) => {
         if (next[key] !== value) {
           next[key] = value;
@@ -268,46 +274,50 @@ export default function ArkaFinance({
       };
 
       // 1. Plot Value = Area * Recommended Rate
-      const area = extractNum(next.areaOfPlot);
-      const rate = extractNum(next.recommendedRateOfPlot);
-      if (area > 0 && rate > 0) {
-        updateField('valueOfPlot', `Rs. ${(area * rate).toLocaleString('en-IN')}/-`);
+      if (!next.enableEditValueOfPlot) {
+        const area = extractNum(next.areaOfPlot);
+        const rate = extractNum(next.recommendedRateOfPlot);
+        if (area > 0 && rate > 0) {
+          updateField('valueOfPlot', `Rs. ${(area * rate).toLocaleString('en-IN')}/-`);
+        }
       }
 
       // 2. Construction Cost = SUM(RCC Areas) * Construction Rate
-      const sumRcc = Array.isArray(next.measuredBuaFloors) 
-        ? next.measuredBuaFloors.reduce((sum: number, f: any) => sum + extractNum(f.rccArea), 0)
-        : 0;
-      const constRate = extractNum(next.constructionRate);
-      if (sumRcc > 0 && constRate > 0) {
-        updateField('totalCostOfConstructionMeasured', `Rs. ${(sumRcc * constRate).toLocaleString('en-IN')}/-`);
+      if (!next.enableEditTotalCost) {
+        const sumRcc = Array.isArray(next.measuredBuaFloors)
+          ? next.measuredBuaFloors.reduce((sum: number, f: any) => sum + extractNum(f.rccArea), 0)
+          : 0;
+        const constRate = extractNum(next.constructionRate);
+        if (sumRcc > 0 && constRate > 0) {
+          updateField('totalCostOfConstructionMeasured', `Rs. ${(sumRcc * constRate).toLocaleString('en-IN')}/-`);
+        }
       }
 
       // 3. Depreciation Value = Total Cost - (Total Cost * 1% * Age)
-      const totalCost = extractNum(next.totalCostOfConstructionMeasured);
-      const age = extractNum(next.currentLifeOfStructure);
-      if (totalCost > 0 && age > 0) {
-        // Skip override if user explicitly typed "Nil" or similar manual text
-        if (!String(next.depreciationValue || '').toLowerCase().includes('nil')) {
+      if (!next.enableEditDepreciation) {
+        const totalCost = extractNum(next.totalCostOfConstructionMeasured);
+        const age = extractNum(next.currentLifeOfStructure);
+        if (totalCost > 0 && age > 0) {
           const depVal = totalCost - (totalCost * 0.01 * age);
           updateField('depreciationValue', `Rs. ${depVal.toLocaleString('en-IN')}/-`);
         }
       }
 
       // 4. Current Value = Plot Value + Depreciation Value
-      const plotV = extractNum(next.valueOfPlot);
-      const depV = String(next.depreciationValue || '').toLowerCase().includes('nil') 
-        ? totalCost // If Nil, depreciation is 0, so depreciated value is just totalCost
-        : extractNum(next.depreciationValue); 
-
-      if (plotV > 0 || depV > 0) {
-        updateField('currentValueOfTheProperty', `Rs. ${(plotV + depV).toLocaleString('en-IN')}/-`);
+      if (!next.enableEditCurrentValue) {
+        const plotV = extractNum(next.valueOfPlot);
+        const depV = extractNum(next.depreciationValue);
+        if (plotV > 0 || depV > 0) {
+          updateField('currentValueOfTheProperty', `Rs. ${(plotV + depV).toLocaleString('en-IN')}/-`);
+        }
       }
 
       // 5. Distressed Valuation = Current Value * 0.80
-      const currentVal = extractNum(next.currentValueOfTheProperty);
-      if (currentVal > 0) {
-        updateField('distressedValuation', `Rs. ${(currentVal * 0.80).toLocaleString('en-IN')}/-`);
+      if (!next.enableEditDistressed) {
+        const currentVal = extractNum(next.currentValueOfTheProperty);
+        if (currentVal > 0) {
+          updateField('distressedValuation', `Rs. ${(currentVal * 0.80).toLocaleString('en-IN')}/-`);
+        }
       }
 
       // 6. Cover Page Values State Mirroring
@@ -322,18 +332,21 @@ export default function ArkaFinance({
 
       return changed ? next : prev;
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
+    // SOURCE input fields only — no computed fields in this array
     fields.areaOfPlot,
     fields.recommendedRateOfPlot,
     fields.measuredBuaFloors,
     fields.constructionRate,
-    fields.totalCostOfConstructionMeasured,
     fields.currentLifeOfStructure,
-    fields.valueOfPlot,
-    fields.depreciationValue,
-    fields.currentValueOfTheProperty,
-    fields.enableCoverPageValueEdit,
-    fields.distressedValuation
+    // Edit toggle flags
+    fields.enableEditValueOfPlot,
+    fields.enableEditTotalCost,
+    fields.enableEditDepreciation,
+    fields.enableEditCurrentValue,
+    fields.enableEditDistressed,
+    fields.enableCoverPageValueEdit
   ]);
 
   const navSections: NavItem[] = [
@@ -779,17 +792,18 @@ export default function ArkaFinance({
                 />
               </Field>
               {/* Edit Switch for Plot No / Khasra No auto-extraction */}
-              <div className="col-span-1 md:col-span-3 flex items-center gap-3 -mt-2 mb-1">
+              <div className="col-span-1 md:col-span-3 flex items-center gap-2 -mt-2 mb-1">
+                <span className={`text-xs font-semibold ${plotKhasraEditMode ? 'text-gray-400' : 'text-gray-700'}`}>Edit Off</span>
                 <button
                   type="button"
                   onClick={() => setPlotKhasraEditMode(!plotKhasraEditMode)}
                   disabled={isReadOnly}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${plotKhasraEditMode ? 'bg-emerald-500' : 'bg-gray-300'}`}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${plotKhasraEditMode ? 'bg-green-500' : 'bg-gray-200'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 shadow ${plotKhasraEditMode ? 'translate-x-6' : 'translate-x-1'}`} />
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${plotKhasraEditMode ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
-                <span className={`text-xs font-medium ${plotKhasraEditMode ? 'text-emerald-700' : 'text-gray-500'}`}>
-                  {plotKhasraEditMode ? 'Edit On' : 'Edit Off'} — Plot No & Khasra/Khata No {plotKhasraEditMode ? '(Manual Override)' : '(Auto-extracted from Address)'}
+                <span className={`text-xs font-semibold ${plotKhasraEditMode ? 'text-green-600' : 'text-gray-400'}`}>
+                  Edit On — Plot No & Khasra/Khata No {plotKhasraEditMode ? '(Manual Override)' : '(Auto-extracted from Address)'}
                 </span>
               </div>
               <Field label="Plot No">
@@ -1271,7 +1285,14 @@ export default function ArkaFinance({
                 <input className={inputCls} value={fields.recommendedRateOfPlot || ''} onChange={e => handleChange('recommendedRateOfPlot', e.target.value)} disabled={isReadOnly} placeholder="&#8377; per sq. ft." />
               </Field>
               <Field label="Value of the Plot / Flat">
-                <input className={inputCls} value={fields.valueOfPlot || ''} onChange={e => handleChange('valueOfPlot', e.target.value)} disabled={isReadOnly} placeholder="&#8377;" />
+                <div className="flex items-center gap-2 mb-1">
+                  <span className={`text-xs font-semibold ${fields.enableEditValueOfPlot ? 'text-gray-400' : 'text-gray-700'}`}>Edit Off</span>
+                  <button type="button" onClick={() => handleChange('enableEditValueOfPlot', !fields.enableEditValueOfPlot)} disabled={isReadOnly} className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${fields.enableEditValueOfPlot ? 'bg-green-500' : 'bg-gray-200'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${fields.enableEditValueOfPlot ? 'translate-x-[18px]' : 'translate-x-[3px]'}`} />
+                  </button>
+                  <span className={`text-xs font-semibold ${fields.enableEditValueOfPlot ? 'text-green-600' : 'text-gray-400'}`}>Edit On</span>
+                </div>
+                <input className={`${inputCls} ${!fields.enableEditValueOfPlot ? 'bg-gray-50' : ''}`} value={fields.valueOfPlot || ''} onChange={e => handleChange('valueOfPlot', e.target.value)} disabled={isReadOnly || !fields.enableEditValueOfPlot} placeholder="&#8377;" />
               </Field>
               <Field label="Estimated Cost of Construction">
                 <input className={inputCls} value={fields.estimatedCostOfConstruction || ''} onChange={e => handleChange('estimatedCostOfConstruction', e.target.value)} disabled={isReadOnly} placeholder="&#8377;" />
@@ -1280,10 +1301,24 @@ export default function ArkaFinance({
                 <input className={inputCls} value={fields.constructionRate || ''} onChange={e => handleChange('constructionRate', e.target.value)} disabled={isReadOnly} placeholder="&#8377; per sq. ft." />
               </Field>
               <Field label="Total Cost of Construction (Measured)">
-                <input className={inputCls} value={fields.totalCostOfConstructionMeasured || ''} onChange={e => handleChange('totalCostOfConstructionMeasured', e.target.value)} disabled={isReadOnly} placeholder="&#8377;" />
+                <div className="flex items-center gap-2 mb-1">
+                  <span className={`text-xs font-semibold ${fields.enableEditTotalCost ? 'text-gray-400' : 'text-gray-700'}`}>Edit Off</span>
+                  <button type="button" onClick={() => handleChange('enableEditTotalCost', !fields.enableEditTotalCost)} disabled={isReadOnly} className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${fields.enableEditTotalCost ? 'bg-green-500' : 'bg-gray-200'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${fields.enableEditTotalCost ? 'translate-x-[18px]' : 'translate-x-[3px]'}`} />
+                  </button>
+                  <span className={`text-xs font-semibold ${fields.enableEditTotalCost ? 'text-green-600' : 'text-gray-400'}`}>Edit On</span>
+                </div>
+                <input className={`${inputCls} ${!fields.enableEditTotalCost ? 'bg-gray-50' : ''}`} value={fields.totalCostOfConstructionMeasured || ''} onChange={e => handleChange('totalCostOfConstructionMeasured', e.target.value)} disabled={isReadOnly || !fields.enableEditTotalCost} placeholder="&#8377;" />
               </Field>
               <Field span={2} label="Depreciation Value">
-                <input className={`${inputCls} font-bold`} value={fields.depreciationValue || ''} onChange={e => handleChange('depreciationValue', e.target.value)} disabled={isReadOnly} placeholder="&#8377;" />
+                <div className="flex items-center gap-2 mb-1">
+                  <span className={`text-xs font-semibold ${fields.enableEditDepreciation ? 'text-gray-400' : 'text-gray-700'}`}>Edit Off</span>
+                  <button type="button" onClick={() => handleChange('enableEditDepreciation', !fields.enableEditDepreciation)} disabled={isReadOnly} className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${fields.enableEditDepreciation ? 'bg-green-500' : 'bg-gray-200'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${fields.enableEditDepreciation ? 'translate-x-[18px]' : 'translate-x-[3px]'}`} />
+                  </button>
+                  <span className={`text-xs font-semibold ${fields.enableEditDepreciation ? 'text-green-600' : 'text-gray-400'}`}>Edit On</span>
+                </div>
+                <input className={`${inputCls} font-bold ${!fields.enableEditDepreciation ? 'bg-gray-50' : ''}`} value={fields.depreciationValue || ''} onChange={e => handleChange('depreciationValue', e.target.value)} disabled={isReadOnly || !fields.enableEditDepreciation} placeholder="&#8377;" />
               </Field>
               <Field label="Stage of Construction">
                 <input className={inputCls} value={fields.stageOfConstruction || ''} onChange={e => handleChange('stageOfConstruction', e.target.value)} disabled={isReadOnly} placeholder="e.g. Completed / Plinth / Superstructure" />
@@ -1295,7 +1330,14 @@ export default function ArkaFinance({
                 <input className={inputCls} value={fields.percentDisbursementRecommended || ''} onChange={e => handleChange('percentDisbursementRecommended', e.target.value)} disabled={isReadOnly} placeholder="e.g. 100%" />
               </Field>
               <Field label="Current Value of Property (Plot + Construction)">
-                <input className={`${inputCls} font-bold`} value={fields.currentValueOfTheProperty || ''} onChange={e => handleChange('currentValueOfTheProperty', e.target.value)} disabled={isReadOnly} placeholder="&#8377;" />
+                <div className="flex items-center gap-2 mb-1">
+                  <span className={`text-xs font-semibold ${fields.enableEditCurrentValue ? 'text-gray-400' : 'text-gray-700'}`}>Edit Off</span>
+                  <button type="button" onClick={() => handleChange('enableEditCurrentValue', !fields.enableEditCurrentValue)} disabled={isReadOnly} className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${fields.enableEditCurrentValue ? 'bg-green-500' : 'bg-gray-200'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${fields.enableEditCurrentValue ? 'translate-x-[18px]' : 'translate-x-[3px]'}`} />
+                  </button>
+                  <span className={`text-xs font-semibold ${fields.enableEditCurrentValue ? 'text-green-600' : 'text-gray-400'}`}>Edit On</span>
+                </div>
+                <input className={`${inputCls} font-bold ${!fields.enableEditCurrentValue ? 'bg-gray-50' : ''}`} value={fields.currentValueOfTheProperty || ''} onChange={e => handleChange('currentValueOfTheProperty', e.target.value)} disabled={isReadOnly || !fields.enableEditCurrentValue} placeholder="&#8377;" />
               </Field>
               <Field span={2} label="Date of Property Visit">
                 <input type="date" className={inputCls} value={fields.dateOfPropertyVisit || ''} onChange={e => handleChange('dateOfPropertyVisit', e.target.value)} disabled={isReadOnly} />
@@ -1310,7 +1352,14 @@ export default function ArkaFinance({
                 <input className={inputCls} value={fields.valuationAsPerGovernmentReckoner || ''} onChange={e => handleChange('valuationAsPerGovernmentReckoner', e.target.value)} disabled={isReadOnly} placeholder="&#8377;" />
               </Field>
               <Field label="Distressed Valuation of the Property">
-                <input className={`${inputCls} font-bold`} value={fields.distressedValuation || ''} onChange={e => handleChange('distressedValuation', e.target.value)} disabled={isReadOnly} placeholder="&#8377;" />
+                <div className="flex items-center gap-2 mb-1">
+                  <span className={`text-xs font-semibold ${fields.enableEditDistressed ? 'text-gray-400' : 'text-gray-700'}`}>Edit Off</span>
+                  <button type="button" onClick={() => handleChange('enableEditDistressed', !fields.enableEditDistressed)} disabled={isReadOnly} className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${fields.enableEditDistressed ? 'bg-green-500' : 'bg-gray-200'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${fields.enableEditDistressed ? 'translate-x-[18px]' : 'translate-x-[3px]'}`} />
+                  </button>
+                  <span className={`text-xs font-semibold ${fields.enableEditDistressed ? 'text-green-600' : 'text-gray-400'}`}>Edit On</span>
+                </div>
+                <input className={`${inputCls} font-bold ${!fields.enableEditDistressed ? 'bg-gray-50' : ''}`} value={fields.distressedValuation || ''} onChange={e => handleChange('distressedValuation', e.target.value)} disabled={isReadOnly || !fields.enableEditDistressed} placeholder="&#8377;" />
               </Field>
               <Field label="Rental Value per Month">
                 <input className={inputCls} value={fields.rentalValuePerMonth || ''} onChange={e => handleChange('rentalValuePerMonth', e.target.value)} disabled={isReadOnly} placeholder="&#8377; / month" />
