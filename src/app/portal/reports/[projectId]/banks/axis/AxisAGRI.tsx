@@ -72,7 +72,7 @@ function Date8BoxInput({
 
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{label}</span>
+      <span className="text-xs font-semibold text-slate-700">{label}</span>
       <div className="flex items-center gap-1 flex-wrap">
         {labels.map((lbl, idx) => (
           <React.Fragment key={idx}>
@@ -89,7 +89,7 @@ function Date8BoxInput({
                   arr[idx] = char;
                   onChange(arr.join(''));
                 }}
-                className="w-7 h-8 text-center text-sm font-bold border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                className="w-7 h-8 text-center text-sm font-bold border border-slate-300 rounded bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                 placeholder={lbl}
               />
               <span className="text-[9px] text-slate-400 mt-0.5 font-medium">{lbl}</span>
@@ -111,7 +111,7 @@ function Date8BoxInput({
             />
             <button
               type="button"
-              className="px-2 py-1 text-xs bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 rounded text-slate-600 dark:text-slate-300"
+              className="px-2 py-1 text-xs bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded text-slate-600"
             >
               📅
             </button>
@@ -761,12 +761,9 @@ export default function AxisAGRI({
   ];
 
   return (
-    <div className="min-h-screen pb-24 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
-      {/* Floating Section Navigator */}
-      <FloatingNavigator sections={navSections} />
-
+    <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
       {/* Main Container */}
-      <div className="max-w-5xl mx-auto px-4 py-6 space-y-8">
+      <div className="flex-1 min-w-0 space-y-6 w-full">
         {/* Top Header & Bank Banner */}
         <ActiveConfigBanner
           bankName="AXIS BANK"
@@ -775,24 +772,12 @@ export default function AxisAGRI({
           onResetWizard={onResetWizard}
         />
 
-        {/* Global Action Bar */}
-        <ReportActionBar
-          loading={loading}
-          autoSaveStatus={autoSaveStatus}
-          isReadOnly={isReadOnly}
-          userRole={userRole}
-          message={message}
-          onSaveDraft={handleSaveDraft}
-          onPreviewPDF={handlePreviewPDF}
-          onDownloadPDF={handleDownloadPDF}
-        />
-
         {message && (
           <div
-            className={`p-4 rounded-lg text-sm font-medium border ${
+            className={`p-4 rounded-xl text-sm font-bold shadow-sm ${
               message.type === 'success'
-                ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-800'
-                : 'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950 dark:text-rose-200 dark:border-rose-800'
+                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                : 'bg-red-50 text-red-700 border border-red-200'
             }`}
           >
             {message.text}
@@ -802,100 +787,111 @@ export default function AxisAGRI({
         {/* ═══════════════════════════════════════════════════════════════
             SECTION 1: HEADER & TECHNICAL INITIATION
         ═══════════════════════════════════════════════════════════════ */}
-        <Section id="sec-1" title="1. Header & Technical Initiation" defaultOpen>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Field label="REF NO (SMA/MM/YYYY/XX)">
-              <input
-                type="text"
-                className={inputCls}
-                value={fields.refNo || ''}
-                onChange={e => handleChange('refNo', e.target.value)}
-                disabled={isReadOnly}
-                placeholder="SMA/08/2026/07"
-              />
-            </Field>
+        <Section id="sec-1" title="Header & Technical Initiation" number={1} defaultOpen>
+          {/* Container 1: Report Reference & Initiation */}
+          <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 mb-5 shadow-xs">
+            <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">Report Reference & Technical Initiation</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Field label="Reference Number (SMA/MM/YYYY/XX)">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.refNo || ''}
+                  onChange={e => handleChange('refNo', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="SMA/08/2026/07"
+                />
+              </Field>
 
-            <DateInput fieldKey="reportDate" label="DATE OF REPORT (DD/MM/YYYY)" />
-            <DateInput fieldKey="dateOfVisit" label="DATE OF VISIT (DD/MM/YYYY)" />
+              <DateInput fieldKey="reportDate" label="Date of Report (DD/MM/YYYY)" />
+              <DateInput fieldKey="dateOfVisit" label="Date of Visit (DD/MM/YYYY)" />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <Field label="Report Initiated By (Area)">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.reportInitiatedByArea || ''}
+                  onChange={e => handleChange('reportInitiatedByArea', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="e.g. Purusottampur, Ganjam"
+                />
+              </Field>
+
+              <Field label="Name of Area">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.nameOfArea || ''}
+                  onChange={e => handleChange('nameOfArea', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="e.g. Purusottampur, Ganjam"
+                />
+              </Field>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            <Field label="REPORT INITIATED BY AREA">
-              <input
-                type="text"
-                className={inputCls}
-                value={fields.reportInitiatedByArea || ''}
-                onChange={e => handleChange('reportInitiatedByArea', e.target.value)}
-                disabled={isReadOnly}
-                placeholder="e.g. Purusottampur, Ganjam"
-              />
-            </Field>
+          {/* Container 2: Parties Involved & Representative */}
+          <div className="border border-indigo-200 bg-indigo-50/50 rounded-xl p-5 shadow-xs">
+            <h3 className="font-semibold text-indigo-800 mb-4 text-sm tracking-wide uppercase">Parties Involved & Representative Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Name of Owner & Address">
+                <textarea
+                  rows={3}
+                  className={inputCls}
+                  value={fields.ownerNameAndAddress || ''}
+                  onChange={e => handleChange('ownerNameAndAddress', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="Mr. Babula Behera S/O: Mr. Gopala Behera, At: Achhuli, Ps/Ts: Purusottampur, Dist: Ganjam, Odisha"
+                />
+              </Field>
 
-            <Field label="NAME OF AREA">
-              <input
-                type="text"
-                className={inputCls}
-                value={fields.nameOfArea || ''}
-                onChange={e => handleChange('nameOfArea', e.target.value)}
-                disabled={isReadOnly}
-                placeholder="e.g. Purusottampur, Ganjam"
-              />
-            </Field>
+              <Field label="Name of Borrower & Address">
+                <textarea
+                  rows={3}
+                  className={inputCls}
+                  value={fields.borrowerNameAndAddress || ''}
+                  onChange={e => handleChange('borrowerNameAndAddress', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="M/S. MAA TARINI ENTERPRISERS"
+                />
+              </Field>
 
-            <Field label="NAME OF OWNER & ADDRESS">
-              <textarea
-                rows={3}
-                className={inputCls}
-                value={fields.ownerNameAndAddress || ''}
-                onChange={e => handleChange('ownerNameAndAddress', e.target.value)}
-                disabled={isReadOnly}
-                placeholder="Mr. Babula Behera S/O: Mr. Gopala Behera, At: Achhuli, Ps/Ts: Purusottampur, Dist: Ganjam, Odisha"
-              />
-            </Field>
+              <Field label="Proposal Number">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.proposalNo || ''}
+                  onChange={e => handleChange('proposalNo', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="Not Available"
+                />
+              </Field>
 
-            <Field label="NAME OF BORROWER & ADDRESS">
-              <textarea
-                rows={3}
-                className={inputCls}
-                value={fields.borrowerNameAndAddress || ''}
-                onChange={e => handleChange('borrowerNameAndAddress', e.target.value)}
-                disabled={isReadOnly}
-                placeholder="M/S. MAA TARINI ENTERPRISERS"
-              />
-            </Field>
-
-            <Field label="PROPOSAL NO">
-              <input
-                type="text"
-                className={inputCls}
-                value={fields.proposalNo || ''}
-                onChange={e => handleChange('proposalNo', e.target.value)}
-                disabled={isReadOnly}
-                placeholder="Not Available"
-              />
-            </Field>
-
-            <Field label="NAME OF THE REPRESENTATIVE & MOBILE NO.">
-              <input
-                type="text"
-                className={inputCls}
-                value={fields.representativeNameMobile || ''}
-                onChange={e => handleChange('representativeNameMobile', e.target.value)}
-                disabled={isReadOnly}
-                placeholder="Local People"
-              />
-            </Field>
+              <Field label="Representative Name & Mobile No.">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.representativeNameMobile || ''}
+                  onChange={e => handleChange('representativeNameMobile', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="Local People"
+                />
+              </Field>
+            </div>
           </div>
         </Section>
 
         {/* ═══════════════════════════════════════════════════════════════
             SECTION 2: DETAILS OF PROPERTY BEING VALUED
         ═══════════════════════════════════════════════════════════════ */}
-        <Section id="sec-2" title="2. Details of the Property Being Valued" defaultOpen>
-          <div className="space-y-4">
-            {/* Location Type & Documents Provided */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="LOCATION OF PROPERTY">
+        <Section id="sec-2" title="Details of the Property Being Valued" number={2} defaultOpen>
+          {/* Container 1: Classification & Documents */}
+          <div className="border border-emerald-200 bg-emerald-50/50 rounded-xl p-5 mb-5 shadow-xs">
+            <h3 className="font-semibold text-emerald-800 mb-4 text-sm tracking-wide uppercase">Property Classification & Documents</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <Field label="Location of Property">
                 <div className="flex gap-4 items-center pt-2">
                   {['Rural', 'Semi Urban', 'Urban'].map(loc => (
                     <label key={loc} className="flex items-center gap-2 cursor-pointer text-sm font-medium">
@@ -914,7 +910,7 @@ export default function AxisAGRI({
                 </div>
               </Field>
 
-              <Field label="ROAD FACILITY AT THE SITE">
+              <Field label="Road Facility at the Site">
                 <input
                   type="text"
                   className={inputCls}
@@ -927,8 +923,8 @@ export default function AxisAGRI({
             </div>
 
             {/* Documents Provided Checkbox Group */}
-            <Field label="DOCUMENTS PROVIDED">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-1">
+            <Field label="Documents Provided">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-1 mb-4">
                 {[
                   'Copy of Sale Deed',
                   'Bhu-Naksha',
@@ -942,10 +938,10 @@ export default function AxisAGRI({
                   return (
                     <label
                       key={doc}
-                      className={`flex items-center gap-2 p-2 rounded border text-xs font-medium cursor-pointer transition-colors ${
+                      className={`flex items-center gap-2 p-2 rounded-lg border text-xs font-medium cursor-pointer transition-colors ${
                         checked
-                          ? 'bg-emerald-50 border-emerald-400 text-emerald-900 dark:bg-emerald-950 dark:border-emerald-600 dark:text-emerald-200'
-                          : 'bg-white border-slate-200 text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300'
+                          ? 'bg-emerald-100/80 border-emerald-400 text-emerald-900'
+                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                       }`}
                     >
                       <input
@@ -963,7 +959,7 @@ export default function AxisAGRI({
             </Field>
 
             {/* Plot Khata Description */}
-            <Field label="PLOT NO / S.NO / G. NO / KHASRA NO & PROPERTY SPECIFICS">
+            <Field label="Plot No / S.No / G.No / Khasra No & Property Specifics">
               <textarea
                 rows={3}
                 className={inputCls}
@@ -973,10 +969,13 @@ export default function AxisAGRI({
                 placeholder="Khata No: 405/107, Plot No: 191/1095, Total Area Ac.0.013 Dec I.E. 566.00 Sft, Kissam: Gharabari, Mouza: Achhuli, Ps- Purusottampur, No-223, Ts: Purusottampur No-139, Dist- Ganjam, Odisha."
               />
             </Field>
+          </div>
 
-            {/* Address & Admin Units */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Field label="COLONY / NAGAR / SECTOR">
+          {/* Container 2: Address & Geographic Position */}
+          <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs">
+            <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">Address & Geographic Position</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <Field label="Colony / Nagar / Sector">
                 <input
                   type="text"
                   className={inputCls}
@@ -987,7 +986,7 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="LOCALITY / LANDMARK">
+              <Field label="Locality / Landmark">
                 <input
                   type="text"
                   className={inputCls}
@@ -998,7 +997,7 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="VILLAGE / TOWN / CITY / MARKET">
+              <Field label="Village / Town / City / Market">
                 <input
                   type="text"
                   className={inputCls}
@@ -1009,7 +1008,7 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="DISTRICT">
+              <Field label="District">
                 <input
                   type="text"
                   className={inputCls}
@@ -1020,7 +1019,7 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="STATE">
+              <Field label="State">
                 <input
                   type="text"
                   className={inputCls}
@@ -1031,7 +1030,7 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="PINCODE">
+              <Field label="Pincode">
                 <input
                   type="text"
                   className={inputCls}
@@ -1045,7 +1044,7 @@ export default function AxisAGRI({
 
             {/* Distance & GPS Coordinates */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Field label="DISTANCE FROM AREA OFFICE">
+              <Field label="Distance from Area Office">
                 <input
                   type="text"
                   className={inputCls}
@@ -1056,7 +1055,7 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="LATITUDE">
+              <Field label="Latitude">
                 <input
                   type="text"
                   className={inputCls}
@@ -1067,7 +1066,7 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="LONGITUDE">
+              <Field label="Longitude">
                 <input
                   type="text"
                   className={inputCls}
@@ -1078,7 +1077,7 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="COORDINATES (DEG MIN SEC)">
+              <Field label="Coordinates (Deg Min Sec)">
                 <input
                   type="text"
                   className={inputCls}
@@ -1095,85 +1094,85 @@ export default function AxisAGRI({
         {/* ═══════════════════════════════════════════════════════════════
             SECTION 3: CLASSIFICATION & SITE TOPOGRAPHY
         ═══════════════════════════════════════════════════════════════ */}
-        <Section id="sec-3" title="3. Property Classification & Site Topography" defaultOpen>
-          <div className="space-y-4">
-            {/* (A) Plot Classification */}
-            <div className="p-3 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-                (A) Plot Characteristics
-              </span>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Field label="TYPE OF PROPERTY (PLOT)">
-                  <select
-                    className={selectCls}
-                    value={fields.typeOfPropertyPlot || 'Residential'}
-                    onChange={e => handleChange('typeOfPropertyPlot', e.target.value)}
-                    disabled={isReadOnly}
-                  >
-                    <option value="NA">NA</option>
-                    <option value="Residential">Residential</option>
-                    <option value="Commercial">Commercial</option>
-                    <option value="Industrial">Industrial</option>
-                  </select>
-                </Field>
+        <Section id="sec-3" title="Property Classification & Site Topography" number={3} defaultOpen>
+          {/* Container 1: Plot Characteristics & Governance */}
+          <div className="border border-indigo-200 bg-indigo-50/50 rounded-xl p-5 mb-5 shadow-xs">
+            <h3 className="font-semibold text-indigo-800 mb-4 text-sm tracking-wide uppercase">Plot Characteristics & Governance</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <Field label="Type of Property (Plot)">
+                <select
+                  className={selectCls}
+                  value={fields.typeOfPropertyPlot || 'Residential'}
+                  onChange={e => handleChange('typeOfPropertyPlot', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="NA">NA</option>
+                  <option value="Residential">Residential</option>
+                  <option value="Commercial">Commercial</option>
+                  <option value="Industrial">Industrial</option>
+                </select>
+              </Field>
 
-                <Field label="LEVEL OF LAND WITH TOPOGRAPHICAL CONDITIONS">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.levelOfLand || ''}
-                    onChange={e => handleChange('levelOfLand', e.target.value)}
-                    disabled={isReadOnly}
-                    placeholder="Existing Road Level"
-                  />
-                </Field>
+              <Field label="Level of Land with Topographical Conditions">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.levelOfLand || ''}
+                  onChange={e => handleChange('levelOfLand', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="Existing Road Level"
+                />
+              </Field>
 
-                <Field label="ANY CONSTRUCTION OBSERVED ON PLOT">
-                  <select
-                    className={selectCls}
-                    value={fields.constructionObservedOnPlot || 'Yes'}
-                    onChange={e => handleChange('constructionObservedOnPlot', e.target.value)}
-                    disabled={isReadOnly}
-                  >
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
-                  </select>
-                </Field>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="SITUATED IN MUNICIPAL/CORPORATION LIMIT">
-                  <select
-                    className={selectCls}
-                    value={fields.situatedInMunicipalLimit || 'No'}
-                    onChange={e => handleChange('situatedInMunicipalLimit', e.target.value)}
-                    disabled={isReadOnly}
-                  >
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
-                  </select>
-                </Field>
-
-                <Field label="MUNICIPAL / GRAM PANCHAYAT DETAILS">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.municipalLimitDetails || ''}
-                    onChange={e => handleChange('municipalLimitDetails', e.target.value)}
-                    disabled={isReadOnly}
-                    placeholder="(Within Achhuli Gram Panchayat area limit)"
-                  />
-                </Field>
-              </div>
+              <Field label="Any Construction Observed on Plot">
+                <select
+                  className={selectCls}
+                  value={fields.constructionObservedOnPlot || 'Yes'}
+                  onChange={e => handleChange('constructionObservedOnPlot', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </Field>
             </div>
 
-            {/* (B) Residential & (C) Commercial Subtypes */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-3 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-                  (B) Residential Property Classification
+              <Field label="Situated in Municipal / Corporation Limit">
+                <select
+                  className={selectCls}
+                  value={fields.situatedInMunicipalLimit || 'No'}
+                  onChange={e => handleChange('situatedInMunicipalLimit', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </Field>
+
+              <Field label="Municipal / Gram Panchayat Details">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.municipalLimitDetails || ''}
+                  onChange={e => handleChange('municipalLimitDetails', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="(Within Achhuli Gram Panchayat area limit)"
+                />
+              </Field>
+            </div>
+          </div>
+
+          {/* Container 2: Subtypes & Civic Amenities */}
+          <div className="border border-purple-200 bg-purple-50/50 rounded-xl p-5 mb-5 shadow-xs">
+            <h3 className="font-semibold text-purple-800 mb-4 text-sm tracking-wide uppercase">Property Subtypes & Civic Amenities</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Residential Subtype Card */}
+              <div className="bg-white p-4 rounded-lg border border-purple-100 shadow-xs space-y-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-purple-900 block">
+                  Residential Property Classification
                 </span>
-                <Field label="RESIDENTIAL PROPERTY SUBTYPE">
+                <Field label="Residential Property Subtype">
                   <select
                     className={selectCls}
                     value={fields.residentialPropertySubtype || 'Independent house'}
@@ -1188,7 +1187,7 @@ export default function AxisAGRI({
                   </select>
                 </Field>
 
-                <Field label="CIVIC AMENITIES (SCHOOL, HOSPITAL, MARKET)">
+                <Field label="Civic Amenities (School, Hospital, Market)">
                   <select
                     className={selectCls}
                     value={fields.civicAmenities || 'Available within the radius of 2-3 Kms'}
@@ -1201,11 +1200,12 @@ export default function AxisAGRI({
                 </Field>
               </div>
 
-              <div className="p-3 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-                  (C) Commercial / Industrial Classification
+              {/* Commercial Subtype Card */}
+              <div className="bg-white p-4 rounded-lg border border-purple-100 shadow-xs space-y-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-purple-900 block">
+                  Commercial / Industrial Classification
                 </span>
-                <Field label="COMMERCIAL PROPERTY SUBTYPE">
+                <Field label="Commercial Property Subtype">
                   <select
                     className={selectCls}
                     value={fields.commercialPropertySubtype || 'Godown'}
@@ -1221,7 +1221,7 @@ export default function AxisAGRI({
                   </select>
                 </Field>
 
-                <Field label="LOCAL TRANSPORT AVAILABILITY">
+                <Field label="Local Transport Availability">
                   <div className="grid grid-cols-2 gap-2 pt-1">
                     {['Metro', 'Local Train', 'Bus', 'Personal Transport'].map(item => {
                       const checked = (fields.availabilityLocalTransport || []).includes(item);
@@ -1232,7 +1232,7 @@ export default function AxisAGRI({
                             checked={checked}
                             onChange={() => handleToggleMulti('availabilityLocalTransport', item)}
                             disabled={isReadOnly}
-                            className="rounded text-emerald-600 focus:ring-emerald-500"
+                            className="rounded text-purple-600 focus:ring-purple-500"
                           />
                           <span>{item}</span>
                         </label>
@@ -1242,10 +1242,13 @@ export default function AxisAGRI({
                 </Field>
               </div>
             </div>
+          </div>
 
-            {/* Accessibility & Physical Constraints */}
+          {/* Container 3: Accessibility & Physical Constraints */}
+          <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs">
+            <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">Accessibility & Physical Constraints</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Field label="DISTANCE FROM RAILWAY STATION">
+              <Field label="Distance from Railway Station">
                 <input
                   type="text"
                   className={inputCls}
@@ -1256,7 +1259,7 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="BUS STOP / TAXI / AUTO STAND">
+              <Field label="Bus Stop / Taxi / Auto Stand">
                 <input
                   type="text"
                   className={inputCls}
@@ -1267,7 +1270,7 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="INDEPENDENT & ACCESSIBLE APPROACH ROAD">
+              <Field label="Independent & Accessible Approach Road">
                 <select
                   className={selectCls}
                   value={fields.independentApproachRoad || 'Yes'}
@@ -1279,7 +1282,7 @@ export default function AxisAGRI({
                 </select>
               </Field>
 
-              <Field label="ABLE TO ACCOMMODATE FIRE EXTINGUISHER">
+              <Field label="Able to Accommodate Fire Extinguisher">
                 <select
                   className={selectCls}
                   value={fields.accommodateFireExtinguisher || 'Yes'}
@@ -1291,7 +1294,7 @@ export default function AxisAGRI({
                 </select>
               </Field>
 
-              <Field label="FALLS UNDER LAND LOCKED AREA">
+              <Field label="Falls Under Land Locked Area">
                 <select
                   className={selectCls}
                   value={fields.landLockedArea || 'No'}
@@ -1303,7 +1306,7 @@ export default function AxisAGRI({
                 </select>
               </Field>
 
-              <Field label="CORNERED / INTERMITTENT PLOT">
+              <Field label="Cornered / Intermittent Plot">
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -1330,124 +1333,129 @@ export default function AxisAGRI({
         {/* ═══════════════════════════════════════════════════════════════
             SECTION 4: BOUNDARIES
         ═══════════════════════════════════════════════════════════════ */}
-        <Section id="sec-4" title="4. Boundaries (Dual Matrix)" defaultOpen>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
-              <thead className="bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300">
-                <tr>
-                  <th className="p-3 text-left font-bold w-24">Direction</th>
-                  <th className="p-3 text-left font-bold">As per Verification</th>
-                  <th className="p-3 text-left font-bold">As per Document</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-950">
-                <tr>
-                  <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">East</td>
-                  <td className="p-2">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.boundaryEastVerification || ''}
-                      onChange={e => handleChange('boundaryEastVerification', e.target.value)}
-                      disabled={isReadOnly}
-                      placeholder="Road"
-                    />
-                  </td>
-                  <td className="p-2">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.boundaryEastDocument || ''}
-                      onChange={e => handleChange('boundaryEastDocument', e.target.value)}
-                      disabled={isReadOnly}
-                      placeholder="Road"
-                    />
-                  </td>
-                </tr>
+        <Section id="sec-4" title="Boundaries (Dual Matrix)" number={4} defaultOpen>
+          <div className="border border-purple-200 bg-purple-50/50 rounded-xl p-5 shadow-xs">
+            <h3 className="font-semibold text-purple-800 mb-4 text-sm tracking-wide uppercase">Dual Boundary Verification Matrix</h3>
+            <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+              <table className="w-full text-xs text-left">
+                <thead className="bg-purple-100/70 text-purple-900 font-bold uppercase">
+                  <tr>
+                    <th className="p-3 border-b border-r w-24">Direction</th>
+                    <th className="p-3 border-b border-r">As per Verification (Site)</th>
+                    <th className="p-3 border-b">As per Document (Deed/ROR)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 bg-white">
+                  <tr>
+                    <td className="p-3 font-semibold text-slate-700 bg-slate-50 border-r">East</td>
+                    <td className="p-2 border-r">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.boundaryEastVerification || ''}
+                        onChange={e => handleChange('boundaryEastVerification', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="Road"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.boundaryEastDocument || ''}
+                        onChange={e => handleChange('boundaryEastDocument', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="Road"
+                      />
+                    </td>
+                  </tr>
 
-                <tr>
-                  <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">West</td>
-                  <td className="p-2">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.boundaryWestVerification || ''}
-                      onChange={e => handleChange('boundaryWestVerification', e.target.value)}
-                      disabled={isReadOnly}
-                      placeholder="Other's Vacant land"
-                    />
-                  </td>
-                  <td className="p-2">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.boundaryWestDocument || ''}
-                      onChange={e => handleChange('boundaryWestDocument', e.target.value)}
-                      disabled={isReadOnly}
-                      placeholder="Hemanta Kumar Panda"
-                    />
-                  </td>
-                </tr>
+                  <tr>
+                    <td className="p-3 font-semibold text-slate-700 bg-slate-50 border-r">West</td>
+                    <td className="p-2 border-r">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.boundaryWestVerification || ''}
+                        onChange={e => handleChange('boundaryWestVerification', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="Other's Vacant land"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.boundaryWestDocument || ''}
+                        onChange={e => handleChange('boundaryWestDocument', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="Hemanta Kumar Panda"
+                      />
+                    </td>
+                  </tr>
 
-                <tr>
-                  <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">North</td>
-                  <td className="p-2">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.boundaryNorthVerification || ''}
-                      onChange={e => handleChange('boundaryNorthVerification', e.target.value)}
-                      disabled={isReadOnly}
-                      placeholder="Other's Vacant land"
-                    />
-                  </td>
-                  <td className="p-2">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.boundaryNorthDocument || ''}
-                      onChange={e => handleChange('boundaryNorthDocument', e.target.value)}
-                      disabled={isReadOnly}
-                      placeholder="Kirtan Behera"
-                    />
-                  </td>
-                </tr>
+                  <tr>
+                    <td className="p-3 font-semibold text-slate-700 bg-slate-50 border-r">North</td>
+                    <td className="p-2 border-r">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.boundaryNorthVerification || ''}
+                        onChange={e => handleChange('boundaryNorthVerification', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="Other's Vacant land"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.boundaryNorthDocument || ''}
+                        onChange={e => handleChange('boundaryNorthDocument', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="Kirtan Behera"
+                      />
+                    </td>
+                  </tr>
 
-                <tr>
-                  <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">South</td>
-                  <td className="p-2">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.boundarySouthVerification || ''}
-                      onChange={e => handleChange('boundarySouthVerification', e.target.value)}
-                      disabled={isReadOnly}
-                      placeholder="Other's Vacant land"
-                    />
-                  </td>
-                  <td className="p-2">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.boundarySouthDocument || ''}
-                      onChange={e => handleChange('boundarySouthDocument', e.target.value)}
-                      disabled={isReadOnly}
-                      placeholder="Gobinda Behera"
-                    />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                  <tr>
+                    <td className="p-3 font-semibold text-slate-700 bg-slate-50 border-r">South</td>
+                    <td className="p-2 border-r">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.boundarySouthVerification || ''}
+                        onChange={e => handleChange('boundarySouthVerification', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="Other's Vacant land"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.boundarySouthDocument || ''}
+                        onChange={e => handleChange('boundarySouthDocument', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="Gobinda Behera"
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </Section>
 
         {/* ═══════════════════════════════════════════════════════════════
             SECTION 5: LOCALITY, INFRASTRUCTURE & USAGE
         ═══════════════════════════════════════════════════════════════ */}
-        <Section id="sec-5" title="5. Locality, Infrastructure & Usage Details" defaultOpen>
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Field label="CLASS OF LOCALITY">
+        <Section id="sec-5" title="Locality, Infrastructure & Usage Details" number={5} defaultOpen>
+          {/* Container 1: Locality Class, Infrastructure & Ownership */}
+          <div className="border border-indigo-200 bg-indigo-50/50 rounded-xl p-5 mb-5 shadow-xs">
+            <h3 className="font-semibold text-indigo-800 mb-4 text-sm tracking-wide uppercase">Locality Class, Infrastructure & Ownership</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <Field label="Class of Locality">
                 <select
                   className={selectCls}
                   value={fields.classOfLocality || 'Middle class'}
@@ -1462,7 +1470,7 @@ export default function AxisAGRI({
                 </select>
               </Field>
 
-              <Field label="QUALITY OF INFRASTRUCTURE IN VICINITY">
+              <Field label="Quality of Infrastructure in Vicinity">
                 <select
                   className={selectCls}
                   value={fields.qualityOfInfrastructure || 'Good'}
@@ -1476,7 +1484,7 @@ export default function AxisAGRI({
                 </select>
               </Field>
 
-              <Field label="OWNERSHIP STATUS OF THE PROPERTY">
+              <Field label="Ownership Status of the Property">
                 <select
                   className={selectCls}
                   value={fields.ownershipStatus || 'Free Hold'}
@@ -1492,7 +1500,7 @@ export default function AxisAGRI({
 
             {/* Approved vs Actual Usage Multi-Select */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="APPROVED USAGE OF PROPERTY">
+              <Field label="Approved Usage of Property">
                 <div className="flex gap-3 pt-2">
                   {['Industrial', 'commercial', 'Residential', 'Mix'].map(item => (
                     <label key={item} className="flex items-center gap-1.5 text-xs font-medium cursor-pointer">
@@ -1501,7 +1509,7 @@ export default function AxisAGRI({
                         checked={(fields.approvedUsage || []).includes(item)}
                         onChange={() => handleToggleMulti('approvedUsage', item)}
                         disabled={isReadOnly}
-                        className="rounded text-emerald-600 focus:ring-emerald-500"
+                        className="rounded text-indigo-600 focus:ring-indigo-500"
                       />
                       <span>{item}</span>
                     </label>
@@ -1509,7 +1517,7 @@ export default function AxisAGRI({
                 </div>
               </Field>
 
-              <Field label="ACTUAL USAGE OF PROPERTY">
+              <Field label="Actual Usage of Property">
                 <div className="flex gap-3 pt-2">
                   {['Industrial', 'Commercial', 'Residential', 'Mix'].map(item => (
                     <label key={item} className="flex items-center gap-1.5 text-xs font-medium cursor-pointer">
@@ -1518,7 +1526,7 @@ export default function AxisAGRI({
                         checked={(fields.actualUsage || []).includes(item)}
                         onChange={() => handleToggleMulti('actualUsage', item)}
                         disabled={isReadOnly}
-                        className="rounded text-emerald-600 focus:ring-emerald-500"
+                        className="rounded text-indigo-600 focus:ring-indigo-500"
                       />
                       <span>{item}</span>
                     </label>
@@ -1526,9 +1534,13 @@ export default function AxisAGRI({
                 </div>
               </Field>
             </div>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Field label="RESTRICTIVE COVENANTS REGARDS LAND USE">
+          {/* Container 2: Structure, Occupancy & Surroundings */}
+          <div className="border border-emerald-200 bg-emerald-50/50 rounded-xl p-5 mb-5 shadow-xs">
+            <h3 className="font-semibold text-emerald-800 mb-4 text-sm tracking-wide uppercase">Structure, Occupancy & Surroundings</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <Field label="Restrictive Covenants Regards Land Use">
                 <input
                   type="text"
                   className={inputCls}
@@ -1539,7 +1551,7 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="TYPE OF STRUCTURE">
+              <Field label="Type of Structure">
                 <input
                   type="text"
                   className={inputCls}
@@ -1550,7 +1562,7 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="NO OF FLOORS">
+              <Field label="No of Floors">
                 <input
                   type="text"
                   className={inputCls}
@@ -1561,7 +1573,7 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="OCCUPANCY DETAILS">
+              <Field label="Occupancy Details">
                 <select
                   className={selectCls}
                   value={fields.occupancyDetails || 'Self-Occupied'}
@@ -1574,7 +1586,7 @@ export default function AxisAGRI({
                 </select>
               </Field>
 
-              <Field label="IF RENTED: TENANT NAME">
+              <Field label="If Rented: Tenant Name">
                 <input
                   type="text"
                   className={inputCls}
@@ -1585,7 +1597,7 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="YEARS IN TENANCY">
+              <Field label="Years in Tenancy">
                 <input
                   type="text"
                   className={inputCls}
@@ -1598,7 +1610,7 @@ export default function AxisAGRI({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Field label="WAS RESISTANCE FOR VALUATION">
+              <Field label="Was Resistance for Valuation">
                 <select
                   className={selectCls}
                   value={fields.resistanceForValuation || 'No'}
@@ -1610,7 +1622,7 @@ export default function AxisAGRI({
                 </select>
               </Field>
 
-              <Field label="RESISTANCE FROM OCCUPANTS">
+              <Field label="Resistance from Occupants">
                 <select
                   className={selectCls}
                   value={fields.resistanceFromOccupants || 'No'}
@@ -1622,7 +1634,7 @@ export default function AxisAGRI({
                 </select>
               </Field>
 
-              <Field label="DEVELOPMENT OF SURROUNDING AREA">
+              <Field label="Development of Surrounding Area">
                 <select
                   className={selectCls}
                   value={fields.developmentSurroundingArea || 'Developing'}
@@ -1635,7 +1647,7 @@ export default function AxisAGRI({
                 </select>
               </Field>
 
-              <Field label="BASIC AMENITIES">
+              <Field label="Basic Amenities">
                 <div className="flex gap-2 pt-2">
                   {['Electricity', 'Water', 'Drainage connection'].map(item => (
                     <label key={item} className="flex items-center gap-1 text-[11px] font-medium cursor-pointer">
@@ -1652,49 +1664,49 @@ export default function AxisAGRI({
                 </div>
               </Field>
             </div>
+          </div>
 
-            {/* Leasehold Specifics */}
-            <div className="p-3 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-                  Leasehold Details (If Applicable)
-                </span>
-                <span className="text-xs text-slate-500 italic">{fields.isLeasehold}</span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Field label="NAME OF LESSOR">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.lessorName || ''}
-                    onChange={e => handleChange('lessorName', e.target.value)}
-                    disabled={isReadOnly}
-                    placeholder="NA"
-                  />
-                </Field>
+          {/* Container 3: Leasehold Details */}
+          <div className="border border-teal-200 bg-teal-50/50 rounded-xl p-5 shadow-xs">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-semibold text-teal-800 text-sm tracking-wide uppercase">
+                Leasehold Details (If Applicable)
+              </h3>
+              <span className="text-xs text-slate-500 italic">{fields.isLeasehold}</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Field label="Name of Lessor">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.lessorName || ''}
+                  onChange={e => handleChange('lessorName', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="NA"
+                />
+              </Field>
 
-                <Field label="NATURE OF LEASE">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.natureOfLease || ''}
-                    onChange={e => handleChange('natureOfLease', e.target.value)}
-                    disabled={isReadOnly}
-                    placeholder="NA"
-                  />
-                </Field>
+              <Field label="Nature of Lease">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.natureOfLease || ''}
+                  onChange={e => handleChange('natureOfLease', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="NA"
+                />
+              </Field>
 
-                <Field label="TOTAL PERIOD OF LEASE">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.totalPeriodOfLease || ''}
-                    onChange={e => handleChange('totalPeriodOfLease', e.target.value)}
-                    disabled={isReadOnly}
-                    placeholder="NA"
-                  />
-                </Field>
-              </div>
+              <Field label="Total Period of Lease">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.totalPeriodOfLease || ''}
+                  onChange={e => handleChange('totalPeriodOfLease', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="NA"
+                />
+              </Field>
             </div>
           </div>
         </Section>
@@ -1702,10 +1714,12 @@ export default function AxisAGRI({
         {/* ═══════════════════════════════════════════════════════════════
             SECTION 6: STATUTORY APPROVAL DETAILS
         ═══════════════════════════════════════════════════════════════ */}
-        <Section id="sec-6" title="6. Statutory Approval Details (DDMMYYYY Layout)" defaultOpen>
-          <div className="space-y-4">
+        <Section id="sec-6" title="Statutory Approval Details" number={6} defaultOpen>
+          {/* Container 1: RERA & Certificates */}
+          <div className="border border-teal-200 bg-teal-50/50 rounded-xl p-5 mb-5 shadow-xs">
+            <h3 className="font-semibold text-teal-800 mb-4 text-sm tracking-wide uppercase">RERA & Statutory Certificates</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="RERA REGISTRATION NUMBER">
+              <Field label="RERA Registration Number">
                 <input
                   type="text"
                   className={inputCls}
@@ -1716,7 +1730,7 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="OCCUPANCY CERTIFICATE">
+              <Field label="Occupancy Certificate">
                 <input
                   type="text"
                   className={inputCls}
@@ -1727,65 +1741,67 @@ export default function AxisAGRI({
                 />
               </Field>
             </div>
+          </div>
 
-            {/* Layout Approval */}
-            <div className="p-4 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-3">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Field label="LAYOUT APPROVAL NUMBER">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.layoutApprovalNo || ''}
-                    onChange={e => handleChange('layoutApprovalNo', e.target.value)}
-                    disabled={isReadOnly}
-                    placeholder="Not Mentioned"
-                  />
-                </Field>
-
-                <Date8BoxInput
-                  label="DATE OF APPROVAL [DDMMYYYY]"
-                  value={fields.layoutApprovalDate}
-                  onChange={val => handleChange('layoutApprovalDate', val)}
+          {/* Container 2: Layout Approval */}
+          <div className="border border-cyan-200 bg-cyan-50/50 rounded-xl p-5 mb-5 shadow-xs">
+            <h3 className="font-semibold text-cyan-800 mb-4 text-sm tracking-wide uppercase">Layout Approval (Statutory DDMMYYYY Layout)</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Field label="Layout Approval Number">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.layoutApprovalNo || ''}
+                  onChange={e => handleChange('layoutApprovalNo', e.target.value)}
                   disabled={isReadOnly}
+                  placeholder="Not Mentioned"
                 />
+              </Field>
 
-                <Date8BoxInput
-                  label="EXPIRY DATE [DDMMYYYY]"
-                  value={fields.layoutExpiryDate}
-                  onChange={val => handleChange('layoutExpiryDate', val)}
-                  disabled={isReadOnly}
-                />
-              </div>
+              <Date8BoxInput
+                label="Date of Approval [DDMMYYYY]"
+                value={fields.layoutApprovalDate}
+                onChange={val => handleChange('layoutApprovalDate', val)}
+                disabled={isReadOnly}
+              />
+
+              <Date8BoxInput
+                label="Expiry Date [DDMMYYYY]"
+                value={fields.layoutExpiryDate}
+                onChange={val => handleChange('layoutExpiryDate', val)}
+                disabled={isReadOnly}
+              />
             </div>
+          </div>
 
-            {/* Building Plan Approval */}
-            <div className="p-4 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-3">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Field label="BUILDING PLAN APPROVAL NUMBER">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.buildingPlanApprovalNo || ''}
-                    onChange={e => handleChange('buildingPlanApprovalNo', e.target.value)}
-                    disabled={isReadOnly}
-                    placeholder="Not Available"
-                  />
-                </Field>
-
-                <Date8BoxInput
-                  label="DATE OF APPROVAL [DDMMYYYY]"
-                  value={fields.buildingPlanApprovalDate}
-                  onChange={val => handleChange('buildingPlanApprovalDate', val)}
+          {/* Container 3: Building Plan Approval */}
+          <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs">
+            <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">Building Plan Approval (Statutory DDMMYYYY Layout)</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Field label="Building Plan Approval Number">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.buildingPlanApprovalNo || ''}
+                  onChange={e => handleChange('buildingPlanApprovalNo', e.target.value)}
                   disabled={isReadOnly}
+                  placeholder="Not Available"
                 />
+              </Field>
 
-                <Date8BoxInput
-                  label="EXPIRY DATE [DDMMYYYY]"
-                  value={fields.buildingPlanExpiryDate}
-                  onChange={val => handleChange('buildingPlanExpiryDate', val)}
-                  disabled={isReadOnly}
-                />
-              </div>
+              <Date8BoxInput
+                label="Date of Approval [DDMMYYYY]"
+                value={fields.buildingPlanApprovalDate}
+                onChange={val => handleChange('buildingPlanApprovalDate', val)}
+                disabled={isReadOnly}
+              />
+
+              <Date8BoxInput
+                label="Expiry Date [DDMMYYYY]"
+                value={fields.buildingPlanExpiryDate}
+                onChange={val => handleChange('buildingPlanExpiryDate', val)}
+                disabled={isReadOnly}
+              />
             </div>
           </div>
         </Section>
@@ -1793,11 +1809,12 @@ export default function AxisAGRI({
         {/* ═══════════════════════════════════════════════════════════════
             SECTION 7: CONSTRUCTION & FLOOR-WISE BREAKUP
         ═══════════════════════════════════════════════════════════════ */}
-        <Section id="sec-7" title="7. Construction Details & Floor-Wise BUA" defaultOpen>
-          <div className="space-y-4">
-            {/* Plot Areas & Site Demarcation */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Field label="AREA OF PLOT AS PER ROR">
+        <Section id="sec-7" title="Construction Details & Floor-Wise BUA" number={7} defaultOpen>
+          {/* Container 1: Plot Extents & Demarcation */}
+          <div className="border border-amber-200 bg-amber-50/50 rounded-xl p-5 mb-5 shadow-xs">
+            <h3 className="font-semibold text-amber-800 mb-4 text-sm tracking-wide uppercase">Plot Extents & Demarcation</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <Field label="Area of Plot as per ROR">
                 <input
                   type="text"
                   className={inputCls}
@@ -1808,7 +1825,7 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="AREA OF PLOT AS PER DOCUMENT">
+              <Field label="Area of Plot as per Document">
                 <input
                   type="text"
                   className={inputCls}
@@ -1819,7 +1836,7 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="DEMARCATION AT SITE">
+              <Field label="Demarcation at Site">
                 <select
                   className={selectCls}
                   value={fields.demarcationAtSite || 'Yes'}
@@ -1833,7 +1850,7 @@ export default function AxisAGRI({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="APPROVED BUILT UP AREA (IN SQ.FT.)">
+              <Field label="Approved Built-Up Area (In Sq.Ft.)">
                 <input
                   type="text"
                   className={inputCls}
@@ -1844,7 +1861,7 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="ACTUAL BUILT UP AREA SUMMARY (IN SQ.FT.)">
+              <Field label="Actual Built-Up Area Summary (In Sq.Ft.)">
                 <input
                   type="text"
                   className={inputCls}
@@ -1855,108 +1872,109 @@ export default function AxisAGRI({
                 />
               </Field>
             </div>
+          </div>
 
-            {/* Dynamic Floor-Wise BUA Table */}
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                  Floor-Wise Break Up & Usage Details
-                </label>
-                {!isReadOnly && (
-                  <button
-                    type="button"
-                    onClick={handleAddFloor}
-                    className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-semibold flex items-center gap-1 shadow-sm"
-                  >
-                    + Add Floor
-                  </button>
-                )}
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
-                  <thead className="bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300">
-                    <tr>
-                      <th className="p-3 text-left font-bold w-12">#</th>
-                      <th className="p-3 text-left font-bold">Floor Name / Level</th>
-                      <th className="p-3 text-right font-bold w-36">Plinth Area (Sq.Ft.)</th>
-                      <th className="p-3 text-left font-bold w-48">Current Usage</th>
-                      {!isReadOnly && <th className="p-3 text-center font-bold w-16">Action</th>}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-950">
-                    {(fields.floors || []).map((floor, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-900/50">
-                        <td className="p-3 text-center text-xs text-slate-400 font-medium">{idx + 1}</td>
-                        <td className="p-2">
-                          <input
-                            type="text"
-                            className={inputCls}
-                            value={floor.floorName}
-                            onChange={e => handleFloorChange(idx, 'floorName', e.target.value)}
-                            disabled={isReadOnly}
-                            placeholder="e.g. Ground Floor"
-                          />
-                        </td>
-                        <td className="p-2">
-                          <input
-                            type="text"
-                            className={`${inputCls} text-right font-medium`}
-                            value={floor.plinthArea}
-                            onChange={e => handleFloorChange(idx, 'plinthArea', e.target.value)}
-                            disabled={isReadOnly}
-                            placeholder="525.00"
-                          />
-                        </td>
-                        <td className="p-2">
-                          <select
-                            className={selectCls}
-                            value={floor.usage}
-                            onChange={e => handleFloorChange(idx, 'usage', e.target.value)}
-                            disabled={isReadOnly}
-                          >
-                            <option value="Residential">Residential</option>
-                            <option value="Commercial">Commercial</option>
-                            <option value="Office">Office</option>
-                            <option value="Storage">Storage</option>
-                            <option value="Parking">Parking</option>
-                            <option value="Industrial">Industrial</option>
-                          </select>
-                        </td>
-                        {!isReadOnly && (
-                          <td className="p-2 text-center">
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveFloor(idx)}
-                              disabled={(fields.floors || []).length <= 1}
-                              className="text-rose-500 hover:text-rose-700 disabled:opacity-30 text-base"
-                              title="Delete Floor"
-                            >
-                              ✕
-                            </button>
-                          </td>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot className="bg-slate-50 dark:bg-slate-900 font-bold border-t border-slate-300 dark:border-slate-700">
-                    <tr>
-                      <td colSpan={2} className="p-3 text-right text-slate-700 dark:text-slate-300">
-                        Total Built Up Area (Auto-summed):
-                      </td>
-                      <td className="p-3 text-right text-emerald-700 dark:text-emerald-400 text-base">
-                        {fields.totalBUA}
-                      </td>
-                      <td colSpan={!isReadOnly ? 2 : 1}></td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
+          {/* Container 2: Dynamic Floor-Wise BUA Table */}
+          <div className="border border-cyan-200 bg-cyan-50/50 rounded-xl p-5 mb-5 shadow-xs">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-semibold text-cyan-800 text-sm tracking-wide uppercase">Floor-Wise Break Up & Usage Details</h3>
+              {!isReadOnly && (
+                <button
+                  type="button"
+                  onClick={handleAddFloor}
+                  className="px-3 py-1 bg-cyan-700 hover:bg-cyan-800 text-white rounded-lg text-xs font-semibold flex items-center gap-1 shadow-xs transition-colors"
+                >
+                  + Add Floor
+                </button>
+              )}
             </div>
 
-            {/* Total Carpet, Saleable, FAR, and Extras */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Field label="TOTAL CARPET AREA (IN SQ.FT.)">
+            <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+              <table className="w-full text-xs text-left">
+                <thead className="bg-cyan-100/70 text-cyan-900 font-bold uppercase">
+                  <tr>
+                    <th className="p-3 w-12 text-center border-b border-r">#</th>
+                    <th className="p-3 border-b border-r">Floor Name / Level</th>
+                    <th className="p-3 text-right w-36 border-b border-r">Plinth Area (Sq.Ft.)</th>
+                    <th className="p-3 w-48 border-b">Current Usage</th>
+                    {!isReadOnly && <th className="p-3 text-center w-16 border-b border-l">Action</th>}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 bg-white">
+                  {(fields.floors || []).map((floor, idx) => (
+                    <tr key={idx} className="hover:bg-cyan-50/30">
+                      <td className="p-3 text-center text-slate-400 font-medium border-r">{idx + 1}</td>
+                      <td className="p-2 border-r">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={floor.floorName}
+                          onChange={e => handleFloorChange(idx, 'floorName', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="e.g. Ground Floor"
+                        />
+                      </td>
+                      <td className="p-2 border-r">
+                        <input
+                          type="text"
+                          className={`${inputCls} text-right font-medium`}
+                          value={floor.plinthArea}
+                          onChange={e => handleFloorChange(idx, 'plinthArea', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="525.00"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <select
+                          className={selectCls}
+                          value={floor.usage}
+                          onChange={e => handleFloorChange(idx, 'usage', e.target.value)}
+                          disabled={isReadOnly}
+                        >
+                          <option value="Residential">Residential</option>
+                          <option value="Commercial">Commercial</option>
+                          <option value="Office">Office</option>
+                          <option value="Storage">Storage</option>
+                          <option value="Parking">Parking</option>
+                          <option value="Industrial">Industrial</option>
+                        </select>
+                      </td>
+                      {!isReadOnly && (
+                        <td className="p-2 text-center border-l">
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveFloor(idx)}
+                            disabled={(fields.floors || []).length <= 1}
+                            className="text-rose-500 hover:text-rose-700 disabled:opacity-30 text-sm font-bold"
+                            title="Delete Floor"
+                          >
+                            ✕
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot className="bg-cyan-50/80 font-bold border-t border-cyan-200">
+                  <tr>
+                    <td colSpan={2} className="p-3 text-right text-slate-700">
+                      Total Built Up Area (Auto-summed):
+                    </td>
+                    <td className="p-3 text-right text-cyan-800 text-sm font-mono">
+                      {fields.totalBUA} Sft
+                    </td>
+                    <td colSpan={!isReadOnly ? 2 : 1}></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+
+          {/* Container 3: Carpet, Saleable, FAR & Quality */}
+          <div className="border border-slate-200 bg-slate-50/70 rounded-xl p-5 shadow-xs">
+            <h3 className="font-semibold text-slate-800 mb-4 text-sm tracking-wide uppercase">Carpet, Saleable, FAR & Construction Quality</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <Field label="Total Carpet Area (In Sq.Ft.)">
                 <input
                   type="text"
                   className={inputCls}
@@ -1967,7 +1985,7 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="TOTAL SALEABLE AREA (IN SQ.FT.)">
+              <Field label="Total Saleable Area (In Sq.Ft.)">
                 <input
                   type="text"
                   className={inputCls}
@@ -1978,7 +1996,7 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="AMENITIES DETAILS (IF ANY)">
+              <Field label="Amenities Details (If Any)">
                 <input
                   type="text"
                   className={inputCls}
@@ -1988,8 +2006,10 @@ export default function AxisAGRI({
                   placeholder="Nil"
                 />
               </Field>
+            </div>
 
-              <Field label="FLOOR SPACE INDEX (FAR) PERMISSIBLE & UTILIZED">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <Field label="Floor Space Index (FAR) Permissible & Utilized">
                 <input
                   type="text"
                   className={inputCls}
@@ -2000,7 +2020,7 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="CONSTRUCTION AS PER APPROVED PLAN / BYE LAWS">
+              <Field label="Construction As Per Approved Plan / Bye Laws">
                 <input
                   type="text"
                   className={inputCls}
@@ -2011,7 +2031,7 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="DETAILS OF EXTRA CONSTRUCTION">
+              <Field label="Details of Extra Construction">
                 <input
                   type="text"
                   className={inputCls}
@@ -2021,8 +2041,10 @@ export default function AxisAGRI({
                   placeholder="Not Applicable"
                 />
               </Field>
+            </div>
 
-              <Field label="PERCENTAGE OF EXTRA CONSTRUCTION">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Field label="Percentage of Extra Construction">
                 <input
                   type="text"
                   className={inputCls}
@@ -2033,7 +2055,7 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="COMPOUNDABLE OR NON-COMPOUNDABLE">
+              <Field label="Compoundable or Non-Compoundable">
                 <input
                   type="text"
                   className={inputCls}
@@ -2044,7 +2066,7 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="QUALITY OF CONSTRUCTION">
+              <Field label="Quality of Construction">
                 <select
                   className={selectCls}
                   value={fields.qualityOfConstruction || 'Good'}
@@ -2057,7 +2079,7 @@ export default function AxisAGRI({
                 </select>
               </Field>
 
-              <Field label="MAINTENANCE OF THE PROPERTY">
+              <Field label="Maintenance of Property">
                 <select
                   className={selectCls}
                   value={fields.maintenanceOfProperty || 'Good'}
@@ -2076,16 +2098,15 @@ export default function AxisAGRI({
         {/* ═══════════════════════════════════════════════════════════════
             SECTION 8: BUILDING CONDITION, LIFE & LAND RATE
         ═══════════════════════════════════════════════════════════════ */}
-        <Section id="sec-8" title="8. Building Condition, Life & Land Rate" defaultOpen>
-          <div className="space-y-6">
-            {/* Condition & Life Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs border border-slate-300 dark:border-slate-700 rounded-lg overflow-hidden">
-                <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                  <tr className="bg-slate-50 dark:bg-slate-900">
-                    <td className="p-3 font-semibold text-slate-700 dark:text-slate-300 w-1/4 border-r border-slate-200 dark:border-slate-800">
-                      Condition Of Building
-                    </td>
+        <Section id="sec-8" title="Building Condition, Life & Land Rate" number={8} defaultOpen>
+          {/* Container 1: Condition, Life & Taxes */}
+          <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 mb-5 shadow-xs">
+            <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">Building Condition, Life & Taxes</h3>
+            <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+              <table className="w-full text-xs text-left">
+                <tbody className="divide-y divide-slate-200">
+                  <tr className="bg-slate-50/70">
+                    <td className="p-3 font-semibold text-slate-700 w-1/4 border-r">Condition Of Building</td>
                     <td colSpan={3} className="p-2">
                       <select
                         className={selectCls}
@@ -2100,10 +2121,8 @@ export default function AxisAGRI({
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-3 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-800">
-                      Current Life of the structure
-                    </td>
-                    <td className="p-2 border-r border-slate-200 dark:border-slate-800">
+                    <td className="p-3 font-semibold text-slate-700 border-r">Current Life of Structure</td>
+                    <td className="p-2 border-r">
                       <input
                         type="text"
                         className={inputCls}
@@ -2113,9 +2132,7 @@ export default function AxisAGRI({
                         placeholder="8 Years"
                       />
                     </td>
-                    <td className="p-3 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-800">
-                      Projected Life of the Structure
-                    </td>
+                    <td className="p-3 font-semibold text-slate-700 border-r">Projected Life of Structure</td>
                     <td className="p-2">
                       <input
                         type="text"
@@ -2127,11 +2144,9 @@ export default function AxisAGRI({
                       />
                     </td>
                   </tr>
-                  <tr className="bg-slate-50 dark:bg-slate-900">
-                    <td className="p-3 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-800">
-                      Land Revenue/Taxes Paid upto (for Land)
-                    </td>
-                    <td className="p-2 border-r border-slate-200 dark:border-slate-800">
+                  <tr className="bg-slate-50/70">
+                    <td className="p-3 font-semibold text-slate-700 border-r">Land Revenue/Taxes Paid upto (Land)</td>
+                    <td className="p-2 border-r">
                       <input
                         type="text"
                         className={inputCls}
@@ -2141,9 +2156,7 @@ export default function AxisAGRI({
                         placeholder="Recent rent receipt is not provided"
                       />
                     </td>
-                    <td className="p-3 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-800">
-                      Municipal Taxes Paid upto (for Building)
-                    </td>
+                    <td className="p-3 font-semibold text-slate-700 border-r">Municipal Taxes Paid upto (Building)</td>
                     <td className="p-2">
                       <input
                         type="text"
@@ -2158,107 +2171,105 @@ export default function AxisAGRI({
                 </tbody>
               </table>
             </div>
+          </div>
 
-            {/* Land Rate Calculations */}
-            <div className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 space-y-4">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 border-b pb-2">
-                The Land Rate Adopted in this Valuation
-              </h4>
+          {/* Container 2: Land Rate Calculations */}
+          <div className="border border-lime-200 bg-lime-50/50 rounded-xl p-5 shadow-xs">
+            <h3 className="font-semibold text-lime-800 mb-4 text-sm tracking-wide uppercase">Adopted Land Rate & Valuation</h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="GOVT. BENCHMARK RATE (PER ACRE)">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.govtBenchmarkRateAcre || ''}
-                    onChange={e => handleChange('govtBenchmarkRateAcre', e.target.value)}
-                    disabled={isReadOnly}
-                    placeholder="86,55,000"
-                  />
-                </Field>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <Field label="Govt. Benchmark Rate (Per Acre)">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.govtBenchmarkRateAcre || ''}
+                  onChange={e => handleChange('govtBenchmarkRateAcre', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="86,55,000"
+                />
+              </Field>
 
-                <Field label="GOVT. BENCHMARK RATE (PER SFT)">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.govtBenchmarkRateSft || ''}
-                    onChange={e => handleChange('govtBenchmarkRateSft', e.target.value)}
-                    disabled={isReadOnly}
-                    placeholder="199"
-                  />
-                </Field>
+              <Field label="Govt. Benchmark Rate (Per Sft)">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.govtBenchmarkRateSft || ''}
+                  onChange={e => handleChange('govtBenchmarkRateSft', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="199"
+                />
+              </Field>
 
-                <Field label="TOTAL LAND AREA (DECIMAL)">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.totalLandAreaDec || ''}
-                    onChange={e => handleChange('totalLandAreaDec', e.target.value)}
-                    disabled={isReadOnly}
-                    placeholder="0.013"
-                  />
-                </Field>
+              <Field label="Total Land Area (Decimal)">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.totalLandAreaDec || ''}
+                  onChange={e => handleChange('totalLandAreaDec', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="0.013"
+                />
+              </Field>
 
-                <Field label="TOTAL LAND AREA (IN SFT)">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.totalLandAreaSft || ''}
-                    onChange={e => handleChange('totalLandAreaSft', e.target.value)}
-                    disabled={isReadOnly}
-                    placeholder="566.00"
-                  />
-                </Field>
-              </div>
+              <Field label="Total Land Area (In Sft)">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.totalLandAreaSft || ''}
+                  onChange={e => handleChange('totalLandAreaSft', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="566.00"
+                />
+              </Field>
+            </div>
 
-              <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 flex justify-between items-center text-xs font-bold">
-                <span className="text-slate-600 dark:text-slate-400">Total Govt. Value of Land:</span>
-                <span className="text-emerald-600 dark:text-emerald-400 font-mono text-sm">
-                  ₹ {fields.totalGovtValueLand || '0.00'}
-                </span>
-              </div>
+            <div className="p-3 bg-white rounded-lg border border-lime-200 flex justify-between items-center text-xs font-bold mb-4 shadow-xs">
+              <span className="text-slate-700">Total Govt. Value of Land:</span>
+              <span className="text-lime-700 font-mono text-sm">
+                ₹ {fields.totalGovtValueLand || '0.00'}
+              </span>
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-                <Field label="PREVAILING MARKET RATE MIN (RS./SFT)">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.prevailingMarketRateMin || ''}
-                    onChange={e => handleChange('prevailingMarketRateMin', e.target.value)}
-                    disabled={isReadOnly}
-                    placeholder="500"
-                  />
-                </Field>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <Field label="Prevailing Market Rate Min (Rs./Sft)">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.prevailingMarketRateMin || ''}
+                  onChange={e => handleChange('prevailingMarketRateMin', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="500"
+                />
+              </Field>
 
-                <Field label="PREVAILING MARKET RATE MAX (RS./SFT)">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.prevailingMarketRateMax || ''}
-                    onChange={e => handleChange('prevailingMarketRateMax', e.target.value)}
-                    disabled={isReadOnly}
-                    placeholder="600"
-                  />
-                </Field>
+              <Field label="Prevailing Market Rate Max (Rs./Sft)">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.prevailingMarketRateMax || ''}
+                  onChange={e => handleChange('prevailingMarketRateMax', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="600"
+                />
+              </Field>
 
-                <Field label="ADOPTED MARKET RATE (RS./SFT)">
-                  <input
-                    type="text"
-                    className={`${inputCls} font-bold text-emerald-600`}
-                    value={fields.adoptedMarketRateSft || ''}
-                    onChange={e => handleChange('adoptedMarketRateSft', e.target.value)}
-                    disabled={isReadOnly}
-                    placeholder="550"
-                  />
-                </Field>
-              </div>
+              <Field label="Adopted Market Rate (Rs./Sft)">
+                <input
+                  type="text"
+                  className={`${inputCls} font-bold text-emerald-700`}
+                  value={fields.adoptedMarketRateSft || ''}
+                  onChange={e => handleChange('adoptedMarketRateSft', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="550"
+                />
+              </Field>
+            </div>
 
-              <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-lg border border-emerald-200 dark:border-emerald-800 flex justify-between items-center text-xs font-bold">
-                <span className="text-emerald-800 dark:text-emerald-300">Total Market Value of Land:</span>
-                <span className="text-emerald-700 dark:text-emerald-400 font-mono text-sm">
-                  ₹ {fields.totalMarketValueLand || '0.00'}
-                </span>
-              </div>
+            <div className="p-3 bg-emerald-100/70 rounded-lg border border-emerald-300 flex justify-between items-center text-xs font-bold shadow-xs">
+              <span className="text-emerald-900">Total Market Value of Land:</span>
+              <span className="text-emerald-800 font-mono text-sm">
+                ₹ {fields.totalMarketValueLand || '0.00'}
+              </span>
             </div>
           </div>
         </Section>
@@ -2266,26 +2277,27 @@ export default function AxisAGRI({
         {/* ═══════════════════════════════════════════════════════════════
             SECTION 9: BUILDING VALUATION BREAKDOWN
         ═══════════════════════════════════════════════════════════════ */}
-        <Section id="sec-9" title="9. Building Valuation (Floor-Wise Breakdown & Cost Analysis)" defaultOpen>
-          <div className="space-y-4">
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
-                <thead className="bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300">
+        <Section id="sec-9" title="Building Valuation Breakdown & Cost Analysis" number={9} defaultOpen>
+          <div className="border border-emerald-200 bg-emerald-50/50 rounded-xl p-5 shadow-xs">
+            <h3 className="font-semibold text-emerald-800 mb-4 text-sm tracking-wide uppercase">Floor-Wise Replacement Cost & Depreciation Breakdown</h3>
+            <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+              <table className="w-full text-xs text-left">
+                <thead className="bg-emerald-100/70 text-emerald-900 font-bold uppercase">
                   <tr>
-                    <th className="p-2 text-left font-bold">Particulars of Items</th>
-                    <th className="p-2 text-right font-bold w-24">Plinth (Sft)</th>
-                    <th className="p-2 text-center font-bold w-20">Roof Ht</th>
-                    <th className="p-2 text-center font-bold w-16">Age</th>
-                    <th className="p-2 text-right font-bold w-28">Rate (Rs./Sft)</th>
-                    <th className="p-2 text-right font-bold w-32">Est. Cost (Rs.)</th>
-                    <th className="p-2 text-right font-bold w-32">Depreciation (Rs.)</th>
-                    <th className="p-2 text-right font-bold w-32">Net Value (Rs.)</th>
+                    <th className="p-2 border-b border-r">Particulars of Items</th>
+                    <th className="p-2 text-right w-24 border-b border-r">Plinth (Sft)</th>
+                    <th className="p-2 text-center w-20 border-b border-r">Roof Ht</th>
+                    <th className="p-2 text-center w-16 border-b border-r">Age</th>
+                    <th className="p-2 text-right w-28 border-b border-r">Rate (Rs./Sft)</th>
+                    <th className="p-2 text-right w-32 border-b border-r">Est. Cost (Rs.)</th>
+                    <th className="p-2 text-right w-32 border-b border-r">Depreciation (Rs.)</th>
+                    <th className="p-2 text-right w-32 border-b">Net Value (Rs.)</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-950">
+                <tbody className="divide-y divide-slate-200 bg-white">
                   {(fields.floors || []).map((floor, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-900/50">
-                      <td className="p-2">
+                    <tr key={idx} className="hover:bg-emerald-50/30">
+                      <td className="p-2 border-r">
                         <input
                           type="text"
                           className={inputCls}
@@ -2294,16 +2306,16 @@ export default function AxisAGRI({
                           disabled={isReadOnly}
                         />
                       </td>
-                      <td className="p-2">
+                      <td className="p-2 border-r">
                         <input
                           type="text"
-                          className={`${inputCls} text-right`}
+                          className={`${inputCls} text-right font-medium`}
                           value={floor.plinthArea}
                           onChange={e => handleFloorChange(idx, 'plinthArea', e.target.value)}
                           disabled={isReadOnly}
                         />
                       </td>
-                      <td className="p-2">
+                      <td className="p-2 border-r">
                         <input
                           type="text"
                           className={`${inputCls} text-center`}
@@ -2312,7 +2324,7 @@ export default function AxisAGRI({
                           disabled={isReadOnly}
                         />
                       </td>
-                      <td className="p-2">
+                      <td className="p-2 border-r">
                         <input
                           type="text"
                           className={`${inputCls} text-center`}
@@ -2321,7 +2333,7 @@ export default function AxisAGRI({
                           disabled={isReadOnly}
                         />
                       </td>
-                      <td className="p-2">
+                      <td className="p-2 border-r">
                         <input
                           type="text"
                           className={`${inputCls} text-right`}
@@ -2330,7 +2342,7 @@ export default function AxisAGRI({
                           disabled={isReadOnly}
                         />
                       </td>
-                      <td className="p-2">
+                      <td className="p-2 border-r">
                         <input
                           type="text"
                           className={`${inputCls} text-right font-medium`}
@@ -2339,7 +2351,7 @@ export default function AxisAGRI({
                           disabled={isReadOnly}
                         />
                       </td>
-                      <td className="p-2">
+                      <td className="p-2 border-r">
                         <input
                           type="text"
                           className={`${inputCls} text-right text-rose-600 font-medium`}
@@ -2351,7 +2363,7 @@ export default function AxisAGRI({
                       <td className="p-2">
                         <input
                           type="text"
-                          className={`${inputCls} text-right text-emerald-600 font-bold`}
+                          className={`${inputCls} text-right text-emerald-700 font-bold`}
                           value={floor.netValue || '0.00'}
                           onChange={e => handleFloorChange(idx, 'netValue', e.target.value)}
                           disabled={isReadOnly}
@@ -2360,12 +2372,12 @@ export default function AxisAGRI({
                     </tr>
                   ))}
                 </tbody>
-                <tfoot className="bg-slate-50 dark:bg-slate-900 font-bold border-t border-slate-300 dark:border-slate-700">
+                <tfoot className="bg-emerald-50/80 font-bold border-t border-emerald-200">
                   <tr>
-                    <td colSpan={7} className="p-3 text-right text-slate-700 dark:text-slate-300">
+                    <td colSpan={7} className="p-3 text-right text-slate-700">
                       Total Net Building Value:
                     </td>
-                    <td className="p-3 text-right text-emerald-700 dark:text-emerald-400 text-sm">
+                    <td className="p-3 text-right text-emerald-800 text-sm font-mono">
                       ₹ {fields.totalBasicValueBuilding || '0.00'}
                     </td>
                   </tr>
@@ -2373,11 +2385,11 @@ export default function AxisAGRI({
               </table>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-              <Field label="TOTAL BASIC VALUE OF BUILDING (ROUNDED / SAY)">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+              <Field label="Total Basic Value of Building (Rounded / Say)">
                 <input
                   type="text"
-                  className={`${inputCls} font-bold text-emerald-700`}
+                  className={`${inputCls} font-bold text-emerald-800`}
                   value={fields.totalBasicValueBuildingSay || ''}
                   onChange={e => handleChange('totalBasicValueBuildingSay', e.target.value)}
                   disabled={isReadOnly}
@@ -2385,7 +2397,7 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="TOTAL BASIC VALUE IN WORDS">
+              <Field label="Total Basic Value in Words">
                 <input
                   type="text"
                   className={inputCls}
@@ -2402,84 +2414,89 @@ export default function AxisAGRI({
         {/* ═══════════════════════════════════════════════════════════════
             SECTION 10: VALUE OF PROPERTY SUMMARY MATRIX
         ═══════════════════════════════════════════════════════════════ */}
-        <Section id="sec-10" title="10. Value of the Property (Summary Matrix)" defaultOpen>
-          <div className="space-y-6">
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs border border-slate-300 dark:border-slate-700 rounded-lg overflow-hidden">
-                <thead className="bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300">
+        <Section id="sec-10" title="Value of the Property (Summary Matrix)" number={10} defaultOpen>
+          {/* Container 1: Five-Tier Valuation Matrix */}
+          <div className="border border-indigo-200 bg-indigo-50/50 rounded-xl p-5 mb-5 shadow-xs">
+            <h3 className="font-semibold text-indigo-800 mb-4 text-sm tracking-wide uppercase">Five-Tier Valuation Matrix</h3>
+            <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+              <table className="w-full text-xs text-left">
+                <thead className="bg-indigo-100/70 text-indigo-900 font-bold uppercase">
                   <tr>
-                    <th className="p-3 text-left font-bold">Category</th>
-                    <th className="p-3 text-right font-bold w-40">Land (₹)</th>
-                    <th className="p-3 text-right font-bold w-40">Building (₹)</th>
-                    <th className="p-3 text-right font-bold w-32">Amenities (₹)</th>
-                    <th className="p-3 text-right font-bold w-44">Total in Rs (₹)</th>
+                    <th className="p-3 border-b border-r">Category</th>
+                    <th className="p-3 text-right w-40 border-b border-r">Land (₹)</th>
+                    <th className="p-3 text-right w-40 border-b border-r">Building (₹)</th>
+                    <th className="p-3 text-right w-32 border-b border-r">Amenities (₹)</th>
+                    <th className="p-3 text-right w-44 border-b">Total in Rs (₹)</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-950">
+                <tbody className="divide-y divide-slate-200 bg-white">
                   <tr>
-                    <td className="p-3 font-bold text-slate-700 dark:text-slate-300">Govt. Guide Line Value</td>
-                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.govtGuideLand || ''} onChange={e => handleChange('govtGuideLand', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.govtGuideBuilding || '-'} onChange={e => handleChange('govtGuideBuilding', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.govtGuideAmenities || '-'} onChange={e => handleChange('govtGuideAmenities', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-slate-800 dark:text-slate-100`} value={fields.govtGuideTotal || ''} onChange={e => handleChange('govtGuideTotal', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-3 font-bold text-slate-700 border-r">Govt. Guide Line Value</td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right`} value={fields.govtGuideLand || ''} onChange={e => handleChange('govtGuideLand', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right`} value={fields.govtGuideBuilding || '-'} onChange={e => handleChange('govtGuideBuilding', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right`} value={fields.govtGuideAmenities || '-'} onChange={e => handleChange('govtGuideAmenities', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-slate-800`} value={fields.govtGuideTotal || ''} onChange={e => handleChange('govtGuideTotal', e.target.value)} disabled={isReadOnly} /></td>
                   </tr>
-                  <tr className="bg-slate-50/50 dark:bg-slate-900/30">
-                    <td className="p-3 font-bold text-emerald-800 dark:text-emerald-300">Market Value in Rs</td>
-                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.marketValueLand || ''} onChange={e => handleChange('marketValueLand', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.marketValueBuilding || ''} onChange={e => handleChange('marketValueBuilding', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.marketValueAmenities || '-'} onChange={e => handleChange('marketValueAmenities', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-emerald-700 dark:text-emerald-400`} value={fields.marketValueTotal || ''} onChange={e => handleChange('marketValueTotal', e.target.value)} disabled={isReadOnly} /></td>
+                  <tr className="bg-emerald-50/50">
+                    <td className="p-3 font-bold text-emerald-800 border-r">Market Value in Rs</td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right`} value={fields.marketValueLand || ''} onChange={e => handleChange('marketValueLand', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right`} value={fields.marketValueBuilding || ''} onChange={e => handleChange('marketValueBuilding', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right`} value={fields.marketValueAmenities || '-'} onChange={e => handleChange('marketValueAmenities', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-emerald-800`} value={fields.marketValueTotal || ''} onChange={e => handleChange('marketValueTotal', e.target.value)} disabled={isReadOnly} /></td>
                   </tr>
-                  <tr>
-                    <td className="p-3 font-bold text-blue-800 dark:text-blue-300">Realisable Value (95%)</td>
-                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.realisableValueLand || ''} onChange={e => handleChange('realisableValueLand', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.realisableValueBuilding || ''} onChange={e => handleChange('realisableValueBuilding', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.realisableValueAmenities || '-'} onChange={e => handleChange('realisableValueAmenities', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-blue-700 dark:text-blue-400`} value={fields.realisableValueTotal || ''} onChange={e => handleChange('realisableValueTotal', e.target.value)} disabled={isReadOnly} /></td>
+                  <tr className="bg-blue-50/50">
+                    <td className="p-3 font-bold text-blue-800 border-r">Realisable Value (95%)</td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right`} value={fields.realisableValueLand || ''} onChange={e => handleChange('realisableValueLand', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right`} value={fields.realisableValueBuilding || ''} onChange={e => handleChange('realisableValueBuilding', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right`} value={fields.realisableValueAmenities || '-'} onChange={e => handleChange('realisableValueAmenities', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-blue-800`} value={fields.realisableValueTotal || ''} onChange={e => handleChange('realisableValueTotal', e.target.value)} disabled={isReadOnly} /></td>
                   </tr>
-                  <tr className="bg-slate-50/50 dark:bg-slate-900/30">
-                    <td className="p-3 font-bold text-amber-800 dark:text-amber-300">Distress/Forced Sale Value (85%)</td>
-                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.distressValueLand || ''} onChange={e => handleChange('distressValueLand', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.distressValueBuilding || ''} onChange={e => handleChange('distressValueBuilding', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.distressValueAmenities || '-'} onChange={e => handleChange('distressValueAmenities', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-amber-700 dark:text-amber-400`} value={fields.distressValueTotal || ''} onChange={e => handleChange('distressValueTotal', e.target.value)} disabled={isReadOnly} /></td>
+                  <tr className="bg-amber-50/50">
+                    <td className="p-3 font-bold text-amber-800 border-r">Distress/Forced Sale Value (85%)</td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right`} value={fields.distressValueLand || ''} onChange={e => handleChange('distressValueLand', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right`} value={fields.distressValueBuilding || ''} onChange={e => handleChange('distressValueBuilding', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right`} value={fields.distressValueAmenities || '-'} onChange={e => handleChange('distressValueAmenities', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-amber-800`} value={fields.distressValueTotal || ''} onChange={e => handleChange('distressValueTotal', e.target.value)} disabled={isReadOnly} /></td>
                   </tr>
-                  <tr>
-                    <td className="p-3 font-bold text-indigo-800 dark:text-indigo-300">Insurable Value</td>
-                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.insurableValueLand || '-'} onChange={e => handleChange('insurableValueLand', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.insurableValueBuilding || ''} onChange={e => handleChange('insurableValueBuilding', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2"><input type="text" className={`${inputCls} text-right`} value={fields.insurableValueAmenities || '-'} onChange={e => handleChange('insurableValueAmenities', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-indigo-700 dark:text-indigo-400`} value={fields.insurableValueTotal || ''} onChange={e => handleChange('insurableValueTotal', e.target.value)} disabled={isReadOnly} /></td>
+                  <tr className="bg-indigo-50/50">
+                    <td className="p-3 font-bold text-indigo-800 border-r">Insurable Value</td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right`} value={fields.insurableValueLand || '-'} onChange={e => handleChange('insurableValueLand', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right`} value={fields.insurableValueBuilding || ''} onChange={e => handleChange('insurableValueBuilding', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right`} value={fields.insurableValueAmenities || '-'} onChange={e => handleChange('insurableValueAmenities', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-indigo-800`} value={fields.insurableValueTotal || ''} onChange={e => handleChange('insurableValueTotal', e.target.value)} disabled={isReadOnly} /></td>
                   </tr>
                 </tbody>
               </table>
             </div>
+          </div>
 
-            {/* Rounded Figures & Words */}
+          {/* Container 2: Adopted Rounded Figures & Words */}
+          <div className="border border-amber-200 bg-amber-50/50 rounded-xl p-5 shadow-xs">
+            <h3 className="font-semibold text-amber-800 mb-4 text-sm tracking-wide uppercase">Adopted Valuation Figures & Words</h3>
             <div className="space-y-3">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20">
-                <Field label="MARKET VALUE (SAY)">
-                  <input type="text" className={`${inputCls} font-bold text-emerald-800 dark:text-emerald-300`} value={fields.marketValueSay || ''} onChange={e => handleChange('marketValueSay', e.target.value)} disabled={isReadOnly} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl border border-emerald-200 bg-white">
+                <Field label="Market Value (Say)">
+                  <input type="text" className={`${inputCls} font-bold text-emerald-800`} value={fields.marketValueSay || ''} onChange={e => handleChange('marketValueSay', e.target.value)} disabled={isReadOnly} />
                 </Field>
-                <Field label="MARKET VALUE IN WORDS">
+                <Field label="Market Value in Words">
                   <input type="text" className={inputCls} value={fields.marketValueWords || ''} onChange={e => handleChange('marketValueWords', e.target.value)} disabled={isReadOnly} />
                 </Field>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20">
-                <Field label="REALIZABLE VALUE (SAY)">
-                  <input type="text" className={`${inputCls} font-bold text-blue-800 dark:text-blue-300`} value={fields.realizableValueSay || ''} onChange={e => handleChange('realizableValueSay', e.target.value)} disabled={isReadOnly} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl border border-blue-200 bg-white">
+                <Field label="Realizable Value (Say)">
+                  <input type="text" className={`${inputCls} font-bold text-blue-800`} value={fields.realizableValueSay || ''} onChange={e => handleChange('realizableValueSay', e.target.value)} disabled={isReadOnly} />
                 </Field>
-                <Field label="REALIZABLE VALUE IN WORDS">
+                <Field label="Realizable Value in Words">
                   <input type="text" className={inputCls} value={fields.realizableValueWords || ''} onChange={e => handleChange('realizableValueWords', e.target.value)} disabled={isReadOnly} />
                 </Field>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
-                <Field label="DISTRESS VALUE (SAY)">
-                  <input type="text" className={`${inputCls} font-bold text-amber-800 dark:text-amber-300`} value={fields.distressValueSay || ''} onChange={e => handleChange('distressValueSay', e.target.value)} disabled={isReadOnly} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl border border-amber-200 bg-white">
+                <Field label="Distress Value (Say)">
+                  <input type="text" className={`${inputCls} font-bold text-amber-800`} value={fields.distressValueSay || ''} onChange={e => handleChange('distressValueSay', e.target.value)} disabled={isReadOnly} />
                 </Field>
-                <Field label="DISTRESS VALUE IN WORDS">
+                <Field label="Distress Value in Words">
                   <input type="text" className={inputCls} value={fields.distressValueWords || ''} onChange={e => handleChange('distressValueWords', e.target.value)} disabled={isReadOnly} />
                 </Field>
               </div>
@@ -2490,44 +2507,48 @@ export default function AxisAGRI({
         {/* ═══════════════════════════════════════════════════════════════
             SECTION 11: REMARKS & ANNEXURE A
         ═══════════════════════════════════════════════════════════════ */}
-        <Section id="sec-11" title="11. Remarks, Opinions & Annexure 'A'" defaultOpen>
-          <div className="space-y-4">
-            <Field label="BASIS OF VALUATION">
-              <textarea
-                rows={3}
-                className={inputCls}
-                value={fields.basisOfValuation || ''}
-                onChange={e => handleChange('basisOfValuation', e.target.value)}
-                disabled={isReadOnly}
-              />
-            </Field>
+        <Section id="sec-11" title="Remarks, Opinions & Annexure 'A'" number={11} defaultOpen>
+          {/* Container 1: Remarks & Opinions */}
+          <div className="border border-yellow-200 bg-yellow-50/50 rounded-xl p-5 mb-5 shadow-xs">
+            <h3 className="font-semibold text-amber-800 mb-4 text-sm tracking-wide uppercase">Valuer Remarks & Market Opinions</h3>
+            <div className="space-y-4">
+              <Field label="Basis of Valuation">
+                <textarea
+                  rows={3}
+                  className={inputCls}
+                  value={fields.basisOfValuation || ''}
+                  onChange={e => handleChange('basisOfValuation', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
 
-            <Field label="OPINION OF MARKET VALUE">
-              <textarea
-                rows={3}
-                className={inputCls}
-                value={fields.opinionOfMarketValue || ''}
-                onChange={e => handleChange('opinionOfMarketValue', e.target.value)}
-                disabled={isReadOnly}
-              />
-            </Field>
+              <Field label="Opinion of Market Value">
+                <textarea
+                  rows={3}
+                  className={inputCls}
+                  value={fields.opinionOfMarketValue || ''}
+                  onChange={e => handleChange('opinionOfMarketValue', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
 
-            <Field label="REMARKS (INCLUDING NB: DISCLAIMER)">
-              <textarea
-                rows={6}
-                className={inputCls}
-                value={fields.remarksText || ''}
-                onChange={e => handleChange('remarksText', e.target.value)}
-                disabled={isReadOnly}
-              />
-            </Field>
+              <Field label="Remarks (Including NB: Disclaimer)">
+                <textarea
+                  rows={6}
+                  className={inputCls}
+                  value={fields.remarksText || ''}
+                  onChange={e => handleChange('remarksText', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+            </div>
+          </div>
 
-            {/* Annexure A */}
-            <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 border-b pb-2">
-                Annexure - &quot;A&quot; Details
-              </h4>
-              <Field label="REGARDING LAND">
+          {/* Container 2: Annexure A */}
+          <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs">
+            <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">Annexure - &quot;A&quot; Details</h3>
+            <div className="space-y-4">
+              <Field label="Regarding Land">
                 <textarea
                   rows={2}
                   className={inputCls}
@@ -2536,7 +2557,7 @@ export default function AxisAGRI({
                   disabled={isReadOnly}
                 />
               </Field>
-              <Field label="REGARDING BUILDING">
+              <Field label="Regarding Building">
                 <textarea
                   rows={2}
                   className={inputCls}
@@ -2545,7 +2566,7 @@ export default function AxisAGRI({
                   disabled={isReadOnly}
                 />
               </Field>
-              <Field label="BASIS OF ARRIVING AT THE LAND RATE">
+              <Field label="Basis of Arriving at the Land Rate">
                 <textarea
                   rows={3}
                   className={inputCls}
@@ -2561,31 +2582,29 @@ export default function AxisAGRI({
         {/* ═══════════════════════════════════════════════════════════════
             SECTION 12: STATUTORY CHECKLIST & UNDERTAKING
         ═══════════════════════════════════════════════════════════════ */}
-        <Section id="sec-12" title="12. Valuation Report Checklist & Undertaking" defaultOpen>
-          <div className="space-y-6">
-            <div className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 space-y-4">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 border-b pb-2">
-                Valuation Report Check List (12 Statutory Items)
-              </h4>
-
+        <Section id="sec-12" title="Valuation Report Checklist & Undertaking" number={12} defaultOpen>
+          {/* Container 1: Checklist */}
+          <div className="border border-indigo-200 bg-indigo-50/50 rounded-xl p-5 mb-5 shadow-xs">
+            <h3 className="font-semibold text-indigo-800 mb-4 text-sm tracking-wide uppercase">Valuation Report Check List (12 Statutory Items)</h3>
+            <div className="space-y-2.5">
               {[
-                { id: 'q1', text: '1. FULL NAMES OF ALL PROPERTY OWNERS ARE MENTIONED. ADDRESS OF THE PROPERTY IS MENTIONED AND IS SAME AS LATEST TITLE DEED' },
-                { id: 'q2', text: '2. BOUNDARIES OF THE PROPERTY ARE MENTIONED AS PER BOTH, TITLE DEED AND ACTUAL OBSERVATIONS' },
-                { id: 'q3', text: '3. CLEARLY MENTIONED THAT PROPERTY HAS BEEN IDENTIFIED BY THE BORROWER ON HIS OWN BASED ON THE ADDRESS' },
-                { id: 'q4', text: '4. TYPE OF PROPERTY IS CLEARLY MENTIONED (AMONGST AGRICULTURAL, RESIDENTIAL, COMMERCIAL, INDUSTRIAL ETC.)' },
-                { id: 'q5', text: '5. IF LAND, CLEARLY MENTIONED WHETHER THE LAND IS LAND BLOCKED PLOT OR INDEPENDENT LAND (ONLY YES OR NO)' },
-                { id: 'q6', text: '6. IF VACANT LAND, CLEARLY MENTIONED THAT PROPER DEMARCATION AND FENCING HAS BEEN DONE' },
-                { id: 'q7', text: '7. IF BUILDING, CLEARLY MENTIONED THAT CONSTRUCTION HAS BEEN DONE ACCORDING TO THE BUILDING PLAN APPROVAL (IF NOT, DEVIATION SPECIFIED)' },
-                { id: 'q8', text: '8. IF BUILDING, CLEARLY MENTIONED THAT BUILDING USE/COMPLETION CERTIFICATE HAS BEEN OBTAINED FROM COMPETENT AUTHORITY' },
-                { id: 'q9', text: '9. CLEARLY MENTIONED WHETHER ACCESS TO THE PROPERTY IS AVAILABLE (ONLY YES OR NO)' },
-                { id: 'q10', text: '10. BASIS FOR ARRIVING AT GOVERNMENT VALUE HAS BEEN MENTIONED AND NECESSARY DOCUMENTS HAVE BEEN ENCLOSED' },
-                { id: 'q11', text: '11. WHETHER THE SITE IS SITUATED ABOVE THE WATER TANK LEVEL (IF BELOW, NEGATIVE EFFECT SPECIFIED)' },
-                { id: 'q12', text: '12. ANY HIGH TENSION ELECTRICITY WIRES ARE PASSING ABOVE THE SITE (IF SO, NEGATIVE EFFECT SPECIFIED)' },
+                { id: 'q1', text: '1. Full names of all property owners are mentioned. Address of the property is mentioned and is same as latest title deed' },
+                { id: 'q2', text: '2. Boundaries of the property are mentioned as per both, title deed and actual observations' },
+                { id: 'q3', text: '3. Clearly mentioned that property has been identified by the borrower on his own based on the address' },
+                { id: 'q4', text: '4. Type of property is clearly mentioned (amongst agricultural, residential, commercial, industrial etc.)' },
+                { id: 'q5', text: '5. If land, clearly mentioned whether the land is land blocked plot or independent land (only YES or NO)' },
+                { id: 'q6', text: '6. If vacant land, clearly mentioned that proper demarcation and fencing has been done' },
+                { id: 'q7', text: '7. If building, clearly mentioned that construction has been done according to the building plan approval (if not, deviation specified)' },
+                { id: 'q8', text: '8. If building, clearly mentioned that building use/completion certificate has been obtained from competent authority' },
+                { id: 'q9', text: '9. Clearly mentioned whether access to the property is available (only YES or NO)' },
+                { id: 'q10', text: '10. Basis for arriving at government value has been mentioned and necessary documents have been enclosed' },
+                { id: 'q11', text: '11. Whether the site is situated above the water tank level (if below, negative effect specified)' },
+                { id: 'q12', text: '12. Any high tension electricity wires are passing above the site (if so, negative effect specified)' },
               ].map(item => {
                 const currentVal = fields.checklistResponses?.[item.id] || 'YES';
                 return (
-                  <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
-                    <span className="font-medium text-slate-700 dark:text-slate-300 flex-1">{item.text}</span>
+                  <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white rounded-lg border border-slate-200 text-xs shadow-xs">
+                    <span className="font-medium text-slate-800 flex-1">{item.text}</span>
                     <div className="flex items-center gap-4 shrink-0">
                       {['YES', 'NO'].map(opt => (
                         <label key={opt} className="flex items-center gap-1.5 cursor-pointer font-bold">
@@ -2599,9 +2618,9 @@ export default function AxisAGRI({
                               handleChange('checklistResponses', updated);
                             }}
                             disabled={isReadOnly}
-                            className="text-emerald-600 focus:ring-emerald-500"
+                            className="text-indigo-600 focus:ring-indigo-500"
                           />
-                          <span>{opt}</span>
+                          <span className={opt === 'YES' ? 'text-emerald-700' : 'text-rose-700'}>{opt}</span>
                         </label>
                       ))}
                     </div>
@@ -2609,14 +2628,13 @@ export default function AxisAGRI({
                 );
               })}
             </div>
+          </div>
 
-            {/* Undertaking & Signatory */}
-            <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 space-y-4">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 border-b pb-2">
-                Undertaking & Authorized Signatory Block
-              </h4>
-
-              <Field label="UNDERTAKING TEXT">
+          {/* Container 2: Undertaking & Valuer Block */}
+          <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs">
+            <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">Undertaking & Authorized Signatory Block</h3>
+            <div className="space-y-4">
+              <Field label="Undertaking Text">
                 <textarea
                   rows={6}
                   className={inputCls}
@@ -2626,8 +2644,8 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <div className="p-3 bg-white dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 space-y-1">
-                <p className="font-bold text-slate-900 dark:text-slate-100">Prepared By: Er. Satyajit Mohanty (B.E,Civil) FIV</p>
+              <div className="p-4 bg-white rounded-xl border border-blue-200 text-xs text-slate-700 space-y-1 shadow-xs">
+                <p className="font-bold text-slate-900 text-sm">Prepared By: Er. Satyajit Mohanty (B.E,Civil) FIV</p>
                 <p>Registered Valuer, Govt. of India (Regd. No.-107/2016-17, Cat -I)</p>
                 <p>Chartered Engineer (Regd. No.-M-156096-9) • Empanelled Valuer of Axis Bank</p>
               </div>
@@ -2639,7 +2657,7 @@ export default function AxisAGRI({
             SECTION 13: PROPERTY PHOTOGRAPHS (DUAL MODALITY: DEVICE + BUCKET)
         ═══════════════════════════════════════════════════════════════ */}
         <BasePhotographsSection
-          title="13. Property Photographs"
+          title="Property Photographs"
           sectionNumber={13}
           sectionId="sec-13"
           propertyImages={fields.propertyImages || []}
@@ -2662,7 +2680,7 @@ export default function AxisAGRI({
             SECTION 14: MAPS & SPATIAL DOCUMENTS (LOCAL DEVICE UPLOAD ONLY)
         ═══════════════════════════════════════════════════════════════ */}
         <BaseMapsSection
-          title="14. Maps & Spatial Documents"
+          title="Maps & Spatial Documents"
           sectionNumber={14}
           sectionId="sec-14"
           isReadOnly={isReadOnly}
@@ -2686,13 +2704,13 @@ export default function AxisAGRI({
         />
 
         {/* Benchmark Screenshot Upload inside Sec 14 */}
-        <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+        <div className="border border-amber-200 bg-amber-50/50 rounded-xl p-5 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+            <h3 className="font-semibold text-amber-800 text-sm tracking-wide uppercase">
               📊 Benchmark Valuation Screenshot (Page 8)
-            </span>
+            </h3>
             {!isReadOnly && (
-              <label className="px-3 py-1.5 rounded-lg border border-[#b8860b] text-[#b8860b] text-xs font-semibold hover:bg-[#b8860b]/10 cursor-pointer transition-colors">
+              <label className="px-3 py-1.5 rounded-lg border border-amber-600 text-amber-700 bg-white text-xs font-semibold hover:bg-amber-100/50 cursor-pointer transition-colors shadow-xs">
                 {uploading ? 'Uploading...' : '+ Upload Benchmark Screenshot'}
                 <input
                   type="file"
@@ -2707,13 +2725,13 @@ export default function AxisAGRI({
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {(fields.benchmarkImages || []).map((img, idx) => (
-              <div key={idx} className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 aspect-video bg-slate-100">
+              <div key={idx} className="relative group rounded-xl overflow-hidden border border-amber-200 aspect-video bg-white shadow-xs">
                 <img src={img} alt={`Benchmark ${idx + 1}`} className="w-full h-full object-cover" />
                 {!isReadOnly && (
                   <button
                     type="button"
                     onClick={() => handleMapRemove('benchmarkImages', idx)}
-                    className="absolute top-1.5 right-1.5 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute top-1.5 right-1.5 bg-rose-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     ✕
                   </button>
@@ -2723,6 +2741,18 @@ export default function AxisAGRI({
           </div>
         </div>
 
+        {/* Global Action Bar (Sticky Bottom) */}
+        <ReportActionBar
+          loading={loading}
+          autoSaveStatus={autoSaveStatus}
+          isReadOnly={isReadOnly}
+          userRole={userRole}
+          message={message}
+          onSaveDraft={handleSaveDraft}
+          onPreviewPDF={handlePreviewPDF}
+          onDownloadPDF={handleDownloadPDF}
+        />
+
         {/* Cloud Photo Bucket Picker Modal */}
         <BasePhotoBucketModal
           isOpen={bucketPickerOpen}
@@ -2731,6 +2761,9 @@ export default function AxisAGRI({
           onConfirm={handleBucketConfirm}
         />
       </div>
+
+      {/* Floating Section Navigator on Right Side */}
+      <FloatingNavigator sections={navSections} />
     </div>
   );
 }
