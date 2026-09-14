@@ -303,7 +303,7 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
     this.drawTable([], [
       ['i.', 'Longitude', fv('longitude')],
       ['ii.', 'Latitude', fv('latitude')],
-    ], [C1, C2, C3], [2], []);
+    ], [C1, C2, C3], [], [], [0, 1, 2]);
 
     // 5. APPROVAL DETAILS header
     this.drawTable([], [

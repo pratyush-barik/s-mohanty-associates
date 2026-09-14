@@ -345,7 +345,8 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
     rows: (string | number)[][],
     colWidths: number[],
     highlightedCols: number[] = [],
-    labelCols: number[] = []
+    labelCols: number[] = [],
+    boldCols: number[] = []
   ): void {
     const fontSize = FONT_SIZE;
     const pad = 3;
@@ -407,7 +408,7 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
       let rowMaxLines = 1;
       const rowWrapped = row.map((cell, i) => {
         const text = String(cell ?? '');
-        const isBold = highlightedCols.includes(i) || labelCols.includes(i);
+        const isBold = highlightedCols.includes(i) || labelCols.includes(i) || boldCols.includes(i);
         const lines = this.wrapText(text, (normalizedColWidths[i] || 50) - pad * 2, fontSize, isBold);
         rowMaxLines = Math.max(rowMaxLines, lines.length);
         return lines;
@@ -462,7 +463,7 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
             x: curX + pad,
             y: lineY,
             size: fontSize,
-            font: (isHighlight || isLabel) ? this.fontBold : this.fontRegular,
+            font: (isHighlight || isLabel || boldCols.includes(i)) ? this.fontBold : this.fontRegular,
             color: rgb(0, 0, 0),
           });
           lineY -= fontSize * LINE_HEIGHT;

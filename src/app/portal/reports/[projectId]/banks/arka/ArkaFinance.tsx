@@ -970,10 +970,22 @@ export default function ArkaFinance({
                 <input className={inputCls} value={fields.buildingPlanApprovalNo || ''} onChange={e => handleChange('buildingPlanApprovalNo', e.target.value)} disabled={isReadOnly} />
               </Field>
               <Field label="Date of Approval">
-                <input type="date" className={inputCls} value={fields.dateOfApproval || ''} onChange={e => handleChange('dateOfApproval', e.target.value)} disabled={isReadOnly} />
+                <div className="flex items-center gap-3">
+                  <input type="date" className={inputCls} value={fields.dateOfApproval === 'NA' ? '' : (fields.dateOfApproval || '')} onChange={e => handleChange('dateOfApproval', e.target.value)} disabled={isReadOnly || fields.dateOfApproval === 'NA'} />
+                  <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 cursor-pointer">
+                    <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500" checked={fields.dateOfApproval === 'NA'} onChange={e => handleChange('dateOfApproval', e.target.checked ? 'NA' : '')} disabled={isReadOnly} />
+                    NA
+                  </label>
+                </div>
               </Field>
               <Field label="Expiry Date">
-                <input type="date" className={inputCls} value={fields.expiryDate || ''} onChange={e => handleChange('expiryDate', e.target.value)} disabled={isReadOnly} />
+                <div className="flex items-center gap-3">
+                  <input type="date" className={inputCls} value={fields.expiryDate === 'NA' ? '' : (fields.expiryDate || '')} onChange={e => handleChange('expiryDate', e.target.value)} disabled={isReadOnly || fields.expiryDate === 'NA'} />
+                  <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 cursor-pointer">
+                    <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500" checked={fields.expiryDate === 'NA'} onChange={e => handleChange('expiryDate', e.target.checked ? 'NA' : '')} disabled={isReadOnly} />
+                    NA
+                  </label>
+                </div>
               </Field>
               <Field label="Expected Completion">
                 <input className={inputCls} value={fields.expectedCompletion || ''} onChange={e => handleChange('expectedCompletion', e.target.value)} disabled={isReadOnly} placeholder="e.g. Dec 2026" />
