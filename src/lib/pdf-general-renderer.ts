@@ -494,6 +494,7 @@ export class PDFGeneralRenderer {
     this.cursorY += h;
   }
 
+
   /**
    * Draw a two-column row: label on left (with background), bold value on right.
    * Advances cursor.

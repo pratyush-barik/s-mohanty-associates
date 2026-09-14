@@ -1299,7 +1299,7 @@ export default function BankReportBuilder({
       // ── Property Photographs ──
       if (propImageBytes.length > 0) {
         r.newPage();
-        r.drawCenteredTitle('PROPERTY PHOTOGRAPHS');
+        r.drawSectionHeader('PROPERTY PHOTOGRAPHS');
         r.advanceCursor(8);
 
         for (let i = 0; i < propImageBytes.length; i += 2) {
@@ -1322,7 +1322,7 @@ export default function BankReportBuilder({
           const sBytes = sketchBytesList[i];
           if (sBytes) {
             r.newPage();
-            r.drawCenteredTitle(`SKETCH MAP${sketchBytesList.length > 1 ? ` ${i + 1}` : ''}`);
+            r.drawSectionHeader(`SKETCH MAP${sketchBytesList.length > 1 ? ` ${i + 1}` : ''}`);
             r.advanceCursor(8);
             await r.drawImageBlock(sBytes, {
               maxWidth: 450, maxHeight: 500, centered: true,
@@ -1334,14 +1334,14 @@ export default function BankReportBuilder({
       // ── Location Map ──
       if (locationBytes && locationBytes.length > 0) {
         r.newPage();
-        r.drawCenteredTitle('LOCATION MAP');
+        const latLongStr = (fields.latitude || fields.longitude) 
+          ? ` (LAT: ${fields.latitude || 'N/A'}, LONG: ${fields.longitude || 'N/A'})` 
+          : '';
+        r.drawSectionHeader(`LOCATION MAP${latLongStr}`);
         r.advanceCursor(8);
         await r.drawImageBlock(locationBytes, {
           maxWidth: 450, maxHeight: 500, centered: true,
         });
-        if (fields.latitude || fields.longitude) {
-          r.drawTextBlock(`Lat: ${fields.latitude || 'N/A'}, Long: ${fields.longitude || 'N/A'}`, { bold: true, align: 'center' });
-        }
       }
 
       // ── Annexure Sections ──
