@@ -427,11 +427,11 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
               <Field label="Status Of Property"><input className={inputCls} value={fields.statusOfPropertyAxis || ''} onChange={e => handleChange('statusOfPropertyAxis', e.target.value)} disabled={isReadOnly} /></Field>
               {renderDropdownWithCustom('Actual Usage Of Property', 'actualUsageOfPropertyAxis', ['Residential', 'Commercial', 'Industrial', 'Residential Cum Industrial', 'Mixed (Residential + Commercial)', 'Vacant', 'NA', 'Custom'])}
               {renderDropdownWithCustom('Approved Usage of Property', 'approvedUsageOfPropertyAxis', ['Residential', 'Commercial', 'Industrial', 'Residential Cum Industrial', 'NA / Unapproved / GP Limit', 'NA', 'Custom'])}
-              <Field label="Property Demarcation at Site"><input className={inputCls} value={fields.plotDemarcated || ''} onChange={e => handleChange('plotDemarcated', e.target.value)} disabled={isReadOnly} /></Field>
+              {renderDropdownWithCustom('Property Demarcation at Site', 'plotDemarcated', ['Yes', 'No', 'NA', 'Custom'])}
               <Field label="Distance: Nearest Metro / Bus Station / Railway Station/Airport"><input className={inputCls} value={fields.distanceNearestMetroBusRailwayAirportAxis || ''} onChange={e => handleChange('distanceNearestMetroBusRailwayAirportAxis', e.target.value)} disabled={isReadOnly} /></Field>
               <Field label="Nearness to recreation facilities"><input className={inputCls} value={fields.nearnessToRecreationFacilitiesAxis || ''} onChange={e => handleChange('nearnessToRecreationFacilitiesAxis', e.target.value)} disabled={isReadOnly} /></Field>
-              <Field label="Quality of Interiors"><input className={inputCls} value={fields.qualityOfInteriorsAxis || ''} onChange={e => handleChange('qualityOfInteriorsAxis', e.target.value)} disabled={isReadOnly} /></Field>
-              <Field label="Vastu Compliance or direction of the entrance"><input className={inputCls} value={fields.vastuComplianceDirectionAxis || ''} onChange={e => handleChange('vastuComplianceDirectionAxis', e.target.value)} disabled={isReadOnly} /></Field>
+              {renderDropdownWithCustom('Quality of Interiors', 'qualityOfInteriorsAxis', ['Excellent', 'Good', 'Average', 'Poor', 'NA', 'Custom'])}
+              {renderDropdownWithCustom('Vastu Compliance or direction of the entrance', 'vastuComplianceDirectionAxis', ['North-faced', 'East-faced', 'West-faced', 'South-faced', 'North-East faced', 'North-West faced', 'South-East faced', 'South-West faced', 'NA', 'Custom'])}
             </div>
           </div>
         </div>
