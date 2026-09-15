@@ -1346,17 +1346,34 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                   </div>
                 ))}
                 {!isReadOnly && (
-                  <button
-                    type="button"
-                    className="mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center"
-                    onClick={() => {
-                      const arr = [...(fields.axisAttachments || [])];
-                      arr.push({ text: '' });
-                      handleChange('axisAttachments', arr);
-                    }}
-                  >
-                    + Add Attachment Item
-                  </button>
+                  <div className="flex items-center space-x-6 mt-2">
+                    <button
+                      type="button"
+                      className="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center"
+                      onClick={() => {
+                        const arr = [...(fields.axisAttachments || [])];
+                        arr.push({ text: '' });
+                        handleChange('axisAttachments', arr);
+                      }}
+                    >
+                      + Add Attachment Item
+                    </button>
+                    {(fields.axisAttachments || []).length > 2 && (
+                      <button
+                        type="button"
+                        className="text-sm text-red-500 hover:text-red-700 font-medium flex items-center transition-colors"
+                        onClick={() => {
+                          const arr = [...(fields.axisAttachments || [])];
+                          if (arr.length > 2) {
+                            arr.pop();
+                            handleChange('axisAttachments', arr);
+                          }
+                        }}
+                      >
+                        - Remove Attachment Item
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
