@@ -14,7 +14,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
     { id: 'axis-section-2', title: 'Client & Application Details' },
     { id: 'axis-section-3', title: 'Property Location & Locality Details' },
     { id: 'section-4', title: 'Subject Property' },
-    { id: 'section-5', title: 'Structural Details' },
+    { id: 'axis-section-5', title: 'Approval & Structural Information' },
     { id: 'section-6', title: 'Plan Approvals' },
     { id: 'section-7', title: 'Area Valuation' },
     { id: 'section-8', title: 'Land Valuation' },
@@ -26,7 +26,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
     { id: 'section-14', title: 'Location Map' },
     { id: 'section-15', title: 'Annexures' },
   ],
-  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4'],
+  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5'],
   extraSections: [
     {
       id: 'axis-boundaries', 
@@ -104,6 +104,20 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
     axisPreparedByPinCode: '751018',
     axisPreparedByPhone: '06742381145',
     axisPreparedByMobile: '9937023855/9437074855',
+    axisLayoutPlanApprovalAuthority: '',
+    axisLayoutPlanApprovalNo: '',
+    axisLayoutPlanApprovalDate: '',
+    axisBuildingPlanApprovalAuthority: '',
+    axisBuildingPlanApprovalNo: '',
+    axisBuildingPlanApprovalDate: '',
+    axisAgeOfBuilding: '',
+    axisEstimatedLifeOfBuilding: '',
+    axisConstructionYear: '',
+    axisConstructionType: '',
+    axisCommentsOnFeasibility: '',
+    axisDepreciationPercentage: '',
+    axisNoOfFloorsPlan: '',
+    axisNoOfFloorsSite: '',
   },
   extraSectionsStart: [
     {
@@ -559,6 +573,62 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                 <Field label="Width of the abutting Road - Road 2"><input className={inputCls} value={fields.widthOfRoad2 || ''} onChange={e => handleChange('widthOfRoad2', e.target.value)} disabled={isReadOnly} /></Field>
                 <Field label="Latitude"><input className={inputCls} value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} /></Field>
                 <Field label="Longitude"><input className={inputCls} value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} /></Field>
+              </div>
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'axis-section-5',
+      title: 'Approval & Structural Information',
+      number: 5,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        const inputCls = "w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white";
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#F7FEE7', borderColor: '#D9F99D' }}>
+              <h3 className="font-bold text-gray-700 mb-4">Approval Details</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left text-gray-600">
+                  <thead className="text-xs text-gray-700 uppercase bg-white bg-opacity-50 border-b">
+                    <tr>
+                      <th className="px-4 py-2">Description</th>
+                      <th className="px-4 py-2">Approval authority</th>
+                      <th className="px-4 py-2">Approval no</th>
+                      <th className="px-4 py-2">Approval Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b">
+                      <td className="px-4 py-2 font-medium">Layout Plan</td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisLayoutPlanApprovalAuthority || ''} onChange={e => handleChange('axisLayoutPlanApprovalAuthority', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisLayoutPlanApprovalNo || ''} onChange={e => handleChange('axisLayoutPlanApprovalNo', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><input type="date" className={inputCls} value={fields.axisLayoutPlanApprovalDate || ''} onChange={e => handleChange('axisLayoutPlanApprovalDate', e.target.value)} disabled={isReadOnly} /></td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-2 font-medium">Building/Construction Plan</td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisBuildingPlanApprovalAuthority || ''} onChange={e => handleChange('axisBuildingPlanApprovalAuthority', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisBuildingPlanApprovalNo || ''} onChange={e => handleChange('axisBuildingPlanApprovalNo', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><input type="date" className={inputCls} value={fields.axisBuildingPlanApprovalDate || ''} onChange={e => handleChange('axisBuildingPlanApprovalDate', e.target.value)} disabled={isReadOnly} /></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FFF7ED', borderColor: '#FED7AA' }}>
+              <h3 className="font-bold text-gray-700 mb-4">Building Specifications & Condition</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="Age of Building (Years)"><input className={inputCls} value={fields.axisAgeOfBuilding || ''} onChange={e => handleChange('axisAgeOfBuilding', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="Estimated Life of Building (Years)"><input className={inputCls} value={fields.axisEstimatedLifeOfBuilding || ''} onChange={e => handleChange('axisEstimatedLifeOfBuilding', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="Construction Year"><input className={inputCls} value={fields.axisConstructionYear || ''} onChange={e => handleChange('axisConstructionYear', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="Construction Type (e.g., RCC, Load Bearing)"><input className={inputCls} value={fields.axisConstructionType || ''} onChange={e => handleChange('axisConstructionType', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="Comments on Feasibility"><input className={inputCls} value={fields.axisCommentsOnFeasibility || ''} onChange={e => handleChange('axisCommentsOnFeasibility', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="Depreciation%"><input className={inputCls} value={fields.axisDepreciationPercentage || ''} onChange={e => handleChange('axisDepreciationPercentage', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="No Of Floors (As per Plan)"><input className={inputCls} value={fields.axisNoOfFloorsPlan || ''} onChange={e => handleChange('axisNoOfFloorsPlan', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="No Of Floors (As per Site)"><input className={inputCls} value={fields.axisNoOfFloorsSite || ''} onChange={e => handleChange('axisNoOfFloorsSite', e.target.value)} disabled={isReadOnly} /></Field>
               </div>
             </div>
           </div>
