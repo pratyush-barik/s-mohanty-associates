@@ -43,6 +43,8 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
       this.drawAxisSection5();
     } else if (title === 'UNIT MEASUREMENTS & SETBACKS') {
       this.drawAxisSection6();
+    } else if (title === 'VALUATION & CONSTRUCTION COST BREAK-UP') {
+      this.drawAxisSection7();
     }
   }
 
@@ -456,6 +458,80 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
     if (this.fields['axisMaintenanceOfTheProperty_isCustom']) mop = fv('axisMaintenanceOfTheProperty');
     
     this.drawKeyValueRow('Quality of Construction', qc, 'Maintenance of the Property', mop);
+    this.advanceCursor(4);
+  }
+
+  private drawAxisSection7() {
+    const fv = (key: string, def = 'NA') => {
+      const val = this.fields[key];
+      return val ? String(val) : def;
+    };
+
+    // Container: Market Value of Independent Property (Land)
+    this.drawSectionSubtitle('Market Value of Independent Property (Land)');
+    this.drawKeyValueRow([
+      { label: 'Area of Land (As per Documents) (Sq. Ft.)', value: fv('axisAreaOfLand') },
+      { label: 'Market rate of the Land (Rs./Sq. Ft.)', value: fv('axisMarketRateOfLand') }
+    ]);
+    this.drawSimpleRow('Value of the Land', fv('axisValueOfTheLand'));
+    this.advanceCursor(4);
+
+    // Container: Cost of Construction Break-up (Table)
+    this.drawSectionSubtitle('Cost of Construction Break-up');
+    const startX = MARGIN_L;
+    const cw = (CONTENT_W - 140) / 6; // 6 numeric columns
+    const colWidths = [140, cw, cw, cw, cw, cw, cw];
+    const h = 18;
+    
+    // Table Header
+    this.checkPageBreak(h);
+    const thY = this.pdfY(this.cursorY);
+    this.doc.font('Helvetica-Bold').fontSize(8);
+    this.doc.fillColor('#1e293b');
+    
+    let thX = startX;
+    ['Parameter', 'GF', 'FF', 'SF', 'TF', 'NA', 'Total'].forEach((th, i) => {
+      this.doc.rect(thX, thY, colWidths[i], h).fillAndStroke('#f1f5f9', '#94a3b8');
+      this.doc.fillColor('#1e293b').text(th, thX + 4, thY + 5, { width: colWidths[i] - 8, align: i === 0 ? 'left' : 'center' });
+      thX += colWidths[i];
+    });
+    this.y = thY + h;
+    
+    const drawRow = (param: string, gf: string, ff: string, sf: string, tf: string, na: string, total: string) => {
+      this.checkPageBreak(h);
+      const rowY = this.pdfY(this.cursorY);
+      
+      this.doc.font('Helvetica-Bold').fontSize(7);
+      this.doc.fillColor('#1e293b');
+      this.doc.rect(startX, rowY, colWidths[0], h).stroke('#d1d5db');
+      this.doc.text(param, startX + 4, rowY + 5, { width: colWidths[0] - 8, align: 'left' });
+      
+      this.doc.font('Helvetica').fontSize(7);
+      this.doc.fillColor('#334155');
+      
+      let currX = startX + colWidths[0];
+      [gf, ff, sf, tf, na, total].forEach((val, i) => {
+        this.doc.rect(currX, rowY, colWidths[i + 1], h).stroke('#d1d5db');
+        this.doc.text(val || 'NA', currX + 2, rowY + 5, { width: colWidths[i + 1] - 4, align: 'center' });
+        currX += colWidths[i + 1];
+      });
+      
+      this.y = rowY + h;
+    };
+    
+    drawRow('Approved BUA', fv('axisCostBreakupApprovedBUAGF'), fv('axisCostBreakupApprovedBUAFF'), fv('axisCostBreakupApprovedBUASF'), fv('axisCostBreakupApprovedBUATF'), fv('axisCostBreakupApprovedBUANA'), fv('axisCostBreakupApprovedBUATotal'));
+    drawRow('Actual BUA Sq ft', fv('axisCostBreakupActualBUAGF'), fv('axisCostBreakupActualBUAFF'), fv('axisCostBreakupActualBUASF'), fv('axisCostBreakupActualBUATF'), fv('axisCostBreakupActualBUANA'), fv('axisCostBreakupActualBUATotal'));
+    drawRow('Construction Cost Rs. Per Sq ft', fv('axisCostBreakupConstructionCostGF'), fv('axisCostBreakupConstructionCostFF'), fv('axisCostBreakupConstructionCostSF'), fv('axisCostBreakupConstructionCostTF'), fv('axisCostBreakupConstructionCostNA'), fv('axisCostBreakupConstructionCostTotal'));
+    drawRow('Total BUA Value', fv('axisCostBreakupTotalBUAValueGF'), fv('axisCostBreakupTotalBUAValueFF'), fv('axisCostBreakupTotalBUAValueSF'), fv('axisCostBreakupTotalBUAValueTF'), fv('axisCostBreakupTotalBUAValueNA'), fv('axisCostBreakupTotalBUAValueTotal'));
+    
+    this.advanceCursor(4);
+
+    // Container: Unit Market Value Summary
+    this.drawSectionSubtitle('Unit Market Value Summary');
+    this.drawKeyValueRow([
+      { label: 'Value of the Approved BUA', value: fv('axisValueOfApprovedBUA') },
+      { label: 'Market Value of the Unit : (Land + Construction)', value: fv('axisMarketValueOfTheUnitLandAndConstruction') }
+    ]);
     this.advanceCursor(4);
   }
 }

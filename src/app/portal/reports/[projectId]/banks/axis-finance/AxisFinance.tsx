@@ -16,7 +16,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
     { id: 'axis-section-4', title: 'Boundaries, Access & Geolocation' },
     { id: 'axis-section-5', title: 'Approval & Structural Information' },
     { id: 'axis-section-6', title: 'Unit Measurements & Setbacks' },
-    { id: 'section-7', title: 'Area Valuation' },
+    { id: 'axis-section-7', title: 'Valuation & Construction Cost Break-up' },
     { id: 'section-8', title: 'Land Valuation' },
     { id: 'section-9', title: 'Valuation Abstract' },
     { id: 'section-10', title: 'Remarks' },
@@ -26,7 +26,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
     { id: 'section-14', title: 'Location Map' },
     { id: 'section-15', title: 'Annexures' },
   ],
-  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6'],
+  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7'],
   extraSections: [],
   hiddenFields: ['to', 'dateOfValuation', 'refNo'],
   defaultValues: {
@@ -104,6 +104,18 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
 
     axisQualityOfConstruction: '',
     axisMaintenanceOfTheProperty: '',
+
+    axisAreaOfLand: '',
+    axisMarketRateOfLand: '',
+    axisValueOfTheLand: '',
+
+    axisCostBreakupApprovedBUAGF: '', axisCostBreakupApprovedBUAFF: '', axisCostBreakupApprovedBUASF: '', axisCostBreakupApprovedBUATF: '', axisCostBreakupApprovedBUANA: '', axisCostBreakupApprovedBUATotal: '',
+    axisCostBreakupActualBUAGF: '', axisCostBreakupActualBUAFF: '', axisCostBreakupActualBUASF: '', axisCostBreakupActualBUATF: '', axisCostBreakupActualBUANA: '', axisCostBreakupActualBUATotal: '',
+    axisCostBreakupConstructionCostGF: '', axisCostBreakupConstructionCostFF: '', axisCostBreakupConstructionCostSF: '', axisCostBreakupConstructionCostTF: '', axisCostBreakupConstructionCostNA: '', axisCostBreakupConstructionCostTotal: '',
+    axisCostBreakupTotalBUAValueGF: '', axisCostBreakupTotalBUAValueFF: '', axisCostBreakupTotalBUAValueSF: '', axisCostBreakupTotalBUAValueTF: '', axisCostBreakupTotalBUAValueNA: '', axisCostBreakupTotalBUAValueTotal: '',
+
+    axisValueOfApprovedBUA: '',
+    axisMarketValueOfTheUnitLandAndConstruction: '',
   },
   extraSectionsStart: [
     {
@@ -814,6 +826,118 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {renderDropdownWithCustom('Quality of Construction', 'axisQualityOfConstruction', ['Excellent', 'Good', 'Average', 'Poor', 'NA', 'Custom'])}
                 {renderDropdownWithCustom('Maintenance of the Property', 'axisMaintenanceOfTheProperty', ['Well Maintained', 'Good', 'Average', 'Poor', 'NA', 'Custom'])}
+              </div>
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'axis-section-7',
+      title: 'Valuation & Construction Cost Break-up',
+      number: 7,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        const inputCls = "w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white disabled:bg-gray-100 disabled:text-gray-500";
+        
+        const renderField = (label: string, fieldKey: string) => (
+          <div className="space-y-1">
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-xs font-semibold text-gray-700">{label}</label>
+              <label className="flex items-center space-x-1 cursor-pointer">
+                <input type="checkbox" className="w-3 h-3 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={fields[fieldKey] === 'NA'} onChange={e => handleChange(fieldKey, e.target.checked ? 'NA' : '')} disabled={isReadOnly} />
+                <span className="text-[10px] text-gray-500 font-medium leading-none">NA</span>
+              </label>
+            </div>
+            <input className={inputCls} value={fields[fieldKey] || ''} onChange={e => handleChange(fieldKey, e.target.value)} disabled={isReadOnly || fields[fieldKey] === 'NA'} />
+          </div>
+        );
+
+        const renderTableCell = (fieldKey: string) => (
+          <div className="flex flex-col space-y-1 px-1 py-1">
+            <div className="flex justify-end">
+              <label className="flex items-center space-x-1 cursor-pointer" title="Not Applicable">
+                <input type="checkbox" className="w-2.5 h-2.5" checked={fields[fieldKey] === 'NA'} onChange={e => handleChange(fieldKey, e.target.checked ? 'NA' : '')} disabled={isReadOnly} />
+                <span className="text-[9px] text-gray-400 font-medium leading-none">NA</span>
+              </label>
+            </div>
+            <input className={`${inputCls} text-xs p-1`} value={fields[fieldKey] || ''} onChange={e => handleChange(fieldKey, e.target.value)} disabled={isReadOnly || fields[fieldKey] === 'NA'} />
+          </div>
+        );
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#F4F6F0', borderColor: '#D5DDC5' }}>
+              <h3 className="font-bold text-gray-700 mb-4">Market Value of Independent Property (Land)</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {renderField('Area of Land (As per Documents) (Sq. Ft.)', 'axisAreaOfLand')}
+                {renderField('Market rate of the Land (Rs./Sq. Ft.)', 'axisMarketRateOfLand')}
+                {renderField('Value of the Land', 'axisValueOfTheLand')}
+              </div>
+            </div>
+
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FCF4F9', borderColor: '#F2CCE2' }}>
+              <h3 className="font-bold text-gray-700 mb-4">Cost of Construction Break-up</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left text-gray-600">
+                  <thead className="text-xs text-gray-700 uppercase bg-white bg-opacity-50 border-b">
+                    <tr>
+                      <th className="px-4 py-2 min-w-[140px]">Parameter</th>
+                      <th className="px-2 py-2 min-w-[90px]">GF</th>
+                      <th className="px-2 py-2 min-w-[90px]">FF</th>
+                      <th className="px-2 py-2 min-w-[90px]">SF</th>
+                      <th className="px-2 py-2 min-w-[90px]">TF</th>
+                      <th className="px-2 py-2 min-w-[90px]">NA</th>
+                      <th className="px-2 py-2 min-w-[100px]">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b">
+                      <td className="px-4 py-2 font-medium">Approved BUA</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupApprovedBUAGF')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupApprovedBUAFF')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupApprovedBUASF')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupApprovedBUATF')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupApprovedBUANA')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupApprovedBUATotal')}</td>
+                    </tr>
+                    <tr className="border-b">
+                      <td className="px-4 py-2 font-medium">Actual BUA Sq ft</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupActualBUAGF')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupActualBUAFF')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupActualBUASF')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupActualBUATF')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupActualBUANA')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupActualBUATotal')}</td>
+                    </tr>
+                    <tr className="border-b">
+                      <td className="px-4 py-2 font-medium">Construction Cost Rs. Per Sq ft</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupConstructionCostGF')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupConstructionCostFF')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupConstructionCostSF')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupConstructionCostTF')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupConstructionCostNA')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupConstructionCostTotal')}</td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-2 font-medium">Total BUA Value</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupTotalBUAValueGF')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupTotalBUAValueFF')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupTotalBUAValueSF')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupTotalBUAValueTF')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupTotalBUAValueNA')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupTotalBUAValueTotal')}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FFF5F5', borderColor: '#FED7D7' }}>
+              <h3 className="font-bold text-gray-700 mb-4">Unit Market Value Summary</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {renderField('Value of the Approved BUA', 'axisValueOfApprovedBUA')}
+                {renderField('Market Value of the Unit : (Land + Construction)', 'axisMarketValueOfTheUnitLandAndConstruction')}
               </div>
             </div>
           </div>
