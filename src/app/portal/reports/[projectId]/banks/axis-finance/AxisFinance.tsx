@@ -13,7 +13,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
     { id: 'section-cover', title: 'Cover Page Details' },
     { id: 'axis-section-2', title: 'Client & Application Details' },
     { id: 'axis-section-3', title: 'Property Location & Locality Details' },
-    { id: 'section-4', title: 'Subject Property' },
+    { id: 'axis-section-4', title: 'Boundaries, Access & Geolocation' },
     { id: 'axis-section-5', title: 'Approval & Structural Information' },
     { id: 'section-6', title: 'Plan Approvals' },
     { id: 'section-7', title: 'Area Valuation' },
