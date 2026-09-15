@@ -11,7 +11,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
   displayName: 'Axis Finance Ltd',
   navSections: [
     { id: 'section-cover', title: 'Cover Page Details' },
-    { id: 'section-2', title: 'Locality Details' },
+    { id: 'axis-section-2', title: 'Client & Application Details' },
     { id: 'section-3', title: 'Property Details' },
     { id: 'section-4', title: 'Subject Property' },
     { id: 'section-5', title: 'Structural Details' },
@@ -26,7 +26,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
     { id: 'section-14', title: 'Location Map' },
     { id: 'section-15', title: 'Annexures' },
   ],
-  hiddenSections: ['section-1'],
+  hiddenSections: ['section-1', 'section-2'],
   hiddenFields: ['to', 'dateOfValuation', 'refNo'],
   defaultValues: {
     propertyOwners: [{ name: '', relationship: 'S/O', relativeName: '' }],
@@ -225,6 +225,30 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
               <Field label="Mobile Number">
                 <input className={inputCls} value={fields.preparedByMobile || ''} onChange={e => { handleChange('preparedByMobile', e.target.value.replace(/[a-zA-Z]/g, '')); }} disabled={isReadOnly} />
               </Field>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'axis-section-2',
+      title: 'Client & Application Details',
+      number: 2,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => (
+        <div className="animate-fade-in space-y-6">
+          <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#F0F7FF', borderColor: '#BAE6FD' }}>
+            <h3 className="font-bold text-gray-700 mb-4">CUSTOMER & LOAN INFORMATION</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Valuation Report For"><input className={inputCls} value={fields.valuationReportFor || ''} onChange={e => handleChange('valuationReportFor', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Product / Loan Category"><input className={inputCls} value={fields.productLoanCategory || ''} onChange={e => handleChange('productLoanCategory', e.target.value)} disabled={isReadOnly} placeholder="e.g., LAP – RESIDENTIAL BUILDING" /></Field>
+              <Field label="Application Number"><input className={inputCls} value={fields.loanApplicationNo || ''} onChange={e => handleChange('loanApplicationNo', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Date"><input type="date" className={inputCls} value={fields.dateOfValuation || ''} onChange={e => handleChange('dateOfValuation', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Name of the Customer"><input className={inputCls} value={fields.ownerName || ''} onChange={e => handleChange('ownerName', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Name of the Property Owner(S)"><input className={inputCls} value={fields.propertyOwnerNames || ''} onChange={e => handleChange('propertyOwnerNames', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Collateral Ownership"><input className={inputCls} value={fields.collateralOwnership || ''} onChange={e => handleChange('collateralOwnership', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Collateral Category"><input className={inputCls} value={fields.collateralCategory || ''} onChange={e => handleChange('collateralCategory', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Property Documents Received"><input className={inputCls} value={fields.propertyDocumentsReceived || ''} onChange={e => handleChange('propertyDocumentsReceived', e.target.value)} disabled={isReadOnly} /></Field>
             </div>
           </div>
         </div>
