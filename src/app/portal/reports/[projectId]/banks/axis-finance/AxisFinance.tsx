@@ -586,6 +586,36 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields, handleChange, isReadOnly) => {
         const inputCls = "w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white";
+        const renderDropdownWithCustom = (label: string, fieldKey: string, options: string[]) => {
+          const isCustomKey = `${fieldKey}_isCustom`;
+          const isCustom = fields[isCustomKey] || false;
+          return (
+            <Field label={label}>
+              <select
+                className={inputCls}
+                value={isCustom ? 'Custom' : (fields[fieldKey] || '')}
+                onChange={e => {
+                  const val = e.target.value;
+                  if (val === 'Custom') {
+                    handleChange(isCustomKey, true);
+                    handleChange(fieldKey, '');
+                  } else {
+                    handleChange(isCustomKey, false);
+                    handleChange(fieldKey, val);
+                  }
+                }}
+                disabled={isReadOnly}
+              >
+                <option value="">Select...</option>
+                {options.map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
+              {isCustom && (
+                <input className={`${inputCls} mt-2`} value={fields[fieldKey] || ''} onChange={e => handleChange(fieldKey, e.target.value)} disabled={isReadOnly} placeholder="Enter custom value..." />
+              )}
+            </Field>
+          );
+        };
+
         return (
           <div className="animate-fade-in space-y-6">
             <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#F7FEE7', borderColor: '#D9F99D' }}>
@@ -625,7 +655,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                 <Field label="Estimated Life of Building (Years)"><input className={inputCls} value={fields.axisEstimatedLifeOfBuilding || ''} onChange={e => handleChange('axisEstimatedLifeOfBuilding', e.target.value)} disabled={isReadOnly} /></Field>
                 <Field label="Construction Year"><input className={inputCls} value={fields.axisConstructionYear || ''} onChange={e => handleChange('axisConstructionYear', e.target.value)} disabled={isReadOnly} /></Field>
                 <Field label="Construction Type (e.g., RCC, Load Bearing)"><input className={inputCls} value={fields.axisConstructionType || ''} onChange={e => handleChange('axisConstructionType', e.target.value)} disabled={isReadOnly} /></Field>
-                <Field label="Comments on Feasibility"><input className={inputCls} value={fields.axisCommentsOnFeasibility || ''} onChange={e => handleChange('axisCommentsOnFeasibility', e.target.value)} disabled={isReadOnly} /></Field>
+                {renderDropdownWithCustom('Comments on Feasibility', 'axisCommentsOnFeasibility', ['Good', 'Satisfactory', 'Feasible', 'Poor', 'Not Feasible', 'NA', 'Custom'])}
                 <Field label="Depreciation%"><input className={inputCls} value={fields.axisDepreciationPercentage || ''} onChange={e => handleChange('axisDepreciationPercentage', e.target.value)} disabled={isReadOnly} /></Field>
                 <Field label="No Of Floors (As per Plan)"><input className={inputCls} value={fields.axisNoOfFloorsPlan || ''} onChange={e => handleChange('axisNoOfFloorsPlan', e.target.value)} disabled={isReadOnly} /></Field>
                 <Field label="No Of Floors (As per Site)"><input className={inputCls} value={fields.axisNoOfFloorsSite || ''} onChange={e => handleChange('axisNoOfFloorsSite', e.target.value)} disabled={isReadOnly} /></Field>
