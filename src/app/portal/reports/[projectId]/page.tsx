@@ -87,6 +87,15 @@ export default async function ReportEditorPage({ params, searchParams }: { param
       createdAt: img.createdAt.toISOString()
     }));
 
+    // Earliest field visit detection:
+    const earliestPhoto = verifiedBucketImages.length > 0
+      ? [...verifiedBucketImages].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())[0]
+      : null;
+    const earliestFieldVisitDate = earliestPhoto
+      ? earliestPhoto.createdAt.toISOString().split('T')[0]
+      : (project.inspection?.completedAt || project.inspection?.scheduledDate || project.inspection?.createdAt)?.toISOString().split('T')[0];
+    const earliestFieldAgentName = earliestPhoto?.employee?.name || project.fieldEmployees?.[0]?.name || '';
+
     return (
       <div className="space-y-6 w-full">
         {/* Header */}
@@ -98,25 +107,36 @@ export default async function ReportEditorPage({ params, searchParams }: { param
               </Link>
               <span className="text-[#dee2e6]">|</span>
               <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold ${project.status === 'MANAGER_REVIEW' ? 'bg-orange-50 text-orange-700 border border-orange-200' :
-                  project.status === 'COMPLETED' ? 'bg-green-50 text-green-700 border border-green-200' :
-                    'bg-blue-50 text-blue-700 border border-blue-200'
-                }`}>
-                {project.status.replace('_', ' ')}
+                project.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                project.status === 'REPORT_DRAFTING' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                'bg-slate-100 text-slate-700 border border-slate-200'}`}>
+                {project.status.replace(/_/g, ' ')}
               </span>
             </div>
-            <h1 className="text-2xl font-bold text-[#0f2038] font-mono">
-              {project.projectCode}
+            <h1 className="text-xl font-bold text-[#0f2038]">
+              Report Editor: {project.projectCode}
             </h1>
+            <p className="text-xs text-[#6c757d]">
+              {serviceRequest?.propertyAddress ? decodeHtmlEntities(serviceRequest.propertyAddress) : 'No address provided'}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/portal/projects/${project.id}`}
+              className="px-3 py-1.5 bg-white border border-[#dee2e6] rounded-lg text-xs font-semibold text-[#0f2038] hover:bg-[#f8f9fa] transition-colors"
+            >
+              Project Overview
+            </Link>
           </div>
         </div>
 
-        {/* Project Information Horizontal Bar */}
-        <div className="card p-6 bg-[#f8f9fa] border border-[#e9ecef] grid md:grid-cols-4 gap-6">
+        {/* Project Meta Bar */}
+        <div className="bg-white border border-[#dee2e6] rounded-xl p-4 grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
-            <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1.5">Client & Property</p>
-            <p className="text-sm font-bold text-[#0f2038]">{decodeHtmlEntities(serviceRequest?.contactName || '')}</p>
-            <p className="text-xs text-[#6c757d]">{decodeHtmlEntities(serviceRequest?.propertyType || '')} — {decodeHtmlEntities(serviceRequest?.purpose || '')}</p>
-            <p className="text-xs text-[#6c757d] mt-1">{decodeHtmlEntities(serviceRequest?.propertyAddress || '')}</p>
+            <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1.5">Client & Service Request</p>
+            <p className="text-xs font-semibold text-[#0f2038]">{serviceRequest?.contactName ? decodeHtmlEntities(serviceRequest.contactName) : 'N/A'}</p>
+            <p className="text-xs text-gray-500">{serviceRequest?.contactPhone || 'No Phone'}</p>
+            <p className="text-xs text-gray-500">{serviceRequest?.contactEmail || 'No Email'}</p>
           </div>
           <div>
             <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1.5">Field Engineer & Phone</p>
@@ -179,11 +199,13 @@ export default async function ReportEditorPage({ params, searchParams }: { param
               reportEmployeeName: project.reportEmployee?.name || (currentUser.role === 'REPORT_EMPLOYEE' ? session.user.name : '') || '',
               initiationDate: (project.startDate || project.createdAt)?.toISOString().split('T')[0],
               inspectionDate: (project.inspection?.completedAt || project.inspection?.scheduledDate || project.inspection?.createdAt)?.toISOString().split('T')[0],
+              fieldVisitDate: earliestFieldVisitDate,
+              firstFieldAgentName: earliestFieldAgentName,
             }}
           />
         </BuilderErrorBoundary>
-        </div>
-      );
+      </div>
+    );
   } catch (error: any) {
     return (
       <div className="p-12 text-center flex flex-col items-center justify-center h-full">

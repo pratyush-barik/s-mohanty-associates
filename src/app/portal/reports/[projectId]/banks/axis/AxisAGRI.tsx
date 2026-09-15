@@ -133,8 +133,8 @@ export default function AxisAGRI({
   onResetWizard,
 }: AxisAgriProps) {
   const router = useRouter();
-  const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
   const isManagerOrOwner = userRole === 'MANAGER' || userRole === 'OWNER';
+  const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
 
   // ── Auto-derive default REF NO: SMA/MM/YYYY/XX ──
   const defaultRefNo = useMemo(() => {
@@ -145,6 +145,45 @@ export default function AxisAGRI({
     return `SMA/${mm}/${yyyy}/${seq}`;
   }, [projectCode]);
 
+  // ── Find First Field Engineer Visit Date (Earliest Initiation) ──
+  const firstFieldAgentVisit = useMemo(() => {
+    if (bucketImages && bucketImages.length > 0) {
+      const validImages = [...bucketImages]
+        .filter(img => img.createdAt)
+        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      if (validImages.length > 0) {
+        return {
+          dateStr: formatReportDate(validImages[0].createdAt),
+          rawDate: validImages[0].createdAt,
+          agentName: validImages[0].employee?.name || prefill?.firstFieldAgentName || '',
+          agentId: validImages[0].employee?.employeeId || '',
+        };
+      }
+    }
+    const fallbackDate = prefill?.fieldVisitDate || prefill?.inspectionDate;
+    if (fallbackDate) {
+      return {
+        dateStr: formatReportDate(fallbackDate),
+        rawDate: fallbackDate,
+        agentName: prefill?.firstFieldAgentName || prefill?.fieldEmployees?.[0]?.name || '',
+        agentId: prefill?.fieldEmployees?.[0]?.employeeId || '',
+      };
+    }
+    return null;
+  }, [bucketImages, prefill]);
+
+  // ── Differentiate Property Area from Bank Initiating Area ──
+  const derivedPropertyArea = useMemo(() => {
+    if (prefill?.propertyAddress) {
+      const parts = prefill.propertyAddress.split(',').map((s: string) => s.trim());
+      if (parts.length >= 2) {
+        return `${parts[0].replace(/^(At|Vill|Village|Plot)\s*[:\-]\s*/i, '')}, ${parts[1].replace(/^(Ps|Ts|Tahasil|Town)\s*[:\-]\s*/i, '')}`;
+      }
+      return prefill.propertyAddress;
+    }
+    return 'Achhuli, Purusottampur';
+  }, [prefill?.propertyAddress]);
+
   // ── Initial State Pre-fill ──
   const initialData: AxisAgriReportFields = useMemo(() => {
     const raw = typeof initialFields === 'object' && initialFields !== null ? initialFields : {};
@@ -153,9 +192,11 @@ export default function AxisAGRI({
       refNo: raw.refNo || defaultRefNo,
       reportDate: formatReportDate(raw.reportDate || raw.dateOfReportSubmission || new Date()),
       reportTitle: raw.reportTitle || 'VALUATION REPORT FORMAT (NON-AGRI)',
-      dateOfVisit: formatReportDate(raw.dateOfVisit || raw.dateOfInspection || prefill?.inspectionDate || new Date()),
-      reportInitiatedByArea: raw.reportInitiatedByArea || prefill?.serviceRequest?.branch || 'Purusottampur, Ganjam',
-      nameOfArea: raw.nameOfArea || prefill?.serviceRequest?.branch || 'Purusottampur, Ganjam',
+      dateOfVisit: raw.dateOfVisit
+        ? formatReportDate(raw.dateOfVisit)
+        : (firstFieldAgentVisit?.dateStr || formatReportDate(raw.dateOfInspection || prefill?.inspectionDate || new Date())),
+      reportInitiatedByArea: raw.reportInitiatedByArea || prefill?.serviceRequest?.branch || prefill?.branch || 'Purusottampur Area Office',
+      nameOfArea: (raw.nameOfArea && raw.nameOfArea !== raw.reportInitiatedByArea) ? raw.nameOfArea : derivedPropertyArea,
       ownerNameAndAddress: raw.ownerNameAndAddress || prefill?.contactName || '',
       borrowerNameAndAddress: raw.borrowerNameAndAddress || prefill?.contactName || '',
       proposalNo: raw.proposalNo || 'Not Available',
@@ -163,14 +204,14 @@ export default function AxisAGRI({
 
       // Page 1: Details of Property Being Valued
       locationOfProperty: raw.locationOfProperty || 'Rural',
-      documentsProvided: raw.documentsProvided || ['Bhu-Naksha', 'ROR'],
+      documentsProvided: raw.documentsProvided || [],
       plotKhataDetails: raw.plotKhataDetails || prefill?.propertyAddress || '',
-      roadFacilityAtSite: raw.roadFacilityAtSite || '20-ft wide Road',
+      roadFacilityAtSite: raw.roadFacilityAtSite || '',
       colonyNagarSector: raw.colonyNagarSector || '',
       localityLandmark: raw.localityLandmark || '',
-      villageTownCityMarket: raw.villageTownCityMarket || 'Village',
-      district: raw.district || 'Ganjam',
-      state: raw.state || 'Odisha',
+      villageTownCityMarket: raw.villageTownCityMarket || '',
+      district: raw.district || '',
+      state: raw.state || '',
       pincode: raw.pincode || '',
       distanceFromAreaOffice: raw.distanceFromAreaOffice || '',
       latitude: raw.latitude || '',
@@ -179,43 +220,43 @@ export default function AxisAGRI({
 
       // Page 1 & 2: Classification & Site Topography
       typeOfPropertyPlot: raw.typeOfPropertyPlot || 'Residential',
-      levelOfLand: raw.levelOfLand || 'Existing Road Level',
+      levelOfLand: raw.levelOfLand || '',
       situatedInMunicipalLimit: raw.situatedInMunicipalLimit || 'No',
-      municipalLimitDetails: raw.municipalLimitDetails || '(Within Achhuli Gram Panchayat area limit)',
+      municipalLimitDetails: raw.municipalLimitDetails || '',
       constructionObservedOnPlot: raw.constructionObservedOnPlot || 'Yes',
       residentialPropertyType: raw.residentialPropertyType || 'Residential',
       residentialPropertySubtype: raw.residentialPropertySubtype || 'Independent house',
       civicAmenities: raw.civicAmenities || 'Available within the radius of 2-3 Kms',
       commercialPropertyType: raw.commercialPropertyType || 'Commercial',
       commercialPropertySubtype: raw.commercialPropertySubtype || 'Godown',
-      availabilityLocalTransport: raw.availabilityLocalTransport || ['Personal Transport'],
+      availabilityLocalTransport: raw.availabilityLocalTransport || [],
       distanceFromRailwayStation: raw.distanceFromRailwayStation || '',
-      busStopTaxiStand: raw.busStopTaxiStand || 'Within 2-3 Kms',
+      busStopTaxiStand: raw.busStopTaxiStand || '',
       independentApproachRoad: raw.independentApproachRoad || 'Yes',
       accommodateFireExtinguisher: raw.accommodateFireExtinguisher || 'Yes',
       landLockedArea: raw.landLockedArea || 'No',
-      corneredOrIntermittent: raw.corneredOrIntermittent || 'Intermittent plot',
+      corneredOrIntermittent: raw.corneredOrIntermittent || '',
       corneredOrIntermittentVal: raw.corneredOrIntermittentVal || 'No',
 
       // Page 2: Boundaries
-      boundaryEastVerification: raw.boundaryEastVerification || 'Road',
-      boundaryEastDocument: raw.boundaryEastDocument || 'Road',
-      boundaryWestVerification: raw.boundaryWestVerification || "Other's Vacant land",
+      boundaryEastVerification: raw.boundaryEastVerification || '',
+      boundaryEastDocument: raw.boundaryEastDocument || '',
+      boundaryWestVerification: raw.boundaryWestVerification || '',
       boundaryWestDocument: raw.boundaryWestDocument || '',
-      boundaryNorthVerification: raw.boundaryNorthVerification || "Other's Vacant land",
+      boundaryNorthVerification: raw.boundaryNorthVerification || '',
       boundaryNorthDocument: raw.boundaryNorthDocument || '',
-      boundarySouthVerification: raw.boundarySouthVerification || "Other's Vacant land",
+      boundarySouthVerification: raw.boundarySouthVerification || '',
       boundarySouthDocument: raw.boundarySouthDocument || '',
 
       // Page 2: Locality & Usage
       classOfLocality: raw.classOfLocality || 'Middle class',
       qualityOfInfrastructure: raw.qualityOfInfrastructure || 'Good',
       ownershipStatus: raw.ownershipStatus || 'Free Hold',
-      approvedUsage: raw.approvedUsage || ['Commercial', 'Residential'],
-      actualUsage: raw.actualUsage || ['Commercial', 'Residential'],
+      approvedUsage: raw.approvedUsage || [],
+      actualUsage: raw.actualUsage || [],
       restrictiveCovenants: raw.restrictiveCovenants || 'Not Applicable',
-      typeOfStructure: raw.typeOfStructure || 'Load Bearing/RCC/GCI/Aluform shuttering',
-      noOfFloors: raw.noOfFloors || 'G+2 Storied building',
+      typeOfStructure: raw.typeOfStructure || 'RCC',
+      noOfFloors: raw.noOfFloors || '',
       occupancyDetails: raw.occupancyDetails || 'Self-Occupied',
       tenantName: raw.tenantName || 'NA',
       yearsInTenancy: raw.yearsInTenancy || 'NA',
@@ -246,19 +287,15 @@ export default function AxisAGRI({
       // Page 3: Construction & Floors
       areaOfPlotRor: raw.areaOfPlotRor || '',
       areaOfPlotDoc: raw.areaOfPlotDoc || '',
-      approvedBUA: raw.approvedBUA || 'Not Available',
+      approvedBUA: raw.approvedBUA || '',
       actualBUA: raw.actualBUA || '',
       demarcationAtSite: raw.demarcationAtSite || 'Yes',
-      floors: raw.floors || [
-        { floorName: 'Ground Floor', plinthArea: '525.00', usage: 'Residential', roofHeight: "10'-6\"", ageYears: '8Yrs', replacementRate: '1500.00', estimatedCost: '787500.00', depreciationAmount: '63000.00', netValue: '724500.00' },
-        { floorName: 'First Floor', plinthArea: '525.00', usage: 'Residential', roofHeight: "10'-6\"", ageYears: '8Yrs', replacementRate: '1300.00', estimatedCost: '682500.00', depreciationAmount: '54600.00', netValue: '627900.00' },
-        { floorName: 'Second Floor', plinthArea: '204.00', usage: 'Residential', roofHeight: "10'-6\"", ageYears: '8Yrs', replacementRate: '1300.00', estimatedCost: '265200.00', depreciationAmount: '21216.00', netValue: '243984.00' },
-      ],
-      totalBUA: raw.totalBUA || '1254.00 Sft',
-      totalCarpetArea: raw.totalCarpetArea || '1090.00 Sft (Approx.)',
+      floors: raw.floors || [],
+      totalBUA: raw.totalBUA || '',
+      totalCarpetArea: raw.totalCarpetArea || '',
       totalSaleableArea: raw.totalSaleableArea || '',
       amenitiesDetails: raw.amenitiesDetails || 'Nil',
-      farPermissibleUtilized: raw.farPermissibleUtilized || 'FAR:2.21',
+      farPermissibleUtilized: raw.farPermissibleUtilized || '',
       constructionAsPerApprovedPlan: raw.constructionAsPerApprovedPlan || 'Plan is not Available',
       extraConstructionDetails: raw.extraConstructionDetails || 'Not Applicable',
       extraConstructionPercentage: raw.extraConstructionPercentage || 'Not Applicable',
@@ -266,64 +303,69 @@ export default function AxisAGRI({
       qualityOfConstruction: raw.qualityOfConstruction || 'Good',
       maintenanceOfProperty: raw.maintenanceOfProperty || 'Good',
 
-      // Page 4: Building Condition, Life & Land Rate (Sec 8)
+      // Page 4: Building Condition, Life & Land Rate (Sec 9)
       conditionOfBuilding: raw.conditionOfBuilding || 'Good',
-      currentLifeStructure: raw.currentLifeStructure || '8 Years',
-      projectedLifeStructure: raw.projectedLifeStructure || '52 Years',
-      landRevenueTaxesPaid: raw.landRevenueTaxesPaid || 'Recent rent receipt is not provided',
-      municipalTaxesPaid: raw.municipalTaxesPaid || 'Not Applicable',
-      govtBenchmarkRateAcre: raw.govtBenchmarkRateAcre || '86,55,000',
-      govtBenchmarkRateSft: raw.govtBenchmarkRateSft || '199',
-      totalLandAreaDec: raw.totalLandAreaDec || '0.013',
-      totalLandAreaSft: raw.totalLandAreaSft || '566.00',
-      totalGovtValueLand: raw.totalGovtValueLand || '1,12,634.00',
-      prevailingMarketRateMin: raw.prevailingMarketRateMin || '500',
-      prevailingMarketRateMax: raw.prevailingMarketRateMax || '600',
-      adoptedMarketRateSft: raw.adoptedMarketRateSft || '550',
-      totalMarketValueLand: raw.totalMarketValueLand || '5,98,950.00',
+      currentLifeStructure: raw.currentLifeStructure || '',
+      projectedLifeStructure: raw.projectedLifeStructure || '',
+      landRevenueTaxesPaid: raw.landRevenueTaxesPaid || '',
+      municipalTaxesPaid: raw.municipalTaxesPaid || '',
+      govtBenchmarkRateAcre: raw.govtBenchmarkRateAcre || '',
+      govtBenchmarkRateSft: raw.govtBenchmarkRateSft || '',
+      totalLandAreaDec: raw.totalLandAreaDec || '',
+      totalLandAreaSft: raw.totalLandAreaSft || '',
+      totalGovtValueLand: raw.totalGovtValueLand || '',
+      prevailingMarketRateMin: raw.prevailingMarketRateMin || '',
+      prevailingMarketRateMax: raw.prevailingMarketRateMax || '',
+      adoptedMarketRateSft: raw.adoptedMarketRateSft || '',
+      totalMarketValueLand: raw.totalMarketValueLand || '',
 
       // Page 4: Building Basic Valuation (Sec 9)
-      totalBasicValueBuilding: raw.totalBasicValueBuilding || '21,96,285.00',
-      totalBasicValueBuildingSay: raw.totalBasicValueBuildingSay || '21,96,000.00',
-      totalBasicValueBuildingWords: raw.totalBasicValueBuildingWords || 'RUPEES TWENTY ONE LAKHS NINETY SIX THOUSANDS ONLY',
+      totalBasicValueBuilding: raw.totalBasicValueBuilding || '',
+      totalBasicValueBuildingSay: raw.totalBasicValueBuildingSay || '',
+      totalBasicValueBuildingWords: raw.totalBasicValueBuildingWords || '',
 
       // Page 5: Value of Property Summary Table (Sec 10)
-      govtGuideLand: raw.govtGuideLand || '1,12,634.00',
+      govtGuideLand: raw.govtGuideLand || '',
       govtGuideBuilding: raw.govtGuideBuilding || '-',
       govtGuideAmenities: raw.govtGuideAmenities || '-',
-      govtGuideTotal: raw.govtGuideTotal || '1,12,634.00',
-      marketValueLand: raw.marketValueLand || '5,98,950.00',
-      marketValueBuilding: raw.marketValueBuilding || '21,96,285.00',
+      govtGuideTotal: raw.govtGuideTotal || '',
+      marketValueLand: raw.marketValueLand || '',
+      marketValueBuilding: raw.marketValueBuilding || '',
       marketValueAmenities: raw.marketValueAmenities || '-',
-      marketValueTotal: raw.marketValueTotal || '27,95,235.00',
-      realisableValueLand: raw.realisableValueLand || '5,69,002.50',
-      realisableValueBuilding: raw.realisableValueBuilding || '20,86,470.75',
+      marketValueTotal: raw.marketValueTotal || '',
+      realisableValueLand: raw.realisableValueLand || '',
+      realisableValueBuilding: raw.realisableValueBuilding || '',
       realisableValueAmenities: raw.realisableValueAmenities || '-',
-      realisableValueTotal: raw.realisableValueTotal || '26,55,473.25',
-      distressValueLand: raw.distressValueLand || '5,09,107.50',
-      distressValueBuilding: raw.distressValueBuilding || '18,66,842.25',
+      realisableValueTotal: raw.realisableValueTotal || '',
+      distressValueLand: raw.distressValueLand || '',
+      distressValueBuilding: raw.distressValueBuilding || '',
       distressValueAmenities: raw.distressValueAmenities || '-',
-      distressValueTotal: raw.distressValueTotal || '23,75,949.75',
+      distressValueTotal: raw.distressValueTotal || '',
       insurableValueLand: raw.insurableValueLand || '-',
-      insurableValueBuilding: raw.insurableValueBuilding || '18,66,842.25',
+      insurableValueBuilding: raw.insurableValueBuilding || '',
       insurableValueAmenities: raw.insurableValueAmenities || '-',
-      insurableValueTotal: raw.insurableValueTotal || '18,66,842.25',
+      insurableValueTotal: raw.insurableValueTotal || '',
 
       // Page 5 & 6: Narratives & Remarks (Sec 11)
       realizableEstimationText: raw.realizableEstimationText || 'REALIZABLE ESTIMATION OF THE PROPERTY IN CASE OF DISTRESS SALE, IN CASE, THE BANK WILL SELL THE PROPERTY THROUGH PROCEEDINGS.',
-      marketValueSay: raw.marketValueSay || '27,95,000.00',
-      marketValueWords: raw.marketValueWords || 'RUPEES TWENTY SEVEN LAKHS NINETY FIVE THOUSANDS ONLY',
-      realizableValueSay: raw.realizableValueSay || '26,55,000.00',
-      realizableValueWords: raw.realizableValueWords || 'RUPEES TWENTY SIX LAKHS FIFTY THOUSAND ONLY',
-      distressValueSay: raw.distressValueSay || '23,76,000.00',
-      distressValueWords: raw.distressValueWords || 'RUPEES TWENTY THREE LAKHS SEVENTY FIVE THOUSAND ONLY',
-      basisOfValuation: raw.basisOfValuation || 'AS PER MARKET FEEDBACK, FREE HOLD SMALL SIZE RESIDENTIAL LANDS PATCH IN ACHHULI, PURUSOTTAMPUR & GANJAM. APPROACHING 20-FT WIDE ROAD ARE GETTING TRANSACTED IN A RANGE OF RS.500/- TO RS.600/- PER SFT. OUR LAND PATCH APPROACHES 20-FT WIDE ROAD, SHOULD BE GETTING TRANSACTED IN A RATE OF RS.550/- PER SFT INCLUDING ALL LAND DEVELOPMENT CHARGES.',
-      opinionOfMarketValue: raw.opinionOfMarketValue || 'AS A RESULT OF MY / OUR APPRAISAL AND ANALYSIS IT IS MY/OUR CONSIDERED OPINION THAT THE PRESENT MARKET VALUE OF THE ABOVE PROPERTY IN THE PREVAILING CONDITION WITH AFORESAID SPECIFICATIONS IS SAY : Rs.27,95,000/- (RUPEES TWENTY SEVEN LAKHS NINETY FIVE THOUSANDS ONLY).',
-      remarksText: raw.remarksText || 'THE SUBJECT PROPERTY IS AN EXISTING CASE WITH AXIS BANK. SUBJECT PROPERTY IS A G+2 STORIED RESIDENTIAL CUM COMMERCIAL BUILDING, LAND EXTENT OF (AC.0.013 DEC I.E. 566.00 SFT). THE BUILDING IS APPROXIMATELY 8 YEARS OLD AND IS LOCATED IN A DEVELOPED RESIDENTIAL AREA AT ACHHULI, PURUSOTTAMPUR & GANJAM, WITHIN THE JURISDICTION OF ACHHULI GRAM PANCHAYAT AREA LIMIT. THE PROPERTY IS PRESENTLY OWNER-OCCUPIED. BASIC CIVIC AMENITIES SUCH AS SCHOOLS, HOSPITALS, MARKETS, BANKS, AND PUBLIC TRANSPORTATION ARE AVAILABLE WITHIN A RADIUS OF APPROXIMATELY 2–3 KM. VALUATION HAS BEEN DONE FOR LAND & BUA OF THE G+2 STORIED RESIDENTIAL CUM COMMERCIAL BUILDING\nNB: WE HAVE NOT VERIFIED ANY SALE DEED, ROR, SKETCH MAP, AND APPROVAL PLAN. ALL THE DATA LIKE KHATA NO, PLOT NO, PLOT AREA, BUILT UP AREA, BOUNDARIES DETAILS ARE SHARED BY AXIS BANK LIMITED. REPORT IS RELEASED BASING UPON THE DATA SHARED BY AXIS BANK LIMITED.',
+      marketValueSay: raw.marketValueSay || '',
+      marketValueWords: raw.marketValueWords || '',
+      realizableValueSay: raw.realizableValueSay || '',
+      realizableValueWords: raw.realizableValueWords || '',
+      distressValueSay: raw.distressValueSay || '',
+      distressValueWords: raw.distressValueWords || '',
+      basisOfValuation: raw.basisOfValuation || '',
+      opinionOfMarketValue: raw.opinionOfMarketValue || '',
+      remarksText: raw.remarksText || '',
       undertakingText: raw.undertakingText || '• I have personally visited the property & identified the same based on the documents provided.\n• I/We have no direct or indirect interest in the property being valued.\n• The information furnished above is true and correct to my/our knowledge.\n• I/ we have not been dismissed or removed from govt. Service or convicted of an offence connected with any proceedings of income tax act, wealth tax act or gift tax act or have been blacklisted by any bank/ financial institution/ govt. Department/ public sector enterprise/ body corporate etc.\n• This valuation is prepared without any prejudice or bias to any person or institution\n• The value of land is taken into account by making due enquires in the locality and ascertaining the sales value of the properties in the locality\n• Any additions/alterations made to the property after the date of valuations shall not fall under the scope of this report',
-      annexureARegardingLand: raw.annexureARegardingLand || 'THERE IS A VERY HIGH DIFFERENCE BETWEEN GOVT. VALUE AND MARKET VALUE. GOVT. BENCHMARK VALUE NOT REVISED FOR THAT LOCALITY RECENTLY AND TO AVOID HIGH STAMP DUTY/REGISTRATION CHARGES SALE DEED EXECUTED IN UNDER-VALUED RATE.',
-      annexureARegardingBuilding: raw.annexureARegardingBuilding || 'BUILDING VALUE IS ARRIVED BY ANALYSIS OF RATE OF MATERIAL, LABOUR ETC. THIS A RCC ROOFING BUILDING WITH GOOD MAINTENANCE LEVEL & QUALITY OF CONSTRUCTION.',
-      annexureABasisLandRate: raw.annexureABasisLandRate || 'AS PER MARKET FEEDBACK, FREE HOLD SMALL SIZE RESIDENTIAL LANDS PATCH IN ACHHULI, PURUSOTTAMPUR & GANJAM. APPROACHING 20-FT WIDE ROAD ARE GETTING TRANSACTED IN A RANGE OF RS.500/- TO RS.600/- PER SFT. OUR LAND PATCH APPROACHES 20-FT WIDE ROAD, SHOULD BE GETTING TRANSACTED IN A RATE OF RS.550/- PER SFT INCLUDING ALL LAND DEVELOPMENT CHARGES.',
+      annexureARegardingLand: raw.annexureARegardingLand || '',
+      annexureARegardingBuilding: raw.annexureARegardingBuilding || '',
+      annexureABasisLandRate: raw.annexureABasisLandRate || '',
+
+      // Signatory & Valuer
+      authorizedSignatory: raw.authorizedSignatory || 'Er. Satyajit Mohanty',
+      visitingEngineer: raw.visitingEngineer || prefill?.firstFieldAgentName || prefill?.fieldEmployees?.[0]?.name || '',
+      dateOfReportSubmission: formatReportDate(raw.dateOfReportSubmission || raw.reportDate || new Date()),
 
       // Page 10: Checklist (Sec 12)
       checklistResponses: raw.checklistResponses || {
@@ -349,7 +391,7 @@ export default function AxisAGRI({
       benchmarkImages: raw.benchmarkImages || [],
       sketchMapImages: raw.sketchMapImages || [],
     };
-  }, [initialFields, prefill, defaultRefNo]);
+  }, [initialFields, prefill, defaultRefNo, firstFieldAgentVisit, derivedPropertyArea]);
 
   const [fields, setFields] = useState<AxisAgriReportFields>(() => decodeHtmlEntitiesDeep(initialData));
   const [loading, setLoading] = useState(false);
@@ -415,6 +457,18 @@ export default function AxisAGRI({
     }));
   }, []);
 
+  // Format actual BUA summary string from floor table
+  const handleAutoFormatBUA = useCallback(() => {
+    if (!fields.floors || fields.floors.length === 0) return;
+    const parts = fields.floors
+      .filter(f => f.floorName && f.plinthArea)
+      .map(f => `${f.floorName}: ${f.plinthArea} Sft`);
+    const total = fields.floors.reduce((acc, f) => acc + parseNum(f.plinthArea), 0);
+    const summary = `${parts.join(' ')} Total BUA: ${total.toFixed(2)} Sft`;
+    handleChange('actualBUA', summary);
+    handleChange('totalBUA', `${total.toFixed(2)} Sft`);
+  }, [fields.floors, handleChange]);
+
   // Auto-sum Plinth Area into Total BUA & Total Basic Value of Building
   useEffect(() => {
     const sumPlinth = (fields.floors || []).reduce((acc, f) => acc + parseNum(f.plinthArea), 0);
@@ -441,9 +495,9 @@ export default function AxisAGRI({
 
   // Auto-calculate Land Values when benchmark or market rate changes
   useEffect(() => {
-    const areaSft = parseNum(fields.totalLandAreaSft || '566');
-    const benchRate = parseNum(fields.govtBenchmarkRateSft || '199');
-    const adoptedRate = parseNum(fields.adoptedMarketRateSft || '550');
+    const areaSft = parseNum(fields.totalLandAreaSft);
+    const benchRate = parseNum(fields.govtBenchmarkRateSft);
+    const adoptedRate = parseNum(fields.adoptedMarketRateSft);
 
     if (areaSft > 0 && benchRate > 0) {
       const govtVal = (areaSft * benchRate).toFixed(2);
@@ -742,22 +796,23 @@ export default function AxisAGRI({
     </Field>
   );
 
-  // ── Navigation Sections (All 14 Sections) ──
+  // ── Navigation Sections (All 15 Sections) ──
   const navSections: NavItem[] = [
     { id: 'sec-1', title: '1. Header & Initiation' },
     { id: 'sec-2', title: '2. Property Location' },
     { id: 'sec-3', title: '3. Classification & Site' },
     { id: 'sec-4', title: '4. Boundaries' },
-    { id: 'sec-5', title: '5. Locality & Infrastructure' },
-    { id: 'sec-6', title: '6. Statutory Approvals' },
-    { id: 'sec-7', title: '7. Construction & BUA' },
-    { id: 'sec-8', title: '8. Condition, Life & Land Rate' },
-    { id: 'sec-9', title: '9. Building Valuation Breakdown' },
-    { id: 'sec-10', title: '10. Value of Property Summary' },
-    { id: 'sec-11', title: '11. Remarks & Annexure A' },
-    { id: 'sec-12', title: '12. Checklist & Undertaking' },
-    { id: 'sec-13', title: '13. Property Photographs' },
-    { id: 'sec-14', title: '14. Maps & Documents' },
+    { id: 'sec-5', title: '5. Locality & Structure' },
+    { id: 'sec-6', title: '6. Tenancy & Leasehold' },
+    { id: 'sec-7', title: '7. Statutory Approvals' },
+    { id: 'sec-8', title: '8. Construction & BUA' },
+    { id: 'sec-9', title: '9. Condition, Life & Land Rate' },
+    { id: 'sec-10', title: '10. Building Valuation Breakdown' },
+    { id: 'sec-11', title: '11. Value of Property Summary' },
+    { id: 'sec-12', title: '12. Remarks & Annexure A' },
+    { id: 'sec-13', title: '13. Checklist & Valuer Declaration' },
+    { id: 'sec-14', title: '14. Property Photographs' },
+    { id: 'sec-15', title: '15. Maps & Documents' },
   ];
 
   return (
@@ -788,45 +843,68 @@ export default function AxisAGRI({
             SECTION 1: HEADER & TECHNICAL INITIATION
         ═══════════════════════════════════════════════════════════════ */}
         <Section id="sec-1" title="Header & Technical Initiation" number={1} defaultOpen>
-          {/* Container 1: Report Reference & Initiation */}
+          {/* Container 1A: Report Reference */}
           <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 mb-5 shadow-xs">
-            <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">Report Reference & Technical Initiation</h3>
+            <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">Report Reference Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Field label="Reference Number (SMA/MM/YYYY/XX)">
+              <Field label="Reference Number">
                 <input
                   type="text"
                   className={inputCls}
                   value={fields.refNo || ''}
                   onChange={e => handleChange('refNo', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="SMA/08/2026/07"
+                  placeholder="SMA/MM/YYYY/XX"
                 />
               </Field>
 
-              <DateInput fieldKey="reportDate" label="Date of Report (DD/MM/YYYY)" />
-              <DateInput fieldKey="dateOfVisit" label="Date of Visit (DD/MM/YYYY)" />
-            </div>
+              <DateInput fieldKey="reportDate" label="Date of Report" />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <Field label="Report Initiated By (Area)">
+              <div className="space-y-1">
+                <DateInput fieldKey="dateOfVisit" label="Date of Visit" />
+                {firstFieldAgentVisit && (
+                  <div className="flex items-center justify-between text-[11px] bg-blue-100/70 border border-blue-200 text-blue-800 px-2 py-0.5 rounded">
+                    <span>
+                      Visited: <strong>{firstFieldAgentVisit.agentName}</strong> ({firstFieldAgentVisit.dateStr})
+                    </span>
+                    {!isReadOnly && fields.dateOfVisit !== firstFieldAgentVisit.dateStr && (
+                      <button
+                        type="button"
+                        onClick={() => handleChange('dateOfVisit', firstFieldAgentVisit.dateStr)}
+                        className="text-[10px] underline font-bold hover:text-blue-900 cursor-pointer ml-1"
+                      >
+                        Reset to Visit
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Container 1B: Technical Initiation Details */}
+          <div className="border border-sky-200 bg-sky-50/50 rounded-xl p-5 mb-5 shadow-xs">
+            <h3 className="font-semibold text-sky-800 mb-4 text-sm tracking-wide uppercase">Technical Initiation Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Report Initiated By (Area Office / Bank Branch)">
                 <input
                   type="text"
                   className={inputCls}
                   value={fields.reportInitiatedByArea || ''}
                   onChange={e => handleChange('reportInitiatedByArea', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="e.g. Purusottampur, Ganjam"
+                  placeholder="e.g. Cluster / Area Branch Office"
                 />
               </Field>
 
-              <Field label="Name of Area">
+              <Field label="Name of Area (Property Locality / Village)">
                 <input
                   type="text"
                   className={inputCls}
                   value={fields.nameOfArea || ''}
                   onChange={e => handleChange('nameOfArea', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="e.g. Purusottampur, Ganjam"
+                  placeholder="e.g. Property Locality / Village"
                 />
               </Field>
             </div>
@@ -917,14 +995,14 @@ export default function AxisAGRI({
                   value={fields.roadFacilityAtSite || ''}
                   onChange={e => handleChange('roadFacilityAtSite', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="e.g. 20-ft wide Road"
+                  placeholder="e.g. 20-ft wide Road / Tar Road"
                 />
               </Field>
             </div>
 
             {/* Documents Provided Checkbox Group */}
             <Field label="Documents Provided">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-1 mb-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-1">
                 {[
                   'Copy of Sale Deed',
                   'Bhu-Naksha',
@@ -957,23 +1035,26 @@ export default function AxisAGRI({
                 })}
               </div>
             </Field>
-
-            {/* Plot Khata Description */}
-            <Field label="Plot No / S.No / G.No / Khasra No & Property Specifics">
-              <textarea
-                rows={3}
-                className={inputCls}
-                value={fields.plotKhataDetails || ''}
-                onChange={e => handleChange('plotKhataDetails', e.target.value)}
-                disabled={isReadOnly}
-                placeholder="Khata No: 405/107, Plot No: 191/1095, Total Area Ac.0.013 Dec I.E. 566.00 Sft, Kissam: Gharabari, Mouza: Achhuli, Ps- Purusottampur, No-223, Ts: Purusottampur No-139, Dist- Ganjam, Odisha."
-              />
-            </Field>
           </div>
 
           {/* Container 2: Address & Geographic Position */}
           <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs">
             <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">Address & Geographic Position</h3>
+
+            {/* Plot Khata Description shifted into Address container */}
+            <div className="mb-4">
+              <Field label="Plot No / S.No / G.No / Khasra No & Property Specifics">
+                <textarea
+                  rows={3}
+                  className={inputCls}
+                  value={fields.plotKhataDetails || ''}
+                  onChange={e => handleChange('plotKhataDetails', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="e.g. Khata No: ..., Plot No: ..., Total Area Ac.0.0... Dec i.e. ... Sft, Kissam: ..., Mouza: ..., Ps: ..., Dist: ..."
+                />
+              </Field>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <Field label="Colony / Nagar / Sector">
                 <input
@@ -982,7 +1063,7 @@ export default function AxisAGRI({
                   value={fields.colonyNagarSector || ''}
                   onChange={e => handleChange('colonyNagarSector', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Purusottampur, Ganjam"
+                  placeholder="e.g. Colony / Sector / Area"
                 />
               </Field>
 
@@ -993,7 +1074,7 @@ export default function AxisAGRI({
                   value={fields.localityLandmark || ''}
                   onChange={e => handleChange('localityLandmark', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Situated nearer to Purusottampur Achhuli chaka"
+                  placeholder="e.g. Near Achhuli Chaka"
                 />
               </Field>
 
@@ -1004,7 +1085,7 @@ export default function AxisAGRI({
                   value={fields.villageTownCityMarket || ''}
                   onChange={e => handleChange('villageTownCityMarket', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Village"
+                  placeholder="e.g. Village / Town"
                 />
               </Field>
 
@@ -1015,7 +1096,7 @@ export default function AxisAGRI({
                   value={fields.district || ''}
                   onChange={e => handleChange('district', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Ganjam"
+                  placeholder="e.g. Ganjam"
                 />
               </Field>
 
@@ -1026,7 +1107,7 @@ export default function AxisAGRI({
                   value={fields.state || ''}
                   onChange={e => handleChange('state', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Odisha"
+                  placeholder="e.g. Odisha"
                 />
               </Field>
 
@@ -1037,7 +1118,7 @@ export default function AxisAGRI({
                   value={fields.pincode || ''}
                   onChange={e => handleChange('pincode', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="761018"
+                  placeholder="e.g. 761018"
                 />
               </Field>
             </div>
@@ -1051,7 +1132,7 @@ export default function AxisAGRI({
                   value={fields.distanceFromAreaOffice || ''}
                   onChange={e => handleChange('distanceFromAreaOffice', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="2 Kms away from Purusottampur area office"
+                  placeholder="e.g. 2 Kms away from area office"
                 />
               </Field>
 
@@ -1062,7 +1143,7 @@ export default function AxisAGRI({
                   value={fields.latitude || ''}
                   onChange={e => handleChange('latitude', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="19.511361"
+                  placeholder="e.g. 19.511361"
                 />
               </Field>
 
@@ -1073,7 +1154,7 @@ export default function AxisAGRI({
                   value={fields.longitude || ''}
                   onChange={e => handleChange('longitude', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="84.907833"
+                  placeholder="e.g. 84.907833"
                 />
               </Field>
 
@@ -1084,7 +1165,7 @@ export default function AxisAGRI({
                   value={fields.coordinates || ''}
                   onChange={e => handleChange('coordinates', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder={`19°30'40.9"N 84°54'28.2"E`}
+                  placeholder="e.g. 19°30'40.9&quot;N 84°54'28.2&quot;E"
                 />
               </Field>
             </div>
@@ -1120,7 +1201,7 @@ export default function AxisAGRI({
                   value={fields.levelOfLand || ''}
                   onChange={e => handleChange('levelOfLand', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Existing Road Level"
+                  placeholder="e.g. Existing Road Level"
                 />
               </Field>
 
@@ -1157,7 +1238,7 @@ export default function AxisAGRI({
                   value={fields.municipalLimitDetails || ''}
                   onChange={e => handleChange('municipalLimitDetails', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="(Within Achhuli Gram Panchayat area limit)"
+                  placeholder="e.g. (Within Gram Panchayat area limit)"
                 />
               </Field>
             </div>
@@ -1255,7 +1336,7 @@ export default function AxisAGRI({
                   value={fields.distanceFromRailwayStation || ''}
                   onChange={e => handleChange('distanceFromRailwayStation', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="27 Km from Khallikote"
+                  placeholder="e.g. 15 Km from nearest station"
                 />
               </Field>
 
@@ -1266,7 +1347,7 @@ export default function AxisAGRI({
                   value={fields.busStopTaxiStand || ''}
                   onChange={e => handleChange('busStopTaxiStand', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Within 2-3 Kms"
+                  placeholder="e.g. Within 2-3 Kms"
                 />
               </Field>
 
@@ -1355,7 +1436,7 @@ export default function AxisAGRI({
                         value={fields.boundaryEastVerification || ''}
                         onChange={e => handleChange('boundaryEastVerification', e.target.value)}
                         disabled={isReadOnly}
-                        placeholder="Road"
+                        placeholder="e.g. Road / Adjacent Plot"
                       />
                     </td>
                     <td className="p-2">
@@ -1365,7 +1446,7 @@ export default function AxisAGRI({
                         value={fields.boundaryEastDocument || ''}
                         onChange={e => handleChange('boundaryEastDocument', e.target.value)}
                         disabled={isReadOnly}
-                        placeholder="Road"
+                        placeholder="e.g. Road / Document Boundary"
                       />
                     </td>
                   </tr>
@@ -1379,7 +1460,7 @@ export default function AxisAGRI({
                         value={fields.boundaryWestVerification || ''}
                         onChange={e => handleChange('boundaryWestVerification', e.target.value)}
                         disabled={isReadOnly}
-                        placeholder="Other's Vacant land"
+                        placeholder="e.g. Vacant Land / Plot No."
                       />
                     </td>
                     <td className="p-2">
@@ -1389,7 +1470,7 @@ export default function AxisAGRI({
                         value={fields.boundaryWestDocument || ''}
                         onChange={e => handleChange('boundaryWestDocument', e.target.value)}
                         disabled={isReadOnly}
-                        placeholder="Hemanta Kumar Panda"
+                        placeholder="e.g. Plot No. / Owner Name"
                       />
                     </td>
                   </tr>
@@ -1403,7 +1484,7 @@ export default function AxisAGRI({
                         value={fields.boundaryNorthVerification || ''}
                         onChange={e => handleChange('boundaryNorthVerification', e.target.value)}
                         disabled={isReadOnly}
-                        placeholder="Other's Vacant land"
+                        placeholder="e.g. Vacant Land / Plot No."
                       />
                     </td>
                     <td className="p-2">
@@ -1413,7 +1494,7 @@ export default function AxisAGRI({
                         value={fields.boundaryNorthDocument || ''}
                         onChange={e => handleChange('boundaryNorthDocument', e.target.value)}
                         disabled={isReadOnly}
-                        placeholder="Kirtan Behera"
+                        placeholder="e.g. Plot No. / Owner Name"
                       />
                     </td>
                   </tr>
@@ -1427,7 +1508,7 @@ export default function AxisAGRI({
                         value={fields.boundarySouthVerification || ''}
                         onChange={e => handleChange('boundarySouthVerification', e.target.value)}
                         disabled={isReadOnly}
-                        placeholder="Other's Vacant land"
+                        placeholder="e.g. Vacant Land / Plot No."
                       />
                     </td>
                     <td className="p-2">
@@ -1437,7 +1518,7 @@ export default function AxisAGRI({
                         value={fields.boundarySouthDocument || ''}
                         onChange={e => handleChange('boundarySouthDocument', e.target.value)}
                         disabled={isReadOnly}
-                        placeholder="Gobinda Behera"
+                        placeholder="e.g. Plot No. / Owner Name"
                       />
                     </td>
                   </tr>
@@ -1498,12 +1579,12 @@ export default function AxisAGRI({
               </Field>
             </div>
 
-            {/* Approved vs Actual Usage Multi-Select */}
+            {/* Approved vs Actual Usage Multi-Select (Separate lines, default selected: none) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Approved Usage of Property">
-                <div className="flex gap-3 pt-2">
+                <div className="flex flex-col gap-2 pt-1">
                   {['Industrial', 'commercial', 'Residential', 'Mix'].map(item => (
-                    <label key={item} className="flex items-center gap-1.5 text-xs font-medium cursor-pointer">
+                    <label key={item} className="flex items-center gap-2 text-xs font-medium cursor-pointer p-1.5 rounded hover:bg-indigo-100/50">
                       <input
                         type="checkbox"
                         checked={(fields.approvedUsage || []).includes(item)}
@@ -1511,16 +1592,16 @@ export default function AxisAGRI({
                         disabled={isReadOnly}
                         className="rounded text-indigo-600 focus:ring-indigo-500"
                       />
-                      <span>{item}</span>
+                      <span className="font-semibold text-slate-800">{item}</span>
                     </label>
                   ))}
                 </div>
               </Field>
 
               <Field label="Actual Usage of Property">
-                <div className="flex gap-3 pt-2">
+                <div className="flex flex-col gap-2 pt-1">
                   {['Industrial', 'Commercial', 'Residential', 'Mix'].map(item => (
-                    <label key={item} className="flex items-center gap-1.5 text-xs font-medium cursor-pointer">
+                    <label key={item} className="flex items-center gap-2 text-xs font-medium cursor-pointer p-1.5 rounded hover:bg-indigo-100/50">
                       <input
                         type="checkbox"
                         checked={(fields.actualUsage || []).includes(item)}
@@ -1528,7 +1609,7 @@ export default function AxisAGRI({
                         disabled={isReadOnly}
                         className="rounded text-indigo-600 focus:ring-indigo-500"
                       />
-                      <span>{item}</span>
+                      <span className="font-semibold text-slate-800">{item}</span>
                     </label>
                   ))}
                 </div>
@@ -1536,10 +1617,35 @@ export default function AxisAGRI({
             </div>
           </div>
 
-          {/* Container 2: Structure, Occupancy & Surroundings */}
-          <div className="border border-emerald-200 bg-emerald-50/50 rounded-xl p-5 mb-5 shadow-xs">
-            <h3 className="font-semibold text-emerald-800 mb-4 text-sm tracking-wide uppercase">Structure, Occupancy & Surroundings</h3>
+          {/* Container 2: Structure & Surroundings */}
+          <div className="border border-emerald-200 bg-emerald-50/50 rounded-xl p-5 shadow-xs">
+            <h3 className="font-semibold text-emerald-800 mb-4 text-sm tracking-wide uppercase">Structure & Surroundings</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <Field label="Type of Structure (Bold in PDF)">
+                <select
+                  className={selectCls}
+                  value={fields.typeOfStructure || 'RCC'}
+                  onChange={e => handleChange('typeOfStructure', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="Load Bearing">Load Bearing</option>
+                  <option value="RCC">RCC</option>
+                  <option value="GCI">GCI</option>
+                  <option value="Aluform shuttering">Aluform shuttering</option>
+                </select>
+              </Field>
+
+              <Field label="No of Floors">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.noOfFloors || ''}
+                  onChange={e => handleChange('noOfFloors', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="e.g. G+1 / G+2"
+                />
+              </Field>
+
               <Field label="Restrictive Covenants Regards Land Use">
                 <input
                   type="text"
@@ -1550,29 +1656,50 @@ export default function AxisAGRI({
                   placeholder="Not Applicable"
                 />
               </Field>
+            </div>
 
-              <Field label="Type of Structure">
-                <input
-                  type="text"
-                  className={inputCls}
-                  value={fields.typeOfStructure || ''}
-                  onChange={e => handleChange('typeOfStructure', e.target.value)}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Development of Surrounding Area">
+                <select
+                  className={selectCls}
+                  value={fields.developmentSurroundingArea || 'Developing'}
+                  onChange={e => handleChange('developmentSurroundingArea', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Load Bearing/RCC/GCI/Aluform shuttering"
-                />
+                >
+                  <option value="Underdeveloped">Underdeveloped</option>
+                  <option value="Developing">Developing</option>
+                  <option value="Developed">Developed</option>
+                </select>
               </Field>
 
-              <Field label="No of Floors">
-                <input
-                  type="text"
-                  className={inputCls}
-                  value={fields.noOfFloors || ''}
-                  onChange={e => handleChange('noOfFloors', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="G+2 Storied building"
-                />
+              <Field label="Basic Amenities">
+                <div className="flex gap-3 pt-2">
+                  {['Electricity', 'Water', 'Drainage connection'].map(item => (
+                    <label key={item} className="flex items-center gap-1.5 text-xs font-medium cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={(fields.basicAmenities || []).includes(item)}
+                        onChange={() => handleToggleMulti('basicAmenities', item)}
+                        disabled={isReadOnly}
+                        className="rounded text-emerald-600 focus:ring-emerald-500"
+                      />
+                      <span>{item}</span>
+                    </label>
+                  ))}
+                </div>
               </Field>
+            </div>
+          </div>
+        </Section>
 
+        {/* ═══════════════════════════════════════════════════════════════
+            SECTION 6: TENANCY, OCCUPANCY & LEASEHOLD DETAILS
+        ═══════════════════════════════════════════════════════════════ */}
+        <Section id="sec-6" title="Tenancy, Occupancy & Leasehold Details" number={6} defaultOpen>
+          {/* Container 1: Occupancy & Tenancy */}
+          <div className="border border-indigo-200 bg-indigo-50/50 rounded-xl p-5 mb-5 shadow-xs">
+            <h3 className="font-semibold text-indigo-800 mb-4 text-sm tracking-wide uppercase">Occupancy & Tenancy Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <Field label="Occupancy Details">
                 <select
                   className={selectCls}
@@ -1609,7 +1736,7 @@ export default function AxisAGRI({
               </Field>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Was Resistance for Valuation">
                 <select
                   className={selectCls}
@@ -1633,44 +1760,14 @@ export default function AxisAGRI({
                   <option value="No">No</option>
                 </select>
               </Field>
-
-              <Field label="Development of Surrounding Area">
-                <select
-                  className={selectCls}
-                  value={fields.developmentSurroundingArea || 'Developing'}
-                  onChange={e => handleChange('developmentSurroundingArea', e.target.value)}
-                  disabled={isReadOnly}
-                >
-                  <option value="Underdeveloped">Underdeveloped</option>
-                  <option value="Developing">Developing</option>
-                  <option value="Developed">Developed</option>
-                </select>
-              </Field>
-
-              <Field label="Basic Amenities">
-                <div className="flex gap-2 pt-2">
-                  {['Electricity', 'Water', 'Drainage connection'].map(item => (
-                    <label key={item} className="flex items-center gap-1 text-[11px] font-medium cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={(fields.basicAmenities || []).includes(item)}
-                        onChange={() => handleToggleMulti('basicAmenities', item)}
-                        disabled={isReadOnly}
-                        className="rounded text-emerald-600 focus:ring-emerald-500"
-                      />
-                      <span>{item}</span>
-                    </label>
-                  ))}
-                </div>
-              </Field>
             </div>
           </div>
 
-          {/* Container 3: Leasehold Details */}
+          {/* Container 2: Leasehold Details */}
           <div className="border border-teal-200 bg-teal-50/50 rounded-xl p-5 shadow-xs">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-semibold text-teal-800 text-sm tracking-wide uppercase">
-                Leasehold Details (If Applicable)
+                Leasehold Details (The Property is Free Hold Land)
               </h3>
               <span className="text-xs text-slate-500 italic">{fields.isLeasehold}</span>
             </div>
@@ -1712,9 +1809,9 @@ export default function AxisAGRI({
         </Section>
 
         {/* ═══════════════════════════════════════════════════════════════
-            SECTION 6: STATUTORY APPROVAL DETAILS
+            SECTION 7: STATUTORY APPROVAL DETAILS (APPROVAL DETAILS:-)
         ═══════════════════════════════════════════════════════════════ */}
-        <Section id="sec-6" title="Statutory Approval Details" number={6} defaultOpen>
+        <Section id="sec-7" title="Approval Details:- (Statutory Approvals)" number={7} defaultOpen>
           {/* Container 1: RERA & Certificates */}
           <div className="border border-teal-200 bg-teal-50/50 rounded-xl p-5 mb-5 shadow-xs">
             <h3 className="font-semibold text-teal-800 mb-4 text-sm tracking-wide uppercase">RERA & Statutory Certificates</h3>
@@ -1745,7 +1842,7 @@ export default function AxisAGRI({
 
           {/* Container 2: Layout Approval */}
           <div className="border border-cyan-200 bg-cyan-50/50 rounded-xl p-5 mb-5 shadow-xs">
-            <h3 className="font-semibold text-cyan-800 mb-4 text-sm tracking-wide uppercase">Layout Approval (Statutory DDMMYYYY Layout)</h3>
+            <h3 className="font-semibold text-cyan-800 mb-4 text-sm tracking-wide uppercase">Layout Approval Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Field label="Layout Approval Number">
                 <input
@@ -1758,25 +1855,14 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Date8BoxInput
-                label="Date of Approval [DDMMYYYY]"
-                value={fields.layoutApprovalDate}
-                onChange={val => handleChange('layoutApprovalDate', val)}
-                disabled={isReadOnly}
-              />
-
-              <Date8BoxInput
-                label="Expiry Date [DDMMYYYY]"
-                value={fields.layoutExpiryDate}
-                onChange={val => handleChange('layoutExpiryDate', val)}
-                disabled={isReadOnly}
-              />
+              <DateInput fieldKey="layoutApprovalDate" label="Date of Approval (DD/MM/YYYY)" />
+              <DateInput fieldKey="layoutExpiryDate" label="Expiry Date (DD/MM/YYYY)" />
             </div>
           </div>
 
           {/* Container 3: Building Plan Approval */}
           <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs">
-            <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">Building Plan Approval (Statutory DDMMYYYY Layout)</h3>
+            <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">Building Plan Approval Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Field label="Building Plan Approval Number">
                 <input
@@ -1789,31 +1875,21 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Date8BoxInput
-                label="Date of Approval [DDMMYYYY]"
-                value={fields.buildingPlanApprovalDate}
-                onChange={val => handleChange('buildingPlanApprovalDate', val)}
-                disabled={isReadOnly}
-              />
-
-              <Date8BoxInput
-                label="Expiry Date [DDMMYYYY]"
-                value={fields.buildingPlanExpiryDate}
-                onChange={val => handleChange('buildingPlanExpiryDate', val)}
-                disabled={isReadOnly}
-              />
+              <DateInput fieldKey="buildingPlanApprovalDate" label="Date of Approval (DD/MM/YYYY)" />
+              <DateInput fieldKey="buildingPlanExpiryDate" label="Expiry Date (DD/MM/YYYY)" />
             </div>
           </div>
         </Section>
 
         {/* ═══════════════════════════════════════════════════════════════
-            SECTION 7: CONSTRUCTION & FLOOR-WISE BREAKUP
+            SECTION 8: CONSTRUCTION & FLOOR-WISE BREAKUP
         ═══════════════════════════════════════════════════════════════ */}
-        <Section id="sec-7" title="Construction Details & Floor-Wise BUA" number={7} defaultOpen>
-          {/* Container 1: Plot Extents & Demarcation */}
+        <Section id="sec-8" title="Construction Details & Floor-Wise BUA" number={8} defaultOpen>
+          {/* Container 1: Plot Extents & Demarcation (2x2 Grid Matching Photo) */}
           <div className="border border-amber-200 bg-amber-50/50 rounded-xl p-5 mb-5 shadow-xs">
             <h3 className="font-semibold text-amber-800 mb-4 text-sm tracking-wide uppercase">Plot Extents & Demarcation</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              {/* Row 1 Left */}
               <Field label="Area of Plot as per ROR">
                 <input
                   type="text"
@@ -1821,35 +1897,11 @@ export default function AxisAGRI({
                   value={fields.areaOfPlotRor || ''}
                   onChange={e => handleChange('areaOfPlotRor', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Total Area = Ac.0.013 Dec i.e. 566.00 Sft"
+                  placeholder="Not Available"
                 />
               </Field>
 
-              <Field label="Area of Plot as per Document">
-                <input
-                  type="text"
-                  className={inputCls}
-                  value={fields.areaOfPlotDoc || ''}
-                  onChange={e => handleChange('areaOfPlotDoc', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="Total Area = Ac.0.013 Dec i.e. 566.00 Sft"
-                />
-              </Field>
-
-              <Field label="Demarcation at Site">
-                <select
-                  className={selectCls}
-                  value={fields.demarcationAtSite || 'Yes'}
-                  onChange={e => handleChange('demarcationAtSite', e.target.value)}
-                  disabled={isReadOnly}
-                >
-                  <option value="Yes">Yes</option>
-                  <option value="No">No</option>
-                </select>
-              </Field>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Row 1 Right */}
               <Field label="Approved Built-Up Area (In Sq.Ft.)">
                 <input
                   type="text"
@@ -1861,16 +1913,57 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="Actual Built-Up Area Summary (In Sq.Ft.)">
+              {/* Row 2 Left */}
+              <Field label="Area of Plot as per Document">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.areaOfPlotDoc || ''}
+                  onChange={e => handleChange('areaOfPlotDoc', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="Not Available"
+                />
+              </Field>
+
+              {/* Row 2 Right */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-slate-700">Actual Built-Up Area Summary (In Sq.Ft.)</span>
+                  {!isReadOnly && (fields.floors || []).length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleAutoFormatBUA}
+                      className="text-[10px] text-blue-700 hover:text-blue-900 font-bold underline cursor-pointer"
+                      title="Generate summary text from floor table"
+                    >
+                      Auto-Format from Floors
+                    </button>
+                  )}
+                </div>
                 <input
                   type="text"
                   className={inputCls}
                   value={fields.actualBUA || ''}
                   onChange={e => handleChange('actualBUA', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="RCC GF: 525.00 Sft RCC FF: 525.00 Sft RCC SF: 204.00 Sft Total BUA: 1254.00 Sft"
+                  placeholder="Not Available"
                 />
-              </Field>
+              </div>
+
+              {/* Row 3 Left */}
+              <div className="md:col-span-1">
+                <Field label="Demarcation at Site">
+                  <select
+                    className={selectCls}
+                    value={fields.demarcationAtSite || 'Yes'}
+                    onChange={e => handleChange('demarcationAtSite', e.target.value)}
+                    disabled={isReadOnly}
+                  >
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </Field>
+              </div>
             </div>
           </div>
 
@@ -2096,9 +2189,9 @@ export default function AxisAGRI({
         </Section>
 
         {/* ═══════════════════════════════════════════════════════════════
-            SECTION 8: BUILDING CONDITION, LIFE & LAND RATE
+            SECTION 9: BUILDING CONDITION, LIFE & LAND RATE
         ═══════════════════════════════════════════════════════════════ */}
-        <Section id="sec-8" title="Building Condition, Life & Land Rate" number={8} defaultOpen>
+        <Section id="sec-9" title="Building Condition, Life & Land Rate" number={9} defaultOpen>
           {/* Container 1: Condition, Life & Taxes */}
           <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 mb-5 shadow-xs">
             <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">Building Condition, Life & Taxes</h3>
@@ -2129,7 +2222,7 @@ export default function AxisAGRI({
                         value={fields.currentLifeStructure || ''}
                         onChange={e => handleChange('currentLifeStructure', e.target.value)}
                         disabled={isReadOnly}
-                        placeholder="8 Years"
+                        placeholder="e.g. 8 Years"
                       />
                     </td>
                     <td className="p-3 font-semibold text-slate-700 border-r">Projected Life of Structure</td>
@@ -2140,7 +2233,7 @@ export default function AxisAGRI({
                         value={fields.projectedLifeStructure || ''}
                         onChange={e => handleChange('projectedLifeStructure', e.target.value)}
                         disabled={isReadOnly}
-                        placeholder="52 Years"
+                        placeholder="e.g. 52 Years"
                       />
                     </td>
                   </tr>
@@ -2275,9 +2368,9 @@ export default function AxisAGRI({
         </Section>
 
         {/* ═══════════════════════════════════════════════════════════════
-            SECTION 9: BUILDING VALUATION BREAKDOWN
+            SECTION 10: BUILDING VALUATION BREAKDOWN
         ═══════════════════════════════════════════════════════════════ */}
-        <Section id="sec-9" title="Building Valuation Breakdown & Cost Analysis" number={9} defaultOpen>
+        <Section id="sec-10" title="Building Valuation Breakdown & Cost Analysis" number={10} defaultOpen>
           <div className="border border-emerald-200 bg-emerald-50/50 rounded-xl p-5 shadow-xs">
             <h3 className="font-semibold text-emerald-800 mb-4 text-sm tracking-wide uppercase">Floor-Wise Replacement Cost & Depreciation Breakdown</h3>
             <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
@@ -2412,9 +2505,9 @@ export default function AxisAGRI({
         </Section>
 
         {/* ═══════════════════════════════════════════════════════════════
-            SECTION 10: VALUE OF PROPERTY SUMMARY MATRIX
+            SECTION 11: VALUE OF PROPERTY SUMMARY MATRIX
         ═══════════════════════════════════════════════════════════════ */}
-        <Section id="sec-10" title="Value of the Property (Summary Matrix)" number={10} defaultOpen>
+        <Section id="sec-11" title="Value of the Property (Summary Matrix)" number={11} defaultOpen>
           {/* Container 1: Five-Tier Valuation Matrix */}
           <div className="border border-indigo-200 bg-indigo-50/50 rounded-xl p-5 mb-5 shadow-xs">
             <h3 className="font-semibold text-indigo-800 mb-4 text-sm tracking-wide uppercase">Five-Tier Valuation Matrix</h3>
@@ -2505,9 +2598,9 @@ export default function AxisAGRI({
         </Section>
 
         {/* ═══════════════════════════════════════════════════════════════
-            SECTION 11: REMARKS & ANNEXURE A
+            SECTION 12: REMARKS & ANNEXURE A
         ═══════════════════════════════════════════════════════════════ */}
-        <Section id="sec-11" title="Remarks, Opinions & Annexure 'A'" number={11} defaultOpen>
+        <Section id="sec-12" title="Remarks, Opinions & Annexure 'A'" number={12} defaultOpen>
           {/* Container 1: Remarks & Opinions */}
           <div className="border border-yellow-200 bg-yellow-50/50 rounded-xl p-5 mb-5 shadow-xs">
             <h3 className="font-semibold text-amber-800 mb-4 text-sm tracking-wide uppercase">Valuer Remarks & Market Opinions</h3>
@@ -2519,6 +2612,7 @@ export default function AxisAGRI({
                   value={fields.basisOfValuation || ''}
                   onChange={e => handleChange('basisOfValuation', e.target.value)}
                   disabled={isReadOnly}
+                  placeholder="Enter basis of valuation..."
                 />
               </Field>
 
@@ -2529,6 +2623,7 @@ export default function AxisAGRI({
                   value={fields.opinionOfMarketValue || ''}
                   onChange={e => handleChange('opinionOfMarketValue', e.target.value)}
                   disabled={isReadOnly}
+                  placeholder="Enter opinion of market value..."
                 />
               </Field>
 
@@ -2539,6 +2634,7 @@ export default function AxisAGRI({
                   value={fields.remarksText || ''}
                   onChange={e => handleChange('remarksText', e.target.value)}
                   disabled={isReadOnly}
+                  placeholder="Enter remarks and statutory disclaimer..."
                 />
               </Field>
             </div>
@@ -2555,6 +2651,7 @@ export default function AxisAGRI({
                   value={fields.annexureARegardingLand || ''}
                   onChange={e => handleChange('annexureARegardingLand', e.target.value)}
                   disabled={isReadOnly}
+                  placeholder="Details regarding land..."
                 />
               </Field>
               <Field label="Regarding Building">
@@ -2564,6 +2661,7 @@ export default function AxisAGRI({
                   value={fields.annexureARegardingBuilding || ''}
                   onChange={e => handleChange('annexureARegardingBuilding', e.target.value)}
                   disabled={isReadOnly}
+                  placeholder="Details regarding building..."
                 />
               </Field>
               <Field label="Basis of Arriving at the Land Rate">
@@ -2573,6 +2671,7 @@ export default function AxisAGRI({
                   value={fields.annexureABasisLandRate || ''}
                   onChange={e => handleChange('annexureABasisLandRate', e.target.value)}
                   disabled={isReadOnly}
+                  placeholder="Basis of arriving at land rate..."
                 />
               </Field>
             </div>
@@ -2580,9 +2679,9 @@ export default function AxisAGRI({
         </Section>
 
         {/* ═══════════════════════════════════════════════════════════════
-            SECTION 12: STATUTORY CHECKLIST & UNDERTAKING
+            SECTION 13: STATUTORY CHECKLIST & VALUER DECLARATION
         ═══════════════════════════════════════════════════════════════ */}
-        <Section id="sec-12" title="Valuation Report Checklist & Undertaking" number={12} defaultOpen>
+        <Section id="sec-13" title="Valuation Report Checklist & Valuer Declaration" number={13} defaultOpen>
           {/* Container 1: Checklist */}
           <div className="border border-indigo-200 bg-indigo-50/50 rounded-xl p-5 mb-5 shadow-xs">
             <h3 className="font-semibold text-indigo-800 mb-4 text-sm tracking-wide uppercase">Valuation Report Check List (12 Statutory Items)</h3>
@@ -2630,36 +2729,117 @@ export default function AxisAGRI({
             </div>
           </div>
 
-          {/* Container 2: Undertaking & Valuer Block */}
+          {/* Container 2: Valuer Declaration & Authorized Signatory Block (Arthan Style) */}
           <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs">
-            <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">Undertaking & Authorized Signatory Block</h3>
-            <div className="space-y-4">
-              <Field label="Undertaking Text">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-blue-200/80 pb-3 mb-4 gap-2">
+              <div>
+                <h3 className="font-semibold text-blue-800 text-sm tracking-wide uppercase flex items-center gap-2">
+                  <span>✍️</span> Valuer Declaration & Authorized Signatory
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Statutory certification, visiting engineer, report submission date, and declaration undertaking.
+                </p>
+              </div>
+              <span className="text-[10px] font-bold text-blue-700 bg-blue-100 px-2.5 py-1 rounded-full uppercase tracking-wider self-start sm:self-auto">
+                Statutory Certification
+              </span>
+            </div>
+
+            <div className="space-y-5">
+              {/* Certification Grid (Arthan Style) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="Date of Visit (DD/MM/YYYY)">
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      className={`${inputCls} bg-slate-100 text-black cursor-not-allowed font-semibold pr-8`}
+                      value={fields.dateOfVisit || ''}
+                      disabled
+                      readOnly
+                      placeholder="DD/MM/YYYY"
+                    />
+                    <span className="absolute right-2.5 text-xs text-black" title="Locked: Referenced from Section 1 Date of Site Visit">
+                      🔒
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-500 font-medium mt-1 block">
+                    Referenced from Sec 1 (Date of Site Visit)
+                  </span>
+                </Field>
+
+                <DateInput fieldKey="dateOfReportSubmission" label="Date of Report Submission (DD/MM/YYYY)" />
+
+                <Field label="Name of Engineer Visited the property">
+                  <input
+                    className={inputCls}
+                    value={fields.visitingEngineer || ''}
+                    onChange={e => handleChange('visitingEngineer', e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="Auto-filled from field inspector"
+                  />
+                  <span className="text-[11px] text-slate-500 font-medium mt-1 block">
+                    Field inspection engineer who visited the site
+                  </span>
+                </Field>
+
+                <Field label="Authorized Signatory Name & Signature">
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      className={`${inputCls} bg-slate-100 text-black cursor-not-allowed font-semibold pr-8`}
+                      value={fields.authorizedSignatory || 'Er. Satyajit Mohanty'}
+                      disabled
+                      readOnly
+                      placeholder="Er. Satyajit Mohanty"
+                    />
+                    <span className="absolute right-2.5 text-xs text-black" title="Locked: Authorized Signatory">
+                      🔒
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-500 font-medium mt-1 block">
+                    Statutory signatory locked
+                  </span>
+                </Field>
+              </div>
+
+              {/* Declaration Statement / Undertaking Text */}
+              <Field label="Valuer Declaration & Undertaking Statement">
                 <textarea
-                  rows={6}
+                  rows={7}
                   className={inputCls}
                   value={fields.undertakingText || ''}
                   onChange={e => handleChange('undertakingText', e.target.value)}
                   disabled={isReadOnly}
+                  placeholder="Enter statutory valuer declaration & undertaking text..."
                 />
+                <span className="text-[11px] text-slate-500 font-medium mt-1 block">
+                  Rendered as the statutory 7-point undertaking on Page 6 of the Axis Bank valuation report.
+                </span>
               </Field>
 
-              <div className="p-4 bg-white rounded-xl border border-blue-200 text-xs text-slate-700 space-y-1 shadow-xs">
-                <p className="font-bold text-slate-900 text-sm">Prepared By: Er. Satyajit Mohanty (B.E,Civil) FIV</p>
-                <p>Registered Valuer, Govt. of India (Regd. No.-107/2016-17, Cat -I)</p>
-                <p>Chartered Engineer (Regd. No.-M-156096-9) • Empanelled Valuer of Axis Bank</p>
+              {/* Statutory Credentials Card (Axis AGRI styled) */}
+              <div className="p-4 bg-white rounded-xl border border-blue-200 text-xs text-slate-700 space-y-1.5 shadow-xs">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-1.5">
+                  <p className="font-bold text-slate-900 text-sm">Prepared By: {fields.authorizedSignatory || 'Er. Satyajit Mohanty'} (B.E, Civil) FIV</p>
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    Empanelled Valuer
+                  </span>
+                </div>
+                <p><strong className="text-slate-800">Registered Valuer:</strong> Govt. of India (Regd. No.-107/2016-17, Cat -I)</p>
+                <p><strong className="text-slate-800">Chartered Engineer:</strong> Regd. No.-M-156096-9 • Empanelled Valuer of Axis Bank Limited</p>
+                <p><strong className="text-slate-800">Institution Membership:</strong> Life, Fellow & Approved Valuer from Institution of Valuers (New Delhi), Membership No.F-26377 • Member in Institution of Engineers (India)</p>
               </div>
             </div>
           </div>
         </Section>
 
         {/* ═══════════════════════════════════════════════════════════════
-            SECTION 13: PROPERTY PHOTOGRAPHS (DUAL MODALITY: DEVICE + BUCKET)
+            SECTION 14: PROPERTY PHOTOGRAPHS (DUAL MODALITY: DEVICE + BUCKET)
         ═══════════════════════════════════════════════════════════════ */}
         <BasePhotographsSection
           title="Property Photographs"
-          sectionNumber={13}
-          sectionId="sec-13"
+          sectionNumber={14}
+          sectionId="sec-14"
           propertyImages={fields.propertyImages || []}
           propertyImageNames={fields.propertyImageNames || []}
           isReadOnly={isReadOnly}
@@ -2677,12 +2857,12 @@ export default function AxisAGRI({
         />
 
         {/* ═══════════════════════════════════════════════════════════════
-            SECTION 14: MAPS & SPATIAL DOCUMENTS (LOCAL DEVICE UPLOAD ONLY)
+            SECTION 15: MAPS & SPATIAL DOCUMENTS (LOCAL DEVICE UPLOAD ONLY)
         ═══════════════════════════════════════════════════════════════ */}
         <BaseMapsSection
           title="Maps & Spatial Documents"
-          sectionNumber={14}
-          sectionId="sec-14"
+          sectionNumber={15}
+          sectionId="sec-15"
           isReadOnly={isReadOnly}
           uploading={uploading}
           propertyAddress={fields.localityLandmark || fields.colonyNagarSector || ''}
@@ -2703,7 +2883,7 @@ export default function AxisAGRI({
           onReorderSketchMap={(imgs) => handleChange('sketchMapImages', imgs)}
         />
 
-        {/* Benchmark Screenshot Upload inside Sec 14 */}
+        {/* Benchmark Screenshot Upload inside Sec 15 */}
         <div className="border border-amber-200 bg-amber-50/50 rounded-xl p-5 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-amber-800 text-sm tracking-wide uppercase">

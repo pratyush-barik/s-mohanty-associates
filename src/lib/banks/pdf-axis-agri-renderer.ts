@@ -226,6 +226,11 @@ export interface AxisAgriReportFields {
   annexureARegardingBuilding?: string;
   annexureABasisLandRate?: string;
 
+  // Signatory & Valuer
+  authorizedSignatory?: string;
+  visitingEngineer?: string;
+  dateOfReportSubmission?: string;
+
   // Page 10: Check List & Images
   checklistResponses?: Record<string, string>;
   propertyPhotos?: any[];
@@ -387,7 +392,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
    */
   draw8BoxDate(x: number, y: number, dateStr: string = '', cellW: number = 13, cellH: number = 16): void {
     // Sanitize string to get digits or characters
-    const clean = dateStr.replace(/[^0-9A-Za-z]/g, '');
+    const clean = String(dateStr || '').replace(/[^0-9A-Za-z]/g, '');
     const chars = clean.padEnd(8, ' ').split('').slice(0, 8);
     const headers = ['D', 'D', 'M', 'M', 'Y', 'Y', 'Y', 'Y'];
 
@@ -513,7 +518,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.drawRow([{ text: 'Details of the Property Being Valued', width: W, isHeader: true, bold: true }], 18, 4);
 
     // Location of Property: Rural / Semi Urban / Urban
-    const loc = (fields.locationOfProperty || 'Rural').toLowerCase();
+    const loc = String(fields.locationOfProperty || 'Rural').toLowerCase();
     const locText = `${check(loc.includes('rural'))} Rural   ${check(loc.includes('semi'))} Semi Urban   ${check(loc.includes('urban') && !loc.includes('semi'))} Urban`;
     this.drawRow([
       { text: 'Location of Property', width: col4_w1 * 2, isLabel: true },
@@ -521,8 +526,13 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     ], 20, 4);
 
     // Documents Provided
-    const docs = fields.documentsProvided || [];
-    const hasDoc = (d: string) => docs.some(item => item.toLowerCase().includes(d.toLowerCase()));
+    const rawDocs = fields.documentsProvided;
+    const docs = Array.isArray(rawDocs)
+      ? rawDocs
+      : typeof rawDocs === 'string' && rawDocs
+      ? (rawDocs as string).split(',').map(s => s.trim())
+      : [];
+    const hasDoc = (d: string) => docs.some(item => String(item || '').toLowerCase().includes(d.toLowerCase()));
     const docStr = `Documents Provided: ${check(hasDoc('sale deed'))} Copy of Sale Deed   ${check(hasDoc('naksha'))} Bhu-Naksha   ${check(hasDoc('approved plan'))} Approved Plan   ${check(hasDoc('commencement'))} Commencement Certificate   ${check(hasDoc('occupancy'))} Occupancy Certificate   ${check(hasDoc('ror'))} ROR   ${check(hasDoc('previous'))} Previous Valuation Report`;
     this.drawRow([{ text: docStr, width: W, bold: true }], 20, 4);
 
@@ -575,7 +585,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.drawRow([{ text: 'Type of Property', width: W, isHeader: true, bold: true }], 18, 4);
 
     // (A) Plot
-    const plotType = (fields.typeOfPropertyPlot || 'Residential').toLowerCase();
+    const plotType = String(fields.typeOfPropertyPlot || (fields as any).classificationOfPlot || 'Residential').toLowerCase();
     const plotText = `${check(plotType.includes('na'))} NA   ${check(plotType.includes('residential'))} Residential   ${check(plotType.includes('commercial'))} Commercial   ${check(plotType.includes('industrial'))} Industrial`;
     this.drawRow([
       { text: '(A) Plot:', width: col4_w1 * 2, isLabel: true },
@@ -589,7 +599,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     ], 20, 4);
 
     // Municipal Limit
-    const isMuni = (fields.situatedInMunicipalLimit || 'No').toLowerCase() === 'yes';
+    const isMuni = String(fields.situatedInMunicipalLimit || 'No').toLowerCase() === 'yes';
     const muniText = `${check(isMuni)} Yes   ${check(!isMuni)} No ${fields.municipalLimitDetails ? `(${fields.municipalLimitDetails})` : ''}`;
     this.drawRow([
       { text: 'Whether situated in Municipal/Corporation Limit:', width: col4_w1 * 2, isLabel: true },
@@ -603,7 +613,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     ], 20, 4);
 
     // (B) Residential Property options
-    const resSub = (fields.residentialPropertySubtype || 'Independent house').toLowerCase();
+    const resSub = String(fields.residentialPropertySubtype || (fields as any).residentialSubClass || 'Independent house').toLowerCase();
     const resText = `${check(resSub.includes('independent'))} Independent house   ${check(resSub.includes('bungalow'))} Bungalow   ${check(resSub.includes('row'))} Row House`;
     this.drawRow([
       { text: '(B) Residential Property: [X] Residential', width: col4_w1 * 2, isLabel: true },
@@ -629,7 +639,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     ], 24, 4);
 
     // (C) Commercial/Industrial Property
-    const commSub = (fields.commercialPropertySubtype || 'Godown').toLowerCase();
+    const commSub = String(fields.commercialPropertySubtype || (fields as any).commercialSubClass || 'Godown').toLowerCase();
     const commText = `${check(commSub.includes('independent'))} Independent house   ${check(commSub.includes('row'))} Row House   ${check(commSub.includes('mall'))} Unit in a mall   ${check(commSub.includes('godown'))} Godown   ${check(commSub.includes('industrial'))} Industrial   ${check(commSub.includes('shop'))} Shop`;
     this.drawRow([
       { text: '(C) Commercial/Industrial Property: [X] Commercial', width: col4_w1 * 2, isLabel: true },
@@ -637,8 +647,13 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     ], 22, 4);
 
     // Availability of local transport
-    const trans = fields.availabilityLocalTransport || ['Personal Transport'];
-    const hasTrans = (t: string) => trans.some(item => item.toLowerCase().includes(t.toLowerCase()));
+    const rawTrans = fields.availabilityLocalTransport;
+    const trans = Array.isArray(rawTrans)
+      ? rawTrans
+      : typeof rawTrans === 'string' && rawTrans
+      ? (rawTrans as string).split(',').map(s => s.trim())
+      : ['Personal Transport'];
+    const hasTrans = (t: string) => trans.some(item => String(item || '').toLowerCase().includes(t.toLowerCase()));
     const transText = `${check(hasTrans('metro'))} Metro   ${check(hasTrans('train'))} Local Train   ${check(hasTrans('bus'))} Bus   ${check(hasTrans('personal'))} Personal Transport`;
     this.drawRow([
       { text: 'Availability of local transport', width: col4_w1 * 2, isLabel: true },
@@ -689,30 +704,30 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     this.drawRow([
       { text: 'East', width: bW1, isLabel: true, bold: true },
-      { text: fields.boundaryEastVerification || 'Road', width: bW2 },
-      { text: fields.boundaryEastDocument || 'Road', width: bW3 },
+      { text: fields.boundaryEastVerification || '-', width: bW2 },
+      { text: fields.boundaryEastDocument || '-', width: bW3 },
     ], 18, 4);
 
     this.drawRow([
       { text: 'West', width: bW1, isLabel: true, bold: true },
-      { text: fields.boundaryWestVerification || "Other's Vacant land", width: bW2 },
-      { text: fields.boundaryWestDocument || 'Hemanta Kumar Panda', width: bW3 },
+      { text: fields.boundaryWestVerification || '-', width: bW2 },
+      { text: fields.boundaryWestDocument || '-', width: bW3 },
     ], 18, 4);
 
     this.drawRow([
       { text: 'North', width: bW1, isLabel: true, bold: true },
-      { text: fields.boundaryNorthVerification || "Other's Vacant land", width: bW2 },
-      { text: fields.boundaryNorthDocument || 'Kirtan Behera', width: bW3 },
+      { text: fields.boundaryNorthVerification || '-', width: bW2 },
+      { text: fields.boundaryNorthDocument || '-', width: bW3 },
     ], 18, 4);
 
     this.drawRow([
       { text: 'South', width: bW1, isLabel: true, bold: true },
-      { text: fields.boundarySouthVerification || "Other's Vacant land", width: bW2 },
-      { text: fields.boundarySouthDocument || 'Gobinda Behera', width: bW3 },
+      { text: fields.boundarySouthVerification || '-', width: bW2 },
+      { text: fields.boundarySouthDocument || '-', width: bW3 },
     ], 18, 4);
 
     // Class of locality
-    const locClass = (fields.classOfLocality || 'Middle class').toLowerCase();
+    const locClass = String(fields.classOfLocality || (fields as any).classificationOfLocality || 'Middle class').toLowerCase();
     const locClassText = `${check(locClass.includes('posh'))} Posh   ${check(locClass.includes('higher'))} Higher Middle Class   ${check(locClass.includes('middle') && !locClass.includes('higher') && !locClass.includes('lower'))} Middle class   ${check(locClass.includes('lower'))} Lower middle Class   ${check(locClass.includes('poor'))} Poor`;
     this.drawRow([
       { text: 'Class of locality', width: col4_w1 * 1.5, isLabel: true },
@@ -720,14 +735,14 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     ], 20, 4);
 
     // Quality of Infrastructure & Ownership Status
-    const infra = (fields.qualityOfInfrastructure || 'Good').toLowerCase();
+    const infra = String(fields.qualityOfInfrastructure || (fields as any).infrastructureCondition || 'Good').toLowerCase();
     const infraText = `${check(infra.includes('excellent'))} Excellent   ${check(infra.includes('good'))} Good   ${check(infra.includes('average'))} Average   ${check(infra.includes('poor'))} Poor`;
     this.drawRow([
       { text: 'Quality of Infrastructure in the vicinity', width: col4_w1 * 1.5, isLabel: true },
       { text: infraText, width: W - col4_w1 * 1.5, bold: true },
     ], 20, 4);
 
-    const own = (fields.ownershipStatus || 'Free Hold').toLowerCase();
+    const own = String(fields.ownershipStatus || (fields as any).ownershipType || 'Free Hold').toLowerCase();
     const ownText = `${check(own.includes('free'))} Free Hold   ${check(own.includes('lease'))} Reg. Lease   ${check(own.includes('govt'))} Govt. Authority`;
     this.drawRow([
       { text: 'Ownership Status of the Property', width: col4_w1 * 1.5, isLabel: true },
@@ -735,10 +750,20 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     ], 20, 4);
 
     // Approved & Actual Usage
-    const appUsage = fields.approvedUsage || ['Residential'];
-    const actUsage = fields.actualUsage || ['Commercial', 'Residential'];
-    const hasApp = (u: string) => appUsage.some(item => item.toLowerCase().includes(u.toLowerCase()));
-    const hasAct = (u: string) => actUsage.some(item => item.toLowerCase().includes(u.toLowerCase()));
+    const rawApp = fields.approvedUsage;
+    const appUsage = Array.isArray(rawApp)
+      ? rawApp
+      : typeof rawApp === 'string' && rawApp
+      ? (rawApp as string).split(',').map(s => s.trim())
+      : ['Residential'];
+    const rawAct = fields.actualUsage;
+    const actUsage = Array.isArray(rawAct)
+      ? rawAct
+      : typeof rawAct === 'string' && rawAct
+      ? (rawAct as string).split(',').map(s => s.trim())
+      : ['Commercial', 'Residential'];
+    const hasApp = (u: string) => appUsage.some(item => String(item || '').toLowerCase().includes(u.toLowerCase()));
+    const hasAct = (u: string) => actUsage.some(item => String(item || '').toLowerCase().includes(u.toLowerCase()));
 
     const appUsageText = `${check(hasApp('industrial'))} Industrial   ${check(hasApp('commercial'))} Commercial   ${check(hasApp('residential'))} Residential   ${check(hasApp('mix'))} Mix`;
     const actUsageText = `${check(hasAct('industrial'))} Industrial   ${check(hasAct('commercial'))} Commercial   ${check(hasAct('residential'))} Residential   ${check(hasAct('mix'))} Mix`;
@@ -757,13 +782,16 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     ], 20, 4);
 
     // Structure & No of Floors
+    // Structure & No of Floors
+    const structType = fields.typeOfStructure || 'RCC';
+    const floorDesc = fields.noOfFloors || '-';
     this.drawRow([
       { text: 'Type of Structure\nNo of Floors:', width: col4_w1 * 2, isLabel: true },
-      { text: `${fields.typeOfStructure || 'Load Bearing/RCC/GCI/Aluform shuttering'}\n${fields.noOfFloors || 'G+2 Storied building'}`, width: col4_w1 * 2, bold: true },
+      { text: `${structType}\n${floorDesc}`, width: col4_w1 * 2, bold: true },
     ], 24, 4);
 
     // Occupancy Details
-    const occ = (fields.occupancyDetails || 'Self-Occupied').toLowerCase();
+    const occ = String(fields.occupancyDetails || (fields as any).occupancyStatus || 'Self-Occupied').toLowerCase();
     const occText = `${check(occ.includes('self'))} Self-Occupied   ${check(occ.includes('rent'))} Rented   ${check(occ.includes('vacant'))} Vacant`;
     this.drawRow([
       { text: 'Occupancy Details', width: col4_w1 * 2, isLabel: true },
@@ -778,18 +806,23 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     ], 20, 4);
 
     // Resistance
-    const hasResVal = (fields.resistanceForValuation || 'No').toLowerCase() === 'yes';
-    const hasResOcc = (fields.resistanceFromOccupants || 'No').toLowerCase() === 'yes';
+    const hasResVal = String(fields.resistanceForValuation || 'No').toLowerCase() === 'yes';
+    const hasResOcc = String(fields.resistanceFromOccupants || 'No').toLowerCase() === 'yes';
     this.drawRow([
       { text: `Was there any resistance for valuation: ${check(hasResVal)} Yes  ${check(!hasResVal)} No`, width: W * 0.5 },
       { text: `If yes, from the current occupants: ${check(hasResOcc)} Yes  ${check(!hasResOcc)} No`, width: W * 0.5 },
     ], 20, 4);
 
     // Basic Amenities & Development
-    const am = fields.basicAmenities || ['Electricity', 'Water', 'Drainage connection'];
-    const hasAm = (a: string) => am.some(item => item.toLowerCase().includes(a.toLowerCase()));
+    const rawAm = fields.basicAmenities;
+    const am = Array.isArray(rawAm)
+      ? rawAm
+      : typeof rawAm === 'string' && rawAm
+      ? (rawAm as string).split(',').map(s => s.trim())
+      : ['Electricity', 'Water', 'Drainage connection'];
+    const hasAm = (a: string) => am.some(item => String(item || '').toLowerCase().includes(a.toLowerCase()));
     const amText = `${check(hasAm('electricity'))} Electricity   ${check(hasAm('water'))} Water   ${check(hasAm('drainage'))} Drainage connection`;
-    const dev = (fields.developmentSurroundingArea || 'Developing').toLowerCase();
+    const dev = String(fields.developmentSurroundingArea || (fields as any).surroundingDevelopment || 'Developing').toLowerCase();
     const devText = `${check(dev.includes('under'))} Underdeveloped   ${check(dev.includes('developing'))} Developing   ${check(dev.includes('developed') && !dev.includes('under'))} Developed`;
 
     this.drawRow([
@@ -860,16 +893,16 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     this.drawRow([
       { text: 'Area of the Plot As per ROR', width: col4_w1, isLabel: true },
-      { text: fields.areaOfPlotRor || 'Total Area = Ac.0.013 Dec i.e. 566.00 Sft', width: col4_w2, bold: true },
+      { text: fields.areaOfPlotRor || 'Not Available', width: col4_w2, bold: true },
       { text: 'Approved Built Up Area (In Sq.Ft.)', width: col4_w3, isLabel: true },
       { text: fields.approvedBUA || 'Not Available', width: col4_w4 },
     ], 28, 4);
 
     this.drawRow([
       { text: 'Area of the Plot As per Document', width: col4_w1, isLabel: true },
-      { text: fields.areaOfPlotDoc || 'Total Area = Ac.0.013 Dec i.e. 566.00 Sft', width: col4_w2, bold: true },
+      { text: fields.areaOfPlotDoc || 'Not Available', width: col4_w2, bold: true },
       { text: 'Actual Built Up Area (In Sq.Ft.)', width: col4_w3, isLabel: true },
-      { text: fields.actualBUA || 'RCC GF: 525.00 Sft\nRCC FF: 525.00 Sft\nRCC SF: 204.00 Sft\nTotal BUA: 1254.00 Sft', width: col4_w4, bold: true },
+      { text: fields.actualBUA || 'Not Available', width: col4_w4, bold: true },
     ], 38, 4);
 
     this.drawRow([
@@ -904,11 +937,14 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     ];
 
     for (const fl of floors) {
-      const u = (fl.usage || '').toLowerCase();
+      const u = String(fl.usage || '').toLowerCase();
       const uText = `${check(u.includes('office') || u.includes('industrial'))} ${u.includes('industrial') ? 'Industrial' : 'Office'}   ${check(u.includes('parking'))} Parking   ${check(u.includes('commercial'))} Commercial   ${check(u.includes('residential'))} Residential`;
+      const pArea = String(fl.plinthArea ?? (fl as any).area ?? '0.00');
+      const pAreaFormatted = pArea.includes('Sft') ? pArea : `${pArea} Sft`;
+      const flName = String(fl.floorName || (fl as any).name || 'Floor');
       this.drawRow([
-        { text: `${fl.floorName} (in Sq.Ft.) Measured (RCC)`, width: W * 0.3, isLabel: true, bold: true },
-        { text: fl.plinthArea.includes('Sft') ? fl.plinthArea : `${fl.plinthArea} Sft`, width: W * 0.2, bold: true },
+        { text: `${flName} (in Sq.Ft.) Measured (RCC)`, width: W * 0.3, isLabel: true, bold: true },
+        { text: pAreaFormatted, width: W * 0.2, bold: true },
         { text: uText, width: W * 0.5, bold: true },
       ], 18, 4);
     }
@@ -1003,13 +1039,23 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     });
     this.cursorY += 16;
 
+    const benchAcre = fields.govtBenchmarkRateAcre || 'Not Available';
+    const benchSft = fields.govtBenchmarkRateSft || 'Not Available';
+    const landDec = fields.totalLandAreaDec || 'Not Available';
+    const landSft = fields.totalLandAreaSft || 'Not Available';
+    const govtVal = fields.totalGovtValueLand || 'Not Available';
+    const mktMin = fields.prevailingMarketRateMin || 'Not Available';
+    const mktMax = fields.prevailingMarketRateMax || 'Not Available';
+    const adoptedRate = fields.adoptedMarketRateSft || 'Not Available';
+    const totalMktVal = fields.totalMarketValueLand || 'Not Available';
+
     const landBullets = [
-      `THE GOVT. BENCHMARK VALUE: RS.${fields.govtBenchmarkRateAcre || '86,55,000'}/- PER ACRE I.E. RS.${fields.govtBenchmarkRateSft || '199'}/- PER SFT`,
-      `TOTAL LAND AREA: AC.${fields.totalLandAreaDec || '0.013'} DEC I.E. ${fields.totalLandAreaSft || '566.00'} SFT`,
-      `TOTAL GOVT. VALUE OF LAND: ${fields.totalLandAreaSft || '566.00'} SFT X RS.${fields.govtBenchmarkRateSft || '199'}/- PER SFT = RS.${fields.totalGovtValueLand || '1,12,634'}/-`,
-      `THE PREVAILING MARKET RATE OF THE LAND IS RS.${fields.prevailingMarketRateMin || '500'}/- TO RS.${fields.prevailingMarketRateMax || '600'}/- PER SFT.`,
-      `THE ADOPTED MARKET RATE OF THE LAND IS RS.${fields.adoptedMarketRateSft || '550'}/- PER SFT FOR VALUATION PURPOSE.`,
-      `TOTAL MARKET VALUE: ${fields.totalLandAreaSft || '566.00'} SFT X RS.${fields.adoptedMarketRateSft || '550'}/- PER SFT = RS.${fields.totalMarketValueLand || '5,98,950'}/-`,
+      `THE GOVT. BENCHMARK VALUE: ${benchAcre !== 'Not Available' ? `RS.${benchAcre}/- PER ACRE` : 'NOT AVAILABLE'} ${benchSft !== 'Not Available' ? `I.E. RS.${benchSft}/- PER SFT` : ''}`.trim(),
+      `TOTAL LAND AREA: ${landDec !== 'Not Available' ? `AC.${landDec} DEC` : ''} ${landSft !== 'Not Available' ? `I.E. ${landSft} SFT` : 'NOT AVAILABLE'}`.trim(),
+      `TOTAL GOVT. VALUE OF LAND: ${landSft !== 'Not Available' && benchSft !== 'Not Available' ? `${landSft} SFT X RS.${benchSft}/- PER SFT = ` : ''}${govtVal !== 'Not Available' ? `RS.${govtVal}/-` : 'NOT AVAILABLE'}`,
+      `THE PREVAILING MARKET RATE OF THE LAND IS ${mktMin !== 'Not Available' ? `RS.${mktMin}/-` : ''} TO ${mktMax !== 'Not Available' ? `RS.${mktMax}/- PER SFT.` : 'NOT AVAILABLE.'}`,
+      `THE ADOPTED MARKET RATE OF THE LAND IS ${adoptedRate !== 'Not Available' ? `RS.${adoptedRate}/- PER SFT FOR VALUATION PURPOSE.` : 'NOT AVAILABLE.'}`,
+      `TOTAL MARKET VALUE: ${landSft !== 'Not Available' && adoptedRate !== 'Not Available' ? `${landSft} SFT X RS.${adoptedRate}/- PER SFT = ` : ''}${totalMktVal !== 'Not Available' ? `RS.${totalMktVal}/-` : 'NOT AVAILABLE'}`,
     ];
 
     for (const b of landBullets) {
@@ -1060,36 +1106,42 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       { text: 'NET VALUE AFTER DEPRECIATION', width: tW[7], isHeader: true, bold: true, fontSize: 8 },
     ], 26, 4);
 
-    const costFloors = fields.floors && fields.floors.length > 0 ? fields.floors : [
-      { floorName: 'RCC GROUND FLOOR', plinthArea: '525.00', roofHeight: "10'-6\"", ageYears: '8Yrs', replacementRate: '1,500.00', estimatedCost: '7,87,500.00', depreciationAmount: '63,000.00', netValue: '7,24,500.00' },
-      { floorName: 'RCC FIRST FLOOR', plinthArea: '525.00', roofHeight: "10'-6\"", ageYears: '8Yrs', replacementRate: '1,300.00', estimatedCost: '6,82,500.00', depreciationAmount: '54,600.00', netValue: '6,27,900.00' },
-      { floorName: 'RCC SECOND FLOOR', plinthArea: '204.00', roofHeight: "10'-6\"", ageYears: '8Yrs', replacementRate: '1,300.00', estimatedCost: '2,65,200.00', depreciationAmount: '21,216.00', netValue: '2,43,984.00' },
-    ];
+    const costFloors = fields.floors && fields.floors.length > 0 ? fields.floors : [];
 
-    for (const cf of costFloors) {
+    if (costFloors.length === 0) {
       this.drawRow([
-        { text: cf.floorName.toUpperCase(), width: tW[0], bold: true, fontSize: 8.5 },
-        { text: cf.plinthArea, width: tW[1], align: 'right', fontSize: 8.5 },
-        { text: cf.roofHeight || "10'-6\"", width: tW[2], align: 'center', fontSize: 8.5 },
-        { text: cf.ageYears || '8Yrs', width: tW[3], align: 'center', fontSize: 8.5 },
-        { text: `Rs. ${cf.replacementRate || '0.00'}`, width: tW[4], align: 'right', fontSize: 8.5 },
-        { text: `Rs. ${cf.estimatedCost || '0.00'}`, width: tW[5], align: 'right', fontSize: 8.5 },
-        { text: `Rs. ${cf.depreciationAmount || '0.00'}`, width: tW[6], align: 'right', fontSize: 8.5 },
-        { text: `Rs. ${cf.netValue || '0.00'}`, width: tW[7], align: 'right', bold: true, fontSize: 8.5 },
+        { text: 'No construction/floor data provided', width: W, align: 'center', fontSize: 8.5 },
       ], 18, 4);
+    } else {
+      for (const cf of costFloors) {
+        const cfName = String(cf.floorName || (cf as any).name || 'Floor').toUpperCase();
+        const cfPlinth = String(cf.plinthArea ?? (cf as any).area ?? '0.00');
+        this.drawRow([
+          { text: cfName, width: tW[0], bold: true, fontSize: 8.5 },
+          { text: cfPlinth, width: tW[1], align: 'right', fontSize: 8.5 },
+          { text: String(cf.roofHeight || "10'-6\""), width: tW[2], align: 'center', fontSize: 8.5 },
+          { text: String(cf.ageYears || '-'), width: tW[3], align: 'center', fontSize: 8.5 },
+          { text: cf.replacementRate ? `Rs. ${cf.replacementRate}` : '-', width: tW[4], align: 'right', fontSize: 8.5 },
+          { text: cf.estimatedCost ? `Rs. ${cf.estimatedCost}` : '-', width: tW[5], align: 'right', fontSize: 8.5 },
+          { text: cf.depreciationAmount ? `Rs. ${cf.depreciationAmount}` : '-', width: tW[6], align: 'right', fontSize: 8.5 },
+          { text: cf.netValue ? `Rs. ${cf.netValue}` : '-', width: tW[7], align: 'right', bold: true, fontSize: 8.5 },
+        ], 18, 4);
+      }
     }
 
     // Total Row
     const nonNetWidth = tW.slice(0, 7).reduce((a, b) => a + b, 0);
     this.drawRow([
       { text: 'Total', width: nonNetWidth, align: 'right', bold: true, isLabel: true },
-      { text: `Rs. ${fields.totalBasicValueBuilding || '21,96,285.00'}`, width: tW[7], align: 'right', bold: true, highlight: true },
+      { text: fields.totalBasicValueBuilding ? `Rs. ${fields.totalBasicValueBuilding}` : 'Rs. 0.00', width: tW[7], align: 'right', bold: true, highlight: true },
     ], 20, 4);
 
     this.cursorY += 16;
 
     // Total Basic Value statement
-    const bldgValSummary = `TOTAL BASIC VALUE OF THE BUILDING- Rs.${fields.totalBasicValueBuilding || '21,96,285.00'}/- OR SAY Rs.${fields.totalBasicValueBuildingSay || '21,96,000.00'}/- (${fields.totalBasicValueBuildingWords || 'RUPEES TWENTY ONE LAKHS NINETY SIX THOUSANDS ONLY'}).`;
+    const bldgValSummary = fields.totalBasicValueBuilding
+      ? `TOTAL BASIC VALUE OF THE BUILDING- Rs.${fields.totalBasicValueBuilding}/- OR SAY Rs.${fields.totalBasicValueBuildingSay || fields.totalBasicValueBuilding}/- (${fields.totalBasicValueBuildingWords || ''}).`
+      : 'TOTAL BASIC VALUE OF THE BUILDING: Not Available';
     this.drawRow([{ text: bldgValSummary, width: W, bold: true, highlight: true }], 24, 6);
 
     // =========================================================================
@@ -1110,42 +1162,42 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     this.drawRow([
       { text: 'GOVT. GUIDE LINE VALUE', width: mColW[0], isLabel: true, bold: true },
-      { text: fields.govtGuideLand ? `Rs. ${fields.govtGuideLand}` : `Rs. ${fields.totalGovtValueLand || '1,12,634.00'}`, width: mColW[1], align: 'right' },
-      { text: fields.govtGuideBuilding ? `Rs. ${fields.govtGuideBuilding}` : '', width: mColW[2], align: 'right' },
+      { text: fields.govtGuideLand ? `Rs. ${fields.govtGuideLand}` : (fields.totalGovtValueLand ? `Rs. ${fields.totalGovtValueLand}` : '-'), width: mColW[1], align: 'right' },
+      { text: fields.govtGuideBuilding ? `Rs. ${fields.govtGuideBuilding}` : '-', width: mColW[2], align: 'right' },
       { text: fields.govtGuideAmenities || '-', width: mColW[3], align: 'center' },
-      { text: fields.govtGuideTotal ? `Rs. ${fields.govtGuideTotal}` : `Rs. ${fields.totalGovtValueLand || '1,12,634.00'}`, width: mColW[4], align: 'right', bold: true },
+      { text: fields.govtGuideTotal ? `Rs. ${fields.govtGuideTotal}` : (fields.totalGovtValueLand ? `Rs. ${fields.totalGovtValueLand}` : '-'), width: mColW[4], align: 'right', bold: true },
     ], 18, 4);
 
     this.drawRow([
       { text: 'MARKET VALUE IN RS', width: mColW[0], isLabel: true, bold: true },
-      { text: `Rs. ${fields.marketValueLand || fields.totalMarketValueLand || '5,98,950.00'}`, width: mColW[1], align: 'right' },
-      { text: `Rs. ${fields.marketValueBuilding || fields.totalBasicValueBuilding || '21,96,285.00'}`, width: mColW[2], align: 'right' },
+      { text: fields.marketValueLand || fields.totalMarketValueLand ? `Rs. ${fields.marketValueLand || fields.totalMarketValueLand}` : '-', width: mColW[1], align: 'right' },
+      { text: fields.marketValueBuilding || fields.totalBasicValueBuilding ? `Rs. ${fields.marketValueBuilding || fields.totalBasicValueBuilding}` : '-', width: mColW[2], align: 'right' },
       { text: fields.marketValueAmenities || '-', width: mColW[3], align: 'center' },
-      { text: `Rs. ${fields.marketValueTotal || '27,95,235.00'}`, width: mColW[4], align: 'right', bold: true, highlight: true },
+      { text: fields.marketValueTotal ? `Rs. ${fields.marketValueTotal}` : '-', width: mColW[4], align: 'right', bold: true, highlight: true },
     ], 18, 4);
 
     this.drawRow([
       { text: 'REALISABLE VALUE (95%)', width: mColW[0], isLabel: true, bold: true },
-      { text: `Rs. ${fields.realisableValueLand || '5,69,002.50'}`, width: mColW[1], align: 'right' },
-      { text: `Rs. ${fields.realisableValueBuilding || '20,86,470.75'}`, width: mColW[2], align: 'right' },
+      { text: fields.realisableValueLand ? `Rs. ${fields.realisableValueLand}` : '-', width: mColW[1], align: 'right' },
+      { text: fields.realisableValueBuilding ? `Rs. ${fields.realisableValueBuilding}` : '-', width: mColW[2], align: 'right' },
       { text: fields.realisableValueAmenities || '-', width: mColW[3], align: 'center' },
-      { text: `Rs. ${fields.realisableValueTotal || '26,55,473.25'}`, width: mColW[4], align: 'right', bold: true },
+      { text: fields.realisableValueTotal ? `Rs. ${fields.realisableValueTotal}` : '-', width: mColW[4], align: 'right', bold: true },
     ], 18, 4);
 
     this.drawRow([
       { text: 'DISTRESS/FORCED SALE VALUE (85%)', width: mColW[0], isLabel: true, bold: true },
-      { text: `Rs. ${fields.distressValueLand || '5,09,107.50'}`, width: mColW[1], align: 'right' },
-      { text: `Rs. ${fields.distressValueBuilding || '18,66,842.25'}`, width: mColW[2], align: 'right' },
+      { text: fields.distressValueLand ? `Rs. ${fields.distressValueLand}` : '-', width: mColW[1], align: 'right' },
+      { text: fields.distressValueBuilding ? `Rs. ${fields.distressValueBuilding}` : '-', width: mColW[2], align: 'right' },
       { text: fields.distressValueAmenities || '-', width: mColW[3], align: 'center' },
-      { text: `Rs. ${fields.distressValueTotal || '23,75,949.75'}`, width: mColW[4], align: 'right', bold: true },
+      { text: fields.distressValueTotal ? `Rs. ${fields.distressValueTotal}` : '-', width: mColW[4], align: 'right', bold: true },
     ], 18, 4);
 
     this.drawRow([
       { text: 'INSURABLE VALUE', width: mColW[0], isLabel: true, bold: true },
       { text: fields.insurableValueLand || '-', width: mColW[1], align: 'center' },
-      { text: `Rs. ${fields.insurableValueBuilding || '18,66,842.25'}`, width: mColW[2], align: 'right' },
-      { text: fields.insurableValueAmenities || '', width: mColW[3], align: 'center' },
-      { text: `Rs. ${fields.insurableValueTotal || '18,66,842.25'}`, width: mColW[4], align: 'right', bold: true },
+      { text: fields.insurableValueBuilding ? `Rs. ${fields.insurableValueBuilding}` : '-', width: mColW[2], align: 'right' },
+      { text: fields.insurableValueAmenities || '-', width: mColW[3], align: 'center' },
+      { text: fields.insurableValueTotal ? `Rs. ${fields.insurableValueTotal}` : '-', width: mColW[4], align: 'right', bold: true },
     ], 18, 4);
 
     this.cursorY += 10;
@@ -1154,24 +1206,30 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     const text1 = fields.realizableEstimationText || 'REALIZABLE ESTIMATION OF THE PROPERTY IN CASE OF DISTRESS SALE, IN CASE, THE BANK WILL SELL THE PROPERTY THROUGH PROCEEDINGS.';
     this.drawRow([{ text: text1, width: W, fontSize: 8.5 }], 16, 2);
 
-    const mvLine = `MARKET VALUE OF THE PROPERTY: Rs.${fields.marketValueTotal || '27,95,235.00'}/- OR SAY Rs.${fields.marketValueSay || '27,95,000.00'}/- (${fields.marketValueWords || 'RUPEES TWENTY SEVEN LAKHS NINETY FIVE THOUSANDS ONLY'}).`;
+    const mvLine = fields.marketValueTotal
+      ? `MARKET VALUE OF THE PROPERTY: Rs.${fields.marketValueTotal}/- OR SAY Rs.${fields.marketValueSay || fields.marketValueTotal}/- (${fields.marketValueWords || ''}).`
+      : 'MARKET VALUE OF THE PROPERTY: Not Available';
     this.drawRow([{ text: mvLine, width: W, bold: true, fontSize: 8.5 }], 16, 2);
 
-    const rvLine = `REALIZABLE VALUE OF THE PROPERTY: Rs.${fields.realisableValueTotal || '26,55,473.25'}/- OR SAY Rs.${fields.realizableValueSay || '26,55,000.00'}/- (${fields.realizableValueWords || 'RUPEES TWENTY SIX LAKHS FIFTY THOUSAND ONLY'}).`;
+    const rvLine = fields.realisableValueTotal
+      ? `REALIZABLE VALUE OF THE PROPERTY: Rs.${fields.realisableValueTotal}/- OR SAY Rs.${fields.realizableValueSay || fields.realisableValueTotal}/- (${fields.realizableValueWords || ''}).`
+      : 'REALIZABLE VALUE OF THE PROPERTY: Not Available';
     this.drawRow([{ text: rvLine, width: W, bold: true, fontSize: 8.5 }], 16, 2);
 
-    const dvLine = `DISTRESS SALE VALUE OF THE PROPERTY WILL BE: Rs.${fields.distressValueTotal || '23,75,949.75'}/- OR SAY Rs.${fields.distressValueSay || '23,76,000.00'}/- (${fields.distressValueWords || 'RUPEES TWENTY THREE LAKHS SEVENTY FIVE THOUSAND ONLY'}).`;
+    const dvLine = fields.distressValueTotal
+      ? `DISTRESS SALE VALUE OF THE PROPERTY WILL BE: Rs.${fields.distressValueTotal}/- OR SAY Rs.${fields.distressValueSay || fields.distressValueTotal}/- (${fields.distressValueWords || ''}).`
+      : 'DISTRESS SALE VALUE OF THE PROPERTY: Not Available';
     this.drawRow([{ text: dvLine, width: W, bold: true, fontSize: 8.5 }], 16, 2);
 
-    const basisLine = `BASIS OF VALUATION:- ${fields.basisOfValuation || 'AS PER MARKET FEEDBACK, FREE HOLD SMALL SIZE RESIDENTIAL LANDS PATCH IN ACHHULI, PURUSOTTAMPUR & GANJAM. APPROACHING 20-FT WIDE ROAD ARE GETTING TRANSACTED IN A RANGE OF RS.500/- TO RS.600/- PER SFT. OUR LAND PATCH APPROACHES 20-FT WIDE ROAD, SHOULD BE GETTING TRANSACTED IN A RATE OF RS.550/- PER SFT INCLUDING ALL LAND DEVELOPMENT CHARGES.'}`;
+    const basisLine = `BASIS OF VALUATION:- ${fields.basisOfValuation || 'As per local market feedback and property analysis.'}`;
     this.drawRow([{ text: basisLine, width: W, fontSize: 8.5 }], 28, 4);
 
-    const opLine = fields.opinionOfMarketValue || `AS A RESULT OF MY / OUR APPRAISAL AND ANALYSIS IT IS MY/OUR CONSIDERED OPINION THAT THE PRESENT MARKET VALUE OF THE ABOVE PROPERTY IN THE PREVAILING CONDITION WITH AFORESAID SPECIFICATIONS IS SAY : Rs.${fields.marketValueSay || '27,95,000.00'}/- (${fields.marketValueWords || 'RUPEES TWENTY SEVEN LAKHS NINETY FIVE THOUSANDS ONLY'}).`;
+    const opLine = fields.opinionOfMarketValue || (fields.marketValueSay ? `AS A RESULT OF MY / OUR APPRAISAL AND ANALYSIS IT IS MY/OUR CONSIDERED OPINION THAT THE PRESENT MARKET VALUE OF THE ABOVE PROPERTY IN THE PREVAILING CONDITION WITH AFORESAID SPECIFICATIONS IS SAY : Rs.${fields.marketValueSay}/- (${fields.marketValueWords || ''}).` : 'Not Available');
     this.drawRow([{ text: opLine, width: W, bold: true, fontSize: 8.5 }], 24, 4);
 
     // Remarks Box
     const remHeader = 'REMARKS:-';
-    const remBody = fields.remarksText || 'THE SUBJECT PROPERTY IS AN EXISTING CASE WITH AXIS BANK. SUBJECT PROPERTY IS A G+2 STORIED RESIDENTIAL CUM COMMERCIAL BUILDING, LAND EXTENT OF (AC.0.013 DEC I.E. 566.00 SFT). THE BUILDING IS APPROXIMATELY 8 YEARS OLD AND IS LOCATED IN A DEVELOPED RESIDENTIAL AREA AT ACHHULI, PURUSOTTAMPUR & GANJAM, WITHIN THE JURISDICTION OF ACHHULI GRAM PANCHAYAT AREA LIMIT. THE PROPERTY IS PRESENTLY OWNER-OCCUPIED. BASIC CIVIC AMENITIES SUCH AS SCHOOLS, HOSPITALS, MARKETS, BANKS, AND PUBLIC TRANSPORTATION ARE AVAILABLE WITHIN A RADIUS OF APPROXIMATELY 2-3 KM. VALUATION HAS BEEN DONE FOR LAND & BUA OF THE G+2 STORIED RESIDENTIAL CUM COMMERCIAL BUILDING';
+    const remBody = fields.remarksText || 'The property has been inspected and valued based on available documents, site measurements and current market conditions.';
     const remNB = 'NB: WE HAVE NOT VERIFIED ANY SALE DEED, ROR, SKETCH MAP, AND APPROVAL PLAN. ALL THE DATA';
 
     this.drawRow([
@@ -1199,7 +1257,14 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     });
     this.cursorY += 16;
 
-    const undertakings = [
+    const rawUndertakings = fields.undertakingText
+      ? fields.undertakingText
+          .split('\n')
+          .map(s => s.trim().replace(/^[•\-\*]\s*/, ''))
+          .filter(Boolean)
+      : [];
+
+    const defaultUndertakings = [
       'I have personally visited the property & identified the same based on the documents provided.',
       'I/We have no direct or indirect interest in the property being valued.',
       'The information furnished above is true and correct to my/our knowledge.',
@@ -1208,6 +1273,8 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       'The value of land is taken into account by making due enquires in the locality and ascertaining the sales value of the properties in the locality',
       'Any additions/alterations made to the property after the date of valuations shall not fall under the scope of this report',
     ];
+
+    const undertakings = rawUndertakings.length > 0 ? rawUndertakings : defaultUndertakings;
 
     for (const u of undertakings) {
       const uY = this.pdfY(this.cursorY) - 9;
@@ -1231,10 +1298,11 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     // Authorized Signatory block (right aligned)
     const sigY = this.pdfY(this.cursorY);
+    const signatoryTitle = fields.authorizedSignatory || 'Authorized Signatory';
     const sigLines = [
-      'Authorized Signatory',
+      signatoryTitle,
       '(Name and Seal of the Agency)',
-      `Date: ${formatReportDate(fields.reportDate, '06.08.2026')}`,
+      `Date: ${formatReportDate(fields.dateOfReportSubmission || fields.reportDate, '06.08.2026')}`,
     ];
     let sigCurY = sigY - 10;
     for (const sl of sigLines) {
@@ -1290,7 +1358,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     });
     this.cursorY += 14;
 
-    const landText = fields.annexureARegardingLand || 'THERE IS A VERY HIGH DIFFERENCE BETWEEN GOVT. VALUE AND MARKET VALUE. GOVT. BENCHMARK VALUE NOT REVISED FOR THAT LOCALITY RECENTLY AND TO AVIOD HIGH STAMP DUTY/REGISTRACTION CHARGES SALE DEED EXECUTED IN UNDER-VALUED RATE.';
+    const landText = fields.annexureARegardingLand || 'Market value is established considering local enquiries, location advantages and prevailing transaction trends.';
     const landLines = this.wrapText(this.sanitizeText(landText), W - 28, FONT_SIZE_SMALL, false);
     this.page.drawText('•', { x: MARGIN_L + 8, y: this.pdfY(this.cursorY) - 9, size: FONT_SIZE_SMALL, font: this.fontBold, color: rgb(0, 0, 0) });
     let lOff = 0;
@@ -1316,7 +1384,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     });
     this.cursorY += 14;
 
-    const bldgText = fields.annexureARegardingBuilding || 'BUILDING VALUE IS ARRIVED BY ANALYSIS OF RATE OF MATERIAL, LABOUR ETC.THIS A RCC ROOFING BUILDING WITH GOOD MAINTENACE LEVEL & QUALITY OF CONSTRUCTION.';
+    const bldgText = fields.annexureARegardingBuilding || 'Building value is calculated by analyzing construction specifications, material and labour rates with prevailing depreciation.';
     const bldgLines = this.wrapText(this.sanitizeText(bldgText), W - 28, FONT_SIZE_SMALL, false);
     this.page.drawText('•', { x: MARGIN_L + 8, y: this.pdfY(this.cursorY) - 9, size: FONT_SIZE_SMALL, font: this.fontBold, color: rgb(0, 0, 0) });
     let bOff = 0;
@@ -1342,7 +1410,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     });
     this.cursorY += 14;
 
-    const basisRateText = fields.annexureABasisLandRate || 'AS PER MARKET FEEDBACK, FREE HOLD SMALL SIZE RESIDENTIAL LANDS PATCH IN ACHHULI, PURUSOTTAMPUR & GANJAM. APPROACHING 20-FT WIDE ROAD ARE GETTING TRANSACTED IN A RANGE OF RS.500/- TO RS.600/- PER SFT. OUR LAND PATCH APPROACHES 20-FT WIDE ROAD, SHOULD BE GETTING TRANSACTED IN A RATE OF RS.550/- PER SFT INCLUDING ALL LAND DEVELOPMENT CHARGES.';
+    const basisRateText = fields.annexureABasisLandRate || 'Land rate is arrived at through verified market enquiries and approaching road access in the immediate vicinity.';
     const basisRateLines = this.wrapText(this.sanitizeText(basisRateText), W, FONT_SIZE_SMALL, false);
     let brOff = 0;
     for (const brl of basisRateLines) {
