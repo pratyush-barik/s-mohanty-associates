@@ -304,8 +304,12 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
           <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' }}>
             <h3 className="font-bold text-gray-700 mb-4">PROPERTY ADDRESS & IDENTIFICATION</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Property details"><input className={inputCls} value={fields.propertyDetailsAxis !== undefined ? fields.propertyDetailsAxis : (fields.addressOfTheProperty || '')} onChange={e => handleChange('propertyDetailsAxis', e.target.value)} disabled={isReadOnly} /></Field>
-              <Field label="Property Address"><input className={inputCls} value={fields.propertyAddressAxis !== undefined ? fields.propertyAddressAxis : (fields.addressOfTheProperty || '')} onChange={e => handleChange('propertyAddressAxis', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Property details" span={2}>
+                <textarea className={inputCls} rows={3} value={fields.propertyDetailsAxis !== undefined ? fields.propertyDetailsAxis : (fields.addressOfTheProperty || '')} onChange={e => handleChange('propertyDetailsAxis', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Property Address" span={2}>
+                <textarea className={inputCls} rows={3} value={fields.propertyAddressAxis !== undefined ? fields.propertyAddressAxis : (fields.addressOfTheProperty || '')} onChange={e => handleChange('propertyAddressAxis', e.target.value)} disabled={isReadOnly} />
+              </Field>
               <Field label="City"><input className={inputCls} value={fields.city || ''} onChange={e => handleChange('city', e.target.value)} disabled={isReadOnly} /></Field>
               <Field label="District"><input className={inputCls} value={fields.district || ''} onChange={e => handleChange('district', e.target.value)} disabled={isReadOnly} /></Field>
               <Field label="State"><input className={inputCls} value={fields.state || ''} onChange={e => handleChange('state', e.target.value)} disabled={isReadOnly} /></Field>
