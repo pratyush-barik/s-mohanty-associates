@@ -28,7 +28,63 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
   ],
   hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4'],
   extraSections: [
-    { id: 'axis-boundaries', title: 'BOUNDARIES, ACCESS & GEOLOCATION', render: () => null }
+    {
+      id: 'axis-boundaries', 
+      title: 'BOUNDARIES, ACCESS & GEOLOCATION',
+      render: (fields, handleChange, isReadOnly) => (
+        <div className="col-span-1 md:col-span-2 space-y-4">
+          <div className="bg-[#FAF5FF] p-4 rounded-xl border border-[#E9D5FF] shadow-xs">
+            <h3 className="text-[#0f2038] font-semibold text-sm mb-3">Four Boundaries of the Property</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm border-collapse bg-white">
+                <thead>
+                  <tr className="bg-neutral-50 text-[#0f2038] font-semibold">
+                    <th className="border p-2 text-left">Source / Description</th>
+                    <th className="border p-2 text-left">East</th>
+                    <th className="border p-2 text-left">West</th>
+                    <th className="border p-2 text-left">North</th>
+                    <th className="border p-2 text-left">South</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="border p-2 font-medium">As Per saledeed</td>
+                    <td className="border p-2"><input type="text" className={inputCls} value={fields.eastAsPerDeed || ''} onChange={e => handleChange('eastAsPerDeed', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="border p-2"><input type="text" className={inputCls} value={fields.westAsPerDeed || ''} onChange={e => handleChange('westAsPerDeed', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="border p-2"><input type="text" className={inputCls} value={fields.northAsPerDeed || ''} onChange={e => handleChange('northAsPerDeed', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="border p-2"><input type="text" className={inputCls} value={fields.southAsPerDeed || ''} onChange={e => handleChange('southAsPerDeed', e.target.value)} disabled={isReadOnly} /></td>
+                  </tr>
+                  <tr>
+                    <td className="border p-2 font-medium">As per Sketch map</td>
+                    <td className="border p-2"><input type="text" className={inputCls} value={fields.eastAsPerMap || ''} onChange={e => handleChange('eastAsPerMap', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="border p-2"><input type="text" className={inputCls} value={fields.westAsPerMap || ''} onChange={e => handleChange('westAsPerMap', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="border p-2"><input type="text" className={inputCls} value={fields.northAsPerMap || ''} onChange={e => handleChange('northAsPerMap', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="border p-2"><input type="text" className={inputCls} value={fields.southAsPerMap || ''} onChange={e => handleChange('southAsPerMap', e.target.value)} disabled={isReadOnly} /></td>
+                  </tr>
+                  <tr>
+                    <td className="border p-2 font-medium">Actual as per Site</td>
+                    <td className="border p-2"><input type="text" className={inputCls} value={fields.eastAsPerSite || ''} onChange={e => handleChange('eastAsPerSite', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="border p-2"><input type="text" className={inputCls} value={fields.westAsPerSite || ''} onChange={e => handleChange('westAsPerSite', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="border p-2"><input type="text" className={inputCls} value={fields.northAsPerSite || ''} onChange={e => handleChange('northAsPerSite', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="border p-2"><input type="text" className={inputCls} value={fields.southAsPerSite || ''} onChange={e => handleChange('southAsPerSite', e.target.value)} disabled={isReadOnly} /></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <div className="bg-[#F0FDFA] p-4 rounded-xl border border-[#99F6E4] shadow-xs">
+            <h3 className="text-[#0f2038] font-semibold text-sm mb-3">Abutting Road & Geo Coordinates</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Width of the abutting Road - Road 1"><input type="text" className={inputCls} value={fields.widthOfRoad1 || ''} onChange={e => handleChange('widthOfRoad1', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Width of the abutting Road - Road 2"><input type="text" className={inputCls} value={fields.widthOfRoad2 || ''} onChange={e => handleChange('widthOfRoad2', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Latitude"><input type="text" className={inputCls} value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Longitude"><input type="text" className={inputCls} value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} /></Field>
+            </div>
+          </div>
+        </div>
+      )
+    }
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo'],
   defaultValues: {
