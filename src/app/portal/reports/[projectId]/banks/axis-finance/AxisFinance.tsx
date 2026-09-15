@@ -285,7 +285,9 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
 
               <Field label="Collateral Ownership"><input className={inputCls} value={fields.collateralOwnership || ''} onChange={e => handleChange('collateralOwnership', e.target.value)} disabled={isReadOnly} /></Field>
               <Field label="Collateral Category"><input className={inputCls} value={fields.collateralCategory || ''} onChange={e => handleChange('collateralCategory', e.target.value)} disabled={isReadOnly} /></Field>
-              <Field label="Property Documents Received"><input className={inputCls} value={fields.propertyDocumentsReceived || ''} onChange={e => handleChange('propertyDocumentsReceived', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Property Documents Received" span={2}>
+                <textarea className={inputCls} rows={3} value={fields.propertyDocumentsReceived || ''} onChange={e => handleChange('propertyDocumentsReceived', e.target.value)} disabled={isReadOnly} />
+              </Field>
             </div>
           </div>
         </div>
