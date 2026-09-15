@@ -178,8 +178,8 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
 
     // Property Owners from dynamic array
     drawCenteredBold('PROPERTY OWNER', FONT_SIZE_HEADER, 16, true);
-    const owners = Array.isArray(fields.propertyOwners) && fields.propertyOwners.length > 0
-      ? fields.propertyOwners
+    const owners = Array.isArray(fields.axisPropertyOwners) && fields.axisPropertyOwners.length > 0
+      ? fields.axisPropertyOwners
       : [{ name: '', relationship: 'S/O', relativeName: '', fatherName: '' }];
     for (const owner of owners) {
       if (owner.name) {
@@ -197,34 +197,36 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
     drawCenteredBold(fv('addressOfTheProperty'), FONT_SIZE, 40);
 
     drawCenteredBold('VALUE OF THE PROPERTY', FONT_SIZE_HEADER, 16, true);
-    drawCenteredBold(`PRESENT MARKET VALUE: ${fv('presentMarketValue')}`, FONT_SIZE, 14);
-    drawCenteredBold(`DISTRESS SALE VALUE: ${fv('distressSaleValue')}`, FONT_SIZE, 40);
+    drawCenteredBold(`PRESENT MARKET VALUE: ${fv('axisPresentMarketValue')}`, FONT_SIZE, 14);
+    drawCenteredBold(`DISTRESS SALE VALUE: ${fv('axisDistressSaleValue')}`, FONT_SIZE, 40);
 
     drawCenteredBold('PURPOSE OF VALUATION', FONT_SIZE_HEADER, 16, true);
-    drawCenteredBold(fv('purposeOfValuation', 'TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY'), FONT_SIZE, 40);
+    drawCenteredBold(fv('axisPurposeOfValuation', 'TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY'), FONT_SIZE, 40);
 
     drawCenteredBold('PREPARED BY', FONT_SIZE_HEADER, 16, true);
 
-    drawCenteredBold(fv('preparedByCompany', 'M/s. S MOHANTY ASSOCIATES'), FONT_SIZE, 14);
-    drawCenteredBold(fv('preparedByDesignation', 'EMPANELLED VALUER & CHARTERED ENGINEER'), FONT_SIZE, 14);
+    drawCenteredBold(fv('axisPreparedByCompany', 'M/s. S MOHANTY ASSOCIATES'), FONT_SIZE, 14);
+    drawCenteredBold(fv('axisPreparedByDesignation', 'EMPANELLED VALUER & CHARTERED ENGINEER'), FONT_SIZE, 14);
 
-    const plotNo = fv('preparedByPlotNo', 'Plot no-859/2494/3232 & 858/2493/3295');
+    const plotNo = fv('axisPreparedByPlotNo', 'Plot no-859/2494/3232 & 858/2493/3295');
     if (plotNo) drawCenteredBold(`${plotNo},`, FONT_SIZE, 14);
 
-    const street = fv('preparedByStreet', 'Shiv Nagar Tankapani Road');
+    const street = fv('axisPreparedByStreet', 'Shiv Nagar Tankapani Road');
     if (street) drawCenteredBold(`${street},`, FONT_SIZE, 14);
 
     const cityStatePin = [
-      fv('preparedByCity', 'Bhubaneswar'),
-      fv('preparedByState', 'Odisha'),
-      fv('preparedByPinCode', '751018') ? `Pin-${fv('preparedByPinCode', '751018')}` : ''
+      fv('axisPreparedByCity', 'Bhubaneswar'),
+      fv('axisPreparedByState', 'Odisha'),
+      fv('axisPreparedByPinCode', '751018') ? `Pin-${fv('axisPreparedByPinCode', '751018')}` : ''
     ].filter(Boolean).join(', ');
     if (cityStatePin) drawCenteredBold(cityStatePin, FONT_SIZE, 14);
 
-    drawCenteredBold(`PHONE- ${fv('preparedByPhone', '06742381145')}`, FONT_SIZE, 14);
+    drawCenteredBold(`PHONE- ${fv('axisPreparedByPhone', '06742381145')}`, FONT_SIZE, 14);
 
-    let rawMobile = fv('preparedByMobile', '9937023855/9437074855');
+    let rawMobile = fv('axisPreparedByMobile', '9937023855/9437074855');
     let processedMobile = rawMobile.replace(/[^0-9]+/g, '/').replace(/(^\/|\/$)/g, '');
     drawCenteredBold(`MOBILE-${processedMobile}`, FONT_SIZE, 0);
   }
 }
+
+
