@@ -1268,7 +1268,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {renderField('Technical Status', 'axisTechnicalStatus', 'select', ['Recommended', 'Not Recommended', 'Subject to Legal Clearance', 'Custom'])}
+                  {renderField('Technical Status', 'axisTechnicalStatus', 'select', ['Positive', 'Negative', 'Neutral / Refer to Bank', 'Acceptable with Conditions', 'Custom'])}
                   {fields.axisTechnicalStatus === 'Custom' && (
                     <div className="space-y-1">
                       <div className="flex justify-between items-center mb-1">
@@ -1286,15 +1286,27 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
               <div className="space-y-4">
                 <div className="space-y-2">
                   {[
-                    { key: 'axisUndertakingClause1', text: 'I have personally visited the property & identified the same based on the documents provided' },
-                    { key: 'axisUndertakingClause2', text: 'I/We have no direct or Indirect Interest in the property being valued' },
-                    { key: 'axisUndertakingClause3', text: 'The information furnished above is true and correct to my/our knowledge' }
-                  ].map(clause => (
-                    <label key={clause.key} className="flex items-start space-x-3 cursor-pointer p-2 hover:bg-white/50 rounded transition-colors">
-                      <input type="checkbox" className="mt-1 w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={fields[clause.key] !== false} onChange={e => handleChange(clause.key, e.target.checked)} disabled={isReadOnly} />
-                      <span className="text-sm text-gray-700 leading-tight">{clause.text}</span>
-                    </label>
-                  ))}
+                    { key: 'axisUndertakingClause1', defaultText: 'I have personally visited the property & identified the same based on the documents provided' },
+                    { key: 'axisUndertakingClause2', defaultText: 'I/We have no direct or Indirect Interest in the property being valued' },
+                    { key: 'axisUndertakingClause3', defaultText: 'The information furnished above is true and correct to my/our knowledge' }
+                  ].map((clause) => {
+                    const isNA = fields[`${clause.key}NA`] === true;
+                    return (
+                      <div key={clause.key} className={`flex items-start space-x-3 p-2 rounded transition-colors ${isNA ? 'opacity-50 grayscale bg-gray-50' : 'hover:bg-white/50'}`}>
+                        <input type="checkbox" className="mt-2 w-4 h-4 text-green-500 rounded border-gray-300 focus:ring-green-500 cursor-pointer" checked={fields[clause.key] !== false} onChange={e => handleChange(clause.key, e.target.checked)} disabled={isReadOnly || isNA} title="Active Confirmation Toggle" />
+                        <textarea
+                          className={`${inputCls} min-h-[40px] resize-y flex-1 ${isNA ? 'bg-gray-100' : ''}`}
+                          value={fields[`${clause.key}Text`] !== undefined ? fields[`${clause.key}Text`] : clause.defaultText}
+                          onChange={e => handleChange(`${clause.key}Text`, e.target.value)}
+                          disabled={isReadOnly || isNA}
+                        />
+                        <label className="flex items-center space-x-1 cursor-pointer mt-2">
+                          <input type="checkbox" className="w-3 h-3 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={isNA} onChange={e => handleChange(`${clause.key}NA`, e.target.checked)} disabled={isReadOnly} />
+                          <span className="text-[10px] text-gray-500 font-medium leading-none">NA</span>
+                        </label>
+                      </div>
+                    );
+                  })}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                   {renderField('Name of The Person Visited Site', 'axisNameOfPersonVisitedSite')}
