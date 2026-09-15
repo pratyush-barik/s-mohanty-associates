@@ -428,6 +428,12 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
               {renderDropdownWithCustom('Actual Usage Of Property', 'actualUsageOfPropertyAxis', ['Residential', 'Commercial', 'Industrial', 'Residential Cum Industrial', 'Mixed (Residential + Commercial)', 'Vacant', 'NA', 'Custom'])}
               {renderDropdownWithCustom('Approved Usage of Property', 'approvedUsageOfPropertyAxis', ['Residential', 'Commercial', 'Industrial', 'Residential Cum Industrial', 'NA / Unapproved / GP Limit', 'NA', 'Custom'])}
               {renderDropdownWithCustom('Property Demarcation at Site', 'plotDemarcated', ['Yes', 'No', 'NA', 'Custom'])}
+            </div>
+          </div>
+
+          <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FFF1F2', borderColor: '#FECDD3' }}>
+            <h3 className="font-bold text-gray-700 mb-4">AMENITIES, INTERIORS & ORIENTATION</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Distance: Nearest Metro / Bus Station / Railway Station/Airport"><input className={inputCls} value={fields.distanceNearestMetroBusRailwayAirportAxis || ''} onChange={e => handleChange('distanceNearestMetroBusRailwayAirportAxis', e.target.value)} disabled={isReadOnly} /></Field>
               <Field label="Nearness to recreation facilities"><input className={inputCls} value={fields.nearnessToRecreationFacilitiesAxis || ''} onChange={e => handleChange('nearnessToRecreationFacilitiesAxis', e.target.value)} disabled={isReadOnly} /></Field>
               {renderDropdownWithCustom('Quality of Interiors', 'qualityOfInteriorsAxis', ['Excellent', 'Good', 'Average', 'Poor', 'NA', 'Custom'])}
