@@ -840,7 +840,13 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
       render: (fields, handleChange, isReadOnly) => {
         const inputCls = "w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white disabled:bg-gray-100 disabled:text-gray-500";
         
-        const renderField = (label: string, fieldKey: string) => (
+        const safeNum = (val: any) => {
+          if (val === 'NA' || !val) return 0;
+          const num = parseFloat(val);
+          return isNaN(num) ? 0 : num;
+        };
+
+        const renderFieldWithUnit = (label: string, fieldKey: string, unitTag: string) => (
           <div className="space-y-1">
             <div className="flex justify-between items-center mb-1">
               <label className="text-xs font-semibold text-gray-700">{label}</label>
@@ -849,9 +855,42 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                 <span className="text-[10px] text-gray-500 font-medium leading-none">NA</span>
               </label>
             </div>
-            <input className={inputCls} value={fields[fieldKey] || ''} onChange={e => handleChange(fieldKey, e.target.value)} disabled={isReadOnly || fields[fieldKey] === 'NA'} />
+            <div className="relative">
+              <input className={`${inputCls} pr-16`} value={fields[fieldKey] || ''} onChange={e => handleChange(fieldKey, e.target.value)} disabled={isReadOnly || fields[fieldKey] === 'NA'} />
+              <div className="absolute right-1 top-1.5 px-2 bg-gray-100 rounded text-xs text-gray-500 pointer-events-none">{unitTag}</div>
+            </div>
           </div>
         );
+
+        const renderFieldWithFormulaAndUnit = (label: string, fieldKey: string, formulaLabel: string, calculatedValue: number | string, unitTag?: string) => {
+          const isManual = fields[`${fieldKey}_isManual`] || false;
+          const isNA = fields[fieldKey] === 'NA';
+          const displayValue = (isManual || isNA) ? (fields[fieldKey] || '') : calculatedValue;
+          
+          return (
+            <div className="space-y-1">
+              <div className="flex justify-between items-center mb-1">
+                <label className="text-xs font-semibold text-gray-700">{label} <span className="text-gray-400 font-normal italic ml-1">{formulaLabel}</span></label>
+                <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-1" title="Toggle Manual Override">
+                    <span className="text-[9px] text-gray-500 font-medium uppercase">Edit</span>
+                    <button type="button" className={`w-6 h-3 rounded-full relative transition-colors ${isManual ? 'bg-green-500' : 'bg-gray-300'}`} onClick={() => handleChange(`${fieldKey}_isManual`, !isManual)} disabled={isReadOnly}>
+                      <div className={`w-2 h-2 bg-white rounded-full absolute top-0.5 transition-transform ${isManual ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
+                    </button>
+                  </div>
+                  <label className="flex items-center space-x-1 cursor-pointer">
+                    <input type="checkbox" className="w-3 h-3 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={isNA} onChange={e => handleChange(fieldKey, e.target.checked ? 'NA' : '')} disabled={isReadOnly} />
+                    <span className="text-[10px] text-gray-500 font-medium leading-none">NA</span>
+                  </label>
+                </div>
+              </div>
+              <div className="relative">
+                <input className={`${inputCls} ${unitTag ? 'pr-16' : ''} ${!isManual ? 'bg-green-50/50' : ''}`} value={displayValue} onChange={e => isManual && handleChange(fieldKey, e.target.value)} disabled={isReadOnly || isNA || !isManual} />
+                {unitTag && <div className="absolute right-1 top-1.5 px-2 bg-gray-100 rounded text-xs text-gray-500 pointer-events-none">{unitTag}</div>}
+              </div>
+            </div>
+          );
+        };
 
         const renderTableCell = (fieldKey: string) => (
           <div className="flex flex-col space-y-1 px-1 py-1">
@@ -865,14 +904,59 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
           </div>
         );
 
+        const renderTableCellWithFormula = (fieldKey: string, calculatedValue: number | string, formulaLabel: string) => {
+          const isManual = fields[`${fieldKey}_isManual`] || false;
+          const isNA = fields[fieldKey] === 'NA';
+          const displayValue = (isManual || isNA) ? (fields[fieldKey] || '') : calculatedValue;
+          
+          return (
+            <div className="flex flex-col space-y-1 px-1 py-1 group relative">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center space-x-0.5">
+                  <button type="button" className={`w-5 h-2.5 rounded-full relative transition-colors ${isManual ? 'bg-green-500' : 'bg-gray-300'}`} onClick={() => handleChange(`${fieldKey}_isManual`, !isManual)} disabled={isReadOnly} title="Toggle Edit">
+                    <div className={`w-1.5 h-1.5 bg-white rounded-full absolute top-0.5 transition-transform ${isManual ? 'translate-x-2.5' : 'translate-x-0.5'}`} />
+                  </button>
+                </div>
+                <label className="flex items-center space-x-1 cursor-pointer" title="Not Applicable">
+                  <input type="checkbox" className="w-2.5 h-2.5" checked={isNA} onChange={e => handleChange(fieldKey, e.target.checked ? 'NA' : '')} disabled={isReadOnly} />
+                  <span className="text-[9px] text-gray-400 font-medium leading-none">NA</span>
+                </label>
+              </div>
+              <input className={`${inputCls} text-xs p-1 ${!isManual ? 'bg-green-50/50' : ''}`} value={displayValue} onChange={e => isManual && handleChange(fieldKey, e.target.value)} disabled={isReadOnly || isNA || !isManual} title={formulaLabel} />
+            </div>
+          );
+        };
+
+        // Calculations
+        const landArea = safeNum(fields.axisAreaOfLand);
+        const landRate = safeNum(fields.axisMarketRateOfLand);
+        const landValueCalc = (landArea * landRate).toFixed(2);
+
+        const floors = ['GF', 'FF', 'SF', 'TF', 'NA'];
+        const approvedBuaTotal = floors.reduce((sum, f) => sum + safeNum(fields[`axisCostBreakupApprovedBUA${f}`]), 0);
+        const actualBuaTotal = floors.reduce((sum, f) => sum + safeNum(fields[`axisCostBreakupActualBUA${f}`]), 0);
+
+        const totalBuaValues = floors.reduce((acc, f) => {
+          acc[f] = safeNum(fields[`axisCostBreakupActualBUA${f}`]) * safeNum(fields[`axisCostBreakupConstructionCost${f}`]);
+          return acc;
+        }, {} as Record<string, number>);
+        const totalBuaValueSum = floors.reduce((sum, f) => sum + totalBuaValues[f], 0);
+
+        const approvedBuaValueTotal = floors.reduce((sum, f) => sum + (safeNum(fields[`axisCostBreakupApprovedBUA${f}`]) * safeNum(fields[`axisCostBreakupConstructionCost${f}`])), 0);
+        const totalLandVal = fields.axisValueOfTheLand_isManual ? safeNum(fields.axisValueOfTheLand) : safeNum(landValueCalc);
+        const totalConstructionVal = fields.axisCostBreakupTotalBUAValueTotal_isManual ? safeNum(fields.axisCostBreakupTotalBUAValueTotal) : totalBuaValueSum;
+        const marketValueUnitCalc = (totalLandVal + totalConstructionVal).toFixed(2);
+
         return (
           <div className="animate-fade-in space-y-6">
             <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#F4F6F0', borderColor: '#D5DDC5' }}>
               <h3 className="font-bold text-gray-700 mb-4">Market Value of Independent Property (Land)</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {renderField('Area of Land (As per Documents) (Sq. Ft.)', 'axisAreaOfLand')}
-                {renderField('Market rate of the Land (Rs./Sq. Ft.)', 'axisMarketRateOfLand')}
-                {renderField('Value of the Land', 'axisValueOfTheLand')}
+                {renderFieldWithUnit('Area of Land (As per Documents)', 'axisAreaOfLand', 'Sq. Ft.')}
+                {renderFieldWithUnit('Market rate of the Land', 'axisMarketRateOfLand', 'Rs./Sq. Ft.')}
+                <div className="md:col-span-2">
+                  {renderFieldWithFormulaAndUnit('Value of the Land', 'axisValueOfTheLand', '[Formula: Area × Rate]', landValueCalc, 'Rs.')}
+                </div>
               </div>
             </div>
 
@@ -887,19 +971,19 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                       <th className="px-2 py-2 min-w-[90px]">FF</th>
                       <th className="px-2 py-2 min-w-[90px]">SF</th>
                       <th className="px-2 py-2 min-w-[90px]">TF</th>
-                      <th className="px-2 py-2 min-w-[90px]">NA</th>
+                      <th className="px-2 py-2 min-w-[90px]">NA / Other</th>
                       <th className="px-2 py-2 min-w-[100px]">Total</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr className="border-b">
-                      <td className="px-4 py-2 font-medium">Approved BUA</td>
+                      <td className="px-4 py-2 font-medium">Approved BUA (Sq. Ft.)</td>
                       <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupApprovedBUAGF')}</td>
                       <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupApprovedBUAFF')}</td>
                       <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupApprovedBUASF')}</td>
                       <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupApprovedBUATF')}</td>
                       <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupApprovedBUANA')}</td>
-                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupApprovedBUATotal')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCellWithFormula('axisCostBreakupApprovedBUATotal', approvedBuaTotal.toFixed(2), '[Formula: Sum of all floors]')}</td>
                     </tr>
                     <tr className="border-b">
                       <td className="px-4 py-2 font-medium">Actual BUA Sq ft</td>
@@ -908,7 +992,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                       <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupActualBUASF')}</td>
                       <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupActualBUATF')}</td>
                       <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupActualBUANA')}</td>
-                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupActualBUATotal')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCellWithFormula('axisCostBreakupActualBUATotal', actualBuaTotal.toFixed(2), '[Formula: Sum of all floors]')}</td>
                     </tr>
                     <tr className="border-b">
                       <td className="px-4 py-2 font-medium">Construction Cost Rs. Per Sq ft</td>
@@ -921,12 +1005,12 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                     </tr>
                     <tr>
                       <td className="px-4 py-2 font-medium">Total BUA Value</td>
-                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupTotalBUAValueGF')}</td>
-                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupTotalBUAValueFF')}</td>
-                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupTotalBUAValueSF')}</td>
-                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupTotalBUAValueTF')}</td>
-                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupTotalBUAValueNA')}</td>
-                      <td className="px-1 py-1 align-top">{renderTableCell('axisCostBreakupTotalBUAValueTotal')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCellWithFormula('axisCostBreakupTotalBUAValueGF', totalBuaValues.GF.toFixed(2), '[Formula: Actual BUA × Cost]')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCellWithFormula('axisCostBreakupTotalBUAValueFF', totalBuaValues.FF.toFixed(2), '[Formula: Actual BUA × Cost]')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCellWithFormula('axisCostBreakupTotalBUAValueSF', totalBuaValues.SF.toFixed(2), '[Formula: Actual BUA × Cost]')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCellWithFormula('axisCostBreakupTotalBUAValueTF', totalBuaValues.TF.toFixed(2), '[Formula: Actual BUA × Cost]')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCellWithFormula('axisCostBreakupTotalBUAValueNA', totalBuaValues.NA.toFixed(2), '[Formula: Actual BUA × Cost]')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCellWithFormula('axisCostBreakupTotalBUAValueTotal', totalBuaValueSum.toFixed(2), '[Formula: Sum of all floor values]')}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -935,9 +1019,9 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
 
             <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FFF5F5', borderColor: '#FED7D7' }}>
               <h3 className="font-bold text-gray-700 mb-4">Unit Market Value Summary</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {renderField('Value of the Approved BUA', 'axisValueOfApprovedBUA')}
-                {renderField('Market Value of the Unit : (Land + Construction)', 'axisMarketValueOfTheUnitLandAndConstruction')}
+              <div className="grid grid-cols-1 gap-4">
+                {renderFieldWithFormulaAndUnit('Value of the Approved BUA', 'axisValueOfApprovedBUA', '[Formula: Approved BUA × Construction Rate]', approvedBuaValueTotal.toFixed(2), 'Rs.')}
+                {renderFieldWithFormulaAndUnit('Market Value of the Unit : (Land + Construction)', 'axisMarketValueOfTheUnitLandAndConstruction', '[Formula: Land Value + Construction Value]', marketValueUnitCalc, 'Rs.')}
               </div>
             </div>
           </div>
@@ -967,6 +1051,62 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
             computedState = s;
             break;
           }
+    
+    // Inject calculated values for Section 7 into fields for PDF renderer if they are auto-calculated
+    const safeNum = (val: any) => {
+      if (val === 'NA' || !val) return 0;
+      const num = parseFloat(val);
+      return isNaN(num) ? 0 : num;
+    };
+    
+    // Land value
+    if (!fields.axisValueOfTheLand_isManual && fields.axisValueOfTheLand !== 'NA') {
+      fields.axisValueOfTheLand = (safeNum(fields.axisAreaOfLand) * safeNum(fields.axisMarketRateOfLand)).toFixed(2);
+    }
+    
+    // Table values
+    const floors = ['GF', 'FF', 'SF', 'TF', 'NA'];
+    const totalBuaValues: Record<string, number> = {};
+    let approvedBuaTotal = 0;
+    let actualBuaTotal = 0;
+    let approvedBuaValueTotal = 0;
+    
+    floors.forEach(f => {
+      approvedBuaTotal += safeNum(fields[`axisCostBreakupApprovedBUA${f}`]);
+      actualBuaTotal += safeNum(fields[`axisCostBreakupActualBUA${f}`]);
+      
+      const actual = safeNum(fields[`axisCostBreakupActualBUA${f}`]);
+      const cost = safeNum(fields[`axisCostBreakupConstructionCost${f}`]);
+      totalBuaValues[f] = actual * cost;
+      
+      if (!fields[`axisCostBreakupTotalBUAValue${f}_isManual`] && fields[`axisCostBreakupTotalBUAValue${f}`] !== 'NA') {
+        fields[`axisCostBreakupTotalBUAValue${f}`] = (actual * cost).toFixed(2);
+      }
+      
+      approvedBuaValueTotal += safeNum(fields[`axisCostBreakupApprovedBUA${f}`]) * cost;
+    });
+
+    if (!fields.axisCostBreakupApprovedBUATotal_isManual && fields.axisCostBreakupApprovedBUATotal !== 'NA') {
+      fields.axisCostBreakupApprovedBUATotal = approvedBuaTotal.toFixed(2);
+    }
+    if (!fields.axisCostBreakupActualBUATotal_isManual && fields.axisCostBreakupActualBUATotal !== 'NA') {
+      fields.axisCostBreakupActualBUATotal = actualBuaTotal.toFixed(2);
+    }
+    
+    const totalBuaValueSum = Object.values(totalBuaValues).reduce((sum, v) => sum + v, 0);
+    if (!fields.axisCostBreakupTotalBUAValueTotal_isManual && fields.axisCostBreakupTotalBUAValueTotal !== 'NA') {
+      fields.axisCostBreakupTotalBUAValueTotal = totalBuaValueSum.toFixed(2);
+    }
+
+    if (!fields.axisValueOfApprovedBUA_isManual && fields.axisValueOfApprovedBUA !== 'NA') {
+      fields.axisValueOfApprovedBUA = approvedBuaValueTotal.toFixed(2);
+    }
+    
+    const finalLandVal = safeNum(fields.axisValueOfTheLand);
+    const finalConstrVal = safeNum(fields.axisCostBreakupTotalBUAValueTotal);
+    if (!fields.axisMarketValueOfTheUnitLandAndConstruction_isManual && fields.axisMarketValueOfTheUnitLandAndConstruction !== 'NA') {
+      fields.axisMarketValueOfTheUnitLandAndConstruction = (finalLandVal + finalConstrVal).toFixed(2);
+    }
         }
         if (!computedDistrict) {
           const parts = address.split(',').map((p: string) => p.trim());
