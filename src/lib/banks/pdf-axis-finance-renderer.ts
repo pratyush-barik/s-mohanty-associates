@@ -40,7 +40,7 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
 
   private drawAxisBoundariesTable() {
     const fields = this.fields;
-    const fv = (key: string) => (fields[key] || 'NA').toString();
+    const fv = (key: string) => (fields[key] || 'NA').toString().replace(/[\t\n\r]+/g, ' ');
 
     const rowHeight = FONT_SIZE * 1.5 + 4;
     const tableWidth = CONTENT_W;
@@ -75,7 +75,7 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
         });
       }
       
-      this.page.drawText(text, {
+      this.page.drawText(this.sanitizeText(text), {
         x: x + 4,
         y: this.pdfY(y + h - 14),
         size: FONT_SIZE - 1,
@@ -117,7 +117,7 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
 
   private drawAxisCoverPage() {
     const fields = this.fields;
-    const fv = (key: string, defaultVal = '') => (fields as any)[key] as string || defaultVal;
+    const fv = (key: string, defaultVal = '') => ((fields as any)[key] as string || defaultVal).replace(/[\t\n\r]+/g, ' ');
 
     // Reset cursor for the cover page
     this.cursorY = 60;
@@ -148,10 +148,11 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
     });
 
     const drawCenteredBold = (text: string, size: number, ySpaceAfter: number, underline: boolean = false) => {
-      const tw = this.fontBold.widthOfTextAtSize(text, size);
+      const cleanText = this.sanitizeText(text);
+      const tw = this.fontBold.widthOfTextAtSize(cleanText, size);
       const startX = MARGIN_L + (CONTENT_W - tw) / 2;
       const startY = this.pdfY(this.cursorY);
-      this.page.drawText(text, { x: startX, y: startY, size, font: this.fontBold, color: rgb(0,0,0) });
+      this.page.drawText(cleanText, { x: startX, y: startY, size, font: this.fontBold, color: rgb(0,0,0) });
       if (underline) {
         this.page.drawLine({
           start: { x: startX, y: startY - 2 },
