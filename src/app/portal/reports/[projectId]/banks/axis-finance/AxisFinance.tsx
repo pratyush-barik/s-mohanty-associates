@@ -235,7 +235,15 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
       title: 'Client & Application Details',
       number: 2,
       defaultOpen: true,
-      render: (fields, handleChange, isReadOnly) => (
+      render: (fields, handleChange, isReadOnly) => {
+        const isOwnerEditOn = fields.enablePropertyOwnerEdit || false;
+        const computedOwnersText = (fields.propertyOwners || [])
+          .filter((o: any) => o.name)
+          .map((o: any) => `${o.name}, ${o.relationship || 'S/O'}- ${o.relativeName || o.fatherName || ''}`)
+          .join('\n');
+        const propertyOwnerValue = isOwnerEditOn ? (fields.propertyOwnerNames ?? computedOwnersText) : computedOwnersText;
+        
+        return (
         <div className="animate-fade-in space-y-6">
           <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#F0F7FF', borderColor: '#BAE6FD' }}>
             <h3 className="font-bold text-gray-700 mb-4">CUSTOMER & LOAN INFORMATION</h3>
@@ -244,14 +252,45 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
               <Field label="Application Number"><input className={inputCls} value={fields.loanApplicationNo || ''} onChange={e => handleChange('loanApplicationNo', e.target.value)} disabled={isReadOnly} /></Field>
               <Field label="Date"><input type="date" className={inputCls} value={fields.dateOfValuation || ''} onChange={e => handleChange('dateOfValuation', e.target.value)} disabled={isReadOnly} /></Field>
               <Field label="Name of the Customer"><input className={inputCls} value={fields.ownerName || ''} onChange={e => handleChange('ownerName', e.target.value)} disabled={isReadOnly} /></Field>
-              <Field label="Name of the Property Owner(S)"><input className={inputCls} value={fields.propertyOwnerNames || ''} onChange={e => handleChange('propertyOwnerNames', e.target.value)} disabled={isReadOnly} /></Field>
+              
+              <div className="col-span-1 w-full flex flex-col">
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Name of the Property Owner(S)</label>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-[10px] uppercase font-bold text-gray-400">Edit {isOwnerEditOn ? 'On' : 'Off'}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!isOwnerEditOn && !fields.propertyOwnerNames) {
+                           handleChange('propertyOwnerNames', computedOwnersText);
+                        }
+                        handleChange('enablePropertyOwnerEdit', !isOwnerEditOn);
+                      }}
+                      disabled={isReadOnly}
+                      className={`w-8 h-4 rounded-full relative transition-colors ${isOwnerEditOn ? 'bg-green-500' : 'bg-gray-300'}`}
+                    >
+                      <span className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white transition-transform ${isOwnerEditOn ? 'translate-x-4' : ''}`} />
+                    </button>
+                  </div>
+                </div>
+                <textarea
+                  className={inputCls}
+                  rows={isOwnerEditOn ? 3 : Math.max(1, (fields.propertyOwners || []).length)}
+                  value={propertyOwnerValue}
+                  onChange={e => handleChange('propertyOwnerNames', e.target.value)}
+                  readOnly={!isOwnerEditOn}
+                  disabled={isReadOnly || !isOwnerEditOn}
+                />
+              </div>
+
               <Field label="Collateral Ownership"><input className={inputCls} value={fields.collateralOwnership || ''} onChange={e => handleChange('collateralOwnership', e.target.value)} disabled={isReadOnly} /></Field>
               <Field label="Collateral Category"><input className={inputCls} value={fields.collateralCategory || ''} onChange={e => handleChange('collateralCategory', e.target.value)} disabled={isReadOnly} /></Field>
               <Field label="Property Documents Received"><input className={inputCls} value={fields.propertyDocumentsReceived || ''} onChange={e => handleChange('propertyDocumentsReceived', e.target.value)} disabled={isReadOnly} /></Field>
             </div>
           </div>
         </div>
-      )
+      );
+      }
     }
   ],
   getPDFRenderer: (fields) => new PDFAxisFinanceRenderer(fields)
