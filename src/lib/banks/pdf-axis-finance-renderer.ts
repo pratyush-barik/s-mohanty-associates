@@ -31,8 +31,8 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
     super.drawCenteredTitle(title);
   }
 
-  override drawSectionHeader(title: string, opts?: { skipBreak?: boolean }) {
-    super.drawSectionHeader(title, opts);
+  override drawSectionHeader(title: string, addSpaceBefore?: boolean, preserveCase?: boolean) {
+    super.drawSectionHeader(title, addSpaceBefore, preserveCase);
     if (title === 'BOUNDARIES, ACCESS & GEOLOCATION') {
       this.drawAxisBoundariesTable();
     }
