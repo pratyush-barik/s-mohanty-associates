@@ -443,6 +443,68 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
         </div>
       );
       }
+    },
+    {
+      id: 'axis-section-4',
+      title: 'Boundaries, Access & Geolocation',
+      number: 4,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        const inputCls = "w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all";
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FAF5FF', borderColor: '#E9D5FF' }}>
+              <h3 className="font-bold text-gray-700 mb-4">Four Boundaries of the Property</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left text-gray-600">
+                  <thead className="text-xs text-gray-700 uppercase bg-white bg-opacity-50 border-b">
+                    <tr>
+                      <th className="px-4 py-2">Source / Description</th>
+                      <th className="px-4 py-2">East</th>
+                      <th className="px-4 py-2">West</th>
+                      <th className="px-4 py-2">North</th>
+                      <th className="px-4 py-2">South</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b">
+                      <td className="px-4 py-2 font-medium">As Per saledeed</td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.eastAsPerDeed || ''} onChange={e => handleChange('eastAsPerDeed', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.westAsPerDeed || ''} onChange={e => handleChange('westAsPerDeed', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.northAsPerDeed || ''} onChange={e => handleChange('northAsPerDeed', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.southAsPerDeed || ''} onChange={e => handleChange('southAsPerDeed', e.target.value)} disabled={isReadOnly} /></td>
+                    </tr>
+                    <tr className="border-b">
+                      <td className="px-4 py-2 font-medium">As per Sketch map</td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.eastAsPerPlan || ''} onChange={e => handleChange('eastAsPerPlan', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.westAsPerPlan || ''} onChange={e => handleChange('westAsPerPlan', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.northAsPerPlan || ''} onChange={e => handleChange('northAsPerPlan', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.southAsPerPlan || ''} onChange={e => handleChange('southAsPerPlan', e.target.value)} disabled={isReadOnly} /></td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-2 font-medium">Actual as per Site</td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.eastAsPerSite || ''} onChange={e => handleChange('eastAsPerSite', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.westAsPerSite || ''} onChange={e => handleChange('westAsPerSite', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.northAsPerSite || ''} onChange={e => handleChange('northAsPerSite', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.southAsPerSite || ''} onChange={e => handleChange('southAsPerSite', e.target.value)} disabled={isReadOnly} /></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#F0FDFA', borderColor: '#99F6E4' }}>
+              <h3 className="font-bold text-gray-700 mb-4">Abutting Road & Geo Coordinates</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="Width of the abutting Road - Road 1"><input className={inputCls} value={fields.widthOfRoad1 || ''} onChange={e => handleChange('widthOfRoad1', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="Width of the abutting Road - Road 2"><input className={inputCls} value={fields.widthOfRoad2 || ''} onChange={e => handleChange('widthOfRoad2', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="Latitude"><input className={inputCls} value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="Longitude"><input className={inputCls} value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} /></Field>
+              </div>
+            </div>
+          </div>
+        );
+      }
     }
   ],
   getPDFRenderer: (fields) => {
