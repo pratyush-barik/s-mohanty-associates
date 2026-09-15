@@ -17,7 +17,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
     { id: 'axis-section-5', title: 'Approval & Structural Information' },
     { id: 'axis-section-6', title: 'Unit Measurements & Setbacks' },
     { id: 'axis-section-7', title: 'Valuation & Construction Cost Break-up' },
-    { id: 'section-8', title: 'Land Valuation' },
+    { id: 'axis-section-8', title: 'Construction Cost (For Plot Plus Construction)' },
     { id: 'section-9', title: 'Valuation Abstract' },
     { id: 'section-10', title: 'Remarks' },
     { id: 'section-11', title: 'Certificate' },
@@ -26,7 +26,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
     { id: 'section-14', title: 'Location Map' },
     { id: 'section-15', title: 'Annexures' },
   ],
-  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7'],
+  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7', 'section-8'],
   extraSections: [],
   hiddenFields: ['to', 'dateOfValuation', 'refNo'],
   defaultValues: {
@@ -116,6 +116,17 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
 
     axisValueOfApprovedBUA: '',
     axisMarketValueOfTheUnitLandAndConstruction: '',
+
+    axisEstimatedCostOfConstruction: '',
+    axisStandardCostOfConstruction: '',
+    axisEstimatedRatePerSqft: '',
+    axisStandardRatePerSqft: '',
+    axisMaterialAndFinishingDetails: '',
+    axisStageOfConstruction: '',
+    axisRecommendedForDisbursement: '',
+    axisRecommendedConstructionRate: '',
+    axisRecommendedCostOfConstruction: '',
+    axisTotalValueOfPropertyAfterCompletion: '',
   },
   extraSectionsStart: [
     {
@@ -1106,6 +1117,12 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
     const finalConstrVal = safeNum(fields.axisCostBreakupTotalBUAValueTotal);
     if (!fields.axisMarketValueOfTheUnitLandAndConstruction_isManual && fields.axisMarketValueOfTheUnitLandAndConstruction !== 'NA') {
       fields.axisMarketValueOfTheUnitLandAndConstruction = (finalLandVal + finalConstrVal).toFixed(2);
+    }
+    
+    // Section 8 calculated fields
+    const recommendedConstCost = safeNum(fields.axisRecommendedCostOfConstruction);
+    if (!fields.axisTotalValueOfPropertyAfterCompletion_isManual && fields.axisTotalValueOfPropertyAfterCompletion !== 'NA') {
+      fields.axisTotalValueOfPropertyAfterCompletion = (finalLandVal + recommendedConstCost).toFixed(2);
     }
         }
         if (!computedDistrict) {

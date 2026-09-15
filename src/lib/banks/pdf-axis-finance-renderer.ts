@@ -45,6 +45,8 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
       this.drawAxisSection6();
     } else if (title === 'VALUATION & CONSTRUCTION COST BREAK-UP') {
       this.drawAxisSection7();
+    } else if (title === 'CONSTRUCTION COST (FOR PLOT PLUS CONSTRUCTION)') {
+      this.drawAxisSection8();
     }
   }
 
@@ -532,6 +534,38 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
       { label: 'Value of the Approved BUA', value: fv('axisValueOfApprovedBUA') },
       { label: 'Market Value of the Unit : (Land + Construction)', value: fv('axisMarketValueOfTheUnitLandAndConstruction') }
     ]);
+    this.advanceCursor(4);
+  }
+
+  private drawAxisSection8() {
+    const fv = (key: string, def = 'NA') => {
+      const val = this.fields[key];
+      return val ? String(val) : def;
+    };
+
+    this.drawSectionSubtitle('Construction Cost & Technical Specifications');
+    this.drawKeyValueRow([
+      { label: 'Estimated Cost Of Construction', value: fv('axisEstimatedCostOfConstruction') },
+      { label: 'Standard Cost Of Construction', value: fv('axisStandardCostOfConstruction') }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Estimated Rate Per Sq ft', value: fv('axisEstimatedRatePerSqft') },
+      { label: 'Standard Rate Per Sq ft', value: fv('axisStandardRatePerSqft') }
+    ]);
+    
+    this.drawSimpleRow('Material & Finishing Details as proposed in Estimate', fv('axisMaterialAndFinishingDetails'));
+
+    this.drawKeyValueRow([
+      { label: 'Stage of Construction (%)', value: fv('axisStageOfConstruction') },
+      { label: 'Recommended For Disbursement (%)', value: fv('axisRecommendedForDisbursement') }
+    ]);
+
+    this.drawKeyValueRow([
+      { label: 'Recommended construction rate based on the proposed specifications', value: fv('axisRecommendedConstructionRate') },
+      { label: 'Recommended Cost of Construction', value: fv('axisRecommendedCostOfConstruction') }
+    ]);
+
+    this.drawSimpleRow('Total Value of property after Completion', fv('axisTotalValueOfPropertyAfterCompletion'));
     this.advanceCursor(4);
   }
 }
