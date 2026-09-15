@@ -20,7 +20,7 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
     this.fields = fields || {};
   }
 
-  drawCenteredTitle(title: string) {
+  override drawCenteredTitle(title: string) {
     if (!this.drawnCover) {
       this.drawnCover = true;
       this.drawAxisCoverPage();
@@ -29,6 +29,90 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
     }
     // Proceed to draw the actual title on the second page
     super.drawCenteredTitle(title);
+  }
+
+  override drawSectionHeader(title: string, opts?: { skipBreak?: boolean }) {
+    super.drawSectionHeader(title, opts);
+    if (title === 'BOUNDARIES, ACCESS & GEOLOCATION') {
+      this.drawAxisBoundariesTable();
+    }
+  }
+
+  private drawAxisBoundariesTable() {
+    const fields = this.fields;
+    const fv = (key: string) => (fields[key] || 'NA').toString();
+
+    const rowHeight = FONT_SIZE * 1.5 + 4;
+    const tableWidth = CONTENT_W;
+    const colW = [
+      tableWidth * 0.28,
+      tableWidth * 0.18,
+      tableWidth * 0.18,
+      tableWidth * 0.18,
+      tableWidth * 0.18
+    ];
+
+    const drawCell = (x: number, y: number, w: number, h: number, text: string, bgHex?: string, isBold = false) => {
+      if (bgHex) {
+        this.page.drawRectangle({
+          x,
+          y: this.pdfY(y + h),
+          width: w,
+          height: h,
+          color: hexToRgb(bgHex),
+          borderColor: rgb(1,1,1),
+          borderWidth: 1
+        });
+      } else {
+         this.page.drawRectangle({
+          x,
+          y: this.pdfY(y + h),
+          width: w,
+          height: h,
+          borderColor: rgb(1,1,1),
+          borderWidth: 1,
+          color: hexToRgb('#222222') // dark grey like the image
+        });
+      }
+      
+      this.page.drawText(text, {
+        x: x + 4,
+        y: this.pdfY(y + h - 14),
+        size: FONT_SIZE - 1,
+        font: isBold ? this.fontBold : this.fontRegular,
+        color: rgb(1,1,1)
+      });
+    };
+
+    const drawRow = (texts: string[], isHeader = false) => {
+      this.checkPageBreak(rowHeight);
+      let curX = MARGIN_L;
+      for (let i = 0; i < 5; i++) {
+        drawCell(curX, this.cursorY, colW[i], rowHeight, texts[i], undefined, isHeader);
+        curX += colW[i];
+      }
+      this.cursorY += rowHeight;
+    };
+
+    // The image has a dark background with white text
+    drawRow(['Four Boundaries of the Property', 'East', 'West', 'North', 'South'], true);
+    drawRow(['As Per saledeed', fv('eastAsPerDeed'), fv('westAsPerDeed'), fv('northAsPerDeed'), fv('southAsPerDeed')]);
+    drawRow(['As per Sketch map', fv('eastAsPerPlan'), fv('westAsPerPlan'), fv('northAsPerPlan'), fv('southAsPerPlan')]);
+    drawRow(['Actual as per Site', fv('eastAsPerSite'), fv('westAsPerSite'), fv('northAsPerSite'), fv('southAsPerSite')]);
+
+    // Row 5: Width of abutting road
+    this.checkPageBreak(rowHeight);
+    drawCell(MARGIN_L, this.cursorY, colW[0], rowHeight, 'Width of the abutting Road', undefined, true);
+    drawCell(MARGIN_L + colW[0], this.cursorY, colW[1] + colW[2], rowHeight, `Road 1 : ${fv('widthOfRoad1')}`);
+    drawCell(MARGIN_L + colW[0] + colW[1] + colW[2], this.cursorY, colW[3] + colW[4], rowHeight, `Road 2 :${fv('widthOfRoad2')}`);
+    this.cursorY += rowHeight;
+
+    // Row 6: Geo Coordinates
+    this.checkPageBreak(rowHeight);
+    drawCell(MARGIN_L, this.cursorY, colW[0] + colW[1] + colW[2], rowHeight, `Latitude : ${fv('latitude')}`, undefined, true);
+    drawCell(MARGIN_L + colW[0] + colW[1] + colW[2], this.cursorY, colW[3] + colW[4], rowHeight, `Longitude :${fv('longitude')}`, undefined, true);
+    this.cursorY += rowHeight;
+    this.cursorY += 8;
   }
 
   private drawAxisCoverPage() {

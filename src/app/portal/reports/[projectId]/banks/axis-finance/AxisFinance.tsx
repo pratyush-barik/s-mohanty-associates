@@ -26,7 +26,10 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
     { id: 'section-14', title: 'Location Map' },
     { id: 'section-15', title: 'Annexures' },
   ],
-  hiddenSections: ['section-1', 'section-2', 'section-3'],
+  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4'],
+  extraSections: [
+    { id: 'axis-boundaries', title: 'BOUNDARIES, ACCESS & GEOLOCATION' }
+  ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo'],
   defaultValues: {
     propertyOwners: [{ name: '', relationship: 'S/O', relativeName: '' }],
