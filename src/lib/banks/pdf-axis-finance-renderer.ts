@@ -149,7 +149,7 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
 
     const drawCenteredBold = (text: string, size: number, ySpaceAfter: number, underline: boolean = false) => {
       const cleanText = this.sanitizeText(text);
-      const maxWidth = PAGE_W - 2 * bmx - 20;
+      const maxWidth = PAGE_W - 2 * bmx - 140;
       const lines = this.wrapText(cleanText, maxWidth, size, true);
 
       for (let i = 0; i < lines.length; i++) {
