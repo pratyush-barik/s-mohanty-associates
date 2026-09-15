@@ -15,7 +15,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
     { id: 'axis-section-3', title: 'Property Location & Locality Details' },
     { id: 'axis-section-4', title: 'Boundaries, Access & Geolocation' },
     { id: 'axis-section-5', title: 'Approval & Structural Information' },
-    { id: 'section-6', title: 'Plan Approvals' },
+    { id: 'axis-section-6', title: 'Unit Measurements & Setbacks' },
     { id: 'section-7', title: 'Area Valuation' },
     { id: 'section-8', title: 'Land Valuation' },
     { id: 'section-9', title: 'Valuation Abstract' },
@@ -26,7 +26,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
     { id: 'section-14', title: 'Location Map' },
     { id: 'section-15', title: 'Annexures' },
   ],
-  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5'],
+  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6'],
   extraSections: [],
   hiddenFields: ['to', 'dateOfValuation', 'refNo'],
   defaultValues: {
@@ -60,6 +60,50 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
     axisDepreciationPercentage: '',
     axisNoOfFloorsPlan: '',
     axisNoOfFloorsSite: '',
+
+    axisMeasuredCarpetArea: '',
+    axisApprovedCarpetArea: '',
+    axisUDSLand: '',
+    axisAgreementCarpetArea: '',
+    axisLoadingAdoptedForValuation: '',
+    axisSaleableAreaOfUnit: '',
+    axisBuiltUpArea: '',
+    axisPrevailingRateForBuilding: '',
+    axisFloorRiseRate: '',
+    axisAdoptedRateBuilding: '',
+    axisMarketValueOfTheUnit: '',
+    axisCarParkingDropdown: '',
+    axisNoOfCarParking: '',
+    axisParkingArea: '',
+    axisCarParkingPrice: '',
+    
+    axisPlotArea: '',
+    axisFloorWiseBreakUp: '',
+    axisAsPerApproval: '',
+    axisAsPerMaxPermissibleFARNorms: '',
+    axisDeviationSqFt: '',
+    axisDeviationPercentage: '',
+
+    axisSideMarginApprovalFront: '',
+    axisSideMarginApprovalLeft: '',
+    axisSideMarginApprovalRight: '',
+    axisSideMarginApprovalRear: '',
+    axisSideMarginApprovalRemarks: '',
+
+    axisSideMarginActualFront: '',
+    axisSideMarginActualLeft: '',
+    axisSideMarginActualRight: '',
+    axisSideMarginActualRear: '',
+    axisSideMarginActualRemarks: '',
+    
+    axisSideMarginDeviationFront: '',
+    axisSideMarginDeviationLeft: '',
+    axisSideMarginDeviationRight: '',
+    axisSideMarginDeviationRear: '',
+    axisSideMarginDeviationRemarks: '',
+
+    axisQualityOfConstruction: '',
+    axisMaintenanceOfTheProperty: '',
   },
   extraSectionsStart: [
     {
@@ -602,6 +646,134 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                 <Field label="Depreciation%"><input className={inputCls} value={fields.axisDepreciationPercentage || ''} onChange={e => handleChange('axisDepreciationPercentage', e.target.value)} disabled={isReadOnly} /></Field>
                 <Field label="No Of Floors (As per Plan)"><input className={inputCls} value={fields.axisNoOfFloorsPlan || ''} onChange={e => handleChange('axisNoOfFloorsPlan', e.target.value)} disabled={isReadOnly} /></Field>
                 <Field label="No Of Floors (As per Site)"><input className={inputCls} value={fields.axisNoOfFloorsSite || ''} onChange={e => handleChange('axisNoOfFloorsSite', e.target.value)} disabled={isReadOnly} /></Field>
+              </div>
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'axis-section-6',
+      title: 'Unit Measurements & Setbacks',
+      number: 6,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        const inputCls = "w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white";
+        const renderDropdownWithCustom = (label: string, fieldKey: string, options: string[]) => {
+          const isCustomKey = `${fieldKey}_isCustom`;
+          const isCustom = fields[isCustomKey] || false;
+          return (
+            <Field label={label}>
+              <select
+                className={inputCls}
+                value={isCustom ? 'Custom' : (fields[fieldKey] || '')}
+                onChange={e => {
+                  const val = e.target.value;
+                  if (val === 'Custom') {
+                    handleChange(isCustomKey, true);
+                    handleChange(fieldKey, '');
+                  } else {
+                    handleChange(isCustomKey, false);
+                    handleChange(fieldKey, val);
+                  }
+                }}
+                disabled={isReadOnly}
+              >
+                <option value="">Select...</option>
+                {options.map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
+              {isCustom && (
+                <input className={`${inputCls} mt-2`} value={fields[fieldKey] || ''} onChange={e => handleChange(fieldKey, e.target.value)} disabled={isReadOnly} placeholder="Enter custom value..." />
+              )}
+            </Field>
+          );
+        };
+        
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#ECFEFF', borderColor: '#A5F3FC' }}>
+              <h3 className="font-bold text-gray-700 mb-4">Valuation of the Property Flat/Shop/Office/</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="Measured Carpet Area (Sq. Ft.)"><input className={inputCls} value={fields.axisMeasuredCarpetArea || ''} onChange={e => handleChange('axisMeasuredCarpetArea', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="Approved Carpet Area (Sq. Ft.)"><input className={inputCls} value={fields.axisApprovedCarpetArea || ''} onChange={e => handleChange('axisApprovedCarpetArea', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="UDS Land (Sq. Ft.)"><input className={inputCls} value={fields.axisUDSLand || ''} onChange={e => handleChange('axisUDSLand', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="Agreement Carpet Area (Sq. Ft.)"><input className={inputCls} value={fields.axisAgreementCarpetArea || ''} onChange={e => handleChange('axisAgreementCarpetArea', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="Loading Adopted for Valuation (%)"><input className={inputCls} value={fields.axisLoadingAdoptedForValuation || ''} onChange={e => handleChange('axisLoadingAdoptedForValuation', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="Saleable Area of Unit (Sq. Ft.)"><input className={inputCls} value={fields.axisSaleableAreaOfUnit || ''} onChange={e => handleChange('axisSaleableAreaOfUnit', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="Built Up Area (Sq. Ft.)"><input className={inputCls} value={fields.axisBuiltUpArea || ''} onChange={e => handleChange('axisBuiltUpArea', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="Prevailing Rate for Building (Rs.)"><input className={inputCls} value={fields.axisPrevailingRateForBuilding || ''} onChange={e => handleChange('axisPrevailingRateForBuilding', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="Floor Rise Rate (Rs.)"><input className={inputCls} value={fields.axisFloorRiseRate || ''} onChange={e => handleChange('axisFloorRiseRate', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="Adopted Rate Building"><input className={inputCls} value={fields.axisAdoptedRateBuilding || ''} onChange={e => handleChange('axisAdoptedRateBuilding', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="Market Value Of the Unit"><input className={inputCls} value={fields.axisMarketValueOfTheUnit || ''} onChange={e => handleChange('axisMarketValueOfTheUnit', e.target.value)} disabled={isReadOnly} /></Field>
+                
+                {renderDropdownWithCustom('Car Parking', 'axisCarParkingDropdown', ['Open', 'Stilt', 'Mechanised', 'None', 'NA', 'Custom'])}
+                <Field label="No. of Car Parking"><input className={inputCls} value={fields.axisNoOfCarParking || ''} onChange={e => handleChange('axisNoOfCarParking', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="Parking Area"><input className={inputCls} value={fields.axisParkingArea || ''} onChange={e => handleChange('axisParkingArea', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="Car Parking Price"><input className={inputCls} value={fields.axisCarParkingPrice || ''} onChange={e => handleChange('axisCarParkingPrice', e.target.value)} disabled={isReadOnly} /></Field>
+              </div>
+            </div>
+
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FFF1F2', borderColor: '#FECDD3' }}>
+              <h3 className="font-bold text-gray-700 mb-4">Unit Details - Row House/ Independent House/Plot</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="Plot Area"><input className={inputCls} value={fields.axisPlotArea || ''} onChange={e => handleChange('axisPlotArea', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="Floor wise Break-up (As per actual BUA)"><input className={inputCls} value={fields.axisFloorWiseBreakUp || ''} onChange={e => handleChange('axisFloorWiseBreakUp', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="As per Approval (Approved BUA)"><input className={inputCls} value={fields.axisAsPerApproval || ''} onChange={e => handleChange('axisAsPerApproval', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="As per max. Permissible FAR norms"><input className={inputCls} value={fields.axisAsPerMaxPermissibleFARNorms || ''} onChange={e => handleChange('axisAsPerMaxPermissibleFARNorms', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="Deviation (Sq. Ft.)"><input className={inputCls} value={fields.axisDeviationSqFt || ''} onChange={e => handleChange('axisDeviationSqFt', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="Deviation (%)"><input className={inputCls} value={fields.axisDeviationPercentage || ''} onChange={e => handleChange('axisDeviationPercentage', e.target.value)} disabled={isReadOnly} /></Field>
+              </div>
+            </div>
+
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FEFCE8', borderColor: '#FEF08A' }}>
+              <h3 className="font-bold text-gray-700 mb-4">Side Margin Details</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left text-gray-600">
+                  <thead className="text-xs text-gray-700 uppercase bg-white bg-opacity-50 border-b">
+                    <tr>
+                      <th className="px-4 py-2">Margin Reference</th>
+                      <th className="px-4 py-2">Front</th>
+                      <th className="px-4 py-2">Left Side</th>
+                      <th className="px-4 py-2">Right Side</th>
+                      <th className="px-4 py-2">Rear</th>
+                      <th className="px-4 py-2">Remarks</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b">
+                      <td className="px-4 py-2 font-medium">As per Approval</td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginApprovalFront || ''} onChange={e => handleChange('axisSideMarginApprovalFront', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginApprovalLeft || ''} onChange={e => handleChange('axisSideMarginApprovalLeft', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginApprovalRight || ''} onChange={e => handleChange('axisSideMarginApprovalRight', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginApprovalRear || ''} onChange={e => handleChange('axisSideMarginApprovalRear', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginApprovalRemarks || ''} onChange={e => handleChange('axisSideMarginApprovalRemarks', e.target.value)} disabled={isReadOnly} /></td>
+                    </tr>
+                    <tr className="border-b">
+                      <td className="px-4 py-2 font-medium">Actual at Site</td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginActualFront || ''} onChange={e => handleChange('axisSideMarginActualFront', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginActualLeft || ''} onChange={e => handleChange('axisSideMarginActualLeft', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginActualRight || ''} onChange={e => handleChange('axisSideMarginActualRight', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginActualRear || ''} onChange={e => handleChange('axisSideMarginActualRear', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginActualRemarks || ''} onChange={e => handleChange('axisSideMarginActualRemarks', e.target.value)} disabled={isReadOnly} /></td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-2 font-medium">Deviation %</td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginDeviationFront || ''} onChange={e => handleChange('axisSideMarginDeviationFront', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginDeviationLeft || ''} onChange={e => handleChange('axisSideMarginDeviationLeft', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginDeviationRight || ''} onChange={e => handleChange('axisSideMarginDeviationRight', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginDeviationRear || ''} onChange={e => handleChange('axisSideMarginDeviationRear', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginDeviationRemarks || ''} onChange={e => handleChange('axisSideMarginDeviationRemarks', e.target.value)} disabled={isReadOnly} /></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#EEF2FF', borderColor: '#C7D2FE' }}>
+              <h3 className="font-bold text-gray-700 mb-4">Quality of Construction & Upkeep</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {renderDropdownWithCustom('Quality of Construction', 'axisQualityOfConstruction', ['Excellent', 'Good', 'Satisfactory', 'Poor', 'NA', 'Custom'])}
+                {renderDropdownWithCustom('Maintenance of the Property', 'axisMaintenanceOfTheProperty', ['Excellent', 'Good', 'Satisfactory', 'Poor', 'NA', 'Custom'])}
               </div>
             </div>
           </div>

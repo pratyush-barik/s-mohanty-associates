@@ -41,6 +41,8 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
       this.drawAxisBoundariesTable();
     } else if (title === 'APPROVAL & STRUCTURAL INFORMATION') {
       this.drawAxisSection5();
+    } else if (title === 'UNIT MEASUREMENTS & SETBACKS') {
+      this.drawAxisSection6();
     }
   }
 
@@ -352,6 +354,109 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
     let rawMobile = fv('axisPreparedByMobile', '9937023855/9437074855');
     let processedMobile = rawMobile.replace(/[^0-9]+/g, '/').replace(/(^\/|\/$)/g, '');
     drawCenteredBold(`MOBILE-${processedMobile}`, FONT_SIZE, 0);
+  }
+  private drawAxisSection6() {
+    const fv = (key: string, def = 'NA') => {
+      const val = this.fields[key];
+      return val ? String(val) : def;
+    };
+
+    // Container: Valuation of the Property Flat/Shop/Office/
+    this.drawSectionSubtitle('Valuation of the Property Flat/Shop/Office/');
+    this.drawKeyValueRow('Measured Carpet Area (Sq. Ft.)', fv('axisMeasuredCarpetArea'), 'Approved Carpet Area (Sq. Ft.)', fv('axisApprovedCarpetArea'));
+    this.drawKeyValueRow('UDS Land (Sq. Ft.)', fv('axisUDSLand'), 'Agreement Carpet Area (Sq. Ft.)', fv('axisAgreementCarpetArea'));
+    this.drawKeyValueRow('Loading Adopted for Valuation (%)', fv('axisLoadingAdoptedForValuation'), 'Saleable Area of Unit (Sq. Ft.)', fv('axisSaleableAreaOfUnit'));
+    this.drawKeyValueRow('Built Up Area (Sq. Ft.)', fv('axisBuiltUpArea'), 'Prevailing Rate for Building (Rs.)', fv('axisPrevailingRateForBuilding'));
+    this.drawKeyValueRow('Floor Rise Rate (Rs.)', fv('axisFloorRiseRate'), 'Adopted Rate Building', fv('axisAdoptedRateBuilding'));
+    
+    // Add Car Parking section if values exist, or just draw Market Value and Car Parking
+    let carParking = fv('axisCarParkingDropdown');
+    if (this.fields['axisCarParkingDropdown_isCustom']) {
+      carParking = fv('axisCarParkingDropdown');
+    }
+    this.drawKeyValueRow('Market Value Of the Unit', fv('axisMarketValueOfTheUnit'), 'Car Parking', carParking);
+    this.drawKeyValueRow('No. of Car Parking', fv('axisNoOfCarParking'), 'Parking Area', fv('axisParkingArea'));
+    this.drawSimpleRow('Car Parking Price', fv('axisCarParkingPrice'));
+    this.advanceCursor(2);
+
+    // Container: Unit Details - Row House/ Independent House/Plot
+    this.drawSectionSubtitle('Unit Details - Row House/ Independent House/Plot');
+    this.drawKeyValueRow('Plot Area', fv('axisPlotArea'), 'Floor wise Break-up (As per actual BUA)', fv('axisFloorWiseBreakUp'));
+    this.drawKeyValueRow('As per Approval (Approved BUA)', fv('axisAsPerApproval'), 'As per max. Permissible FAR norms', fv('axisAsPerMaxPermissibleFARNorms'));
+    this.drawKeyValueRow('Deviation (Sq. Ft.)', fv('axisDeviationSqFt'), 'Deviation (%)', fv('axisDeviationPercentage'));
+    this.advanceCursor(2);
+
+    // Table: Side Margin Details
+    this.drawSectionSubtitle('Side Margin Details');
+    
+    // Custom table drawing for Side Margins
+    const tableHeaders = ['Margin Reference', 'Front', 'Left Side', 'Right Side', 'Rear', 'Remarks'];
+    
+    const cw = this.contentWidth;
+    const colWidths = [
+      cw * 0.2, // Reference
+      cw * 0.12, // Front
+      cw * 0.12, // Left
+      cw * 0.12, // Right
+      cw * 0.12, // Rear
+      cw * 0.32  // Remarks
+    ];
+    
+    const startX = this.doc.page.margins.left;
+    this.doc.font('Helvetica-Bold').fontSize(7);
+    this.doc.fillColor('#0f2038');
+    
+    let x = startX;
+    this.checkPageBottom(15);
+    const headerY = this.y;
+    let maxHeaderH = 15;
+    
+    tableHeaders.forEach((th, i) => {
+      this.doc.rect(x, headerY, colWidths[i], maxHeaderH).fillAndStroke('#f8fafc', '#d1d5db');
+      this.doc.fillColor('#0f2038').text(th, x + 2, headerY + 4, { width: colWidths[i] - 4, align: 'left' });
+      x += colWidths[i];
+    });
+    this.y = headerY + maxHeaderH;
+    
+    const drawRow = (ref: string, f: string, l: string, ri: string, re: string, rem: string) => {
+      this.checkPageBottom(15);
+      const rowY = this.y;
+      const h = 15;
+      
+      this.doc.font('Helvetica-Bold').fontSize(7);
+      this.doc.rect(startX, rowY, colWidths[0], h).stroke('#d1d5db');
+      this.doc.fillColor('#0f2038').text(ref, startX + 2, rowY + 4, { width: colWidths[0] - 4, align: 'left' });
+      
+      this.doc.font('Helvetica').fontSize(7);
+      this.doc.fillColor('#334155');
+      
+      let currX = startX + colWidths[0];
+      [f, l, ri, re, rem].forEach((val, i) => {
+        this.doc.rect(currX, rowY, colWidths[i + 1], h).stroke('#d1d5db');
+        this.doc.text(val || 'NA', currX + 2, rowY + 4, { width: colWidths[i + 1] - 4, align: 'left' });
+        currX += colWidths[i + 1];
+      });
+      
+      this.y = rowY + h;
+    };
+    
+    drawRow('As per Approval', fv('axisSideMarginApprovalFront'), fv('axisSideMarginApprovalLeft'), fv('axisSideMarginApprovalRight'), fv('axisSideMarginApprovalRear'), fv('axisSideMarginApprovalRemarks'));
+    drawRow('Actual at Site', fv('axisSideMarginActualFront'), fv('axisSideMarginActualLeft'), fv('axisSideMarginActualRight'), fv('axisSideMarginActualRear'), fv('axisSideMarginActualRemarks'));
+    drawRow('Deviation %', fv('axisSideMarginDeviationFront'), fv('axisSideMarginDeviationLeft'), fv('axisSideMarginDeviationRight'), fv('axisSideMarginDeviationRear'), fv('axisSideMarginDeviationRemarks'));
+    
+    this.advanceCursor(4);
+
+    // Container: Quality of Construction & Upkeep
+    this.drawSectionSubtitle('Quality of Construction & Upkeep');
+    
+    let qc = fv('axisQualityOfConstruction');
+    if (this.fields['axisQualityOfConstruction_isCustom']) qc = fv('axisQualityOfConstruction');
+    
+    let mop = fv('axisMaintenanceOfTheProperty');
+    if (this.fields['axisMaintenanceOfTheProperty_isCustom']) mop = fv('axisMaintenanceOfTheProperty');
+    
+    this.drawKeyValueRow('Quality of Construction', qc, 'Maintenance of the Property', mop);
+    this.advanceCursor(4);
   }
 }
 
