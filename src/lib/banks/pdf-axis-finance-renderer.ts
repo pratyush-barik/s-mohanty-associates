@@ -33,8 +33,134 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
 
   override drawSectionHeader(title: string, addSpaceBefore?: boolean, preserveCase?: boolean) {
     super.drawSectionHeader(title, addSpaceBefore, preserveCase);
-    if (title === 'BOUNDARIES, ACCESS & GEOLOCATION') {
+    if (title === 'CLIENT & APPLICATION DETAILS') {
+      this.drawAxisSection2();
+    } else if (title === 'PROPERTY LOCATION & LOCALITY DETAILS') {
+      this.drawAxisSection3();
+    } else if (title === 'BOUNDARIES, ACCESS & GEOLOCATION') {
       this.drawAxisBoundariesTable();
+    } else if (title === 'APPROVAL & STRUCTURAL INFORMATION') {
+      this.drawAxisSection5();
+    }
+  }
+
+  private drawAxisSection2() {
+    const fv = (key: string, def = 'NA') => {
+      const val = this.fields[key];
+      return val ? String(val) : def;
+    };
+    const owners = this.fields.propertyOwnerNames || ((this.fields.axisPropertyOwners || [])
+      .filter((o: any) => o.name)
+      .map((o: any) => `${o.name}, ${o.relationship || 'S/O'}- ${o.relativeName || o.fatherName || ''}`)
+      .join('\n')) || 'NA';
+    
+    this.drawSimpleRow('Product / Loan Category (LOAN AGAINST PROPERTY (LAP))', fv('productLoanCategory'));
+    this.drawKeyValueRow([
+      { label: 'Application Number', value: fv('loanApplicationNo') },
+      { label: 'Date', value: fv('dateOfValuation') }
+    ]);
+    this.drawSimpleRow('Name of the Customer', fv('ownerName'));
+    this.drawSimpleRow('Name of the Property Owner(S)', owners);
+    this.drawKeyValueRow([
+      { label: 'Collateral Ownership', value: fv('collateralOwnership') },
+      { label: 'Collateral Category', value: fv('collateralCategory') }
+    ]);
+    this.drawSimpleRow('Property Documents Received', fv('propertyDocumentsReceived'));
+  }
+
+  private drawAxisSection3() {
+    const fv = (key: string, def = 'NA') => {
+      const val = this.fields[key];
+      if (val === 'Custom') return String(this.fields[`${key}_isCustom`] ? this.fields[key] : (this.fields[`${key}Custom`] || def));
+      // For _isCustom fallback if they just use the same key
+      if (this.fields[`${key}_isCustom`]) {
+        return String(this.fields[key] || def);
+      }
+      return val ? String(val) : def;
+    };
+    const c = this.fields;
+    
+    let addr = c.axisAddressOfTheProperty || '';
+    let propDetails = c.propertyDetailsAxis ?? addr;
+    let propAddr = c.propertyAddressAxis ?? addr;
+    
+    this.drawSimpleRow('Property details', propDetails);
+    this.drawSimpleRow('Property Address', propAddr);
+    this.drawKeyValueRow([
+      { label: 'City', value: fv('city') },
+      { label: 'District', value: fv('district') }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'State', value: fv('state') },
+      { label: 'Pin Code', value: fv('pinCode') }
+    ]);
+    
+    this.drawKeyValueRow([
+      { label: 'Nearby Land Mark', value: fv('landmark') },
+      { label: 'Distance from City Center', value: fv('distanceFromCityCenter') }
+    ]);
+    
+    const sec3Fields = [
+      ['Classification of Locality', 'classificationOfLocalityAxis', 'Approved by Town', 'approvedByTownAxis'],
+      ['Locality Classification', 'localityClassificationAxis', 'Building Type', 'buildingTypeAxis'],
+      ['Class of Locality', 'classOfLocality', 'Type of Locality', 'typeOfLocalityAxis'],
+      ['Condition of Building', 'conditionOfBuildingAxis', 'Occupancy Details', 'occupancyDetailsAxis'],
+      ['Monthly Rentals for Freehold Prop', 'monthlyRentalsFreeholdAxis', 'Name of the Lease', 'nameOfTheLeaseAxis'],
+      ['Type Of Property', 'propertyType', 'Status Of Property', 'statusOfPropertyAxis'],
+      ['Actual Usage Of Property', 'actualUsageOfPropertyAxis', 'Approved Usage of Property', 'approvedUsageOfPropertyAxis'],
+      ['Property Demarcation at Site', 'plotDemarcated', 'Quality of Interiors', 'qualityOfInteriorsAxis']
+    ];
+    
+    for (const [l1, k1, l2, k2] of sec3Fields) {
+      this.drawKeyValueRow([
+        { label: l1, value: fv(k1) },
+        { label: l2, value: fv(k2) }
+      ]);
+    }
+    this.drawSimpleRow('Distance: Nearest Metro / Bus Station / Railway Station/Airport', fv('distanceNearestMetroBusRailwayAirportAxis'));
+    this.drawSimpleRow('Nearness to recreation facilities', fv('nearnessToRecreationFacilitiesAxis'));
+    this.drawSimpleRow('Vastu Compliance or direction of the entrance', fv('vastuComplianceDirectionAxis'));
+  }
+
+  private drawAxisSection5() {
+    const fv = (key: string, def = 'NA') => {
+      const val = this.fields[key];
+      if (this.fields[`${key}_isCustom`]) {
+        return String(val || def);
+      }
+      return val ? String(val) : def;
+    };
+    
+    // Approval Details Table
+    this.drawKeyValueRow([
+      { label: 'Description', value: 'Approval authority', labelBold: true, valueBold: true },
+      { label: 'Approval no', value: 'Approval Date', labelBold: true, valueBold: true }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Layout Plan', value: fv('axisLayoutPlanApprovalAuthority'), labelBold: true },
+      { label: fv('axisLayoutPlanApprovalNo'), value: fv('axisLayoutPlanApprovalDate') }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Building/Construction Plan', value: fv('axisBuildingPlanApprovalAuthority'), labelBold: true },
+      { label: fv('axisBuildingPlanApprovalNo'), value: fv('axisBuildingPlanApprovalDate') }
+    ]);
+    
+    this.advanceCursor(10);
+    this.drawCenteredTitle('Building Specifications & Condition');
+    this.advanceCursor(5);
+    
+    const sec5Fields = [
+      ['Age of Building (Years)', 'axisAgeOfBuilding', 'Estimated Life of Building (Years)', 'axisEstimatedLifeOfBuilding'],
+      ['Construction Year', 'axisConstructionYear', 'Construction Type (e.g., RCC, Load Bearing)', 'axisConstructionType'],
+      ['Comments on Feasibility', 'axisCommentsOnFeasibility', 'Depreciation%', 'axisDepreciationPercentage'],
+      ['No Of Floors (As per Plan)', 'axisNoOfFloorsPlan', 'No Of Floors (As per Site)', 'axisNoOfFloorsSite']
+    ];
+    
+    for (const [l1, k1, l2, k2] of sec5Fields) {
+      this.drawKeyValueRow([
+        { label: l1, value: fv(k1) },
+        { label: l2, value: fv(k2) }
+      ]);
     }
   }
 
