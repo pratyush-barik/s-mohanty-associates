@@ -128,7 +128,7 @@ export interface ArkaReportFields extends BaseReportFields {
 
 export class PDFArkaFinanceRenderer extends PDFBankRenderer {
   public async render(fields: ArkaReportFields): Promise<Uint8Array> {
-    const fv = (key: string, defaultVal = '') => ((fields as any)[key] as string || defaultVal).replace(/[\t\n\r]+/g, ' ');
+    const fv = (key: string, defaultVal = '') => String((fields as any)[key] ?? defaultVal).replace(/[\t\n\r]+/g, ' ');
 
     this.cursorY += 60;
 

@@ -40,7 +40,7 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
 
   private drawAxisBoundariesTable() {
     const fields = this.fields;
-    const fv = (key: string) => (fields[key] || 'NA').toString().replace(/[\t\n\r]+/g, ' ');
+    const fv = (key: string) => String(fields[key] || 'NA').replace(/[\t\n\r]+/g, ' ');
 
     const rowHeight = FONT_SIZE * 1.5 + 4;
     const tableWidth = CONTENT_W;
@@ -117,7 +117,7 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
 
   private drawAxisCoverPage() {
     const fields = this.fields;
-    const fv = (key: string, defaultVal = '') => ((fields as any)[key] as string || defaultVal).replace(/[\t\n\r]+/g, ' ');
+    const fv = (key: string, defaultVal = '') => String((fields as any)[key] ?? defaultVal).replace(/[\t\n\r]+/g, ' ');
 
     // Reset cursor for the cover page
     this.cursorY = 60;
