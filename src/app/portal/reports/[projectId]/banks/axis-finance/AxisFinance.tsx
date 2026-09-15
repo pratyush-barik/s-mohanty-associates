@@ -415,9 +415,9 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
               
               {renderDropdownWithCustom('Classification of Locality', 'classificationOfLocalityAxis', ['Developing', 'Developed', 'Underdeveloped', 'Stagnant / Fully Developed', 'Decaying / Declining', 'NA', 'Custom'])}
               {renderDropdownWithCustom('Approved by Town', 'approvedByTownAxis', ['Residential', 'Commercial', 'Industrial', 'Residential Cum Industrial', 'Agricultural', 'NA', 'Custom'])}
-              {renderDropdownWithCustom('Locality Classification', 'localityClassificationAxis', ['IMP_OPTIONS', 'NA', 'Custom'])}
+              {renderDropdownWithCustom('Locality Classification', 'localityClassificationAxis', ['Residential', 'Commercial', 'Industrial', 'Mixed', 'Agricultural', 'NA', 'Custom'])}
               {renderDropdownWithCustom('Building Type', 'buildingTypeAxis', ['Residential', 'Commercial', 'Industrial', 'Residential Cum Industrial', 'Institutional', 'Warehouse', 'NA', 'Custom'])}
-              <Field label="Class of Locality"><input className={inputCls} value={fields.classOfLocality || ''} onChange={e => handleChange('classOfLocality', e.target.value)} disabled={isReadOnly} /></Field>
+              {renderDropdownWithCustom('Class of Locality', 'classOfLocality', ['Upper Class / Posh', 'Upper Middle Class', 'Middle Class', 'Lower Middle Class', 'Slum / Low Income', 'NA', 'Custom'])}
               {renderDropdownWithCustom('Type of Locality', 'typeOfLocalityAxis', ['Residential', 'Commercial', 'Industrial', 'Residential Cum Industrial', 'Mixed Use', 'Rural / Village Abadi', 'NA', 'Custom'])}
               <Field label="Condition of Building"><input className={inputCls} value={fields.conditionOfBuildingAxis || ''} onChange={e => handleChange('conditionOfBuildingAxis', e.target.value)} disabled={isReadOnly} /></Field>
               <Field label="Occupancy Details"><input className={inputCls} value={fields.occupancyDetailsAxis || ''} onChange={e => handleChange('occupancyDetailsAxis', e.target.value)} disabled={isReadOnly} /></Field>
