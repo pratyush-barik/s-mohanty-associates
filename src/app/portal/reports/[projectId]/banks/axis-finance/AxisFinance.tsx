@@ -12,7 +12,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
   navSections: [
     { id: 'section-cover', title: 'Cover Page Details' },
     { id: 'axis-section-2', title: 'Client & Application Details' },
-    { id: 'section-3', title: 'Property Details' },
+    { id: 'axis-section-3', title: 'Property Location & Locality Details' },
     { id: 'section-4', title: 'Subject Property' },
     { id: 'section-5', title: 'Structural Details' },
     { id: 'section-6', title: 'Plan Approvals' },
@@ -26,7 +26,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
     { id: 'section-14', title: 'Location Map' },
     { id: 'section-15', title: 'Annexures' },
   ],
-  hiddenSections: ['section-1', 'section-2'],
+  hiddenSections: ['section-1', 'section-2', 'section-3'],
   hiddenFields: ['to', 'dateOfValuation', 'refNo'],
   defaultValues: {
     propertyOwners: [{ name: '', relationship: 'S/O', relativeName: '' }],
@@ -291,6 +291,54 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
         </div>
       );
       }
+    },
+    {
+      id: 'axis-section-3',
+      title: 'Property Location & Locality Details',
+      number: 3,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => (
+        <div className="animate-fade-in space-y-6">
+          <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' }}>
+            <h3 className="font-bold text-gray-700 mb-4">PROPERTY ADDRESS & IDENTIFICATION</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Property details"><input className={inputCls} value={fields.propertyDetailsAxis || ''} onChange={e => handleChange('propertyDetailsAxis', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Property Address"><input className={inputCls} value={fields.addressOfTheProperty || ''} onChange={e => handleChange('addressOfTheProperty', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="City"><input className={inputCls} value={fields.city || ''} onChange={e => handleChange('city', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="District"><input className={inputCls} value={fields.district || ''} onChange={e => handleChange('district', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="State"><input className={inputCls} value={fields.state || ''} onChange={e => handleChange('state', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Pin Code"><input className={inputCls} value={fields.pinCode || ''} onChange={e => handleChange('pinCode', e.target.value)} disabled={isReadOnly} /></Field>
+            </div>
+          </div>
+          
+          <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FFFBEB', borderColor: '#FDE68A' }}>
+            <h3 className="font-bold text-gray-700 mb-4">LOCALITY & OCCUPANCY CHARACTERISTICS</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Nearby Land Mark"><input className={inputCls} value={fields.landmark || ''} onChange={e => handleChange('landmark', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Distance from City Center"><input className={inputCls} value={fields.distanceFromCityCenter || ''} onChange={e => handleChange('distanceFromCityCenter', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Classification of Locality"><input className={inputCls} value={fields.classificationOfLocalityAxis || ''} onChange={e => handleChange('classificationOfLocalityAxis', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Approved by Town"><input className={inputCls} value={fields.approvedByTownAxis || ''} onChange={e => handleChange('approvedByTownAxis', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Locality Classification"><input className={inputCls} value={fields.localityClassificationAxis || ''} onChange={e => handleChange('localityClassificationAxis', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Building Type"><input className={inputCls} value={fields.buildingTypeAxis || ''} onChange={e => handleChange('buildingTypeAxis', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Class of Locality"><input className={inputCls} value={fields.classOfLocality || ''} onChange={e => handleChange('classOfLocality', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Type of Locality"><input className={inputCls} value={fields.typeOfLocalityAxis || ''} onChange={e => handleChange('typeOfLocalityAxis', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Condition of Building"><input className={inputCls} value={fields.conditionOfBuildingAxis || ''} onChange={e => handleChange('conditionOfBuildingAxis', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Occupancy Details"><input className={inputCls} value={fields.occupancyDetailsAxis || ''} onChange={e => handleChange('occupancyDetailsAxis', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Monthly Rentals for Freehold Prop"><input className={inputCls} value={fields.monthlyRentalsFreeholdAxis || ''} onChange={e => handleChange('monthlyRentalsFreeholdAxis', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Name of the Lease"><input className={inputCls} value={fields.nameOfTheLeaseAxis || ''} onChange={e => handleChange('nameOfTheLeaseAxis', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Type Of Property"><input className={inputCls} value={fields.propertyType || ''} onChange={e => handleChange('propertyType', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Status Of Property"><input className={inputCls} value={fields.statusOfPropertyAxis || ''} onChange={e => handleChange('statusOfPropertyAxis', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Actual Usage Of Property"><input className={inputCls} value={fields.actualUsageOfPropertyAxis || ''} onChange={e => handleChange('actualUsageOfPropertyAxis', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Approved Usage of Property"><input className={inputCls} value={fields.approvedUsageOfPropertyAxis || ''} onChange={e => handleChange('approvedUsageOfPropertyAxis', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Property Demarcation at Site"><input className={inputCls} value={fields.plotDemarcated || ''} onChange={e => handleChange('plotDemarcated', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Distance: Nearest Metro / Bus Station / Railway Station/Airport"><input className={inputCls} value={fields.distanceNearestMetroBusRailwayAirportAxis || ''} onChange={e => handleChange('distanceNearestMetroBusRailwayAirportAxis', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Nearness to recreation facilities"><input className={inputCls} value={fields.nearnessToRecreationFacilitiesAxis || ''} onChange={e => handleChange('nearnessToRecreationFacilitiesAxis', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Quality of Interiors"><input className={inputCls} value={fields.qualityOfInteriorsAxis || ''} onChange={e => handleChange('qualityOfInteriorsAxis', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Vastu Compliance or direction of the entrance"><input className={inputCls} value={fields.vastuComplianceDirectionAxis || ''} onChange={e => handleChange('vastuComplianceDirectionAxis', e.target.value)} disabled={isReadOnly} /></Field>
+            </div>
+          </div>
+        </div>
+      )
     }
   ],
   getPDFRenderer: (fields) => new PDFAxisFinanceRenderer(fields)
