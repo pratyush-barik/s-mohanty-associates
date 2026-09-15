@@ -658,15 +658,44 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
       number: 6,
       defaultOpen: true,
       render: (fields, handleChange, isReadOnly) => {
-        const inputCls = "w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white";
+        const inputCls = "w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white disabled:bg-gray-100 disabled:text-gray-500";
+        
+        const renderField = (label: string, fieldKey: string) => (
+          <div className="space-y-1">
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-xs font-semibold text-gray-700">{label}</label>
+              <label className="flex items-center space-x-1 cursor-pointer">
+                <input type="checkbox" className="w-3 h-3 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={fields[fieldKey] === 'NA'} onChange={e => handleChange(fieldKey, e.target.checked ? 'NA' : '')} disabled={isReadOnly} />
+                <span className="text-[10px] text-gray-500 font-medium leading-none">NA</span>
+              </label>
+            </div>
+            <input className={inputCls} value={fields[fieldKey] || ''} onChange={e => handleChange(fieldKey, e.target.value)} disabled={isReadOnly || fields[fieldKey] === 'NA'} />
+          </div>
+        );
+
         const renderDropdownWithCustom = (label: string, fieldKey: string, options: string[]) => {
           const isCustomKey = `${fieldKey}_isCustom`;
           const isCustom = fields[isCustomKey] || false;
+          const isNA = fields[fieldKey] === 'NA';
           return (
-            <Field label={label}>
+            <div className="space-y-1">
+              <div className="flex justify-between items-center mb-1">
+                <label className="text-xs font-semibold text-gray-700">{label}</label>
+                <label className="flex items-center space-x-1 cursor-pointer">
+                  <input type="checkbox" className="w-3 h-3 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={isNA} onChange={e => {
+                    if (e.target.checked) {
+                      handleChange(isCustomKey, false);
+                      handleChange(fieldKey, 'NA');
+                    } else {
+                      handleChange(fieldKey, '');
+                    }
+                  }} disabled={isReadOnly} />
+                  <span className="text-[10px] text-gray-500 font-medium leading-none">NA</span>
+                </label>
+              </div>
               <select
                 className={inputCls}
-                value={isCustom ? 'Custom' : (fields[fieldKey] || '')}
+                value={isNA ? 'NA' : (isCustom ? 'Custom' : (fields[fieldKey] || ''))}
                 onChange={e => {
                   const val = e.target.value;
                   if (val === 'Custom') {
@@ -677,51 +706,62 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                     handleChange(fieldKey, val);
                   }
                 }}
-                disabled={isReadOnly}
+                disabled={isReadOnly || isNA}
               >
                 <option value="">Select...</option>
                 {options.map(o => <option key={o} value={o}>{o}</option>)}
               </select>
-              {isCustom && (
+              {isCustom && !isNA && (
                 <input className={`${inputCls} mt-2`} value={fields[fieldKey] || ''} onChange={e => handleChange(fieldKey, e.target.value)} disabled={isReadOnly} placeholder="Enter custom value..." />
               )}
-            </Field>
+            </div>
           );
         };
+
+        const renderTableCell = (fieldKey: string) => (
+          <div className="flex flex-col space-y-1 px-1 py-1">
+            <div className="flex justify-end">
+              <label className="flex items-center space-x-1 cursor-pointer" title="Not Applicable">
+                <input type="checkbox" className="w-2.5 h-2.5" checked={fields[fieldKey] === 'NA'} onChange={e => handleChange(fieldKey, e.target.checked ? 'NA' : '')} disabled={isReadOnly} />
+                <span className="text-[9px] text-gray-400 font-medium leading-none">NA</span>
+              </label>
+            </div>
+            <input className={`${inputCls} text-xs p-1`} value={fields[fieldKey] || ''} onChange={e => handleChange(fieldKey, e.target.value)} disabled={isReadOnly || fields[fieldKey] === 'NA'} />
+          </div>
+        );
         
         return (
           <div className="animate-fade-in space-y-6">
             <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#ECFEFF', borderColor: '#A5F3FC' }}>
               <h3 className="font-bold text-gray-700 mb-4">Valuation of the Property Flat/Shop/Office/</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Measured Carpet Area (Sq. Ft.)"><input className={inputCls} value={fields.axisMeasuredCarpetArea || ''} onChange={e => handleChange('axisMeasuredCarpetArea', e.target.value)} disabled={isReadOnly} /></Field>
-                <Field label="Approved Carpet Area (Sq. Ft.)"><input className={inputCls} value={fields.axisApprovedCarpetArea || ''} onChange={e => handleChange('axisApprovedCarpetArea', e.target.value)} disabled={isReadOnly} /></Field>
-                <Field label="UDS Land (Sq. Ft.)"><input className={inputCls} value={fields.axisUDSLand || ''} onChange={e => handleChange('axisUDSLand', e.target.value)} disabled={isReadOnly} /></Field>
-                <Field label="Agreement Carpet Area (Sq. Ft.)"><input className={inputCls} value={fields.axisAgreementCarpetArea || ''} onChange={e => handleChange('axisAgreementCarpetArea', e.target.value)} disabled={isReadOnly} /></Field>
-                <Field label="Loading Adopted for Valuation (%)"><input className={inputCls} value={fields.axisLoadingAdoptedForValuation || ''} onChange={e => handleChange('axisLoadingAdoptedForValuation', e.target.value)} disabled={isReadOnly} /></Field>
-                <Field label="Saleable Area of Unit (Sq. Ft.)"><input className={inputCls} value={fields.axisSaleableAreaOfUnit || ''} onChange={e => handleChange('axisSaleableAreaOfUnit', e.target.value)} disabled={isReadOnly} /></Field>
-                <Field label="Built Up Area (Sq. Ft.)"><input className={inputCls} value={fields.axisBuiltUpArea || ''} onChange={e => handleChange('axisBuiltUpArea', e.target.value)} disabled={isReadOnly} /></Field>
-                <Field label="Prevailing Rate for Building (Rs.)"><input className={inputCls} value={fields.axisPrevailingRateForBuilding || ''} onChange={e => handleChange('axisPrevailingRateForBuilding', e.target.value)} disabled={isReadOnly} /></Field>
-                <Field label="Floor Rise Rate (Rs.)"><input className={inputCls} value={fields.axisFloorRiseRate || ''} onChange={e => handleChange('axisFloorRiseRate', e.target.value)} disabled={isReadOnly} /></Field>
-                <Field label="Adopted Rate Building"><input className={inputCls} value={fields.axisAdoptedRateBuilding || ''} onChange={e => handleChange('axisAdoptedRateBuilding', e.target.value)} disabled={isReadOnly} /></Field>
-                <Field label="Market Value Of the Unit"><input className={inputCls} value={fields.axisMarketValueOfTheUnit || ''} onChange={e => handleChange('axisMarketValueOfTheUnit', e.target.value)} disabled={isReadOnly} /></Field>
-                
-                {renderDropdownWithCustom('Car Parking', 'axisCarParkingDropdown', ['Open', 'Stilt', 'Mechanised', 'None', 'NA', 'Custom'])}
-                <Field label="No. of Car Parking"><input className={inputCls} value={fields.axisNoOfCarParking || ''} onChange={e => handleChange('axisNoOfCarParking', e.target.value)} disabled={isReadOnly} /></Field>
-                <Field label="Parking Area"><input className={inputCls} value={fields.axisParkingArea || ''} onChange={e => handleChange('axisParkingArea', e.target.value)} disabled={isReadOnly} /></Field>
-                <Field label="Car Parking Price"><input className={inputCls} value={fields.axisCarParkingPrice || ''} onChange={e => handleChange('axisCarParkingPrice', e.target.value)} disabled={isReadOnly} /></Field>
+                {renderField('Measured Carpet Area (Sq. Ft.)', 'axisMeasuredCarpetArea')}
+                {renderField('Approved Carpet Area (Sq. Ft.)', 'axisApprovedCarpetArea')}
+                {renderField('UDS Land (Sq. Ft.)', 'axisUDSLand')}
+                {renderField('Agreement Carpet Area (Sq. Ft.)', 'axisAgreementCarpetArea')}
+                {renderField('Loading Adopted for Valuation (%)', 'axisLoadingAdoptedForValuation')}
+                {renderField('Saleable Area of Unit (Sq. Ft.)', 'axisSaleableAreaOfUnit')}
+                {renderField('Built Up Area (Sq. Ft.)', 'axisBuiltUpArea')}
+                {renderField('Prevailing Rate for Building (Rs.)', 'axisPrevailingRateForBuilding')}
+                {renderField('Floor Rise Rate (Rs.)', 'axisFloorRiseRate')}
+                {renderField('Adopted Rate Building', 'axisAdoptedRateBuilding')}
+                {renderField('Market Value Of the Unit', 'axisMarketValueOfTheUnit')}
+                {renderDropdownWithCustom('Car Parking', 'axisCarParkingDropdown', ['Available', 'Covered', 'Open', 'Basement', 'NA', 'Custom'])}
+                {renderField('No. of Car Parking', 'axisNoOfCarParking')}
+                {renderField('Parking Area', 'axisParkingArea')}
+                {renderField('Car Parking Price', 'axisCarParkingPrice')}
               </div>
             </div>
 
             <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FFF1F2', borderColor: '#FECDD3' }}>
               <h3 className="font-bold text-gray-700 mb-4">Unit Details - Row House/ Independent House/Plot</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Plot Area"><input className={inputCls} value={fields.axisPlotArea || ''} onChange={e => handleChange('axisPlotArea', e.target.value)} disabled={isReadOnly} /></Field>
-                <Field label="Floor wise Break-up (As per actual BUA)"><input className={inputCls} value={fields.axisFloorWiseBreakUp || ''} onChange={e => handleChange('axisFloorWiseBreakUp', e.target.value)} disabled={isReadOnly} /></Field>
-                <Field label="As per Approval (Approved BUA)"><input className={inputCls} value={fields.axisAsPerApproval || ''} onChange={e => handleChange('axisAsPerApproval', e.target.value)} disabled={isReadOnly} /></Field>
-                <Field label="As per max. Permissible FAR norms"><input className={inputCls} value={fields.axisAsPerMaxPermissibleFARNorms || ''} onChange={e => handleChange('axisAsPerMaxPermissibleFARNorms', e.target.value)} disabled={isReadOnly} /></Field>
-                <Field label="Deviation (Sq. Ft.)"><input className={inputCls} value={fields.axisDeviationSqFt || ''} onChange={e => handleChange('axisDeviationSqFt', e.target.value)} disabled={isReadOnly} /></Field>
-                <Field label="Deviation (%)"><input className={inputCls} value={fields.axisDeviationPercentage || ''} onChange={e => handleChange('axisDeviationPercentage', e.target.value)} disabled={isReadOnly} /></Field>
+                {renderField('Plot Area', 'axisPlotArea')}
+                {renderField('Floor wise Break-up (As per actual BUA)', 'axisFloorWiseBreakUp')}
+                {renderField('As per Approval (Approved BUA)', 'axisAsPerApproval')}
+                {renderField('As per max. Permissible FAR norms', 'axisAsPerMaxPermissibleFARNorms')}
+                {renderField('Deviation (Sq. Ft.)', 'axisDeviationSqFt')}
+                {renderField('Deviation (%)', 'axisDeviationPercentage')}
               </div>
             </div>
 
@@ -731,38 +771,38 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                 <table className="w-full text-sm text-left text-gray-600">
                   <thead className="text-xs text-gray-700 uppercase bg-white bg-opacity-50 border-b">
                     <tr>
-                      <th className="px-4 py-2">Margin Reference</th>
-                      <th className="px-4 py-2">Front</th>
-                      <th className="px-4 py-2">Left Side</th>
-                      <th className="px-4 py-2">Right Side</th>
-                      <th className="px-4 py-2">Rear</th>
-                      <th className="px-4 py-2">Remarks</th>
+                      <th className="px-4 py-2 min-w-[120px]">Margin Reference</th>
+                      <th className="px-2 py-2 min-w-[100px]">Front</th>
+                      <th className="px-2 py-2 min-w-[100px]">Left Side</th>
+                      <th className="px-2 py-2 min-w-[100px]">Right Side</th>
+                      <th className="px-2 py-2 min-w-[100px]">Rear</th>
+                      <th className="px-2 py-2 min-w-[100px]">Remarks</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr className="border-b">
                       <td className="px-4 py-2 font-medium">As per Approval</td>
-                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginApprovalFront || ''} onChange={e => handleChange('axisSideMarginApprovalFront', e.target.value)} disabled={isReadOnly} /></td>
-                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginApprovalLeft || ''} onChange={e => handleChange('axisSideMarginApprovalLeft', e.target.value)} disabled={isReadOnly} /></td>
-                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginApprovalRight || ''} onChange={e => handleChange('axisSideMarginApprovalRight', e.target.value)} disabled={isReadOnly} /></td>
-                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginApprovalRear || ''} onChange={e => handleChange('axisSideMarginApprovalRear', e.target.value)} disabled={isReadOnly} /></td>
-                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginApprovalRemarks || ''} onChange={e => handleChange('axisSideMarginApprovalRemarks', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisSideMarginApprovalFront')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisSideMarginApprovalLeft')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisSideMarginApprovalRight')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisSideMarginApprovalRear')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisSideMarginApprovalRemarks')}</td>
                     </tr>
                     <tr className="border-b">
                       <td className="px-4 py-2 font-medium">Actual at Site</td>
-                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginActualFront || ''} onChange={e => handleChange('axisSideMarginActualFront', e.target.value)} disabled={isReadOnly} /></td>
-                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginActualLeft || ''} onChange={e => handleChange('axisSideMarginActualLeft', e.target.value)} disabled={isReadOnly} /></td>
-                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginActualRight || ''} onChange={e => handleChange('axisSideMarginActualRight', e.target.value)} disabled={isReadOnly} /></td>
-                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginActualRear || ''} onChange={e => handleChange('axisSideMarginActualRear', e.target.value)} disabled={isReadOnly} /></td>
-                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginActualRemarks || ''} onChange={e => handleChange('axisSideMarginActualRemarks', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisSideMarginActualFront')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisSideMarginActualLeft')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisSideMarginActualRight')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisSideMarginActualRear')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisSideMarginActualRemarks')}</td>
                     </tr>
                     <tr>
                       <td className="px-4 py-2 font-medium">Deviation %</td>
-                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginDeviationFront || ''} onChange={e => handleChange('axisSideMarginDeviationFront', e.target.value)} disabled={isReadOnly} /></td>
-                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginDeviationLeft || ''} onChange={e => handleChange('axisSideMarginDeviationLeft', e.target.value)} disabled={isReadOnly} /></td>
-                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginDeviationRight || ''} onChange={e => handleChange('axisSideMarginDeviationRight', e.target.value)} disabled={isReadOnly} /></td>
-                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginDeviationRear || ''} onChange={e => handleChange('axisSideMarginDeviationRear', e.target.value)} disabled={isReadOnly} /></td>
-                      <td className="px-2 py-1"><input className={inputCls} value={fields.axisSideMarginDeviationRemarks || ''} onChange={e => handleChange('axisSideMarginDeviationRemarks', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisSideMarginDeviationFront')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisSideMarginDeviationLeft')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisSideMarginDeviationRight')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisSideMarginDeviationRear')}</td>
+                      <td className="px-1 py-1 align-top">{renderTableCell('axisSideMarginDeviationRemarks')}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -772,8 +812,8 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
             <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#EEF2FF', borderColor: '#C7D2FE' }}>
               <h3 className="font-bold text-gray-700 mb-4">Quality of Construction & Upkeep</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {renderDropdownWithCustom('Quality of Construction', 'axisQualityOfConstruction', ['Excellent', 'Good', 'Satisfactory', 'Poor', 'NA', 'Custom'])}
-                {renderDropdownWithCustom('Maintenance of the Property', 'axisMaintenanceOfTheProperty', ['Excellent', 'Good', 'Satisfactory', 'Poor', 'NA', 'Custom'])}
+                {renderDropdownWithCustom('Quality of Construction', 'axisQualityOfConstruction', ['Excellent', 'Good', 'Average', 'Poor', 'NA', 'Custom'])}
+                {renderDropdownWithCustom('Maintenance of the Property', 'axisMaintenanceOfTheProperty', ['Well Maintained', 'Good', 'Average', 'Poor', 'NA', 'Custom'])}
               </div>
             </div>
           </div>
