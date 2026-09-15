@@ -1391,7 +1391,7 @@ export default function BankReportBuilder({
       }
 
       // ── Annexure Sections ──
-      if (fields.annexures && fields.annexures.length > 0) {
+      if (!isSectionHidden('annexures') && fields.annexures && fields.annexures.length > 0) {
         for (const annexure of fields.annexures) {
           if (annexure.parsedData && annexure.parsedData.headers.length > 0) {
             r.newPage();
@@ -2539,6 +2539,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
         {/* ── Section 11: Photographs ── */}
         {!isSectionHidden('section-11') && (
           <BasePhotographsSection
+            title={config?.fieldLabels?.['section-11-title'] || 'Photographs'}
             propertyImages={fields.propertyImages || []}
             propertyImageNames={fields.propertyImageNames || []}
             isReadOnly={isReadOnly}
@@ -2575,6 +2576,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
           const technicalAddress = fields.propertyAddressSite || fields.propertyAddressAsVisit || fields.propertyAddress || getFullAddress() || fields.ownerAddress || '';
           return (
             <BaseMapsSection
+              title={config?.fieldLabels?.['section-12-title'] || 'Maps & Documents'}
               locationMapImages={fields.locationMapImages || normalizeMapImages(fields.locationMapImage)}
               mouzaMapImages={fields.mouzaMapImages || normalizeMapImages(fields.mouzaMapImage)}
               sketchMapImages={fields.sketchMapImages || []}
@@ -2614,7 +2616,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
         ))}
 
         {/* ── Section 14 / 15: Annexures ── */}
-        {!isSectionHidden(`section-${isApartmentFlat ? 14 : 15}`) && (
+        {!isSectionHidden(`section-${isApartmentFlat ? 14 : 15}`) && !isSectionHidden('annexures') && (
           <BaseAnnexureSection
             annexures={fields.annexures || []}
             isReadOnly={isReadOnly}
