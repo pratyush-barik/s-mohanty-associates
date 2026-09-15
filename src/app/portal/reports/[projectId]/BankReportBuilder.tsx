@@ -1060,6 +1060,16 @@ export default function BankReportBuilder({
         }
       };
 
+      // ── Extra Bank-Specific Sections (Start) ──
+      if (config?.extraSectionsStart) {
+        for (const sec of config.extraSectionsStart) {
+          if (sec.id === 'section-cover') continue;
+          r.drawSectionHeader(sec.title.toUpperCase());
+          drawExtraPDFFields(sec.id);
+          r.advanceCursor(8);
+        }
+      }
+
       // ── Optional Split Section 1a ──
       if (config?.navSections?.some(s => s.id === 'section-1a') && !isSectionHidden('section-1a')) {
         r.drawSectionHeader(getSectionTitle('section-1a', 'BASIC DETAILS').toUpperCase());
