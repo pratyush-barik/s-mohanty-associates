@@ -194,7 +194,7 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
     this.cursorY += 16;
 
     drawCenteredBold('ADDRESS OF THE PROPERTY', FONT_SIZE_HEADER, 16, true);
-    drawCenteredBold(fv('addressOfTheProperty'), FONT_SIZE, 40);
+    drawCenteredBold(fv('axisAddressOfTheProperty'), FONT_SIZE, 40);
 
     drawCenteredBold('VALUE OF THE PROPERTY', FONT_SIZE_HEADER, 16, true);
     drawCenteredBold(`PRESENT MARKET VALUE: ${fv('axisPresentMarketValue')}`, FONT_SIZE, 14);

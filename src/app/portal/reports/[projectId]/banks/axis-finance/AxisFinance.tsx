@@ -89,7 +89,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
   hiddenFields: ['to', 'dateOfValuation', 'refNo'],
   defaultValues: {
     axisPropertyOwners: [{ name: '', relationship: 'S/O', relativeName: '' }],
-    addressOfTheProperty: '',
+    axisAddressOfTheProperty: '',
     axisPresentMarketValue: '',
     axisDistressSaleValue: '',
     axisEnableCoverPageValueEdit: false,
@@ -194,7 +194,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
           </div>
           <div className="mt-4 mb-4">
             <Field label="ADDRESS OF THE PROPERTY">
-              <textarea className={inputCls} rows={3} value={fields.addressOfTheProperty || ''} onChange={e => handleChange('addressOfTheProperty', e.target.value)} disabled={isReadOnly} />
+              <textarea className={inputCls} rows={3} value={fields.axisAddressOfTheProperty || ''} onChange={e => handleChange('axisAddressOfTheProperty', e.target.value)} disabled={isReadOnly} />
             </Field>
           </div>
           <div className="border border-red-200 bg-[#fff5f5] rounded-xl p-4 mb-4 relative">
@@ -364,7 +364,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
         let computedState = '';
         let computedPinCode = '';
         
-        const address = [fields.propertyDetailsAxis, fields.propertyAddressAxis, fields.addressOfTheProperty].filter(Boolean).join(' ');
+        const address = [fields.propertyDetailsAxis, fields.propertyAddressAxis, fields.axisAddressOfTheProperty].filter(Boolean).join(' ');
         if (address) {
           const pinMatch = address.match(/\b(\d{6})\b/);
           if (pinMatch) computedPinCode = pinMatch[1];
@@ -454,10 +454,10 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Property details" span={2}>
-                <textarea className={inputCls} rows={3} value={fields.enableAddressEdit ? (fields.propertyDetailsAxis ?? fields.addressOfTheProperty ?? '') : (fields.addressOfTheProperty ?? '')} onChange={e => handleChange('propertyDetailsAxis', e.target.value)} disabled={isReadOnly || !fields.enableAddressEdit} />
+                <textarea className={inputCls} rows={3} value={fields.enableAddressEdit ? (fields.propertyDetailsAxis ?? fields.axisAddressOfTheProperty ?? '') : (fields.axisAddressOfTheProperty ?? '')} onChange={e => handleChange('propertyDetailsAxis', e.target.value)} disabled={isReadOnly || !fields.enableAddressEdit} />
               </Field>
               <Field label="Property Address" span={2}>
-                <textarea className={inputCls} rows={3} value={fields.enableAddressEdit ? (fields.propertyAddressAxis ?? fields.addressOfTheProperty ?? '') : (fields.addressOfTheProperty ?? '')} onChange={e => handleChange('propertyAddressAxis', e.target.value)} disabled={isReadOnly || !fields.enableAddressEdit} />
+                <textarea className={inputCls} rows={3} value={fields.enableAddressEdit ? (fields.propertyAddressAxis ?? fields.axisAddressOfTheProperty ?? '') : (fields.axisAddressOfTheProperty ?? '')} onChange={e => handleChange('propertyAddressAxis', e.target.value)} disabled={isReadOnly || !fields.enableAddressEdit} />
               </Field>
               <Field label="City"><input className={inputCls} value={fields.enableAddressEdit ? (fields.city ?? computedCity) : computedCity} onChange={e => handleChange('city', e.target.value)} disabled={isReadOnly || !fields.enableAddressEdit} /></Field>
               <Field label="District"><input className={inputCls} value={fields.enableAddressEdit ? (fields.district ?? computedDistrict) : computedDistrict} onChange={e => handleChange('district', e.target.value)} disabled={isReadOnly || !fields.enableAddressEdit} /></Field>
@@ -569,7 +569,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
   getPDFRenderer: (fields) => {
     // Inject computed fields if edit is off so PDF renderer sees them
     if (!fields.enableAddressEdit) {
-      const address = [fields.propertyDetailsAxis, fields.propertyAddressAxis, fields.addressOfTheProperty].filter(Boolean).join(' ');
+      const address = [fields.propertyDetailsAxis, fields.propertyAddressAxis, fields.axisAddressOfTheProperty].filter(Boolean).join(' ');
       let computedCity = '';
       let computedDistrict = '';
       let computedState = '';
@@ -598,8 +598,8 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
       }
       fields = {
         ...fields,
-        propertyDetailsAxis: fields.addressOfTheProperty || '',
-        propertyAddressAxis: fields.addressOfTheProperty || '',
+        propertyDetailsAxis: fields.axisAddressOfTheProperty || '',
+        propertyAddressAxis: fields.axisAddressOfTheProperty || '',
         city: computedCity,
         district: computedDistrict,
         state: computedState,
