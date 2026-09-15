@@ -18,7 +18,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
     { id: 'axis-section-6', title: 'Unit Measurements & Setbacks' },
     { id: 'axis-section-7', title: 'Valuation & Construction Cost Break-up' },
     { id: 'axis-section-8', title: 'Construction Cost (For Plot Plus Construction)' },
-    { id: 'section-9', title: 'Valuation Abstract' },
+    { id: 'axis-section-9', title: 'Government Valuation & Distress Value' },
     { id: 'section-10', title: 'Remarks' },
     { id: 'section-11', title: 'Certificate' },
     { id: 'section-12', title: 'Photographs' },
@@ -26,7 +26,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
     { id: 'section-14', title: 'Location Map' },
     { id: 'section-15', title: 'Annexures' },
   ],
-  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7', 'section-8'],
+  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7', 'section-8', 'section-9'],
   extraSections: [],
   hiddenFields: ['to', 'dateOfValuation', 'refNo'],
   defaultValues: {
@@ -127,6 +127,12 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
     axisRecommendedConstructionRate: '',
     axisRecommendedCostOfConstruction: '',
     axisTotalValueOfPropertyAfterCompletion: '',
+
+    axisAreaOfLandGovt: '',
+    axisGovernmentRate: '',
+    axisValueOfTheLandGovt: '',
+    axisGovtValueOfTheUnit: '',
+    axisDistressValueOfTheProperty: '',
   },
   extraSectionsStart: [
     {
@@ -873,7 +879,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
           </div>
         );
 
-        const renderFieldWithFormulaAndUnit = (label: string, fieldKey: string, formulaLabel: string, calculatedValue: number | string, unitTag?: string) => {
+        const renderFieldWithFormulaAndUnit = (label: string, fieldKey: string, formulaLabel: string, calculatedValue: number | string, unitTag?: string, isRedFormula?: boolean) => {
           const isManual = fields[`${fieldKey}_isManual`] || false;
           const isNA = fields[fieldKey] === 'NA';
           const displayValue = (isManual || isNA) ? (fields[fieldKey] || '') : calculatedValue;
@@ -881,7 +887,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
           return (
             <div className="space-y-1">
               <div className="flex justify-between items-center mb-1">
-                <label className="text-xs font-semibold text-gray-700">{label} <span className="text-gray-400 font-normal italic ml-1">{formulaLabel}</span></label>
+                <label className="text-xs font-semibold text-gray-700">{label} <span className={`font-normal italic ml-1 ${isRedFormula ? 'text-red-500' : 'text-gray-400'}`}>{formulaLabel}</span></label>
                 <div className="flex items-center space-x-3">
                   <div className="flex items-center space-x-1" title="Toggle Manual Override">
                     <span className="text-[9px] text-gray-500 font-medium uppercase">Edit</span>
@@ -957,6 +963,11 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
         const totalLandVal = fields.axisValueOfTheLand_isManual ? safeNum(fields.axisValueOfTheLand) : safeNum(landValueCalc);
         const totalConstructionVal = fields.axisCostBreakupTotalBUAValueTotal_isManual ? safeNum(fields.axisCostBreakupTotalBUAValueTotal) : totalBuaValueSum;
         const marketValueUnitCalc = (totalLandVal + totalConstructionVal).toFixed(2);
+        
+        const recommendedConstructionRate = safeNum(fields.axisRecommendedConstructionRate);
+        const recommendedConstCostCalc = (approvedBuaTotal * recommendedConstructionRate).toFixed(2);
+        const recommendedConstCost = fields.axisRecommendedCostOfConstruction_isManual ? safeNum(fields.axisRecommendedCostOfConstruction) : safeNum(recommendedConstCostCalc);
+        const totalValueCalc = (totalLandVal + recommendedConstCost).toFixed(2);
 
         return (
           <div className="animate-fade-in space-y-6">
@@ -967,6 +978,52 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                 {renderFieldWithUnit('Market rate of the Land', 'axisMarketRateOfLand', 'Rs./Sq. Ft.')}
                 <div className="md:col-span-2">
                   {renderFieldWithFormulaAndUnit('Value of the Land', 'axisValueOfTheLand', '[Formula: Area × Rate]', landValueCalc, 'Rs.')}
+                </div>
+              </div>
+            </div>
+
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FDF4FF', borderColor: '#F5D0FE' }}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-gray-700">Construction Cost & Technical Specifications</h3>
+              </div>
+              <div className="bg-fuchsia-50 text-fuchsia-800 text-xs p-2 rounded border border-fuchsia-200 mb-4 inline-block">
+                <strong>Note:</strong> Cost of Construction to be worked out on Approved area only
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {renderFieldWithUnit('Estimated Cost Of Construction', 'axisEstimatedCostOfConstruction', 'Rs.')}
+                {renderFieldWithUnit('Standard Cost Of Construction', 'axisStandardCostOfConstruction', 'Rs.')}
+                
+                {renderFieldWithUnit('Estimated Rate Per Sq ft', 'axisEstimatedRatePerSqft', 'Rs. / Sq. Ft.')}
+                {renderFieldWithUnit('Standard Rate Per Sq ft', 'axisStandardRatePerSqft', 'Rs. / Sq. Ft.')}
+                
+                <div className="md:col-span-2">
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="text-xs font-semibold text-gray-700">Material & Finishing Details as proposed in Estimate</label>
+                      <label className="flex items-center space-x-1 cursor-pointer">
+                        <input type="checkbox" className="w-3 h-3 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={fields.axisMaterialAndFinishingDetails === 'NA'} onChange={e => handleChange('axisMaterialAndFinishingDetails', e.target.checked ? 'NA' : '')} disabled={isReadOnly} />
+                        <span className="text-[10px] text-gray-500 font-medium leading-none">NA</span>
+                      </label>
+                    </div>
+                    <textarea 
+                      className={`${inputCls} min-h-[80px] resize-none placeholder:text-gray-400`} 
+                      placeholder="Describe the Flooring, Doors, Windows, Wall Finish, Lighting, and Plumbing etc."
+                      value={fields.axisMaterialAndFinishingDetails || ''} 
+                      onChange={e => handleChange('axisMaterialAndFinishingDetails', e.target.value)} 
+                      disabled={isReadOnly || fields.axisMaterialAndFinishingDetails === 'NA'} 
+                    />
+                  </div>
+                </div>
+
+                {renderFieldWithUnit('Stage of Construction', 'axisStageOfConstruction', '%')}
+                {renderFieldWithUnit('Recommended For Disbursement', 'axisRecommendedForDisbursement', '%')}
+                
+                {renderFieldWithUnit('Recommended construction rate based on the proposed specifications', 'axisRecommendedConstructionRate', 'Rs. / Sq. Ft.')}
+                {renderFieldWithFormulaAndUnit('Recommended Cost of Construction', 'axisRecommendedCostOfConstruction', '[Formula: Approved BUA × Recommended Construction Rate]', recommendedConstCostCalc, 'Rs.', true)}
+
+                <div className="md:col-span-2">
+                  {renderFieldWithFormulaAndUnit('Total Value of property after Completion', 'axisTotalValueOfPropertyAfterCompletion', '[Formula: Market Value of Land + Recommended Const Cost]', totalValueCalc, 'Rs.', true)}
                 </div>
               </div>
             </div>
@@ -1033,6 +1090,104 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
               <div className="grid grid-cols-1 gap-4">
                 {renderFieldWithFormulaAndUnit('Value of the Approved BUA', 'axisValueOfApprovedBUA', '[Formula: Approved BUA × Construction Rate]', approvedBuaValueTotal.toFixed(2), 'Rs.')}
                 {renderFieldWithFormulaAndUnit('Market Value of the Unit : (Land + Construction)', 'axisMarketValueOfTheUnitLandAndConstruction', '[Formula: Land Value + Construction Value]', marketValueUnitCalc, 'Rs.')}
+              </div>
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'axis-section-9',
+      title: 'Government Valuation & Distress Value',
+      number: 9,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        const inputCls = "w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white disabled:bg-gray-100 disabled:text-gray-500";
+        
+        const safeNum = (val: any) => {
+          if (val === 'NA' || !val) return 0;
+          const num = parseFloat(val);
+          return isNaN(num) ? 0 : num;
+        };
+
+        const renderFieldWithUnit = (label: string, fieldKey: string, unitTag?: string) => (
+          <div className="space-y-1">
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-xs font-semibold text-gray-700">{label}</label>
+              <label className="flex items-center space-x-1 cursor-pointer">
+                <input type="checkbox" className="w-3 h-3 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={fields[fieldKey] === 'NA'} onChange={e => handleChange(fieldKey, e.target.checked ? 'NA' : '')} disabled={isReadOnly} />
+                <span className="text-[10px] text-gray-500 font-medium leading-none">NA</span>
+              </label>
+            </div>
+            <div className="relative">
+              <input className={`${inputCls} ${unitTag ? 'pr-16' : ''}`} value={fields[fieldKey] || ''} onChange={e => handleChange(fieldKey, e.target.value)} disabled={isReadOnly || fields[fieldKey] === 'NA'} />
+              {unitTag && <div className="absolute right-1 top-1.5 px-2 bg-gray-100 rounded text-xs text-gray-500 pointer-events-none">{unitTag}</div>}
+            </div>
+          </div>
+        );
+
+        const renderFieldWithFormulaAndUnit = (label: string, fieldKey: string, formulaLabel: string, calculatedValue: number | string, unitTag?: string, isRedFormula?: boolean) => {
+          const isManual = fields[`${fieldKey}_isManual`] || false;
+          const isNA = fields[fieldKey] === 'NA';
+          const displayValue = (isManual || isNA) ? (fields[fieldKey] || '') : calculatedValue;
+          
+          return (
+            <div className="space-y-1">
+              <div className="flex justify-between items-center mb-1">
+                <label className="text-xs font-semibold text-gray-700">{label} <span className={`font-normal italic ml-1 ${isRedFormula ? 'text-red-500' : 'text-gray-400'}`}>{formulaLabel}</span></label>
+                <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-1" title="Toggle Manual Override">
+                    <span className="text-[9px] text-gray-500 font-medium uppercase">Edit</span>
+                    <button type="button" className={`w-6 h-3 rounded-full relative transition-colors ${isManual ? 'bg-green-500' : 'bg-gray-300'}`} onClick={() => handleChange(`${fieldKey}_isManual`, !isManual)} disabled={isReadOnly}>
+                      <div className={`w-2 h-2 bg-white rounded-full absolute top-0.5 transition-transform ${isManual ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
+                    </button>
+                  </div>
+                  <label className="flex items-center space-x-1 cursor-pointer">
+                    <input type="checkbox" className="w-3 h-3 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={isNA} onChange={e => handleChange(fieldKey, e.target.checked ? 'NA' : '')} disabled={isReadOnly} />
+                    <span className="text-[10px] text-gray-500 font-medium leading-none">NA</span>
+                  </label>
+                </div>
+              </div>
+              <div className="relative">
+                <input className={`${inputCls} ${unitTag ? 'pr-16' : ''} ${!isManual ? 'bg-green-50/50' : ''}`} value={displayValue} onChange={e => isManual && handleChange(fieldKey, e.target.value)} disabled={isReadOnly || isNA || !isManual} />
+                {unitTag && <div className="absolute right-1 top-1.5 px-2 bg-gray-100 rounded text-xs text-gray-500 pointer-events-none">{unitTag}</div>}
+              </div>
+            </div>
+          );
+        };
+
+        // Calculations
+        const govtLandValueCalc = (safeNum(fields.axisAreaOfLandGovt) * safeNum(fields.axisGovernmentRate)).toFixed(2);
+        const finalGovtLandVal = fields.axisValueOfTheLandGovt_isManual ? safeNum(fields.axisValueOfTheLandGovt) : safeNum(govtLandValueCalc);
+        
+        // BUA total construction cost from Section 7
+        const floors = ['GF', 'FF', 'SF', 'TF', 'NA'];
+        const totalBuaValues = floors.reduce((acc, f) => {
+          acc[f] = safeNum(fields[`axisCostBreakupActualBUA${f}`]) * safeNum(fields[`axisCostBreakupConstructionCost${f}`]);
+          return acc;
+        }, {} as Record<string, number>);
+        const totalBuaValueSum = floors.reduce((sum, f) => sum + totalBuaValues[f], 0);
+        const totalConstructionVal = fields.axisCostBreakupTotalBUAValueTotal_isManual ? safeNum(fields.axisCostBreakupTotalBUAValueTotal) : totalBuaValueSum;
+        
+        const govtValueOfUnitCalc = (finalGovtLandVal + totalConstructionVal).toFixed(2);
+        
+        // Market value from Section 7/8
+        const totalLandVal = fields.axisValueOfTheLand_isManual ? safeNum(fields.axisValueOfTheLand) : (safeNum(fields.axisAreaOfLand) * safeNum(fields.axisMarketRateOfLand));
+        const marketValueUnitCalc = (totalLandVal + totalConstructionVal).toFixed(2);
+        const finalMarketVal = fields.axisMarketValueOfTheUnitLandAndConstruction_isManual ? safeNum(fields.axisMarketValueOfTheUnitLandAndConstruction) : safeNum(marketValueUnitCalc);
+        
+        const distressValueCalc = (finalMarketVal * 0.85).toFixed(2);
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }}>
+              <h3 className="font-bold text-gray-700 mb-4">Government Valuation of Independent Property</h3>
+              <div className="grid grid-cols-1 gap-4">
+                {renderFieldWithUnit('Area of Land', 'axisAreaOfLandGovt', 'Sq. Ft.')}
+                {renderFieldWithUnit('Government Rate', 'axisGovernmentRate', 'Rs. / Sq. Ft.')}
+                {renderFieldWithFormulaAndUnit('Value of the Land', 'axisValueOfTheLandGovt', '[Formula: Area of Land × Government Rate]', govtLandValueCalc, 'Rs.', true)}
+                {renderFieldWithFormulaAndUnit('Govt Value of the Unit : Rs. (Government Land cost + Construction cost calculated above)', 'axisGovtValueOfTheUnit', '[Formula: Value of the Land + Construction Cost calculated above]', govtValueOfUnitCalc, 'Rs.', true)}
+                {renderFieldWithFormulaAndUnit('Distress Value of the Property : Rs.', 'axisDistressValueOfTheProperty', '[Formula: 80% to 85% of Market Value]', distressValueCalc, 'Rs.', true)}
               </div>
             </div>
           </div>
@@ -1120,9 +1275,26 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
     }
     
     // Section 8 calculated fields
-    const recommendedConstCost = safeNum(fields.axisRecommendedCostOfConstruction);
+    const finalRecommendedConstRate = safeNum(fields.axisRecommendedConstructionRate);
+    if (!fields.axisRecommendedCostOfConstruction_isManual && fields.axisRecommendedCostOfConstruction !== 'NA') {
+      fields.axisRecommendedCostOfConstruction = (approvedBuaTotal * finalRecommendedConstRate).toFixed(2);
+    }
+    const finalRecommendedConstCost = safeNum(fields.axisRecommendedCostOfConstruction);
     if (!fields.axisTotalValueOfPropertyAfterCompletion_isManual && fields.axisTotalValueOfPropertyAfterCompletion !== 'NA') {
-      fields.axisTotalValueOfPropertyAfterCompletion = (finalLandVal + recommendedConstCost).toFixed(2);
+      fields.axisTotalValueOfPropertyAfterCompletion = (finalLandVal + finalRecommendedConstCost).toFixed(2);
+    }
+    
+    // Section 9 calculated fields
+    if (!fields.axisValueOfTheLandGovt_isManual && fields.axisValueOfTheLandGovt !== 'NA') {
+      fields.axisValueOfTheLandGovt = (safeNum(fields.axisAreaOfLandGovt) * safeNum(fields.axisGovernmentRate)).toFixed(2);
+    }
+    const finalGovtLandVal = safeNum(fields.axisValueOfTheLandGovt);
+    if (!fields.axisGovtValueOfTheUnit_isManual && fields.axisGovtValueOfTheUnit !== 'NA') {
+      fields.axisGovtValueOfTheUnit = (finalGovtLandVal + finalConstrVal).toFixed(2);
+    }
+    if (!fields.axisDistressValueOfTheProperty_isManual && fields.axisDistressValueOfTheProperty !== 'NA') {
+      const marketVal = safeNum(fields.axisMarketValueOfTheUnitLandAndConstruction);
+      fields.axisDistressValueOfTheProperty = (marketVal * 0.85).toFixed(2);
     }
         }
         if (!computedDistrict) {

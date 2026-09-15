@@ -47,6 +47,8 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
       this.drawAxisSection7();
     } else if (title === 'CONSTRUCTION COST (FOR PLOT PLUS CONSTRUCTION)') {
       this.drawAxisSection8();
+    } else if (title === 'GOVERNMENT VALUATION & DISTRESS VALUE') {
+      this.drawAxisSection9();
     }
   }
 
@@ -566,6 +568,23 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
     ]);
 
     this.drawSimpleRow('Total Value of property after Completion', fv('axisTotalValueOfPropertyAfterCompletion'));
+    this.advanceCursor(4);
+  }
+
+  private drawAxisSection9() {
+    const fv = (key: string, def = 'NA') => {
+      const val = this.fields[key];
+      return val ? String(val) : def;
+    };
+
+    this.drawSectionSubtitle('Government Valuation of Independent Property');
+    this.drawKeyValueRow([
+      { label: 'Area of Land', value: fv('axisAreaOfLandGovt') },
+      { label: 'Government Rate', value: fv('axisGovernmentRate') }
+    ]);
+    this.drawSimpleRow('Value of the Land', fv('axisValueOfTheLandGovt'));
+    this.drawSimpleRow('Govt Value of the Unit : Rs. (Government Land cost + Construction cost calculated above)', fv('axisGovtValueOfTheUnit'));
+    this.drawSimpleRow('Distress Value of the Property : Rs.', fv('axisDistressValueOfTheProperty'));
     this.advanceCursor(4);
   }
 }
