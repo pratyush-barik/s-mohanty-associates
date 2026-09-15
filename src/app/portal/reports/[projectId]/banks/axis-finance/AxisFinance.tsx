@@ -240,8 +240,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
           <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#F0F7FF', borderColor: '#BAE6FD' }}>
             <h3 className="font-bold text-gray-700 mb-4">CUSTOMER & LOAN INFORMATION</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Valuation Report For"><input className={inputCls} value={fields.valuationReportFor || ''} onChange={e => handleChange('valuationReportFor', e.target.value)} disabled={isReadOnly} /></Field>
-              <Field label="Product / Loan Category"><input className={inputCls} value={fields.productLoanCategory || ''} onChange={e => handleChange('productLoanCategory', e.target.value)} disabled={isReadOnly} placeholder="e.g., LAP – RESIDENTIAL BUILDING" /></Field>
+              <Field label="Product / Loan Category (LOAN AGAINST PROPERTY (LAP))"><input className={inputCls} value={fields.productLoanCategory || ''} onChange={e => handleChange('productLoanCategory', e.target.value)} disabled={isReadOnly} placeholder="e.g., LAP – RESIDENTIAL BUILDING" /></Field>
               <Field label="Application Number"><input className={inputCls} value={fields.loanApplicationNo || ''} onChange={e => handleChange('loanApplicationNo', e.target.value)} disabled={isReadOnly} /></Field>
               <Field label="Date"><input type="date" className={inputCls} value={fields.dateOfValuation || ''} onChange={e => handleChange('dateOfValuation', e.target.value)} disabled={isReadOnly} /></Field>
               <Field label="Name of the Customer"><input className={inputCls} value={fields.ownerName || ''} onChange={e => handleChange('ownerName', e.target.value)} disabled={isReadOnly} /></Field>
