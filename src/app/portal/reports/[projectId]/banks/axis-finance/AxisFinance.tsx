@@ -305,7 +305,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
         let computedState = '';
         let computedPinCode = '';
         
-        const address = fields.propertyDetailsAxis || fields.propertyAddressAxis || fields.addressOfTheProperty || '';
+        const address = [fields.propertyDetailsAxis, fields.propertyAddressAxis, fields.addressOfTheProperty].filter(Boolean).join(' ');
         if (address) {
           const pinMatch = address.match(/\b(\d{6})\b/);
           if (pinMatch) computedPinCode = pinMatch[1];
