@@ -438,45 +438,46 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
           );
         };
 
-        return (
-        <div className="animate-fade-in space-y-6">
-          <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' }}>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-gray-700">PROPERTY ADDRESS & IDENTIFICATION</h3>
+        const renderToggleLabel = (labelText: string, editFieldKey: string, valueFieldKey: string) => {
+          const isEditOn = fields[editFieldKey] || false;
+          return (
+            <div className="flex justify-between items-center w-full">
+              <span>{labelText}</span>
               <div className="flex items-center space-x-2">
-                <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.enableAddressEdit ? 'On' : 'Off'}</span>
+                <span className="text-[9px] uppercase font-bold text-gray-400 normal-case">Edit {isEditOn ? 'On' : 'Off'}</span>
                 <button
                   type="button"
                   onClick={() => {
-                    if (fields.enableAddressEdit) {
-                      // Turning off: clear manual edits so it falls back to computed
-                      handleChange('propertyDetailsAxis', undefined);
-                      handleChange('propertyAddressAxis', undefined);
-                      handleChange('city', undefined);
-                      handleChange('district', undefined);
-                      handleChange('state', undefined);
-                      handleChange('pinCode', undefined);
+                    if (isEditOn) {
+                      handleChange(valueFieldKey, undefined);
                     }
-                    handleChange('enableAddressEdit', !fields.enableAddressEdit);
+                    handleChange(editFieldKey, !isEditOn);
                   }}
                   disabled={isReadOnly}
-                  className={`w-8 h-4 rounded-full relative transition-colors ${fields.enableAddressEdit ? 'bg-green-500' : 'bg-gray-300'}`}
+                  className={`w-8 h-4 rounded-full relative transition-colors ${isEditOn ? 'bg-green-500' : 'bg-gray-300'}`}
                 >
-                  <span className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white transition-transform ${fields.enableAddressEdit ? 'translate-x-4' : ''}`} />
+                  <span className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white transition-transform ${isEditOn ? 'translate-x-4' : ''}`} />
                 </button>
               </div>
             </div>
+          );
+        };
+
+        return (
+        <div className="animate-fade-in space-y-6">
+          <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' }}>
+            <h3 className="font-bold text-gray-700 mb-4">PROPERTY ADDRESS & IDENTIFICATION</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Property details" span={2}>
-                <textarea className={inputCls} rows={3} value={fields.enableAddressEdit ? (fields.propertyDetailsAxis ?? fields.axisAddressOfTheProperty ?? '') : (fields.axisAddressOfTheProperty ?? '')} onChange={e => handleChange('propertyDetailsAxis', e.target.value)} disabled={isReadOnly || !fields.enableAddressEdit} />
+              <Field label={renderToggleLabel('Property details', 'enablePropertyDetailsEditAxis', 'propertyDetailsAxis')} span={2}>
+                <textarea className={inputCls} rows={3} value={fields.enablePropertyDetailsEditAxis ? (fields.propertyDetailsAxis ?? fields.axisAddressOfTheProperty ?? '') : (fields.axisAddressOfTheProperty ?? '')} onChange={e => handleChange('propertyDetailsAxis', e.target.value)} disabled={isReadOnly || !fields.enablePropertyDetailsEditAxis} />
               </Field>
-              <Field label="Property Address" span={2}>
-                <textarea className={inputCls} rows={3} value={fields.enableAddressEdit ? (fields.propertyAddressAxis ?? fields.axisAddressOfTheProperty ?? '') : (fields.axisAddressOfTheProperty ?? '')} onChange={e => handleChange('propertyAddressAxis', e.target.value)} disabled={isReadOnly || !fields.enableAddressEdit} />
+              <Field label={renderToggleLabel('Property Address', 'enablePropertyAddressEditAxis', 'propertyAddressAxis')} span={2}>
+                <textarea className={inputCls} rows={3} value={fields.enablePropertyAddressEditAxis ? (fields.propertyAddressAxis ?? fields.axisAddressOfTheProperty ?? '') : (fields.axisAddressOfTheProperty ?? '')} onChange={e => handleChange('propertyAddressAxis', e.target.value)} disabled={isReadOnly || !fields.enablePropertyAddressEditAxis} />
               </Field>
-              <Field label="City"><input className={inputCls} value={fields.enableAddressEdit ? (fields.city ?? computedCity) : computedCity} onChange={e => handleChange('city', e.target.value)} disabled={isReadOnly || !fields.enableAddressEdit} /></Field>
-              <Field label="District"><input className={inputCls} value={fields.enableAddressEdit ? (fields.district ?? computedDistrict) : computedDistrict} onChange={e => handleChange('district', e.target.value)} disabled={isReadOnly || !fields.enableAddressEdit} /></Field>
-              <Field label="State"><input className={inputCls} value={fields.enableAddressEdit ? (fields.state ?? computedState) : computedState} onChange={e => handleChange('state', e.target.value)} disabled={isReadOnly || !fields.enableAddressEdit} /></Field>
-              <Field label="Pin Code"><input className={inputCls} value={fields.enableAddressEdit ? (fields.pinCode ?? computedPinCode) : computedPinCode} onChange={e => handleChange('pinCode', e.target.value)} disabled={isReadOnly || !fields.enableAddressEdit} /></Field>
+              <Field label={renderToggleLabel('City', 'enableCityEditAxis', 'city')}><input className={inputCls} value={fields.enableCityEditAxis ? (fields.city ?? computedCity) : computedCity} onChange={e => handleChange('city', e.target.value)} disabled={isReadOnly || !fields.enableCityEditAxis} /></Field>
+              <Field label={renderToggleLabel('District', 'enableDistrictEditAxis', 'district')}><input className={inputCls} value={fields.enableDistrictEditAxis ? (fields.district ?? computedDistrict) : computedDistrict} onChange={e => handleChange('district', e.target.value)} disabled={isReadOnly || !fields.enableDistrictEditAxis} /></Field>
+              <Field label={renderToggleLabel('State', 'enableStateEditAxis', 'state')}><input className={inputCls} value={fields.enableStateEditAxis ? (fields.state ?? computedState) : computedState} onChange={e => handleChange('state', e.target.value)} disabled={isReadOnly || !fields.enableStateEditAxis} /></Field>
+              <Field label={renderToggleLabel('Pin Code', 'enablePinCodeEditAxis', 'pinCode')}><input className={inputCls} value={fields.enablePinCodeEditAxis ? (fields.pinCode ?? computedPinCode) : computedPinCode} onChange={e => handleChange('pinCode', e.target.value)} disabled={isReadOnly || !fields.enablePinCodeEditAxis} /></Field>
             </div>
           </div>
           
