@@ -509,7 +509,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
       number: 4,
       defaultOpen: true,
       render: (fields, handleChange, isReadOnly) => {
-        const inputCls = "w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all";
+        const inputCls = "w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white";
         return (
           <div className="animate-fade-in space-y-6">
             <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FAF5FF', borderColor: '#E9D5FF' }}>
