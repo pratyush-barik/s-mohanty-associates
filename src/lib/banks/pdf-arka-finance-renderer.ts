@@ -128,7 +128,7 @@ export interface ArkaReportFields extends BaseReportFields {
 
 export class PDFArkaFinanceRenderer extends PDFBankRenderer {
   public async render(fields: ArkaReportFields): Promise<Uint8Array> {
-    const fv = (key: string, defaultVal = '') => (fields as any)[key] as string || defaultVal;
+    const fv = (key: string, defaultVal = '') => ((fields as any)[key] as string || defaultVal).replace(/[\t\n\r]+/g, ' ');
 
     this.cursorY += 60;
 
@@ -158,10 +158,11 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
     });
 
     const drawCenteredBold = (text: string, size: number, ySpaceAfter: number, underline: boolean = false) => {
-      const tw = this.fontBold.widthOfTextAtSize(text, size);
+      const cleanText = this.sanitizeText(text);
+      const tw = this.fontBold.widthOfTextAtSize(cleanText, size);
       const startX = MARGIN_L + (CONTENT_W - tw) / 2;
       const startY = this.pdfY(this.cursorY);
-      this.page.drawText(text, { x: startX, y: startY, size, font: this.fontBold, color: rgb(0,0,0) });
+      this.page.drawText(cleanText, { x: startX, y: startY, size, font: this.fontBold, color: rgb(0,0,0) });
       if (underline) {
         this.page.drawLine({
           start: { x: startX, y: startY - 2 },
@@ -229,10 +230,10 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
     // PAGE 2: Report details in table format
     this.addPage();
 
-    this.page.drawText(`Ref No: ${fv('refNo')}`, { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
+    this.page.drawText(this.sanitizeText(`Ref No: ${fv('refNo')}`), { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
     const dateStr = `Date: ${fv('dateOfReport')}`;
     const wDate = this.fontBold.widthOfTextAtSize(dateStr, FONT_SIZE);
-    this.page.drawText(dateStr, { x: MARGIN_L + CONTENT_W - wDate, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
+    this.page.drawText(this.sanitizeText(dateStr), { x: MARGIN_L + CONTENT_W - wDate, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
     this.cursorY += 20;
 
     const C1 = 30; const C2 = 230; const C3 = CONTENT_W - C1 - C2;
@@ -473,25 +474,25 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
 
     this.addPage();
     this.cursorY += 20;
-    this.page.drawText('Undertaking:', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
+    this.page.drawText(this.sanitizeText('Undertaking:'), { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
     this.cursorY += 16;
     
     const undertakingText = fields.undertakingDetails || 'I have personally visited the property & identified the same based on the documents provided.\nI/We have no direct or Indirect Interest in the property being valued.\nThe information furnished above is true and correct to my/our knowledge.';
     const undertakingLines = undertakingText.split('\n');
     for (const line of undertakingLines) {
       if (!line.trim()) continue;
-      this.page.drawText(line, { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
+      this.page.drawText(this.sanitizeText(line), { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
       this.cursorY += 20;
     }
     
     this.cursorY += 4;
-    this.page.drawText('Authorized Signatory', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
+    this.page.drawText(this.sanitizeText('Authorized Signatory'), { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
     this.cursorY += 16;
-    this.page.drawText('Name & Seal of the Agency', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
+    this.page.drawText(this.sanitizeText('Name & Seal of the Agency'), { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
     this.cursorY += 24;
-    this.page.drawText(fields.nameOfValuer || 'Er. Satyajit Mohanty', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
+    this.page.drawText(this.sanitizeText(fields.nameOfValuer || 'Er. Satyajit Mohanty'), { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
     this.cursorY += 16;
-    this.page.drawText(fields.designation || 'Approved Panel Valuer', { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
+    this.page.drawText(this.sanitizeText(fields.designation || 'Approved Panel Valuer'), { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
 
     // PHOTOGRAPHS — drawPhotoGrid handles its own page break & section header
     const imgs = Array.isArray(fields.propertyImages) ? fields.propertyImages : [];
