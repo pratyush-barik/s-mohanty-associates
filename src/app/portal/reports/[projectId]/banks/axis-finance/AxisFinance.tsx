@@ -338,18 +338,42 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
         return (
         <div className="animate-fade-in space-y-6">
           <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' }}>
-            <h3 className="font-bold text-gray-700 mb-4">PROPERTY ADDRESS & IDENTIFICATION</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-gray-700">PROPERTY ADDRESS & IDENTIFICATION</h3>
+              <div className="flex items-center space-x-2">
+                <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.enableAddressEdit ? 'On' : 'Off'}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (fields.enableAddressEdit) {
+                      // Turning off: clear manual edits so it falls back to computed
+                      handleChange('propertyDetailsAxis', undefined);
+                      handleChange('propertyAddressAxis', undefined);
+                      handleChange('city', undefined);
+                      handleChange('district', undefined);
+                      handleChange('state', undefined);
+                      handleChange('pinCode', undefined);
+                    }
+                    handleChange('enableAddressEdit', !fields.enableAddressEdit);
+                  }}
+                  disabled={isReadOnly}
+                  className={`w-8 h-4 rounded-full relative transition-colors ${fields.enableAddressEdit ? 'bg-green-500' : 'bg-gray-300'}`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white transition-transform ${fields.enableAddressEdit ? 'translate-x-4' : ''}`} />
+                </button>
+              </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Property details" span={2}>
-                <textarea className={inputCls} rows={3} value={fields.propertyDetailsAxis ?? fields.addressOfTheProperty ?? ''} onChange={e => handleChange('propertyDetailsAxis', e.target.value)} disabled={isReadOnly} />
+                <textarea className={inputCls} rows={3} value={fields.enableAddressEdit ? (fields.propertyDetailsAxis ?? fields.addressOfTheProperty ?? '') : (fields.addressOfTheProperty ?? '')} onChange={e => handleChange('propertyDetailsAxis', e.target.value)} disabled={isReadOnly || !fields.enableAddressEdit} />
               </Field>
               <Field label="Property Address" span={2}>
-                <textarea className={inputCls} rows={3} value={fields.propertyAddressAxis ?? fields.addressOfTheProperty ?? ''} onChange={e => handleChange('propertyAddressAxis', e.target.value)} disabled={isReadOnly} />
+                <textarea className={inputCls} rows={3} value={fields.enableAddressEdit ? (fields.propertyAddressAxis ?? fields.addressOfTheProperty ?? '') : (fields.addressOfTheProperty ?? '')} onChange={e => handleChange('propertyAddressAxis', e.target.value)} disabled={isReadOnly || !fields.enableAddressEdit} />
               </Field>
-              <Field label="City"><input className={inputCls} value={fields.city !== undefined ? fields.city : computedCity} onChange={e => handleChange('city', e.target.value)} disabled={isReadOnly} /></Field>
-              <Field label="District"><input className={inputCls} value={fields.district !== undefined ? fields.district : computedDistrict} onChange={e => handleChange('district', e.target.value)} disabled={isReadOnly} /></Field>
-              <Field label="State"><input className={inputCls} value={fields.state !== undefined ? fields.state : computedState} onChange={e => handleChange('state', e.target.value)} disabled={isReadOnly} /></Field>
-              <Field label="Pin Code"><input className={inputCls} value={fields.pinCode !== undefined ? fields.pinCode : computedPinCode} onChange={e => handleChange('pinCode', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="City"><input className={inputCls} value={fields.enableAddressEdit ? (fields.city ?? computedCity) : computedCity} onChange={e => handleChange('city', e.target.value)} disabled={isReadOnly || !fields.enableAddressEdit} /></Field>
+              <Field label="District"><input className={inputCls} value={fields.enableAddressEdit ? (fields.district ?? computedDistrict) : computedDistrict} onChange={e => handleChange('district', e.target.value)} disabled={isReadOnly || !fields.enableAddressEdit} /></Field>
+              <Field label="State"><input className={inputCls} value={fields.enableAddressEdit ? (fields.state ?? computedState) : computedState} onChange={e => handleChange('state', e.target.value)} disabled={isReadOnly || !fields.enableAddressEdit} /></Field>
+              <Field label="Pin Code"><input className={inputCls} value={fields.enableAddressEdit ? (fields.pinCode ?? computedPinCode) : computedPinCode} onChange={e => handleChange('pinCode', e.target.value)} disabled={isReadOnly || !fields.enableAddressEdit} /></Field>
             </div>
           </div>
           
@@ -384,7 +408,48 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
       }
     }
   ],
-  getPDFRenderer: (fields) => new PDFAxisFinanceRenderer(fields)
+  getPDFRenderer: (fields) => {
+    // Inject computed fields if edit is off so PDF renderer sees them
+    if (!fields.enableAddressEdit) {
+      const address = [fields.propertyDetailsAxis, fields.propertyAddressAxis, fields.addressOfTheProperty].filter(Boolean).join(' ');
+      let computedCity = '';
+      let computedDistrict = '';
+      let computedState = '';
+      let computedPinCode = '';
+      if (address) {
+        const pinMatch = address.match(/\b(\d{6})\b/);
+        if (pinMatch) computedPinCode = pinMatch[1];
+        const distMatch = address.match(/(?:Dist|District)[\s-]*([A-Za-z]+)/i);
+        if (distMatch && distMatch[1]) {
+          computedDistrict = distMatch[1];
+          computedCity = computedDistrict;
+        }
+        const states = ['Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Delhi'];
+        for (const s of states) {
+          if (address.toLowerCase().includes(s.toLowerCase())) {
+            computedState = s;
+            break;
+          }
+        }
+        if (!computedDistrict) {
+          const parts = address.split(',').map((p: string) => p.trim());
+          const stateIdx = parts.findIndex((p: string) => computedState && p.toLowerCase().includes(computedState.toLowerCase()));
+          if (stateIdx > 0) computedCity = parts[stateIdx - 1];
+          else if (parts.length >= 3) computedCity = parts[parts.length - 3];
+        }
+      }
+      fields = {
+        ...fields,
+        propertyDetailsAxis: fields.addressOfTheProperty || '',
+        propertyAddressAxis: fields.addressOfTheProperty || '',
+        city: computedCity,
+        district: computedDistrict,
+        state: computedState,
+        pinCode: computedPinCode
+      };
+    }
+    return new PDFAxisFinanceRenderer(fields);
+  }
 };
 
 export default function AxisFinance(props: BankReportBuilderProps) {
