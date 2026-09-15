@@ -19,14 +19,14 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
     { id: 'axis-section-7', title: 'Valuation & Construction Cost Break-up' },
     { id: 'axis-section-8', title: 'Construction Cost (For Plot Plus Construction)' },
     { id: 'axis-section-9', title: 'Government Valuation & Distress Value' },
-    { id: 'section-10', title: 'Remarks' },
+    { id: 'axis-section-10', title: 'Remarks, Certification & Attachments' },
     { id: 'section-11', title: 'Certificate' },
     { id: 'section-12', title: 'Photographs' },
     { id: 'section-13', title: 'Sketch Maps' },
     { id: 'section-14', title: 'Location Map' },
     { id: 'section-15', title: 'Annexures' },
   ],
-  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7', 'section-8', 'section-9'],
+  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7', 'section-8', 'section-9', 'section-10'],
   extraSections: [],
   hiddenFields: ['to', 'dateOfValuation', 'refNo'],
   defaultValues: {
@@ -133,6 +133,21 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
     axisValueOfTheLandGovt: '',
     axisGovtValueOfTheUnit: '',
     axisDistressValueOfTheProperty: '',
+
+    axisRedFlagComments: '',
+    axisTechnicalStatus: '',
+    axisCustomTechnicalStatus: '',
+    axisUndertakingClause1: true,
+    axisUndertakingClause2: true,
+    axisUndertakingClause3: true,
+    axisNameOfPersonVisitedSite: '',
+    axisNameOfValuationAgency: '',
+    axisSealOfTheAgency: null,
+    axisDateOfInspection: '',
+    axisAttachments: [
+      { text: 'Photos of the Property from inside/outside.' },
+      { text: 'Location sketch for the property' }
+    ],
   },
   extraSectionsStart: [
     {
@@ -1188,6 +1203,149 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                 {renderFieldWithFormulaAndUnit('Value of the Land', 'axisValueOfTheLandGovt', '[Formula: Area of Land × Government Rate]', govtLandValueCalc, 'Rs.', true)}
                 {renderFieldWithFormulaAndUnit('Govt Value of the Unit : Rs. (Government Land cost + Construction cost calculated above)', 'axisGovtValueOfTheUnit', '[Formula: Value of the Land + Construction Cost calculated above]', govtValueOfUnitCalc, 'Rs.', true)}
                 {renderFieldWithFormulaAndUnit('Distress Value of the Property : Rs.', 'axisDistressValueOfTheProperty', '[Formula: 80% to 85% of Market Value]', distressValueCalc, 'Rs.', true)}
+              </div>
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'axis-section-10',
+      title: 'Remarks, Certification & Attachments',
+      number: 10,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        const inputCls = "w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white disabled:bg-gray-100 disabled:text-gray-500";
+        
+        const renderField = (label: string, fieldKey: string, type = 'text', options: any = null) => (
+          <div className="space-y-1">
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-xs font-semibold text-gray-700">{label}</label>
+              <label className="flex items-center space-x-1 cursor-pointer">
+                <input type="checkbox" className="w-3 h-3 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={fields[fieldKey] === 'NA'} onChange={e => handleChange(fieldKey, e.target.checked ? 'NA' : '')} disabled={isReadOnly} />
+                <span className="text-[10px] text-gray-500 font-medium leading-none">NA</span>
+              </label>
+            </div>
+            {type === 'select' ? (
+              <select className={inputCls} value={fields[fieldKey] || ''} onChange={e => handleChange(fieldKey, e.target.value)} disabled={isReadOnly || fields[fieldKey] === 'NA'}>
+                <option value="">Select...</option>
+                {options.map((opt: string) => <option key={opt} value={opt}>{opt}</option>)}
+              </select>
+            ) : type === 'date' ? (
+              <input type="date" className={inputCls} value={fields[fieldKey] || ''} onChange={e => handleChange(fieldKey, e.target.value)} disabled={isReadOnly || fields[fieldKey] === 'NA'} />
+            ) : type === 'file' ? (
+              <input type="file" accept="image/png, image/jpeg" className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50" onChange={e => {
+                if (e.target.files && e.target.files[0]) {
+                  handleChange(fieldKey, e.target.files[0]);
+                }
+              }} disabled={isReadOnly || fields[fieldKey] === 'NA'} />
+            ) : (
+              <input className={inputCls} value={fields[fieldKey] || ''} onChange={e => handleChange(fieldKey, e.target.value)} disabled={isReadOnly || fields[fieldKey] === 'NA'} />
+            )}
+          </div>
+        );
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FFF3E0', borderColor: '#FFE0B2' }}>
+              <h3 className="font-bold text-gray-700 mb-4">Red Flag Comments & Technical Status</h3>
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="text-xs font-semibold text-gray-700">Red Flag comments / Remarks</label>
+                    <label className="flex items-center space-x-1 cursor-pointer">
+                      <input type="checkbox" className="w-3 h-3 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={fields.axisRedFlagComments === 'NA'} onChange={e => handleChange('axisRedFlagComments', e.target.checked ? 'NA' : '')} disabled={isReadOnly} />
+                      <span className="text-[10px] text-gray-500 font-medium leading-none">NA</span>
+                    </label>
+                  </div>
+                  <textarea 
+                    className={`${inputCls} min-h-[100px] placeholder:text-gray-400`} 
+                    placeholder="Enter negative remarks, violations, high tension wires, or clearance issues..."
+                    value={fields.axisRedFlagComments || ''} 
+                    onChange={e => handleChange('axisRedFlagComments', e.target.value)} 
+                    disabled={isReadOnly || fields.axisRedFlagComments === 'NA'} 
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {renderField('Technical Status', 'axisTechnicalStatus', 'select', ['Recommended', 'Not Recommended', 'Subject to Legal Clearance', 'Custom'])}
+                  {fields.axisTechnicalStatus === 'Custom' && (
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="text-xs font-semibold text-gray-700">Custom Technical Status</label>
+                      </div>
+                      <input className={inputCls} value={fields.axisCustomTechnicalStatus || ''} onChange={e => handleChange('axisCustomTechnicalStatus', e.target.value)} disabled={isReadOnly} placeholder="Enter custom status..." />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#F8FAFC', borderColor: '#CBD5E1' }}>
+              <h3 className="font-bold text-gray-700 mb-4">Undertaking & Site Sign-off</h3>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  {[
+                    { key: 'axisUndertakingClause1', text: 'I have personally visited the property & identified the same based on the documents provided' },
+                    { key: 'axisUndertakingClause2', text: 'I/We have no direct or Indirect Interest in the property being valued' },
+                    { key: 'axisUndertakingClause3', text: 'The information furnished above is true and correct to my/our knowledge' }
+                  ].map(clause => (
+                    <label key={clause.key} className="flex items-start space-x-3 cursor-pointer p-2 hover:bg-white/50 rounded transition-colors">
+                      <input type="checkbox" className="mt-1 w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={fields[clause.key] !== false} onChange={e => handleChange(clause.key, e.target.checked)} disabled={isReadOnly} />
+                      <span className="text-sm text-gray-700 leading-tight">{clause.text}</span>
+                    </label>
+                  ))}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  {renderField('Name of The Person Visited Site', 'axisNameOfPersonVisitedSite')}
+                  {renderField('Name of The Valuation Agency', 'axisNameOfValuationAgency')}
+                  {renderField('Date of Inspection', 'axisDateOfInspection', 'date')}
+                  {renderField('Seal Of the Agency', 'axisSealOfTheAgency', 'file')}
+                </div>
+              </div>
+            </div>
+
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' }}>
+              <h3 className="font-bold text-gray-700 mb-4">Attachment</h3>
+              <div className="space-y-3">
+                {(fields.axisAttachments || []).map((item: any, idx: number) => (
+                  <div key={idx} className="flex items-center space-x-2">
+                    <span className="text-sm font-semibold text-gray-600 w-6">{idx + 1}.</span>
+                    <div className="flex-1 relative">
+                      <input 
+                        className={inputCls} 
+                        value={item.text || ''} 
+                        onChange={e => {
+                          const arr = [...(fields.axisAttachments || [])];
+                          arr[idx] = { ...arr[idx], text: e.target.value };
+                          handleChange('axisAttachments', arr);
+                        }} 
+                        disabled={isReadOnly || item.text === 'NA'} 
+                      />
+                    </div>
+                    <label className="flex items-center space-x-1 cursor-pointer min-w-[40px]">
+                      <input type="checkbox" className="w-3 h-3 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={item.text === 'NA'} onChange={e => {
+                        const arr = [...(fields.axisAttachments || [])];
+                        arr[idx] = { ...arr[idx], text: e.target.checked ? 'NA' : '' };
+                        handleChange('axisAttachments', arr);
+                      }} disabled={isReadOnly} />
+                      <span className="text-[10px] text-gray-500 font-medium leading-none">NA</span>
+                    </label>
+                  </div>
+                ))}
+                {!isReadOnly && (
+                  <button
+                    type="button"
+                    className="mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center"
+                    onClick={() => {
+                      const arr = [...(fields.axisAttachments || [])];
+                      arr.push({ text: '' });
+                      handleChange('axisAttachments', arr);
+                    }}
+                  >
+                    + Add Attachment Item
+                  </button>
+                )}
               </div>
             </div>
           </div>

@@ -49,6 +49,8 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
       this.drawAxisSection8();
     } else if (title === 'GOVERNMENT VALUATION & DISTRESS VALUE') {
       this.drawAxisSection9();
+    } else if (title === 'REMARKS, CERTIFICATION & ATTACHMENTS') {
+      this.drawAxisSection10();
     }
   }
 
@@ -585,6 +587,51 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
     this.drawSimpleRow('Value of the Land', fv('axisValueOfTheLandGovt'));
     this.drawSimpleRow('Govt Value of the Unit : Rs. (Government Land cost + Construction cost calculated above)', fv('axisGovtValueOfTheUnit'));
     this.drawSimpleRow('Distress Value of the Property : Rs.', fv('axisDistressValueOfTheProperty'));
+    this.advanceCursor(4);
+  }
+
+  private drawAxisSection10() {
+    const fv = (key: string, def = 'NA') => {
+      const val = this.fields[key];
+      return val ? String(val) : def;
+    };
+
+    this.drawSectionSubtitle('Red Flag Comments & Technical Status');
+    this.drawSimpleRow('Red Flag comments / Remarks', fv('axisRedFlagComments'));
+    
+    const techStatus = fv('axisTechnicalStatus');
+    const displayStatus = techStatus === 'Custom' ? fv('axisCustomTechnicalStatus') : techStatus;
+    this.drawSimpleRow('Technical Status', displayStatus);
+    this.advanceCursor(4);
+
+    this.drawSectionSubtitle('Undertaking & Site Sign-off');
+    
+    const boolStr = (key: string) => this.fields[key] !== false ? 'Yes' : 'No';
+    this.drawSimpleRow('I have personally visited the property & identified the same based on the documents provided', boolStr('axisUndertakingClause1'));
+    this.drawSimpleRow('I/We have no direct or Indirect Interest in the property being valued', boolStr('axisUndertakingClause2'));
+    this.drawSimpleRow('The information furnished above is true and correct to my/our knowledge', boolStr('axisUndertakingClause3'));
+
+    this.drawKeyValueRow([
+      { label: 'Name of The Person Visited Site', value: fv('axisNameOfPersonVisitedSite') },
+      { label: 'Name of The Valuation Agency', value: fv('axisNameOfValuationAgency') }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Date of Inspection', value: fv('axisDateOfInspection') },
+      { label: 'Seal Of the Agency', value: this.fields.axisSealOfTheAgency ? 'Attached' : 'NA' }
+    ]);
+    this.advanceCursor(4);
+
+    this.drawSectionSubtitle('Attachment');
+    const attachments = this.fields.axisAttachments || [];
+    if (attachments.length > 0) {
+      attachments.forEach((item: any, idx: number) => {
+        if (item.text && item.text !== 'NA') {
+          this.drawSimpleRow(`${idx + 1}.`, item.text);
+        }
+      });
+    } else {
+      this.drawSimpleRow('Attachments', 'NA');
+    }
     this.advanceCursor(4);
   }
 }
