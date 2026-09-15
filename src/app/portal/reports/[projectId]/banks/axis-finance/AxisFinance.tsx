@@ -17,6 +17,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
     { id: 'axis-section-5', title: 'Approvals' },
     { id: 'axis-section-6', title: 'Measurements' },
     { id: 'axis-section-7', title: 'Valuation' },
+    { id: 'axis-section-8', title: 'Cost Estimate' },
     { id: 'axis-section-9', title: 'Govt & Distress' },
     { id: 'axis-section-10', title: 'Remarks & Cert' },
     { id: 'section-11', title: 'Photos' },
@@ -997,51 +998,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
               </div>
             </div>
 
-            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FDF4FF', borderColor: '#F5D0FE' }}>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-gray-700">Construction Cost & Technical Specifications</h3>
-              </div>
-              <div className="bg-fuchsia-50 text-fuchsia-800 text-xs p-2 rounded border border-fuchsia-200 mb-4 inline-block">
-                <strong>Note:</strong> Cost of Construction to be worked out on Approved area only
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {renderFieldWithUnit('Estimated Cost Of Construction', 'axisEstimatedCostOfConstruction', 'Rs.')}
-                {renderFieldWithUnit('Standard Cost Of Construction', 'axisStandardCostOfConstruction', 'Rs.')}
-                
-                {renderFieldWithUnit('Estimated Rate Per Sq ft', 'axisEstimatedRatePerSqft', 'Rs. / Sq. Ft.')}
-                {renderFieldWithUnit('Standard Rate Per Sq ft', 'axisStandardRatePerSqft', 'Rs. / Sq. Ft.')}
-                
-                <div className="md:col-span-2">
-                  <div className="space-y-1">
-                    <div className="flex justify-between items-center mb-1">
-                      <label className="text-xs font-semibold text-gray-700">Material & Finishing Details as proposed in Estimate</label>
-                      <label className="flex items-center space-x-1 cursor-pointer">
-                        <input type="checkbox" className="w-3 h-3 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={fields.axisMaterialAndFinishingDetails === 'NA'} onChange={e => handleChange('axisMaterialAndFinishingDetails', e.target.checked ? 'NA' : '')} disabled={isReadOnly} />
-                        <span className="text-[10px] text-gray-500 font-medium leading-none">NA</span>
-                      </label>
-                    </div>
-                    <textarea 
-                      className={`${inputCls} min-h-[80px] resize-none placeholder:text-gray-400`} 
-                      placeholder="Describe the Flooring, Doors, Windows, Wall Finish, Lighting, and Plumbing etc."
-                      value={fields.axisMaterialAndFinishingDetails || ''} 
-                      onChange={e => handleChange('axisMaterialAndFinishingDetails', e.target.value)} 
-                      disabled={isReadOnly || fields.axisMaterialAndFinishingDetails === 'NA'} 
-                    />
-                  </div>
-                </div>
 
-                {renderFieldWithUnit('Stage of Construction', 'axisStageOfConstruction', '%')}
-                {renderFieldWithUnit('Recommended For Disbursement', 'axisRecommendedForDisbursement', '%')}
-                
-                {renderFieldWithUnit('Recommended construction rate based on the proposed specifications', 'axisRecommendedConstructionRate', 'Rs. / Sq. Ft.')}
-                {renderFieldWithFormulaAndUnit('Recommended Cost of Construction', 'axisRecommendedCostOfConstruction', '[Formula: Approved BUA × Recommended Construction Rate]', recommendedConstCostCalc, 'Rs.', true)}
-
-                <div className="md:col-span-2">
-                  {renderFieldWithFormulaAndUnit('Total Value of property after Completion', 'axisTotalValueOfPropertyAfterCompletion', '[Formula: Market Value of Land + Recommended Const Cost]', totalValueCalc, 'Rs.', true)}
-                </div>
-              </div>
-            </div>
 
             <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FCF4F9', borderColor: '#F2CCE2' }}>
               <h3 className="font-bold text-gray-700 mb-4">Cost of Construction Break-up</h3>
@@ -1105,6 +1062,129 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
               <div className="grid grid-cols-1 gap-4">
                 {renderFieldWithFormulaAndUnit('Value of the Approved BUA', 'axisValueOfApprovedBUA', '[Formula: Approved BUA × Construction Rate]', approvedBuaValueTotal.toFixed(2), 'Rs.')}
                 {renderFieldWithFormulaAndUnit('Market Value of the Unit : (Land + Construction)', 'axisMarketValueOfTheUnitLandAndConstruction', '[Formula: Land Value + Construction Value]', marketValueUnitCalc, 'Rs.')}
+              </div>
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'axis-section-8',
+      title: 'Construction Cost (For Plot Plus Construction)',
+      number: 8,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        const inputCls = "w-full border border-gray-300 rounded px-2 py-1 text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-inner";
+        const safeNum = (val: any) => {
+          const n = parseFloat(val);
+          return isNaN(n) ? 0 : n;
+        };
+
+        const renderFieldWithUnit = (label: string, fieldKey: string, unitTag?: string) => (
+          <div className="space-y-1">
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-xs font-semibold text-gray-700">{label}</label>
+              <label className="flex items-center space-x-1 cursor-pointer">
+                <input type="checkbox" className="w-3 h-3 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={fields[fieldKey] === 'NA'} onChange={e => handleChange(fieldKey, e.target.checked ? 'NA' : '')} disabled={isReadOnly} />
+                <span className="text-[10px] text-gray-500 font-medium leading-none">NA</span>
+              </label>
+            </div>
+            <div className="relative">
+              <input className={`${inputCls} ${unitTag ? 'pr-16' : ''}`} value={fields[fieldKey] || ''} onChange={e => handleChange(fieldKey, e.target.value)} disabled={isReadOnly || fields[fieldKey] === 'NA'} />
+              {unitTag && <div className="absolute right-1 top-1.5 px-2 bg-gray-100 rounded text-xs text-gray-500 pointer-events-none">{unitTag}</div>}
+            </div>
+          </div>
+        );
+
+        const renderFieldWithFormulaAndUnit = (label: string, fieldKey: string, formulaLabel: string, calculatedValue: number | string, unitTag?: string, isRedFormula?: boolean) => {
+          const isManual = fields[`${fieldKey}_isManual`] || false;
+          const isNA = fields[fieldKey] === 'NA';
+          const displayValue = (isManual || isNA) ? (fields[fieldKey] || '') : calculatedValue;
+          
+          return (
+            <div className="space-y-1">
+              <div className="flex justify-between items-center mb-1">
+                <label className="text-xs font-semibold text-gray-700">{label} <span className={`font-normal italic ml-1 ${isRedFormula ? 'text-red-500' : 'text-gray-400'}`}>{formulaLabel}</span></label>
+                <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-1" title="Toggle Manual Override">
+                    <span className="text-[9px] text-gray-500 font-medium uppercase">Edit</span>
+                    <button type="button" className={`w-6 h-3 rounded-full relative transition-colors ${isManual ? 'bg-green-500' : 'bg-gray-300'}`} onClick={() => handleChange(`${fieldKey}_isManual`, !isManual)} disabled={isReadOnly}>
+                      <div className={`w-2 h-2 bg-white rounded-full absolute top-0.5 transition-transform ${isManual ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
+                    </button>
+                  </div>
+                  <label className="flex items-center space-x-1 cursor-pointer">
+                    <input type="checkbox" className="w-3 h-3 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={isNA} onChange={e => handleChange(fieldKey, e.target.checked ? 'NA' : '')} disabled={isReadOnly} />
+                    <span className="text-[10px] text-gray-500 font-medium leading-none">NA</span>
+                  </label>
+                </div>
+              </div>
+              <div className="relative">
+                <input className={`${inputCls} ${unitTag ? 'pr-16' : ''} ${!isManual ? 'bg-green-50/50' : ''}`} value={displayValue} onChange={e => isManual && handleChange(fieldKey, e.target.value)} disabled={isReadOnly || isNA || !isManual} />
+                {unitTag && <div className="absolute right-1 top-1.5 px-2 bg-gray-100 rounded text-xs text-gray-500 pointer-events-none">{unitTag}</div>}
+              </div>
+            </div>
+          );
+        };
+
+        const landArea = safeNum(fields.axisAreaOfLand);
+        const landRate = safeNum(fields.axisMarketRateOfLand);
+        const landValueCalc = (landArea * landRate).toFixed(2);
+        
+        const floors = ['GF', 'FF', 'SF', 'TF', 'NA'];
+        const approvedBuaTotal = floors.reduce((sum, f) => sum + safeNum(fields[`axisCostBreakupApprovedBUA${f}`]), 0);
+        
+        const totalLandVal = fields.axisValueOfTheLand_isManual ? safeNum(fields.axisValueOfTheLand) : safeNum(landValueCalc);
+        
+        const recommendedConstructionRate = safeNum(fields.axisRecommendedConstructionRate);
+        const recommendedConstCostCalc = (approvedBuaTotal * recommendedConstructionRate).toFixed(2);
+        const recommendedConstCost = fields.axisRecommendedCostOfConstruction_isManual ? safeNum(fields.axisRecommendedCostOfConstruction) : safeNum(recommendedConstCostCalc);
+        const totalValueCalc = (totalLandVal + recommendedConstCost).toFixed(2);
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FDF4FF', borderColor: '#F5D0FE' }}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-gray-700">Construction Cost & Technical Specifications</h3>
+              </div>
+              <div className="bg-fuchsia-50 text-fuchsia-800 text-xs p-2 rounded border border-fuchsia-200 mb-4 inline-block">
+                <strong>Note:</strong> Cost of Construction to be worked out on Approved area only
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {renderFieldWithUnit('Estimated Cost Of Construction', 'axisEstimatedCostOfConstruction', 'Rs.')}
+                {renderFieldWithUnit('Standard Cost Of Construction', 'axisStandardCostOfConstruction', 'Rs.')}
+                
+                {renderFieldWithUnit('Estimated Rate Per Sq ft', 'axisEstimatedRatePerSqft', 'Rs. / Sq. Ft.')}
+                {renderFieldWithUnit('Standard Rate Per Sq ft', 'axisStandardRatePerSqft', 'Rs. / Sq. Ft.')}
+                
+                <div className="md:col-span-2">
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="text-xs font-semibold text-gray-700">Material & Finishing Details as proposed in Estimate</label>
+                      <label className="flex items-center space-x-1 cursor-pointer">
+                        <input type="checkbox" className="w-3 h-3 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={fields.axisMaterialAndFinishingDetails === 'NA'} onChange={e => handleChange('axisMaterialAndFinishingDetails', e.target.checked ? 'NA' : '')} disabled={isReadOnly} />
+                        <span className="text-[10px] text-gray-500 font-medium leading-none">NA</span>
+                      </label>
+                    </div>
+                    <textarea 
+                      className={`${inputCls} min-h-[80px] resize-none placeholder:text-gray-400`} 
+                      placeholder="Describe the Flooring, Doors, Windows, Wall Finish, Lighting, and Plumbing etc."
+                      value={fields.axisMaterialAndFinishingDetails || ''} 
+                      onChange={e => handleChange('axisMaterialAndFinishingDetails', e.target.value)} 
+                      disabled={isReadOnly || fields.axisMaterialAndFinishingDetails === 'NA'} 
+                    />
+                  </div>
+                </div>
+
+                {renderFieldWithUnit('Stage of Construction', 'axisStageOfConstruction', '%')}
+                {renderFieldWithUnit('Recommended For Disbursement', 'axisRecommendedForDisbursement', '%')}
+                
+                {renderFieldWithUnit('Recommended construction rate based on the proposed specifications', 'axisRecommendedConstructionRate', 'Rs. / Sq. Ft.')}
+                {renderFieldWithFormulaAndUnit('Recommended Cost of Construction', 'axisRecommendedCostOfConstruction', '[Formula: Approved BUA × Recommended Construction Rate]', recommendedConstCostCalc, 'Rs.', true)}
+
+                <div className="md:col-span-2">
+                  {renderFieldWithFormulaAndUnit('Total Value of property after Completion', 'axisTotalValueOfPropertyAfterCompletion', '[Formula: Market Value of Land + Recommended Const Cost]', totalValueCalc, 'Rs.', true)}
+                </div>
               </div>
             </div>
           </div>
