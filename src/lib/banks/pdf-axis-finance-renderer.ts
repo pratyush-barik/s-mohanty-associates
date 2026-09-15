@@ -149,19 +149,29 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
 
     const drawCenteredBold = (text: string, size: number, ySpaceAfter: number, underline: boolean = false) => {
       const cleanText = this.sanitizeText(text);
-      const tw = this.fontBold.widthOfTextAtSize(cleanText, size);
-      const startX = MARGIN_L + (CONTENT_W - tw) / 2;
-      const startY = this.pdfY(this.cursorY);
-      this.page.drawText(cleanText, { x: startX, y: startY, size, font: this.fontBold, color: rgb(0,0,0) });
-      if (underline) {
-        this.page.drawLine({
-          start: { x: startX, y: startY - 2 },
-          end: { x: startX + tw, y: startY - 2 },
-          thickness: 1,
-          color: rgb(0,0,0)
-        });
+      const maxWidth = PAGE_W - 2 * bmx - 10;
+      const lines = this.wrapText(cleanText, maxWidth, size, true);
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const tw = this.fontBold.widthOfTextAtSize(line, size);
+        const startX = MARGIN_L + (CONTENT_W - tw) / 2;
+        const startY = this.pdfY(this.cursorY);
+        this.page.drawText(line, { x: startX, y: startY, size, font: this.fontBold, color: rgb(0,0,0) });
+        if (underline && i === lines.length - 1) {
+          this.page.drawLine({
+            start: { x: startX, y: startY - 2 },
+            end: { x: startX + tw, y: startY - 2 },
+            thickness: 1,
+            color: rgb(0,0,0)
+          });
+        }
+        if (i < lines.length - 1) {
+          this.cursorY += size + 4;
+        } else {
+          this.cursorY += ySpaceAfter;
+        }
       }
-      this.cursorY += ySpaceAfter;
     };
 
     drawCenteredBold('VALUATION OF IMMOVABLE PROPERTY', FONT_SIZE_TITLE + 3, 40, true);
