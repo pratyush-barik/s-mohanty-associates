@@ -17,7 +17,6 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
     { id: 'axis-section-5', title: 'Approvals' },
     { id: 'axis-section-6', title: 'Measurements' },
     { id: 'axis-section-7', title: 'Valuation' },
-    { id: 'axis-section-8', title: 'Cost Estimate' },
     { id: 'axis-section-9', title: 'Govt & Distress' },
     { id: 'axis-section-10', title: 'Remarks & Cert' },
     { id: 'section-11', title: 'Photos' },
