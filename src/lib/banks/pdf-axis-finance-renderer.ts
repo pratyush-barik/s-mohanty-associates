@@ -15,6 +15,10 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
   private fields: any;
   private drawnCover = false;
 
+  drawSectionSubtitle(title: string) {
+    this.drawSectionHeader(title, false, false);
+  }
+
   constructor(fields?: any) {
     super();
     this.fields = fields || {};
@@ -363,7 +367,7 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
     let processedMobile = rawMobile.replace(/[^0-9]+/g, '/').replace(/(^\/|\/$)/g, '');
     drawCenteredBold(`MOBILE-${processedMobile}`, FONT_SIZE, 0);
   }
-  private drawAxisSection6() {
+    private drawAxisSection6() {
     const fv = (key: string, def = 'NA') => {
       const val = this.fields[key];
       return val ? String(val) : def;
@@ -371,27 +375,57 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
 
     // Container: Valuation of the Property Flat/Shop/Office/
     this.drawSectionSubtitle('Valuation of the Property Flat/Shop/Office/');
-    this.drawKeyValueRow('Measured Carpet Area (Sq. Ft.)', fv('axisMeasuredCarpetArea'), 'Approved Carpet Area (Sq. Ft.)', fv('axisApprovedCarpetArea'));
-    this.drawKeyValueRow('UDS Land (Sq. Ft.)', fv('axisUDSLand'), 'Agreement Carpet Area (Sq. Ft.)', fv('axisAgreementCarpetArea'));
-    this.drawKeyValueRow('Loading Adopted for Valuation (%)', fv('axisLoadingAdoptedForValuation'), 'Saleable Area of Unit (Sq. Ft.)', fv('axisSaleableAreaOfUnit'));
-    this.drawKeyValueRow('Built Up Area (Sq. Ft.)', fv('axisBuiltUpArea'), 'Prevailing Rate for Building (Rs.)', fv('axisPrevailingRateForBuilding'));
-    this.drawKeyValueRow('Floor Rise Rate (Rs.)', fv('axisFloorRiseRate'), 'Adopted Rate Building', fv('axisAdoptedRateBuilding'));
+    this.drawKeyValueRow([
+      { label: 'Measured Carpet Area (Sq. Ft.)', value: fv('axisMeasuredCarpetArea') },
+      { label: 'Approved Carpet Area (Sq. Ft.)', value: fv('axisApprovedCarpetArea') }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'UDS Land (Sq. Ft.)', value: fv('axisUDSLand') },
+      { label: 'Agreement Carpet Area (Sq. Ft.)', value: fv('axisAgreementCarpetArea') }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Loading Adopted for Valuation (%)', value: fv('axisLoadingAdoptedForValuation') },
+      { label: 'Saleable Area of Unit (Sq. Ft.)', value: fv('axisSaleableAreaOfUnit') }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Built Up Area (Sq. Ft.)', value: fv('axisBuiltUpArea') },
+      { label: 'Prevailing Rate for Building (Rs.)', value: fv('axisPrevailingRateForBuilding') }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Floor Rise Rate (Rs.)', value: fv('axisFloorRiseRate') },
+      { label: 'Adopted Rate Building', value: fv('axisAdoptedRateBuilding') }
+    ]);
     
     // Add Car Parking section if values exist, or just draw Market Value and Car Parking
     let carParking = fv('axisCarParkingDropdown');
     if (this.fields['axisCarParkingDropdown_isCustom']) {
       carParking = fv('axisCarParkingDropdown');
     }
-    this.drawKeyValueRow('Market Value Of the Unit', fv('axisMarketValueOfTheUnit'), 'Car Parking', carParking);
-    this.drawKeyValueRow('No. of Car Parking', fv('axisNoOfCarParking'), 'Parking Area', fv('axisParkingArea'));
+    this.drawKeyValueRow([
+      { label: 'Market Value Of the Unit', value: fv('axisMarketValueOfTheUnit') },
+      { label: 'Car Parking', value: carParking }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'No. of Car Parking', value: fv('axisNoOfCarParking') },
+      { label: 'Parking Area', value: fv('axisParkingArea') }
+    ]);
     this.drawSimpleRow('Car Parking Price', fv('axisCarParkingPrice'));
     this.advanceCursor(2);
 
     // Container: Unit Details - Row House/ Independent House/Plot
     this.drawSectionSubtitle('Unit Details - Row House/ Independent House/Plot');
-    this.drawKeyValueRow('Plot Area', fv('axisPlotArea'), 'Floor wise Break-up (As per actual BUA)', fv('axisFloorWiseBreakUp'));
-    this.drawKeyValueRow('As per Approval (Approved BUA)', fv('axisAsPerApproval'), 'As per max. Permissible FAR norms', fv('axisAsPerMaxPermissibleFARNorms'));
-    this.drawKeyValueRow('Deviation (Sq. Ft.)', fv('axisDeviationSqFt'), 'Deviation (%)', fv('axisDeviationPercentage'));
+    this.drawKeyValueRow([
+      { label: 'Plot Area', value: fv('axisPlotArea') },
+      { label: 'Floor wise Break-up (As per actual BUA)', value: fv('axisFloorWiseBreakUp') }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'As per Approval (Approved BUA)', value: fv('axisAsPerApproval') },
+      { label: 'As per max. Permissible FAR norms', value: fv('axisAsPerMaxPermissibleFARNorms') }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Deviation (Sq. Ft.)', value: fv('axisDeviationSqFt') },
+      { label: 'Deviation (%)', value: fv('axisDeviationPercentage') }
+    ]);
     this.advanceCursor(2);
 
     // Table: Side Margin Details
@@ -400,7 +434,7 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
     // Custom table drawing for Side Margins
     const tableHeaders = ['Margin Reference', 'Front', 'Left Side', 'Right Side', 'Rear', 'Remarks'];
     
-    const cw = this.contentWidth;
+    const cw = 487.28; // CONTENT_W
     const colWidths = [
       cw * 0.2, // Reference
       cw * 0.12, // Front
@@ -410,48 +444,13 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
       cw * 0.32  // Remarks
     ];
     
-    const startX = this.doc.page.margins.left;
-    this.doc.font('Helvetica-Bold').fontSize(7);
-    this.doc.fillColor('#0f2038');
+    const rows = [
+      ['As per Approval', fv('axisSideMarginApprovalFront'), fv('axisSideMarginApprovalLeft'), fv('axisSideMarginApprovalRight'), fv('axisSideMarginApprovalRear'), fv('axisSideMarginApprovalRemarks')],
+      ['Actual at Site', fv('axisSideMarginActualFront'), fv('axisSideMarginActualLeft'), fv('axisSideMarginActualRight'), fv('axisSideMarginActualRear'), fv('axisSideMarginActualRemarks')],
+      ['Deviation %', fv('axisSideMarginDeviationFront'), fv('axisSideMarginDeviationLeft'), fv('axisSideMarginDeviationRight'), fv('axisSideMarginDeviationRear'), fv('axisSideMarginDeviationRemarks')]
+    ];
     
-    let x = startX;
-    this.checkPageBottom(15);
-    const headerY = this.y;
-    let maxHeaderH = 15;
-    
-    tableHeaders.forEach((th, i) => {
-      this.doc.rect(x, headerY, colWidths[i], maxHeaderH).fillAndStroke('#f8fafc', '#d1d5db');
-      this.doc.fillColor('#0f2038').text(th, x + 2, headerY + 4, { width: colWidths[i] - 4, align: 'left' });
-      x += colWidths[i];
-    });
-    this.y = headerY + maxHeaderH;
-    
-    const drawRow = (ref: string, f: string, l: string, ri: string, re: string, rem: string) => {
-      this.checkPageBottom(15);
-      const rowY = this.y;
-      const h = 15;
-      
-      this.doc.font('Helvetica-Bold').fontSize(7);
-      this.doc.rect(startX, rowY, colWidths[0], h).stroke('#d1d5db');
-      this.doc.fillColor('#0f2038').text(ref, startX + 2, rowY + 4, { width: colWidths[0] - 4, align: 'left' });
-      
-      this.doc.font('Helvetica').fontSize(7);
-      this.doc.fillColor('#334155');
-      
-      let currX = startX + colWidths[0];
-      [f, l, ri, re, rem].forEach((val, i) => {
-        this.doc.rect(currX, rowY, colWidths[i + 1], h).stroke('#d1d5db');
-        this.doc.text(val || 'NA', currX + 2, rowY + 4, { width: colWidths[i + 1] - 4, align: 'left' });
-        currX += colWidths[i + 1];
-      });
-      
-      this.y = rowY + h;
-    };
-    
-    drawRow('As per Approval', fv('axisSideMarginApprovalFront'), fv('axisSideMarginApprovalLeft'), fv('axisSideMarginApprovalRight'), fv('axisSideMarginApprovalRear'), fv('axisSideMarginApprovalRemarks'));
-    drawRow('Actual at Site', fv('axisSideMarginActualFront'), fv('axisSideMarginActualLeft'), fv('axisSideMarginActualRight'), fv('axisSideMarginActualRear'), fv('axisSideMarginActualRemarks'));
-    drawRow('Deviation %', fv('axisSideMarginDeviationFront'), fv('axisSideMarginDeviationLeft'), fv('axisSideMarginDeviationRight'), fv('axisSideMarginDeviationRear'), fv('axisSideMarginDeviationRemarks'));
-    
+    this.drawTable(tableHeaders, rows, colWidths);
     this.advanceCursor(4);
 
     // Container: Quality of Construction & Upkeep
@@ -463,7 +462,10 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
     let mop = fv('axisMaintenanceOfTheProperty');
     if (this.fields['axisMaintenanceOfTheProperty_isCustom']) mop = fv('axisMaintenanceOfTheProperty');
     
-    this.drawKeyValueRow('Quality of Construction', qc, 'Maintenance of the Property', mop);
+    this.drawKeyValueRow([
+      { label: 'Quality of Construction', value: qc },
+      { label: 'Maintenance of the Property', value: mop }
+    ]);
     this.advanceCursor(4);
   }
 
@@ -484,64 +486,29 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
 
     // Container: Cost of Construction Break-up (Table)
     this.drawSectionSubtitle('Cost of Construction Break-up');
-    const startX = MARGIN_L;
-    const cw = (CONTENT_W - 140) / 6; // 6 numeric columns
+    const cw = (487.28 - 140) / 6; // CONTENT_W - 140
     const colWidths = [140, cw, cw, cw, cw, cw, cw];
-    const h = 18;
     
-    // Table Header
-    this.checkPageBreak(h);
-    const thY = this.pdfY(this.cursorY);
-    this.doc.font('Helvetica-Bold').fontSize(8);
-    this.doc.fillColor('#1e293b');
+    const headers = ['Parameter', 'GF', 'FF', 'SF', 'TF', 'NA', 'Total'];
+    const rows = [
+      ['Approved BUA', fv('axisCostBreakupApprovedBUAGF'), fv('axisCostBreakupApprovedBUAFF'), fv('axisCostBreakupApprovedBUASF'), fv('axisCostBreakupApprovedBUATF'), fv('axisCostBreakupApprovedBUANA'), fv('axisCostBreakupApprovedBUATotal')],
+      ['Actual BUA Sq ft', fv('axisCostBreakupActualBUAGF'), fv('axisCostBreakupActualBUAFF'), fv('axisCostBreakupActualBUASF'), fv('axisCostBreakupActualBUATF'), fv('axisCostBreakupActualBUANA'), fv('axisCostBreakupActualBUATotal')],
+      ['Construction Cost Rs. Per Sq ft', fv('axisCostBreakupConstructionCostGF'), fv('axisCostBreakupConstructionCostFF'), fv('axisCostBreakupConstructionCostSF'), fv('axisCostBreakupConstructionCostTF'), fv('axisCostBreakupConstructionCostNA'), fv('axisCostBreakupConstructionCostTotal')],
+      ['Stage of Construction (%)', fv('axisCostBreakupStageOfConstructionGF'), fv('axisCostBreakupStageOfConstructionFF'), fv('axisCostBreakupStageOfConstructionSF'), fv('axisCostBreakupStageOfConstructionTF'), fv('axisCostBreakupStageOfConstructionNA'), fv('axisCostBreakupStageOfConstructionTotal')],
+      ['Total Construction Cost', fv('axisCostBreakupTotalConstructionCostGF'), fv('axisCostBreakupTotalConstructionCostFF'), fv('axisCostBreakupTotalConstructionCostSF'), fv('axisCostBreakupTotalConstructionCostTF'), fv('axisCostBreakupTotalConstructionCostNA'), fv('axisCostBreakupTotalConstructionCostTotal')],
+      ['Depreciation (%)', fv('axisCostBreakupDepreciationGF'), fv('axisCostBreakupDepreciationFF'), fv('axisCostBreakupDepreciationSF'), fv('axisCostBreakupDepreciationTF'), fv('axisCostBreakupDepreciationNA'), fv('axisCostBreakupDepreciationTotal')],
+      ['Depreciated Value', fv('axisCostBreakupDepreciatedValueGF'), fv('axisCostBreakupDepreciatedValueFF'), fv('axisCostBreakupDepreciatedValueSF'), fv('axisCostBreakupDepreciatedValueTF'), fv('axisCostBreakupDepreciatedValueNA'), fv('axisCostBreakupDepreciatedValueTotal')]
+    ];
     
-    let thX = startX;
-    ['Parameter', 'GF', 'FF', 'SF', 'TF', 'NA', 'Total'].forEach((th, i) => {
-      this.doc.rect(thX, thY, colWidths[i], h).fillAndStroke('#f1f5f9', '#94a3b8');
-      this.doc.fillColor('#1e293b').text(th, thX + 4, thY + 5, { width: colWidths[i] - 8, align: i === 0 ? 'left' : 'center' });
-      thX += colWidths[i];
-    });
-    this.y = thY + h;
-    
-    const drawRow = (param: string, gf: string, ff: string, sf: string, tf: string, na: string, total: string) => {
-      this.checkPageBreak(h);
-      const rowY = this.pdfY(this.cursorY);
-      
-      this.doc.font('Helvetica-Bold').fontSize(7);
-      this.doc.fillColor('#1e293b');
-      this.doc.rect(startX, rowY, colWidths[0], h).stroke('#d1d5db');
-      this.doc.text(param, startX + 4, rowY + 5, { width: colWidths[0] - 8, align: 'left' });
-      
-      this.doc.font('Helvetica').fontSize(7);
-      this.doc.fillColor('#334155');
-      
-      let currX = startX + colWidths[0];
-      [gf, ff, sf, tf, na, total].forEach((val, i) => {
-        this.doc.rect(currX, rowY, colWidths[i + 1], h).stroke('#d1d5db');
-        this.doc.text(val || 'NA', currX + 2, rowY + 5, { width: colWidths[i + 1] - 4, align: 'center' });
-        currX += colWidths[i + 1];
-      });
-      
-      this.y = rowY + h;
-    };
-    
-    drawRow('Approved BUA', fv('axisCostBreakupApprovedBUAGF'), fv('axisCostBreakupApprovedBUAFF'), fv('axisCostBreakupApprovedBUASF'), fv('axisCostBreakupApprovedBUATF'), fv('axisCostBreakupApprovedBUANA'), fv('axisCostBreakupApprovedBUATotal'));
-    drawRow('Actual BUA Sq ft', fv('axisCostBreakupActualBUAGF'), fv('axisCostBreakupActualBUAFF'), fv('axisCostBreakupActualBUASF'), fv('axisCostBreakupActualBUATF'), fv('axisCostBreakupActualBUANA'), fv('axisCostBreakupActualBUATotal'));
-    drawRow('Construction Cost Rs. Per Sq ft', fv('axisCostBreakupConstructionCostGF'), fv('axisCostBreakupConstructionCostFF'), fv('axisCostBreakupConstructionCostSF'), fv('axisCostBreakupConstructionCostTF'), fv('axisCostBreakupConstructionCostNA'), fv('axisCostBreakupConstructionCostTotal'));
-    drawRow('Total BUA Value', fv('axisCostBreakupTotalBUAValueGF'), fv('axisCostBreakupTotalBUAValueFF'), fv('axisCostBreakupTotalBUAValueSF'), fv('axisCostBreakupTotalBUAValueTF'), fv('axisCostBreakupTotalBUAValueNA'), fv('axisCostBreakupTotalBUAValueTotal'));
-    
+    this.drawTable(headers, rows, colWidths);
     this.advanceCursor(4);
 
-    // Container: Unit Market Value Summary
     this.drawSectionSubtitle('Unit Market Value Summary');
-    this.drawKeyValueRow([
-      { label: 'Value of the Approved BUA', value: fv('axisValueOfApprovedBUA') },
-      { label: 'Market Value of the Unit : (Land + Construction)', value: fv('axisMarketValueOfTheUnitLandAndConstruction') }
-    ]);
+    this.drawSimpleRow('Market Value of Property (Land + Depreciated construction cost)', fv('axisMarketValueOfPropertySummary'));
     this.advanceCursor(4);
   }
 
-  private drawAxisSection8() {
+private drawAxisSection8() {
     const fv = (key: string, def = 'NA') => {
       const val = this.fields[key];
       return val ? String(val) : def;
