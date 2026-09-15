@@ -305,7 +305,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
         let computedState = '';
         let computedPinCode = '';
         
-        const address = fields.addressOfTheProperty || '';
+        const address = fields.propertyDetailsAxis || fields.propertyAddressAxis || fields.addressOfTheProperty || '';
         if (address) {
           const pinMatch = address.match(/\b(\d{6})\b/);
           if (pinMatch) computedPinCode = pinMatch[1];
@@ -341,10 +341,10 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
             <h3 className="font-bold text-gray-700 mb-4">PROPERTY ADDRESS & IDENTIFICATION</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Property details" span={2}>
-                <textarea className={inputCls} rows={3} value={fields.propertyDetailsAxis !== undefined ? fields.propertyDetailsAxis : (fields.addressOfTheProperty || '')} onChange={e => handleChange('propertyDetailsAxis', e.target.value)} disabled={isReadOnly} />
+                <textarea className={inputCls} rows={3} value={fields.propertyDetailsAxis || fields.addressOfTheProperty || ''} onChange={e => handleChange('propertyDetailsAxis', e.target.value)} disabled={isReadOnly} />
               </Field>
               <Field label="Property Address" span={2}>
-                <textarea className={inputCls} rows={3} value={fields.propertyAddressAxis !== undefined ? fields.propertyAddressAxis : (fields.addressOfTheProperty || '')} onChange={e => handleChange('propertyAddressAxis', e.target.value)} disabled={isReadOnly} />
+                <textarea className={inputCls} rows={3} value={fields.propertyAddressAxis || fields.addressOfTheProperty || ''} onChange={e => handleChange('propertyAddressAxis', e.target.value)} disabled={isReadOnly} />
               </Field>
               <Field label="City"><input className={inputCls} value={fields.city !== undefined ? fields.city : computedCity} onChange={e => handleChange('city', e.target.value)} disabled={isReadOnly} /></Field>
               <Field label="District"><input className={inputCls} value={fields.district !== undefined ? fields.district : computedDistrict} onChange={e => handleChange('district', e.target.value)} disabled={isReadOnly} /></Field>
