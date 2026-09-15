@@ -35,7 +35,7 @@ export default function ArkaFinance({
   const [fields, setFields] = useState<any>({
     // Section 1: Cover Page
     propertyOwners: [{ name: '', fatherName: '' }],
-    addressOfTheProperty: '',
+    arkaAddressOfTheProperty: '',
     presentMarketValue: '',
     distressSaleValue: '',
     enableCoverPageValueEdit: false,
@@ -691,7 +691,7 @@ export default function ArkaFinance({
           </div>
           <div className="mt-4 mb-4">
             <Field label="ADDRESS OF THE PROPERTY">
-              <textarea className={inputCls} rows={3} value={fields.addressOfTheProperty || ''} onChange={e => handleChange('addressOfTheProperty', e.target.value)} disabled={isReadOnly} />
+              <textarea className={inputCls} rows={3} value={fields.arkaAddressOfTheProperty || ''} onChange={e => handleChange('arkaAddressOfTheProperty', e.target.value)} disabled={isReadOnly} />
             </Field>
           </div>
           <div className="border border-red-200 bg-[#fff5f5] rounded-xl p-4 mb-4 relative">
@@ -1615,7 +1615,7 @@ export default function ArkaFinance({
           cadastralMapImages={fields.cadastralMapImages || []}
           latitude={fields.latitude}
           longitude={fields.longitude}
-          propertyAddress={fields.addressOfTheProperty || ""}
+          propertyAddress={fields.arkaAddressOfTheProperty || ""}
           hasExternalCoordinatesField={true}
           coordinatesSectionName="Cover Page Details"
           isReadOnly={isReadOnly}
