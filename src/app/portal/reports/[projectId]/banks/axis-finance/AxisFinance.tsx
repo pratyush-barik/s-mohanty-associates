@@ -299,7 +299,43 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
       title: 'Property Location & Locality Details',
       number: 3,
       defaultOpen: true,
-      render: (fields, handleChange, isReadOnly) => (
+      render: (fields, handleChange, isReadOnly) => {
+        let computedCity = '';
+        let computedDistrict = '';
+        let computedState = '';
+        let computedPinCode = '';
+        
+        const address = fields.addressOfTheProperty || '';
+        if (address) {
+          const pinMatch = address.match(/\b(\d{6})\b/);
+          if (pinMatch) computedPinCode = pinMatch[1];
+          
+          const distMatch = address.match(/(?:Dist|District)[\s-]*([A-Za-z]+)/i);
+          if (distMatch && distMatch[1]) {
+            computedDistrict = distMatch[1];
+            computedCity = computedDistrict;
+          }
+          
+          const states = ['Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Delhi'];
+          for (const s of states) {
+            if (address.toLowerCase().includes(s.toLowerCase())) {
+              computedState = s;
+              break;
+            }
+          }
+          
+          if (!computedDistrict) {
+            const parts = address.split(',').map((p: string) => p.trim());
+            const stateIdx = parts.findIndex((p: string) => computedState && p.toLowerCase().includes(computedState.toLowerCase()));
+            if (stateIdx > 0) {
+              computedCity = parts[stateIdx - 1];
+            } else if (parts.length >= 3) {
+              computedCity = parts[parts.length - 3];
+            }
+          }
+        }
+
+        return (
         <div className="animate-fade-in space-y-6">
           <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' }}>
             <h3 className="font-bold text-gray-700 mb-4">PROPERTY ADDRESS & IDENTIFICATION</h3>
@@ -310,10 +346,10 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
               <Field label="Property Address" span={2}>
                 <textarea className={inputCls} rows={3} value={fields.propertyAddressAxis !== undefined ? fields.propertyAddressAxis : (fields.addressOfTheProperty || '')} onChange={e => handleChange('propertyAddressAxis', e.target.value)} disabled={isReadOnly} />
               </Field>
-              <Field label="City"><input className={inputCls} value={fields.city || ''} onChange={e => handleChange('city', e.target.value)} disabled={isReadOnly} /></Field>
-              <Field label="District"><input className={inputCls} value={fields.district || ''} onChange={e => handleChange('district', e.target.value)} disabled={isReadOnly} /></Field>
-              <Field label="State"><input className={inputCls} value={fields.state || ''} onChange={e => handleChange('state', e.target.value)} disabled={isReadOnly} /></Field>
-              <Field label="Pin Code"><input className={inputCls} value={fields.pinCode || ''} onChange={e => handleChange('pinCode', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="City"><input className={inputCls} value={fields.city !== undefined ? fields.city : computedCity} onChange={e => handleChange('city', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="District"><input className={inputCls} value={fields.district !== undefined ? fields.district : computedDistrict} onChange={e => handleChange('district', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="State"><input className={inputCls} value={fields.state !== undefined ? fields.state : computedState} onChange={e => handleChange('state', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="Pin Code"><input className={inputCls} value={fields.pinCode !== undefined ? fields.pinCode : computedPinCode} onChange={e => handleChange('pinCode', e.target.value)} disabled={isReadOnly} /></Field>
             </div>
           </div>
           
@@ -344,7 +380,8 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
             </div>
           </div>
         </div>
-      )
+      );
+      }
     }
   ],
   getPDFRenderer: (fields) => new PDFAxisFinanceRenderer(fields)
