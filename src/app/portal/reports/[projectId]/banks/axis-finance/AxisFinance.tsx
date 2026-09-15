@@ -335,6 +335,36 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
           }
         }
 
+        const renderDropdownWithCustom = (label: string, fieldKey: string, options: string[]) => {
+          const isCustomKey = `${fieldKey}_isCustom`;
+          const isCustom = fields[isCustomKey] || false;
+          return (
+            <Field label={label}>
+              <select
+                className={inputCls}
+                value={isCustom ? 'Custom' : (fields[fieldKey] || '')}
+                onChange={e => {
+                  const val = e.target.value;
+                  if (val === 'Custom') {
+                    handleChange(isCustomKey, true);
+                    handleChange(fieldKey, '');
+                  } else {
+                    handleChange(isCustomKey, false);
+                    handleChange(fieldKey, val);
+                  }
+                }}
+                disabled={isReadOnly}
+              >
+                <option value="">Select...</option>
+                {options.map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
+              {isCustom && (
+                <input className={`${inputCls} mt-2`} value={fields[fieldKey] || ''} onChange={e => handleChange(fieldKey, e.target.value)} disabled={isReadOnly} placeholder="Enter custom value..." />
+              )}
+            </Field>
+          );
+        };
+
         return (
         <div className="animate-fade-in space-y-6">
           <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' }}>
@@ -383,56 +413,20 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
               <Field label="Nearby Land Mark"><input className={inputCls} value={fields.landmark || ''} onChange={e => handleChange('landmark', e.target.value)} disabled={isReadOnly} /></Field>
               <Field label="Distance from City Center"><input className={inputCls} value={fields.distanceFromCityCenter || ''} onChange={e => handleChange('distanceFromCityCenter', e.target.value)} disabled={isReadOnly} /></Field>
               
-              {(() => {
-                const renderDropdownWithCustom = (label: string, fieldKey: string, options: string[]) => {
-                  const isCustomKey = `${fieldKey}_isCustom`;
-                  const isCustom = fields[isCustomKey] || false;
-                  return (
-                    <Field label={label}>
-                      <select
-                        className={inputCls}
-                        value={isCustom ? 'Custom' : (fields[fieldKey] || '')}
-                        onChange={e => {
-                          const val = e.target.value;
-                          if (val === 'Custom') {
-                            handleChange(isCustomKey, true);
-                            handleChange(fieldKey, '');
-                          } else {
-                            handleChange(isCustomKey, false);
-                            handleChange(fieldKey, val);
-                          }
-                        }}
-                        disabled={isReadOnly}
-                      >
-                        <option value="">Select...</option>
-                        {options.map(o => <option key={o} value={o}>{o}</option>)}
-                      </select>
-                      {isCustom && (
-                        <input className={`${inputCls} mt-2`} value={fields[fieldKey] || ''} onChange={e => handleChange(fieldKey, e.target.value)} disabled={isReadOnly} placeholder="Enter custom value..." />
-                      )}
-                    </Field>
-                  );
-                };
-
-                return (
-                  <>
-                    {renderDropdownWithCustom('Classification of Locality', 'classificationOfLocalityAxis', ['Developing', 'Developed', 'Underdeveloped', 'Stagnant / Fully Developed', 'Decaying / Declining', 'NA', 'Custom'])}
-                    {renderDropdownWithCustom('Approved by Town', 'approvedByTownAxis', ['Residential', 'Commercial', 'Industrial', 'Residential Cum Industrial', 'Agricultural', 'NA', 'Custom'])}
-                    {renderDropdownWithCustom('Locality Classification', 'localityClassificationAxis', ['IMP_OPTIONS', 'NA', 'Custom'])}
-                    {renderDropdownWithCustom('Building Type', 'buildingTypeAxis', ['Residential', 'Commercial', 'Industrial', 'Residential Cum Industrial', 'Institutional', 'Warehouse', 'NA', 'Custom'])}
-                  </>
-                );
-              })()}
+              {renderDropdownWithCustom('Classification of Locality', 'classificationOfLocalityAxis', ['Developing', 'Developed', 'Underdeveloped', 'Stagnant / Fully Developed', 'Decaying / Declining', 'NA', 'Custom'])}
+              {renderDropdownWithCustom('Approved by Town', 'approvedByTownAxis', ['Residential', 'Commercial', 'Industrial', 'Residential Cum Industrial', 'Agricultural', 'NA', 'Custom'])}
+              {renderDropdownWithCustom('Locality Classification', 'localityClassificationAxis', ['IMP_OPTIONS', 'NA', 'Custom'])}
+              {renderDropdownWithCustom('Building Type', 'buildingTypeAxis', ['Residential', 'Commercial', 'Industrial', 'Residential Cum Industrial', 'Institutional', 'Warehouse', 'NA', 'Custom'])}
               <Field label="Class of Locality"><input className={inputCls} value={fields.classOfLocality || ''} onChange={e => handleChange('classOfLocality', e.target.value)} disabled={isReadOnly} /></Field>
-              <Field label="Type of Locality"><input className={inputCls} value={fields.typeOfLocalityAxis || ''} onChange={e => handleChange('typeOfLocalityAxis', e.target.value)} disabled={isReadOnly} /></Field>
+              {renderDropdownWithCustom('Type of Locality', 'typeOfLocalityAxis', ['Residential', 'Commercial', 'Industrial', 'Residential Cum Industrial', 'Mixed Use', 'Rural / Village Abadi', 'NA', 'Custom'])}
               <Field label="Condition of Building"><input className={inputCls} value={fields.conditionOfBuildingAxis || ''} onChange={e => handleChange('conditionOfBuildingAxis', e.target.value)} disabled={isReadOnly} /></Field>
               <Field label="Occupancy Details"><input className={inputCls} value={fields.occupancyDetailsAxis || ''} onChange={e => handleChange('occupancyDetailsAxis', e.target.value)} disabled={isReadOnly} /></Field>
               <Field label="Monthly Rentals for Freehold Prop"><input className={inputCls} value={fields.monthlyRentalsFreeholdAxis || ''} onChange={e => handleChange('monthlyRentalsFreeholdAxis', e.target.value)} disabled={isReadOnly} /></Field>
               <Field label="Name of the Lease"><input className={inputCls} value={fields.nameOfTheLeaseAxis || ''} onChange={e => handleChange('nameOfTheLeaseAxis', e.target.value)} disabled={isReadOnly} /></Field>
               <Field label="Type Of Property"><input className={inputCls} value={fields.propertyType || ''} onChange={e => handleChange('propertyType', e.target.value)} disabled={isReadOnly} /></Field>
               <Field label="Status Of Property"><input className={inputCls} value={fields.statusOfPropertyAxis || ''} onChange={e => handleChange('statusOfPropertyAxis', e.target.value)} disabled={isReadOnly} /></Field>
-              <Field label="Actual Usage Of Property"><input className={inputCls} value={fields.actualUsageOfPropertyAxis || ''} onChange={e => handleChange('actualUsageOfPropertyAxis', e.target.value)} disabled={isReadOnly} /></Field>
-              <Field label="Approved Usage of Property"><input className={inputCls} value={fields.approvedUsageOfPropertyAxis || ''} onChange={e => handleChange('approvedUsageOfPropertyAxis', e.target.value)} disabled={isReadOnly} /></Field>
+              {renderDropdownWithCustom('Actual Usage Of Property', 'actualUsageOfPropertyAxis', ['Residential', 'Commercial', 'Industrial', 'Residential Cum Industrial', 'Mixed (Residential + Commercial)', 'Vacant', 'NA', 'Custom'])}
+              {renderDropdownWithCustom('Approved Usage of Property', 'approvedUsageOfPropertyAxis', ['Residential', 'Commercial', 'Industrial', 'Residential Cum Industrial', 'NA / Unapproved / GP Limit', 'NA', 'Custom'])}
               <Field label="Property Demarcation at Site"><input className={inputCls} value={fields.plotDemarcated || ''} onChange={e => handleChange('plotDemarcated', e.target.value)} disabled={isReadOnly} /></Field>
               <Field label="Distance: Nearest Metro / Bus Station / Railway Station/Airport"><input className={inputCls} value={fields.distanceNearestMetroBusRailwayAirportAxis || ''} onChange={e => handleChange('distanceNearestMetroBusRailwayAirportAxis', e.target.value)} disabled={isReadOnly} /></Field>
               <Field label="Nearness to recreation facilities"><input className={inputCls} value={fields.nearnessToRecreationFacilitiesAxis || ''} onChange={e => handleChange('nearnessToRecreationFacilitiesAxis', e.target.value)} disabled={isReadOnly} /></Field>
