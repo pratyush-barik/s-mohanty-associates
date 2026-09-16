@@ -32,7 +32,10 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
       this.addPage();
     }
     // Proceed to draw the actual title on the second page
-    super.drawCenteredTitle(title);
+    const finalTitle = title.trim().toUpperCase() === 'VALUATION REPORT'
+      ? 'VALUATION REPORT FOR AXIS FINANCE LIMITED'
+      : title;
+    super.drawCenteredTitle(finalTitle);
   }
 
   override drawSectionHeader(title: string, addSpaceBefore?: boolean, preserveCase?: boolean) {
