@@ -26,7 +26,6 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
   ],
   hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7', 'section-7a', 'section-7b', 'section-7c', 'section-8', 'section-9', 'section-10', 'section-11', 'annexures'],
   hideDefaultDeclarationAndCertificate: true,
-  extraSections: [],
   hiddenFields: ['to', 'dateOfValuation', 'refNo'],
   fieldLabels: {
     'section-11-title': 'Property Photographs',
