@@ -350,43 +350,57 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
 
   }
 
-  // ── Section 9: Valuation & Calculation (Valuation Details) ──
+  // ── Section 9: Valuation & Calculation ──
   private drawBajajSection9() {
     const fv = this.fv.bind(this);
     const cw = CONTENT_W;
 
-    this.drawSectionSubtitle('Valuation of Land & Construction');
-    const vHeaders = ['Description', 'Area (In Sq. Ft)', 'Rate per Sq. Ft (In Rs.)', 'Total Value (In Rs.)'];
+    this.drawSectionSubtitle('Valuation Breakdown by Items');
+    const vHeaders = ['Items', 'Area Details in Sq. Ft.', 'Rate per Sq. Ft.', 'Total Values in Rupees'];
     
     // Calculate totals for the PDF
-    const landVal = (parseFloat(fv('bajajValuationLandArea')) || 0) * (parseFloat(fv('bajajValuationLandRate')) || 0);
-    const constVal1 = (parseFloat(fv('bajajValuationConstructionArea1')) || 0) * (parseFloat(fv('bajajValuationConstructionRate1')) || 0);
-    const constVal2 = (parseFloat(fv('bajajValuationConstructionArea2')) || 0) * (parseFloat(fv('bajajValuationConstructionRate2')) || 0);
+    const landArea = parseFloat(fv('bajajValuationLandArea')) || 0;
+    const landRate = parseFloat(fv('bajajValuationLandRate')) || 0;
+    const landVal = landArea * landRate;
+
+    const buaArea = parseFloat(fv('bajajValuationBUAArea')) || 0;
+    const buaRate = parseFloat(fv('bajajValuationBUARate')) || 0;
+    const buaVal = buaArea * buaRate;
+
+    const formatINR = (num: number) => {
+      return new Intl.NumberFormat('en-IN').format(num);
+    };
     
     const vRows = [
-      ['Land Value', fv('bajajValuationLandArea'), fv('bajajValuationLandRate'), landVal ? landVal.toFixed(2) : ''],
-      ['Construction Value (Ground Floor to 2nd Floor)', fv('bajajValuationConstructionArea1'), fv('bajajValuationConstructionRate1'), constVal1 ? constVal1.toFixed(2) : ''],
-      ['Construction Value (3rd Floor)', fv('bajajValuationConstructionArea2'), fv('bajajValuationConstructionRate2'), constVal2 ? constVal2.toFixed(2) : ''],
-      ['Total Structural Replacement Cost', ((parseFloat(fv('bajajValuationConstructionArea1')) || 0) + (parseFloat(fv('bajajValuationConstructionArea2')) || 0)).toFixed(2) || '', '-', (constVal1 + constVal2) ? (constVal1 + constVal2).toFixed(2) : '']
+      ['Land Value(As per ROR)', fv('bajajValuationLandArea'), fv('bajajValuationLandRate'), landVal ? formatINR(landVal) : ''],
+      ['BUA Value (Measured BUA G+3)', fv('bajajValuationBUAArea'), fv('bajajValuationBUARate'), buaVal ? formatINR(buaVal) : ''],
+      ['Car Parking Charges', fv('bajajValuationCarParkingArea'), fv('bajajValuationCarParkingRate'), fv('bajajValuationCarParkingTotal')]
     ];
-    this.drawTable(vHeaders, vRows, [cw * 0.4, cw * 0.2, cw * 0.2, cw * 0.2], [], [0]);
+    this.drawTable(vHeaders, vRows, [cw * 0.35, cw * 0.25, cw * 0.20, cw * 0.20], [], [0]);
 
     this.advanceCursor(6);
 
-    this.drawSectionSubtitle('Depreciation & Net Valuation Summary');
+    this.drawSectionSubtitle('Valuation Summary & Statutory Checks');
     this.drawKeyValueRow([
-      { label: 'Gross Construction Value (Rs.)', value: fv('bajajGrossConstructionValue') },
-      { label: 'Depreciation Rate Applied (%)', value: fv('bajajDepreciationRateApplied') }
+      { label: 'Amenities/Other charges (Lumpsum)', value: fv('bajajAmenitiesOtherCharges') },
+      { label: 'Realizable value as on date', value: fv('bajajRealizableValue') }
     ]);
     this.drawKeyValueRow([
-      { label: 'Depreciated Construction Value (Rs.)', value: fv('bajajDepreciatedConstructionValue') },
-      { label: 'Total Fair Market Value (Rs.)', value: fv('bajajTotalFairMarketValue') }
+      { label: 'Government Value', value: fv('bajajGovernmentValue') },
+      { label: 'Distressed/ Force Value', value: fv('bajajDistressedValue') }
     ]);
-    this.drawKeyValueRow([
-      { label: 'Realizable Value (Rs.)', value: fv('bajajRealizableValue') },
-      { label: 'Distress / Forced Sale Value (Rs.)', value: fv('bajajDistressValue') }
-    ]);
-    this.drawSimpleRow('Government / Guideline Land Value (Govt. Rate) (Rs.)', fv('bajajGovtLandValue'));
+    
+    const valuationDoneEarlier = fv('bajajValuationDoneEarlier') === 'Custom' ? fv('bajajValuationDoneEarlierCustom') : fv('bajajValuationDoneEarlier');
+    this.drawSimpleRow('Valuation Done Earlier', valuationDoneEarlier);
+    
+    const methodology = fv('bajajValuationMethodology') === 'Custom' ? fv('bajajValuationMethodologyCustom') : fv('bajajValuationMethodology');
+    this.drawSimpleRow('Valuation Methodology', methodology);
+
+    const demolitionList = fv('bajajMunicipalDemolitionList') === 'Custom' ? fv('bajajMunicipalDemolitionListCustom') : fv('bajajMunicipalDemolitionList');
+    this.drawSimpleRow('In Municipal/ Development Authority Demolition List', demolitionList);
+
+    const negativeArea = fv('bajajPropertyInNegativeArea') === 'Custom' ? fv('bajajPropertyInNegativeAreaCustom') : fv('bajajPropertyInNegativeArea');
+    this.drawSimpleRow('Is Property in Negative Area', negativeArea);
 
   }
 
