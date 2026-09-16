@@ -70,7 +70,8 @@ export default function AxisAGRI({
 
   // ── Auto-derive default REF NO: from projectCode or projectId ──
   const defaultRefNo = useMemo(() => {
-    return projectCode || projectId || '';
+    const id = projectCode || projectId || '';
+    return id ? (id.toLowerCase().startsWith('axis/') ? id : `Axis/${id}`) : '';
   }, [projectCode, projectId]);
 
   // ── Find First Field Engineer Visit Date (Earliest Initiation) ──
@@ -776,23 +777,26 @@ export default function AxisAGRI({
             SECTION 1: HEADER & TECHNICAL INITIATION
         ═══════════════════════════════════════════════════════════════ */}
         <Section id="sec-1" title="Header & Technical Initiation" number={1} defaultOpen>
-          {/* Container 1A: Report Reference */}
-          <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 mb-5 shadow-xs">
-            <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">Report Reference Details</h3>
+          {/* Top Reference & Report Date (Separated outside soft container) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+            <Field label="Reference Number">
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.refNo || ''}
+                onChange={e => handleChange('refNo', e.target.value)}
+                disabled={isReadOnly}
+                placeholder=""
+              />
+            </Field>
+
+            <DateInput fieldKey="reportDate" label="Date of Report" />
+          </div>
+
+          {/* Container 1A: Technical Initiation Details */}
+          <div className="border border-sky-200 bg-sky-50/50 rounded-xl p-5 mb-5 shadow-xs">
+            <h3 className="font-semibold text-sky-800 mb-4 text-sm tracking-wide uppercase">Technical Initiation Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Field label="Reference Number">
-                <input
-                  type="text"
-                  className={inputCls}
-                  value={fields.refNo || ''}
-                  onChange={e => handleChange('refNo', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder=""
-                />
-              </Field>
-
-              <DateInput fieldKey="reportDate" label="Date of Report" />
-
               <div className="space-y-1">
                 <DateInput fieldKey="dateOfVisit" label="Date of Visit" />
                 {firstFieldAgentVisit && (
@@ -812,13 +816,7 @@ export default function AxisAGRI({
                   </div>
                 )}
               </div>
-            </div>
-          </div>
 
-          {/* Container 1B: Technical Initiation Details */}
-          <div className="border border-sky-200 bg-sky-50/50 rounded-xl p-5 mb-5 shadow-xs">
-            <h3 className="font-semibold text-sky-800 mb-4 text-sm tracking-wide uppercase">Technical Initiation Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Report Initiated by Area">
                 <input
                   type="text"

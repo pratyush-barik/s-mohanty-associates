@@ -362,8 +362,8 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     await this.init(letterheadBytes);
 
     // --- Page 1: Header ---
-    const refText = `Ref No: ${fields.refNo || 'Axis/SMA/07-26/19'}`;
-    const dateText = `Date:${formatReportDate(fields.reportDate || new Date().toISOString())}`;
+    const refText = fields.refNo ? `Ref No: ${fields.refNo}` : 'Ref No: ';
+    const dateText = `Date: ${formatReportDate(fields.reportDate || new Date().toISOString())}`;
     const titleText = 'Valuation Report Format for Bungalow/Individual House/Resale';
 
     // Top line with Ref No and Date
@@ -491,7 +491,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.drawHLLAPRow(
       '3.',
       'Documents Provided: Approved Layout/\nApproved Building Plan/ NA order/ Four\nBoundaries Details',
-      fields.documentsProvided || 'Copy of Sale deed, ROR, Approved plan'
+      fields.documentsProvided || 'NA'
     );
     this.addSectionBreak();
 
@@ -506,10 +506,10 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.drawHLLAPRow('g.', 'Pin code', fields.pinCode || 'NA');
     this.drawHLLAPRow('h.', 'Nearby Land Mark', fields.nearbyLandMark || 'NA');
     this.drawHLLAPRow('i.', 'Distance from City Center', fields.distanceFromCityCenter || 'NA');
-    this.drawHLLAPRow('j.', 'Availability of Local Transport : Metro/ Local Train/ Bus', fields.availabilityOfLocalTransport || 'Taxi, Auto');
-    this.drawHLLAPRow('k.', 'Level of land with topographical conditions', fields.levelOfLand || 'Regular level land');
-    this.drawHLLAPRow('l.', 'Class Of Locality : Posh/ Higher Middle Class/Middle class/Lower middle Class/ Poor', fields.classOfLocality || 'Middle Class');
-    this.drawHLLAPRow('m.', 'Quality of Infrastructure in the vicinity', fields.qualityOfInfrastructure || 'Good');
+    this.drawHLLAPRow('j.', 'Availability of Local Transport : Metro/ Local Train/ Bus', fields.availabilityOfLocalTransport || 'NA');
+    this.drawHLLAPRow('k.', 'Level of land with topographical conditions', fields.levelOfLand || 'NA');
+    this.drawHLLAPRow('l.', 'Class Of Locality : Posh/ Higher Middle Class/Middle class/Lower middle Class/ Poor', fields.classOfLocality || 'NA');
+    this.drawHLLAPRow('m.', 'Quality of Infrastructure in the vicinity', fields.qualityOfInfrastructure || 'NA');
 
     // 4n. Boundaries (Header sub-row + 4 direction rows)
     const bHeaderW1 = this.colSl + this.colLbl;
@@ -571,17 +571,17 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     }
 
     // 4o - 4y
-    this.drawHLLAPRow('o.', 'Does the Boundaries at Site match, as mentioned in documentation?', fields.boundariesMatch || 'Yes(Boundary matching as per documents)');
-    this.drawHLLAPRow('p.', 'Status of the Land/ Flat : Free Hold/Leased / Development Authority', fields.statusOfLand || 'Free Hold');
-    this.drawHLLAPRow('q.', 'Type of Property : Bungalow/row house/Plot/ flat (1BHK/2BHK/3BHK)/Residential', fields.typeOfProperty || 'Residential');
-    this.drawHLLAPRow('r.', 'Approved usage of Property: Agri/ Mix /Industrial/commercial/Residential (Restrictive covenants in regards to Land Use, if any)', fields.approvedUsage || 'Residential');
-    this.drawHLLAPRow('s.', 'Actual Usage of the Property', fields.actualUsage || 'Residential');
-    this.drawHLLAPRow('t.', 'Type of Structure : Load Bearing/RCC/Aluform shuttering', fields.typeOfStructure || 'RCC Framed Structure');
-    this.drawHLLAPRow('u.', 'No of Floors', fields.noOfFloors || 'G+1 storied Residential building');
-    this.drawHLLAPRow('v.', 'Occupancy Details: Self Occupied/Rented/ Vacant', fields.occupancyDetails || 'Self');
-    this.drawHLLAPRow('w.', 'Does property have Electricity / Water / Drainage connection', fields.hasElectricityWaterDrainage || 'Yes');
-    this.drawHLLAPRow('x.', 'Proximity to civic amenities like school, hospital, market, etc', fields.proximityToCivicAmenities || 'Within 2-3 kms range');
-    this.drawHLLAPRow('y.', 'Development of surrounding area', fields.developmentOfSurroundingArea || 'Developing in surrounding area');
+    this.drawHLLAPRow('o.', 'Does the Boundaries at Site match, as mentioned in documentation?', fields.boundariesMatch || 'NA');
+    this.drawHLLAPRow('p.', 'Status of the Land/ Flat : Free Hold/Leased / Development Authority', fields.statusOfLand || 'NA');
+    this.drawHLLAPRow('q.', 'Type of Property : Bungalow/row house/Plot/ flat (1BHK/2BHK/3BHK)/Residential', fields.typeOfProperty || 'NA');
+    this.drawHLLAPRow('r.', 'Approved usage of Property: Agri/ Mix /Industrial/commercial/Residential (Restrictive covenants in regards to Land Use, if any)', fields.approvedUsage || 'NA');
+    this.drawHLLAPRow('s.', 'Actual Usage of the Property', fields.actualUsage || 'NA');
+    this.drawHLLAPRow('t.', 'Type of Structure : Load Bearing/RCC/Aluform shuttering', fields.typeOfStructure || 'NA');
+    this.drawHLLAPRow('u.', 'No of Floors', fields.noOfFloors || 'NA');
+    this.drawHLLAPRow('v.', 'Occupancy Details: Self Occupied/Rented/ Vacant', fields.occupancyDetails || 'NA');
+    this.drawHLLAPRow('w.', 'Does property have Electricity / Water / Drainage connection', fields.hasElectricityWaterDrainage || 'NA');
+    this.drawHLLAPRow('x.', 'Proximity to civic amenities like school, hospital, market, etc', fields.proximityToCivicAmenities || 'NA');
+    this.drawHLLAPRow('y.', 'Development of surrounding area', fields.developmentOfSurroundingArea || 'NA');
 
     // 4z. Longitude & Latitude
     this.drawHLLAPRow('z.', 'Longitude & latitude of the property', '');
@@ -597,24 +597,26 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.drawHLLAPRow('d.', 'Building Plan Approval No', fields.buildingPlanApprovalNo || 'NA');
     this.drawHLLAPRow('e.', 'Date of Approval', fields.buildingPlanApprovalDate || 'NA');
     this.drawHLLAPRow('f.', 'Expiry Date', fields.buildingPlanExpiryDate || 'NA');
-    this.drawHLLAPRow('g.', 'Date of Commencement of Construction', fields.constructionCommencementDate || '100% Completed');
+    this.drawHLLAPRow('g.', 'Date of Commencement of Construction', fields.constructionCommencementDate || 'NA');
     this.drawHLLAPRow('h.', 'Expected Completion', fields.expectedCompletionDate || 'NA');
     this.addSectionBreak();
 
     // --- Section 6: CONSTRUCTION DETAILS ---
     this.drawSectionBanner('6.', 'CONSTRUCTION DETAILS');
     this.drawHLLAPRow('a.', 'Area of the Plot/flat', fields.plotAreaDocs || 'NA');
-    this.drawHLLAPRow('b.', 'Demarcation at Site', fields.demarcationAtSite || 'Yes');
+    this.drawHLLAPRow('b.', 'Demarcation at Site', fields.demarcationAtSite || 'NA');
 
     // 6c. Approved Built up Area & Floor-wise break up
     this.drawHLLAPRow(
       'c.',
       'Approved Built up Area: _____sqft floor wise break up (for Bungalow/Twin /Row-house) as follows',
-      fields.approvedBUATotal || 'NA'
+      fields.approvedBUATotal ? `${fields.approvedBUATotal} sqft` : 'NA'
     );
     if (fields.approvedBUAFloors && fields.approvedBUAFloors.length > 0) {
       for (const fl of fields.approvedBUAFloors) {
-        this.drawMergedLabelRow(`${fl.floor} - Sq Ft Description`, fl.area || 'NA');
+        if (fl.floor || fl.area) {
+          this.drawMergedLabelRow(`${fl.floor || 'Floor'} - Sq Ft Description`, fl.area ? `${fl.area} sqft` : 'NA');
+        }
       }
     }
 
@@ -622,15 +624,17 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.drawHLLAPRow(
       'd.',
       'Measured Built up Area: _____sqft floor wise break up (for Bungalow/Twin /Row-house) as follows',
-      fields.measuredBUATotal || 'NA'
+      fields.measuredBUATotal ? `${fields.measuredBUATotal} sqft` : 'NA'
     );
     if (fields.measuredBUAFloors && fields.measuredBUAFloors.length > 0) {
       for (const fl of fields.measuredBUAFloors) {
-        this.drawMergedLabelRow(`${fl.floor} - Sq Ft Description`, fl.area || 'NA');
+        if (fl.floor || fl.area) {
+          this.drawMergedLabelRow(`${fl.floor || 'Floor'} - Sq Ft Description`, fl.area ? `${fl.area} sqft` : 'NA');
+        }
       }
     }
 
-    this.drawHLLAPRow('f.', 'Whether the construction is as per approved building plan and / or local building bye laws', fields.isConstructionAsPerPlan || 'As per plan');
+    this.drawHLLAPRow('f.', 'Whether the construction is as per approved building plan and / or local building bye laws', fields.isConstructionAsPerPlan || 'NA');
     this.drawHLLAPRow('g.', 'Details of Extra Construction', fields.detailsOfExtraConstruction || 'NA');
 
     // 6h. Recommended / Available Side Margin
@@ -640,10 +644,10 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.drawMergedLabelRow('Left Side', fields.sideMarginLeft || 'NA');
     this.drawMergedLabelRow('Back Side', fields.sideMarginBack || 'NA');
 
-    this.drawHLLAPRow('i.', 'Quality of construction', fields.qualityOfConstruction || 'Good');
-    this.drawHLLAPRow('j.', 'Maintenance of the Property: excellent/very good/average/poor', fields.maintenanceOfProperty || 'Good');
-    this.drawHLLAPRow('k.', 'Current Life of the structure', fields.currentLifeOfStructure || '2-Years');
-    this.drawHLLAPRow('l.', 'Projected Life of the Structure', fields.projectedLifeOfStructure || '58-Years');
+    this.drawHLLAPRow('i.', 'Quality of construction', fields.qualityOfConstruction || 'NA');
+    this.drawHLLAPRow('j.', 'Maintenance of the Property: excellent/very good/average/poor', fields.maintenanceOfProperty || 'NA');
+    this.drawHLLAPRow('k.', 'Current Life of the structure', fields.currentLifeOfStructure || 'NA');
+    this.drawHLLAPRow('l.', 'Projected Life of the Structure', fields.projectedLifeOfStructure || 'NA');
     this.addSectionBreak();
 
     // --- Section 7: Recommended Valuation of the Property ---
@@ -702,6 +706,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.drawHLLAPRow('10.', 'Rental value per month', fields.rentalValuePerMonth || 'NA');
     this.addSectionBreak();
 
+    // --- Section 11: Attachment ---
     this.drawSectionBanner('11.', 'Attachment');
     this.drawHLLAPRow('a.', '4 photos of the Property from inside/outside are attached', fields.photosAttached || 'Attached');
     this.drawHLLAPRow('b.', 'Location sketch for the property', fields.locationSketchAttached || 'Attached');
