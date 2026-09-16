@@ -368,7 +368,53 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
     bajajResidualAge_isNA: false,
     bajajResidualAge_isManual: false,
 
-    // Section 9: Remarks & Declaration
+    // Section 9: Valuation & Calculation (Valuation Details)
+    bajajValuationLandArea: '',
+    bajajValuationLandArea_isNA: false,
+    bajajValuationLandArea_isManual: false,
+    bajajValuationLandRate: '',
+    bajajValuationLandRate_isNA: false,
+    
+    bajajValuationConstructionArea1: '',
+    bajajValuationConstructionArea1_isNA: false,
+    bajajValuationConstructionArea1_isManual: false,
+    bajajValuationConstructionRate1: '',
+    bajajValuationConstructionRate1_isNA: false,
+
+    bajajValuationConstructionArea2: '',
+    bajajValuationConstructionArea2_isNA: false,
+    bajajValuationConstructionArea2_isManual: false,
+    bajajValuationConstructionRate2: '',
+    bajajValuationConstructionRate2_isNA: false,
+
+    bajajGrossConstructionValue: '',
+    bajajGrossConstructionValue_isNA: false,
+    bajajGrossConstructionValue_isManual: false,
+
+    bajajDepreciationRateApplied: '',
+    bajajDepreciationRateApplied_isNA: false,
+    bajajDepreciationRateApplied_isManual: false,
+
+    bajajDepreciatedConstructionValue: '',
+    bajajDepreciatedConstructionValue_isNA: false,
+    bajajDepreciatedConstructionValue_isManual: false,
+
+    bajajTotalFairMarketValue: '',
+    bajajTotalFairMarketValue_isNA: false,
+    bajajTotalFairMarketValue_isManual: false,
+
+    bajajRealizableValue: '',
+    bajajRealizableValue_isNA: false,
+    bajajRealizableValue_isManual: false,
+
+    bajajDistressValue: '',
+    bajajDistressValue_isNA: false,
+    bajajDistressValue_isManual: false,
+
+    bajajGovtLandValue: '',
+    bajajGovtLandValue_isNA: false,
+
+    // Section 10: Remarks & Declaration
     bajajRemarks: '',
     bajajSignatureDate: '',
     bajajSignaturePlace: 'Bhubaneswar',
@@ -2311,8 +2357,260 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
     },
     {
       id: 'bajaj-section-9',
-      title: 'Remarks & Declaration',
+      title: 'Valuation & Calculation (Valuation Details)',
       number: 9,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        const inputCls = "w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500";
+        
+        const NACheckbox = ({ field, label = 'Mark as NA' }: { field: string, label?: string }) => (
+          <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-500 mt-1 hover:text-gray-700">
+            <input 
+              type="checkbox" 
+              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
+              checked={!!fields[`${field}_isNA`]}
+              onChange={(e) => {
+                handleChange(`${field}_isNA`, e.target.checked);
+                if (e.target.checked) handleChange(field, 'NA');
+                else handleChange(field, '');
+              }}
+              disabled={isReadOnly}
+            />
+            <span>{label}</span>
+          </label>
+        );
+
+        const EditSwitch = ({ field, onToggleOff }: { field: string, onToggleOff?: () => void }) => (
+          <div className="flex items-center gap-2 mt-1">
+            <button
+              type="button"
+              onClick={() => {
+                const manual = !fields[`${field}_isManual`];
+                handleChange(`${field}_isManual`, manual);
+                if (!manual && onToggleOff) {
+                  onToggleOff();
+                }
+              }}
+              disabled={isReadOnly}
+              className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields[`${field}_isManual`] ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields[`${field}_isManual`] ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
+            </button>
+            <span className={`text-[10px] font-medium uppercase tracking-wider ${fields[`${field}_isManual`] ? 'text-emerald-600' : 'text-gray-400'}`}>
+              {fields[`${field}_isManual`] ? 'Edit On' : 'Edit Off'}
+            </span>
+          </div>
+        );
+
+        // Auto-calculation logic for Section 9
+        const landValue = parseFloat(fields.bajajValuationLandArea) * parseFloat(fields.bajajValuationLandRate) || 0;
+        const constValue1 = parseFloat(fields.bajajValuationConstructionArea1) * parseFloat(fields.bajajValuationConstructionRate1) || 0;
+        const constValue2 = parseFloat(fields.bajajValuationConstructionArea2) * parseFloat(fields.bajajValuationConstructionRate2) || 0;
+        const totalReplacementCost = constValue1 + constValue2;
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            {/* Valuation of Land & Construction */}
+            <div className="border border-[#FDE68A] bg-[#FEF3C7] rounded-xl p-4 overflow-x-auto">
+              <h3 className="font-bold text-gray-700 mb-4">Valuation of Land & Construction</h3>
+              <table className="min-w-full text-sm text-left whitespace-nowrap">
+                <thead>
+                  <tr className="bg-amber-100 text-gray-700">
+                    <th className="px-3 py-2 border-b border-amber-200">Description</th>
+                    <th className="px-3 py-2 border-b border-amber-200">Area (In Sq. Ft)</th>
+                    <th className="px-3 py-2 border-b border-amber-200">Rate per Sq. Ft (In Rs.)</th>
+                    <th className="px-3 py-2 border-b border-amber-200">Total Value (In Rs.)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="px-3 py-2 border-b border-amber-100 font-medium">Land Value</td>
+                    <td className="px-3 py-2 border-b border-amber-100">
+                      <div className="flex items-center gap-2">
+                        <input type="number" step="0.01" min="0" className={inputCls} value={fields.bajajValuationLandArea || ''} onChange={e => handleChange('bajajValuationLandArea', e.target.value)} disabled={isReadOnly || !fields.bajajValuationLandArea_isManual || fields.bajajValuationLandArea_isNA} />
+                        <EditSwitch field="bajajValuationLandArea" onToggleOff={() => {
+                           handleChange('bajajValuationLandArea', fields.bajajLandAreaSite || fields.bajajLandAreaDoc || '');
+                        }} />
+                        <NACheckbox field="bajajValuationLandArea" />
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 border-b border-amber-100">
+                      <div className="flex items-center gap-2">
+                        <input type="number" step="0.01" min="0" className={inputCls} value={fields.bajajValuationLandRate || ''} onChange={e => handleChange('bajajValuationLandRate', e.target.value)} disabled={isReadOnly || fields.bajajValuationLandRate_isNA} />
+                        <NACheckbox field="bajajValuationLandRate" />
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 border-b border-amber-100">
+                      <input type="number" className={inputCls} value={landValue.toFixed(2)} readOnly />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="px-3 py-2 border-b border-amber-100 font-medium">Construction Value (Ground Floor to 2nd Floor)</td>
+                    <td className="px-3 py-2 border-b border-amber-100">
+                      <div className="flex items-center gap-2">
+                        <input type="number" step="0.01" min="0" className={inputCls} value={fields.bajajValuationConstructionArea1 || ''} onChange={e => handleChange('bajajValuationConstructionArea1', e.target.value)} disabled={isReadOnly || !fields.bajajValuationConstructionArea1_isManual || fields.bajajValuationConstructionArea1_isNA} />
+                        <EditSwitch field="bajajValuationConstructionArea1" />
+                        <NACheckbox field="bajajValuationConstructionArea1" />
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 border-b border-amber-100">
+                      <div className="flex items-center gap-2">
+                        <input type="number" step="0.01" min="0" className={inputCls} value={fields.bajajValuationConstructionRate1 || ''} onChange={e => handleChange('bajajValuationConstructionRate1', e.target.value)} disabled={isReadOnly || fields.bajajValuationConstructionRate1_isNA} />
+                        <NACheckbox field="bajajValuationConstructionRate1" />
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 border-b border-amber-100">
+                      <input type="number" className={inputCls} value={constValue1.toFixed(2)} readOnly />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="px-3 py-2 border-b border-amber-100 font-medium">Construction Value (3rd Floor)</td>
+                    <td className="px-3 py-2 border-b border-amber-100">
+                      <div className="flex items-center gap-2">
+                        <input type="number" step="0.01" min="0" className={inputCls} value={fields.bajajValuationConstructionArea2 || ''} onChange={e => handleChange('bajajValuationConstructionArea2', e.target.value)} disabled={isReadOnly || !fields.bajajValuationConstructionArea2_isManual || fields.bajajValuationConstructionArea2_isNA} />
+                        <EditSwitch field="bajajValuationConstructionArea2" />
+                        <NACheckbox field="bajajValuationConstructionArea2" />
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 border-b border-amber-100">
+                      <div className="flex items-center gap-2">
+                        <input type="number" step="0.01" min="0" className={inputCls} value={fields.bajajValuationConstructionRate2 || ''} onChange={e => handleChange('bajajValuationConstructionRate2', e.target.value)} disabled={isReadOnly || fields.bajajValuationConstructionRate2_isNA} />
+                        <NACheckbox field="bajajValuationConstructionRate2" />
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 border-b border-amber-100">
+                      <input type="number" className={inputCls} value={constValue2.toFixed(2)} readOnly />
+                    </td>
+                  </tr>
+                  <tr className="bg-amber-50">
+                    <td className="px-3 py-2 font-bold text-gray-700">Total Structural Replacement Cost</td>
+                    <td className="px-3 py-2">
+                      <input type="number" className={inputCls} value={((parseFloat(fields.bajajValuationConstructionArea1) || 0) + (parseFloat(fields.bajajValuationConstructionArea2) || 0)).toFixed(2)} readOnly />
+                    </td>
+                    <td className="px-3 py-2 text-center text-gray-500">-</td>
+                    <td className="px-3 py-2">
+                      <input type="number" className={`${inputCls} font-bold bg-amber-100`} value={totalReplacementCost.toFixed(2)} readOnly />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Depreciation & Net Valuation Summary */}
+            <div className="border border-[#A7F3D0] bg-[#ECFDF5] rounded-xl p-4">
+              <h3 className="font-bold text-gray-700 mb-4">Depreciation & Net Valuation Summary</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <div>
+                  <div className="flex justify-between items-end mb-1">
+                    <label className="block text-xs font-medium text-gray-700">Gross Construction Value (Rs.)</label>
+                    <EditSwitch field="bajajGrossConstructionValue" onToggleOff={() => {
+                      handleChange('bajajGrossConstructionValue', Math.round(totalReplacementCost).toString());
+                    }} />
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 font-medium pointer-events-none">INR</span>
+                    <input type="number" step="1" className={`${inputCls} pl-10`} value={fields.bajajGrossConstructionValue || ''} onChange={e => handleChange('bajajGrossConstructionValue', e.target.value)} disabled={isReadOnly || !fields.bajajGrossConstructionValue_isManual || fields.bajajGrossConstructionValue_isNA} />
+                  </div>
+                  <NACheckbox field="bajajGrossConstructionValue" />
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-end mb-1">
+                    <label className="block text-xs font-medium text-gray-700">Depreciation Rate Applied (%)</label>
+                    <EditSwitch field="bajajDepreciationRateApplied" />
+                  </div>
+                  <div className="relative">
+                    <input type="number" step="0.1" min="0" max="100" className={`${inputCls} pr-8`} value={fields.bajajDepreciationRateApplied || ''} onChange={e => handleChange('bajajDepreciationRateApplied', e.target.value)} disabled={isReadOnly || !fields.bajajDepreciationRateApplied_isManual || fields.bajajDepreciationRateApplied_isNA} />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 font-medium pointer-events-none">%</span>
+                  </div>
+                  <NACheckbox field="bajajDepreciationRateApplied" />
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-end mb-1">
+                    <label className="block text-xs font-medium text-gray-700">Depreciated Construction Value (Rs.)</label>
+                    <EditSwitch field="bajajDepreciatedConstructionValue" onToggleOff={() => {
+                      const gross = parseFloat(fields.bajajGrossConstructionValue) || 0;
+                      const depRate = parseFloat(fields.bajajDepreciationRateApplied) || 0;
+                      const depVal = gross * (1 - depRate / 100);
+                      handleChange('bajajDepreciatedConstructionValue', Math.round(depVal).toString());
+                    }} />
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 font-medium pointer-events-none">INR</span>
+                    <input type="number" step="1" className={`${inputCls} pl-10`} value={fields.bajajDepreciatedConstructionValue || ''} onChange={e => handleChange('bajajDepreciatedConstructionValue', e.target.value)} disabled={isReadOnly || !fields.bajajDepreciatedConstructionValue_isManual || fields.bajajDepreciatedConstructionValue_isNA} />
+                  </div>
+                  <NACheckbox field="bajajDepreciatedConstructionValue" />
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-end mb-1">
+                    <label className="block text-xs font-medium text-gray-700">Total Fair Market Value (Rs.)</label>
+                    <EditSwitch field="bajajTotalFairMarketValue" onToggleOff={() => {
+                      const lValue = landValue || 0;
+                      const cValue = parseFloat(fields.bajajDepreciatedConstructionValue) || 0;
+                      const fmv = lValue + cValue;
+                      handleChange('bajajTotalFairMarketValue', Math.round(fmv).toString());
+                    }} />
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 font-medium pointer-events-none">INR</span>
+                    <input type="number" step="1" className={`${inputCls} pl-10 font-bold bg-emerald-50`} value={fields.bajajTotalFairMarketValue || ''} onChange={e => handleChange('bajajTotalFairMarketValue', e.target.value)} disabled={isReadOnly || !fields.bajajTotalFairMarketValue_isManual || fields.bajajTotalFairMarketValue_isNA} />
+                  </div>
+                  <NACheckbox field="bajajTotalFairMarketValue" />
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-end mb-1">
+                    <label className="block text-xs font-medium text-gray-700">Realizable Value (Rs.)</label>
+                    <EditSwitch field="bajajRealizableValue" onToggleOff={() => {
+                      const fmv = parseFloat(fields.bajajTotalFairMarketValue) || 0;
+                      handleChange('bajajRealizableValue', Math.round(fmv * 0.90).toString());
+                    }} />
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 font-medium pointer-events-none">INR</span>
+                    <input type="number" step="1" className={`${inputCls} pl-10`} value={fields.bajajRealizableValue || ''} onChange={e => handleChange('bajajRealizableValue', e.target.value)} disabled={isReadOnly || !fields.bajajRealizableValue_isManual || fields.bajajRealizableValue_isNA} />
+                  </div>
+                  <NACheckbox field="bajajRealizableValue" />
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-end mb-1">
+                    <label className="block text-xs font-medium text-gray-700">Distress / Forced Sale Value (Rs.)</label>
+                    <EditSwitch field="bajajDistressValue" onToggleOff={() => {
+                      const fmv = parseFloat(fields.bajajTotalFairMarketValue) || 0;
+                      handleChange('bajajDistressValue', Math.round(fmv * 0.75).toString());
+                    }} />
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 font-medium pointer-events-none">INR</span>
+                    <input type="number" step="1" className={`${inputCls} pl-10`} value={fields.bajajDistressValue || ''} onChange={e => handleChange('bajajDistressValue', e.target.value)} disabled={isReadOnly || !fields.bajajDistressValue_isManual || fields.bajajDistressValue_isNA} />
+                  </div>
+                  <NACheckbox field="bajajDistressValue" />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Government / Guideline Land Value (Govt. Rate) (Rs.)</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 font-medium pointer-events-none">INR</span>
+                    <input type="number" step="1" className={`${inputCls} pl-10`} value={fields.bajajGovtLandValue || ''} onChange={e => handleChange('bajajGovtLandValue', e.target.value)} disabled={isReadOnly || fields.bajajGovtLandValue_isNA} />
+                  </div>
+                  <NACheckbox field="bajajGovtLandValue" />
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        );
+      },
+    },
+    {
+      id: 'bajaj-section-10',
+      title: 'Remarks & Declaration',
+      number: 10,
       defaultOpen: false,
       render: (fields, handleChange, isReadOnly) => (
         <div className="animate-fade-in space-y-4">

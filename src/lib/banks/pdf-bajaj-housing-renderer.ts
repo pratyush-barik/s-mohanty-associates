@@ -350,78 +350,53 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
 
   }
 
-  // ── Section 9: Valuation Summary ──
+  // ── Section 9: Valuation & Calculation (Valuation Details) ──
   private drawBajajSection9() {
     const fv = this.fv.bind(this);
-
-    // Main valuation table
-    const vHeaders = ['Items', 'Area Details In Sq. Ft.', 'Rate per Sq. Ft.', 'Total Value In Rupees'];
-    const vRows = [
-      ['Land Value (as per RORL)', fv('bajajLandAreaSqft'), fv('bajajLandRatePerSqft'), fv('bajajLandTotalValue')],
-      ['BUA Value (Measured BUA)', fv('bajajBUAAreaSqft'), fv('bajajBUARatePerSqft'), fv('bajajBUATotalValue')],
-      ['Car Parking Charges', fv('bajajCarParkingArea'), fv('bajajCarParkingRate'), fv('bajajCarParkingValue')]
-    ];
     const cw = CONTENT_W;
-    this.drawTable(vHeaders, vRows, [cw * 0.28, cw * 0.22, cw * 0.22, cw * 0.28], [], [0]);
+
+    this.drawSectionSubtitle('Valuation of Land & Construction');
+    const vHeaders = ['Description', 'Area (In Sq. Ft)', 'Rate per Sq. Ft (In Rs.)', 'Total Value (In Rs.)'];
+    
+    // Calculate totals for the PDF
+    const landVal = (parseFloat(fv('bajajValuationLandArea')) || 0) * (parseFloat(fv('bajajValuationLandRate')) || 0);
+    const constVal1 = (parseFloat(fv('bajajValuationConstructionArea1')) || 0) * (parseFloat(fv('bajajValuationConstructionRate1')) || 0);
+    const constVal2 = (parseFloat(fv('bajajValuationConstructionArea2')) || 0) * (parseFloat(fv('bajajValuationConstructionRate2')) || 0);
+    
+    const vRows = [
+      ['Land Value', fv('bajajValuationLandArea'), fv('bajajValuationLandRate'), landVal ? landVal.toFixed(2) : ''],
+      ['Construction Value (Ground Floor to 2nd Floor)', fv('bajajValuationConstructionArea1'), fv('bajajValuationConstructionRate1'), constVal1 ? constVal1.toFixed(2) : ''],
+      ['Construction Value (3rd Floor)', fv('bajajValuationConstructionArea2'), fv('bajajValuationConstructionRate2'), constVal2 ? constVal2.toFixed(2) : ''],
+      ['Total Structural Replacement Cost', ((parseFloat(fv('bajajValuationConstructionArea1')) || 0) + (parseFloat(fv('bajajValuationConstructionArea2')) || 0)).toFixed(2) || '', '-', (constVal1 + constVal2) ? (constVal1 + constVal2).toFixed(2) : '']
+    ];
+    this.drawTable(vHeaders, vRows, [cw * 0.4, cw * 0.2, cw * 0.2, cw * 0.2], [], [0]);
 
     this.advanceCursor(6);
 
-    // Amenities / Other charges
-    this.drawSectionSubtitle('Amenities/Other charges');
-    this.drawSimpleRow('Amenities/Other charges', fv('bajajAmenitiesOtherCharges'));
-    this.drawSimpleRow('Realizable value as on date', fv('bajajRealizableValue'));
-    this.drawSimpleRow('Government Rates', fv('bajajGovernmentRates'));
-    this.drawSimpleRow('Distressed / Forced Value', fv('bajajDistressedForcedValue'));
-    this.drawSimpleRow('Valuation (Floor Rate)', fv('bajajValuationFloorRate'));
-    this.drawSimpleRow('Valuation Methodology', fv('bajajValuationMethodology'));
-    this.drawSimpleRow('Is Municipal / Development Authority Demolition List (Yes/No)', fv('bajajMunicipalDemolitionList'));
-    this.drawSimpleRow('Is Property in Negative Area', fv('bajajPropertyInNegativeArea'));
+    this.drawSectionSubtitle('Depreciation & Net Valuation Summary');
+    this.drawKeyValueRow([
+      { label: 'Gross Construction Value (Rs.)', value: fv('bajajGrossConstructionValue') },
+      { label: 'Depreciation Rate Applied (%)', value: fv('bajajDepreciationRateApplied') }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Depreciated Construction Value (Rs.)', value: fv('bajajDepreciatedConstructionValue') },
+      { label: 'Total Fair Market Value (Rs.)', value: fv('bajajTotalFairMarketValue') }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Realizable Value (Rs.)', value: fv('bajajRealizableValue') },
+      { label: 'Distress / Forced Sale Value (Rs.)', value: fv('bajajDistressValue') }
+    ]);
+    this.drawSimpleRow('Government / Guideline Land Value (Govt. Rate) (Rs.)', fv('bajajGovtLandValue'));
 
-    this.advanceCursor(6);
-    this.drawSimpleRow('% Work completed', fv('bajajWorkCompleted'));
-    this.drawSimpleRow('% Disbursement Recommended', fv('bajajDisbursementRecommendedVal'));
-    this.drawSimpleRow('Current Value of the Property (Plot + construction)', fv('bajajCurrentValueOfProperty'));
-    this.drawSimpleRow('Date of Property Visit', fv('bajajDateOfPropertyVisit'));
-    this.drawSimpleRow('Valuation as per Government reckoner rates', fv('bajajValuationGovtReckoner'));
-    this.drawSimpleRow('Distressed valuation of the Property', fv('bajajDistressedValuation'));
-    this.drawSimpleRow('Rental value per month', fv('bajajRentalValuePerMonth'));
   }
 
   // ── Section 10: Remarks & Declaration ──
   private drawBajajSection10() {
     const fv = this.fv.bind(this);
 
-    // Attachments
-    this.drawSectionSubtitle('Attachment');
-    this.drawSimpleRow('a. 4 photos of the Property from inside/outside are attached', 'Attached');
-    this.drawSimpleRow('b. Location sketch for the property', 'Attached');
-
-    this.advanceCursor(6);
-
     // Remarks
     this.drawSectionSubtitle('Remarks');
-    this.drawSimpleRow('(Comment on - resistance for valuation if any from the current occupants for rented property, if the property falls in a community dominated areas, if the approach road to the property is not motorable, etc.)', fv('bajajRemarks'));
-
-    this.advanceCursor(6);
-
-    // Additional checks for Panchayat properties
-    this.drawSectionSubtitle('Additional checks for Panchayat properties');
-    const panchayatFields = [
-      'Any well / Pond in the vicinity',
-      'Power supply of surrounding area to property',
-      'Distance from City centre (kms)',
-      'Distance from Corporater/District/Tehsil/Bus station in case where there is no municipal body',
-      'Electricity / GPH Supply',
-      'Water supply',
-      'Water Distribution',
-      'Sewer line (Nala) attached for individual septic tank',
-      'Any encroachment found in Nagar/Development / expansion',
-    ];
-    for (const label of panchayatFields) {
-      this.drawKeyValueRow([
-        { label, value: fv(`bajajPanchayat_${label.replace(/[^a-zA-Z0-9]/g, '')}`) },
-      ]);
-    }
+    this.drawSimpleRow('Remarks', fv('bajajRemarks'));
 
     this.advanceCursor(6);
 
