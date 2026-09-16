@@ -19,11 +19,12 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
     { id: 'bajaj-section-7', title: 'Area & Floor' },
     { id: 'bajaj-section-8', title: 'Plot & BAU Area' },
     { id: 'bajaj-section-9', title: 'Valuation' },
-    { id: 'bajaj-section-10', title: 'Remarks' },
+    { id: 'bajaj-section-10', title: 'Remarks & Panchayat' },
+    { id: 'bajaj-section-11', title: 'Declaration' },
     { id: 'section-11', title: 'Photos' },
     { id: 'section-12', title: 'Maps' },
   ],
-  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7', 'section-7a', 'section-7b', 'section-7c', 'section-8', 'section-9', 'section-10', 'annexures'],
+  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7', 'section-7a', 'section-7b', 'section-7c', 'section-8', 'section-9', 'section-10', 'section-11', 'annexures'],
   hideDefaultDeclarationAndCertificate: true,
   extraSections: [],
   hiddenFields: ['to', 'dateOfValuation', 'refNo'],
@@ -419,10 +420,70 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
     bajajPropertyInNegativeArea_isNA: false,
     bajajPropertyInNegativeAreaCustom: '',
 
-    // Section 10: Remarks & Declaration
-    bajajRemarks: '',
-    bajajSignatureDate: '',
+    // Section 10: Remarks & Additional Checks for Panchayat Properties
+    bajajRemarksIfAny: '',
+    bajajRemarksIfAny_isNA: false,
+    bajajRemarksIfAny_isManual: false,
+
+    bajajPanchayatApproachRoad: 'NA',
+    bajajPanchayatApproachRoad_isNA: true,
+    bajajPanchayatApproachRoadCustom: '',
+
+    bajajPanchayatDevelopment: 'NA',
+    bajajPanchayatDevelopment_isNA: true,
+    bajajPanchayatDevelopmentCustom: '',
+
+    bajajPanchayatDistanceCityCentre: 'NA',
+    bajajPanchayatDistanceCityCentre_isNA: true,
+
+    bajajPanchayatDistanceCorp: 'NA',
+    bajajPanchayatDistanceCorp_isNA: true,
+
+    bajajPanchayatElectricity: 'NA',
+    bajajPanchayatElectricity_isNA: true,
+    bajajPanchayatElectricityCustom: '',
+
+    bajajPanchayatElectricityDistributor: 'NA',
+    bajajPanchayatElectricityDistributor_isNA: true,
+    bajajPanchayatElectricityDistributorCustom: '',
+
+    bajajPanchayatWaterSupply: 'NA',
+    bajajPanchayatWaterSupply_isNA: true,
+    bajajPanchayatWaterSupplyCustom: '',
+
+    bajajPanchayatWaterDistributor: 'NA',
+    bajajPanchayatWaterDistributor_isNA: true,
+    bajajPanchayatWaterDistributorCustom: '',
+
+    bajajPanchayatSewerProvision: 'NA',
+    bajajPanchayatSewerProvision_isNA: true,
+    bajajPanchayatSewerProvisionCustom: '',
+
+    bajajPanchayatSewerMainConnected: 'NA',
+    bajajPanchayatSewerMainConnected_isNA: true,
+    bajajPanchayatSewerMainConnectedCustom: '',
+
+    bajajPanchayatDemolitionThreat: 'NA',
+    bajajPanchayatDemolitionThreat_isNA: true,
+    bajajPanchayatDemolitionThreatCustom: '',
+
+    bajajPanchayatAllNA: false,
+
+    // Section 11: Declaration & Verification
+    bajajDeclarationText: 'The final valuation has been concluded basis Land & Building Method approach and rates are cross-verified with the rates prevalent in the nearby localities.\nWe have no direct/indirect interest in the property valued.\nThe information furnished in the report is true and correct to the best of my knowledge.',
+    bajajDeclarationText_isNA: false,
+    bajajDeclarationText_isManual: false,
+
+    bajajSignatureFile: '',
+    bajajSignatureFile_isNA: false,
+
+    bajajSignatureDate: new Date().toISOString().split('T')[0],
+    bajajSignatureDate_isNA: false,
+    bajajSignatureDate_isManual: false,
+
     bajajSignaturePlace: 'Bhubaneswar',
+    bajajSignaturePlace_isNA: false,
+    bajajSignaturePlace_isManual: false,
   },
   extraSectionsStart: [
     {
@@ -2624,25 +2685,413 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
     },
     {
       id: 'bajaj-section-10',
-      title: 'Remarks & Declaration',
+      title: 'Remarks & Additional Checks for Panchayat Properties',
       number: 10,
-      defaultOpen: false,
-      render: (fields, handleChange, isReadOnly) => (
-        <div className="animate-fade-in space-y-4">
-          <p className="text-xs text-gray-500 italic">Section details will be configured with detailed prompts.</p>
-          <Field label="Remarks">
-            <textarea className={inputCls} rows={5} value={fields.bajajRemarks || ''} onChange={e => handleChange('bajajRemarks', e.target.value)} disabled={isReadOnly} placeholder="Comment on - resistance for valuation, rented property, community dominated areas, approach road, etc." />
-          </Field>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="Signature Date">
-              <input type="date" className={inputCls} value={fields.bajajSignatureDate || ''} onChange={e => handleChange('bajajSignatureDate', e.target.value)} disabled={isReadOnly} />
-            </Field>
-            <Field label="Place">
-              <input className={inputCls} value={fields.bajajSignaturePlace || 'Bhubaneswar'} onChange={e => handleChange('bajajSignaturePlace', e.target.value)} disabled={isReadOnly} />
-            </Field>
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        const inputCls = "w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500";
+        const selectCls = "w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500";
+        
+        const NACheckbox = ({ field, label = 'Mark as NA' }: { field: string, label?: string }) => (
+          <label className="flex items-center gap-2 mt-1.5 text-xs text-gray-500 cursor-pointer w-max">
+            <input
+              type="checkbox"
+              checked={(fields as any)[`${field}_isNA`]}
+              onChange={(e) => handleChange(`${field}_isNA`, e.target.checked)}
+              disabled={isReadOnly}
+              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5"
+            />
+            {label}
+          </label>
+        );
+
+        const EditSwitch = ({ field }: { field: string }) => {
+          const isManual = (fields as any)[`${field}_isManual`];
+          return (
+            <button
+              type="button"
+              onClick={() => handleChange(`${field}_isManual`, !isManual)}
+              disabled={isReadOnly}
+              className={`px-2 py-0.5 rounded text-xs font-medium border transition-colors ${
+                isManual 
+                  ? 'bg-green-100 border-green-300 text-green-700 hover:bg-green-200' 
+                  : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'
+              }`}
+              title={isManual ? "Switch to auto-calculated" : "Switch to manual edit"}
+            >
+              {isManual ? 'Manual (On)' : 'Auto (Off)'}
+            </button>
+          );
+        };
+
+        const renderSelectWithCustom = (
+          value: string,
+          customValue: string,
+          onChange: (val: string, custom: string) => void,
+          options: string[],
+          disabled: boolean
+        ) => (
+          <div className="space-y-2">
+            <select
+              className={selectCls}
+              value={options.includes(value) ? value : (value ? 'Custom' : options[0])}
+              onChange={e => onChange(e.target.value === 'Custom' ? customValue : e.target.value, customValue)}
+              disabled={disabled}
+            >
+              {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+              <option value="Custom">Custom</option>
+            </select>
+            {(!options.includes(value) && value) || value === 'Custom' ? (
+              <input
+                type="text"
+                className={inputCls}
+                value={customValue}
+                onChange={e => onChange('Custom', e.target.value)}
+                disabled={disabled}
+                placeholder="Enter custom value..."
+              />
+            ) : null}
           </div>
-        </div>
-      ),
+        );
+
+        // Auto-compile Remarks
+        React.useEffect(() => {
+          if (!fields.bajajRemarksIfAny_isManual && !fields.bajajRemarksIfAny_isNA) {
+            // "Subject property is a {Floor No.} storied {Nature of Building} building having land extent of {Land Area} sqft and, having total measured BUA for {Floor No.} storied building is {Total BUA}sqft. Age of the building is about {Age of Property}-years. All civic amenities are present within 1-2 km from the property. Property is accessible with {Road Width}-feet wide road & surrounding areas are {Surrounding Nature} in nature. Property is coming under {Jurisdiction} limit & it is coming under {Zone} zone. {Occupancy breakdown details}. Valuation has been done for land & measured BUA of {Floor No.} residential building. As approved plan is not provided, it is upto the sole discretion of {Bank/Client Name} to consider the BUA value or not."
+            const floorNo = fields.bajajPropertyNoOfFloors || '{Floor No.}';
+            const nature = fields.bajajPropertyNatureOfProperty || '{Nature of Building}';
+            const landArea = fields.bajajValuationLandArea || '{Land Area}';
+            const totalBua = fields.bajajTotalBUA || '{Total BUA}';
+            const age = fields.bajajAgeOfProperty || '{Age of Property}';
+            const roadWidth = fields.bajajPropertyRoadWidth || '{Road Width}';
+            const surrounding = fields.bajajSurroundingNature || '{Surrounding Nature}';
+            const jurisdiction = fields.bajajLocationJurisdiction || '{Jurisdiction}';
+            const zone = fields.bajajLocationZone || '{Zone}';
+            
+            const bankName = fields.bankName || 'BAJAJ HOUSING FINANCE LTD';
+            let occupancy = fields.bajajPropertyOccupancyStatus || '{Occupancy breakdown details}';
+            if (fields.bajajPropertyOccupancyStatus === 'Self Occupied') {
+               occupancy = "Property is self occupied by the owner.";
+            } else if (fields.bajajPropertyOccupancyStatus === 'Tenanted') {
+               occupancy = "Property is tenanted.";
+            } else if (fields.bajajPropertyOccupancyStatus === 'Vacant') {
+               occupancy = "Property is currently vacant.";
+            }
+
+            const autoRemarks = `Subject property is a ${floorNo} storied ${nature} building having land extent of ${landArea} sqft and, having total measured BUA for ${floorNo} storied building is ${totalBua}sqft. Age of the building is about ${age}-years. All civic amenities are present within 1-2 km from the property. Property is accessible with ${roadWidth}-feet wide road & surrounding areas are ${surrounding} in nature. Property is coming under ${jurisdiction} limit & it is coming under ${zone} zone. ${occupancy} Valuation has been done for land & measured BUA of ${floorNo} residential building. As approved plan is not provided, it is upto the sole discretion of ${bankName} to consider the BUA value or not.`;
+            
+            if (fields.bajajRemarksIfAny !== autoRemarks) {
+              handleChange('bajajRemarksIfAny', autoRemarks);
+            }
+          }
+        }, [
+          fields.bajajRemarksIfAny_isManual, fields.bajajRemarksIfAny_isNA,
+          fields.bajajPropertyNoOfFloors, fields.bajajPropertyNatureOfProperty,
+          fields.bajajValuationLandArea, fields.bajajTotalBUA, fields.bajajAgeOfProperty,
+          fields.bajajPropertyRoadWidth, fields.bajajSurroundingNature, fields.bajajLocationJurisdiction,
+          fields.bajajLocationZone, fields.bajajPropertyOccupancyStatus, fields.bankName
+        ]);
+
+        const showPanchayat = fields.bajajLocationJurisdiction === 'Gram Panchayat';
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            
+            {/* General Observations & Remarks */}
+            <div className="border border-[#C7D2FE] bg-[#EEF2FF] rounded-xl p-4">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-gray-700">General Observations & Remarks</h3>
+                <EditSwitch field="bajajRemarksIfAny" />
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Remarks If Any</label>
+                  <textarea 
+                    className={inputCls} 
+                    rows={6} 
+                    value={fields.bajajRemarksIfAny_isNA ? 'NA' : (fields.bajajRemarksIfAny || '')}
+                    onChange={e => handleChange('bajajRemarksIfAny', e.target.value)}
+                    disabled={isReadOnly || fields.bajajRemarksIfAny_isNA || !fields.bajajRemarksIfAny_isManual}
+                    placeholder="Auto-compiled summary..."
+                  />
+                  <NACheckbox field="bajajRemarksIfAny" />
+                </div>
+              </div>
+            </div>
+
+            {/* Additional checks for Panchayat properties */}
+            {showPanchayat && (
+              <div className="border border-[#FEF08A] bg-[#FEFCE8] rounded-xl p-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="font-bold text-gray-700">Additional checks for Panchayat properties</h3>
+                  <label className="flex items-center gap-2 text-xs font-bold text-gray-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={fields.bajajPanchayatAllNA}
+                      onChange={(e) => {
+                        const isNA = e.target.checked;
+                        handleChange('bajajPanchayatAllNA', isNA);
+                        handleChange('bajajPanchayatApproachRoad_isNA', isNA);
+                        handleChange('bajajPanchayatDevelopment_isNA', isNA);
+                        handleChange('bajajPanchayatDistanceCityCentre_isNA', isNA);
+                        handleChange('bajajPanchayatDistanceCorp_isNA', isNA);
+                        handleChange('bajajPanchayatElectricity_isNA', isNA);
+                        handleChange('bajajPanchayatElectricityDistributor_isNA', isNA);
+                        handleChange('bajajPanchayatWaterSupply_isNA', isNA);
+                        handleChange('bajajPanchayatWaterDistributor_isNA', isNA);
+                        handleChange('bajajPanchayatSewerProvision_isNA', isNA);
+                        handleChange('bajajPanchayatSewerMainConnected_isNA', isNA);
+                        handleChange('bajajPanchayatDemolitionThreat_isNA', isNA);
+                      }}
+                      disabled={isReadOnly}
+                      className="rounded border-gray-300 text-yellow-600 focus:ring-yellow-500 w-4 h-4"
+                    />
+                    Mark all as NA
+                  </label>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Approach Road to the property</label>
+                    {renderSelectWithCustom(fields.bajajPanchayatApproachRoad, fields.bajajPanchayatApproachRoadCustom, (v, c) => {
+                      handleChange('bajajPanchayatApproachRoad', v);
+                      handleChange('bajajPanchayatApproachRoadCustom', c);
+                    }, ['Pucca', 'Kuccha', 'Concrete', 'Bitumen', 'NA'], isReadOnly || fields.bajajPanchayatApproachRoad_isNA)}
+                    <NACheckbox field="bajajPanchayatApproachRoad" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Development of surrounding areas to property</label>
+                    {renderSelectWithCustom(fields.bajajPanchayatDevelopment, fields.bajajPanchayatDevelopmentCustom, (v, c) => {
+                      handleChange('bajajPanchayatDevelopment', v);
+                      handleChange('bajajPanchayatDevelopmentCustom', c);
+                    }, ['Developed', 'Under Developed', 'Developing', 'Sparsely Populated', 'NA'], isReadOnly || fields.bajajPanchayatDevelopment_isNA)}
+                    <NACheckbox field="bajajPanchayatDevelopment" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Distance from city centre in Kms</label>
+                    <input 
+                      type="number" step="0.1" 
+                      className={inputCls} 
+                      value={fields.bajajPanchayatDistanceCityCentre_isNA ? '' : fields.bajajPanchayatDistanceCityCentre} 
+                      onChange={e => handleChange('bajajPanchayatDistanceCityCentre', e.target.value)} 
+                      disabled={isReadOnly || fields.bajajPanchayatDistanceCityCentre_isNA} 
+                    />
+                    <NACheckbox field="bajajPanchayatDistanceCityCentre" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Distance from corporation limits in Kms/Bus stop</label>
+                    <input 
+                      type="text" 
+                      className={inputCls} 
+                      value={fields.bajajPanchayatDistanceCorp_isNA ? '' : fields.bajajPanchayatDistanceCorp} 
+                      onChange={e => handleChange('bajajPanchayatDistanceCorp', e.target.value)} 
+                      disabled={isReadOnly || fields.bajajPanchayatDistanceCorp_isNA} 
+                    />
+                    <NACheckbox field="bajajPanchayatDistanceCorp" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Electricity</label>
+                    {renderSelectWithCustom(fields.bajajPanchayatElectricity, fields.bajajPanchayatElectricityCustom, (v, c) => {
+                      handleChange('bajajPanchayatElectricity', v);
+                      handleChange('bajajPanchayatElectricityCustom', c);
+                    }, ['Yes', 'No', 'Available', 'NA'], isReadOnly || fields.bajajPanchayatElectricity_isNA)}
+                    <NACheckbox field="bajajPanchayatElectricity" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Electricity Distributor</label>
+                    {renderSelectWithCustom(fields.bajajPanchayatElectricityDistributor, fields.bajajPanchayatElectricityDistributorCustom, (v, c) => {
+                      handleChange('bajajPanchayatElectricityDistributor', v);
+                      handleChange('bajajPanchayatElectricityDistributorCustom', c);
+                    }, ['TPCODL', 'TPNODL', 'TPSODL', 'TPWODL', 'State Board', 'NA'], isReadOnly || fields.bajajPanchayatElectricityDistributor_isNA)}
+                    <NACheckbox field="bajajPanchayatElectricityDistributor" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Water supply</label>
+                    {renderSelectWithCustom(fields.bajajPanchayatWaterSupply, fields.bajajPanchayatWaterSupplyCustom, (v, c) => {
+                      handleChange('bajajPanchayatWaterSupply', v);
+                      handleChange('bajajPanchayatWaterSupplyCustom', c);
+                    }, ['Available', 'Not Available', 'Borewell', 'Municipal Supply', 'NA'], isReadOnly || fields.bajajPanchayatWaterSupply_isNA)}
+                    <NACheckbox field="bajajPanchayatWaterSupply" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Water Distributor</label>
+                    <input 
+                      type="text" 
+                      className={inputCls} 
+                      value={fields.bajajPanchayatWaterDistributor_isNA ? '' : fields.bajajPanchayatWaterDistributor} 
+                      onChange={e => handleChange('bajajPanchayatWaterDistributor', e.target.value)} 
+                      disabled={isReadOnly || fields.bajajPanchayatWaterDistributor_isNA} 
+                    />
+                    <NACheckbox field="bajajPanchayatWaterDistributor" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Sewer provision</label>
+                    {renderSelectWithCustom(fields.bajajPanchayatSewerProvision, fields.bajajPanchayatSewerProvisionCustom, (v, c) => {
+                      handleChange('bajajPanchayatSewerProvision', v);
+                      handleChange('bajajPanchayatSewerProvisionCustom', c);
+                    }, ['Yes', 'No', 'Septic Tank', 'Open Drain', 'Underground Sewerage', 'NA'], isReadOnly || fields.bajajPanchayatSewerProvision_isNA)}
+                    <NACheckbox field="bajajPanchayatSewerProvision" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Sewer line connected to main sewer</label>
+                    {renderSelectWithCustom(fields.bajajPanchayatSewerMainConnected, fields.bajajPanchayatSewerMainConnectedCustom, (v, c) => {
+                      handleChange('bajajPanchayatSewerMainConnected', v);
+                      handleChange('bajajPanchayatSewerMainConnectedCustom', c);
+                    }, ['Yes', 'No', 'NA'], isReadOnly || fields.bajajPanchayatSewerMainConnected_isNA)}
+                    <NACheckbox field="bajajPanchayatSewerMainConnected" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Any demolition threat in future development/ expansion</label>
+                    {renderSelectWithCustom(fields.bajajPanchayatDemolitionThreat, fields.bajajPanchayatDemolitionThreatCustom, (v, c) => {
+                      handleChange('bajajPanchayatDemolitionThreat', v);
+                      handleChange('bajajPanchayatDemolitionThreatCustom', c);
+                    }, ['No', 'Yes', 'NA'], isReadOnly || fields.bajajPanchayatDemolitionThreat_isNA)}
+                    <NACheckbox field="bajajPanchayatDemolitionThreat" />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      id: 'bajaj-section-11',
+      title: 'Declaration & Verification',
+      number: 11,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        const inputCls = "w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500";
+        
+        const NACheckbox = ({ field, label = 'Mark as NA' }: { field: string, label?: string }) => (
+          <label className="flex items-center gap-2 mt-1.5 text-xs text-gray-500 cursor-pointer w-max">
+            <input
+              type="checkbox"
+              checked={(fields as any)[`${field}_isNA`]}
+              onChange={(e) => handleChange(`${field}_isNA`, e.target.checked)}
+              disabled={isReadOnly}
+              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5"
+            />
+            {label}
+          </label>
+        );
+
+        const EditSwitch = ({ field }: { field: string }) => {
+          const isManual = (fields as any)[`${field}_isManual`];
+          return (
+            <button
+              type="button"
+              onClick={() => handleChange(`${field}_isManual`, !isManual)}
+              disabled={isReadOnly}
+              className={`px-2 py-0.5 rounded text-xs font-medium border transition-colors ${
+                isManual 
+                  ? 'bg-green-100 border-green-300 text-green-700 hover:bg-green-200' 
+                  : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'
+              }`}
+              title={isManual ? "Switch to manual edit" : "Switch to auto-calculated"}
+            >
+              {isManual ? 'Manual (On)' : 'Auto (Off)'}
+            </button>
+          );
+        };
+
+        // Auto-compile Declaration based on Valuation Methodology
+        React.useEffect(() => {
+          if (!fields.bajajDeclarationText_isManual && !fields.bajajDeclarationText_isNA) {
+            const methodologyRaw = fields.bajajValuationMethodology === 'Custom' ? fields.bajajValuationMethodologyCustom : fields.bajajValuationMethodology;
+            const methodology = methodologyRaw || 'Land & Building Method';
+            
+            const autoDec = `The final valuation has been concluded basis ${methodology} approach and rates are cross-verified with the rates prevalent in the nearby localities.\nWe have no direct/indirect interest in the property valued.\nThe information furnished in the report is true and correct to the best of my knowledge.`;
+            
+            if (fields.bajajDeclarationText !== autoDec) {
+              handleChange('bajajDeclarationText', autoDec);
+            }
+          }
+        }, [
+          fields.bajajDeclarationText_isManual, fields.bajajDeclarationText_isNA,
+          fields.bajajValuationMethodology, fields.bajajValuationMethodologyCustom
+        ]);
+
+        // Auto-fill Place from District/Jurisdiction
+        React.useEffect(() => {
+          if (!fields.bajajSignaturePlace_isManual && !fields.bajajSignaturePlace_isNA) {
+            const place = fields.bajajLocationDistrict || fields.bajajLocationJurisdiction || 'Bhubaneswar';
+            if (fields.bajajSignaturePlace !== place) {
+              handleChange('bajajSignaturePlace', place);
+            }
+          }
+        }, [
+          fields.bajajSignaturePlace_isManual, fields.bajajSignaturePlace_isNA,
+          fields.bajajLocationDistrict, fields.bajajLocationJurisdiction
+        ]);
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border border-[#EAD9D0] bg-[#FBF7F5] rounded-xl p-4">
+              <h3 className="font-bold text-gray-700 mb-4">Declaration & Verification</h3>
+              <div className="space-y-4">
+                
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="block text-xs font-medium text-gray-700">Declaration (I hereby declare that)</label>
+                    <EditSwitch field="bajajDeclarationText" />
+                  </div>
+                  <textarea 
+                    className={inputCls} 
+                    rows={5} 
+                    value={fields.bajajDeclarationText_isNA ? 'NA' : (fields.bajajDeclarationText || '')}
+                    onChange={e => handleChange('bajajDeclarationText', e.target.value)}
+                    disabled={isReadOnly || fields.bajajDeclarationText_isNA || !fields.bajajDeclarationText_isManual}
+                  />
+                  <NACheckbox field="bajajDeclarationText" />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">For Seal with Signature</label>
+                  <input 
+                    type="file" accept="image/*,.pdf"
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    disabled={isReadOnly || fields.bajajSignatureFile_isNA}
+                  />
+                  <p className="text-[10px] text-gray-400 mt-1">Upload digital signature/seal.</p>
+                  <NACheckbox field="bajajSignatureFile" />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-xs font-medium text-gray-700">Date</label>
+                      <EditSwitch field="bajajSignatureDate" />
+                    </div>
+                    <input 
+                      type="date" 
+                      className={inputCls} 
+                      value={fields.bajajSignatureDate_isNA ? '' : (fields.bajajSignatureDate || '')}
+                      onChange={e => handleChange('bajajSignatureDate', e.target.value)}
+                      disabled={isReadOnly || fields.bajajSignatureDate_isNA || !fields.bajajSignatureDate_isManual}
+                    />
+                    <NACheckbox field="bajajSignatureDate" />
+                  </div>
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-xs font-medium text-gray-700">Place</label>
+                      <EditSwitch field="bajajSignaturePlace" />
+                    </div>
+                    <input 
+                      type="text" 
+                      className={inputCls} 
+                      value={fields.bajajSignaturePlace_isNA ? 'NA' : (fields.bajajSignaturePlace || '')}
+                      onChange={e => handleChange('bajajSignaturePlace', e.target.value)}
+                      disabled={isReadOnly || fields.bajajSignaturePlace_isNA || !fields.bajajSignaturePlace_isManual}
+                    />
+                    <NACheckbox field="bajajSignaturePlace" />
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        );
+      },
     },
   ],
   getPDFRenderer: (fields) => {

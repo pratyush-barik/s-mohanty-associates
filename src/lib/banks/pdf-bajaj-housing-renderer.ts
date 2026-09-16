@@ -65,12 +65,14 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
       this.drawBajajSection6();
     } else if (title === 'TECHNICAL DETAILS') {
       this.drawBajajSection7();
-    } else if (title === 'AREA & FLOOR DETAILS') {
+    } else if (title === 'PLOT & BAU AREA') {
       this.drawBajajSection8();
-    } else if (title === 'VALUATION SUMMARY') {
+    } else if (title === 'VALUATION') {
       this.drawBajajSection9();
-    } else if (title === 'REMARKS & DECLARATION') {
+    } else if (title === 'REMARKS & PANCHAYAT') {
       this.drawBajajSection10();
+    } else if (title === 'DECLARATION') {
+      this.drawBajajSection11();
     }
   }
 
@@ -404,27 +406,58 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
 
   }
 
-  // ── Section 10: Remarks & Declaration ──
+  // ── Section 10: Remarks & Additional Checks for Panchayat Properties ──
   private drawBajajSection10() {
     const fv = this.fv.bind(this);
+    const cw = CONTENT_W;
 
-    // Remarks
-    this.drawSectionSubtitle('Remarks');
-    this.drawSimpleRow('Remarks', fv('bajajRemarks'));
-
+    this.drawSectionSubtitle('General Observations & Remarks');
+    this.drawTextBlock(fv('bajajRemarksIfAny'));
     this.advanceCursor(6);
 
-    // Declaration
-    this.drawSectionSubtitle('Declaration');
-    const declarations = [
-      'The final valuation has been done/decided basis Land & Building Method as approved per policy and rates are cross-referred with the rates prevalent in the nearby/similar properties.',
-      'We have no direct/indirect interest in the property valued.',
-      'The information furnished in the report is true and correct to the best of the knowledge.'
-    ];
-    for (let i = 0; i < declarations.length; i++) {
-      this.drawSimpleRow(`${i + 1}.`, declarations[i]);
-    }
+    if (fv('bajajLocationJurisdiction') === 'Gram Panchayat') {
+      this.drawSectionSubtitle('Additional checks for Panchayat properties');
+      const getPanchayatValue = (field: string) => fv(`${field}`) === 'Custom' ? fv(`${field}Custom`) : fv(`${field}`);
 
+      this.drawKeyValueRow([
+        { label: 'Approach Road to the property', value: getPanchayatValue('bajajPanchayatApproachRoad') },
+        { label: 'Development of surrounding areas', value: getPanchayatValue('bajajPanchayatDevelopment') }
+      ]);
+      this.drawKeyValueRow([
+        { label: 'Distance from city centre (Kms)', value: fv('bajajPanchayatDistanceCityCentre') },
+        { label: 'Distance from corp limits (Kms)', value: fv('bajajPanchayatDistanceCorp') }
+      ]);
+      this.drawKeyValueRow([
+        { label: 'Electricity', value: getPanchayatValue('bajajPanchayatElectricity') },
+        { label: 'Electricity Distributor', value: getPanchayatValue('bajajPanchayatElectricityDistributor') }
+      ]);
+      this.drawKeyValueRow([
+        { label: 'Water supply', value: getPanchayatValue('bajajPanchayatWaterSupply') },
+        { label: 'Water Distributor', value: fv('bajajPanchayatWaterDistributor') }
+      ]);
+      this.drawKeyValueRow([
+        { label: 'Sewer provision', value: getPanchayatValue('bajajPanchayatSewerProvision') },
+        { label: 'Sewer connected to main sewer', value: getPanchayatValue('bajajPanchayatSewerMainConnected') }
+      ]);
+      this.drawSimpleRow('Any demolition threat in future development/ expansion', getPanchayatValue('bajajPanchayatDemolitionThreat'));
+      this.advanceCursor(6);
+    }
+  }
+
+  // ── Section 11: Declaration & Verification ──
+  private drawBajajSection11() {
+    const fv = this.fv.bind(this);
+
+    this.drawSectionSubtitle('Declaration (I hereby declare that)');
+    const declarationText = fv('bajajDeclarationText');
+    if (declarationText) {
+      const lines = declarationText.split('\n');
+      for (const line of lines) {
+        if (line.trim()) {
+          this.drawTextBlock(`\u2022 ${line.trim()}`);
+        }
+      }
+    }
     this.advanceCursor(10);
 
     // Signature block
