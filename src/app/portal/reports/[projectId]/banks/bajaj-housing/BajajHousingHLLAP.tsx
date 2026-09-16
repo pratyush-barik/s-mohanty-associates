@@ -273,7 +273,31 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
     bajajNumberOfFloorsBuilding_isNA: false,
     bajajNumberOfFloorsBuilding_isManual: false,
 
-    // Section 7: Area & Floor Details
+    // Section 7: Technical Details
+    bajajConstructionQuality: '',
+    bajajConstructionQualityCustom: '',
+    bajajConstructionQuality_isNA: false,
+    
+    bajajLiftAvailable: '',
+    bajajLiftAvailableCustom: '',
+    bajajLiftAvailable_isNA: false,
+    
+    bajajNoOfLifts: '',
+    bajajNoOfLifts_isNA: false,
+    bajajNoOfLifts_isManual: false,
+    
+    bajajCurrentOccupant: '',
+    bajajCurrentOccupant_isNA: false,
+    bajajCurrentOccupant_isManual: false,
+    
+    bajajSeparateAccess: '',
+    bajajSeparateAccessCustom: '',
+    bajajSeparateAccess_isNA: false,
+    
+    bajajAccommodationDetails: '',
+    bajajAccommodationDetails_isNA: false,
+
+    // Section 8: Area & Floor Details
     bajajPlotNSDoc: '',
     bajajPlotNSPlan: '',
     bajajPlotNSSite: '',
@@ -1439,60 +1463,168 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
     },
     {
       id: 'bajaj-section-7',
-      title: 'Area & Floor Details',
+      title: 'Technical Details',
       number: 7,
       defaultOpen: false,
-      render: (fields, handleChange, isReadOnly) => (
-        <div className="animate-fade-in space-y-4">
-          <p className="text-xs text-gray-500 italic">Section details will be configured with detailed prompts.</p>
-          {/* Plot Area Details */}
-          <div className="border border-gray-200 rounded-md p-4">
-            <h4 className="font-semibold text-sm text-gray-700 mb-3">Plot Area Details</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {['Doc', 'Plan', 'Site'].map(src => (
-                <div key={src}>
-                  <h5 className="text-xs font-medium text-gray-500 mb-2">As Per {src === 'Doc' ? 'Documents' : src === 'Plan' ? 'Plan' : 'Site Visit'}</h5>
-                  <Field label="North to South">
-                    <input className={inputCls} value={fields[`bajajPlotNS${src}`] || ''} onChange={e => handleChange(`bajajPlotNS${src}`, e.target.value)} disabled={isReadOnly} />
-                  </Field>
-                  <Field label="East to West">
-                    <input className={inputCls} value={fields[`bajajPlotEW${src}`] || ''} onChange={e => handleChange(`bajajPlotEW${src}`, e.target.value)} disabled={isReadOnly} />
-                  </Field>
-                  <Field label="Land Area (sq.ft.)">
-                    <input className={inputCls} value={fields[`bajajLandArea${src}`] || ''} onChange={e => handleChange(`bajajLandArea${src}`, e.target.value)} disabled={isReadOnly} />
-                  </Field>
-                </div>
-              ))}
-            </div>
+      render: (fields, handleChange, isReadOnly) => {
+        const NACheckbox = ({ field, label = 'Mark as NA' }: { field: string, label?: string }) => (
+          <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-500 mt-1 hover:text-gray-700">
+            <input 
+              type="checkbox" 
+              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
+              checked={!!fields[`${field}_isNA`]}
+              onChange={(e) => {
+                handleChange(`${field}_isNA`, e.target.checked);
+                if (e.target.checked) handleChange(field, 'NA');
+                else handleChange(field, '');
+              }}
+              disabled={isReadOnly}
+            />
+            <span>{label}</span>
+          </label>
+        );
+
+        const EditSwitch = ({ field, onToggleOff }: { field: string, onToggleOff?: () => void }) => (
+          <div className="flex items-center gap-2 mt-1">
+            <button
+              type="button"
+              onClick={() => {
+                const manual = !fields[`${field}_isManual`];
+                handleChange(`${field}_isManual`, manual);
+                if (!manual && onToggleOff) {
+                  onToggleOff();
+                }
+              }}
+              disabled={isReadOnly}
+              className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields[`${field}_isManual`] ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields[`${field}_isManual`] ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
+            </button>
+            <span className={`text-[10px] font-medium uppercase tracking-wider ${fields[`${field}_isManual`] ? 'text-emerald-600' : 'text-gray-400'}`}>
+              {fields[`${field}_isManual`] ? 'Edit On' : 'Edit Off'}
+            </span>
           </div>
-          {/* Risk/Status/Age */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="Risk of Deviations">
-              <select className={inputCls} value={fields.bajajRiskOfDeviations || ''} onChange={e => handleChange('bajajRiskOfDeviations', e.target.value)} disabled={isReadOnly}>
+        );
+
+        const renderSelectWithCustom = (field: string, options: string[], label: string, onChangeExt?: (val: string) => void) => (
+          <div>
+            <Field label={label}>
+              <select 
+                className={inputCls} 
+                value={fields[field] === 'NA' ? 'NA' : (options.includes(fields[field] || '') ? fields[field] : (fields[field] ? 'Custom' : ''))} 
+                onChange={e => {
+                  let val = e.target.value;
+                  if (val === 'Custom') val = fields[`${field}Custom`] || '';
+                  handleChange(field, val);
+                  if (onChangeExt) onChangeExt(val);
+                }} 
+                disabled={isReadOnly || fields[`${field}_isNA`]}
+              >
                 <option value="">Select</option>
-                <option value="High">High</option>
-                <option value="Medium">Medium</option>
-                <option value="Low">Low</option>
+                {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                <option value="Custom">Custom</option>
               </select>
             </Field>
-            <Field label="Status of the Property">
-              <input className={inputCls} value={fields.bajajStatusOfProperty || ''} onChange={e => handleChange('bajajStatusOfProperty', e.target.value)} disabled={isReadOnly} />
-            </Field>
-            <Field label="% Completed">
-              <input className={inputCls} value={fields.bajajPercentCompleted || ''} onChange={e => handleChange('bajajPercentCompleted', e.target.value)} disabled={isReadOnly} />
-            </Field>
-            <Field label="% Disbursement Recommended">
-              <input className={inputCls} value={fields.bajajDisbursementRecommended || ''} onChange={e => handleChange('bajajDisbursementRecommended', e.target.value)} disabled={isReadOnly} />
-            </Field>
-            <Field label="Current Age of Property (Years)">
-              <input className={inputCls} value={fields.bajajCurrentAge || ''} onChange={e => handleChange('bajajCurrentAge', e.target.value)} disabled={isReadOnly} />
-            </Field>
-            <Field label="Residual Age">
-              <input className={inputCls} value={fields.bajajResidualAge || ''} onChange={e => handleChange('bajajResidualAge', e.target.value)} disabled={isReadOnly} />
-            </Field>
+            {!options.includes(fields[field] || '') && fields[field] && fields[field] !== 'NA' && (
+              <div className="mt-2">
+                <input 
+                  type="text" 
+                  className={inputCls} 
+                  placeholder="Enter custom value"
+                  value={fields[`${field}Custom`] || ''} 
+                  onChange={e => {
+                    handleChange(`${field}Custom`, e.target.value);
+                    handleChange(field, e.target.value);
+                    if (onChangeExt) onChangeExt(e.target.value);
+                  }}
+                  disabled={isReadOnly || fields[`${field}_isNA`]}
+                />
+              </div>
+            )}
+            <NACheckbox field={field} />
           </div>
-        </div>
-      ),
+        );
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border border-[#E9D5FF] bg-[#FAF5FF] rounded-xl p-4">
+              <h3 className="font-bold text-gray-700 mb-4">Technical Details</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {renderSelectWithCustom('bajajConstructionQuality', ['Good', 'Average', 'Poor'], 'Construction Quality (Good/Average/Poor)')}
+                
+                {renderSelectWithCustom('bajajLiftAvailable', ['Yes', 'No'], 'Lift Available (Yes/No)', (val) => {
+                  if (['No', 'NA'].includes(val)) {
+                    if (!fields.bajajNoOfLifts_isManual) {
+                      handleChange('bajajNoOfLifts', '0');
+                    }
+                  }
+                })}
+                
+                <div>
+                  <div className="flex justify-between items-end mb-1">
+                    <label className="block text-xs font-medium text-gray-700">No. of Lifts</label>
+                    <EditSwitch 
+                      field="bajajNoOfLifts" 
+                      onToggleOff={() => {
+                        handleChange('bajajNoOfLifts_isNA', false);
+                        if (['No', 'NA'].includes(fields.bajajLiftAvailable)) {
+                          handleChange('bajajNoOfLifts', '0');
+                        }
+                      }} 
+                    />
+                  </div>
+                  <input 
+                    type="number"
+                    min="0"
+                    className={inputCls} 
+                    value={fields.bajajNoOfLifts || ''} 
+                    onChange={e => handleChange('bajajNoOfLifts', e.target.value)} 
+                    disabled={isReadOnly || (!fields.bajajNoOfLifts_isManual && ['No', 'NA'].includes(fields.bajajLiftAvailable)) || fields.bajajNoOfLifts_isNA} 
+                  />
+                  <NACheckbox field="bajajNoOfLifts" />
+                </div>
+
+                {renderSelectWithCustom('bajajSeparateAccess', ['Yes', 'No'], 'Separate Independent Access (Yes/No)')}
+              </div>
+
+              <div className="mt-4">
+                <div className="flex justify-between items-end mb-1">
+                  <label className="block text-xs font-medium text-gray-700">Current Occupant of Property (Owner/Tenant/Vacant)</label>
+                  <EditSwitch 
+                    field="bajajCurrentOccupant" 
+                    onToggleOff={() => {
+                      handleChange('bajajCurrentOccupant_isNA', false);
+                      handleChange('bajajCurrentOccupant', fields.bajajOccupiedBy || '');
+                    }} 
+                  />
+                </div>
+                <textarea
+                  className={inputCls} 
+                  rows={2}
+                  value={fields.bajajCurrentOccupant === 'NA' ? 'NA' : fields.bajajCurrentOccupant || ''} 
+                  onChange={e => handleChange('bajajCurrentOccupant', e.target.value)} 
+                  disabled={isReadOnly || !fields.bajajCurrentOccupant_isManual || fields.bajajCurrentOccupant_isNA} 
+                />
+                <NACheckbox field="bajajCurrentOccupant" />
+              </div>
+
+              <div className="mt-4">
+                <Field label="Accommodation details: Floor wise and Occupancy">
+                  <textarea 
+                    className={inputCls} 
+                    rows={4}
+                    value={fields.bajajAccommodationDetails || ''} 
+                    onChange={e => handleChange('bajajAccommodationDetails', e.target.value)} 
+                    disabled={isReadOnly || fields.bajajAccommodationDetails_isNA} 
+                  />
+                </Field>
+                <NACheckbox field="bajajAccommodationDetails" />
+              </div>
+            </div>
+          </div>
+        );
+      },
     },
     {
       id: 'bajaj-section-8',

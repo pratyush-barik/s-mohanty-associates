@@ -63,12 +63,14 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
       this.drawBajajSection5();
     } else if (title === 'APPROVED PLAN DETAILS') {
       this.drawBajajSection6();
-    } else if (title === 'AREA & FLOOR DETAILS') {
+    } else if (title === 'TECHNICAL DETAILS') {
       this.drawBajajSection7();
-    } else if (title === 'VALUATION SUMMARY') {
+    } else if (title === 'AREA & FLOOR DETAILS') {
       this.drawBajajSection8();
-    } else if (title === 'REMARKS & DECLARATION') {
+    } else if (title === 'VALUATION SUMMARY') {
       this.drawBajajSection9();
+    } else if (title === 'REMARKS & DECLARATION') {
+      this.drawBajajSection10();
     }
   }
 
@@ -260,8 +262,25 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
     ]);
   }
 
-  // ── Section 7: Area & Floor Details ──
+  // ── Section 7: Technical Details ──
   private drawBajajSection7() {
+    const fv = this.fv.bind(this);
+    const getVal = (field: string) => this.fields[`${field}_isNA`] ? 'NA' : fv(field);
+
+    this.drawKeyValueRow([
+      { label: 'Construction Quality (Good/Average/Poor)', value: getVal('bajajConstructionQuality') },
+      { label: 'Lift Available (Yes/No)', value: getVal('bajajLiftAvailable') }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'No. of Lifts', value: getVal('bajajNoOfLifts') },
+      { label: 'Separate Independent Access (Yes/No)', value: getVal('bajajSeparateAccess') }
+    ]);
+    this.drawSimpleRow('Current Occupant of Property (Owner/Tenant/Vacant)', getVal('bajajCurrentOccupant'));
+    this.drawSimpleRow('Accommodation details: Floor wise and Occupancy', getVal('bajajAccommodationDetails'));
+  }
+
+  // ── Section 8: Area & Floor Details ──
+  private drawBajajSection8() {
     const fv = this.fv.bind(this);
 
     // Plot Area Details table
@@ -320,8 +339,8 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
     ]);
   }
 
-  // ── Section 8: Valuation Summary ──
-  private drawBajajSection8() {
+  // ── Section 9: Valuation Summary ──
+  private drawBajajSection9() {
     const fv = this.fv.bind(this);
 
     // Main valuation table
@@ -357,8 +376,8 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
     this.drawSimpleRow('Rental value per month', fv('bajajRentalValuePerMonth'));
   }
 
-  // ── Section 9: Remarks & Declaration ──
-  private drawBajajSection9() {
+  // ── Section 10: Remarks & Declaration ──
+  private drawBajajSection10() {
     const fv = this.fv.bind(this);
 
     // Attachments
