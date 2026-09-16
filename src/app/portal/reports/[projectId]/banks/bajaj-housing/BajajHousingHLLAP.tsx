@@ -606,7 +606,7 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
                     <label className="block text-xs font-medium text-gray-700">Address of Property</label>
                     <EditSwitch 
                       field="bajajLegalAddressOfProperty" 
-                      onToggleOff={() => handleChange('bajajLegalAddressOfProperty', fields.bajajAddressAsPerSite || '')} 
+                      onToggleOff={() => handleChange('bajajLegalAddressOfProperty', fields.bajajAddressAsPerInitiation || '')} 
                     />
                   </div>
                   <textarea 
