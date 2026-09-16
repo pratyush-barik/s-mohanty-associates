@@ -2514,7 +2514,7 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
                     <th className="px-3 py-2 border-b border-amber-200">Items</th>
                     <th className="px-3 py-2 border-b border-amber-200">Area Details in Sq. Ft.</th>
                     <th className="px-3 py-2 border-b border-amber-200">Rate per Sq. Ft.</th>
-                    <th className="px-3 py-2 border-b border-amber-200">Total Values in Rupees</th>
+                    <th className="px-3 py-2 border-b border-amber-200">Total Values in Rupees <span className="text-red-600 font-semibold text-[0.7em] ml-1">[Formula]</span></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -2539,8 +2539,9 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
                     <td className="px-3 py-2 border-b border-amber-100">
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 font-medium pointer-events-none">RS.</span>
-                        <input type="text" className={`${inputCls} pl-8`} value={landValue ? `${formatINR(landValue)}/-` : ''} readOnly />
+                        <input type="text" className={`${inputCls} pl-8`} value={landValue ? `${formatINR(landValue)}/-` : ''} readOnly title="Formula: Numeric Area × Rate per Sq.Ft = Total Land Value" />
                       </div>
+                      <span className="text-red-600 font-semibold text-[0.65em] mt-0.5 block">Area × Rate = Total</span>
                     </td>
                   </tr>
                   <tr>
@@ -2562,8 +2563,9 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
                     <td className="px-3 py-2 border-b border-amber-100">
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 font-medium pointer-events-none">RS.</span>
-                        <input type="text" className={`${inputCls} pl-8`} value={buaValue ? `${formatINR(buaValue)}/-` : ''} readOnly />
+                        <input type="text" className={`${inputCls} pl-8`} value={buaValue ? `${formatINR(buaValue)}/-` : ''} readOnly title="Formula: Numeric Area × Rate per Sq.Ft = Total BUA Value" />
                       </div>
+                      <span className="text-red-600 font-semibold text-[0.65em] mt-0.5 block">Area × Rate = Total</span>
                     </td>
                   </tr>
                   <tr>
@@ -2604,7 +2606,7 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
 
                 <div>
                   <div className="flex justify-between items-end mb-1">
-                    <label className="block text-xs font-medium text-gray-700">Realizable value as on date</label>
+                    <label className="block text-xs font-medium text-gray-700">Realizable value as on date <span className="text-red-600 font-semibold text-[0.85em] ml-1" title="Land Total + BUA Total + Car Parking + Amenities = Realizable Value">[Formula]</span></label>
                     <EditSwitch field="bajajRealizableValue" onToggleOff={() => {
                       let amenities = parseFloat(fields.bajajAmenitiesOtherCharges) || 0;
                       let cp = parseFloat(fields.bajajValuationCarParkingTotal) || 0;
@@ -2627,7 +2629,7 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
 
                 <div>
                   <div className="flex justify-between items-end mb-1">
-                    <label className="block text-xs font-medium text-gray-700">Distressed/ Force Value</label>
+                    <label className="block text-xs font-medium text-gray-700">Distressed/ Force Value <span className="text-red-600 font-semibold text-[0.85em] ml-1" title="Realizable Value × 0.80 = Distressed Value">[Formula]</span></label>
                     <EditSwitch field="bajajDistressedValue" onToggleOff={() => {
                       const realizable = parseFloat(fields.bajajRealizableValue) || 0;
                       handleChange('bajajDistressedValue', Math.round(realizable * 0.8).toString());
@@ -2805,7 +2807,7 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Remarks If Any</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Remarks If Any <span className="text-red-600 font-semibold text-[0.85em] ml-1" title="Dynamic synthesis from Sections 3, 5, 6, 7, 8, 9 data keys">[Formula / Dynamic Synthesis]</span></label>
                   <textarea 
                     className={inputCls} 
                     rows={6} 
