@@ -275,6 +275,7 @@ The core business logic is **100% complete**.
       - Exact 3-row Address format (TRF, Visit, Docs), 8-item documentation checklist, BUA & Setback deviation tables, 4-side boundary comparison (Deed vs Mouza vs Actual), GPS-stamped photo grid.
       - Continuous map stack on Page 6 (Location Map & Mouza Map) touching section headers with zero extra gaps and bounding box borders.
       - Declaration section with hanging indent on all 5 clauses, locked Appraiser Name (`Er. Satyajit Mohanty`), and pre-filled editable Report Prepared By / Finalized By fields.
+    - **Axis Finance Ltd**: Completed custom UI and dedicated PDF renderer with dynamic auto-sync cover page, custom approvals table, and precise PDF pagination.
     - Complete tracking across all 57 banks and 73 subclasses maintained in `BANK_REPORT_PROGRESS.md`.
 
 ## 5. Pending Work (What is next)

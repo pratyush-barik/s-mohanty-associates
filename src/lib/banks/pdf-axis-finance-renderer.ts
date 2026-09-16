@@ -64,6 +64,9 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
   }
 
   override drawSectionHeader(title: string, addSpaceBefore?: boolean, preserveCase?: boolean) {
+    if (title === 'UNIT MEASUREMENTS & SETBACKS') {
+      this.addPage();
+    }
     super.drawSectionHeader(title, addSpaceBefore, preserveCase);
     if (title === 'CLIENT & APPLICATION DETAILS') {
       this.drawAxisSection2();
