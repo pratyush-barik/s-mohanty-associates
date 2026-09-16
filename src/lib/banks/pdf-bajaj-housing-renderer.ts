@@ -187,27 +187,28 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
     this.drawSimpleRow('Occupancy Status SORP/SOCP/Rented/Vacant (Please mentioned only one)', getVal('bajajOccupancy'));
   }
 
-  // ── Section 4: Boundaries & Schedule ──
+  // ── Section 4: Schedule of the Property ──
   private drawBajajSection4() {
     const fv = this.fv.bind(this);
+    const getVal = (field: string) => this.fields[`${field}_isNA`] ? 'NA' : fv(field);
 
     // Boundaries table
-    const bHeaders = ['Boundaries', 'As per sale deed', 'As per Actual'];
+    const bHeaders = ['Boundaries', 'As per legal documents (Sub Plot No-J & Sub plot no-K-1(Part))', 'As per site visit'];
     const bRows = [
-      ['North', fv('bajajBoundaryNorthDeed'), fv('bajajBoundaryNorthActual')],
-      ['East', fv('bajajBoundaryEastDeed'), fv('bajajBoundaryEastActual')],
-      ['South', fv('bajajBoundarySouthDeed'), fv('bajajBoundarySouthActual')],
-      ['West', fv('bajajBoundaryWestDeed'), fv('bajajBoundaryWestActual')]
+      ['North', getVal('bajajBoundaryNorthDeed'), getVal('bajajBoundaryNorthActual')],
+      ['East', getVal('bajajBoundaryEastDeed'), getVal('bajajBoundaryEastActual')],
+      ['West', getVal('bajajBoundaryWestDeed'), getVal('bajajBoundaryWestActual')],
+      ['South', getVal('bajajBoundarySouthDeed'), getVal('bajajBoundarySouthActual')]
     ];
     const cw = CONTENT_W;
-    this.drawTable(bHeaders, bRows, [cw * 0.2, cw * 0.4, cw * 0.4], [], [0]);
+    this.drawTable(bHeaders, bRows, [cw * 0.15, cw * 0.425, cw * 0.425], [], [0]);
 
     this.advanceCursor(4);
     this.drawKeyValueRow([
-      { label: 'Boundary Matching (Yes/No)', value: fv('bajajBoundaryMatching') },
-      { label: 'Property Identifiable', value: fv('bajajPropertyIdentifiable') }
+      { label: 'Boundaries Matching (Yes/No)', value: getVal('bajajBoundaryMatching') },
+      { label: 'Property Identified (Yes/No)', value: getVal('bajajPropertyIdentifiable') }
     ]);
-    this.drawSimpleRow('Approach Road Size', fv('bajajApproachRoadSize'));
+    this.drawSimpleRow('Approach Road Size (<5 ft/5-10 ft/ 10-15 ft/ >15 ft)', getVal('bajajApproachRoadSize'));
   }
 
   // ── Section 5: Approval Details ──

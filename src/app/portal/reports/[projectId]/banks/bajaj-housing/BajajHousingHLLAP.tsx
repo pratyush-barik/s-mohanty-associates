@@ -130,18 +130,43 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
     bajajSOBP: '',
     bajajScheduleOfProperty: '',
 
-    // Section 4: Boundaries
+    // Section 4: Schedule of the Property
     bajajBoundaryNorthDeed: '',
+    bajajBoundaryNorthDeed_isNA: false,
     bajajBoundaryEastDeed: '',
+    bajajBoundaryEastDeed_isNA: false,
     bajajBoundarySouthDeed: '',
+    bajajBoundarySouthDeed_isNA: false,
     bajajBoundaryWestDeed: '',
+    bajajBoundaryWestDeed_isNA: false,
+    
     bajajBoundaryNorthActual: '',
+    bajajBoundaryNorthActual_isNA: false,
+    bajajBoundaryNorthActual_isManual: false,
+    
     bajajBoundaryEastActual: '',
+    bajajBoundaryEastActual_isNA: false,
+    bajajBoundaryEastActual_isManual: false,
+    
     bajajBoundarySouthActual: '',
+    bajajBoundarySouthActual_isNA: false,
+    bajajBoundarySouthActual_isManual: false,
+    
     bajajBoundaryWestActual: '',
+    bajajBoundaryWestActual_isNA: false,
+    bajajBoundaryWestActual_isManual: false,
+
     bajajBoundaryMatching: '',
+    bajajBoundaryMatchingCustom: '',
+    bajajBoundaryMatching_isNA: false,
+    
     bajajPropertyIdentifiable: '',
+    bajajPropertyIdentifiableCustom: '',
+    bajajPropertyIdentifiable_isNA: false,
+    
     bajajApproachRoadSize: '',
+    bajajApproachRoadSizeCustom: '',
+    bajajApproachRoadSize_isNA: false,
 
     // Section 5: Approval Details
     bajajSanctionedPlanProvided: '',
@@ -778,53 +803,147 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
     },
     {
       id: 'bajaj-section-4',
-      title: 'Boundaries & Schedule',
+      title: 'Schedule of the Property',
       number: 4,
       defaultOpen: false,
-      render: (fields, handleChange, isReadOnly) => (
-        <div className="animate-fade-in space-y-4">
-          <p className="text-xs text-gray-500 italic">Section details will be configured with detailed prompts.</p>
-          <div className="border border-gray-200 rounded-md p-4">
-            <h4 className="font-semibold text-sm text-gray-700 mb-3">Boundaries - As per Sale Deed</h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {(['North', 'East', 'South', 'West'] as const).map(dir => (
-                <Field key={dir} label={dir}>
-                  <input className={inputCls} value={fields[`bajajBoundary${dir}Deed`] || ''} onChange={e => handleChange(`bajajBoundary${dir}Deed`, e.target.value)} disabled={isReadOnly} />
-                </Field>
-              ))}
-            </div>
+      render: (fields, handleChange, isReadOnly) => {
+        const NACheckbox = ({ field, label = 'Mark as NA' }: { field: string, label?: string }) => (
+          <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-500 mt-1 hover:text-gray-700">
+            <input 
+              type="checkbox" 
+              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
+              checked={!!fields[`${field}_isNA`]}
+              onChange={(e) => {
+                handleChange(`${field}_isNA`, e.target.checked);
+                if (e.target.checked) handleChange(field, 'NA');
+                else handleChange(field, '');
+              }}
+              disabled={isReadOnly}
+            />
+            <span>{label}</span>
+          </label>
+        );
+
+        const EditSwitch = ({ field, onToggleOff }: { field: string, onToggleOff?: () => void }) => (
+          <div className="flex items-center gap-2 mt-1">
+            <button
+              type="button"
+              onClick={() => {
+                const manual = !fields[`${field}_isManual`];
+                handleChange(`${field}_isManual`, manual);
+                if (!manual && onToggleOff) {
+                  onToggleOff();
+                }
+              }}
+              disabled={isReadOnly}
+              className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields[`${field}_isManual`] ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields[`${field}_isManual`] ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
+            </button>
+            <span className={`text-[10px] font-medium uppercase tracking-wider ${fields[`${field}_isManual`] ? 'text-emerald-600' : 'text-gray-400'}`}>
+              {fields[`${field}_isManual`] ? 'Edit On' : 'Edit Off'}
+            </span>
           </div>
-          <div className="border border-gray-200 rounded-md p-4">
-            <h4 className="font-semibold text-sm text-gray-700 mb-3">Boundaries - As per Actual</h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {(['North', 'East', 'South', 'West'] as const).map(dir => (
-                <Field key={dir} label={dir}>
-                  <input className={inputCls} value={fields[`bajajBoundary${dir}Actual`] || ''} onChange={e => handleChange(`bajajBoundary${dir}Actual`, e.target.value)} disabled={isReadOnly} />
-                </Field>
-              ))}
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="Boundary Matching (Yes/No)">
-              <select className={inputCls} value={fields.bajajBoundaryMatching || ''} onChange={e => handleChange('bajajBoundaryMatching', e.target.value)} disabled={isReadOnly}>
+        );
+
+        const renderSelectWithCustom = (field: string, options: string[], label: string) => (
+          <div>
+            <Field label={label}>
+              <select 
+                className={inputCls} 
+                value={fields[field] === 'NA' ? 'NA' : (options.includes(fields[field] || '') ? fields[field] : (fields[field] ? 'Custom' : ''))} 
+                onChange={e => {
+                  if (e.target.value === 'Custom') {
+                    handleChange(field, fields[`${field}Custom`] || '');
+                  } else {
+                    handleChange(field, e.target.value);
+                  }
+                }} 
+                disabled={isReadOnly || fields[`${field}_isNA`]}
+              >
                 <option value="">Select</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
+                {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                <option value="Custom">Custom</option>
               </select>
             </Field>
-            <Field label="Property Identifiable">
-              <select className={inputCls} value={fields.bajajPropertyIdentifiable || ''} onChange={e => handleChange('bajajPropertyIdentifiable', e.target.value)} disabled={isReadOnly}>
-                <option value="">Select</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-              </select>
-            </Field>
+            {!options.includes(fields[field] || '') && fields[field] && fields[field] !== 'NA' && (
+              <div className="mt-2">
+                <input 
+                  type="text" 
+                  className={inputCls} 
+                  placeholder="Enter custom value"
+                  value={fields[`${field}Custom`] || ''} 
+                  onChange={e => {
+                    handleChange(`${field}Custom`, e.target.value);
+                    handleChange(field, e.target.value);
+                  }}
+                  disabled={isReadOnly || fields[`${field}_isNA`]}
+                />
+              </div>
+            )}
+            <NACheckbox field={field} />
           </div>
-          <Field label="Approach Road Size">
-            <input className={inputCls} value={fields.bajajApproachRoadSize || ''} onChange={e => handleChange('bajajApproachRoadSize', e.target.value)} disabled={isReadOnly} />
-          </Field>
-        </div>
-      ),
+        );
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border border-[#C7D2FE] bg-[#EEF2FF] rounded-xl p-4">
+              <h3 className="font-bold text-gray-700 mb-4">Schedule of the Property</h3>
+              
+              <div className="overflow-x-auto mb-6">
+                <table className="w-full text-sm text-left text-gray-600 border-collapse">
+                  <thead className="bg-indigo-50 border-b border-indigo-100">
+                    <tr>
+                      <th className="px-4 py-3 font-semibold w-1/5">Direction</th>
+                      <th className="px-4 py-3 font-semibold w-2/5">As per legal documents (Sub Plot No-J & Sub plot no-K-1(Part))</th>
+                      <th className="px-4 py-3 font-semibold w-2/5">As per site visit</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(['North', 'East', 'West', 'South'] as const).map(dir => (
+                      <tr key={dir} className="border-b border-indigo-50 hover:bg-white/50 transition-colors">
+                        <td className="px-4 py-3 font-medium text-gray-700">{dir}</td>
+                        <td className="px-4 py-3">
+                          <input 
+                            type="text"
+                            className={inputCls} 
+                            value={fields[`bajajBoundary${dir}Deed`] || ''} 
+                            onChange={e => handleChange(`bajajBoundary${dir}Deed`, e.target.value)} 
+                            disabled={isReadOnly || fields[`bajajBoundary${dir}Deed_isNA`]} 
+                          />
+                          <NACheckbox field={`bajajBoundary${dir}Deed`} />
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex justify-end mb-1">
+                            <EditSwitch 
+                              field={`bajajBoundary${dir}Actual`} 
+                              onToggleOff={() => handleChange(`bajajBoundary${dir}Actual`, fields[`bajajBoundary${dir}Deed`] || '')} 
+                            />
+                          </div>
+                          <input 
+                            type="text"
+                            className={inputCls} 
+                            value={fields[`bajajBoundary${dir}Actual`] || ''} 
+                            onChange={e => handleChange(`bajajBoundary${dir}Actual`, e.target.value)} 
+                            disabled={isReadOnly || !fields[`bajajBoundary${dir}Actual_isManual`] || fields[`bajajBoundary${dir}Actual_isNA`]} 
+                          />
+                          <NACheckbox field={`bajajBoundary${dir}Actual`} />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {renderSelectWithCustom('bajajBoundaryMatching', ['Yes', 'No'], 'Boundaries Matching (Yes/No)')}
+                {renderSelectWithCustom('bajajPropertyIdentifiable', ['Yes', 'No'], 'Property Identified (Yes/No)')}
+                {renderSelectWithCustom('bajajApproachRoadSize', ['<5 ft', '5-10 ft', '10-15 ft', '>15 ft'], 'Approach Road Size (<5 ft/5-10 ft/ 10-15 ft/ >15 ft)')}
+              </div>
+            </div>
+          </div>
+        );
+      },
     },
     {
       id: 'bajaj-section-5',
