@@ -1274,7 +1274,7 @@ export default function BankReportBuilder({
       }
 
       // ── Declaration & Valuation Certificate ──
-      if (!config.hideDefaultDeclarationAndCertificate) {
+      if (!config?.hideDefaultDeclarationAndCertificate) {
         // ── Declaration ──
         r.drawTextBlock('Declaration:', { bold: true, fontSize: 14 });
         r.advanceCursor(2);
