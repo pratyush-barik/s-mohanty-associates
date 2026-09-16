@@ -24,6 +24,29 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
     this.fields = fields || {};
   }
 
+  override drawKeyValueRow(cols: { label: string; value: string; labelWidth?: number; valueWidth?: number; highlight?: boolean; bold?: boolean; labelBold?: boolean; valueBold?: boolean; hideTop?: boolean; hideBottom?: boolean }[]): void {
+    const newCols = cols.map(c => ({
+      ...c,
+      labelBold: true,
+      valueBold: false
+    }));
+    super.drawKeyValueRow(newCols);
+  }
+
+  override drawSimpleRow(label: string, value: string, highlight?: boolean, bold?: boolean): void {
+    const labelW = Math.round(CONTENT_W * 0.40);
+    const valueW = CONTENT_W - labelW;
+    super.drawKeyValueRow([{ 
+      label, 
+      value: value || 'NA', 
+      labelWidth: labelW, 
+      valueWidth: valueW, 
+      highlight, 
+      labelBold: true, 
+      valueBold: false 
+    }]);
+  }
+
   override drawCenteredTitle(title: string) {
     if (!this.drawnCover) {
       this.drawnCover = true;
