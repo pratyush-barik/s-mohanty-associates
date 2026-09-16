@@ -368,7 +368,7 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
     bajajResidualAge_isNA: false,
     bajajResidualAge_isManual: false,
 
-    // Section 9: Valuation & Calculation
+    // Section 9: Property Status & Valuation Details
     bajajValuationLandArea: '',
     bajajValuationLandArea_isNA: false,
     bajajValuationLandArea_isManual: false,
@@ -402,7 +402,7 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
     bajajDistressedValue_isNA: false,
     bajajDistressedValue_isManual: false,
 
-    bajajValuationDoneEarlier: '',
+    bajajValuationDoneEarlier: 'NO',
     bajajValuationDoneEarlier_isNA: false,
     bajajValuationDoneEarlierCustom: '',
 
@@ -2361,7 +2361,7 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
     },
     {
       id: 'bajaj-section-9',
-      title: 'Valuation & Calculation (Valuation Details)',
+      title: 'Property Status & Valuation Details',
       number: 9,
       defaultOpen: true,
       render: (fields, handleChange, isReadOnly) => {
