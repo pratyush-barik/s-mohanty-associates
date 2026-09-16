@@ -279,63 +279,52 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
     this.drawSimpleRow('Accommodation details: Floor wise and Occupancy', getVal('bajajAccommodationDetails'));
   }
 
-  // ── Section 8: Area & Floor Details ──
+  // ── Section 8: Area Details & Valuation (BAU Details) ──
   private drawBajajSection8() {
     const fv = this.fv.bind(this);
+    const cw = CONTENT_W;
 
     // Plot Area Details table
     this.drawSectionSubtitle('Plot Area Details');
-    const paHeaders = ['', 'As Per Documents', 'As Per Plan', 'As Per Site Visit'];
+    const paHeaders = ['Parameter', 'Area as per Deed', 'Area as per Plan', 'Area as per Site Measurement', 'Area Considered for Valuation', 'Unit'];
     const paRows = [
-      ['North to South', fv('bajajPlotNSDoc'), fv('bajajPlotNSPlan'), fv('bajajPlotNSSite')],
-      ['East to West', fv('bajajPlotEWDoc'), fv('bajajPlotEWPlan'), fv('bajajPlotEWSite')],
-      ['Land Area (sq. ft.)', fv('bajajLandAreaDoc'), fv('bajajLandAreaPlan'), fv('bajajLandAreaSite')]
+      ['Plot Area', fv('bajajPlotAreaDeed'), fv('bajajPlotAreaPlan'), fv('bajajPlotAreaSite'), fv('bajajPlotAreaConsidered'), fv('bajajPlotAreaUnit')]
     ];
-    const cw = CONTENT_W;
-    this.drawTable(paHeaders, paRows, [cw * 0.25, cw * 0.25, cw * 0.25, cw * 0.25], [], [0]);
+    this.drawTable(paHeaders, paRows, [cw * 0.16, cw * 0.16, cw * 0.16, cw * 0.18, cw * 0.22, cw * 0.12], [], [0]);
 
     this.advanceCursor(6);
 
-    // Floor-wise Area Breakup table
-    this.drawSectionSubtitle('Floor wise Area Breakup');
-    const fHeaders = ['Floor / BHK Details', 'No. of Rooms', 'No. of Kitchen', 'No. of Bathrooms', 'Sanctioned Usage', 'Actual Usage (Residential/Industrial/Commercial/Mixed Usage)'];
-    const floorKeys = ['Ground', '1stFloor', '2ndFloor', '3rdFloor'];
-    const floorLabels = ['Ground Floor', '1st Floor', '2nd Floor', '3rd Floor'];
-    const fRows = floorKeys.map((fk, i) => [
-      floorLabels[i],
-      fv(`bajajFloor${fk}Rooms`),
-      fv(`bajajFloor${fk}Kitchen`),
-      fv(`bajajFloor${fk}Bathrooms`),
-      fv(`bajajFloor${fk}SanctionedUsage`),
-      fv(`bajajFloor${fk}ActualUsage`)
-    ]);
-    this.drawTable(fHeaders, fRows, [cw * 0.2, cw * 0.12, cw * 0.12, cw * 0.14, cw * 0.18, cw * 0.24], [], [0]);
+    // Built-up Area (BAU) Details & Floor-wise Valuation table
+    this.drawSectionSubtitle('Built-up Area (BAU) Details & Floor-wise Valuation');
+    const bauHeaders = ['Floor Level', 'Area as per Deed (Sq.ft)', 'Area as per Plan (Sq.ft)', 'Area as per Site (Sq.ft)', 'Area Considered (Sq.ft)', 'Replacement Rate (Rs./Sq.ft)', 'Structure Value (Rs.)'];
+    const bauFloors = this.fields.bajajBAUFloors || [];
+    const bauRows = Array.isArray(bauFloors) && bauFloors.length > 0 
+      ? bauFloors.map((f: any) => [
+          f.floor || '',
+          f.areaDeed || '',
+          f.areaPlan || '',
+          f.areaSite || '',
+          f.areaConsidered || '',
+          f.replacementRate || '',
+          f.structureValue || ''
+        ])
+      : [['', '', '', '', '', '', '']];
+    this.drawTable(bauHeaders, bauRows, [cw * 0.12, cw * 0.14, cw * 0.14, cw * 0.14, cw * 0.14, cw * 0.16, cw * 0.16], [], [0]);
 
     this.advanceCursor(6);
 
-    // Rooms / Permissible Area table
-    this.drawSectionSubtitle('Rooms');
-    const rHeaders = ['', 'Permissible plan (Sq. Ft)', 'Land Component (Sq. Ft)', 'Permissible Rsd', 'Permissible construction as per RBI (Sq Ft)', 'Carpet Area as Per Document (BUA) (In Sq. Ft)', 'Actual construction (BUA) (In Sq. Ft)'];
-    const rRows = [
-      ['', fv('bajajPermissiblePlan'), fv('bajajLandComponent'), fv('bajajPermissibleRsd'), fv('bajajPermissibleRBI'), fv('bajajCarpetAreaDoc'), fv('bajajActualConstruction')]
-    ];
-    this.drawTable(rHeaders, rRows, [cw * 0.1, cw * 0.14, cw * 0.12, cw * 0.12, cw * 0.18, cw * 0.18, cw * 0.16], [], [0]);
-
-    this.advanceCursor(6);
-
-    // Risk, Status, Age
-    this.drawSimpleRow('Risk of Deviations (High / Medium / Low)', fv('bajajRiskOfDeviations'));
+    // Summary Fields
     this.drawKeyValueRow([
-      { label: 'Status of the Property (Flat/Under Construction/Complete/Construction on plot)', value: fv('bajajStatusOfProperty') },
-      { label: '% Completed', value: fv('bajajPercentCompleted') }
+      { label: 'Total Built-up Area Considered (Sq.ft)', value: fv('bajajTotalBAUConsidered') },
+      { label: 'Age of Building (Years)', value: fv('bajajAgeOfBuilding') }
     ]);
     this.drawKeyValueRow([
-      { label: '% Disbursement Recommended', value: fv('bajajDisbursementRecommended') },
+      { label: 'Residual Life of Building (Years)', value: fv('bajajResidualLife') },
+      { label: 'Depreciation Rate (%)', value: fv('bajajDepreciationRate') }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Depreciated Value of Structure (Rs.)', value: fv('bajajDepreciatedValue') },
       { label: '', value: '' }
-    ]);
-    this.drawKeyValueRow([
-      { label: 'Current Age of Property (IN YEAR)', value: fv('bajajCurrentAge') },
-      { label: 'Residual Age', value: fv('bajajResidualAge') }
     ]);
   }
 
