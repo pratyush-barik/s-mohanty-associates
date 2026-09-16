@@ -8,6 +8,12 @@ import {
   MARGIN_L,
   MARGIN_R,
   CONTENT_W,
+  FONT_SIZE,
+  FONT_SIZE_HEADER,
+  FONT_SIZE_TITLE,
+  FONT_SIZE_SMALL,
+  FONT_SIZE_CAPTION,
+  LINE_HEIGHT,
   BORDER_W,
   LBL_BG,
   OPT_BG,
@@ -157,7 +163,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     isValueBold: boolean = false,
     labelBg: string | undefined = LBL_BG,
     valBg: string | undefined = undefined,
-    fontSize: number = 8.5
+    fontSize: number = FONT_SIZE
   ): void {
     const hSl = this.cellHeight(sl, this.colSl, { bold: isLabelBold, fontSize });
     const hLbl = this.cellHeight(label, this.colLbl, { bold: isLabelBold, fontSize });
@@ -209,7 +215,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     isValueBold: boolean = false,
     labelBg: string | undefined = LBL_BG,
     valBg: string | undefined = undefined,
-    fontSize: number = 8.5
+    fontSize: number = FONT_SIZE
   ): void {
     const totalLblW = this.colSl + this.colLbl;
     const hLbl = this.cellHeight(label, totalLblW, { bold: isLabelBold, fontSize });
@@ -251,7 +257,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
   /**
    * Draw section header banner spanning all 3 columns
    */
-  private drawSectionBanner(sl: string, title: string, fontSize: number = 9): void {
+  private drawSectionBanner(sl: string, title: string, fontSize: number = FONT_SIZE_HEADER): void {
     const fullText = sl ? `${sl} ${title}` : title;
     const rowH = Math.max(18, this.cellHeight(fullText, CONTENT_W, { bold: true, fontSize }));
 
@@ -276,7 +282,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     direction: string,
     deedVal: string,
     actualVal: string,
-    fontSize: number = 8.5
+    fontSize: number = FONT_SIZE
   ): void {
     const totalLblW = this.colSl + this.colLbl;
     const leftText = `${direction}: - ${deedVal || 'NA'}`;
@@ -308,7 +314,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
   /**
    * Draw single sketch boundary direction row spanning columns
    */
-  private drawSketchBoundaryDirection(direction: string, val: string, fontSize: number = 8.5): void {
+  private drawSketchBoundaryDirection(direction: string, val: string, fontSize: number = FONT_SIZE): void {
     const totalLblW = this.colSl + this.colLbl;
     const text = `${direction}: - ${val || 'NA'}`;
     const h = Math.max(16, this.cellHeight(text, totalLblW, { bold: false, fontSize }));
@@ -367,20 +373,20 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     const titleText = 'Valuation Report Format for Bungalow/Individual House/Resale';
 
     // Top line with Ref No and Date
-    const headerH = 14;
+    const headerH = 16;
     const yTop = this.pdfY(this.cursorY);
     this.page.drawText(this.sanitizeText(refText), {
       x: MARGIN_L,
-      y: yTop - 10,
-      size: 9,
+      y: yTop - 12,
+      size: FONT_SIZE_SMALL,
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });
-    const dateW = this.fontBold.widthOfTextAtSize(this.sanitizeText(dateText), 9);
+    const dateW = this.fontBold.widthOfTextAtSize(this.sanitizeText(dateText), FONT_SIZE_SMALL);
     this.page.drawText(this.sanitizeText(dateText), {
       x: MARGIN_L + CONTENT_W - dateW,
-      y: yTop - 10,
-      size: 9,
+      y: yTop - 12,
+      size: FONT_SIZE_SMALL,
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });
@@ -388,29 +394,29 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
 
     // Centered Title Banner (Underlined)
     const titleY = this.pdfY(this.cursorY);
-    const titleW = this.fontBold.widthOfTextAtSize(titleText, 10.5);
+    const titleW = this.fontBold.widthOfTextAtSize(titleText, FONT_SIZE_TITLE);
     const titleX = MARGIN_L + (CONTENT_W - titleW) / 2;
     this.page.drawText(titleText, {
       x: titleX,
-      y: titleY - 10,
-      size: 10.5,
+      y: titleY - 12,
+      size: FONT_SIZE_TITLE,
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });
     // Underline
     this.page.drawLine({
-      start: { x: titleX, y: titleY - 12 },
-      end: { x: titleX + titleW, y: titleY - 12 },
+      start: { x: titleX, y: titleY - 14 },
+      end: { x: titleX + titleW, y: titleY - 14 },
       thickness: 1,
       color: rgb(0, 0, 0),
     });
-    this.cursorY += 22;
+    this.cursorY += 24;
 
     // --- Table Header: [Sl. No | Label | Value] ---
-    const thH = 16;
+    const thH = 18;
     this.drawCell(MARGIN_L, this.cursorY, this.colSl, thH, 'Sl. No', {
       bold: true,
-      fontSize: 8.5,
+      fontSize: FONT_SIZE,
       fillColor: OPT_BG,
       bgOpacity: 0.5,
       align: 'center',
@@ -418,7 +424,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     });
     this.drawCell(MARGIN_L + this.colSl, this.cursorY, this.colLbl, thH, '', {
       bold: true,
-      fontSize: 8.5,
+      fontSize: FONT_SIZE,
       fillColor: OPT_BG,
       bgOpacity: 0.5,
       align: 'center',
@@ -426,7 +432,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     });
     this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, thH, '', {
       bold: true,
-      fontSize: 8.5,
+      fontSize: FONT_SIZE,
       fillColor: OPT_BG,
       bgOpacity: 0.5,
       align: 'center',
@@ -435,8 +441,8 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.cursorY += thH;
 
     // --- Section 1: Customer Details (Merged Sl.No) ---
-    const custH1 = Math.max(16, this.cellHeight(fields.customerName || 'NA', this.colVal, { fontSize: 8.5 }));
-    const custH2 = Math.max(16, this.cellHeight(fields.customerContactDetails || 'NA', this.colVal, { fontSize: 8.5 }));
+    const custH1 = Math.max(16, this.cellHeight(fields.customerName || 'NA', this.colVal, { fontSize: FONT_SIZE }));
+    const custH2 = Math.max(16, this.cellHeight(fields.customerContactDetails || 'NA', this.colVal, { fontSize: FONT_SIZE }));
     const totalCustH = custH1 + custH2;
 
     this.checkPageBreak(totalCustH);
@@ -444,7 +450,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     // Left Sl cell spanning both sub-rows
     this.drawCell(MARGIN_L, this.cursorY, this.colSl, totalCustH, '1.', {
       bold: true,
-      fontSize: 8.5,
+      fontSize: FONT_SIZE,
       fillColor: LBL_BG,
       bgOpacity: 0.5,
       align: 'left',
@@ -453,7 +459,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     // Sub-row 1: Name
     this.drawCell(MARGIN_L + this.colSl, this.cursorY, this.colLbl, custH1, 'Name of the Customer', {
       bold: false,
-      fontSize: 8.5,
+      fontSize: FONT_SIZE,
       fillColor: LBL_BG,
       bgOpacity: 0.5,
       align: 'left',
@@ -461,14 +467,14 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     });
     this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, custH1, fields.customerName || 'NA', {
       bold: false,
-      fontSize: 8.5,
+      fontSize: FONT_SIZE,
       align: 'left',
       vAlign: 'middle',
     });
     // Sub-row 2: Contact
     this.drawCell(MARGIN_L + this.colSl, this.cursorY + custH1, this.colLbl, custH2, 'Customer Contact Details', {
       bold: false,
-      fontSize: 8.5,
+      fontSize: FONT_SIZE,
       fillColor: LBL_BG,
       bgOpacity: 0.5,
       align: 'left',
@@ -476,7 +482,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     });
     this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY + custH1, this.colVal, custH2, fields.customerContactDetails || 'NA', {
       bold: false,
-      fontSize: 8.5,
+      fontSize: FONT_SIZE,
       align: 'left',
       vAlign: 'middle',
     });
@@ -519,7 +525,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
 
     this.drawCell(MARGIN_L, this.cursorY, bHeaderW1, bHeaderH, 'n. Boundaries of Property as per sale deed', {
       bold: false,
-      fontSize: 8.5,
+      fontSize: FONT_SIZE,
       fillColor: LBL_BG,
       bgOpacity: 0.5,
       align: 'left',
@@ -527,7 +533,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     });
     this.drawCell(MARGIN_L + bHeaderW1, this.cursorY, bHeaderW2, bHeaderH, 'Boundaries of Property as per Actual', {
       bold: false,
-      fontSize: 8.5,
+      fontSize: FONT_SIZE,
       fillColor: LBL_BG,
       bgOpacity: 0.5,
       align: 'left',
@@ -551,14 +557,14 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       this.checkPageBreak(16);
       this.drawCell(MARGIN_L, this.cursorY, bHeaderW1, 16, 'Boundaries of Property as per sketch map', {
         bold: false,
-        fontSize: 8.5,
+        fontSize: FONT_SIZE,
         fillColor: LBL_BG,
         bgOpacity: 0.5,
         align: 'left',
         vAlign: 'middle',
       });
       this.drawCell(MARGIN_L + bHeaderW1, this.cursorY, bHeaderW2, 16, '', {
-        fontSize: 8.5,
+        fontSize: FONT_SIZE,
         align: 'left',
         vAlign: 'middle',
       });
@@ -715,7 +721,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     // --- Section 12: Remarks ---
     const remarksPrompt =
       'Remarks :\n(Comment on - resistance for valuation if any from the current occupants for rented property, if the property falls in a community dominated areas, if the approach road to the building is small and will not be able to accommodate a fire extinguisher, does the property falls under land locked area or is prone to frequent floods & any other critical observation.)';
-    this.drawHLLAPRow('12.', remarksPrompt, fields.remarks || 'NA', false, false, LBL_BG, undefined, 8);
+    this.drawHLLAPRow('12.', remarksPrompt, fields.remarks || 'NA', false, false, LBL_BG, undefined, FONT_SIZE);
     this.addSectionBreak(10);
 
     // --- Undertaking Block (Below table, aligned to right side) ---
@@ -747,16 +753,16 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       }
       const isBold = line === 'Undertaking:' || line.includes('Satyajit') || line.includes('Signatory');
       const font = isBold ? this.fontBold : this.fontRegular;
-      const wrapped = this.wrapText(line, underW, 8.5, isBold);
+      const wrapped = this.wrapText(line, underW, FONT_SIZE_SMALL, isBold);
       for (const wLine of wrapped) {
         this.page.drawText(wLine, {
           x: underX,
           y: curUnderY,
-          size: 8.5,
+          size: FONT_SIZE_SMALL,
           font,
           color: rgb(0, 0, 0),
         });
-        curUnderY -= 11;
+        curUnderY -= FONT_SIZE_SMALL * 1.25;
       }
     }
     this.cursorY += undertakingH;
@@ -796,8 +802,8 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
         const startY = this.pdfY(this.cursorY);
 
         const photoHeading = 'PHOTOGRAPHS';
-        const photoHw = this.fontBold.widthOfTextAtSize(photoHeading, 10);
-        this.page.drawText(photoHeading, { x: MARGIN_L, y: startY - 10, size: 10, font: this.fontBold, color: rgb(0,0,0) });
+        const photoHw = this.fontBold.widthOfTextAtSize(photoHeading, FONT_SIZE_CAPTION);
+        this.page.drawText(photoHeading, { x: MARGIN_L, y: startY - 10, size: FONT_SIZE_CAPTION, font: this.fontBold, color: rgb(0,0,0) });
         this.page.drawLine({ start: { x: MARGIN_L, y: startY - 12 }, end: { x: MARGIN_L + photoHw, y: startY - 12 }, thickness: 1, color: rgb(0,0,0) });
 
         const photoStartY = startY - 22;
@@ -845,7 +851,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
         const halfH = (PAGE_H - MARGIN_T - MARGIN_B - 65) / 2;
 
         // Top: Mouza Map
-        this.page.drawText('MOUZA MAP', { x: MARGIN_L, y: mapPageStartY - 10, size: 9, font: this.fontBold, color: rgb(0,0,0) });
+        this.page.drawText('MOUZA MAP', { x: MARGIN_L, y: mapPageStartY - 10, size: FONT_SIZE_CAPTION, font: this.fontBold, color: rgb(0,0,0) });
         const mouzaBoxY = mapPageStartY - 20 - halfH;
         this.page.drawRectangle({
           x: MARGIN_L,
@@ -870,7 +876,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
         // Bottom: Location Map
         const locHeadingText = `LOCATION MAP (LAT: ${fields.latitude || 'NA'}, LONG: ${fields.longitude || 'NA'})`;
         const locBoxTop = mouzaBoxY - 20;
-        this.page.drawText(this.sanitizeText(locHeadingText), { x: MARGIN_L, y: locBoxTop, size: 9, font: this.fontBold, color: rgb(0,0,0) });
+        this.page.drawText(this.sanitizeText(locHeadingText), { x: MARGIN_L, y: locBoxTop, size: FONT_SIZE_CAPTION, font: this.fontBold, color: rgb(0,0,0) });
         const locBoxY = locBoxTop - 10 - halfH;
         this.page.drawRectangle({
           x: MARGIN_L,
@@ -898,7 +904,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
         this.addPage();
         this.cursorY = MARGIN_T;
         const sketchStartY = this.pdfY(this.cursorY);
-        this.page.drawText('SKETCH MAP', { x: MARGIN_L, y: sketchStartY - 10, size: 10, font: this.fontBold, color: rgb(0,0,0) });
+        this.page.drawText('SKETCH MAP', { x: MARGIN_L, y: sketchStartY - 10, size: FONT_SIZE_CAPTION, font: this.fontBold, color: rgb(0,0,0) });
         const sketchBoxH = PAGE_H - MARGIN_T - MARGIN_B - 30;
         const sketchBoxY = sketchStartY - 20 - sketchBoxH;
         this.page.drawRectangle({
@@ -936,11 +942,11 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
 
       // 1. LEFT COLUMN: PHOTOGRAPHS
       const photoHeading = 'PHOTOGRAPHS';
-      const photoHw = this.fontBold.widthOfTextAtSize(photoHeading, 10);
+      const photoHw = this.fontBold.widthOfTextAtSize(photoHeading, FONT_SIZE_CAPTION);
       this.page.drawText(photoHeading, {
         x: leftX,
         y: startY - 10,
-        size: 10,
+        size: FONT_SIZE_CAPTION,
         font: this.fontBold,
         color: rgb(0, 0, 0),
       });
@@ -999,7 +1005,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       this.page.drawText(this.sanitizeText(locHeading), {
         x: rightX,
         y: startY - 10,
-        size: 8.5,
+        size: FONT_SIZE_CAPTION,
         font: this.fontBold,
         color: rgb(0, 0, 0),
       });
@@ -1029,7 +1035,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       this.page.drawText('MOUZA MAP', {
         x: rightX,
         y: mouzaHeadingY,
-        size: 8.5,
+        size: FONT_SIZE_CAPTION,
         font: this.fontBold,
         color: rgb(0, 0, 0),
       });

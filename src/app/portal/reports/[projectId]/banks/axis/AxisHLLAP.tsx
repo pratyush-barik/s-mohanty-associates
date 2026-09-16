@@ -586,14 +586,14 @@ export default function AxisHLLAP({
   };
 
   const NAV_SECTIONS: NavItem[] = [
-    { id: 'axis-sec1', title: '1-3. Customer, App ID & Documents' },
-    { id: 'axis-sec2', title: '4. Property Details & Boundaries' },
-    { id: 'axis-sec3', title: '5. Approval Details' },
-    { id: 'axis-sec4', title: '6. Construction Details' },
-    { id: 'axis-sec5', title: '7-10. Valuation & Statutory Rates' },
-    { id: 'axis-sec6', title: '11-12. Attachments & Remarks' },
-    { id: 'axis-photos', title: '13. Property Photographs' },
-    { id: 'axis-maps', title: '14. Location & Sketch Maps' },
+    { id: 'axis-sec1', title: '1. Client & Application Details' },
+    { id: 'axis-sec2', title: '2. Property Overview & Location' },
+    { id: 'axis-sec3', title: '3. Boundary Details & Property Characteristics' },
+    { id: 'axis-sec4', title: '4. Construction & Regulatory Approvals' },
+    { id: 'axis-sec5', title: '5. Recommended Valuation' },
+    { id: 'axis-sec6', title: '6. Remarks & Valuer Signatory' },
+    { id: 'axis-photos', title: '7. Property Photographs' },
+    { id: 'axis-maps', title: '8. Location & Sketch Maps' },
   ];
 
   // Date picker helper component
@@ -659,9 +659,9 @@ export default function AxisHLLAP({
           </div>
         )}
 
-        {/* SECTION 1: 1 - 3. Customer, App ID & Documents Provided */}
-        <Section id="axis-sec1" title="1 - 3. Customer, App ID & Documents Provided" number={1} defaultOpen={true}>
-          {/* Header Reference & Date */}
+        {/* SECTION 1: Client & Application Details */}
+        <Section id="axis-sec1" title="Client & Application Details" number={1} defaultOpen={true}>
+          {/* Top Reference & Report Date */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4 border-b border-slate-200">
             <Field label="Reference Number">
               <input
@@ -679,9 +679,9 @@ export default function AxisHLLAP({
             />
           </div>
 
-          {/* Questionnaire Fields 1 to 3 */}
+          {/* Loan & Customer Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-            <Field label="1a. Name of the Customer">
+            <Field label="Name of the Customer">
               <input
                 type="text"
                 value={fields.customerName}
@@ -692,7 +692,7 @@ export default function AxisHLLAP({
               />
             </Field>
 
-            <Field label="1b. Customer Contact Details">
+            <Field label="Customer Contact Details">
               <input
                 type="text"
                 value={fields.customerContactDetails}
@@ -703,7 +703,7 @@ export default function AxisHLLAP({
               />
             </Field>
 
-            <Field label="2. APP ID / Loan Account No">
+            <Field label="APP ID / Loan Account No">
               <input
                 type="text"
                 value={fields.appId}
@@ -714,7 +714,7 @@ export default function AxisHLLAP({
               />
             </Field>
 
-            <Field label="3. Documents Provided">
+            <Field label="Documents Provided">
               <input
                 type="text"
                 value={fields.documentsProvided}
@@ -727,11 +727,10 @@ export default function AxisHLLAP({
           </div>
         </Section>
 
-        {/* SECTION 2: 4. Property Details & Characteristics */}
-        <Section id="axis-sec2" title="4. Property Details & Characteristics" number={2} defaultOpen={true}>
-          {/* General Property Location & Identification */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-5">
-            <Field span={3} label="4. Property Details (Full Description / Address)">
+        {/* SECTION 2: Property Overview & Location */}
+        <Section id="axis-sec2" title="Property Overview & Location" number={2} defaultOpen={true}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Field span={3} label="Property Details (Full Description)">
               <textarea
                 rows={3}
                 value={fields.propertyDetailsHeader}
@@ -742,7 +741,7 @@ export default function AxisHLLAP({
               />
             </Field>
 
-            <Field label="4a. Plot No">
+            <Field label="Plot No">
               <input
                 type="text"
                 value={fields.plotNo}
@@ -753,7 +752,7 @@ export default function AxisHLLAP({
               />
             </Field>
 
-            <Field label="4b. S No / G. No / Khasra No / Khata No">
+            <Field label="S No / G. No / Khasra No / Khata No">
               <input
                 type="text"
                 value={fields.khataNo}
@@ -764,7 +763,7 @@ export default function AxisHLLAP({
               />
             </Field>
 
-            <Field label="4c. Locality">
+            <Field label="Locality">
               <input
                 type="text"
                 value={fields.locality}
@@ -775,7 +774,7 @@ export default function AxisHLLAP({
               />
             </Field>
 
-            <Field label="4d. Road Width / Access Road">
+            <Field label="Road Width / Access Road">
               <input
                 type="text"
                 value={fields.road}
@@ -786,7 +785,7 @@ export default function AxisHLLAP({
               />
             </Field>
 
-            <Field label="4e. City">
+            <Field label="City">
               <input
                 type="text"
                 value={fields.city}
@@ -797,7 +796,7 @@ export default function AxisHLLAP({
               />
             </Field>
 
-            <Field label="4f. District">
+            <Field label="District">
               <input
                 type="text"
                 value={fields.district}
@@ -808,7 +807,7 @@ export default function AxisHLLAP({
               />
             </Field>
 
-            <Field label="4g. Pin Code">
+            <Field label="Pin Code">
               <input
                 type="text"
                 value={fields.pinCode}
@@ -819,7 +818,7 @@ export default function AxisHLLAP({
               />
             </Field>
 
-            <Field label="4h. Nearby Landmark">
+            <Field label="Nearby Landmark">
               <input
                 type="text"
                 value={fields.nearbyLandMark}
@@ -830,7 +829,7 @@ export default function AxisHLLAP({
               />
             </Field>
 
-            <Field label="4i. Distance from City Center">
+            <Field label="Distance from City Center">
               <input
                 type="text"
                 value={fields.distanceFromCityCenter}
@@ -841,7 +840,7 @@ export default function AxisHLLAP({
               />
             </Field>
 
-            <Field label="4j. Availability of Local Transport">
+            <Field label="Availability of Local Transport">
               <select
                 value={fields.availabilityOfLocalTransport}
                 onChange={e => handleChange('availabilityOfLocalTransport', e.target.value)}
@@ -856,7 +855,7 @@ export default function AxisHLLAP({
               </select>
             </Field>
 
-            <Field label="4k. Level of Land">
+            <Field label="Level of Land">
               <select
                 value={fields.levelOfLand}
                 onChange={e => handleChange('levelOfLand', e.target.value)}
@@ -871,7 +870,7 @@ export default function AxisHLLAP({
               </select>
             </Field>
 
-            <Field label="4l. Class of Locality">
+            <Field label="Class of Locality">
               <select
                 value={fields.classOfLocality}
                 onChange={e => handleChange('classOfLocality', e.target.value)}
@@ -887,7 +886,7 @@ export default function AxisHLLAP({
               </select>
             </Field>
 
-            <Field label="4m. Quality of Infrastructure">
+            <Field label="Quality of Infrastructure">
               <select
                 value={fields.qualityOfInfrastructure}
                 onChange={e => handleChange('qualityOfInfrastructure', e.target.value)}
@@ -902,12 +901,15 @@ export default function AxisHLLAP({
               </select>
             </Field>
           </div>
+        </Section>
 
-          {/* 4n. MULTI-SUBPOINT SOFT CONTAINER: Four Boundaries Comparison Table */}
-          <div className="border border-purple-200 bg-purple-50/40 rounded-xl p-4 sm:p-5 mb-5 shadow-xs">
+        {/* SECTION 3: Boundary Details & Property Characteristics */}
+        <Section id="axis-sec3" title="Boundary Details & Property Characteristics" number={3} defaultOpen={true}>
+          {/* MULTI-SUBPOINT SOFT CONTAINER: Four Boundaries Comparison Table */}
+          <div className="border border-purple-200 bg-purple-50/50 rounded-xl p-5 mb-5 shadow-xs">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-purple-900 text-sm tracking-wide uppercase">
-                4n. Four Boundaries Comparison (Deed vs Actual vs Sketch Map)
+              <h3 className="font-semibold text-purple-800 text-sm tracking-wide uppercase">
+                Four Boundaries Comparison
               </h3>
               <div className="flex items-center gap-2">
                 <input
@@ -925,7 +927,7 @@ export default function AxisHLLAP({
 
             <div className="overflow-x-auto rounded-lg border border-slate-200 shadow-2xs">
               <table className="w-full text-xs text-left">
-                <thead className="bg-purple-100/80 text-purple-900 font-bold uppercase">
+                <thead className="bg-purple-100/70 text-purple-900 font-bold uppercase">
                   <tr>
                     <th className="p-3 border-b border-r border-purple-200 w-24">Direction</th>
                     <th className="p-3 border-b border-r border-purple-200">As Per Sale Deed</th>
@@ -1077,25 +1079,27 @@ export default function AxisHLLAP({
                 </tbody>
               </table>
             </div>
+
+            <div className="mt-4">
+              <Field label="Boundaries Matching Verification">
+                <select
+                  value={fields.boundariesMatch}
+                  onChange={e => handleChange('boundariesMatch', e.target.value)}
+                  className={selectCls}
+                  disabled={isReadOnly}
+                >
+                  <option value="Yes(Boundary matching as per documents)">Yes (Boundary matching as per documents)</option>
+                  <option value="Yes(Boundary is matching as per sketch map)">Yes (Boundary is matching as per sketch map)</option>
+                  <option value="No - Boundaries do not match">No - Boundaries do not match</option>
+                  <option value="Partial match observed">Partial match observed</option>
+                </select>
+              </Field>
+            </div>
           </div>
 
-          {/* Questionnaire Fields 4o to 4y */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-5">
-            <Field label="4o. Boundaries Matching Verification">
-              <select
-                value={fields.boundariesMatch}
-                onChange={e => handleChange('boundariesMatch', e.target.value)}
-                className={selectCls}
-                disabled={isReadOnly}
-              >
-                <option value="Yes(Boundary matching as per documents)">Yes (Boundary matching as per documents)</option>
-                <option value="Yes(Boundary is matching as per sketch map)">Yes (Boundary is matching as per sketch map)</option>
-                <option value="No - Boundaries do not match">No - Boundaries do not match</option>
-                <option value="Partial match observed">Partial match observed</option>
-              </select>
-            </Field>
-
-            <Field label="4p. Status of the Land">
+          {/* Property Attributes Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+            <Field label="Status of the Land">
               <select
                 value={fields.statusOfLand}
                 onChange={e => handleChange('statusOfLand', e.target.value)}
@@ -1108,7 +1112,7 @@ export default function AxisHLLAP({
               </select>
             </Field>
 
-            <Field label="4q. Type of Property">
+            <Field label="Type of Property">
               <select
                 value={fields.typeOfProperty}
                 onChange={e => handleChange('typeOfProperty', e.target.value)}
@@ -1125,7 +1129,7 @@ export default function AxisHLLAP({
               </select>
             </Field>
 
-            <Field label="4r. Approved Usage">
+            <Field label="Approved Usage">
               <select
                 value={fields.approvedUsage}
                 onChange={e => handleChange('approvedUsage', e.target.value)}
@@ -1140,7 +1144,7 @@ export default function AxisHLLAP({
               </select>
             </Field>
 
-            <Field label="4s. Actual Usage">
+            <Field label="Actual Usage">
               <select
                 value={fields.actualUsage}
                 onChange={e => handleChange('actualUsage', e.target.value)}
@@ -1154,7 +1158,7 @@ export default function AxisHLLAP({
               </select>
             </Field>
 
-            <Field label="4t. Type of Structure">
+            <Field label="Structure Type">
               <select
                 value={fields.typeOfStructure}
                 onChange={e => handleChange('typeOfStructure', e.target.value)}
@@ -1168,7 +1172,7 @@ export default function AxisHLLAP({
               </select>
             </Field>
 
-            <Field label="4u. Number of Floors">
+            <Field label="Number of Floors">
               <input
                 type="text"
                 value={fields.noOfFloors}
@@ -1179,7 +1183,7 @@ export default function AxisHLLAP({
               />
             </Field>
 
-            <Field label="4v. Occupancy Details">
+            <Field label="Occupancy Details">
               <select
                 value={fields.occupancyDetails}
                 onChange={e => handleChange('occupancyDetails', e.target.value)}
@@ -1193,7 +1197,7 @@ export default function AxisHLLAP({
               </select>
             </Field>
 
-            <Field label="4w. Electricity, Water & Drainage">
+            <Field label="Electricity, Water & Drainage">
               <select
                 value={fields.hasElectricityWaterDrainage}
                 onChange={e => handleChange('hasElectricityWaterDrainage', e.target.value)}
@@ -1206,7 +1210,7 @@ export default function AxisHLLAP({
               </select>
             </Field>
 
-            <Field label="4x. Proximity to Civic Amenities">
+            <Field label="Proximity to Civic Amenities">
               <input
                 type="text"
                 value={fields.proximityToCivicAmenities}
@@ -1217,7 +1221,7 @@ export default function AxisHLLAP({
               />
             </Field>
 
-            <Field span={2} label="4y. Development of Surrounding Area">
+            <Field span={3} label="Development of Surrounding Area">
               <input
                 type="text"
                 value={fields.developmentOfSurroundingArea}
@@ -1229,30 +1233,30 @@ export default function AxisHLLAP({
             </Field>
           </div>
 
-          {/* 4z. MULTI-SUBPOINT SOFT CONTAINER: Longitude & Latitude Coordinates */}
-          <div className="border border-blue-200 bg-blue-50/40 rounded-xl p-4 sm:p-5 shadow-xs">
-            <h3 className="font-semibold text-blue-900 mb-3 text-sm tracking-wide uppercase">
-              4z. Longitude & Latitude of the Property
+          {/* MULTI-SUBPOINT SOFT CONTAINER: Longitude & Latitude Coordinates */}
+          <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs">
+            <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">
+              Longitude &amp; Latitude Coordinates
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="4z(i). Latitude">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Latitude">
                 <input
                   type="text"
                   value={fields.latitude}
                   onChange={e => handleChange('latitude', e.target.value)}
                   className={inputCls}
-                  placeholder="e.g. 20.2961"
+                  placeholder=""
                   disabled={isReadOnly}
                 />
               </Field>
 
-              <Field label="4z(ii). Longitude">
+              <Field label="Longitude">
                 <input
                   type="text"
                   value={fields.longitude}
                   onChange={e => handleChange('longitude', e.target.value)}
                   className={inputCls}
-                  placeholder="e.g. 85.8245"
+                  placeholder=""
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1260,10 +1264,11 @@ export default function AxisHLLAP({
           </div>
         </Section>
 
-        {/* SECTION 3: 5. Approval Details */}
-        <Section id="axis-sec3" title="5. Approval Details" number={3} defaultOpen={true}>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Field label="5a. Layout Approval No">
+        {/* SECTION 4: Construction & Regulatory Approvals */}
+        <Section id="axis-sec4" title="Construction & Regulatory Approvals" number={4} defaultOpen={true}>
+          {/* Regulatory Approvals Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+            <Field label="Layout Approval No">
               <input
                 type="text"
                 value={fields.layoutApprovalNo}
@@ -1275,15 +1280,15 @@ export default function AxisHLLAP({
 
             <DateInput
               fieldKey="layoutApprovalDate"
-              label="5b. Layout Approval Date"
+              label="Layout Approval Date"
             />
 
             <DateInput
               fieldKey="layoutExpiryDate"
-              label="5c. Layout Expiry Date"
+              label="Layout Expiry Date"
             />
 
-            <Field span={3} label="5d. Building Plan Approval Details">
+            <Field span={3} label="Building Plan Approval Details">
               <textarea
                 rows={2}
                 value={fields.buildingPlanApprovalNo}
@@ -1296,31 +1301,28 @@ export default function AxisHLLAP({
 
             <DateInput
               fieldKey="buildingPlanApprovalDate"
-              label="5e. Building Plan Approval Date"
+              label="Building Plan Approval Date"
             />
 
             <DateInput
               fieldKey="buildingPlanExpiryDate"
-              label="5f. Building Plan Expiry Date"
+              label="Building Plan Expiry Date"
             />
 
             <DateInput
               fieldKey="constructionCommencementDate"
-              label="5g. Date of Commencement of Construction"
+              label="Date of Commencement"
             />
 
             <DateInput
               fieldKey="expectedCompletionDate"
-              label="5h. Expected Completion Date"
+              label="Expected Completion Date"
             />
           </div>
-        </Section>
 
-        {/* SECTION 4: 6. Construction Details */}
-        <Section id="axis-sec4" title="6. Construction Details" number={4} defaultOpen={true}>
-          {/* 6a & 6b Direct Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-            <Field label="6a. Area of the Plot / Flat (as per documents)">
+          {/* Plot Area & Demarcation Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5 pt-4 border-t border-slate-200">
+            <Field label="Area of the Plot (as per documents)">
               <input
                 type="text"
                 value={fields.plotAreaDocs}
@@ -1331,7 +1333,7 @@ export default function AxisHLLAP({
               />
             </Field>
 
-            <Field label="6b. Demarcation at Site">
+            <Field label="Demarcation at Site">
               <select
                 value={fields.demarcationAtSite}
                 onChange={e => handleChange('demarcationAtSite', e.target.value)}
@@ -1345,173 +1347,180 @@ export default function AxisHLLAP({
             </Field>
           </div>
 
-          {/* 6c. MULTI-SUBPOINT SOFT CONTAINER: Approved BUA Floor Table */}
-          <div className="border border-cyan-200 bg-cyan-50/40 rounded-xl p-4 sm:p-5 mb-5 shadow-xs">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-cyan-950 text-sm tracking-wide uppercase">
-                6c. Approved Built Up Area (BUA) Floor-wise Breakup
-              </h3>
-              {!isReadOnly && (
-                <button
-                  type="button"
-                  onClick={handleAddApprovedFloor}
-                  className="px-3 py-1 bg-cyan-700 hover:bg-cyan-800 text-white text-xs font-semibold rounded-md shadow-xs transition-colors cursor-pointer"
-                >
-                  + Add Floor
-                </button>
-              )}
-            </div>
-            <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-              <table className="w-full text-xs text-left">
-                <thead>
-                  <tr className="bg-[#0a1628] text-white">
-                    <th className="px-3 py-2.5 text-center font-normal text-xs uppercase tracking-wider w-12">#</th>
-                    <th className="px-3 py-2.5 text-left font-normal text-xs uppercase tracking-wider">Floor Name / Level</th>
-                    <th className="px-3 py-2.5 text-right font-normal text-xs uppercase tracking-wider w-44">Area (Sq.Ft.)</th>
-                    {!isReadOnly && <th className="px-2 py-2.5 w-12 text-center"></th>}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200">
-                  {(fields.approvedBUAFloors || []).map((fl, idx) => (
-                    <tr key={idx} className="bg-white hover:bg-neutral-50/50 transition-colors">
-                      <td className="px-2 py-1.5 text-center text-slate-400 font-medium">{idx + 1}</td>
-                      <td className="px-2 py-1.5">
-                        <input
-                          type="text"
-                          value={fl.floor}
-                          onChange={e => handleApprovedFloorChange(idx, 'floor', e.target.value)}
-                          className={inputCls + ' !py-1.5 text-xs font-normal text-[#0f2038]'}
-                          placeholder="e.g. Ground Floor"
-                          disabled={isReadOnly}
-                        />
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <input
-                          type="text"
-                          inputMode="decimal"
-                          value={fl.area}
-                          onChange={e => handleApprovedFloorChange(idx, 'area', e.target.value)}
-                          className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
-                          placeholder=""
-                          disabled={isReadOnly}
-                        />
-                      </td>
-                      {!isReadOnly && (
-                        <td className="px-2 py-1.5 text-center">
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveApprovedFloor(idx)}
-                            disabled={(fields.approvedBUAFloors || []).length <= 1}
-                            className="text-red-400 hover:text-red-600 disabled:opacity-30 text-base leading-none cursor-pointer p-1 font-bold"
-                            title="Remove Floor"
-                          >
-                            &times;
-                          </button>
-                        </td>
-                      )}
+          {/* MULTI-SUBPOINT SOFT CONTAINER: Dynamic Built-Up Area (BUA) Tables */}
+          <div className="border border-cyan-200 bg-cyan-50/50 rounded-xl p-5 mb-5 shadow-xs">
+            <h3 className="font-semibold text-cyan-800 mb-4 text-sm tracking-wide uppercase">
+              Built-Up Area (BUA) Floor Breakup
+            </h3>
+
+            {/* Approved BUA Floors Table */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-cyan-950 uppercase tracking-wider">
+                  Approved Built Up Area (BUA) Floors
+                </span>
+                {!isReadOnly && (
+                  <button
+                    type="button"
+                    onClick={handleAddApprovedFloor}
+                    className="px-3 py-1 bg-cyan-700 hover:bg-cyan-800 text-white text-xs font-semibold rounded-md shadow-xs transition-colors cursor-pointer"
+                  >
+                    + Add Floor
+                  </button>
+                )}
+              </div>
+              <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+                <table className="w-full text-xs text-left">
+                  <thead>
+                    <tr className="bg-[#0a1628] text-white">
+                      <th className="px-3 py-2.5 text-center font-normal text-xs uppercase tracking-wider w-12">#</th>
+                      <th className="px-3 py-2.5 text-left font-normal text-xs uppercase tracking-wider">Floor Name / Level</th>
+                      <th className="px-3 py-2.5 text-right font-normal text-xs uppercase tracking-wider w-44">Area (Sq.Ft.)</th>
+                      {!isReadOnly && <th className="px-2 py-2.5 w-12 text-center"></th>}
                     </tr>
-                  ))}
-                </tbody>
-                <tfoot className="bg-slate-50 font-bold border-t-2 border-slate-300 text-xs">
-                  <tr>
-                    <td colSpan={2} className="px-3 py-2.5 text-right text-slate-800 font-bold uppercase tracking-wider">
-                      Total Approved BUA:
-                    </td>
-                    <td className="px-3 py-2.5 text-right text-cyan-800 font-bold font-mono">
-                      {fields.approvedBUATotal ? `${fields.approvedBUATotal} sqft` : '0 sqft'}
-                    </td>
-                    {!isReadOnly && <td></td>}
-                  </tr>
-                </tfoot>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {(fields.approvedBUAFloors || []).map((fl, idx) => (
+                      <tr key={idx} className="bg-white hover:bg-neutral-50/50 transition-colors">
+                        <td className="px-2 py-1.5 text-center text-slate-400 font-medium">{idx + 1}</td>
+                        <td className="px-2 py-1.5">
+                          <input
+                            type="text"
+                            value={fl.floor}
+                            onChange={e => handleApprovedFloorChange(idx, 'floor', e.target.value)}
+                            className={inputCls + ' !py-1.5 text-xs font-normal text-[#0f2038]'}
+                            placeholder="e.g. Ground Floor"
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                        <td className="px-2 py-1.5">
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            value={fl.area}
+                            onChange={e => handleApprovedFloorChange(idx, 'area', e.target.value)}
+                            className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
+                            placeholder=""
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                        {!isReadOnly && (
+                          <td className="px-2 py-1.5 text-center">
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveApprovedFloor(idx)}
+                              disabled={(fields.approvedBUAFloors || []).length <= 1}
+                              className="text-red-400 hover:text-red-600 disabled:opacity-30 text-base leading-none cursor-pointer p-1 font-bold"
+                              title="Remove Floor"
+                            >
+                              &times;
+                            </button>
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot className="bg-slate-50 font-bold border-t-2 border-slate-300 text-xs">
+                    <tr>
+                      <td colSpan={2} className="px-3 py-2.5 text-right text-slate-800 font-bold uppercase tracking-wider">
+                        Total Approved BUA:
+                      </td>
+                      <td className="px-3 py-2.5 text-right text-cyan-800 font-bold font-mono">
+                        {fields.approvedBUATotal ? `${fields.approvedBUATotal} sqft` : '0 sqft'}
+                      </td>
+                      {!isReadOnly && <td></td>}
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+
+            {/* Measured BUA Floors Table */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-cyan-950 uppercase tracking-wider">
+                  Measured Built Up Area (BUA) Floors
+                </span>
+                {!isReadOnly && (
+                  <button
+                    type="button"
+                    onClick={handleAddMeasuredFloor}
+                    className="px-3 py-1 bg-cyan-700 hover:bg-cyan-800 text-white text-xs font-semibold rounded-md shadow-xs transition-colors cursor-pointer"
+                  >
+                    + Add Floor
+                  </button>
+                )}
+              </div>
+              <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+                <table className="w-full text-xs text-left">
+                  <thead>
+                    <tr className="bg-[#0a1628] text-white">
+                      <th className="px-3 py-2.5 text-center font-normal text-xs uppercase tracking-wider w-12">#</th>
+                      <th className="px-3 py-2.5 text-left font-normal text-xs uppercase tracking-wider">Floor Name / Level</th>
+                      <th className="px-3 py-2.5 text-right font-normal text-xs uppercase tracking-wider w-44">Area (Sq.Ft.)</th>
+                      {!isReadOnly && <th className="px-2 py-2.5 w-12 text-center"></th>}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {(fields.measuredBUAFloors || []).map((fl, idx) => (
+                      <tr key={idx} className="bg-white hover:bg-neutral-50/50 transition-colors">
+                        <td className="px-2 py-1.5 text-center text-slate-400 font-medium">{idx + 1}</td>
+                        <td className="px-2 py-1.5">
+                          <input
+                            type="text"
+                            value={fl.floor}
+                            onChange={e => handleMeasuredFloorChange(idx, 'floor', e.target.value)}
+                            className={inputCls + ' !py-1.5 text-xs font-normal text-[#0f2038]'}
+                            placeholder="e.g. Ground Floor"
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                        <td className="px-2 py-1.5">
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            value={fl.area}
+                            onChange={e => handleMeasuredFloorChange(idx, 'area', e.target.value)}
+                            className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
+                            placeholder=""
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                        {!isReadOnly && (
+                          <td className="px-2 py-1.5 text-center">
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveMeasuredFloor(idx)}
+                              disabled={(fields.measuredBUAFloors || []).length <= 1}
+                              className="text-red-400 hover:text-red-600 disabled:opacity-30 text-base leading-none cursor-pointer p-1 font-bold"
+                              title="Remove Floor"
+                            >
+                              &times;
+                            </button>
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot className="bg-slate-50 font-bold border-t-2 border-slate-300 text-xs">
+                    <tr>
+                      <td colSpan={2} className="px-3 py-2.5 text-right text-slate-800 font-bold uppercase tracking-wider">
+                        Total Measured BUA:
+                      </td>
+                      <td className="px-3 py-2.5 text-right text-cyan-800 font-bold font-mono">
+                        {fields.measuredBUATotal ? `${fields.measuredBUATotal} sqft` : '0 sqft'}
+                      </td>
+                      {!isReadOnly && <td></td>}
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
             </div>
           </div>
 
-          {/* 6d. MULTI-SUBPOINT SOFT CONTAINER: Measured BUA Floor Table */}
-          <div className="border border-cyan-200 bg-cyan-50/40 rounded-xl p-4 sm:p-5 mb-5 shadow-xs">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-cyan-950 text-sm tracking-wide uppercase">
-                6d. Measured Built Up Area (BUA) Floor-wise Breakup
-              </h3>
-              {!isReadOnly && (
-                <button
-                  type="button"
-                  onClick={handleAddMeasuredFloor}
-                  className="px-3 py-1 bg-cyan-700 hover:bg-cyan-800 text-white text-xs font-semibold rounded-md shadow-xs transition-colors cursor-pointer"
-                >
-                  + Add Floor
-                </button>
-              )}
-            </div>
-            <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-              <table className="w-full text-xs text-left">
-                <thead>
-                  <tr className="bg-[#0a1628] text-white">
-                    <th className="px-3 py-2.5 text-center font-normal text-xs uppercase tracking-wider w-12">#</th>
-                    <th className="px-3 py-2.5 text-left font-normal text-xs uppercase tracking-wider">Floor Name / Level</th>
-                    <th className="px-3 py-2.5 text-right font-normal text-xs uppercase tracking-wider w-44">Area (Sq.Ft.)</th>
-                    {!isReadOnly && <th className="px-2 py-2.5 w-12 text-center"></th>}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200">
-                  {(fields.measuredBUAFloors || []).map((fl, idx) => (
-                    <tr key={idx} className="bg-white hover:bg-neutral-50/50 transition-colors">
-                      <td className="px-2 py-1.5 text-center text-slate-400 font-medium">{idx + 1}</td>
-                      <td className="px-2 py-1.5">
-                        <input
-                          type="text"
-                          value={fl.floor}
-                          onChange={e => handleMeasuredFloorChange(idx, 'floor', e.target.value)}
-                          className={inputCls + ' !py-1.5 text-xs font-normal text-[#0f2038]'}
-                          placeholder="e.g. Ground Floor"
-                          disabled={isReadOnly}
-                        />
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <input
-                          type="text"
-                          inputMode="decimal"
-                          value={fl.area}
-                          onChange={e => handleMeasuredFloorChange(idx, 'area', e.target.value)}
-                          className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
-                          placeholder=""
-                          disabled={isReadOnly}
-                        />
-                      </td>
-                      {!isReadOnly && (
-                        <td className="px-2 py-1.5 text-center">
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveMeasuredFloor(idx)}
-                            disabled={(fields.measuredBUAFloors || []).length <= 1}
-                            className="text-red-400 hover:text-red-600 disabled:opacity-30 text-base leading-none cursor-pointer p-1 font-bold"
-                            title="Remove Floor"
-                          >
-                            &times;
-                          </button>
-                        </td>
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot className="bg-slate-50 font-bold border-t-2 border-slate-300 text-xs">
-                  <tr>
-                    <td colSpan={2} className="px-3 py-2.5 text-right text-slate-800 font-bold uppercase tracking-wider">
-                      Total Measured BUA:
-                    </td>
-                    <td className="px-3 py-2.5 text-right text-cyan-800 font-bold font-mono">
-                      {fields.measuredBUATotal ? `${fields.measuredBUATotal} sqft` : '0 sqft'}
-                    </td>
-                    {!isReadOnly && <td></td>}
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          </div>
-
-          {/* 6f & 6g Direct Grid */}
+          {/* Construction Compliance Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-            <Field label="6f. Construction as per Approved Plan">
+            <Field label="Construction as per Approved Plan">
               <select
                 value={fields.isConstructionAsPerPlan}
                 onChange={e => handleChange('isConstructionAsPerPlan', e.target.value)}
@@ -1525,7 +1534,7 @@ export default function AxisHLLAP({
               </select>
             </Field>
 
-            <Field label="6g. Details of Extra Construction">
+            <Field label="Details of Extra Construction">
               <input
                 type="text"
                 value={fields.detailsOfExtraConstruction}
@@ -1537,10 +1546,10 @@ export default function AxisHLLAP({
             </Field>
           </div>
 
-          {/* 6h. MULTI-SUBPOINT SOFT CONTAINER: Side Margins */}
-          <div className="border border-slate-200 bg-slate-50/80 rounded-xl p-4 sm:p-5 mb-5 shadow-xs">
-            <h3 className="font-semibold text-slate-800 mb-3 text-sm tracking-wide uppercase">
-              6h. Recommended / Available Side Margins (Setbacks)
+          {/* MULTI-SUBPOINT SOFT CONTAINER: Side Margins (Setbacks) */}
+          <div className="border border-slate-200 bg-slate-50 rounded-xl p-5 mb-5 shadow-xs">
+            <h3 className="font-semibold text-slate-800 mb-4 text-sm tracking-wide uppercase">
+              Recommended / Available Side Margins (Setbacks)
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-3 rounded-lg border border-slate-200 shadow-2xs">
               <Field label="Margin: Front">
@@ -1586,9 +1595,9 @@ export default function AxisHLLAP({
             </div>
           </div>
 
-          {/* 6i - 6l Direct Grid */}
+          {/* Structure Life & Maintenance Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Field label="6i. Quality of Construction">
+            <Field label="Quality of Construction">
               <select
                 value={fields.qualityOfConstruction}
                 onChange={e => handleChange('qualityOfConstruction', e.target.value)}
@@ -1602,7 +1611,7 @@ export default function AxisHLLAP({
               </select>
             </Field>
 
-            <Field label="6j. Maintenance of Property">
+            <Field label="Maintenance of Property">
               <select
                 value={fields.maintenanceOfProperty}
                 onChange={e => handleChange('maintenanceOfProperty', e.target.value)}
@@ -1616,7 +1625,7 @@ export default function AxisHLLAP({
               </select>
             </Field>
 
-            <Field label="6k. Current Age of Structure">
+            <Field label="Current Age of Structure">
               <input
                 type="text"
                 value={fields.currentLifeOfStructure}
@@ -1627,7 +1636,7 @@ export default function AxisHLLAP({
               />
             </Field>
 
-            <Field label="6l. Projected / Residual Life">
+            <Field label="Projected / Residual Life">
               <input
                 type="text"
                 value={fields.projectedLifeOfStructure}
@@ -1640,8 +1649,8 @@ export default function AxisHLLAP({
           </div>
         </Section>
 
-        {/* SECTION 5: 7 - 10. Valuation, Statutory Rates & Rental Value */}
-        <Section id="axis-sec5" title="7 - 10. Valuation, Statutory Rates & Rental Value" number={5} defaultOpen={true}>
+        {/* SECTION 5: Recommended Valuation */}
+        <Section id="axis-sec5" title="Recommended Valuation" number={5} defaultOpen={true}>
           {/* Construction Status Toggle Bar */}
           <div className="p-4 bg-slate-100 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-4 mb-5 shadow-xs">
             <div className="flex items-center gap-3">
@@ -1669,9 +1678,9 @@ export default function AxisHLLAP({
             </button>
           </div>
 
-          {/* Direct Valuation Grid */}
+          {/* Plot & Construction Valuation Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-            <Field label="7a. Plot Area for Valuation (sqft)">
+            <Field label="Plot Area for Valuation (sqft)">
               <input
                 type="text"
                 value={fields.plotAreaForValuation}
@@ -1682,7 +1691,7 @@ export default function AxisHLLAP({
               />
             </Field>
 
-            <Field label="7b. Plot Rate (Rs./sqft)">
+            <Field label="Plot Rate (Rs./sqft)">
               <input
                 type="text"
                 value={fields.plotRateForValuation}
@@ -1693,7 +1702,7 @@ export default function AxisHLLAP({
               />
             </Field>
 
-            <Field label="7c. Recommended Rate Description">
+            <Field label="Recommended Rate Description">
               <input
                 type="text"
                 value={fields.recommendedRatePerSqft}
@@ -1704,7 +1713,7 @@ export default function AxisHLLAP({
               />
             </Field>
 
-            <Field span={3} label="7d. Total Value of the Plot / Flat">
+            <Field span={3} label="Total Value of the Plot / Flat">
               <input
                 type="text"
                 value={fields.valueOfPlotFlat}
@@ -1714,7 +1723,7 @@ export default function AxisHLLAP({
               />
             </Field>
 
-            <Field label="7e. Estimated Cost of Construction">
+            <Field label="Estimated Cost of Construction">
               <input
                 type="text"
                 value={fields.estimatedCostOfConstruction}
@@ -1725,7 +1734,7 @@ export default function AxisHLLAP({
               />
             </Field>
 
-            <Field span={2} label="7f. Total Construction Cost (100% Completion)">
+            <Field span={2} label="Total Construction Cost (100% Completion)">
               <input
                 type="text"
                 value={fields.totalCostOfConstruction}
@@ -1736,11 +1745,11 @@ export default function AxisHLLAP({
             </Field>
           </div>
 
-          {/* MULTI-SUBPOINT SOFT CONTAINER: Under-Construction Breakdown (Only when active) */}
+          {/* MULTI-SUBPOINT SOFT CONTAINER: Under-Construction Breakdown */}
           {fields.isUnderConstruction && (
-            <div className="border border-amber-200 bg-amber-50/50 rounded-xl p-4 sm:p-5 mb-5 shadow-xs">
-              <h3 className="font-semibold text-amber-900 mb-3 text-sm tracking-wide uppercase">
-                Under-Construction Progress &amp; Valuation Breakdown
+            <div className="border border-amber-200 bg-amber-50/50 rounded-xl p-5 mb-5 shadow-xs">
+              <h3 className="font-semibold text-amber-800 mb-4 text-sm tracking-wide uppercase">
+                Under-Construction Valuation Breakdown
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <Field label="Stage of Construction">
@@ -1800,9 +1809,9 @@ export default function AxisHLLAP({
             </div>
           )}
 
-          {/* Summary, Statutory Rates & Visit Date Direct Grid */}
+          {/* Summary, Statutory Rates & Visit Date */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="7g. Current Value of Property (100% Completion)">
+            <Field label="Current Value of Property (100% Completion)">
               <input
                 type="text"
                 value={fields.currentValueOfProperty}
@@ -1814,10 +1823,10 @@ export default function AxisHLLAP({
 
             <DateInput
               fieldKey="dateOfPropertyVisit"
-              label="7h. Date of Property Visit"
+              label="Date of Property Visit"
             />
 
-            <Field label="8. Valuation as per Govt Reckoner Rate">
+            <Field label="Valuation as per Govt Reckoner Rate">
               <input
                 type="text"
                 value={fields.valuationGovtReckonerRate}
@@ -1832,7 +1841,7 @@ export default function AxisHLLAP({
               label={
                 <div>
                   <div className="flex items-center gap-3 flex-wrap">
-                    <span>9. Distressed Valuation of Property</span>
+                    <span>Distressed Valuation of Property</span>
                     <button
                       type="button"
                       onClick={() => setEnableDistressedEdit(!enableDistressedEdit)}
@@ -1866,7 +1875,7 @@ export default function AxisHLLAP({
               />
             </Field>
 
-            <Field span={2} label="10. Rental Value per Month">
+            <Field span={2} label="Rental Value per Month">
               <input
                 type="text"
                 value={fields.rentalValuePerMonth}
@@ -1879,38 +1888,11 @@ export default function AxisHLLAP({
           </div>
         </Section>
 
-        {/* SECTION 6: 11 - 12. Attachments & Remarks */}
-        <Section id="axis-sec6" title="11 - 12. Attachments, Remarks & Signatory" number={6} defaultOpen={true}>
-          {/* 11. Attachments Direct Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-            <Field label="11a. 4 photos of the Property attached">
-              <select
-                value={fields.photosAttached}
-                onChange={e => handleChange('photosAttached', e.target.value)}
-                className={selectCls}
-                disabled={isReadOnly}
-              >
-                <option value="Attached">Attached</option>
-                <option value="Not Attached">Not Attached</option>
-              </select>
-            </Field>
-
-            <Field label="11b. Location sketch for the property">
-              <select
-                value={fields.locationSketchAttached}
-                onChange={e => handleChange('locationSketchAttached', e.target.value)}
-                className={selectCls}
-                disabled={isReadOnly}
-              >
-                <option value="Attached">Attached</option>
-                <option value="Not Attached">Not Attached</option>
-              </select>
-            </Field>
-          </div>
-
-          {/* 12. Remarks Direct Field */}
+        {/* SECTION 6: Remarks & Valuer Signatory */}
+        <Section id="axis-sec6" title="Remarks & Valuer Signatory" number={6} defaultOpen={true}>
+          {/* Remarks Field */}
           <div className="mb-5">
-            <Field label="12. Remarks & Critical Observations">
+            <Field label="Observations & Critical Notes">
               <textarea
                 rows={5}
                 value={fields.remarks}
@@ -1922,10 +1904,10 @@ export default function AxisHLLAP({
             </Field>
           </div>
 
-          {/* MULTI-SUBPOINT SOFT CONTAINER: Valuer Undertaking & Signatory */}
+          {/* MULTI-SUBPOINT SOFT CONTAINER: Undertaking & Signatory */}
           <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs">
-            <h3 className="font-semibold text-blue-900 mb-3 text-sm tracking-wide uppercase">
-              Valuer Undertaking &amp; Authorized Signatory
+            <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">
+              Undertaking &amp; Signatory
             </h3>
             <p className="text-xs text-slate-700 italic leading-relaxed mb-4">
               I have personally visited the property &amp; identified the same based on the documents provided.<br />
@@ -1983,7 +1965,7 @@ export default function AxisHLLAP({
           locationMapImages={fields.locationMapImages || []}
           mouzaMapImages={fields.mouzaMapImages || []}
           sketchMapImages={fields.sketchMapImages || []}
-          coordinatesSectionName="4. Property Details & Characteristics"
+          coordinatesSectionName="Boundary Details & Property Characteristics"
           isReadOnly={isReadOnly}
           uploading={uploading}
           onLocationMapUpload={e => handleMapUpload('locationMapImages', e)}
