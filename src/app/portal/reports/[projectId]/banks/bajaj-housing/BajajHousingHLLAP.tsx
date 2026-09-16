@@ -165,38 +165,82 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
     bajajApproachRoadSizeCustom: '',
     bajajApproachRoadSize_isNA: false,
 
-    // Section 5: Approval Details
-    bajajSanctionedPlanProvided: '',
-    bajajLayoutPlanNo: '',
-    bajajConstructionPlanNo: '',
-    bajajDateOfSanction: '',
-    bajajPlanValidity: '',
-    bajajApprovingAuthority: '',
-    bajajApprovedCategory: '',
-    bajajNumberOfFloorsBuilding: '',
-
-    // Section 6: Technical Details - NDMA
+    // Section 5: NDMA Parameters
     bajajNatureOfBuilding: '',
+    bajajNatureOfBuildingCustom: '',
+    bajajNatureOfBuilding_isNA: false,
+    
     bajajPlanAspectRatio: '',
+    bajajPlanAspectRatioCustom: '',
+    bajajPlanAspectRatio_isNA: false,
+    
     bajajStructureType: '',
+    bajajStructureTypeCustom: '',
+    bajajStructureType_isNA: false,
+    
     bajajProjectedParts: '',
+    bajajProjectedPartsCustom: '',
+    bajajProjectedParts_isNA: false,
+    
     bajajTypeOfMasonry: '',
+    bajajTypeOfMasonryCustom: '',
+    bajajTypeOfMasonry_isNA: false,
+
+    bajajExpansionJointsAvailable: '',
+    bajajExpansionJointsAvailableCustom: '',
+    bajajExpansionJointsAvailable_isNA: false,
+    
     bajajRoofType: '',
+    bajajRoofTypeCustom: '',
+    bajajRoofType_isNA: false,
+    
     bajajSteelGrade: '',
+    bajajSteelGradeCustom: '',
+    bajajSteelGrade_isNA: false,
+
+    bajajMortarType: '',
+    bajajMortarTypeCustom: '',
+    bajajMortarType_isNA: false,
+    
     bajajConcreteGrade: '',
-    bajajEnvironmentExposure: '',
+    bajajConcreteGradeCustom: '',
+    bajajConcreteGrade_isNA: false,
+    
+    bajajEnvironmentExposureCondition: '',
+    bajajEnvironmentExposureConditionCustom: '',
+    bajajEnvironmentExposureCondition_isNA: false,
+
+    bajajFootingType: '',
+    bajajFootingTypeCustom: '',
+    bajajFootingType_isNA: false,
+    
     bajajSeismicZone: '',
-    bajajSoilLiquefable: '',
-    bajajVulnerableToLandslide: '',
+    bajajSeismicZoneCustom: '',
+    bajajSeismicZone_isNA: false,
+    
+    bajajSoilLiquefiable: '',
+    bajajSoilLiquefiableCustom: '',
+    bajajSoilLiquefiable_isNA: false,
+
+    bajajCoastalRegulatoryZone: '',
+    bajajCoastalRegulatoryZoneCustom: '',
+    bajajCoastalRegulatoryZone_isNA: false,
+    
+    bajajSoilSlopeVulnerableToLandslide: '',
+    bajajSoilSlopeVulnerableToLandslideCustom: '',
+    bajajSoilSlopeVulnerableToLandslide_isNA: false,
+    
     bajajFloodProneArea: '',
-    // Technical Details
-    bajajConstructionQuality: '',
-    bajajLiftAvailable: '',
-    bajajNoOfLifts: '',
-    bajajSeparateAccess: '',
-    bajajCurrentOccupant: '',
-    bajajNoOfStoreys: '',
-    bajajAccommodationDetails: '',
+    bajajFloodProneAreaCustom: '',
+    bajajFloodProneArea_isNA: false,
+    
+    bajajGroundSlopeMoreThan20: '',
+    bajajGroundSlopeMoreThan20Custom: '',
+    bajajGroundSlopeMoreThan20_isNA: false,
+
+    bajajFireExit: '',
+    bajajFireExitCustom: '',
+    bajajFireExit_isNA: false,
 
     // Section 7: Area & Floor Details
     bajajPlotNSDoc: '',
@@ -1016,163 +1060,96 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
     },
     {
       id: 'bajaj-section-5',
-      title: 'Approval Details',
+      title: 'NDMA Parameters',
       number: 5,
       defaultOpen: false,
-      render: (fields, handleChange, isReadOnly) => (
-        <div className="animate-fade-in space-y-4">
-          <p className="text-xs text-gray-500 italic">Section details will be configured with detailed prompts.</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="Sanctioned Plan Provided (Yes/No)">
-              <select className={inputCls} value={fields.bajajSanctionedPlanProvided || ''} onChange={e => handleChange('bajajSanctionedPlanProvided', e.target.value)} disabled={isReadOnly}>
+      render: (fields, handleChange, isReadOnly) => {
+        const NACheckbox = ({ field, label = 'Mark as NA' }: { field: string, label?: string }) => (
+          <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-500 mt-1 hover:text-gray-700">
+            <input 
+              type="checkbox" 
+              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
+              checked={!!fields[`${field}_isNA`]}
+              onChange={(e) => {
+                handleChange(`${field}_isNA`, e.target.checked);
+                if (e.target.checked) handleChange(field, 'NA');
+                else handleChange(field, '');
+              }}
+              disabled={isReadOnly}
+            />
+            <span>{label}</span>
+          </label>
+        );
+
+        const renderSelectWithCustom = (field: string, options: string[], label: string) => (
+          <div>
+            <Field label={label}>
+              <select 
+                className={inputCls} 
+                value={fields[field] === 'NA' ? 'NA' : (options.includes(fields[field] || '') ? fields[field] : (fields[field] ? 'Custom' : ''))} 
+                onChange={e => {
+                  if (e.target.value === 'Custom') {
+                    handleChange(field, fields[`${field}Custom`] || '');
+                  } else {
+                    handleChange(field, e.target.value);
+                  }
+                }} 
+                disabled={isReadOnly || fields[`${field}_isNA`]}
+              >
                 <option value="">Select</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
+                {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                <option value="Custom">Custom</option>
               </select>
             </Field>
-            <Field label="Layout Plan No">
-              <input className={inputCls} value={fields.bajajLayoutPlanNo || ''} onChange={e => handleChange('bajajLayoutPlanNo', e.target.value)} disabled={isReadOnly} />
-            </Field>
+            {!options.includes(fields[field] || '') && fields[field] && fields[field] !== 'NA' && (
+              <div className="mt-2">
+                <input 
+                  type="text" 
+                  className={inputCls} 
+                  placeholder="Enter custom value"
+                  value={fields[`${field}Custom`] || ''} 
+                  onChange={e => {
+                    handleChange(`${field}Custom`, e.target.value);
+                    handleChange(field, e.target.value);
+                  }}
+                  disabled={isReadOnly || fields[`${field}_isNA`]}
+                />
+              </div>
+            )}
+            <NACheckbox field={field} />
           </div>
-          <Field label="Construction Plan Details: Sanctioned No/Permit No.">
-            <input className={inputCls} value={fields.bajajConstructionPlanNo || ''} onChange={e => handleChange('bajajConstructionPlanNo', e.target.value)} disabled={isReadOnly} />
-          </Field>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="Date of Sanction">
-              <input type="date" className={inputCls} value={fields.bajajDateOfSanction || ''} onChange={e => handleChange('bajajDateOfSanction', e.target.value)} disabled={isReadOnly} />
-            </Field>
-            <Field label="Plan Validity">
-              <input className={inputCls} value={fields.bajajPlanValidity || ''} onChange={e => handleChange('bajajPlanValidity', e.target.value)} disabled={isReadOnly} />
-            </Field>
-          </div>
-          <Field label="Approving Authority">
-            <input className={inputCls} value={fields.bajajApprovingAuthority || ''} onChange={e => handleChange('bajajApprovingAuthority', e.target.value)} disabled={isReadOnly} />
-          </Field>
-          <Field label="Approved Category">
-            <select className={inputCls} value={fields.bajajApprovedCategory || ''} onChange={e => handleChange('bajajApprovedCategory', e.target.value)} disabled={isReadOnly}>
-              <option value="">Select</option>
-              <option value="Residential">Residential</option>
-              <option value="Industrial">Industrial</option>
-              <option value="Commercial">Commercial</option>
-              <option value="Mixed">Mixed</option>
-            </select>
-          </Field>
-          <Field label="Number of Floors in Building">
-            <input className={inputCls} value={fields.bajajNumberOfFloorsBuilding || ''} onChange={e => handleChange('bajajNumberOfFloorsBuilding', e.target.value)} disabled={isReadOnly} />
-          </Field>
-        </div>
-      ),
-    },
-    {
-      id: 'bajaj-section-6',
-      title: 'Technical Details',
-      number: 6,
-      defaultOpen: false,
-      render: (fields, handleChange, isReadOnly) => (
-        <div className="animate-fade-in space-y-4">
-          <p className="text-xs text-gray-500 italic">Section details will be configured with detailed prompts.</p>
-          {/* NDMA Parameters */}
-          <div className="border border-blue-200 bg-blue-50/30 rounded-md p-4">
-            <h4 className="font-semibold text-sm text-gray-700 mb-3">NDMA Parameters</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Nature of Building/Wing">
-                <input className={inputCls} value={fields.bajajNatureOfBuilding || ''} onChange={e => handleChange('bajajNatureOfBuilding', e.target.value)} disabled={isReadOnly} />
-              </Field>
-              <Field label="Plan Aspect Ratio">
-                <input className={inputCls} value={fields.bajajPlanAspectRatio || ''} onChange={e => handleChange('bajajPlanAspectRatio', e.target.value)} disabled={isReadOnly} />
-              </Field>
-              <Field label="Structure Type">
-                <input className={inputCls} value={fields.bajajStructureType || ''} onChange={e => handleChange('bajajStructureType', e.target.value)} disabled={isReadOnly} />
-              </Field>
-              <Field label="Projected Parts">
-                <input className={inputCls} value={fields.bajajProjectedParts || ''} onChange={e => handleChange('bajajProjectedParts', e.target.value)} disabled={isReadOnly} />
-              </Field>
-              <Field label="Type of Masonry">
-                <input className={inputCls} value={fields.bajajTypeOfMasonry || ''} onChange={e => handleChange('bajajTypeOfMasonry', e.target.value)} disabled={isReadOnly} />
-              </Field>
-              <Field label="Roof Type">
-                <input className={inputCls} value={fields.bajajRoofType || ''} onChange={e => handleChange('bajajRoofType', e.target.value)} disabled={isReadOnly} />
-              </Field>
-              <Field label="Steel Grade">
-                <input className={inputCls} value={fields.bajajSteelGrade || ''} onChange={e => handleChange('bajajSteelGrade', e.target.value)} disabled={isReadOnly} />
-              </Field>
-              <Field label="Concrete Grade">
-                <input className={inputCls} value={fields.bajajConcreteGrade || ''} onChange={e => handleChange('bajajConcreteGrade', e.target.value)} disabled={isReadOnly} />
-              </Field>
-              <Field label="Environment Exposure Condition">
-                <input className={inputCls} value={fields.bajajEnvironmentExposure || ''} onChange={e => handleChange('bajajEnvironmentExposure', e.target.value)} disabled={isReadOnly} />
-              </Field>
-              <Field label="Seismic Zone">
-                <input className={inputCls} value={fields.bajajSeismicZone || ''} onChange={e => handleChange('bajajSeismicZone', e.target.value)} disabled={isReadOnly} />
-              </Field>
-              <Field label="Soil Liquefable">
-                <select className={inputCls} value={fields.bajajSoilLiquefable || ''} onChange={e => handleChange('bajajSoilLiquefable', e.target.value)} disabled={isReadOnly}>
-                  <option value="">Select</option>
-                  <option value="Yes">Yes</option>
-                  <option value="No">No</option>
-                </select>
-              </Field>
-              <Field label="Vulnerable to Landslide">
-                <select className={inputCls} value={fields.bajajVulnerableToLandslide || ''} onChange={e => handleChange('bajajVulnerableToLandslide', e.target.value)} disabled={isReadOnly}>
-                  <option value="">Select</option>
-                  <option value="Yes">Yes</option>
-                  <option value="No">No</option>
-                </select>
-              </Field>
-              <Field label="Flood Prone Area">
-                <select className={inputCls} value={fields.bajajFloodProneArea || ''} onChange={e => handleChange('bajajFloodProneArea', e.target.value)} disabled={isReadOnly}>
-                  <option value="">Select</option>
-                  <option value="Yes">Yes</option>
-                  <option value="No">No</option>
-                </select>
-              </Field>
+        );
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border border-[#FECDD3] bg-[#FFF1F2] rounded-xl p-4">
+              <h3 className="font-bold text-gray-700 mb-4">NDMA Parameters</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {renderSelectWithCustom('bajajNatureOfBuilding', ['Residential', 'Commercial', 'Industrial', 'Mixed'], 'Nature of Building/Wing')}
+                {renderSelectWithCustom('bajajPlanAspectRatio', ['YES', 'NO'], 'Plan Aspect Ratio')}
+                {renderSelectWithCustom('bajajStructureType', ['Load Bearing', 'RCC', 'Composite Structure', 'Others'], 'Structure Type (Load Bearing, RCC, Composite Structure, Others)')}
+                {renderSelectWithCustom('bajajProjectedParts', ['Yes', 'No'], 'Projected Parts Available')}
+                {renderSelectWithCustom('bajajTypeOfMasonry', ['Brick Masonry', 'Stone Masonry', 'Concrete Blocks', 'Fly Ash'], 'Type of Masonry')}
+                {renderSelectWithCustom('bajajExpansionJointsAvailable', ['YES', 'NO'], 'Expansion Joints Available')}
+                {renderSelectWithCustom('bajajRoofType', ['FLAT Roof', 'Pitched Roof', 'Sloped Roof', 'GI Sheet Roof'], 'Roof Type')}
+                {renderSelectWithCustom('bajajSteelGrade', ['FE 415', 'FE 500', 'FE 550D'], 'Steel Grade')}
+                {renderSelectWithCustom('bajajMortarType', ['Cement Mortar', 'Lime Mortar', 'Mud Mortar'], 'Mortar Type')}
+                {renderSelectWithCustom('bajajConcreteGrade', ['M15', 'M20', 'M25', 'M30'], 'Concrete Grade')}
+                {renderSelectWithCustom('bajajEnvironmentExposureCondition', ['MILD', 'MODERATE', 'SEVERE', 'VERY SEVERE', 'EXTREME'], 'Environment Exposure Condition')}
+                {renderSelectWithCustom('bajajFootingType', ['Stepped Footing', 'Isolated Footing', 'Combined Footing', 'Raft / Mat Foundation', 'Pile Foundation'], 'Footing Type')}
+                {renderSelectWithCustom('bajajSeismicZone', ['Zone II', 'Zone III', 'II & III', 'Zone IV', 'Zone V'], 'Sesmic Zone')}
+                {renderSelectWithCustom('bajajSoilLiquefiable', ['YES', 'NO'], 'Soil Liquefiable')}
+                {renderSelectWithCustom('bajajCoastalRegulatoryZone', ['Yes', 'No'], 'Coastal Regulatory Zone (Yes/No)')}
+                {renderSelectWithCustom('bajajSoilSlopeVulnerableToLandslide', ['YES', 'NO'], 'Soil Slope Vulnerable to Landslide')}
+                {renderSelectWithCustom('bajajFloodProneArea', ['YES', 'NO'], 'Flood Prone Area')}
+                {renderSelectWithCustom('bajajGroundSlopeMoreThan20', ['YES', 'NO'], 'Ground Slope More than 20%')}
+                {renderSelectWithCustom('bajajFireExit', ['Yes', 'No'], 'Fire Exit')}
+              </div>
             </div>
           </div>
-          {/* Technical Details */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="Construction Quality">
-              <select className={inputCls} value={fields.bajajConstructionQuality || ''} onChange={e => handleChange('bajajConstructionQuality', e.target.value)} disabled={isReadOnly}>
-                <option value="">Select</option>
-                <option value="Good">Good</option>
-                <option value="Average">Average</option>
-                <option value="Poor">Poor</option>
-                <option value="Luxury">Luxury</option>
-              </select>
-            </Field>
-            <Field label="Lift Available">
-              <select className={inputCls} value={fields.bajajLiftAvailable || ''} onChange={e => handleChange('bajajLiftAvailable', e.target.value)} disabled={isReadOnly}>
-                <option value="">Select</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-              </select>
-            </Field>
-            <Field label="No. of Lifts">
-              <input className={inputCls} value={fields.bajajNoOfLifts || ''} onChange={e => handleChange('bajajNoOfLifts', e.target.value)} disabled={isReadOnly} />
-            </Field>
-            <Field label="Separate Independent Access">
-              <select className={inputCls} value={fields.bajajSeparateAccess || ''} onChange={e => handleChange('bajajSeparateAccess', e.target.value)} disabled={isReadOnly}>
-                <option value="">Select</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-              </select>
-            </Field>
-            <Field label="Current Occupant of Property">
-              <select className={inputCls} value={fields.bajajCurrentOccupant || ''} onChange={e => handleChange('bajajCurrentOccupant', e.target.value)} disabled={isReadOnly}>
-                <option value="">Select</option>
-                <option value="Owner">Owner</option>
-                <option value="Tenant">Tenant</option>
-                <option value="Vacant">Vacant</option>
-              </select>
-            </Field>
-            <Field label="No. of Storeys">
-              <input className={inputCls} value={fields.bajajNoOfStoreys || ''} onChange={e => handleChange('bajajNoOfStoreys', e.target.value)} disabled={isReadOnly} />
-            </Field>
-          </div>
-          <Field label="Accommodation details / Floor wise and Occupancy">
-            <textarea className={inputCls} rows={3} value={fields.bajajAccommodationDetails || ''} onChange={e => handleChange('bajajAccommodationDetails', e.target.value)} disabled={isReadOnly} />
-          </Field>
-        </div>
-      ),
+        );
+      },
     },
     {
       id: 'bajaj-section-7',

@@ -59,10 +59,8 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
       this.drawBajajSection3();
     } else if (title === 'BOUNDARIES & SCHEDULE') {
       this.drawBajajSection4();
-    } else if (title === 'APPROVAL DETAILS') {
+    } else if (title === 'NDMA PARAMETERS') {
       this.drawBajajSection5();
-    } else if (title === 'TECHNICAL DETAILS') {
-      this.drawBajajSection6();
     } else if (title === 'AREA & FLOOR DETAILS') {
       this.drawBajajSection7();
     } else if (title === 'VALUATION SUMMARY') {
@@ -211,68 +209,30 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
     this.drawSimpleRow('Approach Road Size (<5 ft/5-10 ft/ 10-15 ft/ 15ft)', getVal('bajajApproachRoadSize'));
   }
 
-  // ── Section 5: Approval Details ──
+  // ── Section 5: NDMA Parameters ──
   private drawBajajSection5() {
     const fv = this.fv.bind(this);
+    const getVal = (field: string) => this.fields[`${field}_isNA`] ? 'NA' : fv(field);
 
-    this.drawKeyValueRow([
-      { label: 'Sanctioned Plan Provided (Yes/No)', value: fv('bajajSanctionedPlanProvided') },
-      { label: 'Layout Plan (Udable Sanction of No./Permit) No', value: fv('bajajLayoutPlanNo') }
-    ]);
-    this.drawSimpleRow('Construction Plan Details: Sanctioned No/Permit No.', fv('bajajConstructionPlanNo'));
-    this.drawSimpleRow('Date of Sanction', fv('bajajDateOfSanction'));
-    this.drawSimpleRow('Plan Validity', fv('bajajPlanValidity'));
-    this.drawSimpleRow('Approving Authority', fv('bajajApprovingAuthority'));
-    this.drawSimpleRow('Approved Category (Residential/Industrial/Commercial/Mixed)', fv('bajajApprovedCategory'));
-    this.drawSimpleRow('Number of Floors in Building', fv('bajajNumberOfFloorsBuilding'));
-  }
-
-  // ── Section 6: Technical Details ──
-  private drawBajajSection6() {
-    const fv = this.fv.bind(this);
-
-    // NDMA Parameters
-    this.advanceCursor(4);
-    this.drawSectionSubtitle('NDMA Parameters');
-    
     const ndmaFields = [
       ['Nature of Building/Wing', 'bajajNatureOfBuilding', 'Plan Aspect Ratio', 'bajajPlanAspectRatio'],
-      ['Structure Type (Load Bearing, RCC, Composite Structure, Others)', 'bajajStructureType', '', ''],
-      ['Projected Parts', 'bajajProjectedParts', 'Type of Masonry', 'bajajTypeOfMasonry'],
+      ['Structure Type', 'bajajStructureType', 'Projected Parts', 'bajajProjectedParts'],
+      ['Type of Masonry', 'bajajTypeOfMasonry', 'Expansion Joints Available', 'bajajExpansionJointsAvailable'],
       ['Roof Type', 'bajajRoofType', 'Steel Grade', 'bajajSteelGrade'],
-      ['Concrete Grade', 'bajajConcreteGrade', 'Environment Exposure Condition', 'bajajEnvironmentExposure'],
-      ['Seismic Zone', 'bajajSeismicZone', 'Soil Liquefable', 'bajajSoilLiquefable'],
-      ['Vulnerable to Landslide', 'bajajVulnerableToLandslide', 'Flood Prone Area', 'bajajFloodProneArea']
+      ['Mortar Type', 'bajajMortarType', 'Concrete Grade', 'bajajConcreteGrade'],
+      ['Environment Exposure Condition', 'bajajEnvironmentExposureCondition', 'Footing Type', 'bajajFootingType'],
+      ['Seismic Zone', 'bajajSeismicZone', 'Soil Liquefiable', 'bajajSoilLiquefiable'],
+      ['Coastal Regulatory Zone', 'bajajCoastalRegulatoryZone', 'Vulnerable to Landslide', 'bajajSoilSlopeVulnerableToLandslide'],
+      ['Flood Prone Area', 'bajajFloodProneArea', 'Ground Slope > 20%', 'bajajGroundSlopeMoreThan20']
     ];
 
     for (const [l1, k1, l2, k2] of ndmaFields) {
-      if (l2) {
-        this.drawKeyValueRow([
-          { label: l1, value: fv(k1) },
-          { label: l2, value: fv(k2) }
-        ]);
-      } else {
-        this.drawSimpleRow(l1, fv(k1));
-      }
+      this.drawKeyValueRow([
+        { label: l1, value: getVal(k1) },
+        { label: l2, value: getVal(k2) }
+      ]);
     }
-
-    this.advanceCursor(6);
-    // Technical Details - Construction Quality etc.
-    this.drawSectionSubtitle('Technical Details');
-    
-    this.drawKeyValueRow([
-      { label: 'Construction Quality (Good/Avg/Poor/Luxury)', value: fv('bajajConstructionQuality') },
-      { label: 'Lift Available (Yes/No)', value: fv('bajajLiftAvailable') }
-    ]);
-    this.drawKeyValueRow([
-      { label: 'No. of Lifts', value: fv('bajajNoOfLifts') },
-      { label: 'Separate Independent Access (Yes/No)', value: fv('bajajSeparateAccess') }
-    ]);
-    this.drawKeyValueRow([
-      { label: 'Current Occupant of Property (Owner/Tenant/Vacant)', value: fv('bajajCurrentOccupant') },
-      { label: 'No. of Storeys', value: fv('bajajNoOfStoreys') }
-    ]);
-    this.drawSimpleRow('Accommodation details / Floor wise and Occupancy', fv('bajajAccommodationDetails'));
+    this.drawSimpleRow('Fire Exit (Yes/No)', getVal('bajajFireExit'));
   }
 
   // ── Section 7: Area & Floor Details ──
