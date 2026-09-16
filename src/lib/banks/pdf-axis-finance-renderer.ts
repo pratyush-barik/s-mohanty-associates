@@ -47,18 +47,19 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
     }]);
   }
 
-  override drawCenteredTitle(title: string) {
+  override drawCenteredTitle(title: string, fontSize?: number, underline?: boolean) {
     if (!this.drawnCover) {
       this.drawnCover = true;
       this.drawAxisCoverPage();
-      // After drawing cover page, move to the next page for the standard sections
       this.addPage();
     }
-    // Proceed to draw the actual title on the second page
-    const finalTitle = title.trim().toUpperCase() === 'VALUATION REPORT'
+    
+    // Override the generic "Valuation Report" title
+    const finalTitle = title.trim().toLowerCase() === 'valuation report'
       ? 'VALUATION REPORT FOR AXIS FINANCE LIMITED'
       : title;
-    super.drawCenteredTitle(finalTitle);
+      
+    super.drawCenteredTitle(finalTitle, fontSize, underline);
   }
 
   override drawSectionHeader(title: string, addSpaceBefore?: boolean, preserveCase?: boolean) {
@@ -172,16 +173,21 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
     };
     
     // Approval Details Table
-    const headers = ['Description', 'Approval authority', 'Approval no', 'Approval Date'];
-    const rows = [
-      ['Layout Plan', fv('axisLayoutPlanApprovalAuthority'), fv('axisLayoutPlanApprovalNo'), fv('axisLayoutPlanApprovalDate')],
-      ['Building/Construction Plan', fv('axisBuildingPlanApprovalAuthority'), fv('axisBuildingPlanApprovalNo'), fv('axisBuildingPlanApprovalDate')]
-    ];
-    const colWidths = [150, 120, 120, 120];
-    this.drawTable(headers, rows, colWidths, [], [0]);
+    this.drawKeyValueRow([
+      { label: 'Description', value: 'Approval authority', labelBold: true, valueBold: true },
+      { label: 'Approval no', value: 'Approval Date', labelBold: true, valueBold: true }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Layout Plan', value: fv('axisLayoutPlanApprovalAuthority'), labelBold: true },
+      { label: fv('axisLayoutPlanApprovalNo'), value: fv('axisLayoutPlanApprovalDate') }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Building/Construction Plan', value: fv('axisBuildingPlanApprovalAuthority'), labelBold: true },
+      { label: fv('axisBuildingPlanApprovalNo'), value: fv('axisBuildingPlanApprovalDate') }
+    ]);
     
     this.advanceCursor(10);
-    this.drawCenteredTitle('Building Specifications & Condition');
+    this.drawCenteredTitle('Building Specifications & Condition', undefined, true);
     this.advanceCursor(5);
     
     const sec5Fields = [
