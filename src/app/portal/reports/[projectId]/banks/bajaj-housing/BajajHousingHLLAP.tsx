@@ -242,6 +242,37 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
     bajajFireExitCustom: '',
     bajajFireExit_isNA: false,
 
+    // Section 6: Approved Plan Details
+    bajajSanctionedPlanProvided: '',
+    bajajSanctionedPlanProvidedCustom: '',
+    bajajSanctionedPlanProvided_isNA: false,
+    
+    bajajLayoutPlanNo: '',
+    bajajLayoutPlanNo_isNA: false,
+    
+    bajajConstructionPlanNo: '',
+    bajajConstructionPlanNo_isNA: false,
+    
+    bajajDateOfSanction: '',
+    bajajDateOfSanction_isNA: false,
+    
+    bajajPlanValidity: '',
+    bajajPlanValidity_isNA: false,
+    
+    bajajApprovingAuthority: '',
+    bajajApprovingAuthorityCustom: '',
+    bajajApprovingAuthority_isNA: false,
+    bajajApprovingAuthority_isManual: false,
+    
+    bajajApprovedCategory: '',
+    bajajApprovedCategoryCustom: '',
+    bajajApprovedCategory_isNA: false,
+    bajajApprovedCategory_isManual: false,
+    
+    bajajNumberOfFloorsBuilding: '',
+    bajajNumberOfFloorsBuilding_isNA: false,
+    bajajNumberOfFloorsBuilding_isManual: false,
+
     // Section 7: Area & Floor Details
     bajajPlotNSDoc: '',
     bajajPlotNSPlan: '',
@@ -1145,6 +1176,261 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
                 {renderSelectWithCustom('bajajFloodProneArea', ['YES', 'NO'], 'Flood Prone Area')}
                 {renderSelectWithCustom('bajajGroundSlopeMoreThan20', ['YES', 'NO'], 'Ground Slope More than 20%')}
                 {renderSelectWithCustom('bajajFireExit', ['Yes', 'No'], 'Fire Exit')}
+              </div>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      id: 'bajaj-section-6',
+      title: 'Approved Plan Details',
+      number: 6,
+      defaultOpen: false,
+      render: (fields, handleChange, isReadOnly) => {
+        const NACheckbox = ({ field, label = 'Mark as NA' }: { field: string, label?: string }) => (
+          <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-500 mt-1 hover:text-gray-700">
+            <input 
+              type="checkbox" 
+              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
+              checked={!!fields[`${field}_isNA`]}
+              onChange={(e) => {
+                handleChange(`${field}_isNA`, e.target.checked);
+                if (e.target.checked) handleChange(field, 'NA');
+                else handleChange(field, '');
+              }}
+              disabled={isReadOnly}
+            />
+            <span>{label}</span>
+          </label>
+        );
+
+        const EditSwitch = ({ field, onToggleOff }: { field: string, onToggleOff?: () => void }) => (
+          <div className="flex items-center gap-2 mt-1">
+            <button
+              type="button"
+              onClick={() => {
+                const manual = !fields[`${field}_isManual`];
+                handleChange(`${field}_isManual`, manual);
+                if (!manual && onToggleOff) {
+                  onToggleOff();
+                }
+              }}
+              disabled={isReadOnly}
+              className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields[`${field}_isManual`] ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields[`${field}_isManual`] ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
+            </button>
+            <span className={`text-[10px] font-medium uppercase tracking-wider ${fields[`${field}_isManual`] ? 'text-emerald-600' : 'text-gray-400'}`}>
+              {fields[`${field}_isManual`] ? 'Edit On' : 'Edit Off'}
+            </span>
+          </div>
+        );
+
+        const isPlanLocked = ['No', 'NA'].includes(fields.bajajSanctionedPlanProvided) || fields.bajajSanctionedPlanProvided_isNA;
+        const globalDisabled = isReadOnly || isPlanLocked;
+
+        const handleSanctionedPlanChange = (val: string) => {
+          handleChange('bajajSanctionedPlanProvided', val);
+          if (['No', 'NA'].includes(val)) {
+            ['bajajLayoutPlanNo', 'bajajConstructionPlanNo', 'bajajDateOfSanction', 'bajajPlanValidity', 'bajajApprovingAuthority', 'bajajApprovedCategory', 'bajajNumberOfFloorsBuilding'].forEach(f => {
+               if (!fields[`${f}_isManual`]) {
+                 handleChange(`${f}_isNA`, true);
+                 handleChange(f, 'NA');
+               }
+            });
+          }
+        };
+
+        const renderSelectWithCustom = (field: string, options: string[], label: string, isFieldDisabled: boolean = false) => (
+          <div>
+            <Field label={label}>
+              <select 
+                className={inputCls} 
+                value={fields[field] === 'NA' ? 'NA' : (options.includes(fields[field] || '') ? fields[field] : (fields[field] ? 'Custom' : ''))} 
+                onChange={e => {
+                  if (e.target.value === 'Custom') {
+                    if (field === 'bajajSanctionedPlanProvided') handleSanctionedPlanChange(fields[`${field}Custom`] || '');
+                    else handleChange(field, fields[`${field}Custom`] || '');
+                  } else {
+                    if (field === 'bajajSanctionedPlanProvided') handleSanctionedPlanChange(e.target.value);
+                    else handleChange(field, e.target.value);
+                  }
+                }} 
+                disabled={isFieldDisabled || fields[`${field}_isNA`]}
+              >
+                <option value="">Select</option>
+                {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                <option value="Custom">Custom</option>
+              </select>
+            </Field>
+            {!options.includes(fields[field] || '') && fields[field] && fields[field] !== 'NA' && (
+              <div className="mt-2">
+                <input 
+                  type="text" 
+                  className={inputCls} 
+                  placeholder="Enter custom value"
+                  value={fields[`${field}Custom`] || ''} 
+                  onChange={e => {
+                    handleChange(`${field}Custom`, e.target.value);
+                    if (field === 'bajajSanctionedPlanProvided') handleSanctionedPlanChange(e.target.value);
+                    else handleChange(field, e.target.value);
+                  }}
+                  disabled={isFieldDisabled || fields[`${field}_isNA`]}
+                />
+              </div>
+            )}
+            <NACheckbox field={field} />
+          </div>
+        );
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border border-[#FED7AA] bg-[#FFF7ED] rounded-xl p-4">
+              <h3 className="font-bold text-gray-700 mb-4">Approved Plan Details</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {renderSelectWithCustom('bajajSanctionedPlanProvided', ['Yes', 'No'], 'Sanctioned Plan Provided (Yes/No)', isReadOnly)}
+                
+                <div>
+                  <Field label="Layout Plan Details: Sanctioned No./Permit No.">
+                    <input className={inputCls} value={fields.bajajLayoutPlanNo || ''} onChange={e => handleChange('bajajLayoutPlanNo', e.target.value)} disabled={globalDisabled || fields.bajajLayoutPlanNo_isNA} />
+                  </Field>
+                  <NACheckbox field="bajajLayoutPlanNo" />
+                </div>
+                
+                <div>
+                  <Field label="Construction Plan Details: Sanctioned No/Permit No.">
+                    <input className={inputCls} value={fields.bajajConstructionPlanNo || ''} onChange={e => handleChange('bajajConstructionPlanNo', e.target.value)} disabled={globalDisabled || fields.bajajConstructionPlanNo_isNA} />
+                  </Field>
+                  <NACheckbox field="bajajConstructionPlanNo" />
+                </div>
+                
+                <div>
+                  <Field label="Date of Sanction">
+                    <input type="date" className={inputCls} value={fields.bajajDateOfSanction || ''} onChange={e => handleChange('bajajDateOfSanction', e.target.value)} disabled={globalDisabled || fields.bajajDateOfSanction_isNA} />
+                  </Field>
+                  <NACheckbox field="bajajDateOfSanction" />
+                </div>
+                
+                <div>
+                  <Field label="Plan Validity">
+                    <input type="date" className={inputCls} value={fields.bajajPlanValidity || ''} onChange={e => handleChange('bajajPlanValidity', e.target.value)} disabled={globalDisabled || fields.bajajPlanValidity_isNA} />
+                  </Field>
+                  <NACheckbox field="bajajPlanValidity" />
+                </div>
+                
+                <div>
+                  <div className="flex justify-between items-end mb-1">
+                    <label className="block text-xs font-medium text-gray-700">Approving Authority</label>
+                    <EditSwitch 
+                      field="bajajApprovingAuthority" 
+                      onToggleOff={() => {
+                        handleChange('bajajApprovingAuthority_isNA', false);
+                        handleChange('bajajApprovingAuthority', fields.bajajJurisdictionMunicipalBody || '');
+                      }} 
+                    />
+                  </div>
+                  <select 
+                    className={inputCls} 
+                    value={fields.bajajApprovingAuthority === 'NA' ? 'NA' : (['BDA', 'BMC', 'CMC', 'Gram Panchayat', 'Not Provided'].includes(fields.bajajApprovingAuthority || '') ? fields.bajajApprovingAuthority : (fields.bajajApprovingAuthority ? 'Custom' : ''))} 
+                    onChange={e => {
+                      if (e.target.value === 'Custom') {
+                        handleChange('bajajApprovingAuthority', fields.bajajApprovingAuthorityCustom || '');
+                      } else {
+                        handleChange('bajajApprovingAuthority', e.target.value);
+                      }
+                    }} 
+                    disabled={globalDisabled || !fields.bajajApprovingAuthority_isManual || fields.bajajApprovingAuthority_isNA}
+                  >
+                    <option value="">Select</option>
+                    {['BDA', 'BMC', 'CMC', 'Gram Panchayat', 'Not Provided'].map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                    <option value="Custom">Custom</option>
+                  </select>
+                  {!['BDA', 'BMC', 'CMC', 'Gram Panchayat', 'Not Provided'].includes(fields.bajajApprovingAuthority || '') && fields.bajajApprovingAuthority && fields.bajajApprovingAuthority !== 'NA' && (
+                    <div className="mt-2">
+                      <input 
+                        type="text" 
+                        className={inputCls} 
+                        placeholder="Enter custom value"
+                        value={fields.bajajApprovingAuthorityCustom || ''} 
+                        onChange={e => {
+                          handleChange('bajajApprovingAuthorityCustom', e.target.value);
+                          handleChange('bajajApprovingAuthority', e.target.value);
+                        }}
+                        disabled={globalDisabled || !fields.bajajApprovingAuthority_isManual || fields.bajajApprovingAuthority_isNA}
+                      />
+                    </div>
+                  )}
+                  <NACheckbox field="bajajApprovingAuthority" />
+                </div>
+                
+                <div>
+                  <div className="flex justify-between items-end mb-1">
+                    <label className="block text-xs font-medium text-gray-700">Approved Usages (Residential/Industrial/Commercial/Mixed Usages)</label>
+                    <EditSwitch 
+                      field="bajajApprovedCategory" 
+                      onToggleOff={() => {
+                        handleChange('bajajApprovedCategory_isNA', false);
+                        handleChange('bajajApprovedCategory', fields.bajajNatureOfBuilding || '');
+                      }} 
+                    />
+                  </div>
+                  <select 
+                    className={inputCls} 
+                    value={fields.bajajApprovedCategory === 'NA' ? 'NA' : (['Residential', 'Commercial', 'Industrial', 'Mixed Usages'].includes(fields.bajajApprovedCategory || '') ? fields.bajajApprovedCategory : (fields.bajajApprovedCategory ? 'Custom' : ''))} 
+                    onChange={e => {
+                      if (e.target.value === 'Custom') {
+                        handleChange('bajajApprovedCategory', fields.bajajApprovedCategoryCustom || '');
+                      } else {
+                        handleChange('bajajApprovedCategory', e.target.value);
+                      }
+                    }} 
+                    disabled={globalDisabled || !fields.bajajApprovedCategory_isManual || fields.bajajApprovedCategory_isNA}
+                  >
+                    <option value="">Select</option>
+                    {['Residential', 'Commercial', 'Industrial', 'Mixed Usages'].map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                    <option value="Custom">Custom</option>
+                  </select>
+                  {!['Residential', 'Commercial', 'Industrial', 'Mixed Usages'].includes(fields.bajajApprovedCategory || '') && fields.bajajApprovedCategory && fields.bajajApprovedCategory !== 'NA' && (
+                    <div className="mt-2">
+                      <input 
+                        type="text" 
+                        className={inputCls} 
+                        placeholder="Enter custom value"
+                        value={fields.bajajApprovedCategoryCustom || ''} 
+                        onChange={e => {
+                          handleChange('bajajApprovedCategoryCustom', e.target.value);
+                          handleChange('bajajApprovedCategory', e.target.value);
+                        }}
+                        disabled={globalDisabled || !fields.bajajApprovedCategory_isManual || fields.bajajApprovedCategory_isNA}
+                      />
+                    </div>
+                  )}
+                  <NACheckbox field="bajajApprovedCategory" />
+                </div>
+                
+                <div>
+                  <div className="flex justify-between items-end mb-1">
+                    <label className="block text-xs font-medium text-gray-700">Number of Floor in Building</label>
+                    <EditSwitch 
+                      field="bajajNumberOfFloorsBuilding" 
+                      onToggleOff={() => {
+                        handleChange('bajajNumberOfFloorsBuilding_isNA', false);
+                        handleChange('bajajNumberOfFloorsBuilding', fields.bajajFloorNo || '');
+                      }} 
+                    />
+                  </div>
+                  <input 
+                    type="text"
+                    className={inputCls} 
+                    value={fields.bajajNumberOfFloorsBuilding || ''} 
+                    onChange={e => handleChange('bajajNumberOfFloorsBuilding', e.target.value)} 
+                    disabled={globalDisabled || !fields.bajajNumberOfFloorsBuilding_isManual || fields.bajajNumberOfFloorsBuilding_isNA} 
+                  />
+                  <NACheckbox field="bajajNumberOfFloorsBuilding" />
+                </div>
+                
               </div>
             </div>
           </div>

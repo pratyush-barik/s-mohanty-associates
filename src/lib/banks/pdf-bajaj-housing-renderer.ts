@@ -61,6 +61,8 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
       this.drawBajajSection4();
     } else if (title === 'NDMA PARAMETERS') {
       this.drawBajajSection5();
+    } else if (title === 'APPROVED PLAN DETAILS') {
+      this.drawBajajSection6();
     } else if (title === 'AREA & FLOOR DETAILS') {
       this.drawBajajSection7();
     } else if (title === 'VALUATION SUMMARY') {
@@ -233,6 +235,29 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
       ]);
     }
     this.drawSimpleRow('Fire Exit (Yes/No)', getVal('bajajFireExit'));
+  }
+
+  // ── Section 6: Approved Plan Details ──
+  private drawBajajSection6() {
+    const fv = this.fv.bind(this);
+    const getVal = (field: string) => this.fields[`${field}_isNA`] ? 'NA' : fv(field);
+
+    this.drawKeyValueRow([
+      { label: 'Sanctioned Plan Provided (Yes/No)', value: getVal('bajajSanctionedPlanProvided') },
+      { label: 'Layout Plan Details: Sanctioned No./Permit No.', value: getVal('bajajLayoutPlanNo') }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Construction Plan Details: Sanctioned No/Permit No.', value: getVal('bajajConstructionPlanNo') },
+      { label: 'Date of Sanction', value: getVal('bajajDateOfSanction') }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Plan Validity', value: getVal('bajajPlanValidity') },
+      { label: 'Approving Authority', value: getVal('bajajApprovingAuthority') }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Approved Usages (Residential/Industrial/Commercial/Mixed Usages)', value: getVal('bajajApprovedCategory') },
+      { label: 'Number of Floor in Building', value: getVal('bajajNumberOfFloorsBuilding') }
+    ]);
   }
 
   // ── Section 7: Area & Floor Details ──
