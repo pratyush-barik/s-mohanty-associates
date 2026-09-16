@@ -81,20 +81,52 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
     bajajAddressAsPerInitiation: '',
     bajajAddressAsPerInitiation_isNA: false,
     
+    // Section 3: Legal Address & Property Details
     bajajLegalAddressOfProperty: '',
+    bajajLegalAddressOfProperty_isNA: false,
+    bajajLegalAddressOfProperty_isManual: false,
+    
     bajajFloorNoOfProperty: '',
+    bajajFloorNoOfProperty_isNA: false,
+    
     bajajPropertyState: '',
+    bajajPropertyStateCustom: '',
+    bajajPropertyState_isNA: false,
+    
     bajajPropertyCity: '',
+    bajajPropertyCity_isNA: false,
+    
     bajajPropertyPinCode: '',
+    bajajPropertyPinCode_isNA: false,
+    
     bajajAddressMatching: '',
+    bajajAddressMatchingCustom: '',
+    bajajAddressMatching_isNA: false,
+    
     bajajJurisdictionMunicipalBody: '',
+    bajajJurisdictionMunicipalBody_isNA: false,
+    
     bajajPropertyHoldingType: '',
+    bajajPropertyHoldingTypeCustom: '',
+    bajajPropertyHoldingType_isNA: false,
+    
     bajajMarketability: '',
+    bajajMarketabilityCustom: '',
+    bajajMarketability_isNA: false,
+    
     bajajPropertyOccupiedBy: '',
-
-    // Section 3: Property Details
+    bajajPropertyOccupiedByCustom: '',
+    bajajPropertyOccupiedBy_isNA: false,
+    
     bajajTypeOfProperty: '',
+    bajajTypeOfPropertyCustom: '',
+    bajajTypeOfProperty_isNA: false,
+    
     bajajOccupancy: '',
+    bajajOccupancyCustom: '',
+    bajajOccupancy_isNA: false,
+    bajajOccupancy_isManual: false,
+    
     bajajSOBP: '',
     bajajScheduleOfProperty: '',
 
@@ -471,41 +503,278 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
     },
     {
       id: 'bajaj-section-3',
-      title: 'Property Details',
+      title: 'Legal Address & Property Details',
       number: 3,
       defaultOpen: false,
-      render: (fields, handleChange, isReadOnly) => (
-        <div className="animate-fade-in space-y-4">
-          <p className="text-xs text-gray-500 italic">Section details will be configured with detailed prompts.</p>
-          <Field label="Type of the Property">
-            <select className={inputCls} value={fields.bajajTypeOfProperty || ''} onChange={e => handleChange('bajajTypeOfProperty', e.target.value)} disabled={isReadOnly}>
-              <option value="">Select</option>
-              <option value="Flat">Flat</option>
-              <option value="Bungalow">Bungalow</option>
-              <option value="Commercial Building">Commercial Building</option>
-              <option value="Commercial">Commercial</option>
-              <option value="Row House">Row House</option>
-            </select>
-          </Field>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="Occupancy">
-              <select className={inputCls} value={fields.bajajOccupancy || ''} onChange={e => handleChange('bajajOccupancy', e.target.value)} disabled={isReadOnly}>
+      render: (fields, handleChange, isReadOnly) => {
+        const NACheckbox = ({ field, label = 'Mark as NA' }: { field: string, label?: string }) => (
+          <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-500 mt-1 hover:text-gray-700">
+            <input 
+              type="checkbox" 
+              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
+              checked={!!fields[`${field}_isNA`]}
+              onChange={(e) => {
+                handleChange(`${field}_isNA`, e.target.checked);
+                if (e.target.checked) handleChange(field, 'NA');
+                else handleChange(field, '');
+              }}
+              disabled={isReadOnly}
+            />
+            <span>{label}</span>
+          </label>
+        );
+
+        const EditSwitch = ({ field, onToggleOff }: { field: string, onToggleOff?: () => void }) => (
+          <div className="flex items-center gap-2 mt-1">
+            <button
+              type="button"
+              onClick={() => {
+                const manual = !fields[`${field}_isManual`];
+                handleChange(`${field}_isManual`, manual);
+                if (!manual && onToggleOff) {
+                  onToggleOff();
+                }
+              }}
+              disabled={isReadOnly}
+              className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields[`${field}_isManual`] ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields[`${field}_isManual`] ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
+            </button>
+            <span className={`text-[10px] font-medium uppercase tracking-wider ${fields[`${field}_isManual`] ? 'text-emerald-600' : 'text-gray-400'}`}>
+              {fields[`${field}_isManual`] ? 'Edit On' : 'Edit Off'}
+            </span>
+          </div>
+        );
+
+        const handleOccupiedByChange = (val: string) => {
+          handleChange('bajajPropertyOccupiedBy', val);
+          if (!fields.bajajOccupancy_isManual && !fields.bajajOccupancy_isNA) {
+            if (val === 'Self') handleChange('bajajOccupancy', 'SORP (Self-Occupied Residential Property)');
+            else if (val === 'Tenant') handleChange('bajajOccupancy', 'Rented');
+            else if (val === 'Vacant') handleChange('bajajOccupancy', 'Vacant');
+            else handleChange('bajajOccupancy', '');
+          }
+        };
+
+        const renderSelectWithCustom = (field: string, options: string[], label: string) => (
+          <div>
+            <Field label={label}>
+              <select 
+                className={inputCls} 
+                value={fields[field] === 'NA' ? 'NA' : (options.includes(fields[field] || '') ? fields[field] : (fields[field] ? 'Custom' : ''))} 
+                onChange={e => {
+                  if (e.target.value === 'Custom') {
+                    handleChange(field, fields[`${field}Custom`] || '');
+                  } else {
+                    handleChange(field, e.target.value);
+                  }
+                }} 
+                disabled={isReadOnly || fields[`${field}_isNA`]}
+              >
                 <option value="">Select</option>
-                <option value="Self">Self</option>
-                <option value="Owner">Owner</option>
-                <option value="Rented">Rented</option>
-                <option value="Vacant">Vacant</option>
+                {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                <option value="Custom">Custom</option>
               </select>
             </Field>
-            <Field label="SOBP">
-              <input className={inputCls} value={fields.bajajSOBP || ''} onChange={e => handleChange('bajajSOBP', e.target.value)} disabled={isReadOnly} />
-            </Field>
+            {!options.includes(fields[field] || '') && fields[field] && fields[field] !== 'NA' && (
+              <div className="mt-2">
+                <input 
+                  type="text" 
+                  className={inputCls} 
+                  placeholder="Enter custom value"
+                  value={fields[`${field}Custom`] || ''} 
+                  onChange={e => {
+                    handleChange(`${field}Custom`, e.target.value);
+                    handleChange(field, e.target.value);
+                  }}
+                  disabled={isReadOnly || fields[`${field}_isNA`]}
+                />
+              </div>
+            )}
+            <NACheckbox field={field} />
           </div>
-          <Field label="Schedule of the Property">
-            <textarea className={inputCls} rows={3} value={fields.bajajScheduleOfProperty || ''} onChange={e => handleChange('bajajScheduleOfProperty', e.target.value)} disabled={isReadOnly} />
-          </Field>
-        </div>
-      ),
+        );
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border border-[#A5F3FC] bg-[#ECFEFF] rounded-xl p-4">
+              <h3 className="font-bold text-gray-700 mb-4">Legal Address of the Property: (As per Title Deed or Sanctioned Plan)</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between items-end mb-1">
+                    <label className="block text-xs font-medium text-gray-700">Address of Property</label>
+                    <EditSwitch 
+                      field="bajajLegalAddressOfProperty" 
+                      onToggleOff={() => handleChange('bajajLegalAddressOfProperty', fields.bajajAddressAsPerSite || '')} 
+                    />
+                  </div>
+                  <textarea 
+                    className={inputCls} 
+                    rows={3} 
+                    value={fields.bajajLegalAddressOfProperty || ''} 
+                    onChange={e => handleChange('bajajLegalAddressOfProperty', e.target.value)} 
+                    disabled={isReadOnly || !fields.bajajLegalAddressOfProperty_isManual || fields.bajajLegalAddressOfProperty_isNA} 
+                  />
+                  <NACheckbox field="bajajLegalAddressOfProperty" />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Field label="Floor No. of Property">
+                      <input 
+                        type="text"
+                        className={inputCls} 
+                        value={fields.bajajFloorNoOfProperty || ''} 
+                        onChange={e => handleChange('bajajFloorNoOfProperty', e.target.value)} 
+                        disabled={isReadOnly || fields.bajajFloorNoOfProperty_isNA} 
+                      />
+                    </Field>
+                    <NACheckbox field="bajajFloorNoOfProperty" />
+                  </div>
+                  {renderSelectWithCustom('bajajPropertyState', ['Andhra Pradesh', 'Bihar', 'Chhattisgarh', 'Delhi', 'Gujarat', 'Karnataka', 'Maharashtra', 'Odisha', 'Punjab', 'Tamil Nadu', 'Uttar Pradesh', 'West Bengal', 'Other States / UTs'], 'Property State')}
+                  
+                  <div>
+                    <Field label="Property City">
+                      <input 
+                        type="text"
+                        className={inputCls} 
+                        value={fields.bajajPropertyCity || ''} 
+                        onChange={e => handleChange('bajajPropertyCity', e.target.value)} 
+                        disabled={isReadOnly || fields.bajajPropertyCity_isNA} 
+                      />
+                    </Field>
+                    <NACheckbox field="bajajPropertyCity" />
+                  </div>
+                  <div>
+                    <Field label="Property Pin code">
+                      <input 
+                        type="number"
+                        className={inputCls} 
+                        value={fields.bajajPropertyPinCode || ''} 
+                        onChange={e => handleChange('bajajPropertyPinCode', e.target.value)} 
+                        disabled={isReadOnly || fields.bajajPropertyPinCode_isNA} 
+                      />
+                    </Field>
+                    <NACheckbox field="bajajPropertyPinCode" />
+                  </div>
+                  
+                  {renderSelectWithCustom('bajajAddressMatching', ['Yes', 'No'], 'Address Matching (Yes/No)')}
+                  
+                  <div>
+                    <Field label="Jurisdiction/Local Municipal Body">
+                      <input 
+                        type="text"
+                        className={inputCls} 
+                        value={fields.bajajJurisdictionMunicipalBody || ''} 
+                        onChange={e => handleChange('bajajJurisdictionMunicipalBody', e.target.value)} 
+                        disabled={isReadOnly || fields.bajajJurisdictionMunicipalBody_isNA} 
+                      />
+                    </Field>
+                    <NACheckbox field="bajajJurisdictionMunicipalBody" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="border border-[#FDE68A] bg-[#FFFBEB] rounded-xl p-4">
+              <h3 className="font-bold text-gray-700 mb-4">Property Character & Occupancy</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {renderSelectWithCustom('bajajPropertyHoldingType', ['Freehold', 'Lease hold'], 'Property Holding Type (Freehold/Lease hold)')}
+                {renderSelectWithCustom('bajajMarketability', ['Good', 'Fair', 'Poor'], 'Marketability (Poor/Fair/Good)')}
+                
+                <div>
+                  <Field label="Property Occupied by (Self/Tenant/Vacant/Under Construction)">
+                    <select 
+                      className={inputCls} 
+                      value={fields.bajajPropertyOccupiedBy === 'NA' ? 'NA' : (['Self', 'Tenant', 'Vacant', 'Under Construction'].includes(fields.bajajPropertyOccupiedBy || '') ? fields.bajajPropertyOccupiedBy : (fields.bajajPropertyOccupiedBy ? 'Custom' : ''))} 
+                      onChange={e => {
+                        if (e.target.value === 'Custom') {
+                          handleOccupiedByChange(fields.bajajPropertyOccupiedByCustom || '');
+                        } else {
+                          handleOccupiedByChange(e.target.value);
+                        }
+                      }} 
+                      disabled={isReadOnly || fields.bajajPropertyOccupiedBy_isNA}
+                    >
+                      <option value="">Select</option>
+                      <option value="Self">Self</option>
+                      <option value="Tenant">Tenant</option>
+                      <option value="Vacant">Vacant</option>
+                      <option value="Under Construction">Under Construction</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {!['Self', 'Tenant', 'Vacant', 'Under Construction'].includes(fields.bajajPropertyOccupiedBy || '') && fields.bajajPropertyOccupiedBy && fields.bajajPropertyOccupiedBy !== 'NA' && (
+                    <div className="mt-2">
+                      <input 
+                        type="text" 
+                        className={inputCls} 
+                        placeholder="Enter custom value"
+                        value={fields.bajajPropertyOccupiedByCustom || ''} 
+                        onChange={e => {
+                          handleChange('bajajPropertyOccupiedByCustom', e.target.value);
+                          handleOccupiedByChange(e.target.value);
+                        }}
+                        disabled={isReadOnly || fields.bajajPropertyOccupiedBy_isNA}
+                      />
+                    </div>
+                  )}
+                  <NACheckbox field="bajajPropertyOccupiedBy" />
+                </div>
+                
+                {renderSelectWithCustom('bajajTypeOfProperty', ['Flat', 'Bungalow', 'Commercial Building', 'Commercial Unit', 'Industrial', 'Plot'], 'Type of the Property')}
+                
+                <div>
+                  <div className="flex justify-between items-end mb-1">
+                    <label className="block text-xs font-medium text-gray-700">Occupancy Status SORP/SOCP/Rented/Vacant (Please mentioned only one)</label>
+                    <EditSwitch 
+                      field="bajajOccupancy" 
+                      onToggleOff={() => handleOccupiedByChange(fields.bajajPropertyOccupiedBy || '')} 
+                    />
+                  </div>
+                  <select 
+                    className={inputCls} 
+                    value={fields.bajajOccupancy === 'NA' ? 'NA' : (['SORP (Self-Occupied Residential Property)', 'SOCP (Self-Occupied Commercial Property)', 'Rented', 'Vacant'].includes(fields.bajajOccupancy || '') ? fields.bajajOccupancy : (fields.bajajOccupancy ? 'Custom' : ''))} 
+                    onChange={e => {
+                      if (e.target.value === 'Custom') {
+                        handleChange('bajajOccupancy', fields.bajajOccupancyCustom || '');
+                      } else {
+                        handleChange('bajajOccupancy', e.target.value);
+                      }
+                    }} 
+                    disabled={isReadOnly || !fields.bajajOccupancy_isManual || fields.bajajOccupancy_isNA}
+                  >
+                    <option value="">Select</option>
+                    <option value="SORP (Self-Occupied Residential Property)">SORP (Self-Occupied Residential Property)</option>
+                    <option value="SOCP (Self-Occupied Commercial Property)">SOCP (Self-Occupied Commercial Property)</option>
+                    <option value="Rented">Rented</option>
+                    <option value="Vacant">Vacant</option>
+                    <option value="Custom">Custom</option>
+                  </select>
+                  {!['SORP (Self-Occupied Residential Property)', 'SOCP (Self-Occupied Commercial Property)', 'Rented', 'Vacant'].includes(fields.bajajOccupancy || '') && fields.bajajOccupancy && fields.bajajOccupancy !== 'NA' && (
+                    <div className="mt-2">
+                      <input 
+                        type="text" 
+                        className={inputCls} 
+                        placeholder="Enter custom value"
+                        value={fields.bajajOccupancyCustom || ''} 
+                        onChange={e => {
+                          handleChange('bajajOccupancyCustom', e.target.value);
+                          handleChange('bajajOccupancy', e.target.value);
+                        }}
+                        disabled={isReadOnly || !fields.bajajOccupancy_isManual || fields.bajajOccupancy_isNA}
+                      />
+                    </div>
+                  )}
+                  <NACheckbox field="bajajOccupancy" />
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      },
     },
     {
       id: 'bajaj-section-4',

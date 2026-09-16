@@ -157,16 +157,34 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
     this.drawSectionHeader(title, false, false);
   }
 
-  // ── Section 3: Property Details ──
+  // ── Section 3: Legal Address & Property Details ──
   private drawBajajSection3() {
     const fv = this.fv.bind(this);
+    const getVal = (field: string) => this.fields[`${field}_isNA`] ? 'NA' : fv(field);
 
-    this.drawSimpleRow('Type of the Property (Flat/Bungalow/Commercial Building/Commercial)', fv('bajajTypeOfProperty'));
+    this.advanceCursor(6);
+    this.drawSectionSubtitle('Legal Address of the Property: (As per Title Deed or Sanctioned Plan)');
+    this.drawSimpleRow('Address of Property', getVal('bajajLegalAddressOfProperty'));
+    this.drawSimpleRow('Floor No. of Property', getVal('bajajFloorNoOfProperty'));
+    this.drawSimpleRow('Property State', getVal('bajajPropertyState'));
+    this.drawSimpleRow('Property City', getVal('bajajPropertyCity'));
+    this.drawSimpleRow('Property Pin code', getVal('bajajPropertyPinCode'));
+
+    this.advanceCursor(4);
     this.drawKeyValueRow([
-      { label: 'Occupancy (Self/Owner/Rented/Vacant)', value: fv('bajajOccupancy') },
-      { label: 'SOBP', value: fv('bajajSOBP') }
+      { label: 'Address Matching (Yes/No)', value: getVal('bajajAddressMatching') },
+      { label: 'Jurisdiction/Local Municipal Body', value: getVal('bajajJurisdictionMunicipalBody') }
     ]);
-    this.drawSimpleRow('Schedule of the Property', fv('bajajScheduleOfProperty'));
+
+    this.advanceCursor(6);
+    this.drawSectionSubtitle('Property Character & Occupancy');
+    this.drawKeyValueRow([
+      { label: 'Property Holding Type (Freehold/Lease hold)', value: getVal('bajajPropertyHoldingType') },
+      { label: 'Marketability (Poor/Fair/Good)', value: getVal('bajajMarketability') }
+    ]);
+    this.drawSimpleRow('Property Occupied by (Self/Tenant/Vacant/Under Construction)', getVal('bajajPropertyOccupiedBy'));
+    this.drawSimpleRow('Type of the Property (Flat/Bungalow/Commercial Building/Commercial Unit/Industrial/Plot)', getVal('bajajTypeOfProperty'));
+    this.drawSimpleRow('Occupancy Status SORP/SOCP/Rented/Vacant (Please mentioned only one)', getVal('bajajOccupancy'));
   }
 
   // ── Section 4: Boundaries & Schedule ──
