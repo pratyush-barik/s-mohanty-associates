@@ -196,34 +196,40 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
       number: 1,
       defaultOpen: true,
       render: (fields, handleChange, isReadOnly) => (
-        <div className="animate-fade-in space-y-4">
-          <p className="text-xs text-gray-500 italic">Section details will be configured with detailed prompts.</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="File No./LAN No./System No.">
-              <input className={inputCls} value={fields.bajajFileNo || ''} onChange={e => handleChange('bajajFileNo', e.target.value)} disabled={isReadOnly} />
-            </Field>
-            <Field label="Date of Report">
-              <input type="date" className={inputCls} value={fields.bajajDateOfReport || ''} onChange={e => handleChange('bajajDateOfReport', e.target.value)} disabled={isReadOnly} />
-            </Field>
-            <Field label="Name of Applicant">
-              <input className={inputCls} value={fields.bajajNameOfApplicant || ''} onChange={e => handleChange('bajajNameOfApplicant', e.target.value)} disabled={isReadOnly} />
-            </Field>
-            <Field label="Contact Person Name & No.">
-              <input className={inputCls} value={fields.bajajContactPersonNameNo || ''} onChange={e => handleChange('bajajContactPersonNameNo', e.target.value)} disabled={isReadOnly} />
-            </Field>
-            <Field label="Loan Type (HL/LAP/BT)">
-              <input className={inputCls} value={fields.bajajLoanType || ''} onChange={e => handleChange('bajajLoanType', e.target.value)} disabled={isReadOnly} />
-            </Field>
-            <Field label="Person Met at Site">
-              <input className={inputCls} value={fields.bajajPersonMetAtSite || ''} onChange={e => handleChange('bajajPersonMetAtSite', e.target.value)} disabled={isReadOnly} />
-            </Field>
+        <div className="animate-fade-in space-y-6">
+          <div className="border border-[#B9DBFE] bg-[#F0F7FF] rounded-xl p-4">
+            <h3 className="font-bold text-gray-700 mb-4">Application Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="File No./LAN No./System No.">
+                <input className={inputCls} value={fields.bajajFileNo || ''} onChange={e => handleChange('bajajFileNo', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Date of Report">
+                <input type="date" className={inputCls} value={fields.bajajDateOfReport || ''} onChange={e => handleChange('bajajDateOfReport', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Name of Applicant">
+                <input className={inputCls} value={fields.bajajNameOfApplicant || ''} onChange={e => handleChange('bajajNameOfApplicant', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Contact Person Name & No.">
+                <input className={inputCls} value={fields.bajajContactPersonNameNo || ''} onChange={e => handleChange('bajajContactPersonNameNo', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Loan Type (HL/LAP/BT)">
+                <input className={inputCls} value={fields.bajajLoanType || ''} onChange={e => handleChange('bajajLoanType', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Person Met at Site">
+                <input className={inputCls} value={fields.bajajPersonMetAtSite || ''} onChange={e => handleChange('bajajPersonMetAtSite', e.target.value)} disabled={isReadOnly} />
+              </Field>
+            </div>
+            <div className="mt-4">
+              <Field label="Name of Property Owner as per Legal Document">
+                <input className={inputCls} value={fields.bajajPropertyOwnerName || ''} onChange={e => handleChange('bajajPropertyOwnerName', e.target.value)} disabled={isReadOnly} />
+              </Field>
+            </div>
+            <div className="mt-4">
+              <Field label="Documents Provided">
+                <textarea className={inputCls} rows={2} value={fields.bajajDocumentsProvided || ''} onChange={e => handleChange('bajajDocumentsProvided', e.target.value)} disabled={isReadOnly} />
+              </Field>
+            </div>
           </div>
-          <Field label="Name of Property Owner as per Legal Document">
-            <input className={inputCls} value={fields.bajajPropertyOwnerName || ''} onChange={e => handleChange('bajajPropertyOwnerName', e.target.value)} disabled={isReadOnly} />
-          </Field>
-          <Field label="Documents Provided">
-            <textarea className={inputCls} rows={2} value={fields.bajajDocumentsProvided || ''} onChange={e => handleChange('bajajDocumentsProvided', e.target.value)} disabled={isReadOnly} />
-          </Field>
         </div>
       ),
     },
