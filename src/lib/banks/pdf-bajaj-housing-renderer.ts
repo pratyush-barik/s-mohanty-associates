@@ -129,37 +129,21 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
   private drawBajajSection2() {
     const fv = this.fv.bind(this);
 
-    this.drawSimpleRow('Address as per Site', fv('bajajAddressAsPerSite'));
+    this.drawSimpleRow('Address of Property (Address as per Site)', this.fields.bajajAddressAsPerSite_isNA ? 'NA' : fv('bajajAddressAsPerSite'));
 
     this.drawKeyValueRow([
-      { label: 'Locality Name', value: fv('bajajLocalityName') },
-      { label: 'Landmark Near By', value: fv('bajajLandmarkNearBy') }
+      { label: 'Locality Name', value: this.fields.bajajLocalityName_isNA ? 'NA' : fv('bajajLocalityName') },
+      { label: 'Landmark Near By', value: this.fields.bajajLandmarkNearBy_isNA ? 'NA' : fv('bajajLandmarkNearBy') }
     ]);
-    this.drawKeyValueRow([
-      { label: 'Distance from City Centre', value: fv('bajajDistanceFromCityCentre') },
-      { label: 'LAT/Long', value: `${fv('bajajLatitude', '')}, ${fv('bajajLongitude', '')}` }
-    ]);
-    this.drawSimpleRow('Address as per Initiation', fv('bajajAddressAsPerInitiation'));
 
-    // Legal Address sub-section
-    this.advanceCursor(6);
-    this.drawSectionSubtitle('Legal Address of the Property: (As per Title Deed or Sanctioned Plan)');
-    this.drawSimpleRow('Address of Property', fv('bajajLegalAddressOfProperty'));
-    this.drawSimpleRow('Floor No. of Property', fv('bajajFloorNoOfProperty'));
-    this.drawSimpleRow('Property State', fv('bajajPropertyState'));
-    this.drawSimpleRow('Property City', fv('bajajPropertyCity'));
-    this.drawSimpleRow('Property Pin code', fv('bajajPropertyPinCode'));
+    const dist = this.fields.bajajDistanceFromCityCentre ? `${this.fields.bajajDistanceFromCityCentre} Kms` : '';
+    const latLong = this.fields.bajajLatLong_isNA ? 'NA' : `${fv('bajajLatitude', '')}, ${fv('bajajLongitude', '')}`.replace(/^, |, $/g, '');
 
-    this.advanceCursor(4);
     this.drawKeyValueRow([
-      { label: 'Address Matching (Yes/No)', value: fv('bajajAddressMatching') },
-      { label: 'Jurisdiction/Local Municipal Body', value: fv('bajajJurisdictionMunicipalBody') }
+      { label: 'Distance from City Centre', value: this.fields.bajajDistanceFromCityCentre_isNA ? 'NA' : (dist || 'NA') },
+      { label: 'LAT/Long', value: latLong || 'NA' }
     ]);
-    this.drawKeyValueRow([
-      { label: 'Property Holding Type (Freehold/Leasehold)', value: fv('bajajPropertyHoldingType') },
-      { label: 'Marketability (Poor/Fair/Good)', value: fv('bajajMarketability') }
-    ]);
-    this.drawSimpleRow('Property Occupied by (Self/Tenant/Vacant/Under Construction)', fv('bajajPropertyOccupiedBy'));
+    this.drawSimpleRow('Address as per Initiation', this.fields.bajajAddressAsPerInitiation_isNA ? 'NA' : fv('bajajAddressAsPerInitiation'));
   }
 
   drawSectionSubtitle(title: string) {

@@ -63,12 +63,23 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
 
     // Section 2: Location Details
     bajajAddressAsPerSite: '',
+    bajajAddressAsPerSite_isNA: false,
     bajajLocalityName: '',
+    bajajLocalityName_isNA: false,
     bajajLandmarkNearBy: '',
+    bajajLandmarkNearBy_isNA: false,
     bajajDistanceFromCityCentre: '',
+    bajajDistanceFromCityCentre_isNA: false,
+    
     bajajLatitude: '',
     bajajLongitude: '',
+    bajajLatLong_isManual: false,
+    bajajLatLong_isNA: false,
+    
     bajajAddressAsPerInitiation: '',
+    bajajAddressAsPerInitiation_isManual: false,
+    bajajAddressAsPerInitiation_isNA: false,
+    
     bajajLegalAddressOfProperty: '',
     bajajFloorNoOfProperty: '',
     bajajPropertyState: '',
@@ -258,90 +269,196 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
       title: 'Location Details',
       number: 2,
       defaultOpen: false,
-      render: (fields, handleChange, isReadOnly) => (
-        <div className="animate-fade-in space-y-4">
-          <p className="text-xs text-gray-500 italic">Section details will be configured with detailed prompts.</p>
-          <Field label="Address as per Site">
-            <textarea className={inputCls} rows={3} value={fields.bajajAddressAsPerSite || ''} onChange={e => handleChange('bajajAddressAsPerSite', e.target.value)} disabled={isReadOnly} />
-          </Field>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="Locality Name">
-              <input className={inputCls} value={fields.bajajLocalityName || ''} onChange={e => handleChange('bajajLocalityName', e.target.value)} disabled={isReadOnly} />
-            </Field>
-            <Field label="Landmark Near By">
-              <input className={inputCls} value={fields.bajajLandmarkNearBy || ''} onChange={e => handleChange('bajajLandmarkNearBy', e.target.value)} disabled={isReadOnly} />
-            </Field>
-            <Field label="Distance from City Centre">
-              <input className={inputCls} value={fields.bajajDistanceFromCityCentre || ''} onChange={e => handleChange('bajajDistanceFromCityCentre', e.target.value)} disabled={isReadOnly} />
-            </Field>
-            <Field label="Latitude">
-              <input className={inputCls} value={fields.bajajLatitude || ''} onChange={e => handleChange('bajajLatitude', e.target.value)} disabled={isReadOnly} />
-            </Field>
-            <Field label="Longitude">
-              <input className={inputCls} value={fields.bajajLongitude || ''} onChange={e => handleChange('bajajLongitude', e.target.value)} disabled={isReadOnly} />
-            </Field>
+      render: (fields, handleChange, isReadOnly) => {
+        // Helpers
+        const NACheckbox = ({ field, label = 'Mark as NA' }: { field: string, label?: string }) => (
+          <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-500 mt-1 hover:text-gray-700">
+            <input 
+              type="checkbox" 
+              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
+              checked={!!fields[`${field}_isNA`]}
+              onChange={(e) => {
+                handleChange(`${field}_isNA`, e.target.checked);
+                if (e.target.checked) handleChange(field, 'NA');
+                else handleChange(field, '');
+              }}
+              disabled={isReadOnly}
+            />
+            <span>{label}</span>
+          </label>
+        );
+
+        const EditSwitch = ({ field, onToggleOff }: { field: string, onToggleOff?: () => void }) => (
+          <div className="flex items-center gap-2 mt-1">
+            <button
+              type="button"
+              onClick={() => {
+                const manual = !fields[`${field}_isManual`];
+                handleChange(`${field}_isManual`, manual);
+                if (!manual && onToggleOff) {
+                  onToggleOff();
+                }
+              }}
+              disabled={isReadOnly}
+              className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields[`${field}_isManual`] ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields[`${field}_isManual`] ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
+            </button>
+            <span className={`text-[10px] font-medium uppercase tracking-wider ${fields[`${field}_isManual`] ? 'text-emerald-600' : 'text-gray-400'}`}>
+              {fields[`${field}_isManual`] ? 'Edit On' : 'Edit Off'}
+            </span>
           </div>
-          <Field label="Address as per Initiation">
-            <textarea className={inputCls} rows={3} value={fields.bajajAddressAsPerInitiation || ''} onChange={e => handleChange('bajajAddressAsPerInitiation', e.target.value)} disabled={isReadOnly} />
-          </Field>
-          <div className="border border-gray-200 rounded-md p-4 mt-4">
-            <h4 className="font-semibold text-sm text-gray-700 mb-3">Legal Address of the Property</h4>
-            <Field label="Address of Property">
-              <textarea className={inputCls} rows={2} value={fields.bajajLegalAddressOfProperty || ''} onChange={e => handleChange('bajajLegalAddressOfProperty', e.target.value)} disabled={isReadOnly} />
-            </Field>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
-              <Field label="Floor No. of Property">
-                <input className={inputCls} value={fields.bajajFloorNoOfProperty || ''} onChange={e => handleChange('bajajFloorNoOfProperty', e.target.value)} disabled={isReadOnly} />
-              </Field>
-              <Field label="Property State">
-                <input className={inputCls} value={fields.bajajPropertyState || ''} onChange={e => handleChange('bajajPropertyState', e.target.value)} disabled={isReadOnly} />
-              </Field>
-              <Field label="Property City">
-                <input className={inputCls} value={fields.bajajPropertyCity || ''} onChange={e => handleChange('bajajPropertyCity', e.target.value)} disabled={isReadOnly} />
-              </Field>
-              <Field label="Property Pin code">
-                <input className={inputCls} value={fields.bajajPropertyPinCode || ''} onChange={e => handleChange('bajajPropertyPinCode', e.target.value)} disabled={isReadOnly} />
-              </Field>
+        );
+
+        const handleSiteAddressChange = (val: string) => {
+          handleChange('bajajAddressAsPerSite', val);
+          if (!fields.bajajAddressAsPerInitiation_isManual && !fields.bajajAddressAsPerInitiation_isNA) {
+            handleChange('bajajAddressAsPerInitiation', val);
+          }
+        };
+
+        const handleMapPicker = () => {
+          // Dummy function representing map picker action
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position) => {
+              handleChange('bajajLatitude', position.coords.latitude.toFixed(6));
+              handleChange('bajajLongitude', position.coords.longitude.toFixed(6));
+            });
+          }
+        };
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border border-[#A7F3D0] bg-[#ECFDF5] rounded-xl p-4">
+              <h3 className="font-bold text-gray-700 mb-4">Location Details</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <Field label="Address of Property (Address as per Site)">
+                    <textarea 
+                      className={inputCls} 
+                      rows={3} 
+                      value={fields.bajajAddressAsPerSite || ''} 
+                      onChange={e => handleSiteAddressChange(e.target.value)} 
+                      disabled={isReadOnly || fields.bajajAddressAsPerSite_isNA} 
+                    />
+                  </Field>
+                  <NACheckbox field="bajajAddressAsPerSite" />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Field label="Locality Name">
+                      <input 
+                        type="text"
+                        className={inputCls} 
+                        value={fields.bajajLocalityName || ''} 
+                        onChange={e => handleChange('bajajLocalityName', e.target.value)} 
+                        disabled={isReadOnly || fields.bajajLocalityName_isNA} 
+                      />
+                    </Field>
+                    <NACheckbox field="bajajLocalityName" />
+                  </div>
+                  <div>
+                    <Field label="Landmark Near By">
+                      <input 
+                        type="text"
+                        className={inputCls} 
+                        value={fields.bajajLandmarkNearBy || ''} 
+                        onChange={e => handleChange('bajajLandmarkNearBy', e.target.value)} 
+                        disabled={isReadOnly || fields.bajajLandmarkNearBy_isNA} 
+                      />
+                    </Field>
+                    <NACheckbox field="bajajLandmarkNearBy" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Field label="Distance from City Centre">
+                      <div className="relative flex items-center">
+                        <input 
+                          type="number"
+                          className={`${inputCls} pr-12`} 
+                          value={fields.bajajDistanceFromCityCentre || ''} 
+                          onChange={e => handleChange('bajajDistanceFromCityCentre', e.target.value)} 
+                          disabled={isReadOnly || fields.bajajDistanceFromCityCentre_isNA} 
+                        />
+                        <span className="absolute right-3 text-gray-500 text-sm font-medium">Kms</span>
+                      </div>
+                    </Field>
+                    <NACheckbox field="bajajDistanceFromCityCentre" />
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between items-end mb-1">
+                      <label className="block text-xs font-medium text-gray-700">LAT/Long</label>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          type="button"
+                          onClick={handleMapPicker}
+                          disabled={isReadOnly || fields.bajajLatLong_isNA}
+                          className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                        >
+                          Fetch Current GPS
+                        </button>
+                        <EditSwitch field="bajajLatLong" />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="w-1/2">
+                        <input 
+                          type="number"
+                          step="any"
+                          min="-90"
+                          max="90"
+                          placeholder="Latitude"
+                          className={inputCls} 
+                          value={fields.bajajLatitude || ''} 
+                          onChange={e => handleChange('bajajLatitude', e.target.value)} 
+                          disabled={isReadOnly || !fields.bajajLatLong_isManual || fields.bajajLatLong_isNA} 
+                        />
+                      </div>
+                      <div className="w-1/2">
+                        <input 
+                          type="number"
+                          step="any"
+                          min="-180"
+                          max="180"
+                          placeholder="Longitude"
+                          className={inputCls} 
+                          value={fields.bajajLongitude || ''} 
+                          onChange={e => handleChange('bajajLongitude', e.target.value)} 
+                          disabled={isReadOnly || !fields.bajajLatLong_isManual || fields.bajajLatLong_isNA} 
+                        />
+                      </div>
+                    </div>
+                    <NACheckbox field="bajajLatLong" />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-end mb-1">
+                    <label className="block text-xs font-medium text-gray-700">Address as per Initiation</label>
+                    <EditSwitch 
+                      field="bajajAddressAsPerInitiation" 
+                      onToggleOff={() => handleChange('bajajAddressAsPerInitiation', fields.bajajAddressAsPerSite || '')} 
+                    />
+                  </div>
+                  <textarea 
+                    className={inputCls} 
+                    rows={3} 
+                    value={fields.bajajAddressAsPerInitiation || ''} 
+                    onChange={e => handleChange('bajajAddressAsPerInitiation', e.target.value)} 
+                    disabled={isReadOnly || !fields.bajajAddressAsPerInitiation_isManual || fields.bajajAddressAsPerInitiation_isNA} 
+                  />
+                  <NACheckbox field="bajajAddressAsPerInitiation" />
+                </div>
+              </div>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
-            <Field label="Address Matching (Yes/No)">
-              <select className={inputCls} value={fields.bajajAddressMatching || ''} onChange={e => handleChange('bajajAddressMatching', e.target.value)} disabled={isReadOnly}>
-                <option value="">Select</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-              </select>
-            </Field>
-            <Field label="Jurisdiction/Local Municipal Body">
-              <input className={inputCls} value={fields.bajajJurisdictionMunicipalBody || ''} onChange={e => handleChange('bajajJurisdictionMunicipalBody', e.target.value)} disabled={isReadOnly} />
-            </Field>
-            <Field label="Property Holding Type">
-              <select className={inputCls} value={fields.bajajPropertyHoldingType || ''} onChange={e => handleChange('bajajPropertyHoldingType', e.target.value)} disabled={isReadOnly}>
-                <option value="">Select</option>
-                <option value="Freehold">Freehold</option>
-                <option value="Leasehold">Leasehold</option>
-              </select>
-            </Field>
-            <Field label="Marketability">
-              <select className={inputCls} value={fields.bajajMarketability || ''} onChange={e => handleChange('bajajMarketability', e.target.value)} disabled={isReadOnly}>
-                <option value="">Select</option>
-                <option value="Poor">Poor</option>
-                <option value="Fair">Fair</option>
-                <option value="Good">Good</option>
-              </select>
-            </Field>
-          </div>
-          <Field label="Property Occupied by">
-            <select className={inputCls} value={fields.bajajPropertyOccupiedBy || ''} onChange={e => handleChange('bajajPropertyOccupiedBy', e.target.value)} disabled={isReadOnly}>
-              <option value="">Select</option>
-              <option value="Self">Self</option>
-              <option value="Tenant">Tenant</option>
-              <option value="Vacant">Vacant</option>
-              <option value="Under Construction">Under Construction</option>
-            </select>
-          </Field>
-        </div>
-      ),
+        );
+      },
     },
     {
       id: 'bajaj-section-3',
