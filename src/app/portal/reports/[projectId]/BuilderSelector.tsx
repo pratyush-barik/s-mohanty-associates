@@ -198,69 +198,6 @@ export default function BuilderSelector({
 
   const cleanPrefill = useMemo(() => decodeHtmlEntitiesDeep(prefill), [prefill]);
 
-  /**
-   * Sanitizes report fields on format switch or reset according to the Data Retention Policy:
-   * Retained (Universal Core):
-   * - Uploaded photographs (propertyImages, propertyPhotos, propertyImageNames)
-   * - Spatial maps (locationMapImages, cadastralMapImages, sketchMapImages, benchmarkImages)
-   * - GPS coordinates (latitude, longitude, coordinates)
-   * - Site visit date (dateOfVisit, dateOfInspection)
-   * - Field engineer (visitingEngineer, engineerName)
-   * - Authorized signatory (authorizedSignatory)
-   * - Project prefill (borrower name, address, contact, branch)
-   * All other template-specific variables (floors, checklists, rates, calculations, bank remarks) are wiped.
-   */
-  const extractUniversalCore = useCallback((fields: any, pPrefill?: any) => {
-    const f = typeof fields === 'object' && fields !== null ? fields : {};
-    const p = typeof pPrefill === 'object' && pPrefill !== null ? pPrefill : {};
-
-    return {
-      // Photographs
-      propertyImages: f.propertyImages || f.propertyPhotos || [],
-      propertyPhotos: f.propertyPhotos || f.propertyImages || [],
-      propertyImageNames: f.propertyImageNames || [],
-
-      // Spatial & Maps
-      locationMapImages: f.locationMapImages || [],
-      cadastralMapImages: f.cadastralMapImages || [],
-      sketchMapImages: f.sketchMapImages || [],
-      benchmarkImages: f.benchmarkImages || [],
-
-      // GPS & Coordinates
-      latitude: f.latitude || p.latitude || '',
-      longitude: f.longitude || p.longitude || '',
-      coordinates: f.coordinates || p.coordinates || '',
-
-      // Inspection / Site Visit
-      dateOfVisit: f.dateOfVisit || f.dateOfInspection || p.fieldVisitDate || p.inspectionDate || '',
-      dateOfInspection: f.dateOfInspection || f.dateOfVisit || p.fieldVisitDate || p.inspectionDate || '',
-
-      // Engineer & Signatory
-      visitingEngineer: f.visitingEngineer || f.engineerName || p.firstFieldAgentName || p.fieldEmployees?.[0]?.name || '',
-      engineerName: f.engineerName || f.visitingEngineer || p.firstFieldAgentName || p.fieldEmployees?.[0]?.name || '',
-      authorizedSignatory: f.authorizedSignatory || 'Er. Satyajit Mohanty',
-
-      // Prefill Project Details
-      ownerName: f.ownerName || p.contactName || '',
-      ownerNameAndAddress: f.ownerNameAndAddress || p.contactName || '',
-      borrowerName: f.borrowerName || p.contactName || '',
-      borrowerNameAndAddress: f.borrowerNameAndAddress || p.contactName || '',
-      contactName: f.contactName || p.contactName || '',
-      contactPhone: f.contactPhone || p.contactPhone || '',
-      propertyAddress: f.propertyAddress || p.propertyAddress || '',
-      plotKhataDetails: f.plotKhataDetails || p.propertyAddress || '',
-      colonyNagarSector: f.colonyNagarSector || '',
-      localityLandmark: f.localityLandmark || '',
-      villageTownCityMarket: f.villageTownCityMarket || '',
-      district: f.district || '',
-      state: f.state || '',
-      pincode: f.pincode || '',
-      reportInitiatedByArea: f.reportInitiatedByArea || p.branch || '',
-      nameOfArea: f.nameOfArea || '',
-      distanceFromAreaOffice: f.distanceFromAreaOffice || '',
-    };
-  }, []);
-
   const computedInitialFields = useMemo(() => {
     const decodedFields = decodeHtmlEntitiesDeep(initialFields);
     
@@ -271,10 +208,9 @@ export default function BuilderSelector({
       const currentOrg = decodedFields?.organisationTemplate || "";
       const currentSub = decodedFields?.organisationSubTemplate || "";
 
-      // Format changed via query parameter -> sanitize and start fresh with Universal Core
+      // Format changed via query parameter -> completely fresh start
       if (currentOrg && (currentOrg !== qOrg || currentSub !== (qSub || ""))) {
         return {
-          ...extractUniversalCore(decodedFields, cleanPrefill),
           clientType: "organisation",
           organisationTemplate: qOrg,
           organisationSubTemplate: qSub || "",
@@ -284,7 +220,6 @@ export default function BuilderSelector({
 
       if (!decodedFields?.organisationTemplate) {
         return {
-          ...extractUniversalCore(decodedFields, cleanPrefill),
           clientType: "organisation",
           organisationTemplate: qOrg,
           organisationSubTemplate: qSub || "",
@@ -295,7 +230,7 @@ export default function BuilderSelector({
 
     if (decodedFields?.organisationTemplate) return decodedFields;
     return decodedFields;
-  }, [initialFields, initialBuilder, cleanPrefill, extractUniversalCore]);
+  }, [initialFields, initialBuilder]);
 
   const [activeFields, setActiveFields] = useState(computedInitialFields);
   const [activeBuilder, setActiveBuilder] = useState<BuilderType>(() => resolveBuilderType(computedInitialFields, initialBuilder));
@@ -335,10 +270,8 @@ export default function BuilderSelector({
     bankName?: string;
     to?: string;
   }) => {
-    // Format switch: Sanitize data according to retention policy (preserve Universal Core only)
-    const universalCore = extractUniversalCore(activeFields, cleanPrefill);
+    // Format switch: Clean slate for the newly selected configuration
     const updatedFields = {
-      ...universalCore,
       ...config,
     };
     setActiveFields(updatedFields);
@@ -376,15 +309,8 @@ export default function BuilderSelector({
   };
 
   const handleReset = async () => {
-    // Reset report: Wipes all template-specific data, retaining only Universal Core
-    const clearedFields = {
-      ...extractUniversalCore(activeFields, cleanPrefill),
-      clientType: "",
-      organisationTemplate: "",
-      institutionCategory: "",
-      organisationSubTemplate: "",
-      bankName: "",
-    };
+    // Reset report: Completely flush all previous data, photographs, and template variables
+    const clearedFields = {};
     setActiveFields(clearedFields);
     setActiveBuilder("wizard");
     setResetKey((prev) => prev + 1);

@@ -832,27 +832,30 @@ export default function AnnapurnaMicroFinance({
             <Field label="File No. / LAN No. / Lead No.">
               <input className={inputCls} value={fields.fileNo || ''} onChange={e => handleChange('fileNo', e.target.value)} disabled={isReadOnly} placeholder="e.g. 20159644" />
             </Field>
-            <Field label="Date of Visit (DD/MM/YYYY)">
+            <Field label="Date of Visit">
               <div className="relative flex items-center">
                 <input
                   type="text"
-                  className={inputCls}
+                  className={inputCls + ' pr-9'}
                   value={fields.dateOfVisit || ''}
                   onChange={e => handleChange('dateOfVisit', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="DD/MM/YYYY"
+                  placeholder=""
                 />
                 {!isReadOnly && (
-                  <input
-                    type="date"
-                    className="absolute right-2 opacity-0 w-8 h-8 cursor-pointer"
-                    title="Choose Date"
-                    onChange={e => {
-                      if (e.target.value) {
-                        handleChange('dateOfVisit', formatReportDate(e.target.value));
-                      }
-                    }}
-                  />
+                  <div className="absolute right-2.5 flex items-center pointer-events-auto">
+                    <input
+                      type="date"
+                      className="opacity-0 absolute inset-0 w-6 h-6 cursor-pointer"
+                      title="Choose Date"
+                      onChange={e => {
+                        if (e.target.value) {
+                          handleChange('dateOfVisit', formatReportDate(e.target.value));
+                        }
+                      }}
+                    />
+                    <span className="text-slate-400 hover:text-slate-600 text-sm">📅</span>
+                  </div>
                 )}
               </div>
             </Field>
@@ -1720,23 +1723,26 @@ export default function AnnapurnaMicroFinance({
                 <div className="relative flex items-center">
                   <input
                     type="text"
-                    className={inputCls}
+                    className={inputCls + ' pr-9'}
                     value={fields.declarationDate || ''}
                     onChange={e => handleChange('declarationDate', e.target.value)}
                     disabled={isReadOnly}
-                    placeholder="DD/MM/YYYY"
+                    placeholder=""
                   />
                   {!isReadOnly && (
-                    <input
-                      type="date"
-                      className="absolute right-2 opacity-0 w-8 h-8 cursor-pointer"
-                      title="Choose Date"
-                      onChange={e => {
-                        if (e.target.value) {
-                          handleChange('declarationDate', formatReportDate(e.target.value));
-                        }
-                      }}
-                    />
+                    <div className="absolute right-2.5 flex items-center pointer-events-auto">
+                      <input
+                        type="date"
+                        className="opacity-0 absolute inset-0 w-6 h-6 cursor-pointer"
+                        title="Choose Date"
+                        onChange={e => {
+                          if (e.target.value) {
+                            handleChange('declarationDate', formatReportDate(e.target.value));
+                          }
+                        }}
+                      />
+                      <span className="text-slate-400 hover:text-slate-600 text-sm">📅</span>
+                    </div>
                   )}
                 </div>
               </Field>

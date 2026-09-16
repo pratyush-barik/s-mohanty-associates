@@ -426,6 +426,15 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
   }
 
   /**
+   * Insert a visual section break/line break in the PDF if there is enough vertical space
+   */
+  addSectionBreak(gap: number = 8): void {
+    if (this.pdfY(this.cursorY + gap + 25) > MARGIN_B) {
+      this.cursorY += gap;
+    }
+  }
+
+  /**
    * Main 10-Page Generator for Axis Bank AGRI (Non-Agri Format)
    */
   async generateAxisAgriReport(
@@ -448,8 +457,8 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     // Ref No & Date
     const refDateH = 18;
     const refDateY = this.pdfY(this.cursorY);
-    const refText = `REF NO - ${fields.refNo || 'SMA/08/2026/07'}`;
-    const dateText = `DATE - ${formatReportDate(fields.reportDate, '06.08.2026')}`;
+    const refText = fields.refNo ? `REF NO - ${fields.refNo}` : '';
+    const dateText = fields.reportDate ? `DATE - ${formatReportDate(fields.reportDate)}` : '';
 
     this.page.drawText(this.sanitizeText(refText), {
       x: MARGIN_L,
@@ -467,10 +476,8 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });
-    this.cursorY += refDateH + 4;
-
-    // Header Banner: VALUATION REPORT FORMAT (NON-AGRI) | DATE OF VISIT
-    const visitDate = formatReportDate(fields.dateOfVisit, '02.08.2026');
+    this.cursorY += refDateH + 4;    // Header Banner: VALUATION REPORT FORMAT (NON-AGRI) | DATE OF VISIT
+    const visitDate = fields.dateOfVisit ? formatReportDate(fields.dateOfVisit) : '';
     this.drawRow([
       {
         text: fields.reportTitle || 'VALUATION REPORT FORMAT (NON-AGRI)',
@@ -479,7 +486,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
         bold: true,
       },
       {
-        text: `DATE OF VISIT: ${visitDate}`,
+        text: visitDate ? `DATE OF VISIT: ${visitDate}` : 'DATE OF VISIT:',
         width: W * 0.35,
         isHeader: true,
         bold: true,
@@ -509,10 +516,12 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     this.drawRow([
       { text: 'Proposal No', width: col4_w1, isLabel: true },
-      { text: fields.proposalNo || 'Not Available', width: col4_w2 },
+      { text: fields.proposalNo || '', width: col4_w2 },
       { text: 'Name of the Representative & Mobile No.', width: col4_w3, isLabel: true },
-      { text: fields.representativeNameMobile || 'Local People', width: col4_w4 },
+      { text: fields.representativeNameMobile || '', width: col4_w4 },
     ], 20, 4);
+
+    this.addSectionBreak(8);
 
     // Section Banner: Details of the Property Being Valued
     this.drawRow([{ text: 'Details of the Property Being Valued', width: W, isHeader: true, bold: true }], 18, 4);
@@ -541,7 +550,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       { text: 'Plot No / S.NO/ G. No/ Khasra No:', width: col4_w1, isLabel: true },
       { text: fields.plotKhataDetails || '', width: col4_w2, bold: true },
       { text: 'Road Facility at the site', width: col4_w3, isLabel: true },
-      { text: fields.roadFacilityAtSite || '20-ft wide Road', width: col4_w4, bold: true },
+      { text: fields.roadFacilityAtSite || '', width: col4_w4, bold: true },
     ], 36, 4);
 
     // Colony & Locality/Landmark
@@ -555,17 +564,17 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     // Village & District
     this.drawRow([
       { text: 'Village/Town/City/Market', width: col4_w1, isLabel: true },
-      { text: fields.villageTownCityMarket || 'Village', width: col4_w2 },
+      { text: fields.villageTownCityMarket || '', width: col4_w2 },
       { text: 'District', width: col4_w3, isLabel: true },
-      { text: fields.district || 'Ganjam', width: col4_w4 },
+      { text: fields.district || '', width: col4_w4 },
     ], 20, 4);
 
     // State & Pincode
     this.drawRow([
       { text: 'State', width: col4_w1, isLabel: true },
-      { text: fields.state || 'Odisha', width: col4_w2 },
+      { text: fields.state || '', width: col4_w2 },
       { text: 'Pincode', width: col4_w3, isLabel: true },
-      { text: fields.pincode || '761018', width: col4_w4 },
+      { text: fields.pincode || '', width: col4_w4 },
     ], 20, 4);
 
     // Distance from Area Office
@@ -580,6 +589,8 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       { text: 'Latitude, Longitude and Coordinates of the site', width: col4_w1 * 2, isLabel: true },
       { text: coordsFull, width: col4_w1 * 2, bold: true },
     ], 24, 4);
+
+    this.addSectionBreak(8);
 
     // Section Banner: Type of Property
     this.drawRow([{ text: 'Type of Property', width: W, isHeader: true, bold: true }], 18, 4);
@@ -662,7 +673,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     // Distance from Railway Station & Bus Stop
     this.drawRow([
-      { text: `Distance from Railway Station: ${fields.distanceFromRailwayStation || '27 Km from Khallikote'}`, width: col4_w1 * 2 },
+      { text: `Distance from Railway Station: ${fields.distanceFromRailwayStation || ''}`, width: col4_w1 * 2 },
       { text: `Bus stop/ Taxi/ Auto Stand( ${fields.busStopTaxiStand || 'Within 2-3 Kms'})`, width: col4_w1 * 2 },
     ], 20, 4);
 
@@ -690,6 +701,8 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       { text: `Cornered/Intermittent Plot - ${fields.corneredOrIntermittent || 'Intermittent plot'}`, width: col4_w1 * 2, isLabel: true },
       { text: `${check(isCorner)} Yes   ${check(!isCorner)} No`, width: col4_w1 * 2, bold: true },
     ], 20, 4);
+
+    this.addSectionBreak(8);
 
     // Boundaries Table (3 Columns)
     const bW1 = W * 0.2;
@@ -725,6 +738,8 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       { text: fields.boundarySouthVerification || '-', width: bW2 },
       { text: fields.boundarySouthDocument || '-', width: bW3 },
     ], 18, 4);
+
+    this.addSectionBreak(8);
 
     // Class of locality
     const locClass = String(fields.classOfLocality || (fields as any).classificationOfLocality || 'Middle class').toLowerCase();
@@ -782,13 +797,14 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     ], 20, 4);
 
     // Structure & No of Floors
-    // Structure & No of Floors
     const structType = fields.typeOfStructure || 'RCC';
     const floorDesc = fields.noOfFloors || '-';
     this.drawRow([
       { text: 'Type of Structure\nNo of Floors:', width: col4_w1 * 2, isLabel: true },
       { text: `${structType}\n${floorDesc}`, width: col4_w1 * 2, bold: true },
     ], 24, 4);
+
+    this.addSectionBreak(8);
 
     // Occupancy Details
     const occ = String(fields.occupancyDetails || (fields as any).occupancyStatus || 'Self-Occupied').toLowerCase();
@@ -832,6 +848,8 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       { text: devText, width: col4_w4, bold: true },
     ], 22, 4);
 
+    this.addSectionBreak(8);
+
     // Leasehold Details
     this.drawRow([
       { text: `If the property is Leasehold (${fields.isLeasehold || 'The Property is Free Hold Land'})`, width: W, isHeader: true, bold: true },
@@ -846,6 +864,27 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       { text: `Total Period of Lease: ${fields.totalPeriodOfLease || 'NA'}`, width: W * 0.5 },
       { text: `If yes, from the current occupants: ${check(false)} Yes  ${check(true)} No`, width: W * 0.5 },
     ], 20, 4);
+
+    // Leasehold basic amenities & development (matching UI screenshot)
+    const leaseAm = fields.leaseholdBasicAmenities || fields.basicAmenities;
+    const lAm = Array.isArray(leaseAm)
+      ? leaseAm
+      : typeof leaseAm === 'string' && leaseAm
+      ? (leaseAm as string).split(',').map(s => s.trim())
+      : ['Electricity', 'Water', 'Drainage connection'];
+    const hasLAm = (a: string) => lAm.some(item => String(item || '').toLowerCase().includes(a.toLowerCase()));
+    const lAmText = `${check(hasLAm('electricity'))} Electricity   ${check(hasLAm('water'))} Water   ${check(hasLAm('drainage'))} Drainage connection`;
+    const lDev = String(fields.leaseholdDevelopment || fields.developmentSurroundingArea || 'Developing').toLowerCase();
+    const lDevText = `${check(lDev.includes('under'))} Under developed   ${check(lDev.includes('developing'))} Developing   ${check(lDev.includes('developed') && !lDev.includes('under'))} Developed`;
+
+    this.drawRow([
+      { text: 'Does property have basic amenities', width: col4_w1, isLabel: true },
+      { text: lAmText, width: col4_w2, bold: true },
+      { text: 'Development of surrounding area', width: col4_w3, isLabel: true },
+      { text: lDevText, width: col4_w4, bold: true },
+    ], 22, 4);
+
+    this.addSectionBreak(8);
 
     // RERA & Occupancy Certificate
     this.drawRow([{ text: 'Approval Details:-', width: W, isHeader: true, bold: true }], 18, 4);
@@ -874,6 +913,8 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.draw8BoxDate(MARGIN_L + W * 0.75 + 4, boxY - 3, fields.layoutExpiryDate || '');
     this.cursorY += boxRowH;
 
+    this.addSectionBreak(8);
+
     // Building Plan Approval Row
     this.drawRow([
       { text: `Building Plan Approval Number: ${fields.buildingPlanApprovalNo || 'Not Available'}`, width: W * 0.5, isLabel: true },
@@ -887,6 +928,8 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.drawCell(MARGIN_L + W * 0.5, boxY2, W * 0.25, boxRowH, 'Expiry Date', { isLabel: true, align: 'center', vAlign: 'middle' });
     this.draw8BoxDate(MARGIN_L + W * 0.75 + 4, boxY2 - 3, fields.buildingPlanExpiryDate || '');
     this.cursorY += boxRowH;
+
+    this.addSectionBreak(8);
 
     // Construction Details Header
     this.drawRow([{ text: 'Construction Details', width: W, isHeader: true, bold: true }], 18, 4);
@@ -902,13 +945,15 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       { text: 'Area of the Plot As per Document', width: col4_w1, isLabel: true },
       { text: fields.areaOfPlotDoc || 'Not Available', width: col4_w2, bold: true },
       { text: 'Actual Built Up Area (In Sq.Ft.)', width: col4_w3, isLabel: true },
-      { text: fields.actualBUA || 'Not Available', width: col4_w4, bold: true },
-    ], 38, 4);
+      { text: fields.actualBUA || 'Not Available', width: col4_w4 },
+    ], 28, 4);
 
     this.drawRow([
-      { text: 'Demarcation at Site', width: col4_w1 * 2, isLabel: true },
+      { text: 'Demarcation at site', width: col4_w1 * 2, isLabel: true },
       { text: fields.demarcationAtSite || 'Yes', width: col4_w1 * 2, bold: true },
     ], 20, 4);
+
+    this.addSectionBreak(8);
 
     // Floor Wise Break up Table
     this.drawRow([
@@ -930,11 +975,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     ], 18, 4);
 
     // Floor rows
-    const floors = fields.floors && fields.floors.length > 0 ? fields.floors : [
-      { floorName: 'Ground Floor', plinthArea: '525.00 Sft', usage: 'Commercial, Residential' },
-      { floorName: 'First Floor', plinthArea: '525.00 Sft', usage: 'Residential' },
-      { floorName: 'Second Floor', plinthArea: '204.00 Sft', usage: 'Residential' },
-    ];
+    const floors = fields.floors && fields.floors.length > 0 ? fields.floors : [];
 
     for (const fl of floors) {
       const u = String(fl.usage || '').toLowerCase();
@@ -952,14 +993,14 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     // Totals
     this.drawRow([
       { text: 'Total Built Up area (in Sq.Ft.)', width: col4_w1, isLabel: true, bold: true },
-      { text: fields.totalBUA || '1254.00 Sft', width: col4_w2, bold: true, highlight: true },
+      { text: fields.totalBUA ? `${fields.totalBUA} Sft` : '', width: col4_w2, bold: true, highlight: true },
       { text: 'Total Carpet area (in Sq.Ft.)', width: col4_w3, isLabel: true },
-      { text: fields.totalCarpetArea || '1090.00 Sft (Approx.)', width: col4_w4 },
+      { text: fields.totalCarpetArea ? `${fields.totalCarpetArea}` : '', width: col4_w4 },
     ], 20, 4);
 
     this.drawRow([
       { text: 'Total Saleable area (in Sq.Ft.)', width: col4_w1 * 2, isLabel: true },
-      { text: fields.totalSaleableArea || '566.00 Sft (Land) & 1254.00 Sft (Building)', width: col4_w1 * 2, bold: true },
+      { text: fields.totalSaleableArea || '', width: col4_w1 * 2, bold: true },
     ], 20, 4);
 
     this.drawRow([
@@ -1014,19 +1055,19 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     this.drawRow([
       { text: 'Current Life of the structure', width: col4_w1, isLabel: true },
-      { text: fields.currentLifeStructure || '8 Years', width: col4_w2 },
+      { text: fields.currentLifeStructure || '', width: col4_w2 },
       { text: 'Projected Life of the Structure', width: col4_w3, isLabel: true },
-      { text: fields.projectedLifeStructure || '52 Years', width: col4_w4 },
+      { text: fields.projectedLifeStructure || '', width: col4_w4 },
     ], 20, 4);
 
     this.drawRow([
       { text: 'Land Revenue/Taxes Paid upto (for Land)', width: col4_w1, isLabel: true },
-      { text: fields.landRevenueTaxesPaid || 'Recent rent receipt is not provided', width: col4_w2 },
+      { text: fields.landRevenueTaxesPaid || '', width: col4_w2 },
       { text: 'Municipal Taxes Paid upto (for Building)', width: col4_w3, isLabel: true },
-      { text: fields.municipalTaxesPaid || 'Not Applicable', width: col4_w4 },
+      { text: fields.municipalTaxesPaid || '', width: col4_w4 },
     ], 22, 4);
 
-    this.cursorY += 12;
+    this.addSectionBreak(8);
 
     // Land Rate Adopted narrative
     const landHeader = 'THE LAND RATE ADOPTED IN THIS VALUATION:';
@@ -1071,7 +1112,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       this.cursorY += 14;
     }
 
-    this.cursorY += 14;
+    this.addSectionBreak(8);
 
     // Details of Valuation Table (8 columns)
     const valTitle = 'Details of Valuation:-';
@@ -1136,7 +1177,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       { text: fields.totalBasicValueBuilding ? `Rs. ${fields.totalBasicValueBuilding}` : 'Rs. 0.00', width: tW[7], align: 'right', bold: true, highlight: true },
     ], 20, 4);
 
-    this.cursorY += 16;
+    this.addSectionBreak(8);
 
     // Total Basic Value statement
     const bldgValSummary = fields.totalBasicValueBuilding
@@ -1200,7 +1241,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       { text: fields.insurableValueTotal ? `Rs. ${fields.insurableValueTotal}` : '-', width: mColW[4], align: 'right', bold: true },
     ], 18, 4);
 
-    this.cursorY += 10;
+    this.addSectionBreak(8);
 
     // Narrative statements
     const text1 = fields.realizableEstimationText || 'REALIZABLE ESTIMATION OF THE PROPERTY IN CASE OF DISTRESS SALE, IN CASE, THE BANK WILL SELL THE PROPERTY THROUGH PROCEEDINGS.';
@@ -1245,7 +1286,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     const topNotice = 'LIKE KHATA NO, PLOT NO, PLOT AREA, BUILT UP AREA, BOUNDARIES DETAILS ARE SHARED BY AXIS BANK LIMITED. REPORT IS RELEASED BASING UPON THE DATA SHARED BY AXIS BANK LIMITED.';
     this.drawRow([{ text: topNotice, width: W, bold: true, fontSize: 8.5, isLabel: true }], 24, 4);
 
-    this.cursorY += 10;
+    this.addSectionBreak(8);
 
     // Undertaking
     this.page.drawText('Undertaking:', {
@@ -1294,7 +1335,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       this.cursorY += Math.max(14, uLines.length * FONT_SIZE_SMALL * LINE_HEIGHT + 2);
     }
 
-    this.cursorY += 12;
+    this.addSectionBreak(8);
 
     // Authorized Signatory block (right aligned)
     const sigY = this.pdfY(this.cursorY);
@@ -1317,6 +1358,8 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       sigCurY -= 13;
     }
     this.cursorY += 50;
+
+    this.addSectionBreak(8);
 
     // ANNEXURE - "A"
     const annTitle = 'ANNEXURE - "A"';
@@ -1725,7 +1768,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     const responses = fields.checklistResponses || {};
 
     for (const item of checklistItems) {
-      const resp = responses[item.id] || item.defaultResp;
+      const resp = responses[item.id] || responses[`q${item.id}`] || item.defaultResp;
       const tLines = this.wrapText(this.sanitizeText(`${item.id}.  ${item.title}`), W - 15, 7.5, false);
 
       let off = 0;

@@ -12,6 +12,7 @@ import {
   ActiveConfigBanner,
   ReportActionBar,
   NavItem,
+  formatReportDate,
   BasePhotographsSection,
   BaseMapsSection,
   BasePhotoBucketModal,
@@ -622,6 +623,35 @@ export default function AxisHLLAP({
     { id: 'axis-photos', title: '7. Property Photographs' },
     { id: 'axis-maps', title: '8. Location & Sketch Maps' },
   ];
+
+  // Date picker helper component
+  const DateInput = ({ fieldKey, label }: { fieldKey: keyof AxisHLLAPReportFields; label: string }) => (
+    <Field label={label}>
+      <div className="relative flex items-center">
+        <input
+          type="text"
+          className={inputCls + ' pr-9'}
+          value={(fields[fieldKey] as string) || ''}
+          onChange={e => handleChange(fieldKey, e.target.value)}
+          disabled={isReadOnly}
+          placeholder=""
+        />
+        {!isReadOnly && (
+          <div className="absolute right-2.5 flex items-center pointer-events-auto">
+            <input
+              type="date"
+              className="opacity-0 absolute inset-0 w-6 h-6 cursor-pointer"
+              title="Choose Date"
+              onChange={e => {
+                if (e.target.value) handleChange(fieldKey, formatReportDate(e.target.value));
+              }}
+            />
+            <span className="text-slate-400 hover:text-slate-600 text-sm">📅</span>
+          </div>
+        )}
+      </div>
+    </Field>
+  );
 
   return (
     <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
@@ -1322,27 +1352,15 @@ export default function AxisHLLAP({
                 />
               </Field>
 
-              <Field label="Building Plan Approval Date">
-                <input
-                  type="text"
-                  value={fields.buildingPlanApprovalDate}
-                  onChange={e => handleChange('buildingPlanApprovalDate', e.target.value)}
-                  className={inputCls}
-                  placeholder="DD/MM/YYYY"
-                  disabled={isReadOnly}
-                />
-              </Field>
+              <DateInput
+                fieldKey="buildingPlanApprovalDate"
+                label="Building Plan Approval Date"
+              />
 
-              <Field label="Building Plan Expiry Date">
-                <input
-                  type="text"
-                  value={fields.buildingPlanExpiryDate}
-                  onChange={e => handleChange('buildingPlanExpiryDate', e.target.value)}
-                  className={inputCls}
-                  placeholder="DD/MM/YYYY"
-                  disabled={isReadOnly}
-                />
-              </Field>
+              <DateInput
+                fieldKey="buildingPlanExpiryDate"
+                label="Building Plan Expiry Date"
+              />
 
               <Field label="Date of Commencement">
                 <input

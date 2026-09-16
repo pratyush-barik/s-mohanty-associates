@@ -240,13 +240,22 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
   }
 
   /**
+   * Introduce a line break / spacing gap after each section to prevent joining sections directly
+   */
+  private addSectionBreak(gap: number = 8): void {
+    if (this.availableHeight > gap + 25) {
+      this.cursorY += gap;
+    }
+  }
+
+  /**
    * Draw section header banner spanning all 3 columns
    */
   private drawSectionBanner(sl: string, title: string, fontSize: number = 9): void {
     const fullText = sl ? `${sl} ${title}` : title;
     const rowH = Math.max(18, this.cellHeight(fullText, CONTENT_W, { bold: true, fontSize }));
 
-    this.checkPageBreak(rowH);
+    this.checkPageBreak(rowH + 20);
 
     this.drawCell(MARGIN_L, this.cursorY, CONTENT_W, rowH, fullText, {
       bold: true,
@@ -472,9 +481,11 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       vAlign: 'middle',
     });
     this.cursorY += totalCustH;
+    this.addSectionBreak();
 
     // --- Section 2: APP ID ---
     this.drawHLLAPRow('2.', 'APP ID', fields.appId || 'NA');
+    this.addSectionBreak();
 
     // --- Section 3: Documents Provided ---
     this.drawHLLAPRow(
@@ -482,6 +493,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       'Documents Provided: Approved Layout/\nApproved Building Plan/ NA order/ Four\nBoundaries Details',
       fields.documentsProvided || 'Copy of Sale deed, ROR, Approved plan'
     );
+    this.addSectionBreak();
 
     // --- Section 4: Property Details ---
     this.drawHLLAPRow('4.', 'Property Details', fields.propertyDetailsHeader || 'NA');
@@ -575,6 +587,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.drawHLLAPRow('z.', 'Longitude & latitude of the property', '');
     this.drawHLLAPRow('i.', 'Longitude', fields.longitude || 'NA');
     this.drawHLLAPRow('ii.', 'Latitude', fields.latitude || 'NA');
+    this.addSectionBreak();
 
     // --- Section 5: APPROVAL DETAILS ---
     this.drawSectionBanner('5.', 'APPROVAL DETAILS');
@@ -586,6 +599,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.drawHLLAPRow('f.', 'Expiry Date', fields.buildingPlanExpiryDate || 'NA');
     this.drawHLLAPRow('g.', 'Date of Commencement of Construction', fields.constructionCommencementDate || '100% Completed');
     this.drawHLLAPRow('h.', 'Expected Completion', fields.expectedCompletionDate || 'NA');
+    this.addSectionBreak();
 
     // --- Section 6: CONSTRUCTION DETAILS ---
     this.drawSectionBanner('6.', 'CONSTRUCTION DETAILS');
@@ -630,6 +644,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.drawHLLAPRow('j.', 'Maintenance of the Property: excellent/very good/average/poor', fields.maintenanceOfProperty || 'Good');
     this.drawHLLAPRow('k.', 'Current Life of the structure', fields.currentLifeOfStructure || '2-Years');
     this.drawHLLAPRow('l.', 'Projected Life of the Structure', fields.projectedLifeOfStructure || '58-Years');
+    this.addSectionBreak();
 
     // --- Section 7: Recommended Valuation of the Property ---
     this.drawSectionBanner('7.', 'Recommended Valuation of the Property');
@@ -677,20 +692,26 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     }
 
     this.drawHLLAPRow('i.', 'Date of Property Visit', formatReportDate(fields.dateOfPropertyVisit || fields.reportDate));
+    this.addSectionBreak();
 
     // --- Section 8 - 11 ---
     this.drawHLLAPRow('8.', 'Valuation as per Government reckoner rates', fields.valuationGovtReckonerRate || 'NA');
+    this.addSectionBreak();
     this.drawHLLAPRow('9.', 'Distressed valuation of the Property', fields.distressedValuation || 'NA', true, true);
+    this.addSectionBreak();
     this.drawHLLAPRow('10.', 'Rental value per month', fields.rentalValuePerMonth || 'NA');
+    this.addSectionBreak();
 
     this.drawSectionBanner('11.', 'Attachment');
     this.drawHLLAPRow('a.', '4 photos of the Property from inside/outside are attached', fields.photosAttached || 'Attached');
     this.drawHLLAPRow('b.', 'Location sketch for the property', fields.locationSketchAttached || 'Attached');
+    this.addSectionBreak();
 
     // --- Section 12: Remarks ---
     const remarksPrompt =
       'Remarks :\n(Comment on - resistance for valuation if any from the current occupants for rented property, if the property falls in a community dominated areas, if the approach road to the building is small and will not be able to accommodate a fire extinguisher, does the property falls under land locked area or is prone to frequent floods & any other critical observation.)';
     this.drawHLLAPRow('12.', remarksPrompt, fields.remarks || 'NA', false, false, LBL_BG, undefined, 8);
+    this.addSectionBreak(10);
 
     // --- Undertaking Block (Below table, aligned to right side) ---
     this.cursorY += 15;

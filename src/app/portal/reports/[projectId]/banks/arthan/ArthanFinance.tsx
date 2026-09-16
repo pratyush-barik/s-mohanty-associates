@@ -809,19 +809,22 @@ export default function ArthanFinance({
       <div className="relative flex items-center">
         <input
           type="text"
-          className={inputCls}
+          className={inputCls + ' pr-9'}
           value={(fields[fieldKey] as string) || ''}
           onChange={e => handleChange(fieldKey, e.target.value)}
           disabled={isReadOnly}
-          placeholder="DD/MM/YYYY"
+          placeholder=""
         />
         {!isReadOnly && (
-          <input
-            type="date"
-            className="absolute right-2 opacity-0 w-8 h-8 cursor-pointer"
-            title="Choose Date"
-            onChange={e => { if (e.target.value) handleChange(fieldKey, formatReportDate(e.target.value)); }}
-          />
+          <div className="absolute right-2.5 flex items-center pointer-events-auto">
+            <input
+              type="date"
+              className="opacity-0 absolute inset-0 w-6 h-6 cursor-pointer"
+              title="Choose Date"
+              onChange={e => { if (e.target.value) handleChange(fieldKey, formatReportDate(e.target.value)); }}
+            />
+            <span className="text-slate-400 hover:text-slate-600 text-sm">📅</span>
+          </div>
         )}
       </div>
     </Field>
@@ -887,18 +890,22 @@ export default function ArthanFinance({
             <div className="relative flex items-center">
               <input
                 type="text"
-                className={`${inputCls} w-40 font-semibold text-black`}
+                className={`${inputCls} w-40 font-semibold text-black pr-9`}
                 value={fields.dateOfValuation || ''}
                 onChange={e => handleChange('dateOfValuation', e.target.value)}
                 disabled={isReadOnly}
-                placeholder="DD/MM/YYYY"
+                placeholder=""
               />
               {!isReadOnly && (
-                <input
-                  type="date"
-                  className="absolute right-2 opacity-0 w-8 h-8 cursor-pointer"
-                  onChange={e => { if (e.target.value) handleChange('dateOfValuation', formatReportDate(e.target.value)); }}
-                />
+                <div className="absolute right-2.5 flex items-center pointer-events-auto">
+                  <input
+                    type="date"
+                    className="opacity-0 absolute inset-0 w-6 h-6 cursor-pointer"
+                    title="Choose Date"
+                    onChange={e => { if (e.target.value) handleChange('dateOfValuation', formatReportDate(e.target.value)); }}
+                  />
+                  <span className="text-slate-400 hover:text-slate-600 text-sm">📅</span>
+                </div>
               )}
             </div>
           </div>
@@ -910,7 +917,7 @@ export default function ArthanFinance({
             <Field label="Case Type">
               <input className={inputCls} value={fields.caseType || ''} onChange={e => handleChange('caseType', e.target.value)} disabled={isReadOnly} placeholder="e.g. SBL" />
             </Field>
-            <DateInput fieldKey="dateOfInspection" label="Date of Inspection / Site visit (DD/MM/YYYY)" />
+            <DateInput fieldKey="dateOfInspection" label="Date of Inspection / Site visit" />
             <Field label="Nearest Landmark">
               <input className={inputCls} value={fields.nearestLandmark || ''} onChange={e => handleChange('nearestLandmark', e.target.value)} disabled={isReadOnly} placeholder="e.g. Near Ishkon Temple, Antara" />
             </Field>
@@ -1074,7 +1081,7 @@ export default function ArthanFinance({
 
             {/* Solo fields: Inspection Date & Master Plan Zoning */}
             <div className="grid md:grid-cols-2 gap-4 text-black [&_label]:!text-black">
-              <Field label="Date of Inspection / Site visit (DD/MM/YYYY)">
+              <Field label="Date of Inspection / Site visit">
                 <div className="relative flex items-center">
                   <input
                     type="text"
@@ -1082,7 +1089,7 @@ export default function ArthanFinance({
                     value={fields.dateOfInspection || fields.dateOfInspectionSite || ''}
                     disabled
                     readOnly
-                    placeholder="DD/MM/YYYY"
+                    placeholder=""
                   />
                   <span className="absolute right-2.5 text-xs text-black" title="Locked: Referenced from Section 1 Date of Inspection / Site visit">
                     🔒
@@ -2076,7 +2083,7 @@ export default function ArthanFinance({
         {/* ════ SECTION 11: VALUER CERTIFICATION ════ */}
         <Section title="VALUER CERTIFICATION" number={11} id="sec-11">
           <div className="grid md:grid-cols-2 gap-4 text-black [&_label]:!text-black">
-            <Field label="Date of Visit (DD/MM/YYYY)">
+            <Field label="Date of Visit">
               <div className="relative flex items-center">
                 <input
                   type="text"
@@ -2084,7 +2091,7 @@ export default function ArthanFinance({
                   value={fields.dateOfInspection || fields.dateOfVisit || ''}
                   disabled
                   readOnly
-                  placeholder="DD/MM/YYYY"
+                  placeholder=""
                 />
                 <span className="absolute right-2.5 text-xs text-black" title="Locked: Referenced from Section 1 Date of Inspection / Site visit">
                   🔒
@@ -2095,7 +2102,7 @@ export default function ArthanFinance({
               </span>
             </Field>
 
-            <DateInput fieldKey="dateOfReportSubmission" label="Date of Report Submission (DD/MM/YYYY)" />
+            <DateInput fieldKey="dateOfReportSubmission" label="Date of Report Submission" />
 
             <Field label="Name of Engineer Visited the property">
               <input className={inputCls} value={fields.visitingEngineer || ''} onChange={e => handleChange('visitingEngineer', e.target.value)} disabled={isReadOnly} placeholder="Auto-filled from field inspector" />

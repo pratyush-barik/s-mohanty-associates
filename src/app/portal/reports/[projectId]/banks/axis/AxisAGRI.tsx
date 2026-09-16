@@ -54,74 +54,6 @@ const parseNum = (v: any): number => {
   return isNaN(n) ? 0 : n;
 };
 
-// 8-Box Date Component matching statutory DDMMYYYY layout
-function Date8BoxInput({
-  label,
-  value,
-  onChange,
-  disabled,
-}: {
-  label: string;
-  value?: string;
-  onChange: (val: string) => void;
-  disabled?: boolean;
-}) {
-  const digits = (value || '').replace(/[^0-9]/g, '').slice(0, 8);
-  const chars = Array.from({ length: 8 }, (_, i) => digits[i] || '');
-  const labels = ['D', 'D', 'M', 'M', 'Y', 'Y', 'Y', 'Y'];
-
-  return (
-    <div className="flex flex-col gap-1">
-      <span className="text-xs font-semibold text-slate-700">{label}</span>
-      <div className="flex items-center gap-1 flex-wrap">
-        {labels.map((lbl, idx) => (
-          <React.Fragment key={idx}>
-            {idx === 2 || idx === 4 ? <span className="text-slate-400 font-bold px-0.5">/</span> : null}
-            <div className="flex flex-col items-center">
-              <input
-                type="text"
-                maxLength={1}
-                disabled={disabled}
-                value={chars[idx]}
-                onChange={e => {
-                  const char = e.target.value.replace(/[^0-9]/g, '');
-                  const arr = [...chars];
-                  arr[idx] = char;
-                  onChange(arr.join(''));
-                }}
-                className="w-7 h-8 text-center text-sm font-bold border border-slate-300 rounded bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-                placeholder={lbl}
-              />
-              <span className="text-[9px] text-slate-400 mt-0.5 font-medium">{lbl}</span>
-            </div>
-          </React.Fragment>
-        ))}
-        {!disabled && (
-          <div className="relative ml-1">
-            <input
-              type="date"
-              className="opacity-0 absolute inset-0 w-8 h-8 cursor-pointer"
-              title="Pick Date"
-              onChange={e => {
-                if (e.target.value) {
-                  const [yyyy, mm, dd] = e.target.value.split('-');
-                  onChange(`${dd}${mm}${yyyy}`);
-                }
-              }}
-            />
-            <button
-              type="button"
-              className="px-2 py-1 text-xs bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded text-slate-600"
-            >
-              📅
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export default function AxisAGRI({
   projectId,
   projectCode,
@@ -136,14 +68,10 @@ export default function AxisAGRI({
   const isManagerOrOwner = userRole === 'MANAGER' || userRole === 'OWNER';
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
 
-  // ── Auto-derive default REF NO: SMA/MM/YYYY/XX ──
+  // ── Auto-derive default REF NO: from projectCode or projectId ──
   const defaultRefNo = useMemo(() => {
-    const d = new Date();
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const yyyy = String(d.getFullYear());
-    const seq = (projectCode || '01').replace(/[^0-9]/g, '').slice(-2) || '07';
-    return `SMA/${mm}/${yyyy}/${seq}`;
-  }, [projectCode]);
+    return projectCode || projectId || '';
+  }, [projectCode, projectId]);
 
   // ── Find First Field Engineer Visit Date (Earliest Initiation) ──
   const firstFieldAgentVisit = useMemo(() => {
@@ -181,7 +109,7 @@ export default function AxisAGRI({
       }
       return prefill.propertyAddress;
     }
-    return 'Achhuli, Purusottampur';
+    return '';
   }, [prefill?.propertyAddress]);
 
   // ── Initial State Pre-fill ──
@@ -195,12 +123,12 @@ export default function AxisAGRI({
       dateOfVisit: raw.dateOfVisit
         ? formatReportDate(raw.dateOfVisit)
         : (firstFieldAgentVisit?.dateStr || formatReportDate(raw.dateOfInspection || prefill?.inspectionDate || new Date())),
-      reportInitiatedByArea: raw.reportInitiatedByArea || prefill?.serviceRequest?.branch || prefill?.branch || 'Purusottampur Area Office',
+      reportInitiatedByArea: raw.reportInitiatedByArea || prefill?.serviceRequest?.branch || prefill?.branch || '',
       nameOfArea: (raw.nameOfArea && raw.nameOfArea !== raw.reportInitiatedByArea) ? raw.nameOfArea : derivedPropertyArea,
       ownerNameAndAddress: raw.ownerNameAndAddress || prefill?.contactName || '',
       borrowerNameAndAddress: raw.borrowerNameAndAddress || prefill?.contactName || '',
-      proposalNo: raw.proposalNo || 'Not Available',
-      representativeNameMobile: raw.representativeNameMobile || 'Local People',
+      proposalNo: raw.proposalNo || '',
+      representativeNameMobile: raw.representativeNameMobile || '',
 
       // Page 1: Details of Property Being Valued
       locationOfProperty: raw.locationOfProperty || 'Rural',
@@ -771,48 +699,53 @@ export default function AxisAGRI({
   };
 
   // Date picker helper component
+  // Date picker helper component
   const DateInput = ({ fieldKey, label }: { fieldKey: keyof AxisAgriReportFields; label: string }) => (
     <Field label={label}>
       <div className="relative flex items-center">
         <input
           type="text"
-          className={inputCls}
+          className={inputCls + ' pr-9'}
           value={(fields[fieldKey] as string) || ''}
           onChange={e => handleChange(fieldKey, e.target.value)}
           disabled={isReadOnly}
-          placeholder="DD/MM/YYYY"
+          placeholder=""
         />
         {!isReadOnly && (
-          <input
-            type="date"
-            className="absolute right-2 opacity-0 w-8 h-8 cursor-pointer"
-            title="Choose Date"
-            onChange={e => {
-              if (e.target.value) handleChange(fieldKey, formatReportDate(e.target.value));
-            }}
-          />
+          <div className="absolute right-2.5 flex items-center pointer-events-auto">
+            <input
+              type="date"
+              className="opacity-0 absolute inset-0 w-6 h-6 cursor-pointer"
+              title="Choose Date"
+              onChange={e => {
+                if (e.target.value) handleChange(fieldKey, formatReportDate(e.target.value));
+              }}
+            />
+            <span className="text-slate-400 hover:text-slate-600 text-sm">📅</span>
+          </div>
         )}
       </div>
     </Field>
   );
 
-  // ── Navigation Sections (All 15 Sections) ──
+  // ── Navigation Sections (All 16 Sections) ──
   const navSections: NavItem[] = [
     { id: 'sec-1', title: '1. Header & Initiation' },
-    { id: 'sec-2', title: '2. Property Location' },
-    { id: 'sec-3', title: '3. Classification & Site' },
+    { id: 'sec-2', title: '2. Property Location & Details' },
+    { id: 'sec-3', title: '3. Type of Property' },
     { id: 'sec-4', title: '4. Boundaries' },
     { id: 'sec-5', title: '5. Locality & Structure' },
     { id: 'sec-6', title: '6. Tenancy & Leasehold' },
     { id: 'sec-7', title: '7. Statutory Approvals' },
-    { id: 'sec-8', title: '8. Construction & BUA' },
-    { id: 'sec-9', title: '9. Condition, Life & Land Rate' },
+    { id: 'sec-8', title: '8. Construction & Building Details' },
+    { id: 'sec-9', title: '9. Land Rate Adopted' },
     { id: 'sec-10', title: '10. Building Valuation Breakdown' },
     { id: 'sec-11', title: '11. Value of Property Summary' },
     { id: 'sec-12', title: '12. Remarks & Annexure A' },
-    { id: 'sec-13', title: '13. Checklist & Valuer Declaration' },
-    { id: 'sec-14', title: '14. Property Photographs' },
-    { id: 'sec-15', title: '15. Maps & Documents' },
+    { id: 'sec-13', title: '13. Valuer Declaration & Undertaking' },
+    { id: 'sec-14', title: '14. Valuation Report Checklist' },
+    { id: 'sec-15', title: '15. Property Photographs' },
+    { id: 'sec-16', title: '16. Maps & Cadastral Plans' },
   ];
 
   return (
@@ -854,7 +787,7 @@ export default function AxisAGRI({
                   value={fields.refNo || ''}
                   onChange={e => handleChange('refNo', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="SMA/MM/YYYY/XX"
+                  placeholder=""
                 />
               </Field>
 
@@ -886,25 +819,25 @@ export default function AxisAGRI({
           <div className="border border-sky-200 bg-sky-50/50 rounded-xl p-5 mb-5 shadow-xs">
             <h3 className="font-semibold text-sky-800 mb-4 text-sm tracking-wide uppercase">Technical Initiation Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Report Initiated By (Area Office / Bank Branch)">
+              <Field label="Report Initiated by Area">
                 <input
                   type="text"
                   className={inputCls}
                   value={fields.reportInitiatedByArea || ''}
                   onChange={e => handleChange('reportInitiatedByArea', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="e.g. Cluster / Area Branch Office"
+                  placeholder=""
                 />
               </Field>
 
-              <Field label="Name of Area (Property Locality / Village)">
+              <Field label="Name of Area">
                 <input
                   type="text"
                   className={inputCls}
                   value={fields.nameOfArea || ''}
                   onChange={e => handleChange('nameOfArea', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="e.g. Property Locality / Village"
+                  placeholder=""
                 />
               </Field>
             </div>
@@ -921,7 +854,7 @@ export default function AxisAGRI({
                   value={fields.ownerNameAndAddress || ''}
                   onChange={e => handleChange('ownerNameAndAddress', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Mr. Babula Behera S/O: Mr. Gopala Behera, At: Achhuli, Ps/Ts: Purusottampur, Dist: Ganjam, Odisha"
+                  placeholder=""
                 />
               </Field>
 
@@ -932,7 +865,7 @@ export default function AxisAGRI({
                   value={fields.borrowerNameAndAddress || ''}
                   onChange={e => handleChange('borrowerNameAndAddress', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="M/S. MAA TARINI ENTERPRISERS"
+                  placeholder=""
                 />
               </Field>
 
@@ -943,7 +876,7 @@ export default function AxisAGRI({
                   value={fields.proposalNo || ''}
                   onChange={e => handleChange('proposalNo', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Not Available"
+                  placeholder=""
                 />
               </Field>
 
@@ -954,7 +887,7 @@ export default function AxisAGRI({
                   value={fields.representativeNameMobile || ''}
                   onChange={e => handleChange('representativeNameMobile', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Local People"
+                  placeholder=""
                 />
               </Field>
             </div>
@@ -965,12 +898,12 @@ export default function AxisAGRI({
             SECTION 2: DETAILS OF PROPERTY BEING VALUED
         ═══════════════════════════════════════════════════════════════ */}
         <Section id="sec-2" title="Details of the Property Being Valued" number={2} defaultOpen>
-          {/* Container 1: Classification & Documents */}
+          {/* Container 1: Location of Property & Documents */}
           <div className="border border-emerald-200 bg-emerald-50/50 rounded-xl p-5 mb-5 shadow-xs">
             <h3 className="font-semibold text-emerald-800 mb-4 text-sm tracking-wide uppercase">Property Classification & Documents</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-1 gap-4 mb-4">
               <Field label="Location of Property">
-                <div className="flex gap-4 items-center pt-2">
+                <div className="flex gap-6 items-center pt-1">
                   {['Rural', 'Semi Urban', 'Urban'].map(loc => (
                     <label key={loc} className="flex items-center gap-2 cursor-pointer text-sm font-medium">
                       <input
@@ -986,17 +919,6 @@ export default function AxisAGRI({
                     </label>
                   ))}
                 </div>
-              </Field>
-
-              <Field label="Road Facility at the Site">
-                <input
-                  type="text"
-                  className={inputCls}
-                  value={fields.roadFacilityAtSite || ''}
-                  onChange={e => handleChange('roadFacilityAtSite', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="e.g. 20-ft wide Road / Tar Road"
-                />
               </Field>
             </div>
 
@@ -1041,7 +963,7 @@ export default function AxisAGRI({
           <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs">
             <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">Address & Geographic Position</h3>
 
-            {/* Plot Khata Description shifted into Address container */}
+            {/* Plot Khata Description */}
             <div className="mb-4">
               <Field label="Plot No / S.No / G.No / Khasra No & Property Specifics">
                 <textarea
@@ -1050,12 +972,27 @@ export default function AxisAGRI({
                   value={fields.plotKhataDetails || ''}
                   onChange={e => handleChange('plotKhataDetails', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="e.g. Khata No: ..., Plot No: ..., Total Area Ac.0.0... Dec i.e. ... Sft, Kissam: ..., Mouza: ..., Ps: ..., Dist: ..."
+                  placeholder=""
                 />
               </Field>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            {/* Road Facility moved here after plot.no */}
+            <div className="mb-4">
+              <Field label="Road Facility at the Site">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.roadFacilityAtSite || ''}
+                  onChange={e => handleChange('roadFacilityAtSite', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder=""
+                />
+              </Field>
+            </div>
+
+            {/* 2 Fields Per Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <Field label="Colony / Nagar / Sector">
                 <input
                   type="text"
@@ -1063,7 +1000,7 @@ export default function AxisAGRI({
                   value={fields.colonyNagarSector || ''}
                   onChange={e => handleChange('colonyNagarSector', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="e.g. Colony / Sector / Area"
+                  placeholder=""
                 />
               </Field>
 
@@ -1074,10 +1011,12 @@ export default function AxisAGRI({
                   value={fields.localityLandmark || ''}
                   onChange={e => handleChange('localityLandmark', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="e.g. Near Achhuli Chaka"
+                  placeholder=""
                 />
               </Field>
+            </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <Field label="Village / Town / City / Market">
                 <input
                   type="text"
@@ -1085,7 +1024,7 @@ export default function AxisAGRI({
                   value={fields.villageTownCityMarket || ''}
                   onChange={e => handleChange('villageTownCityMarket', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="e.g. Village / Town"
+                  placeholder=""
                 />
               </Field>
 
@@ -1096,10 +1035,12 @@ export default function AxisAGRI({
                   value={fields.district || ''}
                   onChange={e => handleChange('district', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="e.g. Ganjam"
+                  placeholder=""
                 />
               </Field>
+            </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <Field label="State">
                 <input
                   type="text"
@@ -1107,7 +1048,7 @@ export default function AxisAGRI({
                   value={fields.state || ''}
                   onChange={e => handleChange('state', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="e.g. Odisha"
+                  placeholder=""
                 />
               </Field>
 
@@ -1118,13 +1059,12 @@ export default function AxisAGRI({
                   value={fields.pincode || ''}
                   onChange={e => handleChange('pincode', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="e.g. 761018"
+                  placeholder=""
                 />
               </Field>
             </div>
 
-            {/* Distance & GPS Coordinates */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <Field label="Distance from Area Office">
                 <input
                   type="text"
@@ -1132,29 +1072,7 @@ export default function AxisAGRI({
                   value={fields.distanceFromAreaOffice || ''}
                   onChange={e => handleChange('distanceFromAreaOffice', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="e.g. 2 Kms away from area office"
-                />
-              </Field>
-
-              <Field label="Latitude">
-                <input
-                  type="text"
-                  className={inputCls}
-                  value={fields.latitude || ''}
-                  onChange={e => handleChange('latitude', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="e.g. 19.511361"
-                />
-              </Field>
-
-              <Field label="Longitude">
-                <input
-                  type="text"
-                  className={inputCls}
-                  value={fields.longitude || ''}
-                  onChange={e => handleChange('longitude', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="e.g. 84.907833"
+                  placeholder=""
                 />
               </Field>
 
@@ -1165,7 +1083,31 @@ export default function AxisAGRI({
                   value={fields.coordinates || ''}
                   onChange={e => handleChange('coordinates', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="e.g. 19°30'40.9&quot;N 84°54'28.2&quot;E"
+                  placeholder=""
+                />
+              </Field>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Latitude">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.latitude || ''}
+                  onChange={e => handleChange('latitude', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder=""
+                />
+              </Field>
+
+              <Field label="Longitude">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.longitude || ''}
+                  onChange={e => handleChange('longitude', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder=""
                 />
               </Field>
             </div>
@@ -1173,14 +1115,14 @@ export default function AxisAGRI({
         </Section>
 
         {/* ═══════════════════════════════════════════════════════════════
-            SECTION 3: CLASSIFICATION & SITE TOPOGRAPHY
+            SECTION 3: TYPE OF PROPERTY
         ═══════════════════════════════════════════════════════════════ */}
-        <Section id="sec-3" title="Property Classification & Site Topography" number={3} defaultOpen>
-          {/* Container 1: Plot Characteristics & Governance */}
+        <Section id="sec-3" title="Type of Property" number={3} defaultOpen>
+          {/* Card A: (A) Plot */}
           <div className="border border-indigo-200 bg-indigo-50/50 rounded-xl p-5 mb-5 shadow-xs">
-            <h3 className="font-semibold text-indigo-800 mb-4 text-sm tracking-wide uppercase">Plot Characteristics & Governance</h3>
+            <h3 className="font-semibold text-indigo-800 mb-4 text-sm tracking-wide uppercase">(A) Plot Characteristics</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <Field label="Type of Property (Plot)">
+              <Field label="(A) Plot Classification">
                 <select
                   className={selectCls}
                   value={fields.typeOfPropertyPlot || 'Residential'}
@@ -1198,10 +1140,10 @@ export default function AxisAGRI({
                 <input
                   type="text"
                   className={inputCls}
-                  value={fields.levelOfLand || ''}
+                  value={fields.levelOfLand || 'Existing Road Level'}
                   onChange={e => handleChange('levelOfLand', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="e.g. Existing Road Level"
+                  placeholder="Existing Road Level"
                 />
               </Field>
 
@@ -1219,7 +1161,7 @@ export default function AxisAGRI({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Situated in Municipal / Corporation Limit">
+              <Field label="Whether Situated in Municipal / Corporation Limit">
                 <select
                   className={selectCls}
                   value={fields.situatedInMunicipalLimit || 'No'}
@@ -1238,97 +1180,89 @@ export default function AxisAGRI({
                   value={fields.municipalLimitDetails || ''}
                   onChange={e => handleChange('municipalLimitDetails', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="e.g. (Within Gram Panchayat area limit)"
+                  placeholder="e.g. Within Achhuli Gram Panchayat area limit"
                 />
               </Field>
             </div>
           </div>
 
-          {/* Container 2: Subtypes & Civic Amenities */}
+          {/* Card B: (B) Residential Property */}
           <div className="border border-purple-200 bg-purple-50/50 rounded-xl p-5 mb-5 shadow-xs">
-            <h3 className="font-semibold text-purple-800 mb-4 text-sm tracking-wide uppercase">Property Subtypes & Civic Amenities</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Residential Subtype Card */}
-              <div className="bg-white p-4 rounded-lg border border-purple-100 shadow-xs space-y-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-purple-900 block">
-                  Residential Property Classification
-                </span>
-                <Field label="Residential Property Subtype">
-                  <select
-                    className={selectCls}
-                    value={fields.residentialPropertySubtype || 'Independent house'}
-                    onChange={e => handleChange('residentialPropertySubtype', e.target.value)}
-                    disabled={isReadOnly}
-                  >
-                    <option value="Independent house">Independent house</option>
-                    <option value="Bungalow">Bungalow</option>
-                    <option value="Row House">Row House</option>
-                    <option value="Flat">Flat</option>
-                    <option value="Commercial">Commercial</option>
-                  </select>
-                </Field>
+            <h3 className="font-semibold text-purple-800 mb-4 text-sm tracking-wide uppercase">(B) Residential Property Classification</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Residential Property Subtype">
+                <select
+                  className={selectCls}
+                  value={fields.residentialPropertySubtype || 'Independent house'}
+                  onChange={e => handleChange('residentialPropertySubtype', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="Residential">Residential</option>
+                  <option value="Independent house">Independent house</option>
+                  <option value="Bungalow">Bungalow</option>
+                  <option value="Row House">Row House</option>
+                  <option value="Flat">Flat</option>
+                  <option value="Commercial">Commercial</option>
+                </select>
+              </Field>
 
-                <Field label="Civic Amenities (School, Hospital, Market)">
-                  <select
-                    className={selectCls}
-                    value={fields.civicAmenities || 'Available within the radius of 2-3 Kms'}
-                    onChange={e => handleChange('civicAmenities', e.target.value)}
-                    disabled={isReadOnly}
-                  >
-                    <option value="Available within the radius of 2-3 Kms">Available within the radius of 2-3 Kms</option>
-                    <option value="Not Available">Not Available</option>
-                  </select>
-                </Field>
-              </div>
-
-              {/* Commercial Subtype Card */}
-              <div className="bg-white p-4 rounded-lg border border-purple-100 shadow-xs space-y-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-purple-900 block">
-                  Commercial / Industrial Classification
-                </span>
-                <Field label="Commercial Property Subtype">
-                  <select
-                    className={selectCls}
-                    value={fields.commercialPropertySubtype || 'Godown'}
-                    onChange={e => handleChange('commercialPropertySubtype', e.target.value)}
-                    disabled={isReadOnly}
-                  >
-                    <option value="Independent house">Independent house</option>
-                    <option value="Row House">Row House</option>
-                    <option value="Unit in a mall">Unit in a mall</option>
-                    <option value="Godown">Godown</option>
-                    <option value="Industrial">Industrial</option>
-                    <option value="Shop">Shop</option>
-                  </select>
-                </Field>
-
-                <Field label="Local Transport Availability">
-                  <div className="grid grid-cols-2 gap-2 pt-1">
-                    {['Metro', 'Local Train', 'Bus', 'Personal Transport'].map(item => {
-                      const checked = (fields.availabilityLocalTransport || []).includes(item);
-                      return (
-                        <label key={item} className="flex items-center gap-2 text-xs font-medium cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            onChange={() => handleToggleMulti('availabilityLocalTransport', item)}
-                            disabled={isReadOnly}
-                            className="rounded text-purple-600 focus:ring-purple-500"
-                          />
-                          <span>{item}</span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                </Field>
-              </div>
+              <Field label="Civic Amenities (School, Hospital, Market, etc.)">
+                <select
+                  className={selectCls}
+                  value={fields.civicAmenities || 'Available within the radius of 2-3 Kms'}
+                  onChange={e => handleChange('civicAmenities', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="Available within the radius of 2-3 Kms">Available within the radius of 2-3 Kms</option>
+                  <option value="Not Available">Not Available</option>
+                </select>
+              </Field>
             </div>
           </div>
 
-          {/* Container 3: Accessibility & Physical Constraints */}
+          {/* Card C: (C) Commercial / Industrial Property */}
           <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs">
-            <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">Accessibility & Physical Constraints</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">(C) Commercial / Industrial Property & Transport</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <Field label="Commercial / Industrial Property Subtype">
+                <select
+                  className={selectCls}
+                  value={fields.commercialPropertySubtype || 'Godown'}
+                  onChange={e => handleChange('commercialPropertySubtype', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="Commercial">Commercial</option>
+                  <option value="Independent house">Independent house</option>
+                  <option value="Row House">Row House</option>
+                  <option value="Unit in a mall">Unit in a mall</option>
+                  <option value="Godown">Godown</option>
+                  <option value="Industrial">Industrial</option>
+                  <option value="Shop">Shop</option>
+                </select>
+              </Field>
+
+              <Field label="Availability of Local Transport">
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  {['Metro', 'Local Train', 'Bus', 'Personal Transport'].map(item => {
+                    const checked = (fields.availabilityLocalTransport || []).includes(item);
+                    return (
+                      <label key={item} className="flex items-center gap-2 text-xs font-medium cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => handleToggleMulti('availabilityLocalTransport', item)}
+                          disabled={isReadOnly}
+                          className="rounded text-blue-600 focus:ring-blue-500"
+                        />
+                        <span>{item}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </Field>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <Field label="Distance from Railway Station">
                 <input
                   type="text"
@@ -1336,7 +1270,7 @@ export default function AxisAGRI({
                   value={fields.distanceFromRailwayStation || ''}
                   onChange={e => handleChange('distanceFromRailwayStation', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="e.g. 15 Km from nearest station"
+                  placeholder="e.g. 27 Km from Khallikote"
                 />
               </Field>
 
@@ -1350,7 +1284,9 @@ export default function AxisAGRI({
                   placeholder="e.g. Within 2-3 Kms"
                 />
               </Field>
+            </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <Field label="Independent & Accessible Approach Road">
                 <select
                   className={selectCls}
@@ -1374,7 +1310,9 @@ export default function AxisAGRI({
                   <option value="No">No</option>
                 </select>
               </Field>
+            </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Falls Under Land Locked Area">
                 <select
                   className={selectCls}
@@ -1436,7 +1374,7 @@ export default function AxisAGRI({
                         value={fields.boundaryEastVerification || ''}
                         onChange={e => handleChange('boundaryEastVerification', e.target.value)}
                         disabled={isReadOnly}
-                        placeholder="e.g. Road / Adjacent Plot"
+                        placeholder="e.g. Vacant Land / Plot No."
                       />
                     </td>
                     <td className="p-2">
@@ -1446,7 +1384,7 @@ export default function AxisAGRI({
                         value={fields.boundaryEastDocument || ''}
                         onChange={e => handleChange('boundaryEastDocument', e.target.value)}
                         disabled={isReadOnly}
-                        placeholder="e.g. Road / Document Boundary"
+                        placeholder="e.g. Plot No. / Owner Name"
                       />
                     </td>
                   </tr>
@@ -1579,7 +1517,7 @@ export default function AxisAGRI({
               </Field>
             </div>
 
-            {/* Approved vs Actual Usage Multi-Select (Separate lines, default selected: none) */}
+            {/* Approved vs Actual Usage Multi-Select */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Approved Usage of Property">
                 <div className="flex flex-col gap-2 pt-1">
@@ -1620,7 +1558,22 @@ export default function AxisAGRI({
           {/* Container 2: Structure & Surroundings */}
           <div className="border border-emerald-200 bg-emerald-50/50 rounded-xl p-5 shadow-xs">
             <h3 className="font-semibold text-emerald-800 mb-4 text-sm tracking-wide uppercase">Structure & Surroundings</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            
+            {/* Restrictive covenants full width before structure type */}
+            <div className="mb-4">
+              <Field label="Restrictive Covenants Regards Land Use">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.restrictiveCovenants || ''}
+                  onChange={e => handleChange('restrictiveCovenants', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder=""
+                />
+              </Field>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <Field label="Type of Structure (Bold in PDF)">
                 <select
                   className={selectCls}
@@ -1642,18 +1595,7 @@ export default function AxisAGRI({
                   value={fields.noOfFloors || ''}
                   onChange={e => handleChange('noOfFloors', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="e.g. G+1 / G+2"
-                />
-              </Field>
-
-              <Field label="Restrictive Covenants Regards Land Use">
-                <input
-                  type="text"
-                  className={inputCls}
-                  value={fields.restrictiveCovenants || ''}
-                  onChange={e => handleChange('restrictiveCovenants', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="Not Applicable"
+                  placeholder=""
                 />
               </Field>
             </div>
@@ -1696,48 +1638,58 @@ export default function AxisAGRI({
             SECTION 6: TENANCY, OCCUPANCY & LEASEHOLD DETAILS
         ═══════════════════════════════════════════════════════════════ */}
         <Section id="sec-6" title="Tenancy, Occupancy & Leasehold Details" number={6} defaultOpen>
-          {/* Container 1: Occupancy & Tenancy */}
-          <div className="border border-indigo-200 bg-indigo-50/50 rounded-xl p-5 mb-5 shadow-xs">
-            <h3 className="font-semibold text-indigo-800 mb-4 text-sm tracking-wide uppercase">Occupancy & Tenancy Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <Field label="Occupancy Details">
-                <select
-                  className={selectCls}
-                  value={fields.occupancyDetails || 'Self-Occupied'}
-                  onChange={e => handleChange('occupancyDetails', e.target.value)}
-                  disabled={isReadOnly}
-                >
-                  <option value="Self-Occupied">Self-Occupied</option>
-                  <option value="Rented">Rented</option>
-                  <option value="Vacant">Vacant</option>
-                </select>
-              </Field>
+          {/* Standalone Occupancy Details */}
+          <div className="border border-slate-200 bg-white rounded-xl p-5 mb-5 shadow-xs">
+            <Field label="Occupancy Details">
+              <div className="flex gap-6 items-center pt-1">
+                {['Self-Occupied', 'Rented', 'Vacant'].map(opt => (
+                  <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm font-semibold">
+                    <input
+                      type="radio"
+                      name="occupancyDetails"
+                      value={opt}
+                      checked={(fields.occupancyDetails || 'Self-Occupied') === opt}
+                      onChange={e => handleChange('occupancyDetails', e.target.value)}
+                      disabled={isReadOnly}
+                      className="text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span>{opt}</span>
+                  </label>
+                ))}
+              </div>
+            </Field>
+          </div>
 
-              <Field label="If Rented: Tenant Name">
+          {/* Soft Container 1: If the property is on rent */}
+          <div className="border border-indigo-200 bg-indigo-50/50 rounded-xl p-5 mb-5 shadow-xs">
+            <h3 className="font-semibold text-indigo-800 mb-4 text-sm tracking-wide uppercase">If the property is on rent:</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <Field label="Name of tenant/leasee">
                 <input
                   type="text"
                   className={inputCls}
                   value={fields.tenantName || ''}
                   onChange={e => handleChange('tenantName', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="NA"
+                  placeholder=""
                 />
               </Field>
 
-              <Field label="Years in Tenancy">
+              <Field label="Number of years in tenancy">
                 <input
                   type="text"
                   className={inputCls}
                   value={fields.yearsInTenancy || ''}
                   onChange={e => handleChange('yearsInTenancy', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="NA"
+                  placeholder=""
                 />
               </Field>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Was Resistance for Valuation">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <Field label="Was there any resistance for valuation">
                 <select
                   className={selectCls}
                   value={fields.resistanceForValuation || 'No'}
@@ -1749,7 +1701,7 @@ export default function AxisAGRI({
                 </select>
               </Field>
 
-              <Field label="Resistance from Occupants">
+              <Field label="If yes, from the current occupants">
                 <select
                   className={selectCls}
                   value={fields.resistanceFromOccupants || 'No'}
@@ -1761,25 +1713,57 @@ export default function AxisAGRI({
                 </select>
               </Field>
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Does property have basic amenities">
+                <div className="flex gap-3 pt-2">
+                  {['Electricity', 'Water', 'Drainage connection'].map(item => (
+                    <label key={item} className="flex items-center gap-1.5 text-xs font-medium cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={(fields.basicAmenities || []).includes(item)}
+                        onChange={() => handleToggleMulti('basicAmenities', item)}
+                        disabled={isReadOnly}
+                        className="rounded text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <span>{item}</span>
+                    </label>
+                  ))}
+                </div>
+              </Field>
+
+              <Field label="Development of surrounding area">
+                <select
+                  className={selectCls}
+                  value={fields.developmentSurroundingArea || 'Developing'}
+                  onChange={e => handleChange('developmentSurroundingArea', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="Underdeveloped">Underdeveloped</option>
+                  <option value="Developing">Developing</option>
+                  <option value="Developed">Developed</option>
+                </select>
+              </Field>
+            </div>
           </div>
 
-          {/* Container 2: Leasehold Details */}
+          {/* Soft Container 2: If the property is Leasehold */}
           <div className="border border-teal-200 bg-teal-50/50 rounded-xl p-5 shadow-xs">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-semibold text-teal-800 text-sm tracking-wide uppercase">
-                Leasehold Details (The Property is Free Hold Land)
+                If the property is Leasehold (The Property is Free Hold Land)
               </h3>
-              <span className="text-xs text-slate-500 italic">{fields.isLeasehold}</span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Field label="Name of Lessor">
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <Field label="Name of Lesser">
                 <input
                   type="text"
                   className={inputCls}
                   value={fields.lessorName || ''}
                   onChange={e => handleChange('lessorName', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="NA"
+                  placeholder=""
                 />
               </Field>
 
@@ -1790,10 +1774,12 @@ export default function AxisAGRI({
                   value={fields.natureOfLease || ''}
                   onChange={e => handleChange('natureOfLease', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="NA"
+                  placeholder=""
                 />
               </Field>
+            </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <Field label="Total Period of Lease">
                 <input
                   type="text"
@@ -1801,8 +1787,52 @@ export default function AxisAGRI({
                   value={fields.totalPeriodOfLease || ''}
                   onChange={e => handleChange('totalPeriodOfLease', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="NA"
+                  placeholder=""
                 />
+              </Field>
+
+              <Field label="If yes, from the current occupants">
+                <select
+                  className={selectCls}
+                  value={fields.leaseholdOccupantsResistance || 'No'}
+                  onChange={e => handleChange('leaseholdOccupantsResistance', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </Field>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Does property have basic amenities">
+                <div className="flex gap-3 pt-2">
+                  {['Electricity', 'Water', 'Drainage connection'].map(item => (
+                    <label key={item} className="flex items-center gap-1.5 text-xs font-medium cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={(fields.leaseholdBasicAmenities || fields.basicAmenities || []).includes(item)}
+                        onChange={() => handleToggleMulti('leaseholdBasicAmenities', item)}
+                        disabled={isReadOnly}
+                        className="rounded text-teal-600 focus:ring-teal-500"
+                      />
+                      <span>{item}</span>
+                    </label>
+                  ))}
+                </div>
+              </Field>
+
+              <Field label="Development of surrounding area">
+                <select
+                  className={selectCls}
+                  value={fields.leaseholdDevelopment || fields.developmentSurroundingArea || 'Developing'}
+                  onChange={e => handleChange('leaseholdDevelopment', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="Underdeveloped">Underdeveloped</option>
+                  <option value="Developing">Developing</option>
+                  <option value="Developed">Developed</option>
+                </select>
               </Field>
             </div>
           </div>
@@ -1823,7 +1853,7 @@ export default function AxisAGRI({
                   value={fields.reraRegNo || ''}
                   onChange={e => handleChange('reraRegNo', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Not Applicable."
+                  placeholder=""
                 />
               </Field>
 
@@ -1834,7 +1864,7 @@ export default function AxisAGRI({
                   value={fields.occupancyCertificate || ''}
                   onChange={e => handleChange('occupancyCertificate', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Not Available"
+                  placeholder=""
                 />
               </Field>
             </div>
@@ -1851,12 +1881,18 @@ export default function AxisAGRI({
                   value={fields.layoutApprovalNo || ''}
                   onChange={e => handleChange('layoutApprovalNo', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Not Mentioned"
+                  placeholder=""
                 />
               </Field>
 
-              <DateInput fieldKey="layoutApprovalDate" label="Date of Approval (DD/MM/YYYY)" />
-              <DateInput fieldKey="layoutExpiryDate" label="Expiry Date (DD/MM/YYYY)" />
+              <DateInput
+                fieldKey="layoutApprovalDate"
+                label="Date of Approval"
+              />
+              <DateInput
+                fieldKey="layoutExpiryDate"
+                label="Expiry Date"
+              />
             </div>
           </div>
 
@@ -1871,12 +1907,18 @@ export default function AxisAGRI({
                   value={fields.buildingPlanApprovalNo || ''}
                   onChange={e => handleChange('buildingPlanApprovalNo', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Not Available"
+                  placeholder=""
                 />
               </Field>
 
-              <DateInput fieldKey="buildingPlanApprovalDate" label="Date of Approval (DD/MM/YYYY)" />
-              <DateInput fieldKey="buildingPlanExpiryDate" label="Expiry Date (DD/MM/YYYY)" />
+              <DateInput
+                fieldKey="buildingPlanApprovalDate"
+                label="Date of Approval"
+              />
+              <DateInput
+                fieldKey="buildingPlanExpiryDate"
+                label="Expiry Date"
+              />
             </div>
           </div>
         </Section>
@@ -1884,12 +1926,14 @@ export default function AxisAGRI({
         {/* ═══════════════════════════════════════════════════════════════
             SECTION 8: CONSTRUCTION & FLOOR-WISE BREAKUP
         ═══════════════════════════════════════════════════════════════ */}
-        <Section id="sec-8" title="Construction Details & Floor-Wise BUA" number={8} defaultOpen>
-          {/* Container 1: Plot Extents & Demarcation (2x2 Grid Matching Photo) */}
+        {/* ═══════════════════════════════════════════════════════════════
+            SECTION 8: CONSTRUCTION DETAILS & BUILDING SPECIFICATIONS
+        ═══════════════════════════════════════════════════════════════ */}
+        <Section id="sec-8" title="Construction Details & Building Specifications" number={8} defaultOpen>
+          {/* Container 1: Plot Extents & Demarcation */}
           <div className="border border-amber-200 bg-amber-50/50 rounded-xl p-5 mb-5 shadow-xs">
             <h3 className="font-semibold text-amber-800 mb-4 text-sm tracking-wide uppercase">Plot Extents & Demarcation</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              {/* Row 1 Left */}
               <Field label="Area of Plot as per ROR">
                 <input
                   type="text"
@@ -1897,11 +1941,10 @@ export default function AxisAGRI({
                   value={fields.areaOfPlotRor || ''}
                   onChange={e => handleChange('areaOfPlotRor', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Not Available"
+                  placeholder=""
                 />
               </Field>
 
-              {/* Row 1 Right */}
               <Field label="Approved Built-Up Area (In Sq.Ft.)">
                 <input
                   type="text"
@@ -1909,11 +1952,10 @@ export default function AxisAGRI({
                   value={fields.approvedBUA || ''}
                   onChange={e => handleChange('approvedBUA', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Not Available"
+                  placeholder=""
                 />
               </Field>
 
-              {/* Row 2 Left */}
               <Field label="Area of Plot as per Document">
                 <input
                   type="text"
@@ -1921,11 +1963,10 @@ export default function AxisAGRI({
                   value={fields.areaOfPlotDoc || ''}
                   onChange={e => handleChange('areaOfPlotDoc', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Not Available"
+                  placeholder=""
                 />
               </Field>
 
-              {/* Row 2 Right */}
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-slate-700">Actual Built-Up Area Summary (In Sq.Ft.)</span>
@@ -1946,80 +1987,102 @@ export default function AxisAGRI({
                   value={fields.actualBUA || ''}
                   onChange={e => handleChange('actualBUA', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Not Available"
+                  placeholder=""
                 />
               </div>
 
-              {/* Row 3 Left */}
-              <div className="md:col-span-1">
-                <Field label="Demarcation at Site">
-                  <select
-                    className={selectCls}
-                    value={fields.demarcationAtSite || 'Yes'}
-                    onChange={e => handleChange('demarcationAtSite', e.target.value)}
+              <Field label="Demarcation at Site">
+                <select
+                  className={selectCls}
+                  value={fields.demarcationAtSite || 'Yes'}
+                  onChange={e => handleChange('demarcationAtSite', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </Field>
+
+              <Field label="Total Carpet Area (In Sq.Ft.)">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.totalCarpetArea || ''}
+                  onChange={e => handleChange('totalCarpetArea', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder=""
+                />
+              </Field>
+
+              <div className="md:col-span-2">
+                <Field label="Total Saleable Area (In Sq.Ft.)">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.totalSaleableArea || ''}
+                    onChange={e => handleChange('totalSaleableArea', e.target.value)}
                     disabled={isReadOnly}
-                  >
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
-                  </select>
+                    placeholder=""
+                  />
                 </Field>
               </div>
             </div>
           </div>
 
-          {/* Container 2: Dynamic Floor-Wise BUA Table */}
-          <div className="border border-cyan-200 bg-cyan-50/50 rounded-xl p-5 mb-5 shadow-xs">
+          {/* Container 2: Dynamic Floor-Wise BUA Table (Arthan Styled UI) */}
+          <div className="border border-slate-200 bg-white rounded-xl p-5 mb-5 shadow-xs">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-semibold text-cyan-800 text-sm tracking-wide uppercase">Floor-Wise Break Up & Usage Details</h3>
+              <h3 className="font-semibold text-[#0a1628] text-sm tracking-wide uppercase">Floor-Wise Break Up & Usage Details</h3>
               {!isReadOnly && (
                 <button
                   type="button"
                   onClick={handleAddFloor}
-                  className="px-3 py-1 bg-cyan-700 hover:bg-cyan-800 text-white rounded-lg text-xs font-semibold flex items-center gap-1 shadow-xs transition-colors"
+                  className="px-3 py-1 bg-[#0a1628] hover:bg-[#12233f] text-white rounded-lg text-xs font-semibold flex items-center gap-1 shadow-xs transition-colors"
                 >
                   + Add Floor
                 </button>
               )}
             </div>
 
-            <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-              <table className="w-full text-xs text-left">
-                <thead className="bg-cyan-100/70 text-cyan-900 font-bold uppercase">
-                  <tr>
-                    <th className="p-3 w-12 text-center border-b border-r">#</th>
-                    <th className="p-3 border-b border-r">Floor Name / Level</th>
-                    <th className="p-3 text-right w-36 border-b border-r">Plinth Area (Sq.Ft.)</th>
-                    <th className="p-3 w-48 border-b">Current Usage</th>
-                    {!isReadOnly && <th className="p-3 text-center w-16 border-b border-l">Action</th>}
+            <div className="overflow-x-auto rounded-lg border border-slate-200">
+              <table className="w-full text-xs border-collapse">
+                <thead>
+                  <tr className="bg-[#0a1628] text-white">
+                    <th className="px-3 py-2.5 text-center font-normal text-xs uppercase tracking-wider w-12">#</th>
+                    <th className="px-3 py-2.5 text-left font-normal text-xs uppercase tracking-wider">Floor Name / Level</th>
+                    <th className="px-3 py-2.5 text-right font-normal text-xs uppercase tracking-wider w-40">Plinth Area (Sq.Ft.)</th>
+                    <th className="px-3 py-2.5 text-left font-normal text-xs uppercase tracking-wider w-48">Current Usage</th>
+                    {!isReadOnly && <th className="px-2 py-2.5 w-12 text-center"></th>}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200 bg-white">
+                <tbody className="divide-y divide-slate-200">
                   {(fields.floors || []).map((floor, idx) => (
-                    <tr key={idx} className="hover:bg-cyan-50/30">
-                      <td className="p-3 text-center text-slate-400 font-medium border-r">{idx + 1}</td>
-                      <td className="p-2 border-r">
+                    <tr key={idx} className="bg-white hover:bg-neutral-50/50 transition-colors">
+                      <td className="px-2 py-1.5 text-center text-slate-400 font-medium border-b border-[#e9ecef]">{idx + 1}</td>
+                      <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                         <input
                           type="text"
-                          className={inputCls}
+                          className={inputCls + ' !py-1.5 text-xs font-normal text-[#0f2038]'}
                           value={floor.floorName}
                           onChange={e => handleFloorChange(idx, 'floorName', e.target.value)}
                           disabled={isReadOnly}
                           placeholder="e.g. Ground Floor"
                         />
                       </td>
-                      <td className="p-2 border-r">
+                      <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                         <input
                           type="text"
-                          className={`${inputCls} text-right font-medium`}
+                          inputMode="decimal"
+                          className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
                           value={floor.plinthArea}
                           onChange={e => handleFloorChange(idx, 'plinthArea', e.target.value)}
                           disabled={isReadOnly}
-                          placeholder="525.00"
+                          placeholder=""
                         />
                       </td>
-                      <td className="p-2">
+                      <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                         <select
-                          className={selectCls}
+                          className={selectCls + ' !py-1.5 text-xs'}
                           value={floor.usage}
                           onChange={e => handleFloorChange(idx, 'usage', e.target.value)}
                           disabled={isReadOnly}
@@ -2033,28 +2096,28 @@ export default function AxisAGRI({
                         </select>
                       </td>
                       {!isReadOnly && (
-                        <td className="p-2 text-center border-l">
+                        <td className="px-2 py-1.5 border-b border-[#e9ecef] text-center">
                           <button
                             type="button"
                             onClick={() => handleRemoveFloor(idx)}
                             disabled={(fields.floors || []).length <= 1}
-                            className="text-rose-500 hover:text-rose-700 disabled:opacity-30 text-sm font-bold"
-                            title="Delete Floor"
+                            className="text-red-400 hover:text-red-600 disabled:opacity-30 text-base leading-none cursor-pointer p-1 font-bold"
+                            title="Remove Floor"
                           >
-                            ✕
+                            &times;
                           </button>
                         </td>
                       )}
                     </tr>
                   ))}
                 </tbody>
-                <tfoot className="bg-cyan-50/80 font-bold border-t border-cyan-200">
+                <tfoot className="bg-slate-50 font-bold border-t-2 border-slate-300 text-xs">
                   <tr>
-                    <td colSpan={2} className="p-3 text-right text-slate-700">
+                    <td colSpan={2} className="px-3 py-2.5 text-right text-slate-800 font-bold uppercase tracking-wider">
                       Total Built Up Area (Auto-summed):
                     </td>
-                    <td className="p-3 text-right text-cyan-800 text-sm font-mono">
-                      {fields.totalBUA} Sft
+                    <td className="px-3 py-2.5 text-right text-emerald-800 font-bold font-mono">
+                      {fields.totalBUA || '0.00 Sft'}
                     </td>
                     <td colSpan={!isReadOnly ? 2 : 1}></td>
                   </tr>
@@ -2063,64 +2126,42 @@ export default function AxisAGRI({
             </div>
           </div>
 
-          {/* Container 3: Carpet, Saleable, FAR & Quality */}
-          <div className="border border-slate-200 bg-slate-50/70 rounded-xl p-5 shadow-xs">
-            <h3 className="font-semibold text-slate-800 mb-4 text-sm tracking-wide uppercase">Carpet, Saleable, FAR & Construction Quality</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <Field label="Total Carpet Area (In Sq.Ft.)">
-                <input
-                  type="text"
-                  className={inputCls}
-                  value={fields.totalCarpetArea || ''}
-                  onChange={e => handleChange('totalCarpetArea', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="1090.00 Sft (Approx.)"
-                />
-              </Field>
-
-              <Field label="Total Saleable Area (In Sq.Ft.)">
-                <input
-                  type="text"
-                  className={inputCls}
-                  value={fields.totalSaleableArea || ''}
-                  onChange={e => handleChange('totalSaleableArea', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="566.00 Sft (Land) & 1254.00 Sft (Building)"
-                />
-              </Field>
-
-              <Field label="Amenities Details (If Any)">
+          {/* Container 3: Building Specifications & Construction Quality */}
+          <div className="border border-slate-200 bg-slate-50/70 rounded-xl p-5 mb-5 shadow-xs">
+            <h3 className="font-semibold text-slate-800 mb-4 text-sm tracking-wide uppercase">Building Specifications & Construction Quality</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <Field label="Amenities Details (if any)">
                 <input
                   type="text"
                   className={inputCls}
                   value={fields.amenitiesDetails || ''}
                   onChange={e => handleChange('amenitiesDetails', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Nil"
+                  placeholder=""
                 />
               </Field>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <Field label="Floor Space Index (FAR) Permissible & Utilized">
+              <Field label="Floor Space Index permissible and percentage actually utilized">
                 <input
                   type="text"
                   className={inputCls}
                   value={fields.farPermissibleUtilized || ''}
                   onChange={e => handleChange('farPermissibleUtilized', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="FAR:2.21"
+                  placeholder=""
                 />
               </Field>
+            </div>
 
-              <Field label="Construction As Per Approved Plan / Bye Laws">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <Field label="Whether the construction is as per approved building plan and / or local building bye laws">
                 <input
                   type="text"
                   className={inputCls}
                   value={fields.constructionAsPerApprovedPlan || ''}
                   onChange={e => handleChange('constructionAsPerApprovedPlan', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Plan is not Available"
+                  placeholder=""
                 />
               </Field>
 
@@ -2131,12 +2172,12 @@ export default function AxisAGRI({
                   value={fields.extraConstructionDetails || ''}
                   onChange={e => handleChange('extraConstructionDetails', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Not Applicable"
+                  placeholder=""
                 />
               </Field>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <Field label="Percentage of Extra Construction">
                 <input
                   type="text"
@@ -2144,22 +2185,24 @@ export default function AxisAGRI({
                   value={fields.extraConstructionPercentage || ''}
                   onChange={e => handleChange('extraConstructionPercentage', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Not Applicable"
+                  placeholder=""
                 />
               </Field>
 
-              <Field label="Compoundable or Non-Compoundable">
+              <Field label="Whether the extra construction is Compoundable OR Non-Compoundable?">
                 <input
                   type="text"
                   className={inputCls}
                   value={fields.extraConstructionCompoundable || ''}
                   onChange={e => handleChange('extraConstructionCompoundable', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Not Applicable"
+                  placeholder=""
                 />
               </Field>
+            </div>
 
-              <Field label="Quality of Construction">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Field label="Quality of construction">
                 <select
                   className={selectCls}
                   value={fields.qualityOfConstruction || 'Good'}
@@ -2172,7 +2215,7 @@ export default function AxisAGRI({
                 </select>
               </Field>
 
-              <Field label="Maintenance of Property">
+              <Field label="Maintenance of the Property">
                 <select
                   className={selectCls}
                   value={fields.maintenanceOfProperty || 'Good'}
@@ -2184,89 +2227,83 @@ export default function AxisAGRI({
                   <option value="Poor">Poor</option>
                 </select>
               </Field>
+
+              <Field label="Condition Of Building">
+                <select
+                  className={selectCls}
+                  value={fields.conditionOfBuilding || 'Good'}
+                  onChange={e => handleChange('conditionOfBuilding', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="Good">Good</option>
+                  <option value="Average">Average</option>
+                  <option value="Poor">Poor</option>
+                </select>
+              </Field>
+            </div>
+          </div>
+
+          {/* Container 4: Structure Life & Durability */}
+          <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 mb-5 shadow-xs">
+            <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">Structure Life & Durability</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Current Life of the structure">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.currentLifeStructure || ''}
+                  onChange={e => handleChange('currentLifeStructure', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder=""
+                />
+              </Field>
+
+              <Field label="Projected Life of the Structure">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.projectedLifeStructure || ''}
+                  onChange={e => handleChange('projectedLifeStructure', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder=""
+                />
+              </Field>
+            </div>
+          </div>
+
+          {/* Container 5: Revenue & Municipal Taxes */}
+          <div className="border border-indigo-200 bg-indigo-50/50 rounded-xl p-5 shadow-xs">
+            <h3 className="font-semibold text-indigo-800 mb-4 text-sm tracking-wide uppercase">Revenue & Municipal Taxes</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Land Revenue/Taxes Paid upto (for Land)">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.landRevenueTaxesPaid || ''}
+                  onChange={e => handleChange('landRevenueTaxesPaid', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder=""
+                />
+              </Field>
+
+              <Field label="Municipal Taxes Paid upto (for Building)">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.municipalTaxesPaid || ''}
+                  onChange={e => handleChange('municipalTaxesPaid', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder=""
+                />
+              </Field>
             </div>
           </div>
         </Section>
 
         {/* ═══════════════════════════════════════════════════════════════
-            SECTION 9: BUILDING CONDITION, LIFE & LAND RATE
+            SECTION 9: THE LAND RATE ADOPTED IN THIS VALUATION
         ═══════════════════════════════════════════════════════════════ */}
-        <Section id="sec-9" title="Building Condition, Life & Land Rate" number={9} defaultOpen>
-          {/* Container 1: Condition, Life & Taxes */}
-          <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 mb-5 shadow-xs">
-            <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">Building Condition, Life & Taxes</h3>
-            <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-              <table className="w-full text-xs text-left">
-                <tbody className="divide-y divide-slate-200">
-                  <tr className="bg-slate-50/70">
-                    <td className="p-3 font-semibold text-slate-700 w-1/4 border-r">Condition Of Building</td>
-                    <td colSpan={3} className="p-2">
-                      <select
-                        className={selectCls}
-                        value={fields.conditionOfBuilding || 'Good'}
-                        onChange={e => handleChange('conditionOfBuilding', e.target.value)}
-                        disabled={isReadOnly}
-                      >
-                        <option value="Good">Good</option>
-                        <option value="Average">Average</option>
-                        <option value="Poor">Poor</option>
-                      </select>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="p-3 font-semibold text-slate-700 border-r">Current Life of Structure</td>
-                    <td className="p-2 border-r">
-                      <input
-                        type="text"
-                        className={inputCls}
-                        value={fields.currentLifeStructure || ''}
-                        onChange={e => handleChange('currentLifeStructure', e.target.value)}
-                        disabled={isReadOnly}
-                        placeholder="e.g. 8 Years"
-                      />
-                    </td>
-                    <td className="p-3 font-semibold text-slate-700 border-r">Projected Life of Structure</td>
-                    <td className="p-2">
-                      <input
-                        type="text"
-                        className={inputCls}
-                        value={fields.projectedLifeStructure || ''}
-                        onChange={e => handleChange('projectedLifeStructure', e.target.value)}
-                        disabled={isReadOnly}
-                        placeholder="e.g. 52 Years"
-                      />
-                    </td>
-                  </tr>
-                  <tr className="bg-slate-50/70">
-                    <td className="p-3 font-semibold text-slate-700 border-r">Land Revenue/Taxes Paid upto (Land)</td>
-                    <td className="p-2 border-r">
-                      <input
-                        type="text"
-                        className={inputCls}
-                        value={fields.landRevenueTaxesPaid || ''}
-                        onChange={e => handleChange('landRevenueTaxesPaid', e.target.value)}
-                        disabled={isReadOnly}
-                        placeholder="Recent rent receipt is not provided"
-                      />
-                    </td>
-                    <td className="p-3 font-semibold text-slate-700 border-r">Municipal Taxes Paid upto (Building)</td>
-                    <td className="p-2">
-                      <input
-                        type="text"
-                        className={inputCls}
-                        value={fields.municipalTaxesPaid || ''}
-                        onChange={e => handleChange('municipalTaxesPaid', e.target.value)}
-                        disabled={isReadOnly}
-                        placeholder="Not Applicable"
-                      />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Container 2: Land Rate Calculations */}
+        <Section id="sec-9" title="THE LAND RATE ADOPTED IN THIS VALUATION:" number={9} defaultOpen>
           <div className="border border-lime-200 bg-lime-50/50 rounded-xl p-5 shadow-xs">
             <h3 className="font-semibold text-lime-800 mb-4 text-sm tracking-wide uppercase">Adopted Land Rate & Valuation</h3>
 
@@ -2278,7 +2315,7 @@ export default function AxisAGRI({
                   value={fields.govtBenchmarkRateAcre || ''}
                   onChange={e => handleChange('govtBenchmarkRateAcre', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="86,55,000"
+                  placeholder=""
                 />
               </Field>
 
@@ -2289,7 +2326,7 @@ export default function AxisAGRI({
                   value={fields.govtBenchmarkRateSft || ''}
                   onChange={e => handleChange('govtBenchmarkRateSft', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="199"
+                  placeholder=""
                 />
               </Field>
 
@@ -2300,7 +2337,7 @@ export default function AxisAGRI({
                   value={fields.totalLandAreaDec || ''}
                   onChange={e => handleChange('totalLandAreaDec', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="0.013"
+                  placeholder=""
                 />
               </Field>
 
@@ -2311,7 +2348,7 @@ export default function AxisAGRI({
                   value={fields.totalLandAreaSft || ''}
                   onChange={e => handleChange('totalLandAreaSft', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="566.00"
+                  placeholder=""
                 />
               </Field>
             </div>
@@ -2331,7 +2368,7 @@ export default function AxisAGRI({
                   value={fields.prevailingMarketRateMin || ''}
                   onChange={e => handleChange('prevailingMarketRateMin', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="500"
+                  placeholder=""
                 />
               </Field>
 
@@ -2342,7 +2379,7 @@ export default function AxisAGRI({
                   value={fields.prevailingMarketRateMax || ''}
                   onChange={e => handleChange('prevailingMarketRateMax', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="600"
+                  placeholder=""
                 />
               </Field>
 
@@ -2353,7 +2390,7 @@ export default function AxisAGRI({
                   value={fields.adoptedMarketRateSft || ''}
                   onChange={e => handleChange('adoptedMarketRateSft', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="550"
+                  placeholder=""
                 />
               </Field>
             </div>
@@ -2486,7 +2523,7 @@ export default function AxisAGRI({
                   value={fields.totalBasicValueBuildingSay || ''}
                   onChange={e => handleChange('totalBasicValueBuildingSay', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="21,96,000.00"
+                  placeholder=""
                 />
               </Field>
 
@@ -2497,7 +2534,7 @@ export default function AxisAGRI({
                   value={fields.totalBasicValueBuildingWords || ''}
                   onChange={e => handleChange('totalBasicValueBuildingWords', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="RUPEES TWENTY ONE LAKHS NINETY SIX THOUSANDS ONLY"
+                  placeholder=""
                 />
               </Field>
             </div>
@@ -2612,7 +2649,7 @@ export default function AxisAGRI({
                   value={fields.basisOfValuation || ''}
                   onChange={e => handleChange('basisOfValuation', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Enter basis of valuation..."
+                  placeholder=""
                 />
               </Field>
 
@@ -2623,7 +2660,7 @@ export default function AxisAGRI({
                   value={fields.opinionOfMarketValue || ''}
                   onChange={e => handleChange('opinionOfMarketValue', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Enter opinion of market value..."
+                  placeholder=""
                 />
               </Field>
 
@@ -2634,7 +2671,7 @@ export default function AxisAGRI({
                   value={fields.remarksText || ''}
                   onChange={e => handleChange('remarksText', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Enter remarks and statutory disclaimer..."
+                  placeholder=""
                 />
               </Field>
             </div>
@@ -2651,7 +2688,7 @@ export default function AxisAGRI({
                   value={fields.annexureARegardingLand || ''}
                   onChange={e => handleChange('annexureARegardingLand', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Details regarding land..."
+                  placeholder=""
                 />
               </Field>
               <Field label="Regarding Building">
@@ -2661,7 +2698,7 @@ export default function AxisAGRI({
                   value={fields.annexureARegardingBuilding || ''}
                   onChange={e => handleChange('annexureARegardingBuilding', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Details regarding building..."
+                  placeholder=""
                 />
               </Field>
               <Field label="Basis of Arriving at the Land Rate">
@@ -2671,7 +2708,7 @@ export default function AxisAGRI({
                   value={fields.annexureABasisLandRate || ''}
                   onChange={e => handleChange('annexureABasisLandRate', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Basis of arriving at land rate..."
+                  placeholder=""
                 />
               </Field>
             </div>
@@ -2679,12 +2716,118 @@ export default function AxisAGRI({
         </Section>
 
         {/* ═══════════════════════════════════════════════════════════════
-            SECTION 13: STATUTORY CHECKLIST & VALUER DECLARATION
+            SECTION 13: VALUER DECLARATION & UNDERTAKING (PART 1)
         ═══════════════════════════════════════════════════════════════ */}
-        <Section id="sec-13" title="Valuation Report Checklist & Valuer Declaration" number={13} defaultOpen>
-          {/* Container 1: Checklist */}
-          <div className="border border-indigo-200 bg-indigo-50/50 rounded-xl p-5 mb-5 shadow-xs">
-            <h3 className="font-semibold text-indigo-800 mb-4 text-sm tracking-wide uppercase">Valuation Report Check List (12 Statutory Items)</h3>
+        <Section id="sec-13" title="Valuer Declaration & Undertaking" number={13} defaultOpen>
+          <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-blue-200/80 pb-3 mb-4 gap-2">
+              <div>
+                <h3 className="font-semibold text-blue-800 text-sm tracking-wide uppercase flex items-center gap-2">
+                  <span>✍️</span> Valuer Declaration & Authorized Signatory
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Statutory certification, visiting engineer, report submission date, and declaration undertaking.
+                </p>
+              </div>
+              <span className="text-[10px] font-bold text-blue-700 bg-blue-100 px-2.5 py-1 rounded-full uppercase tracking-wider self-start sm:self-auto">
+                Statutory Certification
+              </span>
+            </div>
+
+            <div className="space-y-5">
+              {/* Certification Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="Date of Visit">
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      className={`${inputCls} bg-slate-100 text-black cursor-not-allowed font-semibold pr-8`}
+                      value={fields.dateOfVisit || ''}
+                      disabled
+                      readOnly
+                      placeholder=""
+                    />
+                    <span className="absolute right-2.5 text-xs text-black" title="Locked: Referenced from Section 1 Date of Site Visit">
+                      🔒
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-500 font-medium mt-1 block">
+                    Referenced from Sec 1 (Date of Site Visit)
+                  </span>
+                </Field>
+
+                <DateInput fieldKey="dateOfReportSubmission" label="Date of Report Submission" />
+
+                <Field label="Name of Engineer Visited the property">
+                  <input
+                    className={inputCls}
+                    value={fields.visitingEngineer || ''}
+                    onChange={e => handleChange('visitingEngineer', e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder=""
+                  />
+                  <span className="text-[11px] text-slate-500 font-medium mt-1 block">
+                    Field inspection engineer who visited the site
+                  </span>
+                </Field>
+
+                <Field label="Authorized Signatory Name & Signature">
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      className={`${inputCls} bg-slate-100 text-black cursor-not-allowed font-semibold pr-8`}
+                      value={fields.authorizedSignatory || 'Er. Satyajit Mohanty'}
+                      disabled
+                      readOnly
+                      placeholder="Er. Satyajit Mohanty"
+                    />
+                    <span className="absolute right-2.5 text-xs text-black" title="Locked: Authorized Signatory">
+                      🔒
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-500 font-medium mt-1 block">
+                    Statutory signatory locked
+                  </span>
+                </Field>
+              </div>
+
+              {/* Declaration Statement / Undertaking Text */}
+              <Field label="Valuer Declaration & Undertaking Statement">
+                <textarea
+                  rows={7}
+                  className={inputCls}
+                  value={fields.undertakingText || ''}
+                  onChange={e => handleChange('undertakingText', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder=""
+                />
+                <span className="text-[11px] text-slate-500 font-medium mt-1 block">
+                  Rendered as the statutory 7-point undertaking on Page 6 of the Axis Bank valuation report.
+                </span>
+              </Field>
+
+              {/* Statutory Credentials Card */}
+              <div className="p-4 bg-white rounded-xl border border-blue-200 text-xs text-slate-700 space-y-1.5 shadow-xs">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-1.5">
+                  <p className="font-bold text-slate-900 text-sm">Prepared By: {fields.authorizedSignatory || 'Er. Satyajit Mohanty'} (B.E, Civil) FIV</p>
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    Empanelled Valuer
+                  </span>
+                </div>
+                <p><strong className="text-slate-800">Registered Valuer:</strong> Govt. of India (Regd. No.-107/2016-17, Cat -I)</p>
+                <p><strong className="text-slate-800">Chartered Engineer:</strong> Regd. No.-M-156096-9 • Empanelled Valuer of Axis Bank Limited</p>
+                <p><strong className="text-slate-800">Institution Membership:</strong> Life, Fellow & Approved Valuer from Institution of Valuers (New Delhi), Membership No.F-26377 • Member in Institution of Engineers (India)</p>
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        {/* ═══════════════════════════════════════════════════════════════
+            SECTION 14: VALUATION REPORT CHECK LIST (PART 2)
+        ═══════════════════════════════════════════════════════════════ */}
+        <Section id="sec-14" title="Valuation Report Check List (12 Statutory Items)" number={14} defaultOpen>
+          <div className="border border-indigo-200 bg-indigo-50/50 rounded-xl p-5 shadow-xs">
+            <h3 className="font-semibold text-indigo-800 mb-4 text-sm tracking-wide uppercase">Statutory Check List Items</h3>
             <div className="space-y-2.5">
               {[
                 { id: 'q1', text: '1. Full names of all property owners are mentioned. Address of the property is mentioned and is same as latest title deed' },
@@ -2728,118 +2871,15 @@ export default function AxisAGRI({
               })}
             </div>
           </div>
-
-          {/* Container 2: Valuer Declaration & Authorized Signatory Block (Arthan Style) */}
-          <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-blue-200/80 pb-3 mb-4 gap-2">
-              <div>
-                <h3 className="font-semibold text-blue-800 text-sm tracking-wide uppercase flex items-center gap-2">
-                  <span>✍️</span> Valuer Declaration & Authorized Signatory
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Statutory certification, visiting engineer, report submission date, and declaration undertaking.
-                </p>
-              </div>
-              <span className="text-[10px] font-bold text-blue-700 bg-blue-100 px-2.5 py-1 rounded-full uppercase tracking-wider self-start sm:self-auto">
-                Statutory Certification
-              </span>
-            </div>
-
-            <div className="space-y-5">
-              {/* Certification Grid (Arthan Style) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Date of Visit (DD/MM/YYYY)">
-                  <div className="relative flex items-center">
-                    <input
-                      type="text"
-                      className={`${inputCls} bg-slate-100 text-black cursor-not-allowed font-semibold pr-8`}
-                      value={fields.dateOfVisit || ''}
-                      disabled
-                      readOnly
-                      placeholder="DD/MM/YYYY"
-                    />
-                    <span className="absolute right-2.5 text-xs text-black" title="Locked: Referenced from Section 1 Date of Site Visit">
-                      🔒
-                    </span>
-                  </div>
-                  <span className="text-[11px] text-slate-500 font-medium mt-1 block">
-                    Referenced from Sec 1 (Date of Site Visit)
-                  </span>
-                </Field>
-
-                <DateInput fieldKey="dateOfReportSubmission" label="Date of Report Submission (DD/MM/YYYY)" />
-
-                <Field label="Name of Engineer Visited the property">
-                  <input
-                    className={inputCls}
-                    value={fields.visitingEngineer || ''}
-                    onChange={e => handleChange('visitingEngineer', e.target.value)}
-                    disabled={isReadOnly}
-                    placeholder="Auto-filled from field inspector"
-                  />
-                  <span className="text-[11px] text-slate-500 font-medium mt-1 block">
-                    Field inspection engineer who visited the site
-                  </span>
-                </Field>
-
-                <Field label="Authorized Signatory Name & Signature">
-                  <div className="relative flex items-center">
-                    <input
-                      type="text"
-                      className={`${inputCls} bg-slate-100 text-black cursor-not-allowed font-semibold pr-8`}
-                      value={fields.authorizedSignatory || 'Er. Satyajit Mohanty'}
-                      disabled
-                      readOnly
-                      placeholder="Er. Satyajit Mohanty"
-                    />
-                    <span className="absolute right-2.5 text-xs text-black" title="Locked: Authorized Signatory">
-                      🔒
-                    </span>
-                  </div>
-                  <span className="text-[11px] text-slate-500 font-medium mt-1 block">
-                    Statutory signatory locked
-                  </span>
-                </Field>
-              </div>
-
-              {/* Declaration Statement / Undertaking Text */}
-              <Field label="Valuer Declaration & Undertaking Statement">
-                <textarea
-                  rows={7}
-                  className={inputCls}
-                  value={fields.undertakingText || ''}
-                  onChange={e => handleChange('undertakingText', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="Enter statutory valuer declaration & undertaking text..."
-                />
-                <span className="text-[11px] text-slate-500 font-medium mt-1 block">
-                  Rendered as the statutory 7-point undertaking on Page 6 of the Axis Bank valuation report.
-                </span>
-              </Field>
-
-              {/* Statutory Credentials Card (Axis AGRI styled) */}
-              <div className="p-4 bg-white rounded-xl border border-blue-200 text-xs text-slate-700 space-y-1.5 shadow-xs">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-1.5">
-                  <p className="font-bold text-slate-900 text-sm">Prepared By: {fields.authorizedSignatory || 'Er. Satyajit Mohanty'} (B.E, Civil) FIV</p>
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                    Empanelled Valuer
-                  </span>
-                </div>
-                <p><strong className="text-slate-800">Registered Valuer:</strong> Govt. of India (Regd. No.-107/2016-17, Cat -I)</p>
-                <p><strong className="text-slate-800">Chartered Engineer:</strong> Regd. No.-M-156096-9 • Empanelled Valuer of Axis Bank Limited</p>
-                <p><strong className="text-slate-800">Institution Membership:</strong> Life, Fellow & Approved Valuer from Institution of Valuers (New Delhi), Membership No.F-26377 • Member in Institution of Engineers (India)</p>
-              </div>
-            </div>
-          </div>
         </Section>
 
         {/* ═══════════════════════════════════════════════════════════════
-            SECTION 14: PROPERTY PHOTOGRAPHS (DUAL MODALITY: DEVICE + BUCKET)
+            SECTION 15: PROPERTY PHOTOGRAPHS (DUAL MODALITY: DEVICE + BUCKET)
         ═══════════════════════════════════════════════════════════════ */}
         <BasePhotographsSection
           title="Property Photographs"
-          sectionNumber={14}
-          sectionId="sec-14"
+          sectionNumber={15}
+          sectionId="sec-15"
           propertyImages={fields.propertyImages || []}
           propertyImageNames={fields.propertyImageNames || []}
           isReadOnly={isReadOnly}
@@ -2857,12 +2897,12 @@ export default function AxisAGRI({
         />
 
         {/* ═══════════════════════════════════════════════════════════════
-            SECTION 15: MAPS & SPATIAL DOCUMENTS (LOCAL DEVICE UPLOAD ONLY)
+            SECTION 16: MAPS & SPATIAL DOCUMENTS (LOCAL DEVICE UPLOAD ONLY)
         ═══════════════════════════════════════════════════════════════ */}
         <BaseMapsSection
           title="Maps & Spatial Documents"
-          sectionNumber={15}
-          sectionId="sec-15"
+          sectionNumber={16}
+          sectionId="sec-16"
           isReadOnly={isReadOnly}
           uploading={uploading}
           propertyAddress={fields.localityLandmark || fields.colonyNagarSector || ''}
@@ -2883,7 +2923,7 @@ export default function AxisAGRI({
           onReorderSketchMap={(imgs) => handleChange('sketchMapImages', imgs)}
         />
 
-        {/* Benchmark Screenshot Upload inside Sec 15 */}
+        {/* Benchmark Screenshot Upload inside Sec 16 */}
         <div className="border border-amber-200 bg-amber-50/50 rounded-xl p-5 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-amber-800 text-sm tracking-wide uppercase">
