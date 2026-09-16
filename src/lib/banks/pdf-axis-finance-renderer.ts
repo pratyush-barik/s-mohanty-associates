@@ -601,17 +601,34 @@ private drawAxisSection8() {
     this.drawSimpleRow('Technical Status', displayStatus);
     this.advanceCursor(4);
 
-    this.drawSectionSubtitle('Undertaking & Site Sign-off');
+    this.drawSectionSubtitle('Undertaking :');
     
-    const boolStr = (key: string) => this.fields[key] !== false ? 'Yes' : 'No';
-    const c1Text = this.fields.axisUndertakingClause1Text || 'I have personally visited the property & identified the same based on the documents provided';
-    if (!this.fields.axisUndertakingClause1NA) this.drawSimpleRow(c1Text, boolStr('axisUndertakingClause1'));
+    const undertakingRows: string[][] = [];
+    let counter = 1;
     
-    const c2Text = this.fields.axisUndertakingClause2Text || 'I/We have no direct or Indirect Interest in the property being valued';
-    if (!this.fields.axisUndertakingClause2NA) this.drawSimpleRow(c2Text, boolStr('axisUndertakingClause2'));
+    const c1Text = this.fields.axisUndertakingClause1Text || 'I have personally visited the property & identified the same based on the documents provided.';
+    if (!this.fields.axisUndertakingClause1NA && this.fields.axisUndertakingClause1 !== false) {
+      undertakingRows.push([`${counter}. ${c1Text}`]);
+      counter++;
+    }
     
-    const c3Text = this.fields.axisUndertakingClause3Text || 'The information furnished above is true and correct to my/our knowledge';
-    if (!this.fields.axisUndertakingClause3NA) this.drawSimpleRow(c3Text, boolStr('axisUndertakingClause3'));
+    const c2Text = this.fields.axisUndertakingClause2Text || 'I/We have no direct or Indirect Interest in the property being valued.';
+    if (!this.fields.axisUndertakingClause2NA && this.fields.axisUndertakingClause2 !== false) {
+      undertakingRows.push([`${counter}. ${c2Text}`]);
+      counter++;
+    }
+    
+    const c3Text = this.fields.axisUndertakingClause3Text || 'The information furnished above is true and correct to my/our knowledge.';
+    if (!this.fields.axisUndertakingClause3NA && this.fields.axisUndertakingClause3 !== false) {
+      undertakingRows.push([`${counter}. ${c3Text}`]);
+      counter++;
+    }
+    
+    if (undertakingRows.length > 0) {
+      this.drawTable([], undertakingRows, [487.28]);
+    } else {
+      this.drawSimpleRow('Undertaking', 'NA');
+    }
 
     this.drawKeyValueRow([
       { label: 'Name of The Person Visited Site', value: fv('axisNameOfPersonVisitedSite') },
