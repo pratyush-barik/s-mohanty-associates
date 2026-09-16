@@ -485,7 +485,7 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
     bajajSignaturePlace_isNA: false,
     bajajSignaturePlace_isManual: false,
   },
-  extraSectionsStart: [
+  extraSections: [
     {
       id: 'bajaj-section-1',
       title: 'Application Details',
