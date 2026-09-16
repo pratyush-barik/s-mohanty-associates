@@ -137,6 +137,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
     axisDistressValueOfTheProperty: '',
 
     axisRedFlagComments: '',
+    axisNote: '',
     axisTechnicalStatus: '',
     axisCustomTechnicalStatus: '',
     axisUndertakingClause1: true,
@@ -1328,12 +1329,12 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
 
         return (
           <div className="animate-fade-in space-y-6">
-            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FFF3E0', borderColor: '#FFE0B2' }}>
-              <h3 className="font-bold text-gray-700 mb-4">Red Flag Comments & Technical Status</h3>
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FDF2F8', borderColor: '#FBCFE8' }}>
+              <h3 className="font-bold text-gray-700 mb-4">Red Flag comment</h3>
               <div className="space-y-4">
                 <div className="space-y-1">
                   <div className="flex justify-between items-center mb-1">
-                    <label className="text-xs font-semibold text-gray-700">Red Flag comments / Remarks</label>
+                    <label className="text-xs font-semibold text-gray-700">Remarks</label>
                     <label className="flex items-center space-x-1 cursor-pointer">
                       <input type="checkbox" className="w-3 h-3 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={fields.axisRedFlagComments === 'NA'} onChange={e => handleChange('axisRedFlagComments', e.target.checked ? 'NA' : '')} disabled={isReadOnly} />
                       <span className="text-[10px] text-gray-500 font-medium leading-none">NA</span>
@@ -1347,7 +1348,28 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                     disabled={isReadOnly || fields.axisRedFlagComments === 'NA'} 
                   />
                 </div>
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="text-xs font-semibold text-gray-700">Note</label>
+                    <label className="flex items-center space-x-1 cursor-pointer">
+                      <input type="checkbox" className="w-3 h-3 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={fields.axisNote === 'NA'} onChange={e => handleChange('axisNote', e.target.checked ? 'NA' : '')} disabled={isReadOnly} />
+                      <span className="text-[10px] text-gray-500 font-medium leading-none">NA</span>
+                    </label>
+                  </div>
+                  <textarea 
+                    className={`${inputCls} min-h-25 placeholder:text-gray-400`} 
+                    placeholder="Enter notes..."
+                    value={fields.axisNote || ''} 
+                    onChange={e => handleChange('axisNote', e.target.value)} 
+                    disabled={isReadOnly || fields.axisNote === 'NA'} 
+                  />
+                </div>
+              </div>
+            </div>
 
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FFF3E0', borderColor: '#FFE0B2' }}>
+              <h3 className="font-bold text-gray-700 mb-4">Technical Status</h3>
+              <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {renderField('Technical Status', 'axisTechnicalStatus', 'select', ['Positive', 'Negative', 'Neutral / Refer to Bank', 'Acceptable with Conditions', 'Custom'])}
                   {fields.axisTechnicalStatus === 'Custom' && (

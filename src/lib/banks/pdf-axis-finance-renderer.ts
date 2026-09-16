@@ -588,8 +588,13 @@ private drawAxisSection8() {
       return val ? String(val) : def;
     };
 
-    this.drawSectionSubtitle('Red Flag Comments & Technical Status');
-    this.drawSimpleRow('Red Flag comments / Remarks', fv('axisRedFlagComments'));
+    this.drawSectionSubtitle('Red Flag comments :');
+    
+    const remarkText = fv('axisRedFlagComments', 'NA');
+    const noteText = fv('axisNote', 'NA');
+    const combinedText = `Remarks:- ${remarkText}\nNote- ${noteText}`;
+    
+    this.drawTable([], [[combinedText]], [487.28]);
     
     const techStatus = fv('axisTechnicalStatus');
     const displayStatus = techStatus === 'Custom' ? fv('axisCustomTechnicalStatus') : techStatus;
