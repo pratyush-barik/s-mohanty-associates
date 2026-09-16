@@ -1161,7 +1161,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                 <div className="md:col-span-2">
                   <div className="space-y-1">
                     <div className="flex justify-between items-center mb-1">
-                      <label className="text-xs font-semibold text-gray-700">Material & Finishing Details as proposed in Estimate</label>
+                      <label className="text-xs font-semibold text-gray-700">Material & Finishing Details as proposed in Estimate: Describe the Flooring, Doors, Windows, Wall Finish,Lighting, and Plumbing etc.</label>
                       <label className="flex items-center space-x-1 cursor-pointer">
                         <input type="checkbox" className="w-3 h-3 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={fields.axisMaterialAndFinishingDetails === 'NA'} onChange={e => handleChange('axisMaterialAndFinishingDetails', e.target.checked ? 'NA' : '')} disabled={isReadOnly} />
                         <span className="text-[10px] text-gray-500 font-medium leading-none">NA</span>

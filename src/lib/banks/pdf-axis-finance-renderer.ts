@@ -549,7 +549,7 @@ private drawAxisSection8() {
       { label: 'Standard Rate Per Sq ft', value: fv('axisStandardRatePerSqft') }
     ]);
     
-    this.drawSimpleRow('Material & Finishing Details as proposed in Estimate', fv('axisMaterialAndFinishingDetails'));
+    this.drawSimpleRow('Material & Finishing Details as proposed in Estimate: Describe the Flooring, Doors, Windows, Wall Finish,Lighting, and Plumbing etc.', fv('axisMaterialAndFinishingDetails'));
 
     this.drawKeyValueRow([
       { label: 'Stage of Construction (%)', value: fv('axisStageOfConstruction') },
