@@ -267,8 +267,18 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                   <span className="text-sm font-medium text-gray-700">PRESENT MARKET VALUE</span>
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
-                  <input className={`${inputCls} ${!fields.axisEnableCoverPageValueEdit ? 'bg-gray-50' : ''}`} value={fields.axisPresentMarketValue || ''} onChange={(e) => handleChange('axisPresentMarketValue', e.target.value)} disabled={isReadOnly || !fields.axisEnableCoverPageValueEdit} />
-                  <span className="text-[10px] text-gray-500 mt-1 pl-1">Current Value of Property (Plot + Construction) field from Section 6.</span>
+                  <input 
+                    className={`${inputCls} ${!fields.axisEnableCoverPageValueEdit ? 'bg-gray-50 text-gray-500' : ''}`} 
+                    value={fields.axisEnableCoverPageValueEdit ? (fields.axisPresentMarketValue || '') : (() => {
+                      const v8 = Number(fields.axisTotalValueOfPropertyAfterCompletion || 0);
+                      if (v8 > 0) return v8.toFixed(2);
+                      const v7 = Number(fields.axisMarketValueOfTheUnit || 0);
+                      return v7 > 0 ? v7.toFixed(2) : '0.00';
+                    })()} 
+                    onChange={(e) => handleChange('axisPresentMarketValue', e.target.value)} 
+                    disabled={isReadOnly || !fields.axisEnableCoverPageValueEdit} 
+                  />
+                  <span className="text-[10px] text-gray-500 mt-1 pl-1">Current Value of Property (Plot + Construction) from Section 7 / Section 8</span>
                 </div>
               </div>
               <div className="flex">
@@ -276,8 +286,16 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                   <span className="text-sm font-medium text-gray-700">DISTRESS SALE VALUE</span>
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
-                  <input className={`${inputCls} ${!fields.axisEnableCoverPageValueEdit ? 'bg-gray-50' : ''}`} value={fields.axisDistressSaleValue || ''} onChange={(e) => handleChange('axisDistressSaleValue', e.target.value)} disabled={isReadOnly || !fields.axisEnableCoverPageValueEdit} />
-                  <span className="text-[10px] text-gray-500 mt-1 pl-1">Distressed Valuation of the Property field from Section 6</span>
+                  <input 
+                    className={`${inputCls} ${!fields.axisEnableCoverPageValueEdit ? 'bg-gray-50 text-gray-500' : ''}`} 
+                    value={fields.axisEnableCoverPageValueEdit ? (fields.axisDistressSaleValue || '') : (() => {
+                      const v9 = Number(fields.axisDistressValueOfTheProperty || 0);
+                      return v9 > 0 ? v9.toFixed(2) : '0.00';
+                    })()} 
+                    onChange={(e) => handleChange('axisDistressSaleValue', e.target.value)} 
+                    disabled={isReadOnly || !fields.axisEnableCoverPageValueEdit} 
+                  />
+                  <span className="text-[10px] text-gray-500 mt-1 pl-1">Distress Valuation of the Property field from Section 9</span>
                 </div>
               </div>
             </div>

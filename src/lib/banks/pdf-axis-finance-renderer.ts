@@ -360,8 +360,20 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
     drawCenteredBold(fv('axisAddressOfTheProperty'), FONT_SIZE, 40);
 
     drawCenteredBold('VALUE OF THE PROPERTY', FONT_SIZE_HEADER, 16, true);
-    drawCenteredBold(`PRESENT MARKET VALUE: ${fv('axisPresentMarketValue')}`, FONT_SIZE, 14);
-    drawCenteredBold(`DISTRESS SALE VALUE: ${fv('axisDistressSaleValue')}`, FONT_SIZE, 40);
+    let pmv = fv('axisPresentMarketValue', '');
+    let dsv = fv('axisDistressSaleValue', '');
+    
+    if (!this.fields.axisEnableCoverPageValueEdit) {
+      const v8 = Number(this.fields.axisTotalValueOfPropertyAfterCompletion || 0);
+      const v7 = Number(this.fields.axisMarketValueOfTheUnit || 0);
+      pmv = v8 > 0 ? v8.toFixed(2) : (v7 > 0 ? v7.toFixed(2) : '0.00');
+      
+      const v9 = Number(this.fields.axisDistressValueOfTheProperty || 0);
+      dsv = v9 > 0 ? v9.toFixed(2) : '0.00';
+    }
+
+    drawCenteredBold(`PRESENT MARKET VALUE: ${pmv}`, FONT_SIZE, 14);
+    drawCenteredBold(`DISTRESS SALE VALUE: ${dsv}`, FONT_SIZE, 40);
 
     drawCenteredBold('PURPOSE OF VALUATION', FONT_SIZE_HEADER, 16, true);
     drawCenteredBold(fv('axisPurposeOfValuation', 'TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY'), FONT_SIZE, 40);
