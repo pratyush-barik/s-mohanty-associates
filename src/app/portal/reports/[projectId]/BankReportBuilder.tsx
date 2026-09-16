@@ -278,10 +278,10 @@ function Section({ title, number, id, children, defaultOpen = true }: { title: s
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#0a1628] to-[#162d4a] text-white hover:from-[#0f1e35] hover:to-[#1e3a5f] transition-all"
+        className="w-full flex items-center justify-between px-6 py-4 bg-linear-to-r from-[#0a1628] to-[#162d4a] text-white hover:from-[#0f1e35] hover:to-[#1e3a5f] transition-all"
       >
         <div className="flex items-center gap-3">
-          {number && <span className="w-8 h-8 rounded-lg bg-[#b8860b] flex items-center justify-center text-sm font-bold">{number}</span>}
+          {number && <span className="w-8 h-8 rounded-lg bg-accent-500 flex items-center justify-center text-sm font-bold">{number}</span>}
           <span className="font-semibold text-sm">{title}</span>
         </div>
         <svg className={`w-5 h-5 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -302,7 +302,7 @@ function Field({ label, children, span = 1 }: { label: string; children: React.R
   );
 }
 
-const inputCls = "w-full px-3 py-2.5 rounded-lg border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] disabled:bg-[#f1f3f5] disabled:text-[#6c757d]";
+const inputCls = "w-full px-3 py-2.5 rounded-lg border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-accent-500 disabled:bg-[#f1f3f5] disabled:text-[#6c757d]";
 const selectCls = inputCls;
 
 const FloatingNavigator = ({ sections }: { sections: { id: string; title: string; special?: boolean }[] }) => {
@@ -336,7 +336,7 @@ const FloatingNavigator = ({ sections }: { sections: { id: string; title: string
   };
 
   return (
-    <div className="hidden xl:flex flex-col bg-white/80 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2 rounded-2xl w-[175px] sticky top-24 shrink-0 z-40 max-h-[calc(100vh-120px)] overflow-hidden">
+    <div className="hidden xl:flex flex-col bg-white/80 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2 rounded-2xl w-43.75 sticky top-24 shrink-0 z-40 max-h-[calc(100vh-120px)] overflow-hidden">
       <div className="text-[10px] font-black text-emerald-500 mb-2 px-2 uppercase tracking-widest shrink-0">Sections</div>
       <div className="flex flex-col gap-1 overflow-y-auto pr-1 custom-scrollbar">
         {sections.map((sec) => {
@@ -350,11 +350,11 @@ const FloatingNavigator = ({ sections }: { sections: { id: string; title: string
               onClick={() => scrollTo(sec.id)}
               className={`w-full py-1.5 px-2.5 rounded-xl text-center transition-all duration-200 text-xs font-bold my-0.5 shrink-0 ${
                 isActive
-                  ? 'bg-[#b8860b] text-white border border-[#96700a] shadow-md font-extrabold scale-[1.02]'
+                  ? 'bg-accent-500 text-white border border-[#96700a] shadow-md font-extrabold scale-[1.02]'
                   : 'bg-indigo-50/90 text-indigo-900 border border-indigo-100/80 shadow-sm hover:bg-indigo-100 hover:border-indigo-200'
               }`}
             >
-              <span className="leading-snug block w-full whitespace-normal break-words">
+              <span className="leading-snug block w-full whitespace-normal wrap-break-word">
                 {cleanTitle}
               </span>
             </button>
@@ -1597,7 +1597,7 @@ export default function BankReportBuilder({
                     <div className="flex items-center gap-2">
                       <span>{ef.tableTopField.label}:</span>
                       <input
-                        className={`${inputCls} max-w-[250px] font-semibold text-indigo-700 bg-white/80`}
+                        className={`${inputCls} max-w-62.5 font-semibold text-indigo-700 bg-white/80`}
                         value={fields[ef.tableTopField.key as keyof typeof fields] || ef.tableTopField.default || ''}
                         onChange={e => handleChange(ef.tableTopField!.key, e.target.value)}
                         disabled={isReadOnly}
@@ -1681,7 +1681,7 @@ export default function BankReportBuilder({
                         }
                       }
                       return (
-                        <td key={fIdx} colSpan={field.colSpan || 1} className="p-2 border border-slate-300 bg-white min-w-[120px]">
+                        <td key={fIdx} colSpan={field.colSpan || 1} className="p-2 border border-slate-300 bg-white min-w-30">
                           <div className="flex items-center gap-2">
                             <input
                               className={`${inputCls} ${!isEditMode ? 'bg-slate-50 font-semibold text-emerald-700' : ''}`}
@@ -1706,7 +1706,7 @@ export default function BankReportBuilder({
                         handleChange(field.key as string, cellVal);
                       }
                       return (
-                        <td key={fIdx} colSpan={field.colSpan || 1} className="p-2 border border-slate-300 bg-white min-w-[120px]">
+                        <td key={fIdx} colSpan={field.colSpan || 1} className="p-2 border border-slate-300 bg-white min-w-30">
                           <input
                             className={`${inputCls} bg-slate-50 font-semibold text-slate-600`}
                             value={cellVal}
@@ -1731,7 +1731,7 @@ export default function BankReportBuilder({
                         }
                       }
                       return (
-                        <td key={fIdx} colSpan={field.colSpan || 1} className="p-2 border border-slate-300 bg-white min-w-[120px]">
+                        <td key={fIdx} colSpan={field.colSpan || 1} className="p-2 border border-slate-300 bg-white min-w-30">
                           <div className="flex items-center gap-2">
                             <input
                               className={`${inputCls} ${!isEditMode ? 'bg-slate-50 font-semibold text-emerald-700' : ''}`}
@@ -1748,7 +1748,7 @@ export default function BankReportBuilder({
                     // Handle readOnly with editToggle on the label side
                     const isNumeric = field.inputType === 'number';
                     return (
-                      <td key={fIdx} colSpan={field.colSpan || 1} className="p-2 border border-slate-300 bg-white min-w-[120px]">
+                      <td key={fIdx} colSpan={field.colSpan || 1} className="p-2 border border-slate-300 bg-white min-w-30">
                         {field.inputType === 'select' ? (
                           <select
                             className={selectCls}
@@ -2380,25 +2380,25 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
                     {floorValuations.map((f, idx) => (
                       <tr key={f.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-[#f8f9fa]'}>
                         <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                          <input className={inputCls + ' !py-1.5 text-xs font-bold text-[#0f2038]'} value={f.name} onChange={e => updateFloor(f.id, 'name', e.target.value)} disabled={isReadOnly} />
+                          <input className={inputCls + ' py-1.5! text-xs font-bold text-[#0f2038]'} value={f.name} onChange={e => updateFloor(f.id, 'name', e.target.value)} disabled={isReadOnly} />
                         </td>
                         <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                          <input className={inputCls + ' !py-1.5 text-xs text-right'} value={f.area} onChange={e => updateFloor(f.id, 'area', e.target.value)} disabled={isReadOnly} placeholder="0" />
+                          <input className={inputCls + ' py-1.5! text-xs text-right'} value={f.area} onChange={e => updateFloor(f.id, 'area', e.target.value)} disabled={isReadOnly} placeholder="0" />
                         </td>
                         <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                          <input className={inputCls + ' !py-1.5 text-xs text-right'} value={f.rate} onChange={e => updateFloor(f.id, 'rate', e.target.value)} disabled={isReadOnly} placeholder="0" />
+                          <input className={inputCls + ' py-1.5! text-xs text-right'} value={f.rate} onChange={e => updateFloor(f.id, 'rate', e.target.value)} disabled={isReadOnly} placeholder="0" />
                         </td>
                         <td className="px-2 py-1.5 border-b border-[#e9ecef] text-right font-mono font-semibold text-[#0f2038] text-xs">
                           Rs. {formatIndianCurrency(f.estimated)}
                         </td>
                         <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                          <input className={inputCls + ' !py-1.5 text-xs text-center'} value={f.lifeYears} onChange={e => updateFloor(f.id, 'lifeYears', e.target.value)} disabled={isReadOnly} placeholder="60" />
+                          <input className={inputCls + ' py-1.5! text-xs text-center'} value={f.lifeYears} onChange={e => updateFloor(f.id, 'lifeYears', e.target.value)} disabled={isReadOnly} placeholder="60" />
                         </td>
                         <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                          <input className={inputCls + ' !py-1.5 text-xs text-center'} value={f.ageYears} onChange={e => updateFloor(f.id, 'ageYears', e.target.value)} disabled={isReadOnly} placeholder="0" />
+                          <input className={inputCls + ' py-1.5! text-xs text-center'} value={f.ageYears} onChange={e => updateFloor(f.id, 'ageYears', e.target.value)} disabled={isReadOnly} placeholder="0" />
                         </td>
                         <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                          <input className={inputCls + ' !py-1.5 text-xs text-center font-bold text-[#b8860b]'} value={f.depreciationPct} onChange={e => updateFloor(f.id, 'depreciationPct', e.target.value)} disabled={isReadOnly} placeholder={`${f.depPct}%`} />
+                          <input className={inputCls + ' py-1.5! text-xs text-center font-bold text-accent-500'} value={f.depreciationPct} onChange={e => updateFloor(f.id, 'depreciationPct', e.target.value)} disabled={isReadOnly} placeholder={`${f.depPct}%`} />
                         </td>
                         <td className="px-2 py-1.5 border-b border-[#e9ecef] text-right font-mono font-bold text-[#0f2038] text-xs">
                           Rs. {formatIndianCurrency(f.netValue)}
@@ -2416,7 +2416,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
                   <tfoot>
                     <tr className="bg-[#f0ead6] font-bold text-[#0f2038]">
                       <td className="px-3 py-2.5 text-xs uppercase tracking-wider" colSpan={7}>Total Building Value</td>
-                      <td className="px-3 py-2.5 text-right font-mono text-[#b8860b] text-sm" colSpan={2}>
+                      <td className="px-3 py-2.5 text-right font-mono text-accent-500 text-sm" colSpan={2}>
                         Rs. {formatIndianCurrency(totalBuildingValue)}
                       </td>
                     </tr>
@@ -2427,7 +2427,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
                     <button
                       type="button"
                       onClick={addFloor}
-                      className="text-sm text-[#b8860b] hover:text-[#96700a] font-semibold flex items-center gap-1.5 pt-1"
+                      className="text-sm text-accent-500 hover:text-[#96700a] font-semibold flex items-center gap-1.5 pt-1"
                     >
                       <span className="text-lg leading-none">+</span> Add Floor
                     </button>
@@ -2463,7 +2463,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
               </Field>
               <div className="md:col-span-2 p-3 bg-amber-50 rounded-lg border border-amber-200 flex justify-between items-center">
                 <span className="text-xs font-bold text-slate-700">Calculated Land Value:</span>
-                <span className="text-sm font-bold font-mono text-[#b8860b]">Rs. {formatIndianCurrency(landValue)}</span>
+                <span className="text-sm font-bold font-mono text-accent-500">Rs. {formatIndianCurrency(landValue)}</span>
               </div>
             </div>
             {renderExtraFields('section-8')}
@@ -2685,7 +2685,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
                   type="button"
                   onClick={handleSaveDraft}
                   disabled={loading}
-                  className="px-6 py-2.5 rounded-full bg-white border-2 border-[#b8860b] text-[#b8860b] font-bold text-sm hover:bg-amber-50 transition-all disabled:opacity-50 flex items-center gap-2 shadow-sm"
+                  className="px-6 py-2.5 rounded-full bg-white border-2 border-accent-500 text-accent-500 font-bold text-sm hover:bg-amber-50 transition-all disabled:opacity-50 flex items-center gap-2 shadow-sm"
                 >
                   {loading ? '⏳ Saving...' : '💾 Save Draft'}
                 </button>
@@ -2775,7 +2775,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
 
       {/* ── Rework Modal ── */}
       {showReworkModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
             <div className="p-6 border-b border-[#e9ecef] bg-[#f8f9fa]">
               <h2 className="text-xl font-bold text-[#0f2038]" style={{ fontFamily: 'var(--font-heading)' }}>
@@ -2788,7 +2788,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
                 value={reworkComment}
                 onChange={(e) => setReworkComment(e.target.value)}
                 placeholder="List the changes required..."
-                className="w-full min-h-[150px] p-4 text-sm rounded-xl border border-[#dee2e6] bg-[#f8f9fa] focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500 resize-y"
+                className="w-full min-h-37.5 p-4 text-sm rounded-xl border border-[#dee2e6] bg-[#f8f9fa] focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500 resize-y"
                 autoFocus
               />
             </div>

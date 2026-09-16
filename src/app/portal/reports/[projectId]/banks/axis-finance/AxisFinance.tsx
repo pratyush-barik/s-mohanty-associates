@@ -475,7 +475,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
             <div className="flex justify-between items-center w-full">
               <span>{labelText}</span>
               <div className="flex items-center space-x-2">
-                <span className="text-[9px] uppercase font-bold text-gray-400 normal-case">Edit {isEditOn ? 'On' : 'Off'}</span>
+                <span className="text-[9px] font-bold text-gray-400 normal-case">Edit {isEditOn ? 'On' : 'Off'}</span>
                 <button
                   type="button"
                   onClick={() => {
@@ -816,12 +816,12 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                 <table className="w-full text-sm text-left text-gray-600">
                   <thead className="text-xs text-gray-700 uppercase bg-white bg-opacity-50 border-b">
                     <tr>
-                      <th className="px-4 py-2 min-w-[120px]">Margin Reference</th>
-                      <th className="px-2 py-2 min-w-[100px]">Front</th>
-                      <th className="px-2 py-2 min-w-[100px]">Left Side</th>
-                      <th className="px-2 py-2 min-w-[100px]">Right Side</th>
-                      <th className="px-2 py-2 min-w-[100px]">Rear</th>
-                      <th className="px-2 py-2 min-w-[100px]">Remarks</th>
+                      <th className="px-4 py-2 min-w-30">Margin Reference</th>
+                      <th className="px-2 py-2 min-w-25">Front</th>
+                      <th className="px-2 py-2 min-w-25">Left Side</th>
+                      <th className="px-2 py-2 min-w-25">Right Side</th>
+                      <th className="px-2 py-2 min-w-25">Rear</th>
+                      <th className="px-2 py-2 min-w-25">Remarks</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1006,13 +1006,13 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                 <table className="w-full text-sm text-left text-gray-600">
                   <thead className="text-xs text-gray-700 uppercase bg-white bg-opacity-50 border-b">
                     <tr>
-                      <th className="px-4 py-2 min-w-[140px]">Parameter</th>
-                      <th className="px-2 py-2 min-w-[90px]">GF</th>
-                      <th className="px-2 py-2 min-w-[90px]">FF</th>
-                      <th className="px-2 py-2 min-w-[90px]">SF</th>
-                      <th className="px-2 py-2 min-w-[90px]">TF</th>
-                      <th className="px-2 py-2 min-w-[90px]">NA / Other</th>
-                      <th className="px-2 py-2 min-w-[100px]">Total</th>
+                      <th className="px-4 py-2 min-w-35">Parameter</th>
+                      <th className="px-2 py-2 min-w-22.5">GF</th>
+                      <th className="px-2 py-2 min-w-22.5">FF</th>
+                      <th className="px-2 py-2 min-w-22.5">SF</th>
+                      <th className="px-2 py-2 min-w-22.5">TF</th>
+                      <th className="px-2 py-2 min-w-22.5">NA / Other</th>
+                      <th className="px-2 py-2 min-w-25">Total</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1167,7 +1167,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                       </label>
                     </div>
                     <textarea 
-                      className={`${inputCls} min-h-[80px] resize-none placeholder:text-gray-400`} 
+                      className={`${inputCls} min-h-20 resize-none placeholder:text-gray-400`} 
                       placeholder="Describe the Flooring, Doors, Windows, Wall Finish, Lighting, and Plumbing etc."
                       value={fields.axisMaterialAndFinishingDetails || ''} 
                       onChange={e => handleChange('axisMaterialAndFinishingDetails', e.target.value)} 
@@ -1339,7 +1339,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                     </label>
                   </div>
                   <textarea 
-                    className={`${inputCls} min-h-[100px] placeholder:text-gray-400`} 
+                    className={`${inputCls} min-h-25 placeholder:text-gray-400`} 
                     placeholder="Enter negative remarks, violations, high tension wires, or clearance issues..."
                     value={fields.axisRedFlagComments || ''} 
                     onChange={e => handleChange('axisRedFlagComments', e.target.value)} 
@@ -1375,7 +1375,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                       <div key={clause.key} className={`flex items-start space-x-3 p-2 rounded transition-colors ${isNA ? 'opacity-50 grayscale bg-gray-50' : 'hover:bg-white/50'}`}>
                         <input type="checkbox" className="mt-2 w-4 h-4 text-green-500 rounded border-gray-300 focus:ring-green-500 cursor-pointer" checked={fields[clause.key] !== false} onChange={e => handleChange(clause.key, e.target.checked)} disabled={isReadOnly || isNA} title="Active Confirmation Toggle" />
                         <textarea
-                          className={`${inputCls} min-h-[40px] resize-y flex-1 ${isNA ? 'bg-gray-100' : ''}`}
+                          className={`${inputCls} min-h-10 resize-y flex-1 ${isNA ? 'bg-gray-100' : ''}`}
                           value={fields[`${clause.key}Text`] !== undefined ? fields[`${clause.key}Text`] : clause.defaultText}
                           onChange={e => handleChange(`${clause.key}Text`, e.target.value)}
                           disabled={isReadOnly || isNA}
@@ -1415,7 +1415,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                         disabled={isReadOnly || item.text === 'NA'} 
                       />
                     </div>
-                    <label className="flex items-center space-x-1 cursor-pointer min-w-[40px]">
+                    <label className="flex items-center space-x-1 cursor-pointer min-w-10">
                       <input type="checkbox" className="w-3 h-3 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={item.text === 'NA'} onChange={e => {
                         const arr = [...(fields.axisAttachments || [])];
                         arr[idx] = { ...arr[idx], text: e.target.checked ? 'NA' : '' };

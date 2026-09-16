@@ -74,7 +74,7 @@ export function formatAssignedEngineers(fieldEmployees?: Array<any>): string {
 }
 
 // ─── Standard Input & Select Classes ─────────────────────────────────
-export const inputCls = "w-full px-3 py-2.5 rounded-lg border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] disabled:bg-[#f1f3f5] disabled:text-[#6c757d] transition-all";
+export const inputCls = "w-full px-3 py-2.5 rounded-lg border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 disabled:bg-[#f1f3f5] disabled:text-[#6c757d] transition-all";
 export const selectCls = inputCls;
 
 // ─── Standard Accordion Section Card ─────────────────────────────────
@@ -99,11 +99,11 @@ export function Section({
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#0a1628] to-[#162d4a] text-white hover:from-[#0f1e35] hover:to-[#1e3a5f] transition-all"
+        className="w-full flex items-center justify-between px-6 py-4 bg-linear-to-r from-[#0a1628] to-[#162d4a] text-white hover:from-[#0f1e35] hover:to-[#1e3a5f] transition-all"
       >
         <div className="flex items-center gap-3">
           {number && (
-            <span className="w-8 h-8 rounded-lg bg-[#b8860b] flex items-center justify-center text-sm font-bold shadow-sm">
+            <span className="w-8 h-8 rounded-lg bg-accent-500 flex items-center justify-center text-sm font-bold shadow-sm">
               {number}
             </span>
           )}
@@ -132,7 +132,7 @@ export function Field({
 }) {
   return (
     <div className={`${span === 2 ? 'md:col-span-2' : span === 3 ? 'md:col-span-3' : ''} ${className}`.trim()}>
-      <div className="block text-xs font-semibold text-[#495057] uppercase tracking-wider mb-1.5 flex items-center justify-between">{label}</div>
+      <div className="text-xs font-semibold text-[#495057] uppercase tracking-wider mb-1.5 flex items-center justify-between">{label}</div>
       {children}
     </div>
   );
@@ -175,7 +175,7 @@ export function FloatingNavigator({ sections }: { sections: NavItem[] }) {
   };
 
   return (
-    <div className="hidden xl:flex flex-col bg-white/80 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2 rounded-2xl w-[175px] sticky top-24 shrink-0 z-40 max-h-[calc(100vh-120px)] overflow-hidden">
+    <div className="hidden xl:flex flex-col bg-white/80 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2 rounded-2xl w-43.75 sticky top-24 shrink-0 z-40 max-h-[calc(100vh-120px)] overflow-hidden">
       <div className="text-[10px] font-black text-emerald-500 mb-2 px-2 uppercase tracking-widest shrink-0">Sections</div>
       <div className="flex flex-col gap-1 overflow-y-auto pr-1 custom-scrollbar">
         {sections.map((sec) => {
@@ -189,11 +189,11 @@ export function FloatingNavigator({ sections }: { sections: NavItem[] }) {
               onClick={() => scrollTo(sec.id)}
               className={`w-full py-1.5 px-2.5 rounded-xl text-center transition-all duration-200 text-xs font-bold my-0.5 shrink-0 ${
                 isActive
-                  ? 'bg-[#b8860b] text-white border border-[#96700a] shadow-md font-extrabold scale-[1.02]'
+                  ? 'bg-accent-500 text-white border border-[#96700a] shadow-md font-extrabold scale-[1.02]'
                   : 'bg-indigo-50/90 text-indigo-900 border border-indigo-100/80 shadow-sm hover:bg-indigo-100 hover:border-indigo-200'
               }`}
             >
-              <span className="leading-snug block w-full whitespace-normal break-words">
+              <span className="leading-snug block w-full whitespace-normal wrap-break-word">
                 {cleanTitle}
               </span>
             </button>
@@ -223,7 +223,7 @@ export function ActiveConfigBanner({
   return (
     <div className="p-4 bg-white border border-[#dee2e6] flex flex-row items-center justify-between gap-4 shadow-md rounded-2xl sticky top-2 z-50">
       <div className="flex items-center gap-4">
-        <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider leading-tight min-w-[90px] select-none">
+        <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider leading-tight min-w-22.5 select-none">
           Active<br />Configuration
         </div>
         <div className="flex flex-wrap gap-2">
@@ -263,7 +263,7 @@ export function ActiveConfigBanner({
         <button
           type="button"
           onClick={onResetWizard}
-          className="text-xs text-[#b8860b] hover:text-[#8a6507] hover:underline font-bold transition-colors shrink-0 pr-2 uppercase"
+          className="text-xs text-accent-500 hover:text-[#8a6507] hover:underline font-bold transition-colors shrink-0 pr-2 uppercase"
         >
           Change Parameters
         </button>
@@ -334,7 +334,7 @@ export function ReportActionBar({
                 type="button"
                 onClick={onSaveDraft}
                 disabled={loading}
-                className="px-6 py-2.5 rounded-full bg-white border-2 border-[#b8860b] text-[#b8860b] font-bold text-sm hover:bg-amber-50 transition-all disabled:opacity-50 flex items-center gap-2 shadow-sm"
+                className="px-6 py-2.5 rounded-full bg-white border-2 border-accent-500 text-accent-500 font-bold text-sm hover:bg-amber-50 transition-all disabled:opacity-50 flex items-center gap-2 shadow-sm"
               >
                 {loading ? '⏳ Saving...' : '💾 Save Draft'}
               </button>
@@ -521,7 +521,7 @@ export function BasePhotographsSection({
                   isDragging ? 'opacity-40 scale-[0.98]' : 'opacity-100'
                 } ${
                   isDragOver
-                    ? 'border-2 border-dashed border-[#b8860b] ring-2 ring-[#b8860b]/20 shadow-md bg-amber-50/20'
+                    ? 'border-2 border-dashed border-accent-500 ring-2 ring-accent-500/20 shadow-md bg-amber-50/20'
                     : 'border-[#dee2e6] shadow-xs hover:border-slate-300'
                 }`}
               >
@@ -546,7 +546,7 @@ export function BasePhotographsSection({
                       disabled={isReadOnly}
                       onChange={(e) => onImageNameChange(idx, e.target.value)}
                       onMouseDown={(e) => e.stopPropagation()}
-                      className="text-xs font-bold text-slate-800 bg-white border border-[#dee2e6] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#b8860b] w-full max-w-sm"
+                      className="text-xs font-bold text-slate-800 bg-white border border-[#dee2e6] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-accent-500 w-full max-w-sm"
                     />
                   </div>
                   {!isReadOnly && (
@@ -600,7 +600,7 @@ export function BasePhotographsSection({
         <div className={`flex flex-wrap items-center justify-between gap-3 ${validPhotos.length > 0 ? 'pt-3 border-t border-slate-100' : ''}`}>
           <div className="flex flex-wrap items-center gap-3">
             {/* 1. Local Device Upload */}
-            <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#b8860b] text-[#b8860b] text-sm font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-xs">
+            <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-accent-500 text-accent-500 text-sm font-semibold cursor-pointer hover:bg-accent-500/10 transition-all shadow-xs">
               {uploading ? '⏳ Uploading...' : '📷 Add Property Images'}
               <input
                 type="file"
@@ -793,7 +793,7 @@ export function BaseMapsSection({
                     href={googleMapsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs font-semibold text-[#b8860b] hover:underline"
+                    className="text-xs font-semibold text-accent-500 hover:underline"
                   >
                     Open in Google Maps &#x2197;
                   </a>
@@ -1112,7 +1112,7 @@ function MapImageCategoryCard({
           </h4>
         </div>
         {!isReadOnly && onUpload && (
-          <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#b8860b] text-[#b8860b] text-xs font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-2xs">
+          <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-accent-500 text-accent-500 text-xs font-semibold cursor-pointer hover:bg-accent-500/10 transition-all shadow-2xs">
             {uploading ? '⏳ Uploading...' : `+ Add ${btnLabel}`}
             <input type="file" accept="image/*" multiple className="hidden" onChange={onUpload} disabled={uploading} />
           </label>
@@ -1144,7 +1144,7 @@ function MapImageCategoryCard({
                   isDragging ? 'opacity-40 scale-[0.98]' : 'opacity-100'
                 } ${
                   isDragOver
-                    ? 'border-2 border-dashed border-[#b8860b] ring-2 ring-[#b8860b]/20 shadow-md bg-amber-50/20'
+                    ? 'border-2 border-dashed border-accent-500 ring-2 ring-accent-500/20 shadow-md bg-amber-50/20'
                     : 'border-[#dee2e6] hover:border-slate-300'
                 }`}
               >
@@ -1252,7 +1252,7 @@ export function BasePhotoBucketModal({
   const uniqueAgents = Array.from(new Set(bucketImages.map((img) => img.employee?.employeeId).filter(Boolean)));
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-110 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         <div className="p-5 border-b border-[#e9ecef] bg-[#f8f9fa] flex items-center justify-between">
           <div>
@@ -1285,7 +1285,7 @@ export function BasePhotoBucketModal({
                       <div
                         key={empId}
                         onClick={() => setSelectedAgent(empId)}
-                        className="p-4 rounded-xl border border-gray-200 bg-white hover:border-[#b8860b] cursor-pointer shadow-sm"
+                        className="p-4 rounded-xl border border-gray-200 bg-white hover:border-accent-500 cursor-pointer shadow-sm"
                       >
                         <p className="font-bold text-sm text-[#0f2038]">{agentName}</p>
                         <p className="text-xs text-gray-500 mt-1">{agentImages.length} photos uploaded</p>
@@ -1300,7 +1300,7 @@ export function BasePhotoBucketModal({
                   <button
                     type="button"
                     onClick={() => setSelectedAgent(null)}
-                    className="text-xs font-bold text-[#b8860b] hover:underline mb-2 block"
+                    className="text-xs font-bold text-accent-500 hover:underline mb-2 block"
                   >
                     &larr; Back to all Engineers
                   </button>
@@ -1313,12 +1313,12 @@ export function BasePhotoBucketModal({
                         key={img.id}
                         onClick={() => toggleSelect(img.id, img.url)}
                         className={`relative group aspect-square rounded-xl overflow-hidden border-2 cursor-pointer transition-all ${
-                          isSel ? 'border-[#b8860b] ring-2 ring-[#b8860b]/40 shadow-md' : 'border-gray-200 hover:border-gray-400'
+                          isSel ? 'border-accent-500 ring-2 ring-accent-500/40 shadow-md' : 'border-gray-200 hover:border-gray-400'
                         }`}
                       >
                         <img src={img.url} alt={img.fileName || 'Bucket image'} className="w-full h-full object-cover" />
                         {isSel && (
-                          <div className="absolute top-1.5 right-1.5 bg-[#b8860b] text-white rounded-full w-5 h-5 text-xs flex items-center justify-center font-bold">
+                          <div className="absolute top-1.5 right-1.5 bg-accent-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center font-bold">
                             ✓
                           </div>
                         )}
@@ -1362,7 +1362,7 @@ export function BasePhotoBucketModal({
               type="button"
               onClick={handleConfirmSelection}
               disabled={selectedIds.size === 0}
-              className="px-5 py-2 rounded-xl bg-[#b8860b] text-white text-xs font-bold hover:bg-[#96700a] disabled:opacity-50"
+              className="px-5 py-2 rounded-xl bg-accent-500 text-white text-xs font-bold hover:bg-[#96700a] disabled:opacity-50"
             >
               Add Selected ({selectedIds.size})
             </button>
@@ -1410,7 +1410,7 @@ export function AnnexureRefSelector({
         disabled={isReadOnly}
         onClick={onToggleEnabled}
         className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-          annexureEnabled ? 'bg-[#b8860b]' : 'bg-[#ccc]'
+          annexureEnabled ? 'bg-accent-500' : 'bg-[#ccc]'
         }`}
         title={annexureEnabled ? 'Disable Annexure' : 'Enable Annexure'}
       >
@@ -1486,8 +1486,8 @@ export function BaseAnnexureSection({
     <Section title="Annexures & Schedules" number={sectionNumber} id={sectionId} defaultOpen={true}>
       <div className="space-y-4">
         {/* Info banner */}
-        <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-[#0a1628]/5 to-[#b8860b]/5 border border-[#b8860b]/20">
-          <svg className="w-5 h-5 text-[#b8860b] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-linear-to-r from-[#0a1628]/5 to-accent-500/5 border border-accent-500/20">
+          <svg className="w-5 h-5 text-accent-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
           <p className="text-xs text-[#495057]">
@@ -1499,9 +1499,9 @@ export function BaseAnnexureSection({
         {annexures.map((annexure) => (
           <div key={annexure.id} className="rounded-xl border border-[#dee2e6] overflow-hidden bg-white shadow-xs">
             {/* Annexure header */}
-            <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-[#162d4a] to-[#1e3a5f]">
+            <div className="flex items-center justify-between px-5 py-3 bg-linear-to-r from-[#162d4a] to-[#1e3a5f]">
               <div className="flex items-center gap-2">
-                <span className="w-7 h-7 rounded-lg bg-[#b8860b] flex items-center justify-center text-xs font-bold text-white shadow-xs">
+                <span className="w-7 h-7 rounded-lg bg-accent-500 flex items-center justify-center text-xs font-bold text-white shadow-xs">
                   {annexure.label}
                 </span>
                 <span className="text-sm font-semibold text-white">Annexure {annexure.label}</span>
@@ -1599,11 +1599,11 @@ export function BaseAnnexureSection({
                   </div>
                 ) : (
                   !isReadOnly && (
-                    <label className="flex flex-col items-center justify-center gap-2 px-6 py-8 rounded-xl border-2 border-dashed border-[#b8860b]/30 bg-[#fffaf0] cursor-pointer hover:bg-[#fff5e0] hover:border-[#b8860b]/50 transition-all group">
-                      <svg className="w-10 h-10 text-[#b8860b]/40 group-hover:text-[#b8860b]/70 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <label className="flex flex-col items-center justify-center gap-2 px-6 py-8 rounded-xl border-2 border-dashed border-accent-500/30 bg-[#fffaf0] cursor-pointer hover:bg-[#fff5e0] hover:border-accent-500/50 transition-all group">
+                      <svg className="w-10 h-10 text-accent-500/40 group-hover:text-accent-500/70 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                       </svg>
-                      <span className="text-sm font-medium text-[#b8860b]">
+                      <span className="text-sm font-medium text-accent-500">
                         {uploading ? 'Uploading...' : 'Click to upload Excel file'}
                       </span>
                       <span className="text-[10px] text-[#999]">Supports .xlsx, .xls, .csv (max 10MB)</span>
@@ -1627,7 +1627,7 @@ export function BaseAnnexureSection({
           <button
             type="button"
             onClick={onAddAnnexure}
-            className="mt-1 text-sm text-[#b8860b] hover:text-[#96700a] font-semibold flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#b8860b]/30 hover:bg-[#b8860b]/10 transition-colors"
+            className="mt-1 text-sm text-accent-500 hover:text-[#96700a] font-semibold flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-accent-500/30 hover:bg-accent-500/10 transition-colors"
           >
             <span className="text-lg leading-none">+</span> Add Annexure
           </button>
