@@ -115,10 +115,10 @@ export default function AxisHLLAP({
       pinCode: raw.pinCode || prefill?.serviceRequest?.pincode || '',
       nearbyLandMark: raw.nearbyLandMark || '',
       distanceFromCityCenter: raw.distanceFromCityCenter || '',
-      availabilityOfLocalTransport: raw.availabilityOfLocalTransport || 'Taxi, Auto',
-      levelOfLand: raw.levelOfLand || 'Regular level land',
-      classOfLocality: raw.classOfLocality || 'Middle Class',
-      qualityOfInfrastructure: raw.qualityOfInfrastructure || 'Good',
+      availabilityOfLocalTransport: raw.availabilityOfLocalTransport || '',
+      levelOfLand: raw.levelOfLand || '',
+      classOfLocality: raw.classOfLocality || '',
+      qualityOfInfrastructure: raw.qualityOfInfrastructure || '',
 
       // 4n. Boundaries (Deed vs Actual vs Sketch Map)
       boundaryEastDeed: raw.boundaryEastDeed || '',
@@ -221,31 +221,7 @@ export default function AxisHLLAP({
   const [showSketchBoundaries, setShowSketchBoundaries] = useState<boolean>(() => {
     return !!(fields.boundaryEastSketch || fields.boundaryWestSketch || fields.boundaryNorthSketch || fields.boundarySouthSketch);
   });
-  const [plotKhataEditMode, setPlotKhataEditMode] = useState(false);
   const [enableDistressedEdit, setEnableDistressedEdit] = useState(false);
-
-  // Auto-extraction of Plot No & Khata No from Address
-  const extractPlotAndKhata = (text: string, force?: boolean) => {
-    if (!force && plotKhataEditMode) return;
-    const plotMatches = [...text.matchAll(/Plot\s*no[-\s.:]*([0-9\/]+)/gi)];
-    const plotResult = plotMatches.map(m => m[1]).filter(Boolean).join(', ');
-
-    const khataMatches = [...text.matchAll(/(?:Khata|Khasra|\bS|\bG)\.?\s*No[-.:\s]*([0-9\/]+)/gi)];
-    const khataResult = khataMatches.map(m => m[1]).filter(Boolean).join(', ');
-
-    setFields(p => ({
-      ...p,
-      plotNo: plotResult || p.plotNo,
-      khataNo: khataResult || p.khataNo,
-    }));
-  };
-
-  // Run extraction on initial load if address is present
-  useEffect(() => {
-    if (fields.propertyDetailsHeader && (!fields.plotNo || !fields.khataNo)) {
-      extractPlotAndKhata(fields.propertyDetailsHeader, true);
-    }
-  }, []);
 
   const handleChange = (k: keyof AxisHLLAPReportFields, v: any) => {
     setFields(p => ({ ...p, [k]: v }));
@@ -610,14 +586,14 @@ export default function AxisHLLAP({
   };
 
   const NAV_SECTIONS: NavItem[] = [
-    { id: 'axis-sec1', title: '1. Client & Application' },
-    { id: 'axis-sec2', title: '2. Property Overview & Location' },
-    { id: 'axis-sec3', title: '3. Boundaries & Characteristics' },
-    { id: 'axis-sec4', title: '4. Approvals & Built-Up Area' },
-    { id: 'axis-sec5', title: '5. Recommended Valuation' },
-    { id: 'axis-sec6', title: '6. Remarks & Signatory' },
-    { id: 'axis-photos', title: '7. Property Photographs' },
-    { id: 'axis-maps', title: '8. Location & Sketch Maps' },
+    { id: 'axis-sec1', title: '1-3. Customer, App ID & Documents' },
+    { id: 'axis-sec2', title: '4. Property Details & Boundaries' },
+    { id: 'axis-sec3', title: '5. Approval Details' },
+    { id: 'axis-sec4', title: '6. Construction Details' },
+    { id: 'axis-sec5', title: '7-10. Valuation & Statutory Rates' },
+    { id: 'axis-sec6', title: '11-12. Attachments & Remarks' },
+    { id: 'axis-photos', title: '13. Property Photographs' },
+    { id: 'axis-maps', title: '14. Location & Sketch Maps' },
   ];
 
   // Date picker helper component
@@ -663,7 +639,7 @@ export default function AxisHLLAP({
     <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
       {/* Main Content Area */}
       <div className="flex-1 min-w-0 space-y-6 w-full">
-        {/* 1. Top Active Configuration Banner */}
+        {/* Top Active Configuration Banner */}
         <ActiveConfigBanner
           bankName="AXIS BANK"
           formatName="HL-LAP"
@@ -683,10 +659,10 @@ export default function AxisHLLAP({
           </div>
         )}
 
-        {/* SECTION 1: Client & Application Details */}
-        <Section id="axis-sec1" title="Client & Application Details" number={1} defaultOpen={true}>
-          {/* Top Reference & Report Date (Separated outside soft container) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+        {/* SECTION 1: 1 - 3. Customer, App ID & Documents Provided */}
+        <Section id="axis-sec1" title="1 - 3. Customer, App ID & Documents Provided" number={1} defaultOpen={true}>
+          {/* Header Reference & Date */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4 border-b border-slate-200">
             <Field label="Reference Number">
               <input
                 type="text"
@@ -703,266 +679,236 @@ export default function AxisHLLAP({
             />
           </div>
 
-          <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs">
-            <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">Loan & Application Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Name of the Customer">
-                <input
-                  type="text"
-                  value={fields.customerName}
-                  onChange={e => handleChange('customerName', e.target.value)}
-                  className={inputCls}
-                  placeholder=""
-                  disabled={isReadOnly}
-                />
-              </Field>
+          {/* Questionnaire Fields 1 to 3 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            <Field label="1a. Name of the Customer">
+              <input
+                type="text"
+                value={fields.customerName}
+                onChange={e => handleChange('customerName', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
+              />
+            </Field>
 
-              <Field label="Customer Contact Details">
-                <input
-                  type="text"
-                  value={fields.customerContactDetails}
-                  onChange={e => handleChange('customerContactDetails', e.target.value)}
-                  className={inputCls}
-                  placeholder=""
-                  disabled={isReadOnly}
-                />
-              </Field>
+            <Field label="1b. Customer Contact Details">
+              <input
+                type="text"
+                value={fields.customerContactDetails}
+                onChange={e => handleChange('customerContactDetails', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
+              />
+            </Field>
 
-              <Field label="APP ID / Loan Account No">
-                <input
-                  type="text"
-                  value={fields.appId}
-                  onChange={e => handleChange('appId', e.target.value)}
-                  className={inputCls}
-                  placeholder=""
-                  disabled={isReadOnly}
-                />
-              </Field>
+            <Field label="2. APP ID / Loan Account No">
+              <input
+                type="text"
+                value={fields.appId}
+                onChange={e => handleChange('appId', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
+              />
+            </Field>
 
-              <Field label="Documents Provided">
-                <input
-                  type="text"
-                  value={fields.documentsProvided}
-                  onChange={e => handleChange('documentsProvided', e.target.value)}
-                  className={inputCls}
-                  placeholder=""
-                  disabled={isReadOnly}
-                />
-              </Field>
-            </div>
+            <Field label="3. Documents Provided">
+              <input
+                type="text"
+                value={fields.documentsProvided}
+                onChange={e => handleChange('documentsProvided', e.target.value)}
+                className={inputCls}
+                placeholder="Copy of Sale deed, ROR, Approved plan"
+                disabled={isReadOnly}
+              />
+            </Field>
           </div>
         </Section>
 
-        {/* SECTION 2: Property Overview & Location */}
-        <Section id="axis-sec2" title="Property Overview & Location" number={2} defaultOpen={true}>
-          {/* Container 1: Property Identification */}
-          <div className="border border-emerald-200 bg-emerald-50/50 rounded-xl p-5 mb-5 shadow-xs">
-            <h3 className="font-semibold text-emerald-800 mb-4 text-sm tracking-wide uppercase">Property Identification</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field span={2} label="Property Details (Full Description)">
-                <textarea
-                  rows={3}
-                  value={fields.propertyDetailsHeader}
-                  onChange={e => handleChange('propertyDetailsHeader', e.target.value)}
-                  onBlur={e => extractPlotAndKhata(e.target.value)}
-                  className={inputCls}
-                  placeholder=""
-                  disabled={isReadOnly}
-                />
-              </Field>
+        {/* SECTION 2: 4. Property Details & Characteristics */}
+        <Section id="axis-sec2" title="4. Property Details & Characteristics" number={2} defaultOpen={true}>
+          {/* General Property Location & Identification */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-5">
+            <Field span={3} label="4. Property Details (Full Description / Address)">
+              <textarea
+                rows={3}
+                value={fields.propertyDetailsHeader}
+                onChange={e => handleChange('propertyDetailsHeader', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
+              />
+            </Field>
 
-              {/* Auto-extraction Switch */}
-              <div className="col-span-1 md:col-span-2 flex items-center gap-3 -mt-2 mb-1">
-                <button
-                  type="button"
-                  onClick={() => setPlotKhataEditMode(!plotKhataEditMode)}
-                  disabled={isReadOnly}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${
-                    plotKhataEditMode ? 'bg-emerald-500' : 'bg-gray-300'
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 shadow ${
-                      plotKhataEditMode ? 'translate-x-6' : 'translate-x-1'
-                    }`}
-                  />
-                </button>
-                <span className={`text-xs font-medium ${plotKhataEditMode ? 'text-emerald-700' : 'text-gray-500'}`}>
-                  {plotKhataEditMode ? 'Edit On' : 'Edit Off'} — Plot No & Khata No {plotKhataEditMode ? '(Manual Override)' : '(Auto-extracted from Address)'}
-                </span>
-              </div>
+            <Field label="4a. Plot No">
+              <input
+                type="text"
+                value={fields.plotNo}
+                onChange={e => handleChange('plotNo', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
+              />
+            </Field>
 
-              <Field label="Plot No">
-                <input
-                  type="text"
-                  value={fields.plotNo}
-                  onChange={e => handleChange('plotNo', e.target.value)}
-                  className={`${inputCls} ${!plotKhataEditMode ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                  placeholder=""
-                  disabled={isReadOnly || !plotKhataEditMode}
-                />
-              </Field>
+            <Field label="4b. S No / G. No / Khasra No / Khata No">
+              <input
+                type="text"
+                value={fields.khataNo}
+                onChange={e => handleChange('khataNo', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
+              />
+            </Field>
 
-              <Field label="S No / G. No / Khasra No / Khata No">
-                <input
-                  type="text"
-                  value={fields.khataNo}
-                  onChange={e => handleChange('khataNo', e.target.value)}
-                  className={`${inputCls} ${!plotKhataEditMode ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                  placeholder=""
-                  disabled={isReadOnly || !plotKhataEditMode}
-                />
-              </Field>
+            <Field label="4c. Locality">
+              <input
+                type="text"
+                value={fields.locality}
+                onChange={e => handleChange('locality', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
+              />
+            </Field>
 
-              <Field label="Locality">
-                <input
-                  type="text"
-                  value={fields.locality}
-                  onChange={e => handleChange('locality', e.target.value)}
-                  className={inputCls}
-                  placeholder=""
-                  disabled={isReadOnly}
-                />
-              </Field>
+            <Field label="4d. Road Width / Access Road">
+              <input
+                type="text"
+                value={fields.road}
+                onChange={e => handleChange('road', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
+              />
+            </Field>
 
-              <Field label="Road Width / Access Road">
-                <input
-                  type="text"
-                  value={fields.road}
-                  onChange={e => handleChange('road', e.target.value)}
-                  className={inputCls}
-                  placeholder=""
-                  disabled={isReadOnly}
-                />
-              </Field>
-            </div>
+            <Field label="4e. City">
+              <input
+                type="text"
+                value={fields.city}
+                onChange={e => handleChange('city', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
+              />
+            </Field>
+
+            <Field label="4f. District">
+              <input
+                type="text"
+                value={fields.district}
+                onChange={e => handleChange('district', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
+              />
+            </Field>
+
+            <Field label="4g. Pin Code">
+              <input
+                type="text"
+                value={fields.pinCode}
+                onChange={e => handleChange('pinCode', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
+              />
+            </Field>
+
+            <Field label="4h. Nearby Landmark">
+              <input
+                type="text"
+                value={fields.nearbyLandMark}
+                onChange={e => handleChange('nearbyLandMark', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
+              />
+            </Field>
+
+            <Field label="4i. Distance from City Center">
+              <input
+                type="text"
+                value={fields.distanceFromCityCenter}
+                onChange={e => handleChange('distanceFromCityCenter', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
+              />
+            </Field>
+
+            <Field label="4j. Availability of Local Transport">
+              <select
+                value={fields.availabilityOfLocalTransport}
+                onChange={e => handleChange('availabilityOfLocalTransport', e.target.value)}
+                className={selectCls}
+                disabled={isReadOnly}
+              >
+                <option value="">Select Local Transport</option>
+                <option value="Taxi, Auto">Taxi, Auto</option>
+                <option value="Bus, Taxi, Auto">Bus, Taxi, Auto</option>
+                <option value="Metro, Bus, Auto">Metro, Bus, Auto</option>
+                <option value="Local Train, Bus">Local Train, Bus</option>
+              </select>
+            </Field>
+
+            <Field label="4k. Level of Land">
+              <select
+                value={fields.levelOfLand}
+                onChange={e => handleChange('levelOfLand', e.target.value)}
+                className={selectCls}
+                disabled={isReadOnly}
+              >
+                <option value="">Select Level of Land</option>
+                <option value="Regular level land">Regular level land</option>
+                <option value="Low land">Low land</option>
+                <option value="Sloping land">Sloping land</option>
+                <option value="Elevated land">Elevated land</option>
+              </select>
+            </Field>
+
+            <Field label="4l. Class of Locality">
+              <select
+                value={fields.classOfLocality}
+                onChange={e => handleChange('classOfLocality', e.target.value)}
+                className={selectCls}
+                disabled={isReadOnly}
+              >
+                <option value="">Select Class of Locality</option>
+                <option value="Middle Class">Middle Class</option>
+                <option value="Higher Middle Class">Higher Middle Class</option>
+                <option value="Posh">Posh</option>
+                <option value="Lower Middle Class">Lower Middle Class</option>
+                <option value="Poor">Poor</option>
+              </select>
+            </Field>
+
+            <Field label="4m. Quality of Infrastructure">
+              <select
+                value={fields.qualityOfInfrastructure}
+                onChange={e => handleChange('qualityOfInfrastructure', e.target.value)}
+                className={selectCls}
+                disabled={isReadOnly}
+              >
+                <option value="">Select Quality</option>
+                <option value="Good">Good</option>
+                <option value="Average">Average</option>
+                <option value="Excellent">Excellent</option>
+                <option value="Developing">Developing</option>
+              </select>
+            </Field>
           </div>
 
-          {/* Container 2: Locality & Environment */}
-          <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs">
-            <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">Locality & Infrastructure</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Field label="City">
-                <input
-                  type="text"
-                  value={fields.city}
-                  onChange={e => handleChange('city', e.target.value)}
-                  className={inputCls}
-                  placeholder=""
-                  disabled={isReadOnly}
-                />
-              </Field>
-
-              <Field label="District">
-                <input
-                  type="text"
-                  value={fields.district}
-                  onChange={e => handleChange('district', e.target.value)}
-                  className={inputCls}
-                  placeholder=""
-                  disabled={isReadOnly}
-                />
-              </Field>
-
-              <Field label="Pin Code">
-                <input
-                  type="text"
-                  value={fields.pinCode}
-                  onChange={e => handleChange('pinCode', e.target.value)}
-                  className={inputCls}
-                  placeholder=""
-                  disabled={isReadOnly}
-                />
-              </Field>
-
-              <Field label="Nearby Landmark">
-                <input
-                  type="text"
-                  value={fields.nearbyLandMark}
-                  onChange={e => handleChange('nearbyLandMark', e.target.value)}
-                  className={inputCls}
-                  placeholder=""
-                  disabled={isReadOnly}
-                />
-              </Field>
-
-              <Field label="Distance from City Center">
-                <input
-                  type="text"
-                  value={fields.distanceFromCityCenter}
-                  onChange={e => handleChange('distanceFromCityCenter', e.target.value)}
-                  className={inputCls}
-                  placeholder=""
-                  disabled={isReadOnly}
-                />
-              </Field>
-
-              <Field label="Availability of Local Transport">
-                <select
-                  value={fields.availabilityOfLocalTransport}
-                  onChange={e => handleChange('availabilityOfLocalTransport', e.target.value)}
-                  className={selectCls}
-                  disabled={isReadOnly}
-                >
-                  <option value="Taxi, Auto">Taxi, Auto</option>
-                  <option value="Bus, Taxi, Auto">Bus, Taxi, Auto</option>
-                  <option value="Metro, Bus, Auto">Metro, Bus, Auto</option>
-                  <option value="Local Train, Bus">Local Train, Bus</option>
-                </select>
-              </Field>
-
-              <Field label="Level of Land">
-                <select
-                  value={fields.levelOfLand}
-                  onChange={e => handleChange('levelOfLand', e.target.value)}
-                  className={selectCls}
-                  disabled={isReadOnly}
-                >
-                  <option value="Regular level land">Regular level land</option>
-                  <option value="Low land">Low land</option>
-                  <option value="Sloping land">Sloping land</option>
-                  <option value="Elevated land">Elevated land</option>
-                </select>
-              </Field>
-
-              <Field label="Class of Locality">
-                <select
-                  value={fields.classOfLocality}
-                  onChange={e => handleChange('classOfLocality', e.target.value)}
-                  className={selectCls}
-                  disabled={isReadOnly}
-                >
-                  <option value="Middle Class">Middle Class</option>
-                  <option value="Higher Middle Class">Higher Middle Class</option>
-                  <option value="Posh">Posh</option>
-                  <option value="Lower Middle Class">Lower Middle Class</option>
-                  <option value="Poor">Poor</option>
-                </select>
-              </Field>
-
-              <Field label="Quality of Infrastructure">
-                <select
-                  value={fields.qualityOfInfrastructure}
-                  onChange={e => handleChange('qualityOfInfrastructure', e.target.value)}
-                  className={selectCls}
-                  disabled={isReadOnly}
-                >
-                  <option value="Good">Good</option>
-                  <option value="Average">Average</option>
-                  <option value="Excellent">Excellent</option>
-                  <option value="Developing">Developing</option>
-                </select>
-              </Field>
-            </div>
-          </div>
-        </Section>
-
-        {/* SECTION 3: Boundary Details & Property Characteristics */}
-        <Section id="axis-sec3" title="Boundary Details & Property Characteristics" number={3} defaultOpen={true}>
-          {/* Container 1: Boundaries */}
-          <div className="border border-purple-200 bg-purple-50/50 rounded-xl p-5 mb-5 shadow-xs">
+          {/* 4n. MULTI-SUBPOINT SOFT CONTAINER: Four Boundaries Comparison Table */}
+          <div className="border border-purple-200 bg-purple-50/40 rounded-xl p-4 sm:p-5 mb-5 shadow-xs">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-purple-800 text-sm tracking-wide uppercase">Four Boundaries Comparison</h3>
+              <h3 className="font-semibold text-purple-900 text-sm tracking-wide uppercase">
+                4n. Four Boundaries Comparison (Deed vs Actual vs Sketch Map)
+              </h3>
               <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -979,7 +925,7 @@ export default function AxisHLLAP({
 
             <div className="overflow-x-auto rounded-lg border border-slate-200 shadow-2xs">
               <table className="w-full text-xs text-left">
-                <thead className="bg-purple-100/70 text-purple-900 font-bold uppercase">
+                <thead className="bg-purple-100/80 text-purple-900 font-bold uppercase">
                   <tr>
                     <th className="p-3 border-b border-r border-purple-200 w-24">Direction</th>
                     <th className="p-3 border-b border-r border-purple-200">As Per Sale Deed</th>
@@ -1131,179 +1077,182 @@ export default function AxisHLLAP({
                 </tbody>
               </table>
             </div>
-
-            <div className="mt-4">
-              <Field label="Boundaries Matching Verification">
-                <select
-                  value={fields.boundariesMatch}
-                  onChange={e => handleChange('boundariesMatch', e.target.value)}
-                  className={selectCls}
-                  disabled={isReadOnly}
-                >
-                  <option value="Yes(Boundary matching as per documents)">Yes (Boundary matching as per documents)</option>
-                  <option value="Yes(Boundary is matching as per sketch map)">Yes (Boundary is matching as per sketch map)</option>
-                  <option value="No - Boundaries do not match">No - Boundaries do not match</option>
-                  <option value="Partial match observed">Partial match observed</option>
-                </select>
-              </Field>
-            </div>
           </div>
 
-          {/* Container 2: Property Characteristics */}
-          <div className="border border-indigo-200 bg-indigo-50/50 rounded-xl p-5 shadow-xs">
-            <h3 className="font-semibold text-indigo-800 mb-4 text-sm tracking-wide uppercase">Property Attributes</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Field label="Status of the Land">
-                <select
-                  value={fields.statusOfLand}
-                  onChange={e => handleChange('statusOfLand', e.target.value)}
-                  className={selectCls}
-                  disabled={isReadOnly}
-                >
-                  <option value="Free Hold">Free Hold</option>
-                  <option value="Lease Hold">Lease Hold</option>
-                  <option value="Development Authority">Development Authority</option>
-                </select>
-              </Field>
+          {/* Questionnaire Fields 4o to 4y */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-5">
+            <Field label="4o. Boundaries Matching Verification">
+              <select
+                value={fields.boundariesMatch}
+                onChange={e => handleChange('boundariesMatch', e.target.value)}
+                className={selectCls}
+                disabled={isReadOnly}
+              >
+                <option value="Yes(Boundary matching as per documents)">Yes (Boundary matching as per documents)</option>
+                <option value="Yes(Boundary is matching as per sketch map)">Yes (Boundary is matching as per sketch map)</option>
+                <option value="No - Boundaries do not match">No - Boundaries do not match</option>
+                <option value="Partial match observed">Partial match observed</option>
+              </select>
+            </Field>
 
-              <Field label="Type of Property">
-                <select
-                  value={fields.typeOfProperty}
-                  onChange={e => handleChange('typeOfProperty', e.target.value)}
-                  className={selectCls}
-                  disabled={isReadOnly}
-                >
-                  <option value="Residential">Residential</option>
-                  <option value="Bungalow">Bungalow</option>
-                  <option value="Row House">Row House</option>
-                  <option value="Individual House">Individual House</option>
-                  <option value="Plot">Plot</option>
-                  <option value="Flat (1BHK/2BHK/3BHK)">Flat (1BHK/2BHK/3BHK)</option>
-                  <option value="Commercial">Commercial</option>
-                </select>
-              </Field>
+            <Field label="4p. Status of the Land">
+              <select
+                value={fields.statusOfLand}
+                onChange={e => handleChange('statusOfLand', e.target.value)}
+                className={selectCls}
+                disabled={isReadOnly}
+              >
+                <option value="Free Hold">Free Hold</option>
+                <option value="Lease Hold">Lease Hold</option>
+                <option value="Development Authority">Development Authority</option>
+              </select>
+            </Field>
 
-              <Field label="Approved Usage">
-                <select
-                  value={fields.approvedUsage}
-                  onChange={e => handleChange('approvedUsage', e.target.value)}
-                  className={selectCls}
-                  disabled={isReadOnly}
-                >
-                  <option value="Residential">Residential</option>
-                  <option value="Commercial">Commercial</option>
-                  <option value="Mixed">Mixed</option>
-                  <option value="Industrial">Industrial</option>
-                  <option value="Agricultural">Agricultural</option>
-                </select>
-              </Field>
+            <Field label="4q. Type of Property">
+              <select
+                value={fields.typeOfProperty}
+                onChange={e => handleChange('typeOfProperty', e.target.value)}
+                className={selectCls}
+                disabled={isReadOnly}
+              >
+                <option value="Residential">Residential</option>
+                <option value="Bungalow">Bungalow</option>
+                <option value="Row House">Row House</option>
+                <option value="Individual House">Individual House</option>
+                <option value="Plot">Plot</option>
+                <option value="Flat (1BHK/2BHK/3BHK)">Flat (1BHK/2BHK/3BHK)</option>
+                <option value="Commercial">Commercial</option>
+              </select>
+            </Field>
 
-              <Field label="Actual Usage">
-                <select
-                  value={fields.actualUsage}
-                  onChange={e => handleChange('actualUsage', e.target.value)}
-                  className={selectCls}
-                  disabled={isReadOnly}
-                >
-                  <option value="Residential">Residential</option>
-                  <option value="Commercial">Commercial</option>
-                  <option value="Mixed">Mixed</option>
-                  <option value="Under construction">Under construction</option>
-                </select>
-              </Field>
+            <Field label="4r. Approved Usage">
+              <select
+                value={fields.approvedUsage}
+                onChange={e => handleChange('approvedUsage', e.target.value)}
+                className={selectCls}
+                disabled={isReadOnly}
+              >
+                <option value="Residential">Residential</option>
+                <option value="Commercial">Commercial</option>
+                <option value="Mixed">Mixed</option>
+                <option value="Industrial">Industrial</option>
+                <option value="Agricultural">Agricultural</option>
+              </select>
+            </Field>
 
-              <Field label="Structure Type">
-                <select
-                  value={fields.typeOfStructure}
-                  onChange={e => handleChange('typeOfStructure', e.target.value)}
-                  className={selectCls}
-                  disabled={isReadOnly}
-                >
-                  <option value="RCC Framed Structure">RCC Framed Structure</option>
-                  <option value="Load Bearing">Load Bearing</option>
-                  <option value="Aluform shuttering">Aluform shuttering</option>
-                  <option value="Steel Structure">Steel Structure</option>
-                </select>
-              </Field>
+            <Field label="4s. Actual Usage">
+              <select
+                value={fields.actualUsage}
+                onChange={e => handleChange('actualUsage', e.target.value)}
+                className={selectCls}
+                disabled={isReadOnly}
+              >
+                <option value="Residential">Residential</option>
+                <option value="Commercial">Commercial</option>
+                <option value="Mixed">Mixed</option>
+                <option value="Under construction">Under construction</option>
+              </select>
+            </Field>
 
-              <Field label="Number of Floors">
-                <input
-                  type="text"
-                  value={fields.noOfFloors}
-                  onChange={e => handleChange('noOfFloors', e.target.value)}
-                  className={inputCls}
-                  placeholder=""
-                  disabled={isReadOnly}
-                />
-              </Field>
+            <Field label="4t. Type of Structure">
+              <select
+                value={fields.typeOfStructure}
+                onChange={e => handleChange('typeOfStructure', e.target.value)}
+                className={selectCls}
+                disabled={isReadOnly}
+              >
+                <option value="RCC Framed Structure">RCC Framed Structure</option>
+                <option value="Load Bearing">Load Bearing</option>
+                <option value="Aluform shuttering">Aluform shuttering</option>
+                <option value="Steel Structure">Steel Structure</option>
+              </select>
+            </Field>
 
-              <Field label="Occupancy Details">
-                <select
-                  value={fields.occupancyDetails}
-                  onChange={e => handleChange('occupancyDetails', e.target.value)}
-                  className={selectCls}
-                  disabled={isReadOnly}
-                >
-                  <option value="Self Occupied">Self Occupied</option>
-                  <option value="Rented">Rented</option>
-                  <option value="Vacant">Vacant</option>
-                  <option value="Under construction">Under construction</option>
-                </select>
-              </Field>
+            <Field label="4u. Number of Floors">
+              <input
+                type="text"
+                value={fields.noOfFloors}
+                onChange={e => handleChange('noOfFloors', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
+              />
+            </Field>
 
-              <Field label="Electricity, Water & Drainage">
-                <select
-                  value={fields.hasElectricityWaterDrainage}
-                  onChange={e => handleChange('hasElectricityWaterDrainage', e.target.value)}
-                  className={selectCls}
-                  disabled={isReadOnly}
-                >
-                  <option value="Yes">Yes</option>
-                  <option value="No">No</option>
-                  <option value="Partial">Partial</option>
-                </select>
-              </Field>
+            <Field label="4v. Occupancy Details">
+              <select
+                value={fields.occupancyDetails}
+                onChange={e => handleChange('occupancyDetails', e.target.value)}
+                className={selectCls}
+                disabled={isReadOnly}
+              >
+                <option value="Self Occupied">Self Occupied</option>
+                <option value="Rented">Rented</option>
+                <option value="Vacant">Vacant</option>
+                <option value="Under construction">Under construction</option>
+              </select>
+            </Field>
 
-              <Field label="Proximity to Civic Amenities">
-                <input
-                  type="text"
-                  value={fields.proximityToCivicAmenities}
-                  onChange={e => handleChange('proximityToCivicAmenities', e.target.value)}
-                  className={inputCls}
-                  placeholder=""
-                  disabled={isReadOnly}
-                />
-              </Field>
+            <Field label="4w. Electricity, Water & Drainage">
+              <select
+                value={fields.hasElectricityWaterDrainage}
+                onChange={e => handleChange('hasElectricityWaterDrainage', e.target.value)}
+                className={selectCls}
+                disabled={isReadOnly}
+              >
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+                <option value="Partial">Partial</option>
+              </select>
+            </Field>
 
-              <Field label="Development of Surrounding Area">
-                <input
-                  type="text"
-                  value={fields.developmentOfSurroundingArea}
-                  onChange={e => handleChange('developmentOfSurroundingArea', e.target.value)}
-                  className={inputCls}
-                  placeholder=""
-                  disabled={isReadOnly}
-                />
-              </Field>
+            <Field label="4x. Proximity to Civic Amenities">
+              <input
+                type="text"
+                value={fields.proximityToCivicAmenities}
+                onChange={e => handleChange('proximityToCivicAmenities', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
+              />
+            </Field>
 
-              <Field label="Latitude">
+            <Field span={2} label="4y. Development of Surrounding Area">
+              <input
+                type="text"
+                value={fields.developmentOfSurroundingArea}
+                onChange={e => handleChange('developmentOfSurroundingArea', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
+              />
+            </Field>
+          </div>
+
+          {/* 4z. MULTI-SUBPOINT SOFT CONTAINER: Longitude & Latitude Coordinates */}
+          <div className="border border-blue-200 bg-blue-50/40 rounded-xl p-4 sm:p-5 shadow-xs">
+            <h3 className="font-semibold text-blue-900 mb-3 text-sm tracking-wide uppercase">
+              4z. Longitude & Latitude of the Property
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="4z(i). Latitude">
                 <input
                   type="text"
                   value={fields.latitude}
                   onChange={e => handleChange('latitude', e.target.value)}
                   className={inputCls}
-                  placeholder=""
+                  placeholder="e.g. 20.2961"
                   disabled={isReadOnly}
                 />
               </Field>
 
-              <Field label="Longitude">
+              <Field label="4z(ii). Longitude">
                 <input
                   type="text"
                   value={fields.longitude}
                   onChange={e => handleChange('longitude', e.target.value)}
                   className={inputCls}
-                  placeholder=""
+                  placeholder="e.g. 85.8245"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1311,391 +1260,389 @@ export default function AxisHLLAP({
           </div>
         </Section>
 
-        {/* SECTION 4: Construction & Regulatory Approvals */}
-        <Section id="axis-sec4" title="Construction & Regulatory Approvals" number={4} defaultOpen={true}>
-          {/* Container 1: Approvals */}
-          <div className="border border-teal-200 bg-teal-50/50 rounded-xl p-5 mb-5 shadow-xs">
-            <h3 className="font-semibold text-teal-800 mb-4 text-sm tracking-wide uppercase">Regulatory Approvals</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Field label="Layout Approval No">
-                <input
-                  type="text"
-                  value={fields.layoutApprovalNo}
-                  onChange={e => handleChange('layoutApprovalNo', e.target.value)}
-                  className={inputCls}
-                  disabled={isReadOnly}
-                />
-              </Field>
-              <DateInput
-                fieldKey="layoutApprovalDate"
-                label="Layout Approval Date"
+        {/* SECTION 3: 5. Approval Details */}
+        <Section id="axis-sec3" title="5. Approval Details" number={3} defaultOpen={true}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Field label="5a. Layout Approval No">
+              <input
+                type="text"
+                value={fields.layoutApprovalNo}
+                onChange={e => handleChange('layoutApprovalNo', e.target.value)}
+                className={inputCls}
+                disabled={isReadOnly}
               />
-              <DateInput
-                fieldKey="layoutExpiryDate"
-                label="Layout Expiry Date"
+            </Field>
+
+            <DateInput
+              fieldKey="layoutApprovalDate"
+              label="5b. Layout Approval Date"
+            />
+
+            <DateInput
+              fieldKey="layoutExpiryDate"
+              label="5c. Layout Expiry Date"
+            />
+
+            <Field span={3} label="5d. Building Plan Approval Details">
+              <textarea
+                rows={2}
+                value={fields.buildingPlanApprovalNo}
+                onChange={e => handleChange('buildingPlanApprovalNo', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
               />
+            </Field>
 
-              <Field span={3} label="Building Plan Approval Details">
-                <textarea
-                  rows={2}
-                  value={fields.buildingPlanApprovalNo}
-                  onChange={e => handleChange('buildingPlanApprovalNo', e.target.value)}
-                  className={inputCls}
-                  placeholder=""
-                  disabled={isReadOnly}
-                />
-              </Field>
+            <DateInput
+              fieldKey="buildingPlanApprovalDate"
+              label="5e. Building Plan Approval Date"
+            />
 
-              <DateInput
-                fieldKey="buildingPlanApprovalDate"
-                label="Building Plan Approval Date"
-              />
+            <DateInput
+              fieldKey="buildingPlanExpiryDate"
+              label="5f. Building Plan Expiry Date"
+            />
 
-              <DateInput
-                fieldKey="buildingPlanExpiryDate"
-                label="Building Plan Expiry Date"
-              />
+            <DateInput
+              fieldKey="constructionCommencementDate"
+              label="5g. Date of Commencement of Construction"
+            />
 
-              <DateInput
-                fieldKey="constructionCommencementDate"
-                label="Date of Commencement"
-              />
-
-              <DateInput
-                fieldKey="expectedCompletionDate"
-                label="Expected Completion Date"
-              />
-            </div>
-          </div>
-
-          {/* Container 2: Plot Area & Demarcation */}
-          <div className="border border-amber-200 bg-amber-50/50 rounded-xl p-5 mb-5 shadow-xs">
-            <h3 className="font-semibold text-amber-800 mb-4 text-sm tracking-wide uppercase">Plot Demarcation</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Area of the Plot (as per documents)">
-                <input
-                  type="text"
-                  value={fields.plotAreaDocs}
-                  onChange={e => handleChange('plotAreaDocs', e.target.value)}
-                  className={inputCls}
-                  placeholder=""
-                  disabled={isReadOnly}
-                />
-              </Field>
-
-              <Field label="Demarcation at Site">
-                <select
-                  value={fields.demarcationAtSite}
-                  onChange={e => handleChange('demarcationAtSite', e.target.value)}
-                  className={selectCls}
-                  disabled={isReadOnly}
-                >
-                  <option value="Yes">Yes</option>
-                  <option value="No">No</option>
-                  <option value="Partial">Partial</option>
-                </select>
-              </Field>
-            </div>
-          </div>
-
-          {/* Container 3: Dynamic Built-Up Area (BUA) Tables (Arthan-style) */}
-          <div className="border border-cyan-200 bg-cyan-50/50 rounded-xl p-5 mb-5 shadow-xs">
-            <h3 className="font-semibold text-cyan-800 mb-4 text-sm tracking-wide uppercase">Built-Up Area (BUA) Floor Breakup</h3>
-
-            {/* Approved BUA Floors Table */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-cyan-950 uppercase tracking-wider">
-                  Approved Built Up Area (BUA) Floors
-                </span>
-                {!isReadOnly && (
-                  <button
-                    type="button"
-                    onClick={handleAddApprovedFloor}
-                    className="px-3 py-1 bg-cyan-700 hover:bg-cyan-800 text-white text-xs font-semibold rounded-md shadow-xs transition-colors cursor-pointer"
-                  >
-                    + Add Floor
-                  </button>
-                )}
-              </div>
-              <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-                <table className="w-full text-xs text-left">
-                  <thead>
-                    <tr className="bg-[#0a1628] text-white">
-                      <th className="px-3 py-2.5 text-center font-normal text-xs uppercase tracking-wider w-12">#</th>
-                      <th className="px-3 py-2.5 text-left font-normal text-xs uppercase tracking-wider">Floor Name / Level</th>
-                      <th className="px-3 py-2.5 text-right font-normal text-xs uppercase tracking-wider w-44">Area (Sq.Ft.)</th>
-                      {!isReadOnly && <th className="px-2 py-2.5 w-12 text-center"></th>}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200">
-                    {(fields.approvedBUAFloors || []).map((fl, idx) => (
-                      <tr key={idx} className="bg-white hover:bg-neutral-50/50 transition-colors">
-                        <td className="px-2 py-1.5 text-center text-slate-400 font-medium">{idx + 1}</td>
-                        <td className="px-2 py-1.5">
-                          <input
-                            type="text"
-                            value={fl.floor}
-                            onChange={e => handleApprovedFloorChange(idx, 'floor', e.target.value)}
-                            className={inputCls + ' !py-1.5 text-xs font-normal text-[#0f2038]'}
-                            placeholder="e.g. Ground Floor"
-                            disabled={isReadOnly}
-                          />
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <input
-                            type="text"
-                            inputMode="decimal"
-                            value={fl.area}
-                            onChange={e => handleApprovedFloorChange(idx, 'area', e.target.value)}
-                            className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
-                            placeholder=""
-                            disabled={isReadOnly}
-                          />
-                        </td>
-                        {!isReadOnly && (
-                          <td className="px-2 py-1.5 text-center">
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveApprovedFloor(idx)}
-                              disabled={(fields.approvedBUAFloors || []).length <= 1}
-                              className="text-red-400 hover:text-red-600 disabled:opacity-30 text-base leading-none cursor-pointer p-1 font-bold"
-                              title="Remove Floor"
-                            >
-                              &times;
-                            </button>
-                          </td>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot className="bg-slate-50 font-bold border-t-2 border-slate-300 text-xs">
-                    <tr>
-                      <td colSpan={2} className="px-3 py-2.5 text-right text-slate-800 font-bold uppercase tracking-wider">
-                        Total Approved BUA:
-                      </td>
-                      <td className="px-3 py-2.5 text-right text-cyan-800 font-bold font-mono">
-                        {fields.approvedBUATotal ? `${fields.approvedBUATotal} sqft` : '0 sqft'}
-                      </td>
-                      {!isReadOnly && <td></td>}
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            </div>
-
-            {/* Measured BUA Floors Table */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-cyan-950 uppercase tracking-wider">
-                  Measured Built Up Area (BUA) Floors
-                </span>
-                {!isReadOnly && (
-                  <button
-                    type="button"
-                    onClick={handleAddMeasuredFloor}
-                    className="px-3 py-1 bg-cyan-700 hover:bg-cyan-800 text-white text-xs font-semibold rounded-md shadow-xs transition-colors cursor-pointer"
-                  >
-                    + Add Floor
-                  </button>
-                )}
-              </div>
-              <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-                <table className="w-full text-xs text-left">
-                  <thead>
-                    <tr className="bg-[#0a1628] text-white">
-                      <th className="px-3 py-2.5 text-center font-normal text-xs uppercase tracking-wider w-12">#</th>
-                      <th className="px-3 py-2.5 text-left font-normal text-xs uppercase tracking-wider">Floor Name / Level</th>
-                      <th className="px-3 py-2.5 text-right font-normal text-xs uppercase tracking-wider w-44">Area (Sq.Ft.)</th>
-                      {!isReadOnly && <th className="px-2 py-2.5 w-12 text-center"></th>}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200">
-                    {(fields.measuredBUAFloors || []).map((fl, idx) => (
-                      <tr key={idx} className="bg-white hover:bg-neutral-50/50 transition-colors">
-                        <td className="px-2 py-1.5 text-center text-slate-400 font-medium">{idx + 1}</td>
-                        <td className="px-2 py-1.5">
-                          <input
-                            type="text"
-                            value={fl.floor}
-                            onChange={e => handleMeasuredFloorChange(idx, 'floor', e.target.value)}
-                            className={inputCls + ' !py-1.5 text-xs font-normal text-[#0f2038]'}
-                            placeholder="e.g. Ground Floor"
-                            disabled={isReadOnly}
-                          />
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <input
-                            type="text"
-                            inputMode="decimal"
-                            value={fl.area}
-                            onChange={e => handleMeasuredFloorChange(idx, 'area', e.target.value)}
-                            className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
-                            placeholder=""
-                            disabled={isReadOnly}
-                          />
-                        </td>
-                        {!isReadOnly && (
-                          <td className="px-2 py-1.5 text-center">
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveMeasuredFloor(idx)}
-                              disabled={(fields.measuredBUAFloors || []).length <= 1}
-                              className="text-red-400 hover:text-red-600 disabled:opacity-30 text-base leading-none cursor-pointer p-1 font-bold"
-                              title="Remove Floor"
-                            >
-                              &times;
-                            </button>
-                          </td>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot className="bg-slate-50 font-bold border-t-2 border-slate-300 text-xs">
-                    <tr>
-                      <td colSpan={2} className="px-3 py-2.5 text-right text-slate-800 font-bold uppercase tracking-wider">
-                        Total Measured BUA:
-                      </td>
-                      <td className="px-3 py-2.5 text-right text-cyan-800 font-bold font-mono">
-                        {fields.measuredBUATotal ? `${fields.measuredBUATotal} sqft` : '0 sqft'}
-                      </td>
-                      {!isReadOnly && <td></td>}
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          {/* Container 4: Physical Condition & Bye-laws */}
-          <div className="border border-slate-200 bg-slate-50 rounded-xl p-5 shadow-xs">
-            <h3 className="font-semibold text-slate-800 mb-4 text-sm tracking-wide uppercase">Physical Condition & Setbacks</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Construction as per Approved Plan">
-                <select
-                  value={fields.isConstructionAsPerPlan}
-                  onChange={e => handleChange('isConstructionAsPerPlan', e.target.value)}
-                  className={selectCls}
-                  disabled={isReadOnly}
-                >
-                  <option value="As per plan">As per plan</option>
-                  <option value="Yes (As perApproved)">Yes (As perApproved)</option>
-                  <option value="Deviation observed">Deviation observed</option>
-                  <option value="Unauthorized construction">Unauthorized construction</option>
-                </select>
-              </Field>
-
-              <Field label="Details of Extra Construction">
-                <input
-                  type="text"
-                  value={fields.detailsOfExtraConstruction}
-                  onChange={e => handleChange('detailsOfExtraConstruction', e.target.value)}
-                  className={inputCls}
-                  placeholder=""
-                  disabled={isReadOnly}
-                />
-              </Field>
-
-              {/* Setbacks / Margins */}
-              <div className="col-span-1 md:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-3 rounded-lg border border-slate-200 shadow-2xs">
-                <Field label="Margin: Front">
-                  <input
-                    type="text"
-                    value={fields.sideMarginFront}
-                    onChange={e => handleChange('sideMarginFront', e.target.value)}
-                    className={inputCls}
-                    placeholder=""
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Margin: Right">
-                  <input
-                    type="text"
-                    value={fields.sideMarginRight}
-                    onChange={e => handleChange('sideMarginRight', e.target.value)}
-                    className={inputCls}
-                    placeholder=""
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Margin: Left">
-                  <input
-                    type="text"
-                    value={fields.sideMarginLeft}
-                    onChange={e => handleChange('sideMarginLeft', e.target.value)}
-                    className={inputCls}
-                    placeholder=""
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Margin: Back">
-                  <input
-                    type="text"
-                    value={fields.sideMarginBack}
-                    onChange={e => handleChange('sideMarginBack', e.target.value)}
-                    className={inputCls}
-                    placeholder=""
-                    disabled={isReadOnly}
-                  />
-                </Field>
-              </div>
-
-              <Field label="Quality of Construction">
-                <select
-                  value={fields.qualityOfConstruction}
-                  onChange={e => handleChange('qualityOfConstruction', e.target.value)}
-                  className={selectCls}
-                  disabled={isReadOnly}
-                >
-                  <option value="Good">Good</option>
-                  <option value="Average">Average</option>
-                  <option value="Excellent">Excellent</option>
-                  <option value="Poor">Poor</option>
-                </select>
-              </Field>
-
-              <Field label="Maintenance of Property">
-                <select
-                  value={fields.maintenanceOfProperty}
-                  onChange={e => handleChange('maintenanceOfProperty', e.target.value)}
-                  className={selectCls}
-                  disabled={isReadOnly}
-                >
-                  <option value="Good">Good</option>
-                  <option value="Very Good">Very Good</option>
-                  <option value="Average">Average</option>
-                  <option value="Poor">Poor</option>
-                </select>
-              </Field>
-
-              <Field label="Current Age of Structure">
-                <input
-                  type="text"
-                  value={fields.currentLifeOfStructure}
-                  onChange={e => handleChange('currentLifeOfStructure', e.target.value)}
-                  className={inputCls}
-                  placeholder=""
-                  disabled={isReadOnly}
-                />
-              </Field>
-
-              <Field label="Projected / Residual Life">
-                <input
-                  type="text"
-                  value={fields.projectedLifeOfStructure}
-                  onChange={e => handleChange('projectedLifeOfStructure', e.target.value)}
-                  className={inputCls}
-                  placeholder=""
-                  disabled={isReadOnly}
-                />
-              </Field>
-            </div>
+            <DateInput
+              fieldKey="expectedCompletionDate"
+              label="5h. Expected Completion Date"
+            />
           </div>
         </Section>
 
-        {/* SECTION 5: Recommended Valuation */}
-        <Section id="axis-sec5" title="Recommended Valuation" number={5} defaultOpen={true}>
-          {/* Construction Status Toggle Card */}
+        {/* SECTION 4: 6. Construction Details */}
+        <Section id="axis-sec4" title="6. Construction Details" number={4} defaultOpen={true}>
+          {/* 6a & 6b Direct Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+            <Field label="6a. Area of the Plot / Flat (as per documents)">
+              <input
+                type="text"
+                value={fields.plotAreaDocs}
+                onChange={e => handleChange('plotAreaDocs', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
+              />
+            </Field>
+
+            <Field label="6b. Demarcation at Site">
+              <select
+                value={fields.demarcationAtSite}
+                onChange={e => handleChange('demarcationAtSite', e.target.value)}
+                className={selectCls}
+                disabled={isReadOnly}
+              >
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+                <option value="Partial">Partial</option>
+              </select>
+            </Field>
+          </div>
+
+          {/* 6c. MULTI-SUBPOINT SOFT CONTAINER: Approved BUA Floor Table */}
+          <div className="border border-cyan-200 bg-cyan-50/40 rounded-xl p-4 sm:p-5 mb-5 shadow-xs">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-cyan-950 text-sm tracking-wide uppercase">
+                6c. Approved Built Up Area (BUA) Floor-wise Breakup
+              </h3>
+              {!isReadOnly && (
+                <button
+                  type="button"
+                  onClick={handleAddApprovedFloor}
+                  className="px-3 py-1 bg-cyan-700 hover:bg-cyan-800 text-white text-xs font-semibold rounded-md shadow-xs transition-colors cursor-pointer"
+                >
+                  + Add Floor
+                </button>
+              )}
+            </div>
+            <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+              <table className="w-full text-xs text-left">
+                <thead>
+                  <tr className="bg-[#0a1628] text-white">
+                    <th className="px-3 py-2.5 text-center font-normal text-xs uppercase tracking-wider w-12">#</th>
+                    <th className="px-3 py-2.5 text-left font-normal text-xs uppercase tracking-wider">Floor Name / Level</th>
+                    <th className="px-3 py-2.5 text-right font-normal text-xs uppercase tracking-wider w-44">Area (Sq.Ft.)</th>
+                    {!isReadOnly && <th className="px-2 py-2.5 w-12 text-center"></th>}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {(fields.approvedBUAFloors || []).map((fl, idx) => (
+                    <tr key={idx} className="bg-white hover:bg-neutral-50/50 transition-colors">
+                      <td className="px-2 py-1.5 text-center text-slate-400 font-medium">{idx + 1}</td>
+                      <td className="px-2 py-1.5">
+                        <input
+                          type="text"
+                          value={fl.floor}
+                          onChange={e => handleApprovedFloorChange(idx, 'floor', e.target.value)}
+                          className={inputCls + ' !py-1.5 text-xs font-normal text-[#0f2038]'}
+                          placeholder="e.g. Ground Floor"
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="px-2 py-1.5">
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={fl.area}
+                          onChange={e => handleApprovedFloorChange(idx, 'area', e.target.value)}
+                          className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
+                          placeholder=""
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      {!isReadOnly && (
+                        <td className="px-2 py-1.5 text-center">
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveApprovedFloor(idx)}
+                            disabled={(fields.approvedBUAFloors || []).length <= 1}
+                            className="text-red-400 hover:text-red-600 disabled:opacity-30 text-base leading-none cursor-pointer p-1 font-bold"
+                            title="Remove Floor"
+                          >
+                            &times;
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot className="bg-slate-50 font-bold border-t-2 border-slate-300 text-xs">
+                  <tr>
+                    <td colSpan={2} className="px-3 py-2.5 text-right text-slate-800 font-bold uppercase tracking-wider">
+                      Total Approved BUA:
+                    </td>
+                    <td className="px-3 py-2.5 text-right text-cyan-800 font-bold font-mono">
+                      {fields.approvedBUATotal ? `${fields.approvedBUATotal} sqft` : '0 sqft'}
+                    </td>
+                    {!isReadOnly && <td></td>}
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+
+          {/* 6d. MULTI-SUBPOINT SOFT CONTAINER: Measured BUA Floor Table */}
+          <div className="border border-cyan-200 bg-cyan-50/40 rounded-xl p-4 sm:p-5 mb-5 shadow-xs">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-cyan-950 text-sm tracking-wide uppercase">
+                6d. Measured Built Up Area (BUA) Floor-wise Breakup
+              </h3>
+              {!isReadOnly && (
+                <button
+                  type="button"
+                  onClick={handleAddMeasuredFloor}
+                  className="px-3 py-1 bg-cyan-700 hover:bg-cyan-800 text-white text-xs font-semibold rounded-md shadow-xs transition-colors cursor-pointer"
+                >
+                  + Add Floor
+                </button>
+              )}
+            </div>
+            <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+              <table className="w-full text-xs text-left">
+                <thead>
+                  <tr className="bg-[#0a1628] text-white">
+                    <th className="px-3 py-2.5 text-center font-normal text-xs uppercase tracking-wider w-12">#</th>
+                    <th className="px-3 py-2.5 text-left font-normal text-xs uppercase tracking-wider">Floor Name / Level</th>
+                    <th className="px-3 py-2.5 text-right font-normal text-xs uppercase tracking-wider w-44">Area (Sq.Ft.)</th>
+                    {!isReadOnly && <th className="px-2 py-2.5 w-12 text-center"></th>}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {(fields.measuredBUAFloors || []).map((fl, idx) => (
+                    <tr key={idx} className="bg-white hover:bg-neutral-50/50 transition-colors">
+                      <td className="px-2 py-1.5 text-center text-slate-400 font-medium">{idx + 1}</td>
+                      <td className="px-2 py-1.5">
+                        <input
+                          type="text"
+                          value={fl.floor}
+                          onChange={e => handleMeasuredFloorChange(idx, 'floor', e.target.value)}
+                          className={inputCls + ' !py-1.5 text-xs font-normal text-[#0f2038]'}
+                          placeholder="e.g. Ground Floor"
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="px-2 py-1.5">
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={fl.area}
+                          onChange={e => handleMeasuredFloorChange(idx, 'area', e.target.value)}
+                          className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
+                          placeholder=""
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      {!isReadOnly && (
+                        <td className="px-2 py-1.5 text-center">
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveMeasuredFloor(idx)}
+                            disabled={(fields.measuredBUAFloors || []).length <= 1}
+                            className="text-red-400 hover:text-red-600 disabled:opacity-30 text-base leading-none cursor-pointer p-1 font-bold"
+                            title="Remove Floor"
+                          >
+                            &times;
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot className="bg-slate-50 font-bold border-t-2 border-slate-300 text-xs">
+                  <tr>
+                    <td colSpan={2} className="px-3 py-2.5 text-right text-slate-800 font-bold uppercase tracking-wider">
+                      Total Measured BUA:
+                    </td>
+                    <td className="px-3 py-2.5 text-right text-cyan-800 font-bold font-mono">
+                      {fields.measuredBUATotal ? `${fields.measuredBUATotal} sqft` : '0 sqft'}
+                    </td>
+                    {!isReadOnly && <td></td>}
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+
+          {/* 6f & 6g Direct Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+            <Field label="6f. Construction as per Approved Plan">
+              <select
+                value={fields.isConstructionAsPerPlan}
+                onChange={e => handleChange('isConstructionAsPerPlan', e.target.value)}
+                className={selectCls}
+                disabled={isReadOnly}
+              >
+                <option value="As per plan">As per plan</option>
+                <option value="Yes (As perApproved)">Yes (As perApproved)</option>
+                <option value="Deviation observed">Deviation observed</option>
+                <option value="Unauthorized construction">Unauthorized construction</option>
+              </select>
+            </Field>
+
+            <Field label="6g. Details of Extra Construction">
+              <input
+                type="text"
+                value={fields.detailsOfExtraConstruction}
+                onChange={e => handleChange('detailsOfExtraConstruction', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
+              />
+            </Field>
+          </div>
+
+          {/* 6h. MULTI-SUBPOINT SOFT CONTAINER: Side Margins */}
+          <div className="border border-slate-200 bg-slate-50/80 rounded-xl p-4 sm:p-5 mb-5 shadow-xs">
+            <h3 className="font-semibold text-slate-800 mb-3 text-sm tracking-wide uppercase">
+              6h. Recommended / Available Side Margins (Setbacks)
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-3 rounded-lg border border-slate-200 shadow-2xs">
+              <Field label="Margin: Front">
+                <input
+                  type="text"
+                  value={fields.sideMarginFront}
+                  onChange={e => handleChange('sideMarginFront', e.target.value)}
+                  className={inputCls}
+                  placeholder=""
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="Margin: Right">
+                <input
+                  type="text"
+                  value={fields.sideMarginRight}
+                  onChange={e => handleChange('sideMarginRight', e.target.value)}
+                  className={inputCls}
+                  placeholder=""
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="Margin: Left">
+                <input
+                  type="text"
+                  value={fields.sideMarginLeft}
+                  onChange={e => handleChange('sideMarginLeft', e.target.value)}
+                  className={inputCls}
+                  placeholder=""
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="Margin: Back">
+                <input
+                  type="text"
+                  value={fields.sideMarginBack}
+                  onChange={e => handleChange('sideMarginBack', e.target.value)}
+                  className={inputCls}
+                  placeholder=""
+                  disabled={isReadOnly}
+                />
+              </Field>
+            </div>
+          </div>
+
+          {/* 6i - 6l Direct Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Field label="6i. Quality of Construction">
+              <select
+                value={fields.qualityOfConstruction}
+                onChange={e => handleChange('qualityOfConstruction', e.target.value)}
+                className={selectCls}
+                disabled={isReadOnly}
+              >
+                <option value="Good">Good</option>
+                <option value="Average">Average</option>
+                <option value="Excellent">Excellent</option>
+                <option value="Poor">Poor</option>
+              </select>
+            </Field>
+
+            <Field label="6j. Maintenance of Property">
+              <select
+                value={fields.maintenanceOfProperty}
+                onChange={e => handleChange('maintenanceOfProperty', e.target.value)}
+                className={selectCls}
+                disabled={isReadOnly}
+              >
+                <option value="Good">Good</option>
+                <option value="Very Good">Very Good</option>
+                <option value="Average">Average</option>
+                <option value="Poor">Poor</option>
+              </select>
+            </Field>
+
+            <Field label="6k. Current Age of Structure">
+              <input
+                type="text"
+                value={fields.currentLifeOfStructure}
+                onChange={e => handleChange('currentLifeOfStructure', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
+              />
+            </Field>
+
+            <Field label="6l. Projected / Residual Life">
+              <input
+                type="text"
+                value={fields.projectedLifeOfStructure}
+                onChange={e => handleChange('projectedLifeOfStructure', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
+              />
+            </Field>
+          </div>
+        </Section>
+
+        {/* SECTION 5: 7 - 10. Valuation, Statutory Rates & Rental Value */}
+        <Section id="axis-sec5" title="7 - 10. Valuation, Statutory Rates & Rental Value" number={5} defaultOpen={true}>
+          {/* Construction Status Toggle Bar */}
           <div className="p-4 bg-slate-100 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-4 mb-5 shadow-xs">
             <div className="flex items-center gap-3">
               <span className="text-xs font-bold text-slate-700 uppercase">Property Status:</span>
@@ -1722,145 +1669,124 @@ export default function AxisHLLAP({
             </button>
           </div>
 
-          {/* Container 1: Plot / Land Valuation */}
-          <div className="border border-lime-200 bg-lime-50/50 rounded-xl p-5 mb-5 shadow-xs">
-            <h3 className="font-semibold text-lime-800 mb-4 text-sm tracking-wide uppercase">Plot / Land Valuation</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Field label="Plot Area for Valuation (sqft)">
-                <input
-                  type="text"
-                  value={fields.plotAreaForValuation}
-                  onChange={e => handleChange('plotAreaForValuation', e.target.value)}
-                  className={inputCls}
-                  placeholder=""
-                  disabled={isReadOnly}
-                />
-              </Field>
+          {/* Direct Valuation Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+            <Field label="7a. Plot Area for Valuation (sqft)">
+              <input
+                type="text"
+                value={fields.plotAreaForValuation}
+                onChange={e => handleChange('plotAreaForValuation', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
+              />
+            </Field>
 
-              <Field label="Plot Rate (Rs./sqft)">
-                <input
-                  type="text"
-                  value={fields.plotRateForValuation}
-                  onChange={e => handleChange('plotRateForValuation', e.target.value)}
-                  className={inputCls}
-                  placeholder=""
-                  disabled={isReadOnly}
-                />
-              </Field>
+            <Field label="7b. Plot Rate (Rs./sqft)">
+              <input
+                type="text"
+                value={fields.plotRateForValuation}
+                onChange={e => handleChange('plotRateForValuation', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
+              />
+            </Field>
 
-              <Field label="Recommended Rate Description">
-                <input
-                  type="text"
-                  value={fields.recommendedRatePerSqft}
-                  onChange={e => handleChange('recommendedRatePerSqft', e.target.value)}
-                  className={inputCls}
-                  placeholder=""
-                  disabled={isReadOnly}
-                />
-              </Field>
+            <Field label="7c. Recommended Rate Description">
+              <input
+                type="text"
+                value={fields.recommendedRatePerSqft}
+                onChange={e => handleChange('recommendedRatePerSqft', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
+              />
+            </Field>
 
-              <Field span={3} label="Total Value of the Plot / Flat">
-                <input
-                  type="text"
-                  value={fields.valueOfPlotFlat}
-                  onChange={e => handleChange('valueOfPlotFlat', e.target.value)}
-                  className={inputCls}
-                  disabled={isReadOnly}
-                />
-              </Field>
-            </div>
+            <Field span={3} label="7d. Total Value of the Plot / Flat">
+              <input
+                type="text"
+                value={fields.valueOfPlotFlat}
+                onChange={e => handleChange('valueOfPlotFlat', e.target.value)}
+                className={inputCls}
+                disabled={isReadOnly}
+              />
+            </Field>
+
+            <Field label="7e. Estimated Cost of Construction">
+              <input
+                type="text"
+                value={fields.estimatedCostOfConstruction}
+                onChange={e => handleChange('estimatedCostOfConstruction', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
+              />
+            </Field>
+
+            <Field span={2} label="7f. Total Construction Cost (100% Completion)">
+              <input
+                type="text"
+                value={fields.totalCostOfConstruction}
+                onChange={e => handleChange('totalCostOfConstruction', e.target.value)}
+                className={inputCls}
+                disabled={isReadOnly}
+              />
+            </Field>
           </div>
 
-          {/* Container 2: Construction Valuation */}
-          <div className="border border-emerald-200 bg-emerald-50/50 rounded-xl p-5 mb-5 shadow-xs">
-            <h3 className="font-semibold text-emerald-800 mb-4 text-sm tracking-wide uppercase">Construction Valuation</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Estimated Cost of Construction">
-                <input
-                  type="text"
-                  value={fields.estimatedCostOfConstruction}
-                  onChange={e => handleChange('estimatedCostOfConstruction', e.target.value)}
-                  className={inputCls}
-                  placeholder=""
-                  disabled={isReadOnly}
-                />
-              </Field>
+          {/* MULTI-SUBPOINT SOFT CONTAINER: Under-Construction Breakdown (Only when active) */}
+          {fields.isUnderConstruction && (
+            <div className="border border-amber-200 bg-amber-50/50 rounded-xl p-4 sm:p-5 mb-5 shadow-xs">
+              <h3 className="font-semibold text-amber-900 mb-3 text-sm tracking-wide uppercase">
+                Under-Construction Progress &amp; Valuation Breakdown
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <Field label="Stage of Construction">
+                  <input
+                    type="text"
+                    value={fields.stageOfConstruction}
+                    onChange={e => handleChange('stageOfConstruction', e.target.value)}
+                    className={inputCls}
+                    placeholder=""
+                    disabled={isReadOnly}
+                  />
+                </Field>
 
-              <Field label="Total Construction Cost (100% Completion)">
-                <input
-                  type="text"
-                  value={fields.totalCostOfConstruction}
-                  onChange={e => handleChange('totalCostOfConstruction', e.target.value)}
-                  className={inputCls}
-                  disabled={isReadOnly}
-                />
-              </Field>
+                <Field label="% Work Completed">
+                  <input
+                    type="text"
+                    value={fields.percentWorkCompleted}
+                    onChange={e => handleChange('percentWorkCompleted', e.target.value)}
+                    className={inputCls}
+                    placeholder=""
+                    disabled={isReadOnly}
+                  />
+                </Field>
 
-              {fields.isUnderConstruction && (
-                <>
-                  <Field label="Stage of Construction">
-                    <input
-                      type="text"
-                      value={fields.stageOfConstruction}
-                      onChange={e => handleChange('stageOfConstruction', e.target.value)}
-                      className={inputCls}
-                      placeholder=""
-                      disabled={isReadOnly}
-                    />
-                  </Field>
+                <Field label="% Disbursement Recommended">
+                  <input
+                    type="text"
+                    value={fields.percentDisbursementRecommended}
+                    onChange={e => handleChange('percentDisbursementRecommended', e.target.value)}
+                    className={inputCls}
+                    placeholder=""
+                    disabled={isReadOnly}
+                  />
+                </Field>
 
-                  <Field label="% Work Completed">
-                    <input
-                      type="text"
-                      value={fields.percentWorkCompleted}
-                      onChange={e => handleChange('percentWorkCompleted', e.target.value)}
-                      className={inputCls}
-                      placeholder=""
-                      disabled={isReadOnly}
-                    />
-                  </Field>
+                <Field span={2} label="Construction Cost As On Date">
+                  <input
+                    type="text"
+                    value={fields.constructionCostAsOnDate || ''}
+                    onChange={e => handleChange('constructionCostAsOnDate', e.target.value)}
+                    className={inputCls}
+                    placeholder=""
+                    disabled={isReadOnly}
+                  />
+                </Field>
 
-                  <Field label="% Disbursement Recommended">
-                    <input
-                      type="text"
-                      value={fields.percentDisbursementRecommended}
-                      onChange={e => handleChange('percentDisbursementRecommended', e.target.value)}
-                      className={inputCls}
-                      placeholder=""
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-
-                  <Field label="Construction Cost As On Date">
-                    <input
-                      type="text"
-                      value={fields.constructionCostAsOnDate || ''}
-                      onChange={e => handleChange('constructionCostAsOnDate', e.target.value)}
-                      className={inputCls}
-                      placeholder=""
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Container 3: Valuation Summary & Distressed Value */}
-          <div className="border border-amber-200 bg-amber-50/50 rounded-xl p-5 shadow-xs">
-            <h3 className="font-semibold text-amber-800 mb-4 text-sm tracking-wide uppercase">Summary & Statutory Rates</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Current Value of Property (100% Completion)">
-                <input
-                  type="text"
-                  value={fields.currentValueOfProperty}
-                  onChange={e => handleChange('currentValueOfProperty', e.target.value)}
-                  className={inputCls}
-                  disabled={isReadOnly}
-                />
-              </Field>
-
-              {fields.isUnderConstruction && (
                 <Field label="Current Value As On Date">
                   <input
                     type="text"
@@ -1870,82 +1796,121 @@ export default function AxisHLLAP({
                     disabled={isReadOnly}
                   />
                 </Field>
-              )}
+              </div>
+            </div>
+          )}
 
-              <Field label="Valuation as per Govt Reckoner Rate">
-                <input
-                  type="text"
-                  value={fields.valuationGovtReckonerRate}
-                  onChange={e => handleChange('valuationGovtReckonerRate', e.target.value)}
-                  className={inputCls}
-                  placeholder=""
-                  disabled={isReadOnly}
-                />
-              </Field>
+          {/* Summary, Statutory Rates & Visit Date Direct Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field label="7g. Current Value of Property (100% Completion)">
+              <input
+                type="text"
+                value={fields.currentValueOfProperty}
+                onChange={e => handleChange('currentValueOfProperty', e.target.value)}
+                className={inputCls}
+                disabled={isReadOnly}
+              />
+            </Field>
 
-              <Field
-                label={
-                  <div>
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <span>Distressed Valuation of Property</span>
-                      <button
-                        type="button"
-                        onClick={() => setEnableDistressedEdit(!enableDistressedEdit)}
-                        disabled={isReadOnly}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none cursor-pointer ${
-                          enableDistressedEdit ? 'bg-emerald-500' : 'bg-gray-300'
+            <DateInput
+              fieldKey="dateOfPropertyVisit"
+              label="7h. Date of Property Visit"
+            />
+
+            <Field label="8. Valuation as per Govt Reckoner Rate">
+              <input
+                type="text"
+                value={fields.valuationGovtReckonerRate}
+                onChange={e => handleChange('valuationGovtReckonerRate', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
+              />
+            </Field>
+
+            <Field
+              label={
+                <div>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <span>9. Distressed Valuation of Property</span>
+                    <button
+                      type="button"
+                      onClick={() => setEnableDistressedEdit(!enableDistressedEdit)}
+                      disabled={isReadOnly}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none cursor-pointer ${
+                        enableDistressedEdit ? 'bg-emerald-500' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 shadow ${
+                          enableDistressedEdit ? 'translate-x-6' : 'translate-x-1'
                         }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 shadow ${
-                            enableDistressedEdit ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
-                      <span className={`text-xs font-medium normal-case ${enableDistressedEdit ? 'text-emerald-700' : 'text-gray-500'}`}>
-                        {enableDistressedEdit ? 'Edit On' : 'Edit Off (Strictly 80%)'}
-                      </span>
-                    </div>
-                    <span className="block normal-case text-gray-500 text-[10px] mt-0.5">
-                      ([CURRENT MARKET VALUE] * 0.80 (Standard 80% distress factor))
+                      />
+                    </button>
+                    <span className={`text-xs font-medium normal-case ${enableDistressedEdit ? 'text-emerald-700' : 'text-gray-500'}`}>
+                      {enableDistressedEdit ? 'Edit On' : 'Edit Off (Strictly 80%)'}
                     </span>
                   </div>
-                }
-              >
-                <input
-                  type="text"
-                  value={fields.distressedValuation}
-                  onChange={e => handleChange('distressedValuation', e.target.value)}
-                  className={`${inputCls} ${!enableDistressedEdit ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                  disabled={isReadOnly || !enableDistressedEdit}
-                />
-              </Field>
-
-              <Field label="Rental Value per Month">
-                <input
-                  type="text"
-                  value={fields.rentalValuePerMonth}
-                  onChange={e => handleChange('rentalValuePerMonth', e.target.value)}
-                  className={inputCls}
-                  placeholder=""
-                  disabled={isReadOnly}
-                />
-              </Field>
-
-              <DateInput
-                fieldKey="dateOfPropertyVisit"
-                label="Date of Property Visit"
+                  <span className="block normal-case text-gray-500 text-[10px] mt-0.5">
+                    ([CURRENT MARKET VALUE] * 0.80 (Standard 80% distress factor))
+                  </span>
+                </div>
+              }
+            >
+              <input
+                type="text"
+                value={fields.distressedValuation}
+                onChange={e => handleChange('distressedValuation', e.target.value)}
+                className={`${inputCls} ${!enableDistressedEdit ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                disabled={isReadOnly || !enableDistressedEdit}
               />
-            </div>
+            </Field>
+
+            <Field span={2} label="10. Rental Value per Month">
+              <input
+                type="text"
+                value={fields.rentalValuePerMonth}
+                onChange={e => handleChange('rentalValuePerMonth', e.target.value)}
+                className={inputCls}
+                placeholder=""
+                disabled={isReadOnly}
+              />
+            </Field>
           </div>
         </Section>
 
-        {/* SECTION 6: Remarks & Valuer Signatory */}
-        <Section id="axis-sec6" title="Remarks & Valuer Signatory" number={6} defaultOpen={true}>
-          {/* Container: Remarks */}
-          <div className="border border-yellow-200 bg-yellow-50/50 rounded-xl p-5 mb-5 shadow-xs">
-            <h3 className="font-semibold text-yellow-800 mb-4 text-sm tracking-wide uppercase">Remarks & Critical Observations</h3>
-            <Field label="Observations & Critical Notes">
+        {/* SECTION 6: 11 - 12. Attachments & Remarks */}
+        <Section id="axis-sec6" title="11 - 12. Attachments, Remarks & Signatory" number={6} defaultOpen={true}>
+          {/* 11. Attachments Direct Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+            <Field label="11a. 4 photos of the Property attached">
+              <select
+                value={fields.photosAttached}
+                onChange={e => handleChange('photosAttached', e.target.value)}
+                className={selectCls}
+                disabled={isReadOnly}
+              >
+                <option value="Attached">Attached</option>
+                <option value="Not Attached">Not Attached</option>
+              </select>
+            </Field>
+
+            <Field label="11b. Location sketch for the property">
+              <select
+                value={fields.locationSketchAttached}
+                onChange={e => handleChange('locationSketchAttached', e.target.value)}
+                className={selectCls}
+                disabled={isReadOnly}
+              >
+                <option value="Attached">Attached</option>
+                <option value="Not Attached">Not Attached</option>
+              </select>
+            </Field>
+          </div>
+
+          {/* 12. Remarks Direct Field */}
+          <div className="mb-5">
+            <Field label="12. Remarks & Critical Observations">
               <textarea
                 rows={5}
                 value={fields.remarks}
@@ -1957,15 +1922,17 @@ export default function AxisHLLAP({
             </Field>
           </div>
 
-          {/* Container: Undertaking & Declaration */}
+          {/* MULTI-SUBPOINT SOFT CONTAINER: Valuer Undertaking & Signatory */}
           <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs">
-            <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">Undertaking & Signatory</h3>
+            <h3 className="font-semibold text-blue-900 mb-3 text-sm tracking-wide uppercase">
+              Valuer Undertaking &amp; Authorized Signatory
+            </h3>
             <p className="text-xs text-slate-700 italic leading-relaxed mb-4">
               I have personally visited the property &amp; identified the same based on the documents provided.<br />
               I/We have no direct or Indirect Interest in the property being valued.<br />
               The information furnished above is true and correct to my/our knowledge.
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-blue-100">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-blue-100">
               <Field label="Valuer Name">
                 <input
                   type="text"
@@ -2016,7 +1983,7 @@ export default function AxisHLLAP({
           locationMapImages={fields.locationMapImages || []}
           mouzaMapImages={fields.mouzaMapImages || []}
           sketchMapImages={fields.sketchMapImages || []}
-          coordinatesSectionName="Boundary Details & Property Characteristics"
+          coordinatesSectionName="4. Property Details & Characteristics"
           isReadOnly={isReadOnly}
           uploading={uploading}
           onLocationMapUpload={e => handleMapUpload('locationMapImages', e)}
