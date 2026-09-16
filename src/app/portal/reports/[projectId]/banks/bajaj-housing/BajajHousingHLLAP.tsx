@@ -289,6 +289,7 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
     bajajCurrentOccupant: '',
     bajajCurrentOccupant_isNA: false,
     bajajCurrentOccupant_isManual: false,
+    bajajFloorOccupancy: [] as { floor: string; status: string }[],
     
     bajajSeparateAccess: '',
     bajajSeparateAccessCustom: '',
@@ -296,6 +297,8 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
     
     bajajAccommodationDetails: '',
     bajajAccommodationDetails_isNA: false,
+    bajajAccommodationDetails_isManual: false,
+    bajajAccommodationFloors: [] as { floor: string; occupancy: string; bedrooms: number; halls: number; dining: number; kitchens: number; bathrooms: number; other: string }[],
 
     // Section 8: Area & Floor Details
     bajajPlotNSDoc: '',
@@ -1545,6 +1548,97 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
           </div>
         );
 
+        // ── Floor-Occupancy helpers ──
+        const FLOOR_LABELS = ['GF', '1ST', '2ND', '3RD', '4TH', '5TH', '6TH', '7TH', '8TH', '9TH'];
+        const STATUS_OPTIONS = ['Owner', 'Tenant', 'Vacant'];
+
+        const getFloorCount = (): number => {
+          const raw = fields.bajajNumberOfFloorsBuilding || fields.bajajFloorNo || '';
+          const match = raw.match(/G\+(\d+)/i);
+          if (match) return parseInt(match[1], 10) + 1;
+          const num = parseInt(raw, 10);
+          return isNaN(num) ? 1 : Math.max(1, num);
+        };
+
+        const floorOccupancy: { floor: string; status: string }[] = Array.isArray(fields.bajajFloorOccupancy) && fields.bajajFloorOccupancy.length > 0
+          ? fields.bajajFloorOccupancy
+          : FLOOR_LABELS.slice(0, getFloorCount()).map((fl: string) => ({
+              floor: fl,
+              status: fields.bajajOccupiedBy === 'Self Occupied' ? 'Owner' : (fields.bajajOccupiedBy === 'Tenant' ? 'Tenant' : (fields.bajajOccupiedBy === 'Vacant' ? 'Vacant' : ''))
+            }));
+
+        const compileOccupantString = (occ: { floor: string; status: string }[]) => {
+          const grouped: Record<string, string[]> = {};
+          for (const item of occ) {
+            if (!item.status) continue;
+            if (!grouped[item.status.toUpperCase()]) grouped[item.status.toUpperCase()] = [];
+            grouped[item.status.toUpperCase()].push(item.floor);
+          }
+          return Object.entries(grouped).map(([status, floors]) => `${floors.join(' & ')}- ${status}`).join('\n');
+        };
+
+        const handleFloorStatusChange = (idx: number, status: string) => {
+          const updated = [...floorOccupancy];
+          updated[idx] = { ...updated[idx], status };
+          handleChange('bajajFloorOccupancy', updated);
+          if (!fields.bajajCurrentOccupant_isManual) {
+            handleChange('bajajCurrentOccupant', compileOccupantString(updated));
+          }
+        };
+
+        // ── Accommodation Table helpers ──
+        const accommodationFloors: { floor: string; occupancy: string; bedrooms: number; halls: number; dining: number; kitchens: number; bathrooms: number; other: string }[] = 
+          Array.isArray(fields.bajajAccommodationFloors) && fields.bajajAccommodationFloors.length > 0
+            ? fields.bajajAccommodationFloors
+            : FLOOR_LABELS.slice(0, getFloorCount()).map((fl: string, i: number) => ({
+                floor: fl,
+                occupancy: floorOccupancy[i]?.status || '',
+                bedrooms: 0, halls: 0, dining: 0, kitchens: 0, bathrooms: 0, other: ''
+              }));
+
+        const compileAccommodationString = (rows: typeof accommodationFloors) => {
+          return rows.map(r => {
+            const parts: string[] = [];
+            if (r.bedrooms > 0) parts.push(`${r.bedrooms} BEDROOM`);
+            if (r.halls > 0) parts.push(`${r.halls} DRAWING`);
+            if (r.dining > 0) parts.push(`${r.dining} DINING`);
+            if (r.kitchens > 0) parts.push(`${r.kitchens} KITCHEN`);
+            if (r.bathrooms > 0) parts.push(`${r.bathrooms} TOILET`);
+            if (r.other) parts.push(r.other.toUpperCase());
+            return `${r.floor}- ${parts.join(', ') || 'NA'}`;
+          }).join('\n');
+        };
+
+        const handleAccFloorChange = (idx: number, key: string, value: any) => {
+          const updated = [...accommodationFloors];
+          updated[idx] = { ...updated[idx], [key]: value };
+          handleChange('bajajAccommodationFloors', updated);
+          if (!fields.bajajAccommodationDetails_isManual) {
+            handleChange('bajajAccommodationDetails', compileAccommodationString(updated));
+          }
+        };
+
+        const addAccFloor = () => {
+          const updated = [...accommodationFloors, { floor: '', occupancy: '', bedrooms: 0, halls: 0, dining: 0, kitchens: 0, bathrooms: 0, other: '' }];
+          handleChange('bajajAccommodationFloors', updated);
+        };
+
+        const removeAccFloor = (idx: number) => {
+          const updated = accommodationFloors.filter((_: any, i: number) => i !== idx);
+          handleChange('bajajAccommodationFloors', updated);
+          if (!fields.bajajAccommodationDetails_isManual) {
+            handleChange('bajajAccommodationDetails', compileAccommodationString(updated));
+          }
+        };
+
+        const NumericStepper = ({ value, onChange, disabled: dis }: { value: number; onChange: (v: number) => void; disabled?: boolean }) => (
+          <div className="flex items-center gap-1">
+            <button type="button" onClick={() => onChange(Math.max(0, value - 1))} disabled={dis} className="w-5 h-5 flex items-center justify-center rounded bg-gray-200 hover:bg-gray-300 text-xs font-bold disabled:opacity-40">−</button>
+            <span className="w-5 text-center text-xs font-medium">{value}</span>
+            <button type="button" onClick={() => onChange(Math.min(9, value + 1))} disabled={dis} className="w-5 h-5 flex items-center justify-center rounded bg-gray-200 hover:bg-gray-300 text-xs font-bold disabled:opacity-40">+</button>
+          </div>
+        );
+
         return (
           <div className="animate-fade-in space-y-6">
             <div className="border border-[#E9D5FF] bg-[#FAF5FF] rounded-xl p-4">
@@ -1577,6 +1671,7 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
                   <input 
                     type="number"
                     min="0"
+                    step="1"
                     className={inputCls} 
                     value={fields.bajajNoOfLifts || ''} 
                     onChange={e => handleChange('bajajNoOfLifts', e.target.value)} 
@@ -1588,37 +1683,153 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
                 {renderSelectWithCustom('bajajSeparateAccess', ['Yes', 'No'], 'Separate Independent Access (Yes/No)')}
               </div>
 
-              <div className="mt-4">
-                <div className="flex justify-between items-end mb-1">
-                  <label className="block text-xs font-medium text-gray-700">Current Occupant of Property (Owner/Tenant/Vacant)</label>
+              {/* ── Current Occupant: Interactive Floor-Occupancy Tag Group ── */}
+              <div className="mt-6 border border-purple-200 bg-purple-50/40 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-3">
+                  <label className="block text-xs font-semibold text-gray-700">Current Occupant of Property (Owner/Tenant/Vacant)</label>
                   <EditSwitch 
                     field="bajajCurrentOccupant" 
                     onToggleOff={() => {
                       handleChange('bajajCurrentOccupant_isNA', false);
-                      handleChange('bajajCurrentOccupant', fields.bajajOccupiedBy || '');
+                      handleChange('bajajCurrentOccupant', compileOccupantString(floorOccupancy));
                     }} 
                   />
                 </div>
-                <textarea
-                  className={inputCls} 
-                  rows={2}
-                  value={fields.bajajCurrentOccupant === 'NA' ? 'NA' : fields.bajajCurrentOccupant || ''} 
-                  onChange={e => handleChange('bajajCurrentOccupant', e.target.value)} 
-                  disabled={isReadOnly || !fields.bajajCurrentOccupant_isManual || fields.bajajCurrentOccupant_isNA} 
-                />
+                
+                {!fields.bajajCurrentOccupant_isManual && !fields.bajajCurrentOccupant_isNA ? (
+                  <>
+                    {/* Floor Status Pill Grid */}
+                    <div className="space-y-2">
+                      {floorOccupancy.map((item: { floor: string; status: string }, idx: number) => (
+                        <div key={idx} className="flex items-center gap-3 bg-white rounded-lg px-3 py-2 shadow-sm border border-purple-100">
+                          <span className="text-xs font-bold text-purple-700 w-8 shrink-0">{item.floor}</span>
+                          <div className="flex gap-1 flex-1">
+                            {STATUS_OPTIONS.map(opt => (
+                              <button
+                                key={opt}
+                                type="button"
+                                onClick={() => handleFloorStatusChange(idx, opt)}
+                                disabled={isReadOnly}
+                                className={`flex-1 px-2 py-1 text-[10px] font-semibold rounded-full border transition-all duration-150 ${
+                                  item.status === opt
+                                    ? opt === 'Owner' ? 'bg-emerald-500 text-white border-emerald-600 shadow-sm'
+                                    : opt === 'Tenant' ? 'bg-amber-500 text-white border-amber-600 shadow-sm'
+                                    : 'bg-slate-500 text-white border-slate-600 shadow-sm'
+                                    : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
+                                } ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              >
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Auto-compiled Summary */}
+                    <div className="mt-3 bg-white rounded-lg border border-purple-200 p-3">
+                      <p className="text-[10px] font-medium text-purple-500 uppercase tracking-wider mb-1">Auto-compiled Summary</p>
+                      <pre className="text-xs text-gray-700 font-mono whitespace-pre-wrap leading-relaxed">{compileOccupantString(floorOccupancy) || '—'}</pre>
+                    </div>
+                  </>
+                ) : (
+                  /* Raw textarea override when Edit On */
+                  <textarea
+                    className={inputCls} 
+                    rows={3}
+                    placeholder="e.g. GF & 2ND- TENANT&#10;1ST & 3RD- OWNER"
+                    value={fields.bajajCurrentOccupant === 'NA' ? 'NA' : fields.bajajCurrentOccupant || ''} 
+                    onChange={e => handleChange('bajajCurrentOccupant', e.target.value)} 
+                    disabled={isReadOnly || fields.bajajCurrentOccupant_isNA} 
+                  />
+                )}
                 <NACheckbox field="bajajCurrentOccupant" />
               </div>
 
-              <div className="mt-4">
-                <Field label="Accommodation details: Floor wise and Occupancy">
+              {/* ── Accommodation Details: Dynamic Floor Breakdown Table ── */}
+              <div className="mt-6 border border-purple-200 bg-purple-50/40 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-3">
+                  <label className="block text-xs font-semibold text-gray-700">Accommodation details: Floor wise and Occupancy</label>
+                  <EditSwitch 
+                    field="bajajAccommodationDetails" 
+                    onToggleOff={() => {
+                      handleChange('bajajAccommodationDetails_isNA', false);
+                      handleChange('bajajAccommodationDetails', compileAccommodationString(accommodationFloors));
+                    }} 
+                  />
+                </div>
+
+                {!fields.bajajAccommodationDetails_isManual && !fields.bajajAccommodationDetails_isNA ? (
+                  <>
+                    {/* Dynamic Repeater Grid */}
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-[10px] border-collapse">
+                        <thead>
+                          <tr className="bg-purple-100 text-purple-800">
+                            <th className="px-2 py-1.5 text-left font-semibold border border-purple-200 whitespace-nowrap">Floor</th>
+                            <th className="px-2 py-1.5 text-left font-semibold border border-purple-200 whitespace-nowrap">Occupancy</th>
+                            <th className="px-2 py-1.5 text-center font-semibold border border-purple-200 whitespace-nowrap">Bedrooms</th>
+                            <th className="px-2 py-1.5 text-center font-semibold border border-purple-200 whitespace-nowrap">Halls/Drawing</th>
+                            <th className="px-2 py-1.5 text-center font-semibold border border-purple-200 whitespace-nowrap">Dining</th>
+                            <th className="px-2 py-1.5 text-center font-semibold border border-purple-200 whitespace-nowrap">Kitchens</th>
+                            <th className="px-2 py-1.5 text-center font-semibold border border-purple-200 whitespace-nowrap">Bathrooms</th>
+                            <th className="px-2 py-1.5 text-left font-semibold border border-purple-200 whitespace-nowrap">Other</th>
+                            <th className="px-2 py-1.5 text-center font-semibold border border-purple-200 w-8"></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {accommodationFloors.map((row: any, idx: number) => (
+                            <tr key={idx} className="bg-white hover:bg-purple-50/50">
+                              <td className="px-1 py-1 border border-purple-100">
+                                <select className="w-full text-[10px] border border-gray-200 rounded px-1 py-0.5" value={row.floor} onChange={e => handleAccFloorChange(idx, 'floor', e.target.value)} disabled={isReadOnly}>
+                                  <option value="">Select</option>
+                                  {['GF', 'FF', 'SF', 'TF', '1ST', '2ND', '3RD', '4TH', '5TH'].map(f => <option key={f} value={f}>{f}</option>)}
+                                  <option value="Custom">Custom</option>
+                                </select>
+                              </td>
+                              <td className="px-1 py-1 border border-purple-100">
+                                <select className="w-full text-[10px] border border-gray-200 rounded px-1 py-0.5" value={row.occupancy} onChange={e => handleAccFloorChange(idx, 'occupancy', e.target.value)} disabled={isReadOnly}>
+                                  <option value="">Select</option>
+                                  {['Owner', 'Tenant', 'Vacant'].map(o => <option key={o} value={o}>{o}</option>)}
+                                </select>
+                              </td>
+                              <td className="px-1 py-1 border border-purple-100 text-center"><NumericStepper value={row.bedrooms || 0} onChange={v => handleAccFloorChange(idx, 'bedrooms', v)} disabled={isReadOnly} /></td>
+                              <td className="px-1 py-1 border border-purple-100 text-center"><NumericStepper value={row.halls || 0} onChange={v => handleAccFloorChange(idx, 'halls', v)} disabled={isReadOnly} /></td>
+                              <td className="px-1 py-1 border border-purple-100 text-center"><NumericStepper value={row.dining || 0} onChange={v => handleAccFloorChange(idx, 'dining', v)} disabled={isReadOnly} /></td>
+                              <td className="px-1 py-1 border border-purple-100 text-center"><NumericStepper value={row.kitchens || 0} onChange={v => handleAccFloorChange(idx, 'kitchens', v)} disabled={isReadOnly} /></td>
+                              <td className="px-1 py-1 border border-purple-100 text-center"><NumericStepper value={row.bathrooms || 0} onChange={v => handleAccFloorChange(idx, 'bathrooms', v)} disabled={isReadOnly} /></td>
+                              <td className="px-1 py-1 border border-purple-100">
+                                <input type="text" className="w-full text-[10px] border border-gray-200 rounded px-1 py-0.5" placeholder="e.g. 1 Storeroom" value={row.other || ''} onChange={e => handleAccFloorChange(idx, 'other', e.target.value)} disabled={isReadOnly} />
+                              </td>
+                              <td className="px-1 py-1 border border-purple-100 text-center">
+                                <button type="button" onClick={() => removeAccFloor(idx)} disabled={isReadOnly || accommodationFloors.length <= 1} className="text-red-400 hover:text-red-600 disabled:opacity-30 text-sm font-bold">✕</button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <button type="button" onClick={addAccFloor} disabled={isReadOnly} className="mt-2 text-[10px] font-semibold text-purple-600 hover:text-purple-800 border border-dashed border-purple-300 rounded-md px-3 py-1 hover:bg-purple-50 transition-colors disabled:opacity-40">
+                      + Add Floor
+                    </button>
+
+                    {/* Compiled Preview */}
+                    <div className="mt-3 bg-white rounded-lg border border-purple-200 p-3">
+                      <p className="text-[10px] font-medium text-purple-500 uppercase tracking-wider mb-1">Auto-compiled Preview</p>
+                      <pre className="text-xs text-gray-700 font-mono whitespace-pre-wrap leading-relaxed">{compileAccommodationString(accommodationFloors) || '—'}</pre>
+                    </div>
+                  </>
+                ) : (
+                  /* Raw textarea override when Edit On */
                   <textarea 
                     className={inputCls} 
-                    rows={4}
+                    rows={5}
+                    placeholder="e.g. GF- 2 BEDROOM, 1 DINING, 1 DRAWING, 2 TOILET, 1 KITCHEN"
                     value={fields.bajajAccommodationDetails || ''} 
                     onChange={e => handleChange('bajajAccommodationDetails', e.target.value)} 
                     disabled={isReadOnly || fields.bajajAccommodationDetails_isNA} 
                   />
-                </Field>
+                )}
                 <NACheckbox field="bajajAccommodationDetails" />
               </div>
             </div>
