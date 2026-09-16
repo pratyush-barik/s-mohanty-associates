@@ -208,7 +208,7 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
       { label: 'Boundaries Matching (Yes/No)', value: getVal('bajajBoundaryMatching') },
       { label: 'Property Identified (Yes/No)', value: getVal('bajajPropertyIdentifiable') }
     ]);
-    this.drawSimpleRow('Approach Road Size (<5 ft/5-10 ft/ 10-15 ft/ >15 ft)', getVal('bajajApproachRoadSize'));
+    this.drawSimpleRow('Approach Road Size (<5 ft/5-10 ft/ 10-15 ft/ 15ft)', getVal('bajajApproachRoadSize'));
   }
 
   // ── Section 5: Approval Details ──

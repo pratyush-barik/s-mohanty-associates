@@ -142,23 +142,20 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
     
     bajajBoundaryNorthActual: '',
     bajajBoundaryNorthActual_isNA: false,
-    bajajBoundaryNorthActual_isManual: false,
     
     bajajBoundaryEastActual: '',
     bajajBoundaryEastActual_isNA: false,
-    bajajBoundaryEastActual_isManual: false,
     
     bajajBoundarySouthActual: '',
     bajajBoundarySouthActual_isNA: false,
-    bajajBoundarySouthActual_isManual: false,
     
     bajajBoundaryWestActual: '',
     bajajBoundaryWestActual_isNA: false,
-    bajajBoundaryWestActual_isManual: false,
 
     bajajBoundaryMatching: '',
     bajajBoundaryMatchingCustom: '',
     bajajBoundaryMatching_isNA: false,
+    bajajBoundaryMatching_isManual: false,
     
     bajajPropertyIdentifiable: '',
     bajajPropertyIdentifiableCustom: '',
@@ -885,6 +882,42 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
           </div>
         );
 
+        const handleBoundaryChange = (fieldToUpdate: string, value: string) => {
+          handleChange(fieldToUpdate, value);
+          
+          if (!fields.bajajBoundaryMatching_isManual && !fields.bajajBoundaryMatching_isNA) {
+            const getLatest = (f: string) => f === fieldToUpdate ? value : (fields[f] || '');
+            
+            const nMatch = getLatest('bajajBoundaryNorthDeed').trim().toLowerCase() === getLatest('bajajBoundaryNorthActual').trim().toLowerCase();
+            const eMatch = getLatest('bajajBoundaryEastDeed').trim().toLowerCase() === getLatest('bajajBoundaryEastActual').trim().toLowerCase();
+            const sMatch = getLatest('bajajBoundarySouthDeed').trim().toLowerCase() === getLatest('bajajBoundarySouthActual').trim().toLowerCase();
+            const wMatch = getLatest('bajajBoundaryWestDeed').trim().toLowerCase() === getLatest('bajajBoundaryWestActual').trim().toLowerCase();
+            
+            const allMatch = nMatch && eMatch && sMatch && wMatch;
+            
+            const allEmpty = 
+              !getLatest('bajajBoundaryNorthDeed') && !getLatest('bajajBoundaryNorthActual') &&
+              !getLatest('bajajBoundaryEastDeed') && !getLatest('bajajBoundaryEastActual') &&
+              !getLatest('bajajBoundarySouthDeed') && !getLatest('bajajBoundarySouthActual') &&
+              !getLatest('bajajBoundaryWestDeed') && !getLatest('bajajBoundaryWestActual');
+
+            if (allEmpty) {
+              handleChange('bajajBoundaryMatching', '');
+            } else {
+              handleChange('bajajBoundaryMatching', allMatch ? 'Yes' : 'No');
+            }
+          }
+        };
+
+        const syncBoundaryMatching = () => {
+          const nMatch = (fields.bajajBoundaryNorthDeed || '').trim().toLowerCase() === (fields.bajajBoundaryNorthActual || '').trim().toLowerCase();
+          const eMatch = (fields.bajajBoundaryEastDeed || '').trim().toLowerCase() === (fields.bajajBoundaryEastActual || '').trim().toLowerCase();
+          const sMatch = (fields.bajajBoundarySouthDeed || '').trim().toLowerCase() === (fields.bajajBoundarySouthActual || '').trim().toLowerCase();
+          const wMatch = (fields.bajajBoundaryWestDeed || '').trim().toLowerCase() === (fields.bajajBoundaryWestActual || '').trim().toLowerCase();
+          const allMatch = nMatch && eMatch && sMatch && wMatch;
+          handleChange('bajajBoundaryMatching', allMatch ? 'Yes' : 'No');
+        };
+
         return (
           <div className="animate-fade-in space-y-6">
             <div className="border border-[#C7D2FE] bg-[#EEF2FF] rounded-xl p-4">
@@ -894,8 +927,8 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
                 <table className="w-full text-sm text-left text-gray-600 border-collapse">
                   <thead className="bg-indigo-50 border-b border-indigo-100">
                     <tr>
-                      <th className="px-4 py-3 font-semibold w-1/5">Direction</th>
-                      <th className="px-4 py-3 font-semibold w-2/5">As per legal documents (Sub Plot No-J & Sub plot no-K-1(Part))</th>
+                      <th className="px-4 py-3 font-semibold w-1/5">Schedule of the Property</th>
+                      <th className="px-4 py-3 font-semibold w-2/5">As per legal documents(Sub Plot No-J & Sub plot no-K-1(Part))</th>
                       <th className="px-4 py-3 font-semibold w-2/5">As per site visit</th>
                     </tr>
                   </thead>
@@ -906,26 +939,20 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
                         <td className="px-4 py-3">
                           <input 
                             type="text"
-                            className={inputCls} 
+                            className={`${inputCls} capitalize`}
                             value={fields[`bajajBoundary${dir}Deed`] || ''} 
-                            onChange={e => handleChange(`bajajBoundary${dir}Deed`, e.target.value)} 
+                            onChange={e => handleBoundaryChange(`bajajBoundary${dir}Deed`, e.target.value)} 
                             disabled={isReadOnly || fields[`bajajBoundary${dir}Deed_isNA`]} 
                           />
                           <NACheckbox field={`bajajBoundary${dir}Deed`} />
                         </td>
                         <td className="px-4 py-3">
-                          <div className="flex justify-end mb-1">
-                            <EditSwitch 
-                              field={`bajajBoundary${dir}Actual`} 
-                              onToggleOff={() => handleChange(`bajajBoundary${dir}Actual`, fields[`bajajBoundary${dir}Deed`] || '')} 
-                            />
-                          </div>
                           <input 
                             type="text"
-                            className={inputCls} 
+                            className={`${inputCls} capitalize`}
                             value={fields[`bajajBoundary${dir}Actual`] || ''} 
-                            onChange={e => handleChange(`bajajBoundary${dir}Actual`, e.target.value)} 
-                            disabled={isReadOnly || !fields[`bajajBoundary${dir}Actual_isManual`] || fields[`bajajBoundary${dir}Actual_isNA`]} 
+                            onChange={e => handleBoundaryChange(`bajajBoundary${dir}Actual`, e.target.value)} 
+                            disabled={isReadOnly || fields[`bajajBoundary${dir}Actual_isNA`]} 
                           />
                           <NACheckbox field={`bajajBoundary${dir}Actual`} />
                         </td>
@@ -936,9 +963,51 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {renderSelectWithCustom('bajajBoundaryMatching', ['Yes', 'No'], 'Boundaries Matching (Yes/No)')}
+                <div>
+                  <div className="flex justify-between items-end mb-1">
+                    <label className="block text-xs font-medium text-gray-700">Boundaries Matching (Yes/No)</label>
+                    <EditSwitch 
+                      field="bajajBoundaryMatching" 
+                      onToggleOff={syncBoundaryMatching} 
+                    />
+                  </div>
+                  <select 
+                    className={inputCls} 
+                    value={fields.bajajBoundaryMatching === 'NA' ? 'NA' : (['Yes', 'No'].includes(fields.bajajBoundaryMatching || '') ? fields.bajajBoundaryMatching : (fields.bajajBoundaryMatching ? 'Custom' : ''))} 
+                    onChange={e => {
+                      if (e.target.value === 'Custom') {
+                        handleChange('bajajBoundaryMatching', fields.bajajBoundaryMatchingCustom || '');
+                      } else {
+                        handleChange('bajajBoundaryMatching', e.target.value);
+                      }
+                    }} 
+                    disabled={isReadOnly || !fields.bajajBoundaryMatching_isManual || fields.bajajBoundaryMatching_isNA}
+                  >
+                    <option value="">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                    <option value="Custom">Custom</option>
+                  </select>
+                  {!['Yes', 'No'].includes(fields.bajajBoundaryMatching || '') && fields.bajajBoundaryMatching && fields.bajajBoundaryMatching !== 'NA' && (
+                    <div className="mt-2">
+                      <input 
+                        type="text" 
+                        className={inputCls} 
+                        placeholder="Enter custom value"
+                        value={fields.bajajBoundaryMatchingCustom || ''} 
+                        onChange={e => {
+                          handleChange('bajajBoundaryMatchingCustom', e.target.value);
+                          handleChange('bajajBoundaryMatching', e.target.value);
+                        }}
+                        disabled={isReadOnly || !fields.bajajBoundaryMatching_isManual || fields.bajajBoundaryMatching_isNA}
+                      />
+                    </div>
+                  )}
+                  <NACheckbox field="bajajBoundaryMatching" />
+                </div>
+                
                 {renderSelectWithCustom('bajajPropertyIdentifiable', ['Yes', 'No'], 'Property Identified (Yes/No)')}
-                {renderSelectWithCustom('bajajApproachRoadSize', ['<5 ft', '5-10 ft', '10-15 ft', '>15 ft'], 'Approach Road Size (<5 ft/5-10 ft/ 10-15 ft/ >15 ft)')}
+                {renderSelectWithCustom('bajajApproachRoadSize', ['<5 ft', '5-10 ft', '10-15 ft', '15ft'], 'Approach Road Size (<5 ft/5-10 ft/ 10-15 ft/ 15ft)')}
               </div>
             </div>
           </div>
