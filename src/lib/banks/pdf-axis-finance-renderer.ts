@@ -516,22 +516,20 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
     const cw = (487.28 - 140) / 6; // CONTENT_W - 140
     const colWidths = [140, cw, cw, cw, cw, cw, cw];
     
-    const headers = ['Parameter', 'GF', 'FF', 'SF', 'TF', 'NA', 'Total'];
+    const headers = ['Parameter', 'GF', 'FF', 'SF', 'TF', 'NA / Other', 'Total'];
     const rows = [
-      ['Approved BUA', fv('axisCostBreakupApprovedBUAGF'), fv('axisCostBreakupApprovedBUAFF'), fv('axisCostBreakupApprovedBUASF'), fv('axisCostBreakupApprovedBUATF'), fv('axisCostBreakupApprovedBUANA'), fv('axisCostBreakupApprovedBUATotal')],
+      ['Approved BUA (Sq. Ft.)', fv('axisCostBreakupApprovedBUAGF'), fv('axisCostBreakupApprovedBUAFF'), fv('axisCostBreakupApprovedBUASF'), fv('axisCostBreakupApprovedBUATF'), fv('axisCostBreakupApprovedBUANA'), fv('axisCostBreakupApprovedBUATotal')],
       ['Actual BUA Sq ft', fv('axisCostBreakupActualBUAGF'), fv('axisCostBreakupActualBUAFF'), fv('axisCostBreakupActualBUASF'), fv('axisCostBreakupActualBUATF'), fv('axisCostBreakupActualBUANA'), fv('axisCostBreakupActualBUATotal')],
       ['Construction Cost Rs. Per Sq ft', fv('axisCostBreakupConstructionCostGF'), fv('axisCostBreakupConstructionCostFF'), fv('axisCostBreakupConstructionCostSF'), fv('axisCostBreakupConstructionCostTF'), fv('axisCostBreakupConstructionCostNA'), fv('axisCostBreakupConstructionCostTotal')],
-      ['Stage of Construction (%)', fv('axisCostBreakupStageOfConstructionGF'), fv('axisCostBreakupStageOfConstructionFF'), fv('axisCostBreakupStageOfConstructionSF'), fv('axisCostBreakupStageOfConstructionTF'), fv('axisCostBreakupStageOfConstructionNA'), fv('axisCostBreakupStageOfConstructionTotal')],
-      ['Total Construction Cost', fv('axisCostBreakupTotalConstructionCostGF'), fv('axisCostBreakupTotalConstructionCostFF'), fv('axisCostBreakupTotalConstructionCostSF'), fv('axisCostBreakupTotalConstructionCostTF'), fv('axisCostBreakupTotalConstructionCostNA'), fv('axisCostBreakupTotalConstructionCostTotal')],
-      ['Depreciation (%)', fv('axisCostBreakupDepreciationGF'), fv('axisCostBreakupDepreciationFF'), fv('axisCostBreakupDepreciationSF'), fv('axisCostBreakupDepreciationTF'), fv('axisCostBreakupDepreciationNA'), fv('axisCostBreakupDepreciationTotal')],
-      ['Depreciated Value', fv('axisCostBreakupDepreciatedValueGF'), fv('axisCostBreakupDepreciatedValueFF'), fv('axisCostBreakupDepreciatedValueSF'), fv('axisCostBreakupDepreciatedValueTF'), fv('axisCostBreakupDepreciatedValueNA'), fv('axisCostBreakupDepreciatedValueTotal')]
+      ['Total BUA Value', fv('axisCostBreakupTotalBUAValueGF'), fv('axisCostBreakupTotalBUAValueFF'), fv('axisCostBreakupTotalBUAValueSF'), fv('axisCostBreakupTotalBUAValueTF'), fv('axisCostBreakupTotalBUAValueNA'), fv('axisCostBreakupTotalBUAValueTotal')]
     ];
     
-    this.drawTable(headers, rows, colWidths);
+    this.drawTable(headers, rows, colWidths, [], [0]);
     this.advanceCursor(4);
 
     this.drawSectionSubtitle('Unit Market Value Summary');
-    this.drawSimpleRow('Market Value of Property (Land + Depreciated construction cost)', fv('axisMarketValueOfPropertySummary'));
+    this.drawSimpleRow('Value of the Approved BUA', fv('axisValueOfApprovedBUA'));
+    this.drawSimpleRow('Market Value of the Unit : (Land + Construction)', fv('axisMarketValueOfTheUnitLandAndConstruction'));
     this.advanceCursor(4);
   }
 
