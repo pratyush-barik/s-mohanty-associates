@@ -536,6 +536,8 @@ private drawAxisSection8() {
     };
 
     this.drawSectionSubtitle('Construction Cost & Technical Specifications');
+    this.drawTable([], [['Note : Cost of Construction to be worked out on Approved area only']], [487.28]);
+    
     this.drawKeyValueRow([
       { label: 'Estimated Cost Of Construction', value: fv('axisEstimatedCostOfConstruction') },
       { label: 'Standard Cost Of Construction', value: fv('axisStandardCostOfConstruction') }
