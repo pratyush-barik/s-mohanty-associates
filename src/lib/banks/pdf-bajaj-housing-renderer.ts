@@ -137,11 +137,18 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
     ]);
 
     const dist = this.fields.bajajDistanceFromCityCentre ? `${this.fields.bajajDistanceFromCityCentre} Kms` : '';
-    const latLong = this.fields.bajajLatLong_isNA ? 'NA' : `${fv('bajajLatitude', '')}, ${fv('bajajLongitude', '')}`.replace(/^, |, $/g, '');
+    const latStr = this.fields.bajajLatitude_isNA ? 'NA' : fv('bajajLatitude', '');
+    const longStr = this.fields.bajajLongitude_isNA ? 'NA' : fv('bajajLongitude', '');
+    let latLong = [latStr, longStr].filter(s => s && s !== 'NA').join(', ');
+    if (this.fields.bajajLatitude_isNA && this.fields.bajajLongitude_isNA) {
+      latLong = 'NA';
+    } else if (!latLong) {
+      latLong = 'NA';
+    }
 
     this.drawKeyValueRow([
       { label: 'Distance from City Centre', value: this.fields.bajajDistanceFromCityCentre_isNA ? 'NA' : (dist || 'NA') },
-      { label: 'LAT/Long', value: latLong || 'NA' }
+      { label: 'LAT/Long', value: latLong }
     ]);
     this.drawSimpleRow('Address as per Initiation', this.fields.bajajAddressAsPerInitiation_isNA ? 'NA' : fv('bajajAddressAsPerInitiation'));
   }

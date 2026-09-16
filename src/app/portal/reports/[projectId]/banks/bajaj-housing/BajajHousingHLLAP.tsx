@@ -72,12 +72,13 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
     bajajDistanceFromCityCentre_isNA: false,
     
     bajajLatitude: '',
+    bajajLatitude_isManual: false,
+    bajajLatitude_isNA: false,
     bajajLongitude: '',
-    bajajLatLong_isManual: false,
-    bajajLatLong_isNA: false,
+    bajajLongitude_isManual: false,
+    bajajLongitude_isNA: false,
     
     bajajAddressAsPerInitiation: '',
-    bajajAddressAsPerInitiation_isManual: false,
     bajajAddressAsPerInitiation_isNA: false,
     
     bajajLegalAddressOfProperty: '',
@@ -312,19 +313,6 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
 
         const handleSiteAddressChange = (val: string) => {
           handleChange('bajajAddressAsPerSite', val);
-          if (!fields.bajajAddressAsPerInitiation_isManual && !fields.bajajAddressAsPerInitiation_isNA) {
-            handleChange('bajajAddressAsPerInitiation', val);
-          }
-        };
-
-        const handleMapPicker = () => {
-          // Dummy function representing map picker action
-          if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition((position) => {
-              handleChange('bajajLatitude', position.coords.latitude.toFixed(6));
-              handleChange('bajajLongitude', position.coords.longitude.toFixed(6));
-            });
-          }
         };
 
         return (
@@ -379,6 +367,8 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
                       <div className="relative flex items-center">
                         <input 
                           type="number"
+                          step="0.1"
+                          min="0"
                           className={`${inputCls} pr-12`} 
                           value={fields.bajajDistanceFromCityCentre || ''} 
                           onChange={e => handleChange('bajajDistanceFromCityCentre', e.target.value)} 
@@ -389,69 +379,88 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
                     </Field>
                     <NACheckbox field="bajajDistanceFromCityCentre" />
                   </div>
-                  
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <div className="flex justify-between items-end mb-1">
-                      <label className="block text-xs font-medium text-gray-700">LAT/Long</label>
+                      <label className="block text-xs font-medium text-gray-700">LATITUDE</label>
                       <div className="flex items-center gap-3">
                         <button 
                           type="button"
-                          onClick={handleMapPicker}
-                          disabled={isReadOnly || fields.bajajLatLong_isNA}
+                          onClick={() => {
+                            if (navigator.geolocation) {
+                              navigator.geolocation.getCurrentPosition((position) => {
+                                handleChange('bajajLatitude', position.coords.latitude.toFixed(6));
+                              });
+                            }
+                          }}
+                          disabled={isReadOnly || fields.bajajLatitude_isNA}
                           className="text-xs text-blue-600 hover:text-blue-800 font-medium"
                         >
                           Fetch Current GPS
                         </button>
-                        <EditSwitch field="bajajLatLong" />
+                        <EditSwitch field="bajajLatitude" />
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <div className="w-1/2">
-                        <input 
-                          type="number"
-                          step="any"
-                          min="-90"
-                          max="90"
-                          placeholder="Latitude"
-                          className={inputCls} 
-                          value={fields.bajajLatitude || ''} 
-                          onChange={e => handleChange('bajajLatitude', e.target.value)} 
-                          disabled={isReadOnly || !fields.bajajLatLong_isManual || fields.bajajLatLong_isNA} 
-                        />
-                      </div>
-                      <div className="w-1/2">
-                        <input 
-                          type="number"
-                          step="any"
-                          min="-180"
-                          max="180"
-                          placeholder="Longitude"
-                          className={inputCls} 
-                          value={fields.bajajLongitude || ''} 
-                          onChange={e => handleChange('bajajLongitude', e.target.value)} 
-                          disabled={isReadOnly || !fields.bajajLatLong_isManual || fields.bajajLatLong_isNA} 
-                        />
+                    <input 
+                      type="number"
+                      step="any"
+                      min="-90"
+                      max="90"
+                      className={inputCls} 
+                      value={fields.bajajLatitude || ''} 
+                      onChange={e => handleChange('bajajLatitude', e.target.value)} 
+                      disabled={isReadOnly || !fields.bajajLatitude_isManual || fields.bajajLatitude_isNA} 
+                    />
+                    <NACheckbox field="bajajLatitude" />
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between items-end mb-1">
+                      <label className="block text-xs font-medium text-gray-700">LONGITUDE</label>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            if (navigator.geolocation) {
+                              navigator.geolocation.getCurrentPosition((position) => {
+                                handleChange('bajajLongitude', position.coords.longitude.toFixed(6));
+                              });
+                            }
+                          }}
+                          disabled={isReadOnly || fields.bajajLongitude_isNA}
+                          className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                        >
+                          Fetch Current GPS
+                        </button>
+                        <EditSwitch field="bajajLongitude" />
                       </div>
                     </div>
-                    <NACheckbox field="bajajLatLong" />
+                    <input 
+                      type="number"
+                      step="any"
+                      min="-180"
+                      max="180"
+                      className={inputCls} 
+                      value={fields.bajajLongitude || ''} 
+                      onChange={e => handleChange('bajajLongitude', e.target.value)} 
+                      disabled={isReadOnly || !fields.bajajLongitude_isManual || fields.bajajLongitude_isNA} 
+                    />
+                    <NACheckbox field="bajajLongitude" />
                   </div>
                 </div>
 
                 <div>
-                  <div className="flex justify-between items-end mb-1">
-                    <label className="block text-xs font-medium text-gray-700">Address as per Initiation</label>
-                    <EditSwitch 
-                      field="bajajAddressAsPerInitiation" 
-                      onToggleOff={() => handleChange('bajajAddressAsPerInitiation', fields.bajajAddressAsPerSite || '')} 
+                  <Field label="Address as per Initiation">
+                    <textarea 
+                      className={inputCls} 
+                      rows={3} 
+                      value={fields.bajajAddressAsPerInitiation || ''} 
+                      onChange={e => handleChange('bajajAddressAsPerInitiation', e.target.value)} 
+                      disabled={isReadOnly || fields.bajajAddressAsPerInitiation_isNA} 
                     />
-                  </div>
-                  <textarea 
-                    className={inputCls} 
-                    rows={3} 
-                    value={fields.bajajAddressAsPerInitiation || ''} 
-                    onChange={e => handleChange('bajajAddressAsPerInitiation', e.target.value)} 
-                    disabled={isReadOnly || !fields.bajajAddressAsPerInitiation_isManual || fields.bajajAddressAsPerInitiation_isNA} 
-                  />
+                  </Field>
                   <NACheckbox field="bajajAddressAsPerInitiation" />
                 </div>
               </div>
