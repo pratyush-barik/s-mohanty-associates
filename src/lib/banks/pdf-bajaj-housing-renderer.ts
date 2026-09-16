@@ -55,9 +55,9 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
       this.drawBajajSection1();
     } else if (title === 'LOCATION DETAILS') {
       this.drawBajajSection2();
-    } else if (title === 'PROPERTY DETAILS') {
+    } else if (title === 'LEGAL ADDRESS & PROPERTY DETAILS') {
       this.drawBajajSection3();
-    } else if (title === 'BOUNDARIES & SCHEDULE') {
+    } else if (title === 'SCHEDULE OF THE PROPERTY') {
       this.drawBajajSection4();
     } else if (title === 'NDMA PARAMETERS') {
       this.drawBajajSection5();
@@ -65,13 +65,13 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
       this.drawBajajSection6();
     } else if (title === 'TECHNICAL DETAILS') {
       this.drawBajajSection7();
-    } else if (title === 'PLOT & BAU AREA') {
+    } else if (title === 'AREA DETAILS & VALUATION (BAU DETAILS)') {
       this.drawBajajSection8();
-    } else if (title === 'VALUATION') {
+    } else if (title === 'PROPERTY STATUS & VALUATION DETAILS') {
       this.drawBajajSection9();
-    } else if (title === 'REMARKS & PANCHAYAT') {
+    } else if (title === 'REMARKS & ADDITIONAL CHECKS FOR PANCHAYAT PROPERTIES') {
       this.drawBajajSection10();
-    } else if (title === 'DECLARATION') {
+    } else if (title === 'DECLARATION & VERIFICATION') {
       this.drawBajajSection11();
     }
   }
