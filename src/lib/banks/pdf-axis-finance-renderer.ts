@@ -172,18 +172,13 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
     };
     
     // Approval Details Table
-    this.drawKeyValueRow([
-      { label: 'Description', value: 'Approval authority', labelBold: true, valueBold: true },
-      { label: 'Approval no', value: 'Approval Date', labelBold: true, valueBold: true }
-    ]);
-    this.drawKeyValueRow([
-      { label: 'Layout Plan', value: fv('axisLayoutPlanApprovalAuthority'), labelBold: true },
-      { label: fv('axisLayoutPlanApprovalNo'), value: fv('axisLayoutPlanApprovalDate') }
-    ]);
-    this.drawKeyValueRow([
-      { label: 'Building/Construction Plan', value: fv('axisBuildingPlanApprovalAuthority'), labelBold: true },
-      { label: fv('axisBuildingPlanApprovalNo'), value: fv('axisBuildingPlanApprovalDate') }
-    ]);
+    const headers = ['Description', 'Approval authority', 'Approval no', 'Approval Date'];
+    const rows = [
+      ['Layout Plan', fv('axisLayoutPlanApprovalAuthority'), fv('axisLayoutPlanApprovalNo'), fv('axisLayoutPlanApprovalDate')],
+      ['Building/Construction Plan', fv('axisBuildingPlanApprovalAuthority'), fv('axisBuildingPlanApprovalNo'), fv('axisBuildingPlanApprovalDate')]
+    ];
+    const colWidths = [150, 120, 120, 120];
+    this.drawTable(headers, rows, colWidths, [], [0]);
     
     this.advanceCursor(10);
     this.drawCenteredTitle('Building Specifications & Condition');
