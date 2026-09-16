@@ -625,12 +625,18 @@ private drawAxisSection8() {
 
     this.drawSectionSubtitle('Attachment');
     const attachments = this.fields.axisAttachments || [];
+    
+    const attachmentRows: string[][] = [];
     if (attachments.length > 0) {
       attachments.forEach((item: any, idx: number) => {
         if (item.text && item.text !== 'NA') {
-          this.drawSimpleRow(`${idx + 1}.`, item.text);
+          attachmentRows.push([`${idx + 1}.`, item.text]);
         }
       });
+    }
+    
+    if (attachmentRows.length > 0) {
+      this.drawTable([], attachmentRows, [30, 457.28]);
     } else {
       this.drawSimpleRow('Attachments', 'NA');
     }
