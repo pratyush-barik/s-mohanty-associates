@@ -1273,45 +1273,48 @@ export default function BankReportBuilder({
         r.advanceCursor(8);
       }
 
-      // ── Declaration ──
-      r.drawTextBlock('Declaration:', { bold: true, fontSize: 14 });
-      r.advanceCursor(2);
-      r.drawTextBlock('I hereby declare that:');
-      r.advanceCursor(2);
-      r.drawTextBlock(`\u2022 I have deputed my representative ${fields.representativeName ? 'Mr. ' + fields.representativeName : '______'}${fields.representativeFatherName ? ', S/o: ' + fields.representativeFatherName : ''} to inspect the property on ${fmtDate(fields.dateOfInspection)}.`);
-      r.drawTextBlock('\u2022 I have no direct or indirect interest in the property valued.');
-      r.drawTextBlock('\u2022 The information furnished is true and correct to the best of my knowledge and belief.');
-      r.advanceCursor(10);
+      // ── Declaration & Valuation Certificate ──
+      if (!config.hideDefaultDeclarationAndCertificate) {
+        // ── Declaration ──
+        r.drawTextBlock('Declaration:', { bold: true, fontSize: 14 });
+        r.advanceCursor(2);
+        r.drawTextBlock('I hereby declare that:');
+        r.advanceCursor(2);
+        r.drawTextBlock(`\u2022 I have deputed my representative ${fields.representativeName ? 'Mr. ' + fields.representativeName : '______'}${fields.representativeFatherName ? ', S/o: ' + fields.representativeFatherName : ''} to inspect the property on ${fmtDate(fields.dateOfInspection)}.`);
+        r.drawTextBlock('\u2022 I have no direct or indirect interest in the property valued.');
+        r.drawTextBlock('\u2022 The information furnished is true and correct to the best of my knowledge and belief.');
+        r.advanceCursor(10);
 
-      // ── Valuation Certificate ──
-      r.checkPageBreak(200);
-      r.drawCenteredTitle('VALUATION CERTIFICATE', undefined, true);
-      r.advanceCursor(6);
-      r.drawCertificateBox([
-        {
-          segments: [
-            { text: 'This is to certify that the undersigned has personally inspected the property belonging to ' },
-            { text: fields.ownerName, bold: true },
-            { text: ' situated at ' },
-            { text: fields.annexureEnabled && fields.annexures.length > 0 ? `address as provided in Annexure ${(fields.annexures.find(a => a.parsedData) || fields.annexures[0]).label}` : getFullAddress(), bold: true },
-            { text: ' on ' },
-            { text: fmtDate(fields.dateOfInspection), bold: true },
-            { text: ' and after careful examination and consideration of all relevant factors, the Fair Market Value of the said property is assessed as under:' },
-          ],
-        },
-        { segments: [{ text: `Fair Market Value: Rs. ${formatIndianCurrency(totalPropertyValue)} (${rupeesInWords(totalPropertyValue)})`, bold: true }] },
-        { segments: [{ text: `Realizable Value (${fields.realizablePct || '90'}%): Rs. ${formatIndianCurrency(realizableValue)} (${rupeesInWords(realizableValue)})`, bold: true }] },
-        { segments: [{ text: `Distress Sale Value (${fields.distressPct || '80'}%): Rs. ${formatIndianCurrency(distressValue)} (${rupeesInWords(distressValue)})`, bold: true }] },
-      ]);
+        // ── Valuation Certificate ──
+        r.checkPageBreak(200);
+        r.drawCenteredTitle('VALUATION CERTIFICATE', undefined, true);
+        r.advanceCursor(6);
+        r.drawCertificateBox([
+          {
+            segments: [
+              { text: 'This is to certify that the undersigned has personally inspected the property belonging to ' },
+              { text: fields.ownerName, bold: true },
+              { text: ' situated at ' },
+              { text: fields.annexureEnabled && fields.annexures.length > 0 ? `address as provided in Annexure ${(fields.annexures.find(a => a.parsedData) || fields.annexures[0]).label}` : getFullAddress(), bold: true },
+              { text: ' on ' },
+              { text: fmtDate(fields.dateOfInspection), bold: true },
+              { text: ' and after careful examination and consideration of all relevant factors, the Fair Market Value of the said property is assessed as under:' },
+            ],
+          },
+          { segments: [{ text: `Fair Market Value: Rs. ${formatIndianCurrency(totalPropertyValue)} (${rupeesInWords(totalPropertyValue)})`, bold: true }] },
+          { segments: [{ text: `Realizable Value (${fields.realizablePct || '90'}%): Rs. ${formatIndianCurrency(realizableValue)} (${rupeesInWords(realizableValue)})`, bold: true }] },
+          { segments: [{ text: `Distress Sale Value (${fields.distressPct || '80'}%): Rs. ${formatIndianCurrency(distressValue)} (${rupeesInWords(distressValue)})`, bold: true }] },
+        ]);
 
-      // ── Signature ──
-      r.drawSignatureBlock([
-        { text: '_______________________________' },
-        { text: 'Satyajit Mohanty', bold: true, fontSize: 14 },
-        { text: 'B.E.(Civil), M.Tech (Structural)', italic: true },
-        { text: 'Registered Valuer \u2014 IBBI/RV/02/2019/10594', italic: true },
-        { text: 'S Mohanty & Associates, Bhubaneswar', italic: true },
-      ]);
+        // ── Signature ──
+        r.drawSignatureBlock([
+          { text: '_______________________________' },
+          { text: 'Satyajit Mohanty', bold: true, fontSize: 14 },
+          { text: 'B.E.(Civil), M.Tech (Structural)', italic: true },
+          { text: 'Registered Valuer \u2014 IBBI/RV/02/2019/10594', italic: true },
+          { text: 'S Mohanty & Associates, Bhubaneswar', italic: true },
+        ]);
+      }
 
       // ── Property Photographs ──
       if (propImageBytes.length > 0) {

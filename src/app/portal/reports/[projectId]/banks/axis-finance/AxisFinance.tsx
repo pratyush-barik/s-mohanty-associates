@@ -24,6 +24,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
     { id: 'section-12', title: 'Maps' },
   ],
   hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7', 'section-7a', 'section-7b', 'section-7c', 'section-8', 'section-9', 'section-10', 'annexures'],
+  hideDefaultDeclarationAndCertificate: true,
   extraSections: [],
   hiddenFields: ['to', 'dateOfValuation', 'refNo'],
   fieldLabels: {
