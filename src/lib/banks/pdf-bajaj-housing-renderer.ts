@@ -85,20 +85,44 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
   private drawBajajSection1() {
     const fv = this.fv.bind(this);
 
+    // Helpers to build complex field strings
+    const getContactPerson = () => {
+      if (this.fields.bajajContactPerson_isNA) return 'NA';
+      const name = this.fields.bajajContactPersonName || '';
+      const phone = this.fields.bajajContactPersonPhone ? `+91 ${this.fields.bajajContactPersonPhone}` : '';
+      return [name, phone].filter(Boolean).join(' - ') || 'NA';
+    };
+
+    const getLoanType = () => {
+      if (this.fields.bajajLoanType === 'Custom') return this.fields.bajajLoanTypeCustom || 'NA';
+      return fv('bajajLoanType');
+    };
+
+    const getPropertyOwner = () => {
+      if (this.fields.bajajPropertyOwner_isNA) return 'NA';
+      const name = this.fields.bajajPropertyOwnerName || '';
+      let rel = this.fields.bajajPropertyOwnerRelation || '';
+      if (rel === 'Custom') rel = this.fields.bajajPropertyOwnerRelationCustom || '';
+      const relName = this.fields.bajajPropertyOwnerRelative || '';
+      
+      const relClause = rel && relName ? `${rel} ${relName}` : '';
+      return [name, relClause].filter(Boolean).join(', ') || 'NA';
+    };
+
     this.drawKeyValueRow([
-      { label: 'File No./LAN No./System No.', value: fv('bajajFileNo') },
+      { label: 'File No./LAN No./System No.', value: this.fields.bajajFileNo_isNA ? 'NA' : fv('bajajFileNo') },
       { label: 'Date of Report', value: fv('bajajDateOfReport') }
     ]);
     this.drawKeyValueRow([
       { label: 'Name of Applicant', value: fv('bajajNameOfApplicant') },
-      { label: 'Contact Person Name & No.', value: fv('bajajContactPersonNameNo') }
+      { label: 'Contact Person Name & No.', value: getContactPerson() }
     ]);
     this.drawKeyValueRow([
-      { label: 'Loan Type (HL/LAP/BT)', value: fv('bajajLoanType') },
-      { label: 'Person Met at Site', value: fv('bajajPersonMetAtSite') }
+      { label: 'Loan Type (HL/LAP/BT)', value: getLoanType() },
+      { label: 'Person Met at Site', value: this.fields.bajajPersonMetAtSite_isNA ? 'NA' : fv('bajajPersonMetAtSite') }
     ]);
-    this.drawSimpleRow('Name of Property Owner as per Legal Document', fv('bajajPropertyOwnerName'));
-    this.drawSimpleRow('Documents Provided', fv('bajajDocumentsProvided'));
+    this.drawSimpleRow('Name of Property Owner as per Legal Document', getPropertyOwner());
+    this.drawSimpleRow('Documents Provided', this.fields.bajajDocumentsProvided_isNA ? 'NA' : fv('bajajDocumentsProvided'));
   }
 
   // ── Section 2: Location Details ──

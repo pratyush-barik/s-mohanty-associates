@@ -33,13 +33,33 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
   defaultValues: {
     // Section 1: Application Details
     bajajFileNo: '',
+    bajajFileNo_isNA: false,
+
     bajajDateOfReport: '',
+
     bajajNameOfApplicant: '',
-    bajajContactPersonNameNo: '',
+
+    bajajContactPersonName: '',
+    bajajContactPersonPhone: '',
+    bajajContactPerson_isManual: false,
+    bajajContactPerson_isNA: false,
+    
     bajajLoanType: '',
+    bajajLoanTypeCustom: '',
+
     bajajPersonMetAtSite: '',
+    bajajPersonMetAtSite_isManual: false,
+    bajajPersonMetAtSite_isNA: false,
+
     bajajPropertyOwnerName: '',
+    bajajPropertyOwnerRelation: 'S/O',
+    bajajPropertyOwnerRelationCustom: '',
+    bajajPropertyOwnerRelative: '',
+    bajajPropertyOwner_isManual: false,
+    bajajPropertyOwner_isNA: false,
+
     bajajDocumentsProvided: '',
+    bajajDocumentsProvided_isNA: false,
 
     // Section 2: Location Details
     bajajAddressAsPerSite: '',
