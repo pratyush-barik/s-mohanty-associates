@@ -330,6 +330,24 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
     
     // Custom multiline draw for Actual construction (BUA) (In Sq. Ft)
     this.drawSimpleRow('Actual construction (BUA) (In Sq. Ft)', fv('bajajActualConstruction'));
+    
+    this.advanceCursor(4);
+    
+    // Risk, Status & Age Assessment
+    this.drawSectionSubtitle('Risk, Status & Age Assessment');
+    this.drawKeyValueRow([
+      { label: 'Risk of Demolition', value: fv('bajajRiskOfDemolition') === 'Custom' ? fv('bajajRiskOfDemolitionCustom') : fv('bajajRiskOfDemolition') },
+      { label: 'Status of the Property', value: fv('bajajStatusOfProperty') === 'Custom' ? fv('bajajStatusOfPropertyCustom') : fv('bajajStatusOfProperty') }
+    ]);
+    this.drawKeyValueRow([
+      { label: '% Completed', value: fv('bajajPropertyCompletedPercent') ? `${fv('bajajPropertyCompletedPercent')}%` : '' },
+      { label: '% Recommended', value: fv('bajajPropertyRecommendedPercent') ? `${fv('bajajPropertyRecommendedPercent')}%` : '' }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Current Age of Property', value: fv('bajajCurrentAgeInYear') ? `${fv('bajajCurrentAgeInYear')} Years` : '' },
+      { label: 'Residual Age', value: fv('bajajResidualAge') ? `${fv('bajajResidualAge')} Years` : '' }
+    ]);
+
   }
 
   // ── Section 9: Valuation Summary ──

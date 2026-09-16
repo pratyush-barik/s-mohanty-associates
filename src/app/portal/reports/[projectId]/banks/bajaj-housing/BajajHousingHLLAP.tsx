@@ -345,6 +345,29 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
     bajajActualConstruction_isNA: false,
     bajajActualConstruction_isManual: false,
 
+    bajajRiskOfDemolition: '',
+    bajajRiskOfDemolition_isNA: false,
+    bajajRiskOfDemolitionCustom: '',
+
+    bajajStatusOfProperty: '',
+    bajajStatusOfProperty_isNA: false,
+    bajajStatusOfPropertyCustom: '',
+
+    bajajPropertyCompletedPercent: '',
+    bajajPropertyCompletedPercent_isNA: false,
+    bajajPropertyCompletedPercent_isManual: false,
+
+    bajajPropertyRecommendedPercent: '',
+    bajajPropertyRecommendedPercent_isNA: false,
+    bajajPropertyRecommendedPercent_isManual: false,
+
+    bajajCurrentAgeInYear: '',
+    bajajCurrentAgeInYear_isNA: false,
+
+    bajajResidualAge: '',
+    bajajResidualAge_isNA: false,
+    bajajResidualAge_isManual: false,
+
     // Section 9: Remarks & Declaration
     bajajRemarks: '',
     bajajSignatureDate: '',
@@ -2180,6 +2203,103 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
                   </div>
                   <textarea className={inputCls} rows={4} value={fields.bajajActualConstruction || ''} onChange={e => handleChange('bajajActualConstruction', e.target.value)} disabled={isReadOnly || !fields.bajajActualConstruction_isManual || fields.bajajActualConstruction_isNA} placeholder="GF TO SF- 1617sqft each floor,&#10;3rd floor-360sqft&#10;Total BUA=5211sqft" />
                   <NACheckbox field="bajajActualConstruction" />
+                </div>
+
+                <div className="lg:col-span-3">
+                  <hr className="my-2 border-pink-200" />
+                  <h4 className="font-semibold text-sm text-gray-700 mt-2 mb-2">Risk, Status & Age Assessment</h4>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Risk of Demolition (High / Medium / Low)</label>
+                  {renderSelectWithCustomRow(fields.bajajRiskOfDemolition, fields.bajajRiskOfDemolitionCustom, (v, c) => {
+                    handleChange('bajajRiskOfDemolition', v);
+                    handleChange('bajajRiskOfDemolitionCustom', c);
+                  }, ['Low', 'Medium', 'High', 'NA'], isReadOnly || fields.bajajRiskOfDemolition_isNA)}
+                  <NACheckbox field="bajajRiskOfDemolition" />
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-end mb-1">
+                    <label className="block text-xs font-medium text-gray-700">Status of the Property</label>
+                    <EditSwitch field="bajajStatusOfProperty" />
+                  </div>
+                  {renderSelectWithCustomRow(fields.bajajStatusOfProperty, fields.bajajStatusOfPropertyCustom, (v, c) => {
+                    handleChange('bajajStatusOfProperty', v);
+                    handleChange('bajajStatusOfPropertyCustom', c);
+                    if (v === 'Complete' && !fields.bajajPropertyCompletedPercent_isManual) {
+                      handleChange('bajajPropertyCompletedPercent', '100');
+                      if (!fields.bajajPropertyRecommendedPercent_isManual) {
+                        handleChange('bajajPropertyRecommendedPercent', '100');
+                      }
+                    }
+                  }, ['Complete', 'Under Construction', 'Plot', 'Construction on Hold', 'NA'], isReadOnly || fields.bajajStatusOfProperty_isNA || !fields.bajajStatusOfProperty_isManual)}
+                  <NACheckbox field="bajajStatusOfProperty" />
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-end mb-1">
+                    <label className="block text-xs font-medium text-gray-700">% Completed</label>
+                    <EditSwitch field="bajajPropertyCompletedPercent" onToggleOff={() => {
+                      if (fields.bajajStatusOfProperty === 'Complete') {
+                        handleChange('bajajPropertyCompletedPercent', '100');
+                      }
+                    }} />
+                  </div>
+                  <div className="relative">
+                    <input type="number" min="0" max="100" step="1" className={`${inputCls} pr-8`} value={fields.bajajPropertyCompletedPercent || ''} onChange={e => {
+                      handleChange('bajajPropertyCompletedPercent', e.target.value);
+                      if (!fields.bajajPropertyRecommendedPercent_isManual) {
+                        handleChange('bajajPropertyRecommendedPercent', e.target.value);
+                      }
+                    }} disabled={isReadOnly || !fields.bajajPropertyCompletedPercent_isManual || fields.bajajPropertyCompletedPercent_isNA} />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 font-medium pointer-events-none">%</span>
+                  </div>
+                  <NACheckbox field="bajajPropertyCompletedPercent" />
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-end mb-1">
+                    <label className="block text-xs font-medium text-gray-700">% Recommended</label>
+                    <EditSwitch field="bajajPropertyRecommendedPercent" onToggleOff={() => {
+                      handleChange('bajajPropertyRecommendedPercent', fields.bajajPropertyCompletedPercent);
+                    }} />
+                  </div>
+                  <div className="relative">
+                    <input type="number" min="0" max="100" step="1" className={`${inputCls} pr-8`} value={fields.bajajPropertyRecommendedPercent || ''} onChange={e => handleChange('bajajPropertyRecommendedPercent', e.target.value)} disabled={isReadOnly || !fields.bajajPropertyRecommendedPercent_isManual || fields.bajajPropertyRecommendedPercent_isNA} />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 font-medium pointer-events-none">%</span>
+                  </div>
+                  <NACheckbox field="bajajPropertyRecommendedPercent" />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Current Age of Property IN YEAR</label>
+                  <div className="relative">
+                    <input type="number" min="0" max="150" step="1" className={`${inputCls} pr-12`} value={fields.bajajCurrentAgeInYear || ''} onChange={e => {
+                      handleChange('bajajCurrentAgeInYear', e.target.value);
+                      if (!fields.bajajResidualAge_isManual) {
+                        const age = parseFloat(e.target.value);
+                        handleChange('bajajResidualAge', isNaN(age) ? '' : Math.max(0, 60 - age).toString());
+                      }
+                    }} disabled={isReadOnly || fields.bajajCurrentAgeInYear_isNA} />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 font-medium pointer-events-none">Years</span>
+                  </div>
+                  <NACheckbox field="bajajCurrentAgeInYear" />
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-end mb-1">
+                    <label className="block text-xs font-medium text-gray-700">Residual Age</label>
+                    <EditSwitch field="bajajResidualAge" onToggleOff={() => {
+                      const age = parseFloat(fields.bajajCurrentAgeInYear);
+                      handleChange('bajajResidualAge', isNaN(age) ? '' : Math.max(0, 60 - age).toString());
+                    }} />
+                  </div>
+                  <div className="relative">
+                    <input type="number" min="0" max="150" step="1" className={`${inputCls} pr-12`} value={fields.bajajResidualAge || ''} onChange={e => handleChange('bajajResidualAge', e.target.value)} disabled={isReadOnly || !fields.bajajResidualAge_isManual || fields.bajajResidualAge_isNA} />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 font-medium pointer-events-none">Years</span>
+                  </div>
+                  <NACheckbox field="bajajResidualAge" />
                 </div>
                 
               </div>
