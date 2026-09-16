@@ -300,39 +300,50 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
     bajajAccommodationDetails_isManual: false,
     bajajAccommodationFloors: [] as { floor: string; occupancy: string; bedrooms: number; halls: number; dining: number; kitchens: number; bathrooms: number; other: string }[],
 
-    // Section 8: Area Details & Valuation (BAU Details)
-    bajajPlotAreaDeed: '',
-    bajajPlotAreaDeed_isNA: false,
-    bajajPlotAreaPlan: '',
-    bajajPlotAreaPlan_isNA: false,
-    bajajPlotAreaSite: '',
-    bajajPlotAreaSite_isNA: false,
-    bajajPlotAreaConsidered: '',
-    bajajPlotAreaConsidered_isNA: false,
-    bajajPlotAreaConsidered_isManual: false,
-    bajajPlotAreaUnit: 'Sq.ft',
-    bajajPlotAreaUnitCustom: '',
+    // Section 8: Plot & BAU Area Details
+    bajajPlotEWDoc: '',
+    bajajPlotEWDoc_isNA: false,
+    bajajPlotEWPlan: '',
+    bajajPlotEWPlan_isNA: false,
+    bajajPlotEWSite: '',
+    bajajPlotEWSite_isNA: false,
     
-    bajajBAUFloors: [] as { floor: string, areaDeed: string, areaPlan: string, areaSite: string, areaConsidered: string, areaConsidered_isManual: boolean, replacementRate: string, structureValue: string }[],
+    bajajPlotNSDoc: '',
+    bajajPlotNSDoc_isNA: false,
+    bajajPlotNSPlan: '',
+    bajajPlotNSPlan_isNA: false,
+    bajajPlotNSSite: '',
+    bajajPlotNSSite_isNA: false,
     
-    bajajTotalBAUConsidered: '',
-    bajajTotalBAUConsidered_isNA: false,
-    bajajTotalBAUConsidered_isManual: false,
+    bajajLandAreaDoc: '',
+    bajajLandAreaDoc_isNA: false,
+    bajajLandAreaPlan: '',
+    bajajLandAreaPlan_isNA: false,
+    bajajLandAreaSite: '',
+    bajajLandAreaSite_isNA: false,
     
-    bajajAgeOfBuilding: '',
-    bajajAgeOfBuilding_isNA: false,
+    bajajBAUAreaFloors: [] as { floor: string; rooms: string; kitchens: string; bathrooms: string; sanctionedUsage: string; sanctionedUsageCustom: string; actualUsage: string; actualUsageCustom: string; rooms_isManual: boolean; kitchens_isManual: boolean; bathrooms_isManual: boolean }[],
     
-    bajajResidualLife: '',
-    bajajResidualLife_isNA: false,
-    bajajResidualLife_isManual: false,
+    bajajPermissiblePlan: '',
+    bajajPermissiblePlan_isNA: false,
     
-    bajajDepreciationRate: '',
-    bajajDepreciationRate_isNA: false,
-    bajajDepreciationRate_isManual: false,
+    bajajLandComponent: '',
+    bajajLandComponent_isNA: false,
+    bajajLandComponent_isManual: false,
     
-    bajajDepreciatedValue: '',
-    bajajDepreciatedValue_isNA: false,
-    bajajDepreciatedValue_isManual: false,
+    bajajPermissibleFSI: '',
+    bajajPermissibleFSI_isNA: false,
+    
+    bajajPermissibleConstruction: '',
+    bajajPermissibleConstruction_isNA: false,
+    bajajPermissibleConstruction_isManual: false,
+    
+    bajajCarpetAreaDoc: '',
+    bajajCarpetAreaDoc_isNA: false,
+    
+    bajajActualConstruction: '',
+    bajajActualConstruction_isNA: false,
+    bajajActualConstruction_isManual: false,
 
     // Section 9: Remarks & Declaration
     bajajRemarks: '',
@@ -1844,24 +1855,29 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
           </div>
         );
 
-        const getMinArea = (...areas: (string | number)[]) => {
-          const nums = areas.map(a => parseFloat(String(a))).filter(n => !isNaN(n) && n > 0);
-          return nums.length > 0 ? Math.min(...nums).toFixed(2) : '';
-        };
-
-        // Plot Area Logic
-        const handlePlotAreaChange = (key: string, val: string) => {
-          handleChange(key, val);
-          if (!fields.bajajPlotAreaConsidered_isManual) {
-            const deed = key === 'bajajPlotAreaDeed' ? val : fields.bajajPlotAreaDeed;
-            const plan = key === 'bajajPlotAreaPlan' ? val : fields.bajajPlotAreaPlan;
-            const site = key === 'bajajPlotAreaSite' ? val : fields.bajajPlotAreaSite;
-            handleChange('bajajPlotAreaConsidered', getMinArea(deed, plan, site));
-          }
+        const renderSelectWithCustomRow = (val: string, customVal: string, onChange: (v: string, c: string) => void, options: string[], dis?: boolean) => {
+          return (
+            <div>
+              <select className="w-full text-[11px] border border-gray-200 rounded px-1 py-1" value={options.includes(val) ? val : (val ? 'Custom' : '')} onChange={e => {
+                const nv = e.target.value;
+                if (nv === 'Custom') {
+                  onChange(nv, customVal);
+                } else {
+                  onChange(nv, '');
+                }
+              }} disabled={dis}>
+                <option value="">Select</option>
+                {options.map(o => <option key={o} value={o}>{o}</option>)}
+                <option value="Custom">Custom</option>
+              </select>
+              {(!options.includes(val) && val) || val === 'Custom' ? (
+                <input type="text" className="w-full text-[11px] mt-1 border border-gray-200 rounded px-1 py-1" value={customVal || ''} onChange={e => onChange('Custom', e.target.value)} disabled={dis} placeholder="Custom value" />
+              ) : null}
+            </div>
+          );
         };
 
         // BAU Floors Logic
-        const FLOOR_LABELS = ['GF', '1ST', '2ND', '3RD', '4TH', '5TH', '6TH', '7TH', '8TH', '9TH'];
         const getFloorCount = (): number => {
           const raw = fields.bajajNumberOfFloorsBuilding || fields.bajajFloorNo || '';
           const match = raw.match(/G\+(\d+)/i);
@@ -1874,151 +1890,116 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
           Array.isArray(fields.bajajAccommodationFloors) ? fields.bajajAccommodationFloors.length : 1
         );
 
-        const bauFloors = Array.isArray(fields.bajajBAUFloors) && fields.bajajBAUFloors.length > 0
-          ? fields.bajajBAUFloors
-          : Array.from({ length: defaultFloorsCount }).map((_, i) => ({
-              floor: FLOOR_LABELS[i] || `F`+(i+1),
-              areaDeed: '', areaPlan: '', areaSite: '', areaConsidered: '', areaConsidered_isManual: false, replacementRate: '', structureValue: ''
-            }));
+        // Map data from Section 7 Accommodation to initialize BAU floors if empty
+        const initialFloors = Array.from({ length: defaultFloorsCount }).map((_, i) => {
+          const accFloor = Array.isArray(fields.bajajAccommodationFloors) ? fields.bajajAccommodationFloors[i] : null;
+          return {
+            floor: accFloor?.floor || (i === 0 ? 'GF' : `F${i}`),
+            rooms: accFloor?.bedrooms?.toString() || '',
+            kitchens: accFloor?.kitchens?.toString() || '',
+            bathrooms: accFloor?.bathrooms?.toString() || '',
+            sanctionedUsage: fields.bajajApprovedUsages || '',
+            sanctionedUsageCustom: fields.bajajApprovedUsagesCustom || '',
+            actualUsage: fields.bajajNatureOfBuilding || '',
+            actualUsageCustom: fields.bajajNatureOfBuildingCustom || '',
+            rooms_isManual: false,
+            kitchens_isManual: false,
+            bathrooms_isManual: false
+          };
+        });
 
-        const calcTotalBAU = (floors: any[]) => {
-          return floors.reduce((acc, f) => {
-            const val = parseFloat(f.areaConsidered);
-            return acc + (isNaN(val) ? 0 : val);
-          }, 0).toFixed(2);
-        };
-
-        const calcTotalStructValue = (floors: any[]) => {
-          return floors.reduce((acc, f) => {
-            const val = parseFloat(f.structureValue);
-            return acc + (isNaN(val) ? 0 : val);
-          }, 0);
-        };
+        const bauFloors = Array.isArray(fields.bajajBAUAreaFloors) && fields.bajajBAUAreaFloors.length > 0
+          ? fields.bajajBAUAreaFloors
+          : initialFloors;
 
         const handleBAUFloorChange = (idx: number, key: string, val: string) => {
           const updated = [...bauFloors];
-          const row = { ...updated[idx], [key]: val };
-
-          // Recalculate areaConsidered (min of plan and site) if not manual
-          if (key === 'areaPlan' || key === 'areaSite' || key === 'areaConsidered_isManual') {
-            if (!row.areaConsidered_isManual) {
-              row.areaConsidered = getMinArea(row.areaPlan, row.areaSite);
-            }
-          }
-
-          // Recalculate structure value
-          if (key === 'areaConsidered' || key === 'replacementRate' || key === 'areaPlan' || key === 'areaSite') {
-            const area = parseFloat(row.areaConsidered);
-            const rate = parseFloat(row.replacementRate);
-            row.structureValue = (!isNaN(area) && !isNaN(rate)) ? (area * rate).toFixed(2) : '';
-          }
-
-          updated[idx] = row;
-          handleChange('bajajBAUFloors', updated);
-
-          if (!fields.bajajTotalBAUConsidered_isManual) {
-            handleChange('bajajTotalBAUConsidered', calcTotalBAU(updated));
-          }
-          if (!fields.bajajDepreciatedValue_isManual) {
-            recalcDepreciatedValue(updated, fields.bajajDepreciationRate);
-          }
+          updated[idx] = { ...updated[idx], [key]: val };
+          handleChange('bajajBAUAreaFloors', updated);
         };
 
         const addBAUFloor = () => {
-          const updated = [...bauFloors, { floor: '', areaDeed: '', areaPlan: '', areaSite: '', areaConsidered: '', areaConsidered_isManual: false, replacementRate: '', structureValue: '' }];
-          handleChange('bajajBAUFloors', updated);
+          const updated = [...bauFloors, { 
+            floor: '', rooms: '', kitchens: '', bathrooms: '', 
+            sanctionedUsage: fields.bajajApprovedUsages || '', sanctionedUsageCustom: fields.bajajApprovedUsagesCustom || '', 
+            actualUsage: fields.bajajNatureOfBuilding || '', actualUsageCustom: fields.bajajNatureOfBuildingCustom || '', 
+            rooms_isManual: false, kitchens_isManual: false, bathrooms_isManual: false 
+          }];
+          handleChange('bajajBAUAreaFloors', updated);
         };
 
         const removeBAUFloor = (idx: number) => {
           const updated = bauFloors.filter((_, i) => i !== idx);
-          handleChange('bajajBAUFloors', updated);
-          if (!fields.bajajTotalBAUConsidered_isManual) {
-            handleChange('bajajTotalBAUConsidered', calcTotalBAU(updated));
-          }
-          if (!fields.bajajDepreciatedValue_isManual) {
-            recalcDepreciatedValue(updated, fields.bajajDepreciationRate);
-          }
+          handleChange('bajajBAUAreaFloors', updated);
         };
 
-        // Summary Calculations
-        const recalcDepreciatedValue = (floors = bauFloors, depRate = fields.bajajDepreciationRate) => {
-          const totalStruct = calcTotalStructValue(floors);
-          const rate = parseFloat(depRate);
-          const finalVal = (!isNaN(totalStruct) && !isNaN(rate)) ? Math.round(totalStruct * (1 - rate / 100)) : (isNaN(totalStruct) ? '' : Math.round(totalStruct));
-          handleChange('bajajDepreciatedValue', finalVal.toString());
-        };
+        const usageOpts = ['Residential', 'Commercial', 'Industrial', 'Mixed Usages', 'NA'];
 
-        const handleAgeChange = (val: string) => {
-          handleChange('bajajAgeOfBuilding', val);
-          const age = parseFloat(val);
-          if (!isNaN(age)) {
-            if (!fields.bajajResidualLife_isManual) {
-              handleChange('bajajResidualLife', Math.max(0, 60 - age).toString());
-            }
-            if (!fields.bajajDepreciationRate_isManual) {
-              const rate = ((age / 60) * 100).toFixed(2);
-              handleChange('bajajDepreciationRate', rate);
-              if (!fields.bajajDepreciatedValue_isManual) {
-                recalcDepreciatedValue(bauFloors, rate);
-              }
-            }
-          }
+        // Actual Construction BUA formatting
+        const compileBUAString = () => {
+          return "Total BUA=";
         };
 
         return (
           <div className="animate-fade-in space-y-6">
             
             {/* Plot Area Details */}
-            <div className="border border-[#BAE6FD] bg-[#F0F9FF] rounded-xl p-4">
+            <div className="border border-[#D9F99D] bg-[#F7FEE7] rounded-xl p-4">
               <h3 className="font-bold text-gray-700 mb-4">Plot Area Details</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm border-collapse">
                   <thead>
-                    <tr className="bg-sky-100 text-sky-800">
-                      <th className="px-2 py-2 text-left font-semibold border border-sky-200">Parameter</th>
-                      <th className="px-2 py-2 text-left font-semibold border border-sky-200">Area as per Deed</th>
-                      <th className="px-2 py-2 text-left font-semibold border border-sky-200">Area as per Plan</th>
-                      <th className="px-2 py-2 text-left font-semibold border border-sky-200">Area as per Site Measurement</th>
-                      <th className="px-2 py-2 text-left font-semibold border border-sky-200 w-1/5">Area Considered for Valuation</th>
-                      <th className="px-2 py-2 text-left font-semibold border border-sky-200 w-1/6">Unit</th>
+                    <tr className="bg-lime-100 text-lime-800">
+                      <th className="px-2 py-2 text-left font-semibold border border-lime-200">Plot Area Dimension</th>
+                      <th className="px-2 py-2 text-left font-semibold border border-lime-200 w-[28%]">As Per Documents</th>
+                      <th className="px-2 py-2 text-left font-semibold border border-lime-200 w-[28%]">As Per Plan</th>
+                      <th className="px-2 py-2 text-left font-semibold border border-lime-200 w-[28%]">As Per Site Visit</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr className="bg-white">
-                      <td className="px-2 py-2 border border-sky-100 font-medium text-gray-700">Plot Area</td>
-                      <td className="px-2 py-2 border border-sky-100 align-top">
-                        <input type="number" step="0.01" min="0" className={inputCls} value={fields.bajajPlotAreaDeed || ''} onChange={e => handlePlotAreaChange('bajajPlotAreaDeed', e.target.value)} disabled={isReadOnly || fields.bajajPlotAreaDeed_isNA} />
-                        <NACheckbox field="bajajPlotAreaDeed" />
+                      <td className="px-2 py-2 border border-lime-100 font-medium text-gray-700">East to West</td>
+                      <td className="px-2 py-2 border border-lime-100 align-top">
+                        <input type="text" className={inputCls} value={fields.bajajPlotEWDoc || ''} onChange={e => handleChange('bajajPlotEWDoc', e.target.value)} disabled={isReadOnly || fields.bajajPlotEWDoc_isNA} />
+                        <NACheckbox field="bajajPlotEWDoc" />
                       </td>
-                      <td className="px-2 py-2 border border-sky-100 align-top">
-                        <input type="number" step="0.01" min="0" className={inputCls} value={fields.bajajPlotAreaPlan || ''} onChange={e => handlePlotAreaChange('bajajPlotAreaPlan', e.target.value)} disabled={isReadOnly || fields.bajajPlotAreaPlan_isNA} />
-                        <NACheckbox field="bajajPlotAreaPlan" />
+                      <td className="px-2 py-2 border border-lime-100 align-top">
+                        <input type="text" className={inputCls} value={fields.bajajPlotEWPlan || ''} onChange={e => handleChange('bajajPlotEWPlan', e.target.value)} disabled={isReadOnly || fields.bajajPlotEWPlan_isNA} />
+                        <NACheckbox field="bajajPlotEWPlan" />
                       </td>
-                      <td className="px-2 py-2 border border-sky-100 align-top">
-                        <input type="number" step="0.01" min="0" className={inputCls} value={fields.bajajPlotAreaSite || ''} onChange={e => handlePlotAreaChange('bajajPlotAreaSite', e.target.value)} disabled={isReadOnly || fields.bajajPlotAreaSite_isNA} />
-                        <NACheckbox field="bajajPlotAreaSite" />
+                      <td className="px-2 py-2 border border-lime-100 align-top">
+                        <input type="text" className={inputCls} value={fields.bajajPlotEWSite || ''} onChange={e => handleChange('bajajPlotEWSite', e.target.value)} disabled={isReadOnly || fields.bajajPlotEWSite_isNA} />
+                        <NACheckbox field="bajajPlotEWSite" />
                       </td>
-                      <td className="px-2 py-2 border border-sky-100 bg-sky-50 align-top">
-                        <div className="flex justify-between items-end mb-1">
-                          <EditSwitch field="bajajPlotAreaConsidered" onToggleOff={() => handleChange('bajajPlotAreaConsidered', getMinArea(fields.bajajPlotAreaDeed, fields.bajajPlotAreaPlan, fields.bajajPlotAreaSite))} />
-                        </div>
-                        <input type="number" step="0.01" min="0" className={inputCls} value={fields.bajajPlotAreaConsidered || ''} onChange={e => handleChange('bajajPlotAreaConsidered', e.target.value)} disabled={isReadOnly || !fields.bajajPlotAreaConsidered_isManual || fields.bajajPlotAreaConsidered_isNA} />
-                        <NACheckbox field="bajajPlotAreaConsidered" />
+                    </tr>
+                    <tr className="bg-white">
+                      <td className="px-2 py-2 border border-lime-100 font-medium text-gray-700">North to South</td>
+                      <td className="px-2 py-2 border border-lime-100 align-top">
+                        <input type="text" className={inputCls} value={fields.bajajPlotNSDoc || ''} onChange={e => handleChange('bajajPlotNSDoc', e.target.value)} disabled={isReadOnly || fields.bajajPlotNSDoc_isNA} />
+                        <NACheckbox field="bajajPlotNSDoc" />
                       </td>
-                      <td className="px-2 py-2 border border-sky-100 align-top">
-                        <select className={inputCls} value={['Sq.ft', 'Sq.yd', 'Decimal', 'Acre', 'NA'].includes(fields.bajajPlotAreaUnit) ? fields.bajajPlotAreaUnit : 'Custom'} onChange={e => {
-                          let val = e.target.value;
-                          if (val === 'Custom') val = fields.bajajPlotAreaUnitCustom || '';
-                          handleChange('bajajPlotAreaUnit', val);
-                        }} disabled={isReadOnly}>
-                          {['Sq.ft', 'Sq.yd', 'Decimal', 'Acre', 'NA', 'Custom'].map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                        </select>
-                        {!['Sq.ft', 'Sq.yd', 'Decimal', 'Acre', 'NA'].includes(fields.bajajPlotAreaUnit || '') && fields.bajajPlotAreaUnit && (
-                          <input type="text" className={`mt-2 ${inputCls}`} placeholder="Enter custom unit" value={fields.bajajPlotAreaUnitCustom || ''} onChange={e => {
-                            handleChange('bajajPlotAreaUnitCustom', e.target.value);
-                            handleChange('bajajPlotAreaUnit', e.target.value);
-                          }} disabled={isReadOnly} />
-                        )}
+                      <td className="px-2 py-2 border border-lime-100 align-top">
+                        <input type="text" className={inputCls} value={fields.bajajPlotNSPlan || ''} onChange={e => handleChange('bajajPlotNSPlan', e.target.value)} disabled={isReadOnly || fields.bajajPlotNSPlan_isNA} />
+                        <NACheckbox field="bajajPlotNSPlan" />
+                      </td>
+                      <td className="px-2 py-2 border border-lime-100 align-top">
+                        <input type="text" className={inputCls} value={fields.bajajPlotNSSite || ''} onChange={e => handleChange('bajajPlotNSSite', e.target.value)} disabled={isReadOnly || fields.bajajPlotNSSite_isNA} />
+                        <NACheckbox field="bajajPlotNSSite" />
+                      </td>
+                    </tr>
+                    <tr className="bg-white">
+                      <td className="px-2 py-2 border border-lime-100 font-medium text-gray-700">Land Area (In Sq. Ft.)</td>
+                      <td className="px-2 py-2 border border-lime-100 align-top">
+                        <input type="number" step="0.01" className={inputCls} value={fields.bajajLandAreaDoc || ''} onChange={e => handleChange('bajajLandAreaDoc', e.target.value)} disabled={isReadOnly || fields.bajajLandAreaDoc_isNA} />
+                        <NACheckbox field="bajajLandAreaDoc" />
+                      </td>
+                      <td className="px-2 py-2 border border-lime-100 align-top">
+                        <input type="number" step="0.01" className={inputCls} value={fields.bajajLandAreaPlan || ''} onChange={e => handleChange('bajajLandAreaPlan', e.target.value)} disabled={isReadOnly || fields.bajajLandAreaPlan_isNA} />
+                        <NACheckbox field="bajajLandAreaPlan" />
+                      </td>
+                      <td className="px-2 py-2 border border-lime-100 align-top">
+                        <input type="number" step="0.01" className={inputCls} value={fields.bajajLandAreaSite || ''} onChange={e => handleChange('bajajLandAreaSite', e.target.value)} disabled={isReadOnly || fields.bajajLandAreaSite_isNA} />
+                        <NACheckbox field="bajajLandAreaSite" />
                       </td>
                     </tr>
                   </tbody>
@@ -2026,143 +2007,184 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
               </div>
             </div>
 
-            {/* Built-up Area (BAU) Details */}
-            <div className="border border-[#A7F3D0] bg-[#ECFDF5] rounded-xl p-4">
-              <h3 className="font-bold text-gray-700 mb-4">Built-up Area (BAU) Details & Floor-wise Valuation</h3>
+            {/* BAU Area Details */}
+            <div className="border border-[#99F6E4] bg-[#F0FDFA] rounded-xl p-4">
+              <h3 className="font-bold text-gray-700 mb-4">BAU Area Details</h3>
               
               <div className="overflow-x-auto">
                 <table className="w-full text-[11px] border-collapse">
                   <thead>
-                    <tr className="bg-emerald-100 text-emerald-800">
-                      <th className="px-2 py-1.5 text-left font-semibold border border-emerald-200 whitespace-nowrap">Floor Level</th>
-                      <th className="px-2 py-1.5 text-left font-semibold border border-emerald-200">Built-up Area as per Deed (Sq.ft)</th>
-                      <th className="px-2 py-1.5 text-left font-semibold border border-emerald-200">Built-up Area as per Plan (Sq.ft)</th>
-                      <th className="px-2 py-1.5 text-left font-semibold border border-emerald-200">Built-up Area as per Site (Sq.ft)</th>
-                      <th className="px-2 py-1.5 text-left font-semibold border border-emerald-200">Area Considered for Valuation (Sq.ft)</th>
-                      <th className="px-2 py-1.5 text-left font-semibold border border-emerald-200">Replacement Rate (Rs./Sq.ft)</th>
-                      <th className="px-2 py-1.5 text-left font-semibold border border-emerald-200">Structure Value (Rs.)</th>
-                      <th className="px-2 py-1.5 text-center font-semibold border border-emerald-200 w-8"></th>
+                    <tr className="bg-teal-100 text-teal-800">
+                      <th className="px-2 py-1.5 text-left font-semibold border border-teal-200 whitespace-nowrap">BAU Area Details</th>
+                      <th className="px-2 py-1.5 text-left font-semibold border border-teal-200">No. of Rooms</th>
+                      <th className="px-2 py-1.5 text-left font-semibold border border-teal-200">No. of Kitchens</th>
+                      <th className="px-2 py-1.5 text-left font-semibold border border-teal-200">No. of Bathrooms</th>
+                      <th className="px-2 py-1.5 text-left font-semibold border border-teal-200 w-[15%]">Sanctioned Usages</th>
+                      <th className="px-2 py-1.5 text-left font-semibold border border-teal-200 w-[20%]">Actual Usage (Residential/ Industrial/Commercial/ Mixed Usage)</th>
+                      <th className="px-2 py-1.5 text-center font-semibold border border-teal-200 w-8"></th>
                     </tr>
                   </thead>
                   <tbody>
-                    {bauFloors.map((row: any, idx: number) => (
-                      <tr key={idx} className="bg-white hover:bg-emerald-50/50">
-                        <td className="px-1 py-1.5 border border-emerald-100">
-                          <select className="w-full border border-gray-200 rounded px-1 py-1" value={row.floor} onChange={e => handleBAUFloorChange(idx, 'floor', e.target.value)} disabled={isReadOnly}>
-                            <option value="">Select</option>
-                            {['GF', 'FF', 'SF', 'TF', '1ST', '2ND', '3RD', '4TH', '5TH'].map(f => <option key={f} value={f}>{f}</option>)}
-                            <option value="Custom">Custom</option>
-                          </select>
+                    {bauFloors.map((row: any, idx: number) => {
+                      const accFloor = Array.isArray(fields.bajajAccommodationFloors) ? fields.bajajAccommodationFloors[idx] : null;
+                      return (
+                      <tr key={idx} className="bg-white hover:bg-teal-50/50">
+                        <td className="px-1 py-1.5 border border-teal-100">
+                          <input type="text" className="w-full border border-gray-200 rounded px-1 py-1 font-medium" value={row.floor || ''} onChange={e => handleBAUFloorChange(idx, 'floor', e.target.value)} disabled={isReadOnly} />
                         </td>
-                        <td className="px-1 py-1.5 border border-emerald-100"><input type="number" step="0.01" min="0" className="w-full border border-gray-200 rounded px-1 py-1" value={row.areaDeed || ''} onChange={e => handleBAUFloorChange(idx, 'areaDeed', e.target.value)} disabled={isReadOnly} /></td>
-                        <td className="px-1 py-1.5 border border-emerald-100"><input type="number" step="0.01" min="0" className="w-full border border-gray-200 rounded px-1 py-1" value={row.areaPlan || ''} onChange={e => handleBAUFloorChange(idx, 'areaPlan', e.target.value)} disabled={isReadOnly} /></td>
-                        <td className="px-1 py-1.5 border border-emerald-100"><input type="number" step="0.01" min="0" className="w-full border border-gray-200 rounded px-1 py-1" value={row.areaSite || ''} onChange={e => handleBAUFloorChange(idx, 'areaSite', e.target.value)} disabled={isReadOnly} /></td>
-                        <td className="px-1 py-1.5 border border-emerald-100 bg-emerald-50/30">
+                        <td className="px-1 py-1.5 border border-teal-100 bg-teal-50/30">
                           <div className="flex justify-between items-center mb-1">
-                            <span className="text-[9px] text-gray-500">Edit</span>
                             <button
                               type="button"
                               onClick={() => {
-                                const manual = !row.areaConsidered_isManual;
-                                handleBAUFloorChange(idx, 'areaConsidered_isManual', manual as any);
+                                const manual = !row.rooms_isManual;
+                                handleBAUFloorChange(idx, 'rooms_isManual', manual as any);
+                                if (!manual) handleBAUFloorChange(idx, 'rooms', accFloor?.bedrooms?.toString() || '');
                               }}
                               disabled={isReadOnly}
-                              className={`relative inline-flex h-3 w-5 items-center rounded-full transition-colors focus:outline-none ${row.areaConsidered_isManual ? 'bg-emerald-500' : 'bg-gray-300'}`}
+                              className={`relative inline-flex h-3 w-5 items-center rounded-full transition-colors focus:outline-none ${row.rooms_isManual ? 'bg-teal-500' : 'bg-gray-300'}`}
                             >
-                              <span className={`inline-block h-2 w-2 transform rounded-full bg-white transition-transform ${row.areaConsidered_isManual ? 'translate-x-2.5' : 'translate-x-0.5'}`} />
+                              <span className={`inline-block h-2 w-2 transform rounded-full bg-white transition-transform ${row.rooms_isManual ? 'translate-x-2.5' : 'translate-x-0.5'}`} />
                             </button>
                           </div>
-                          <input type="number" step="0.01" min="0" className="w-full border border-gray-200 rounded px-1 py-1" value={row.areaConsidered || ''} onChange={e => handleBAUFloorChange(idx, 'areaConsidered', e.target.value)} disabled={isReadOnly || !row.areaConsidered_isManual} />
+                          <input type="number" min="0" className="w-full border border-gray-200 rounded px-1 py-1" value={row.rooms || ''} onChange={e => handleBAUFloorChange(idx, 'rooms', e.target.value)} disabled={isReadOnly || !row.rooms_isManual} />
                         </td>
-                        <td className="px-1 py-1.5 border border-emerald-100"><input type="number" step="0.01" min="0" className="w-full border border-gray-200 rounded px-1 py-1" value={row.replacementRate || ''} onChange={e => handleBAUFloorChange(idx, 'replacementRate', e.target.value)} disabled={isReadOnly} /></td>
-                        <td className="px-1 py-1.5 border border-emerald-100 bg-gray-50"><input type="number" className="w-full border border-gray-200 rounded px-1 py-1 bg-gray-50" value={row.structureValue || ''} readOnly /></td>
-                        <td className="px-1 py-1.5 border border-emerald-100 text-center">
+                        <td className="px-1 py-1.5 border border-teal-100 bg-teal-50/30">
+                          <div className="flex justify-between items-center mb-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const manual = !row.kitchens_isManual;
+                                handleBAUFloorChange(idx, 'kitchens_isManual', manual as any);
+                                if (!manual) handleBAUFloorChange(idx, 'kitchens', accFloor?.kitchens?.toString() || '');
+                              }}
+                              disabled={isReadOnly}
+                              className={`relative inline-flex h-3 w-5 items-center rounded-full transition-colors focus:outline-none ${row.kitchens_isManual ? 'bg-teal-500' : 'bg-gray-300'}`}
+                            >
+                              <span className={`inline-block h-2 w-2 transform rounded-full bg-white transition-transform ${row.kitchens_isManual ? 'translate-x-2.5' : 'translate-x-0.5'}`} />
+                            </button>
+                          </div>
+                          <input type="number" min="0" className="w-full border border-gray-200 rounded px-1 py-1" value={row.kitchens || ''} onChange={e => handleBAUFloorChange(idx, 'kitchens', e.target.value)} disabled={isReadOnly || !row.kitchens_isManual} />
+                        </td>
+                        <td className="px-1 py-1.5 border border-teal-100 bg-teal-50/30">
+                          <div className="flex justify-between items-center mb-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const manual = !row.bathrooms_isManual;
+                                handleBAUFloorChange(idx, 'bathrooms_isManual', manual as any);
+                                if (!manual) handleBAUFloorChange(idx, 'bathrooms', accFloor?.bathrooms?.toString() || '');
+                              }}
+                              disabled={isReadOnly}
+                              className={`relative inline-flex h-3 w-5 items-center rounded-full transition-colors focus:outline-none ${row.bathrooms_isManual ? 'bg-teal-500' : 'bg-gray-300'}`}
+                            >
+                              <span className={`inline-block h-2 w-2 transform rounded-full bg-white transition-transform ${row.bathrooms_isManual ? 'translate-x-2.5' : 'translate-x-0.5'}`} />
+                            </button>
+                          </div>
+                          <input type="number" min="0" className="w-full border border-gray-200 rounded px-1 py-1" value={row.bathrooms || ''} onChange={e => handleBAUFloorChange(idx, 'bathrooms', e.target.value)} disabled={isReadOnly || !row.bathrooms_isManual} />
+                        </td>
+                        <td className="px-1 py-1.5 border border-teal-100">
+                          {renderSelectWithCustomRow(row.sanctionedUsage, row.sanctionedUsageCustom, (v, c) => {
+                            const updated = [...bauFloors];
+                            updated[idx].sanctionedUsage = v;
+                            updated[idx].sanctionedUsageCustom = c;
+                            handleChange('bajajBAUAreaFloors', updated);
+                          }, usageOpts, isReadOnly)}
+                        </td>
+                        <td className="px-1 py-1.5 border border-teal-100">
+                          {renderSelectWithCustomRow(row.actualUsage, row.actualUsageCustom, (v, c) => {
+                            const updated = [...bauFloors];
+                            updated[idx].actualUsage = v;
+                            updated[idx].actualUsageCustom = c;
+                            handleChange('bajajBAUAreaFloors', updated);
+                          }, usageOpts, isReadOnly)}
+                        </td>
+                        <td className="px-1 py-1.5 border border-teal-100 text-center">
                           <button type="button" onClick={() => removeBAUFloor(idx)} disabled={isReadOnly || bauFloors.length <= 1} className="text-red-400 hover:text-red-600 disabled:opacity-30 text-sm font-bold">✕</button>
                         </td>
                       </tr>
-                    ))}
+                    )})}
                   </tbody>
                 </table>
               </div>
-              <button type="button" onClick={addBAUFloor} disabled={isReadOnly} className="mt-2 text-[10px] font-semibold text-emerald-600 hover:text-emerald-800 border border-dashed border-emerald-300 rounded-md px-3 py-1 hover:bg-emerald-50 transition-colors disabled:opacity-40">
+              <button type="button" onClick={addBAUFloor} disabled={isReadOnly} className="mt-2 text-[10px] font-semibold text-teal-600 hover:text-teal-800 border border-dashed border-teal-300 rounded-md px-3 py-1 hover:bg-teal-50 transition-colors disabled:opacity-40">
                 + Add Floor
               </button>
+            </div>
 
-              <hr className="my-6 border-emerald-200" />
-
-              <h4 className="font-semibold text-sm text-gray-700 mb-4">Summary Fields: Total Areas & Depreciated Structure Value</h4>
+            {/* Items (FSI & Construction Area) */}
+            <div className="border border-[#FBCFE8] bg-[#FDF2F8] rounded-xl p-4">
+              <h3 className="font-bold text-gray-700 mb-4">Items (FSI & Construction Area)</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 
                 <div>
-                  <div className="flex justify-between items-end mb-1">
-                    <label className="block text-xs font-medium text-gray-700">Total Built-up Area Considered</label>
-                    <EditSwitch field="bajajTotalBAUConsidered" onToggleOff={() => handleChange('bajajTotalBAUConsidered', calcTotalBAU(bauFloors))} />
-                  </div>
-                  <div className="relative">
-                    <input type="number" step="0.01" className={`${inputCls} pr-12`} value={fields.bajajTotalBAUConsidered || ''} onChange={e => handleChange('bajajTotalBAUConsidered', e.target.value)} disabled={isReadOnly || !fields.bajajTotalBAUConsidered_isManual || fields.bajajTotalBAUConsidered_isNA} />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 font-medium pointer-events-none">Sq.ft</span>
-                  </div>
-                  <NACheckbox field="bajajTotalBAUConsidered" />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Age of Building</label>
-                  <div className="relative">
-                    <input type="number" min="0" max="150" className={`${inputCls} pr-12 mt-4`} value={fields.bajajAgeOfBuilding || ''} onChange={e => handleAgeChange(e.target.value)} disabled={isReadOnly || fields.bajajAgeOfBuilding_isNA} />
-                    <span className="absolute right-3 top-1/2 translate-y-1 text-xs text-gray-500 font-medium pointer-events-none">Years</span>
-                  </div>
-                  <NACheckbox field="bajajAgeOfBuilding" />
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Permissible area as per plan (In Sq. Ft)</label>
+                  <input type="text" className={inputCls} value={fields.bajajPermissiblePlan || ''} onChange={e => handleChange('bajajPermissiblePlan', e.target.value)} disabled={isReadOnly || fields.bajajPermissiblePlan_isNA} />
+                  <NACheckbox field="bajajPermissiblePlan" />
                 </div>
 
                 <div>
                   <div className="flex justify-between items-end mb-1">
-                    <label className="block text-xs font-medium text-gray-700">Residual Life of Building</label>
-                    <EditSwitch field="bajajResidualLife" onToggleOff={() => {
-                      const age = parseFloat(fields.bajajAgeOfBuilding);
-                      handleChange('bajajResidualLife', isNaN(age) ? '' : Math.max(0, 60 - age).toString());
+                    <label className="block text-xs font-medium text-gray-700">Land Component (in Sq. Ft)</label>
+                    <EditSwitch field="bajajLandComponent" onToggleOff={() => {
+                      // Note suffix (e.g. 2003 sqft(as per ROR))
+                      handleChange('bajajLandComponent', (fields.bajajLandAreaDoc || '') + (fields.bajajLandAreaDoc ? ' sqft(as per ROR)' : ''));
                     }} />
                   </div>
-                  <div className="relative">
-                    <input type="number" min="0" max="150" className={`${inputCls} pr-12`} value={fields.bajajResidualLife || ''} onChange={e => handleChange('bajajResidualLife', e.target.value)} disabled={isReadOnly || !fields.bajajResidualLife_isManual || fields.bajajResidualLife_isNA} />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 font-medium pointer-events-none">Years</span>
-                  </div>
-                  <NACheckbox field="bajajResidualLife" />
+                  <input type="text" className={inputCls} value={fields.bajajLandComponent || ''} onChange={e => handleChange('bajajLandComponent', e.target.value)} disabled={isReadOnly || !fields.bajajLandComponent_isManual || fields.bajajLandComponent_isNA} />
+                  <NACheckbox field="bajajLandComponent" />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Permissible FSI</label>
+                  <input type="text" className={inputCls} value={fields.bajajPermissibleFSI || ''} onChange={e => {
+                    handleChange('bajajPermissibleFSI', e.target.value);
+                    if (!fields.bajajPermissibleConstruction_isManual) {
+                      const land = parseFloat(fields.bajajLandComponent);
+                      const fsi = parseFloat(e.target.value);
+                      if (!isNaN(land) && !isNaN(fsi)) {
+                        handleChange('bajajPermissibleConstruction', (land * fsi).toFixed(2));
+                      } else {
+                        handleChange('bajajPermissibleConstruction', '');
+                      }
+                    }
+                  }} disabled={isReadOnly || fields.bajajPermissibleFSI_isNA} />
+                  <NACheckbox field="bajajPermissibleFSI" />
                 </div>
 
                 <div>
                   <div className="flex justify-between items-end mb-1">
-                    <label className="block text-xs font-medium text-gray-700">Depreciation Rate</label>
-                    <EditSwitch field="bajajDepreciationRate" onToggleOff={() => {
-                      const age = parseFloat(fields.bajajAgeOfBuilding);
-                      const rate = isNaN(age) ? '' : ((age / 60) * 100).toFixed(2);
-                      handleChange('bajajDepreciationRate', rate);
-                      recalcDepreciatedValue(bauFloors, rate);
+                    <label className="block text-xs font-medium text-gray-700">Permissible construction as per FSI (In Sq. Ft)</label>
+                    <EditSwitch field="bajajPermissibleConstruction" onToggleOff={() => {
+                      const land = parseFloat(fields.bajajLandComponent);
+                      const fsi = parseFloat(fields.bajajPermissibleFSI);
+                      handleChange('bajajPermissibleConstruction', (!isNaN(land) && !isNaN(fsi)) ? (land * fsi).toFixed(2) : '');
                     }} />
                   </div>
-                  <div className="relative">
-                    <input type="number" step="0.1" min="0" max="100" className={`${inputCls} pr-8`} value={fields.bajajDepreciationRate || ''} onChange={e => {
-                      handleChange('bajajDepreciationRate', e.target.value);
-                      recalcDepreciatedValue(bauFloors, e.target.value);
-                    }} disabled={isReadOnly || !fields.bajajDepreciationRate_isManual || fields.bajajDepreciationRate_isNA} />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 font-medium pointer-events-none">%</span>
-                  </div>
-                  <NACheckbox field="bajajDepreciationRate" />
+                  <input type="text" className={inputCls} value={fields.bajajPermissibleConstruction || ''} onChange={e => handleChange('bajajPermissibleConstruction', e.target.value)} disabled={isReadOnly || !fields.bajajPermissibleConstruction_isManual || fields.bajajPermissibleConstruction_isNA} />
+                  <NACheckbox field="bajajPermissibleConstruction" />
                 </div>
 
-                <div className="lg:col-span-2">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Carpet Area as Per Document</label>
+                  <input type="text" className={inputCls} value={fields.bajajCarpetAreaDoc || ''} onChange={e => handleChange('bajajCarpetAreaDoc', e.target.value)} disabled={isReadOnly || fields.bajajCarpetAreaDoc_isNA} />
+                  <NACheckbox field="bajajCarpetAreaDoc" />
+                </div>
+
+                <div className="lg:col-span-3">
                   <div className="flex justify-between items-end mb-1">
-                    <label className="block text-xs font-medium text-gray-700">Depreciated Value of Structure</label>
-                    <EditSwitch field="bajajDepreciatedValue" onToggleOff={() => recalcDepreciatedValue()} />
+                    <label className="block text-xs font-medium text-gray-700">Actual construction (BUA) (In Sq. Ft)</label>
+                    <EditSwitch field="bajajActualConstruction" onToggleOff={() => {
+                      handleChange('bajajActualConstruction', compileBUAString());
+                    }} />
                   </div>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-700 font-medium pointer-events-none">₹</span>
-                    <input type="number" step="1" className={`${inputCls} pl-8 font-semibold text-emerald-800 bg-white shadow-sm border-emerald-300`} value={fields.bajajDepreciatedValue || ''} onChange={e => handleChange('bajajDepreciatedValue', e.target.value)} disabled={isReadOnly || !fields.bajajDepreciatedValue_isManual || fields.bajajDepreciatedValue_isNA} />
-                  </div>
-                  <NACheckbox field="bajajDepreciatedValue" />
+                  <textarea className={inputCls} rows={4} value={fields.bajajActualConstruction || ''} onChange={e => handleChange('bajajActualConstruction', e.target.value)} disabled={isReadOnly || !fields.bajajActualConstruction_isManual || fields.bajajActualConstruction_isNA} placeholder="GF TO SF- 1617sqft each floor,&#10;3rd floor-360sqft&#10;Total BUA=5211sqft" />
+                  <NACheckbox field="bajajActualConstruction" />
                 </div>
                 
               </div>
             </div>
+
           </div>
         );
       },
