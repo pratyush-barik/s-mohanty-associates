@@ -402,6 +402,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       locationMaps: Uint8Array[];
       mouzaMaps: Uint8Array[];
       sketchMaps?: Uint8Array[];
+      cadastralMaps?: Uint8Array[];
     },
     letterheadBytes?: Uint8Array | null
   ): Promise<Uint8Array> {
@@ -911,11 +912,13 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       locationMaps: Uint8Array[];
       mouzaMaps: Uint8Array[];
       sketchMaps?: Uint8Array[];
+      cadastralMaps?: Uint8Array[];
     }
   ) {
     const validPhotos = (images.photos || []).filter(p => p.bytes && p.bytes.length > 0);
     const validLocMaps = (images.locationMaps || []).filter(m => m && m.length > 0);
-    const validMouzaMaps = (images.mouzaMaps || []).filter(m => m && m.length > 0);
+    const allMouzaCadMaps = [...(images.mouzaMaps || []), ...(images.cadastralMaps || [])];
+    const validMouzaMaps = allMouzaCadMaps.filter(m => m && m.length > 0);
     const validSketchMaps = (images.sketchMaps || []).filter(s => s && s.length > 0);
 
     const hasPhotos = validPhotos.length > 0;

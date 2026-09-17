@@ -490,41 +490,43 @@ export const DEFAULT_PHOTO_LABEL = 'Site Picture';
 
 // ─── Standard Photographs Section (Boxed UI with Drag & Drop Reordering) ───
 export function BasePhotographsSection({
-  title = 'Photographs',
   propertyImages = [],
   propertyImageNames = [],
   isReadOnly = false,
   uploading = false,
   bucketCount = 0,
-  onImageNameChange,
-  onRemoveImage,
-  onReorderImages,
-  onUploadImages,
   onOpenBucketPicker,
+  onUploadImages,
+  onRemoveImage,
+  onImageNameChange,
+  onReorderImages,
   sectionNumber = 11,
   sectionId = 'section-11',
+  title = 'Property Photographs',
   withoutSectionWrapper = false,
   defaultOpen = false,
 }: {
-  title?: string;
-  propertyImages: string[];
-  propertyImageNames: string[];
+  propertyImages?: string[];
+  propertyImageNames?: string[];
   isReadOnly?: boolean;
-  uploading?: boolean;
+  uploading?: boolean | string;
   bucketCount?: number;
-  onImageNameChange: (index: number, name: string) => void;
-  onRemoveImage: (index: number) => void;
-  onReorderImages?: (newImages: string[], newNames: string[]) => void;
-  onUploadImages: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onOpenBucketPicker?: () => void;
+  onUploadImages?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onRemoveImage?: (idx: number) => void;
+  onImageNameChange?: (idx: number, name: string) => void;
+  onReorderImages?: (newImages: string[], newNames: string[]) => void;
   sectionNumber?: number | string;
   sectionId?: string;
+  title?: string;
   withoutSectionWrapper?: boolean;
   defaultOpen?: boolean;
 }) {
-  const validPhotos = propertyImages.filter(Boolean);
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+
+  const isPhotosUploading = uploading === true || uploading === 'photos' || uploading === 'propertyImages';
+  const validPhotos = propertyImages.filter(Boolean);
 
   const movePhoto = (fromIdx: number, toIdx: number) => {
     if (isReadOnly || !onReorderImages) return;
@@ -532,22 +534,22 @@ export function BasePhotographsSection({
     if (toIdx < 0 || toIdx >= propertyImages.length) return;
     if (fromIdx === toIdx) return;
 
-    const reorderedImages = [...propertyImages];
+    const reorderedImgs = [...propertyImages];
     const reorderedNames = [...(propertyImageNames || [])];
-    while (reorderedNames.length < reorderedImages.length) {
-      reorderedNames.push(DEFAULT_PHOTO_LABEL);
+
+    while (reorderedNames.length < reorderedImgs.length) {
+      reorderedNames.push(`Photograph ${reorderedNames.length + 1}`);
     }
 
-    const [movedImg] = reorderedImages.splice(fromIdx, 1);
+    const [movedImg] = reorderedImgs.splice(fromIdx, 1);
     const [movedName] = reorderedNames.splice(fromIdx, 1);
 
-    reorderedImages.splice(toIdx, 0, movedImg);
+    reorderedImgs.splice(toIdx, 0, movedImg);
     reorderedNames.splice(toIdx, 0, movedName);
 
     setDraggedIdx(null);
     setDragOverIdx(null);
-
-    onReorderImages(reorderedImages, reorderedNames);
+    onReorderImages(reorderedImgs, reorderedNames);
   };
 
   const handleDragStart = (e: React.DragEvent, idx: number) => {
@@ -590,37 +592,30 @@ export function BasePhotographsSection({
     } catch {
       /* fallback */
     }
-
     setDraggedIdx(null);
     setDragOverIdx(null);
 
     if (fromIdx === null || isNaN(fromIdx) || fromIdx === targetIdx) {
       return;
     }
-
     movePhoto(fromIdx, targetIdx);
   };
 
   const content = (
-    <div className="space-y-6">
-      {/* Uploaded Photo Slots Grid: 2 slots per row */}
-      {validPhotos.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="space-y-4">
+      {/* Photo Grid */}
+      {propertyImages.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {propertyImages.map((url, idx) => {
-            if (!url) return null;
-            const currentLabel =
-              propertyImageNames?.[idx] !== undefined && propertyImageNames[idx] !== ''
-                ? propertyImageNames[idx]
-                : DEFAULT_PHOTO_LABEL;
-
+            const currentLabel = propertyImageNames?.[idx] || `Photograph ${idx + 1}`;
             const isDragging = draggedIdx === idx;
             const isDragOver = dragOverIdx === idx;
-            const canReorder = !isReadOnly && propertyImages.length > 1;
+            const canDrag = !isReadOnly && propertyImages.length > 1;
 
             return (
               <div
                 key={`${url}-${idx}`}
-                draggable={!isReadOnly}
+                draggable={canDrag}
                 onDragStart={(e) => handleDragStart(e, idx)}
                 onDragOver={(e) => handleDragOver(e, idx)}
                 onDragLeave={handleDragLeave}
@@ -629,41 +624,38 @@ export function BasePhotographsSection({
                   setDraggedIdx(null);
                   setDragOverIdx(null);
                 }}
-                className={`p-4 border rounded-2xl bg-white space-y-3 transition-all duration-200 ${
+                className={`space-y-2 p-3 border rounded-2xl bg-white shadow-xs transition-all duration-200 ${
                   isDragging ? 'opacity-40 scale-[0.98]' : 'opacity-100'
                 } ${
                   isDragOver
                     ? 'border-2 border-dashed border-accent-500 ring-2 ring-accent-500/20 shadow-md bg-amber-50/20'
-                    : 'border-[#dee2e6] shadow-xs hover:border-slate-300'
+                    : 'border-[#dee2e6] hover:border-slate-300'
                 }`}
               >
-                {/* Header: Photo Number Badge + Drag Handle + Label Input + Reorder Arrows + Remove Button */}
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200 shrink-0 select-none">
-                      #{idx + 1}
+                {/* Header: Badge / Drag Handle + Editable Label + Actions */}
+                <div className="flex items-center justify-between gap-1.5 pb-1 border-b border-slate-100">
+                  <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                    <span
+                      className="px-2 py-0.5 rounded bg-[#1e3a5f] text-white text-[11px] font-bold select-none shrink-0 flex items-center gap-1 shadow-2xs"
+                      title="Drag photo card to reposition or use arrow buttons"
+                    >
+                      {canDrag && <span className="cursor-grab active:cursor-grabbing text-slate-300">⠿</span>}
+                      <span>#{idx + 1}</span>
                     </span>
-                    {!isReadOnly && (
-                      <span
-                        className="text-slate-400 hover:text-slate-600 cursor-grab active:cursor-grabbing select-none text-base font-bold px-0.5 shrink-0"
-                        title="Drag to reposition photograph"
-                      >
-                        ⠿
-                      </span>
-                    )}
                     <input
                       type="text"
-                      placeholder="Photo Label"
-                      value={propertyImageNames?.[idx] !== undefined ? propertyImageNames[idx] : DEFAULT_PHOTO_LABEL}
+                      className="w-full text-xs font-semibold text-[#0f2038] bg-transparent border-b border-transparent hover:border-slate-300 focus:border-accent-500 focus:bg-slate-50 rounded px-1 py-0.5 outline-none truncate transition-colors"
+                      value={currentLabel}
+                      onChange={(e) => onImageNameChange?.(idx, e.target.value)}
+                      placeholder={`Photograph ${idx + 1}`}
                       disabled={isReadOnly}
-                      onChange={(e) => onImageNameChange(idx, e.target.value)}
-                      onMouseDown={(e) => e.stopPropagation()}
-                      className="text-xs font-bold text-slate-800 bg-white border border-[#dee2e6] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-accent-500 w-full max-w-sm"
                     />
                   </div>
-                  {!isReadOnly && (
-                    <div className="flex items-center gap-1 shrink-0" onMouseDown={(e) => e.stopPropagation()}>
-                      {canReorder && onReorderImages && (
+
+                  {/* Move Left / Right Buttons + Remove */}
+                  {!isReadOnly && onRemoveImage && (
+                    <div className="flex items-center gap-1 shrink-0">
+                      {onReorderImages && propertyImages.length > 1 && (
                         <>
                           <button
                             type="button"
@@ -713,14 +705,14 @@ export function BasePhotographsSection({
           <div className="flex flex-wrap items-center gap-3">
             {/* 1. Local Device Upload */}
             <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-accent-500 text-accent-500 text-sm font-semibold cursor-pointer hover:bg-accent-500/10 transition-all shadow-xs">
-              {uploading ? '⏳ Uploading...' : '📷 Add Property Images'}
+              {isPhotosUploading ? '⏳ Uploading...' : '📷 Add Property Images'}
               <input
                 type="file"
                 accept="image/*"
                 multiple
                 className="hidden"
                 onChange={onUploadImages}
-                disabled={uploading}
+                disabled={isPhotosUploading}
               />
             </label>
 
@@ -807,7 +799,7 @@ export function BaseMapsSection({
   cadastralMapImage?: string | string[];
   cadastralMapImages?: string[];
   isReadOnly?: boolean;
-  uploading?: boolean;
+  uploading?: boolean | string;
   hasExternalCoordinatesField?: boolean;
   coordinatesSectionName?: string;
   onLatitudeChange?: (val: string) => void;
@@ -868,6 +860,23 @@ export function BaseMapsSection({
     handleLngChange(cleanLat);
   };
 
+  // Specific uploading booleans per map category
+  const isLocationUploading = typeof uploading === 'string'
+    ? (uploading === 'location' || uploading === 'locationMapImages' || uploading === 'locationMapImage')
+    : Boolean(uploading);
+
+  const isMouzaUploading = typeof uploading === 'string'
+    ? (uploading === 'mouza' || uploading === 'mouzaMapImages' || uploading === 'mouzaMapImage')
+    : Boolean(uploading);
+
+  const isSketchUploading = typeof uploading === 'string'
+    ? (uploading === 'sketch' || uploading === 'sketchMapImages' || uploading === 'sketchMapImage')
+    : Boolean(uploading);
+
+  const isCadastralUploading = typeof uploading === 'string'
+    ? (uploading === 'cadastral' || uploading === 'cadastralMapImages' || uploading === 'cadastralMapImage')
+    : Boolean(uploading);
+
   // Coordinates override technical address for more accurate pinpointing
   const queryParam = hasCoordinates
     ? `${cleanLat},${cleanLng}`
@@ -891,7 +900,7 @@ export function BaseMapsSection({
         images={normLocationImages}
         categoryLabel="Satellite Screenshot"
         isReadOnly={isReadOnly}
-        uploading={uploading}
+        uploading={isLocationUploading}
         icon="🛰️"
         title="Google Satellite Map"
         btnLabel="Satellite Image"
@@ -1091,7 +1100,7 @@ export function BaseMapsSection({
         images={normMouzaImages}
         categoryLabel="Mouza Map"
         isReadOnly={isReadOnly}
-        uploading={uploading}
+        uploading={isMouzaUploading}
         icon="🗺️"
         title="Mouza Map (Bhulekh / Revenue Map)"
         btnLabel="Mouza Map"
@@ -1109,7 +1118,7 @@ export function BaseMapsSection({
         images={normSketchImages}
         categoryLabel="Sketch Map"
         isReadOnly={isReadOnly}
-        uploading={uploading}
+        uploading={isSketchUploading}
         icon="📐"
         title="Sketch Map (Demarcation / Hand-Drawn)"
         btnLabel="Sketch Map"
@@ -1127,7 +1136,7 @@ export function BaseMapsSection({
         images={normCadastralImages}
         categoryLabel="Cadastral Map"
         isReadOnly={isReadOnly}
-        uploading={uploading}
+        uploading={isCadastralUploading}
         icon="🌐"
         title="Cadastral Map"
         btnLabel="Cadastral Map"
@@ -1629,7 +1638,7 @@ export function BaseAnnexureSection({
     };
   }>;
   isReadOnly?: boolean;
-  uploading?: boolean;
+  uploading?: boolean | string;
   onAddAnnexure: () => void;
   onRemoveAnnexure: (id: string) => void;
   onUpdateTitle: (id: string, title: string) => void;
@@ -1768,7 +1777,7 @@ export function BaseAnnexureSection({
                         accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
                         className="hidden"
                         onChange={e => onUploadExcel(annexure.id, e)}
-                        disabled={uploading}
+                        disabled={!!uploading}
                       />
                     </label>
                   )

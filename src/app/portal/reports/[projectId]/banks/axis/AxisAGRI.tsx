@@ -325,7 +325,7 @@ export default function AxisAGRI({
 
   const [fields, setFields] = useState<AxisAgriReportFields>(() => decodeHtmlEntitiesDeep(initialData));
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [uploading, setUploading] = useState<string | boolean>(false);
   const [bucketPickerOpen, setBucketPickerOpen] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
@@ -478,7 +478,7 @@ export default function AxisAGRI({
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-    setUploading(true);
+    setUploading('photos');
     try {
       const uploadedUrls: string[] = [];
       for (let i = 0; i < files.length; i++) {
@@ -531,7 +531,7 @@ export default function AxisAGRI({
   const handleMultiMapUpload = async (e: React.ChangeEvent<HTMLInputElement>, key: 'locationMapImages' | 'cadastralMapImages' | 'sketchMapImages' | 'benchmarkImages') => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-    setUploading(true);
+    setUploading(key);
     try {
       const uploadedUrls: string[] = [];
       for (let i = 0; i < files.length; i++) {
@@ -545,7 +545,7 @@ export default function AxisAGRI({
           uploadedUrls.push(data.publicUrl);
         }
       }
-      const existing = fields[key] || [];
+      const existing = (fields[key] as string[]) || [];
       handleChange(key, [...existing, ...uploadedUrls]);
     } catch (err: any) {
       alert(`Upload error: ${err.message}`);
@@ -559,7 +559,7 @@ export default function AxisAGRI({
       handleChange(key, []);
       return;
     }
-    const updated = (fields[key] || []).filter((_, i) => i !== idx);
+    const updated = ((fields[key] as string[]) || []).filter((_: any, i: number) => i !== idx);
     handleChange(key, updated);
   };
 
@@ -2930,7 +2930,7 @@ export default function AxisAGRI({
                   multiple
                   className="hidden"
                   onChange={(e) => handleMultiMapUpload(e, 'benchmarkImages')}
-                  disabled={uploading}
+                  disabled={!!uploading}
                 />
               </label>
             )}

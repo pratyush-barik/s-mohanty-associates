@@ -219,11 +219,12 @@ export default function AxisHLLAP({
       locationMapImages: raw.locationMapImages || [],
       mouzaMapImages: raw.mouzaMapImages || [],
       sketchMapImages: raw.sketchMapImages || [],
+      cadastralMapImages: raw.cadastralMapImages || [],
     };
   });
 
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [uploading, setUploading] = useState<string | boolean>(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [showBucketModal, setShowBucketModal] = useState(false);
@@ -431,11 +432,11 @@ export default function AxisHLLAP({
   ]);
 
   // File Upload Handlers for Maps
-  const handleMapUpload = async (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages', e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMapUpload = async (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages', e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    setUploading(true);
+    setUploading(fieldKey);
     try {
       const uploadPromises = Array.from(files).map(async file => {
         const ext = file.name.split('.').pop() || 'png';
@@ -467,7 +468,7 @@ export default function AxisHLLAP({
     }
   };
 
-  const handleMapRemove = (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages', idx?: number) => {
+  const handleMapRemove = (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages', idx?: number) => {
     if (idx === undefined) {
       setFields(p => ({ ...p, [fieldKey]: [] }));
       return;
@@ -478,7 +479,7 @@ export default function AxisHLLAP({
     }));
   };
 
-  const handleMapReorder = (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages', reordered: string[]) => {
+  const handleMapReorder = (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages', reordered: string[]) => {
     setFields(p => ({
       ...p,
       [fieldKey]: reordered,
@@ -488,7 +489,7 @@ export default function AxisHLLAP({
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-    setUploading(true);
+    setUploading('photos');
     try {
       const uploadPromises = Array.from(files).map(async file => {
         const ext = file.name.split('.').pop() || 'png';
@@ -579,6 +580,7 @@ export default function AxisHLLAP({
     const locMapBytes = (await Promise.all((fields.locationMapImages || []).map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
     const mouzaMapBytes = (await Promise.all((fields.mouzaMapImages || []).map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
     const sketchMapBytes = (await Promise.all((fields.sketchMapImages || []).map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
+    const cadastralMapBytes = (await Promise.all((fields.cadastralMapImages || []).map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
 
     const renderer = new PDFAxisHLLAPRenderer();
     return await renderer.generateAxisHLLAPReport(
@@ -588,6 +590,7 @@ export default function AxisHLLAP({
         locationMaps: locMapBytes,
         mouzaMaps: mouzaMapBytes,
         sketchMaps: sketchMapBytes,
+        cadastralMaps: cadastralMapBytes,
       }
     );
   };
@@ -2255,6 +2258,7 @@ export default function AxisHLLAP({
           locationMapImages={fields.locationMapImages || []}
           mouzaMapImages={fields.mouzaMapImages || []}
           sketchMapImages={fields.sketchMapImages || []}
+          cadastralMapImages={fields.cadastralMapImages || []}
           latitude={fields.latitude}
           longitude={fields.longitude}
           propertyAddress={
@@ -2275,9 +2279,12 @@ export default function AxisHLLAP({
           onMouzaMapRemove={idx => handleMapRemove('mouzaMapImages', idx)}
           onSketchMapUpload={e => handleMapUpload('sketchMapImages', e)}
           onSketchMapRemove={idx => handleMapRemove('sketchMapImages', idx)}
+          onCadastralMapUpload={e => handleMapUpload('cadastralMapImages', e)}
+          onCadastralMapRemove={idx => handleMapRemove('cadastralMapImages', idx)}
           onReorderLocationMap={newImgs => handleMapReorder('locationMapImages', newImgs)}
           onReorderMouzaMap={newImgs => handleMapReorder('mouzaMapImages', newImgs)}
           onReorderSketchMap={newImgs => handleMapReorder('sketchMapImages', newImgs)}
+          onReorderCadastralMap={newImgs => handleMapReorder('cadastralMapImages', newImgs)}
         />
 
         {/* STANDARDIZED ACTION BAR (DOCKED AT BOTTOM OF MAIN CONTENT) */}
@@ -2286,7 +2293,7 @@ export default function AxisHLLAP({
           userRole={userRole}
           autoSaveStatus={autoSaveStatus}
           message={message}
-          loading={loading || uploading}
+          loading={loading || !!uploading}
           onSaveDraft={handleSaveDraft}
           onSubmit={handleSubmit}
           onPreviewPDF={handlePreviewPDF}

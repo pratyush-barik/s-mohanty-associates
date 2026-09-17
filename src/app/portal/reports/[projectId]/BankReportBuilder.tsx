@@ -462,7 +462,7 @@ export default function BankReportBuilder({
   const [loading, setLoading] = useState(false);
   const [loadingText, setLoadingText] = useState('Loading...');
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [uploading, setUploading] = useState<string | boolean>(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   // Bucket Picker State
@@ -892,7 +892,7 @@ export default function BankReportBuilder({
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
     const fileList = e.target.files;
     if (!fileList || fileList.length === 0) return;
-    setUploading(true);
+    setUploading(fieldName);
     setUploadError(null);
 
     const arrayFields = ['propertyImages', 'sketchMapImages', 'locationMapImages', 'mouzaMapImages', 'cadastralMapImages'];
