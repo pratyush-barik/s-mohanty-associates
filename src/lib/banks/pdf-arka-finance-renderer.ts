@@ -273,8 +273,8 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
       ['l.', 'Class Of Locality : Posh/ Higher Middle Class/Middle class/Lower middle Class/ Poor', fv('classOfLocality')],
       ['m.', 'Quality of Infrastructure in the vicinity', fv('qualityOfInfrastructure')],
     ], [C1, C2, C3], [], [], [], 
-    [{r:0,c:0},{r:0,c:1}, {r:1,c:0},{r:1,c:1}, {r:2,c:0},{r:2,c:1}, {r:3,c:0},{r:3,c:1}, {r:4,c:0},{r:4,c:1}], 
-    [{r:0,c:0},{r:0,c:1}, {r:1,c:0},{r:1,c:1}, {r:2,c:0},{r:2,c:1}, {r:3,c:0},{r:3,c:1}, {r:4,c:0},{r:4,c:1}]
+    [{r:4,c:0},{r:4,c:1}], 
+    [{r:4,c:0},{r:4,c:1}]
     );
 
     // Boundaries header
@@ -312,7 +312,7 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
     // Match boundaries question
     this.drawTable([], [
       ['o.', 'Does the Boundaries at Site match, as mentioned in documentation?', fv('boundariesMatch')]
-    ], [C1, C2, C3], [], [], [], [{r:0,c:0},{r:0,c:1}], [{r:0,c:0},{r:0,c:1}]);
+    ], [C1, C2, C3], [], [], [], [{r:0,c:0},{r:0,c:1}], []);
 
     // Property characteristics (p-z)
     this.drawTable([], [

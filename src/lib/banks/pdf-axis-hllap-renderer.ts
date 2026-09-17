@@ -149,9 +149,9 @@ export interface AxisHLLAPReportFields extends Partial<BaseReportFields> {
   valuerTitle?: string;
 }
 
-const TABLE_FONT_SIZE = 10;
-const TABLE_FONT_SIZE_HEADER = 10.5;
-const TABLE_MIN_ROW_H = 14.5;
+const TABLE_FONT_SIZE = FONT_SIZE; // Standardized to 12 pt
+const TABLE_FONT_SIZE_HEADER = FONT_SIZE_HEADER; // Standardized to 14 pt
+const TABLE_MIN_ROW_H = 16;
 
 export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
   private colSl = 38;
@@ -848,9 +848,9 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     // Section title "Undertaking:"
     this.drawTextAt('Undertaking:', MARGIN_L, this.cursorY, {
       bold: true,
-      fontSize: 10,
+      fontSize: FONT_SIZE_HEADER,
     });
-    this.cursorY += 14;
+    this.cursorY += 16;
 
     const undertakingClauses = [
       'I have personally visited the property & identified the same based on the documents provided.',
@@ -859,24 +859,24 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     ];
 
     for (const clause of undertakingClauses) {
-      const wrapped = this.wrapText(clause, CONTENT_W, 9.5, false);
+      const wrapped = this.wrapText(clause, CONTENT_W, FONT_SIZE, false);
       for (const wLine of wrapped) {
         this.drawTextAt(wLine, MARGIN_L, this.cursorY, {
           bold: false,
-          fontSize: 9.5,
+          fontSize: FONT_SIZE,
         });
-        this.cursorY += 12;
+        this.cursorY += FONT_SIZE * LINE_HEIGHT;
       }
     }
 
-    this.cursorY += 14;
+    this.cursorY += 16;
 
     // Authorized Signatory Block (Right-aligned matching base bank format)
     const sigLines = [
-      { text: 'Authorized Signatory', bold: true, fontSize: 10 },
-      { text: 'Name & Seal of the Agency', bold: false, fontSize: 9 },
-      { text: fields.valuerName || 'Er. Satyajit Mohanty', bold: true, fontSize: 10 },
-      { text: fields.valuerTitle || 'Approved Panel Valuer', bold: false, fontSize: 9.5 },
+      { text: 'Authorized Signatory', bold: true, fontSize: FONT_SIZE },
+      { text: 'Name & Seal of the Agency', bold: false, fontSize: FONT_SIZE },
+      { text: fields.valuerName || 'Er. Satyajit Mohanty', bold: true, fontSize: FONT_SIZE },
+      { text: fields.valuerTitle || 'Approved Panel Valuer', bold: false, fontSize: FONT_SIZE },
     ];
 
     for (const s of sigLines) {
