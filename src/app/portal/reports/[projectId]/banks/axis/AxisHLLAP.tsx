@@ -1806,6 +1806,10 @@ export default function AxisHLLAP({
 
         {/* SECTION 5: Recommended Valuation & Statutory Rates (7 – 10) */}
         <Section id="axis-sec5" title="Recommended Valuation & Statutory Rates (7 – 10)" number={5} defaultOpen={true}>
+          <div className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">
+            7. Recommended Valuation of the Property
+          </div>
+
           {(() => {
             const selectedUnit = fields.plotOrFlat || 'Plot';
             const pArea = parseNum(fields.plotAreaForValuation) || parseNum(fields.plotAreaDocs);
@@ -1853,17 +1857,20 @@ export default function AxisHLLAP({
                   </button>
                 </div>
 
-                {/* 7a - 7b: Plot / Flat Area, Rate & Valuation (Soft Container - Soft Blue) */}
-                <div className="border border-blue-200 bg-[#F0F7FF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
-                  {pVal > 0 && (
-                    <div className="flex justify-end">
+                {/* Valuation Basis Inputs (Area & Rate) */}
+                <div className="border border-slate-200 bg-[#F8FAFC] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                      {selectedUnit} Valuation Basis ({selectedUnit} Area &amp; Rate)
+                    </span>
+                    {pVal > 0 && (
                       <span className="text-[11px] font-semibold bg-white text-blue-800 px-2.5 py-0.5 rounded-full border border-blue-200">
                         {pArea} sqft × Rs. {pRate}/sqft = <strong className="text-blue-950">Rs. {formatIndianCurrency(pVal)}/-</strong>
                       </span>
-                    </div>
-                  )}
+                    )}
+                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Field label={`${selectedUnit} Area for Valuation (sqft)`}>
                       <div className="relative">
                         <input
@@ -1872,7 +1879,7 @@ export default function AxisHLLAP({
                           onChange={e => handleChange('plotAreaForValuation', e.target.value)}
                           className={inputCls}
                           disabled={isReadOnly}
-                          placeholder={fields.plotAreaDocs ? `From 6a: ${fields.plotAreaDocs}` : '0'}
+                          placeholder={fields.plotAreaDocs ? `From 6a: ${fields.plotAreaDocs}` : ''}
                         />
                         {!fields.plotAreaForValuation && fields.plotAreaDocs && !isReadOnly && (
                           <button
@@ -1893,11 +1900,15 @@ export default function AxisHLLAP({
                         onChange={e => handleChange('plotRateForValuation', e.target.value)}
                         className={inputCls}
                         disabled={isReadOnly}
-                        placeholder="e.g. 850"
                       />
                     </Field>
+                  </div>
+                </div>
 
-                    <Field label="7a. Recommended Rate Description">
+                {/* a & b: Rate Description & Value of the Plot/Flat (Soft Container - Soft Blue) */}
+                <div className="border border-blue-200 bg-[#F0F7FF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Field label="a. Recommended Rate Description">
                       <input
                         type="text"
                         value={fields.recommendedRatePerSqft}
@@ -1908,20 +1919,25 @@ export default function AxisHLLAP({
                       />
                     </Field>
 
-                    <Field span={3} label={`7b. Value of the ${selectedUnit}`}>
-                      <input
-                        type="text"
-                        value={fields.valueOfPlotFlat}
-                        onChange={e => handleChange('valueOfPlotFlat', e.target.value)}
-                        className={inputCls + ' font-medium text-slate-900'}
-                        disabled={isReadOnly}
-                        placeholder={`e.g. Value of ${selectedUnit}-1500X Rs.850/- = Rs.12,75,000/-`}
-                      />
+                    <Field label={`b. Value of the ${selectedUnit}`}>
+                      <div className="space-y-1">
+                        <input
+                          type="text"
+                          value={fields.valueOfPlotFlat}
+                          onChange={e => handleChange('valueOfPlotFlat', e.target.value)}
+                          className={inputCls + ' font-medium text-slate-900'}
+                          disabled={isReadOnly}
+                          placeholder={`e.g. Value of ${selectedUnit}-1500X Rs.850/- = Rs.12,75,000/-`}
+                        />
+                        <span className="block text-[10px] text-blue-700 font-medium">
+                          Derived using: {selectedUnit} Area for Valuation × {selectedUnit} Rate per sqft
+                        </span>
+                      </div>
                     </Field>
                   </div>
                 </div>
 
-                {/* 7c - 7d: Structure Construction Cost Valuation (Soft Container - Soft Teal) */}
+                {/* c - d: Structure Construction Cost Valuation (Soft Container - Soft Teal) */}
                 <div className="border border-teal-200 bg-[#F0FDFA] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
                   {cVal > 0 && (
                     <div className="flex justify-end">
@@ -1932,7 +1948,7 @@ export default function AxisHLLAP({
                   )}
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Field label="7c. Estimated Cost of Construction (Rate/sqft)">
+                    <Field label="c. Estimated Cost of Construction (Rate/sqft)">
                       <input
                         type="text"
                         value={fields.estimatedCostOfConstruction}
@@ -1949,7 +1965,7 @@ export default function AxisHLLAP({
                       </div>
                     </Field>
 
-                    <Field span={3} label="7d. Total Cost of Construction (100% Completion)">
+                    <Field span={3} label="d. Total Cost of Construction (100% Completion)">
                       <input
                         type="text"
                         value={fields.totalCostOfConstruction}
@@ -1962,7 +1978,7 @@ export default function AxisHLLAP({
                   </div>
                 </div>
 
-                {/* 7e - 7g: Under-Construction Progress & As-On-Date Valuation (Soft Container - Soft Cyan) */}
+                {/* e - g: Under-Construction Progress & As-On-Date Valuation (Soft Container - Soft Cyan) */}
                 {fields.isUnderConstruction && (
                   <div className="border border-cyan-200 bg-[#ECFEFF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
                     {cValAsOnDate > 0 && (
@@ -1974,7 +1990,7 @@ export default function AxisHLLAP({
                     )}
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <Field label="7e. Stage of Construction">
+                      <Field label="e. Stage of Construction">
                         <input
                           type="text"
                           value={fields.stageOfConstruction}
@@ -1985,7 +2001,7 @@ export default function AxisHLLAP({
                         />
                       </Field>
 
-                      <Field label="7f. % Work Completed">
+                      <Field label="f. % Work Completed">
                         <input
                           type="text"
                           value={fields.percentWorkCompleted}
@@ -1996,7 +2012,7 @@ export default function AxisHLLAP({
                         />
                       </Field>
 
-                      <Field label="7g. % Disbursement Recommended">
+                      <Field label="g. % Disbursement Recommended">
                         <input
                           type="text"
                           value={fields.percentDisbursementRecommended}
@@ -2032,7 +2048,7 @@ export default function AxisHLLAP({
                   </div>
                 )}
 
-                {/* 7h - 7i: Final Property Value & Site Visit (Soft Container - Soft Indigo) */}
+                {/* h - i: Final Property Value & Site Visit (Soft Container - Soft Indigo) */}
                 <div className="border border-indigo-200 bg-[#EEF2FF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
                   {total100 > 0 && (
                     <div className="flex justify-end">
@@ -2043,7 +2059,7 @@ export default function AxisHLLAP({
                   )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Field label={`7h. Current Value of Property (${selectedUnit} + Construction) on 100% Completion`}>
+                    <Field label={`h. Current Value of Property (${selectedUnit} + Construction) on 100% Completion`}>
                       <input
                         type="text"
                         value={fields.currentValueOfProperty}
@@ -2056,7 +2072,7 @@ export default function AxisHLLAP({
 
                     <DateInput
                       fieldKey="dateOfPropertyVisit"
-                      label="7i. Date of Property Visit"
+                      label="i. Date of Property Visit"
                     />
                   </div>
                 </div>
