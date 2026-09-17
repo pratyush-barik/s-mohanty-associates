@@ -355,14 +355,6 @@ export default function AxisHLLAP({
       : 80;
     const distressedVal = Math.round((pct < 100 ? totalAsOnDate : total100) * (distressedPct / 100));
 
-    const recRateDesc = pRate > 0 && cRate > 0
-      ? `${selectedUnit}- Rs. ${pRate}/-per sqft & Building Rs. ${cRate}/-per sqft`
-      : pRate > 0
-      ? `${selectedUnit}- Rs. ${pRate}/-per sqft`
-      : cRate > 0
-      ? `Building Rs. ${cRate}/-per sqft`
-      : '';
-
     const valPlotFlatStr = pArea > 0 && pRate > 0
       ? `Value of ${selectedUnit}-${pArea} sqft X Rs.${pRate}/- = Rs.${formatIndianCurrency(pVal)}/-`
       : '';
@@ -402,10 +394,6 @@ export default function AxisHLLAP({
         changed = true;
       }
 
-      if (next.recommendedRatePerSqft !== recRateDesc) {
-        next.recommendedRatePerSqft = recRateDesc;
-        changed = true;
-      }
       if (next.valueOfPlotFlat !== valPlotFlatStr) {
         next.valueOfPlotFlat = valPlotFlatStr;
         changed = true;
