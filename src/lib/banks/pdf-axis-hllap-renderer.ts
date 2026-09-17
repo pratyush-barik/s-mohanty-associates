@@ -149,9 +149,9 @@ export interface AxisHLLAPReportFields extends Partial<BaseReportFields> {
 }
 
 export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
-  private colSl = 24;
-  private colLbl = 210;
-  private colVal = CONTENT_W - 24 - 210; // 253.28
+  private colSl = 42;
+  private colLbl = 200;
+  private colVal = CONTENT_W - 42 - 200; // 245.28 (Total = 487.28 = CONTENT_W)
 
   /**
    * Draw standard 3-column table row: [Sl.No | Label | Value]
@@ -207,9 +207,9 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
   }
 
   /**
-   * Draw a row where the label spans across the first two columns (Sl + Label)
+   * Draw a sub-item row where Sl.No is blank (preserves 3-column grid alignment)
    */
-  private drawMergedLabelRow(
+  private drawSubItemRow(
     label: string,
     val: string,
     isLabelBold: boolean = false,
@@ -218,57 +218,11 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     valBg: string | undefined = undefined,
     fontSize: number = FONT_SIZE
   ): void {
-    const totalLblW = this.colSl + this.colLbl;
-    const hLbl = this.cellHeight(label, totalLblW, { bold: isLabelBold, fontSize });
-    const hVal = this.cellHeight(val || 'NA', this.colVal, { bold: isValueBold, fontSize });
-    const rowH = Math.max(16, hLbl, hVal);
-
-    this.checkPageBreak(rowH);
-
-    this.drawCell(MARGIN_L, this.cursorY, totalLblW, rowH, label, {
-      bold: isLabelBold,
-      fontSize,
-      fillColor: labelBg,
-      bgOpacity: 0.5,
-      align: 'left',
-      vAlign: 'middle',
-    });
-
-    this.drawCell(MARGIN_L + totalLblW, this.cursorY, this.colVal, rowH, val || 'NA', {
-      bold: isValueBold,
-      fontSize,
-      fillColor: valBg,
-      bgOpacity: valBg ? 0.5 : undefined,
-      align: 'left',
-      vAlign: 'middle',
-    });
-
-    this.cursorY += rowH;
+    this.drawHLLAPRow('', label, val, isLabelBold, isValueBold, labelBg, valBg, fontSize);
   }
 
   /**
-   * Draw section header banner spanning all 3 columns
-   */
-  private drawSectionBanner(sl: string, title: string, fontSize: number = FONT_SIZE_HEADER): void {
-    const fullText = sl ? `${sl} ${title}` : title;
-    const rowH = Math.max(18, this.cellHeight(fullText, CONTENT_W, { bold: true, fontSize }));
-
-    this.checkPageBreak(rowH + 20);
-
-    this.drawCell(MARGIN_L, this.cursorY, CONTENT_W, rowH, fullText, {
-      bold: true,
-      fontSize,
-      fillColor: OPT_BG,
-      bgOpacity: 0.5,
-      align: 'left',
-      vAlign: 'middle',
-    });
-
-    this.cursorY += rowH;
-  }
-
-  /**
-   * Draw boundary sub-row with 2 columns inside the table (Deed vs Actual)
+   * Draw boundary sub-row with 3 columns: [empty Sl | Deed | Actual]
    */
   private drawBoundaryRow(
     direction: string,
@@ -276,17 +230,26 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     actualVal: string,
     fontSize: number = FONT_SIZE
   ): void {
-    const totalLblW = this.colSl + this.colLbl;
     const leftText = `${direction}:- ${deedVal || 'NA'}`;
     const rightText = `${direction}:- ${actualVal || 'NA'}`;
 
-    const hLeft = this.cellHeight(leftText, totalLblW, { bold: false, fontSize });
+    const hLeft = this.cellHeight(leftText, this.colLbl, { bold: false, fontSize });
     const hRight = this.cellHeight(rightText, this.colVal, { bold: false, fontSize });
     const rowH = Math.max(16, hLeft, hRight);
 
     this.checkPageBreak(rowH);
 
-    this.drawCell(MARGIN_L, this.cursorY, totalLblW, rowH, leftText, {
+    // 1. Sl col (empty)
+    this.drawCell(MARGIN_L, this.cursorY, this.colSl, rowH, '', {
+      fontSize,
+      fillColor: LBL_BG,
+      bgOpacity: 0.5,
+      align: 'left',
+      vAlign: 'middle',
+    });
+
+    // 2. Deed col (colLbl)
+    this.drawCell(MARGIN_L + this.colSl, this.cursorY, this.colLbl, rowH, leftText, {
       bold: false,
       fontSize,
       fillColor: LBL_BG,
@@ -295,7 +258,8 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       vAlign: 'middle',
     });
 
-    this.drawCell(MARGIN_L + totalLblW, this.cursorY, this.colVal, rowH, rightText, {
+    // 3. Actual col (colVal)
+    this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, rowH, rightText, {
       bold: false,
       fontSize,
       align: 'left',
@@ -306,16 +270,25 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
   }
 
   /**
-   * Draw single sketch boundary direction row spanning columns
+   * Draw single sketch boundary direction row [empty Sl | Sketch Direction | empty Val]
    */
   private drawSketchBoundaryDirection(direction: string, val: string, fontSize: number = FONT_SIZE): void {
-    const totalLblW = this.colSl + this.colLbl;
     const text = `${direction}:- ${val || 'NA'}`;
-    const h = Math.max(16, this.cellHeight(text, totalLblW, { bold: false, fontSize }));
+    const h = Math.max(16, this.cellHeight(text, this.colLbl, { bold: false, fontSize }));
 
     this.checkPageBreak(h);
 
-    this.drawCell(MARGIN_L, this.cursorY, totalLblW, h, text, {
+    // 1. Sl col (empty)
+    this.drawCell(MARGIN_L, this.cursorY, this.colSl, h, '', {
+      fontSize,
+      fillColor: LBL_BG,
+      bgOpacity: 0.5,
+      align: 'left',
+      vAlign: 'middle',
+    });
+
+    // 2. Sketch direction text (colLbl)
+    this.drawCell(MARGIN_L + this.colSl, this.cursorY, this.colLbl, h, text, {
       bold: false,
       fontSize,
       fillColor: LBL_BG,
@@ -323,7 +296,9 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       align: 'left',
       vAlign: 'middle',
     });
-    this.drawCell(MARGIN_L + totalLblW, this.cursorY, this.colVal, h, '', {
+
+    // 3. Value cell (empty)
+    this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, h, '', {
       fontSize,
       align: 'left',
       vAlign: 'middle',
@@ -415,7 +390,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       fontSize: FONT_SIZE,
       fillColor: OPT_BG,
       bgOpacity: 0.5,
-      align: 'center',
+      align: 'left',
       vAlign: 'middle',
     });
     this.drawCell(MARGIN_L + this.colSl, this.cursorY, this.colLbl, thH, '', {
@@ -423,7 +398,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       fontSize: FONT_SIZE,
       fillColor: OPT_BG,
       bgOpacity: 0.5,
-      align: 'center',
+      align: 'left',
       vAlign: 'middle',
     });
     this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, thH, '', {
@@ -431,7 +406,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       fontSize: FONT_SIZE,
       fillColor: OPT_BG,
       bgOpacity: 0.5,
-      align: 'center',
+      align: 'left',
       vAlign: 'middle',
     });
     this.cursorY += thH;
@@ -510,13 +485,11 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.drawHLLAPRow('l.', 'Class Of Locality :  Posh/ Higher Middle Class/Middle class/Lower middle Class/ Poor', fields.classOfLocality || 'NA');
     this.drawHLLAPRow('m.', 'Quality of Infrastructure in the vicinity', fields.qualityOfInfrastructure || 'NA');
 
-    // 4n. Boundaries (Header sub-row + 4 direction rows)
-    const bHeaderW1 = this.colSl + this.colLbl;
-    const bHeaderW2 = this.colVal;
+    // 4n. Boundaries (Header sub-row [n. | Documents | Actual] + 4 direction rows)
     const bHeaderH = 16;
     this.checkPageBreak(bHeaderH);
 
-    this.drawCell(MARGIN_L, this.cursorY, bHeaderW1, bHeaderH, 'n.  Boundaries of Property as per documents', {
+    this.drawCell(MARGIN_L, this.cursorY, this.colSl, bHeaderH, 'n.', {
       bold: true,
       fontSize: FONT_SIZE,
       fillColor: LBL_BG,
@@ -524,7 +497,15 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       align: 'left',
       vAlign: 'middle',
     });
-    this.drawCell(MARGIN_L + bHeaderW1, this.cursorY, bHeaderW2, bHeaderH, 'Boundaries of Property as per Actual', {
+    this.drawCell(MARGIN_L + this.colSl, this.cursorY, this.colLbl, bHeaderH, 'Boundaries of Property as per documents', {
+      bold: true,
+      fontSize: FONT_SIZE,
+      fillColor: LBL_BG,
+      bgOpacity: 0.5,
+      align: 'left',
+      vAlign: 'middle',
+    });
+    this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, bHeaderH, 'Boundaries of Property as per Actual', {
       bold: true,
       fontSize: FONT_SIZE,
       fillColor: LBL_BG,
@@ -548,7 +529,13 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     );
     if (hasSketchBoundaries) {
       this.checkPageBreak(16);
-      this.drawCell(MARGIN_L, this.cursorY, bHeaderW1, 16, 'Boundaries of Property as per sketch map', {
+      this.drawCell(MARGIN_L, this.cursorY, this.colSl, 16, '', {
+        fillColor: LBL_BG,
+        bgOpacity: 0.5,
+        align: 'left',
+        vAlign: 'middle',
+      });
+      this.drawCell(MARGIN_L + this.colSl, this.cursorY, this.colLbl, 16, 'Boundaries of Property as per sketch map', {
         bold: true,
         fontSize: FONT_SIZE,
         fillColor: LBL_BG,
@@ -556,7 +543,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
         align: 'left',
         vAlign: 'middle',
       });
-      this.drawCell(MARGIN_L + bHeaderW1, this.cursorY, bHeaderW2, 16, '', {
+      this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, 16, '', {
         fontSize: FONT_SIZE,
         align: 'left',
         vAlign: 'middle',
@@ -574,7 +561,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.drawHLLAPRow('p.', 'Status of the Land/ Flat : Free Hold/Leased / Development Authority', fields.statusOfLand || 'NA');
     this.drawHLLAPRow('q.', 'Type of Property : Bungalow/row house/Plot/ flat (1BHK/2BHK/3BHK)/Residential', fields.typeOfProperty || 'NA');
     this.drawHLLAPRow('r.', 'Approved usage of Property: Agri/ Mix /Industrial/commercial/Residential (Restrictive covenants in regards to Land Use, if any)', fields.approvedUsage || 'NA');
-    this.drawMergedLabelRow('Actual Usage of the Property :Agri/Industrial/commercial/Residential/Mix', fields.actualUsage || 'NA');
+    this.drawSubItemRow('Actual Usage of the Property :Agri/Industrial/commercial/Residential/Mix', fields.actualUsage || 'NA');
     this.drawHLLAPRow('t.', 'Type of Structure : Load Bearing/RCC/Aluform shuttering', fields.typeOfStructure || 'NA');
     this.drawHLLAPRow('u.', 'No of Floors', fields.noOfFloors || 'NA');
     this.drawHLLAPRow('v.', 'Occupancy Details: Self Occupied/Rented/ Vacant', fields.occupancyDetails || 'NA');
@@ -610,7 +597,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     if (fields.approvedBUAFloors && fields.approvedBUAFloors.length > 0) {
       for (const fl of fields.approvedBUAFloors) {
         if (fl.floor || fl.area) {
-          this.drawMergedLabelRow(fl.floor || 'Floor', fl.area ? `${fl.area}sqft` : 'NA', false, true);
+          this.drawSubItemRow(fl.floor || 'Floor', fl.area ? `${fl.area}sqft` : 'NA', false, true);
         }
       }
     }
@@ -622,7 +609,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     if (fields.measuredBUAFloors && fields.measuredBUAFloors.length > 0) {
       for (const fl of fields.measuredBUAFloors) {
         if (fl.floor || fl.area) {
-          this.drawMergedLabelRow(fl.floor || 'Floor', fl.area ? `${fl.area}sqft` : 'NA', false, true);
+          this.drawSubItemRow(fl.floor || 'Floor', fl.area ? `${fl.area}sqft` : 'NA', false, true);
         }
       }
     }
@@ -632,10 +619,10 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
 
     // 6h. Recommended / Available Side Margin
     this.drawHLLAPRow('h.', 'Recommended / Available Side Margin', '');
-    this.drawMergedLabelRow('Front', fields.sideMarginFront || 'NA');
-    this.drawMergedLabelRow('Right Side', fields.sideMarginRight || 'NA');
-    this.drawMergedLabelRow('Left Side', fields.sideMarginLeft || 'NA');
-    this.drawMergedLabelRow('Back Side', fields.sideMarginBack || 'NA');
+    this.drawSubItemRow('Front', fields.sideMarginFront || 'NA');
+    this.drawSubItemRow('Right Side', fields.sideMarginRight || 'NA');
+    this.drawSubItemRow('Left Side', fields.sideMarginLeft || 'NA');
+    this.drawSubItemRow('Back Side', fields.sideMarginBack || 'NA');
 
     this.drawHLLAPRow('i.', 'Quality of construction', fields.qualityOfConstruction || 'NA');
     this.drawHLLAPRow('j.', 'Maintenance of the Property: excellent/very good/average/poor', fields.maintenanceOfProperty || 'NA');
@@ -659,7 +646,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
 
     // If Under-Construction, show "As on date (X%)" construction cost
     if (fields.isUnderConstruction && fields.constructionCostAsOnDate) {
-      this.drawMergedLabelRow(
+      this.drawSubItemRow(
         `As on date (${fields.percentWorkCompleted || '0%'})`,
         fields.constructionCostAsOnDate,
         false,
@@ -684,7 +671,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
 
     // If Under-Construction, show "As on date X% completion" Current Value
     if (fields.isUnderConstruction && fields.currentValueAsOnDate) {
-      this.drawMergedLabelRow(
+      this.drawSubItemRow(
         `As on date ${fields.percentWorkCompleted || ''} completion`,
         fields.currentValueAsOnDate,
         false,
@@ -717,15 +704,23 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     // Draw row 12 header
     this.drawHLLAPRow('12.', 'Remarks :', '');
 
-    // Draw remarks content (Left: Prompt, Right: Valuer's full remarks)
-    const promptW = this.colSl + this.colLbl;
-    const hPrompt = this.cellHeight(remarksPrompt, promptW, { fontSize: 10 });
+    // Draw remarks content (Left: Prompt in colLbl, Right: Valuer remarks in colVal)
+    const hPrompt = this.cellHeight(remarksPrompt, this.colLbl, { fontSize: 10 });
     const hRemarks = this.cellHeight(fields.remarks || 'NA', this.colVal, { fontSize: 10 });
     const remarksRowH = Math.max(80, hPrompt, hRemarks);
 
     this.checkPageBreak(remarksRowH);
 
-    this.drawCell(MARGIN_L, this.cursorY, promptW, remarksRowH, remarksPrompt, {
+    // 1. Sl col (empty)
+    this.drawCell(MARGIN_L, this.cursorY, this.colSl, remarksRowH, '', {
+      fillColor: LBL_BG,
+      bgOpacity: 0.5,
+      align: 'left',
+      vAlign: 'top',
+    });
+
+    // 2. Prompt in colLbl
+    this.drawCell(MARGIN_L + this.colSl, this.cursorY, this.colLbl, remarksRowH, remarksPrompt, {
       bold: false,
       fontSize: 10,
       fillColor: LBL_BG,
@@ -734,7 +729,8 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       vAlign: 'top',
     });
 
-    this.drawCell(MARGIN_L + promptW, this.cursorY, this.colVal, remarksRowH, fields.remarks || 'NA', {
+    // 3. Valuer Remarks in colVal
+    this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, remarksRowH, fields.remarks || 'NA', {
       bold: false,
       fontSize: 10,
       align: 'left',
