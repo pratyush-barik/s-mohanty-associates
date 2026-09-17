@@ -585,13 +585,17 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     );
     if (hasSketchBoundaries) {
       this.checkPageBreak(65);
-      this.drawCell(MARGIN_L, this.cursorY, this.colSl, 15, '', {
+      const sketchHdrH = Math.max(
+        TABLE_MIN_ROW_H,
+        this.cellHeight('Boundaries of Property as per sketch map', this.colLbl, { bold: true, fontSize: TABLE_FONT_SIZE })
+      );
+      this.drawCell(MARGIN_L, this.cursorY, this.colSl, sketchHdrH, '', {
         fillColor: LBL_BG,
         bgOpacity: 0.5,
         align: 'left',
         vAlign: 'middle',
       });
-      this.drawCell(MARGIN_L + this.colSl, this.cursorY, this.colLbl, 15, 'Boundaries of Property as per sketch map', {
+      this.drawCell(MARGIN_L + this.colSl, this.cursorY, this.colLbl, sketchHdrH, 'Boundaries of Property as per sketch map', {
         bold: true,
         fontSize: TABLE_FONT_SIZE,
         fillColor: LBL_BG,
@@ -599,14 +603,14 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
         align: 'left',
         vAlign: 'middle',
       });
-      this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, 15, '', {
+      this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, sketchHdrH, '', {
         fontSize: TABLE_FONT_SIZE,
         fillColor: LBL_BG,
         bgOpacity: 0.5,
         align: 'left',
         vAlign: 'middle',
       });
-      this.cursorY += 15;
+      this.cursorY += sketchHdrH;
 
       this.drawSketchBoundaryDirection('East', fields.boundaryEastSketch || '');
       this.drawSketchBoundaryDirection('West', fields.boundaryWestSketch || '');

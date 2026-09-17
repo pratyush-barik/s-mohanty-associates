@@ -1199,7 +1199,7 @@ export default function AxisHLLAP({
           {/* 4t - 4y: Structure, Occupancy & Utilities (Soft Container - Soft Teal) */}
           <div className="pt-2 pb-4 border-b border-slate-200">
             <div className="border border-teal-200 bg-[#F0FDFA] rounded-xl p-4 sm:p-5 shadow-2xs">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Field label="t. Type of Structure">
                   <input
                     type="text"
@@ -1210,7 +1210,7 @@ export default function AxisHLLAP({
                   />
                 </Field>
 
-                <Field span={2} label="u. No of Floors">
+                <Field label="u. No of Floors">
                   <input
                     type="text"
                     value={fields.noOfFloors}
@@ -1412,60 +1412,58 @@ export default function AxisHLLAP({
 
           {/* 6a - 6b: Plot / Flat Area & Demarcation (Soft Container - Soft Indigo) */}
           <div className="pb-4 border-b border-slate-200">
-            <div className="border border-indigo-200 bg-[#EEF2FF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="a. Area of the Plot / Flat (as per documents)">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-1.5 p-1 bg-white rounded-lg w-fit border border-indigo-200 shadow-2xs">
-                      <button
-                        type="button"
-                        onClick={() => handleChange('plotOrFlat', 'Plot')}
-                        disabled={isReadOnly}
-                        className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
-                          (fields.plotOrFlat || 'Plot') === 'Plot'
-                            ? 'bg-blue-600 text-white shadow-xs'
-                            : 'text-slate-600 hover:text-slate-900'
-                        }`}
-                      >
-                        Plot
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleChange('plotOrFlat', 'Flat')}
-                        disabled={isReadOnly}
-                        className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
-                          fields.plotOrFlat === 'Flat'
-                            ? 'bg-blue-600 text-white shadow-xs'
-                            : 'text-slate-600 hover:text-slate-900'
-                        }`}
-                      >
-                        Flat
-                      </button>
-                    </div>
-                    <input
-                      type="text"
-                      value={fields.plotAreaDocs}
-                      onChange={e => handleChange('plotAreaDocs', e.target.value)}
-                      className={inputCls}
+            <div className="border border-indigo-200 bg-[#EEF2FF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
+              <Field label="a. Area of the Plot / Flat (as per documents)">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5 p-1 bg-white rounded-lg w-fit border border-indigo-200 shadow-2xs">
+                    <button
+                      type="button"
+                      onClick={() => handleChange('plotOrFlat', 'Plot')}
                       disabled={isReadOnly}
-                      placeholder="e.g. 1500 sqft"
-                    />
+                      className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                        (fields.plotOrFlat || 'Plot') === 'Plot'
+                          ? 'bg-blue-600 text-white shadow-xs'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      Plot
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleChange('plotOrFlat', 'Flat')}
+                      disabled={isReadOnly}
+                      className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                        fields.plotOrFlat === 'Flat'
+                          ? 'bg-blue-600 text-white shadow-xs'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      Flat
+                    </button>
                   </div>
-                </Field>
-
-                <Field label="b. Demarcation at Site">
-                  <select
-                    value={fields.demarcationAtSite}
-                    onChange={e => handleChange('demarcationAtSite', e.target.value)}
-                    className={selectCls}
+                  <input
+                    type="text"
+                    value={fields.plotAreaDocs}
+                    onChange={e => handleChange('plotAreaDocs', e.target.value)}
+                    className={inputCls}
                     disabled={isReadOnly}
-                  >
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
-                    <option value="Partial">Partial</option>
-                  </select>
-                </Field>
-              </div>
+                    placeholder="e.g. 1500 sqft"
+                  />
+                </div>
+              </Field>
+
+              <Field label="b. Demarcation at Site">
+                <select
+                  value={fields.demarcationAtSite}
+                  onChange={e => handleChange('demarcationAtSite', e.target.value)}
+                  className={selectCls}
+                  disabled={isReadOnly}
+                >
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                  <option value="Partial">Partial</option>
+                </select>
+              </Field>
             </div>
           </div>
 
@@ -1672,8 +1670,8 @@ export default function AxisHLLAP({
                     className={selectCls}
                     disabled={isReadOnly}
                   >
-                    <option value="Yes (As per approved plan)">Yes (As per approved plan)</option>
-                    <option value="As per plan">As per plan</option>
+                    <option value="Yes as per approved plan">Yes as per approved plan</option>
+                    <option value="Not as per approved plan">Not as per approved plan</option>
                     <option value="Deviation observed">Deviation observed</option>
                     <option value="Unauthorized construction">Unauthorized construction</option>
                   </select>
@@ -1692,11 +1690,11 @@ export default function AxisHLLAP({
             </div>
           </div>
 
-          {/* F. Recommended / Available Side Margin (Soft Container - Soft Violet) */}
+          {/* g. Recommended / Available Side Margin (Soft Container - Soft Violet) */}
           <div className="pt-2 pb-4 border-b border-slate-200">
             <div className="border border-violet-200 bg-[#FAF5FF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
               <h3 className="font-semibold text-violet-900 text-sm tracking-wide">
-                F. Recommended / Available Side Margin
+                g. Recommended / Available Side Margin
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-3 rounded-lg border border-violet-200/80 shadow-2xs">
                 <Field label="Front">
