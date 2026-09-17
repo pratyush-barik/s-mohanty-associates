@@ -764,9 +764,6 @@ export default function AxisHLLAP({
 
           {/* 4a - 4m: Locational & Infrastructure Details */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
-              4a – 4m. Locational &amp; Vicinity Details
-            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <Field label="a. Plot No">
                 <input
@@ -1106,9 +1103,6 @@ export default function AxisHLLAP({
 
           {/* 4o - 4y: Property Attributes, Structure & Utilities */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
-              4o – 4y. Property Attributes, Structure &amp; Amenities
-            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Field label="o. Boundaries Match Verification">
                 <select
@@ -1308,9 +1302,6 @@ export default function AxisHLLAP({
 
           {/* 5a - 5c: Layout Approval */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
-              5a – 5c. Layout Approval
-            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Field label="a. Layout Approval No">
                 <input
@@ -1337,9 +1328,6 @@ export default function AxisHLLAP({
 
           {/* 5d - 5f: Building Plan Approval */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
-              5d – 5f. Building Plan Approval
-            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Field label="d. Building Plan Approval No">
                 <input
@@ -1366,9 +1354,6 @@ export default function AxisHLLAP({
 
           {/* 5g - 5h: Construction Timeline */}
           <div className="pt-2">
-            <div className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
-              5g – 5h. Construction Timeline
-            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <DateInput
                 fieldKey="constructionCommencementDate"
@@ -1675,9 +1660,6 @@ export default function AxisHLLAP({
 
           {/* 6i - 6l: Structure Quality, Maintenance & Life */}
           <div className="pt-2">
-            <div className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
-              6i – 6l. Structure Quality, Maintenance &amp; Estimated Life
-            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Field label="6i. Quality of Construction">
                 <input
@@ -1757,9 +1739,6 @@ export default function AxisHLLAP({
 
           {/* 7a - 7d: Plot & Construction Valuation */}
           <div className="pb-4 border-b border-slate-200">
-            <div className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
-              7a – 7d. Plot &amp; Construction Valuation
-            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Field label="Plot Area for Valuation (sqft)">
                 <input
@@ -1898,9 +1877,6 @@ export default function AxisHLLAP({
 
           {/* 7h - 10: Summary, Statutory Rates & Visit Date */}
           <div className="pt-2">
-            <div className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
-              7h – 10. Summary Valuation &amp; Statutory Assessment
-            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="7h. Current Value of Property (100% Completion)">
                 <input
@@ -1983,9 +1959,6 @@ export default function AxisHLLAP({
         <Section id="axis-sec6" title="6. Attachments, Remarks & Valuer Signatory (Points 11 – 12)" number={6} defaultOpen={true}>
           {/* Point 11: Attachments Status */}
           <div className="pb-4 border-b border-slate-200">
-            <div className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
-              11. Attachments Status
-            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="11a. 4 photos of Property (inside/outside)">
                 <input
@@ -2013,10 +1986,7 @@ export default function AxisHLLAP({
 
           {/* Point 12: Remarks */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
-              12. Remarks &amp; Critical Observations
-            </div>
-            <Field label="Remarks, Access Notes & Observations">
+            <Field label="12. Remarks, Access Notes & Observations">
               <textarea
                 rows={6}
                 value={fields.remarks}
