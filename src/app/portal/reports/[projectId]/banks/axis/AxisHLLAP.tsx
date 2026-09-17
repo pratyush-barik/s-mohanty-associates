@@ -370,7 +370,7 @@ export default function AxisHLLAP({
     const distressedPct = fields.distressedPercentage !== undefined && fields.distressedPercentage !== ''
       ? parseNum(fields.distressedPercentage)
       : 80;
-    const distressedVal = Math.round((isUnderConst ? totalAsOnDate : total100) * (distressedPct / 100));
+    const distressedVal = Math.round(total100 * (distressedPct / 100));
 
     const valPlotFlatStr = pArea > 0 && pRate > 0
       ? `Value of ${selectedUnit}-${pArea} sqft X Rs.${pRate}/- = Rs.${formatIndianCurrency(pVal)}/-`
@@ -396,7 +396,7 @@ export default function AxisHLLAP({
       ? `Rs.${formatIndianCurrency(pVal)}/- + Rs.${formatIndianCurrency(cValAsOnDate)}/- =Rs.${formatIndianCurrency(totalAsOnDate)}/-`
       : '';
 
-    const distressedStr = distressedVal > 0 && (pVal > 0 || cVal > 0)
+    const distressedStr = distressedVal > 0 && total100 > 0
       ? `Rs.${formatIndianCurrency(distressedVal)}/-`
       : '';
 
@@ -1862,7 +1862,7 @@ export default function AxisHLLAP({
             const distressedPct = fields.distressedPercentage !== undefined && fields.distressedPercentage !== ''
               ? parseNum(fields.distressedPercentage)
               : 80;
-            const distressedVal = Math.round((isUnderConst ? totalAsOnDate : total100) * (distressedPct / 100));
+            const distressedVal = Math.round(total100 * (distressedPct / 100));
 
             return (
               <div className="space-y-5">
@@ -2162,7 +2162,7 @@ export default function AxisHLLAP({
                     </div>
 
                     <div className="sm:col-span-2">
-                      <Field label={`9. Distressed Valuation of Property (${fields.distressedPercentage || '80'}% of Current Valuation)`}>
+                      <Field label={`9. Distressed Valuation of Property (${fields.distressedPercentage || '80'}% of Total Valuation)`}>
                         <div className="relative">
                           <input
                             type="text"
