@@ -44,7 +44,7 @@ export const LINE_HEIGHT = 1.25; // multiplier on font size
 export const BORDER_W = 0.5;
 export const LBL_BG = '#DBE6F0';
 export const OPT_BG = '#DDE9F6';
-export const VAL_BG = '#FEF9E7';
+export const VAL_BG = '#DBE6F0';
 export const BG_OPACITY = 0.5;
 
 export interface TextSegment {

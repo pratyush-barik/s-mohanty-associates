@@ -1199,10 +1199,10 @@ export default function AxisHLLAP({
             </div>
           </div>
 
-          {/* 4t - 4y: Structure, Occupancy & Utilities (Soft Container - Warm Amber) */}
+          {/* 4t - 4y: Structure, Occupancy & Utilities (Soft Container - Soft Teal) */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="border border-amber-200 bg-[#FFFBEB] rounded-xl p-4 sm:p-5 shadow-2xs">
-              <div className="text-xs font-bold text-amber-900 uppercase tracking-wider mb-3">
+            <div className="border border-teal-200 bg-[#F0FDFA] rounded-xl p-4 sm:p-5 shadow-2xs">
+              <div className="text-xs font-bold text-teal-900 uppercase tracking-wider mb-3">
                 Structure, Occupancy &amp; Utilities (t – y)
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1829,23 +1829,23 @@ export default function AxisHLLAP({
 
             return (
               <div className="space-y-5">
-                {/* Valuation Controls & Quick Action Banner (Soft Container - Warm Amber) */}
-                <div className="border border-amber-200 bg-[#FFFBEB] rounded-xl p-4 sm:p-5 shadow-2xs flex flex-wrap items-center justify-between gap-4">
+                {/* Valuation Controls & Quick Action Banner (Soft Container - Cool Slate) */}
+                <div className="border border-slate-200 bg-[#F8FAFC] rounded-xl p-4 sm:p-5 shadow-2xs flex flex-wrap items-center justify-between gap-4">
                   <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-xs font-bold text-amber-950 uppercase tracking-wide">Valuation Mode:</span>
+                    <span className="text-xs font-bold text-slate-800 uppercase tracking-wide">Valuation Mode:</span>
                     <button
                       type="button"
                       onClick={() => handleChange('isUnderConstruction', !fields.isUnderConstruction)}
                       disabled={isReadOnly}
                       className={`px-3.5 py-1.5 rounded-lg text-xs font-bold shadow-xs transition-all cursor-pointer ${
                         fields.isUnderConstruction
-                          ? 'bg-amber-600 text-white hover:bg-amber-700 ring-2 ring-amber-300'
+                          ? 'bg-blue-600 text-white hover:bg-blue-700 ring-2 ring-blue-300'
                           : 'bg-emerald-600 text-white hover:bg-emerald-700 ring-2 ring-emerald-300'
                       }`}
                     >
                       {fields.isUnderConstruction ? '🏗️ Under-Construction (< 100%)' : '✅ 100% Completed Property'}
                     </button>
-                    <div className="text-[11px] font-semibold text-amber-900 bg-white px-2.5 py-1 rounded-md border border-amber-200/80">
+                    <div className="text-[11px] font-semibold text-slate-700 bg-white px-2.5 py-1 rounded-md border border-slate-200">
                       Unit: <strong className="text-blue-700">{selectedUnit}</strong> | BUA Total: <strong className="text-slate-800">{buaTotal ? `${buaTotal} sqft` : '0 sqft'}</strong>
                     </div>
                   </div>
@@ -1975,16 +1975,16 @@ export default function AxisHLLAP({
                   </div>
                 </div>
 
-                {/* 7e - 7g: Under-Construction Progress & As-On-Date Valuation (Soft Container - Warm Amber) */}
+                {/* 7e - 7g: Under-Construction Progress & As-On-Date Valuation (Soft Container - Soft Cyan) */}
                 {fields.isUnderConstruction && (
-                  <div className="border border-amber-200 bg-[#FFFBEB] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
+                  <div className="border border-cyan-200 bg-[#ECFEFF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="text-xs font-bold text-amber-900 uppercase tracking-wider">
+                      <div className="text-xs font-bold text-cyan-900 uppercase tracking-wider">
                         7e – 7g. Under-Construction Progress &amp; Valuation As On Date
                       </div>
                       {cValAsOnDate > 0 && (
-                        <span className="text-[11px] font-semibold bg-white text-amber-900 px-2.5 py-0.5 rounded-full border border-amber-200">
-                          Const As-On-Date ({pct}%): <strong className="text-amber-950">Rs. {formatIndianCurrency(cValAsOnDate)}/-</strong>
+                        <span className="text-[11px] font-semibold bg-white text-cyan-900 px-2.5 py-0.5 rounded-full border border-cyan-200">
+                          Const As-On-Date ({pct}%): <strong className="text-cyan-950">Rs. {formatIndianCurrency(cValAsOnDate)}/-</strong>
                         </span>
                       )}
                     </div>

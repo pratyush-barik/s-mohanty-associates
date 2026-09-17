@@ -17,7 +17,6 @@ import {
   BORDER_W,
   LBL_BG,
   OPT_BG,
-  VAL_BG,
   BG_OPACITY,
   hexToRgb,
   formatReportDate,
@@ -167,9 +166,10 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     valBg: string | undefined = LBL_BG,
     fontSize: number = FONT_SIZE
   ): void {
+    const valText = val ?? '';
     const hSl = this.cellHeight(sl, this.colSl, { bold: isLabelBold, fontSize });
     const hLbl = this.cellHeight(label, this.colLbl, { bold: isLabelBold, fontSize });
-    const hVal = this.cellHeight(val || 'NA', this.colVal, { bold: isValueBold, fontSize });
+    const hVal = this.cellHeight(valText, this.colVal, { bold: isValueBold, fontSize });
     const rowH = Math.max(16, hSl, hLbl, hVal);
 
     this.checkPageBreak(rowH);
@@ -194,8 +194,8 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       vAlign: 'middle',
     });
 
-    // 3. Value cell (uniform background color applied)
-    this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, rowH, val || 'NA', {
+    // 3. Value cell (uniform background color applied across all answer cells)
+    this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, rowH, valText, {
       bold: isValueBold,
       fontSize,
       fillColor: valBg,
@@ -220,9 +220,10 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     fontSize: number = FONT_SIZE
   ): void {
     const fullLabelText = labelSegments.map(s => s.text).join('');
+    const valText = val ?? '';
     const hSl = this.cellHeight(sl, this.colSl, { bold: false, fontSize });
     const hLbl = this.cellHeight(fullLabelText, this.colLbl, { bold: false, fontSize });
-    const hVal = this.cellHeight(val || 'NA', this.colVal, { bold: isValueBold, fontSize });
+    const hVal = this.cellHeight(valText, this.colVal, { bold: isValueBold, fontSize });
     const rowH = Math.max(16, hSl, hLbl, hVal);
 
     this.checkPageBreak(rowH);
@@ -253,7 +254,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.drawRichTextAt(labelSegments, textX, textTopY, textMaxWidth, fontSize);
 
     // 3. Value cell
-    this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, rowH, val || 'NA', {
+    this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, rowH, valText, {
       bold: isValueBold,
       fontSize,
       fillColor: valBg,
@@ -289,8 +290,8 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     actualVal: string,
     fontSize: number = FONT_SIZE
   ): void {
-    const leftText = `${direction}:- ${deedVal || 'NA'}`;
-    const rightText = `${direction}:- ${actualVal || 'NA'}`;
+    const leftText = deedVal ? `${direction}:- ${deedVal}` : `${direction}:-`;
+    const rightText = actualVal ? `${direction}:- ${actualVal}` : `${direction}:-`;
 
     const hLeft = this.cellHeight(leftText, this.colLbl, { bold: false, fontSize });
     const hRight = this.cellHeight(rightText, this.colVal, { bold: false, fontSize });
@@ -334,7 +335,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
    * Draw single sketch boundary direction row [empty Sl | Sketch Direction | empty Val]
    */
   private drawSketchBoundaryDirection(direction: string, val: string, fontSize: number = FONT_SIZE): void {
-    const text = `${direction}:- ${val || 'NA'}`;
+    const text = val ? `${direction}:- ${val}` : `${direction}:-`;
     const h = Math.max(16, this.cellHeight(text, this.colLbl, { bold: false, fontSize }));
 
     this.checkPageBreak(h);
@@ -475,8 +476,8 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.cursorY += thH;
 
     // --- Row 1: Customer Details ---
-    const custH1 = Math.max(16, this.cellHeight(fields.customerName || 'NA', this.colVal, { fontSize: FONT_SIZE }));
-    const custH2 = Math.max(16, this.cellHeight(fields.customerContactDetails || 'NA', this.colVal, { fontSize: FONT_SIZE }));
+    const custH1 = Math.max(16, this.cellHeight(fields.customerName || '', this.colVal, { fontSize: FONT_SIZE }));
+    const custH2 = Math.max(16, this.cellHeight(fields.customerContactDetails || '', this.colVal, { fontSize: FONT_SIZE }));
     const totalCustH = custH1 + custH2;
 
     this.checkPageBreak(totalCustH);
@@ -499,7 +500,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       align: 'left',
       vAlign: 'middle',
     });
-    this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, custH1, fields.customerName || 'NA', {
+    this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, custH1, fields.customerName || '', {
       bold: false,
       fontSize: FONT_SIZE,
       fillColor: LBL_BG,
@@ -516,7 +517,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       align: 'left',
       vAlign: 'middle',
     });
-    this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY + custH1, this.colVal, custH2, fields.customerContactDetails || 'NA', {
+    this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY + custH1, this.colVal, custH2, fields.customerContactDetails || '', {
       bold: false,
       fontSize: FONT_SIZE,
       fillColor: LBL_BG,
@@ -527,30 +528,30 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.cursorY += totalCustH;
 
     // --- Row 2: APP ID ---
-    this.drawHLLAPRow('2.', 'APP ID', fields.appId || 'NA');
+    this.drawHLLAPRow('2.', 'APP ID', fields.appId || '');
 
     // --- Row 3: Documents Provided ---
     this.drawHLLAPRow(
       '3.',
       'Documents Provided: Approved Layout/\nApproved Building Plan/ NA order/ Four\nBoundaries Details',
-      fields.documentsProvided || 'NA'
+      fields.documentsProvided || ''
     );
 
     // --- Row 4: Property Details ---
-    this.drawHLLAPRow('4.', 'Property Details', fields.propertyDetailsHeader || 'NA');
-    this.drawHLLAPRow('a.', 'Plot  No', fields.plotNo || 'NA');
-    this.drawHLLAPRow('b.', 'S No/G. No/Khasra No/Khata No', fields.khataNo || 'NA');
-    this.drawHLLAPRow('c.', 'Locality', fields.locality || 'NA');
-    this.drawHLLAPRow('d.', 'Road', fields.road || 'NA');
-    this.drawHLLAPRow('e.', 'City', fields.city || 'NA');
-    this.drawHLLAPRow('f.', 'District', fields.district || 'NA');
-    this.drawHLLAPRow('g.', 'Pin code', fields.pinCode || 'NA');
-    this.drawHLLAPRow('h.', 'Nearby Land Mark', fields.nearbyLandMark || 'NA');
-    this.drawHLLAPRow('i.', 'Distance from City Center', fields.distanceFromCityCenter || 'NA');
-    this.drawHLLAPRow('j.', 'Availability of Local Transport : Metro/ Local Train/ Bus', fields.availabilityOfLocalTransport || 'NA');
-    this.drawHLLAPRow('k.', 'Level of land with topographical conditions', fields.levelOfLand || 'NA');
-    this.drawHLLAPRow('l.', 'Class Of Locality :  Posh/ Higher Middle Class/Middle class/Lower middle Class/ Poor', fields.classOfLocality || 'NA');
-    this.drawHLLAPRow('m.', 'Quality of Infrastructure in the vicinity', fields.qualityOfInfrastructure || 'NA');
+    this.drawHLLAPRow('4.', 'Property Details', fields.propertyDetailsHeader || '');
+    this.drawHLLAPRow('a.', 'Plot  No', fields.plotNo || '');
+    this.drawHLLAPRow('b.', 'S No/G. No/Khasra No/Khata No', fields.khataNo || '');
+    this.drawHLLAPRow('c.', 'Locality', fields.locality || '');
+    this.drawHLLAPRow('d.', 'Road', fields.road || '');
+    this.drawHLLAPRow('e.', 'City', fields.city || '');
+    this.drawHLLAPRow('f.', 'District', fields.district || '');
+    this.drawHLLAPRow('g.', 'Pin code', fields.pinCode || '');
+    this.drawHLLAPRow('h.', 'Nearby Land Mark', fields.nearbyLandMark || '');
+    this.drawHLLAPRow('i.', 'Distance from City Center', fields.distanceFromCityCenter || '');
+    this.drawHLLAPRow('j.', 'Availability of Local Transport : Metro/ Local Train/ Bus', fields.availabilityOfLocalTransport || '');
+    this.drawHLLAPRow('k.', 'Level of land with topographical conditions', fields.levelOfLand || '');
+    this.drawHLLAPRow('l.', 'Class Of Locality :  Posh/ Higher Middle Class/Middle class/Lower middle Class/ Poor', fields.classOfLocality || '');
+    this.drawHLLAPRow('m.', 'Quality of Infrastructure in the vicinity', fields.qualityOfInfrastructure || '');
 
     // 4n. Boundaries (Header row + 4 direction rows)
     const bLbl = 'Boundaries of Property as per documents';
@@ -565,10 +566,10 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
 
     this.drawHLLAPRow('n.', bLbl, bVal, true, true, LBL_BG, LBL_BG);
 
-    this.drawBoundaryRow('East', fields.boundaryEastDeed, fields.boundaryEastActual);
-    this.drawBoundaryRow('West', fields.boundaryWestDeed, fields.boundaryWestActual);
-    this.drawBoundaryRow('North', fields.boundaryNorthDeed, fields.boundaryNorthActual);
-    this.drawBoundaryRow('South', fields.boundarySouthDeed, fields.boundarySouthActual);
+    this.drawBoundaryRow('East', fields.boundaryEastDeed || '', fields.boundaryEastActual || '');
+    this.drawBoundaryRow('West', fields.boundaryWestDeed || '', fields.boundaryWestActual || '');
+    this.drawBoundaryRow('North', fields.boundaryNorthDeed || '', fields.boundaryNorthActual || '');
+    this.drawBoundaryRow('South', fields.boundarySouthDeed || '', fields.boundarySouthActual || '');
 
     // Optional: Boundaries of Property as per sketch map
     const hasSketchBoundaries = !!(
@@ -609,35 +610,35 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     }
 
     // 4o - 4y
-    this.drawHLLAPRow('o.', 'Does the Boundaries at Site match, as mentioned in documentation?', fields.boundariesMatch || 'NA');
-    this.drawHLLAPRow('p.', 'Status of the Land/ Flat : Free Hold/Leased / Development Authority', fields.statusOfLand || 'NA');
-    this.drawHLLAPRow('q.', 'Type of Property : Bungalow/row house/Plot/ flat (1BHK/2BHK/3BHK)/Residential', fields.typeOfProperty || 'NA');
-    this.drawHLLAPRow('r.', 'Approved usage of Property: Agri/ Mix /Industrial/commercial/Residential (Restrictive covenants in regards to Land Use, if any)', fields.approvedUsage || 'NA');
-    this.drawHLLAPRow('s.', 'Actual Usage of the Property :Agri/Industrial/commercial/Residential/Mix', fields.actualUsage || 'NA');
-    this.drawHLLAPRow('t.', 'Type of Structure : Load Bearing/RCC/Aluform shuttering', fields.typeOfStructure || 'NA');
-    this.drawHLLAPRow('u.', 'No of Floors', fields.noOfFloors || 'NA');
-    this.drawHLLAPRow('v.', 'Occupancy Details: Self Occupied/Rented/ Vacant', fields.occupancyDetails || 'NA');
-    this.drawHLLAPRow('w.', 'Does property have Electricity / Water / Drainage connection', fields.hasElectricityWaterDrainage || 'NA');
-    this.drawHLLAPRow('x.', 'Proximity to civic amenities like school, hospital, market, etc', fields.proximityToCivicAmenities || 'NA');
-    this.drawHLLAPRow('y.', 'Development of surrounding area', fields.developmentOfSurroundingArea || 'NA');
+    this.drawHLLAPRow('o.', 'Does the Boundaries at Site match, as mentioned in documentation?', fields.boundariesMatch || '');
+    this.drawHLLAPRow('p.', 'Status of the Land/ Flat : Free Hold/Leased / Development Authority', fields.statusOfLand || '');
+    this.drawHLLAPRow('q.', 'Type of Property : Bungalow/row house/Plot/ flat (1BHK/2BHK/3BHK)/Residential', fields.typeOfProperty || '');
+    this.drawHLLAPRow('r.', 'Approved usage of Property: Agri/ Mix /Industrial/commercial/Residential (Restrictive covenants in regards to Land Use, if any)', fields.approvedUsage || '');
+    this.drawHLLAPRow('s.', 'Actual Usage of the Property :Agri/Industrial/commercial/Residential/Mix', fields.actualUsage || '');
+    this.drawHLLAPRow('t.', 'Type of Structure : Load Bearing/RCC/Aluform shuttering', fields.typeOfStructure || '');
+    this.drawHLLAPRow('u.', 'No of Floors', fields.noOfFloors || '');
+    this.drawHLLAPRow('v.', 'Occupancy Details: Self Occupied/Rented/ Vacant', fields.occupancyDetails || '');
+    this.drawHLLAPRow('w.', 'Does property have Electricity / Water / Drainage connection', fields.hasElectricityWaterDrainage || '');
+    this.drawHLLAPRow('x.', 'Proximity to civic amenities like school, hospital, market, etc', fields.proximityToCivicAmenities || '');
+    this.drawHLLAPRow('y.', 'Development of surrounding area', fields.developmentOfSurroundingArea || '');
 
     // 4z. Longitude & Latitude
     this.checkPageBreak(50);
     this.drawHLLAPRow('z.', 'Longitude & latitude of the property', '');
-    this.drawHLLAPRow('i.', 'Longitude', fields.longitude || 'NA', false, true);
-    this.drawHLLAPRow('ii.', 'Latitude', fields.latitude || 'NA', false, true);
+    this.drawHLLAPRow('i.', 'Longitude', fields.longitude || '', false, true);
+    this.drawHLLAPRow('ii.', 'Latitude', fields.latitude || '', false, true);
 
     // --- Row 5: APPROVAL DETAILS ---
     this.checkPageBreak(70);
-    this.drawHLLAPRow('5.', 'APPROVAL DETAILS', fields.approvedPlanDetails || fields.buildingPlanApprovalNo || 'NA', true, true);
-    this.drawHLLAPRow('a.', 'Layout Approval No', fields.layoutApprovalNo || 'NA');
-    this.drawHLLAPRow('b.', 'Date of Approval', formatReportDate(fields.layoutApprovalDate));
-    this.drawHLLAPRow('c.', 'Expiry Date', formatReportDate(fields.layoutExpiryDate));
-    this.drawHLLAPRow('d.', 'Building Plan Approval No', fields.buildingPlanApprovalNo || 'NA');
-    this.drawHLLAPRow('e.', 'Date of Approval', formatReportDate(fields.buildingPlanApprovalDate));
-    this.drawHLLAPRow('f.', 'Expiry Date', formatReportDate(fields.buildingPlanExpiryDate));
-    this.drawHLLAPRow('g.', 'Date of Commencement of Construction', formatReportDate(fields.constructionCommencementDate));
-    this.drawHLLAPRow('h.', 'Expected Completion', formatReportDate(fields.expectedCompletionDate));
+    this.drawHLLAPRow('5.', 'APPROVAL DETAILS', fields.approvedPlanDetails || fields.buildingPlanApprovalNo || '', true, true);
+    this.drawHLLAPRow('a.', 'Layout Approval No', fields.layoutApprovalNo || '');
+    this.drawHLLAPRow('b.', 'Date of Approval', fields.layoutApprovalDate ? formatReportDate(fields.layoutApprovalDate) : '');
+    this.drawHLLAPRow('c.', 'Expiry Date', fields.layoutExpiryDate ? formatReportDate(fields.layoutExpiryDate) : '');
+    this.drawHLLAPRow('d.', 'Building Plan Approval No', fields.buildingPlanApprovalNo || '');
+    this.drawHLLAPRow('e.', 'Date of Approval', fields.buildingPlanApprovalDate ? formatReportDate(fields.buildingPlanApprovalDate) : '');
+    this.drawHLLAPRow('f.', 'Expiry Date', fields.buildingPlanExpiryDate ? formatReportDate(fields.buildingPlanExpiryDate) : '');
+    this.drawHLLAPRow('g.', 'Date of Commencement of Construction', fields.constructionCommencementDate ? formatReportDate(fields.constructionCommencementDate) : '');
+    this.drawHLLAPRow('h.', 'Expected Completion', fields.expectedCompletionDate ? formatReportDate(fields.expectedCompletionDate) : '');
 
     // --- Row 6: CONSTRUCTION DETAILS ---
     this.checkPageBreak(60);
@@ -654,18 +655,18 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
           { text: 'Plot', bold: true },
           { text: '/flat' },
         ];
-    this.drawHLLAPRichLabelRow('a.', areaSegments, fields.plotAreaDocs || 'NA', true);
-    this.drawHLLAPRow('b.', 'Demarcation at Site', fields.demarcationAtSite || 'NA');
+    this.drawHLLAPRichLabelRow('a.', areaSegments, fields.plotAreaDocs || '', true);
+    this.drawHLLAPRow('b.', 'Demarcation at Site', fields.demarcationAtSite || '');
 
     // 6c. Approved Built up Area & Floor-wise break up
     this.checkPageBreak(40);
     const appBUALabel = 'Approved Built up Area:_____sqft floor wise break up (for Bungalow/Twin /Row-house) as follows';
-    const appBUAVal = fields.approvedBUATotal ? `Approved BUA-${fields.approvedBUATotal}sqft` : 'NA';
+    const appBUAVal = fields.approvedBUATotal ? `Approved BUA-${fields.approvedBUATotal}sqft` : '';
     this.drawHLLAPRow('c.', appBUALabel, appBUAVal, true, true);
     if (fields.approvedBUAFloors && fields.approvedBUAFloors.length > 0) {
       for (const fl of fields.approvedBUAFloors) {
         if (fl.floor || fl.area) {
-          this.drawSubItemRow(fl.floor || 'Floor', fl.area ? `${fl.area}sqft` : 'NA', false, true);
+          this.drawSubItemRow(fl.floor || 'Floor', fl.area ? `${fl.area}sqft` : '', false, true);
         }
       }
     }
@@ -673,31 +674,31 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     // 6d. Measured Built up Area & Floor-wise break up
     this.checkPageBreak(40);
     const measBUALabel = 'Measured Built up Area:_____sqft floor wise break up (for Bungalow/Twin /Row-house) as follows';
-    const measBUAVal = fields.measuredBUATotal ? `Measured BUA-${fields.measuredBUATotal}sqft` : 'NA';
+    const measBUAVal = fields.measuredBUATotal ? `Measured BUA-${fields.measuredBUATotal}sqft` : '';
     this.drawHLLAPRow('d.', measBUALabel, measBUAVal, true, true);
     if (fields.measuredBUAFloors && fields.measuredBUAFloors.length > 0) {
       for (const fl of fields.measuredBUAFloors) {
         if (fl.floor || fl.area) {
-          this.drawSubItemRow(fl.floor || 'Floor', fl.area ? `${fl.area}sqft` : 'NA', false, true);
+          this.drawSubItemRow(fl.floor || 'Floor', fl.area ? `${fl.area}sqft` : '', false, true);
         }
       }
     }
 
-    this.drawHLLAPRow('e.', 'Whether the construction is as per approved building plan and / or local building bye laws', fields.isConstructionAsPerPlan || 'NA');
-    this.drawHLLAPRow('f.', 'Details of Extra Construction', fields.detailsOfExtraConstruction || 'NA');
+    this.drawHLLAPRow('e.', 'Whether the construction is as per approved building plan and / or local building bye laws', fields.isConstructionAsPerPlan || '');
+    this.drawHLLAPRow('f.', 'Details of Extra Construction', fields.detailsOfExtraConstruction || '');
 
     // 6g. Recommended / Available Side Margin
     this.checkPageBreak(75);
     this.drawHLLAPRow('g.', 'Recommended / Available Side Margin', '');
-    this.drawSubItemRow('Front', fields.sideMarginFront || 'NA');
-    this.drawSubItemRow('Right Side', fields.sideMarginRight || 'NA');
-    this.drawSubItemRow('Left Side', fields.sideMarginLeft || 'NA');
-    this.drawSubItemRow('Back Side', fields.sideMarginBack || 'NA');
+    this.drawSubItemRow('Front', fields.sideMarginFront || '');
+    this.drawSubItemRow('Right Side', fields.sideMarginRight || '');
+    this.drawSubItemRow('Left Side', fields.sideMarginLeft || '');
+    this.drawSubItemRow('Back Side', fields.sideMarginBack || '');
 
-    this.drawHLLAPRow('h.', 'Quality of construction', fields.qualityOfConstruction || 'NA');
-    this.drawHLLAPRow('i.', 'Maintenance of the Property: excellent/very good/average/poor', fields.maintenanceOfProperty || 'NA');
-    this.drawHLLAPRow('j.', 'Current Life of the structure', fields.currentLifeOfStructure || 'NA');
-    this.drawHLLAPRow('k.', 'Projected Life of the Structure', fields.projectedLifeOfStructure || 'NA');
+    this.drawHLLAPRow('h.', 'Quality of construction', fields.qualityOfConstruction || '');
+    this.drawHLLAPRow('i.', 'Maintenance of the Property: excellent/very good/average/poor', fields.maintenanceOfProperty || '');
+    this.drawHLLAPRow('j.', 'Current Life of the structure', fields.currentLifeOfStructure || '');
+    this.drawHLLAPRow('k.', 'Projected Life of the Structure', fields.projectedLifeOfStructure || '');
 
     // --- Row 7: Recommended Valuation of the Property ---
     this.checkPageBreak(60);
@@ -713,7 +714,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
           { text: 'Plot', bold: true },
           { text: '/Flat' },
         ];
-    this.drawHLLAPRichLabelRow('a.', rateSegments, fields.recommendedRatePerSqft || 'NA', false);
+    this.drawHLLAPRichLabelRow('a.', rateSegments, fields.recommendedRatePerSqft || '', false);
 
     const valSegments = isFlat
       ? [
@@ -725,14 +726,14 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
           { text: 'Plot', bold: true },
           { text: '/Flat' },
         ];
-    this.drawHLLAPRichLabelRow('b.', valSegments, fields.valueOfPlotFlat || 'NA', true);
-    this.drawHLLAPRow('c.', 'Estimated Cost of construction', fields.estimatedCostOfConstruction || 'NA', false, true);
+    this.drawHLLAPRichLabelRow('b.', valSegments, fields.valueOfPlotFlat || '', true);
+    this.drawHLLAPRow('c.', 'Estimated Cost of construction', fields.estimatedCostOfConstruction || '', false, true);
     this.drawHLLAPRow(
       'd.',
       fields.isUnderConstruction
         ? 'Total Cost of construction(Proposed G+2) on 100% completion'
         : 'Total Cost of construction(approved G+1)',
-      fields.totalCostOfConstruction || 'NA',
+      fields.totalCostOfConstruction || '',
       false,
       true
     );
@@ -747,22 +748,22 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       );
     }
 
-    this.drawHLLAPRow('e.', 'Stage of Construction', fields.stageOfConstruction || '100%');
-    this.drawHLLAPRow('f.', '% Work completed', fields.percentWorkCompleted || '100%');
-    this.drawHLLAPRow('g.', '% Disbursement Recommended', fields.percentDisbursementRecommended || '100%');
+    this.drawHLLAPRow('e.', 'Stage of Construction', fields.stageOfConstruction || '');
+    this.drawHLLAPRow('f.', '% Work completed', fields.percentWorkCompleted || '');
+    this.drawHLLAPRow('g.', '% Disbursement Recommended', fields.percentDisbursementRecommended || '');
 
-    // 7h. Current Value 100% completion
+    // 7h. Current Value 100% completion (uniform LBL_BG cell color)
     this.drawHLLAPRow(
       'h.',
       'Current Value of the Property (Plot + construction)on 100% completion',
-      fields.currentValueOfProperty || 'NA',
+      fields.currentValueOfProperty || '',
       false,
       true,
       LBL_BG,
-      VAL_BG
+      LBL_BG
     );
 
-    // If Under-Construction, show "As on date X% completion" Current Value
+    // If Under-Construction, show "As on date X% completion" Current Value (uniform LBL_BG cell color)
     if (fields.isUnderConstruction && fields.currentValueAsOnDate) {
       this.drawSubItemRow(
         `As on date ${fields.percentWorkCompleted || ''} completion`,
@@ -770,32 +771,32 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
         false,
         true,
         LBL_BG,
-        VAL_BG
+        LBL_BG
       );
     }
 
-    this.drawHLLAPRow('i.', 'Date of Property Visit', formatReportDate(fields.dateOfPropertyVisit || fields.reportDate));
+    this.drawHLLAPRow('i.', 'Date of Property Visit', fields.dateOfPropertyVisit || fields.reportDate ? formatReportDate(fields.dateOfPropertyVisit || fields.reportDate) : '');
 
     // --- Row 8: Govt Reckoner Rates ---
-    this.drawHLLAPRow('8.', 'Valuation as per Government reckoner rates', fields.valuationGovtReckonerRate || 'NA');
+    this.drawHLLAPRow('8.', 'Valuation as per Government reckoner rates', fields.valuationGovtReckonerRate || '');
 
-    // --- Row 9: Distressed Valuation ---
-    this.drawHLLAPRow('9.', 'Distressed valuation of the Property', fields.distressedValuation || 'NA', true, true, LBL_BG, VAL_BG);
+    // --- Row 9: Distressed Valuation (uniform LBL_BG cell color) ---
+    this.drawHLLAPRow('9.', 'Distressed valuation of the Property', fields.distressedValuation || '', true, true, LBL_BG, LBL_BG);
 
     // --- Row 10: Rental Value ---
-    this.drawHLLAPRow('10.', 'Rental value per month', fields.rentalValuePerMonth || 'NA');
+    this.drawHLLAPRow('10.', 'Rental value per month', fields.rentalValuePerMonth || '');
 
     // --- Row 11: Attachment ---
     this.drawHLLAPRow('11.', 'Attachment', '');
-    this.drawHLLAPRow('a.', '4 photos of the Property from inside/outside are attached', fields.photosAttached || 'Attached');
-    this.drawHLLAPRow('b.', 'Location sketch for the property', fields.locationSketchAttached || 'Attached');
+    this.drawHLLAPRow('a.', '4 photos of the Property from inside/outside are attached', fields.photosAttached || '');
+    this.drawHLLAPRow('b.', 'Location sketch for the property', fields.locationSketchAttached || '');
 
     // --- Row 12: Remarks ---
     const remarksPrompt =
       '(Comment on - resistance for valuation if any from the current occupants for rented property, if the property falls in a community dominated areas, if the approach road to the building is small and will not be able to accommodate a fire extinguisher, does the property falls under land locked area or is prone to frequent floods & any other critical observation.)';
 
     const hPrompt = this.cellHeight(remarksPrompt, this.colLbl, { fontSize: 10 });
-    const hRemarks = this.cellHeight(fields.remarks || 'NA', this.colVal, { fontSize: 10 });
+    const hRemarks = this.cellHeight(fields.remarks || '', this.colVal, { fontSize: 10 });
     const remarksRowH = Math.max(80, hPrompt, hRemarks);
 
     this.checkPageBreak(18 + remarksRowH);
@@ -823,7 +824,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     });
 
     // 3. Valuer Remarks in colVal
-    this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, remarksRowH, fields.remarks || 'NA', {
+    this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, remarksRowH, fields.remarks || '', {
       bold: false,
       fontSize: 10,
       fillColor: LBL_BG,
@@ -984,7 +985,10 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
         }
 
         // Bottom: Location Map
-        const locHeadingText = `LOCATION MAP (LAT: ${fields.latitude || 'NA'}, LONG: ${fields.longitude || 'NA'})`;
+        const latLongStr = (fields.latitude || fields.longitude)
+          ? ` (LAT: ${fields.latitude || ''}, LONG: ${fields.longitude || ''})`
+          : '';
+        const locHeadingText = `LOCATION MAP${latLongStr}`;
         const locBoxTop = mouzaBoxY - 20;
         this.page.drawText(this.sanitizeText(locHeadingText), { x: MARGIN_L, y: locBoxTop, size: FONT_SIZE_CAPTION, font: this.fontBold, color: rgb(0,0,0) });
         const locBoxY = locBoxTop - 10 - halfH;
@@ -1111,7 +1115,10 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       const mapH = (availablePhotoH - 45) / 2;
 
       // Top: Location Map
-      const locHeading = `LOCATION MAP (LAT: ${fields.latitude || 'NA'}, LONG: ${fields.longitude || 'NA'})`;
+      const latLongStrCompact = (fields.latitude || fields.longitude)
+        ? ` (LAT: ${fields.latitude || ''}, LONG: ${fields.longitude || ''})`
+        : '';
+      const locHeading = `LOCATION MAP${latLongStrCompact}`;
       this.page.drawText(this.sanitizeText(locHeading), {
         x: rightX,
         y: startY - 10,
