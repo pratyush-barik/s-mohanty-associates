@@ -104,7 +104,112 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       this.drawSbbSection6();
       return;
     }
+    // Intercept standard section 7
+    if (title.toUpperCase() === 'AREA VALUATION') {
+      super.drawSectionHeader('STRUCTURE, TENANCY & PLANNING APPROVALS', addSpaceBefore, preserveCase);
+      this.drawSbbSection7();
+      return;
+    }
     super.drawSectionHeader(title, addSpaceBefore, preserveCase);
+  }
+
+  private drawSbbSection7() {
+    const fields = this.fields;
+    
+    const val = (key: string, computed?: string) => {
+      if ((fields as any)[`${key}IsNA`]) return 'NA';
+      if ((fields as any)[`${key}EditOn`] || !computed) {
+        return String((fields as any)[key] || 'NA').replace(/[\t\n\r]+/g, ' ').trim() || 'NA';
+      }
+      return computed;
+    };
+
+    this.drawSectionSubtitle('OCCUPANCY DETAILS & STRUCTURE CLASSIFICATION');
+    
+    // Type of structure
+    let structTypes = [];
+    if ((fields as any).axisSbbTypeOfStructureGCI) structTypes.push('GCI');
+    if ((fields as any).axisSbbTypeOfStructureTinShed) structTypes.push('TIN SHED');
+    if ((fields as any).axisSbbTypeOfStructureRCC) structTypes.push('RCC');
+    if ((fields as any).axisSbbTypeOfStructureAluform) structTypes.push('ALUFORM SHUTTERING');
+    let structVal = structTypes.join(', ');
+    if ((fields as any).axisSbbTypeOfStructureIsNA) structVal = 'NA';
+    else if (structTypes.length === 0) structVal = 'NA';
+    
+    this.drawKeyValueRow([
+      { label: 'Type of Structure', value: structVal },
+      { label: 'No. of Floors', value: val('axisSbbNoOfFloors') }
+    ]);
+    
+    this.drawKeyValueRow([
+      { label: 'Occupancy Details', value: val('axisSbbOccupancyDetails') },
+      { label: 'Is Property on Rent?', value: val('axisSbbPropertyOnRent') }
+    ]);
+
+    const isRentYes = (fields as any).axisSbbPropertyOnRent === 'YES' && !(fields as any).axisSbbPropertyOnRentIsNA;
+
+    this.drawKeyValueRow([
+      { label: 'Number of Tenants & Details', value: isRentYes ? val('axisSbbNumberOfTenantsDetails') : 'NA' },
+      { label: 'Name of Tenant/Lease', value: isRentYes ? val('axisSbbNameOfTenantLease') : 'NA' }
+    ]);
+
+    this.drawKeyValueRow([
+      { label: 'Years in Tenancy', value: isRentYes ? val('axisSbbYearsInTenancy') : 'NA' },
+      { label: 'Any Resistance for Valuation?', value: val('axisSbbResistanceForValuation') }
+    ]);
+
+    this.drawKeyValueRow([
+      { label: 'Resistance from Occupants?', value: val('axisSbbResistanceFromOccupants') },
+      { label: 'Surrounding Area Development', value: val('axisSbbDevelopmentSurroundingArea') }
+    ]);
+
+    // Basic amenities
+    let amenities = [];
+    if ((fields as any).axisSbbBasicAmenitiesElectricity) amenities.push('ELECTRICITY');
+    if ((fields as any).axisSbbBasicAmenitiesWater) amenities.push('WATER');
+    if ((fields as any).axisSbbBasicAmenitiesDrainage) amenities.push('DRAINAGE CONNECTION');
+    let amenVal = amenities.join(', ');
+    if ((fields as any).axisSbbBasicAmenitiesIsNA) amenVal = 'NA';
+    else if (amenities.length === 0) amenVal = 'NA';
+
+    this.drawSimpleRow('Basic Amenities', amenVal);
+    
+    this.drawSectionSubtitle('APPROVAL DETAILS & BYE-LAWS COMPLIANCE');
+
+    this.drawKeyValueRow([
+      { label: 'Layout Approval No.', value: val('axisSbbLayoutApprovalNumber') },
+      { label: 'Approval Date', value: val('axisSbbLayoutApprovalDate') }
+    ]);
+
+    this.drawKeyValueRow([
+      { label: 'Expiry Date', value: val('axisSbbLayoutExpiryDate') },
+      { label: 'Building Plan Approval No.', value: val('axisSbbBuildingPlanApprovalNumber') }
+    ]);
+
+    this.drawKeyValueRow([
+      { label: 'Approval Date', value: val('axisSbbBuildingPlanApprovalDate') },
+      { label: 'Expiry Date', value: val('axisSbbBuildingPlanExpiryDate') }
+    ]);
+
+    this.drawSimpleRow('Construction As Per Approved Building Plan/Local Bye Laws', val('axisSbbConstructionAsPerApprovedPlan'));
+    this.drawSimpleRow('FSI As Per Plan Approval / Govt. Guideline & Actual FSI', val('axisSbbFSIAsPerPlan'));
+
+    this.drawKeyValueRow([
+      { label: 'Details of Extra Construction', value: val('axisSbbExtraConstructionDetails') },
+      { label: 'Percentage of Extra Construction', value: val('axisSbbExtraConstructionPercentage') }
+    ]);
+
+    this.drawKeyValueRow([
+      { label: 'Compoundable / Non-Compoundable?', value: (fields as any).axisSbbCompoundableIsCustom ? val('axisSbbCompoundable') : val('axisSbbCompoundable') },
+      { label: 'Maintenance of Property', value: (fields as any).axisSbbMaintenanceOfPropertyIsCustom ? val('axisSbbMaintenanceOfProperty') : val('axisSbbMaintenanceOfProperty') }
+    ]);
+    
+    this.drawSimpleRow('Quality of Construction', val('axisSbbQualityOfConstruction'));
+
+    this.drawKeyValueRow([
+      { label: 'Current Life of Structure (Years)', value: val('axisSbbCurrentLifeOfStructure') },
+      { label: 'Projected Life of Structure (Years)', value: val('axisSbbProjectedLifeOfStructure') }
+    ]);
   }
 
   private drawSbbSection6() {

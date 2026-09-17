@@ -9,7 +9,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
   bankId: 'AXIS BANK',
   subTemplateId: 'SBB',
   displayName: 'Axis Bank — SBB (Small Business Banking)',
-  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6'],
+  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7'],
   extraSections: [],
     axisSbbDeedNumberDate: '',
     axisSbbDeedNumberDateIsNA: false,
@@ -144,6 +144,115 @@ export const AXIS_SBB_CONFIG: BankConfig = {
     axisSbbRestrictiveCovenants: 'NA',
     axisSbbRestrictiveCovenantsIsNA: false,
     axisSbbRestrictiveCovenantsEditOn: false,
+
+    // SECTION 7
+    axisSbbTypeOfStructureGCI: false,
+    axisSbbTypeOfStructureTinShed: false,
+    axisSbbTypeOfStructureRCC: true,
+    axisSbbTypeOfStructureAluform: false,
+    axisSbbTypeOfStructureIsNA: false,
+    axisSbbTypeOfStructureEditOn: false,
+
+    axisSbbNoOfFloors: 'G+1',
+    axisSbbNoOfFloorsIsNA: false,
+    axisSbbNoOfFloorsEditOn: false,
+    
+    axisSbbOccupancyDetails: 'SELF-OCCUPIED',
+    axisSbbOccupancyDetailsIsNA: false,
+    axisSbbOccupancyDetailsEditOn: false,
+    
+    axisSbbPropertyOnRent: 'NO',
+    axisSbbPropertyOnRentIsNA: false,
+    axisSbbPropertyOnRentEditOn: false,
+
+    axisSbbNumberOfTenantsDetails: 'NA',
+    axisSbbNumberOfTenantsDetailsIsNA: false,
+    axisSbbNumberOfTenantsDetailsEditOn: false,
+
+    axisSbbNameOfTenantLease: 'NA',
+    axisSbbNameOfTenantLeaseIsNA: false,
+    axisSbbNameOfTenantLeaseEditOn: false,
+
+    axisSbbYearsInTenancy: 'NA',
+    axisSbbYearsInTenancyIsNA: false,
+    axisSbbYearsInTenancyEditOn: false,
+
+    axisSbbResistanceForValuation: 'NO',
+    axisSbbResistanceForValuationIsNA: false,
+    axisSbbResistanceForValuationEditOn: false,
+
+    axisSbbResistanceFromOccupants: 'NO',
+    axisSbbResistanceFromOccupantsIsNA: false,
+    axisSbbResistanceFromOccupantsEditOn: false,
+
+    axisSbbBasicAmenitiesElectricity: true,
+    axisSbbBasicAmenitiesWater: true,
+    axisSbbBasicAmenitiesDrainage: false,
+    axisSbbBasicAmenitiesIsNA: false,
+    axisSbbBasicAmenitiesEditOn: false,
+
+    axisSbbDevelopmentSurroundingArea: 'DEVELOPING',
+    axisSbbDevelopmentSurroundingAreaIsNA: false,
+    axisSbbDevelopmentSurroundingAreaEditOn: false,
+
+    axisSbbLayoutApprovalNumber: 'NA',
+    axisSbbLayoutApprovalNumberIsNA: false,
+    axisSbbLayoutApprovalNumberEditOn: false,
+    
+    axisSbbLayoutApprovalDate: 'NOT PROVIDED',
+    axisSbbLayoutApprovalDateIsNA: false,
+    axisSbbLayoutApprovalDateEditOn: false,
+    
+    axisSbbLayoutExpiryDate: 'NOT PROVIDED',
+    axisSbbLayoutExpiryDateIsNA: false,
+    axisSbbLayoutExpiryDateEditOn: false,
+    
+    axisSbbBuildingPlanApprovalNumber: 'NA',
+    axisSbbBuildingPlanApprovalNumberIsNA: false,
+    axisSbbBuildingPlanApprovalNumberEditOn: false,
+
+    axisSbbBuildingPlanApprovalDate: 'NOT PROVIDED',
+    axisSbbBuildingPlanApprovalDateIsNA: false,
+    axisSbbBuildingPlanApprovalDateEditOn: false,
+
+    axisSbbBuildingPlanExpiryDate: 'NOT PROVIDED',
+    axisSbbBuildingPlanExpiryDateIsNA: false,
+    axisSbbBuildingPlanExpiryDateEditOn: false,
+
+    axisSbbConstructionAsPerApprovedPlan: 'NOT APPLICABLE BYE LAWS',
+    axisSbbConstructionAsPerApprovedPlanEditOn: false,
+
+    axisSbbFSIAsPerPlan: 'NA',
+    axisSbbFSIAsPerPlanIsNA: false,
+    axisSbbFSIAsPerPlanEditOn: false,
+
+    axisSbbExtraConstructionDetails: 'NA',
+    axisSbbExtraConstructionDetailsIsNA: false,
+    axisSbbExtraConstructionDetailsEditOn: false,
+
+    axisSbbExtraConstructionPercentage: 'NA',
+    axisSbbExtraConstructionPercentageIsNA: false,
+    axisSbbExtraConstructionPercentageEditOn: false,
+
+    axisSbbCompoundable: 'NA',
+    axisSbbCompoundableIsCustom: false,
+    axisSbbCompoundableEditOn: false,
+
+    axisSbbQualityOfConstruction: 'RCC/PATTI/TIN SHED/CLAY TILES ROOF WITH MASONRY WALLS WITH TILES/MARBLE/KOTA STONE/LOCAL STONE/C.C FLOOR',
+    axisSbbQualityOfConstructionIsNA: false,
+    axisSbbQualityOfConstructionEditOn: false,
+
+    axisSbbMaintenanceOfProperty: 'GOOD',
+    axisSbbMaintenanceOfPropertyIsCustom: false,
+    axisSbbMaintenanceOfPropertyEditOn: false,
+
+    axisSbbCurrentLifeOfStructure: '25-YEARS',
+    axisSbbCurrentLifeOfStructureIsNA: false,
+    axisSbbCurrentLifeOfStructureEditOn: false,
+
+    axisSbbProjectedLifeOfStructure: '35-YEARS',
+    axisSbbProjectedLifeOfStructureIsNA: false,
+    axisSbbProjectedLifeOfStructureEditOn: false,
 
     axisSbbPropertyLocation: '',
     axisSbbGoverningBody: '',
@@ -1683,6 +1792,637 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       onChange={e => handleChange('axisSbbRestrictiveCovenants', e.target.value.toUpperCase())}
                       readOnly={!fields.axisSbbRestrictiveCovenantsEditOn || fields.axisSbbRestrictiveCovenantsIsNA}
                       disabled={isReadOnly || (!fields.axisSbbRestrictiveCovenantsEditOn && !fields.axisSbbRestrictiveCovenantsIsNA)}
+                    />
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'axis-sbb-section-7',
+      title: 'Structure, Tenancy & Planning Approvals',
+      number: 7,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        const renderNaToggle = (fieldName: string) => (
+          <label className="flex items-center space-x-1.5 text-[10px] uppercase font-bold text-gray-500 cursor-pointer ml-4">
+            <input 
+              type="checkbox" 
+              checked={!!fields[`${fieldName}IsNA`]} 
+              onChange={e => handleChange(`${fieldName}IsNA`, e.target.checked)}
+              disabled={isReadOnly}
+              className="w-3 h-3 text-red-500 rounded focus:ring-red-500 border-gray-300"
+            />
+            <span>NA</span>
+          </label>
+        );
+
+        const renderEditSwitch = (fieldName: string, disabled: boolean) => {
+          const isEditOn = !!fields[`${fieldName}EditOn`];
+          return (
+            <div className="flex items-center space-x-2">
+              <span className="text-[10px] uppercase font-bold text-gray-400">Edit {isEditOn ? 'On' : 'Off'}</span>
+              <button
+                type="button"
+                onClick={() => handleChange(`${fieldName}EditOn`, !isEditOn)}
+                disabled={disabled || isReadOnly}
+                className={`w-8 h-4 rounded-full relative transition-colors ${isEditOn ? 'bg-green-500' : 'bg-gray-300'}`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white transition-transform ${isEditOn ? 'translate-x-4' : ''}`} />
+              </button>
+            </div>
+          );
+        };
+
+        const renderRadioGroup = (field: string, options: string[]) => (
+          <div className={`flex flex-wrap gap-3 ${fields[`${field}IsNA`] ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
+            {options.map(opt => (
+              <label key={opt} className={`flex items-center space-x-2 p-2 border rounded-lg cursor-pointer transition-colors ${(fields[field] === opt && !fields[`${field}IsNA`]) ? 'bg-amber-50 border-amber-300' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
+                <input
+                  type="radio"
+                  name={field}
+                  value={opt}
+                  checked={fields[field] === opt && !fields[`${field}IsNA`]}
+                  onChange={e => handleChange(field, e.target.value)}
+                  disabled={isReadOnly || !!fields[`${field}IsNA`] || (!fields[`${field}EditOn`] && fields[`${field}EditOn`] !== undefined)}
+                  className="text-amber-500 focus:ring-amber-400 border-gray-300"
+                />
+                <span className="text-xs font-semibold text-gray-700">{opt}</span>
+              </label>
+            ))}
+          </div>
+        );
+
+        const isRentYes = fields.axisSbbPropertyOnRent === 'YES' && !fields.axisSbbPropertyOnRentIsNA;
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FFFBEB', borderColor: '#FDE68A' }}>
+              <h3 className="font-bold text-gray-700 mb-4">OCCUPANCY DETAILS & STRUCTURE CLASSIFICATION</h3>
+              
+              <div className="space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">TYPE OF STRUCTURE</label>
+                        {renderNaToggle('axisSbbTypeOfStructure')}
+                      </div>
+                      {renderEditSwitch('axisSbbTypeOfStructure', !!fields.axisSbbTypeOfStructureIsNA)}
+                    </div>
+                    <div className={`flex flex-wrap gap-3 ${fields.axisSbbTypeOfStructureIsNA ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
+                      {[
+                        { id: 'axisSbbTypeOfStructureGCI', label: 'GCI' },
+                        { id: 'axisSbbTypeOfStructureTinShed', label: 'TIN SHED' },
+                        { id: 'axisSbbTypeOfStructureRCC', label: 'RCC' },
+                        { id: 'axisSbbTypeOfStructureAluform', label: 'ALUFORM SHUTTERING' }
+                      ].map(item => (
+                        <label key={item.id} className="flex items-center space-x-2 p-2 border rounded-lg cursor-pointer bg-white border-gray-200 hover:bg-gray-50">
+                          <input
+                            type="checkbox"
+                            checked={!!fields[item.id]}
+                            onChange={e => handleChange(item.id, e.target.checked)}
+                            disabled={isReadOnly || !!fields.axisSbbTypeOfStructureIsNA || !fields.axisSbbTypeOfStructureEditOn}
+                            className="text-amber-500 focus:ring-amber-400 border-gray-300 rounded"
+                          />
+                          <span className="text-xs font-semibold text-gray-700">{item.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">NO. OF FLOORS</label>
+                        {renderNaToggle('axisSbbNoOfFloors')}
+                      </div>
+                      {renderEditSwitch('axisSbbNoOfFloors', !!fields.axisSbbNoOfFloorsIsNA)}
+                    </div>
+                    <input
+                      type="text"
+                      className={`${inputCls}`}
+                      value={fields.axisSbbNoOfFloorsIsNA ? 'NA' : (fields.axisSbbNoOfFloors || '')}
+                      onChange={e => handleChange('axisSbbNoOfFloors', e.target.value.toUpperCase())}
+                      readOnly={!fields.axisSbbNoOfFloorsEditOn || fields.axisSbbNoOfFloorsIsNA}
+                      disabled={isReadOnly || (!fields.axisSbbNoOfFloorsEditOn && !fields.axisSbbNoOfFloorsIsNA)}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">OCCUPANCY DETAILS</label>
+                        {renderNaToggle('axisSbbOccupancyDetails')}
+                      </div>
+                      {renderEditSwitch('axisSbbOccupancyDetails', !!fields.axisSbbOccupancyDetailsIsNA)}
+                    </div>
+                    {renderRadioGroup('axisSbbOccupancyDetails', ['SELF-OCCUPIED', 'RENTED', 'VACANT'])}
+                  </div>
+
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">IF THE PROPERTY IS ON RENT</label>
+                        {renderNaToggle('axisSbbPropertyOnRent')}
+                      </div>
+                      {renderEditSwitch('axisSbbPropertyOnRent', !!fields.axisSbbPropertyOnRentIsNA)}
+                    </div>
+                    {renderRadioGroup('axisSbbPropertyOnRent', ['YES', 'NO'])}
+                  </div>
+                </div>
+
+                <div className={`grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-lg bg-white/50 ${!isRentYes ? 'opacity-60 grayscale' : ''}`}>
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">NUMBER OF TENANT</label>
+                        {renderNaToggle('axisSbbNumberOfTenantsDetails')}
+                      </div>
+                      {renderEditSwitch('axisSbbNumberOfTenantsDetails', !!fields.axisSbbNumberOfTenantsDetailsIsNA || !isRentYes)}
+                    </div>
+                    <textarea
+                      className={`${inputCls} resize-y`}
+                      rows={1}
+                      value={fields.axisSbbNumberOfTenantsDetailsIsNA || !isRentYes ? 'NA' : (fields.axisSbbNumberOfTenantsDetails || '')}
+                      onChange={e => handleChange('axisSbbNumberOfTenantsDetails', e.target.value.toUpperCase())}
+                      readOnly={!fields.axisSbbNumberOfTenantsDetailsEditOn || fields.axisSbbNumberOfTenantsDetailsIsNA || !isRentYes}
+                      disabled={isReadOnly || (!fields.axisSbbNumberOfTenantsDetailsEditOn && !fields.axisSbbNumberOfTenantsDetailsIsNA) || !isRentYes}
+                    />
+                  </div>
+                  
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">NAME OF TENANT/LEASE</label>
+                        {renderNaToggle('axisSbbNameOfTenantLease')}
+                      </div>
+                      {renderEditSwitch('axisSbbNameOfTenantLease', !!fields.axisSbbNameOfTenantLeaseIsNA || !isRentYes)}
+                    </div>
+                    <input
+                      type="text"
+                      className={`${inputCls}`}
+                      value={fields.axisSbbNameOfTenantLeaseIsNA || !isRentYes ? 'NA' : (fields.axisSbbNameOfTenantLease || '')}
+                      onChange={e => handleChange('axisSbbNameOfTenantLease', e.target.value.toUpperCase())}
+                      readOnly={!fields.axisSbbNameOfTenantLeaseEditOn || fields.axisSbbNameOfTenantLeaseIsNA || !isRentYes}
+                      disabled={isReadOnly || (!fields.axisSbbNameOfTenantLeaseEditOn && !fields.axisSbbNameOfTenantLeaseIsNA) || !isRentYes}
+                    />
+                  </div>
+                  
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">YEARS IN TENANCY</label>
+                        {renderNaToggle('axisSbbYearsInTenancy')}
+                      </div>
+                      {renderEditSwitch('axisSbbYearsInTenancy', !!fields.axisSbbYearsInTenancyIsNA || !isRentYes)}
+                    </div>
+                    <input
+                      type="text"
+                      className={`${inputCls}`}
+                      value={fields.axisSbbYearsInTenancyIsNA || !isRentYes ? 'NA' : (fields.axisSbbYearsInTenancy || '')}
+                      onChange={e => handleChange('axisSbbYearsInTenancy', e.target.value.toUpperCase())}
+                      readOnly={!fields.axisSbbYearsInTenancyEditOn || fields.axisSbbYearsInTenancyIsNA || !isRentYes}
+                      disabled={isReadOnly || (!fields.axisSbbYearsInTenancyEditOn && !fields.axisSbbYearsInTenancyIsNA) || !isRentYes}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">ANY RESISTANCE FOR VALUATION?</label>
+                        {renderNaToggle('axisSbbResistanceForValuation')}
+                      </div>
+                      {renderEditSwitch('axisSbbResistanceForValuation', !!fields.axisSbbResistanceForValuationIsNA)}
+                    </div>
+                    {renderRadioGroup('axisSbbResistanceForValuation', ['YES', 'NO'])}
+                  </div>
+                  
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">RESISTANCE FROM OCCUPANTS?</label>
+                        {renderNaToggle('axisSbbResistanceFromOccupants')}
+                      </div>
+                      {renderEditSwitch('axisSbbResistanceFromOccupants', !!fields.axisSbbResistanceFromOccupantsIsNA || fields.axisSbbResistanceForValuation === 'NO')}
+                    </div>
+                    {/* If previous is NO, this is also implicitly disabled in UX usually, but we'll follow logic */}
+                    <div className={`flex flex-wrap gap-3 ${(fields.axisSbbResistanceFromOccupantsIsNA || fields.axisSbbResistanceForValuation === 'NO') ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
+                      {['YES', 'NO'].map(opt => (
+                        <label key={opt} className={`flex items-center space-x-2 p-2 border rounded-lg cursor-pointer transition-colors ${(fields.axisSbbResistanceFromOccupants === opt && !fields.axisSbbResistanceFromOccupantsIsNA) ? 'bg-amber-50 border-amber-300' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
+                          <input
+                            type="radio"
+                            name="axisSbbResistanceFromOccupants"
+                            value={opt}
+                            checked={fields.axisSbbResistanceFromOccupants === opt && !fields.axisSbbResistanceFromOccupantsIsNA}
+                            onChange={e => handleChange('axisSbbResistanceFromOccupants', e.target.value)}
+                            disabled={isReadOnly || !!fields.axisSbbResistanceFromOccupantsIsNA || (!fields.axisSbbResistanceFromOccupantsEditOn && fields.axisSbbResistanceFromOccupantsEditOn !== undefined) || fields.axisSbbResistanceForValuation === 'NO'}
+                            className="text-amber-500 focus:ring-amber-400 border-gray-300"
+                          />
+                          <span className="text-xs font-semibold text-gray-700">{opt}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">BASIC AMENITIES</label>
+                        {renderNaToggle('axisSbbBasicAmenities')}
+                      </div>
+                      {renderEditSwitch('axisSbbBasicAmenities', !!fields.axisSbbBasicAmenitiesIsNA)}
+                    </div>
+                    <div className={`flex flex-wrap gap-3 ${fields.axisSbbBasicAmenitiesIsNA ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
+                      {[
+                        { id: 'axisSbbBasicAmenitiesElectricity', label: 'ELECTRICITY' },
+                        { id: 'axisSbbBasicAmenitiesWater', label: 'WATER' },
+                        { id: 'axisSbbBasicAmenitiesDrainage', label: 'DRAINAGE CONNECTION' }
+                      ].map(item => (
+                        <label key={item.id} className="flex items-center space-x-2 p-2 border rounded-lg cursor-pointer bg-white border-gray-200 hover:bg-gray-50">
+                          <input
+                            type="checkbox"
+                            checked={!!fields[item.id]}
+                            onChange={e => handleChange(item.id, e.target.checked)}
+                            disabled={isReadOnly || !!fields.axisSbbBasicAmenitiesIsNA || !fields.axisSbbBasicAmenitiesEditOn}
+                            className="text-amber-500 focus:ring-amber-400 border-gray-300 rounded"
+                          />
+                          <span className="text-xs font-semibold text-gray-700">{item.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">SURROUNDING AREA DEVELOPMENT</label>
+                        {renderNaToggle('axisSbbDevelopmentSurroundingArea')}
+                      </div>
+                      {renderEditSwitch('axisSbbDevelopmentSurroundingArea', !!fields.axisSbbDevelopmentSurroundingAreaIsNA)}
+                    </div>
+                    <div className={`flex flex-wrap gap-3 ${fields.axisSbbDevelopmentSurroundingAreaIsNA ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
+                      {['UNDER DEVELOPED', 'DEVELOPING', 'DEVELOPED'].map(opt => (
+                        <label key={opt} className={`flex items-center space-x-2 p-2 border rounded-lg cursor-pointer transition-colors ${(fields.axisSbbDevelopmentSurroundingArea === opt && !fields.axisSbbDevelopmentSurroundingAreaIsNA) ? 'bg-amber-50 border-amber-300' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
+                          <input
+                            type="radio"
+                            name="axisSbbDevelopmentSurroundingArea"
+                            value={opt}
+                            checked={fields.axisSbbDevelopmentSurroundingArea === opt && !fields.axisSbbDevelopmentSurroundingAreaIsNA}
+                            onChange={e => handleChange('axisSbbDevelopmentSurroundingArea', e.target.value)}
+                            disabled={isReadOnly || !!fields.axisSbbDevelopmentSurroundingAreaIsNA || !fields.axisSbbDevelopmentSurroundingAreaEditOn}
+                            className="text-amber-500 focus:ring-amber-400 border-gray-300"
+                          />
+                          <span className="text-xs font-semibold text-gray-700">{opt}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#F0FDFA', borderColor: '#99F6E4' }}>
+              <h3 className="font-bold text-gray-700 mb-4">APPROVAL DETAILS & BYE-LAWS COMPLIANCE</h3>
+              
+              <div className="space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">LAYOUT APPROVAL NO.</label>
+                        {renderNaToggle('axisSbbLayoutApprovalNumber')}
+                      </div>
+                      {renderEditSwitch('axisSbbLayoutApprovalNumber', !!fields.axisSbbLayoutApprovalNumberIsNA)}
+                    </div>
+                    <input
+                      type="text"
+                      className={`${inputCls}`}
+                      value={fields.axisSbbLayoutApprovalNumberIsNA ? 'NA' : (fields.axisSbbLayoutApprovalNumber || '')}
+                      onChange={e => handleChange('axisSbbLayoutApprovalNumber', e.target.value.toUpperCase())}
+                      readOnly={!fields.axisSbbLayoutApprovalNumberEditOn || fields.axisSbbLayoutApprovalNumberIsNA}
+                      disabled={isReadOnly || (!fields.axisSbbLayoutApprovalNumberEditOn && !fields.axisSbbLayoutApprovalNumberIsNA)}
+                    />
+                  </div>
+                  
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">DATE OF APPROVAL</label>
+                        {renderNaToggle('axisSbbLayoutApprovalDate')}
+                      </div>
+                      {renderEditSwitch('axisSbbLayoutApprovalDate', !!fields.axisSbbLayoutApprovalDateIsNA)}
+                    </div>
+                    <input
+                      type="text"
+                      className={`${inputCls}`}
+                      value={fields.axisSbbLayoutApprovalDateIsNA ? 'NA' : (fields.axisSbbLayoutApprovalDate || '')}
+                      onChange={e => handleChange('axisSbbLayoutApprovalDate', e.target.value.toUpperCase())}
+                      readOnly={!fields.axisSbbLayoutApprovalDateEditOn || fields.axisSbbLayoutApprovalDateIsNA}
+                      disabled={isReadOnly || (!fields.axisSbbLayoutApprovalDateEditOn && !fields.axisSbbLayoutApprovalDateIsNA)}
+                    />
+                  </div>
+                  
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">EXPIRY DATE</label>
+                        {renderNaToggle('axisSbbLayoutExpiryDate')}
+                      </div>
+                      {renderEditSwitch('axisSbbLayoutExpiryDate', !!fields.axisSbbLayoutExpiryDateIsNA)}
+                    </div>
+                    <input
+                      type="text"
+                      className={`${inputCls}`}
+                      value={fields.axisSbbLayoutExpiryDateIsNA ? 'NA' : (fields.axisSbbLayoutExpiryDate || '')}
+                      onChange={e => handleChange('axisSbbLayoutExpiryDate', e.target.value.toUpperCase())}
+                      readOnly={!fields.axisSbbLayoutExpiryDateEditOn || fields.axisSbbLayoutExpiryDateIsNA}
+                      disabled={isReadOnly || (!fields.axisSbbLayoutExpiryDateEditOn && !fields.axisSbbLayoutExpiryDateIsNA)}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">BUILDING PLAN NO.</label>
+                        {renderNaToggle('axisSbbBuildingPlanApprovalNumber')}
+                      </div>
+                      {renderEditSwitch('axisSbbBuildingPlanApprovalNumber', !!fields.axisSbbBuildingPlanApprovalNumberIsNA)}
+                    </div>
+                    <input
+                      type="text"
+                      className={`${inputCls}`}
+                      value={fields.axisSbbBuildingPlanApprovalNumberIsNA ? 'NA' : (fields.axisSbbBuildingPlanApprovalNumber || '')}
+                      onChange={e => handleChange('axisSbbBuildingPlanApprovalNumber', e.target.value.toUpperCase())}
+                      readOnly={!fields.axisSbbBuildingPlanApprovalNumberEditOn || fields.axisSbbBuildingPlanApprovalNumberIsNA}
+                      disabled={isReadOnly || (!fields.axisSbbBuildingPlanApprovalNumberEditOn && !fields.axisSbbBuildingPlanApprovalNumberIsNA)}
+                    />
+                  </div>
+                  
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">DATE OF APPROVAL</label>
+                        {renderNaToggle('axisSbbBuildingPlanApprovalDate')}
+                      </div>
+                      {renderEditSwitch('axisSbbBuildingPlanApprovalDate', !!fields.axisSbbBuildingPlanApprovalDateIsNA)}
+                    </div>
+                    <input
+                      type="text"
+                      className={`${inputCls}`}
+                      value={fields.axisSbbBuildingPlanApprovalDateIsNA ? 'NA' : (fields.axisSbbBuildingPlanApprovalDate || '')}
+                      onChange={e => handleChange('axisSbbBuildingPlanApprovalDate', e.target.value.toUpperCase())}
+                      readOnly={!fields.axisSbbBuildingPlanApprovalDateEditOn || fields.axisSbbBuildingPlanApprovalDateIsNA}
+                      disabled={isReadOnly || (!fields.axisSbbBuildingPlanApprovalDateEditOn && !fields.axisSbbBuildingPlanApprovalDateIsNA)}
+                    />
+                  </div>
+                  
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">EXPIRY DATE</label>
+                        {renderNaToggle('axisSbbBuildingPlanExpiryDate')}
+                      </div>
+                      {renderEditSwitch('axisSbbBuildingPlanExpiryDate', !!fields.axisSbbBuildingPlanExpiryDateIsNA)}
+                    </div>
+                    <input
+                      type="text"
+                      className={`${inputCls}`}
+                      value={fields.axisSbbBuildingPlanExpiryDateIsNA ? 'NA' : (fields.axisSbbBuildingPlanExpiryDate || '')}
+                      onChange={e => handleChange('axisSbbBuildingPlanExpiryDate', e.target.value.toUpperCase())}
+                      readOnly={!fields.axisSbbBuildingPlanExpiryDateEditOn || fields.axisSbbBuildingPlanExpiryDateIsNA}
+                      disabled={isReadOnly || (!fields.axisSbbBuildingPlanExpiryDateEditOn && !fields.axisSbbBuildingPlanExpiryDateIsNA)}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col">
+                  <div className="flex justify-between items-center mb-1">
+                    <div className="flex items-center">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">CONSTRUCTION AS PER APPROVED BUILDING PLAN AND/OR LOCAL BUILDING BYE LAWS</label>
+                    </div>
+                    {renderEditSwitch('axisSbbConstructionAsPerApprovedPlan', false)}
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    {['YES', 'NA', 'NOT APPLICABLE BYE LAWS'].map(opt => (
+                      <label key={opt} className={`flex items-center space-x-2 p-2 border rounded-lg cursor-pointer transition-colors ${(fields.axisSbbConstructionAsPerApprovedPlan === opt) ? 'bg-teal-50 border-teal-300' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
+                        <input
+                          type="radio"
+                          name="axisSbbConstructionAsPerApprovedPlan"
+                          value={opt}
+                          checked={fields.axisSbbConstructionAsPerApprovedPlan === opt}
+                          onChange={e => handleChange('axisSbbConstructionAsPerApprovedPlan', e.target.value)}
+                          disabled={isReadOnly || !fields.axisSbbConstructionAsPerApprovedPlanEditOn}
+                          className="text-teal-500 focus:ring-teal-400 border-gray-300"
+                        />
+                        <span className="text-xs font-semibold text-gray-700">{opt}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex flex-col">
+                  <div className="flex justify-between items-center mb-1">
+                    <div className="flex items-center">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">FSI AS PER PLAN APPROVAL/FSI AS PER GOVT.GUIDELINE & ACTUAL FSI</label>
+                      {renderNaToggle('axisSbbFSIAsPerPlan')}
+                    </div>
+                    {renderEditSwitch('axisSbbFSIAsPerPlan', !!fields.axisSbbFSIAsPerPlanIsNA)}
+                  </div>
+                  <textarea
+                    className={`${inputCls} resize-y`}
+                    rows={1}
+                    value={fields.axisSbbFSIAsPerPlanIsNA ? 'NA' : (fields.axisSbbFSIAsPerPlan || '')}
+                    onChange={e => handleChange('axisSbbFSIAsPerPlan', e.target.value.toUpperCase())}
+                    readOnly={!fields.axisSbbFSIAsPerPlanEditOn || fields.axisSbbFSIAsPerPlanIsNA}
+                    disabled={isReadOnly || (!fields.axisSbbFSIAsPerPlanEditOn && !fields.axisSbbFSIAsPerPlanIsNA)}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">DETAILS OF EXTRA CONSTRUCTION</label>
+                        {renderNaToggle('axisSbbExtraConstructionDetails')}
+                      </div>
+                      {renderEditSwitch('axisSbbExtraConstructionDetails', !!fields.axisSbbExtraConstructionDetailsIsNA)}
+                    </div>
+                    <input
+                      type="text"
+                      className={`${inputCls}`}
+                      value={fields.axisSbbExtraConstructionDetailsIsNA ? 'NA' : (fields.axisSbbExtraConstructionDetails || '')}
+                      onChange={e => handleChange('axisSbbExtraConstructionDetails', e.target.value.toUpperCase())}
+                      readOnly={!fields.axisSbbExtraConstructionDetailsEditOn || fields.axisSbbExtraConstructionDetailsIsNA}
+                      disabled={isReadOnly || (!fields.axisSbbExtraConstructionDetailsEditOn && !fields.axisSbbExtraConstructionDetailsIsNA)}
+                    />
+                  </div>
+                  
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">PERCENTAGE OF EXTRA CONSTRUCTION</label>
+                        {renderNaToggle('axisSbbExtraConstructionPercentage')}
+                      </div>
+                      {renderEditSwitch('axisSbbExtraConstructionPercentage', !!fields.axisSbbExtraConstructionPercentageIsNA)}
+                    </div>
+                    <input
+                      type="text"
+                      className={`${inputCls}`}
+                      value={fields.axisSbbExtraConstructionPercentageIsNA ? 'NA' : (fields.axisSbbExtraConstructionPercentage || '')}
+                      onChange={e => handleChange('axisSbbExtraConstructionPercentage', e.target.value.toUpperCase())}
+                      readOnly={!fields.axisSbbExtraConstructionPercentageEditOn || fields.axisSbbExtraConstructionPercentageIsNA}
+                      disabled={isReadOnly || (!fields.axisSbbExtraConstructionPercentageEditOn && !fields.axisSbbExtraConstructionPercentageIsNA)}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">COMPOUNDABLE / NON-COMPOUNDABLE?</label>
+                      </div>
+                      {renderEditSwitch('axisSbbCompoundable', false)}
+                    </div>
+                    <select
+                      className={`${inputCls} appearance-none bg-white`}
+                      value={fields.axisSbbCompoundableIsCustom ? 'Custom' : (fields.axisSbbCompoundable || 'NA')}
+                      onChange={e => {
+                        const val = e.target.value;
+                        if (val === 'Custom') {
+                          handleChange('axisSbbCompoundableIsCustom', true);
+                          handleChange('axisSbbCompoundable', '');
+                        } else {
+                          handleChange('axisSbbCompoundableIsCustom', false);
+                          handleChange('axisSbbCompoundable', val);
+                        }
+                      }}
+                      disabled={isReadOnly || !fields.axisSbbCompoundableEditOn}
+                    >
+                      <option value="NA">NA</option>
+                      <option value="COMPOUNDABLE">COMPOUNDABLE</option>
+                      <option value="NON-COMPOUNDABLE">NON-COMPOUNDABLE</option>
+                      <option value="Custom">Custom / Other</option>
+                    </select>
+                    {fields.axisSbbCompoundableIsCustom && (
+                      <input
+                        type="text"
+                        className={`${inputCls} mt-2`}
+                        placeholder="Specify Custom Value"
+                        value={fields.axisSbbCompoundable || ''}
+                        onChange={e => handleChange('axisSbbCompoundable', e.target.value.toUpperCase())}
+                        disabled={isReadOnly || !fields.axisSbbCompoundableEditOn}
+                      />
+                    )}
+                  </div>
+                  
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">MAINTENANCE OF PROPERTY</label>
+                      </div>
+                      {renderEditSwitch('axisSbbMaintenanceOfProperty', false)}
+                    </div>
+                    <select
+                      className={`${inputCls} appearance-none bg-white`}
+                      value={fields.axisSbbMaintenanceOfPropertyIsCustom ? 'Custom' : (fields.axisSbbMaintenanceOfProperty || 'GOOD')}
+                      onChange={e => {
+                        const val = e.target.value;
+                        if (val === 'Custom') {
+                          handleChange('axisSbbMaintenanceOfPropertyIsCustom', true);
+                          handleChange('axisSbbMaintenanceOfProperty', '');
+                        } else {
+                          handleChange('axisSbbMaintenanceOfPropertyIsCustom', false);
+                          handleChange('axisSbbMaintenanceOfProperty', val);
+                        }
+                      }}
+                      disabled={isReadOnly || !fields.axisSbbMaintenanceOfPropertyEditOn}
+                    >
+                      <option value="NA">NA</option>
+                      <option value="GOOD">GOOD</option>
+                      <option value="AVERAGE">AVERAGE</option>
+                      <option value="POOR">POOR</option>
+                      <option value="Custom">Custom / Other</option>
+                    </select>
+                    {fields.axisSbbMaintenanceOfPropertyIsCustom && (
+                      <input
+                        type="text"
+                        className={`${inputCls} mt-2`}
+                        placeholder="Specify Custom Value"
+                        value={fields.axisSbbMaintenanceOfProperty || ''}
+                        onChange={e => handleChange('axisSbbMaintenanceOfProperty', e.target.value.toUpperCase())}
+                        disabled={isReadOnly || !fields.axisSbbMaintenanceOfPropertyEditOn}
+                      />
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex flex-col">
+                  <div className="flex justify-between items-center mb-1">
+                    <div className="flex items-center">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">QUALITY OF CONSTRUCTION</label>
+                      {renderNaToggle('axisSbbQualityOfConstruction')}
+                    </div>
+                    {renderEditSwitch('axisSbbQualityOfConstruction', !!fields.axisSbbQualityOfConstructionIsNA)}
+                  </div>
+                  <textarea
+                    className={`${inputCls} resize-y`}
+                    rows={2}
+                    value={fields.axisSbbQualityOfConstructionIsNA ? 'NA' : (fields.axisSbbQualityOfConstruction || '')}
+                    onChange={e => handleChange('axisSbbQualityOfConstruction', e.target.value.toUpperCase())}
+                    readOnly={!fields.axisSbbQualityOfConstructionEditOn || fields.axisSbbQualityOfConstructionIsNA}
+                    disabled={isReadOnly || (!fields.axisSbbQualityOfConstructionEditOn && !fields.axisSbbQualityOfConstructionIsNA)}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">CURRENT LIFE OF STRUCTURE (YEARS)</label>
+                        {renderNaToggle('axisSbbCurrentLifeOfStructure')}
+                      </div>
+                      {renderEditSwitch('axisSbbCurrentLifeOfStructure', !!fields.axisSbbCurrentLifeOfStructureIsNA)}
+                    </div>
+                    <input
+                      type="text"
+                      className={`${inputCls}`}
+                      value={fields.axisSbbCurrentLifeOfStructureIsNA ? 'NA' : (fields.axisSbbCurrentLifeOfStructure || '')}
+                      onChange={e => handleChange('axisSbbCurrentLifeOfStructure', e.target.value.toUpperCase())}
+                      readOnly={!fields.axisSbbCurrentLifeOfStructureEditOn || fields.axisSbbCurrentLifeOfStructureIsNA}
+                      disabled={isReadOnly || (!fields.axisSbbCurrentLifeOfStructureEditOn && !fields.axisSbbCurrentLifeOfStructureIsNA)}
+                    />
+                  </div>
+                  
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">PROJECTED LIFE OF STRUCTURE (YEARS)</label>
+                        {renderNaToggle('axisSbbProjectedLifeOfStructure')}
+                      </div>
+                      {renderEditSwitch('axisSbbProjectedLifeOfStructure', !!fields.axisSbbProjectedLifeOfStructureIsNA)}
+                    </div>
+                    <input
+                      type="text"
+                      className={`${inputCls}`}
+                      value={fields.axisSbbProjectedLifeOfStructureIsNA ? 'NA' : (fields.axisSbbProjectedLifeOfStructure || '')}
+                      onChange={e => handleChange('axisSbbProjectedLifeOfStructure', e.target.value.toUpperCase())}
+                      readOnly={!fields.axisSbbProjectedLifeOfStructureEditOn || fields.axisSbbProjectedLifeOfStructureIsNA}
+                      disabled={isReadOnly || (!fields.axisSbbProjectedLifeOfStructureEditOn && !fields.axisSbbProjectedLifeOfStructureIsNA)}
                     />
                   </div>
                 </div>
