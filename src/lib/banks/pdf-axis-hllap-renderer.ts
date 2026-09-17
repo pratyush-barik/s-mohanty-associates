@@ -1016,10 +1016,14 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     );
 
     // If Under-Construction or percentWorkCompleted < 100, show "As on date (X%)" construction cost
-    const pctNum = parseFloat(String(fields.percentWorkCompleted || '100').replace(/[^\d.]/g, '')) || 100;
-    if ((fields.isUnderConstruction || pctNum < 100) && fields.constructionCostAsOnDate) {
+    const hasPct = fields.percentWorkCompleted !== undefined && String(fields.percentWorkCompleted).trim() !== '';
+    const pctNum = hasPct ? (parseFloat(String(fields.percentWorkCompleted).replace(/[^\d.]/g, '')) || 0) : (fields.isUnderConstruction ? 0 : 100);
+    const isUnderConst = fields.isUnderConstruction || pctNum < 100;
+    const pctDisplay = hasPct ? (String(fields.percentWorkCompleted).includes('%') ? fields.percentWorkCompleted : `${fields.percentWorkCompleted}%`) : `${pctNum}%`;
+
+    if (isUnderConst && fields.constructionCostAsOnDate) {
       this.drawSubItemRow(
-        `As on date (${fields.percentWorkCompleted ? (fields.percentWorkCompleted.includes('%') ? fields.percentWorkCompleted : `${fields.percentWorkCompleted}%`) : '0%'})`,
+        `As on date (${pctDisplay})`,
         fields.constructionCostAsOnDate,
         false,
         true
@@ -1027,8 +1031,8 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     }
 
     this.drawHLLAPRow('e.', 'Stage of Construction', fields.stageOfConstruction || '');
-    this.drawHLLAPRow('f.', '% Work completed', fields.percentWorkCompleted ? (fields.percentWorkCompleted.includes('%') ? fields.percentWorkCompleted : `${fields.percentWorkCompleted}%`) : '');
-    this.drawHLLAPRow('g.', '% Disbursement Recommended', fields.percentDisbursementRecommended ? (fields.percentDisbursementRecommended.includes('%') ? fields.percentDisbursementRecommended : `${fields.percentDisbursementRecommended}%`) : '');
+    this.drawHLLAPRow('f.', '% Work completed', fields.percentWorkCompleted ? (String(fields.percentWorkCompleted).includes('%') ? fields.percentWorkCompleted : `${fields.percentWorkCompleted}%`) : '');
+    this.drawHLLAPRow('g.', '% Disbursement Recommended', fields.percentDisbursementRecommended ? (String(fields.percentDisbursementRecommended).includes('%') ? fields.percentDisbursementRecommended : `${fields.percentDisbursementRecommended}%`) : '');
 
     // 7h. Current Value 100% completion (uniform LBL_BG cell color)
     this.drawHLLAPRow(
@@ -1042,8 +1046,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     );
 
     // If Under-Construction or percentWorkCompleted < 100, show "As on date X% completion" Current Value (uniform LBL_BG cell color)
-    if ((fields.isUnderConstruction || pctNum < 100) && fields.currentValueAsOnDate) {
-      const pctDisplay = fields.percentWorkCompleted ? (fields.percentWorkCompleted.includes('%') ? fields.percentWorkCompleted : `${fields.percentWorkCompleted}%`) : '';
+    if (isUnderConst && fields.currentValueAsOnDate) {
       this.drawSubItemRow(
         `As on date ${pctDisplay} completion`,
         fields.currentValueAsOnDate,

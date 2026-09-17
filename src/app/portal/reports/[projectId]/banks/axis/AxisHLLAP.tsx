@@ -359,15 +359,18 @@ export default function AxisHLLAP({
 
     const total100 = pVal + cVal;
 
-    const pct = parseNum(fields.percentWorkCompleted) || 100;
-    const cRateAsOnDate = cRate > 0 ? Math.round(cRate * (pct / 100)) : 0;
-    const cValAsOnDate = cVal > 0 ? Math.round(cVal * (pct / 100)) : 0;
+    const hasPct = fields.percentWorkCompleted !== undefined && String(fields.percentWorkCompleted).trim() !== '';
+    const pct = hasPct ? parseNum(fields.percentWorkCompleted) : (fields.isUnderConstruction ? 0 : 100);
+    const isUnderConst = fields.isUnderConstruction || pct < 100;
+
+    const cRateAsOnDate = cRate > 0 && isUnderConst ? Math.round(cRate * (pct / 100)) : 0;
+    const cValAsOnDate = cVal > 0 && isUnderConst ? Math.round(cVal * (pct / 100)) : 0;
     const totalAsOnDate = pVal + cValAsOnDate;
 
     const distressedPct = fields.distressedPercentage !== undefined && fields.distressedPercentage !== ''
       ? parseNum(fields.distressedPercentage)
       : 80;
-    const distressedVal = Math.round((pct < 100 ? totalAsOnDate : total100) * (distressedPct / 100));
+    const distressedVal = Math.round((isUnderConst ? totalAsOnDate : total100) * (distressedPct / 100));
 
     const valPlotFlatStr = pArea > 0 && pRate > 0
       ? `Value of ${selectedUnit}-${pArea} sqft X Rs.${pRate}/- = Rs.${formatIndianCurrency(pVal)}/-`
@@ -377,7 +380,7 @@ export default function AxisHLLAP({
       ? `${buaTotal}sqft@ Rs.${cRate}/-=Rs.${formatIndianCurrency(cVal)}/-`
       : '';
 
-    const constAsOnDateStr = buaTotal > 0 && cValAsOnDate > 0 && pct < 100
+    const constAsOnDateStr = buaTotal > 0 && isUnderConst && (cValAsOnDate > 0 || pct === 0)
       ? `${buaTotal}sqft@ Rs.${cRateAsOnDate}/-= Rs.${formatIndianCurrency(cValAsOnDate)}/-`
       : '';
 
@@ -389,7 +392,7 @@ export default function AxisHLLAP({
       ? `Rs.${formatIndianCurrency(cVal)}/-`
       : '';
 
-    const currentValAsOnDateStr = ((pVal > 0 || cValAsOnDate > 0) && pct < 100)
+    const currentValAsOnDateStr = isUnderConst && (pVal > 0 || cValAsOnDate > 0)
       ? `Rs.${formatIndianCurrency(pVal)}/- + Rs.${formatIndianCurrency(cValAsOnDate)}/- =Rs.${formatIndianCurrency(totalAsOnDate)}/-`
       : '';
 
@@ -443,6 +446,7 @@ export default function AxisHLLAP({
     fields.measuredBUATotal,
     fields.constructionRatePerSqft,
     fields.percentWorkCompleted,
+    fields.isUnderConstruction,
     fields.distressedPercentage,
     fields.plotOrFlat,
   ]);
@@ -1847,13 +1851,18 @@ export default function AxisHLLAP({
             const cRate = parseNum(fields.constructionRatePerSqft);
             const cVal = buaTotal * cRate;
             const total100 = pVal + cVal;
-            const pct = parseNum(fields.percentWorkCompleted) || 100;
+            const hasPct = fields.percentWorkCompleted !== undefined && String(fields.percentWorkCompleted).trim() !== '';
+            const pct = hasPct ? parseNum(fields.percentWorkCompleted) : (fields.isUnderConstruction ? 0 : 100);
+            const isUnderConst = fields.isUnderConstruction || pct < 100;
+            const pctDisplay = hasPct
+              ? (String(fields.percentWorkCompleted).includes('%') ? fields.percentWorkCompleted : `${fields.percentWorkCompleted}%`)
+              : `${pct}%`;
             const cValAsOnDate = Math.round(cVal * (pct / 100));
             const totalAsOnDate = pVal + cValAsOnDate;
             const distressedPct = fields.distressedPercentage !== undefined && fields.distressedPercentage !== ''
               ? parseNum(fields.distressedPercentage)
               : 80;
-            const distressedVal = Math.round((pct < 100 ? totalAsOnDate : total100) * (distressedPct / 100));
+            const distressedVal = Math.round((isUnderConst ? totalAsOnDate : total100) * (distressedPct / 100));
 
             return (
               <div className="space-y-5">
@@ -2000,9 +2009,9 @@ export default function AxisHLLAP({
                     </Field>
                   </div>
 
-                  {pct < 100 && (
+                  {isUnderConst && (
                     <div className="pt-2 border-t border-teal-200">
-                      <Field label={`As on Date (${pct}%) Construction Cost`}>
+                      <Field label={`As on Date (${pctDisplay}) Construction Cost`}>
                         <input
                           type="text"
                           value={fields.constructionCostAsOnDate || ''}
@@ -2064,9 +2073,9 @@ export default function AxisHLLAP({
                         <span className="text-[11px] font-semibold bg-white text-indigo-900 px-2.5 py-0.5 rounded-full border border-indigo-200">
                           100% Total: <strong className="text-indigo-950">Rs. {formatIndianCurrency(total100)}/-</strong>
                         </span>
-                        {pct < 100 && totalAsOnDate > 0 && (
+                        {isUnderConst && totalAsOnDate > 0 && (
                           <span className="text-[11px] font-semibold bg-white text-cyan-900 px-2.5 py-0.5 rounded-full border border-cyan-200">
-                            As On Date ({pct}%): <strong className="text-cyan-950">Rs. {formatIndianCurrency(totalAsOnDate)}/-</strong>
+                            As On Date ({pctDisplay}): <strong className="text-cyan-950">Rs. {formatIndianCurrency(totalAsOnDate)}/-</strong>
                           </span>
                         )}
                       </div>
@@ -2092,9 +2101,9 @@ export default function AxisHLLAP({
                     />
                   </div>
 
-                  {pct < 100 && (
+                  {isUnderConst && (
                     <div className="pt-2 border-t border-indigo-200">
-                      <Field label={`Current Value As On Date (${pct}% Completion)`}>
+                      <Field label={`Current Value As On Date (${pctDisplay} Completion)`}>
                         <input
                           type="text"
                           value={fields.currentValueAsOnDate || ''}
