@@ -923,12 +923,12 @@ export default function AxisHLLAP({
             </div>
           </div>
 
-          {/* 4n. Boundaries Comparison Table (Soft Container) */}
+          {/* n. Boundaries Comparison Table (Soft Container) */}
           <div className="pt-2 pb-4 border-b border-slate-200">
             <div className="border border-purple-200 bg-purple-50/50 rounded-xl p-5 shadow-xs">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-purple-800 text-sm tracking-wide uppercase">
-                  4n. Boundaries of Property (Deed vs Actual vs Sketch Map)
+                  n. Boundaries of Property (Deed vs Actual vs Sketch Map)
                 </h3>
                 <div className="flex items-center gap-2">
                   <input
@@ -1251,11 +1251,11 @@ export default function AxisHLLAP({
             </div>
           </div>
 
-          {/* 4z. Longitude & Latitude Coordinates (Soft Container) */}
+          {/* z. Longitude & Latitude Coordinates (Soft Container) */}
           <div className="pt-2">
             <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs">
               <h3 className="font-semibold text-blue-800 mb-3 text-sm tracking-wide uppercase">
-                4z. Longitude &amp; Latitude Coordinates
+                z. Longitude &amp; Latitude Coordinates
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="i. Longitude">
@@ -1373,7 +1373,7 @@ export default function AxisHLLAP({
           {/* 6a - 6b: Plot Area & Demarcation */}
           <div className="pb-4 border-b border-slate-200">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="6a. Area of the Plot / Flat (as per documents)">
+              <Field label="a. Area of the Plot / Flat (as per documents)">
                 <input
                   type="text"
                   value={fields.plotAreaDocs}
@@ -1384,7 +1384,7 @@ export default function AxisHLLAP({
                 />
               </Field>
 
-              <Field label="6b. Demarcation at Site">
+              <Field label="b. Demarcation at Site">
                 <select
                   value={fields.demarcationAtSite}
                   onChange={e => handleChange('demarcationAtSite', e.target.value)}
@@ -1405,7 +1405,7 @@ export default function AxisHLLAP({
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <h3 className="font-semibold text-cyan-900 text-sm tracking-wide uppercase">
-                    6c. Approved Built Up Area (BUA) Floor Breakup
+                    c. Approved Built Up Area (BUA) Floor Breakup
                   </h3>
                   <span className="text-xs text-cyan-700">
                     Approved Total: <strong className="font-mono">{fields.approvedBUATotal ? `${fields.approvedBUATotal} sqft` : '0 sqft'}</strong>
@@ -1494,7 +1494,7 @@ export default function AxisHLLAP({
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <h3 className="font-semibold text-cyan-900 text-sm tracking-wide uppercase">
-                    6d. Measured Built Up Area (BUA) Floor Breakup
+                    d. Measured Built Up Area (BUA) Floor Breakup
                   </h3>
                   <span className="text-xs text-cyan-700">
                     Measured Total: <strong className="font-mono">{fields.measuredBUATotal ? `${fields.measuredBUATotal} sqft` : '0 sqft'}</strong>
@@ -1580,7 +1580,7 @@ export default function AxisHLLAP({
           {/* 6f - 6g: Plan Compliance & Extra Construction */}
           <div className="pt-2 pb-4 border-b border-slate-200">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="6f. Construction as per Approved Building Plan">
+              <Field label="f. Construction as per Approved Building Plan">
                 <select
                   value={fields.isConstructionAsPerPlan}
                   onChange={e => handleChange('isConstructionAsPerPlan', e.target.value)}
@@ -1594,7 +1594,7 @@ export default function AxisHLLAP({
                 </select>
               </Field>
 
-              <Field label="6g. Details of Extra Construction">
+              <Field label="g. Details of Extra Construction">
                 <input
                   type="text"
                   value={fields.detailsOfExtraConstruction}
@@ -1611,7 +1611,7 @@ export default function AxisHLLAP({
           <div className="pt-2 pb-4 border-b border-slate-200">
             <div className="border border-slate-200 bg-slate-50 rounded-xl p-5 shadow-xs">
               <h3 className="font-semibold text-slate-800 mb-3 text-sm tracking-wide uppercase">
-                6h. Recommended / Available Side Margins (Setbacks)
+                h. Recommended / Available Side Margins (Setbacks)
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-3 rounded-lg border border-slate-200 shadow-2xs">
                 <Field label="Front">
@@ -1661,7 +1661,7 @@ export default function AxisHLLAP({
           {/* 6i - 6l: Structure Quality, Maintenance & Life */}
           <div className="pt-2">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Field label="6i. Quality of Construction">
+              <Field label="i. Quality of Construction">
                 <input
                   type="text"
                   value={fields.qualityOfConstruction}
@@ -1672,7 +1672,7 @@ export default function AxisHLLAP({
                 />
               </Field>
 
-              <Field label="6j. Maintenance of Property">
+              <Field label="j. Maintenance of Property">
                 <input
                   type="text"
                   value={fields.maintenanceOfProperty}
@@ -1683,7 +1683,7 @@ export default function AxisHLLAP({
                 />
               </Field>
 
-              <Field label="6k. Current Life of Structure">
+              <Field label="k. Current Life of Structure">
                 <input
                   type="text"
                   value={fields.currentLifeOfStructure}
@@ -1694,7 +1694,7 @@ export default function AxisHLLAP({
                 />
               </Field>
 
-              <Field label="6l. Projected Life of Structure">
+              <Field label="l. Projected Life of Structure">
                 <input
                   type="text"
                   value={fields.projectedLifeOfStructure}
@@ -1762,7 +1762,7 @@ export default function AxisHLLAP({
                 />
               </Field>
 
-              <Field label="7a. Recommended Rate Description">
+              <Field label="a. Recommended Rate Description">
                 <input
                   type="text"
                   value={fields.recommendedRatePerSqft}
@@ -1773,7 +1773,7 @@ export default function AxisHLLAP({
                 />
               </Field>
 
-              <Field span={3} label="7b. Value of the Plot / Flat">
+              <Field span={3} label="b. Value of the Plot / Flat">
                 <input
                   type="text"
                   value={fields.valueOfPlotFlat}
@@ -1784,7 +1784,7 @@ export default function AxisHLLAP({
                 />
               </Field>
 
-              <Field label="7c. Estimated Cost of Construction">
+              <Field label="c. Estimated Cost of Construction">
                 <input
                   type="text"
                   value={fields.estimatedCostOfConstruction}
@@ -1795,7 +1795,7 @@ export default function AxisHLLAP({
                 />
               </Field>
 
-              <Field span={2} label="7d. Total Cost of Construction (100% Completion)">
+              <Field span={2} label="d. Total Cost of Construction (100% Completion)">
                 <input
                   type="text"
                   value={fields.totalCostOfConstruction}
@@ -1816,7 +1816,7 @@ export default function AxisHLLAP({
                   Under-Construction Valuation Breakdown
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Field label="7e. Stage of Construction">
+                  <Field label="e. Stage of Construction">
                     <input
                       type="text"
                       value={fields.stageOfConstruction}
@@ -1827,7 +1827,7 @@ export default function AxisHLLAP({
                     />
                   </Field>
 
-                  <Field label="7f. % Work Completed">
+                  <Field label="f. % Work Completed">
                     <input
                       type="text"
                       value={fields.percentWorkCompleted}
@@ -1838,7 +1838,7 @@ export default function AxisHLLAP({
                     />
                   </Field>
 
-                  <Field label="7g. % Disbursement Recommended">
+                  <Field label="g. % Disbursement Recommended">
                     <input
                       type="text"
                       value={fields.percentDisbursementRecommended}
@@ -1878,7 +1878,7 @@ export default function AxisHLLAP({
           {/* 7h - 10: Summary, Statutory Rates & Visit Date */}
           <div className="pt-2">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="7h. Current Value of Property (100% Completion)">
+              <Field label="h. Current Value of Property (100% Completion)">
                 <input
                   type="text"
                   value={fields.currentValueOfProperty}
@@ -1891,7 +1891,7 @@ export default function AxisHLLAP({
 
               <DateInput
                 fieldKey="dateOfPropertyVisit"
-                label="7i. Date of Property Visit"
+                label="i. Date of Property Visit"
               />
 
               <Field label="8. Valuation as per Govt Reckoner Rates">
@@ -1960,7 +1960,7 @@ export default function AxisHLLAP({
           {/* Point 11: Attachments Status */}
           <div className="pb-4 border-b border-slate-200">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="11a. 4 photos of Property (inside/outside)">
+              <Field label="a. 4 photos of Property (inside/outside)">
                 <input
                   type="text"
                   value={fields.photosAttached}
@@ -1971,7 +1971,7 @@ export default function AxisHLLAP({
                 />
               </Field>
 
-              <Field label="11b. Location sketch for the property">
+              <Field label="b. Location sketch for the property">
                 <input
                   type="text"
                   value={fields.locationSketchAttached}
