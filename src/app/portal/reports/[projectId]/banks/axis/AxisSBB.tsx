@@ -10,10 +10,22 @@ export const AXIS_SBB_CONFIG: BankConfig = {
   subTemplateId: 'SBB',
   displayName: 'Axis Bank — SBB (Small Business Banking)',
   hiddenSections: [
-    'section-1', 'section-2', 'section-3', 'section-4', 'section-5',
-    'section-6', 'section-7', 'section-8', 'section-9', 'section-10',
+    'section-1', 'section-1a', 'section-2', 'section-3', 'section-4', 'section-5',
+    'section-6', 'section-7', 'section-7b', 'section-7c', 'section-8', 'section-9', 'section-10',
     'section-11', 'section-12', 'section-13', 'section-14', 'section-15',
-    'layout-config'
+    'annexures', 'layout-config'
+  ],
+  navSections: [
+    { id: 'section-cover', title: '1. Cover Page Details' },
+    { id: 'axis-sbb-section-2', title: '2. Case Details & Report Metadata' },
+    { id: 'axis-sbb-section-3', title: '3. Legal Verification & Classification' },
+    { id: 'axis-sbb-section-4', title: '4. Property Identification & Address' },
+    { id: 'axis-sbb-section-5', title: '5. Characteristics & Site Assessment' },
+    { id: 'axis-sbb-section-6', title: '6. Boundaries, Access & Risk Checks' },
+    { id: 'axis-sbb-section-7', title: '7. Structure, Tenancy & Approvals' },
+    { id: 'axis-sbb-section-8', title: '8. Construction Breakdown & Details' },
+    { id: 'axis-sbb-section-9', title: '9. Valuation Calculation Engine' },
+    { id: 'axis-sbb-section-10', title: '10. Remarks & Undertaking' },
   ],
   extraSections: [],
   defaultValues: {
