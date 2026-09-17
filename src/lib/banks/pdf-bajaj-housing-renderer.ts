@@ -415,55 +415,80 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
     this.drawSimpleRow('Remarks If Any', fv('bajajRemarksIfAny'));
     this.advanceCursor(6);
 
-    if (fv('bajajJurisdictionMunicipalBody').toLowerCase() === 'gram panchayat') {
-      this.drawSectionSubtitle('Additional checks for Panchayat properties');
-      const getPanchayatValue = (field: string) => fv(`${field}`) === 'Custom' ? fv(`${field}Custom`) : fv(`${field}`);
+    this.drawSectionSubtitle('Additional checks for Panchayat properties');
+    const getPanchayatValue = (field: string) => fv(`${field}`) === 'Custom' ? fv(`${field}Custom`) : fv(`${field}`);
 
-      this.drawKeyValueRow([
-        { label: 'Approach Road to the property', value: getPanchayatValue('bajajPanchayatApproachRoad') },
-        { label: 'Development of surrounding areas', value: getPanchayatValue('bajajPanchayatDevelopment') }
-      ]);
-      this.drawKeyValueRow([
-        { label: 'Distance from city centre (Kms)', value: fv('bajajPanchayatDistanceCityCentre') },
-        { label: 'Distance from corp limits (Kms)', value: fv('bajajPanchayatDistanceCorp') }
-      ]);
-      this.drawKeyValueRow([
-        { label: 'Electricity', value: getPanchayatValue('bajajPanchayatElectricity') },
-        { label: 'Electricity Distributor', value: getPanchayatValue('bajajPanchayatElectricityDistributor') }
-      ]);
-      this.drawKeyValueRow([
-        { label: 'Water supply', value: getPanchayatValue('bajajPanchayatWaterSupply') },
-        { label: 'Water Distributor', value: fv('bajajPanchayatWaterDistributor') }
-      ]);
-      this.drawKeyValueRow([
-        { label: 'Sewer provision', value: getPanchayatValue('bajajPanchayatSewerProvision') },
-        { label: 'Sewer connected to main sewer', value: getPanchayatValue('bajajPanchayatSewerMainConnected') }
-      ]);
-      this.drawSimpleRow('Any demolition threat in future development/ expansion', getPanchayatValue('bajajPanchayatDemolitionThreat'));
-      this.advanceCursor(6);
-    }
+    this.drawKeyValueRow([
+      { label: 'Approach Road to the property', value: getPanchayatValue('bajajPanchayatApproachRoad') },
+      { label: 'Development of surrounding areas', value: getPanchayatValue('bajajPanchayatDevelopment') }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Distance from city centre (Kms)', value: fv('bajajPanchayatDistanceCityCentre') },
+      { label: 'Distance from corp limits (Kms)', value: fv('bajajPanchayatDistanceCorp') }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Electricity', value: getPanchayatValue('bajajPanchayatElectricity') },
+      { label: 'Electricity Distributor', value: getPanchayatValue('bajajPanchayatElectricityDistributor') }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Water supply', value: getPanchayatValue('bajajPanchayatWaterSupply') },
+      { label: 'Water Distributor', value: fv('bajajPanchayatWaterDistributor') }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Sewer provision', value: getPanchayatValue('bajajPanchayatSewerProvision') },
+      { label: 'Sewer connected to main sewer', value: getPanchayatValue('bajajPanchayatSewerMainConnected') }
+    ]);
+    this.drawSimpleRow('Any demolition threat in future development/ expansion', getPanchayatValue('bajajPanchayatDemolitionThreat'));
+    this.advanceCursor(6);
   }
 
   // ── Section 11: Declaration & Verification ──
   private drawBajajSection11() {
     const fv = this.fv.bind(this);
 
-    this.drawSectionSubtitle('Declaration (I hereby declare that)');
     const declarationText = fv('bajajDeclarationText');
+    let formattedText = '';
     if (declarationText) {
-      const lines = declarationText.split('\n');
-      for (const line of lines) {
-        if (line.trim()) {
-          this.drawTextBlock(`\u2022 ${line.trim()}`);
-        }
-      }
+      formattedText = declarationText.split('\n').map((l: string) => l.trim() ? `• ${l.trim()}` : '').join('\n');
     }
-    this.advanceCursor(10);
+    this.drawKeyValueRow([
+      { label: 'Declaration (I hereby declare that)', value: formattedText, labelWidth: 140 }
+    ]);
+    
+    this.advanceCursor(20);
+    this.checkPageBreak(60);
+    
+    const startY = this.pdfY(this.cursorY);
+    const dateStr = `Date: ${fv('bajajSignatureDate')}`;
+    const placeStr = `Place: ${fv('bajajSignaturePlace')}`;
+    
+    this.page.drawText(dateStr, {
+      x: MARGIN_L,
+      y: startY - FONT_SIZE,
+      size: FONT_SIZE,
+      font: this.fontRegular,
+      color: rgb(0, 0, 0),
+    });
+    this.page.drawText(placeStr, {
+      x: MARGIN_L,
+      y: startY - (FONT_SIZE * 2.5),
+      size: FONT_SIZE,
+      font: this.fontRegular,
+      color: rgb(0, 0, 0),
+    });
+    
+    const rightText = "For Seal with Signature";
+    const tw = this.fontBold.widthOfTextAtSize(rightText, FONT_SIZE);
+    
+    this.page.drawText(rightText, {
+      x: MARGIN_L + CONTENT_W - tw,
+      y: startY - FONT_SIZE,
+      size: FONT_SIZE,
+      font: this.fontBold,
+      color: rgb(0, 0, 0),
+    });
 
-    // Signature block
-    this.drawSimpleRow('For Seal with Signature', '');
-    this.drawSimpleRow('Date', fv('bajajSignatureDate'));
-    this.drawSimpleRow('Place', fv('bajajSignaturePlace'));
+    this.advanceCursor(60);
   }
 }
 
