@@ -9,11 +9,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
   bankId: 'AXIS BANK',
   subTemplateId: 'SBB',
   displayName: 'Axis Bank — SBB (Small Business Banking)',
-  navSections: [
-    { id: 'section-cover', title: 'Cover Page' },
-  ],
-  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7', 'section-7a', 'section-7b', 'section-7c', 'section-8', 'section-9', 'section-10', 'section-11', 'section-12', 'annexures'],
-  hideDefaultDeclarationAndCertificate: true,
+  hiddenSections: ['section-1'],
   extraSections: [],
   hiddenFields: ['to', 'dateOfValuation', 'refNo'],
   fieldLabels: {},
