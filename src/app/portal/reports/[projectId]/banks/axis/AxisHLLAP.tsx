@@ -1273,27 +1273,45 @@ export default function AxisHLLAP({
           {/* z. Longitude & Latitude Coordinates (Soft Container - Soft Cyan) */}
           <div className="pt-2">
             <div className="border border-cyan-200 bg-[#ECFEFF] rounded-xl p-5 shadow-2xs">
-              <h3 className="font-semibold text-cyan-900 mb-3 text-sm tracking-wide uppercase">
-                z. Longitude &amp; Latitude Coordinates
-              </h3>
+              <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                <h3 className="font-semibold text-cyan-900 text-sm tracking-wide uppercase">
+                  z. Longitude &amp; Latitude Coordinates
+                </h3>
+                {!isReadOnly && (fields.longitude || fields.latitude) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const tempLat = fields.latitude;
+                      handleChange('latitude', fields.longitude);
+                      handleChange('longitude', tempLat);
+                    }}
+                    className="text-xs font-bold text-cyan-800 hover:text-cyan-950 flex items-center gap-1 bg-white px-2.5 py-1 rounded-lg border border-cyan-300 cursor-pointer transition-colors shadow-2xs"
+                    title="Swap Longitude and Latitude"
+                  >
+                    ⇄ Swap Long &amp; Lat
+                  </button>
+                )}
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="i. Longitude">
+                <Field label="i. Longitude (e.g. 85.001200° E)">
                   <input
                     type="text"
                     value={fields.longitude}
                     onChange={e => handleChange('longitude', e.target.value)}
                     className={inputCls}
                     disabled={isReadOnly}
+                    placeholder="e.g. 85.001200"
                   />
                 </Field>
 
-                <Field label="ii. Latitude">
+                <Field label="ii. Latitude (e.g. 19.597680° N)">
                   <input
                     type="text"
                     value={fields.latitude}
                     onChange={e => handleChange('latitude', e.target.value)}
                     className={inputCls}
                     disabled={isReadOnly}
+                    placeholder="e.g. 19.597680"
                   />
                 </Field>
               </div>
