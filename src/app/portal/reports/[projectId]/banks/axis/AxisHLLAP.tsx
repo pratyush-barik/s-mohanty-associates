@@ -19,6 +19,7 @@ import {
   BaseMapsSection,
   BasePhotoBucketModal,
   fetchBytes,
+  DEFAULT_PHOTO_LABEL,
 } from '../BaseBankReportComponents';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { formatIndianCurrency } from '@/lib/numberToWords';
@@ -514,7 +515,7 @@ export default function AxisHLLAP({
         propertyImages: [...(p.propertyImages || []), ...urls],
         propertyImageNames: [
           ...(p.propertyImageNames || []),
-          ...urls.map((_, i) => `Photograph ${(p.propertyImages?.length || 0) + i + 1}`),
+          ...urls.map(() => DEFAULT_PHOTO_LABEL),
         ],
       }));
     } catch (err: any) {
@@ -577,7 +578,7 @@ export default function AxisHLLAP({
     for (let i = 0; i < propImages.length; i++) {
       const b = await fetchBytes(propImages[i]);
       if (b) {
-        photoBytesList.push({ bytes: b, label: photoNames[i] || `Photograph ${i + 1}` });
+        photoBytesList.push({ bytes: b, label: photoNames[i] || DEFAULT_PHOTO_LABEL });
       }
     }
 
