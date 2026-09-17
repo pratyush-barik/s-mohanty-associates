@@ -252,9 +252,18 @@ export const AXIS_SBB_CONFIG: BankConfig = {
     axisSbbCompoundableIsCustom: false,
     axisSbbCompoundableEditOn: false,
 
-    axisSbbQualityOfConstruction: 'RCC/PATTI/TIN SHED/CLAY TILES ROOF WITH MASONRY WALLS WITH TILES/MARBLE/KOTA STONE/LOCAL STONE/C.C FLOOR',
+    axisSbbQualityOfConstruction: '',
     axisSbbQualityOfConstructionIsNA: false,
     axisSbbQualityOfConstructionEditOn: false,
+    axisSbbQualityOfConstructionRoofRCC: true,
+    axisSbbQualityOfConstructionRoofPatti: false,
+    axisSbbQualityOfConstructionRoofTinShed: true,
+    axisSbbQualityOfConstructionRoofClayTiles: false,
+    axisSbbQualityOfConstructionFloorTiles: true,
+    axisSbbQualityOfConstructionFloorMarble: false,
+    axisSbbQualityOfConstructionFloorKotaStone: false,
+    axisSbbQualityOfConstructionFloorLocalStone: false,
+    axisSbbQualityOfConstructionFloorCC: false,
 
     axisSbbMaintenanceOfProperty: 'GOOD',
     axisSbbMaintenanceOfPropertyIsCustom: false,
@@ -2295,6 +2304,23 @@ export const AXIS_SBB_CONFIG: BankConfig = {
         const computedCarpet = `${Math.round(sumConstructed * 0.85)} SQFT`;
         const computedSaleable = computedCarpet;
 
+        const roofTypes = [];
+        if (fields.axisSbbQualityOfConstructionRoofRCC) roofTypes.push('RCC');
+        if (fields.axisSbbQualityOfConstructionRoofPatti) roofTypes.push('PATTI');
+        if (fields.axisSbbQualityOfConstructionRoofTinShed) roofTypes.push('TIN SHED');
+        if (fields.axisSbbQualityOfConstructionRoofClayTiles) roofTypes.push('CLAY TILES');
+        const roofStr = roofTypes.length ? roofTypes.join('/') + ' ROOF' : 'ROOF';
+
+        const floorTypes = [];
+        if (fields.axisSbbQualityOfConstructionFloorTiles) floorTypes.push('TILES');
+        if (fields.axisSbbQualityOfConstructionFloorMarble) floorTypes.push('MARBLE');
+        if (fields.axisSbbQualityOfConstructionFloorKotaStone) floorTypes.push('KOTA STONE');
+        if (fields.axisSbbQualityOfConstructionFloorLocalStone) floorTypes.push('LOCAL STONE');
+        if (fields.axisSbbQualityOfConstructionFloorCC) floorTypes.push('C.C');
+        const floorStr = floorTypes.length ? floorTypes.join('/') + ' FLOOR' : 'FLOOR';
+
+        const computedQuality = `${roofStr} WITH MASONRY WALLS WITH ${floorStr}`;
+
         return (
           <div className="animate-fade-in space-y-6">
             
@@ -2335,6 +2361,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                           </div>
                           <input 
                             type="number" 
+                            step="0.01"
                             className={`${inputCls}`} 
                             value={f.constructedAreaIsNA ? '' : (f.constructedArea || '')} 
                             onChange={e => updateFloor(i, 'constructedArea', e.target.value)}
@@ -2377,6 +2404,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                           </div>
                           <input 
                             type="number" 
+                            step="0.01"
                             className={`${inputCls}`} 
                             value={f.valuationAreaIsNA ? '' : (f.valuationArea || '')} 
                             onChange={e => updateFloor(i, 'valuationArea', e.target.value)}
@@ -2664,21 +2692,97 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   </div>
                 </div>
 
-                <div className="flex flex-col">
-                  <div className="flex justify-between items-center mb-1">
-                    <div className="flex items-center">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">QUALITY OF CONSTRUCTION</label>
-                      {renderNaToggle('axisSbbQualityOfConstruction')}
+                {(() => {
+                  const roofTypes = [
+                    { key: 'axisSbbQualityOfConstructionRoofRCC', label: 'RCC' },
+                    { key: 'axisSbbQualityOfConstructionRoofPatti', label: 'PATTI' },
+                    { key: 'axisSbbQualityOfConstructionRoofTinShed', label: 'TIN SHED' },
+                    { key: 'axisSbbQualityOfConstructionRoofClayTiles', label: 'CLAY TILES' }
+                  ].filter(opt => fields[opt.key]).map(opt => opt.label);
+                  const roofStr = roofTypes.length ? roofTypes.join('/') + ' ROOF' : 'ROOF';
+
+                  const floorTypes = [
+                    { key: 'axisSbbQualityOfConstructionFloorTiles', label: 'TILES' },
+                    { key: 'axisSbbQualityOfConstructionFloorMarble', label: 'MARBLE' },
+                    { key: 'axisSbbQualityOfConstructionFloorKotaStone', label: 'KOTA STONE' },
+                    { key: 'axisSbbQualityOfConstructionFloorLocalStone', label: 'LOCAL STONE' },
+                    { key: 'axisSbbQualityOfConstructionFloorCC', label: 'C.C' }
+                  ].filter(opt => fields[opt.key]).map(opt => opt.label);
+
+                  return (
+                    <div className="flex flex-col border border-amber-200 rounded-lg p-3 bg-white/50">
+                      <div className="flex justify-between items-center mb-3">
+                        <div className="flex items-center">
+                          <label className="block text-xs font-bold text-amber-800 uppercase tracking-wide">QUALITY OF CONSTRUCTION</label>
+                          {renderNaToggle('axisSbbQualityOfConstruction')}
+                        </div>
+                        {renderEditSwitch('axisSbbQualityOfConstruction', !!fields.axisSbbQualityOfConstructionIsNA)}
+                      </div>
+                      
+                      <div className={`grid gap-4 mb-3 p-3 rounded-lg border border-amber-100 bg-amber-50/50 ${fields.axisSbbQualityOfConstructionEditOn || fields.axisSbbQualityOfConstructionIsNA ? 'opacity-50 pointer-events-none' : ''}`}>
+                        <div>
+                          <h4 className="text-[10px] font-bold text-slate-500 mb-2 uppercase">Roof Structure</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {[
+                              { key: 'axisSbbQualityOfConstructionRoofRCC', label: 'RCC' },
+                              { key: 'axisSbbQualityOfConstructionRoofPatti', label: 'PATTI' },
+                              { key: 'axisSbbQualityOfConstructionRoofTinShed', label: 'TIN SHED' },
+                              { key: 'axisSbbQualityOfConstructionRoofClayTiles', label: 'CLAY TILES' }
+                            ].map(opt => (
+                              <label key={opt.key} className="flex items-center space-x-1 text-[10px] cursor-pointer">
+                                <input 
+                                  type="checkbox" 
+                                  checked={!!fields[opt.key]}
+                                  onChange={e => handleChange(opt.key, e.target.checked)}
+                                  disabled={isReadOnly || !!fields.axisSbbQualityOfConstructionEditOn || !!fields.axisSbbQualityOfConstructionIsNA}
+                                  className="w-3 h-3 text-amber-500 rounded border-gray-300"
+                                />
+                                <span>{opt.label}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-center">
+                          <span className="text-[10px] font-bold text-slate-400 border border-dashed border-slate-300 px-2 py-0.5 rounded-full">WITH MASONRY WALLS WITH</span>
+                        </div>
+                        
+                        <div>
+                          <h4 className="text-[10px] font-bold text-slate-500 mb-2 uppercase">Flooring Type</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {[
+                              { key: 'axisSbbQualityOfConstructionFloorTiles', label: 'TILES' },
+                              { key: 'axisSbbQualityOfConstructionFloorMarble', label: 'MARBLE' },
+                              { key: 'axisSbbQualityOfConstructionFloorKotaStone', label: 'KOTA STONE' },
+                              { key: 'axisSbbQualityOfConstructionFloorLocalStone', label: 'LOCAL STONE' },
+                              { key: 'axisSbbQualityOfConstructionFloorCC', label: 'C.C' }
+                            ].map(opt => (
+                              <label key={opt.key} className="flex items-center space-x-1 text-[10px] cursor-pointer">
+                                <input 
+                                  type="checkbox" 
+                                  checked={!!fields[opt.key]}
+                                  onChange={e => handleChange(opt.key, e.target.checked)}
+                                  disabled={isReadOnly || !!fields.axisSbbQualityOfConstructionEditOn || !!fields.axisSbbQualityOfConstructionIsNA}
+                                  className="w-3 h-3 text-amber-500 rounded border-gray-300"
+                                />
+                                <span>{opt.label}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <textarea
+                        className={`${inputCls} resize-y font-medium text-slate-700 bg-amber-50/30 border-amber-200 focus:ring-amber-400 focus:border-amber-400`}
+                        rows={2}
+                        value={fields.axisSbbQualityOfConstructionIsNA ? 'NA' : (fields.axisSbbQualityOfConstructionEditOn ? (fields.axisSbbQualityOfConstruction || '') : `${roofStr} WITH MASONRY WALLS WITH ${floorTypes.length ? floorTypes.join('/') + ' FLOOR' : 'FLOOR'}`)}
+                        onChange={e => handleChange('axisSbbQualityOfConstruction', e.target.value.toUpperCase())}
+                        readOnly={!fields.axisSbbQualityOfConstructionEditOn || fields.axisSbbQualityOfConstructionIsNA}
+                        disabled={isReadOnly || (!fields.axisSbbQualityOfConstructionEditOn && !fields.axisSbbQualityOfConstructionIsNA)}
+                      />
                     </div>
-                  </div>
-                  <textarea
-                    className={`${inputCls} resize-y`}
-                    rows={2}
-                    value={fields.axisSbbQualityOfConstructionIsNA ? 'NA' : (fields.axisSbbQualityOfConstruction || '')}
-                    onChange={e => handleChange('axisSbbQualityOfConstruction', e.target.value.toUpperCase())}
-                    disabled={isReadOnly || !!fields.axisSbbQualityOfConstructionIsNA}
-                  />
-                </div>
+                  );
+                })()}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex flex-col">

@@ -284,7 +284,23 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       { label: 'Maintenance of Property', value: (fields as any).axisSbbMaintenanceOfPropertyIsCustom ? val('axisSbbMaintenanceOfProperty') : val('axisSbbMaintenanceOfProperty') }
     ]);
     
-    this.drawSimpleRow('Quality of Construction', val('axisSbbQualityOfConstruction'));
+    const roofTypes = [];
+    if ((fields as any).axisSbbQualityOfConstructionRoofRCC) roofTypes.push('RCC');
+    if ((fields as any).axisSbbQualityOfConstructionRoofPatti) roofTypes.push('PATTI');
+    if ((fields as any).axisSbbQualityOfConstructionRoofTinShed) roofTypes.push('TIN SHED');
+    if ((fields as any).axisSbbQualityOfConstructionRoofClayTiles) roofTypes.push('CLAY TILES');
+    const roofStr = roofTypes.length ? roofTypes.join('/') + ' ROOF' : 'ROOF';
+
+    const floorTypes = [];
+    if ((fields as any).axisSbbQualityOfConstructionFloorTiles) floorTypes.push('TILES');
+    if ((fields as any).axisSbbQualityOfConstructionFloorMarble) floorTypes.push('MARBLE');
+    if ((fields as any).axisSbbQualityOfConstructionFloorKotaStone) floorTypes.push('KOTA STONE');
+    if ((fields as any).axisSbbQualityOfConstructionFloorLocalStone) floorTypes.push('LOCAL STONE');
+    if ((fields as any).axisSbbQualityOfConstructionFloorCC) floorTypes.push('C.C');
+    
+    const computedQuality = `${roofStr} WITH MASONRY WALLS WITH ${floorTypes.length ? floorTypes.join('/') + ' FLOOR' : 'FLOOR'}`;
+
+    this.drawSimpleRow('Quality of Construction', val('axisSbbQualityOfConstruction', computedQuality));
 
     this.drawKeyValueRow([
       { label: 'Current Life of Structure (Years)', value: val('axisSbbCurrentLifeOfStructure') },
