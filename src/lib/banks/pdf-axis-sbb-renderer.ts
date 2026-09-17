@@ -110,7 +110,119 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       this.drawSbbSection7();
       return;
     }
+    // Intercept standard section 8
+    if (title.toUpperCase() === 'VALUATION ABSTRACT') {
+      super.drawSectionHeader('CONSTRUCTION BREAKDOWN & BUILDING DETAILS', addSpaceBefore, preserveCase);
+      this.drawSbbSection8();
+      return;
+    }
     super.drawSectionHeader(title, addSpaceBefore, preserveCase);
+  }
+
+  private drawSbbSection8() {
+    const fields = this.fields;
+    
+    const val = (key: string, computed?: string) => {
+      if ((fields as any)[`${key}IsNA`]) return 'NA';
+      if ((fields as any)[`${key}EditOn`] || !computed) {
+        return String((fields as any)[key] || 'NA').replace(/[\t\n\r]+/g, ' ').trim() || 'NA';
+      }
+      return computed;
+    };
+
+    this.drawSectionSubtitle('FLOOR WISE BREAK UP AS FOLLOWS IN SQ.FT.');
+    
+    const floors = JSON.parse((fields as any).axisSbbFloorData || '[]');
+    let sumConstructed = 0;
+    let sumApproved = 0;
+    let sumPermissible = 0;
+    let sumValuation = 0;
+
+    const floorTableData = floors.map((f: any) => {
+      if (!f.constructedAreaIsNA && f.constructedArea) sumConstructed += Number(f.constructedArea) || 0;
+      if (!f.approvedAreaIsNA && f.approvedArea) sumApproved += Number(f.approvedArea) || 0;
+      if (!f.permissibleAreaIsNA && f.permissibleArea) sumPermissible += Number(f.permissibleArea) || 0;
+      if (!f.valuationAreaIsNA && f.valuationArea) sumValuation += Number(f.valuationArea) || 0;
+
+      let usages = [];
+      if (f.usageStorage) usages.push('Storage');
+      if (f.usageParking) usages.push('Parking');
+      if (f.usageCommercial) usages.push('Commercial');
+      if (f.usageResidential) usages.push('Residential');
+      if (f.usageIndustry) usages.push('Industry');
+      const usageStr = usages.length > 0 ? usages.join(', ') : 'NA';
+
+      return [
+        { text: f.floorName || '' },
+        { text: f.constructedAreaIsNA ? 'NA' : (f.constructedArea || '') },
+        { text: f.approvedAreaIsNA ? 'NA' : (f.approvedArea || '') },
+        { text: f.permissibleAreaIsNA ? 'NA' : (f.permissibleArea || '') },
+        { text: f.valuationAreaIsNA ? 'NA' : (f.valuationArea || '') },
+        { text: f.accommodationIsNA ? 'NA' : (f.accommodation || '') },
+        { text: usageStr.toUpperCase() }
+      ];
+    });
+
+    super.drawTable({
+      headers: [
+        'FLOOR', 
+        'CONSTRUCTED ACTUAL AREA', 
+        'APPROVED AREA AS PER PLAN', 
+        'PERMISSIBLE AREA (BYELAWS)', 
+        'VALUATION AREA (FAR 2)', 
+        'ACCOMMODATION', 
+        'CURRENT USAGE'
+      ],
+      rows: floorTableData,
+      widths: [45, 45, 45, 45, 45, 55, 55]
+    });
+
+    this.doc.moveDown(0.5);
+    
+    const computedConstructed = `${sumConstructed} SQFT`;
+    const computedApproved = sumApproved > 0 ? `${sumApproved} SQFT` : 'NA';
+    const computedPermissible = sumPermissible > 0 ? `${sumPermissible} SQFT` : 'NA';
+    const computedValuation = `${sumValuation} SQFT`;
+
+    this.drawSectionSubtitle('TOTAL BUILT UP AREA (IN SQFT)');
+    this.drawKeyValueRow([
+      { label: 'Actual Area', value: val('axisSbbTotalConstructedArea', computedConstructed) },
+      { label: 'Approved Area', value: val('axisSbbTotalApprovedArea', computedApproved) }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Permissible Area', value: val('axisSbbTotalPermissibleArea', computedPermissible) },
+      { label: 'Valuation Area', value: val('axisSbbTotalValuationArea', computedValuation) }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Accommodation', value: val('axisSbbTotalAccommodation') },
+      { label: 'TOTAL CARPET AREA', value: val('axisSbbTotalCarpetArea') }
+    ]);
+
+    this.doc.moveDown(0.5);
+    this.drawSectionSubtitle('SALEABLE AREA, BYE-LAWS COMPLIANCE & PHYSICAL LIFE');
+
+    const carpetArea = val('axisSbbTotalCarpetArea') === 'NA' ? 'NA' : val('axisSbbTotalCarpetArea');
+    
+    this.drawSimpleRow('TOTAL SALEABLE AREA (IN SQFT)', val('axisSbbTotalSaleableArea', carpetArea));
+    this.drawSimpleRow('Construction As Per Approved Building Plan/Local Bye Laws', val('axisSbbConstructionAsPerApprovedPlan'));
+    this.drawSimpleRow('FSI As Per Plan Approval / Govt. Guideline & Actual FSI', val('axisSbbFSIAsPerPlan'));
+
+    this.drawKeyValueRow([
+      { label: 'Details of Extra Construction', value: val('axisSbbExtraConstructionDetails') },
+      { label: 'Percentage of Extra Construction', value: val('axisSbbExtraConstructionPercentage') }
+    ]);
+
+    this.drawKeyValueRow([
+      { label: 'Compoundable / Non-Compoundable?', value: val('axisSbbCompoundable') },
+      { label: 'Maintenance of Property', value: val('axisSbbMaintenanceOfProperty') }
+    ]);
+    
+    this.drawSimpleRow('Quality of Construction', val('axisSbbQualityOfConstruction'));
+
+    this.drawKeyValueRow([
+      { label: 'Current Life of Structure (Years)', value: val('axisSbbCurrentLifeOfStructure') },
+      { label: 'Projected Life of Structure (Years)', value: val('axisSbbProjectedLifeOfStructure') }
+    ]);
   }
 
   private drawSbbSection7() {
@@ -189,26 +301,6 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     this.drawKeyValueRow([
       { label: 'Approval Date', value: val('axisSbbBuildingPlanApprovalDate') },
       { label: 'Expiry Date', value: val('axisSbbBuildingPlanExpiryDate') }
-    ]);
-
-    this.drawSimpleRow('Construction As Per Approved Building Plan/Local Bye Laws', val('axisSbbConstructionAsPerApprovedPlan'));
-    this.drawSimpleRow('FSI As Per Plan Approval / Govt. Guideline & Actual FSI', val('axisSbbFSIAsPerPlan'));
-
-    this.drawKeyValueRow([
-      { label: 'Details of Extra Construction', value: val('axisSbbExtraConstructionDetails') },
-      { label: 'Percentage of Extra Construction', value: val('axisSbbExtraConstructionPercentage') }
-    ]);
-
-    this.drawKeyValueRow([
-      { label: 'Compoundable / Non-Compoundable?', value: (fields as any).axisSbbCompoundableIsCustom ? val('axisSbbCompoundable') : val('axisSbbCompoundable') },
-      { label: 'Maintenance of Property', value: (fields as any).axisSbbMaintenanceOfPropertyIsCustom ? val('axisSbbMaintenanceOfProperty') : val('axisSbbMaintenanceOfProperty') }
-    ]);
-    
-    this.drawSimpleRow('Quality of Construction', val('axisSbbQualityOfConstruction'));
-
-    this.drawKeyValueRow([
-      { label: 'Current Life of Structure (Years)', value: val('axisSbbCurrentLifeOfStructure') },
-      { label: 'Projected Life of Structure (Years)', value: val('axisSbbProjectedLifeOfStructure') }
     ]);
   }
 
