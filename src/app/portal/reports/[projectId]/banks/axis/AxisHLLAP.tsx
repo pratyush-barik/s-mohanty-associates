@@ -1297,25 +1297,23 @@ export default function AxisHLLAP({
                 </h3>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="i. Longitude (e.g. 85.001200° E)">
+                <Field label="i. Longitude">
                   <input
                     type="text"
                     value={fields.longitude}
                     onChange={e => handleChange('longitude', sanitizePositiveFloat(e.target.value))}
                     className={inputCls}
                     disabled={isReadOnly}
-                    placeholder="e.g. 85.001200"
                   />
                 </Field>
 
-                <Field label="ii. Latitude (e.g. 19.597680° N)">
+                <Field label="ii. Latitude">
                   <input
                     type="text"
                     value={fields.latitude}
                     onChange={e => handleChange('latitude', sanitizePositiveFloat(e.target.value))}
                     className={inputCls}
                     disabled={isReadOnly}
-                    placeholder="e.g. 19.597680"
                   />
                 </Field>
               </div>
