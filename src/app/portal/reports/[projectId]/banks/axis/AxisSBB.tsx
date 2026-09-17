@@ -221,48 +221,52 @@ export const AXIS_SBB_CONFIG: BankConfig = {
 
     // SECTION 8
     axisSbbFloorData: JSON.stringify([
-      { id: "1", floorName: "GROUND FLOOR RCC", constructedArea: null, constructedAreaIsNA: false, approvedArea: null, approvedAreaIsNA: false, permissibleArea: null, permissibleAreaIsNA: false, valuationArea: null, valuationAreaIsNA: false, accommodation: "", accommodationIsNA: false, usageStorage: false, usageParking: false, usageCommercial: false, usageResidential: false, usageIndustry: false },
-      { id: "2", floorName: "1ST FLOOR* (RCC)", constructedArea: null, constructedAreaIsNA: false, approvedArea: null, approvedAreaIsNA: false, permissibleArea: null, permissibleAreaIsNA: false, valuationArea: null, valuationAreaIsNA: false, accommodation: "", accommodationIsNA: false, usageStorage: false, usageParking: false, usageCommercial: false, usageResidential: false, usageIndustry: false },
-      { id: "3", floorName: "2ND FLOOR* (ADD AS PER REQUIREMENT)", constructedArea: null, constructedAreaIsNA: true, approvedArea: null, approvedAreaIsNA: true, permissibleArea: null, permissibleAreaIsNA: true, valuationArea: null, valuationAreaIsNA: true, accommodation: "", accommodationIsNA: true, usageStorage: false, usageParking: false, usageCommercial: false, usageResidential: false, usageIndustry: false },
-      { id: "4", floorName: "3RD FLOOR* (ADD AS PER REQUIREMENT)", constructedArea: null, constructedAreaIsNA: true, approvedArea: null, approvedAreaIsNA: true, permissibleArea: null, permissibleAreaIsNA: true, valuationArea: null, valuationAreaIsNA: true, accommodation: "", accommodationIsNA: true, usageStorage: false, usageParking: false, usageCommercial: false, usageResidential: false, usageIndustry: false },
-      { id: "5", floorName: "4TH FLOOR* (ADD AS PER REQUIREMENT)", constructedArea: null, constructedAreaIsNA: true, approvedArea: null, approvedAreaIsNA: true, permissibleArea: null, permissibleAreaIsNA: true, valuationArea: null, valuationAreaIsNA: true, accommodation: "", accommodationIsNA: true, usageStorage: false, usageParking: false, usageCommercial: false, usageResidential: false, usageIndustry: false }
+      { id: "1", floorName: "GROUND FLOOR RCC", constructedArea: null, constructedAreaIsNA: false, approvedArea: null, approvedAreaIsNA: true, permissibleArea: null, permissibleAreaIsNA: true, valuationArea: null, valuationAreaIsNA: false, accommodation: "", accommodationIsNA: true, usageStorage: false, usageParking: false, usageCommercial: false, usageResidential: false, usageIndustry: false },
+      { id: "2", floorName: "1ST FLOOR* (RCC)", constructedArea: null, constructedAreaIsNA: false, approvedArea: null, approvedAreaIsNA: true, permissibleArea: null, permissibleAreaIsNA: true, valuationArea: null, valuationAreaIsNA: false, accommodation: "", accommodationIsNA: true, usageStorage: false, usageParking: false, usageCommercial: false, usageResidential: false, usageIndustry: false }
     ]),
-
     axisSbbTotalConstructedArea: '0 SQFT',
     axisSbbTotalConstructedAreaEditOn: false,
-    axisSbbTotalApprovedArea: 'NA',
-    axisSbbTotalApprovedAreaEditOn: false,
-    axisSbbTotalPermissibleArea: 'NA',
-    axisSbbTotalPermissibleAreaEditOn: false,
     axisSbbTotalValuationArea: '0 SQFT',
     axisSbbTotalValuationAreaEditOn: false,
-    axisSbbTotalAccommodation: 'NA',
-    axisSbbTotalAccommodationIsNA: false,
-    
-    axisSbbTotalCarpetArea: '',
-    axisSbbTotalCarpetAreaIsNA: false,
-    
-    axisSbbTotalSaleableArea: '',
-    axisSbbTotalSaleableAreaIsNA: false,
+    axisSbbTotalCarpetArea: '0 SQFT',
+    axisSbbTotalCarpetAreaEditOn: false,
+    axisSbbTotalSaleableArea: '0 SQFT',
     axisSbbTotalSaleableAreaEditOn: false,
 
     axisSbbConstructionAsPerApprovedPlan: 'NOT APPLICABLE BYE LAWS',
+    axisSbbConstructionAsPerApprovedPlanEditOn: false,
+
     axisSbbFSIAsPerPlan: 'NA',
     axisSbbFSIAsPerPlanIsNA: false,
+    axisSbbFSIAsPerPlanEditOn: false,
+
     axisSbbExtraConstructionDetails: 'NA',
     axisSbbExtraConstructionDetailsIsNA: false,
+    axisSbbExtraConstructionDetailsEditOn: false,
+
     axisSbbExtraConstructionPercentage: 'NA',
     axisSbbExtraConstructionPercentageIsNA: false,
+    axisSbbExtraConstructionPercentageEditOn: false,
+
     axisSbbCompoundable: 'NA',
     axisSbbCompoundableIsCustom: false,
+    axisSbbCompoundableEditOn: false,
+
     axisSbbQualityOfConstruction: 'RCC/PATTI/TIN SHED/CLAY TILES ROOF WITH MASONRY WALLS WITH TILES/MARBLE/KOTA STONE/LOCAL STONE/C.C FLOOR',
     axisSbbQualityOfConstructionIsNA: false,
+    axisSbbQualityOfConstructionEditOn: false,
+
     axisSbbMaintenanceOfProperty: 'GOOD',
     axisSbbMaintenanceOfPropertyIsCustom: false,
+    axisSbbMaintenanceOfPropertyEditOn: false,
+
     axisSbbCurrentLifeOfStructure: '25-YEARS',
     axisSbbCurrentLifeOfStructureIsNA: false,
+    axisSbbCurrentLifeOfStructureEditOn: false,
+
     axisSbbProjectedLifeOfStructure: '35-YEARS',
     axisSbbProjectedLifeOfStructureIsNA: false,
+    axisSbbProjectedLifeOfStructureEditOn: false,
 
     axisSbbPropertyLocation: '',
     axisSbbGoverningBody: '',
@@ -2204,7 +2208,6 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   </div>
                 </div>
 
-                </div>
               </div>
             </div>
           </div>
@@ -2257,14 +2260,16 @@ export const AXIS_SBB_CONFIG: BankConfig = {
 
         const addFloor = () => {
           const newFloors = [...floors];
+          const num = newFloors.length + 1;
+          const suffix = ['TH', 'ST', 'ND', 'RD'][(num % 100 > 10 && num % 100 < 20) ? 0 : (num % 10 < 4 ? num % 10 : 0)];
           newFloors.push({ 
             id: String(Date.now()), 
-            floorName: `NEW FLOOR`, 
-            constructedArea: null, constructedAreaIsNA: false, 
-            approvedArea: null, approvedAreaIsNA: false, 
-            permissibleArea: null, permissibleAreaIsNA: false, 
-            valuationArea: null, valuationAreaIsNA: false, 
-            accommodation: "", accommodationIsNA: false, 
+            floorName: `${num}${suffix} FLOOR* (ADD AS PER REQUIREMENT)`, 
+            constructedArea: null, constructedAreaIsNA: true, 
+            approvedArea: null, approvedAreaIsNA: true, 
+            permissibleArea: null, permissibleAreaIsNA: true, 
+            valuationArea: null, valuationAreaIsNA: true, 
+            accommodation: "", accommodationIsNA: true, 
             usageStorage: false, usageParking: false, usageCommercial: false, usageResidential: false, usageIndustry: false 
           });
           handleChange('axisSbbFloorData', JSON.stringify(newFloors));
@@ -2278,27 +2283,22 @@ export const AXIS_SBB_CONFIG: BankConfig = {
 
         // Computed sums
         let sumConstructed = 0;
-        let sumApproved = 0;
-        let sumPermissible = 0;
         let sumValuation = 0;
 
         floors.forEach((f: any) => {
           if (!f.constructedAreaIsNA && f.constructedArea) sumConstructed += Number(f.constructedArea) || 0;
-          if (!f.approvedAreaIsNA && f.approvedArea) sumApproved += Number(f.approvedArea) || 0;
-          if (!f.permissibleAreaIsNA && f.permissibleArea) sumPermissible += Number(f.permissibleArea) || 0;
           if (!f.valuationAreaIsNA && f.valuationArea) sumValuation += Number(f.valuationArea) || 0;
         });
 
         const computedConstructed = `${sumConstructed} SQFT`;
-        const computedApproved = sumApproved > 0 ? `${sumApproved} SQFT` : 'NA';
-        const computedPermissible = sumPermissible > 0 ? `${sumPermissible} SQFT` : 'NA';
         const computedValuation = `${sumValuation} SQFT`;
-        const carpetArea = fields.axisSbbTotalCarpetAreaIsNA ? 'NA' : fields.axisSbbTotalCarpetArea;
+        const computedCarpet = `${Math.round(sumConstructed * 0.85)} SQFT`;
+        const computedSaleable = computedCarpet;
 
         return (
           <div className="animate-fade-in space-y-6">
             
-            {/* CONTAINER 8.1 */}
+            {/* TABLE 8.1 */}
             <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#F1F5F9', borderColor: '#CBD5E1' }}>
               <h3 className="font-bold text-gray-700 mb-4 uppercase">FLOOR WISE BREAK UP AS FOLLOWS IN SQ.FT.</h3>
               
@@ -2307,11 +2307,11 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   <thead className="bg-slate-200/50 text-slate-700 font-bold border-b border-slate-300">
                     <tr>
                       <th className="p-2 w-48">FLOOR</th>
-                      <th className="p-2 w-28">CONSTRUCTED ACTUAL AREA</th>
-                      <th className="p-2 w-28">APPROVED AREA AS PER PLAN</th>
-                      <th className="p-2 w-28">PERMISSIBLE AREA (BYELAWS)</th>
-                      <th className="p-2 w-28">VALUATION AREA FAR 2</th>
-                      <th className="p-2 w-48">ACCOMMODATION</th>
+                      <th className="p-2 w-28">CONSTRUCTED ACTUAL AREA AS PER SITE (SQ.FT)</th>
+                      <th className="p-2 w-28">APPROVED AREA AS PER PLAN(SQ.FT)</th>
+                      <th className="p-2 w-28">PERMISSIBLE AREA AS PER BYELAWS (SQ.FT)</th>
+                      <th className="p-2 w-28">AREA CONSIDERED FOR VALUATION (SQ.FT)</th>
+                      <th className="p-2 w-48">ACCOMMO DATE TION</th>
                       <th className="p-2 min-w-[200px]">CURRENT USAGE</th>
                       <th className="p-2 w-10"></th>
                     </tr>
@@ -2348,12 +2348,12 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                             <input type="checkbox" checked={f.approvedAreaIsNA} onChange={e => updateFloor(i, 'approvedAreaIsNA', e.target.checked)} disabled={isReadOnly} className="w-3 h-3 text-red-500 rounded border-gray-300" />
                           </div>
                           <input 
-                            type="number" 
+                            type="text" 
                             className={`${inputCls}`} 
-                            value={f.approvedAreaIsNA ? '' : (f.approvedArea || '')} 
-                            onChange={e => updateFloor(i, 'approvedArea', e.target.value)}
+                            value={f.approvedAreaIsNA ? 'NA' : (f.approvedArea || '')} 
+                            onChange={e => updateFloor(i, 'approvedArea', e.target.value.toUpperCase())}
                             disabled={isReadOnly || f.approvedAreaIsNA}
-                            placeholder="Sq.Ft."
+                            placeholder="NA"
                           />
                         </td>
                         <td className="p-2 align-top">
@@ -2362,12 +2362,12 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                             <input type="checkbox" checked={f.permissibleAreaIsNA} onChange={e => updateFloor(i, 'permissibleAreaIsNA', e.target.checked)} disabled={isReadOnly} className="w-3 h-3 text-red-500 rounded border-gray-300" />
                           </div>
                           <input 
-                            type="number" 
+                            type="text" 
                             className={`${inputCls}`} 
-                            value={f.permissibleAreaIsNA ? '' : (f.permissibleArea || '')} 
-                            onChange={e => updateFloor(i, 'permissibleArea', e.target.value)}
+                            value={f.permissibleAreaIsNA ? 'NA' : (f.permissibleArea || '')} 
+                            onChange={e => updateFloor(i, 'permissibleArea', e.target.value.toUpperCase())}
                             disabled={isReadOnly || f.permissibleAreaIsNA}
-                            placeholder="Sq.Ft."
+                            placeholder="NA"
                           />
                         </td>
                         <td className="p-2 align-top">
@@ -2414,7 +2414,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                           </div>
                         </td>
                         <td className="p-2 align-middle text-center">
-                          {i > 4 && (
+                          {i > 1 && (
                             <button type="button" onClick={() => removeFloor(i)} disabled={isReadOnly} className="text-red-500 hover:text-red-700 font-bold p-1">X</button>
                           )}
                         </td>
@@ -2430,15 +2430,14 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                 disabled={isReadOnly}
                 className="mb-6 px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-200 hover:bg-slate-300 rounded border border-slate-300 transition-colors flex items-center space-x-1"
               >
-                <span>+ Add Additional Floor Level</span>
+                <span>+ Add Floor Row</span>
               </button>
 
               <div className="bg-white p-4 border border-slate-300 rounded-lg shadow-sm">
-                <h4 className="font-bold text-slate-800 text-sm mb-4 border-b pb-2">TOTAL BUILT UP AREA (IN SQFT)</h4>
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                   <div className="flex flex-col border-r pr-3">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] font-bold text-slate-500">ACTUAL AREA</span>
+                      <span className="text-[10px] font-bold text-slate-500">TOTAL BUILT UP AREA</span>
                       {renderEditSwitch('axisSbbTotalConstructedArea', false)}
                     </div>
                     <input 
@@ -2452,35 +2451,15 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   </div>
                   <div className="flex flex-col border-r pr-3">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] font-bold text-slate-500">APPROVED AREA</span>
-                      {renderEditSwitch('axisSbbTotalApprovedArea', false)}
+                      <span className="text-[10px] font-bold text-slate-500">APPROVED/PERMISSIBLE</span>
                     </div>
-                    <input 
-                      type="text" 
-                      className={`${inputCls} font-bold text-slate-700`}
-                      value={fields.axisSbbTotalApprovedAreaEditOn ? (fields.axisSbbTotalApprovedArea || '') : computedApproved}
-                      onChange={e => handleChange('axisSbbTotalApprovedArea', e.target.value.toUpperCase())}
-                      readOnly={!fields.axisSbbTotalApprovedAreaEditOn}
-                      disabled={isReadOnly || !fields.axisSbbTotalApprovedAreaEditOn}
-                    />
+                    <div className="flex items-center space-x-2 h-full">
+                      <span className="text-gray-400 font-bold text-sm">NA</span>
+                    </div>
                   </div>
                   <div className="flex flex-col border-r pr-3">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] font-bold text-slate-500">PERMISSIBLE AREA</span>
-                      {renderEditSwitch('axisSbbTotalPermissibleArea', false)}
-                    </div>
-                    <input 
-                      type="text" 
-                      className={`${inputCls} font-bold text-slate-700`}
-                      value={fields.axisSbbTotalPermissibleAreaEditOn ? (fields.axisSbbTotalPermissibleArea || '') : computedPermissible}
-                      onChange={e => handleChange('axisSbbTotalPermissibleArea', e.target.value.toUpperCase())}
-                      readOnly={!fields.axisSbbTotalPermissibleAreaEditOn}
-                      disabled={isReadOnly || !fields.axisSbbTotalPermissibleAreaEditOn}
-                    />
-                  </div>
-                  <div className="flex flex-col border-r pr-3">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] font-bold text-slate-500">VALUATION AREA</span>
+                      <span className="text-[10px] font-bold text-slate-500">TOTAL VALUATION AREA</span>
                       {renderEditSwitch('axisSbbTotalValuationArea', false)}
                     </div>
                     <input 
@@ -2492,75 +2471,55 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       disabled={isReadOnly || !fields.axisSbbTotalValuationAreaEditOn}
                     />
                   </div>
-                  <div className="flex flex-col">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] font-bold text-slate-500">ACCOMMODATION</span>
-                      {renderNaToggle('axisSbbTotalAccommodation')}
-                    </div>
-                    <input 
-                      type="text" 
-                      className={`${inputCls} font-bold text-slate-700`}
-                      value={fields.axisSbbTotalAccommodationIsNA ? 'NA' : (fields.axisSbbTotalAccommodation || '')}
-                      onChange={e => handleChange('axisSbbTotalAccommodation', e.target.value.toUpperCase())}
-                      readOnly={fields.axisSbbTotalAccommodationIsNA}
-                      disabled={isReadOnly || fields.axisSbbTotalAccommodationIsNA}
-                    />
-                  </div>
                 </div>
 
-                <div className="pt-2">
-                  <div className="flex flex-col max-w-sm">
-                    <div className="flex items-center mb-1">
-                      <label className="block text-xs font-bold text-slate-800 uppercase tracking-wide">TOTAL CARPET AREA (IN SQFT)</label>
-                      {renderNaToggle('axisSbbTotalCarpetArea')}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-200">
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-xs font-bold text-slate-800 uppercase tracking-wide">TOTAL CARPET AREA(IN SQFT)</label>
+                      {renderEditSwitch('axisSbbTotalCarpetArea', false)}
                     </div>
                     <input
                       type="text"
-                      className={`${inputCls} bg-amber-50 font-bold border-amber-200 focus:ring-amber-400 focus:border-amber-400`}
-                      value={fields.axisSbbTotalCarpetAreaIsNA ? 'NA' : (fields.axisSbbTotalCarpetArea || '')}
+                      className={`${inputCls} font-bold bg-amber-50 border-amber-200 focus:ring-amber-400 focus:border-amber-400`}
+                      value={fields.axisSbbTotalCarpetAreaEditOn ? (fields.axisSbbTotalCarpetArea || '') : computedCarpet}
                       onChange={e => handleChange('axisSbbTotalCarpetArea', e.target.value.toUpperCase())}
-                      disabled={isReadOnly || fields.axisSbbTotalCarpetAreaIsNA}
-                      placeholder="E.g., 5865 SQFT"
+                      readOnly={!fields.axisSbbTotalCarpetAreaEditOn}
+                      disabled={isReadOnly || !fields.axisSbbTotalCarpetAreaEditOn}
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-xs font-bold text-slate-800 uppercase tracking-wide">TOTAL SALEABLE AREA (IN SQFT.)</label>
+                      {renderEditSwitch('axisSbbTotalSaleableArea', false)}
+                    </div>
+                    <input
+                      type="text"
+                      className={`${inputCls} font-bold bg-blue-50 border-blue-200 focus:ring-blue-400 focus:border-blue-400`}
+                      value={fields.axisSbbTotalSaleableAreaEditOn ? (fields.axisSbbTotalSaleableArea || '') : computedSaleable}
+                      onChange={e => handleChange('axisSbbTotalSaleableArea', e.target.value.toUpperCase())}
+                      readOnly={!fields.axisSbbTotalSaleableAreaEditOn}
+                      disabled={isReadOnly || !fields.axisSbbTotalSaleableAreaEditOn}
                     />
                   </div>
                 </div>
               </div>
-
             </div>
 
             {/* CONTAINER 8.2 */}
-            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FFF1F2', borderColor: '#FFCCD5' }}>
-              <h3 className="font-bold text-gray-700 mb-4 uppercase">SALEABLE AREA, BYE-LAWS COMPLIANCE & PHYSICAL LIFE</h3>
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FFFBEB', borderColor: '#FDE68A' }}>
+              <h3 className="font-bold text-gray-700 mb-4 uppercase">BYE-LAWS COMPLIANCE, QUALITY & STRUCTURE LIFE</h3>
               
               <div className="space-y-5">
-                
-                <div className="flex flex-col max-w-sm">
-                  <div className="flex justify-between items-center mb-1">
-                    <div className="flex items-center">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">TOTAL SALEABLE AREA (IN SQFT)</label>
-                      {renderNaToggle('axisSbbTotalSaleableArea')}
-                    </div>
-                    {renderEditSwitch('axisSbbTotalSaleableArea', !!fields.axisSbbTotalSaleableAreaIsNA)}
-                  </div>
-                  <input
-                    type="text"
-                    className={`${inputCls}`}
-                    value={fields.axisSbbTotalSaleableAreaIsNA ? 'NA' : (fields.axisSbbTotalSaleableAreaEditOn ? (fields.axisSbbTotalSaleableArea || '') : carpetArea)}
-                    onChange={e => handleChange('axisSbbTotalSaleableArea', e.target.value.toUpperCase())}
-                    readOnly={!fields.axisSbbTotalSaleableAreaEditOn || fields.axisSbbTotalSaleableAreaIsNA}
-                    disabled={isReadOnly || (!fields.axisSbbTotalSaleableAreaEditOn && !fields.axisSbbTotalSaleableAreaIsNA)}
-                  />
-                </div>
-
                 <div className="flex flex-col">
                   <div className="flex justify-between items-center mb-1">
                     <div className="flex items-center">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">CONSTRUCTION AS PER APPROVED BUILDING PLAN AND/OR LOCAL BUILDING BYE LAWS</label>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">WHETHER THE CONSTRUCTION IS AS PER APPROVED BUILDING PLAN AND / OR LOCAL BUILDING BYE LAWS:</label>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-3">
                     {['YES', 'NA', 'NOT APPLICABLE BYE LAWS'].map(opt => (
-                      <label key={opt} className={`flex items-center space-x-2 p-2 border rounded-lg cursor-pointer transition-colors ${(fields.axisSbbConstructionAsPerApprovedPlan === opt) ? 'bg-rose-50 border-rose-300' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
+                      <label key={opt} className={`flex items-center space-x-2 p-2 border rounded-lg cursor-pointer transition-colors ${(fields.axisSbbConstructionAsPerApprovedPlan === opt) ? 'bg-amber-50 border-amber-300' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
                         <input
                           type="radio"
                           name="axisSbbConstructionAsPerApprovedPlan"
@@ -2568,7 +2527,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                           checked={fields.axisSbbConstructionAsPerApprovedPlan === opt}
                           onChange={e => handleChange('axisSbbConstructionAsPerApprovedPlan', e.target.value)}
                           disabled={isReadOnly}
-                          className="text-rose-500 focus:ring-rose-400 border-gray-300"
+                          className="text-amber-500 focus:ring-amber-400 border-gray-300"
                         />
                         <span className="text-xs font-semibold text-gray-700">{opt}</span>
                       </label>
@@ -2588,7 +2547,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                     rows={1}
                     value={fields.axisSbbFSIAsPerPlanIsNA ? 'NA' : (fields.axisSbbFSIAsPerPlan || '')}
                     onChange={e => handleChange('axisSbbFSIAsPerPlan', e.target.value.toUpperCase())}
-                    disabled={isReadOnly || fields.axisSbbFSIAsPerPlanIsNA}
+                    disabled={isReadOnly || !!fields.axisSbbFSIAsPerPlanIsNA}
                   />
                 </div>
 
@@ -2605,7 +2564,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       className={`${inputCls}`}
                       value={fields.axisSbbExtraConstructionDetailsIsNA ? 'NA' : (fields.axisSbbExtraConstructionDetails || '')}
                       onChange={e => handleChange('axisSbbExtraConstructionDetails', e.target.value.toUpperCase())}
-                      disabled={isReadOnly || fields.axisSbbExtraConstructionDetailsIsNA}
+                      disabled={isReadOnly || !!fields.axisSbbExtraConstructionDetailsIsNA}
                     />
                   </div>
                   
@@ -2621,7 +2580,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       className={`${inputCls}`}
                       value={fields.axisSbbExtraConstructionPercentageIsNA ? 'NA' : (fields.axisSbbExtraConstructionPercentage || '')}
                       onChange={e => handleChange('axisSbbExtraConstructionPercentage', e.target.value.toUpperCase())}
-                      disabled={isReadOnly || fields.axisSbbExtraConstructionPercentageIsNA}
+                      disabled={isReadOnly || !!fields.axisSbbExtraConstructionPercentageIsNA}
                     />
                   </div>
                 </div>
@@ -2717,7 +2676,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                     rows={2}
                     value={fields.axisSbbQualityOfConstructionIsNA ? 'NA' : (fields.axisSbbQualityOfConstruction || '')}
                     onChange={e => handleChange('axisSbbQualityOfConstruction', e.target.value.toUpperCase())}
-                    disabled={isReadOnly || fields.axisSbbQualityOfConstructionIsNA}
+                    disabled={isReadOnly || !!fields.axisSbbQualityOfConstructionIsNA}
                   />
                 </div>
 
@@ -2734,7 +2693,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       className={`${inputCls}`}
                       value={fields.axisSbbCurrentLifeOfStructureIsNA ? 'NA' : (fields.axisSbbCurrentLifeOfStructure || '')}
                       onChange={e => handleChange('axisSbbCurrentLifeOfStructure', e.target.value.toUpperCase())}
-                      disabled={isReadOnly || fields.axisSbbCurrentLifeOfStructureIsNA}
+                      disabled={isReadOnly || !!fields.axisSbbCurrentLifeOfStructureIsNA}
                     />
                   </div>
                   
@@ -2750,7 +2709,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       className={`${inputCls}`}
                       value={fields.axisSbbProjectedLifeOfStructureIsNA ? 'NA' : (fields.axisSbbProjectedLifeOfStructure || '')}
                       onChange={e => handleChange('axisSbbProjectedLifeOfStructure', e.target.value.toUpperCase())}
-                      disabled={isReadOnly || fields.axisSbbProjectedLifeOfStructureIsNA}
+                      disabled={isReadOnly || !!fields.axisSbbProjectedLifeOfStructureIsNA}
                     />
                   </div>
                 </div>
