@@ -787,7 +787,7 @@ export function BaseMapsSection({
               <div className="rounded-xl overflow-hidden border border-[#c8d6e5] shadow-xs">
                 <div className="bg-[#d5e8f5] px-3.5 py-1.5 flex items-center justify-between">
                   <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider flex items-center gap-1.5">
-                    📍 Live Pin {hasCoordinates ? `(${cleanLat}, ${cleanLng})` : '— Technical Address'}
+                    📍 Live Pin {hasCoordinates ? `(${cleanLat}, ${cleanLng})` : '— Property Address'}
                   </span>
                   <a
                     href={googleMapsUrl}
@@ -811,7 +811,7 @@ export function BaseMapsSection({
               </div>
             ) : (
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center text-xs text-slate-500">
-                Enter technical address or coordinates to view live satellite map preview.
+                Enter property address or coordinates to view live satellite map preview.
               </div>
             )}
 
@@ -837,7 +837,7 @@ export function BaseMapsSection({
                 </div>
                 {cleanAddress && (
                   <div className="text-[11px] text-slate-600 pl-4 truncate" title={cleanAddress}>
-                    <span className="font-medium text-slate-700">Overridden Technical Address:</span> {cleanAddress}
+                    <span className="font-medium text-slate-700">Property Address:</span> {cleanAddress}
                   </div>
                 )}
               </div>
@@ -848,7 +848,7 @@ export function BaseMapsSection({
                     <span className="inline-block w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0 shadow-xs" />
                     <span className="font-bold text-blue-950">📍 Map Referenced From:</span>
                     <span className="font-semibold text-blue-800 bg-blue-100/80 px-1.5 py-0.5 rounded">
-                      Technical Address
+                      Property Address
                     </span>
                     <span className="text-[11px] text-blue-700 font-medium">
                       (Default Address Input)
@@ -868,10 +868,10 @@ export function BaseMapsSection({
               <div className="rounded-lg p-2.5 bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-center gap-2">
                 <span>⚠️</span>
                 <span>
-                  No technical address or coordinates found.{' '}
+                  No property address or coordinates found.{' '}
                   {hasExternalCoordinatesField
-                    ? `Please enter technical property address or coordinates in ${coordinatesSectionName || 'Location Details'}.`
-                    : 'Enter technical address in report details or input coordinates below.'}
+                    ? `Please enter property address or coordinates in ${coordinatesSectionName || 'Location Details'}.`
+                    : 'Enter property address in report details or input coordinates below.'}
                 </span>
               </div>
             )}
@@ -885,7 +885,7 @@ export function BaseMapsSection({
                 <span className="text-[11px] text-slate-500">
                   {hasExternalCoordinatesField
                     ? `Coordinates synced from ${coordinatesSectionName || 'report details'}`
-                    : 'Input latitude & longitude to override technical address'}
+                    : 'Input latitude & longitude to set map pin'}
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
