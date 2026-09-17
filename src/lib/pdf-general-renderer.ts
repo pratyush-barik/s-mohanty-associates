@@ -237,7 +237,28 @@ export class PDFGeneralRenderer {
         lines.push('');
         continue;
       }
-      const words = strText.split(/\s+/);
+
+      // Normalize slashes: ensure no space before '/' so a line never begins with '/'
+      // e.g. "Leased / Development" -> "Leased/ Development"
+      const normalizedText = strText.replace(/\s+\//g, '/');
+
+      // Tokenize by whitespace; if a token has multiple '/' and exceeds maxWidth, split at '/' boundaries
+      const rawWords = normalizedText.split(/\s+/);
+      const words: string[] = [];
+      for (const w of rawWords) {
+        if (!w) continue;
+        if (w.includes('/') && font.widthOfTextAtSize(w, fontSize) > maxWidth) {
+          const parts = w.split('/');
+          for (let i = 0; i < parts.length; i++) {
+            const isLast = i === parts.length - 1;
+            const token = isLast ? parts[i] : `${parts[i]}/`;
+            if (token) words.push(token);
+          }
+        } else {
+          words.push(w);
+        }
+      }
+
       let currentLine = '';
 
       for (let word of words) {
