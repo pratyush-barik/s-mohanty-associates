@@ -11,6 +11,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
   displayName: 'Axis Bank — SBB (Small Business Banking)',
   hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7', 'section-8'],
   extraSections: [],
+  defaultValues: {
     axisSbbDeedNumberDate: '',
     axisSbbDeedNumberDateIsNA: false,
     axisSbbDeedNumberDateEditOn: false,
@@ -319,7 +320,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
       title: 'Cover Page Details',
       number: 1,
       defaultOpen: true,
-      render: (fields, handleChange, isReadOnly) => (
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
         <div className="animate-fade-in space-y-6">
           <div className="border border-blue-200 bg-[#f8fafc] rounded-md p-4 mb-4">
             <div className="flex justify-between items-center mb-4">
@@ -916,7 +917,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       {renderEditSwitch('axisSbbDistrict', !!fields.axisSbbDistrictIsNA)}
                     </div>
                     <select
-                      className={selectCls}
+                      className={inputCls}
                       required
                       value={fields.axisSbbDistrictIsNA ? 'NA' : (fields.axisSbbDistrictEditOn ? distDropdown : 'AUTO')}
                       onChange={e => {
@@ -956,7 +957,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       {renderEditSwitch('axisSbbState', !!fields.axisSbbStateIsNA)}
                     </div>
                     <select
-                      className={selectCls}
+                      className={inputCls}
                       required
                       value={fields.axisSbbStateIsNA ? 'NA' : stateDropdown}
                       onChange={e => {
@@ -1154,7 +1155,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                     {renderEditSwitch('axisSbbLevelOfLand', !!fields.axisSbbLevelOfLandIsNA)}
                   </div>
                   <select
-                    className={selectCls}
+                    className={inputCls}
                     value={fields.axisSbbLevelOfLandIsNA ? 'NA' : levelDropdown}
                     onChange={e => {
                       const v = e.target.value;
