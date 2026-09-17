@@ -163,10 +163,12 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
       this.cursorY += 10;
     }
 
-    // Require enough height for section header + at least 2 rows of content (prevents orphan headers)
-    this.checkPageBreak(70);
+    const rawLines = title.split('\n');
+    const h = 20 + (rawLines.length - 1) * 14;
 
-    const h = 20;
+    // Require enough height for section header + at least 2 rows of content (prevents orphan headers)
+    this.checkPageBreak(70 + (rawLines.length - 1) * 14);
+
     const y = this.pdfY(this.cursorY);
 
     this.page.drawRectangle({
@@ -181,15 +183,18 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
     });
 
     const font = this.fontBold;
-    const text = preserveCase ? this.sanitizeText(title) : this.sanitizeText(title).toUpperCase();
-    const tw = font.widthOfTextAtSize(text, FONT_SIZE_HEADER);
-    this.page.drawText(text, {
-      x: MARGIN_L + (CONTENT_W - tw) / 2,
-      y: y - h + 5.5,
-      size: FONT_SIZE_HEADER,
-      font,
-      color: rgb(0, 0, 0),
-    });
+    for (let i = 0; i < rawLines.length; i++) {
+      const text = preserveCase ? this.sanitizeText(rawLines[i]) : this.sanitizeText(rawLines[i]).toUpperCase();
+      const tw = font.widthOfTextAtSize(text, FONT_SIZE_HEADER);
+      const lineY = y - 14.5 - (i * 14);
+      this.page.drawText(text, {
+        x: MARGIN_L + (CONTENT_W - tw) / 2,
+        y: lineY,
+        size: FONT_SIZE_HEADER,
+        font,
+        color: rgb(0, 0, 0),
+      });
+    }
 
     this.cursorY += h;
   }  /**

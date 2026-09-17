@@ -167,7 +167,7 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
     const getVal = (field: string) => this.fields[`${field}_isNA`] ? 'NA' : fv(field);
 
     this.advanceCursor(6);
-    this.drawSectionSubtitle('Legal Address of the Property: (As per Title Deed or Sanctioned Plan)');
+    this.drawSectionSubtitle('Legal Address of the Property:\n(As per Title Deed or Sanctioned Plan)');
     this.drawSimpleRow('Address of Property', getVal('bajajLegalAddressOfProperty'));
     this.drawSimpleRow('Floor No. of Property', getVal('bajajFloorNoOfProperty'));
     this.drawSimpleRow('Property State', getVal('bajajPropertyState'));
@@ -412,10 +412,10 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
     const cw = CONTENT_W;
 
     this.drawSectionSubtitle('General Observations & Remarks');
-    this.drawTextBlock(fv('bajajRemarksIfAny'));
+    this.drawSimpleRow('Remarks If Any', fv('bajajRemarksIfAny'));
     this.advanceCursor(6);
 
-    if (fv('bajajLocationJurisdiction') === 'Gram Panchayat') {
+    if (fv('bajajJurisdictionMunicipalBody') === 'Gram Panchayat') {
       this.drawSectionSubtitle('Additional checks for Panchayat properties');
       const getPanchayatValue = (field: string) => fv(`${field}`) === 'Custom' ? fv(`${field}Custom`) : fv(`${field}`);
 

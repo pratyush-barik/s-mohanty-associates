@@ -2766,7 +2766,7 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
             const age = fields.bajajAgeOfProperty || '{Age of Property}';
             const roadWidth = fields.bajajPropertyRoadWidth || '{Road Width}';
             const surrounding = fields.bajajSurroundingNature || '{Surrounding Nature}';
-            const jurisdiction = fields.bajajLocationJurisdiction || '{Jurisdiction}';
+            const jurisdiction = fields.bajajJurisdictionMunicipalBody || '{Jurisdiction}';
             const zone = fields.bajajLocationZone || '{Zone}';
             
             const bankName = fields.bankName || 'BAJAJ HOUSING FINANCE LTD';
@@ -2789,11 +2789,11 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
           fields.bajajRemarksIfAny_isManual, fields.bajajRemarksIfAny_isNA,
           fields.bajajPropertyNoOfFloors, fields.bajajPropertyNatureOfProperty,
           fields.bajajValuationLandArea, fields.bajajTotalBUA, fields.bajajAgeOfProperty,
-          fields.bajajPropertyRoadWidth, fields.bajajSurroundingNature, fields.bajajLocationJurisdiction,
+          fields.bajajPropertyRoadWidth, fields.bajajSurroundingNature, fields.bajajJurisdictionMunicipalBody,
           fields.bajajLocationZone, fields.bajajPropertyOccupancyStatus, fields.bankName
         ]);
 
-        const showPanchayat = fields.bajajLocationJurisdiction === 'Gram Panchayat';
+        const showPanchayat = fields.bajajJurisdictionMunicipalBody === 'Gram Panchayat';
 
         return (
           <div className="animate-fade-in space-y-6">
