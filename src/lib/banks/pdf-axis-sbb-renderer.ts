@@ -73,6 +73,36 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     super.drawCenteredTitle(finalTitle, fontSize, isValuationReport ? true : underline);
   }
 
+  override drawSectionHeader(title: string, addSpaceBefore?: boolean, preserveCase?: boolean) {
+    // Intercept standard section 2
+    if (title.toUpperCase() === 'CLIENT & APPLICATION DETAILS') {
+      super.drawSectionHeader('CASE DETAILS & REPORT METADATA', addSpaceBefore, preserveCase);
+      this.drawSbbSection2();
+      return;
+    }
+    super.drawSectionHeader(title, addSpaceBefore, preserveCase);
+  }
+
+  private drawSbbSection2() {
+    const fields = this.fields;
+    const fv = (key: string, defaultVal = 'NA') => String((fields as any)[key] || defaultVal).replace(/[\t\n\r]+/g, ' ').trim() || defaultVal;
+
+    this.drawKeyValueRow([
+      { label: 'Report Reference Number', value: fv('axisSbbReportRefNo') },
+      { label: 'Report Initiated By Area', value: fv('axisSbbReportInitiatedBy') }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Name of Area', value: fv('axisSbbAreaName') },
+      { label: 'Name of Owner', value: fv('axisSbbOwnerName') }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Name of Customer', value: fv('axisSbbCustomerName') },
+      { label: 'Date of Property Visit', value: fv('axisSbbDateOfVisit') }
+    ]);
+    this.drawSimpleRow('Date of Report', fv('axisSbbDateOfReport'));
+    this.drawSimpleRow('Sale Deed Discretions For Which Valuation Done', fv('axisSbbSaleDeedDiscretions'));
+  }
+
   // ─── Cover Page (Page 1) ───────────────────────────────────────────────
   private drawSbbCoverPage() {
     const fields = this.fields;

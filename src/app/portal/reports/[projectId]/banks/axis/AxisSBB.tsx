@@ -9,11 +9,19 @@ export const AXIS_SBB_CONFIG: BankConfig = {
   bankId: 'AXIS BANK',
   subTemplateId: 'SBB',
   displayName: 'Axis Bank — SBB (Small Business Banking)',
-  hiddenSections: ['section-1'],
+  hiddenSections: ['section-1', 'section-2'],
   extraSections: [],
   hiddenFields: ['to', 'dateOfValuation', 'refNo'],
   fieldLabels: {},
   defaultValues: {
+    axisSbbReportRefNo: '',
+    axisSbbReportInitiatedBy: '',
+    axisSbbAreaName: '',
+    axisSbbOwnerName: '',
+    axisSbbCustomerName: '',
+    axisSbbDateOfVisit: '',
+    axisSbbDateOfReport: '',
+    axisSbbSaleDeedDiscretions: '',
     axisSbbPropertyOwners: [{ name: '', relationship: 'S/O', relativeName: '' }],
     axisSbbAddressOfTheProperty: '',
     axisSbbPresentMarketValue: '',
@@ -227,6 +235,50 @@ export const AXIS_SBB_CONFIG: BankConfig = {
               </Field>
               <Field label="Mobile Number">
                 <input className={inputCls} value={fields.axisSbbPreparedByMobile || ''} onChange={e => { handleChange('axisSbbPreparedByMobile', e.target.value.replace(/[a-zA-Z]/g, '')); }} disabled={isReadOnly} />
+              </Field>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'axis-sbb-section-2',
+      title: 'Case Details & Report Metadata',
+      number: 2,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => (
+        <div className="animate-fade-in space-y-6">
+          <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#F3E8FF', borderColor: '#D8B4FE' }}>
+            <h3 className="font-bold text-gray-700 mb-4">CASE DETAILS & REPORT METADATA</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Report Reference Number">
+                <input className={inputCls} value={fields.axisSbbReportRefNo || ''} onChange={e => handleChange('axisSbbReportRefNo', e.target.value)} disabled={isReadOnly} placeholder="E.g., SMA/1/07-26/09" />
+              </Field>
+              <Field label="Report Initiated By Area">
+                <input list="axisSbbInitiatedByList" className={inputCls} value={fields.axisSbbReportInitiatedBy || ''} onChange={e => handleChange('axisSbbReportInitiatedBy', e.target.value)} disabled={isReadOnly} placeholder="E.g., BHUBANESWAR" />
+                <datalist id="axisSbbInitiatedByList">
+                  <option value="BHUBANESWAR" />
+                  <option value="CUTTACK" />
+                  <option value="SAMBALPUR" />
+                </datalist>
+              </Field>
+              <Field label="Name of Area">
+                <input className={inputCls} value={fields.axisSbbAreaName || ''} onChange={e => handleChange('axisSbbAreaName', e.target.value)} disabled={isReadOnly} placeholder="E.g., SAMBALPUR" />
+              </Field>
+              <Field label="Name of Owner">
+                <input className={inputCls} value={fields.axisSbbOwnerName || ''} onChange={e => handleChange('axisSbbOwnerName', e.target.value)} disabled={isReadOnly} placeholder="E.g., TANDRAKALA GOEL & MEENADEVI GOEL" />
+              </Field>
+              <Field label="Name of Customer">
+                <input className={inputCls} value={fields.axisSbbCustomerName || ''} onChange={e => handleChange('axisSbbCustomerName', e.target.value)} disabled={isReadOnly} placeholder="E.g., SHREE MATESWARI ENTERPRISES" />
+              </Field>
+              <Field label="Date of Property Visit">
+                <input type="date" className={inputCls} value={fields.axisSbbDateOfVisit || ''} onChange={e => handleChange('axisSbbDateOfVisit', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Date of Report">
+                <input type="date" className={inputCls} value={fields.axisSbbDateOfReport || ''} onChange={e => handleChange('axisSbbDateOfReport', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Sale Deed Discretions For Which Valuation Done" span={2}>
+                <textarea className={inputCls} rows={2} value={fields.axisSbbSaleDeedDiscretions || ''} onChange={e => handleChange('axisSbbSaleDeedDiscretions', e.target.value)} disabled={isReadOnly} placeholder="E.g., COPY OF SALE DEED, ROR & SKETCH MAP" />
               </Field>
             </div>
           </div>
