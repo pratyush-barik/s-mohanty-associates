@@ -15,15 +15,35 @@ export const AXIS_SBB_CONFIG: BankConfig = {
   fieldLabels: {},
   defaultValues: {
     axisSbbDeedNumberDate: '',
+    axisSbbDeedNumberDateIsNA: false,
+    axisSbbDeedNumberDateEditOn: false,
     axisSbbPlotKhasraNo: '',
+    axisSbbPlotKhasraNoIsNA: false,
+    axisSbbPlotKhasraNoEditOn: false,
     axisSbbRoadWidthMaterial: '',
+    axisSbbRoadWidthMaterialIsNA: false,
     axisSbbColonySector: '',
+    axisSbbColonySectorIsNA: false,
     axisSbbLocalityLandmark: '',
+    axisSbbLocalityLandmarkIsNA: false,
     axisSbbVillageCity: '',
+    axisSbbVillageCityIsNA: false,
+    axisSbbVillageCityEditOn: false,
     axisSbbDistrict: '',
+    axisSbbDistrictIsNA: false,
+    axisSbbDistrictEditOn: false,
+    axisSbbDistrictDropdown: '',
     axisSbbState: 'ODISHA',
+    axisSbbStateIsNA: false,
+    axisSbbStateEditOn: false,
+    axisSbbStateDropdown: 'ODISHA',
     axisSbbPinCode: '',
+    axisSbbPinCodeIsNA: false,
+    axisSbbPinCodeEditOn: false,
     axisSbbDistanceFromCityCenter: '',
+    axisSbbDistanceFromCityCenterIsNA: false,
+    axisSbbDistanceFromCityCenterEditOn: false,
+    axisSbbDistanceKm: '',
     axisSbbPropertyLocation: '',
     axisSbbGoverningBody: '',
     axisSbbTownPlanningSubType: '',
@@ -489,133 +509,307 @@ export const AXIS_SBB_CONFIG: BankConfig = {
       number: 4,
       defaultOpen: true,
       render: (fields, handleChange, isReadOnly) => {
-        const capitalizeWords = (str: string) => {
-          return str.replace(/\b\w/g, char => char.toUpperCase());
+        const address = fields.axisSbbAddressOfTheProperty || '';
+        
+        // Auto-fill computations from address
+        const plotComputed = address.split(/MOUZA|VILLAGE/i)[0].trim().toUpperCase() || 'KHATA NO. XX, PLOT NO. YY';
+        const mouzaMatch = address.match(/(?:MOUZA|VILLAGE)[-\s]*(.*?)(?=,|$|DIST)/i);
+        const mouzaComputed = mouzaMatch ? mouzaMatch[0].toUpperCase() : '';
+        const distMatch = address.match(/DIST(?:RICT)?[-\s]*(.*?)(?=,|-|PIN|$)/i);
+        const distComputed = distMatch ? distMatch[1].trim().toUpperCase() : '';
+        const pinMatch = address.match(/PIN[-\s]*(\d{6})/i);
+        const pinComputed = pinMatch ? pinMatch[1] : '';
+        const distanceKm = fields.axisSbbDistanceKm || '03';
+        const refCity = distComputed || mouzaComputed || 'CITY';
+        const distanceComputed = `${distanceKm}- KMS FROM ${refCity} CITY CENTRE`.toUpperCase();
+
+        const renderNaToggle = (fieldName: string) => (
+          <label className="flex items-center space-x-1.5 text-[10px] uppercase font-bold text-gray-500 cursor-pointer ml-4">
+            <input 
+              type="checkbox" 
+              checked={!!fields[`${fieldName}IsNA`]} 
+              onChange={e => handleChange(`${fieldName}IsNA`, e.target.checked)}
+              disabled={isReadOnly}
+              className="w-3 h-3 text-red-500 rounded focus:ring-red-500 border-gray-300"
+            />
+            <span>NA</span>
+          </label>
+        );
+
+        const renderEditSwitch = (fieldName: string, disabled: boolean) => {
+          const isEditOn = !!fields[`${fieldName}EditOn`];
+          return (
+            <div className="flex items-center space-x-2">
+              <span className="text-[10px] uppercase font-bold text-gray-400">Edit {isEditOn ? 'On' : 'Off'}</span>
+              <button
+                type="button"
+                onClick={() => handleChange(`${fieldName}EditOn`, !isEditOn)}
+                disabled={disabled || isReadOnly}
+                className={`w-8 h-4 rounded-full relative transition-colors ${isEditOn ? 'bg-green-500' : 'bg-gray-300'}`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white transition-transform ${isEditOn ? 'translate-x-4' : ''}`} />
+              </button>
+            </div>
+          );
         };
 
+        const distDropdown = fields.axisSbbDistrictDropdown || '';
+        const stateDropdown = fields.axisSbbStateDropdown || 'ODISHA';
+        
         return (
           <div className="animate-fade-in space-y-6">
             <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FFF7ED', borderColor: '#FED7AA' }}>
               <h3 className="font-bold text-gray-700 mb-4">CADASTRAL & POSTAL ADDRESS DETAILS</h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Lease / Sale Deed Number(s) & Date">
-                  <input
-                    className={inputCls}
-                    required
-                    value={fields.axisSbbDeedNumberDate || ''}
+              <div className="grid grid-cols-1 gap-5">
+                
+                <div className="flex flex-col">
+                  <div className="flex justify-between items-center mb-1">
+                    <div className="flex items-center">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">LEASE/SALE DEED NUMBER(S) & DATE <span className="text-red-500">*</span></label>
+                      {renderNaToggle('axisSbbDeedNumberDate')}
+                    </div>
+                    {renderEditSwitch('axisSbbDeedNumberDate', !!fields.axisSbbDeedNumberDateIsNA)}
+                  </div>
+                  <textarea
+                    className={`${inputCls} resize-y min-h-[40px]`}
+                    rows={1}
+                    value={fields.axisSbbDeedNumberDateIsNA ? 'NA' : (fields.axisSbbDeedNumberDateEditOn ? (fields.axisSbbDeedNumberDate || '') : (fields.axisSbbDeedNumberDate || ''))}
                     onChange={e => handleChange('axisSbbDeedNumberDate', e.target.value.toUpperCase())}
-                    disabled={isReadOnly}
+                    readOnly={!fields.axisSbbDeedNumberDateEditOn || fields.axisSbbDeedNumberDateIsNA}
+                    disabled={isReadOnly || (!fields.axisSbbDeedNumberDateEditOn && !fields.axisSbbDeedNumberDateIsNA)}
                     placeholder="2108, DATED-22.08.2005"
                   />
-                </Field>
-                
-                <Field label="Plot No / S.No / G.No / Khasra No / Patta No">
-                  <input
-                    className={inputCls}
-                    required
-                    value={fields.axisSbbPlotKhasraNo || ''}
+                </div>
+
+                <div className="flex flex-col">
+                  <div className="flex justify-between items-center mb-1">
+                    <div className="flex items-center">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">PLOT NO/ S.NO/ G.NO/ KHASRA NO/PATTA NO <span className="text-red-500">*</span></label>
+                      {renderNaToggle('axisSbbPlotKhasraNo')}
+                    </div>
+                    {renderEditSwitch('axisSbbPlotKhasraNo', !!fields.axisSbbPlotKhasraNoIsNA)}
+                  </div>
+                  <textarea
+                    className={`${inputCls} resize-y min-h-[40px]`}
+                    rows={1}
+                    value={fields.axisSbbPlotKhasraNoIsNA ? 'NA' : (fields.axisSbbPlotKhasraNoEditOn ? (fields.axisSbbPlotKhasraNo || '') : plotComputed)}
                     onChange={e => handleChange('axisSbbPlotKhasraNo', e.target.value.toUpperCase())}
-                    disabled={isReadOnly}
-                    placeholder="KHATA NO. 412, PLOT NO. 1915/3557"
+                    readOnly={!fields.axisSbbPlotKhasraNoEditOn || fields.axisSbbPlotKhasraNoIsNA}
+                    disabled={isReadOnly || (!fields.axisSbbPlotKhasraNoEditOn && !fields.axisSbbPlotKhasraNoIsNA)}
                   />
-                </Field>
+                  <span className="text-[10px] text-gray-400 mt-1">Parsed from Section 1 Address</span>
+                </div>
 
-                <Field label="Road Width & Material">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <div className="flex items-center mb-1">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">ROAD <span className="text-red-500">*</span></label>
+                      {renderNaToggle('axisSbbRoadWidthMaterial')}
+                    </div>
+                    <input
+                      className={inputCls}
+                      required
+                      value={fields.axisSbbRoadWidthMaterialIsNA ? 'NA' : (fields.axisSbbRoadWidthMaterial || '')}
+                      onChange={e => handleChange('axisSbbRoadWidthMaterial', e.target.value.toUpperCase())}
+                      readOnly={fields.axisSbbRoadWidthMaterialIsNA}
+                      disabled={isReadOnly || fields.axisSbbRoadWidthMaterialIsNA}
+                      placeholder="20 FEET WIDE CC ROAD"
+                    />
+                  </div>
+
+                  <div className="flex flex-col">
+                    <div className="flex items-center mb-1">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">COLONY/NAGAR/SECTOR</label>
+                      {renderNaToggle('axisSbbColonySector')}
+                    </div>
+                    <input
+                      className={inputCls}
+                      value={fields.axisSbbColonySectorIsNA ? 'NA' : (fields.axisSbbColonySector || '')}
+                      onChange={e => handleChange('axisSbbColonySector', e.target.value.toUpperCase())}
+                      readOnly={fields.axisSbbColonySectorIsNA}
+                      disabled={isReadOnly || fields.axisSbbColonySectorIsNA}
+                      placeholder="SAMBALPUR"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col">
+                  <div className="flex items-center mb-1">
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">LOCALITY/ LANDMARK <span className="text-red-500">*</span></label>
+                    {renderNaToggle('axisSbbLocalityLandmark')}
+                  </div>
                   <input
                     className={inputCls}
                     required
-                    value={fields.axisSbbRoadWidthMaterial || ''}
-                    onChange={e => handleChange('axisSbbRoadWidthMaterial', e.target.value.toUpperCase())}
-                    disabled={isReadOnly}
-                    placeholder="20 FEET WIDE CC ROAD"
-                  />
-                </Field>
-
-                <Field label="Colony / Nagar / Sector">
-                  <input
-                    className={inputCls}
-                    value={fields.axisSbbColonySector || ''}
-                    onChange={e => handleChange('axisSbbColonySector', e.target.value.toUpperCase())}
-                    disabled={isReadOnly}
-                    placeholder="SAMBALPUR"
-                  />
-                </Field>
-
-                <Field label="Locality / Landmark">
-                  <input
-                    className={inputCls}
-                    required
-                    value={fields.axisSbbLocalityLandmark || ''}
-                    onChange={e => handleChange('axisSbbLocalityLandmark', capitalizeWords(e.target.value))}
-                    disabled={isReadOnly}
+                    value={fields.axisSbbLocalityLandmarkIsNA ? 'NA' : (fields.axisSbbLocalityLandmark || '')}
+                    onChange={e => {
+                      const val = e.target.value;
+                      const cap = val.replace(/\b\w/g, char => char.toUpperCase());
+                      handleChange('axisSbbLocalityLandmark', cap);
+                    }}
+                    readOnly={fields.axisSbbLocalityLandmarkIsNA}
+                    disabled={isReadOnly || fields.axisSbbLocalityLandmarkIsNA}
                     placeholder="Near Pratima Clinic"
                   />
-                </Field>
+                </div>
 
-                <Field label="Village / Town / City (Mouza)">
-                  <input
-                    className={inputCls}
-                    required
-                    value={fields.axisSbbVillageCity || ''}
+                <div className="flex flex-col">
+                  <div className="flex justify-between items-center mb-1">
+                    <div className="flex items-center">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">VILLAGE/TOWN/CITY <span className="text-red-500">*</span></label>
+                      {renderNaToggle('axisSbbVillageCity')}
+                    </div>
+                    {renderEditSwitch('axisSbbVillageCity', !!fields.axisSbbVillageCityIsNA)}
+                  </div>
+                  <textarea
+                    className={`${inputCls} resize-y min-h-[40px]`}
+                    rows={1}
+                    value={fields.axisSbbVillageCityIsNA ? 'NA' : (fields.axisSbbVillageCityEditOn ? (fields.axisSbbVillageCity || '') : mouzaComputed)}
                     onChange={e => handleChange('axisSbbVillageCity', e.target.value.toUpperCase())}
-                    disabled={isReadOnly}
-                    placeholder="MOUZA-SAMBALPUR TOWN UNIT NO-13 BAREIPALI"
+                    readOnly={!fields.axisSbbVillageCityEditOn || fields.axisSbbVillageCityIsNA}
+                    disabled={isReadOnly || (!fields.axisSbbVillageCityEditOn && !fields.axisSbbVillageCityIsNA)}
                   />
-                </Field>
+                  <span className="text-[10px] text-gray-400 mt-1">Parsed from Section 1 Address</span>
+                </div>
 
-                <Field label="District">
-                  <input
-                    className={inputCls}
-                    required
-                    value={fields.axisSbbDistrict || ''}
-                    onChange={e => handleChange('axisSbbDistrict', e.target.value.toUpperCase())}
-                    disabled={isReadOnly}
-                    placeholder="SAMBALPUR"
-                  />
-                </Field>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">DISTRICT <span className="text-red-500">*</span></label>
+                        {renderNaToggle('axisSbbDistrict')}
+                      </div>
+                      {renderEditSwitch('axisSbbDistrict', !!fields.axisSbbDistrictIsNA)}
+                    </div>
+                    <select
+                      className={selectCls}
+                      required
+                      value={fields.axisSbbDistrictIsNA ? 'NA' : (fields.axisSbbDistrictEditOn ? distDropdown : 'AUTO')}
+                      onChange={e => {
+                        const v = e.target.value;
+                        handleChange('axisSbbDistrictDropdown', v);
+                        if (v !== 'CUSTOM') {
+                          handleChange('axisSbbDistrict', v);
+                        }
+                      }}
+                      disabled={isReadOnly || !fields.axisSbbDistrictEditOn || fields.axisSbbDistrictIsNA}
+                    >
+                      {!fields.axisSbbDistrictEditOn && <option value="AUTO">{distComputed}</option>}
+                      <option value="">Select District</option>
+                      <option value="SAMBALPUR">SAMBALPUR</option>
+                      <option value="CUTTACK">CUTTACK</option>
+                      <option value="BHUBANESWAR">BHUBANESWAR</option>
+                      <option value="CUSTOM">Custom...</option>
+                    </select>
+                    {fields.axisSbbDistrictEditOn && distDropdown === 'CUSTOM' && !fields.axisSbbDistrictIsNA && (
+                      <input
+                        className={`${inputCls} mt-2`}
+                        value={fields.axisSbbDistrict || ''}
+                        onChange={e => handleChange('axisSbbDistrict', e.target.value.toUpperCase())}
+                        disabled={isReadOnly}
+                        placeholder="Enter Custom District"
+                      />
+                    )}
+                    <span className="text-[10px] text-gray-400 mt-1">Parsed from Section 1 Address</span>
+                  </div>
 
-                <Field label="State">
-                  <select
-                    className={selectCls}
-                    required
-                    value={fields.axisSbbState || ''}
-                    onChange={e => handleChange('axisSbbState', e.target.value)}
-                    disabled={isReadOnly}
-                  >
-                    <option value="">Select State</option>
-                    <option value="ODISHA">ODISHA</option>
-                    <option value="CHHATTISGARH">CHHATTISGARH</option>
-                    <option value="JHARKHAND">JHARKHAND</option>
-                    <option value="WEST BENGAL">WEST BENGAL</option>
-                    <option value="ANDHRA PRADESH">ANDHRA PRADESH</option>
-                    <option value="TELANGANA">TELANGANA</option>
-                  </select>
-                </Field>
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">STATE <span className="text-red-500">*</span></label>
+                        {renderNaToggle('axisSbbState')}
+                      </div>
+                      {renderEditSwitch('axisSbbState', !!fields.axisSbbStateIsNA)}
+                    </div>
+                    <select
+                      className={selectCls}
+                      required
+                      value={fields.axisSbbStateIsNA ? 'NA' : stateDropdown}
+                      onChange={e => {
+                        const v = e.target.value;
+                        handleChange('axisSbbStateDropdown', v);
+                        if (v !== 'CUSTOM') {
+                          handleChange('axisSbbState', v);
+                        }
+                      }}
+                      disabled={isReadOnly || !fields.axisSbbStateEditOn || fields.axisSbbStateIsNA}
+                    >
+                      <option value="">Select State</option>
+                      <option value="ODISHA">ODISHA</option>
+                      <option value="CHHATTISGARH">CHHATTISGARH</option>
+                      <option value="JHARKHAND">JHARKHAND</option>
+                      <option value="WEST BENGAL">WEST BENGAL</option>
+                      <option value="ANDHRA PRADESH">ANDHRA PRADESH</option>
+                      <option value="TELANGANA">TELANGANA</option>
+                      <option value="CUSTOM">Custom...</option>
+                    </select>
+                    {fields.axisSbbStateEditOn && stateDropdown === 'CUSTOM' && !fields.axisSbbStateIsNA && (
+                      <input
+                        className={`${inputCls} mt-2`}
+                        value={fields.axisSbbState || ''}
+                        onChange={e => handleChange('axisSbbState', e.target.value.toUpperCase())}
+                        disabled={isReadOnly}
+                        placeholder="Enter Custom State"
+                      />
+                    )}
+                  </div>
+                </div>
 
-                <Field label="PIN Code">
-                  <input
-                    className={inputCls}
-                    required
-                    pattern="[0-9]{6}"
-                    maxLength={6}
-                    value={fields.axisSbbPinCode || ''}
-                    onChange={e => handleChange('axisSbbPinCode', e.target.value.replace(/\D/g, ''))}
-                    disabled={isReadOnly}
-                    placeholder="768006"
-                  />
-                </Field>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">PIN CODE <span className="text-red-500">*</span></label>
+                        {renderNaToggle('axisSbbPinCode')}
+                      </div>
+                      {renderEditSwitch('axisSbbPinCode', !!fields.axisSbbPinCodeIsNA)}
+                    </div>
+                    <input
+                      className={inputCls}
+                      required
+                      pattern="[0-9]{6}"
+                      maxLength={6}
+                      value={fields.axisSbbPinCodeIsNA ? 'NA' : (fields.axisSbbPinCodeEditOn ? (fields.axisSbbPinCode || '') : pinComputed)}
+                      onChange={e => handleChange('axisSbbPinCode', e.target.value.replace(/\D/g, ''))}
+                      readOnly={!fields.axisSbbPinCodeEditOn || fields.axisSbbPinCodeIsNA}
+                      disabled={isReadOnly || (!fields.axisSbbPinCodeEditOn && !fields.axisSbbPinCodeIsNA)}
+                      placeholder="768006"
+                    />
+                  </div>
 
-                <Field label="Distance from City Centre">
-                  <input
-                    className={inputCls}
-                    required
-                    value={fields.axisSbbDistanceFromCityCenter || ''}
-                    onChange={e => handleChange('axisSbbDistanceFromCityCenter', e.target.value.toUpperCase())}
-                    disabled={isReadOnly}
-                    placeholder="03- KMS FROM SAMBALPUR CITY CENTRE"
-                  />
-                </Field>
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">DISTANCE <span className="text-red-500">*</span></label>
+                        {renderNaToggle('axisSbbDistanceFromCityCenter')}
+                      </div>
+                      {renderEditSwitch('axisSbbDistanceFromCityCenter', !!fields.axisSbbDistanceFromCityCenterIsNA)}
+                    </div>
+                    {!fields.axisSbbDistanceFromCityCenterEditOn && !fields.axisSbbDistanceFromCityCenterIsNA && (
+                      <div className="flex items-center space-x-2 mb-2">
+                        <input
+                          type="number"
+                          className={`${inputCls} w-20`}
+                          placeholder="KM"
+                          value={fields.axisSbbDistanceKm || ''}
+                          onChange={e => handleChange('axisSbbDistanceKm', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                        <span className="text-xs text-gray-500 font-medium whitespace-nowrap">KM from {refCity}</span>
+                      </div>
+                    )}
+                    <textarea
+                      className={`${inputCls} resize-y min-h-[40px] ${!fields.axisSbbDistanceFromCityCenterEditOn && !fields.axisSbbDistanceFromCityCenterIsNA ? 'bg-amber-50 text-amber-800 border-amber-300' : ''}`}
+                      rows={1}
+                      value={fields.axisSbbDistanceFromCityCenterIsNA ? 'NA' : (fields.axisSbbDistanceFromCityCenterEditOn ? (fields.axisSbbDistanceFromCityCenter || '') : distanceComputed)}
+                      onChange={e => handleChange('axisSbbDistanceFromCityCenter', e.target.value.toUpperCase())}
+                      readOnly={!fields.axisSbbDistanceFromCityCenterEditOn || fields.axisSbbDistanceFromCityCenterIsNA}
+                      disabled={isReadOnly || (!fields.axisSbbDistanceFromCityCenterEditOn && !fields.axisSbbDistanceFromCityCenterIsNA)}
+                    />
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
