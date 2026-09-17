@@ -1688,9 +1688,12 @@ export default function AxisHLLAP({
             </div>
           </div>
 
-          {/* 6g: Recommended / Available Side Margins (Soft Container - Soft Violet) */}
+          {/* F. Recommended / Available Side Margin (Soft Container - Soft Violet) */}
           <div className="pt-2 pb-4 border-b border-slate-200">
             <div className="border border-violet-200 bg-[#FAF5FF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
+              <h3 className="font-semibold text-violet-900 text-sm tracking-wide">
+                F. Recommended / Available Side Margin
+              </h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-3 rounded-lg border border-violet-200/80 shadow-2xs">
                 <Field label="Front">
                   <input
