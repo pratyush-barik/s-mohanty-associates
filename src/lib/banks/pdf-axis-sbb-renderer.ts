@@ -727,12 +727,12 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       ['Building G+1', val('axisSbbValuationBuildingArea', buildingAreaPrefill), val('axisSbbValuationBuildingRate'), numVal('axisSbbValuationBuildingAmount', buildingAmount.toFixed(2))],
       ['Amenities', val('axisSbbValuationAmenitiesArea'), val('axisSbbValuationAmenitiesRate'), numVal('axisSbbValuationAmenitiesAmount', amenitiesAmount.toFixed(2))],
     ];
-    this.drawTable(table91Headers, table91Data);
-    this.y -= 2;
+    this.drawTable(table91Headers, table91Data, [40, 20, 20, 20]);
+    this.cursorY += 2;
     this.drawSimpleRow('Total Valuation 100% Completion (I+II)', numVal('axisSbbValuationTotalAmount', totalAmountComp.toFixed(2)), true, true);
     this.drawSimpleRow('Total Valuation in Say', numVal('axisSbbValuationTotalSayAmount', totalSayComp.toFixed(2)), true, true);
 
-    this.y -= 10;
+    this.cursorY += 10;
     
     // --- Table 9.2 ---
     this.drawSectionSubtitle('Table 9.2: Government Guideline / Benchmark Value');
@@ -741,9 +741,9 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       ['Land', val('axisSbbGovtLandArea', landAreaPrefill), val('axisSbbGovtLandRate'), numVal('axisSbbGovtLandAmount', govtLandAmount.toFixed(2))],
       ['Building', val('axisSbbGovtBuildingArea', buildingAreaPrefill), val('axisSbbGovtBuildingRate'), numVal('axisSbbGovtBuildingAmount', govtBuildingAmount.toFixed(2))],
     ];
-    this.drawTable(table92Headers, table92Data);
+    this.drawTable(table92Headers, table92Data, [40, 20, 20, 20]);
 
-    this.y -= 10;
+    this.cursorY += 10;
 
     // --- Summary Cards ---
     this.drawSectionSubtitle('Final Valuation Summary');
