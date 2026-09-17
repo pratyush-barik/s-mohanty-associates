@@ -6,12 +6,14 @@
 import { PDFDocument, PDFPage, PDFFont, PDFImage, PDFEmbeddedPage, StandardFonts, rgb } from 'pdf-lib';
 
 // ─── Color helpers ──────────────────────────────────────────────────
-export function hexToRgb(hex: string) {
+export function hexToRgb(hex?: string | null) {
+  if (!hex || typeof hex !== 'string') return rgb(0, 0, 0);
   const h = hex.replace('#', '');
+  if (h.length < 6) return rgb(0, 0, 0);
   const r = parseInt(h.substring(0, 2), 16) / 255;
   const g = parseInt(h.substring(2, 4), 16) / 255;
   const b = parseInt(h.substring(4, 6), 16) / 255;
-  return rgb(r, g, b);
+  return rgb(isNaN(r) ? 0 : r, isNaN(g) ? 0 : g, isNaN(b) ? 0 : b);
 }
 
 // ─── Constants ──────────────────────────────────────────────────────
@@ -186,8 +188,9 @@ export class PDFGeneralRenderer {
   }
 
   /** Strip/replace characters that WinAnsi (Helvetica/Times) cannot encode */
-  protected sanitizeText(text: string): string {
-    let clean = String(text ?? '');
+  protected sanitizeText(text?: any): string {
+    if (text === null || text === undefined) return '';
+    let clean = typeof text === 'string' ? text : String(text);
     
     // Decode HTML entities
     clean = clean

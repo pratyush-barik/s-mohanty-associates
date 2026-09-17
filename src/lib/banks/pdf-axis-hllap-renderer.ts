@@ -654,7 +654,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
           { text: 'Plot', bold: true },
           { text: '/flat' },
         ];
-    this.drawHLLAPRichLabelRow('a.', areaSegments, fields.plotAreaDocs || 'NA', false, true);
+    this.drawHLLAPRichLabelRow('a.', areaSegments, fields.plotAreaDocs || 'NA', true);
     this.drawHLLAPRow('b.', 'Demarcation at Site', fields.demarcationAtSite || 'NA');
 
     // 6c. Approved Built up Area & Floor-wise break up
@@ -713,7 +713,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
           { text: 'Plot', bold: true },
           { text: '/Flat' },
         ];
-    this.drawHLLAPRichLabelRow('a.', rateSegments, fields.recommendedRatePerSqft || 'NA');
+    this.drawHLLAPRichLabelRow('a.', rateSegments, fields.recommendedRatePerSqft || 'NA', false);
 
     const valSegments = isFlat
       ? [
@@ -725,7 +725,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
           { text: 'Plot', bold: true },
           { text: '/Flat' },
         ];
-    this.drawHLLAPRichLabelRow('b.', valSegments, fields.valueOfPlotFlat || 'NA', false, true);
+    this.drawHLLAPRichLabelRow('b.', valSegments, fields.valueOfPlotFlat || 'NA', true);
     this.drawHLLAPRow('c.', 'Estimated Cost of construction', fields.estimatedCostOfConstruction || 'NA', false, true);
     this.drawHLLAPRow(
       'd.',

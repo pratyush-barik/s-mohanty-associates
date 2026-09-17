@@ -327,12 +327,13 @@ export default function AxisHLLAP({
 
   // Auto-calculation engine for Valuation
   const handleAutoCalculate = () => {
+    const selectedUnit = fields.plotOrFlat || 'Plot';
     const pArea = parseNum(fields.plotAreaForValuation) || parseNum(fields.plotAreaDocs);
     const pRate = parseNum(fields.plotRateForValuation);
     const pVal = pArea * pRate;
 
     const buaTotal = parseNum(fields.approvedBUATotal) || parseNum(fields.measuredBUATotal);
-    const cRate = parseNum(fields.recommendedRatePerSqft) || parseNum(fields.estimatedCostOfConstruction) || 2000;
+    const cRate = parseNum(fields.estimatedCostOfConstruction) || parseNum(fields.recommendedRatePerSqft) || 2000;
     const cVal = buaTotal * cRate;
 
     const currentTotal = pVal + cVal;
@@ -348,23 +349,48 @@ export default function AxisHLLAP({
 
     const distressedVal = Math.round((fields.isUnderConstruction ? currentAsOnDate : currentTotal) * 0.80);
 
+    const recRateDesc = pRate && cRate
+      ? `${selectedUnit}- Rs. ${pRate}/-per sqft & Building Rs. ${cRate}/-per sqft`
+      : pRate
+      ? `${selectedUnit}- Rs. ${pRate}/-per sqft`
+      : fields.recommendedRatePerSqft;
+
+    const valPlotFlatStr = pArea && pRate
+      ? `Value of ${selectedUnit}-${pArea}X Rs.${pRate}/- = Rs.${formatIndianCurrency(pVal)}/-`
+      : fields.valueOfPlotFlat;
+
+    const totalConstStr = buaTotal && cRate
+      ? `${buaTotal}sqft@ Rs.${cRate}/-=Rs.${formatIndianCurrency(cVal)}/-`
+      : fields.totalCostOfConstruction;
+
+    const cRateAsOnDate = Math.round(cRate * (pct / 100));
+    const constAsOnDateStr = fields.isUnderConstruction && buaTotal
+      ? `${buaTotal}sqft@ Rs.${cRateAsOnDate}/-= Rs.${formatIndianCurrency(cValAsOnDate)}/-`
+      : '';
+
+    const currentValStr = pVal || cVal
+      ? `Rs.${formatIndianCurrency(pVal)}/- + Rs.${formatIndianCurrency(cVal)}/- =Rs.${formatIndianCurrency(currentTotal)}/-`
+      : fields.currentValueOfProperty;
+
+    const currentValAsOnDateStr = fields.isUnderConstruction && (pVal || cValAsOnDate)
+      ? `Rs.${formatIndianCurrency(pVal)}/- + Rs.${formatIndianCurrency(cValAsOnDate)}/- =Rs.${formatIndianCurrency(currentAsOnDate)}/-`
+      : '';
+
+    const distressedStr = (fields.isUnderConstruction ? currentAsOnDate : currentTotal) > 0
+      ? `Rs.${formatIndianCurrency(distressedVal)}/-`
+      : fields.distressedValuation;
+
     setFields(prev => ({
       ...prev,
       plotAreaForValuation: prev.plotAreaForValuation || (pArea > 0 ? String(pArea) : ''),
-      valueOfPlotFlat: pArea && pRate ? `Value of Plot-${pArea}X Rs.${pRate}/- = Rs.${formatIndianCurrency(pVal)}/-` : prev.valueOfPlotFlat,
-      totalCostOfConstruction: buaTotal && cRate
-        ? (prev.isUnderConstruction
-            ? `${buaTotal}sqft@ Rs.${cRate}/-=Rs.${formatIndianCurrency(cVal)}/-`
-            : `${buaTotal}sqft@ Rs.${cRate}/-=Rs.${formatIndianCurrency(cVal)}/-`)
-        : prev.totalCostOfConstruction,
-      constructionCostAsOnDate: prev.isUnderConstruction && buaTotal
-        ? `${buaTotal}sqft@ Rs.${Math.round(cRate * (pct / 100))}/-= Rs.${formatIndianCurrency(cValAsOnDate)}/-`
-        : '',
-      currentValueOfProperty: pVal || cVal ? `Rs.${formatIndianCurrency(pVal)}/- + Rs.${formatIndianCurrency(cVal)}/- =Rs.${formatIndianCurrency(currentTotal)}/-` : prev.currentValueOfProperty,
-      currentValueAsOnDate: prev.isUnderConstruction && (pVal || cValAsOnDate)
-        ? `Rs.${formatIndianCurrency(pVal)}/- + Rs.${formatIndianCurrency(cValAsOnDate)}/- =Rs.${formatIndianCurrency(currentAsOnDate)}/-`
-        : '',
-      distressedValuation: (fields.isUnderConstruction ? currentAsOnDate : currentTotal) > 0 ? `Rs.${formatIndianCurrency(distressedVal)}/-` : prev.distressedValuation,
+      recommendedRatePerSqft: recRateDesc || prev.recommendedRatePerSqft,
+      valueOfPlotFlat: valPlotFlatStr || prev.valueOfPlotFlat,
+      estimatedCostOfConstruction: prev.estimatedCostOfConstruction || (cRate > 0 ? `Rs. ${cRate}/- per sqft` : ''),
+      totalCostOfConstruction: totalConstStr || prev.totalCostOfConstruction,
+      constructionCostAsOnDate: constAsOnDateStr,
+      currentValueOfProperty: currentValStr || prev.currentValueOfProperty,
+      currentValueAsOnDate: currentValAsOnDateStr,
+      distressedValuation: distressedStr || prev.distressedValuation,
     }));
   };
 
@@ -601,7 +627,8 @@ export default function AxisHLLAP({
     { id: 'axis-sec3', title: 'Approval Details (5)' },
     { id: 'axis-sec4', title: 'Construction & Built-Up Area (6)' },
     { id: 'axis-sec5', title: 'Recommended Valuation (7–10)' },
-    { id: 'axis-sec6', title: 'Remarks & Undertaking (11–12)' },
+    { id: 'axis-sec6', title: 'Attachments & Remarks (11–12)' },
+    { id: 'axis-sec7', title: 'Undertaking & Valuer Signatory' },
     { id: 'axis-photos', title: 'Property Photographs' },
     { id: 'axis-maps', title: 'Location & Sketch Maps' },
   ];
@@ -671,9 +698,9 @@ export default function AxisHLLAP({
 
         {/* SECTION 1: Applicant & Application Details (1 – 3) */}
         <Section id="axis-sec1" title="Applicant & Application Details (1 – 3)" number={1} defaultOpen={true}>
-          {/* Header Reference & Date of Report (Soft Container) */}
+          {/* Header Reference & Date of Report (Soft Container - Sky Blue) */}
           <div className="pb-4 border-b border-slate-200">
-            <div className="border border-blue-100/80 bg-[#F0F7FF] rounded-xl p-4 sm:p-5 shadow-2xs">
+            <div className="border border-sky-200 bg-[#F0F9FF] rounded-xl p-4 sm:p-5 shadow-2xs">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="Reference Number">
                   <input
@@ -693,10 +720,10 @@ export default function AxisHLLAP({
             </div>
           </div>
 
-          {/* Point 1: Customer Details (Soft Container - Light Coloured) */}
+          {/* Point 1: Customer Details (Soft Container - Soft Indigo) */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="border border-[#B9DBFE] bg-[#F0F7FF] rounded-xl p-4 sm:p-5 shadow-2xs">
-              <div className="text-xs font-bold text-blue-900 uppercase tracking-wider mb-3">
+            <div className="border border-indigo-200 bg-[#EEF2FF] rounded-xl p-4 sm:p-5 shadow-2xs">
+              <div className="text-xs font-bold text-indigo-900 uppercase tracking-wider mb-3">
                 1. Customer Details
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -765,9 +792,9 @@ export default function AxisHLLAP({
             </Field>
           </div>
 
-          {/* 4a - 4m: Locational & Infrastructure Details (Soft Container) */}
+          {/* 4a - 4m: Locational & Infrastructure Details (Soft Container - Cool Slate) */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="border border-[#E2E8F0] bg-[#F8FAFC] rounded-xl p-4 sm:p-5 shadow-2xs">
+            <div className="border border-slate-200 bg-[#F8FAFC] rounded-xl p-4 sm:p-5 shadow-2xs">
               <div className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
                 Locational &amp; Infrastructure Details (a – m)
               </div>
@@ -922,9 +949,9 @@ export default function AxisHLLAP({
             </div>
           </div>
 
-          {/* n. Boundaries Comparison Table (Soft Container) */}
+          {/* n. Boundaries Comparison Table (Soft Container - Soft Purple) */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="border border-[#E9D5FF] bg-[#FAF5FF] rounded-xl p-5 shadow-2xs">
+            <div className="border border-purple-200 bg-[#FAF5FF] rounded-xl p-5 shadow-2xs">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-purple-900 text-sm tracking-wide uppercase">
                   n. Boundaries of Property (Deed vs Actual vs Sketch Map)
@@ -1088,10 +1115,10 @@ export default function AxisHLLAP({
             </div>
           </div>
 
-          {/* 4o - 4s: Property Attributes & Usage (Soft Container) */}
+          {/* 4o - 4s: Property Attributes & Usage (Soft Container - Soft Emerald) */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="border border-[#C7D2FE] bg-[#EEF2FF] rounded-xl p-4 sm:p-5 shadow-2xs">
-              <div className="text-xs font-bold text-indigo-900 uppercase tracking-wider mb-3">
+            <div className="border border-emerald-200 bg-[#ECFDF5] rounded-xl p-4 sm:p-5 shadow-2xs">
+              <div className="text-xs font-bold text-emerald-900 uppercase tracking-wider mb-3">
                 Property Attributes &amp; Usage (o – s)
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1172,10 +1199,10 @@ export default function AxisHLLAP({
             </div>
           </div>
 
-          {/* 4t - 4y: Structure, Occupancy & Utilities (Soft Container) */}
+          {/* 4t - 4y: Structure, Occupancy & Utilities (Soft Container - Warm Amber) */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="border border-[#BAE6FD] bg-[#F0F9FF] rounded-xl p-4 sm:p-5 shadow-2xs">
-              <div className="text-xs font-bold text-sky-900 uppercase tracking-wider mb-3">
+            <div className="border border-amber-200 bg-[#FFFBEB] rounded-xl p-4 sm:p-5 shadow-2xs">
+              <div className="text-xs font-bold text-amber-900 uppercase tracking-wider mb-3">
                 Structure, Occupancy &amp; Utilities (t – y)
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1249,10 +1276,10 @@ export default function AxisHLLAP({
             </div>
           </div>
 
-          {/* z. Longitude & Latitude Coordinates (Soft Container) */}
+          {/* z. Longitude & Latitude Coordinates (Soft Container - Soft Cyan) */}
           <div className="pt-2">
-            <div className="border border-[#B9DBFE] bg-[#F0F7FF] rounded-xl p-5 shadow-2xs">
-              <h3 className="font-semibold text-blue-900 mb-3 text-sm tracking-wide uppercase">
+            <div className="border border-cyan-200 bg-[#ECFEFF] rounded-xl p-5 shadow-2xs">
+              <h3 className="font-semibold text-cyan-900 mb-3 text-sm tracking-wide uppercase">
                 z. Longitude &amp; Latitude Coordinates
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1295,9 +1322,9 @@ export default function AxisHLLAP({
             </Field>
           </div>
 
-          {/* 5a - 5c: Layout Approval Sub-Container with 5b-5c Sub-Subcontainer */}
+          {/* 5a - 5c: Layout Approval Sub-Container (Soft Blue) with 5b-5c Sub-Subcontainer */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="border border-blue-100 bg-[#F0F7FF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
+            <div className="border border-blue-200 bg-[#F0F7FF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
               <div className="text-xs font-bold text-blue-900 uppercase tracking-wider">
                 Layout Approval Details (a – c)
               </div>
@@ -1330,10 +1357,10 @@ export default function AxisHLLAP({
             </div>
           </div>
 
-          {/* 5d - 5f: Building Plan Approval Sub-Container with 5e-5f Sub-Subcontainer */}
+          {/* 5d - 5f: Building Plan Approval Sub-Container (Soft Teal) with 5e-5f Sub-Subcontainer */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="border border-emerald-100 bg-[#ECFDF5] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
-              <div className="text-xs font-bold text-emerald-900 uppercase tracking-wider">
+            <div className="border border-teal-200 bg-[#F0FDFA] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
+              <div className="text-xs font-bold text-teal-900 uppercase tracking-wider">
                 Building Plan Approval Details (d – f)
               </div>
               <Field label="d. Building Plan Approval No">
@@ -1347,8 +1374,8 @@ export default function AxisHLLAP({
               </Field>
 
               {/* 5e - 5f Sub-Subcontainer */}
-              <div className="border border-emerald-200/80 bg-white rounded-lg p-3.5 sm:p-4 shadow-2xs">
-                <div className="text-[11px] font-semibold text-emerald-800 uppercase tracking-wide mb-2.5">
+              <div className="border border-teal-200/80 bg-white rounded-lg p-3.5 sm:p-4 shadow-2xs">
+                <div className="text-[11px] font-semibold text-teal-800 uppercase tracking-wide mb-2.5">
                   Approval Validity (e – f)
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1365,10 +1392,10 @@ export default function AxisHLLAP({
             </div>
           </div>
 
-          {/* 5g - 5h: Construction Timeline Sub-Container */}
+          {/* 5g - 5h: Construction Timeline Sub-Container (Soft Rose) */}
           <div className="pt-2">
-            <div className="border border-amber-100 bg-[#FFFBEB] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
-              <div className="text-xs font-bold text-amber-900 uppercase tracking-wider">
+            <div className="border border-rose-200 bg-[#FFF1F2] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
+              <div className="text-xs font-bold text-rose-900 uppercase tracking-wider">
                 Construction Timeline (g – h)
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1388,60 +1415,65 @@ export default function AxisHLLAP({
 
         {/* SECTION 4: Construction Details & Built-Up Area (6) */}
         <Section id="axis-sec4" title="Construction Details & Built-Up Area (6)" number={4} defaultOpen={true}>
-          {/* 6a - 6b: Plot / Flat Area & Demarcation */}
+          {/* 6a - 6b: Plot / Flat Area & Demarcation (Soft Container - Soft Indigo) */}
           <div className="pb-4 border-b border-slate-200">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="a. Area of the Plot / Flat (as per documents)">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-lg w-fit border border-slate-200">
-                    <button
-                      type="button"
-                      onClick={() => handleChange('plotOrFlat', 'Plot')}
+            <div className="border border-indigo-200 bg-[#EEF2FF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
+              <div className="text-xs font-bold text-indigo-900 uppercase tracking-wider">
+                6a – 6b. Property Type, Area &amp; Demarcation
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="a. Area of the Plot / Flat (as per documents)">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-1.5 p-1 bg-white rounded-lg w-fit border border-indigo-200 shadow-2xs">
+                      <button
+                        type="button"
+                        onClick={() => handleChange('plotOrFlat', 'Plot')}
+                        disabled={isReadOnly}
+                        className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                          (fields.plotOrFlat || 'Plot') === 'Plot'
+                            ? 'bg-blue-600 text-white shadow-xs'
+                            : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        Plot
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleChange('plotOrFlat', 'Flat')}
+                        disabled={isReadOnly}
+                        className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                          fields.plotOrFlat === 'Flat'
+                            ? 'bg-blue-600 text-white shadow-xs'
+                            : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        Flat
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      value={fields.plotAreaDocs}
+                      onChange={e => handleChange('plotAreaDocs', e.target.value)}
+                      className={inputCls}
                       disabled={isReadOnly}
-                      className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
-                        (fields.plotOrFlat || 'Plot') === 'Plot'
-                          ? 'bg-blue-600 text-white shadow-xs'
-                          : 'text-slate-600 hover:text-slate-900'
-                      }`}
-                    >
-                      Plot
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleChange('plotOrFlat', 'Flat')}
-                      disabled={isReadOnly}
-                      className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
-                        fields.plotOrFlat === 'Flat'
-                          ? 'bg-blue-600 text-white shadow-xs'
-                          : 'text-slate-600 hover:text-slate-900'
-                      }`}
-                    >
-                      Flat
-                    </button>
+                      placeholder="e.g. 1500 sqft"
+                    />
                   </div>
-                  <input
-                    type="text"
-                    value={fields.plotAreaDocs}
-                    onChange={e => handleChange('plotAreaDocs', e.target.value)}
-                    className={inputCls}
-                    disabled={isReadOnly}
-                    placeholder="e.g. 1500 sqft"
-                  />
-                </div>
-              </Field>
+                </Field>
 
-              <Field label="b. Demarcation at Site">
-                <select
-                  value={fields.demarcationAtSite}
-                  onChange={e => handleChange('demarcationAtSite', e.target.value)}
-                  className={selectCls}
-                  disabled={isReadOnly}
-                >
-                  <option value="Yes">Yes</option>
-                  <option value="No">No</option>
-                  <option value="Partial">Partial</option>
-                </select>
-              </Field>
+                <Field label="b. Demarcation at Site">
+                  <select
+                    value={fields.demarcationAtSite}
+                    onChange={e => handleChange('demarcationAtSite', e.target.value)}
+                    className={selectCls}
+                    disabled={isReadOnly}
+                  >
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                    <option value="Partial">Partial</option>
+                  </select>
+                </Field>
+              </div>
             </div>
           </div>
 
@@ -1623,40 +1655,45 @@ export default function AxisHLLAP({
             </div>
           </div>
 
-          {/* 6e - 6f: Plan Compliance & Extra Construction */}
+          {/* 6e - 6f: Plan Compliance & Extra Construction (Soft Container - Cool Slate) */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="e. Construction as per Approved Building Plan">
-                <select
-                  value={fields.isConstructionAsPerPlan}
-                  onChange={e => handleChange('isConstructionAsPerPlan', e.target.value)}
-                  className={selectCls}
-                  disabled={isReadOnly}
-                >
-                  <option value="Yes (As per approved plan)">Yes (As per approved plan)</option>
-                  <option value="As per plan">As per plan</option>
-                  <option value="Deviation observed">Deviation observed</option>
-                  <option value="Unauthorized construction">Unauthorized construction</option>
-                </select>
-              </Field>
+            <div className="border border-slate-200 bg-[#F8FAFC] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
+              <div className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                6e – 6f. Plan Compliance &amp; Extra Construction
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="e. Construction as per Approved Building Plan">
+                  <select
+                    value={fields.isConstructionAsPerPlan}
+                    onChange={e => handleChange('isConstructionAsPerPlan', e.target.value)}
+                    className={selectCls}
+                    disabled={isReadOnly}
+                  >
+                    <option value="Yes (As per approved plan)">Yes (As per approved plan)</option>
+                    <option value="As per plan">As per plan</option>
+                    <option value="Deviation observed">Deviation observed</option>
+                    <option value="Unauthorized construction">Unauthorized construction</option>
+                  </select>
+                </Field>
 
-              <Field label="f. Details of Extra Construction">
-                <input
-                  type="text"
-                  value={fields.detailsOfExtraConstruction}
-                  onChange={e => handleChange('detailsOfExtraConstruction', e.target.value)}
-                  className={inputCls}
-                  disabled={isReadOnly}
-                />
-              </Field>
+                <Field label="f. Details of Extra Construction">
+                  <input
+                    type="text"
+                    value={fields.detailsOfExtraConstruction}
+                    onChange={e => handleChange('detailsOfExtraConstruction', e.target.value)}
+                    className={inputCls}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+              </div>
             </div>
           </div>
 
-          {/* 6g: Recommended / Available Side Margins (Soft Container) */}
+          {/* 6g: Recommended / Available Side Margins (Soft Container - Soft Violet) */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="border border-violet-100 bg-[#FAF5FF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
+            <div className="border border-violet-200 bg-[#FAF5FF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
               <div className="text-xs font-bold text-violet-900 uppercase tracking-wider">
-                g. Recommended / Available Side Margins (Setbacks)
+                6g. Recommended / Available Side Margins (Setbacks)
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-3 rounded-lg border border-violet-200/80 shadow-2xs">
                 <Field label="Front">
@@ -1699,11 +1736,11 @@ export default function AxisHLLAP({
             </div>
           </div>
 
-          {/* 6h - 6i: Construction Quality & Maintenance (Soft Container) */}
+          {/* 6h - 6i: Construction Quality & Maintenance (Soft Container - Soft Emerald) */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="border border-teal-100 bg-[#F0FDFA] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
-              <div className="text-xs font-bold text-teal-900 uppercase tracking-wider">
-                Construction Quality &amp; Maintenance (h – i)
+            <div className="border border-emerald-200 bg-[#ECFDF5] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
+              <div className="text-xs font-bold text-emerald-900 uppercase tracking-wider">
+                6h – 6i. Construction Quality &amp; Maintenance
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="h. Quality of Construction">
@@ -1741,11 +1778,11 @@ export default function AxisHLLAP({
             </div>
           </div>
 
-          {/* 6j - 6k: Structure Life Assessment (Soft Container) */}
+          {/* 6j - 6k: Structure Life Assessment (Soft Container - Sky Blue) */}
           <div className="pt-2">
-            <div className="border border-sky-100 bg-[#F0F9FF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
+            <div className="border border-sky-200 bg-[#F0F9FF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
               <div className="text-xs font-bold text-sky-900 uppercase tracking-wider">
-                Structure Life Assessment (j – k)
+                6j – 6k. Structure Life Assessment
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="j. Current Life of Structure">
@@ -1776,303 +1813,374 @@ export default function AxisHLLAP({
 
         {/* SECTION 5: Recommended Valuation & Statutory Rates (7 – 10) */}
         <Section id="axis-sec5" title="Recommended Valuation & Statutory Rates (7 – 10)" number={5} defaultOpen={true}>
-          {/* Construction Status Toggle & Auto Calculate */}
-          <div className="p-4 bg-[#F8FAFC] rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-4 mb-5 shadow-2xs">
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-bold text-slate-700 uppercase">Valuation Mode:</span>
-              <button
-                type="button"
-                onClick={() => handleChange('isUnderConstruction', !fields.isUnderConstruction)}
-                disabled={isReadOnly}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-all cursor-pointer ${
-                  fields.isUnderConstruction
-                    ? 'bg-amber-500 text-white'
-                    : 'bg-emerald-600 text-white'
-                }`}
-              >
-                {fields.isUnderConstruction ? '🏗️ Under-Construction (< 100%)' : '✅ 100% Completed Property'}
-              </button>
-            </div>
-            <button
-              type="button"
-              onClick={handleAutoCalculate}
-              disabled={isReadOnly}
-              className="px-4 py-2 bg-[#b8860b] hover:bg-[#8a6507] text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-2 cursor-pointer"
-            >
-              ⚡ Auto-Calculate Valuation
-            </button>
-          </div>
+          {(() => {
+            const selectedUnit = fields.plotOrFlat || 'Plot';
+            const pArea = parseNum(fields.plotAreaForValuation) || parseNum(fields.plotAreaDocs);
+            const pRate = parseNum(fields.plotRateForValuation);
+            const pVal = pArea * pRate;
+            const buaTotal = parseNum(fields.approvedBUATotal) || parseNum(fields.measuredBUATotal);
+            const cRate = parseNum(fields.estimatedCostOfConstruction) || parseNum(fields.recommendedRatePerSqft) || 2000;
+            const cVal = buaTotal * cRate;
+            const total100 = pVal + cVal;
+            const pct = parseNum(fields.percentWorkCompleted) || 100;
+            const cValAsOnDate = Math.round(cVal * (pct / 100));
+            const totalAsOnDate = pVal + cValAsOnDate;
+            const distressedVal = Math.round((fields.isUnderConstruction ? totalAsOnDate : total100) * 0.80);
 
-          {/* 7a - 7d: Plot & Construction Valuation */}
-          <div className="pb-4 border-b border-slate-200">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Field label="Plot Area for Valuation (sqft)">
-                <input
-                  type="text"
-                  value={fields.plotAreaForValuation}
-                  onChange={e => handleChange('plotAreaForValuation', e.target.value)}
-                  className={inputCls}
-                  disabled={isReadOnly}
-                />
-              </Field>
-
-              <Field label="Plot Rate (Rs./sqft)">
-                <input
-                  type="text"
-                  value={fields.plotRateForValuation}
-                  onChange={e => handleChange('plotRateForValuation', e.target.value)}
-                  className={inputCls}
-                  disabled={isReadOnly}
-                />
-              </Field>
-
-              <Field label="a. Recommended Rate Description">
-                <input
-                  type="text"
-                  value={fields.recommendedRatePerSqft}
-                  onChange={e => handleChange('recommendedRatePerSqft', e.target.value)}
-                  className={inputCls}
-                  disabled={isReadOnly}
-                />
-              </Field>
-
-              <Field span={3} label="b. Value of the Plot / Flat">
-                <input
-                  type="text"
-                  value={fields.valueOfPlotFlat}
-                  onChange={e => handleChange('valueOfPlotFlat', e.target.value)}
-                  className={inputCls}
-                  disabled={isReadOnly}
-                />
-              </Field>
-
-              <Field label="c. Estimated Cost of Construction">
-                <input
-                  type="text"
-                  value={fields.estimatedCostOfConstruction}
-                  onChange={e => handleChange('estimatedCostOfConstruction', e.target.value)}
-                  className={inputCls}
-                  disabled={isReadOnly}
-                />
-              </Field>
-
-              <Field span={2} label="d. Total Cost of Construction (100% Completion)">
-                <input
-                  type="text"
-                  value={fields.totalCostOfConstruction}
-                  onChange={e => handleChange('totalCostOfConstruction', e.target.value)}
-                  className={inputCls}
-                  disabled={isReadOnly}
-                />
-              </Field>
-            </div>
-          </div>
-
-          {/* Under-Construction Valuation Breakdown (Soft Container) */}
-          {fields.isUnderConstruction && (
-            <div className="pt-2 pb-4 border-b border-slate-200">
-              <div className="border border-amber-200 bg-[#FFFBEB] rounded-xl p-5 shadow-2xs">
-                <h3 className="font-semibold text-amber-900 mb-3 text-sm tracking-wide uppercase">
-                  Under-Construction Valuation Breakdown
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Field label="e. Stage of Construction">
-                    <input
-                      type="text"
-                      value={fields.stageOfConstruction}
-                      onChange={e => handleChange('stageOfConstruction', e.target.value)}
-                      className={inputCls}
+            return (
+              <div className="space-y-5">
+                {/* Valuation Controls & Quick Action Banner (Soft Container - Warm Amber) */}
+                <div className="border border-amber-200 bg-[#FFFBEB] rounded-xl p-4 sm:p-5 shadow-2xs flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="text-xs font-bold text-amber-950 uppercase tracking-wide">Valuation Mode:</span>
+                    <button
+                      type="button"
+                      onClick={() => handleChange('isUnderConstruction', !fields.isUnderConstruction)}
                       disabled={isReadOnly}
+                      className={`px-3.5 py-1.5 rounded-lg text-xs font-bold shadow-xs transition-all cursor-pointer ${
+                        fields.isUnderConstruction
+                          ? 'bg-amber-600 text-white hover:bg-amber-700 ring-2 ring-amber-300'
+                          : 'bg-emerald-600 text-white hover:bg-emerald-700 ring-2 ring-emerald-300'
+                      }`}
+                    >
+                      {fields.isUnderConstruction ? '🏗️ Under-Construction (< 100%)' : '✅ 100% Completed Property'}
+                    </button>
+                    <div className="text-[11px] font-semibold text-amber-900 bg-white px-2.5 py-1 rounded-md border border-amber-200/80">
+                      Unit: <strong className="text-blue-700">{selectedUnit}</strong> | BUA Total: <strong className="text-slate-800">{buaTotal ? `${buaTotal} sqft` : '0 sqft'}</strong>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleAutoCalculate}
+                    disabled={isReadOnly}
+                    className="px-4 py-2 bg-[#b8860b] hover:bg-[#8a6507] text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-2 cursor-pointer active:scale-95"
+                  >
+                    <span>⚡</span> Auto-Calculate All Formulas
+                  </button>
+                </div>
+
+                {/* 7a - 7b: Plot / Flat Area, Rate & Valuation (Soft Container - Soft Blue) */}
+                <div className="border border-blue-200 bg-[#F0F7FF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="text-xs font-bold text-blue-900 uppercase tracking-wider">
+                      7a – 7b. {selectedUnit} Valuation
+                    </div>
+                    {pVal > 0 && (
+                      <span className="text-[11px] font-semibold bg-white text-blue-800 px-2.5 py-0.5 rounded-full border border-blue-200">
+                        {pArea} sqft × Rs. {pRate}/sqft = <strong className="text-blue-950">Rs. {formatIndianCurrency(pVal)}/-</strong>
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Field label={`${selectedUnit} Area for Valuation (sqft)`}>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={fields.plotAreaForValuation}
+                          onChange={e => handleChange('plotAreaForValuation', e.target.value)}
+                          className={inputCls}
+                          disabled={isReadOnly}
+                          placeholder={fields.plotAreaDocs ? `From 6a: ${fields.plotAreaDocs}` : '0'}
+                        />
+                        {!fields.plotAreaForValuation && fields.plotAreaDocs && !isReadOnly && (
+                          <button
+                            type="button"
+                            onClick={() => handleChange('plotAreaForValuation', parseNum(fields.plotAreaDocs))}
+                            className="text-[10px] text-blue-600 hover:text-blue-800 font-bold mt-1 inline-block cursor-pointer"
+                          >
+                            ↳ Use 6a Area ({fields.plotAreaDocs})
+                          </button>
+                        )}
+                      </div>
+                    </Field>
+
+                    <Field label={`${selectedUnit} Rate (Rs. / sqft)`}>
+                      <input
+                        type="text"
+                        value={fields.plotRateForValuation}
+                        onChange={e => handleChange('plotRateForValuation', e.target.value)}
+                        className={inputCls}
+                        disabled={isReadOnly}
+                        placeholder="e.g. 850"
+                      />
+                    </Field>
+
+                    <Field label="7a. Recommended Rate Description">
+                      <input
+                        type="text"
+                        value={fields.recommendedRatePerSqft}
+                        onChange={e => handleChange('recommendedRatePerSqft', e.target.value)}
+                        className={inputCls}
+                        disabled={isReadOnly}
+                        placeholder={`e.g. ${selectedUnit}- Rs. 850/-per sqft & Building Rs. 2000/-per sqft`}
+                      />
+                    </Field>
+
+                    <Field span={3} label={`7b. Value of the ${selectedUnit}`}>
+                      <input
+                        type="text"
+                        value={fields.valueOfPlotFlat}
+                        onChange={e => handleChange('valueOfPlotFlat', e.target.value)}
+                        className={inputCls + ' font-medium text-slate-900'}
+                        disabled={isReadOnly}
+                        placeholder={`e.g. Value of ${selectedUnit}-1500X Rs.850/- = Rs.12,75,000/-`}
+                      />
+                    </Field>
+                  </div>
+                </div>
+
+                {/* 7c - 7d: Structure Construction Cost Valuation (Soft Container - Soft Teal) */}
+                <div className="border border-teal-200 bg-[#F0FDFA] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="text-xs font-bold text-teal-900 uppercase tracking-wider">
+                      7c – 7d. Structure Construction Cost Valuation (100% Basis)
+                    </div>
+                    {cVal > 0 && (
+                      <span className="text-[11px] font-semibold bg-white text-teal-800 px-2.5 py-0.5 rounded-full border border-teal-200">
+                        {buaTotal} sqft × Rs. {cRate}/sqft = <strong className="text-teal-950">Rs. {formatIndianCurrency(cVal)}/-</strong>
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Field label="7c. Estimated Cost of Construction (Rate/sqft)">
+                      <input
+                        type="text"
+                        value={fields.estimatedCostOfConstruction}
+                        onChange={e => handleChange('estimatedCostOfConstruction', e.target.value)}
+                        className={inputCls}
+                        disabled={isReadOnly}
+                        placeholder="e.g. Rs. 2000/- per sqft"
+                      />
+                    </Field>
+
+                    <Field label="BUA Basis (from 6c / 6d)">
+                      <div className="px-3 py-2 bg-white rounded-lg border border-teal-200/80 text-xs font-semibold text-slate-700">
+                        Appr: <span className="font-mono text-teal-900 font-bold">{fields.approvedBUATotal || '0'} sqft</span> | Meas: <span className="font-mono text-teal-900 font-bold">{fields.measuredBUATotal || '0'} sqft</span>
+                      </div>
+                    </Field>
+
+                    <Field span={3} label="7d. Total Cost of Construction (100% Completion)">
+                      <input
+                        type="text"
+                        value={fields.totalCostOfConstruction}
+                        onChange={e => handleChange('totalCostOfConstruction', e.target.value)}
+                        className={inputCls + ' font-medium text-slate-900'}
+                        disabled={isReadOnly}
+                        placeholder="e.g. 1200sqft@ Rs.2000/-=Rs.24,00,000/-"
+                      />
+                    </Field>
+                  </div>
+                </div>
+
+                {/* 7e - 7g: Under-Construction Progress & As-On-Date Valuation (Soft Container - Warm Amber) */}
+                {fields.isUnderConstruction && (
+                  <div className="border border-amber-200 bg-[#FFFBEB] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="text-xs font-bold text-amber-900 uppercase tracking-wider">
+                        7e – 7g. Under-Construction Progress &amp; Valuation As On Date
+                      </div>
+                      {cValAsOnDate > 0 && (
+                        <span className="text-[11px] font-semibold bg-white text-amber-900 px-2.5 py-0.5 rounded-full border border-amber-200">
+                          Const As-On-Date ({pct}%): <strong className="text-amber-950">Rs. {formatIndianCurrency(cValAsOnDate)}/-</strong>
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <Field label="7e. Stage of Construction">
+                        <input
+                          type="text"
+                          value={fields.stageOfConstruction}
+                          onChange={e => handleChange('stageOfConstruction', e.target.value)}
+                          className={inputCls}
+                          disabled={isReadOnly}
+                          placeholder="e.g. G.F. Roof Casting Completed (65%)"
+                        />
+                      </Field>
+
+                      <Field label="7f. % Work Completed">
+                        <input
+                          type="text"
+                          value={fields.percentWorkCompleted}
+                          onChange={e => handleChange('percentWorkCompleted', e.target.value)}
+                          className={inputCls}
+                          disabled={isReadOnly}
+                          placeholder="e.g. 65%"
+                        />
+                      </Field>
+
+                      <Field label="7g. % Disbursement Recommended">
+                        <input
+                          type="text"
+                          value={fields.percentDisbursementRecommended}
+                          onChange={e => handleChange('percentDisbursementRecommended', e.target.value)}
+                          className={inputCls}
+                          disabled={isReadOnly}
+                          placeholder="e.g. 65%"
+                        />
+                      </Field>
+
+                      <Field span={2} label={`Construction Cost As On Date (${fields.percentWorkCompleted || 'X%'})`}>
+                        <input
+                          type="text"
+                          value={fields.constructionCostAsOnDate || ''}
+                          onChange={e => handleChange('constructionCostAsOnDate', e.target.value)}
+                          className={inputCls + ' font-medium text-slate-900'}
+                          disabled={isReadOnly}
+                          placeholder="e.g. 1200sqft@ Rs.1300/-= Rs.15,60,000/-"
+                        />
+                      </Field>
+
+                      <Field label={`Current Value As On Date (${selectedUnit} + Const)`}>
+                        <input
+                          type="text"
+                          value={fields.currentValueAsOnDate || ''}
+                          onChange={e => handleChange('currentValueAsOnDate', e.target.value)}
+                          className={inputCls + ' font-medium text-slate-900'}
+                          disabled={isReadOnly}
+                          placeholder="e.g. Rs.12,75,000/- + Rs.15,60,000/- =Rs.28,35,000/-"
+                        />
+                      </Field>
+                    </div>
+                  </div>
+                )}
+
+                {/* 7h - 7i: Final Property Value & Site Visit (Soft Container - Soft Indigo) */}
+                <div className="border border-indigo-200 bg-[#EEF2FF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="text-xs font-bold text-indigo-900 uppercase tracking-wider">
+                      7h – 7i. Final Property Value &amp; Inspection Date
+                    </div>
+                    {total100 > 0 && (
+                      <span className="text-[11px] font-semibold bg-white text-indigo-900 px-2.5 py-0.5 rounded-full border border-indigo-200">
+                        100% Total: <strong className="text-indigo-950">Rs. {formatIndianCurrency(total100)}/-</strong>
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Field label={`7h. Current Value of Property (${selectedUnit} + Construction) on 100% Completion`}>
+                      <input
+                        type="text"
+                        value={fields.currentValueOfProperty}
+                        onChange={e => handleChange('currentValueOfProperty', e.target.value)}
+                        className={inputCls + ' font-bold text-slate-900'}
+                        disabled={isReadOnly}
+                        placeholder="e.g. Rs.12,75,000/- + Rs.24,00,000/- =Rs.36,75,000/-"
+                      />
+                    </Field>
+
+                    <DateInput
+                      fieldKey="dateOfPropertyVisit"
+                      label="7i. Date of Property Visit"
                     />
-                  </Field>
+                  </div>
+                </div>
 
-                  <Field label="f. % Work Completed">
+                {/* Point 8: Govt Reckoner Rates (Soft Container - Soft Emerald) */}
+                <div className="border border-emerald-200 bg-[#ECFDF5] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
+                  <div className="text-xs font-bold text-emerald-900 uppercase tracking-wider">
+                    8. Government Reckoner Valuation
+                  </div>
+                  <Field label="8. Valuation as per Government Reckoner Rates (Circle Rate / Benchmark Value)">
                     <input
                       type="text"
-                      value={fields.percentWorkCompleted}
-                      onChange={e => handleChange('percentWorkCompleted', e.target.value)}
+                      value={fields.valuationGovtReckonerRate}
+                      onChange={e => handleChange('valuationGovtReckonerRate', e.target.value)}
                       className={inputCls}
                       disabled={isReadOnly}
-                    />
-                  </Field>
-
-                  <Field label="g. % Disbursement Recommended">
-                    <input
-                      type="text"
-                      value={fields.percentDisbursementRecommended}
-                      onChange={e => handleChange('percentDisbursementRecommended', e.target.value)}
-                      className={inputCls}
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-
-                  <Field span={2} label="Construction Cost As On Date (X%)">
-                    <input
-                      type="text"
-                      value={fields.constructionCostAsOnDate || ''}
-                      onChange={e => handleChange('constructionCostAsOnDate', e.target.value)}
-                      className={inputCls}
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-
-                  <Field label="Current Value As On Date (Plot + Const)">
-                    <input
-                      type="text"
-                      value={fields.currentValueAsOnDate || ''}
-                      onChange={e => handleChange('currentValueAsOnDate', e.target.value)}
-                      className={inputCls}
-                      disabled={isReadOnly}
+                      placeholder="e.g. Rs. 28,50,000/-"
                     />
                   </Field>
                 </div>
-              </div>
-            </div>
-          )}
 
-          {/* 7h - 10: Summary, Statutory Rates & Visit Date */}
-          <div className="pt-2">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="h. Current Value of Property (100% Completion)">
-                <input
-                  type="text"
-                  value={fields.currentValueOfProperty}
-                  onChange={e => handleChange('currentValueOfProperty', e.target.value)}
-                  className={inputCls}
-                  disabled={isReadOnly}
-                />
-              </Field>
-
-              <DateInput
-                fieldKey="dateOfPropertyVisit"
-                label="i. Date of Property Visit"
-              />
-
-              <Field label="8. Valuation as per Govt Reckoner Rates">
-                <input
-                  type="text"
-                  value={fields.valuationGovtReckonerRate}
-                  onChange={e => handleChange('valuationGovtReckonerRate', e.target.value)}
-                  className={inputCls}
-                  disabled={isReadOnly}
-                />
-              </Field>
-
-              <Field
-                label={
-                  <div>
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <span>9. Distressed Valuation of Property</span>
+                {/* Point 9: Distressed Valuation of Property (Soft Container - Soft Rose) */}
+                <div className="border border-rose-200 bg-[#FFF1F2] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="text-xs font-bold text-rose-900 uppercase tracking-wider">
+                      9. Distressed Valuation (Safety Margin / Forced Sale Value)
+                    </div>
+                    <div className="flex items-center gap-2">
                       <button
                         type="button"
                         onClick={() => setEnableDistressedEdit(!enableDistressedEdit)}
                         disabled={isReadOnly}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none cursor-pointer ${
-                          enableDistressedEdit ? 'bg-emerald-500' : 'bg-gray-300'
+                        className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors duration-200 focus:outline-none cursor-pointer ${
+                          enableDistressedEdit ? 'bg-rose-600' : 'bg-slate-300'
                         }`}
                       >
                         <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 shadow ${
-                            enableDistressedEdit ? 'translate-x-6' : 'translate-x-1'
+                          className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform duration-200 shadow ${
+                            enableDistressedEdit ? 'translate-x-5' : 'translate-x-1'
                           }`}
                         />
                       </button>
-                      <span className={`text-xs font-medium normal-case ${enableDistressedEdit ? 'text-emerald-700' : 'text-gray-500'}`}>
-                        {enableDistressedEdit ? 'Edit On' : 'Edit Off (Strictly 80%)'}
+                      <span className={`text-[11px] font-semibold ${enableDistressedEdit ? 'text-rose-800' : 'text-slate-600'}`}>
+                        {enableDistressedEdit ? 'Custom Manual Edit' : 'Auto 80% Locked'}
                       </span>
                     </div>
                   </div>
-                }
-              >
-                <input
-                  type="text"
-                  value={fields.distressedValuation}
-                  onChange={e => handleChange('distressedValuation', e.target.value)}
-                  className={`${inputCls} ${!enableDistressedEdit ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                  disabled={isReadOnly || !enableDistressedEdit}
-                />
-              </Field>
 
-              <Field span={2} label="10. Rental Value per Month">
-                <input
-                  type="text"
-                  value={fields.rentalValuePerMonth}
-                  onChange={e => handleChange('rentalValuePerMonth', e.target.value)}
-                  className={inputCls}
-                  disabled={isReadOnly}
-                />
-              </Field>
-            </div>
-          </div>
+                  <Field label="9. Distressed Valuation of Property (80% of Current Valuation)">
+                    <input
+                      type="text"
+                      value={fields.distressedValuation}
+                      onChange={e => handleChange('distressedValuation', e.target.value)}
+                      className={`${inputCls} font-bold ${!enableDistressedEdit ? 'bg-white/80 cursor-not-allowed text-rose-950' : 'text-rose-950'}`}
+                      disabled={isReadOnly || !enableDistressedEdit}
+                      placeholder={`Calculated 80% = Rs. ${formatIndianCurrency(distressedVal)}/-`}
+                    />
+                  </Field>
+                </div>
+
+                {/* Point 10: Rental Value per Month (Soft Container - Soft Violet) */}
+                <div className="border border-violet-200 bg-[#FAF5FF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
+                  <div className="text-xs font-bold text-violet-900 uppercase tracking-wider">
+                    10. Rental Value Assessment
+                  </div>
+                  <Field label="10. Rental Value per Month (Estimated / Prevailing Market Rent)">
+                    <input
+                      type="text"
+                      value={fields.rentalValuePerMonth}
+                      onChange={e => handleChange('rentalValuePerMonth', e.target.value)}
+                      className={inputCls}
+                      disabled={isReadOnly}
+                      placeholder="e.g. Rs. 15,000/- PM"
+                    />
+                  </Field>
+                </div>
+              </div>
+            );
+          })()}
         </Section>
 
-        {/* SECTION 6: Attachments, Remarks & Valuer Signatory (11 – 12) */}
-        <Section id="axis-sec6" title="Attachments, Remarks & Valuer Signatory (11 – 12)" number={6} defaultOpen={true}>
-          {/* Point 11: Attachments Status */}
+        {/* SECTION 6: Attachments & Remarks (11 – 12) */}
+        <Section id="axis-sec6" title="Attachments & Remarks (11 – 12)" number={6} defaultOpen={true}>
+          {/* Point 11: Attachments Status (Soft Container - Cool Slate) */}
           <div className="pb-4 border-b border-slate-200">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="a. 4 photos of Property (inside/outside)">
-                <input
-                  type="text"
-                  value={fields.photosAttached}
-                  onChange={e => handleChange('photosAttached', e.target.value)}
-                  className={inputCls}
-                  disabled={isReadOnly}
-                />
-              </Field>
-
-              <Field label="b. Location sketch for the property">
-                <input
-                  type="text"
-                  value={fields.locationSketchAttached}
-                  onChange={e => handleChange('locationSketchAttached', e.target.value)}
-                  className={inputCls}
-                  disabled={isReadOnly}
-                />
-              </Field>
-            </div>
-          </div>
-
-          {/* Point 12: Remarks */}
-          <div className="pt-2 pb-4 border-b border-slate-200">
-            <Field label="12. Remarks, Access Notes & Observations">
-              <textarea
-                rows={6}
-                value={fields.remarks}
-                onChange={e => handleChange('remarks', e.target.value)}
-                className={inputCls}
-                disabled={isReadOnly}
-              />
-            </Field>
-          </div>
-
-          {/* Undertaking & Signatory (Soft Container) */}
-          <div className="pt-2">
-            <div className="border border-[#B9DBFE] bg-[#F0F7FF] rounded-xl p-5 shadow-2xs">
-              <h3 className="font-semibold text-blue-900 mb-3 text-sm tracking-wide uppercase">
-                Undertaking &amp; Signatory
-              </h3>
-              <p className="text-xs text-slate-700 italic leading-relaxed mb-4">
-                I have personally visited the property &amp; identified the same based on the documents provided.<br />
-                I/We have no direct or Indirect Interest in the property being valued.<br />
-                The information furnished above is true and correct to my/our knowledge.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-blue-100">
-                <Field label="Valuer Name">
+            <div className="border border-slate-200 bg-[#F8FAFC] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
+              <div className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                11. Report Attachments
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="a. 4 photos of Property (inside/outside)">
                   <input
                     type="text"
-                    value={fields.valuerName}
-                    onChange={e => handleChange('valuerName', e.target.value)}
+                    value={fields.photosAttached}
+                    onChange={e => handleChange('photosAttached', e.target.value)}
                     className={inputCls}
                     disabled={isReadOnly}
                   />
                 </Field>
 
-                <Field label="Designation / Authority">
+                <Field label="b. Location sketch for the property">
                   <input
                     type="text"
-                    value={fields.valuerTitle}
-                    onChange={e => handleChange('valuerTitle', e.target.value)}
+                    value={fields.locationSketchAttached}
+                    onChange={e => handleChange('locationSketchAttached', e.target.value)}
                     className={inputCls}
                     disabled={isReadOnly}
                   />
@@ -2080,13 +2188,74 @@ export default function AxisHLLAP({
               </div>
             </div>
           </div>
+
+          {/* Point 12: Remarks */}
+          <div className="pt-2">
+            <Field label="12. Remarks, Access Notes & Observations">
+              <textarea
+                rows={5}
+                value={fields.remarks}
+                onChange={e => handleChange('remarks', e.target.value)}
+                className={inputCls}
+                disabled={isReadOnly}
+                placeholder="Comment on resistance for valuation if any, access road width, flood proneness, landlocked status, etc."
+              />
+            </Field>
+          </div>
         </Section>
 
-        {/* SECTION 7: Property Photographs */}
+        {/* SECTION 7: Undertaking & Valuer Signatory */}
+        <Section id="axis-sec7" title="Undertaking & Valuer Signatory" number={7} defaultOpen={true}>
+          <div className="border border-blue-200 bg-[#F0F7FF] rounded-xl p-5 shadow-2xs space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-blue-900 text-sm tracking-wide uppercase">
+                Valuer Undertaking &amp; Declaration
+              </h3>
+              <span className="text-[11px] font-bold text-blue-800 bg-white px-2.5 py-0.5 rounded-full border border-blue-200">
+                Official Declaration
+              </span>
+            </div>
+
+            <p className="text-xs text-slate-700 italic leading-relaxed bg-white/80 p-3.5 rounded-lg border border-blue-100">
+              &ldquo;I have personally visited the property &amp; identified the same based on the documents provided.<br />
+              I/We have no direct or Indirect Interest in the property being valued.<br />
+              The information furnished above is true and correct to my/our knowledge.&rdquo;
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-blue-200/80">
+              <Field label="Valuer Name (Locked)">
+                <div className="relative flex items-center">
+                  <input
+                    type="text"
+                    value={fields.valuerName || 'Er. Satyajit Mohanty'}
+                    className={inputCls + ' bg-slate-100 font-bold text-slate-800 cursor-not-allowed pr-8'}
+                    disabled={true}
+                    readOnly
+                  />
+                  <span className="absolute right-2.5 text-slate-400 text-xs select-none" title="Locked by System">
+                    🔒
+                  </span>
+                </div>
+              </Field>
+
+              <Field label="Designation / Authority">
+                <input
+                  type="text"
+                  value={fields.valuerTitle || 'Approved Panel Valuer'}
+                  onChange={e => handleChange('valuerTitle', e.target.value)}
+                  className={inputCls}
+                  disabled={isReadOnly}
+                />
+              </Field>
+            </div>
+          </div>
+        </Section>
+
+        {/* SECTION 8: Property Photographs */}
         <BasePhotographsSection
           title="Property Photographs"
           sectionId="axis-photos"
-          sectionNumber={7}
+          sectionNumber={8}
           propertyImages={fields.propertyImages || []}
           propertyImageNames={fields.propertyImageNames || []}
           isReadOnly={isReadOnly}
@@ -2099,11 +2268,11 @@ export default function AxisHLLAP({
           onReorderImages={handlePhotoReorder}
         />
 
-        {/* SECTION 8: Location and Sketch Maps */}
+        {/* SECTION 9: Location and Sketch Maps */}
         <BaseMapsSection
           title="Location and Sketch Maps"
           sectionId="axis-maps"
-          sectionNumber={8}
+          sectionNumber={9}
           locationMapImages={fields.locationMapImages || []}
           mouzaMapImages={fields.mouzaMapImages || []}
           sketchMapImages={fields.sketchMapImages || []}
