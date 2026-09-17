@@ -94,6 +94,15 @@ export function Section({
   const [open, setOpen] = useState(defaultOpen);
   const secId = id || (number ? `section-${number}` : undefined);
 
+  const displayTitle = React.useMemo(() => {
+    if (!title || typeof title !== 'string') return title;
+    let clean = title;
+    if (number !== undefined && number !== null) {
+      clean = clean.replace(/^\s*\d+\.\s*/, '');
+    }
+    return clean;
+  }, [title, number]);
+
   return (
     <div id={secId} className="card border border-[#e9ecef] overflow-hidden scroll-mt-24 rounded-2xl bg-white shadow-sm">
       <button
@@ -107,7 +116,7 @@ export function Section({
               {number}
             </span>
           )}
-          <span className="font-semibold text-sm tracking-wide whitespace-pre-line text-left">{title}</span>
+          <span className="font-semibold text-sm tracking-wide whitespace-pre-line text-left">{displayTitle}</span>
         </div>
         <svg className={`w-5 h-5 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />

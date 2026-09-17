@@ -592,14 +592,14 @@ export default function AxisHLLAP({
   };
 
   const NAV_SECTIONS: NavItem[] = [
-    { id: 'axis-sec1', title: '1. Applicant & Application (1-3)' },
-    { id: 'axis-sec2', title: '2. Property Details & Boundaries (4)' },
-    { id: 'axis-sec3', title: '3. Approval Details (5)' },
-    { id: 'axis-sec4', title: '4. Construction & Built-Up Area (6)' },
-    { id: 'axis-sec5', title: '5. Recommended Valuation (7-10)' },
-    { id: 'axis-sec6', title: '6. Remarks & Undertaking (11-12)' },
-    { id: 'axis-photos', title: '7. Property Photographs' },
-    { id: 'axis-maps', title: '8. Location & Sketch Maps' },
+    { id: 'axis-sec1', title: 'Applicant & Application (1–3)' },
+    { id: 'axis-sec2', title: 'Property Details & Boundaries (4)' },
+    { id: 'axis-sec3', title: 'Approval Details (5)' },
+    { id: 'axis-sec4', title: 'Construction & Built-Up Area (6)' },
+    { id: 'axis-sec5', title: 'Recommended Valuation (7–10)' },
+    { id: 'axis-sec6', title: 'Remarks & Undertaking (11–12)' },
+    { id: 'axis-photos', title: 'Property Photographs' },
+    { id: 'axis-maps', title: 'Location & Sketch Maps' },
   ];
 
   // Date picker helper component
@@ -665,8 +665,8 @@ export default function AxisHLLAP({
           </div>
         )}
 
-        {/* SECTION 1: Applicant & Application Details (Points 1 – 3) */}
-        <Section id="axis-sec1" title="1. Applicant & Application Details (Points 1 – 3)" number={1} defaultOpen={true}>
+        {/* SECTION 1: Applicant & Application Details (1 – 3) */}
+        <Section id="axis-sec1" title="Applicant & Application Details (1 – 3)" number={1} defaultOpen={true}>
           {/* Header Reference & Date of Report (Soft Container) */}
           <div className="pb-4 border-b border-slate-200">
             <div className="border border-slate-200/80 bg-slate-50/60 dark:bg-slate-800/30 rounded-xl p-4 sm:p-5 shadow-xs">
@@ -746,8 +746,8 @@ export default function AxisHLLAP({
           </div>
         </Section>
 
-        {/* SECTION 2: Property Details (Point 4) */}
-        <Section id="axis-sec2" title="2. Property Details & Boundaries (Point 4)" number={2} defaultOpen={true}>
+        {/* SECTION 2: Property Details & Boundaries (4) */}
+        <Section id="axis-sec2" title="Property Details & Boundaries (4)" number={2} defaultOpen={true}>
           {/* 4. Full Property Description */}
           <div className="pb-4 border-b border-slate-200">
             <Field label="4. Property Details (Full Description / Header Summary)">
@@ -1276,8 +1276,8 @@ export default function AxisHLLAP({
           </div>
         </Section>
 
-        {/* SECTION 3: Approval Details (Point 5) */}
-        <Section id="axis-sec3" title="3. Approval Details (Point 5)" number={3} defaultOpen={true}>
+        {/* SECTION 3: Approval Details (5) */}
+        <Section id="axis-sec3" title="Approval Details (5)" number={3} defaultOpen={true}>
           {/* 5. Header Summary Note */}
           <div className="pb-4 border-b border-slate-200">
             <Field label="5. Approval Details (Header Summary Note)">
@@ -1382,8 +1382,8 @@ export default function AxisHLLAP({
           </div>
         </Section>
 
-        {/* SECTION 4: Construction Details & Built-Up Area (Point 6) */}
-        <Section id="axis-sec4" title="4. Construction Details & Built-Up Area (Point 6)" number={4} defaultOpen={true}>
+        {/* SECTION 4: Construction Details & Built-Up Area (6) */}
+        <Section id="axis-sec4" title="Construction Details & Built-Up Area (6)" number={4} defaultOpen={true}>
           {/* 6a - 6b: Plot Area & Demarcation */}
           <div className="pb-4 border-b border-slate-200">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1708,8 +1708,8 @@ export default function AxisHLLAP({
           </div>
         </Section>
 
-        {/* SECTION 5: Recommended Valuation & Statutory Assessment (Points 7 - 10) */}
-        <Section id="axis-sec5" title="5. Recommended Valuation & Statutory Rates (Points 7 – 10)" number={5} defaultOpen={true}>
+        {/* SECTION 5: Recommended Valuation & Statutory Rates (7 – 10) */}
+        <Section id="axis-sec5" title="Recommended Valuation & Statutory Rates (7 – 10)" number={5} defaultOpen={true}>
           {/* Construction Status Toggle & Auto Calculate */}
           <div className="p-4 bg-slate-100 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-4 mb-5 shadow-xs">
             <div className="flex items-center gap-3">
@@ -1940,8 +1940,8 @@ export default function AxisHLLAP({
           </div>
         </Section>
 
-        {/* SECTION 6: Attachments, Remarks & Valuer Signatory (Points 11 - 12) */}
-        <Section id="axis-sec6" title="6. Attachments, Remarks & Valuer Signatory (Points 11 – 12)" number={6} defaultOpen={true}>
+        {/* SECTION 6: Attachments, Remarks & Valuer Signatory (11 – 12) */}
+        <Section id="axis-sec6" title="Attachments, Remarks & Valuer Signatory (11 – 12)" number={6} defaultOpen={true}>
           {/* Point 11: Attachments Status */}
           <div className="pb-4 border-b border-slate-200">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2018,7 +2018,7 @@ export default function AxisHLLAP({
 
         {/* SECTION 7: Property Photographs */}
         <BasePhotographsSection
-          title="7. Property Photographs"
+          title="Property Photographs"
           sectionId="axis-photos"
           sectionNumber={7}
           propertyImages={fields.propertyImages || []}
@@ -2035,7 +2035,7 @@ export default function AxisHLLAP({
 
         {/* SECTION 8: Location and Sketch Maps */}
         <BaseMapsSection
-          title="8. Location and Sketch Maps"
+          title="Location and Sketch Maps"
           sectionId="axis-maps"
           sectionNumber={8}
           locationMapImages={fields.locationMapImages || []}
