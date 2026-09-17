@@ -122,6 +122,12 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       this.drawSbbSection9();
       return;
     }
+    // Intercept standard section 10
+    if (title.toUpperCase().includes('10. REMARKS & UNDERTAKING')) {
+      super.drawSectionHeader('10. REMARKS & UNDERTAKING', addSpaceBefore, preserveCase);
+      this.drawSbbSection10();
+      return;
+    }
     super.drawSectionHeader(title, addSpaceBefore, preserveCase);
   }
 
@@ -755,5 +761,68 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       { label: 'Realizable Value (95%)', value: numVal('axisSbbFinalRealizableValue', realizableValueComp.toFixed(2)) },
       { label: 'Insurable Value (App.)', value: numVal('axisSbbFinalInsurableValue', insurableValueComp.toFixed(2)) }
     ]);
+  }
+
+  private drawSbbSection10() {
+    const fields = this.fields;
+    
+    const val = (key: string, computed?: string) => {
+      if ((fields as any)[`${key}IsNA`]) return 'NA';
+      if ((fields as any)[`${key}EditOn`] || !computed) {
+        return String((fields as any)[key] || 'NA').replace(/[\t\n\r]+/g, ' ').trim() || 'NA';
+      }
+      return computed;
+    };
+
+    const structTypes = [];
+    if (fields.axisSbbTypeOfStructureGCI) structTypes.push('GCI');
+    if (fields.axisSbbTypeOfStructureTinShed) structTypes.push('TIN SHED');
+    if (fields.axisSbbTypeOfStructureRCC) structTypes.push('RCC');
+    if (fields.axisSbbTypeOfStructureAluform) structTypes.push('ALUFORM SHUTTERING');
+    const structVal = structTypes.length > 0 ? structTypes.join(', ') : 'RCC';
+
+    const areaStr = fields.axisSbbLandAreaAcres || fields.axisSbbLandAreaDecimals ? `${fields.axisSbbLandAreaAcres || 0} AC. ${fields.axisSbbLandAreaDecimals || 0} DEC.` : (fields.axisSbbPlotAreaAsPerDocument || '');
+    const buaStr = fields.axisSbbTotalConstructedArea || '';
+    const floorBreakdown = fields.axisSbbNoOfFloors || '';
+    const age = fields.axisSbbAgeOfProperty || '';
+    const occupancy = fields.axisSbbOccupancyDetails || '';
+    const location = [fields.axisSbbColonySector, fields.axisSbbLocalityLandmark, fields.axisSbbVillageCity].filter(Boolean).join(', ');
+    const civicRadius = fields.axisSbbBasicAmenities || '';
+    const corp = fields.axisSbbWardNoGramPanchayat || '';
+    const cityDist = fields.axisSbbDistanceCityCentre || '';
+    const approachRoad = fields.axisSbbRoadWidthMaterial || '';
+    const farComp = fields.axisSbbStructureConfirmingByelaws || '';
+
+    const synthesizedRemarks = `The subject property is a ${structVal} structured building (${floorBreakdown}) having total land area of ${areaStr} and total built-up area of ${buaStr} sq.ft. The property is approximately ${age} years old and currently ${occupancy}. It is located at ${location} under the jurisdiction of ${corp}. Basic civic amenities are ${civicRadius}. The property is situated at a distance of ${cityDist} from the city centre and is accessible via a ${approachRoad}. Structure compliance to byelaws: ${farComp}.`;
+
+    this.drawSectionSubtitle('10.1 TECHNICAL INSPECTION REMARKS & SPECIAL NOTES');
+    this.drawSimpleRow('REMARKS: -', val('axisSbbRemarks', synthesizedRemarks));
+    if (fields.axisSbbRemarksNote && !fields.axisSbbRemarksNoteIsNA) {
+      this.drawSimpleRow('NOTE:-', val('axisSbbRemarksNote'));
+    }
+
+    this.drawSectionSubtitle('10.2 UNDERTAKING:-');
+    if (fields.axisSbbUndertakingIsNA) {
+       this.drawSimpleRow('UNDERTAKING', 'NA');
+    } else {
+       const clauses = [
+          { key: 'axisSbbUndertakingClause1', label: 'I HAVE PERSONALLY VISITED THE PROPERTY & IDENTIFIED THE SAME BASED ON THE DOCUMENTS PROVIDED.' },
+          { key: 'axisSbbUndertakingClause2', label: 'I/WE HAVE NO DIRECT OR INDIRECT INTEREST IN THE PROPERTY BEING VALUED.' },
+          { key: 'axisSbbUndertakingClause3', label: 'THE INFORMATION FURNISHED ABOVE IS TRUE AND CORRECT TO MY/OUR KNOWLEDGE.' },
+          { key: 'axisSbbUndertakingClause4', label: 'I HAVE NOT BEEN PENALIZED OR CONVICTED BY ANY BANK/FINANCIAL INSTITUTION/GOVERNMENT DEPARTMENT/PSU/CORPORATE.' },
+          { key: 'axisSbbUndertakingClause5', label: 'THIS VALUATION IS PREPARED WITHOUT ANY PREJUDICE OR BIAS TO ANY PERSON OR INSTITUTION.' },
+          { key: 'axisSbbUndertakingClause6', label: 'THE VALUE OF LAND IS TAKEN INTO ACCOUNT BY MAKING DUE ENQUIRES IN THE LOCALITY AND ASCERTAINING THE SALES VALUE OF THE PROPERTIES IN THE LOCALITY.' },
+          { key: 'axisSbbUndertakingClause7', label: 'ANY ADDITIONS/ALTERATIONS MADE TO THE PROPERTY AFTER THE DATE OF VALUATIONS SHALL NOT FALL UNDER THE SCOPE OF THIS REPORT.' },
+       ];
+       
+       let undertakingText = '';
+       clauses.forEach((clause, index) => {
+         if (fields[clause.key]) {
+           undertakingText += `${index + 1}. ${clause.label}\n`;
+         }
+       });
+       
+       this.drawSimpleRow('UNDERTAKING CLAUSES', undertakingText.trim() || 'NO CLAUSES CHECKED');
+    }
   }
 }
