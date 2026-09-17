@@ -154,9 +154,9 @@ const TABLE_FONT_SIZE_HEADER = FONT_SIZE_HEADER; // Standardized to 14 pt
 const TABLE_MIN_ROW_H = 16;
 
 export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
-  private colSl = 44;
-  private colLbl = 200;
-  private colVal = CONTENT_W - 44 - 200; // 243.28 (Total = 487.28 = CONTENT_W)
+  private colSl = 36;
+  private colLbl = 222;
+  private colVal = CONTENT_W - 36 - 222; // 229.28 (Total = 487.28 = CONTENT_W)
 
   /**
    * Draw standard 3-column table row: [Sl.No | Label | Value]
@@ -453,10 +453,10 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.cursorY += 18;
 
     // --- Table Header: [Sl. No | (empty) | (empty)] ---
-    const thH = Math.max(18, this.cellHeight('Sl. No', this.colSl, { bold: true, fontSize: FONT_SIZE }));
+    const thH = Math.max(18, this.cellHeight('Sl. No', this.colSl, { bold: true, fontSize: 11 }));
     this.drawCell(MARGIN_L, this.cursorY, this.colSl, thH, 'Sl. No', {
       bold: true,
-      fontSize: FONT_SIZE,
+      fontSize: 11,
       fillColor: OPT_BG,
       bgOpacity: 0.5,
       align: 'left',
@@ -464,7 +464,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     });
     this.drawCell(MARGIN_L + this.colSl, this.cursorY, this.colLbl, thH, '', {
       bold: true,
-      fontSize: FONT_SIZE,
+      fontSize: 11,
       fillColor: OPT_BG,
       bgOpacity: 0.5,
       align: 'left',
@@ -472,7 +472,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     });
     this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, thH, '', {
       bold: true,
-      fontSize: FONT_SIZE,
+      fontSize: 11,
       fillColor: OPT_BG,
       bgOpacity: 0.5,
       align: 'left',
