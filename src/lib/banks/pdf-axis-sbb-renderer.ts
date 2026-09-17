@@ -98,7 +98,81 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       this.drawSbbSection5();
       return;
     }
+    // Intercept standard section 6
+    if (title.toUpperCase() === 'PLAN APPROVALS' || title.toUpperCase() === 'VALUATION OVERVIEW') {
+      super.drawSectionHeader('BOUNDARIES, ACCESSIBILITY & SITE RISK CHECKS', addSpaceBefore, preserveCase);
+      this.drawSbbSection6();
+      return;
+    }
     super.drawSectionHeader(title, addSpaceBefore, preserveCase);
+  }
+
+  private drawSbbSection6() {
+    const fields = this.fields;
+    
+    const val = (key: string, computed?: string) => {
+      if ((fields as any)[`${key}IsNA`]) return 'NA';
+      if ((fields as any)[`${key}EditOn`] || !computed) {
+        return String((fields as any)[key] || 'NA').replace(/[\t\n\r]+/g, ' ').trim() || 'NA';
+      }
+      return computed;
+    };
+
+    const remarkComputed = (String((fields as any).axisSbbRoadWidthMaterial || '20 FEET WIDE ROAD')).toUpperCase();
+    const fireExtComputed = parseInt(String((fields as any).axisSbbRoadWidthMaterial || '0')) >= 15 ? 'YES' : 'NO';
+    const sqft = (fields as any).axisSbbPlotAreaSqft || '0';
+    const acres = (fields as any).axisSbbPlotAreaAcres || '0.000';
+    const areaComputed = `${sqft} SQFT (AC.${acres}DECS)`.toUpperCase();
+
+    this.drawSectionSubtitle('ACCESSIBILITY/ BOUNDARIES/OTHERS (Physical Access & Site Risk Checks)');
+    
+    this.drawKeyValueRow([
+      { label: 'Does Approach Road is Small?', value: val('axisSbbApproachRoadSmall') },
+      { label: 'Remark', value: val('axisSbbApproachRoadRemark', remarkComputed) }
+    ]);
+    
+    this.drawKeyValueRow([
+      { label: 'Can Accommodate Fire Extinguisher?', value: val('axisSbbFireExtinguisher', fireExtComputed) },
+      { label: 'Property in Land Locked Area?', value: val('axisSbbLandLockedArea') }
+    ]);
+    
+    this.drawKeyValueRow([
+      { label: 'Property in Community Dominated Area?', value: val('axisSbbCommunityDominatedArea') },
+      { label: 'Boundaries Match Documentation?', value: val('axisSbbBoundariesMatchDocument') }
+    ]);
+
+    this.drawSectionSubtitle('BOUNDARIES/DIMENSIONS (Comparison Matrix)');
+    const headers = ['BOUNDARIES/DIMENSIONS', '(AS PER SALE DEED)', '(AS PER ACTUAL SITE)'];
+    const rows = [
+      ['NORTH', val('axisSbbNorthAsPerDeed'), val('axisSbbNorthAsPerActual')],
+      ['SOUTH', val('axisSbbSouthAsPerDeed'), val('axisSbbSouthAsPerActual')],
+      ['EAST', val('axisSbbEastAsPerDeed'), val('axisSbbEastAsPerActual')],
+      ['WEST', val('axisSbbWestAsPerDeed'), val('axisSbbWestAsPerActual')]
+    ];
+    this.drawTable(headers, rows, [140, 184, 184], [], [0]);
+    this.advanceCursor(10);
+    
+    this.drawSectionSubtitle('PLOT AREA, LOCALITY, INFRASTRUCTURE & USAGE');
+    
+    this.drawKeyValueRow([
+      { label: 'Plot Area (As per Documents)', value: val('axisSbbPlotAreaAsPerDocument') },
+      { label: 'Plot Area (As per Sale Deed)', value: val('axisSbbPlotAreaAsPerSaleDeed', areaComputed) }
+    ]);
+    
+    this.drawKeyValueRow([
+      { label: 'Class of Locality', value: val('axisSbbClassOfLocality') },
+      { label: 'Quality of Infrastructure', value: val('axisSbbQualityOfInfrastructure') }
+    ]);
+    
+    this.drawKeyValueRow([
+      { label: 'Ownership Status', value: (fields as any).axisSbbOwnershipStatus === 'GOVT. AUTHORITY, SPECIFY' && !(fields as any).axisSbbOwnershipStatusIsNA ? val('axisSbbOwnershipStatusSpecify') : val('axisSbbOwnershipStatus') },
+      { label: 'Approved Usage of Property', value: val('axisSbbApprovedUsage') }
+    ]);
+    
+    this.drawKeyValueRow([
+      { label: 'Actual Usage of Property', value: val('axisSbbActualUsage') },
+      { label: 'Restrictive Covenants in regards to land use', value: val('axisSbbRestrictiveCovenants') }
+    ]);
   }
 
   private drawSbbSection5() {

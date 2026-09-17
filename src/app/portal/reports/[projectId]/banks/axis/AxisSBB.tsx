@@ -9,7 +9,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
   bankId: 'AXIS BANK',
   subTemplateId: 'SBB',
   displayName: 'Axis Bank — SBB (Small Business Banking)',
-  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5'],
+  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6'],
   extraSections: [],
     axisSbbDeedNumberDate: '',
     axisSbbDeedNumberDateIsNA: false,
@@ -76,6 +76,74 @@ export const AXIS_SBB_CONFIG: BankConfig = {
     axisSbbDistBusStop: '',
     axisSbbDistBusStopIsNA: false,
     axisSbbDistBusStopEditOn: false,
+
+    // SECTION 6
+    axisSbbApproachRoadSmall: '',
+    axisSbbApproachRoadSmallIsNA: false,
+    axisSbbApproachRoadRemark: '',
+    axisSbbApproachRoadRemarkIsNA: false,
+    axisSbbApproachRoadRemarkEditOn: false,
+    axisSbbFireExtinguisher: 'YES',
+    axisSbbFireExtinguisherIsNA: false,
+    axisSbbFireExtinguisherEditOn: false,
+    axisSbbLandLockedArea: 'NO',
+    axisSbbLandLockedAreaIsNA: false,
+    axisSbbLandLockedAreaEditOn: false,
+    axisSbbCommunityDominatedArea: 'NO',
+    axisSbbCommunityDominatedAreaIsNA: false,
+    axisSbbCommunityDominatedAreaEditOn: false,
+    axisSbbBoundariesMatchDocument: 'YES',
+    axisSbbBoundariesMatchDocumentIsNA: false,
+    axisSbbBoundariesMatchDocumentEditOn: false,
+
+    axisSbbNorthAsPerDeed: '',
+    axisSbbNorthAsPerDeedIsNA: false,
+    axisSbbNorthAsPerActual: '',
+    axisSbbNorthAsPerActualIsNA: false,
+    axisSbbNorthEditOn: false,
+    axisSbbSouthAsPerDeed: '',
+    axisSbbSouthAsPerDeedIsNA: false,
+    axisSbbSouthAsPerActual: '',
+    axisSbbSouthAsPerActualIsNA: false,
+    axisSbbSouthEditOn: false,
+    axisSbbEastAsPerDeed: '',
+    axisSbbEastAsPerDeedIsNA: false,
+    axisSbbEastAsPerActual: '',
+    axisSbbEastAsPerActualIsNA: false,
+    axisSbbEastEditOn: false,
+    axisSbbWestAsPerDeed: '',
+    axisSbbWestAsPerDeedIsNA: false,
+    axisSbbWestAsPerActual: '',
+    axisSbbWestAsPerActualIsNA: false,
+    axisSbbWestEditOn: false,
+
+    axisSbbPlotAreaAsPerDocument: '',
+    axisSbbPlotAreaAsPerDocumentIsNA: false,
+    axisSbbPlotAreaAsPerDocumentEditOn: false,
+    axisSbbPlotAreaSqft: '',
+    axisSbbPlotAreaAcres: '',
+    axisSbbPlotAreaAsPerSaleDeed: '',
+    axisSbbPlotAreaAsPerSaleDeedIsNA: false,
+    axisSbbPlotAreaAsPerSaleDeedEditOn: false,
+    axisSbbClassOfLocality: 'MIDDLE CLASS',
+    axisSbbClassOfLocalityIsNA: false,
+    axisSbbClassOfLocalityEditOn: false,
+    axisSbbQualityOfInfrastructure: 'GOOD',
+    axisSbbQualityOfInfrastructureIsNA: false,
+    axisSbbQualityOfInfrastructureEditOn: false,
+    axisSbbOwnershipStatus: 'FREE HOLD',
+    axisSbbOwnershipStatusIsNA: false,
+    axisSbbOwnershipStatusEditOn: false,
+    axisSbbOwnershipStatusSpecify: '',
+    axisSbbApprovedUsage: 'RESIDENTIAL',
+    axisSbbApprovedUsageIsNA: false,
+    axisSbbApprovedUsageEditOn: false,
+    axisSbbActualUsage: 'COMMERCIAL',
+    axisSbbActualUsageIsNA: false,
+    axisSbbActualUsageEditOn: false,
+    axisSbbRestrictiveCovenants: 'NA',
+    axisSbbRestrictiveCovenantsIsNA: false,
+    axisSbbRestrictiveCovenantsEditOn: false,
 
     axisSbbPropertyLocation: '',
     axisSbbGoverningBody: '',
@@ -1207,6 +1275,400 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       onChange={e => handleChange('axisSbbDistBusStop', e.target.value.toUpperCase())}
                       readOnly={!fields.axisSbbDistBusStopEditOn || fields.axisSbbDistBusStopIsNA}
                       disabled={isReadOnly || (!fields.axisSbbDistBusStopEditOn && !fields.axisSbbDistBusStopIsNA)}
+                    />
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'axis-sbb-section-6',
+      title: 'Boundaries, Accessibility & Site Risk Checks',
+      number: 6,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        const renderNaToggle = (fieldName: string) => (
+          <label className="flex items-center space-x-1.5 text-[10px] uppercase font-bold text-gray-500 cursor-pointer ml-4">
+            <input 
+              type="checkbox" 
+              checked={!!fields[`${fieldName}IsNA`]} 
+              onChange={e => handleChange(`${fieldName}IsNA`, e.target.checked)}
+              disabled={isReadOnly}
+              className="w-3 h-3 text-red-500 rounded focus:ring-red-500 border-gray-300"
+            />
+            <span>NA</span>
+          </label>
+        );
+
+        const renderEditSwitch = (fieldName: string, disabled: boolean) => {
+          const isEditOn = !!fields[`${fieldName}EditOn`];
+          return (
+            <div className="flex items-center space-x-2">
+              <span className="text-[10px] uppercase font-bold text-gray-400">Edit {isEditOn ? 'On' : 'Off'}</span>
+              <button
+                type="button"
+                onClick={() => handleChange(`${fieldName}EditOn`, !isEditOn)}
+                disabled={disabled || isReadOnly}
+                className={`w-8 h-4 rounded-full relative transition-colors ${isEditOn ? 'bg-green-500' : 'bg-gray-300'}`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white transition-transform ${isEditOn ? 'translate-x-4' : ''}`} />
+              </button>
+            </div>
+          );
+        };
+
+        const renderRadioGroup = (field: string, options: string[]) => (
+          <div className={`flex flex-wrap gap-3 ${fields[`${field}IsNA`] ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
+            {options.map(opt => (
+              <label key={opt} className={`flex items-center space-x-2 p-2 border rounded-lg cursor-pointer transition-colors ${(fields[field] === opt && !fields[`${field}IsNA`]) ? 'bg-blue-50 border-blue-300' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
+                <input
+                  type="radio"
+                  name={field}
+                  value={opt}
+                  checked={fields[field] === opt && !fields[`${field}IsNA`]}
+                  onChange={e => handleChange(field, e.target.value)}
+                  disabled={isReadOnly || !!fields[`${field}IsNA`] || (!fields[`${field}EditOn`] && fields[`${field}EditOn`] !== undefined)}
+                  className="text-blue-500 focus:ring-blue-400 border-gray-300"
+                />
+                <span className="text-xs font-semibold text-gray-700">{opt}</span>
+              </label>
+            ))}
+          </div>
+        );
+
+        const remarkComputed = (fields.axisSbbRoadWidthMaterial || '20 FEET WIDE ROAD').toUpperCase();
+        const fireExtComputed = parseInt(fields.axisSbbRoadWidthMaterial || '0') >= 15 ? 'YES' : 'NO';
+        
+        const sqft = fields.axisSbbPlotAreaSqft || '0';
+        const acres = fields.axisSbbPlotAreaAcres || '0.000';
+        const areaComputed = `${sqft} SQFT (AC.${acres}DECS)`.toUpperCase();
+
+        const renderBoundaryRow = (dir: string, deedField: string, actualField: string, editField: string) => (
+          <tr className="border-b">
+            <td className="p-3 font-bold text-xs text-gray-700 w-1/4 align-top">
+              <div className="flex items-center justify-between">
+                <span>{dir.toUpperCase()}:</span>
+                <div className="flex items-center space-x-2">
+                  {renderEditSwitch(editField, false)}
+                </div>
+              </div>
+            </td>
+            <td className="p-2 border-l border-r w-3/8 align-top">
+              <div className="flex items-center mb-1">
+                {renderNaToggle(deedField)}
+              </div>
+              <textarea
+                className={`${inputCls} resize-y ${!fields[`${editField}EditOn`] && !fields[`${deedField}IsNA`] ? 'bg-slate-50 border-slate-300' : ''}`}
+                rows={1}
+                value={fields[`${deedField}IsNA`] ? 'NA' : (fields[deedField] || '')}
+                onChange={e => handleChange(deedField, e.target.value.toUpperCase())}
+                readOnly={!fields[`${editField}EditOn`] || !!fields[`${deedField}IsNA`]}
+                disabled={isReadOnly || (!fields[`${editField}EditOn`] && !fields[`${deedField}IsNA`])}
+                placeholder={`AS PER SALE DEED`}
+              />
+            </td>
+            <td className="p-2 w-3/8 align-top">
+              <div className="flex items-center mb-1">
+                {renderNaToggle(actualField)}
+              </div>
+              <textarea
+                className={`${inputCls} resize-y ${!fields[`${editField}EditOn`] && !fields[`${actualField}IsNA`] ? 'bg-slate-50 border-slate-300' : ''}`}
+                rows={1}
+                value={fields[`${actualField}IsNA`] ? 'NA' : (fields[actualField] || '')}
+                onChange={e => handleChange(actualField, e.target.value.toUpperCase())}
+                readOnly={!fields[`${editField}EditOn`] || !!fields[`${actualField}IsNA`]}
+                disabled={isReadOnly || (!fields[`${editField}EditOn`] && !fields[`${actualField}IsNA`])}
+                placeholder={`AS PER ACTUAL SITE`}
+              />
+            </td>
+          </tr>
+        );
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FFF1F2', borderColor: '#FECDD3' }}>
+              <h3 className="font-bold text-gray-700 mb-4">ACCESSIBILITY/ BOUNDARIES/OTHERS (Physical Access & Site Risk Checks)</h3>
+              
+              <div className="space-y-5">
+                <div className="flex flex-col">
+                  <div className="flex items-center mb-2">
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">DOES THE APPROACH ROAD TO THE BUILDING IS SMALL AND <span className="text-red-500">*</span></label>
+                    {renderNaToggle('axisSbbApproachRoadSmall')}
+                  </div>
+                  <div className={`flex space-x-4 ${fields.axisSbbApproachRoadSmallIsNA ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
+                    {['YES', 'NO'].map(opt => (
+                      <label key={opt} className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="does_approach_road_small"
+                          value={opt}
+                          checked={fields.axisSbbApproachRoadSmall === opt && !fields.axisSbbApproachRoadSmallIsNA}
+                          onChange={e => handleChange('axisSbbApproachRoadSmall', e.target.value)}
+                          disabled={isReadOnly || fields.axisSbbApproachRoadSmallIsNA}
+                          className="text-rose-500 focus:ring-rose-400"
+                        />
+                        <span className="text-sm font-semibold">{opt}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex flex-col">
+                  <div className="flex justify-between items-center mb-1">
+                    <div className="flex items-center">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">REMARK</label>
+                      {renderNaToggle('axisSbbApproachRoadRemark')}
+                    </div>
+                    {renderEditSwitch('axisSbbApproachRoadRemark', !!fields.axisSbbApproachRoadRemarkIsNA)}
+                  </div>
+                  <input
+                    type="text"
+                    className={`${inputCls} ${!fields.axisSbbApproachRoadRemarkEditOn && !fields.axisSbbApproachRoadRemarkIsNA ? 'bg-rose-50 text-rose-800 border-rose-300' : ''}`}
+                    value={fields.axisSbbApproachRoadRemarkIsNA ? 'NA' : (fields.axisSbbApproachRoadRemarkEditOn ? (fields.axisSbbApproachRoadRemark || '') : remarkComputed)}
+                    onChange={e => handleChange('axisSbbApproachRoadRemark', e.target.value.toUpperCase())}
+                    readOnly={!fields.axisSbbApproachRoadRemarkEditOn || fields.axisSbbApproachRoadRemarkIsNA}
+                    disabled={isReadOnly || (!fields.axisSbbApproachRoadRemarkEditOn && !fields.axisSbbApproachRoadRemarkIsNA)}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide truncate">WILL IT BE ABLE TO ACCOMMODATE A FIRE EXTINGUISHER</label>
+                        {renderNaToggle('axisSbbFireExtinguisher')}
+                      </div>
+                      {renderEditSwitch('axisSbbFireExtinguisher', !!fields.axisSbbFireExtinguisherIsNA)}
+                    </div>
+                    <div className={`flex flex-wrap gap-3 ${fields.axisSbbFireExtinguisherIsNA ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
+                      {['YES', 'NO'].map(opt => (
+                        <label key={opt} className={`flex items-center space-x-2 p-2 border rounded-lg cursor-pointer transition-colors ${((fields.axisSbbFireExtinguisherEditOn ? fields.axisSbbFireExtinguisher : fireExtComputed) === opt && !fields.axisSbbFireExtinguisherIsNA) ? 'bg-rose-50 border-rose-300' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
+                          <input
+                            type="radio"
+                            name="accommodate_fire_extinguisher"
+                            value={opt}
+                            checked={(fields.axisSbbFireExtinguisherEditOn ? fields.axisSbbFireExtinguisher : fireExtComputed) === opt && !fields.axisSbbFireExtinguisherIsNA}
+                            onChange={e => handleChange('axisSbbFireExtinguisher', e.target.value)}
+                            disabled={isReadOnly || !!fields.axisSbbFireExtinguisherIsNA || !fields.axisSbbFireExtinguisherEditOn}
+                            className="text-rose-500 focus:ring-rose-400 border-gray-300"
+                          />
+                          <span className="text-xs font-semibold text-gray-700">{opt}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide truncate">DOES THE PROPERTY FALLS UNDER LAND LOCKED AREA</label>
+                        {renderNaToggle('axisSbbLandLockedArea')}
+                      </div>
+                      {renderEditSwitch('axisSbbLandLockedArea', !!fields.axisSbbLandLockedAreaIsNA)}
+                    </div>
+                    {renderRadioGroup('axisSbbLandLockedArea', ['YES', 'NO'])}
+                  </div>
+                  
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide truncate">DOES THE PROPERTY FALLS IN A COMMUNITY DOMINATED AREA</label>
+                        {renderNaToggle('axisSbbCommunityDominatedArea')}
+                      </div>
+                      {renderEditSwitch('axisSbbCommunityDominatedArea', !!fields.axisSbbCommunityDominatedAreaIsNA)}
+                    </div>
+                    {renderRadioGroup('axisSbbCommunityDominatedArea', ['YES', 'NO'])}
+                  </div>
+
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide truncate">DOES THE BOUNDARIES AT SITE MATCH AS MENTIONED IN DOCUMENT</label>
+                        {renderNaToggle('axisSbbBoundariesMatchDocument')}
+                      </div>
+                      {renderEditSwitch('axisSbbBoundariesMatchDocument', !!fields.axisSbbBoundariesMatchDocumentIsNA)}
+                    </div>
+                    {renderRadioGroup('axisSbbBoundariesMatchDocument', ['YES', 'NO'])}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="border rounded-xl p-4 mb-4 overflow-x-auto" style={{ backgroundColor: '#F8FAFC', borderColor: '#CBD5E1' }}>
+              <h3 className="font-bold text-gray-700 mb-4">BOUNDARIES/DIMENSIONS (Comparison Matrix)</h3>
+              
+              <table className="w-full border-collapse bg-white rounded shadow-sm">
+                <thead>
+                  <tr className="bg-slate-100 border-b border-t border-l border-r">
+                    <th className="p-3 text-left text-xs font-bold text-slate-700 w-1/4">BOUNDARIES/DIMENSIONS</th>
+                    <th className="p-3 text-left text-xs font-bold text-slate-700 w-3/8 border-l">(AS PER SALE DEED)</th>
+                    <th className="p-3 text-left text-xs font-bold text-slate-700 w-3/8 border-l">(AS PER ACTUAL SITE)</th>
+                  </tr>
+                </thead>
+                <tbody className="border-l border-r border-b">
+                  {renderBoundaryRow('NORTH', 'axisSbbNorthAsPerDeed', 'axisSbbNorthAsPerActual', 'axisSbbNorth')}
+                  {renderBoundaryRow('SOUTH', 'axisSbbSouthAsPerDeed', 'axisSbbSouthAsPerActual', 'axisSbbSouth')}
+                  {renderBoundaryRow('EAST', 'axisSbbEastAsPerDeed', 'axisSbbEastAsPerActual', 'axisSbbEast')}
+                  {renderBoundaryRow('WEST', 'axisSbbWestAsPerDeed', 'axisSbbWestAsPerActual', 'axisSbbWest')}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#ECFCCB', borderColor: '#D9F99D' }}>
+              <h3 className="font-bold text-gray-700 mb-4">PLOT AREA, LOCALITY, INFRASTRUCTURE & USAGE</h3>
+              
+              <div className="space-y-5">
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">PLOT AREA AS PER DOCUMENTS</label>
+                        {renderNaToggle('axisSbbPlotAreaAsPerDocument')}
+                      </div>
+                      {renderEditSwitch('axisSbbPlotAreaAsPerDocument', !!fields.axisSbbPlotAreaAsPerDocumentIsNA)}
+                    </div>
+                    <textarea
+                      className={`${inputCls} resize-y`}
+                      rows={1}
+                      value={fields.axisSbbPlotAreaAsPerDocumentIsNA ? 'NA' : (fields.axisSbbPlotAreaAsPerDocument || '')}
+                      onChange={e => handleChange('axisSbbPlotAreaAsPerDocument', e.target.value.toUpperCase())}
+                      readOnly={!fields.axisSbbPlotAreaAsPerDocumentEditOn || fields.axisSbbPlotAreaAsPerDocumentIsNA}
+                      disabled={isReadOnly || (!fields.axisSbbPlotAreaAsPerDocumentEditOn && !fields.axisSbbPlotAreaAsPerDocumentIsNA)}
+                    />
+                  </div>
+
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">PLOT AREA AS PER SALE DEED <span className="text-red-500">*</span></label>
+                        {renderNaToggle('axisSbbPlotAreaAsPerSaleDeed')}
+                      </div>
+                      {renderEditSwitch('axisSbbPlotAreaAsPerSaleDeed', !!fields.axisSbbPlotAreaAsPerSaleDeedIsNA)}
+                    </div>
+                    {!fields.axisSbbPlotAreaAsPerSaleDeedEditOn && !fields.axisSbbPlotAreaAsPerSaleDeedIsNA && (
+                      <div className="flex items-center space-x-2 mb-2">
+                        <input
+                          type="number"
+                          className={`${inputCls} w-24 px-2`}
+                          placeholder="SQFT"
+                          value={fields.axisSbbPlotAreaSqft || ''}
+                          onChange={e => handleChange('axisSbbPlotAreaSqft', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                        <span className="text-xs text-gray-500 font-medium">SQFT (AC.</span>
+                        <input
+                          type="number"
+                          className={`${inputCls} w-24 px-2`}
+                          placeholder="0.000"
+                          step="0.001"
+                          value={fields.axisSbbPlotAreaAcres || ''}
+                          onChange={e => handleChange('axisSbbPlotAreaAcres', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                        <span className="text-xs text-gray-500 font-medium">DECS)</span>
+                      </div>
+                    )}
+                    <textarea
+                      className={`${inputCls} resize-y ${!fields.axisSbbPlotAreaAsPerSaleDeedEditOn && !fields.axisSbbPlotAreaAsPerSaleDeedIsNA ? 'bg-lime-50 text-lime-900 border-lime-300' : ''}`}
+                      rows={1}
+                      value={fields.axisSbbPlotAreaAsPerSaleDeedIsNA ? 'NA' : (fields.axisSbbPlotAreaAsPerSaleDeedEditOn ? (fields.axisSbbPlotAreaAsPerSaleDeed || '') : areaComputed)}
+                      onChange={e => handleChange('axisSbbPlotAreaAsPerSaleDeed', e.target.value.toUpperCase())}
+                      readOnly={!fields.axisSbbPlotAreaAsPerSaleDeedEditOn || fields.axisSbbPlotAreaAsPerSaleDeedIsNA}
+                      disabled={isReadOnly || (!fields.axisSbbPlotAreaAsPerSaleDeedEditOn && !fields.axisSbbPlotAreaAsPerSaleDeedIsNA)}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">CLASS OF LOCALITY</label>
+                        {renderNaToggle('axisSbbClassOfLocality')}
+                      </div>
+                      {renderEditSwitch('axisSbbClassOfLocality', !!fields.axisSbbClassOfLocalityIsNA)}
+                    </div>
+                    {renderRadioGroup('axisSbbClassOfLocality', ['POSH', 'HIGHER MIDDLE CLASS', 'MIDDLE CLASS', 'LOWER MIDDLE CLASS', 'POOR'])}
+                  </div>
+                  
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">QUALITY OF INFRASTRUCTURE</label>
+                        {renderNaToggle('axisSbbQualityOfInfrastructure')}
+                      </div>
+                      {renderEditSwitch('axisSbbQualityOfInfrastructure', !!fields.axisSbbQualityOfInfrastructureIsNA)}
+                    </div>
+                    {renderRadioGroup('axisSbbQualityOfInfrastructure', ['EXCELLENT', 'GOOD', 'AVERAGE', 'POOR'])}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">OWNERSHIP STATUS OF THE PROPERTY</label>
+                        {renderNaToggle('axisSbbOwnershipStatus')}
+                      </div>
+                      {renderEditSwitch('axisSbbOwnershipStatus', !!fields.axisSbbOwnershipStatusIsNA)}
+                    </div>
+                    {renderRadioGroup('axisSbbOwnershipStatus', ['FREE HOLD', 'LEASE HOLD', 'REG. LEASE', 'GOVT. AUTHORITY, SPECIFY'])}
+                    {fields.axisSbbOwnershipStatus === 'GOVT. AUTHORITY, SPECIFY' && !fields.axisSbbOwnershipStatusIsNA && (
+                      <input
+                        type="text"
+                        className={`${inputCls} mt-2`}
+                        placeholder="Specify Govt Authority"
+                        value={fields.axisSbbOwnershipStatusSpecify || ''}
+                        onChange={e => handleChange('axisSbbOwnershipStatusSpecify', e.target.value.toUpperCase())}
+                        disabled={isReadOnly || (!fields.axisSbbOwnershipStatusEditOn && fields.axisSbbOwnershipStatusEditOn !== undefined)}
+                      />
+                    )}
+                  </div>
+
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">APPROVED USAGE OF PROPERTY</label>
+                        {renderNaToggle('axisSbbApprovedUsage')}
+                      </div>
+                      {renderEditSwitch('axisSbbApprovedUsage', !!fields.axisSbbApprovedUsageIsNA)}
+                    </div>
+                    {renderRadioGroup('axisSbbApprovedUsage', ['RESIDENTIAL', 'COMMERCIAL', 'INDUSTRIAL', 'VACANT LAND', 'MIX/AGRI', 'OTHERS/AGRI'])}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">ACTUAL USAGE OF PROPERTY</label>
+                        {renderNaToggle('axisSbbActualUsage')}
+                      </div>
+                      {renderEditSwitch('axisSbbActualUsage', !!fields.axisSbbActualUsageIsNA)}
+                    </div>
+                    {renderRadioGroup('axisSbbActualUsage', ['RESIDENTIAL', 'COMMERCIAL', 'INDUSTRIAL', 'VACANT LAND', 'MIX/AGRI', 'OTHERS/AGRI'])}
+                  </div>
+                  
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">RESTRICTIVE COVENANTS IN REGARDS TO LAND USE</label>
+                        {renderNaToggle('axisSbbRestrictiveCovenants')}
+                      </div>
+                      {renderEditSwitch('axisSbbRestrictiveCovenants', !!fields.axisSbbRestrictiveCovenantsIsNA)}
+                    </div>
+                    <input
+                      type="text"
+                      className={`${inputCls}`}
+                      value={fields.axisSbbRestrictiveCovenantsIsNA ? 'NA' : (fields.axisSbbRestrictiveCovenants || '')}
+                      onChange={e => handleChange('axisSbbRestrictiveCovenants', e.target.value.toUpperCase())}
+                      readOnly={!fields.axisSbbRestrictiveCovenantsEditOn || fields.axisSbbRestrictiveCovenantsIsNA}
+                      disabled={isReadOnly || (!fields.axisSbbRestrictiveCovenantsEditOn && !fields.axisSbbRestrictiveCovenantsIsNA)}
                     />
                   </div>
                 </div>
