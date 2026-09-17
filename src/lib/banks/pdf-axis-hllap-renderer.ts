@@ -102,6 +102,7 @@ export interface AxisHLLAPReportFields extends Partial<BaseReportFields> {
   expectedCompletionDate: string;
 
   // 6. CONSTRUCTION DETAILS
+  plotOrFlat?: 'Plot' | 'Flat' | string;
   plotAreaDocs: string;
   demarcationAtSite: string;
   approvedBUATotal: string;
@@ -194,6 +195,64 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     });
 
     // 3. Value cell (uniform background color applied)
+    this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, rowH, val || 'NA', {
+      bold: isValueBold,
+      fontSize,
+      fillColor: valBg,
+      bgOpacity: valBg ? 0.5 : undefined,
+      align: 'left',
+      vAlign: 'middle',
+    });
+
+    this.cursorY += rowH;
+  }
+
+  /**
+   * Draw a row with rich text segments in the label cell (e.g. bolding "Plot" or "Flat")
+   */
+  private drawHLLAPRichLabelRow(
+    sl: string,
+    labelSegments: { text: string; bold?: boolean; italic?: boolean }[],
+    val: string,
+    isValueBold: boolean = false,
+    labelBg: string | undefined = LBL_BG,
+    valBg: string | undefined = LBL_BG,
+    fontSize: number = FONT_SIZE
+  ): void {
+    const fullLabelText = labelSegments.map(s => s.text).join('');
+    const hSl = this.cellHeight(sl, this.colSl, { bold: false, fontSize });
+    const hLbl = this.cellHeight(fullLabelText, this.colLbl, { bold: false, fontSize });
+    const hVal = this.cellHeight(val || 'NA', this.colVal, { bold: isValueBold, fontSize });
+    const rowH = Math.max(16, hSl, hLbl, hVal);
+
+    this.checkPageBreak(rowH);
+
+    // 1. Sl.No cell
+    this.drawCell(MARGIN_L, this.cursorY, this.colSl, rowH, sl, {
+      bold: false,
+      fontSize,
+      fillColor: labelBg,
+      bgOpacity: labelBg ? 0.5 : undefined,
+      align: 'left',
+      vAlign: 'middle',
+    });
+
+    // 2. Rich Label cell
+    if (labelBg) {
+      this.drawRect(MARGIN_L + this.colSl, this.cursorY, this.colLbl, rowH, labelBg, undefined, undefined, 0.5);
+    }
+    this.drawRect(MARGIN_L + this.colSl, this.cursorY, this.colLbl, rowH, undefined, '#000000', 0.5);
+
+    const pad = 4;
+    const textX = MARGIN_L + this.colSl + pad;
+    const textMaxWidth = this.colLbl - pad * 2;
+    const lineH = fontSize * LINE_HEIGHT;
+    const linesCount = Math.max(1, this.wrapText(fullLabelText, textMaxWidth, fontSize, false).length);
+    const textTotalH = linesCount * lineH;
+    const textTopY = rowH > textTotalH + pad ? this.cursorY + (rowH - textTotalH) / 2 : this.cursorY + pad;
+    this.drawRichTextAt(labelSegments, textX, textTopY, textMaxWidth, fontSize);
+
+    // 3. Value cell
     this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, rowH, val || 'NA', {
       bold: isValueBold,
       fontSize,
@@ -583,7 +642,19 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     // --- Row 6: CONSTRUCTION DETAILS ---
     this.checkPageBreak(60);
     this.drawHLLAPRow('6.', 'CONSTRUCTION DETAILS', '', true, true);
-    this.drawHLLAPRow('a.', 'Area of the Plot/flat', fields.plotAreaDocs || 'NA', false, true);
+    
+    const isFlat = (fields.plotOrFlat || '').toLowerCase() === 'flat';
+    const areaSegments = isFlat
+      ? [
+          { text: 'Area of the Plot/' },
+          { text: 'flat', bold: true },
+        ]
+      : [
+          { text: 'Area of the ' },
+          { text: 'Plot', bold: true },
+          { text: '/flat' },
+        ];
+    this.drawHLLAPRichLabelRow('a.', areaSegments, fields.plotAreaDocs || 'NA', false, true);
     this.drawHLLAPRow('b.', 'Demarcation at Site', fields.demarcationAtSite || 'NA');
 
     // 6c. Approved Built up Area & Floor-wise break up
@@ -612,27 +683,49 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       }
     }
 
-    this.drawHLLAPRow('f.', 'Whether the construction is as per approved building plan and / or local building bye laws', fields.isConstructionAsPerPlan || 'NA');
-    this.drawHLLAPRow('g.', 'Details of Extra Construction', fields.detailsOfExtraConstruction || 'NA');
+    this.drawHLLAPRow('e.', 'Whether the construction is as per approved building plan and / or local building bye laws', fields.isConstructionAsPerPlan || 'NA');
+    this.drawHLLAPRow('f.', 'Details of Extra Construction', fields.detailsOfExtraConstruction || 'NA');
 
-    // 6h. Recommended / Available Side Margin
+    // 6g. Recommended / Available Side Margin
     this.checkPageBreak(75);
-    this.drawHLLAPRow('h.', 'Recommended / Available Side Margin', '');
+    this.drawHLLAPRow('g.', 'Recommended / Available Side Margin', '');
     this.drawSubItemRow('Front', fields.sideMarginFront || 'NA');
     this.drawSubItemRow('Right Side', fields.sideMarginRight || 'NA');
     this.drawSubItemRow('Left Side', fields.sideMarginLeft || 'NA');
     this.drawSubItemRow('Back Side', fields.sideMarginBack || 'NA');
 
-    this.drawHLLAPRow('i.', 'Quality of construction', fields.qualityOfConstruction || 'NA');
-    this.drawHLLAPRow('j.', 'Maintenance of the Property: excellent/very good/average/poor', fields.maintenanceOfProperty || 'NA');
-    this.drawHLLAPRow('k.', 'Current Life of the structure', fields.currentLifeOfStructure || 'NA');
-    this.drawHLLAPRow('l.', 'Projected Life of the Structure', fields.projectedLifeOfStructure || 'NA');
+    this.drawHLLAPRow('h.', 'Quality of construction', fields.qualityOfConstruction || 'NA');
+    this.drawHLLAPRow('i.', 'Maintenance of the Property: excellent/very good/average/poor', fields.maintenanceOfProperty || 'NA');
+    this.drawHLLAPRow('j.', 'Current Life of the structure', fields.currentLifeOfStructure || 'NA');
+    this.drawHLLAPRow('k.', 'Projected Life of the Structure', fields.projectedLifeOfStructure || 'NA');
 
     // --- Row 7: Recommended Valuation of the Property ---
     this.checkPageBreak(60);
     this.drawHLLAPRow('7.', 'Recommended Valuation of the Property', '', true, true);
-    this.drawHLLAPRow('a.', 'Recommended rate of the Plot/Flat', fields.recommendedRatePerSqft || 'NA');
-    this.drawHLLAPRow('b.', 'Value of the Plot/Flat', fields.valueOfPlotFlat || 'NA', false, true);
+
+    const rateSegments = isFlat
+      ? [
+          { text: 'Recommended rate of the Plot/' },
+          { text: 'Flat', bold: true },
+        ]
+      : [
+          { text: 'Recommended rate of the ' },
+          { text: 'Plot', bold: true },
+          { text: '/Flat' },
+        ];
+    this.drawHLLAPRichLabelRow('a.', rateSegments, fields.recommendedRatePerSqft || 'NA');
+
+    const valSegments = isFlat
+      ? [
+          { text: 'Value of the Plot/' },
+          { text: 'Flat', bold: true },
+        ]
+      : [
+          { text: 'Value of the ' },
+          { text: 'Plot', bold: true },
+          { text: '/Flat' },
+        ];
+    this.drawHLLAPRichLabelRow('b.', valSegments, fields.valueOfPlotFlat || 'NA', false, true);
     this.drawHLLAPRow('c.', 'Estimated Cost of construction', fields.estimatedCostOfConstruction || 'NA', false, true);
     this.drawHLLAPRow(
       'd.',
