@@ -749,13 +749,13 @@ export function BaseMapsSection({
 
   // Coordinates override technical address for more accurate pinpointing
   const queryParam = hasCoordinates
-    ? `loc:${cleanLat},${cleanLng}`
+    ? `${cleanLat},${cleanLng}`
     : cleanAddress;
 
   const encodedQuery = encodeURIComponent(queryParam);
   const hasQuery = hasCoordinates || cleanAddress.length > 0;
   const googleMapsUrl = hasCoordinates
-    ? `https://www.google.com/maps?q=loc:${cleanLat},${cleanLng}&z=17&t=k`
+    ? `https://www.google.com/maps?q=${cleanLat},${cleanLng}&z=17&t=k`
     : `https://www.google.com/maps/search/${encodeURIComponent(cleanAddress)}`;
 
   // Normalize multi-photo arrays (supports both legacy single string and array)

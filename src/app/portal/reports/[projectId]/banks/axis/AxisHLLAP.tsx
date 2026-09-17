@@ -2016,9 +2016,20 @@ export default function AxisHLLAP({
           locationMapImages={fields.locationMapImages || []}
           mouzaMapImages={fields.mouzaMapImages || []}
           sketchMapImages={fields.sketchMapImages || []}
+          latitude={fields.latitude}
+          longitude={fields.longitude}
+          propertyAddress={
+            fields.propertyDetailsHeader ||
+            [fields.plotNo, fields.khataNo, fields.road, fields.locality, fields.city, fields.district, fields.pinCode]
+              .filter(Boolean)
+              .join(', ')
+          }
+          hasExternalCoordinatesField={true}
           coordinatesSectionName="2. Property Details & Boundaries"
           isReadOnly={isReadOnly}
           uploading={uploading}
+          onLatitudeChange={val => handleChange('latitude', val)}
+          onLongitudeChange={val => handleChange('longitude', val)}
           onLocationMapUpload={e => handleMapUpload('locationMapImages', e)}
           onLocationMapRemove={idx => handleMapRemove('locationMapImages', idx)}
           onMouzaMapUpload={e => handleMapUpload('mouzaMapImages', e)}
