@@ -659,7 +659,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                 </div>
               </div>
 
-              <div className={`mt-4 p-4 border rounded-lg transition-all duration-300 ${isGramPanchayat ? 'bg-white border-sky-200' : 'bg-slate-50 border-slate-200 opacity-60 grayscale-[50%]'}`}>
+              <div className={`mt-4 p-4 border rounded-lg transition-all duration-300 ${isGramPanchayat ? 'bg-white border-sky-200' : 'bg-slate-50 border-slate-200 opacity-60 grayscale-50'}`}>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Town / Gram Panchayat Planning Sub-Type <span className="text-red-500">*</span></label>
                 <div className="flex flex-col space-y-3">
                   {[
@@ -726,7 +726,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
               
               {!fields.axisSbbDocSaleDeed && (
                 <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-md animate-fade-in flex items-center space-x-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 shrink-0" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                   </svg>
                   <span><strong>Required:</strong> At least one title ownership document (e.g., Copy of Sale Deed / Patta Certificate) must be selected.</span>
@@ -806,7 +806,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                     {renderEditSwitch('axisSbbDeedNumberDate', !!fields.axisSbbDeedNumberDateIsNA)}
                   </div>
                   <textarea
-                    className={`${inputCls} resize-y min-h-[40px]`}
+                    className={`${inputCls} resize-y min-h-10`}
                     rows={1}
                     value={fields.axisSbbDeedNumberDateIsNA ? 'NA' : (fields.axisSbbDeedNumberDateEditOn ? (fields.axisSbbDeedNumberDate || '') : (fields.axisSbbDeedNumberDate || ''))}
                     onChange={e => handleChange('axisSbbDeedNumberDate', e.target.value.toUpperCase())}
@@ -825,7 +825,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                     {renderEditSwitch('axisSbbPlotKhasraNo', !!fields.axisSbbPlotKhasraNoIsNA)}
                   </div>
                   <textarea
-                    className={`${inputCls} resize-y min-h-[40px]`}
+                    className={`${inputCls} resize-y min-h-10`}
                     rows={1}
                     value={fields.axisSbbPlotKhasraNoIsNA ? 'NA' : (fields.axisSbbPlotKhasraNoEditOn ? (fields.axisSbbPlotKhasraNo || '') : plotComputed)}
                     onChange={e => handleChange('axisSbbPlotKhasraNo', e.target.value.toUpperCase())}
@@ -897,7 +897,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                     {renderEditSwitch('axisSbbVillageCity', !!fields.axisSbbVillageCityIsNA)}
                   </div>
                   <textarea
-                    className={`${inputCls} resize-y min-h-[40px]`}
+                    className={`${inputCls} resize-y min-h-10`}
                     rows={1}
                     value={fields.axisSbbVillageCityIsNA ? 'NA' : (fields.axisSbbVillageCityEditOn ? (fields.axisSbbVillageCity || '') : mouzaComputed)}
                     onChange={e => handleChange('axisSbbVillageCity', e.target.value.toUpperCase())}
@@ -1034,7 +1034,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       </div>
                     )}
                     <textarea
-                      className={`${inputCls} resize-y min-h-[40px] ${!fields.axisSbbDistanceFromCityCenterEditOn && !fields.axisSbbDistanceFromCityCenterIsNA ? 'bg-amber-50 text-amber-800 border-amber-300' : ''}`}
+                      className={`${inputCls} resize-y min-h-10 ${!fields.axisSbbDistanceFromCityCenterEditOn && !fields.axisSbbDistanceFromCityCenterIsNA ? 'bg-amber-50 text-amber-800 border-amber-300' : ''}`}
                       rows={1}
                       value={fields.axisSbbDistanceFromCityCenterIsNA ? 'NA' : (fields.axisSbbDistanceFromCityCenterEditOn ? (fields.axisSbbDistanceFromCityCenter || '') : distanceComputed)}
                       onChange={e => handleChange('axisSbbDistanceFromCityCenter', e.target.value.toUpperCase())}
@@ -2339,7 +2339,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       <th className="p-2 w-28">PERMISSIBLE AREA AS PER BYELAWS (SQ.FT)</th>
                       <th className="p-2 w-28">AREA CONSIDERED FOR VALUATION (SQ.FT)</th>
                       <th className="p-2 w-48">ACCOMMO DATE TION</th>
-                      <th className="p-2 min-w-[200px]">CURRENT USAGE</th>
+                      <th className="p-2 min-w-50">CURRENT USAGE</th>
                       <th className="p-2 w-10"></th>
                     </tr>
                   </thead>
