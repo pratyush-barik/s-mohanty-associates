@@ -191,6 +191,8 @@ export default function AxisHLLAP({
       plotAreaForValuation: raw.plotAreaForValuation || '',
       plotRateForValuation: raw.plotRateForValuation || '',
       valueOfPlotFlat: raw.valueOfPlotFlat || '',
+      constructionRatePerSqft: raw.constructionRatePerSqft || '',
+      proposedStructureType: raw.proposedStructureType || 'Proposed G+2',
       estimatedCostOfConstruction: raw.estimatedCostOfConstruction || '',
       totalCostOfConstruction: raw.totalCostOfConstruction || '',
       isUnderConstruction: raw.isUnderConstruction !== undefined ? raw.isUnderConstruction : false,
@@ -339,8 +341,8 @@ export default function AxisHLLAP({
     const pVal = pArea > 0 && pRate > 0 ? pArea * pRate : 0;
 
     const buaTotal = parseNum(fields.approvedBUATotal) || parseNum(fields.measuredBUATotal);
-    // Estimated construction rate MUST only be used if explicitly entered (no fallback to recommendedRate or 2000)
-    const cRate = parseNum(fields.estimatedCostOfConstruction);
+    // Valuer assessed construction rate per sqft
+    const cRate = parseNum(fields.constructionRatePerSqft);
     const cVal = buaTotal > 0 && cRate > 0 ? buaTotal * cRate : 0;
 
     const total100 = pVal + cVal;
@@ -360,15 +362,15 @@ export default function AxisHLLAP({
       : '';
 
     const totalConstStr = buaTotal > 0 && cRate > 0
-      ? `${buaTotal} sqft @ Rs.${cRate}/- = Rs.${formatIndianCurrency(cVal)}/-`
+      ? `${buaTotal}sqft@ Rs.${cRate}/-=Rs.${formatIndianCurrency(cVal)}/-`
       : '';
 
     const constAsOnDateStr = buaTotal > 0 && cValAsOnDate > 0 && pct < 100
-      ? `${buaTotal} sqft @ Rs.${cRateAsOnDate}/- = Rs.${formatIndianCurrency(cValAsOnDate)}/-`
+      ? `${buaTotal}sqft@ Rs.${cRateAsOnDate}/-= Rs.${formatIndianCurrency(cValAsOnDate)}/-`
       : '';
 
     const currentValStr = pVal > 0 && cVal > 0
-      ? `Rs.${formatIndianCurrency(pVal)}/- + Rs.${formatIndianCurrency(cVal)}/- = Rs.${formatIndianCurrency(total100)}/-`
+      ? `Rs.${formatIndianCurrency(pVal)}/- + Rs.${formatIndianCurrency(cVal)}/- =Rs.${formatIndianCurrency(total100)}/-`
       : pVal > 0
       ? `Rs.${formatIndianCurrency(pVal)}/-`
       : cVal > 0
@@ -376,7 +378,7 @@ export default function AxisHLLAP({
       : '';
 
     const currentValAsOnDateStr = ((pVal > 0 || cValAsOnDate > 0) && pct < 100)
-      ? `Rs.${formatIndianCurrency(pVal)}/- + Rs.${formatIndianCurrency(cValAsOnDate)}/- = Rs.${formatIndianCurrency(totalAsOnDate)}/-`
+      ? `Rs.${formatIndianCurrency(pVal)}/- + Rs.${formatIndianCurrency(cValAsOnDate)}/- =Rs.${formatIndianCurrency(totalAsOnDate)}/-`
       : '';
 
     const distressedStr = distressedVal > 0 && (pVal > 0 || cVal > 0)
@@ -427,7 +429,7 @@ export default function AxisHLLAP({
     fields.plotRateForValuation,
     fields.approvedBUATotal,
     fields.measuredBUATotal,
-    fields.estimatedCostOfConstruction,
+    fields.constructionRatePerSqft,
     fields.percentWorkCompleted,
     fields.distressedPercentage,
     fields.plotOrFlat,
@@ -1843,45 +1845,101 @@ export default function AxisHLLAP({
 
             return (
               <div className="space-y-5">
-                {/* Valuation Basis Inputs (Area & Rate) */}
-                <div className="border border-slate-200 bg-[#F8FAFC] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
-                  <div className="flex items-center justify-between flex-wrap gap-2">
-                    <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">
-                      {selectedUnit} Valuation Basis ({selectedUnit} Area &amp; Rate)
-                    </span>
-                    {pVal > 0 && (
-                      <span className="text-[11px] font-semibold bg-white text-blue-800 px-2.5 py-0.5 rounded-full border border-blue-200">
-                        {pArea} sqft × Rs. {pRate}/sqft = <strong className="text-blue-950">Rs. {formatIndianCurrency(pVal)}/-</strong>
+                {/* 1. Valuation Basis Inputs (Plot & Construction) */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {/* Card 1: Plot Valuation Basis */}
+                  <div className="border border-blue-200 bg-[#F8FAFC] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                        {selectedUnit} Valuation Basis
                       </span>
-                    )}
-                  </div>
+                      {pVal > 0 && (
+                        <span className="text-[11px] font-semibold bg-white text-blue-800 px-2.5 py-0.5 rounded-full border border-blue-200">
+                          {pArea} sqft × Rs. {pRate}/sqft = <strong className="text-blue-950">Rs. {formatIndianCurrency(pVal)}/-</strong>
+                        </span>
+                      )}
+                    </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Field label={`${selectedUnit} Area for Valuation`}>
-                      <div className="space-y-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <Field label={`${selectedUnit} Area for Valuation`}>
+                        <div className="space-y-1">
+                          <input
+                            type="text"
+                            value={fields.plotAreaDocs ? `${parseNum(fields.plotAreaDocs)} sqft` : (fields.plotAreaDocs || '0 sqft')}
+                            className={inputCls + ' bg-slate-100 text-slate-700 font-medium cursor-not-allowed border-slate-300'}
+                            readOnly
+                            disabled
+                          />
+                          <span className="block text-[10px] text-blue-700 font-semibold">
+                            🔒 Locked from 6.a Area
+                          </span>
+                        </div>
+                      </Field>
+
+                      <Field label={`${selectedUnit} Rate (Rs. / sqft)`}>
                         <input
                           type="text"
-                          value={fields.plotAreaDocs ? `${parseNum(fields.plotAreaDocs)} sqft` : (fields.plotAreaDocs || '0 sqft')}
-                          className={inputCls + ' bg-slate-100 text-slate-700 font-medium cursor-not-allowed border-slate-300'}
-                          readOnly
-                          disabled
+                          value={fields.plotRateForValuation}
+                          onChange={e => handleChange('plotRateForValuation', sanitizePositiveFloat(e.target.value))}
+                          className={inputCls}
+                          disabled={isReadOnly}
+                          placeholder="e.g. 2200"
                         />
-                        <span className="block text-[10px] text-blue-700 font-semibold">
-                          🔒 Referenced &amp; locked from 6.a Area of the {selectedUnit} (as per documents)
-                        </span>
-                      </div>
-                    </Field>
+                      </Field>
+                    </div>
+                  </div>
 
-                    <Field label={`${selectedUnit} Rate (Rs. / sqft)`}>
-                      <input
-                        type="text"
-                        value={fields.plotRateForValuation}
-                        onChange={e => handleChange('plotRateForValuation', sanitizePositiveFloat(e.target.value))}
-                        className={inputCls}
-                        disabled={isReadOnly}
-                        placeholder="e.g. 2500"
-                      />
-                    </Field>
+                  {/* Card 2: Construction Valuation Basis */}
+                  <div className="border border-teal-200 bg-[#F0FDFA] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <span className="text-xs font-bold text-teal-800 uppercase tracking-wide">
+                        Structure Construction Valuation Basis
+                      </span>
+                      {cVal > 0 && (
+                        <span className="text-[11px] font-semibold bg-white text-teal-800 px-2.5 py-0.5 rounded-full border border-teal-200">
+                          {buaTotal} sqft × Rs. {cRate}/sqft = <strong className="text-teal-950">Rs. {formatIndianCurrency(cVal)}/-</strong>
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <Field label="BUA for Valuation">
+                        <div className="space-y-1">
+                          <input
+                            type="text"
+                            value={buaTotal > 0 ? `${buaTotal} sqft` : '0 sqft'}
+                            className={inputCls + ' bg-slate-100 text-slate-700 font-medium cursor-not-allowed border-slate-300'}
+                            readOnly
+                            disabled
+                          />
+                          <span className="block text-[10px] text-teal-700 font-semibold">
+                            🔒 Locked from 6.c / 6.d
+                          </span>
+                        </div>
+                      </Field>
+
+                      <Field label="Construction Rate (Rs./sqft)">
+                        <input
+                          type="text"
+                          value={fields.constructionRatePerSqft || ''}
+                          onChange={e => handleChange('constructionRatePerSqft', sanitizePositiveFloat(e.target.value))}
+                          className={inputCls}
+                          disabled={isReadOnly}
+                          placeholder="e.g. 2000"
+                        />
+                      </Field>
+
+                      <Field label="Structure Description">
+                        <input
+                          type="text"
+                          value={fields.proposedStructureType || ''}
+                          onChange={e => handleChange('proposedStructureType', e.target.value)}
+                          className={inputCls}
+                          disabled={isReadOnly}
+                          placeholder="e.g. Proposed G+2"
+                        />
+                      </Field>
+                    </div>
                   </div>
                 </div>
 
@@ -1895,6 +1953,7 @@ export default function AxisHLLAP({
                         onChange={e => handleChange('recommendedRatePerSqft', e.target.value)}
                         className={inputCls}
                         disabled={isReadOnly}
+                        placeholder="e.g. Plot- Rs. 2200/-per sqft & Building Rs. 2000/-per sqft"
                       />
                     </Field>
 
@@ -1908,42 +1967,28 @@ export default function AxisHLLAP({
                           disabled={isReadOnly}
                         />
                         <span className="block text-[10px] text-blue-700 font-medium">
-                          Derived using: {selectedUnit} Area for Valuation × {selectedUnit} Rate per sqft
+                          Derived using: {selectedUnit} Area × Rate
                         </span>
                       </div>
                     </Field>
                   </div>
                 </div>
 
-                {/* c - d: Structure Construction Cost Valuation (Soft Container - Soft Teal) */}
+                {/* c & d: Construction Valuation Fields (Soft Container - Soft Teal) */}
                 <div className="border border-teal-200 bg-[#F0FDFA] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
-                  {cVal > 0 && (
-                    <div className="flex justify-end">
-                      <span className="text-[11px] font-semibold bg-white text-teal-800 px-2.5 py-0.5 rounded-full border border-teal-200">
-                        {buaTotal} sqft × Rs. {cRate}/sqft = <strong className="text-teal-950">Rs. {formatIndianCurrency(cVal)}/-</strong>
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Field label="c. Estimated Cost of Construction (Rate/sqft)">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Field label="c. Estimated Cost of Construction (Borrower's / Sanctioned Cost)">
                       <input
                         type="text"
                         value={fields.estimatedCostOfConstruction}
-                        onChange={e => handleChange('estimatedCostOfConstruction', sanitizePositiveFloat(e.target.value))}
+                        onChange={e => handleChange('estimatedCostOfConstruction', e.target.value)}
                         className={inputCls}
                         disabled={isReadOnly}
-                        placeholder="e.g. 1800"
+                        placeholder="e.g. Rs.85,03,000/- for construction of G+2 only."
                       />
                     </Field>
 
-                    <Field label="BUA Basis (from 6c / 6d)">
-                      <div className="px-3 py-2 bg-white rounded-lg border border-teal-200/80 text-xs font-semibold text-slate-700">
-                        Appr: <span className="font-mono text-teal-900 font-bold">{fields.approvedBUATotal || '0'} sqft</span> | Meas: <span className="font-mono text-teal-900 font-bold">{fields.measuredBUATotal || '0'} sqft</span>
-                      </div>
-                    </Field>
-
-                    <Field span={3} label="d. Total Cost of Construction (100% Completion)">
+                    <Field label={`d. Total Cost of Construction (${fields.proposedStructureType || 'Proposed G+2'}) on 100% Completion`}>
                       <input
                         type="text"
                         value={fields.totalCostOfConstruction}
@@ -1953,18 +1998,24 @@ export default function AxisHLLAP({
                       />
                     </Field>
                   </div>
-                </div>
 
-                {/* e - g: Construction Progress & As-On-Date Valuation (Soft Container - Soft Cyan) */}
-                <div className="border border-cyan-200 bg-[#ECFEFF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
-                  {cValAsOnDate > 0 && pct < 100 && (
-                    <div className="flex justify-end">
-                      <span className="text-[11px] font-semibold bg-white text-cyan-900 px-2.5 py-0.5 rounded-full border border-cyan-200">
-                        Const As-On-Date ({pct}%): <strong className="text-cyan-950">Rs. {formatIndianCurrency(cValAsOnDate)}/-</strong>
-                      </span>
+                  {pct < 100 && (
+                    <div className="pt-2 border-t border-teal-200">
+                      <Field label={`As on Date (${pct}%) Construction Cost`}>
+                        <input
+                          type="text"
+                          value={fields.constructionCostAsOnDate || ''}
+                          onChange={e => handleChange('constructionCostAsOnDate', e.target.value)}
+                          className={inputCls + ' font-medium text-teal-950 bg-teal-50/50'}
+                          disabled={isReadOnly}
+                        />
+                      </Field>
                     </div>
                   )}
+                </div>
 
+                {/* e - g: Construction Progress (Soft Container - Soft Slate) */}
+                <div className="border border-slate-200 bg-[#F8FAFC] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <Field label="e. Stage of Construction">
                       <input
@@ -1973,6 +2024,7 @@ export default function AxisHLLAP({
                         onChange={e => handleChange('stageOfConstruction', e.target.value)}
                         className={inputCls}
                         disabled={isReadOnly}
+                        placeholder="e.g. GF RCC roof slab completed..."
                       />
                     </Field>
 
@@ -1983,7 +2035,7 @@ export default function AxisHLLAP({
                         onChange={e => handleChange('percentWorkCompleted', sanitizePositiveFloat(e.target.value))}
                         className={inputCls}
                         disabled={isReadOnly}
-                        placeholder="e.g. 100"
+                        placeholder="e.g. 35"
                       />
                     </Field>
 
@@ -1994,27 +2046,7 @@ export default function AxisHLLAP({
                         onChange={e => handleChange('percentDisbursementRecommended', sanitizePositiveFloat(e.target.value))}
                         className={inputCls}
                         disabled={isReadOnly}
-                        placeholder="e.g. 100"
-                      />
-                    </Field>
-
-                    <Field span={2} label={`Construction Cost As On Date (${fields.percentWorkCompleted || 'X%'})`}>
-                      <input
-                        type="text"
-                        value={fields.constructionCostAsOnDate || ''}
-                        onChange={e => handleChange('constructionCostAsOnDate', e.target.value)}
-                        className={inputCls + ' font-medium text-slate-900'}
-                        disabled={isReadOnly}
-                      />
-                    </Field>
-
-                    <Field label={`Current Value As On Date (${selectedUnit} + Const)`}>
-                      <input
-                        type="text"
-                        value={fields.currentValueAsOnDate || ''}
-                        onChange={e => handleChange('currentValueAsOnDate', e.target.value)}
-                        className={inputCls + ' font-medium text-slate-900'}
-                        disabled={isReadOnly}
+                        placeholder="e.g. 45"
                       />
                     </Field>
                   </div>
@@ -2023,10 +2055,20 @@ export default function AxisHLLAP({
                 {/* h - i: Final Property Value & Site Visit (Soft Container - Soft Indigo) */}
                 <div className="border border-indigo-200 bg-[#EEF2FF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
                   {total100 > 0 && (
-                    <div className="flex justify-end">
-                      <span className="text-[11px] font-semibold bg-white text-indigo-900 px-2.5 py-0.5 rounded-full border border-indigo-200">
-                        100% Total: <strong className="text-indigo-950">Rs. {formatIndianCurrency(total100)}/-</strong>
+                    <div className="flex justify-between items-center flex-wrap gap-2">
+                      <span className="text-xs font-bold text-indigo-900 uppercase tracking-wide">
+                        h. Property Valuation Summary
                       </span>
+                      <div className="flex gap-2 flex-wrap">
+                        <span className="text-[11px] font-semibold bg-white text-indigo-900 px-2.5 py-0.5 rounded-full border border-indigo-200">
+                          100% Total: <strong className="text-indigo-950">Rs. {formatIndianCurrency(total100)}/-</strong>
+                        </span>
+                        {pct < 100 && totalAsOnDate > 0 && (
+                          <span className="text-[11px] font-semibold bg-white text-cyan-900 px-2.5 py-0.5 rounded-full border border-cyan-200">
+                            As On Date ({pct}%): <strong className="text-cyan-950">Rs. {formatIndianCurrency(totalAsOnDate)}/-</strong>
+                          </span>
+                        )}
+                      </div>
                     </div>
                   )}
 
@@ -2048,6 +2090,20 @@ export default function AxisHLLAP({
                       disabled={isReadOnly}
                     />
                   </div>
+
+                  {pct < 100 && (
+                    <div className="pt-2 border-t border-indigo-200">
+                      <Field label={`Current Value As On Date (${pct}% Completion)`}>
+                        <input
+                          type="text"
+                          value={fields.currentValueAsOnDate || ''}
+                          onChange={e => handleChange('currentValueAsOnDate', e.target.value)}
+                          className={inputCls + ' font-bold text-indigo-950 bg-white'}
+                          disabled={isReadOnly}
+                        />
+                      </Field>
+                    </div>
+                  )}
                 </div>
 
                 {/* Point 8: Govt Reckoner Rates (Soft Container - Soft Emerald) */}

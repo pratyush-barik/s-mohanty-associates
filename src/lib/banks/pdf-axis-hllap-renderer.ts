@@ -1,4 +1,4 @@
-import { rgb } from 'pdf-lib';
+import { rgb, PDFImage } from 'pdf-lib';
 import {
   PDFBankRenderer,
   PAGE_W,
@@ -124,6 +124,8 @@ export interface AxisHLLAPReportFields extends Partial<BaseReportFields> {
   plotAreaForValuation: string;
   plotRateForValuation: string;
   valueOfPlotFlat: string;
+  constructionRatePerSqft?: string;
+  proposedStructureType?: string;
   estimatedCostOfConstruction: string;
   totalCostOfConstruction: string;
   isUnderConstruction?: boolean;
@@ -738,20 +740,21 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
         ];
     this.drawHLLAPRichLabelRow('b.', valSegments, fields.valueOfPlotFlat || '', true);
     this.drawHLLAPRow('c.', 'Estimated Cost of construction', fields.estimatedCostOfConstruction || '', false, true);
+    
+    const structType = (fields.proposedStructureType || '').trim() || (fields.isUnderConstruction ? 'Proposed G+2' : 'approved G+1');
     this.drawHLLAPRow(
       'd.',
-      fields.isUnderConstruction
-        ? 'Total Cost of construction(Proposed G+2) on 100% completion'
-        : 'Total Cost of construction(approved G+1)',
+      `Total Cost of construction(${structType}) on 100% completion`,
       fields.totalCostOfConstruction || '',
       false,
       true
     );
 
-    // If Under-Construction, show "As on date (X%)" construction cost
-    if (fields.isUnderConstruction && fields.constructionCostAsOnDate) {
+    // If Under-Construction or percentWorkCompleted < 100, show "As on date (X%)" construction cost
+    const pctNum = parseFloat(String(fields.percentWorkCompleted || '100').replace(/[^\d.]/g, '')) || 100;
+    if ((fields.isUnderConstruction || pctNum < 100) && fields.constructionCostAsOnDate) {
       this.drawSubItemRow(
-        `As on date (${fields.percentWorkCompleted || '0%'})`,
+        `As on date (${fields.percentWorkCompleted ? (fields.percentWorkCompleted.includes('%') ? fields.percentWorkCompleted : `${fields.percentWorkCompleted}%`) : '0%'})`,
         fields.constructionCostAsOnDate,
         false,
         true
@@ -759,8 +762,8 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     }
 
     this.drawHLLAPRow('e.', 'Stage of Construction', fields.stageOfConstruction || '');
-    this.drawHLLAPRow('f.', '% Work completed', fields.percentWorkCompleted || '');
-    this.drawHLLAPRow('g.', '% Disbursement Recommended', fields.percentDisbursementRecommended || '');
+    this.drawHLLAPRow('f.', '% Work completed', fields.percentWorkCompleted ? (fields.percentWorkCompleted.includes('%') ? fields.percentWorkCompleted : `${fields.percentWorkCompleted}%`) : '');
+    this.drawHLLAPRow('g.', '% Disbursement Recommended', fields.percentDisbursementRecommended ? (fields.percentDisbursementRecommended.includes('%') ? fields.percentDisbursementRecommended : `${fields.percentDisbursementRecommended}%`) : '');
 
     // 7h. Current Value 100% completion (uniform LBL_BG cell color)
     this.drawHLLAPRow(
@@ -773,10 +776,11 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       LBL_BG
     );
 
-    // If Under-Construction, show "As on date X% completion" Current Value (uniform LBL_BG cell color)
-    if (fields.isUnderConstruction && fields.currentValueAsOnDate) {
+    // If Under-Construction or percentWorkCompleted < 100, show "As on date X% completion" Current Value (uniform LBL_BG cell color)
+    if ((fields.isUnderConstruction || pctNum < 100) && fields.currentValueAsOnDate) {
+      const pctDisplay = fields.percentWorkCompleted ? (fields.percentWorkCompleted.includes('%') ? fields.percentWorkCompleted : `${fields.percentWorkCompleted}%`) : '';
       this.drawSubItemRow(
-        `As on date ${fields.percentWorkCompleted || ''} completion`,
+        `As on date ${pctDisplay} completion`,
         fields.currentValueAsOnDate,
         false,
         true,
@@ -901,9 +905,60 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
   }
 
   /**
-   * Draw the Photographs and Maps annexure pages:
-   * Multi-page dedicated layout matching Report 2 if sketch map is present or photos > 4;
-   * Otherwise compact 2-column layout matching Report 1.
+   * Draw an embedded image inside a bounding box while preserving its natural aspect ratio.
+   * Prevents stretching or distortion, and centers the image within the container.
+   */
+  private drawImageContained(
+    img: PDFImage,
+    boxX: number,
+    boxY: number,
+    boxW: number,
+    boxH: number,
+    drawBorder: boolean = true
+  ) {
+    if (drawBorder) {
+      this.page.drawRectangle({
+        x: boxX,
+        y: boxY,
+        width: boxW,
+        height: boxH,
+        borderColor: rgb(0, 0, 0),
+        borderWidth: 0.5,
+      });
+    }
+
+    const availW = Math.max(10, boxW - 2);
+    const availH = Math.max(10, boxH - 2);
+    const imgRatio = img.width / img.height;
+    const boxRatio = availW / availH;
+    let drawW = availW;
+    let drawH = availH;
+
+    if (imgRatio > boxRatio) {
+      // Image is wider than container: constrain by width
+      drawW = availW;
+      drawH = drawW / imgRatio;
+    } else {
+      // Image is taller than container: constrain by height
+      drawH = availH;
+      drawW = drawH * imgRatio;
+    }
+
+    const drawX = boxX + 1 + (availW - drawW) / 2;
+    const drawY = boxY + 1 + (availH - drawH) / 2;
+
+    this.page.drawImage(img, {
+      x: drawX,
+      y: drawY,
+      width: drawW,
+      height: drawH,
+    });
+  }
+
+  /**
+   * Draw the Photographs and Maps annexures seamlessly without wasting vertical space:
+   * Continues on the current page if sufficient space exists under Undertaking,
+   * otherwise neatly flows across dedicated pages while strictly preserving image aspect ratios.
    */
   private async drawPhotosAndMaps(
     fields: AxisHLLAPReportFields,
@@ -933,16 +988,30 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       return;
     }
 
+    // Check remaining vertical height on current page after Undertaking + Signatory
+    const remainingOnCurrent = PAGE_H - MARGIN_B - this.cursorY;
+    const canFitOnCurrentPage = remainingOnCurrent >= 240;
+
     if (hasSketchMap || validPhotos.length > 4) {
       // ═════════════════════════════════════════════════════════════════
       // MODE A: MULTI-PAGE DEDICATED ANNEXURES
       // ═════════════════════════════════════════════════════════════════
 
-      // 1. Page of Photographs (only if photos exist)
+      // 1. Page of Photographs
       if (hasPhotos) {
-        this.addPage();
-        this.cursorY = MARGIN_T;
-        const startY = this.pdfY(this.cursorY);
+        let startY: number;
+        let availablePhotoH: number;
+
+        if (canFitOnCurrentPage) {
+          // Continue on current page directly below signatory
+          startY = this.pdfY(this.cursorY + 16);
+          availablePhotoH = remainingOnCurrent - 30;
+        } else {
+          this.addPage();
+          this.cursorY = MARGIN_T;
+          startY = this.pdfY(this.cursorY);
+          availablePhotoH = PAGE_H - MARGIN_T - MARGIN_B - 25;
+        }
 
         const photoHeading = 'PHOTOGRAPHS';
         const photoHw = this.fontBold.widthOfTextAtSize(photoHeading, FONT_SIZE_CAPTION);
@@ -950,12 +1019,11 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
         this.page.drawLine({ start: { x: MARGIN_L, y: startY - 12 }, end: { x: MARGIN_L + photoHw, y: startY - 12 }, thickness: 1, color: rgb(0,0,0) });
 
         const photoStartY = startY - 22;
-        const availablePhotoH = PAGE_H - MARGIN_T - MARGIN_B - 25;
         const pGridCols = 2;
         const pGridRows = Math.min(4, Math.ceil(validPhotos.length / pGridCols));
         const pGap = 8;
         const pW = (CONTENT_W - pGap * (pGridCols - 1)) / pGridCols;
-        const pH = Math.min(160, (availablePhotoH - pGap * (pGridRows - 1)) / pGridRows);
+        const pH = Math.min(180, (availablePhotoH - pGap * (pGridRows - 1)) / pGridRows);
 
         for (let i = 0; i < Math.min(8, validPhotos.length); i++) {
           const colIdx = i % pGridCols;
@@ -966,27 +1034,22 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
           const photoItem = validPhotos[i];
           const embeddedImg = await this.embedImgSafe(photoItem.bytes);
 
-          this.page.drawRectangle({
-            x: px,
-            y: py,
-            width: pW,
-            height: pH,
-            borderColor: rgb(0, 0, 0),
-            borderWidth: 0.5,
-          });
-
           if (embeddedImg) {
-            this.page.drawImage(embeddedImg, {
-              x: px + 1,
-              y: py + 1,
-              width: pW - 2,
-              height: pH - 2,
+            this.drawImageContained(embeddedImg, px, py, pW, pH, true);
+          } else {
+            this.page.drawRectangle({
+              x: px,
+              y: py,
+              width: pW,
+              height: pH,
+              borderColor: rgb(0, 0, 0),
+              borderWidth: 0.5,
             });
           }
         }
       }
 
-      // 2. Dedicated Maps Page: Mouza Map & Location Map (only if maps exist)
+      // 2. Dedicated Maps Page: Mouza Map & Location Map
       if (hasMouzaMap || hasLocMap) {
         this.addPage();
         this.cursorY = MARGIN_T;
@@ -998,22 +1061,11 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
           // Top: Mouza Map
           this.page.drawText('MOUZA MAP', { x: MARGIN_L, y: mapPageStartY - 10, size: FONT_SIZE_CAPTION, font: this.fontBold, color: rgb(0,0,0) });
           const mouzaBoxY = mapPageStartY - 20 - halfH;
-          this.page.drawRectangle({
-            x: MARGIN_L,
-            y: mouzaBoxY,
-            width: CONTENT_W,
-            height: halfH,
-            borderColor: rgb(0,0,0),
-            borderWidth: 0.5,
-          });
           const mImg = await this.embedImgSafe(validMouzaMaps[0]);
           if (mImg) {
-            this.page.drawImage(mImg, {
-              x: MARGIN_L + 1,
-              y: mouzaBoxY + 1,
-              width: CONTENT_W - 2,
-              height: halfH - 2,
-            });
+            this.drawImageContained(mImg, MARGIN_L, mouzaBoxY, CONTENT_W, halfH, true);
+          } else {
+            this.page.drawRectangle({ x: MARGIN_L, y: mouzaBoxY, width: CONTENT_W, height: halfH, borderColor: rgb(0,0,0), borderWidth: 0.5 });
           }
 
           // Bottom: Location Map
@@ -1024,22 +1076,11 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
           const locBoxTop = mouzaBoxY - 20;
           this.page.drawText(this.sanitizeText(locHeadingText), { x: MARGIN_L, y: locBoxTop, size: FONT_SIZE_CAPTION, font: this.fontBold, color: rgb(0,0,0) });
           const locBoxY = locBoxTop - 10 - halfH;
-          this.page.drawRectangle({
-            x: MARGIN_L,
-            y: locBoxY,
-            width: CONTENT_W,
-            height: halfH,
-            borderColor: rgb(0,0,0),
-            borderWidth: 0.5,
-          });
           const lImg = await this.embedImgSafe(validLocMaps[0]);
           if (lImg) {
-            this.page.drawImage(lImg, {
-              x: MARGIN_L + 1,
-              y: locBoxY + 1,
-              width: CONTENT_W - 2,
-              height: halfH - 2,
-            });
+            this.drawImageContained(lImg, MARGIN_L, locBoxY, CONTENT_W, halfH, true);
+          } else {
+            this.page.drawRectangle({ x: MARGIN_L, y: locBoxY, width: CONTENT_W, height: halfH, borderColor: rgb(0,0,0), borderWidth: 0.5 });
           }
         } else {
           // Single map full page height
@@ -1048,27 +1089,16 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
           const heading = isMouza ? 'MOUZA MAP' : `LOCATION MAP${(fields.latitude || fields.longitude) ? ` (LAT: ${fields.latitude || ''}, LONG: ${fields.longitude || ''})` : ''}`;
           this.page.drawText(this.sanitizeText(heading), { x: MARGIN_L, y: mapPageStartY - 10, size: FONT_SIZE_CAPTION, font: this.fontBold, color: rgb(0,0,0) });
           const boxY = mapPageStartY - 20 - fullMapH;
-          this.page.drawRectangle({
-            x: MARGIN_L,
-            y: boxY,
-            width: CONTENT_W,
-            height: fullMapH,
-            borderColor: rgb(0,0,0),
-            borderWidth: 0.5,
-          });
           const singleImg = await this.embedImgSafe(isMouza ? validMouzaMaps[0] : validLocMaps[0]);
           if (singleImg) {
-            this.page.drawImage(singleImg, {
-              x: MARGIN_L + 1,
-              y: boxY + 1,
-              width: CONTENT_W - 2,
-              height: fullMapH - 2,
-            });
+            this.drawImageContained(singleImg, MARGIN_L, boxY, CONTENT_W, fullMapH, true);
+          } else {
+            this.page.drawRectangle({ x: MARGIN_L, y: boxY, width: CONTENT_W, height: fullMapH, borderColor: rgb(0,0,0), borderWidth: 0.5 });
           }
         }
       }
 
-      // 3. Dedicated Sketch Map Page (only if sketch map exists)
+      // 3. Dedicated Sketch Map Page
       if (hasSketchMap) {
         this.addPage();
         this.cursorY = MARGIN_T;
@@ -1076,32 +1106,30 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
         this.page.drawText('SKETCH MAP', { x: MARGIN_L, y: sketchStartY - 10, size: FONT_SIZE_CAPTION, font: this.fontBold, color: rgb(0,0,0) });
         const sketchBoxH = PAGE_H - MARGIN_T - MARGIN_B - 30;
         const sketchBoxY = sketchStartY - 20 - sketchBoxH;
-        this.page.drawRectangle({
-          x: MARGIN_L,
-          y: sketchBoxY,
-          width: CONTENT_W,
-          height: sketchBoxH,
-          borderColor: rgb(0,0,0),
-          borderWidth: 0.5,
-        });
         const sImg = await this.embedImgSafe(validSketchMaps[0]);
         if (sImg) {
-          this.page.drawImage(sImg, {
-            x: MARGIN_L + 1,
-            y: sketchBoxY + 1,
-            width: CONTENT_W - 2,
-            height: sketchBoxH - 2,
-          });
+          this.drawImageContained(sImg, MARGIN_L, sketchBoxY, CONTENT_W, sketchBoxH, true);
+        } else {
+          this.page.drawRectangle({ x: MARGIN_L, y: sketchBoxY, width: CONTENT_W, height: sketchBoxH, borderColor: rgb(0,0,0), borderWidth: 0.5 });
         }
       }
     } else {
       // ═════════════════════════════════════════════════════════════════
-      // MODE B: COMPACT FINAL PAGE (Matching Report 1)
+      // MODE B: COMPACT ANNEXURE LAYOUT
       // ═════════════════════════════════════════════════════════════════
-      this.addPage();
-      this.cursorY = MARGIN_T;
-      const startY = this.pdfY(this.cursorY);
-      const availableH = PAGE_H - MARGIN_T - MARGIN_B - 25;
+      let startY: number;
+      let availableH: number;
+
+      if (canFitOnCurrentPage) {
+        // Continue on current page directly below signatory
+        startY = this.pdfY(this.cursorY + 16);
+        availableH = remainingOnCurrent - 30;
+      } else {
+        this.addPage();
+        this.cursorY = MARGIN_T;
+        startY = this.pdfY(this.cursorY);
+        availableH = PAGE_H - MARGIN_T - MARGIN_B - 25;
+      }
 
       if (hasPhotos && (hasLocMap || hasMouzaMap)) {
         // Both photos and map(s) present: 2-column layout
@@ -1123,7 +1151,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
         const pGridRows = Math.min(2, Math.ceil(numPhotos / pGridCols));
         const pGap = 6;
         const pW = (leftColW - pGap * (pGridCols - 1)) / pGridCols;
-        const pH = Math.min(160, (availableH - pGap * (pGridRows - 1)) / pGridRows);
+        const pH = Math.min(180, (availableH - pGap * (pGridRows - 1)) / pGridRows);
 
         for (let i = 0; i < numPhotos; i++) {
           const colIdx = i % pGridCols;
@@ -1134,26 +1162,21 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
           const photoItem = validPhotos[i];
           const embeddedImg = await this.embedImgSafe(photoItem.bytes);
 
-          this.page.drawRectangle({
-            x: px,
-            y: py,
-            width: pW,
-            height: pH,
-            borderColor: rgb(0, 0, 0),
-            borderWidth: 0.5,
-          });
-
           if (embeddedImg) {
-            this.page.drawImage(embeddedImg, {
-              x: px + 1,
-              y: py + 1,
-              width: pW - 2,
-              height: pH - 2,
+            this.drawImageContained(embeddedImg, px, py, pW, pH, true);
+          } else {
+            this.page.drawRectangle({
+              x: px,
+              y: py,
+              width: pW,
+              height: pH,
+              borderColor: rgb(0, 0, 0),
+              borderWidth: 0.5,
             });
           }
         }
 
-        // 2. RIGHT COLUMN: MAPS (Only render maps that actually exist)
+        // 2. RIGHT COLUMN: MAPS
         if (hasLocMap && hasMouzaMap) {
           const mapH = (availableH - 45) / 2;
 
@@ -1164,32 +1187,35 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
           const locHeading = `LOCATION MAP${latLongStrCompact}`;
           this.page.drawText(this.sanitizeText(locHeading), { x: rightX, y: startY - 10, size: FONT_SIZE_CAPTION, font: this.fontBold, color: rgb(0, 0, 0) });
           const locY = startY - 20 - mapH;
-          this.page.drawRectangle({ x: rightX, y: locY, width: rightColW, height: mapH, borderColor: rgb(0, 0, 0), borderWidth: 0.5 });
           const locImg = await this.embedImgSafe(validLocMaps[0]);
           if (locImg) {
-            this.page.drawImage(locImg, { x: rightX + 1, y: locY + 1, width: rightColW - 2, height: mapH - 2 });
+            this.drawImageContained(locImg, rightX, locY, rightColW, mapH, true);
+          } else {
+            this.page.drawRectangle({ x: rightX, y: locY, width: rightColW, height: mapH, borderColor: rgb(0, 0, 0), borderWidth: 0.5 });
           }
 
           // Bottom: Mouza Map
           const mouzaHeadingY = locY - 16;
           this.page.drawText('MOUZA MAP', { x: rightX, y: mouzaHeadingY, size: FONT_SIZE_CAPTION, font: this.fontBold, color: rgb(0, 0, 0) });
           const mouzaY = mouzaHeadingY - 8 - mapH;
-          this.page.drawRectangle({ x: rightX, y: mouzaY, width: rightColW, height: mapH, borderColor: rgb(0, 0, 0), borderWidth: 0.5 });
           const mouzaImg = await this.embedImgSafe(validMouzaMaps[0]);
           if (mouzaImg) {
-            this.page.drawImage(mouzaImg, { x: rightX + 1, y: mouzaY + 1, width: rightColW - 2, height: mapH - 2 });
+            this.drawImageContained(mouzaImg, rightX, mouzaY, rightColW, mapH, true);
+          } else {
+            this.page.drawRectangle({ x: rightX, y: mouzaY, width: rightColW, height: mapH, borderColor: rgb(0, 0, 0), borderWidth: 0.5 });
           }
         } else {
-          // Single map on right column (fills full right column height)
+          // Single map on right column
           const singleMapH = availableH - 25;
           const isMouza = hasMouzaMap;
           const heading = isMouza ? 'MOUZA MAP' : `LOCATION MAP${(fields.latitude || fields.longitude) ? ` (LAT: ${fields.latitude || ''}, LONG: ${fields.longitude || ''})` : ''}`;
           this.page.drawText(this.sanitizeText(heading), { x: rightX, y: startY - 10, size: FONT_SIZE_CAPTION, font: this.fontBold, color: rgb(0, 0, 0) });
           const mapY = startY - 20 - singleMapH;
-          this.page.drawRectangle({ x: rightX, y: mapY, width: rightColW, height: singleMapH, borderColor: rgb(0, 0, 0), borderWidth: 0.5 });
           const singleMapImg = await this.embedImgSafe(isMouza ? validMouzaMaps[0] : validLocMaps[0]);
           if (singleMapImg) {
-            this.page.drawImage(singleMapImg, { x: rightX + 1, y: mapY + 1, width: rightColW - 2, height: singleMapH - 2 });
+            this.drawImageContained(singleMapImg, rightX, mapY, rightColW, singleMapH, true);
+          } else {
+            this.page.drawRectangle({ x: rightX, y: mapY, width: rightColW, height: singleMapH, borderColor: rgb(0, 0, 0), borderWidth: 0.5 });
           }
         }
       } else if (hasPhotos) {
@@ -1215,21 +1241,16 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
           const photoItem = validPhotos[i];
           const embeddedImg = await this.embedImgSafe(photoItem.bytes);
 
-          this.page.drawRectangle({
-            x: px,
-            y: py,
-            width: pW,
-            height: pH,
-            borderColor: rgb(0, 0, 0),
-            borderWidth: 0.5,
-          });
-
           if (embeddedImg) {
-            this.page.drawImage(embeddedImg, {
-              x: px + 1,
-              y: py + 1,
-              width: pW - 2,
-              height: pH - 2,
+            this.drawImageContained(embeddedImg, px, py, pW, pH, true);
+          } else {
+            this.page.drawRectangle({
+              x: px,
+              y: py,
+              width: pW,
+              height: pH,
+              borderColor: rgb(0, 0, 0),
+              borderWidth: 0.5,
             });
           }
         }
@@ -1245,20 +1266,22 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
           const locHeading = `LOCATION MAP${latLongStr}`;
           this.page.drawText(this.sanitizeText(locHeading), { x: MARGIN_L, y: startY - 10, size: FONT_SIZE_CAPTION, font: this.fontBold, color: rgb(0, 0, 0) });
           const locY = startY - 20 - halfH;
-          this.page.drawRectangle({ x: MARGIN_L, y: locY, width: CONTENT_W, height: halfH, borderColor: rgb(0, 0, 0), borderWidth: 0.5 });
           const locImg = await this.embedImgSafe(validLocMaps[0]);
           if (locImg) {
-            this.page.drawImage(locImg, { x: MARGIN_L + 1, y: locY + 1, width: CONTENT_W - 2, height: halfH - 2 });
+            this.drawImageContained(locImg, MARGIN_L, locY, CONTENT_W, halfH, true);
+          } else {
+            this.page.drawRectangle({ x: MARGIN_L, y: locY, width: CONTENT_W, height: halfH, borderColor: rgb(0, 0, 0), borderWidth: 0.5 });
           }
 
           // Bottom: Mouza Map
           const mouzaHeadingY = locY - 16;
           this.page.drawText('MOUZA MAP', { x: MARGIN_L, y: mouzaHeadingY, size: FONT_SIZE_CAPTION, font: this.fontBold, color: rgb(0, 0, 0) });
           const mouzaY = mouzaHeadingY - 8 - halfH;
-          this.page.drawRectangle({ x: MARGIN_L, y: mouzaY, width: CONTENT_W, height: halfH, borderColor: rgb(0, 0, 0), borderWidth: 0.5 });
           const mouzaImg = await this.embedImgSafe(validMouzaMaps[0]);
           if (mouzaImg) {
-            this.page.drawImage(mouzaImg, { x: MARGIN_L + 1, y: mouzaY + 1, width: CONTENT_W - 2, height: halfH - 2 });
+            this.drawImageContained(mouzaImg, MARGIN_L, mouzaY, CONTENT_W, halfH, true);
+          } else {
+            this.page.drawRectangle({ x: MARGIN_L, y: mouzaY, width: CONTENT_W, height: halfH, borderColor: rgb(0, 0, 0), borderWidth: 0.5 });
           }
         } else {
           // Single map full width
@@ -1267,10 +1290,11 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
           const heading = isMouza ? 'MOUZA MAP' : `LOCATION MAP${(fields.latitude || fields.longitude) ? ` (LAT: ${fields.latitude || ''}, LONG: ${fields.longitude || ''})` : ''}`;
           this.page.drawText(this.sanitizeText(heading), { x: MARGIN_L, y: startY - 10, size: FONT_SIZE_CAPTION, font: this.fontBold, color: rgb(0, 0, 0) });
           const mapY = startY - 20 - singleMapH;
-          this.page.drawRectangle({ x: MARGIN_L, y: mapY, width: CONTENT_W, height: singleMapH, borderColor: rgb(0, 0, 0), borderWidth: 0.5 });
           const singleMapImg = await this.embedImgSafe(isMouza ? validMouzaMaps[0] : validLocMaps[0]);
           if (singleMapImg) {
-            this.page.drawImage(singleMapImg, { x: MARGIN_L + 1, y: mapY + 1, width: CONTENT_W - 2, height: singleMapH - 2 });
+            this.drawImageContained(singleMapImg, MARGIN_L, mapY, CONTENT_W, singleMapH, true);
+          } else {
+            this.page.drawRectangle({ x: MARGIN_L, y: mapY, width: CONTENT_W, height: singleMapH, borderColor: rgb(0, 0, 0), borderWidth: 0.5 });
           }
         }
       }
