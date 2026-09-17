@@ -178,8 +178,8 @@ export default function AxisHLLAP({
       sideMarginRight: raw.sideMarginRight || '',
       sideMarginLeft: raw.sideMarginLeft || '',
       sideMarginBack: raw.sideMarginBack || '',
-      qualityOfConstruction: raw.qualityOfConstruction || '',
-      maintenanceOfProperty: raw.maintenanceOfProperty || '',
+      qualityOfConstruction: raw.qualityOfConstruction || 'NA',
+      maintenanceOfProperty: raw.maintenanceOfProperty || 'NA',
       currentLifeOfStructure: raw.currentLifeOfStructure || '',
       projectedLifeOfStructure: raw.projectedLifeOfStructure || '',
 
@@ -1699,28 +1699,45 @@ export default function AxisHLLAP({
             </div>
           </div>
 
-          {/* 6h - 6i: Structure Quality & Maintenance */}
+          {/* 6h - 6i: Construction Quality & Maintenance (Soft Container) */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="h. Quality of Construction">
-                <input
-                  type="text"
-                  value={fields.qualityOfConstruction}
-                  onChange={e => handleChange('qualityOfConstruction', e.target.value)}
-                  className={inputCls}
-                  disabled={isReadOnly}
-                />
-              </Field>
+            <div className="border border-slate-200/80 bg-slate-50/60 dark:bg-slate-800/30 rounded-xl p-4 sm:p-5 shadow-xs space-y-3">
+              <div className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                Construction Quality &amp; Maintenance (h – i)
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="h. Quality of Construction">
+                  <select
+                    value={fields.qualityOfConstruction || 'NA'}
+                    onChange={e => handleChange('qualityOfConstruction', e.target.value)}
+                    className={selectCls}
+                    disabled={isReadOnly}
+                  >
+                    <option value="NA">NA</option>
+                    <option value="Excellent">Excellent</option>
+                    <option value="Very Good">Very Good</option>
+                    <option value="Good">Good</option>
+                    <option value="Average">Average</option>
+                    <option value="Poor">Poor</option>
+                  </select>
+                </Field>
 
-              <Field label="i. Maintenance of Property">
-                <input
-                  type="text"
-                  value={fields.maintenanceOfProperty}
-                  onChange={e => handleChange('maintenanceOfProperty', e.target.value)}
-                  className={inputCls}
-                  disabled={isReadOnly}
-                />
-              </Field>
+                <Field label="i. Maintenance of the Property">
+                  <select
+                    value={fields.maintenanceOfProperty || 'NA'}
+                    onChange={e => handleChange('maintenanceOfProperty', e.target.value)}
+                    className={selectCls}
+                    disabled={isReadOnly}
+                  >
+                    <option value="NA">NA</option>
+                    <option value="Excellent">Excellent</option>
+                    <option value="Very Good">Very Good</option>
+                    <option value="Good">Good</option>
+                    <option value="Average">Average</option>
+                    <option value="Poor">Poor</option>
+                  </select>
+                </Field>
+              </div>
             </div>
           </div>
 
