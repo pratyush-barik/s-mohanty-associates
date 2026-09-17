@@ -121,7 +121,7 @@ export default function AxisHLLAP({
       pinCode: raw.pinCode || prefill?.serviceRequest?.pincode || '',
       nearbyLandMark: raw.nearbyLandMark || '',
       distanceFromCityCenter: raw.distanceFromCityCenter || '',
-      availabilityOfLocalTransport: raw.availabilityOfLocalTransport || 'Bus, Taxi, Auto',
+      availabilityOfLocalTransport: raw.availabilityOfLocalTransport || '',
       levelOfLand: raw.levelOfLand || 'Regular level land',
       classOfLocality: raw.classOfLocality || 'Middle Class',
       qualityOfInfrastructure: raw.qualityOfInfrastructure || 'Good',
@@ -929,17 +929,13 @@ export default function AxisHLLAP({
                 </Field>
 
                 <Field label="j. Availability of Local Transport">
-                  <select
+                  <input
+                    type="text"
                     value={fields.availabilityOfLocalTransport}
                     onChange={e => handleChange('availabilityOfLocalTransport', e.target.value)}
-                    className={selectCls}
+                    className={inputCls}
                     disabled={isReadOnly}
-                  >
-                    <option value="Bus, Taxi, Auto">Bus, Taxi, Auto</option>
-                    <option value="Taxi, Auto">Taxi, Auto</option>
-                    <option value="Metro, Bus, Auto">Metro, Bus, Auto</option>
-                    <option value="Local Train, Bus">Local Train, Bus</option>
-                  </select>
+                  />
                 </Field>
 
                 <Field label="k. Level of Land">

@@ -538,7 +538,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     // --- Row 3: Documents Provided ---
     this.drawHLLAPRow(
       '3.',
-      'Documents Provided: Approved Layout/\nApproved Building Plan/ NA order/ Four\nBoundaries Details',
+      'Documents Provided: Approved Layout/\nApproved Building Plan/ NA order/\nFour Boundaries Details',
       fields.documentsProvided || ''
     );
 
