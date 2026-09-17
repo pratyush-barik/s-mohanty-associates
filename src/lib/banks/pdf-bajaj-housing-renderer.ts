@@ -420,11 +420,11 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
 
     this.drawKeyValueRow([
       { label: 'Approach Road to the property', value: getPanchayatValue('bajajPanchayatApproachRoad') },
-      { label: 'Development of surrounding areas', value: getPanchayatValue('bajajPanchayatDevelopment') }
+      { label: 'Development of surrounding areas to property', value: getPanchayatValue('bajajPanchayatDevelopment') }
     ]);
     this.drawKeyValueRow([
       { label: 'Distance from city centre (Kms)', value: fv('bajajPanchayatDistanceCityCentre') },
-      { label: 'Distance from corp limits (Kms)', value: fv('bajajPanchayatDistanceCorp') }
+      { label: 'Distance from corporation limits in Kms/Bus stop in case where there is no Municipal body', value: fv('bajajPanchayatDistanceCorp') }
     ]);
     this.drawKeyValueRow([
       { label: 'Electricity', value: getPanchayatValue('bajajPanchayatElectricity') },
@@ -436,7 +436,7 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
     ]);
     this.drawKeyValueRow([
       { label: 'Sewer provision', value: getPanchayatValue('bajajPanchayatSewerProvision') },
-      { label: 'Sewer connected to main sewer', value: getPanchayatValue('bajajPanchayatSewerMainConnected') }
+      { label: 'Sewer line connected to main sewer', value: getPanchayatValue('bajajPanchayatSewerMainConnected') }
     ]);
     this.drawSimpleRow('Any demolition threat in future development/ expansion', getPanchayatValue('bajajPanchayatDemolitionThreat'));
     this.advanceCursor(6);
