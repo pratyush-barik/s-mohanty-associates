@@ -415,7 +415,7 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
     this.drawSimpleRow('Remarks If Any', fv('bajajRemarksIfAny'));
     this.advanceCursor(6);
 
-    if (fv('bajajJurisdictionMunicipalBody') === 'Gram Panchayat') {
+    if (fv('bajajJurisdictionMunicipalBody').toLowerCase() === 'gram panchayat') {
       this.drawSectionSubtitle('Additional checks for Panchayat properties');
       const getPanchayatValue = (field: string) => fv(`${field}`) === 'Custom' ? fv(`${field}Custom`) : fv(`${field}`);
 

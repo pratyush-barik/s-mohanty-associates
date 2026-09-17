@@ -2793,7 +2793,7 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
           fields.bajajLocationZone, fields.bajajPropertyOccupancyStatus, fields.bankName
         ]);
 
-        const showPanchayat = fields.bajajJurisdictionMunicipalBody === 'Gram Panchayat';
+        const showPanchayat = fields.bajajJurisdictionMunicipalBody?.toLowerCase() === 'gram panchayat';
 
         return (
           <div className="animate-fade-in space-y-6">
