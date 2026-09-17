@@ -2299,7 +2299,7 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
                   <NACheckbox field="bajajPermissibleConstruction" />
                 </div>
 
-                <div>
+                <div className="pt-5">
                   <label className="block text-xs font-medium text-gray-700 mb-1">Carpet Area as Per Document</label>
                   <input type="text" className={inputCls} value={fields.bajajCarpetAreaDoc || ''} onChange={e => handleChange('bajajCarpetAreaDoc', e.target.value)} disabled={isReadOnly || fields.bajajCarpetAreaDoc_isNA} />
                   <NACheckbox field="bajajCarpetAreaDoc" />
@@ -2597,7 +2597,7 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
               <h3 className="font-bold text-gray-700 mb-4">Valuation Summary & Statutory Checks</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 
-                <div>
+                <div className="pt-5">
                   <label className="block text-xs font-medium text-gray-700 mb-1">Amenities/Other charges (Lumpsum)</label>
                   <input type="text" className={inputCls} value={fields.bajajAmenitiesOtherCharges || ''} onChange={e => handleChange('bajajAmenitiesOtherCharges', e.target.value)} disabled={isReadOnly || fields.bajajAmenitiesOtherCharges_isNA} />
                   <NACheckbox field="bajajAmenitiesOtherCharges" />
@@ -2620,7 +2620,7 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
                   <NACheckbox field="bajajRealizableValue" />
                 </div>
 
-                <div>
+                <div className="pt-5">
                   <label className="block text-xs font-medium text-gray-700 mb-1">Government Value</label>
                   <input type="text" className={inputCls} value={fields.bajajGovernmentValue || ''} onChange={e => handleChange('bajajGovernmentValue', e.target.value)} disabled={isReadOnly || fields.bajajGovernmentValue_isNA} />
                   <NACheckbox field="bajajGovernmentValue" />
@@ -2641,7 +2641,7 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
                   <NACheckbox field="bajajDistressedValue" />
                 </div>
 
-                <div>
+                <div className="pt-5">
                   <label className="block text-xs font-medium text-gray-700 mb-1">Valuation Done Earlier</label>
                   {renderSelectWithCustomRow(fields.bajajValuationDoneEarlier, fields.bajajValuationDoneEarlierCustom, (v, c) => {
                     handleChange('bajajValuationDoneEarlier', v);
@@ -2650,7 +2650,7 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
                   <NACheckbox field="bajajValuationDoneEarlier" />
                 </div>
 
-                <div>
+                <div className="pt-5">
                   <label className="block text-xs font-medium text-gray-700 mb-1">Valuation Methodology</label>
                   {renderSelectWithCustomRow(fields.bajajValuationMethodology, fields.bajajValuationMethodologyCustom, (v, c) => {
                     handleChange('bajajValuationMethodology', v);
