@@ -313,6 +313,66 @@ export const AXIS_SBB_CONFIG: BankConfig = {
     axisSbbPreparedByPinCode: '751018',
     axisSbbPreparedByPhone: '06742381145',
     axisSbbPreparedByMobile: '9937023855/9437074855',
+
+    // SECTION 9
+    axisSbbValuationLandArea: '',
+    axisSbbValuationLandAreaIsNA: false,
+    axisSbbValuationLandAreaEditOn: false,
+    axisSbbValuationLandRate: '',
+    axisSbbValuationLandRateIsNA: false,
+    axisSbbValuationLandAmount: '',
+    axisSbbValuationLandAmountIsNA: false,
+    axisSbbValuationLandAmountEditOn: false,
+    axisSbbValuationBuildingArea: '',
+    axisSbbValuationBuildingAreaIsNA: false,
+    axisSbbValuationBuildingAreaEditOn: false,
+    axisSbbValuationBuildingRate: '',
+    axisSbbValuationBuildingRateIsNA: false,
+    axisSbbValuationBuildingAmount: '',
+    axisSbbValuationBuildingAmountIsNA: false,
+    axisSbbValuationBuildingAmountEditOn: false,
+    axisSbbValuationAmenitiesArea: '',
+    axisSbbValuationAmenitiesAreaIsNA: false,
+    axisSbbValuationAmenitiesRate: '',
+    axisSbbValuationAmenitiesRateIsNA: false,
+    axisSbbValuationAmenitiesAmount: '',
+    axisSbbValuationAmenitiesAmountIsNA: false,
+    axisSbbValuationTotalAmount: '',
+    axisSbbValuationTotalAmountIsNA: false,
+    axisSbbValuationTotalAmountEditOn: false,
+    axisSbbValuationTotalSayAmount: '',
+    axisSbbValuationTotalSayAmountIsNA: false,
+    axisSbbValuationTotalSayAmountEditOn: false,
+
+    axisSbbGovtLandArea: '',
+    axisSbbGovtLandAreaIsNA: false,
+    axisSbbGovtLandAreaEditOn: false,
+    axisSbbGovtLandRate: '',
+    axisSbbGovtLandRateIsNA: false,
+    axisSbbGovtLandAmount: '',
+    axisSbbGovtLandAmountIsNA: false,
+    axisSbbGovtLandAmountEditOn: false,
+    axisSbbGovtBuildingArea: '',
+    axisSbbGovtBuildingAreaIsNA: false,
+    axisSbbGovtBuildingAreaEditOn: false,
+    axisSbbGovtBuildingRate: '',
+    axisSbbGovtBuildingRateIsNA: false,
+    axisSbbGovtBuildingAmount: '',
+    axisSbbGovtBuildingAmountIsNA: false,
+    axisSbbGovtBuildingAmountEditOn: false,
+
+    axisSbbFinalMarketValue: '',
+    axisSbbFinalMarketValueIsNA: false,
+    axisSbbFinalMarketValueEditOn: false,
+    axisSbbFinalDistressValue: '',
+    axisSbbFinalDistressValueIsNA: false,
+    axisSbbFinalDistressValueEditOn: false,
+    axisSbbFinalRealizableValue: '',
+    axisSbbFinalRealizableValueIsNA: false,
+    axisSbbFinalRealizableValueEditOn: false,
+    axisSbbFinalInsurableValue: '',
+    axisSbbFinalInsurableValueIsNA: false,
+    axisSbbFinalInsurableValueEditOn: false,
   },
   extraSectionsStart: [
     {
@@ -2819,6 +2879,297 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   </div>
                 </div>
 
+              </div>
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'section-9',
+      title: '9. VALUATION OVERVIEW & REMARKS',
+      number: 9,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        const renderNaToggle = (field: string) => (
+          <label className="flex items-center space-x-1 ml-2 text-xs">
+            <input type="checkbox" checked={!!fields[`${field}IsNA`]} onChange={e => handleChange(`${field}IsNA`, e.target.checked)} disabled={isReadOnly} className="w-3 h-3 text-red-500 rounded border-gray-300 focus:ring-red-500" />
+            <span className="text-gray-500">NA</span>
+          </label>
+        );
+
+        const renderEditSwitch = (fieldKey: string, disabledCondition: boolean) => (
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => handleChange(`${fieldKey}EditOn`, !fields[`${fieldKey}EditOn`])}
+              disabled={isReadOnly || disabledCondition}
+              className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields[`${fieldKey}EditOn`] ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly || disabledCondition ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields[`${fieldKey}EditOn`] ? 'translate-x-3' : 'translate-x-1'}`} />
+            </button>
+            <span className={`text-[9px] font-bold ${fields[`${fieldKey}EditOn`] ? 'text-emerald-700' : 'text-gray-500'}`}>EDIT</span>
+          </div>
+        );
+
+        // Pre-fills
+        const landAreaPrefill = fields.axisSbbPlotAreaAsPerDocument || '';
+        const buildingAreaPrefill = fields.axisSbbTotalConstructedArea || '';
+
+        // Computations Table 9.1
+        const landAmount = Number(fields.axisSbbValuationLandAreaIsNA ? 0 : (fields.axisSbbValuationLandAreaEditOn ? fields.axisSbbValuationLandArea : landAreaPrefill)) * Number(fields.axisSbbValuationLandRate || 0);
+        const buildingAmount = Number(fields.axisSbbValuationBuildingAreaIsNA ? 0 : (fields.axisSbbValuationBuildingAreaEditOn ? fields.axisSbbValuationBuildingArea : buildingAreaPrefill)) * Number(fields.axisSbbValuationBuildingRate || 0);
+        const amenitiesAmount = Number(fields.axisSbbValuationAmenitiesArea || 0) * Number(fields.axisSbbValuationAmenitiesRate || 0);
+        const totalAmountComp = landAmount + buildingAmount + amenitiesAmount;
+        const totalSayComp = Math.floor(totalAmountComp / 1000) * 1000;
+
+        // Computations Table 9.2
+        const govtLandAmount = Number(fields.axisSbbGovtLandAreaIsNA ? 0 : (fields.axisSbbGovtLandAreaEditOn ? fields.axisSbbGovtLandArea : landAreaPrefill)) * Number(fields.axisSbbGovtLandRate || 0);
+        const govtBuildingAmount = Number(fields.axisSbbGovtBuildingAreaIsNA ? 0 : (fields.axisSbbGovtBuildingAreaEditOn ? fields.axisSbbGovtBuildingArea : buildingAreaPrefill)) * Number(fields.axisSbbGovtBuildingRate || 0);
+
+        // Summary calculations
+        const marketValueComp = totalAmountComp;
+        const distressValueComp = marketValueComp * 0.90;
+        const realizableValueComp = marketValueComp * 0.95;
+        const insurableValueComp = buildingAmount * 0.85;
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border border-emerald-200 bg-[#ECFDF5] rounded-xl p-4 relative shadow-sm">
+              <h3 className="font-bold text-emerald-800 mb-4 uppercase">Table 9.1: Market Valuation Calculation</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm border-collapse bg-white shadow-sm rounded-md overflow-hidden">
+                  <thead className="bg-emerald-50 border-b border-emerald-200">
+                    <tr className="text-left text-xs font-bold text-emerald-800">
+                      <th className="p-3 w-48">ITEM DESCRIPTION</th>
+                      <th className="p-3">AREA (SQ.FT)</th>
+                      <th className="p-3">RATE PER SQ.FT (RS.)</th>
+                      <th className="p-3">AMOUNT (RS.)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-emerald-100">
+                    <tr>
+                      <td className="p-3 font-semibold text-gray-700">Land</td>
+                      <td className="p-3">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center justify-between">
+                            {renderEditSwitch('axisSbbValuationLandArea', !!fields.axisSbbValuationLandAreaIsNA)}
+                            {renderNaToggle('axisSbbValuationLandArea')}
+                          </div>
+                          <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbValuationLandAreaIsNA ? '' : (fields.axisSbbValuationLandAreaEditOn ? (fields.axisSbbValuationLandArea || '') : landAreaPrefill)} onChange={e => handleChange('axisSbbValuationLandArea', e.target.value)} disabled={isReadOnly || !!fields.axisSbbValuationLandAreaIsNA || !fields.axisSbbValuationLandAreaEditOn} />
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex justify-end">{renderNaToggle('axisSbbValuationLandRate')}</div>
+                          <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbValuationLandRateIsNA ? '' : (fields.axisSbbValuationLandRate || '')} onChange={e => handleChange('axisSbbValuationLandRate', e.target.value)} disabled={isReadOnly || !!fields.axisSbbValuationLandRateIsNA} />
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center justify-between">
+                            {renderEditSwitch('axisSbbValuationLandAmount', !!fields.axisSbbValuationLandAmountIsNA)}
+                            {renderNaToggle('axisSbbValuationLandAmount')}
+                          </div>
+                          <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbValuationLandAmountIsNA ? '' : (fields.axisSbbValuationLandAmountEditOn ? (fields.axisSbbValuationLandAmount || '') : landAmount.toFixed(2))} onChange={e => handleChange('axisSbbValuationLandAmount', e.target.value)} disabled={isReadOnly || !!fields.axisSbbValuationLandAmountIsNA || !fields.axisSbbValuationLandAmountEditOn} />
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-semibold text-gray-700">Building G+1</td>
+                      <td className="p-3">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center justify-between">
+                            {renderEditSwitch('axisSbbValuationBuildingArea', !!fields.axisSbbValuationBuildingAreaIsNA)}
+                            {renderNaToggle('axisSbbValuationBuildingArea')}
+                          </div>
+                          <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbValuationBuildingAreaIsNA ? '' : (fields.axisSbbValuationBuildingAreaEditOn ? (fields.axisSbbValuationBuildingArea || '') : buildingAreaPrefill)} onChange={e => handleChange('axisSbbValuationBuildingArea', e.target.value)} disabled={isReadOnly || !!fields.axisSbbValuationBuildingAreaIsNA || !fields.axisSbbValuationBuildingAreaEditOn} />
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex justify-end">{renderNaToggle('axisSbbValuationBuildingRate')}</div>
+                          <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbValuationBuildingRateIsNA ? '' : (fields.axisSbbValuationBuildingRate || '')} onChange={e => handleChange('axisSbbValuationBuildingRate', e.target.value)} disabled={isReadOnly || !!fields.axisSbbValuationBuildingRateIsNA} />
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center justify-between">
+                            {renderEditSwitch('axisSbbValuationBuildingAmount', !!fields.axisSbbValuationBuildingAmountIsNA)}
+                            {renderNaToggle('axisSbbValuationBuildingAmount')}
+                          </div>
+                          <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbValuationBuildingAmountIsNA ? '' : (fields.axisSbbValuationBuildingAmountEditOn ? (fields.axisSbbValuationBuildingAmount || '') : buildingAmount.toFixed(2))} onChange={e => handleChange('axisSbbValuationBuildingAmount', e.target.value)} disabled={isReadOnly || !!fields.axisSbbValuationBuildingAmountIsNA || !fields.axisSbbValuationBuildingAmountEditOn} />
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-semibold text-gray-700">Amenities</td>
+                      <td className="p-3">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex justify-end">{renderNaToggle('axisSbbValuationAmenitiesArea')}</div>
+                          <input type="text" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbValuationAmenitiesAreaIsNA ? 'NA' : (fields.axisSbbValuationAmenitiesArea || '')} onChange={e => handleChange('axisSbbValuationAmenitiesArea', e.target.value.toUpperCase())} disabled={isReadOnly || !!fields.axisSbbValuationAmenitiesAreaIsNA} />
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex justify-end">{renderNaToggle('axisSbbValuationAmenitiesRate')}</div>
+                          <input type="text" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbValuationAmenitiesRateIsNA ? 'NA' : (fields.axisSbbValuationAmenitiesRate || '')} onChange={e => handleChange('axisSbbValuationAmenitiesRate', e.target.value.toUpperCase())} disabled={isReadOnly || !!fields.axisSbbValuationAmenitiesRateIsNA} />
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex justify-end">{renderNaToggle('axisSbbValuationAmenitiesAmount')}</div>
+                          <input type="text" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbValuationAmenitiesAmountIsNA ? 'NA' : (fields.axisSbbValuationAmenitiesAmount || '')} onChange={e => handleChange('axisSbbValuationAmenitiesAmount', e.target.value.toUpperCase())} disabled={isReadOnly || !!fields.axisSbbValuationAmenitiesAmountIsNA} />
+                        </div>
+                      </td>
+                    </tr>
+                    <tr className="bg-emerald-50">
+                      <td className="p-3 font-bold text-emerald-900" colSpan={3}>Total Valuation 100% Completion (I+II)</td>
+                      <td className="p-3">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center justify-between">
+                            {renderEditSwitch('axisSbbValuationTotalAmount', !!fields.axisSbbValuationTotalAmountIsNA)}
+                            {renderNaToggle('axisSbbValuationTotalAmount')}
+                          </div>
+                          <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 font-bold text-emerald-700 bg-emerald-100" value={fields.axisSbbValuationTotalAmountIsNA ? '' : (fields.axisSbbValuationTotalAmountEditOn ? (fields.axisSbbValuationTotalAmount || '') : totalAmountComp.toFixed(2))} onChange={e => handleChange('axisSbbValuationTotalAmount', e.target.value)} disabled={isReadOnly || !!fields.axisSbbValuationTotalAmountIsNA || !fields.axisSbbValuationTotalAmountEditOn} />
+                        </div>
+                      </td>
+                    </tr>
+                    <tr className="bg-emerald-100">
+                      <td className="p-3 font-bold text-emerald-900" colSpan={3}>Total Valuation in Say</td>
+                      <td className="p-3">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center justify-between">
+                            {renderEditSwitch('axisSbbValuationTotalSayAmount', !!fields.axisSbbValuationTotalSayAmountIsNA)}
+                            {renderNaToggle('axisSbbValuationTotalSayAmount')}
+                          </div>
+                          <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 font-bold text-emerald-800 bg-emerald-200 border-emerald-300" value={fields.axisSbbValuationTotalSayAmountIsNA ? '' : (fields.axisSbbValuationTotalSayAmountEditOn ? (fields.axisSbbValuationTotalSayAmount || '') : totalSayComp.toFixed(2))} onChange={e => handleChange('axisSbbValuationTotalSayAmount', e.target.value)} disabled={isReadOnly || !!fields.axisSbbValuationTotalSayAmountIsNA || !fields.axisSbbValuationTotalSayAmountEditOn} />
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="border border-purple-200 bg-[#F5F3FF] rounded-xl p-4 relative shadow-sm">
+              <h3 className="font-bold text-purple-800 mb-4 uppercase">Table 9.2: Government Guideline / Benchmark Value</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm border-collapse bg-white shadow-sm rounded-md overflow-hidden">
+                  <thead className="bg-purple-50 border-b border-purple-200">
+                    <tr className="text-left text-xs font-bold text-purple-800">
+                      <th className="p-3 w-48">ITEM DESCRIPTION</th>
+                      <th className="p-3">AREA (SQ.FT)</th>
+                      <th className="p-3">GUIDELINE RATE PER SQ.FT (RS.)</th>
+                      <th className="p-3">GOVT. GUIDELINE VALUE (RS.)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-purple-100">
+                    <tr>
+                      <td className="p-3 font-semibold text-gray-700">Land</td>
+                      <td className="p-3">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center justify-between">
+                            {renderEditSwitch('axisSbbGovtLandArea', !!fields.axisSbbGovtLandAreaIsNA)}
+                            {renderNaToggle('axisSbbGovtLandArea')}
+                          </div>
+                          <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbGovtLandAreaIsNA ? '' : (fields.axisSbbGovtLandAreaEditOn ? (fields.axisSbbGovtLandArea || '') : landAreaPrefill)} onChange={e => handleChange('axisSbbGovtLandArea', e.target.value)} disabled={isReadOnly || !!fields.axisSbbGovtLandAreaIsNA || !fields.axisSbbGovtLandAreaEditOn} />
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex justify-end">{renderNaToggle('axisSbbGovtLandRate')}</div>
+                          <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbGovtLandRateIsNA ? '' : (fields.axisSbbGovtLandRate || '')} onChange={e => handleChange('axisSbbGovtLandRate', e.target.value)} disabled={isReadOnly || !!fields.axisSbbGovtLandRateIsNA} />
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center justify-between">
+                            {renderEditSwitch('axisSbbGovtLandAmount', !!fields.axisSbbGovtLandAmountIsNA)}
+                            {renderNaToggle('axisSbbGovtLandAmount')}
+                          </div>
+                          <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbGovtLandAmountIsNA ? '' : (fields.axisSbbGovtLandAmountEditOn ? (fields.axisSbbGovtLandAmount || '') : govtLandAmount.toFixed(2))} onChange={e => handleChange('axisSbbGovtLandAmount', e.target.value)} disabled={isReadOnly || !!fields.axisSbbGovtLandAmountIsNA || !fields.axisSbbGovtLandAmountEditOn} />
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-semibold text-gray-700">Building</td>
+                      <td className="p-3">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center justify-between">
+                            {renderEditSwitch('axisSbbGovtBuildingArea', !!fields.axisSbbGovtBuildingAreaIsNA)}
+                            {renderNaToggle('axisSbbGovtBuildingArea')}
+                          </div>
+                          <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbGovtBuildingAreaIsNA ? '' : (fields.axisSbbGovtBuildingAreaEditOn ? (fields.axisSbbGovtBuildingArea || '') : buildingAreaPrefill)} onChange={e => handleChange('axisSbbGovtBuildingArea', e.target.value)} disabled={isReadOnly || !!fields.axisSbbGovtBuildingAreaIsNA || !fields.axisSbbGovtBuildingAreaEditOn} />
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex justify-end">{renderNaToggle('axisSbbGovtBuildingRate')}</div>
+                          <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbGovtBuildingRateIsNA ? '' : (fields.axisSbbGovtBuildingRate || '')} onChange={e => handleChange('axisSbbGovtBuildingRate', e.target.value)} disabled={isReadOnly || !!fields.axisSbbGovtBuildingRateIsNA} />
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center justify-between">
+                            {renderEditSwitch('axisSbbGovtBuildingAmount', !!fields.axisSbbGovtBuildingAmountIsNA)}
+                            {renderNaToggle('axisSbbGovtBuildingAmount')}
+                          </div>
+                          <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbGovtBuildingAmountIsNA ? '' : (fields.axisSbbGovtBuildingAmountEditOn ? (fields.axisSbbGovtBuildingAmount || '') : govtBuildingAmount.toFixed(2))} onChange={e => handleChange('axisSbbGovtBuildingAmount', e.target.value)} disabled={isReadOnly || !!fields.axisSbbGovtBuildingAmountIsNA || !fields.axisSbbGovtBuildingAmountEditOn} />
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="border border-yellow-200 bg-[#FEF9C3] rounded-xl p-5 relative shadow-sm">
+              <h3 className="font-bold text-yellow-800 mb-4 uppercase">Final Valuation Summary</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex flex-col gap-1 bg-white p-4 rounded-lg shadow-sm border border-yellow-100">
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-sm font-bold text-gray-700">Market Value</label>
+                    <div className="flex gap-4">
+                      {renderEditSwitch('axisSbbFinalMarketValue', !!fields.axisSbbFinalMarketValueIsNA)}
+                      {renderNaToggle('axisSbbFinalMarketValue')}
+                    </div>
+                  </div>
+                  <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg font-bold text-gray-800 bg-gray-50" value={fields.axisSbbFinalMarketValueIsNA ? '' : (fields.axisSbbFinalMarketValueEditOn ? (fields.axisSbbFinalMarketValue || '') : marketValueComp.toFixed(2))} onChange={e => handleChange('axisSbbFinalMarketValue', e.target.value)} disabled={isReadOnly || !!fields.axisSbbFinalMarketValueIsNA || !fields.axisSbbFinalMarketValueEditOn} />
+                </div>
+                
+                <div className="flex flex-col gap-1 bg-white p-4 rounded-lg shadow-sm border border-yellow-100">
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-sm font-bold text-gray-700">Distressed / Forced Sale Value (90%)</label>
+                    <div className="flex gap-4">
+                      {renderEditSwitch('axisSbbFinalDistressValue', !!fields.axisSbbFinalDistressValueIsNA)}
+                      {renderNaToggle('axisSbbFinalDistressValue')}
+                    </div>
+                  </div>
+                  <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg font-bold text-red-700 bg-red-50 border-red-200" value={fields.axisSbbFinalDistressValueIsNA ? '' : (fields.axisSbbFinalDistressValueEditOn ? (fields.axisSbbFinalDistressValue || '') : distressValueComp.toFixed(2))} onChange={e => handleChange('axisSbbFinalDistressValue', e.target.value)} disabled={isReadOnly || !!fields.axisSbbFinalDistressValueIsNA || !fields.axisSbbFinalDistressValueEditOn} />
+                </div>
+
+                <div className="flex flex-col gap-1 bg-white p-4 rounded-lg shadow-sm border border-yellow-100">
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-sm font-bold text-gray-700">Realizable Value (95%)</label>
+                    <div className="flex gap-4">
+                      {renderEditSwitch('axisSbbFinalRealizableValue', !!fields.axisSbbFinalRealizableValueIsNA)}
+                      {renderNaToggle('axisSbbFinalRealizableValue')}
+                    </div>
+                  </div>
+                  <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg font-bold text-amber-700 bg-amber-50 border-amber-200" value={fields.axisSbbFinalRealizableValueIsNA ? '' : (fields.axisSbbFinalRealizableValueEditOn ? (fields.axisSbbFinalRealizableValue || '') : realizableValueComp.toFixed(2))} onChange={e => handleChange('axisSbbFinalRealizableValue', e.target.value)} disabled={isReadOnly || !!fields.axisSbbFinalRealizableValueIsNA || !fields.axisSbbFinalRealizableValueEditOn} />
+                </div>
+
+                <div className="flex flex-col gap-1 bg-white p-4 rounded-lg shadow-sm border border-yellow-100">
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-sm font-bold text-gray-700">Insurable Value (App.)</label>
+                    <div className="flex gap-4">
+                      {renderEditSwitch('axisSbbFinalInsurableValue', !!fields.axisSbbFinalInsurableValueIsNA)}
+                      {renderNaToggle('axisSbbFinalInsurableValue')}
+                    </div>
+                  </div>
+                  <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg font-bold text-blue-700 bg-blue-50 border-blue-200" value={fields.axisSbbFinalInsurableValueIsNA ? '' : (fields.axisSbbFinalInsurableValueEditOn ? (fields.axisSbbFinalInsurableValue || '') : insurableValueComp.toFixed(2))} onChange={e => handleChange('axisSbbFinalInsurableValue', e.target.value)} disabled={isReadOnly || !!fields.axisSbbFinalInsurableValueIsNA || !fields.axisSbbFinalInsurableValueEditOn} />
+                </div>
               </div>
             </div>
           </div>

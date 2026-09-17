@@ -116,6 +116,12 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       this.drawSbbSection8();
       return;
     }
+    // Intercept standard section 9
+    if (title.toUpperCase() === 'REMARKS & TERMS AND CONDITIONS') {
+      super.drawSectionHeader('9. VALUATION OVERVIEW & REMARKS', addSpaceBefore, preserveCase);
+      this.drawSbbSection9();
+      return;
+    }
     super.drawSectionHeader(title, addSpaceBefore, preserveCase);
   }
 
@@ -675,5 +681,79 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     let rawMobile = fv('axisSbbPreparedByMobile', '9937023855/9437074855');
     let processedMobile = rawMobile.replace(/[^0-9]+/g, '/').replace(/(^\/|\/$)/g, '');
     drawCenteredBold(`MOBILE-${processedMobile}`, FONT_SIZE, 0);
+  }
+
+  private drawSbbSection9() {
+    const fields = this.fields;
+    const val = (key: string, computed?: string) => {
+      if (fields[`${key}IsNA`]) return 'NA';
+      if (fields[`${key}EditOn`] || !computed) {
+        return String(fields[key] || 'NA').replace(/[\t\n\r]+/g, ' ').trim() || 'NA';
+      }
+      return computed;
+    };
+
+    const numVal = (key: string, computed?: string) => {
+      const str = val(key, computed);
+      return str === 'NA' ? 'NA' : `Rs. ${Number(str).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/-`;
+    };
+
+    // Computations from React Component
+    const landAreaPrefill = fields.axisSbbPlotAreaAsPerDocument || '';
+    const buildingAreaPrefill = fields.axisSbbTotalConstructedArea || '';
+
+    const getLandArea = () => fields.axisSbbValuationLandAreaIsNA ? 0 : (fields.axisSbbValuationLandAreaEditOn ? fields.axisSbbValuationLandArea : landAreaPrefill);
+    const getBldgArea = () => fields.axisSbbValuationBuildingAreaIsNA ? 0 : (fields.axisSbbValuationBuildingAreaEditOn ? fields.axisSbbValuationBuildingArea : buildingAreaPrefill);
+
+    const landAmount = Number(getLandArea()) * Number(fields.axisSbbValuationLandRate || 0);
+    const buildingAmount = Number(getBldgArea()) * Number(fields.axisSbbValuationBuildingRate || 0);
+    const amenitiesAmount = Number(fields.axisSbbValuationAmenitiesArea || 0) * Number(fields.axisSbbValuationAmenitiesRate || 0);
+    const totalAmountComp = landAmount + buildingAmount + amenitiesAmount;
+    const totalSayComp = Math.floor(totalAmountComp / 1000) * 1000;
+
+    const govtLandAmount = Number(fields.axisSbbGovtLandAreaIsNA ? 0 : (fields.axisSbbGovtLandAreaEditOn ? fields.axisSbbGovtLandArea : landAreaPrefill)) * Number(fields.axisSbbGovtLandRate || 0);
+    const govtBuildingAmount = Number(fields.axisSbbGovtBuildingAreaIsNA ? 0 : (fields.axisSbbGovtBuildingAreaEditOn ? fields.axisSbbGovtBuildingArea : buildingAreaPrefill)) * Number(fields.axisSbbGovtBuildingRate || 0);
+
+    const marketValueComp = totalAmountComp;
+    const distressValueComp = marketValueComp * 0.90;
+    const realizableValueComp = marketValueComp * 0.95;
+    const insurableValueComp = buildingAmount * 0.85;
+
+    // --- Table 9.1 ---
+    this.drawSectionSubtitle('Table 9.1: Market Valuation Calculation');
+    const table91Headers = ['ITEM DESCRIPTION', 'AREA (SQ.FT)', 'RATE PER SQ.FT (RS.)', 'AMOUNT (RS.)'];
+    const table91Data = [
+      ['Land', val('axisSbbValuationLandArea', landAreaPrefill), val('axisSbbValuationLandRate'), numVal('axisSbbValuationLandAmount', landAmount.toFixed(2))],
+      ['Building G+1', val('axisSbbValuationBuildingArea', buildingAreaPrefill), val('axisSbbValuationBuildingRate'), numVal('axisSbbValuationBuildingAmount', buildingAmount.toFixed(2))],
+      ['Amenities', val('axisSbbValuationAmenitiesArea'), val('axisSbbValuationAmenitiesRate'), numVal('axisSbbValuationAmenitiesAmount', amenitiesAmount.toFixed(2))],
+    ];
+    this.drawTable(table91Headers, table91Data);
+    this.y -= 2;
+    this.drawSimpleRow('Total Valuation 100% Completion (I+II)', numVal('axisSbbValuationTotalAmount', totalAmountComp.toFixed(2)), true, true);
+    this.drawSimpleRow('Total Valuation in Say', numVal('axisSbbValuationTotalSayAmount', totalSayComp.toFixed(2)), true, true);
+
+    this.y -= 10;
+    
+    // --- Table 9.2 ---
+    this.drawSectionSubtitle('Table 9.2: Government Guideline / Benchmark Value');
+    const table92Headers = ['ITEM DESCRIPTION', 'AREA (SQ.FT)', 'GUIDELINE RATE PER SQ.FT (RS.)', 'GOVT. GUIDELINE VALUE (RS.)'];
+    const table92Data = [
+      ['Land', val('axisSbbGovtLandArea', landAreaPrefill), val('axisSbbGovtLandRate'), numVal('axisSbbGovtLandAmount', govtLandAmount.toFixed(2))],
+      ['Building', val('axisSbbGovtBuildingArea', buildingAreaPrefill), val('axisSbbGovtBuildingRate'), numVal('axisSbbGovtBuildingAmount', govtBuildingAmount.toFixed(2))],
+    ];
+    this.drawTable(table92Headers, table92Data);
+
+    this.y -= 10;
+
+    // --- Summary Cards ---
+    this.drawSectionSubtitle('Final Valuation Summary');
+    this.drawKeyValueRow([
+      { label: 'Market Value', value: numVal('axisSbbFinalMarketValue', marketValueComp.toFixed(2)) },
+      { label: 'Distressed / Forced Sale Value (90%)', value: numVal('axisSbbFinalDistressValue', distressValueComp.toFixed(2)) }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Realizable Value (95%)', value: numVal('axisSbbFinalRealizableValue', realizableValueComp.toFixed(2)) },
+      { label: 'Insurable Value (App.)', value: numVal('axisSbbFinalInsurableValue', insurableValueComp.toFixed(2)) }
+    ]);
   }
 }
