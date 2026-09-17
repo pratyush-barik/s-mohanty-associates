@@ -1022,6 +1022,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         type="number"
                         min="0"
                         max="100"
+                        step="1"
                         className={`${inputCls} pr-8`}
                         value={fields.axisSbbPercentOfConstructionIsNA ? '' : (fields.axisSbbPercentOfConstruction || '')}
                         onChange={e => handleChange('axisSbbPercentOfConstruction', e.target.value)}
