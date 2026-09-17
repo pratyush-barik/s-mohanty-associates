@@ -800,7 +800,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     const remarksPrompt =
       '(Comment on - resistance for valuation if any from the current occupants for rented property, if the property falls in a community dominated areas, if the approach road to the building is small and will not be able to accommodate a fire extinguisher, does the property falls under land locked area or is prone to frequent floods & any other critical observation.)';
 
-    const hPrompt = this.cellHeight(remarksPrompt, this.colLbl, { fontSize: FONT_SIZE_CAPTION });
+    const hPrompt = this.cellHeight(remarksPrompt, this.colLbl, { fontSize: FONT_SIZE });
     const hRemarks = this.cellHeight(fields.remarks || '', this.colVal, { fontSize: FONT_SIZE });
     const remarksRowH = Math.max(45, hPrompt, hRemarks);
 
@@ -821,7 +821,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     // 2. Prompt in colLbl
     this.drawCell(MARGIN_L + this.colSl, this.cursorY, this.colLbl, remarksRowH, remarksPrompt, {
       bold: false,
-      fontSize: FONT_SIZE_CAPTION,
+      fontSize: FONT_SIZE,
       fillColor: LBL_BG,
       bgOpacity: 0.5,
       align: 'left',
