@@ -207,6 +207,7 @@ export default function AxisHLLAP({
 
       // 8 - 12
       valuationGovtReckonerRate: raw.valuationGovtReckonerRate || '',
+      distressedPercentage: raw.distressedPercentage !== undefined ? raw.distressedPercentage : '80',
       distressedValuation: raw.distressedValuation || '',
       rentalValuePerMonth: raw.rentalValuePerMonth || '',
       photosAttached: raw.photosAttached || 'Attached',
@@ -232,7 +233,6 @@ export default function AxisHLLAP({
   const [showSketchBoundaries, setShowSketchBoundaries] = useState<boolean>(() => {
     return !!(fields.boundaryEastSketch || fields.boundaryWestSketch || fields.boundaryNorthSketch || fields.boundarySouthSketch);
   });
-  const [enableDistressedEdit, setEnableDistressedEdit] = useState(false);
 
   const handleChange = (k: keyof AxisHLLAPReportFields, v: any) => {
     setFields(p => ({ ...p, [k]: v }));
@@ -352,10 +352,11 @@ export default function AxisHLLAP({
     const pct = parseNum(fields.percentWorkCompleted) || 100;
     if (fields.isUnderConstruction) {
       cValAsOnDate = Math.round(cVal * (pct / 100));
-      currentAsOnDate = pVal + cValAsOnDate;
-    }
+    const distressedPct = fields.distressedPercentage !== undefined && fields.distressedPercentage !== ''
+      ? parseNum(fields.distressedPercentage)
+      : 80;
 
-    const distressedVal = Math.round((fields.isUnderConstruction ? currentAsOnDate : currentTotal) * 0.80);
+    const distressedVal = Math.round((fields.isUnderConstruction ? currentAsOnDate : currentTotal) * (distressedPct / 100));
 
     const recRateDesc = pRate && cRate
       ? `${selectedUnit}- Rs. ${pRate}/-per sqft & Building Rs. ${cRate}/-per sqft`
@@ -2093,38 +2094,61 @@ export default function AxisHLLAP({
 
                 {/* Point 9: Distressed Valuation of Property (Soft Container - Soft Rose) */}
                 <div className="border border-rose-200 bg-[#FFF1F2] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
-                  <div className="flex justify-end">
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setEnableDistressedEdit(!enableDistressedEdit)}
-                        disabled={isReadOnly}
-                        className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors duration-200 focus:outline-none cursor-pointer ${
-                          enableDistressedEdit ? 'bg-rose-600' : 'bg-slate-300'
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform duration-200 shadow ${
-                            enableDistressedEdit ? 'translate-x-5' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
-                      <span className={`text-[11px] font-semibold ${enableDistressedEdit ? 'text-rose-800' : 'text-slate-600'}`}>
-                        {enableDistressedEdit ? 'Custom Manual Edit' : 'Auto 80% Locked'}
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <span className="text-xs font-bold text-rose-900 uppercase tracking-wide">
+                      9. Distressed Valuation of Property
+                    </span>
+                    {distressedVal > 0 && (
+                      <span className="text-[11px] font-semibold bg-white text-rose-900 px-2.5 py-0.5 rounded-full border border-rose-200">
+                        {distressedPct}% of Total = <strong className="text-rose-950">Rs. {formatIndianCurrency(distressedVal)}/-</strong>
                       </span>
-                    </div>
+                    )}
                   </div>
 
-                  <Field label="9. Distressed Valuation of Property (80% of Current Valuation)">
-                    <input
-                      type="text"
-                      value={fields.distressedValuation}
-                      onChange={e => handleChange('distressedValuation', e.target.value)}
-                      className={`${inputCls} font-bold ${!enableDistressedEdit ? 'bg-white/80 cursor-not-allowed text-rose-950' : 'text-rose-950'}`}
-                      disabled={isReadOnly || !enableDistressedEdit}
-                      placeholder={`Calculated 80% = Rs. ${formatIndianCurrency(distressedVal)}/-`}
-                    />
-                  </Field>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <Field label="Distressed % (Safety Margin)">
+                        <div className="relative">
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            value={fields.distressedPercentage !== undefined ? fields.distressedPercentage : '80'}
+                            onChange={e => handleChange('distressedPercentage', sanitizePositiveFloat(e.target.value))}
+                            className={inputCls + ' font-bold pr-8 text-rose-950'}
+                            disabled={isReadOnly}
+                            placeholder="80"
+                          />
+                          <span className="absolute right-3 top-2.5 text-xs text-slate-400 font-bold pointer-events-none">
+                            %
+                          </span>
+                        </div>
+                      </Field>
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <Field label={`9. Distressed Valuation of Property (${fields.distressedPercentage || '80'}% of Current Valuation)`}>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            value={fields.distressedValuation}
+                            onChange={e => handleChange('distressedValuation', e.target.value)}
+                            className={inputCls + ' font-bold text-rose-950'}
+                            disabled={isReadOnly}
+                            placeholder={`Calculated ${fields.distressedPercentage || '80'}% = Rs. ${formatIndianCurrency(distressedVal)}/-`}
+                          />
+                          {!fields.distressedValuation && distressedVal > 0 && !isReadOnly && (
+                            <button
+                              type="button"
+                              onClick={() => handleChange('distressedValuation', `Rs.${formatIndianCurrency(distressedVal)}/-`)}
+                              className="text-[10px] text-rose-700 hover:text-rose-900 font-bold mt-1 inline-block cursor-pointer"
+                            >
+                              ↳ Set Calculated Value (Rs. {formatIndianCurrency(distressedVal)}/-)
+                            </button>
+                          )}
+                        </div>
+                      </Field>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Point 10: Rental Value per Month (Soft Container - Soft Violet) */}

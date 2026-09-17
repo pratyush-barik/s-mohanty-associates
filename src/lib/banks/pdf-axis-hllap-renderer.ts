@@ -137,6 +137,7 @@ export interface AxisHLLAPReportFields extends Partial<BaseReportFields> {
 
   // 8 - 12
   valuationGovtReckonerRate: string;
+  distressedPercentage?: string;
   distressedValuation: string;
   rentalValuePerMonth: string;
   photosAttached: string;
@@ -839,48 +840,54 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
 
     this.cursorY += remarksRowH;
 
-    // --- Undertaking Block (Below table, aligned to right side) ---
-    this.cursorY += 8;
-    const undertakingH = 85;
+    // --- Undertaking Block (Full width across page) ---
+    this.cursorY += 12;
+    const undertakingH = 120;
     this.checkPageBreak(undertakingH);
-    const underY = this.pdfY(this.cursorY);
-    const underX = MARGIN_L + this.colSl + this.colLbl + 10;
-    const underW = CONTENT_W - (this.colSl + this.colLbl + 10);
 
-    const underLines = [
-      'Undertaking:',
+    // Section title "Undertaking:"
+    this.drawTextAt('Undertaking:', MARGIN_L, this.cursorY, {
+      bold: true,
+      fontSize: 10,
+    });
+    this.cursorY += 14;
+
+    const undertakingClauses = [
       'I have personally visited the property & identified the same based on the documents provided.',
       'I/We have no direct or Indirect Interest in the property being valued.',
       'The information furnished above is true and correct to my/our knowledge.',
-      '',
-      'Authorized Signatory',
-      'Name & Seal of the Agency',
-      '',
-      fields.valuerName || 'Er. Satyajit Mohanty',
-      fields.valuerTitle || 'Approved Panel Valuer',
     ];
 
-    let curUnderY = underY;
-    for (const line of underLines) {
-      if (!line) {
-        curUnderY -= 6;
-        continue;
-      }
-      const isBold = line === 'Undertaking:' || line.includes('Satyajit') || line.includes('Signatory');
-      const font = isBold ? this.fontBold : this.fontRegular;
-      const wrapped = this.wrapText(line, underW, 9.5, isBold);
+    for (const clause of undertakingClauses) {
+      const wrapped = this.wrapText(clause, CONTENT_W, 9.5, false);
       for (const wLine of wrapped) {
-        this.page.drawText(wLine, {
-          x: underX,
-          y: curUnderY,
-          size: 9.5,
-          font,
-          color: rgb(0, 0, 0),
+        this.drawTextAt(wLine, MARGIN_L, this.cursorY, {
+          bold: false,
+          fontSize: 9.5,
         });
-        curUnderY -= 9.5 * 1.2;
+        this.cursorY += 12;
       }
     }
-    this.cursorY += undertakingH;
+
+    this.cursorY += 14;
+
+    // Authorized Signatory Block (Right-aligned matching base bank format)
+    const sigLines = [
+      { text: 'Authorized Signatory', bold: true, fontSize: 10 },
+      { text: 'Name & Seal of the Agency', bold: false, fontSize: 9 },
+      { text: fields.valuerName || 'Er. Satyajit Mohanty', bold: true, fontSize: 10 },
+      { text: fields.valuerTitle || 'Approved Panel Valuer', bold: false, fontSize: 9.5 },
+    ];
+
+    for (const s of sigLines) {
+      this.drawTextAt(s.text, MARGIN_L, this.cursorY, {
+        bold: s.bold,
+        fontSize: s.fontSize,
+        align: 'right',
+        maxWidth: CONTENT_W,
+      });
+      this.cursorY += s.fontSize * 1.25;
+    }
 
     // --- Page 3+: Photographs & Maps Pages (Only if media exists) ---
     await this.drawPhotosAndMaps(fields, images);
