@@ -851,15 +851,6 @@ export function BaseMapsSection({
   const hasCoordinates = Boolean(cleanLat && cleanLng && !isNaN(Number(cleanLat)) && !isNaN(Number(cleanLng)));
   const cleanAddress = (propertyAddress || '').trim();
 
-  const numLat = Number(cleanLat);
-  const numLng = Number(cleanLng);
-  const isLikelyInverted = hasCoordinates && numLat > 45 && numLng < 45;
-
-  const swapCoordinates = () => {
-    handleLatChange(cleanLng);
-    handleLngChange(cleanLat);
-  };
-
   // Specific uploading booleans per map category
   const isLocationUploading = typeof uploading === 'string'
     ? (uploading === 'location' || uploading === 'locationMapImages' || uploading === 'locationMapImage')
@@ -914,26 +905,6 @@ export function BaseMapsSection({
               Live Satellite & Coordinate Preview
             </div>
 
-            {isLikelyInverted && (
-              <div className="rounded-lg p-2.5 bg-amber-50 border border-amber-300 text-xs text-amber-950 flex items-center justify-between flex-wrap gap-2 shadow-2xs">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm">⚠️</span>
-                  <span>
-                    <strong>Inverted Coordinates Detected:</strong> Latitude is set to <code>{cleanLat}</code> (Arctic Ocean / North Pole) and Longitude to <code>{cleanLng}</code>. In India, Latitude is ~8°–37°N and Longitude is ~68°–97°E.
-                  </span>
-                </div>
-                {!isReadOnly && (
-                  <button
-                    type="button"
-                    onClick={swapCoordinates}
-                    className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded font-bold text-xs shrink-0 cursor-pointer shadow-xs transition-colors"
-                  >
-                    ⇄ Swap Lat &amp; Long
-                  </button>
-                )}
-              </div>
-            )}
-
             {hasQuery ? (
               <div className="rounded-xl overflow-hidden border border-[#c8d6e5] shadow-xs">
                 <div className="bg-[#d5e8f5] px-3.5 py-1.5 flex items-center justify-between">
@@ -941,16 +912,6 @@ export function BaseMapsSection({
                     <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider flex items-center gap-1.5">
                       📍 Live Pin {hasCoordinates ? `(${cleanLat}, ${cleanLng})` : '— Property Address'}
                     </span>
-                    {hasCoordinates && !isReadOnly && (
-                      <button
-                        type="button"
-                        onClick={swapCoordinates}
-                        className="text-[10px] font-bold text-blue-700 hover:text-blue-950 bg-white/90 hover:bg-white px-1.5 py-0.5 rounded border border-blue-300 cursor-pointer transition-colors shadow-2xs"
-                        title="Swap Latitude and Longitude"
-                      >
-                        ⇄ Swap
-                      </button>
-                    )}
                   </div>
                   <a
                     href={googleMapsUrl}

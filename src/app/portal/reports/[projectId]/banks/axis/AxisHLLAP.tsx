@@ -334,19 +334,20 @@ export default function AxisHLLAP({
   // Real-time auto-calculation for Section 7 Valuation fields
   useEffect(() => {
     const selectedUnit = fields.plotOrFlat || 'Plot';
-    const pArea = parseNum(fields.plotAreaForValuation) || parseNum(fields.plotAreaDocs);
+    const pArea = parseNum(fields.plotAreaDocs) || parseNum(fields.plotAreaForValuation);
     const pRate = parseNum(fields.plotRateForValuation);
-    const pVal = pArea * pRate;
+    const pVal = pArea > 0 && pRate > 0 ? pArea * pRate : 0;
 
     const buaTotal = parseNum(fields.approvedBUATotal) || parseNum(fields.measuredBUATotal);
-    const cRate = parseNum(fields.estimatedCostOfConstruction) || parseNum(fields.recommendedRatePerSqft) || 2000;
-    const cVal = buaTotal * cRate;
+    // Estimated construction rate MUST only be used if explicitly entered (no fallback to recommendedRate or 2000)
+    const cRate = parseNum(fields.estimatedCostOfConstruction);
+    const cVal = buaTotal > 0 && cRate > 0 ? buaTotal * cRate : 0;
 
     const total100 = pVal + cVal;
 
     const pct = parseNum(fields.percentWorkCompleted) || 100;
-    const cRateAsOnDate = Math.round(cRate * (pct / 100));
-    const cValAsOnDate = Math.round(cVal * (pct / 100));
+    const cRateAsOnDate = cRate > 0 ? Math.round(cRate * (pct / 100)) : 0;
+    const cValAsOnDate = cVal > 0 ? Math.round(cVal * (pct / 100)) : 0;
     const totalAsOnDate = pVal + cValAsOnDate;
 
     const distressedPct = fields.distressedPercentage !== undefined && fields.distressedPercentage !== ''
@@ -354,33 +355,39 @@ export default function AxisHLLAP({
       : 80;
     const distressedVal = Math.round((pct < 100 ? totalAsOnDate : total100) * (distressedPct / 100));
 
-    const recRateDesc = pRate && cRate
+    const recRateDesc = pRate > 0 && cRate > 0
       ? `${selectedUnit}- Rs. ${pRate}/-per sqft & Building Rs. ${cRate}/-per sqft`
-      : pRate
+      : pRate > 0
       ? `${selectedUnit}- Rs. ${pRate}/-per sqft`
+      : cRate > 0
+      ? `Building Rs. ${cRate}/-per sqft`
       : '';
 
-    const valPlotFlatStr = pArea && pRate
-      ? `Value of ${selectedUnit}-${pArea}X Rs.${pRate}/- = Rs.${formatIndianCurrency(pVal)}/-`
+    const valPlotFlatStr = pArea > 0 && pRate > 0
+      ? `Value of ${selectedUnit}-${pArea} sqft X Rs.${pRate}/- = Rs.${formatIndianCurrency(pVal)}/-`
       : '';
 
-    const totalConstStr = buaTotal && cRate
-      ? `${buaTotal}sqft@ Rs.${cRate}/-=Rs.${formatIndianCurrency(cVal)}/-`
+    const totalConstStr = buaTotal > 0 && cRate > 0
+      ? `${buaTotal} sqft @ Rs.${cRate}/- = Rs.${formatIndianCurrency(cVal)}/-`
       : '';
 
-    const constAsOnDateStr = buaTotal && cValAsOnDate && pct < 100
-      ? `${buaTotal}sqft@ Rs.${cRateAsOnDate}/-= Rs.${formatIndianCurrency(cValAsOnDate)}/-`
+    const constAsOnDateStr = buaTotal > 0 && cValAsOnDate > 0 && pct < 100
+      ? `${buaTotal} sqft @ Rs.${cRateAsOnDate}/- = Rs.${formatIndianCurrency(cValAsOnDate)}/-`
       : '';
 
-    const currentValStr = pVal || cVal
-      ? `Rs.${formatIndianCurrency(pVal)}/- + Rs.${formatIndianCurrency(cVal)}/- =Rs.${formatIndianCurrency(total100)}/-`
+    const currentValStr = pVal > 0 && cVal > 0
+      ? `Rs.${formatIndianCurrency(pVal)}/- + Rs.${formatIndianCurrency(cVal)}/- = Rs.${formatIndianCurrency(total100)}/-`
+      : pVal > 0
+      ? `Rs.${formatIndianCurrency(pVal)}/-`
+      : cVal > 0
+      ? `Rs.${formatIndianCurrency(cVal)}/-`
       : '';
 
-    const currentValAsOnDateStr = (pVal || cValAsOnDate) && pct < 100
-      ? `Rs.${formatIndianCurrency(pVal)}/- + Rs.${formatIndianCurrency(cValAsOnDate)}/- =Rs.${formatIndianCurrency(totalAsOnDate)}/-`
+    const currentValAsOnDateStr = ((pVal > 0 || cValAsOnDate > 0) && pct < 100)
+      ? `Rs.${formatIndianCurrency(pVal)}/- + Rs.${formatIndianCurrency(cValAsOnDate)}/- = Rs.${formatIndianCurrency(totalAsOnDate)}/-`
       : '';
 
-    const distressedStr = distressedVal > 0
+    const distressedStr = distressedVal > 0 && (pVal > 0 || cVal > 0)
       ? `Rs.${formatIndianCurrency(distressedVal)}/-`
       : '';
 
@@ -388,31 +395,38 @@ export default function AxisHLLAP({
       let changed = false;
       const next = { ...prev };
 
-      if (recRateDesc && next.recommendedRatePerSqft !== recRateDesc) {
+      // Ensure plotAreaForValuation stays synced with 6a plotAreaDocs
+      const syncAreaStr = pArea > 0 ? String(pArea) : '';
+      if (syncAreaStr && next.plotAreaForValuation !== syncAreaStr) {
+        next.plotAreaForValuation = syncAreaStr;
+        changed = true;
+      }
+
+      if (next.recommendedRatePerSqft !== recRateDesc) {
         next.recommendedRatePerSqft = recRateDesc;
         changed = true;
       }
-      if (valPlotFlatStr && next.valueOfPlotFlat !== valPlotFlatStr) {
+      if (next.valueOfPlotFlat !== valPlotFlatStr) {
         next.valueOfPlotFlat = valPlotFlatStr;
         changed = true;
       }
-      if (totalConstStr && next.totalCostOfConstruction !== totalConstStr) {
+      if (next.totalCostOfConstruction !== totalConstStr) {
         next.totalCostOfConstruction = totalConstStr;
         changed = true;
       }
-      if (constAsOnDateStr && next.constructionCostAsOnDate !== constAsOnDateStr) {
+      if (next.constructionCostAsOnDate !== constAsOnDateStr) {
         next.constructionCostAsOnDate = constAsOnDateStr;
         changed = true;
       }
-      if (currentValStr && next.currentValueOfProperty !== currentValStr) {
+      if (next.currentValueOfProperty !== currentValStr) {
         next.currentValueOfProperty = currentValStr;
         changed = true;
       }
-      if (currentValAsOnDateStr && next.currentValueAsOnDate !== currentValAsOnDateStr) {
+      if (next.currentValueAsOnDate !== currentValAsOnDateStr) {
         next.currentValueAsOnDate = currentValAsOnDateStr;
         changed = true;
       }
-      if (distressedStr && next.distressedValuation !== distressedStr) {
+      if (next.distressedValuation !== distressedStr) {
         next.distressedValuation = distressedStr;
         changed = true;
       }
@@ -1276,24 +1290,10 @@ export default function AxisHLLAP({
           {/* z. Longitude & Latitude Coordinates (Soft Container - Soft Cyan) */}
           <div className="pt-2">
             <div className="border border-cyan-200 bg-[#ECFEFF] rounded-xl p-5 shadow-2xs">
-              <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+              <div className="mb-3">
                 <h3 className="font-semibold text-cyan-900 text-sm tracking-wide uppercase">
                   z. Longitude &amp; Latitude Coordinates
                 </h3>
-                {!isReadOnly && (fields.longitude || fields.latitude) && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const tempLat = fields.latitude;
-                      handleChange('latitude', fields.longitude);
-                      handleChange('longitude', tempLat);
-                    }}
-                    className="text-xs font-bold text-cyan-800 hover:text-cyan-950 flex items-center gap-1 bg-white px-2.5 py-1 rounded-lg border border-cyan-300 cursor-pointer transition-colors shadow-2xs"
-                    title="Swap Longitude and Latitude"
-                  >
-                    ⇄ Swap Long &amp; Lat
-                  </button>
-                )}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="i. Longitude (e.g. 85.001200° E)">
@@ -1866,24 +1866,18 @@ export default function AxisHLLAP({
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Field label={`${selectedUnit} Area for Valuation (sqft)`}>
-                      <div className="relative">
+                    <Field label={`${selectedUnit} Area for Valuation`}>
+                      <div className="space-y-1">
                         <input
                           type="text"
-                          value={fields.plotAreaForValuation}
-                          onChange={e => handleChange('plotAreaForValuation', e.target.value)}
-                          className={inputCls}
-                          disabled={isReadOnly}
+                          value={fields.plotAreaDocs ? `${parseNum(fields.plotAreaDocs)} sqft` : (fields.plotAreaDocs || '0 sqft')}
+                          className={inputCls + ' bg-slate-100 text-slate-700 font-medium cursor-not-allowed border-slate-300'}
+                          readOnly
+                          disabled
                         />
-                        {!fields.plotAreaForValuation && fields.plotAreaDocs && !isReadOnly && (
-                          <button
-                            type="button"
-                            onClick={() => handleChange('plotAreaForValuation', parseNum(fields.plotAreaDocs))}
-                            className="text-[10px] text-blue-600 hover:text-blue-800 font-bold mt-1 inline-block cursor-pointer"
-                          >
-                            ↳ Use 6a Area ({fields.plotAreaDocs})
-                          </button>
-                        )}
+                        <span className="block text-[10px] text-blue-700 font-semibold">
+                          🔒 Referenced &amp; locked from 6.a Area of the {selectedUnit} (as per documents)
+                        </span>
                       </div>
                     </Field>
 
@@ -1891,9 +1885,10 @@ export default function AxisHLLAP({
                       <input
                         type="text"
                         value={fields.plotRateForValuation}
-                        onChange={e => handleChange('plotRateForValuation', e.target.value)}
+                        onChange={e => handleChange('plotRateForValuation', sanitizePositiveFloat(e.target.value))}
                         className={inputCls}
                         disabled={isReadOnly}
+                        placeholder="e.g. 2500"
                       />
                     </Field>
                   </div>
@@ -1944,9 +1939,10 @@ export default function AxisHLLAP({
                       <input
                         type="text"
                         value={fields.estimatedCostOfConstruction}
-                        onChange={e => handleChange('estimatedCostOfConstruction', e.target.value)}
+                        onChange={e => handleChange('estimatedCostOfConstruction', sanitizePositiveFloat(e.target.value))}
                         className={inputCls}
                         disabled={isReadOnly}
+                        placeholder="e.g. 1800"
                       />
                     </Field>
 
