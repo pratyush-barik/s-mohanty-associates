@@ -9,11 +9,21 @@ export const AXIS_SBB_CONFIG: BankConfig = {
   bankId: 'AXIS BANK',
   subTemplateId: 'SBB',
   displayName: 'Axis Bank — SBB (Small Business Banking)',
-  hiddenSections: ['section-1', 'section-2', 'section-3'],
+  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4'],
   extraSections: [],
   hiddenFields: ['to', 'dateOfValuation', 'refNo'],
   fieldLabels: {},
   defaultValues: {
+    axisSbbDeedNumberDate: '',
+    axisSbbPlotKhasraNo: '',
+    axisSbbRoadWidthMaterial: '',
+    axisSbbColonySector: '',
+    axisSbbLocalityLandmark: '',
+    axisSbbVillageCity: '',
+    axisSbbDistrict: '',
+    axisSbbState: 'ODISHA',
+    axisSbbPinCode: '',
+    axisSbbDistanceFromCityCenter: '',
     axisSbbPropertyLocation: '',
     axisSbbGoverningBody: '',
     axisSbbTownPlanningSubType: '',
@@ -468,6 +478,145 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   <span><strong>Required:</strong> At least one title ownership document (e.g., Copy of Sale Deed / Patta Certificate) must be selected.</span>
                 </div>
               )}
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'axis-sbb-section-4',
+      title: 'Property Identification & Postal Address',
+      number: 4,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        const capitalizeWords = (str: string) => {
+          return str.replace(/\b\w/g, char => char.toUpperCase());
+        };
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FFF7ED', borderColor: '#FED7AA' }}>
+              <h3 className="font-bold text-gray-700 mb-4">CADASTRAL & POSTAL ADDRESS DETAILS</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="Lease / Sale Deed Number(s) & Date">
+                  <input
+                    className={inputCls}
+                    required
+                    value={fields.axisSbbDeedNumberDate || ''}
+                    onChange={e => handleChange('axisSbbDeedNumberDate', e.target.value.toUpperCase())}
+                    disabled={isReadOnly}
+                    placeholder="2108, DATED-22.08.2005"
+                  />
+                </Field>
+                
+                <Field label="Plot No / S.No / G.No / Khasra No / Patta No">
+                  <input
+                    className={inputCls}
+                    required
+                    value={fields.axisSbbPlotKhasraNo || ''}
+                    onChange={e => handleChange('axisSbbPlotKhasraNo', e.target.value.toUpperCase())}
+                    disabled={isReadOnly}
+                    placeholder="KHATA NO. 412, PLOT NO. 1915/3557"
+                  />
+                </Field>
+
+                <Field label="Road Width & Material">
+                  <input
+                    className={inputCls}
+                    required
+                    value={fields.axisSbbRoadWidthMaterial || ''}
+                    onChange={e => handleChange('axisSbbRoadWidthMaterial', e.target.value.toUpperCase())}
+                    disabled={isReadOnly}
+                    placeholder="20 FEET WIDE CC ROAD"
+                  />
+                </Field>
+
+                <Field label="Colony / Nagar / Sector">
+                  <input
+                    className={inputCls}
+                    value={fields.axisSbbColonySector || ''}
+                    onChange={e => handleChange('axisSbbColonySector', e.target.value.toUpperCase())}
+                    disabled={isReadOnly}
+                    placeholder="SAMBALPUR"
+                  />
+                </Field>
+
+                <Field label="Locality / Landmark">
+                  <input
+                    className={inputCls}
+                    required
+                    value={fields.axisSbbLocalityLandmark || ''}
+                    onChange={e => handleChange('axisSbbLocalityLandmark', capitalizeWords(e.target.value))}
+                    disabled={isReadOnly}
+                    placeholder="Near Pratima Clinic"
+                  />
+                </Field>
+
+                <Field label="Village / Town / City (Mouza)">
+                  <input
+                    className={inputCls}
+                    required
+                    value={fields.axisSbbVillageCity || ''}
+                    onChange={e => handleChange('axisSbbVillageCity', e.target.value.toUpperCase())}
+                    disabled={isReadOnly}
+                    placeholder="MOUZA-SAMBALPUR TOWN UNIT NO-13 BAREIPALI"
+                  />
+                </Field>
+
+                <Field label="District">
+                  <input
+                    className={inputCls}
+                    required
+                    value={fields.axisSbbDistrict || ''}
+                    onChange={e => handleChange('axisSbbDistrict', e.target.value.toUpperCase())}
+                    disabled={isReadOnly}
+                    placeholder="SAMBALPUR"
+                  />
+                </Field>
+
+                <Field label="State">
+                  <select
+                    className={selectCls}
+                    required
+                    value={fields.axisSbbState || ''}
+                    onChange={e => handleChange('axisSbbState', e.target.value)}
+                    disabled={isReadOnly}
+                  >
+                    <option value="">Select State</option>
+                    <option value="ODISHA">ODISHA</option>
+                    <option value="CHHATTISGARH">CHHATTISGARH</option>
+                    <option value="JHARKHAND">JHARKHAND</option>
+                    <option value="WEST BENGAL">WEST BENGAL</option>
+                    <option value="ANDHRA PRADESH">ANDHRA PRADESH</option>
+                    <option value="TELANGANA">TELANGANA</option>
+                  </select>
+                </Field>
+
+                <Field label="PIN Code">
+                  <input
+                    className={inputCls}
+                    required
+                    pattern="[0-9]{6}"
+                    maxLength={6}
+                    value={fields.axisSbbPinCode || ''}
+                    onChange={e => handleChange('axisSbbPinCode', e.target.value.replace(/\D/g, ''))}
+                    disabled={isReadOnly}
+                    placeholder="768006"
+                  />
+                </Field>
+
+                <Field label="Distance from City Centre">
+                  <input
+                    className={inputCls}
+                    required
+                    value={fields.axisSbbDistanceFromCityCenter || ''}
+                    onChange={e => handleChange('axisSbbDistanceFromCityCenter', e.target.value.toUpperCase())}
+                    disabled={isReadOnly}
+                    placeholder="03- KMS FROM SAMBALPUR CITY CENTRE"
+                  />
+                </Field>
+              </div>
             </div>
           </div>
         );

@@ -86,7 +86,45 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       this.drawSbbSection3();
       return;
     }
+    // Intercept standard section 4
+    if (title.toUpperCase() === 'BOUNDARIES, ACCESS & GEOLOCATION') {
+      super.drawSectionHeader('PROPERTY IDENTIFICATION & POSTAL ADDRESS', addSpaceBefore, preserveCase);
+      this.drawSbbSection4();
+      return;
+    }
     super.drawSectionHeader(title, addSpaceBefore, preserveCase);
+  }
+
+  private drawSbbSection4() {
+    const fields = this.fields;
+    const fv = (key: string, defaultVal = 'NA') => String((fields as any)[key] || defaultVal).replace(/[\t\n\r]+/g, ' ').trim() || defaultVal;
+    
+    this.drawSectionSubtitle('CADASTRAL & POSTAL ADDRESS DETAILS');
+    
+    this.drawKeyValueRow([
+      { label: 'Lease / Sale Deed Number(s) & Date', value: fv('axisSbbDeedNumberDate') },
+      { label: 'Plot No / S.No / G.No / Khasra No', value: fv('axisSbbPlotKhasraNo') }
+    ]);
+    
+    this.drawKeyValueRow([
+      { label: 'Road Width & Material', value: fv('axisSbbRoadWidthMaterial') },
+      { label: 'Colony / Nagar / Sector', value: fv('axisSbbColonySector') }
+    ]);
+    
+    this.drawKeyValueRow([
+      { label: 'Locality / Landmark', value: fv('axisSbbLocalityLandmark') },
+      { label: 'Village / Town / City (Mouza)', value: fv('axisSbbVillageCity') }
+    ]);
+    
+    this.drawKeyValueRow([
+      { label: 'District', value: fv('axisSbbDistrict') },
+      { label: 'State', value: fv('axisSbbState', 'ODISHA') }
+    ]);
+    
+    this.drawKeyValueRow([
+      { label: 'PIN Code', value: fv('axisSbbPinCode') },
+      { label: 'Distance from City Centre', value: fv('axisSbbDistanceFromCityCenter') }
+    ]);
   }
 
   private drawSbbSection3() {
