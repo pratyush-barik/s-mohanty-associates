@@ -163,7 +163,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     isLabelBold: boolean = false,
     isValueBold: boolean = false,
     labelBg: string | undefined = LBL_BG,
-    valBg: string | undefined = undefined,
+    valBg: string | undefined = LBL_BG,
     fontSize: number = FONT_SIZE
   ): void {
     const hSl = this.cellHeight(sl, this.colSl, { bold: isLabelBold, fontSize });
@@ -178,7 +178,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       bold: isLabelBold,
       fontSize,
       fillColor: labelBg,
-      bgOpacity: 0.5,
+      bgOpacity: labelBg ? 0.5 : undefined,
       align: 'left',
       vAlign: 'middle',
     });
@@ -188,12 +188,12 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       bold: isLabelBold,
       fontSize,
       fillColor: labelBg,
-      bgOpacity: 0.5,
+      bgOpacity: labelBg ? 0.5 : undefined,
       align: 'left',
       vAlign: 'middle',
     });
 
-    // 3. Value cell
+    // 3. Value cell (uniform background color applied)
     this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, rowH, val || 'NA', {
       bold: isValueBold,
       fontSize,
@@ -215,7 +215,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     isLabelBold: boolean = false,
     isValueBold: boolean = false,
     labelBg: string | undefined = LBL_BG,
-    valBg: string | undefined = undefined,
+    valBg: string | undefined = LBL_BG,
     fontSize: number = FONT_SIZE
   ): void {
     this.drawHLLAPRow('', label, val, isLabelBold, isValueBold, labelBg, valBg, fontSize);
@@ -262,6 +262,8 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, rowH, rightText, {
       bold: false,
       fontSize,
+      fillColor: LBL_BG,
+      bgOpacity: 0.5,
       align: 'left',
       vAlign: 'middle',
     });
@@ -300,6 +302,8 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     // 3. Value cell (empty)
     this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, h, '', {
       fontSize,
+      fillColor: LBL_BG,
+      bgOpacity: 0.5,
       align: 'left',
       vAlign: 'middle',
     });
@@ -439,6 +443,8 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, custH1, fields.customerName || 'NA', {
       bold: false,
       fontSize: FONT_SIZE,
+      fillColor: LBL_BG,
+      bgOpacity: 0.5,
       align: 'left',
       vAlign: 'middle',
     });
@@ -454,6 +460,8 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY + custH1, this.colVal, custH2, fields.customerContactDetails || 'NA', {
       bold: false,
       fontSize: FONT_SIZE,
+      fillColor: LBL_BG,
+      bgOpacity: 0.5,
       align: 'left',
       vAlign: 'middle',
     });
@@ -485,35 +493,18 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.drawHLLAPRow('l.', 'Class Of Locality :  Posh/ Higher Middle Class/Middle class/Lower middle Class/ Poor', fields.classOfLocality || 'NA');
     this.drawHLLAPRow('m.', 'Quality of Infrastructure in the vicinity', fields.qualityOfInfrastructure || 'NA');
 
-    // 4n. Boundaries (Header sub-row [n. | Documents | Actual] + 4 direction rows)
-    const bHeaderH = 16;
-    this.checkPageBreak(bHeaderH);
+    // 4n. Boundaries (Header row + 4 direction rows)
+    const bLbl = 'Boundaries of Property as per documents';
+    const bVal = 'Boundaries of Property as per Actual';
+    const hSl = this.cellHeight('n.', this.colSl, { bold: true, fontSize: FONT_SIZE });
+    const hLbl = this.cellHeight(bLbl, this.colLbl, { bold: true, fontSize: FONT_SIZE });
+    const hVal = this.cellHeight(bVal, this.colVal, { bold: true, fontSize: FONT_SIZE });
+    const bHeaderH = Math.max(16, hSl, hLbl, hVal);
 
-    this.drawCell(MARGIN_L, this.cursorY, this.colSl, bHeaderH, 'n.', {
-      bold: true,
-      fontSize: FONT_SIZE,
-      fillColor: LBL_BG,
-      bgOpacity: 0.5,
-      align: 'left',
-      vAlign: 'middle',
-    });
-    this.drawCell(MARGIN_L + this.colSl, this.cursorY, this.colLbl, bHeaderH, 'Boundaries of Property as per documents', {
-      bold: true,
-      fontSize: FONT_SIZE,
-      fillColor: LBL_BG,
-      bgOpacity: 0.5,
-      align: 'left',
-      vAlign: 'middle',
-    });
-    this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, bHeaderH, 'Boundaries of Property as per Actual', {
-      bold: true,
-      fontSize: FONT_SIZE,
-      fillColor: LBL_BG,
-      bgOpacity: 0.5,
-      align: 'left',
-      vAlign: 'middle',
-    });
-    this.cursorY += bHeaderH;
+    // Lookahead: ensure header + at least 2 direction rows fit (~36 + 2 * 18 = 72pt) to avoid orphan header
+    this.checkPageBreak(bHeaderH + 36);
+
+    this.drawHLLAPRow('n.', bLbl, bVal, true, true, LBL_BG, LBL_BG);
 
     this.drawBoundaryRow('East', fields.boundaryEastDeed, fields.boundaryEastActual);
     this.drawBoundaryRow('West', fields.boundaryWestDeed, fields.boundaryWestActual);
@@ -528,7 +519,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       fields.boundarySouthSketch
     );
     if (hasSketchBoundaries) {
-      this.checkPageBreak(16);
+      this.checkPageBreak(70);
       this.drawCell(MARGIN_L, this.cursorY, this.colSl, 16, '', {
         fillColor: LBL_BG,
         bgOpacity: 0.5,
@@ -545,6 +536,8 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       });
       this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, 16, '', {
         fontSize: FONT_SIZE,
+        fillColor: LBL_BG,
+        bgOpacity: 0.5,
         align: 'left',
         vAlign: 'middle',
       });
@@ -561,7 +554,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.drawHLLAPRow('p.', 'Status of the Land/ Flat : Free Hold/Leased / Development Authority', fields.statusOfLand || 'NA');
     this.drawHLLAPRow('q.', 'Type of Property : Bungalow/row house/Plot/ flat (1BHK/2BHK/3BHK)/Residential', fields.typeOfProperty || 'NA');
     this.drawHLLAPRow('r.', 'Approved usage of Property: Agri/ Mix /Industrial/commercial/Residential (Restrictive covenants in regards to Land Use, if any)', fields.approvedUsage || 'NA');
-    this.drawSubItemRow('Actual Usage of the Property :Agri/Industrial/commercial/Residential/Mix', fields.actualUsage || 'NA');
+    this.drawHLLAPRow('s.', 'Actual Usage of the Property :Agri/Industrial/commercial/Residential/Mix', fields.actualUsage || 'NA');
     this.drawHLLAPRow('t.', 'Type of Structure : Load Bearing/RCC/Aluform shuttering', fields.typeOfStructure || 'NA');
     this.drawHLLAPRow('u.', 'No of Floors', fields.noOfFloors || 'NA');
     this.drawHLLAPRow('v.', 'Occupancy Details: Self Occupied/Rented/ Vacant', fields.occupancyDetails || 'NA');
@@ -570,12 +563,14 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.drawHLLAPRow('y.', 'Development of surrounding area', fields.developmentOfSurroundingArea || 'NA');
 
     // 4z. Longitude & Latitude
+    this.checkPageBreak(50);
     this.drawHLLAPRow('z.', 'Longitude & latitude of the property', '');
     this.drawHLLAPRow('i.', 'Longitude', fields.longitude || 'NA', false, true);
     this.drawHLLAPRow('ii.', 'Latitude', fields.latitude || 'NA', false, true);
 
     // --- Row 5: APPROVAL DETAILS ---
-    this.drawHLLAPRow('5.', 'APPROVAL DETAILS', fields.approvedPlanDetails || fields.buildingPlanApprovalNo || 'NA');
+    this.checkPageBreak(70);
+    this.drawHLLAPRow('5.', 'APPROVAL DETAILS', fields.approvedPlanDetails || fields.buildingPlanApprovalNo || 'NA', true, true);
     this.drawHLLAPRow('a.', 'Layout Approval No', fields.layoutApprovalNo || 'NA');
     this.drawHLLAPRow('b.', 'Date of Approval', formatReportDate(fields.layoutApprovalDate));
     this.drawHLLAPRow('c.', 'Expiry Date', formatReportDate(fields.layoutExpiryDate));
@@ -586,11 +581,13 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.drawHLLAPRow('h.', 'Expected Completion', formatReportDate(fields.expectedCompletionDate));
 
     // --- Row 6: CONSTRUCTION DETAILS ---
-    this.drawHLLAPRow('6.', 'CONSTRUCTION DETAILS', '');
+    this.checkPageBreak(60);
+    this.drawHLLAPRow('6.', 'CONSTRUCTION DETAILS', '', true, true);
     this.drawHLLAPRow('a.', 'Area of the Plot/flat', fields.plotAreaDocs || 'NA', false, true);
     this.drawHLLAPRow('b.', 'Demarcation at Site', fields.demarcationAtSite || 'NA');
 
     // 6c. Approved Built up Area & Floor-wise break up
+    this.checkPageBreak(40);
     const appBUALabel = 'Approved Built up Area:_____sqft floor wise break up (for Bungalow/Twin /Row-house) as follows';
     const appBUAVal = fields.approvedBUATotal ? `Approved BUA-${fields.approvedBUATotal}sqft` : 'NA';
     this.drawHLLAPRow('c.', appBUALabel, appBUAVal, true, true);
@@ -603,6 +600,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     }
 
     // 6d. Measured Built up Area & Floor-wise break up
+    this.checkPageBreak(40);
     const measBUALabel = 'Measured Built up Area:_____sqft floor wise break up (for Bungalow/Twin /Row-house) as follows';
     const measBUAVal = fields.measuredBUATotal ? `Measured BUA-${fields.measuredBUATotal}sqft` : 'NA';
     this.drawHLLAPRow('d.', measBUALabel, measBUAVal, true, true);
@@ -618,6 +616,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.drawHLLAPRow('g.', 'Details of Extra Construction', fields.detailsOfExtraConstruction || 'NA');
 
     // 6h. Recommended / Available Side Margin
+    this.checkPageBreak(75);
     this.drawHLLAPRow('h.', 'Recommended / Available Side Margin', '');
     this.drawSubItemRow('Front', fields.sideMarginFront || 'NA');
     this.drawSubItemRow('Right Side', fields.sideMarginRight || 'NA');
@@ -630,7 +629,8 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.drawHLLAPRow('l.', 'Projected Life of the Structure', fields.projectedLifeOfStructure || 'NA');
 
     // --- Row 7: Recommended Valuation of the Property ---
-    this.drawHLLAPRow('7.', 'Recommended Valuation of the Property', '');
+    this.checkPageBreak(60);
+    this.drawHLLAPRow('7.', 'Recommended Valuation of the Property', '', true, true);
     this.drawHLLAPRow('a.', 'Recommended rate of the Plot/Flat', fields.recommendedRatePerSqft || 'NA');
     this.drawHLLAPRow('b.', 'Value of the Plot/Flat', fields.valueOfPlotFlat || 'NA', false, true);
     this.drawHLLAPRow('c.', 'Estimated Cost of construction', fields.estimatedCostOfConstruction || 'NA', false, true);
@@ -701,16 +701,16 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     const remarksPrompt =
       '(Comment on - resistance for valuation if any from the current occupants for rented property, if the property falls in a community dominated areas, if the approach road to the building is small and will not be able to accommodate a fire extinguisher, does the property falls under land locked area or is prone to frequent floods & any other critical observation.)';
 
-    // Draw row 12 header
-    this.drawHLLAPRow('12.', 'Remarks :', '');
-
-    // Draw remarks content (Left: Prompt in colLbl, Right: Valuer remarks in colVal)
     const hPrompt = this.cellHeight(remarksPrompt, this.colLbl, { fontSize: 10 });
     const hRemarks = this.cellHeight(fields.remarks || 'NA', this.colVal, { fontSize: 10 });
     const remarksRowH = Math.max(80, hPrompt, hRemarks);
 
-    this.checkPageBreak(remarksRowH);
+    this.checkPageBreak(18 + remarksRowH);
 
+    // Draw row 12 header
+    this.drawHLLAPRow('12.', 'Remarks :', '', true, true);
+
+    // Draw remarks content (Left: Prompt in colLbl, Right: Valuer remarks in colVal)
     // 1. Sl col (empty)
     this.drawCell(MARGIN_L, this.cursorY, this.colSl, remarksRowH, '', {
       fillColor: LBL_BG,
@@ -733,6 +733,8 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, remarksRowH, fields.remarks || 'NA', {
       bold: false,
       fontSize: 10,
+      fillColor: LBL_BG,
+      bgOpacity: 0.5,
       align: 'left',
       vAlign: 'top',
     });
