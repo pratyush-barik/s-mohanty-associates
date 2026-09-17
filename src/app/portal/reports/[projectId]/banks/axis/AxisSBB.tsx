@@ -9,7 +9,12 @@ export const AXIS_SBB_CONFIG: BankConfig = {
   bankId: 'AXIS BANK',
   subTemplateId: 'SBB',
   displayName: 'Axis Bank — SBB (Small Business Banking)',
-  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7', 'section-8'],
+  hiddenSections: [
+    'section-1', 'section-2', 'section-3', 'section-4', 'section-5',
+    'section-6', 'section-7', 'section-8', 'section-9', 'section-10',
+    'section-11', 'section-12', 'section-13', 'section-14', 'section-15',
+    'layout-config'
+  ],
   extraSections: [],
   defaultValues: {
     axisSbbDeedNumberDate: '',
@@ -2886,7 +2891,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
       }
     },
     {
-      id: 'section-9',
+      id: 'axis-sbb-section-9',
       title: '9. VALUATION OVERVIEW & REMARKS',
       number: 9,
       defaultOpen: true,
