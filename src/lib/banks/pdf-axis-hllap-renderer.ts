@@ -152,30 +152,25 @@ export interface AxisHLLAPReportFields extends Partial<BaseReportFields> {
 }
 
 /**
- * Dynamically derive the structure type string (e.g. 'Proposed G+2', 'approved G+1', 'Proposed Ground Floor')
- * from BUA floor breakup (Section 6.c / 6.d).
+ * Dynamically derive the structure type string (e.g. 'Proposed G+2', 'Proposed Ground Floor')
+ * auto-referenced from BUA floor breakup (Section 6.c / 6.d).
  */
 export function deriveStructureType(fields: {
   measuredBUAFloors?: AxisHLLAPBUAFloor[];
   approvedBUAFloors?: AxisHLLAPBUAFloor[];
   isUnderConstruction?: boolean;
-  proposedStructureType?: string;
 }): string {
-  if (fields.proposedStructureType && fields.proposedStructureType.trim()) {
-    return fields.proposedStructureType.trim();
-  }
-
   const floors = (fields.measuredBUAFloors && fields.measuredBUAFloors.length > 0)
     ? fields.measuredBUAFloors
     : (fields.approvedBUAFloors && fields.approvedBUAFloors.length > 0)
     ? fields.approvedBUAFloors
     : [];
 
-  const validFloors = floors.filter(f => f.floor && f.floor.trim());
+  const validFloors = floors.filter(f => (f.floor && f.floor.trim()) || (f.area && f.area.trim()));
   const floorList = validFloors.length > 0 ? validFloors : floors;
 
   if (floorList.length === 0) {
-    return fields.isUnderConstruction ? 'Proposed G+2' : 'approved G+1';
+    return 'Proposed Ground Floor';
   }
 
   let hasBasement = false;
@@ -201,7 +196,7 @@ export function deriveStructureType(fields: {
   let structBody = '';
   if (hasBasement && hasGround) {
     const bStr = basementCount > 1 ? `B${basementCount}+` : 'B+';
-    structBody = upperFloorCount > 0 ? `${bStr}G+${upperFloorCount}` : `${bStr}G`;
+    structBody = upperFloorCount > 0 ? `${bStr}G+${upperFloorCount}` : `${bStr}Ground Floor`;
   } else if (hasStilt) {
     const totalUpper = upperFloorCount + (hasGround ? 1 : 0);
     structBody = totalUpper > 0 ? `S+${totalUpper}` : 'Stilt';
@@ -217,11 +212,7 @@ export function deriveStructureType(fields: {
     else structBody = `G+${count - 1}`;
   }
 
-  const prefix = fields.isUnderConstruction ? 'Proposed ' : 'approved ';
-  if (structBody.toLowerCase().startsWith('proposed') || structBody.toLowerCase().startsWith('approved')) {
-    return structBody;
-  }
-  return `${prefix}${structBody}`;
+  return `Proposed ${structBody}`;
 }
 
 const TABLE_FONT_SIZE = FONT_SIZE; // Standardized to 12 pt

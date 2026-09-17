@@ -1851,6 +1851,7 @@ export default function AxisHLLAP({
             const cRate = parseNum(fields.constructionRatePerSqft);
             const cVal = buaTotal * cRate;
             const total100 = pVal + cVal;
+            const effectiveStructureType = deriveStructureType(fields);
             const hasPct = fields.percentWorkCompleted !== undefined && String(fields.percentWorkCompleted).trim() !== '';
             const pct = hasPct ? parseNum(fields.percentWorkCompleted) : (fields.isUnderConstruction ? 0 : 100);
             const isUnderConst = fields.isUnderConstruction || pct < 100;
@@ -1918,7 +1919,7 @@ export default function AxisHLLAP({
                       )}
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <Field label="BUA for Valuation">
                         <input
                           type="text"
@@ -1937,17 +1938,6 @@ export default function AxisHLLAP({
                           className={inputCls}
                           disabled={isReadOnly}
                           placeholder="e.g. 2000"
-                        />
-                      </Field>
-
-                      <Field label="Structure Description">
-                        <input
-                          type="text"
-                          value={fields.proposedStructureType || ''}
-                          onChange={e => handleChange('proposedStructureType', e.target.value)}
-                          className={inputCls}
-                          disabled={isReadOnly}
-                          placeholder={`e.g. ${effectiveStructureType}`}
                         />
                       </Field>
                     </div>
