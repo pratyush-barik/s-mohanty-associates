@@ -92,7 +92,71 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       this.drawSbbSection4();
       return;
     }
+    // Intercept standard section 5
+    if (title.toUpperCase() === 'APPROVAL & STRUCTURAL INFORMATION') {
+      super.drawSectionHeader('PROPERTY CHARACTERISTICS & PHYSICAL SITE ASSESSMENT', addSpaceBefore, preserveCase);
+      this.drawSbbSection5();
+      return;
+    }
     super.drawSectionHeader(title, addSpaceBefore, preserveCase);
+  }
+
+  private drawSbbSection5() {
+    const fields = this.fields;
+    
+    const val = (key: string, computed?: string) => {
+      if ((fields as any)[`${key}IsNA`]) return 'NA';
+      if ((fields as any)[`${key}EditOn`] || !computed) {
+        const raw = (fields as any)[key];
+        if (Array.isArray(raw)) return raw.length ? raw.join(', ') : 'NA';
+        return String(raw || 'NA').replace(/[\t\n\r]+/g, ' ').trim() || 'NA';
+      }
+      return computed;
+    };
+
+    const address = (fields as any).axisSbbAddressOfTheProperty || '';
+    const distMatch = address.match(/DIST(?:RICT)?[-\s]*(.*?)(?=,|-|PIN|$)/i);
+    const mouzaMatch = address.match(/(?:MOUZA|VILLAGE)[-\s]*(.*?)(?=,|$|DIST)/i);
+    const parsedCity = (distMatch ? distMatch[1] : (mouzaMatch ? mouzaMatch[1] : 'CITY')).trim().toUpperCase();
+
+    const stationName = (fields as any).axisSbbDistRailwayStationName || parsedCity;
+    const busStopName = (fields as any).axisSbbDistBusStopName || parsedCity;
+    const stationDistKm = (fields as any).axisSbbDistRailwayStationKm || '03';
+    const busStopDistKm = (fields as any).axisSbbDistBusStopKm || '03';
+
+    const stationComputed = `${stationDistKm}-KMS (${stationName} RAILWAY STATION)`.toUpperCase();
+    const busStopComputed = `${busStopDistKm}-KMS. (${busStopName} BUS STOP)`.toUpperCase();
+    
+    this.drawSectionSubtitle('TYPE OF PROPERTY');
+    
+    this.drawKeyValueRow([
+      { label: '(A) PLOT/UNDER CONSTRUCTION', value: val('axisSbbPropertyType') },
+      { label: 'Level of Land', value: val('axisSbbLevelOfLand', (fields as any).axisSbbLevelOfLandDropdown === 'CUSTOM' ? ((fields as any).axisSbbLevelOfLand || 'NA') : ((fields as any).axisSbbLevelOfLandDropdown || 'PLAIN')) }
+    ]);
+    
+    this.drawKeyValueRow([
+      { label: 'Any Construction Observed', value: val('axisSbbAnyConstructionObserved') },
+      { label: '% of Construction', value: val('axisSbbPercentOfConstruction', '100%') + (val('axisSbbPercentOfConstruction') !== 'NA' && !(fields as any).axisSbbPercentOfConstructionEditOn ? '%' : '') }
+    ]);
+    
+    this.drawKeyValueRow([
+      { label: 'Vacant Land Demarcated', value: val('axisSbbVacantLandDemarcated') },
+      { label: '(B) RESIDENTIAL PROPERTY', value: val('axisSbbResidentialProperty') }
+    ]);
+    
+    this.drawSimpleRow('(C) COMMERCIAL/INDUSTRIAL PROPERTY', val('axisSbbCommercialIndustrialProperty'));
+    
+    this.drawSectionSubtitle('ACCESSIBILITY/ BOUNDARIES/OTHERS');
+    
+    this.drawKeyValueRow([
+      { label: 'Civic Amenities (School, Hospital, Market)', value: val('axisSbbCivicAmenities') },
+      { label: 'Local Transport', value: val('axisSbbLocalTransport') }
+    ]);
+    
+    this.drawKeyValueRow([
+      { label: 'Distance from Railway Station', value: val('axisSbbDistRailwayStation', stationComputed) },
+      { label: 'Bus Stop/Taxi/Auto Stand', value: val('axisSbbDistBusStop', busStopComputed) }
+    ]);
   }
 
   private drawSbbSection4() {

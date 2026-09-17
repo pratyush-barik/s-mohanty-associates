@@ -9,11 +9,8 @@ export const AXIS_SBB_CONFIG: BankConfig = {
   bankId: 'AXIS BANK',
   subTemplateId: 'SBB',
   displayName: 'Axis Bank — SBB (Small Business Banking)',
-  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4'],
+  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5'],
   extraSections: [],
-  hiddenFields: ['to', 'dateOfValuation', 'refNo'],
-  fieldLabels: {},
-  defaultValues: {
     axisSbbDeedNumberDate: '',
     axisSbbDeedNumberDateIsNA: false,
     axisSbbDeedNumberDateEditOn: false,
@@ -44,6 +41,42 @@ export const AXIS_SBB_CONFIG: BankConfig = {
     axisSbbDistanceFromCityCenterIsNA: false,
     axisSbbDistanceFromCityCenterEditOn: false,
     axisSbbDistanceKm: '',
+    
+    // SECTION 5
+    axisSbbPropertyType: [],
+    axisSbbPropertyTypeIsNA: false,
+    axisSbbLevelOfLand: 'PLAIN',
+    axisSbbLevelOfLandIsNA: false,
+    axisSbbLevelOfLandEditOn: false,
+    axisSbbLevelOfLandDropdown: 'PLAIN',
+    axisSbbAnyConstructionObserved: '',
+    axisSbbAnyConstructionObservedIsNA: false,
+    axisSbbPercentOfConstruction: '100',
+    axisSbbPercentOfConstructionIsNA: false,
+    axisSbbPercentOfConstructionEditOn: false,
+    axisSbbVacantLandDemarcated: '',
+    axisSbbVacantLandDemarcatedIsNA: false,
+    axisSbbResidentialProperty: [],
+    axisSbbResidentialPropertyIsNA: false,
+    axisSbbCommercialIndustrialProperty: [],
+    axisSbbCommercialIndustrialPropertyIsNA: false,
+    
+    axisSbbCivicAmenities: 'AVAILABLE, WITHIN THE RADIUS OF 1-2 KMS',
+    axisSbbCivicAmenitiesIsNA: false,
+    axisSbbCivicAmenitiesEditOn: false,
+    axisSbbLocalTransport: [],
+    axisSbbLocalTransportIsNA: false,
+    axisSbbDistRailwayStationKm: '03',
+    axisSbbDistRailwayStationName: '',
+    axisSbbDistRailwayStation: '',
+    axisSbbDistRailwayStationIsNA: false,
+    axisSbbDistRailwayStationEditOn: false,
+    axisSbbDistBusStopKm: '03',
+    axisSbbDistBusStopName: '',
+    axisSbbDistBusStop: '',
+    axisSbbDistBusStopIsNA: false,
+    axisSbbDistBusStopEditOn: false,
+
     axisSbbPropertyLocation: '',
     axisSbbGoverningBody: '',
     axisSbbTownPlanningSubType: '',
@@ -806,6 +839,373 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       onChange={e => handleChange('axisSbbDistanceFromCityCenter', e.target.value.toUpperCase())}
                       readOnly={!fields.axisSbbDistanceFromCityCenterEditOn || fields.axisSbbDistanceFromCityCenterIsNA}
                       disabled={isReadOnly || (!fields.axisSbbDistanceFromCityCenterEditOn && !fields.axisSbbDistanceFromCityCenterIsNA)}
+                    />
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'axis-sbb-section-5',
+      title: 'Property Characteristics & Physical Site Assessment',
+      number: 5,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        const renderNaToggle = (fieldName: string) => (
+          <label className="flex items-center space-x-1.5 text-[10px] uppercase font-bold text-gray-500 cursor-pointer ml-4">
+            <input 
+              type="checkbox" 
+              checked={!!fields[`${fieldName}IsNA`]} 
+              onChange={e => handleChange(`${fieldName}IsNA`, e.target.checked)}
+              disabled={isReadOnly}
+              className="w-3 h-3 text-red-500 rounded focus:ring-red-500 border-gray-300"
+            />
+            <span>NA</span>
+          </label>
+        );
+
+        const renderEditSwitch = (fieldName: string, disabled: boolean) => {
+          const isEditOn = !!fields[`${fieldName}EditOn`];
+          return (
+            <div className="flex items-center space-x-2">
+              <span className="text-[10px] uppercase font-bold text-gray-400">Edit {isEditOn ? 'On' : 'Off'}</span>
+              <button
+                type="button"
+                onClick={() => handleChange(`${fieldName}EditOn`, !isEditOn)}
+                disabled={disabled || isReadOnly}
+                className={`w-8 h-4 rounded-full relative transition-colors ${isEditOn ? 'bg-green-500' : 'bg-gray-300'}`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white transition-transform ${isEditOn ? 'translate-x-4' : ''}`} />
+              </button>
+            </div>
+          );
+        };
+
+        const handleMultiSelect = (field: string, val: string) => {
+          const arr = Array.isArray(fields[field]) ? [...fields[field]] : [];
+          if (arr.includes(val)) {
+            handleChange(field, arr.filter(x => x !== val));
+          } else {
+            handleChange(field, [...arr, val]);
+          }
+        };
+
+        const renderMultiSelect = (field: string, options: string[], isNA: boolean) => (
+          <div className={`grid grid-cols-2 md:grid-cols-3 gap-3 ${isNA ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
+            {options.map(opt => {
+              const isChecked = Array.isArray(fields[field]) && fields[field].includes(opt);
+              return (
+                <label key={opt} className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-colors ${isChecked ? 'bg-yellow-50/50 border-yellow-300' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={() => handleMultiSelect(field, opt)}
+                    disabled={isReadOnly || isNA}
+                    className="w-4 h-4 text-yellow-600 rounded focus:ring-yellow-500 border-gray-300"
+                  />
+                  <span className="text-xs font-semibold text-gray-700">{opt}</span>
+                </label>
+              );
+            })}
+          </div>
+        );
+
+        // Auto computed station and bus stand names based on address
+        const address = fields.axisSbbAddressOfTheProperty || '';
+        const distMatch = address.match(/DIST(?:RICT)?[-\s]*(.*?)(?=,|-|PIN|$)/i);
+        const mouzaMatch = address.match(/(?:MOUZA|VILLAGE)[-\s]*(.*?)(?=,|$|DIST)/i);
+        const parsedCity = (distMatch ? distMatch[1] : (mouzaMatch ? mouzaMatch[1] : 'CITY')).trim().toUpperCase();
+
+        const stationName = fields.axisSbbDistRailwayStationName || parsedCity;
+        const busStopName = fields.axisSbbDistBusStopName || parsedCity;
+        const stationDistKm = fields.axisSbbDistRailwayStationKm || '03';
+        const busStopDistKm = fields.axisSbbDistBusStopKm || '03';
+
+        const stationComputed = `${stationDistKm}-KMS (${stationName} RAILWAY STATION)`.toUpperCase();
+        const busStopComputed = `${busStopDistKm}-KMS. (${busStopName} BUS STOP)`.toUpperCase();
+
+        const levelDropdown = fields.axisSbbLevelOfLandDropdown || 'PLAIN';
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FEFCE8', borderColor: '#FEF08A' }}>
+              <h3 className="font-bold text-gray-700 mb-4">TYPE OF PROPERTY</h3>
+              
+              <div className="space-y-6">
+                
+                <div className="flex flex-col">
+                  <div className="flex items-center mb-2">
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide">(A) PLOT/UNDER CONSTRUCTION</label>
+                    {renderNaToggle('axisSbbPropertyType')}
+                  </div>
+                  {renderMultiSelect('axisSbbPropertyType', ['RESIDENTIAL', 'COMMERCIAL', 'INDUSTRIAL', 'VACANT LAND/PLOT'], !!fields.axisSbbPropertyTypeIsNA)}
+                </div>
+
+                <div className="flex flex-col">
+                  <div className="flex justify-between items-center mb-1">
+                    <div className="flex items-center">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">LEVEL OF LAND WITH TOPOGRAPHICAL CONDITIONS <span className="text-red-500">*</span></label>
+                      {renderNaToggle('axisSbbLevelOfLand')}
+                    </div>
+                    {renderEditSwitch('axisSbbLevelOfLand', !!fields.axisSbbLevelOfLandIsNA)}
+                  </div>
+                  <select
+                    className={selectCls}
+                    value={fields.axisSbbLevelOfLandIsNA ? 'NA' : levelDropdown}
+                    onChange={e => {
+                      const v = e.target.value;
+                      handleChange('axisSbbLevelOfLandDropdown', v);
+                      if (v !== 'CUSTOM') handleChange('axisSbbLevelOfLand', v);
+                    }}
+                    disabled={isReadOnly || !fields.axisSbbLevelOfLandEditOn || fields.axisSbbLevelOfLandIsNA}
+                  >
+                    <option value="PLAIN">PLAIN</option>
+                    <option value="SLOPING">SLOPING</option>
+                    <option value="LOW LYING">LOW LYING</option>
+                    <option value="ELEVATED / HILLY">ELEVATED / HILLY</option>
+                    <option value="CUSTOM">Custom...</option>
+                  </select>
+                  {fields.axisSbbLevelOfLandEditOn && levelDropdown === 'CUSTOM' && !fields.axisSbbLevelOfLandIsNA && (
+                    <input
+                      className={`${inputCls} mt-2`}
+                      value={fields.axisSbbLevelOfLand || ''}
+                      onChange={e => handleChange('axisSbbLevelOfLand', e.target.value.toUpperCase())}
+                      disabled={isReadOnly}
+                      placeholder="Enter custom level of land"
+                    />
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="flex flex-col">
+                    <div className="flex items-center mb-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">ANY CONSTRUCTION OBSERVED ON PLOT <span className="text-red-500">*</span></label>
+                      {renderNaToggle('axisSbbAnyConstructionObserved')}
+                    </div>
+                    <div className={`flex space-x-4 ${fields.axisSbbAnyConstructionObservedIsNA ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
+                      {['YES', 'NO'].map(opt => (
+                        <label key={opt} className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="any_construction_observed_on_plot"
+                            value={opt}
+                            checked={fields.axisSbbAnyConstructionObserved === opt && !fields.axisSbbAnyConstructionObservedIsNA}
+                            onChange={e => {
+                              handleChange('axisSbbAnyConstructionObserved', e.target.value);
+                              if (e.target.value === 'NO') {
+                                handleChange('axisSbbPercentOfConstruction', '0');
+                              }
+                            }}
+                            disabled={isReadOnly || fields.axisSbbAnyConstructionObservedIsNA}
+                            className="text-yellow-500 focus:ring-yellow-400"
+                          />
+                          <span className="text-sm font-semibold">{opt}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">% OF CONSTRUCTION <span className="text-red-500">*</span></label>
+                        {renderNaToggle('axisSbbPercentOfConstruction')}
+                      </div>
+                      {renderEditSwitch('axisSbbPercentOfConstruction', !!fields.axisSbbPercentOfConstructionIsNA)}
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        className={`${inputCls} pr-8`}
+                        value={fields.axisSbbPercentOfConstructionIsNA ? '' : (fields.axisSbbPercentOfConstruction || '')}
+                        onChange={e => handleChange('axisSbbPercentOfConstruction', e.target.value)}
+                        readOnly={!fields.axisSbbPercentOfConstructionEditOn || fields.axisSbbPercentOfConstructionIsNA}
+                        disabled={isReadOnly || (!fields.axisSbbPercentOfConstructionEditOn && !fields.axisSbbPercentOfConstructionIsNA)}
+                        placeholder={fields.axisSbbPercentOfConstructionIsNA ? 'NA' : '100'}
+                      />
+                      <span className="absolute right-3 top-2.5 text-gray-500 font-bold">%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col">
+                  <div className="flex items-center mb-2">
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">WHETHER VACANT LAND PROPERTY IS DEMARCATED</label>
+                    {renderNaToggle('axisSbbVacantLandDemarcated')}
+                  </div>
+                  <div className={`flex space-x-2 ${fields.axisSbbVacantLandDemarcatedIsNA ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
+                    {['YES', 'NO'].map(opt => {
+                      const active = fields.axisSbbVacantLandDemarcated === opt && !fields.axisSbbVacantLandDemarcatedIsNA;
+                      return (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => handleChange('axisSbbVacantLandDemarcated', opt)}
+                          disabled={isReadOnly || fields.axisSbbVacantLandDemarcatedIsNA}
+                          className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-colors ${active ? 'bg-yellow-100 border-yellow-400 text-yellow-800' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'}`}
+                        >
+                          {opt}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="flex flex-col">
+                  <div className="flex items-center mb-2">
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide">(B) RESIDENTIAL PROPERTY:</label>
+                    {renderNaToggle('axisSbbResidentialProperty')}
+                  </div>
+                  {renderMultiSelect('axisSbbResidentialProperty', ['INDEPENDENT HOUSE', 'BUNGALOW', 'ROW HOUSE/FLAT'], !!fields.axisSbbResidentialPropertyIsNA)}
+                </div>
+
+                <div className="flex flex-col">
+                  <div className="flex items-center mb-2">
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide">(C) COMMERCIAL/INDUSTRIAL PROPERTY:</label>
+                    {renderNaToggle('axisSbbCommercialIndustrialProperty')}
+                  </div>
+                  {renderMultiSelect('axisSbbCommercialIndustrialProperty', ['GODOWN', 'INDURSTRIAL', 'PETROL PUMP', 'OFFICE', 'VACANT LAND', 'UNIT IN A MALL'], !!fields.axisSbbCommercialIndustrialPropertyIsNA)}
+                </div>
+
+              </div>
+            </div>
+
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#ECFEFF', borderColor: '#A5F3FC' }}>
+              <h3 className="font-bold text-gray-700 mb-4">ACCESSIBILITY/ BOUNDARIES/OTHERS</h3>
+              
+              <div className="space-y-5">
+                <div className="flex flex-col">
+                  <div className="flex justify-between items-center mb-1">
+                    <div className="flex items-center">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">CIVIC AMENITIES LIKE SCHOOL, HOSPITAL, MARKET, ETC. <span className="text-red-500">*</span></label>
+                      {renderNaToggle('axisSbbCivicAmenities')}
+                    </div>
+                    {renderEditSwitch('axisSbbCivicAmenities', !!fields.axisSbbCivicAmenitiesIsNA)}
+                  </div>
+                  <div className={`flex flex-col md:flex-row gap-3 ${fields.axisSbbCivicAmenitiesIsNA ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
+                    {['AVAILABLE, WITHIN THE RADIUS OF 1-2 KMS', 'NOT AVAILABLE'].map(opt => (
+                      <label key={opt} className={`flex items-center space-x-3 p-3 border rounded-lg transition-colors ${(fields.axisSbbCivicAmenities === opt && !fields.axisSbbCivicAmenitiesIsNA) ? 'bg-cyan-50/50 border-cyan-300' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
+                        <input
+                          type="radio"
+                          name="civic_amenities_like_school_hospital_market_etc"
+                          value={opt}
+                          checked={fields.axisSbbCivicAmenities === opt && !fields.axisSbbCivicAmenitiesIsNA}
+                          onChange={e => handleChange('axisSbbCivicAmenities', e.target.value)}
+                          disabled={isReadOnly || !fields.axisSbbCivicAmenitiesEditOn || fields.axisSbbCivicAmenitiesIsNA}
+                          className="text-cyan-500 focus:ring-cyan-400 border-gray-300"
+                        />
+                        <span className="text-xs font-semibold text-gray-700">{opt}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex flex-col">
+                  <div className="flex items-center mb-2">
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">AVAILABILITY OF LOCAL TRANSPORT</label>
+                    {renderNaToggle('axisSbbLocalTransport')}
+                  </div>
+                  <div className={`grid grid-cols-2 md:grid-cols-4 gap-3 ${fields.axisSbbLocalTransportIsNA ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
+                    {['METRO', 'LOCAL TRAIN', 'BUS', 'PERSONAL TRANSPORT'].map(opt => {
+                      const isChecked = Array.isArray(fields.axisSbbLocalTransport) && fields.axisSbbLocalTransport.includes(opt);
+                      return (
+                        <label key={opt} className={`flex justify-center items-center p-2 border rounded-full cursor-pointer transition-colors ${isChecked ? 'bg-cyan-500 border-cyan-500 text-white shadow-sm' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'}`}>
+                          <input
+                            type="checkbox"
+                            className="hidden"
+                            checked={isChecked}
+                            onChange={() => handleMultiSelect('axisSbbLocalTransport', opt)}
+                            disabled={isReadOnly || fields.axisSbbLocalTransportIsNA}
+                          />
+                          <span className="text-[11px] font-bold tracking-wide">{opt}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">DISTANCE FROM RAILWAY STATION <span className="text-red-500">*</span></label>
+                        {renderNaToggle('axisSbbDistRailwayStation')}
+                      </div>
+                      {renderEditSwitch('axisSbbDistRailwayStation', !!fields.axisSbbDistRailwayStationIsNA)}
+                    </div>
+                    {!fields.axisSbbDistRailwayStationEditOn && !fields.axisSbbDistRailwayStationIsNA && (
+                      <div className="flex items-center space-x-2 mb-2">
+                        <input
+                          type="number"
+                          className={`${inputCls} w-20 px-2`}
+                          placeholder="KM"
+                          value={fields.axisSbbDistRailwayStationKm || ''}
+                          onChange={e => handleChange('axisSbbDistRailwayStationKm', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                        <span className="text-xs text-gray-500 font-medium">KMS (</span>
+                        <input
+                          type="text"
+                          className={`${inputCls} flex-1 px-2 uppercase`}
+                          placeholder={parsedCity}
+                          value={fields.axisSbbDistRailwayStationName || ''}
+                          onChange={e => handleChange('axisSbbDistRailwayStationName', e.target.value.toUpperCase())}
+                          disabled={isReadOnly}
+                        />
+                        <span className="text-xs text-gray-500 font-medium">RAILWAY STATION)</span>
+                      </div>
+                    )}
+                    <input
+                      className={`${inputCls} ${!fields.axisSbbDistRailwayStationEditOn && !fields.axisSbbDistRailwayStationIsNA ? 'bg-cyan-50 text-cyan-800 border-cyan-300' : ''}`}
+                      value={fields.axisSbbDistRailwayStationIsNA ? 'NA' : (fields.axisSbbDistRailwayStationEditOn ? (fields.axisSbbDistRailwayStation || '') : stationComputed)}
+                      onChange={e => handleChange('axisSbbDistRailwayStation', e.target.value.toUpperCase())}
+                      readOnly={!fields.axisSbbDistRailwayStationEditOn || fields.axisSbbDistRailwayStationIsNA}
+                      disabled={isReadOnly || (!fields.axisSbbDistRailwayStationEditOn && !fields.axisSbbDistRailwayStationIsNA)}
+                    />
+                  </div>
+
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">BUS STOP/TAXI/ AUTO STAND <span className="text-red-500">*</span></label>
+                        {renderNaToggle('axisSbbDistBusStop')}
+                      </div>
+                      {renderEditSwitch('axisSbbDistBusStop', !!fields.axisSbbDistBusStopIsNA)}
+                    </div>
+                    {!fields.axisSbbDistBusStopEditOn && !fields.axisSbbDistBusStopIsNA && (
+                      <div className="flex items-center space-x-2 mb-2">
+                        <input
+                          type="number"
+                          className={`${inputCls} w-20 px-2`}
+                          placeholder="KM"
+                          value={fields.axisSbbDistBusStopKm || ''}
+                          onChange={e => handleChange('axisSbbDistBusStopKm', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                        <span className="text-xs text-gray-500 font-medium">KMS (</span>
+                        <input
+                          type="text"
+                          className={`${inputCls} flex-1 px-2 uppercase`}
+                          placeholder={parsedCity}
+                          value={fields.axisSbbDistBusStopName || ''}
+                          onChange={e => handleChange('axisSbbDistBusStopName', e.target.value.toUpperCase())}
+                          disabled={isReadOnly}
+                        />
+                        <span className="text-xs text-gray-500 font-medium">BUS STOP)</span>
+                      </div>
+                    )}
+                    <input
+                      className={`${inputCls} ${!fields.axisSbbDistBusStopEditOn && !fields.axisSbbDistBusStopIsNA ? 'bg-cyan-50 text-cyan-800 border-cyan-300' : ''}`}
+                      value={fields.axisSbbDistBusStopIsNA ? 'NA' : (fields.axisSbbDistBusStopEditOn ? (fields.axisSbbDistBusStop || '') : busStopComputed)}
+                      onChange={e => handleChange('axisSbbDistBusStop', e.target.value.toUpperCase())}
+                      readOnly={!fields.axisSbbDistBusStopEditOn || fields.axisSbbDistBusStopIsNA}
+                      disabled={isReadOnly || (!fields.axisSbbDistBusStopEditOn && !fields.axisSbbDistBusStopIsNA)}
                     />
                   </div>
                 </div>
