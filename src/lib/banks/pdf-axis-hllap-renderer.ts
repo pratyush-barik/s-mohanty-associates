@@ -154,9 +154,9 @@ const TABLE_FONT_SIZE_HEADER = FONT_SIZE_HEADER; // Standardized to 14 pt
 const TABLE_MIN_ROW_H = 16;
 
 export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
-  private colSl = 38;
-  private colLbl = 204;
-  private colVal = CONTENT_W - 38 - 204; // 245.28 (Total = 487.28 = CONTENT_W)
+  private colSl = 44;
+  private colLbl = 200;
+  private colVal = CONTENT_W - 44 - 200; // 243.28 (Total = 487.28 = CONTENT_W)
 
   /**
    * Draw standard 3-column table row: [Sl.No | Label | Value]
@@ -453,10 +453,10 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.cursorY += 18;
 
     // --- Table Header: [Sl. No | (empty) | (empty)] ---
-    const thH = 16;
+    const thH = Math.max(18, this.cellHeight('Sl. No', this.colSl, { bold: true, fontSize: FONT_SIZE }));
     this.drawCell(MARGIN_L, this.cursorY, this.colSl, thH, 'Sl. No', {
       bold: true,
-      fontSize: TABLE_FONT_SIZE_HEADER,
+      fontSize: FONT_SIZE,
       fillColor: OPT_BG,
       bgOpacity: 0.5,
       align: 'left',
@@ -464,7 +464,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     });
     this.drawCell(MARGIN_L + this.colSl, this.cursorY, this.colLbl, thH, '', {
       bold: true,
-      fontSize: TABLE_FONT_SIZE_HEADER,
+      fontSize: FONT_SIZE,
       fillColor: OPT_BG,
       bgOpacity: 0.5,
       align: 'left',
@@ -472,7 +472,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     });
     this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, thH, '', {
       bold: true,
-      fontSize: TABLE_FONT_SIZE_HEADER,
+      fontSize: FONT_SIZE,
       fillColor: OPT_BG,
       bgOpacity: 0.5,
       align: 'left',
@@ -800,8 +800,8 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     const remarksPrompt =
       '(Comment on - resistance for valuation if any from the current occupants for rented property, if the property falls in a community dominated areas, if the approach road to the building is small and will not be able to accommodate a fire extinguisher, does the property falls under land locked area or is prone to frequent floods & any other critical observation.)';
 
-    const hPrompt = this.cellHeight(remarksPrompt, this.colLbl, { fontSize: 8.5 });
-    const hRemarks = this.cellHeight(fields.remarks || '', this.colVal, { fontSize: 9.5 });
+    const hPrompt = this.cellHeight(remarksPrompt, this.colLbl, { fontSize: FONT_SIZE_CAPTION });
+    const hRemarks = this.cellHeight(fields.remarks || '', this.colVal, { fontSize: FONT_SIZE });
     const remarksRowH = Math.max(45, hPrompt, hRemarks);
 
     this.checkPageBreak(16 + remarksRowH);
@@ -821,7 +821,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     // 2. Prompt in colLbl
     this.drawCell(MARGIN_L + this.colSl, this.cursorY, this.colLbl, remarksRowH, remarksPrompt, {
       bold: false,
-      fontSize: 8.5,
+      fontSize: FONT_SIZE_CAPTION,
       fillColor: LBL_BG,
       bgOpacity: 0.5,
       align: 'left',
@@ -831,7 +831,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     // 3. Valuer Remarks in colVal
     this.drawCell(MARGIN_L + this.colSl + this.colLbl, this.cursorY, this.colVal, remarksRowH, fields.remarks || '', {
       bold: false,
-      fontSize: 9.5,
+      fontSize: FONT_SIZE,
       fillColor: LBL_BG,
       bgOpacity: 0.5,
       align: 'left',
