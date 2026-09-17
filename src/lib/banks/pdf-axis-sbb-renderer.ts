@@ -80,7 +80,58 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       this.drawSbbSection2();
       return;
     }
+    // Intercept standard section 3
+    if (title.toUpperCase() === 'PROPERTY LOCATION & LOCALITY DETAILS') {
+      super.drawSectionHeader('LEGAL VERIFICATION & PROPERTY CLASSIFICATION', addSpaceBefore, preserveCase);
+      this.drawSbbSection3();
+      return;
+    }
     super.drawSectionHeader(title, addSpaceBefore, preserveCase);
+  }
+
+  private drawSbbSection3() {
+    const fields = this.fields;
+    const fv = (key: string, defaultVal = 'NA') => String((fields as any)[key] || defaultVal).replace(/[\t\n\r]+/g, ' ').trim() || defaultVal;
+    
+    this.drawSectionSubtitle('LOCATION CLASSIFICATION & LOCAL AUTHORITY');
+    this.drawSimpleRow('Location of Property', fv('axisSbbPropertyLocation'));
+    this.drawSimpleRow('Governing Body Authority', fv('axisSbbGoverningBody'));
+    if (fields.axisSbbGoverningBody === 'Town or Gram Panchayat or Rural') {
+      this.drawSimpleRow('Town / Gram Panchayat Planning Sub-Type', fv('axisSbbTownPlanningSubType'));
+    }
+
+    this.drawSectionSubtitle('DOCUMENTS PROVIDED CHECKLIST');
+    
+    const docs = [
+      { id: 'axisSbbDocPrevValuation', label: 'Copy of Previous Valuation Report' },
+      { id: 'axisSbbDocApprovedLayout', label: 'Approved Layout' },
+      { id: 'axisSbbDocCommencement', label: 'Commencement Certificate' },
+      { id: 'axisSbbDocApprovedBuildingPlan', label: 'Approved Building Plan' },
+      { id: 'axisSbbDocSaleDeed', label: 'Copy of Sale Deed / Patta Certificate' },
+      { id: 'axisSbbDocOccupancy', label: 'Occupancy Certificate' },
+      { id: 'axisSbbDocPartitionDeed', label: 'Copy Partition Deed' },
+      { id: 'axisSbbDocSketchMap', label: 'Sketch Map / ROR' }
+    ];
+    
+    // Create 2-column checklist
+    for (let i = 0; i < docs.length; i += 2) {
+      const left = docs[i];
+      const right = i + 1 < docs.length ? docs[i + 1] : null;
+      
+      const leftVal = fields[left.id] ? 'Yes' : 'No';
+      if (right) {
+        const rightVal = fields[right.id] ? 'Yes' : 'No';
+        this.drawKeyValueRow([
+          { label: left.label, value: leftVal },
+          { label: right.label, value: rightVal }
+        ]);
+      } else {
+        this.drawKeyValueRow([
+          { label: left.label, value: leftVal },
+          { label: '', value: '' }
+        ]);
+      }
+    }
   }
 
   private drawSbbSection2() {

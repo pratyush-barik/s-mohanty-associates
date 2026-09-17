@@ -9,11 +9,22 @@ export const AXIS_SBB_CONFIG: BankConfig = {
   bankId: 'AXIS BANK',
   subTemplateId: 'SBB',
   displayName: 'Axis Bank — SBB (Small Business Banking)',
-  hiddenSections: ['section-1', 'section-2'],
+  hiddenSections: ['section-1', 'section-2', 'section-3'],
   extraSections: [],
   hiddenFields: ['to', 'dateOfValuation', 'refNo'],
   fieldLabels: {},
   defaultValues: {
+    axisSbbPropertyLocation: '',
+    axisSbbGoverningBody: '',
+    axisSbbTownPlanningSubType: '',
+    axisSbbDocPrevValuation: false,
+    axisSbbDocApprovedLayout: false,
+    axisSbbDocCommencement: false,
+    axisSbbDocApprovedBuildingPlan: false,
+    axisSbbDocSaleDeed: false,
+    axisSbbDocOccupancy: false,
+    axisSbbDocPartitionDeed: false,
+    axisSbbDocSketchMap: false,
     axisSbbReportRefNo: '',
     axisSbbReportInitiatedBy: '',
     axisSbbAreaName: '',
@@ -321,6 +332,134 @@ export const AXIS_SBB_CONFIG: BankConfig = {
             </div>
           </div>
         </div>
+        );
+      }
+    },
+    {
+      id: 'axis-sbb-section-3',
+      title: 'Legal Verification & Property Classification',
+      number: 3,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        const isGramPanchayat = fields.axisSbbGoverningBody === 'Town or Gram Panchayat or Rural';
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#F0F9FF', borderColor: '#BAE6FD' }}>
+              <h3 className="font-bold text-gray-700 mb-4">LOCATION CLASSIFICATION & LOCAL AUTHORITY</h3>
+              
+              <div className="mb-4">
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Location of Property <span className="text-red-500">*</span></label>
+                <div className="flex gap-4">
+                  {['Urban', 'Semi-Urban', 'Rural/Gram Panchayat'].map((opt) => (
+                    <label key={opt} className="flex items-center space-x-2 cursor-pointer bg-white px-4 py-2 rounded-lg border border-sky-200 shadow-sm hover:bg-sky-50 transition-colors">
+                      <input
+                        type="radio"
+                        name="property_location"
+                        value={opt}
+                        checked={fields.axisSbbPropertyLocation === opt}
+                        onChange={e => handleChange('axisSbbPropertyLocation', e.target.value)}
+                        disabled={isReadOnly}
+                        className="text-sky-600 focus:ring-sky-500"
+                        required
+                      />
+                      <span className="text-sm text-gray-700 font-medium">{opt}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Governing Body Authority <span className="text-red-500">*</span></label>
+                <div className="flex gap-4">
+                  {['Corporation', 'Municipality', 'Town or Gram Panchayat or Rural'].map((opt) => (
+                    <label key={opt} className="flex items-center space-x-2 cursor-pointer bg-white px-4 py-2 rounded-lg border border-sky-200 shadow-sm hover:bg-sky-50 transition-colors">
+                      <input
+                        type="radio"
+                        name="governing_body"
+                        value={opt}
+                        checked={fields.axisSbbGoverningBody === opt}
+                        onChange={e => {
+                          handleChange('axisSbbGoverningBody', e.target.value);
+                          if (e.target.value !== 'Town or Gram Panchayat or Rural') {
+                            handleChange('axisSbbTownPlanningSubType', '');
+                          }
+                        }}
+                        disabled={isReadOnly}
+                        className="text-sky-600 focus:ring-sky-500"
+                        required
+                      />
+                      <span className="text-sm text-gray-700 font-medium">{opt}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {isGramPanchayat && (
+                <div className="mt-4 p-4 bg-white border border-sky-200 rounded-lg animate-fade-in">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Town / Gram Panchayat Planning Sub-Type <span className="text-red-500">*</span></label>
+                  <div className="flex flex-col space-y-3">
+                    {[
+                      'Type 1: Layout plan & individual construction both are approved by Town Planning Authority.',
+                      'Type 2A: Layout plan approved by Town Planning Authority and construction approved by Grampanchayat.',
+                      'Type 2B: Layout plan & individual construction both are approved by Grampanchayat but property now falls in Municipality.',
+                      'Type 3: Layout plan & individual construction both are approved by Grampanchayat but property now falls inside Gram Panchayat.'
+                    ].map((opt) => (
+                      <label key={opt} className="flex items-start space-x-3 cursor-pointer p-2 hover:bg-sky-50 rounded-md transition-colors">
+                        <input
+                          type="radio"
+                          name="town_gp_subtype"
+                          value={opt}
+                          checked={fields.axisSbbTownPlanningSubType === opt}
+                          onChange={e => handleChange('axisSbbTownPlanningSubType', e.target.value)}
+                          disabled={isReadOnly}
+                          className="mt-1 text-sky-600 focus:ring-sky-500"
+                          required
+                        />
+                        <span className="text-sm text-gray-700">{opt}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }}>
+              <h3 className="font-bold text-gray-700 mb-4">DOCUMENTS PROVIDED CHECKLIST</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {[
+                  { id: 'axisSbbDocPrevValuation', label: 'Copy of Previous Valuation Report' },
+                  { id: 'axisSbbDocApprovedLayout', label: 'Approved Layout' },
+                  { id: 'axisSbbDocCommencement', label: 'Commencement Certificate' },
+                  { id: 'axisSbbDocApprovedBuildingPlan', label: 'Approved Building Plan' },
+                  { id: 'axisSbbDocSaleDeed', label: 'Copy of Sale Deed / Patta Certificate' },
+                  { id: 'axisSbbDocOccupancy', label: 'Occupancy Certificate' },
+                  { id: 'axisSbbDocPartitionDeed', label: 'Copy Partition Deed' },
+                  { id: 'axisSbbDocSketchMap', label: 'Sketch Map / ROR' }
+                ].map((doc) => (
+                  <label key={doc.id} className="flex items-center space-x-3 bg-white p-3 rounded-lg border border-emerald-100 shadow-sm cursor-pointer hover:bg-emerald-50 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={!!fields[doc.id]}
+                      onChange={e => handleChange(doc.id, e.target.checked)}
+                      disabled={isReadOnly}
+                      className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-gray-300"
+                    />
+                    <span className="text-sm text-gray-700 font-medium">{doc.label}</span>
+                  </label>
+                ))}
+              </div>
+              
+              {!fields.axisSbbDocSaleDeed && (
+                <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-md animate-fade-in flex items-center space-x-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  <span><strong>Required:</strong> At least one title ownership document (e.g., Copy of Sale Deed / Patta Certificate) must be selected.</span>
+                </div>
+              )}
+            </div>
+          </div>
         );
       }
     },
