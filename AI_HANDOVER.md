@@ -276,6 +276,10 @@ The core business logic is **100% complete**.
       - Continuous map stack on Page 6 (Location Map & Mouza Map) touching section headers with zero extra gaps and bounding box borders.
       - Declaration section with hanging indent on all 5 clauses, locked Appraiser Name (`Er. Satyajit Mohanty`), and pre-filled editable Report Prepared By / Finalized By fields.
     - **Axis Finance Ltd**: Completed custom UI and dedicated PDF renderer with dynamic auto-sync cover page, custom approvals table, and precise PDF pagination.
+    - **Bajaj Housing Finance Ltd (HL-LAP)**: Completed 12-section custom UI and dedicated PDF renderer.
+      - Exact multi-row Address format, auto-compiled accommodation strings, NDMA parameters with correct naming, detailed Risk & BAU area assessment.
+      - Panchayat properties feature extra dynamic inputs, with detailed custom declaration text format.
+      - Integrated complex valuation formulas for land, BUA, and parking logic.
     - Complete tracking across all 57 banks and 73 subclasses maintained in `BANK_REPORT_PROGRESS.md`.
 
 ## 5. Pending Work (What is next)

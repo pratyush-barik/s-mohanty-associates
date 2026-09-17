@@ -8,9 +8,9 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 
 - **Total Banks / Organizations**: 60
 - **Total Subclasses / Templates**: 73
-- **Completed Subclasses**: 6 / 73 (1.1 `MLAP`, 1.2 `STSL`, 3 `Standard` (Annapurna), 4 `Standard` (Arka), 5 `Standard` (Arthan), 8 `Standard` (Axis Finance))
-- **Current Active Bank**: 8. `AXIS FINANCE LTD`
-- **Current Active Subclass**: 8 `Standard` (Completed)
+- **Completed Subclasses**: 7 / 73 (1.1 `MLAP`, 1.2 `STSL`, 3 `Standard` (Annapurna), 4 `Standard` (Arka), 5 `Standard` (Arthan), 8 `Standard` (Axis Finance), 10 `HL-LAP` (Bajaj Housing))
+- **Current Active Bank**: 10. `BAJAJ HOUSING FINANCE LTD`
+- **Current Active Subclass**: 10 `HL-LAP` (Completed)
 - **Bucket Standard**: Enforced strictly per [docs/BUCKET_ARCHITECTURE_STANDARD.md](docs/BUCKET_ARCHITECTURE_STANDARD.md) (Cloud bucket exclusively for Property Photographs; Maps/Documents are device-upload only).
 
 ---
@@ -35,7 +35,7 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 | 7.4 | AXIS BANK | `SME` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **8** | **AXIS FINANCE LTD** | `Standard` | ✅ Complete | ✅ 10-Section Custom UI | ✅ Dedicated PDF Renderer | ✅ Validated |
 | **9** | **AYE FINANCE LTD** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
-| **10** | **BAJAJ HOUSING FINANCE LTD** | `HL-LAP` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
+| **10** | **BAJAJ HOUSING FINANCE LTD** | `HL-LAP` | ✅ Complete | ✅ 12-Section Custom UI | ✅ Dedicated PDF Renderer | ✅ Validated |
 | **11** | **BANDHAN BANK** | | | | | |
 | 11.1 | BANDHAN BANK | `HL-LAP` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | 11.2 | BANDHAN BANK | `SME` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
