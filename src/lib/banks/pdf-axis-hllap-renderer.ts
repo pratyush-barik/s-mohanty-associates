@@ -151,6 +151,79 @@ export interface AxisHLLAPReportFields extends Partial<BaseReportFields> {
   valuerTitle?: string;
 }
 
+/**
+ * Dynamically derive the structure type string (e.g. 'Proposed G+2', 'approved G+1', 'Proposed Ground Floor')
+ * from BUA floor breakup (Section 6.c / 6.d).
+ */
+export function deriveStructureType(fields: {
+  measuredBUAFloors?: AxisHLLAPBUAFloor[];
+  approvedBUAFloors?: AxisHLLAPBUAFloor[];
+  isUnderConstruction?: boolean;
+  proposedStructureType?: string;
+}): string {
+  if (fields.proposedStructureType && fields.proposedStructureType.trim()) {
+    return fields.proposedStructureType.trim();
+  }
+
+  const floors = (fields.measuredBUAFloors && fields.measuredBUAFloors.length > 0)
+    ? fields.measuredBUAFloors
+    : (fields.approvedBUAFloors && fields.approvedBUAFloors.length > 0)
+    ? fields.approvedBUAFloors
+    : [];
+
+  const validFloors = floors.filter(f => f.floor && f.floor.trim());
+  const floorList = validFloors.length > 0 ? validFloors : floors;
+
+  if (floorList.length === 0) {
+    return fields.isUnderConstruction ? 'Proposed G+2' : 'approved G+1';
+  }
+
+  let hasBasement = false;
+  let basementCount = 0;
+  let hasStilt = false;
+  let hasGround = false;
+  let upperFloorCount = 0;
+
+  for (const f of floorList) {
+    const name = (f.floor || '').toLowerCase().trim();
+    if (name.includes('basement') || name.startsWith('b+') || name.includes('lower ground')) {
+      hasBasement = true;
+      basementCount++;
+    } else if (name.includes('stilt')) {
+      hasStilt = true;
+    } else if (name.includes('ground') || name === 'gf' || name.startsWith('g+') || name.includes('gr. floor')) {
+      hasGround = true;
+    } else {
+      upperFloorCount++;
+    }
+  }
+
+  let structBody = '';
+  if (hasBasement && hasGround) {
+    const bStr = basementCount > 1 ? `B${basementCount}+` : 'B+';
+    structBody = upperFloorCount > 0 ? `${bStr}G+${upperFloorCount}` : `${bStr}G`;
+  } else if (hasStilt) {
+    const totalUpper = upperFloorCount + (hasGround ? 1 : 0);
+    structBody = totalUpper > 0 ? `S+${totalUpper}` : 'Stilt';
+  } else if (hasGround || upperFloorCount > 0) {
+    if (upperFloorCount > 0) {
+      structBody = `G+${upperFloorCount}`;
+    } else {
+      structBody = 'Ground Floor';
+    }
+  } else {
+    const count = floorList.length;
+    if (count === 1) structBody = 'Ground Floor';
+    else structBody = `G+${count - 1}`;
+  }
+
+  const prefix = fields.isUnderConstruction ? 'Proposed ' : 'approved ';
+  if (structBody.toLowerCase().startsWith('proposed') || structBody.toLowerCase().startsWith('approved')) {
+    return structBody;
+  }
+  return `${prefix}${structBody}`;
+}
+
 const TABLE_FONT_SIZE = FONT_SIZE; // Standardized to 12 pt
 const TABLE_MIN_ROW_H = 16;
 
@@ -933,10 +1006,10 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.drawHLLAPRichLabelRow('b.', valSegments, fields.valueOfPlotFlat || '', true);
     this.drawHLLAPRow('c.', 'Estimated Cost of construction', fields.estimatedCostOfConstruction || '', false, true);
     
-    const structType = (fields.proposedStructureType || '').trim() || (fields.isUnderConstruction ? 'Proposed G+2' : 'approved G+1');
+    const structType = deriveStructureType(fields);
     this.drawHLLAPRow(
       'd.',
-      `Total Cost of construction(${structType}) on 100% completion`,
+      `Total Cost of construction (${structType}) on 100% completion`,
       fields.totalCostOfConstruction || '',
       false,
       true

@@ -28,6 +28,7 @@ import {
   PDFAxisHLLAPRenderer,
   AxisHLLAPReportFields,
   AxisHLLAPBUAFloor,
+  deriveStructureType,
 } from '@/lib/banks/pdf-axis-hllap-renderer';
 import {
   sanitizePositiveFloat,
@@ -193,7 +194,7 @@ export default function AxisHLLAP({
       plotRateForValuation: raw.plotRateForValuation || '',
       valueOfPlotFlat: raw.valueOfPlotFlat || '',
       constructionRatePerSqft: raw.constructionRatePerSqft || '',
-      proposedStructureType: raw.proposedStructureType || 'Proposed G+2',
+      proposedStructureType: raw.proposedStructureType || '',
       estimatedCostOfConstruction: raw.estimatedCostOfConstruction || '',
       totalCostOfConstruction: raw.totalCostOfConstruction || '',
       isUnderConstruction: raw.isUnderConstruction !== undefined ? raw.isUnderConstruction : false,
@@ -238,6 +239,16 @@ export default function AxisHLLAP({
   const handleChange = (k: keyof AxisHLLAPReportFields, v: any) => {
     setFields(p => ({ ...p, [k]: v }));
   };
+
+  // Dynamically derive structure type (e.g. 'Proposed G+2', 'approved G+1') from BUA floors
+  const effectiveStructureType = useMemo(() => {
+    return deriveStructureType(fields);
+  }, [
+    fields.measuredBUAFloors,
+    fields.approvedBUAFloors,
+    fields.isUnderConstruction,
+    fields.proposedStructureType,
+  ]);
 
   // Autosave setup (3s debounce)
   const debouncedTimer = useRef<NodeJS.Timeout | null>(null);
@@ -1937,7 +1948,7 @@ export default function AxisHLLAP({
                           onChange={e => handleChange('proposedStructureType', e.target.value)}
                           className={inputCls}
                           disabled={isReadOnly}
-                          placeholder="e.g. Proposed G+2"
+                          placeholder={`e.g. ${effectiveStructureType}`}
                         />
                       </Field>
                     </div>
@@ -1947,18 +1958,22 @@ export default function AxisHLLAP({
                 {/* a & b: Rate Description & Value of the Plot/Flat (Soft Container - Soft Blue) */}
                 <div className="border border-blue-200 bg-[#F0F7FF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Field label="a. Recommended Rate Description">
+                    <Field label={`a. Recommended rate of the ${selectedUnit === 'Flat' ? 'Flat' : 'Plot/Flat'}`}>
                       <input
                         type="text"
-                        value={fields.recommendedRatePerSqft}
+                        value={fields.recommendedRatePerSqft || ''}
                         onChange={e => handleChange('recommendedRatePerSqft', e.target.value)}
                         className={inputCls}
                         disabled={isReadOnly}
-                        placeholder="e.g. Plot- Rs. 2200/-per sqft & Building Rs. 2000/-per sqft"
+                        placeholder={
+                          selectedUnit === 'Flat'
+                            ? 'e.g. Flat- Rs. 2200/-per sqft'
+                            : 'e.g. Plot- Rs. 2200/-per sqft & Building Rs. 2000/-per sqft'
+                        }
                       />
                     </Field>
 
-                    <Field label={`b. Value of the ${selectedUnit}`}>
+                    <Field label={`b. Value of the ${selectedUnit === 'Flat' ? 'Flat' : 'Plot/Flat'}`}>
                       <div className="space-y-1">
                         <input
                           type="text"
@@ -1989,7 +2004,7 @@ export default function AxisHLLAP({
                       />
                     </Field>
 
-                    <Field label={`d. Total Cost of Construction (${fields.proposedStructureType || 'Proposed G+2'}) on 100% Completion`}>
+                    <Field label={`d. Total Cost of Construction (${effectiveStructureType}) on 100% Completion`}>
                       <input
                         type="text"
                         value={fields.totalCostOfConstruction}

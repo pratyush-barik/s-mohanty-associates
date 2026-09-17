@@ -1583,6 +1583,7 @@ export function BaseAnnexureSection({
   onRemoveFile,
   sectionNumber = 12,
   sectionId = 'section-12-annexure',
+  title,
 }: {
   annexures: Array<{
     id: string;
