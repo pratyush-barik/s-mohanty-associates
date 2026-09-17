@@ -1427,7 +1427,15 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   </div>
                   <input
                     type="text"
-                    className={`${inputCls} ${!fields.axisSbbApproachRoadRemarkEditOn && !fields.axisSbbApproachRoadRemarkIsNA ? 'bg-rose-50 text-rose-800 border-rose-300' : ''}`}
+                    className={`${inputCls} ${
+                      !fields.axisSbbApproachRoadRemarkEditOn && !fields.axisSbbApproachRoadRemarkIsNA 
+                        ? 'bg-rose-50 text-rose-800 border-rose-300' 
+                        : ''
+                    } ${
+                      fields.axisSbbApproachRoadSmall === 'YES' && !fields.axisSbbApproachRoadSmallIsNA
+                        ? 'ring-2 ring-amber-400 border-amber-500 bg-amber-50/30'
+                        : ''
+                    }`}
                     value={fields.axisSbbApproachRoadRemarkIsNA ? 'NA' : (fields.axisSbbApproachRoadRemarkEditOn ? (fields.axisSbbApproachRoadRemark || '') : remarkComputed)}
                     onChange={e => handleChange('axisSbbApproachRoadRemark', e.target.value.toUpperCase())}
                     readOnly={!fields.axisSbbApproachRoadRemarkEditOn || fields.axisSbbApproachRoadRemarkIsNA}
@@ -1471,6 +1479,12 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       {renderEditSwitch('axisSbbLandLockedArea', !!fields.axisSbbLandLockedAreaIsNA)}
                     </div>
                     {renderRadioGroup('axisSbbLandLockedArea', ['YES', 'NO'])}
+                    {fields.axisSbbLandLockedArea === 'YES' && !fields.axisSbbLandLockedAreaIsNA && (
+                      <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-red-700 text-[10px] font-bold flex items-center space-x-2 animate-pulse">
+                        <span>⚠️</span>
+                        <span>WARNING: LAND LOCKED PROPERTY POOSES SERIOUS COLLATERAL RISK.</span>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="flex flex-col">
