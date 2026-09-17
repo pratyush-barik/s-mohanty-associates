@@ -378,6 +378,21 @@ export const AXIS_SBB_CONFIG: BankConfig = {
     axisSbbFinalInsurableValue: '',
     axisSbbFinalInsurableValueIsNA: false,
     axisSbbFinalInsurableValueEditOn: false,
+    
+    // Section 10
+    axisSbbRemarks: '',
+    axisSbbRemarksIsNA: false,
+    axisSbbRemarksEditOn: false,
+    axisSbbRemarksNote: 'THE TIN-SHEET ROOF GODOWN HAS NOT BEEN CONSIDERED FOR VALUATION, AS IT IS A TEMPORARY STRUCTURE',
+    axisSbbRemarksNoteIsNA: false,
+    axisSbbUndertakingIsNA: false,
+    axisSbbUndertakingClause1: true,
+    axisSbbUndertakingClause2: true,
+    axisSbbUndertakingClause3: true,
+    axisSbbUndertakingClause4: true,
+    axisSbbUndertakingClause5: true,
+    axisSbbUndertakingClause6: true,
+    axisSbbUndertakingClause7: true,
   },
   extraSectionsStart: [
     {
@@ -3175,6 +3190,106 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   </div>
                   <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg font-bold text-blue-700 bg-blue-50 border-blue-200" value={fields.axisSbbFinalInsurableValueIsNA ? '' : (fields.axisSbbFinalInsurableValueEditOn ? (fields.axisSbbFinalInsurableValue || '') : insurableValueComp.toFixed(2))} onChange={e => handleChange('axisSbbFinalInsurableValue', e.target.value)} disabled={isReadOnly || !!fields.axisSbbFinalInsurableValueIsNA || !fields.axisSbbFinalInsurableValueEditOn} />
                 </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'axis-sbb-section-10',
+      title: '10. REMARKS & UNDERTAKING',
+      number: 10,
+      defaultOpen: true,
+      render: ({ fields, handleChange, isReadOnly }) => {
+        const inputCls = "w-full text-sm border-gray-300 rounded-md shadow-sm bg-white focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500";
+        const renderNaToggle = (fieldKey: string) => (
+          <label className="flex items-center gap-1 text-xs font-semibold text-gray-500 hover:text-gray-700 cursor-pointer">
+            <input type="checkbox" checked={!!fields[`${fieldKey}IsNA`]} onChange={e => handleChange(`${fieldKey}IsNA`, e.target.checked)} disabled={isReadOnly} className="rounded border-gray-300 text-red-500 focus:ring-red-500" />
+            NA
+          </label>
+        );
+        const renderEditSwitch = (fieldKey: string, isNA: boolean) => {
+          const editOn = !!fields[`${fieldKey}EditOn`];
+          return (
+            <button type="button" onClick={() => handleChange(`${fieldKey}EditOn`, !editOn)} disabled={isReadOnly || isNA} className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${editOn ? 'bg-green-500' : 'bg-gray-200'} ${(isReadOnly || isNA) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+              <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${editOn ? 'translate-x-4' : 'translate-x-1'}`} />
+            </button>
+          );
+        };
+
+        // Synthesize Remarks
+        let structTypes = [];
+        if (fields.axisSbbTypeOfStructureGCI) structTypes.push('GCI');
+        if (fields.axisSbbTypeOfStructureTinShed) structTypes.push('TIN SHED');
+        if (fields.axisSbbTypeOfStructureRCC) structTypes.push('RCC');
+        if (fields.axisSbbTypeOfStructureAluform) structTypes.push('ALUFORM SHUTTERING');
+        const structVal = structTypes.length > 0 ? structTypes.join(', ') : 'RCC';
+
+        const areaStr = fields.axisSbbLandAreaAcres || fields.axisSbbLandAreaDecimals ? `${fields.axisSbbLandAreaAcres || 0} AC. ${fields.axisSbbLandAreaDecimals || 0} DEC.` : (fields.axisSbbPlotAreaAsPerDocument || '');
+        const buaStr = fields.axisSbbTotalConstructedArea || '';
+        const floorBreakdown = fields.axisSbbNoOfFloors || '';
+        const age = fields.axisSbbAgeOfProperty || '';
+        const occupancy = fields.axisSbbOccupancyDetails || '';
+        const location = [fields.axisSbbColonySector, fields.axisSbbLocalityLandmark, fields.axisSbbVillageCity].filter(Boolean).join(', ');
+        const civicRadius = fields.axisSbbBasicAmenities || '';
+        const corp = fields.axisSbbWardNoGramPanchayat || '';
+        const cityDist = fields.axisSbbDistanceCityCentre || '';
+        const approachRoad = fields.axisSbbRoadWidthMaterial || '';
+        const farComp = fields.axisSbbStructureConfirmingByelaws || '';
+
+        const synthesizedRemarks = `The subject property is a ${structVal} structured building (${floorBreakdown}) having total land area of ${areaStr} and total built-up area of ${buaStr} sq.ft. The property is approximately ${age} years old and currently ${occupancy}. It is located at ${location} under the jurisdiction of ${corp}. Basic civic amenities are ${civicRadius}. The property is situated at a distance of ${cityDist} from the city centre and is accessible via a ${approachRoad}. Structure compliance to byelaws: ${farComp}.`;
+
+        return (
+          <div className="space-y-4">
+            {/* Container 10.1: TECHNICAL INSPECTION REMARKS & SPECIAL NOTES */}
+            <div className="border border-zinc-300 rounded-lg overflow-hidden bg-zinc-50">
+              <div className="bg-zinc-100 px-4 py-3 border-b border-zinc-300 font-bold text-sm text-zinc-800 flex justify-between items-center">
+                <span>10.1 TECHNICAL INSPECTION REMARKS & SPECIAL NOTES</span>
+              </div>
+              <div className="p-4 space-y-4">
+                <div className="flex flex-col gap-1">
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="text-xs font-bold text-gray-700">REMARKS: -</label>
+                    <div className="flex gap-4 items-center">
+                      {renderEditSwitch('axisSbbRemarks', !!fields.axisSbbRemarksIsNA)}
+                      {renderNaToggle('axisSbbRemarks')}
+                    </div>
+                  </div>
+                  <textarea rows={8} className={`${inputCls} resize-y ${fields.axisSbbRemarksEditOn ? 'bg-green-50 border-green-300' : 'bg-white'}`} value={fields.axisSbbRemarksIsNA ? '' : (fields.axisSbbRemarksEditOn ? (fields.axisSbbRemarks || '') : synthesizedRemarks)} onChange={e => handleChange('axisSbbRemarks', e.target.value)} disabled={isReadOnly || !!fields.axisSbbRemarksIsNA || !fields.axisSbbRemarksEditOn} />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="text-xs font-bold text-gray-700">NOTE:-</label>
+                    {renderNaToggle('axisSbbRemarksNote')}
+                  </div>
+                  <textarea rows={2} className={`${inputCls} resize-y bg-white`} value={fields.axisSbbRemarksNoteIsNA ? '' : (fields.axisSbbRemarksNote || '')} onChange={e => handleChange('axisSbbRemarksNote', e.target.value)} disabled={isReadOnly || !!fields.axisSbbRemarksNoteIsNA} />
+                </div>
+              </div>
+            </div>
+
+            {/* Container 10.2: UNDERTAKING:- */}
+            <div className="border border-rose-200 rounded-lg overflow-hidden bg-rose-50">
+              <div className="bg-rose-100 px-4 py-3 border-b border-rose-200 font-bold text-sm text-rose-800 flex justify-between items-center">
+                <span>10.2 UNDERTAKING:-</span>
+                {renderNaToggle('axisSbbUndertaking')}
+              </div>
+              <div className="p-4 space-y-3">
+                {[
+                  { key: 'axisSbbUndertakingClause1', label: 'I HAVE PERSONALLY VISITED THE PROPERTY & IDENTIFIED THE SAME BASED ON THE DOCUMENTS PROVIDED.' },
+                  { key: 'axisSbbUndertakingClause2', label: 'I/WE HAVE NO DIRECT OR INDIRECT INTEREST IN THE PROPERTY BEING VALUED.' },
+                  { key: 'axisSbbUndertakingClause3', label: 'THE INFORMATION FURNISHED ABOVE IS TRUE AND CORRECT TO MY/OUR KNOWLEDGE.' },
+                  { key: 'axisSbbUndertakingClause4', label: 'I HAVE NOT BEEN PENALIZED OR CONVICTED BY ANY BANK/FINANCIAL INSTITUTION/GOVERNMENT DEPARTMENT/PSU/CORPORATE.' },
+                  { key: 'axisSbbUndertakingClause5', label: 'THIS VALUATION IS PREPARED WITHOUT ANY PREJUDICE OR BIAS TO ANY PERSON OR INSTITUTION.' },
+                  { key: 'axisSbbUndertakingClause6', label: 'THE VALUE OF LAND IS TAKEN INTO ACCOUNT BY MAKING DUE ENQUIRES IN THE LOCALITY AND ASCERTAINING THE SALES VALUE OF THE PROPERTIES IN THE LOCALITY.' },
+                  { key: 'axisSbbUndertakingClause7', label: 'ANY ADDITIONS/ALTERATIONS MADE TO THE PROPERTY AFTER THE DATE OF VALUATIONS SHALL NOT FALL UNDER THE SCOPE OF THIS REPORT.' },
+                ].map((clause) => (
+                  <label key={clause.key} className="flex items-start gap-3 text-sm text-gray-700 cursor-pointer">
+                    <input type="checkbox" required className="mt-1 h-4 w-4 text-rose-600 border-gray-300 rounded focus:ring-rose-500" checked={!!fields[clause.key]} onChange={e => handleChange(clause.key, e.target.checked)} disabled={isReadOnly || !!fields.axisSbbUndertakingIsNA} />
+                    <span className={fields.axisSbbUndertakingIsNA ? 'opacity-50' : ''}>{clause.label}</span>
+                  </label>
+                ))}
               </div>
             </div>
           </div>
