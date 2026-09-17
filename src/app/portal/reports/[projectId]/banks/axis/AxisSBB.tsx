@@ -395,33 +395,31 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                 </div>
               </div>
 
-              {isGramPanchayat && (
-                <div className="mt-4 p-4 bg-white border border-sky-200 rounded-lg animate-fade-in">
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Town / Gram Panchayat Planning Sub-Type <span className="text-red-500">*</span></label>
-                  <div className="flex flex-col space-y-3">
-                    {[
-                      'Type 1: Layout plan & individual construction both are approved by Town Planning Authority.',
-                      'Type 2A: Layout plan approved by Town Planning Authority and construction approved by Grampanchayat.',
-                      'Type 2B: Layout plan & individual construction both are approved by Grampanchayat but property now falls in Municipality.',
-                      'Type 3: Layout plan & individual construction both are approved by Grampanchayat but property now falls inside Gram Panchayat.'
-                    ].map((opt) => (
-                      <label key={opt} className="flex items-start space-x-3 cursor-pointer p-2 hover:bg-sky-50 rounded-md transition-colors">
-                        <input
-                          type="radio"
-                          name="town_gp_subtype"
-                          value={opt}
-                          checked={fields.axisSbbTownPlanningSubType === opt}
-                          onChange={e => handleChange('axisSbbTownPlanningSubType', e.target.value)}
-                          disabled={isReadOnly}
-                          className="mt-1 text-sky-600 focus:ring-sky-500"
-                          required
-                        />
-                        <span className="text-sm text-gray-700">{opt}</span>
-                      </label>
-                    ))}
-                  </div>
+              <div className={`mt-4 p-4 border rounded-lg transition-all duration-300 ${isGramPanchayat ? 'bg-white border-sky-200' : 'bg-slate-50 border-slate-200 opacity-60 grayscale-[50%]'}`}>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Town / Gram Panchayat Planning Sub-Type <span className="text-red-500">*</span></label>
+                <div className="flex flex-col space-y-3">
+                  {[
+                    'Type 1: Layout plan & individual construction both are approved by Town Planning Authority.',
+                    'Type 2A: Layout plan approved by Town Planning Authority and construction approved by Grampanchayat.',
+                    'Type 2B: Layout plan & individual construction both are approved by Grampanchayat but property now falls in Municipality.',
+                    'Type 3: Layout plan & individual construction both are approved by Grampanchayat but property now falls inside Gram Panchayat.'
+                  ].map((opt) => (
+                    <label key={opt} className={`flex items-start space-x-3 p-2 rounded-md transition-colors ${isGramPanchayat ? 'cursor-pointer hover:bg-sky-50' : 'cursor-not-allowed'}`}>
+                      <input
+                        type="radio"
+                        name="town_gp_subtype"
+                        value={opt}
+                        checked={fields.axisSbbTownPlanningSubType === opt}
+                        onChange={e => handleChange('axisSbbTownPlanningSubType', e.target.value)}
+                        disabled={isReadOnly || !isGramPanchayat}
+                        className={`mt-1 ${isGramPanchayat ? 'text-sky-600 focus:ring-sky-500' : 'text-slate-400'}`}
+                        required={isGramPanchayat}
+                      />
+                      <span className={`text-sm ${isGramPanchayat ? 'text-gray-700' : 'text-gray-400'}`}>{opt}</span>
+                    </label>
+                  ))}
                 </div>
-              )}
+              </div>
             </div>
 
             <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }}>
@@ -436,18 +434,30 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   { id: 'axisSbbDocOccupancy', label: 'Occupancy Certificate' },
                   { id: 'axisSbbDocPartitionDeed', label: 'Copy Partition Deed' },
                   { id: 'axisSbbDocSketchMap', label: 'Sketch Map / ROR' }
-                ].map((doc) => (
-                  <label key={doc.id} className="flex items-center space-x-3 bg-white p-3 rounded-lg border border-emerald-100 shadow-sm cursor-pointer hover:bg-emerald-50 transition-colors">
-                    <input
-                      type="checkbox"
-                      checked={!!fields[doc.id]}
-                      onChange={e => handleChange(doc.id, e.target.checked)}
-                      disabled={isReadOnly}
-                      className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-gray-300"
-                    />
-                    <span className="text-sm text-gray-700 font-medium">{doc.label}</span>
-                  </label>
-                ))}
+                ].map((doc) => {
+                  const isChecked = !!fields[doc.id];
+                  return (
+                  <div key={doc.id} className={`flex items-center justify-between bg-white p-3 rounded-lg border shadow-sm transition-colors ${isChecked ? 'border-emerald-300 bg-emerald-50/30' : 'border-emerald-100 hover:bg-emerald-50'}`}>
+                    <label className="flex items-center space-x-3 cursor-pointer flex-1">
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={e => handleChange(doc.id, e.target.checked)}
+                        disabled={isReadOnly}
+                        className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-gray-300"
+                      />
+                      <span className="text-sm text-gray-700 font-medium">{doc.label}</span>
+                    </label>
+                    {isChecked && (
+                      <label className="cursor-pointer p-1.5 bg-emerald-100 text-emerald-700 rounded-md hover:bg-emerald-200 transition-colors flex items-center justify-center animate-fade-in" title="Attach Document / View Link">
+                        <input type="file" accept=".pdf,image/*" className="hidden" disabled={isReadOnly} />
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                        </svg>
+                      </label>
+                    )}
+                  </div>
+                )})}
               </div>
               
               {!fields.axisSbbDocSaleDeed && (
