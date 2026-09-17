@@ -1472,10 +1472,10 @@ export default function AdityaBirlaCapitalSTSL({
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <Field label="Latitude">
-                  <input type="text" value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 20.288972" />
+                  <input type="text" value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} className={inputCls} />
                 </Field>
                 <Field label="Longitude">
-                  <input type="text" value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 85.181528" />
+                  <input type="text" value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} className={inputCls} />
                 </Field>
               </div>
             </div>

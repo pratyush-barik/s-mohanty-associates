@@ -2054,10 +2054,10 @@ export default function ArthanFinance({
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   <Field label="Latitude(N)">
-                    <input type="text" inputMode="decimal" className={`${inputCls} font-bold text-black`} value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 21.1705" />
+                    <input type="text" inputMode="decimal" className={`${inputCls} font-bold text-black`} value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} />
                   </Field>
                   <Field label="Longitude(E)">
-                    <input type="text" inputMode="decimal" className={`${inputCls} font-bold text-black`} value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 86.492417" />
+                    <input type="text" inputMode="decimal" className={`${inputCls} font-bold text-black`} value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} />
                   </Field>
                 </div>
               </div>

@@ -1107,10 +1107,10 @@ export default function AdityaBirlaCapitalMLAP({
                 </select>
               </Field>
               <Field label="Latitude">
-                <input type="text" value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 21.636778" />
+                <input type="text" value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} className={inputCls} />
               </Field>
               <Field label="Longitude">
-                <input type="text" value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. 85.628000" />
+                <input type="text" value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} className={inputCls} />
               </Field>
             </div>
 

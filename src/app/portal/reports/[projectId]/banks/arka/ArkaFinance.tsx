@@ -1146,10 +1146,10 @@ export default function ArkaFinance({
                 <input className={inputCls} value={fields.developmentOfSurroundingArea || ''} onChange={e => handleChange('developmentOfSurroundingArea', e.target.value)} disabled={isReadOnly} placeholder="Describe surrounding development..." />
               </Field>
               <Field label="Longitude">
-                <input className={inputCls} value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 85.8245" />
+                <input className={inputCls} value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} />
               </Field>
               <Field label="Latitude">
-                <input className={inputCls} value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 20.2961" />
+                <input className={inputCls} value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} />
               </Field>
             </div>
           </div>

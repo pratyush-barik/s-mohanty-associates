@@ -4595,10 +4595,10 @@ Our valuation is based on information obtained from the client and on data gathe
               {/* Lat/Long inputs */}
               <div className="grid md:grid-cols-2 gap-4">
                 <Field label="Latitude">
-                  <input className={inputCls} value={fields.latitude} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 19.976652" />
+                  <input className={inputCls} value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} />
                 </Field>
                 <Field label="Longitude">
-                  <input className={inputCls} value={fields.longitude} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 86.240795" />
+                  <input className={inputCls} value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} />
                 </Field>
               </div>
             </div>

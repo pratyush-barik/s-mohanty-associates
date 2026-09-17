@@ -911,10 +911,10 @@ export default function AnnapurnaMicroFinance({
             </Field>
             <div className="grid grid-cols-2 gap-2">
               <Field label="Latitude">
-                <input className={inputCls} value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 20.349222" />
+                <input className={inputCls} value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} />
               </Field>
               <Field label="Longitude">
-                <input className={inputCls} value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 85.416528" />
+                <input className={inputCls} value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} />
               </Field>
             </div>
             <div className="md:col-span-2">

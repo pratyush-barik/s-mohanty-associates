@@ -891,36 +891,38 @@ export function BaseMapsSection({
                 <span className="text-xs font-bold text-[#0f2038] flex items-center gap-1.5">
                   🧭 {hasExternalCoordinatesField ? 'Report Coordinates' : 'Direct GPS Coordinates Entry'}
                 </span>
-                <span className="text-[11px] text-slate-500">
+                <span className="text-[11px] text-slate-500 font-medium">
                   {hasExternalCoordinatesField
-                    ? `Coordinates synced from ${coordinatesSectionName || 'report details'}`
+                    ? `🔒 Coordinates synced from ${coordinatesSectionName || 'report details'}`
                     : 'Input latitude & longitude to set map pin'}
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                    {hasExternalCoordinatesField ? 'Latitude' : 'Latitude (DD)'}
+                    {hasExternalCoordinatesField ? 'Latitude (Locked)' : 'Latitude (DD)'}
                   </label>
                   <input
                     type="text"
-                    className={`w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-1 focus:ring-[#0f2038] focus:border-[#0f2038] outline-none text-slate-800 font-mono ${hasExternalCoordinatesField ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
-                    placeholder="e.g. 20.296059"
-                    value={activeLat}
+                    className={`w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg outline-none font-mono ${hasExternalCoordinatesField ? 'bg-slate-100 text-slate-800 cursor-not-allowed select-all' : 'bg-white text-slate-800 focus:ring-1 focus:ring-[#0f2038] focus:border-[#0f2038]'}`}
+                    placeholder=""
+                    value={activeLat || ''}
                     onChange={e => handleLatChange(e.target.value)}
+                    readOnly={hasExternalCoordinatesField}
                     disabled={isReadOnly || hasExternalCoordinatesField}
                   />
                 </div>
                 <div>
                   <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                    {hasExternalCoordinatesField ? 'Longitude' : 'Longitude (DD)'}
+                    {hasExternalCoordinatesField ? 'Longitude (Locked)' : 'Longitude (DD)'}
                   </label>
                   <input
                     type="text"
-                    className={`w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-1 focus:ring-[#0f2038] focus:border-[#0f2038] outline-none text-slate-800 font-mono ${hasExternalCoordinatesField ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
-                    placeholder="e.g. 85.824540"
-                    value={activeLng}
+                    className={`w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg outline-none font-mono ${hasExternalCoordinatesField ? 'bg-slate-100 text-slate-800 cursor-not-allowed select-all' : 'bg-white text-slate-800 focus:ring-1 focus:ring-[#0f2038] focus:border-[#0f2038]'}`}
+                    placeholder=""
+                    value={activeLng || ''}
                     onChange={e => handleLngChange(e.target.value)}
+                    readOnly={hasExternalCoordinatesField}
                     disabled={isReadOnly || hasExternalCoordinatesField}
                   />
                 </div>
