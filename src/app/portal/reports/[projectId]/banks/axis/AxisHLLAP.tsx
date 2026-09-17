@@ -673,7 +673,7 @@ export default function AxisHLLAP({
         <Section id="axis-sec1" title="Applicant & Application Details (1 – 3)" number={1} defaultOpen={true}>
           {/* Header Reference & Date of Report (Soft Container) */}
           <div className="pb-4 border-b border-slate-200">
-            <div className="border border-slate-200/80 bg-slate-50/60 dark:bg-slate-800/30 rounded-xl p-4 sm:p-5 shadow-xs">
+            <div className="border border-blue-100/80 bg-[#F0F7FF] rounded-xl p-4 sm:p-5 shadow-2xs">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="Reference Number">
                   <input
@@ -695,8 +695,8 @@ export default function AxisHLLAP({
 
           {/* Point 1: Customer Details (Soft Container - Light Coloured) */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="border border-blue-100/70 bg-blue-50/25 dark:bg-slate-800/20 rounded-xl p-4 sm:p-5 shadow-xs">
-              <div className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-3">
+            <div className="border border-[#B9DBFE] bg-[#F0F7FF] rounded-xl p-4 sm:p-5 shadow-2xs">
+              <div className="text-xs font-bold text-blue-900 uppercase tracking-wider mb-3">
                 1. Customer Details
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -767,8 +767,8 @@ export default function AxisHLLAP({
 
           {/* 4a - 4m: Locational & Infrastructure Details (Soft Container) */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="border border-slate-200/80 bg-slate-50/60 dark:bg-slate-800/30 rounded-xl p-4 sm:p-5 shadow-xs">
-              <div className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-3">
+            <div className="border border-[#E2E8F0] bg-[#F8FAFC] rounded-xl p-4 sm:p-5 shadow-2xs">
+              <div className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
                 Locational &amp; Infrastructure Details (a – m)
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -924,9 +924,9 @@ export default function AxisHLLAP({
 
           {/* n. Boundaries Comparison Table (Soft Container) */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="border border-purple-200 bg-purple-50/50 rounded-xl p-5 shadow-xs">
+            <div className="border border-[#E9D5FF] bg-[#FAF5FF] rounded-xl p-5 shadow-2xs">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-purple-800 text-sm tracking-wide uppercase">
+                <h3 className="font-semibold text-purple-900 text-sm tracking-wide uppercase">
                   n. Boundaries of Property (Deed vs Actual vs Sketch Map)
                 </h3>
                 <div className="flex items-center gap-2">
@@ -1090,8 +1090,8 @@ export default function AxisHLLAP({
 
           {/* 4o - 4s: Property Attributes & Usage (Soft Container) */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="border border-slate-200/80 bg-slate-50/60 dark:bg-slate-800/30 rounded-xl p-4 sm:p-5 shadow-xs">
-              <div className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-3">
+            <div className="border border-[#C7D2FE] bg-[#EEF2FF] rounded-xl p-4 sm:p-5 shadow-2xs">
+              <div className="text-xs font-bold text-indigo-900 uppercase tracking-wider mb-3">
                 Property Attributes &amp; Usage (o – s)
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1174,8 +1174,8 @@ export default function AxisHLLAP({
 
           {/* 4t - 4y: Structure, Occupancy & Utilities (Soft Container) */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="border border-slate-200/80 bg-slate-50/60 dark:bg-slate-800/30 rounded-xl p-4 sm:p-5 shadow-xs">
-              <div className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-3">
+            <div className="border border-[#BAE6FD] bg-[#F0F9FF] rounded-xl p-4 sm:p-5 shadow-2xs">
+              <div className="text-xs font-bold text-sky-900 uppercase tracking-wider mb-3">
                 Structure, Occupancy &amp; Utilities (t – y)
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1251,8 +1251,8 @@ export default function AxisHLLAP({
 
           {/* z. Longitude & Latitude Coordinates (Soft Container) */}
           <div className="pt-2">
-            <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs">
-              <h3 className="font-semibold text-blue-800 mb-3 text-sm tracking-wide uppercase">
+            <div className="border border-[#B9DBFE] bg-[#F0F7FF] rounded-xl p-5 shadow-2xs">
+              <h3 className="font-semibold text-blue-900 mb-3 text-sm tracking-wide uppercase">
                 z. Longitude &amp; Latitude Coordinates
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1297,8 +1297,8 @@ export default function AxisHLLAP({
 
           {/* 5a - 5c: Layout Approval Sub-Container with 5b-5c Sub-Subcontainer */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="border border-slate-200/80 bg-slate-50/60 dark:bg-slate-800/30 rounded-xl p-4 sm:p-5 shadow-xs space-y-4">
-              <div className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+            <div className="border border-blue-100 bg-[#F0F7FF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
+              <div className="text-xs font-bold text-blue-900 uppercase tracking-wider">
                 Layout Approval Details (a – c)
               </div>
               <Field label="a. Layout Approval No">
@@ -1312,8 +1312,8 @@ export default function AxisHLLAP({
               </Field>
 
               {/* 5b - 5c Sub-Subcontainer */}
-              <div className="border border-slate-200/80 bg-white dark:bg-slate-900/50 rounded-lg p-3.5 sm:p-4 shadow-2xs">
-                <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-2.5">
+              <div className="border border-blue-200/80 bg-white rounded-lg p-3.5 sm:p-4 shadow-2xs">
+                <div className="text-[11px] font-semibold text-blue-800 uppercase tracking-wide mb-2.5">
                   Approval Validity (b – c)
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1332,8 +1332,8 @@ export default function AxisHLLAP({
 
           {/* 5d - 5f: Building Plan Approval Sub-Container with 5e-5f Sub-Subcontainer */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="border border-slate-200/80 bg-slate-50/60 dark:bg-slate-800/30 rounded-xl p-4 sm:p-5 shadow-xs space-y-4">
-              <div className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+            <div className="border border-emerald-100 bg-[#ECFDF5] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
+              <div className="text-xs font-bold text-emerald-900 uppercase tracking-wider">
                 Building Plan Approval Details (d – f)
               </div>
               <Field label="d. Building Plan Approval No">
@@ -1347,8 +1347,8 @@ export default function AxisHLLAP({
               </Field>
 
               {/* 5e - 5f Sub-Subcontainer */}
-              <div className="border border-slate-200/80 bg-white dark:bg-slate-900/50 rounded-lg p-3.5 sm:p-4 shadow-2xs">
-                <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-2.5">
+              <div className="border border-emerald-200/80 bg-white rounded-lg p-3.5 sm:p-4 shadow-2xs">
+                <div className="text-[11px] font-semibold text-emerald-800 uppercase tracking-wide mb-2.5">
                   Approval Validity (e – f)
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1367,8 +1367,8 @@ export default function AxisHLLAP({
 
           {/* 5g - 5h: Construction Timeline Sub-Container */}
           <div className="pt-2">
-            <div className="border border-slate-200/80 bg-slate-50/60 dark:bg-slate-800/30 rounded-xl p-4 sm:p-5 shadow-xs space-y-3">
-              <div className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+            <div className="border border-amber-100 bg-[#FFFBEB] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
+              <div className="text-xs font-bold text-amber-900 uppercase tracking-wider">
                 Construction Timeline (g – h)
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1393,7 +1393,7 @@ export default function AxisHLLAP({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="a. Area of the Plot / Flat (as per documents)">
                 <div className="space-y-2">
-                  <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg w-fit border border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-lg w-fit border border-slate-200">
                     <button
                       type="button"
                       onClick={() => handleChange('plotOrFlat', 'Plot')}
@@ -1401,7 +1401,7 @@ export default function AxisHLLAP({
                       className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
                         (fields.plotOrFlat || 'Plot') === 'Plot'
                           ? 'bg-blue-600 text-white shadow-xs'
-                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                          : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
                       Plot
@@ -1413,7 +1413,7 @@ export default function AxisHLLAP({
                       className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
                         fields.plotOrFlat === 'Flat'
                           ? 'bg-blue-600 text-white shadow-xs'
-                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                          : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
                       Flat
@@ -1449,11 +1449,11 @@ export default function AxisHLLAP({
           <div className="pt-2 pb-4 border-b border-slate-200">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <div className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                <div className="text-xs font-bold text-slate-800 uppercase tracking-wider">
                   c. Approved Built Up Area (BUA) Floor Breakup
                 </div>
                 <div className="text-xs text-slate-500">
-                  Approved Total: <strong className="font-mono text-slate-900 dark:text-slate-100">{fields.approvedBUATotal ? `${fields.approvedBUATotal} sqft` : '0 sqft'}</strong>
+                  Approved Total: <strong className="font-mono text-slate-900">{fields.approvedBUATotal ? `${fields.approvedBUATotal} sqft` : '0 sqft'}</strong>
                 </div>
               </div>
 
@@ -1538,11 +1538,11 @@ export default function AxisHLLAP({
           <div className="pt-2 pb-4 border-b border-slate-200">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <div className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                <div className="text-xs font-bold text-slate-800 uppercase tracking-wider">
                   d. Measured Built Up Area (BUA) Floor Breakup
                 </div>
                 <div className="text-xs text-slate-500">
-                  Measured Total: <strong className="font-mono text-slate-900 dark:text-slate-100">{fields.measuredBUATotal ? `${fields.measuredBUATotal} sqft` : '0 sqft'}</strong>
+                  Measured Total: <strong className="font-mono text-slate-900">{fields.measuredBUATotal ? `${fields.measuredBUATotal} sqft` : '0 sqft'}</strong>
                 </div>
               </div>
 
@@ -1654,11 +1654,11 @@ export default function AxisHLLAP({
 
           {/* 6g: Recommended / Available Side Margins (Soft Container) */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="border border-slate-200/80 bg-slate-50/60 dark:bg-slate-800/30 rounded-xl p-4 sm:p-5 shadow-xs space-y-3">
-              <div className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+            <div className="border border-violet-100 bg-[#FAF5FF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
+              <div className="text-xs font-bold text-violet-900 uppercase tracking-wider">
                 g. Recommended / Available Side Margins (Setbacks)
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white dark:bg-slate-900/50 p-3 rounded-lg border border-slate-200/80 shadow-2xs">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-3 rounded-lg border border-violet-200/80 shadow-2xs">
                 <Field label="Front">
                   <input
                     type="text"
@@ -1701,8 +1701,8 @@ export default function AxisHLLAP({
 
           {/* 6h - 6i: Construction Quality & Maintenance (Soft Container) */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="border border-slate-200/80 bg-slate-50/60 dark:bg-slate-800/30 rounded-xl p-4 sm:p-5 shadow-xs space-y-3">
-              <div className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+            <div className="border border-teal-100 bg-[#F0FDFA] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
+              <div className="text-xs font-bold text-teal-900 uppercase tracking-wider">
                 Construction Quality &amp; Maintenance (h – i)
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1743,8 +1743,8 @@ export default function AxisHLLAP({
 
           {/* 6j - 6k: Structure Life Assessment (Soft Container) */}
           <div className="pt-2">
-            <div className="border border-slate-200/80 bg-slate-50/60 dark:bg-slate-800/30 rounded-xl p-4 sm:p-5 shadow-xs space-y-3">
-              <div className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+            <div className="border border-sky-100 bg-[#F0F9FF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
+              <div className="text-xs font-bold text-sky-900 uppercase tracking-wider">
                 Structure Life Assessment (j – k)
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1777,7 +1777,7 @@ export default function AxisHLLAP({
         {/* SECTION 5: Recommended Valuation & Statutory Rates (7 – 10) */}
         <Section id="axis-sec5" title="Recommended Valuation & Statutory Rates (7 – 10)" number={5} defaultOpen={true}>
           {/* Construction Status Toggle & Auto Calculate */}
-          <div className="p-4 bg-slate-100 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-4 mb-5 shadow-xs">
+          <div className="p-4 bg-[#F8FAFC] rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-4 mb-5 shadow-2xs">
             <div className="flex items-center gap-3">
               <span className="text-xs font-bold text-slate-700 uppercase">Valuation Mode:</span>
               <button
@@ -1871,8 +1871,8 @@ export default function AxisHLLAP({
           {/* Under-Construction Valuation Breakdown (Soft Container) */}
           {fields.isUnderConstruction && (
             <div className="pt-2 pb-4 border-b border-slate-200">
-              <div className="border border-amber-200 bg-amber-50/50 rounded-xl p-5 shadow-xs">
-                <h3 className="font-semibold text-amber-800 mb-3 text-sm tracking-wide uppercase">
+              <div className="border border-amber-200 bg-[#FFFBEB] rounded-xl p-5 shadow-2xs">
+                <h3 className="font-semibold text-amber-900 mb-3 text-sm tracking-wide uppercase">
                   Under-Construction Valuation Breakdown
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -2048,8 +2048,8 @@ export default function AxisHLLAP({
 
           {/* Undertaking & Signatory (Soft Container) */}
           <div className="pt-2">
-            <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs">
-              <h3 className="font-semibold text-blue-800 mb-3 text-sm tracking-wide uppercase">
+            <div className="border border-[#B9DBFE] bg-[#F0F7FF] rounded-xl p-5 shadow-2xs">
+              <h3 className="font-semibold text-blue-900 mb-3 text-sm tracking-wide uppercase">
                 Undertaking &amp; Signatory
               </h3>
               <p className="text-xs text-slate-700 italic leading-relaxed mb-4">
