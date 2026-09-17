@@ -228,8 +228,8 @@ export class PDFBajajHousingRenderer extends PDFBankRenderer {
       ['Mortar Type', 'bajajMortarType', 'Concrete Grade', 'bajajConcreteGrade'],
       ['Environment Exposure Condition', 'bajajEnvironmentExposureCondition', 'Footing Type', 'bajajFootingType'],
       ['Seismic Zone', 'bajajSeismicZone', 'Soil Liquefiable', 'bajajSoilLiquefiable'],
-      ['Coastal Regulatory Zone', 'bajajCoastalRegulatoryZone', 'Vulnerable to Landslide', 'bajajSoilSlopeVulnerableToLandslide'],
-      ['Flood Prone Area', 'bajajFloodProneArea', 'Ground Slope > 20%', 'bajajGroundSlopeMoreThan20']
+      ['Coastal Regulatory Zone', 'bajajCoastalRegulatoryZone', 'Soil Slope Vulnerable to Landslide', 'bajajSoilSlopeVulnerableToLandslide'],
+      ['Flood Prone Area', 'bajajFloodProneArea', 'Ground Slope More than 20%', 'bajajGroundSlopeMoreThan20']
     ];
 
     for (const [l1, k1, l2, k2] of ndmaFields) {
