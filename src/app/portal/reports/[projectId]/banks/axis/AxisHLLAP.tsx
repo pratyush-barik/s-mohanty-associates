@@ -904,9 +904,10 @@ export default function AxisHLLAP({
                   <input
                     type="text"
                     value={fields.distanceFromCityCenter}
-                    onChange={e => handleChange('distanceFromCityCenter', e.target.value)}
+                    onChange={e => handleChange('distanceFromCityCenter', sanitizePositiveFloat(e.target.value))}
                     className={inputCls}
                     disabled={isReadOnly}
+                    placeholder="e.g. 5"
                   />
                 </Field>
 
@@ -1300,7 +1301,7 @@ export default function AxisHLLAP({
                   <input
                     type="text"
                     value={fields.longitude}
-                    onChange={e => handleChange('longitude', e.target.value)}
+                    onChange={e => handleChange('longitude', sanitizePositiveFloat(e.target.value))}
                     className={inputCls}
                     disabled={isReadOnly}
                     placeholder="e.g. 85.001200"
@@ -1311,7 +1312,7 @@ export default function AxisHLLAP({
                   <input
                     type="text"
                     value={fields.latitude}
-                    onChange={e => handleChange('latitude', e.target.value)}
+                    onChange={e => handleChange('latitude', sanitizePositiveFloat(e.target.value))}
                     className={inputCls}
                     disabled={isReadOnly}
                     placeholder="e.g. 19.597680"
@@ -1465,10 +1466,10 @@ export default function AxisHLLAP({
                   <input
                     type="text"
                     value={fields.plotAreaDocs}
-                    onChange={e => handleChange('plotAreaDocs', e.target.value)}
+                    onChange={e => handleChange('plotAreaDocs', sanitizePositiveFloat(e.target.value))}
                     className={inputCls}
                     disabled={isReadOnly}
-                    placeholder="e.g. 1500 sqft"
+                    placeholder="e.g. 1500"
                   />
                 </div>
               </Field>
@@ -1718,40 +1719,44 @@ export default function AxisHLLAP({
                 g. Recommended / Available Side Margin
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-3 rounded-lg border border-violet-200/80 shadow-2xs">
-                <Field label="Front">
+                <Field label="Front (ft)">
                   <input
                     type="text"
                     value={fields.sideMarginFront}
-                    onChange={e => handleChange('sideMarginFront', e.target.value)}
+                    onChange={e => handleChange('sideMarginFront', sanitizePositiveFloat(e.target.value))}
                     className={inputCls}
                     disabled={isReadOnly}
+                    placeholder="e.g. 5"
                   />
                 </Field>
-                <Field label="Right Side">
+                <Field label="Right Side (ft)">
                   <input
                     type="text"
                     value={fields.sideMarginRight}
-                    onChange={e => handleChange('sideMarginRight', e.target.value)}
+                    onChange={e => handleChange('sideMarginRight', sanitizePositiveFloat(e.target.value))}
                     className={inputCls}
                     disabled={isReadOnly}
+                    placeholder="e.g. 3"
                   />
                 </Field>
-                <Field label="Left Side">
+                <Field label="Left Side (ft)">
                   <input
                     type="text"
                     value={fields.sideMarginLeft}
-                    onChange={e => handleChange('sideMarginLeft', e.target.value)}
+                    onChange={e => handleChange('sideMarginLeft', sanitizePositiveFloat(e.target.value))}
                     className={inputCls}
                     disabled={isReadOnly}
+                    placeholder="e.g. 3"
                   />
                 </Field>
-                <Field label="Back Side">
+                <Field label="Back Side (ft)">
                   <input
                     type="text"
                     value={fields.sideMarginBack}
-                    onChange={e => handleChange('sideMarginBack', e.target.value)}
+                    onChange={e => handleChange('sideMarginBack', sanitizePositiveFloat(e.target.value))}
                     className={inputCls}
                     disabled={isReadOnly}
+                    placeholder="e.g. 5"
                   />
                 </Field>
               </div>
@@ -1801,25 +1806,25 @@ export default function AxisHLLAP({
           <div className="pt-2">
             <div className="border border-sky-200 bg-[#F0F9FF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="j. Current Life of Structure">
+                <Field label="j. Current Life of Structure (years)">
                   <input
                     type="text"
                     value={fields.currentLifeOfStructure}
-                    onChange={e => handleChange('currentLifeOfStructure', e.target.value)}
+                    onChange={e => handleChange('currentLifeOfStructure', sanitizePositiveFloat(e.target.value))}
                     className={inputCls}
                     disabled={isReadOnly}
-                    placeholder="e.g. 5 years"
+                    placeholder="e.g. 5"
                   />
                 </Field>
 
-                <Field label="k. Projected Life of Structure">
+                <Field label="k. Projected Life of Structure (years)">
                   <input
                     type="text"
                     value={fields.projectedLifeOfStructure}
-                    onChange={e => handleChange('projectedLifeOfStructure', e.target.value)}
+                    onChange={e => handleChange('projectedLifeOfStructure', sanitizePositiveFloat(e.target.value))}
                     className={inputCls}
                     disabled={isReadOnly}
-                    placeholder="e.g. 55 years"
+                    placeholder="e.g. 55"
                   />
                 </Field>
               </div>
@@ -1989,9 +1994,10 @@ export default function AxisHLLAP({
                       <input
                         type="text"
                         value={fields.percentWorkCompleted}
-                        onChange={e => handleChange('percentWorkCompleted', e.target.value)}
+                        onChange={e => handleChange('percentWorkCompleted', sanitizePositiveFloat(e.target.value))}
                         className={inputCls}
                         disabled={isReadOnly}
+                        placeholder="e.g. 100"
                       />
                     </Field>
 
@@ -1999,9 +2005,10 @@ export default function AxisHLLAP({
                       <input
                         type="text"
                         value={fields.percentDisbursementRecommended}
-                        onChange={e => handleChange('percentDisbursementRecommended', e.target.value)}
+                        onChange={e => handleChange('percentDisbursementRecommended', sanitizePositiveFloat(e.target.value))}
                         className={inputCls}
                         disabled={isReadOnly}
+                        placeholder="e.g. 100"
                       />
                     </Field>
 
@@ -2124,9 +2131,10 @@ export default function AxisHLLAP({
                     <input
                       type="text"
                       value={fields.rentalValuePerMonth}
-                      onChange={e => handleChange('rentalValuePerMonth', e.target.value)}
+                      onChange={e => handleChange('rentalValuePerMonth', sanitizePositiveFloat(e.target.value))}
                       className={inputCls}
                       disabled={isReadOnly}
+                      placeholder="e.g. 15000"
                     />
                   </Field>
                 </div>
