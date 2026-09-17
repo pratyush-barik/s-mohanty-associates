@@ -1291,9 +1291,12 @@ export default function AxisHLLAP({
             </Field>
           </div>
 
-          {/* 5a - 5c: Layout Approval */}
+          {/* 5a - 5c: Layout Approval Sub-Container with 5b-5c Sub-Subcontainer */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="border border-slate-200/80 bg-slate-50/60 dark:bg-slate-800/30 rounded-xl p-4 sm:p-5 shadow-xs space-y-4">
+              <div className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                Layout Approval Details (a – c)
+              </div>
               <Field label="a. Layout Approval No">
                 <input
                   type="text"
@@ -1304,21 +1307,31 @@ export default function AxisHLLAP({
                 />
               </Field>
 
-              <DateInput
-                fieldKey="layoutApprovalDate"
-                label="b. Date of Approval"
-              />
-
-              <DateInput
-                fieldKey="layoutExpiryDate"
-                label="c. Expiry Date"
-              />
+              {/* 5b - 5c Sub-Subcontainer */}
+              <div className="border border-slate-200/80 bg-white dark:bg-slate-900/50 rounded-lg p-3.5 sm:p-4 shadow-2xs">
+                <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-2.5">
+                  Approval Validity (b – c)
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <DateInput
+                    fieldKey="layoutApprovalDate"
+                    label="b. Date of Approval"
+                  />
+                  <DateInput
+                    fieldKey="layoutExpiryDate"
+                    label="c. Expiry Date"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* 5d - 5f: Building Plan Approval */}
+          {/* 5d - 5f: Building Plan Approval Sub-Container with 5e-5f Sub-Subcontainer */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="border border-slate-200/80 bg-slate-50/60 dark:bg-slate-800/30 rounded-xl p-4 sm:p-5 shadow-xs space-y-4">
+              <div className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                Building Plan Approval Details (d – f)
+              </div>
               <Field label="d. Building Plan Approval No">
                 <input
                   type="text"
@@ -1329,30 +1342,42 @@ export default function AxisHLLAP({
                 />
               </Field>
 
-              <DateInput
-                fieldKey="buildingPlanApprovalDate"
-                label="e. Date of Approval"
-              />
-
-              <DateInput
-                fieldKey="buildingPlanExpiryDate"
-                label="f. Expiry Date"
-              />
+              {/* 5e - 5f Sub-Subcontainer */}
+              <div className="border border-slate-200/80 bg-white dark:bg-slate-900/50 rounded-lg p-3.5 sm:p-4 shadow-2xs">
+                <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-2.5">
+                  Approval Validity (e – f)
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <DateInput
+                    fieldKey="buildingPlanApprovalDate"
+                    label="e. Date of Approval"
+                  />
+                  <DateInput
+                    fieldKey="buildingPlanExpiryDate"
+                    label="f. Expiry Date"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* 5g - 5h: Construction Timeline */}
+          {/* 5g - 5h: Construction Timeline Sub-Container */}
           <div className="pt-2">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <DateInput
-                fieldKey="constructionCommencementDate"
-                label="g. Date of Commencement of Construction"
-              />
+            <div className="border border-slate-200/80 bg-slate-50/60 dark:bg-slate-800/30 rounded-xl p-4 sm:p-5 shadow-xs space-y-3">
+              <div className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                Construction Timeline (g – h)
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <DateInput
+                  fieldKey="constructionCommencementDate"
+                  label="g. Date of Commencement of Construction"
+                />
 
-              <DateInput
-                fieldKey="expectedCompletionDate"
-                label="h. Expected Completion"
-              />
+                <DateInput
+                  fieldKey="expectedCompletionDate"
+                  label="h. Expected Completion"
+                />
+              </div>
             </div>
           </div>
         </Section>
