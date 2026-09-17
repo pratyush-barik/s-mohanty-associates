@@ -75,49 +75,49 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
 
   override drawSectionHeader(title: string, addSpaceBefore?: boolean, preserveCase?: boolean) {
     // Intercept standard section 2
-    if (title.toUpperCase() === 'CLIENT & APPLICATION DETAILS') {
+    if (title.toUpperCase() === 'CASE DETAILS & REPORT METADATA') {
       super.drawSectionHeader('CASE DETAILS & REPORT METADATA', addSpaceBefore, preserveCase);
       this.drawSbbSection2();
       return;
     }
     // Intercept standard section 3
-    if (title.toUpperCase() === 'PROPERTY LOCATION & LOCALITY DETAILS') {
+    if (title.toUpperCase() === 'LEGAL VERIFICATION & PROPERTY CLASSIFICATION') {
       super.drawSectionHeader('LEGAL VERIFICATION & PROPERTY CLASSIFICATION', addSpaceBefore, preserveCase);
       this.drawSbbSection3();
       return;
     }
     // Intercept standard section 4
-    if (title.toUpperCase() === 'BOUNDARIES, ACCESS & GEOLOCATION') {
+    if (title.toUpperCase() === 'PROPERTY IDENTIFICATION & POSTAL ADDRESS') {
       super.drawSectionHeader('PROPERTY IDENTIFICATION & POSTAL ADDRESS', addSpaceBefore, preserveCase);
       this.drawSbbSection4();
       return;
     }
     // Intercept standard section 5
-    if (title.toUpperCase() === 'APPROVAL & STRUCTURAL INFORMATION') {
+    if (title.toUpperCase() === 'PROPERTY CHARACTERISTICS & PHYSICAL SITE ASSESSMENT') {
       super.drawSectionHeader('PROPERTY CHARACTERISTICS & PHYSICAL SITE ASSESSMENT', addSpaceBefore, preserveCase);
       this.drawSbbSection5();
       return;
     }
     // Intercept standard section 6
-    if (title.toUpperCase() === 'PLAN APPROVALS') {
+    if (title.toUpperCase() === 'BOUNDARIES, ACCESSIBILITY & SITE RISK CHECKS') {
       super.drawSectionHeader('BOUNDARIES, ACCESSIBILITY & SITE RISK CHECKS', addSpaceBefore, preserveCase);
       this.drawSbbSection6();
       return;
     }
     // Intercept standard section 7
-    if (title.toUpperCase() === 'AREA VALUATION') {
+    if (title.toUpperCase() === 'STRUCTURE, TENANCY & PLANNING APPROVALS') {
       super.drawSectionHeader('STRUCTURE, TENANCY & PLANNING APPROVALS', addSpaceBefore, preserveCase);
       this.drawSbbSection7();
       return;
     }
     // Intercept standard section 8
-    if (title.toUpperCase() === 'VALUATION OVERVIEW') {
+    if (title.toUpperCase() === 'CONSTRUCTION BREAKDOWN & BUILDING DETAILS') {
       super.drawSectionHeader('PLANNING, FLOOR BREAK UP & CONSTRUCTION COMPLIANCE', addSpaceBefore, preserveCase);
       this.drawSbbSection8();
       return;
     }
     // Intercept standard section 9
-    if (title.toUpperCase() === 'REMARKS & TERMS AND CONDITIONS') {
+    if (title.toUpperCase() === '9. VALUATION OVERVIEW & REMARKS') {
       super.drawSectionHeader('9. VALUATION OVERVIEW & REMARKS', addSpaceBefore, preserveCase);
       this.drawSbbSection9();
       return;
