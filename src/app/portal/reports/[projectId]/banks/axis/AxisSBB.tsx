@@ -2097,115 +2097,100 @@ export const AXIS_SBB_CONFIG: BankConfig = {
               <h3 className="font-bold text-gray-700 mb-4">APPROVAL DETAILS & BYE-LAWS COMPLIANCE</h3>
               
               <div className="space-y-5">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="flex flex-col">
-                    <div className="flex justify-between items-center mb-1">
-                      <div className="flex items-center">
+                
+                {/* SUB-CONTAINER 7.2A: LAYOUT APPROVAL DETAILS */}
+                <div className="border-b border-teal-200 pb-4 mb-4">
+                  <h4 className="font-bold text-xs text-teal-800 mb-3">LAYOUT APPROVAL DETAILS</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="flex flex-col">
+                      <div className="flex items-center mb-1">
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">LAYOUT APPROVAL NO.</label>
                         {renderNaToggle('axisSbbLayoutApprovalNumber')}
                       </div>
-                      {renderEditSwitch('axisSbbLayoutApprovalNumber', !!fields.axisSbbLayoutApprovalNumberIsNA)}
+                      <input
+                        type="text"
+                        className={`${inputCls}`}
+                        value={fields.axisSbbLayoutApprovalNumberIsNA ? 'NA' : (fields.axisSbbLayoutApprovalNumber || '')}
+                        onChange={e => handleChange('axisSbbLayoutApprovalNumber', e.target.value.toUpperCase())}
+                        disabled={isReadOnly || !!fields.axisSbbLayoutApprovalNumberIsNA}
+                      />
                     </div>
-                    <input
-                      type="text"
-                      className={`${inputCls}`}
-                      value={fields.axisSbbLayoutApprovalNumberIsNA ? 'NA' : (fields.axisSbbLayoutApprovalNumber || '')}
-                      onChange={e => handleChange('axisSbbLayoutApprovalNumber', e.target.value.toUpperCase())}
-                      readOnly={!fields.axisSbbLayoutApprovalNumberEditOn || fields.axisSbbLayoutApprovalNumberIsNA}
-                      disabled={isReadOnly || (!fields.axisSbbLayoutApprovalNumberEditOn && !fields.axisSbbLayoutApprovalNumberIsNA)}
-                    />
-                  </div>
-                  
-                  <div className="flex flex-col">
-                    <div className="flex justify-between items-center mb-1">
-                      <div className="flex items-center">
+                    
+                    <div className="flex flex-col">
+                      <div className="flex items-center mb-1">
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">DATE OF APPROVAL</label>
                         {renderNaToggle('axisSbbLayoutApprovalDate')}
                       </div>
-                      {renderEditSwitch('axisSbbLayoutApprovalDate', !!fields.axisSbbLayoutApprovalDateIsNA)}
+                      <input
+                        type="text"
+                        className={`${inputCls}`}
+                        value={fields.axisSbbLayoutApprovalDateIsNA ? 'NOT PROVIDED' : (fields.axisSbbLayoutApprovalDate || '')}
+                        onChange={e => handleChange('axisSbbLayoutApprovalDate', e.target.value.toUpperCase())}
+                        disabled={isReadOnly || !!fields.axisSbbLayoutApprovalDateIsNA}
+                      />
                     </div>
-                    <input
-                      type="text"
-                      className={`${inputCls}`}
-                      value={fields.axisSbbLayoutApprovalDateIsNA ? 'NA' : (fields.axisSbbLayoutApprovalDate || '')}
-                      onChange={e => handleChange('axisSbbLayoutApprovalDate', e.target.value.toUpperCase())}
-                      readOnly={!fields.axisSbbLayoutApprovalDateEditOn || fields.axisSbbLayoutApprovalDateIsNA}
-                      disabled={isReadOnly || (!fields.axisSbbLayoutApprovalDateEditOn && !fields.axisSbbLayoutApprovalDateIsNA)}
-                    />
-                  </div>
-                  
-                  <div className="flex flex-col">
-                    <div className="flex justify-between items-center mb-1">
-                      <div className="flex items-center">
+                    
+                    <div className="flex flex-col">
+                      <div className="flex items-center mb-1">
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">EXPIRY DATE</label>
                         {renderNaToggle('axisSbbLayoutExpiryDate')}
                       </div>
-                      {renderEditSwitch('axisSbbLayoutExpiryDate', !!fields.axisSbbLayoutExpiryDateIsNA)}
+                      <input
+                        type="text"
+                        className={`${inputCls}`}
+                        value={fields.axisSbbLayoutExpiryDateIsNA ? 'NOT PROVIDED' : (fields.axisSbbLayoutExpiryDate || '')}
+                        onChange={e => handleChange('axisSbbLayoutExpiryDate', e.target.value.toUpperCase())}
+                        disabled={isReadOnly || !!fields.axisSbbLayoutExpiryDateIsNA}
+                      />
                     </div>
-                    <input
-                      type="text"
-                      className={`${inputCls}`}
-                      value={fields.axisSbbLayoutExpiryDateIsNA ? 'NA' : (fields.axisSbbLayoutExpiryDate || '')}
-                      onChange={e => handleChange('axisSbbLayoutExpiryDate', e.target.value.toUpperCase())}
-                      readOnly={!fields.axisSbbLayoutExpiryDateEditOn || fields.axisSbbLayoutExpiryDateIsNA}
-                      disabled={isReadOnly || (!fields.axisSbbLayoutExpiryDateEditOn && !fields.axisSbbLayoutExpiryDateIsNA)}
-                    />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="flex flex-col">
-                    <div className="flex justify-between items-center mb-1">
-                      <div className="flex items-center">
+                {/* SUB-CONTAINER 7.2B: BUILDING PLAN APPROVAL DETAILS */}
+                <div className="border-b border-teal-200 pb-4 mb-4">
+                  <h4 className="font-bold text-xs text-teal-800 mb-3">BUILDING PLAN APPROVAL DETAILS</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="flex flex-col">
+                      <div className="flex items-center mb-1">
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">BUILDING PLAN NO.</label>
                         {renderNaToggle('axisSbbBuildingPlanApprovalNumber')}
                       </div>
-                      {renderEditSwitch('axisSbbBuildingPlanApprovalNumber', !!fields.axisSbbBuildingPlanApprovalNumberIsNA)}
+                      <input
+                        type="text"
+                        className={`${inputCls}`}
+                        value={fields.axisSbbBuildingPlanApprovalNumberIsNA ? 'NA' : (fields.axisSbbBuildingPlanApprovalNumber || '')}
+                        onChange={e => handleChange('axisSbbBuildingPlanApprovalNumber', e.target.value.toUpperCase())}
+                        disabled={isReadOnly || !!fields.axisSbbBuildingPlanApprovalNumberIsNA}
+                      />
                     </div>
-                    <input
-                      type="text"
-                      className={`${inputCls}`}
-                      value={fields.axisSbbBuildingPlanApprovalNumberIsNA ? 'NA' : (fields.axisSbbBuildingPlanApprovalNumber || '')}
-                      onChange={e => handleChange('axisSbbBuildingPlanApprovalNumber', e.target.value.toUpperCase())}
-                      readOnly={!fields.axisSbbBuildingPlanApprovalNumberEditOn || fields.axisSbbBuildingPlanApprovalNumberIsNA}
-                      disabled={isReadOnly || (!fields.axisSbbBuildingPlanApprovalNumberEditOn && !fields.axisSbbBuildingPlanApprovalNumberIsNA)}
-                    />
-                  </div>
-                  
-                  <div className="flex flex-col">
-                    <div className="flex justify-between items-center mb-1">
-                      <div className="flex items-center">
+                    
+                    <div className="flex flex-col">
+                      <div className="flex items-center mb-1">
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">DATE OF APPROVAL</label>
                         {renderNaToggle('axisSbbBuildingPlanApprovalDate')}
                       </div>
-                      {renderEditSwitch('axisSbbBuildingPlanApprovalDate', !!fields.axisSbbBuildingPlanApprovalDateIsNA)}
+                      <input
+                        type="text"
+                        className={`${inputCls}`}
+                        value={fields.axisSbbBuildingPlanApprovalDateIsNA ? 'NOT PROVIDED' : (fields.axisSbbBuildingPlanApprovalDate || '')}
+                        onChange={e => handleChange('axisSbbBuildingPlanApprovalDate', e.target.value.toUpperCase())}
+                        disabled={isReadOnly || !!fields.axisSbbBuildingPlanApprovalDateIsNA}
+                      />
                     </div>
-                    <input
-                      type="text"
-                      className={`${inputCls}`}
-                      value={fields.axisSbbBuildingPlanApprovalDateIsNA ? 'NA' : (fields.axisSbbBuildingPlanApprovalDate || '')}
-                      onChange={e => handleChange('axisSbbBuildingPlanApprovalDate', e.target.value.toUpperCase())}
-                      readOnly={!fields.axisSbbBuildingPlanApprovalDateEditOn || fields.axisSbbBuildingPlanApprovalDateIsNA}
-                      disabled={isReadOnly || (!fields.axisSbbBuildingPlanApprovalDateEditOn && !fields.axisSbbBuildingPlanApprovalDateIsNA)}
-                    />
-                  </div>
-                  
-                  <div className="flex flex-col">
-                    <div className="flex justify-between items-center mb-1">
-                      <div className="flex items-center">
+                    
+                    <div className="flex flex-col">
+                      <div className="flex items-center mb-1">
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">EXPIRY DATE</label>
                         {renderNaToggle('axisSbbBuildingPlanExpiryDate')}
                       </div>
-                      {renderEditSwitch('axisSbbBuildingPlanExpiryDate', !!fields.axisSbbBuildingPlanExpiryDateIsNA)}
+                      <input
+                        type="text"
+                        className={`${inputCls}`}
+                        value={fields.axisSbbBuildingPlanExpiryDateIsNA ? 'NOT PROVIDED' : (fields.axisSbbBuildingPlanExpiryDate || '')}
+                        onChange={e => handleChange('axisSbbBuildingPlanExpiryDate', e.target.value.toUpperCase())}
+                        disabled={isReadOnly || !!fields.axisSbbBuildingPlanExpiryDateIsNA}
+                      />
                     </div>
-                    <input
-                      type="text"
-                      className={`${inputCls}`}
-                      value={fields.axisSbbBuildingPlanExpiryDateIsNA ? 'NA' : (fields.axisSbbBuildingPlanExpiryDate || '')}
-                      onChange={e => handleChange('axisSbbBuildingPlanExpiryDate', e.target.value.toUpperCase())}
-                      readOnly={!fields.axisSbbBuildingPlanExpiryDateEditOn || fields.axisSbbBuildingPlanExpiryDateIsNA}
-                      disabled={isReadOnly || (!fields.axisSbbBuildingPlanExpiryDateEditOn && !fields.axisSbbBuildingPlanExpiryDateIsNA)}
-                    />
                   </div>
                 </div>
 
