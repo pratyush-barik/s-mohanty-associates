@@ -2060,7 +2060,7 @@ export default function AxisAGRI({
                       <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                         <input
                           type="text"
-                          className={inputCls + ' !py-1.5 text-xs font-normal text-[#0f2038]'}
+                          className={inputCls + ' py-1.5! text-xs font-normal text-[#0f2038]'}
                           value={floor.floorName}
                           onChange={e => handleFloorChange(idx, 'floorName', e.target.value)}
                           disabled={isReadOnly}
@@ -2071,7 +2071,7 @@ export default function AxisAGRI({
                         <input
                           type="text"
                           inputMode="decimal"
-                          className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
+                          className={inputCls + ' py-1.5! text-xs text-right font-medium'}
                           value={floor.plinthArea}
                           onChange={e => handleFloorChange(idx, 'plinthArea', e.target.value)}
                           disabled={isReadOnly}
@@ -2080,7 +2080,7 @@ export default function AxisAGRI({
                       </td>
                       <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                         <select
-                          className={selectCls + ' !py-1.5 text-xs'}
+                          className={selectCls + ' py-1.5! text-xs'}
                           value={floor.usage}
                           onChange={e => handleFloorChange(idx, 'usage', e.target.value)}
                           disabled={isReadOnly}

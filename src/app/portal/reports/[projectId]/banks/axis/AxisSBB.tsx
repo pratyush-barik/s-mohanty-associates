@@ -325,7 +325,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
       }
     },
   ],
-  pdfRenderer: (fields) => new PDFAxisSBBRenderer(fields),
+  getPDFRenderer: (fields: any) => new PDFAxisSBBRenderer(fields),
 };
 
 export default function AxisSBB(props: BankReportBuilderProps) {
