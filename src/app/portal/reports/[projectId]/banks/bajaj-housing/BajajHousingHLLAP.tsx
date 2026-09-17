@@ -1992,7 +1992,7 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
         const renderSelectWithCustomRow = (val: string, customVal: string, onChange: (v: string, c: string) => void, options: string[], dis?: boolean) => {
           return (
             <div>
-              <select className="w-full text-[11px] border border-gray-200 rounded px-1 py-1" value={options.includes(val) ? val : (val ? 'Custom' : '')} onChange={e => {
+              <select className="w-full text-[11px] border border-gray-200 rounded px-1 py-1 bg-white disabled:bg-gray-100" value={options.includes(val) ? val : (val ? 'Custom' : '')} onChange={e => {
                 const nv = e.target.value;
                 if (nv === 'Custom') {
                   onChange(nv, customVal);
@@ -2005,7 +2005,7 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
                 <option value="Custom">Custom</option>
               </select>
               {(!options.includes(val) && val) || val === 'Custom' ? (
-                <input type="text" className="w-full text-[11px] mt-1 border border-gray-200 rounded px-1 py-1" value={customVal || ''} onChange={e => onChange('Custom', e.target.value)} disabled={dis} placeholder="Custom value" />
+                <input type="text" className="w-full text-[11px] mt-1 border border-gray-200 rounded px-1 py-1 bg-white disabled:bg-gray-100" value={customVal || ''} onChange={e => onChange('Custom', e.target.value)} disabled={dis} placeholder="Custom value" />
               ) : null}
             </div>
           );
@@ -2470,7 +2470,7 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
         const renderSelectWithCustomRow = (val: string, customVal: string, onChange: (v: string, c: string) => void, options: string[], dis?: boolean) => {
           return (
             <div>
-              <select className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500" value={options.includes(val) ? val : (val ? 'Custom' : '')} onChange={e => {
+              <select className="w-full text-sm border-gray-300 rounded-md shadow-sm bg-white focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500" value={options.includes(val) ? val : (val ? 'Custom' : '')} onChange={e => {
                 const nv = e.target.value;
                 if (nv === 'Custom') {
                   onChange(nv, customVal);
@@ -2483,7 +2483,7 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
                 <option value="Custom">Custom</option>
               </select>
               {(!options.includes(val) && val) || val === 'Custom' ? (
-                <input type="text" className="w-full text-sm mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500" value={customVal || ''} onChange={e => onChange('Custom', e.target.value)} disabled={dis} placeholder="Custom value" />
+                <input type="text" className="w-full text-sm mt-1 border-gray-300 rounded-md shadow-sm bg-white focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500" value={customVal || ''} onChange={e => onChange('Custom', e.target.value)} disabled={dis} placeholder="Custom value" />
               ) : null}
             </div>
           );
