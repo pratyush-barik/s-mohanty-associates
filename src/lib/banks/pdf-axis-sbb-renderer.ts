@@ -24,6 +24,8 @@ import {
 export class PDFAxisSBBRenderer extends PDFBankRenderer {
   private fields: any;
   private drawnCover = false;
+  private drawnMapHeader = false;
+  private drawnAnnexureHeader = false;
 
   drawSectionSubtitle(title: string) {
     this.drawSectionHeader(title, false, false);
@@ -61,7 +63,15 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     if (!this.drawnCover) {
       this.drawnCover = true;
       this.drawSbbCoverPage();
-      this.addPage();
+      return;
+    }
+
+    if (title.toUpperCase().startsWith('ANNEXURE')) {
+      if (!this.drawnAnnexureHeader) {
+        this.drawnAnnexureHeader = true;
+        super.drawSectionHeader('13. DOCUMENTS AND ANNEXTURE', true, false);
+        this.cursorY += 10;
+      }
     }
 
     // Override the generic "Valuation Report" title
@@ -126,6 +136,20 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     if (title.toUpperCase().includes('10. REMARKS & UNDERTAKING')) {
       super.drawSectionHeader('10. REMARKS & UNDERTAKING', addSpaceBefore, preserveCase);
       this.drawSbbSection10();
+      return;
+    }
+    // Intercept Photographs
+    if (title.toUpperCase() === 'PROPERTY PHOTOGRAPHS') {
+      super.drawSectionHeader('11. PROPERTY PHOTOGRAPHS', addSpaceBefore, preserveCase);
+      return;
+    }
+    // Intercept Maps
+    if (title.toUpperCase().includes('MAP')) {
+      if (!this.drawnMapHeader) {
+        this.drawnMapHeader = true;
+        super.drawSectionHeader('12. LOCATION & SKECTH MAP OR MAPS', addSpaceBefore, preserveCase);
+      }
+      super.drawSectionHeader(title.toUpperCase(), false, preserveCase);
       return;
     }
     super.drawSectionHeader(title, addSpaceBefore, preserveCase);

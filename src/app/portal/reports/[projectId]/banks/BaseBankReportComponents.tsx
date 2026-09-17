@@ -1607,9 +1607,10 @@ export function BaseAnnexureSection({
   onRemoveFile: (id: string) => void;
   sectionNumber?: number | string;
   sectionId?: string;
+  title?: string;
 }) {
   return (
-    <Section title="Annexures & Schedules" number={sectionNumber} id={sectionId} defaultOpen={true}>
+    <Section title={title || "Annexures & Schedules"} number={sectionNumber} id={sectionId} defaultOpen={true}>
       <div className="space-y-4">
         {/* Info banner */}
         <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-linear-to-r from-[#0a1628]/5 to-accent-500/5 border border-accent-500/20">

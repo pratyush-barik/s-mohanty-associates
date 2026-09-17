@@ -2628,6 +2628,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
         {/* ── Section 14 / 15: Annexures ── */}
         {!isSectionHidden(`section-${isApartmentFlat ? 14 : 15}`) && !isSectionHidden('annexures') && (
           <BaseAnnexureSection
+            title={config?.fieldLabels?.['annexures-title'] || 'Annexures & Schedules'}
             annexures={fields.annexures || []}
             isReadOnly={isReadOnly}
             uploading={uploading}

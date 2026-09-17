@@ -12,8 +12,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
   hiddenSections: [
     'section-1', 'section-1a', 'section-2', 'section-3', 'section-4', 'section-5',
     'section-6', 'section-7', 'section-7b', 'section-7c', 'section-8', 'section-9', 'section-10',
-    'section-11', 'section-12', 'section-13', 'section-14', 'section-15',
-    'annexures', 'layout-config'
+    'layout-config'
   ],
   navSections: [
     { id: 'section-cover', title: '1. Header & Bank Details' },
@@ -26,7 +25,15 @@ export const AXIS_SBB_CONFIG: BankConfig = {
     { id: 'axis-sbb-section-8', title: '8. Floor Break Up' },
     { id: 'axis-sbb-section-9', title: '9. Valuation Engine' },
     { id: 'axis-sbb-section-10', title: '10. Remarks & Undertaking' },
+    { id: 'section-11', title: '11. PROPERTY PHOTOGRAPHS' },
+    { id: 'section-12', title: '12. LOCATION & SKECTH MAP OR MAPS' },
+    { id: 'annexures', title: '13. DOCUMENTS AND ANNEXTURE' },
   ],
+  fieldLabels: {
+    'section-11-title': '11. PROPERTY PHOTOGRAPHS',
+    'section-12-title': '12. LOCATION & SKECTH MAP OR MAPS',
+    'annexures-title': '13. DOCUMENTS AND ANNEXTURE'
+  },
   extraSections: [],
   defaultValues: {
     axisSbbDeedNumberDate: '',
