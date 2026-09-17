@@ -8,7 +8,7 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 
 - **Total Banks / Organizations**: 60
 - **Total Subclasses / Templates**: 73
-- **Completed Subclasses**: 7 / 73 (1.1 `MLAP`, 1.2 `STSL`, 3 `Standard` (Annapurna), 4 `Standard` (Arka), 5 `Standard` (Arthan), 8 `Standard` (Axis Finance), 10 `HL-LAP` (Bajaj Housing))
+- **Completed Subclasses**: 9 / 73 (1.1 `MLAP`, 1.2 `STSL`, 3 `Standard` (Annapurna), 4 `Standard` (Arka), 5 `Standard` (Arthan), 7.1 `AGRI` (Axis), 7.2 `HL-LAP` (Axis), 8 `Standard` (Axis Finance), 10 `HL-LAP` (Bajaj Housing))
 - **Current Active Bank**: 10. `BAJAJ HOUSING FINANCE LTD`
 - **Current Active Subclass**: 10 `HL-LAP` (Completed)
 - **Bucket Standard**: Enforced strictly per [docs/BUCKET_ARCHITECTURE_STANDARD.md](docs/BUCKET_ARCHITECTURE_STANDARD.md) (Cloud bucket exclusively for Property Photographs; Maps/Documents are device-upload only).
@@ -29,8 +29,8 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 | **5** | **ARTHAN FINANCE** | `Standard` | ✅ Complete | ✅ 13-Section Custom UI | ✅ Dedicated PDF Renderer | ✅ Validated |
 | **6** | **AU SMALL FINANCE BANK** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **7** | **AXIS BANK** | | | | | |
-| 7.1 | AXIS BANK | `AGRI` | 🟡 Started | 🟡 14-Section Custom UI | 🟡 Dedicated 10-Page PDF | ⏳ Pending |
-| 7.2 | AXIS BANK | `HL-LAP` | 🟡 Started | 🟡 12-Section Custom UI | 🟡 Dedicated PDF Renderer | ⏳ Pending |
+| 7.1 | AXIS BANK | `AGRI` | ✅ Complete | ✅ 14-Section Custom UI | ✅ Dedicated 10-Page PDF | ✅ Validated |
+| 7.2 | AXIS BANK | `HL-LAP` | ✅ Complete | ✅ 12-Section Custom UI | ✅ Dedicated PDF Renderer | ✅ Validated |
 | 7.3 | AXIS BANK | `SBB` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | 7.4 | AXIS BANK | `SME` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **8** | **AXIS FINANCE LTD** | `Standard` | ✅ Complete | ✅ 10-Section Custom UI | ✅ Dedicated PDF Renderer | ✅ Validated |
