@@ -3063,7 +3063,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                             {renderEditSwitch('axisSbbValuationTotalSayAmount', !!fields.axisSbbValuationTotalSayAmountIsNA)}
                             {renderNaToggle('axisSbbValuationTotalSayAmount')}
                           </div>
-                          <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 font-bold text-emerald-800 bg-emerald-200 border-emerald-300" value={fields.axisSbbValuationTotalSayAmountIsNA ? '' : (fields.axisSbbValuationTotalSayAmountEditOn ? (fields.axisSbbValuationTotalSayAmount || '') : totalSayComp.toFixed(2))} onChange={e => handleChange('axisSbbValuationTotalSayAmount', e.target.value)} disabled={isReadOnly || !!fields.axisSbbValuationTotalSayAmountIsNA || !fields.axisSbbValuationTotalSayAmountEditOn} />
+                          <input type="number" step="0.01" className="w-full rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 font-bold text-emerald-800 bg-emerald-200 border-emerald-300" value={fields.axisSbbValuationTotalSayAmountIsNA ? '' : (fields.axisSbbValuationTotalSayAmountEditOn ? (fields.axisSbbValuationTotalSayAmount || '') : totalSayComp.toFixed(2))} onChange={e => handleChange('axisSbbValuationTotalSayAmount', e.target.value)} disabled={isReadOnly || !!fields.axisSbbValuationTotalSayAmountIsNA || !fields.axisSbbValuationTotalSayAmountEditOn} />
                         </div>
                       </td>
                     </tr>
@@ -3155,7 +3155,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       {renderNaToggle('axisSbbFinalMarketValue')}
                     </div>
                   </div>
-                  <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg font-bold text-gray-800 bg-gray-50" value={fields.axisSbbFinalMarketValueIsNA ? '' : (fields.axisSbbFinalMarketValueEditOn ? (fields.axisSbbFinalMarketValue || '') : marketValueComp.toFixed(2))} onChange={e => handleChange('axisSbbFinalMarketValue', e.target.value)} disabled={isReadOnly || !!fields.axisSbbFinalMarketValueIsNA || !fields.axisSbbFinalMarketValueEditOn} />
+                  <input type="number" step="0.01" className="w-full rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg font-bold text-gray-800 bg-gray-50 border-gray-300" value={fields.axisSbbFinalMarketValueIsNA ? '' : (fields.axisSbbFinalMarketValueEditOn ? (fields.axisSbbFinalMarketValue || '') : marketValueComp.toFixed(2))} onChange={e => handleChange('axisSbbFinalMarketValue', e.target.value)} disabled={isReadOnly || !!fields.axisSbbFinalMarketValueIsNA || !fields.axisSbbFinalMarketValueEditOn} />
                 </div>
                 
                 <div className="flex flex-col gap-1 bg-white p-4 rounded-lg shadow-sm border border-yellow-100">
@@ -3166,7 +3166,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       {renderNaToggle('axisSbbFinalDistressValue')}
                     </div>
                   </div>
-                  <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg font-bold text-red-700 bg-red-50 border-red-200" value={fields.axisSbbFinalDistressValueIsNA ? '' : (fields.axisSbbFinalDistressValueEditOn ? (fields.axisSbbFinalDistressValue || '') : distressValueComp.toFixed(2))} onChange={e => handleChange('axisSbbFinalDistressValue', e.target.value)} disabled={isReadOnly || !!fields.axisSbbFinalDistressValueIsNA || !fields.axisSbbFinalDistressValueEditOn} />
+                  <input type="number" step="0.01" className="w-full rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg font-bold text-red-700 bg-red-50 border-red-200" value={fields.axisSbbFinalDistressValueIsNA ? '' : (fields.axisSbbFinalDistressValueEditOn ? (fields.axisSbbFinalDistressValue || '') : distressValueComp.toFixed(2))} onChange={e => handleChange('axisSbbFinalDistressValue', e.target.value)} disabled={isReadOnly || !!fields.axisSbbFinalDistressValueIsNA || !fields.axisSbbFinalDistressValueEditOn} />
                 </div>
 
                 <div className="flex flex-col gap-1 bg-white p-4 rounded-lg shadow-sm border border-yellow-100">
@@ -3177,7 +3177,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       {renderNaToggle('axisSbbFinalRealizableValue')}
                     </div>
                   </div>
-                  <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg font-bold text-amber-700 bg-amber-50 border-amber-200" value={fields.axisSbbFinalRealizableValueIsNA ? '' : (fields.axisSbbFinalRealizableValueEditOn ? (fields.axisSbbFinalRealizableValue || '') : realizableValueComp.toFixed(2))} onChange={e => handleChange('axisSbbFinalRealizableValue', e.target.value)} disabled={isReadOnly || !!fields.axisSbbFinalRealizableValueIsNA || !fields.axisSbbFinalRealizableValueEditOn} />
+                  <input type="number" step="0.01" className="w-full rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg font-bold text-amber-700 bg-amber-50 border-amber-200" value={fields.axisSbbFinalRealizableValueIsNA ? '' : (fields.axisSbbFinalRealizableValueEditOn ? (fields.axisSbbFinalRealizableValue || '') : realizableValueComp.toFixed(2))} onChange={e => handleChange('axisSbbFinalRealizableValue', e.target.value)} disabled={isReadOnly || !!fields.axisSbbFinalRealizableValueIsNA || !fields.axisSbbFinalRealizableValueEditOn} />
                 </div>
 
                 <div className="flex flex-col gap-1 bg-white p-4 rounded-lg shadow-sm border border-yellow-100">
@@ -3188,7 +3188,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       {renderNaToggle('axisSbbFinalInsurableValue')}
                     </div>
                   </div>
-                  <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg font-bold text-blue-700 bg-blue-50 border-blue-200" value={fields.axisSbbFinalInsurableValueIsNA ? '' : (fields.axisSbbFinalInsurableValueEditOn ? (fields.axisSbbFinalInsurableValue || '') : insurableValueComp.toFixed(2))} onChange={e => handleChange('axisSbbFinalInsurableValue', e.target.value)} disabled={isReadOnly || !!fields.axisSbbFinalInsurableValueIsNA || !fields.axisSbbFinalInsurableValueEditOn} />
+                  <input type="number" step="0.01" className="w-full rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg font-bold text-blue-700 bg-blue-50 border-blue-200" value={fields.axisSbbFinalInsurableValueIsNA ? '' : (fields.axisSbbFinalInsurableValueEditOn ? (fields.axisSbbFinalInsurableValue || '') : insurableValueComp.toFixed(2))} onChange={e => handleChange('axisSbbFinalInsurableValue', e.target.value)} disabled={isReadOnly || !!fields.axisSbbFinalInsurableValueIsNA || !fields.axisSbbFinalInsurableValueEditOn} />
                 </div>
               </div>
             </div>
