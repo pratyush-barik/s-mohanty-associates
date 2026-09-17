@@ -11,7 +11,7 @@ import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
 import type { BaseReportFields, BankConfig, FloorRow, AnnexureItem, ExtraFieldConfig } from '@/lib/bank-fields';
 import { reorderAndLabelAnnexures, normalizeMapImages } from '@/lib/bank-fields';
-import { getFloorName, BasePhotographsSection, BaseMapsSection, BaseAnnexureSection, AnnexureRefSelector, ActiveConfigBanner, BasePhotoBucketModal } from './banks/BaseBankReportComponents';
+import { getFloorName, BasePhotographsSection, BaseMapsSection, BaseAnnexureSection, AnnexureRefSelector, ActiveConfigBanner, BasePhotoBucketModal, BaseDateInput } from './banks/BaseBankReportComponents';
 import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 import * as XLSX from 'xlsx';
 
@@ -124,8 +124,8 @@ const DEFAULT_BASE_FIELDS: BaseReportFields = {
   legalAddress: '',
   legalState: '',
   legalPincode: '',
-  dateOfInspection: new Date().toISOString().split('T')[0],
-  dateOfValuation: new Date().toISOString().split('T')[0],
+  dateOfInspection: formatReportDate(new Date()),
+  dateOfValuation: formatReportDate(new Date()),
   refNo: '',
   bankName: '',
   branchName: '',
@@ -1939,9 +1939,12 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
                     </Field>
                   )}
                   {!isFieldHidden('dateOfValuation') && (
-                    <Field label={getLabel('dateOfValuation', 'Date of Valuation Report')}>
-                      <input type="date" className={inputCls} value={fields.dateOfValuation} onChange={e => handleChange('dateOfValuation', e.target.value)} disabled={isReadOnly} />
-                    </Field>
+                    <BaseDateInput
+                      label={getLabel('dateOfValuation', 'Date of Valuation Report')}
+                      value={fields.dateOfValuation || ''}
+                      onChange={val => handleChange('dateOfValuation', val)}
+                      disabled={isReadOnly}
+                    />
                   )}
                   {!isFieldHidden('refNo') && (
                     <Field label="Ref No. (Locked)">
@@ -2129,9 +2132,12 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
                   </Field>
                 )}
                 {!isFieldHidden('dateOfInspection') && (
-                  <Field label={getLabel('dateOfInspection', 'Date of Inspection')}>
-                    <input type="date" className={inputCls} value={fields.dateOfInspection} onChange={e => handleChange('dateOfInspection', e.target.value)} disabled={isReadOnly} />
-                  </Field>
+                  <BaseDateInput
+                    label={getLabel('dateOfInspection', 'Date of Inspection')}
+                    value={fields.dateOfInspection || ''}
+                    onChange={val => handleChange('dateOfInspection', val)}
+                    disabled={isReadOnly}
+                  />
                 )}
               </div>
               {renderExtraFields('section-1')}

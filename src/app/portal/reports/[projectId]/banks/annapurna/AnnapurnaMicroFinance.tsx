@@ -22,6 +22,7 @@ import {
   getFloorName,
   formatAssignedEngineers,
   formatReportDate,
+  BaseDateInput,
   BasePhotographsSection,
   BaseMapsSection,
   BasePhotoBucketModal,
@@ -832,33 +833,12 @@ export default function AnnapurnaMicroFinance({
             <Field label="File No. / LAN No. / Lead No.">
               <input className={inputCls} value={fields.fileNo || ''} onChange={e => handleChange('fileNo', e.target.value)} disabled={isReadOnly} placeholder="e.g. 20159644" />
             </Field>
-            <Field label="Date of Visit">
-              <div className="relative flex items-center">
-                <input
-                  type="text"
-                  className={inputCls + ' pr-9'}
-                  value={fields.dateOfVisit || ''}
-                  onChange={e => handleChange('dateOfVisit', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder=""
-                />
-                {!isReadOnly && (
-                  <div className="absolute right-2.5 flex items-center pointer-events-auto">
-                    <input
-                      type="date"
-                      className="opacity-0 absolute inset-0 w-6 h-6 cursor-pointer"
-                      title="Choose Date"
-                      onChange={e => {
-                        if (e.target.value) {
-                          handleChange('dateOfVisit', formatReportDate(e.target.value));
-                        }
-                      }}
-                    />
-                    <span className="text-slate-400 hover:text-slate-600 text-sm">📅</span>
-                  </div>
-                )}
-              </div>
-            </Field>
+            <BaseDateInput
+              label="Date of Visit"
+              value={fields.dateOfVisit || ''}
+              onChange={val => handleChange('dateOfVisit', val)}
+              disabled={isReadOnly}
+            />
             <Field label="Name of Applicant & No.">
               <input className={inputCls} value={fields.applicantName || ''} onChange={e => handleChange('applicantName', e.target.value)} disabled={isReadOnly} placeholder="Applicant name & contact" />
             </Field>
@@ -1719,33 +1699,12 @@ export default function AnnapurnaMicroFinance({
               <Field label="Engineer Visited Name">
                 <input className={inputCls} value={fields.visitingEngineer || ''} onChange={e => handleChange('visitingEngineer', e.target.value)} disabled={isReadOnly} placeholder="e.g. Mr. Kundan Singh" />
               </Field>
-              <Field label="Date">
-                <div className="relative flex items-center">
-                  <input
-                    type="text"
-                    className={inputCls + ' pr-9'}
-                    value={fields.declarationDate || ''}
-                    onChange={e => handleChange('declarationDate', e.target.value)}
-                    disabled={isReadOnly}
-                    placeholder=""
-                  />
-                  {!isReadOnly && (
-                    <div className="absolute right-2.5 flex items-center pointer-events-auto">
-                      <input
-                        type="date"
-                        className="opacity-0 absolute inset-0 w-6 h-6 cursor-pointer"
-                        title="Choose Date"
-                        onChange={e => {
-                          if (e.target.value) {
-                            handleChange('declarationDate', formatReportDate(e.target.value));
-                          }
-                        }}
-                      />
-                      <span className="text-slate-400 hover:text-slate-600 text-sm">📅</span>
-                    </div>
-                  )}
-                </div>
-              </Field>
+              <BaseDateInput
+                label="Date"
+                value={fields.declarationDate || ''}
+                onChange={val => handleChange('declarationDate', val)}
+                disabled={isReadOnly}
+              />
               <Field label="Place">
                 <input className={inputCls} value={fields.place || 'Bhubaneswar'} onChange={e => handleChange('place', e.target.value)} disabled={isReadOnly} />
               </Field>

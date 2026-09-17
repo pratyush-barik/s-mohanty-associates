@@ -5,6 +5,7 @@ import Link from 'next/link';
 import BuilderSelector from './BuilderSelector';
 import BuilderErrorBoundary from './BuilderErrorBoundary';
 import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
+import { formatReportDate } from '@/lib/pdf-bank-renderer';
 
 export default async function ReportEditorPage({ params, searchParams }: { params: Promise<{ projectId: string }>, searchParams: Promise<{ builder?: string }> }) {
   try {
@@ -91,9 +92,10 @@ export default async function ReportEditorPage({ params, searchParams }: { param
     const earliestPhoto = verifiedBucketImages.length > 0
       ? [...verifiedBucketImages].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())[0]
       : null;
-    const earliestFieldVisitDate = earliestPhoto
-      ? earliestPhoto.createdAt.toISOString().split('T')[0]
-      : (project.inspection?.completedAt || project.inspection?.scheduledDate || project.inspection?.createdAt)?.toISOString().split('T')[0];
+    const rawVisitDate = earliestPhoto
+      ? earliestPhoto.createdAt
+      : (project.inspection?.completedAt || project.inspection?.scheduledDate || project.inspection?.createdAt);
+    const earliestFieldVisitDate = rawVisitDate ? formatReportDate(rawVisitDate) : '';
     const earliestFieldAgentName = earliestPhoto?.employee?.name || project.fieldEmployees?.[0]?.name || '';
 
     return (
@@ -197,8 +199,8 @@ export default async function ReportEditorPage({ params, searchParams }: { param
               purpose: decodeHtmlEntities(serviceRequest?.purpose || ''),
               fieldEmployees: project.fieldEmployees || [],
               reportEmployeeName: project.reportEmployee?.name || (currentUser.role === 'REPORT_EMPLOYEE' ? session.user.name : '') || '',
-              initiationDate: (project.startDate || project.createdAt)?.toISOString().split('T')[0],
-              inspectionDate: (project.inspection?.completedAt || project.inspection?.scheduledDate || project.inspection?.createdAt)?.toISOString().split('T')[0],
+              initiationDate: (project.startDate || project.createdAt) ? formatReportDate(project.startDate || project.createdAt) : '',
+              inspectionDate: (project.inspection?.completedAt || project.inspection?.scheduledDate || project.inspection?.createdAt) ? formatReportDate(project.inspection?.completedAt || project.inspection?.scheduledDate || project.inspection?.createdAt) : '',
               fieldVisitDate: earliestFieldVisitDate,
               firstFieldAgentName: earliestFieldAgentName,
             }}

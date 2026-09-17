@@ -18,6 +18,8 @@ import {
   NavItem,
   getFloorName,
   formatAssignedEngineers,
+  formatReportDate,
+  BaseDateInput,
   BasePhotographsSection,
   BaseMapsSection,
   BasePhotoBucketModal,
@@ -96,10 +98,10 @@ export default function AdityaBirlaCapitalMLAP({
     // Basic Details
     clientName: initialFields?.clientName || initialFields?.ownerName || prefill?.contactName || '',
     ownerName: initialFields?.ownerName || initialFields?.clientName || prefill?.contactName || '',
-    initiationDate: initialFields?.initiationDate || prefill?.initiationDate || new Date().toISOString().split('T')[0],
+    initiationDate: initialFields?.initiationDate ? formatReportDate(initialFields.initiationDate) : (prefill?.initiationDate ? formatReportDate(prefill.initiationDate) : formatReportDate(new Date())),
     valuerName: initialFields?.valuerName || 'Er. Satyajit Mohanty',
-    dateOfInspection: initialFields?.dateOfInspection || prefill?.inspectionDate || new Date().toISOString().split('T')[0],
-    dateOfValuation: initialFields?.dateOfValuation || new Date().toISOString().split('T')[0],
+    dateOfInspection: initialFields?.dateOfInspection ? formatReportDate(initialFields.dateOfInspection) : (prefill?.inspectionDate ? formatReportDate(prefill.inspectionDate) : formatReportDate(new Date())),
+    dateOfValuation: initialFields?.dateOfValuation ? formatReportDate(initialFields.dateOfValuation) : formatReportDate(new Date()),
     loanApplicationNo: initialFields?.loanApplicationNo || initialFields?.caseReferenceNumber || '',
     propertyOwnerName: initialFields?.propertyOwnerName || prefill?.contactName || '',
 
@@ -957,18 +959,27 @@ export default function AdityaBirlaCapitalMLAP({
               <Field label="Client Name">
                 <input type="text" value={fields.ownerName || ''} onChange={e => handleChange('ownerName', e.target.value)} disabled={isReadOnly} className={inputCls} />
               </Field>
-              <Field label="Initiation Date">
-                <input type="date" value={fields.initiationDate || ''} onChange={e => handleChange('initiationDate', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
-              <Field label="Visit Date (Date of Inspection)">
-                <input type="date" value={fields.dateOfInspection || ''} onChange={e => handleChange('dateOfInspection', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
+              <BaseDateInput
+                label="Initiation Date"
+                value={fields.initiationDate || ''}
+                onChange={val => handleChange('initiationDate', val)}
+                disabled={isReadOnly}
+              />
+              <BaseDateInput
+                label="Visit Date (Date of Inspection)"
+                value={fields.dateOfInspection || ''}
+                onChange={val => handleChange('dateOfInspection', val)}
+                disabled={isReadOnly}
+              />
               <Field label="Application No. (Case Ref No)">
                 <input type="text" value={fields.loanApplicationNo || ''} onChange={e => handleChange('loanApplicationNo', e.target.value)} disabled={isReadOnly} className={inputCls} />
               </Field>
-              <Field label="Report Date (Date of Valuation)">
-                <input type="date" value={fields.dateOfValuation || ''} onChange={e => handleChange('dateOfValuation', e.target.value)} disabled={isReadOnly} className={inputCls} />
-              </Field>
+              <BaseDateInput
+                label="Report Date (Date of Valuation)"
+                value={fields.dateOfValuation || ''}
+                onChange={val => handleChange('dateOfValuation', val)}
+                disabled={isReadOnly}
+              />
               <Field label="Name of Property Owner (with S/O, W/O)">
                 <input type="text" value={fields.propertyOwnerName || ''} onChange={e => handleChange('propertyOwnerName', e.target.value)} disabled={isReadOnly} className={inputCls} />
               </Field>
@@ -1194,15 +1205,12 @@ export default function AdityaBirlaCapitalMLAP({
                 </select>
               </Field>
               {fields.valuedBefore === 'Yes' ? (
-                <Field label="If Yes When? (Date of Prior Valuation)">
-                  <input
-                    type="date"
-                    value={fields.valuedBeforeDate || ''}
-                    onChange={e => handleChange('valuedBeforeDate', e.target.value)}
-                    disabled={isReadOnly}
-                    className={inputCls}
-                  />
-                </Field>
+                <BaseDateInput
+                  label="If Yes When? (Date of Prior Valuation)"
+                  value={fields.valuedBeforeDate || ''}
+                  onChange={val => handleChange('valuedBeforeDate', val)}
+                  disabled={isReadOnly}
+                />
               ) : (
                 <div className="hidden md:block" />
               )}

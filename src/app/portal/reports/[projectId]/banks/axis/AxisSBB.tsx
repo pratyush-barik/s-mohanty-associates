@@ -3,7 +3,7 @@ import React from 'react';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig } from '@/lib/bank-fields';
 import { PDFAxisSBBRenderer } from '@/lib/banks/pdf-axis-sbb-renderer';
-import { Field, inputCls } from '../BaseBankReportComponents';
+import { Field, inputCls, BaseDateInput } from '../BaseBankReportComponents';
 
 export const AXIS_SBB_CONFIG: BankConfig = {
   bankId: 'AXIS BANK',
@@ -609,8 +609,6 @@ export const AXIS_SBB_CONFIG: BankConfig = {
           .join(' & ');
         const propertyOwnerValue = isOwnerEditOn ? (fields.axisSbbOwnerName ?? computedOwnersText) : computedOwnersText;
 
-        const maxVisitDate = new Date().toISOString().split('T')[0];
-
         return (
         <div className="animate-fade-in space-y-6">
           <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#F3E8FF', borderColor: '#D8B4FE' }}>
@@ -664,12 +662,18 @@ export const AXIS_SBB_CONFIG: BankConfig = {
               <Field label="Name of Customer">
                 <input className={inputCls} required value={fields.axisSbbCustomerName || ''} onChange={e => handleChange('axisSbbCustomerName', e.target.value.toUpperCase())} disabled={isReadOnly} placeholder="E.g., SHREE MATESWARI ENTERPRISES" />
               </Field>
-              <Field label="Date of Property Visit">
-                <input type="date" max={maxVisitDate} className={inputCls} value={fields.axisSbbDateOfVisit || ''} onChange={e => handleChange('axisSbbDateOfVisit', e.target.value)} disabled={isReadOnly} />
-              </Field>
-              <Field label="Date of Report">
-                <input type="date" min={fields.axisSbbDateOfVisit || ''} className={inputCls} value={fields.axisSbbDateOfReport || ''} onChange={e => handleChange('axisSbbDateOfReport', e.target.value)} disabled={isReadOnly} />
-              </Field>
+              <BaseDateInput
+                label="Date of Property Visit"
+                value={fields.axisSbbDateOfVisit || ''}
+                onChange={val => handleChange('axisSbbDateOfVisit', val)}
+                disabled={isReadOnly}
+              />
+              <BaseDateInput
+                label="Date of Report"
+                value={fields.axisSbbDateOfReport || ''}
+                onChange={val => handleChange('axisSbbDateOfReport', val)}
+                disabled={isReadOnly}
+              />
               <Field label="Sale Deed Discretions For Which Valuation Done" span={2}>
                 <textarea className={inputCls} rows={2} value={fields.axisSbbSaleDeedDiscretions || ''} onChange={e => handleChange('axisSbbSaleDeedDiscretions', e.target.value)} disabled={isReadOnly} placeholder="E.g., COPY OF SALE DEED, ROR & SKETCH MAP" />
               </Field>

@@ -33,6 +33,7 @@ import {
   getFloorName,
   formatAssignedEngineers,
   formatReportDate,
+  BaseDateInput,
   BasePhotographsSection,
   BaseMapsSection,
   BasePhotoBucketModal,
@@ -804,32 +805,6 @@ export default function ArthanFinance({
   };
 
   // Date field helper
-  const DateInput = ({ fieldKey, label }: { fieldKey: keyof ArthanFinanceReportFields; label: string }) => (
-    <Field label={label}>
-      <div className="relative flex items-center">
-        <input
-          type="text"
-          className={inputCls + ' pr-9'}
-          value={(fields[fieldKey] as string) || ''}
-          onChange={e => handleChange(fieldKey, e.target.value)}
-          disabled={isReadOnly}
-          placeholder=""
-        />
-        {!isReadOnly && (
-          <div className="absolute right-2.5 flex items-center pointer-events-auto">
-            <input
-              type="date"
-              className="opacity-0 absolute inset-0 w-6 h-6 cursor-pointer"
-              title="Choose Date"
-              onChange={e => { if (e.target.value) handleChange(fieldKey, formatReportDate(e.target.value)); }}
-            />
-            <span className="text-slate-400 hover:text-slate-600 text-sm">📅</span>
-          </div>
-        )}
-      </div>
-    </Field>
-  );
-
   // BUA Totals calculation (exact decimal calculation, no roundoff)
   const totalCarpet = useMemo(() => {
     return sumDecimals((fields.buaFloors || []).map(r => r.carpetArea));
@@ -887,27 +862,12 @@ export default function ArthanFinance({
           {/* Date of Valuation (header field) */}
           <div className="mb-4 flex justify-end items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg text-black">
             <span className="text-sm font-semibold text-black">Date of Valuation:</span>
-            <div className="relative flex items-center">
-              <input
-                type="text"
-                className={`${inputCls} w-40 font-semibold text-black pr-9`}
-                value={fields.dateOfValuation || ''}
-                onChange={e => handleChange('dateOfValuation', e.target.value)}
-                disabled={isReadOnly}
-                placeholder=""
-              />
-              {!isReadOnly && (
-                <div className="absolute right-2.5 flex items-center pointer-events-auto">
-                  <input
-                    type="date"
-                    className="opacity-0 absolute inset-0 w-6 h-6 cursor-pointer"
-                    title="Choose Date"
-                    onChange={e => { if (e.target.value) handleChange('dateOfValuation', formatReportDate(e.target.value)); }}
-                  />
-                  <span className="text-slate-400 hover:text-slate-600 text-sm">📅</span>
-                </div>
-              )}
-            </div>
+            <BaseDateInput
+              className="w-40 font-semibold text-black"
+              value={fields.dateOfValuation || ''}
+              onChange={val => handleChange('dateOfValuation', val)}
+              disabled={isReadOnly}
+            />
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
@@ -917,7 +877,12 @@ export default function ArthanFinance({
             <Field label="Case Type">
               <input className={inputCls} value={fields.caseType || ''} onChange={e => handleChange('caseType', e.target.value)} disabled={isReadOnly} placeholder="e.g. SBL" />
             </Field>
-            <DateInput fieldKey="dateOfInspection" label="Date of Inspection / Site visit" />
+            <BaseDateInput
+              label="Date of Inspection / Site visit"
+              value={fields.dateOfInspection || ''}
+              onChange={val => handleChange('dateOfInspection', val)}
+              disabled={isReadOnly}
+            />
             <Field label="Nearest Landmark">
               <input className={inputCls} value={fields.nearestLandmark || ''} onChange={e => handleChange('nearestLandmark', e.target.value)} disabled={isReadOnly} placeholder="e.g. Near Ishkon Temple, Antara" />
             </Field>
@@ -2102,7 +2067,12 @@ export default function ArthanFinance({
               </span>
             </Field>
 
-            <DateInput fieldKey="dateOfReportSubmission" label="Date of Report Submission" />
+            <BaseDateInput
+              label="Date of Report Submission"
+              value={fields.dateOfReportSubmission || ''}
+              onChange={val => handleChange('dateOfReportSubmission', val)}
+              disabled={isReadOnly}
+            />
 
             <Field label="Name of Engineer Visited the property">
               <input className={inputCls} value={fields.visitingEngineer || ''} onChange={e => handleChange('visitingEngineer', e.target.value)} disabled={isReadOnly} placeholder="Auto-filled from field inspector" />

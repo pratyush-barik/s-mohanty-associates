@@ -3,7 +3,7 @@ import React from 'react';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig } from '@/lib/bank-fields';
 import { PDFBajajHousingRenderer } from '@/lib/banks/pdf-bajaj-housing-renderer';
-import { Field, inputCls } from '../BaseBankReportComponents';
+import { Field, inputCls, BaseDateInput, formatReportDate } from '../BaseBankReportComponents';
 
 export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
   bankId: 'BAJAJ HOUSING FINANCE LTD',
@@ -476,7 +476,7 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
     bajajSignatureFile: '',
     bajajSignatureFile_isNA: false,
 
-    bajajSignatureDate: new Date().toISOString().split('T')[0],
+    bajajSignatureDate: formatReportDate(new Date()),
     bajajSignatureDate_isNA: false,
     bajajSignatureDate_isManual: false,
 
@@ -498,9 +498,12 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
               <Field label="File No./LAN No./System No.">
                 <input className={inputCls} value={fields.bajajFileNo || ''} onChange={e => handleChange('bajajFileNo', e.target.value)} disabled={isReadOnly} />
               </Field>
-              <Field label="Date of Report">
-                <input type="date" className={inputCls} value={fields.bajajDateOfReport || ''} onChange={e => handleChange('bajajDateOfReport', e.target.value)} disabled={isReadOnly} />
-              </Field>
+              <BaseDateInput
+                label="Date of Report"
+                value={fields.bajajDateOfReport || ''}
+                onChange={val => handleChange('bajajDateOfReport', val)}
+                disabled={isReadOnly}
+              />
               <Field label="Name of Applicant">
                 <input className={inputCls} value={fields.bajajNameOfApplicant || ''} onChange={e => handleChange('bajajNameOfApplicant', e.target.value)} disabled={isReadOnly} />
               </Field>
@@ -1441,16 +1444,22 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
                 </div>
                 
                 <div>
-                  <Field label="Date of Sanction">
-                    <input type="date" className={inputCls} value={fields.bajajDateOfSanction || ''} onChange={e => handleChange('bajajDateOfSanction', e.target.value)} disabled={globalDisabled || fields.bajajDateOfSanction_isNA} />
-                  </Field>
+                  <BaseDateInput
+                    label="Date of Sanction"
+                    value={fields.bajajDateOfSanction || ''}
+                    onChange={val => handleChange('bajajDateOfSanction', val)}
+                    disabled={globalDisabled || fields.bajajDateOfSanction_isNA}
+                  />
                   <NACheckbox field="bajajDateOfSanction" />
                 </div>
                 
                 <div>
-                  <Field label="Plan Validity">
-                    <input type="date" className={inputCls} value={fields.bajajPlanValidity || ''} onChange={e => handleChange('bajajPlanValidity', e.target.value)} disabled={globalDisabled || fields.bajajPlanValidity_isNA} />
-                  </Field>
+                  <BaseDateInput
+                    label="Plan Validity"
+                    value={fields.bajajPlanValidity || ''}
+                    onChange={val => handleChange('bajajPlanValidity', val)}
+                    disabled={globalDisabled || fields.bajajPlanValidity_isNA}
+                  />
                   <NACheckbox field="bajajPlanValidity" />
                 </div>
                 
@@ -3063,11 +3072,9 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
                       <label className="block text-xs font-medium text-gray-700">Date</label>
                       <EditSwitch field="bajajSignatureDate" />
                     </div>
-                    <input 
-                      type="date" 
-                      className={inputCls} 
+                    <BaseDateInput 
                       value={fields.bajajSignatureDate_isNA ? '' : (fields.bajajSignatureDate || '')}
-                      onChange={e => handleChange('bajajSignatureDate', e.target.value)}
+                      onChange={val => handleChange('bajajSignatureDate', val)}
                       disabled={isReadOnly || fields.bajajSignatureDate_isNA || !fields.bajajSignatureDate_isManual}
                     />
                     <NACheckbox field="bajajSignatureDate" />

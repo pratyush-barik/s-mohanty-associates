@@ -16,6 +16,7 @@ import {
   ReportActionBar,
   ActiveConfigBanner,
   NavItem,
+  BaseDateInput,
   BasePhotographsSection,
   BaseMapsSection,
   BasePhotoBucketModal
@@ -793,9 +794,12 @@ export default function ArkaFinance({
               <Field label="Reference No">
                 <input className={inputCls} value={fields.refNo || ''} onChange={e => handleChange('refNo', e.target.value)} disabled={isReadOnly} placeholder="e.g. SMA-2026-001" />
               </Field>
-              <Field label="Date of Valuation Report">
-                <input type="date" className={inputCls} value={fields.dateOfReport || ''} onChange={e => handleChange('dateOfReport', e.target.value)} disabled={isReadOnly} />
-              </Field>
+              <BaseDateInput
+                label="Date of Valuation Report"
+                value={fields.dateOfReport || ''}
+                onChange={val => handleChange('dateOfReport', val)}
+                disabled={isReadOnly}
+              />
             </div>
           </div>
           {/* Container: Customer Information - light blue */}
@@ -1172,7 +1176,7 @@ export default function ArkaFinance({
                   </label>
                 </div>
               }>
-                <input type="date" className={inputCls} value={fields.dateOfApproval === 'NA' ? '' : (fields.dateOfApproval || '')} onChange={e => handleChange('dateOfApproval', e.target.value)} disabled={isReadOnly || fields.dateOfApproval === 'NA'} />
+                <BaseDateInput value={fields.dateOfApproval === 'NA' ? '' : (fields.dateOfApproval || '')} onChange={val => handleChange('dateOfApproval', val)} disabled={isReadOnly || fields.dateOfApproval === 'NA'} />
               </Field>
               <Field label={
                 <div className="flex items-center gap-3">
@@ -1183,7 +1187,7 @@ export default function ArkaFinance({
                   </label>
                 </div>
               }>
-                <input type="date" className={inputCls} value={fields.expiryDate === 'NA' ? '' : (fields.expiryDate || '')} onChange={e => handleChange('expiryDate', e.target.value)} disabled={isReadOnly || fields.expiryDate === 'NA'} />
+                <BaseDateInput value={fields.expiryDate === 'NA' ? '' : (fields.expiryDate || '')} onChange={val => handleChange('expiryDate', val)} disabled={isReadOnly || fields.expiryDate === 'NA'} />
               </Field>
               <Field label="Expected Completion">
                 <input className={inputCls} value={fields.expectedCompletion || ''} onChange={e => handleChange('expectedCompletion', e.target.value)} disabled={isReadOnly} placeholder="e.g. Dec 2026" />
@@ -1441,9 +1445,13 @@ export default function ArkaFinance({
               >
                 <input className={`${inputCls} font-bold ${!fields.enableEditCurrentValue ? 'bg-gray-50' : ''}`} value={fields.currentValueOfTheProperty || ''} onChange={e => handleChange('currentValueOfTheProperty', e.target.value)} disabled={isReadOnly || !fields.enableEditCurrentValue} placeholder="&#8377;" />
               </Field>
-              <Field span={2} label="Date of Property Visit">
-                <input type="date" className={inputCls} value={fields.dateOfPropertyVisit || ''} onChange={e => handleChange('dateOfPropertyVisit', e.target.value)} disabled={isReadOnly} />
-              </Field>
+              <BaseDateInput
+                span={2}
+                label="Date of Property Visit"
+                value={fields.dateOfPropertyVisit || ''}
+                onChange={val => handleChange('dateOfPropertyVisit', val)}
+                disabled={isReadOnly}
+              />
             </div>
           </div>
           {/* Container: Additional Valuations - light lime */}

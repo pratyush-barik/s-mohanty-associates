@@ -147,6 +147,109 @@ export function Field({
   );
 }
 
+// ─── Universal Date Formatter & Input Components (Strict DD/MM/YYYY) ──
+export function toISODate(d?: string | null | Date): string {
+  if (!d) return '';
+  if (d instanceof Date) {
+    if (isNaN(d.getTime())) return '';
+    return d.toISOString().split('T')[0];
+  }
+  const t = String(d).trim();
+  if (!t) return '';
+  const ddmmyyyy = t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (ddmmyyyy) {
+    const [, dd, mm, yyyy] = ddmmyyyy;
+    return `${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`;
+  }
+  const dd_mm_yyyy = t.match(/^(\d{1,2})-(\d{1,2})-(\d{4})/);
+  if (dd_mm_yyyy) {
+    const [, dd, mm, yyyy] = dd_mm_yyyy;
+    return `${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`;
+  }
+  const yyyymmdd = t.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+  if (yyyymmdd) {
+    const [, yyyy, mm, dd] = yyyymmdd;
+    return `${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`;
+  }
+  return '';
+}
+
+export function BaseDateInput({
+  value,
+  onChange,
+  label,
+  placeholder = 'DD/MM/YYYY',
+  disabled = false,
+  span,
+  className = '',
+  max,
+  min,
+}: {
+  value?: string | null;
+  onChange: (val: string) => void;
+  label?: React.ReactNode;
+  placeholder?: string;
+  disabled?: boolean;
+  span?: number;
+  className?: string;
+  max?: string;
+  min?: string;
+}) {
+  const strVal = value || '';
+  const isoVal = toISODate(strVal);
+
+  const inputContent = (
+    <div className="relative flex items-center w-full">
+      <input
+        type="text"
+        className={`${inputCls} pr-9 ${className}`.trim()}
+        value={strVal}
+        onChange={e => onChange(e.target.value)}
+        onBlur={() => {
+          if (strVal && strVal.trim() && strVal !== 'NA') {
+            const formatted = formatReportDate(strVal);
+            if (formatted && formatted !== '________' && formatted !== strVal) {
+              onChange(formatted);
+            }
+          }
+        }}
+        disabled={disabled}
+        placeholder={placeholder}
+      />
+      {!disabled && (
+        <div className="absolute right-2.5 flex items-center pointer-events-auto">
+          <input
+            type="date"
+            value={isoVal}
+            max={max ? toISODate(max) : undefined}
+            min={min ? toISODate(min) : undefined}
+            tabIndex={-1}
+            className="opacity-0 absolute inset-0 w-6 h-6 cursor-pointer"
+            title="Choose Date"
+            onChange={e => {
+              if (e.target.value) onChange(formatReportDate(e.target.value));
+            }}
+          />
+          <svg className="w-4 h-4 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </div>
+      )}
+    </div>
+  );
+
+  if (label) {
+    return (
+      <Field label={label} span={span}>
+        {inputContent}
+      </Field>
+    );
+  }
+  return inputContent;
+}
+
+export const DateInput = BaseDateInput;
+
 // ─── Standard Floating Navigator ─────────────────────────────────────
 export interface NavItem {
   id: string;

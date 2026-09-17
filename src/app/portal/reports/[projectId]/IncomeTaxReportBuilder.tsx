@@ -7,7 +7,7 @@ import { SERVICES_LIST } from './constants';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { generateIncomeTaxPDF } from '@/lib/pdf-it-renderer';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
-import { BasePhotographsSection } from './banks/BaseBankReportComponents';
+import { BasePhotographsSection, BaseDateInput, formatReportDate } from './banks/BaseBankReportComponents';
 import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 import * as XLSX from 'xlsx';
 
@@ -398,8 +398,8 @@ const DEFAULT_FIELDS: IncomeTaxFields = {
 
   purposeOfValuation: 'TO ASSESS OF CAPITAL GAIN FOR INCOME TAX',
   valuationDate: '',
-  inspectionDate: new Date().toISOString().split('T')[0],
-  reportDate: new Date().toISOString().split('T')[0],
+  inspectionDate: formatReportDate(new Date()),
+  reportDate: formatReportDate(new Date()),
   identifiedBy: '',
   valuationPlace: 'BHUBANESWAR',
   ownerAddress: '',
@@ -1551,9 +1551,12 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
             <Field label="REF NO">
               <input className={inputCls} value={fields.refNo} onChange={e => handleChange('refNo', e.target.value)} disabled={isReadOnly} placeholder="SMA/V-01/IT/BBSR-XX/YY" />
             </Field>
-            <Field label="Date of Valuation Report">
-              <input type="date" className={inputCls} value={fields.reportDate} onChange={e => handleChange('reportDate', e.target.value)} disabled={isReadOnly} />
-            </Field>
+            <BaseDateInput
+              label="Date of Valuation Report"
+              value={fields.reportDate || ''}
+              onChange={val => handleChange('reportDate', val)}
+              disabled={isReadOnly}
+            />
             <Field label="Owner Name (ALL CAPS)">
               <input className={inputCls} value={fields.ownerName} onChange={e => handleChange('ownerName', e.target.value)} disabled={isReadOnly} placeholder="MR. JAYANTA KUMAR DAS & OTHERS" />
             </Field>
@@ -1627,12 +1630,18 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                       <span>(VALUATION AT THAT TIME BY REVERSE CALCULATION METHOD)</span>
                     </label>
                   </div>
-                  <Field label="Part B — Date of Inspection">
-                    <input type="date" className={inputCls} value={fields.inspectionDate} onChange={e => handleChange('inspectionDate', e.target.value)} disabled={isReadOnly} />
-                  </Field>
-                  <Field label="Part C — Date of Valuation Report">
-                    <input type="date" className={inputCls} value={fields.reportDate} onChange={e => handleChange('reportDate', e.target.value)} disabled={isReadOnly} />
-                  </Field>
+                  <BaseDateInput
+                    label="Part B — Date of Inspection"
+                    value={fields.inspectionDate || ''}
+                    onChange={val => handleChange('inspectionDate', val)}
+                    disabled={isReadOnly}
+                  />
+                  <BaseDateInput
+                    label="Part C — Date of Valuation Report"
+                    value={fields.reportDate || ''}
+                    onChange={val => handleChange('reportDate', val)}
+                    disabled={isReadOnly}
+                  />
                   <Field label="Part D — Identified By Whom">
                     <input className={inputCls} value={fields.identifiedBy} onChange={e => handleChange('identifiedBy', e.target.value)} disabled={isReadOnly} placeholder="MR. TRILOCHAN NAYAK" />
                   </Field>
@@ -2238,9 +2247,12 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                 </div>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
-                <Field label="Date">
-                  <input type="date" className={inputCls} value={fields.declarationDate ?? ''} onChange={e => handleChange('declarationDate', e.target.value)} disabled={isReadOnly} />
-                </Field>
+                <BaseDateInput
+                  label="Date"
+                  value={fields.declarationDate ?? ''}
+                  onChange={val => handleChange('declarationDate', val)}
+                  disabled={isReadOnly}
+                />
                 <Field label="Location / Place">
                   <input className={inputCls} value={fields.valuationPlace ?? 'BHUBANESWAR'} onChange={e => handleChange('valuationPlace', e.target.value)} disabled={isReadOnly} placeholder="e.g. BHUBANESWAR" />
                 </Field>
@@ -2249,7 +2261,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
               <div className="mt-6 p-5 bg-white rounded-xl border border-[#e9ecef] flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 shadow-sm">
                 <div className="space-y-1.5">
                   <p className="text-sm font-bold text-[#0f2038] tracking-wide">
-                    DATE–{fields.declarationDate ? fields.declarationDate.split('-').reverse().join('/') : (fields.reportDate ? fields.reportDate.split('-').reverse().join('/') : 'DD/MM/YYYY')}
+                    DATE–{fields.declarationDate ? formatReportDate(fields.declarationDate) : (fields.reportDate ? formatReportDate(fields.reportDate) : 'DD/MM/YYYY')}
                   </p>
                   <p className="text-sm font-bold text-[#0f2038] tracking-wide">PLACE–{(fields.valuationPlace || 'BHUBANESWAR').toUpperCase()}</p>
                 </div>
@@ -2473,9 +2485,12 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
 
 <SubSection id="subsection-calc-table" title="MODIFICATION IN THE ANNEXURE TO FORM NO –01">
           <div className="grid md:grid-cols-2 gap-4 mb-4">
-            <Field label="Valuation Date (for table header)">
-              <input type="date" className={inputCls} value={fields.valuationCalcDate} onChange={e => handleChange('valuationCalcDate', e.target.value)} disabled={isReadOnly} />
-            </Field>
+            <BaseDateInput
+              label="Valuation Date (for table header)"
+              value={fields.valuationCalcDate || ''}
+              onChange={val => handleChange('valuationCalcDate', val)}
+              disabled={isReadOnly}
+            />
             <Field label="Depreciation % (1.5% × age)">
               <input className={inputCls} value={fields.depreciationPct} onChange={e => handleChange('depreciationPct', e.target.value)} disabled={isReadOnly} placeholder="7.5" />
             </Field>

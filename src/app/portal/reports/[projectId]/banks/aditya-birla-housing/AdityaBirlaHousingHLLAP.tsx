@@ -7,6 +7,7 @@ import { PDFAdityaBirlaHousingRenderer, HLLAPReportFields } from '@/lib/banks/pd
 import { rgb } from 'pdf-lib';
 import { CONTENT_W, MARGIN_L, fetchBytes } from '@/lib/pdf-bank-renderer';
 import { LBL_BG, BG_OPACITY, hexToRgb } from '@/lib/pdf-general-renderer';
+import { BaseDateInput } from '../BaseBankReportComponents';
 
 
 /** Helper: get field value with fallback */
@@ -769,13 +770,13 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
                     <td className={tdLabelCls}>Valuer Ref No</td>
                     <td className={tdInputCls}><input className={inputCls} value={fields.valuerRefNo || ''} onChange={e => handleChange('valuerRefNo', e.target.value)} disabled={isReadOnly} /></td>
                     <td className={tdLabelCls}>Date of Visit</td>
-                    <td className={tdInputCls}><input type="date" className={inputCls} value={fields.dateOfVisit || ''} onChange={e => handleChange('dateOfVisit', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className={tdInputCls}><BaseDateInput value={fields.dateOfVisit || ''} onChange={val => handleChange('dateOfVisit', val)} disabled={isReadOnly} /></td>
                   </tr>
                   <tr>
                     <td className={tdLabelCls}>Valuer Feedback</td>
                     <td className={tdInputCls}><input className={inputCls} value={fields.valuerFeedback || ''} onChange={e => handleChange('valuerFeedback', e.target.value)} disabled={isReadOnly} /></td>
                     <td className={tdLabelCls}>Date of Report</td>
-                    <td className={tdInputCls}><input type="date" className={inputCls} value={fields.dateOfReport || ''} onChange={e => handleChange('dateOfReport', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className={tdInputCls}><BaseDateInput value={fields.dateOfReport || ''} onChange={val => handleChange('dateOfReport', val)} disabled={isReadOnly} /></td>
                   </tr>
                   <tr>
                     <td colSpan={4} className="p-0 border border-slate-300">

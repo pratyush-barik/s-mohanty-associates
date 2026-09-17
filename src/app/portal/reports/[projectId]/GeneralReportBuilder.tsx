@@ -9,7 +9,7 @@ import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
 import { PDFGeneralRenderer } from '@/lib/pdf-general-renderer';
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
-import { getFloorName, BasePhotographsSection, formatReportDate } from './banks/BaseBankReportComponents';
+import { getFloorName, BasePhotographsSection, formatReportDate, BaseDateInput } from './banks/BaseBankReportComponents';
 import { reorderAndLabelAnnexures, type AnnexureItem } from '@/lib/bank-fields';
 import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 // @ts-ignore
@@ -306,8 +306,8 @@ const DEFAULT_FIELDS: ReportFields = {
   legalAddress: '',
   legalState: '',
   legalPincode: '',
-  dateOfInspection: new Date().toISOString().split('T')[0],
-  dateOfValuation: new Date().toISOString().split('T')[0],
+  dateOfInspection: formatReportDate(new Date()),
+  dateOfValuation: formatReportDate(new Date()),
   refNo: '',
   bankName: '',
   branchName: '',
@@ -2233,9 +2233,12 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
             <Field label="To (Recipient / Bank)" span={2}>
               <input className={inputCls} value={fields.to} onChange={e => handleChange('to', e.target.value)} disabled={isReadOnly} placeholder="e.g. HDFC BANK LTD., Bhubaneswar" />
             </Field>
-            <Field label="Date of Valuation Report">
-              <input type="date" className={inputCls} value={fields.dateOfValuation} onChange={e => handleChange('dateOfValuation', e.target.value)} disabled={isReadOnly} />
-            </Field>
+            <BaseDateInput
+              label="Date of Valuation Report"
+              value={fields.dateOfValuation || ''}
+              onChange={val => handleChange('dateOfValuation', val)}
+              disabled={isReadOnly}
+            />
             <Field label="Ref No. (Locked)">
               <input className={inputCls} value={fields.refNo} disabled={true} readOnly={true} placeholder="Project ID" />
             </Field>
@@ -2550,9 +2553,12 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                 </div>
               )}
             </div>
-            <Field label="Date of Inspection">
-              <input type="date" className={inputCls} value={fields.dateOfInspection} onChange={e => handleChange('dateOfInspection', e.target.value)} disabled={isReadOnly} />
-            </Field>
+            <BaseDateInput
+              label="Date of Inspection"
+              value={fields.dateOfInspection || ''}
+              onChange={val => handleChange('dateOfInspection', val)}
+              disabled={isReadOnly}
+            />
           </div>
         </div>
       </Section>

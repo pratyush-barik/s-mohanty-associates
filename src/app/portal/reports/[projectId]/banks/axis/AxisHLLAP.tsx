@@ -13,6 +13,7 @@ import {
   ReportActionBar,
   NavItem,
   formatReportDate,
+  BaseDateInput,
   getFloorName,
   BasePhotographsSection,
   BaseMapsSection,
@@ -98,7 +99,7 @@ export default function AxisHLLAP({
       ...raw,
       // Header
       refNo: raw.refNo || defaultRefNo,
-      reportDate: raw.reportDate || new Date().toISOString().split('T')[0],
+      reportDate: formatReportDate(raw.reportDate || new Date()),
 
       // 1. Customer Details
       customerName: raw.customerName || prefill?.contactName || prefill?.serviceRequest?.guestName || '',
@@ -141,51 +142,47 @@ export default function AxisHLLAP({
       boundaryNorthSketch: raw.boundaryNorthSketch || '',
       boundarySouthSketch: raw.boundarySouthSketch || '',
 
-      // 4o - 4z
-      boundariesMatch: raw.boundariesMatch || 'Yes(Boundary matching as per documents)',
+      // 4o - 4y
+      boundariesMatch: raw.boundariesMatch || 'Matching',
       statusOfLand: raw.statusOfLand || 'Free Hold',
       typeOfProperty: raw.typeOfProperty || 'Residential',
       approvedUsage: raw.approvedUsage || 'Residential',
       actualUsage: raw.actualUsage || 'Residential',
-      typeOfStructure: raw.typeOfStructure || '',
+      typeOfStructure: raw.typeOfStructure || 'RCC',
       noOfFloors: raw.noOfFloors || '',
       occupancyDetails: raw.occupancyDetails || 'Self Occupied',
       hasElectricityWaterDrainage: raw.hasElectricityWaterDrainage || 'Yes',
-      proximityToCivicAmenities: raw.proximityToCivicAmenities || '',
-      developmentOfSurroundingArea: raw.developmentOfSurroundingArea || '',
-      latitude: raw.latitude || '',
-      longitude: raw.longitude || '',
+      proximityToCivicAmenities: raw.proximityToCivicAmenities || 'Nearby',
+      developmentOfSurroundingArea: raw.developmentOfSurroundingArea || 'Developing',
 
-      // 5. APPROVAL DETAILS
+      // 4z. Longitude & Latitude
+      longitude: raw.longitude || '',
+      latitude: raw.latitude || '',
+
+      // 5. Layout & Building Plan Approval Details
       approvedPlanDetails: raw.approvedPlanDetails || '',
       layoutApprovalNo: raw.layoutApprovalNo || '',
-      layoutApprovalDate: raw.layoutApprovalDate || '',
-      layoutExpiryDate: raw.layoutExpiryDate || '',
+      layoutApprovalDate: raw.layoutApprovalDate ? formatReportDate(raw.layoutApprovalDate) : '',
+      layoutExpiryDate: raw.layoutExpiryDate ? formatReportDate(raw.layoutExpiryDate) : '',
       buildingPlanApprovalNo: raw.buildingPlanApprovalNo || '',
-      buildingPlanApprovalDate: raw.buildingPlanApprovalDate || '',
-      buildingPlanExpiryDate: raw.buildingPlanExpiryDate || '',
-      constructionCommencementDate: raw.constructionCommencementDate || '',
-      expectedCompletionDate: raw.expectedCompletionDate || '',
+      buildingPlanApprovalDate: raw.buildingPlanApprovalDate ? formatReportDate(raw.buildingPlanApprovalDate) : '',
+      buildingPlanExpiryDate: raw.buildingPlanExpiryDate ? formatReportDate(raw.buildingPlanExpiryDate) : '',
+      constructionCommencementDate: raw.constructionCommencementDate ? formatReportDate(raw.constructionCommencementDate) : '',
+      expectedCompletionDate: raw.expectedCompletionDate ? formatReportDate(raw.expectedCompletionDate) : '',
 
-      // 6. CONSTRUCTION DETAILS
-      plotOrFlat: raw.plotOrFlat || (raw.typeOfProperty?.toLowerCase().includes('flat') ? 'Flat' : 'Plot'),
+      // 6. Area Details
+      plotOrFlat: raw.plotOrFlat || 'Plot',
       plotAreaDocs: raw.plotAreaDocs || '',
-      demarcationAtSite: raw.demarcationAtSite || 'Yes',
-      approvedBUATotal: raw.approvedBUATotal || '',
+      plotAreaActual: raw.plotAreaActual || '',
+      demarcationAtSite: raw.demarcationAtSite || '',
       approvedBUAFloors: defaultApprovedFloors,
-      measuredBUATotal: raw.measuredBUATotal || '',
+      approvedBUATotal: raw.approvedBUATotal || '',
       measuredBUAFloors: defaultMeasuredFloors,
-      isConstructionAsPerPlan:
-        raw.isConstructionAsPerPlan === 'Yes (As perApproved)'
-          ? 'Yes (As per approved plan)'
-          : raw.isConstructionAsPerPlan || 'Yes (As per approved plan)',
-      detailsOfExtraConstruction: raw.detailsOfExtraConstruction || '',
-      sideMarginFront: raw.sideMarginFront || '',
-      sideMarginRight: raw.sideMarginRight || '',
-      sideMarginLeft: raw.sideMarginLeft || '',
-      sideMarginBack: raw.sideMarginBack || '',
-      qualityOfConstruction: raw.qualityOfConstruction || 'NA',
-      maintenanceOfProperty: raw.maintenanceOfProperty || 'NA',
+      measuredBUATotal: raw.measuredBUATotal || '',
+      carpetAreaMeasuredTotal: raw.carpetAreaMeasuredTotal || '',
+      constructionAsPerPlan: raw.constructionAsPerPlan || 'Yes',
+      qualityOfConstruction: raw.qualityOfConstruction || 'Good',
+      maintenanceOfProperty: raw.maintenanceOfProperty || 'Good',
       currentLifeOfStructure: raw.currentLifeOfStructure || '',
       projectedLifeOfStructure: raw.projectedLifeOfStructure || '',
 
@@ -203,7 +200,7 @@ export default function AxisHLLAP({
       percentDisbursementRecommended: raw.percentDisbursementRecommended || '',
       currentValueOfProperty: raw.currentValueOfProperty || '',
       currentValueAsOnDate: raw.currentValueAsOnDate || '',
-      dateOfPropertyVisit: raw.dateOfPropertyVisit || raw.reportDate || new Date().toISOString().split('T')[0],
+      dateOfPropertyVisit: formatReportDate(raw.dateOfPropertyVisit || raw.reportDate || prefill?.fieldVisitDate || new Date()),
 
       // 8 - 12
       valuationGovtReckonerRate: raw.valuationGovtReckonerRate || '',
@@ -672,45 +669,6 @@ export default function AxisHLLAP({
     { id: 'axis-maps', title: 'Location & Sketch Maps' },
   ];
 
-  // Date picker helper component
-  const DateInput = ({
-    fieldKey,
-    label,
-    placeholder = '',
-    span,
-  }: {
-    fieldKey: keyof AxisHLLAPReportFields;
-    label: string;
-    placeholder?: string;
-    span?: number;
-  }) => (
-    <Field label={label} span={span}>
-      <div className="relative flex items-center">
-        <input
-          type="text"
-          className={inputCls + ' pr-9'}
-          value={(fields[fieldKey] as string) || ''}
-          onChange={e => handleChange(fieldKey, e.target.value)}
-          disabled={isReadOnly}
-          placeholder={placeholder}
-        />
-        {!isReadOnly && (
-          <div className="absolute right-2.5 flex items-center pointer-events-auto">
-            <input
-              type="date"
-              className="opacity-0 absolute inset-0 w-6 h-6 cursor-pointer"
-              title="Choose Date"
-              onChange={e => {
-                if (e.target.value) handleChange(fieldKey, formatReportDate(e.target.value));
-              }}
-            />
-            <span className="text-slate-400 hover:text-slate-600 text-sm">📅</span>
-          </div>
-        )}
-      </div>
-    </Field>
-  );
-
   return (
     <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
       {/* Main Content Area */}
@@ -718,30 +676,35 @@ export default function AxisHLLAP({
         {/* Top Active Configuration Banner */}
         <ActiveConfigBanner
           bankName="AXIS BANK"
-          formatName="HL-LAP"
-          category="Bank & FIS"
+          formatName="Axis Bank HL-LAP Format"
+          category="Retail Asset (Home Loan / LAP)"
           onResetWizard={onResetWizard}
         />
 
         {message && (
           <div
-            className={`p-4 rounded-xl text-sm font-bold shadow-sm ${
+            className={`p-4 rounded-xl text-sm font-semibold border shadow-xs ${
               message.type === 'success'
-                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                : 'bg-red-50 text-red-700 border border-red-200'
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                : 'bg-rose-50 text-rose-800 border-rose-200'
             }`}
           >
             {message.text}
           </div>
         )}
 
-        {/* SECTION 1: Applicant & Application Details (1 – 3) */}
-        <Section id="axis-sec1" title="Applicant & Application Details (1 – 3)" number={1} defaultOpen={true}>
-          {/* Header Reference & Date of Report (Soft Container - Sky Blue) */}
-          <div className="pb-4 border-b border-slate-200">
-            <div className="border border-sky-200 bg-[#F0F9FF] rounded-xl p-4 sm:p-5 shadow-2xs">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Reference Number">
+        {/* ════ SECTION 1: APPLICANT & APPLICATION DETAILS (POINTS 1–3) ════ */}
+        <Section
+          title="1. Applicant & Application Details (Points 1–3)"
+          number={1}
+          id="axis-sec1"
+          defaultOpen={true}
+        >
+          {/* Header Metadata Container (Soft Amber) */}
+          <div className="pt-2 pb-4 border-b border-slate-200">
+            <div className="border border-amber-200 bg-[#FFFBEB] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Reference Number (Auto-assigned)">
                   <input
                     type="text"
                     value={fields.refNo}
@@ -751,9 +714,11 @@ export default function AxisHLLAP({
                   />
                 </Field>
 
-                <DateInput
-                  fieldKey="reportDate"
+                <BaseDateInput
                   label="Date of Report"
+                  value={fields.reportDate || ''}
+                  onChange={val => handleChange('reportDate', val)}
+                  disabled={isReadOnly}
                 />
               </div>
             </div>
@@ -1367,13 +1332,17 @@ export default function AxisHLLAP({
               {/* 5b - 5c Sub-Subcontainer */}
               <div className="border border-blue-200/80 bg-white rounded-lg p-3.5 sm:p-4 shadow-2xs">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <DateInput
-                    fieldKey="layoutApprovalDate"
+                  <BaseDateInput
                     label="b. Date of Approval"
+                    value={fields.layoutApprovalDate || ''}
+                    onChange={val => handleChange('layoutApprovalDate', val)}
+                    disabled={isReadOnly}
                   />
-                  <DateInput
-                    fieldKey="layoutExpiryDate"
+                  <BaseDateInput
                     label="c. Expiry Date"
+                    value={fields.layoutExpiryDate || ''}
+                    onChange={val => handleChange('layoutExpiryDate', val)}
+                    disabled={isReadOnly}
                   />
                 </div>
               </div>
@@ -1396,13 +1365,17 @@ export default function AxisHLLAP({
               {/* 5e - 5f Sub-Subcontainer */}
               <div className="border border-teal-200/80 bg-white rounded-lg p-3.5 sm:p-4 shadow-2xs">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <DateInput
-                    fieldKey="buildingPlanApprovalDate"
+                  <BaseDateInput
                     label="e. Date of Approval"
+                    value={fields.buildingPlanApprovalDate || ''}
+                    onChange={val => handleChange('buildingPlanApprovalDate', val)}
+                    disabled={isReadOnly}
                   />
-                  <DateInput
-                    fieldKey="buildingPlanExpiryDate"
+                  <BaseDateInput
                     label="f. Expiry Date"
+                    value={fields.buildingPlanExpiryDate || ''}
+                    onChange={val => handleChange('buildingPlanExpiryDate', val)}
+                    disabled={isReadOnly}
                   />
                 </div>
               </div>
@@ -1413,14 +1386,18 @@ export default function AxisHLLAP({
           <div className="pt-2">
             <div className="border border-rose-200 bg-[#FFF1F2] rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <DateInput
-                  fieldKey="constructionCommencementDate"
+                <BaseDateInput
                   label="g. Date of Commencement of Construction"
+                  value={fields.constructionCommencementDate || ''}
+                  onChange={val => handleChange('constructionCommencementDate', val)}
+                  disabled={isReadOnly}
                 />
 
-                <DateInput
-                  fieldKey="expectedCompletionDate"
+                <BaseDateInput
                   label="h. Expected Completion"
+                  value={fields.expectedCompletionDate || ''}
+                  onChange={val => handleChange('expectedCompletionDate', val)}
+                  disabled={isReadOnly}
                 />
               </div>
             </div>
@@ -2056,9 +2033,11 @@ export default function AxisHLLAP({
                       />
                     </Field>
 
-                    <DateInput
-                      fieldKey="dateOfPropertyVisit"
+                    <BaseDateInput
                       label="i. Date of Property Visit"
+                      value={fields.dateOfPropertyVisit || ''}
+                      onChange={val => handleChange('dateOfPropertyVisit', val)}
+                      disabled={isReadOnly}
                     />
                   </div>
                 </div>

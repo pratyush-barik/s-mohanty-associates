@@ -22,7 +22,7 @@ import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
 import { PDFIBBIRenderer } from '@/lib/pdf-ibbi-renderer';
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
-import { BasePhotographsSection } from './banks/BaseBankReportComponents';
+import { BasePhotographsSection, BaseDateInput, formatReportDate } from './banks/BaseBankReportComponents';
 import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 // @ts-ignore
 import * as XLSX from 'xlsx';
@@ -450,8 +450,8 @@ const DEFAULT_FIELDS: IBBIFields = {
   customAddressPrefix: '',
   idcoPlotNo: '',
   legalAddress: '',
-  dateOfInspection: new Date().toISOString().split('T')[0],
-  dateOfValuation: new Date().toISOString().split('T')[0],
+  dateOfInspection: formatReportDate(new Date()),
+  dateOfValuation: formatReportDate(new Date()),
   refNo: '',
   purposeOfValuation: 'To assess the Fair Market Value for Auction / Liquidation purpose',
   valuationMethod: 'Sale Comparison Method coupled with Replacement Cost Approach',
@@ -1660,13 +1660,8 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
       const r = new PDFIBBIRenderer();
       await r.init();
 
-      // Date formatter: YYYY-MM-DD → DD.MM.YYYY (used throughout PDF generation)
-      const fmtDateDDMMYYYY = (d: string) => {
-        if (!d) return '________';
-        const parts = d.split('-');
-        if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
-        return d;
-      };
+      // Date formatter: ALWAYS outputs DD/MM/YYYY
+      const fmtDateDDMMYYYY = (d: string) => formatReportDate(d, '________');
 
       // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       //  COVER PAGE
@@ -3303,15 +3298,24 @@ Our valuation is based on information obtained from the client and on data gathe
               <Field label="Appointee Designation (if applicable)">
                 <input type="text" value={fields.appointedByDesignation || ''} onChange={e => handleChange('appointedByDesignation', e.target.value)} className={inputCls} placeholder="e.g. an Insolvency Professional" disabled={isReadOnly} />
               </Field>
-              <Field label="Date of Appointment">
-                <input type="date" value={fields.appointmentDate || ''} onChange={e => handleChange('appointmentDate', e.target.value)} className={inputCls} disabled={isReadOnly} />
-              </Field>
-              <Field label="Date of Valuation Report">
-                <input type="date" value={fields.dateOfValuation || ''} onChange={e => handleChange('dateOfValuation', e.target.value)} className={inputCls} disabled={isReadOnly} />
-              </Field>
-              <Field label="Date of Inspection">
-                <input type="date" value={fields.dateOfInspection || ''} onChange={e => handleChange('dateOfInspection', e.target.value)} className={inputCls} disabled={isReadOnly} />
-              </Field>
+              <BaseDateInput
+                label="Date of Appointment"
+                value={fields.appointmentDate || ''}
+                onChange={val => handleChange('appointmentDate', val)}
+                disabled={isReadOnly}
+              />
+              <BaseDateInput
+                label="Date of Valuation Report"
+                value={fields.dateOfValuation || ''}
+                onChange={val => handleChange('dateOfValuation', val)}
+                disabled={isReadOnly}
+              />
+              <BaseDateInput
+                label="Date of Inspection"
+                value={fields.dateOfInspection || ''}
+                onChange={val => handleChange('dateOfInspection', val)}
+                disabled={isReadOnly}
+              />
               <Field label="Place">
                 <input type="text" value={fields.conclusionPlace || ''} onChange={e => handleChange('conclusionPlace', e.target.value)} className={inputCls} disabled={isReadOnly} />
               </Field>
@@ -4984,9 +4988,12 @@ Our valuation is based on information obtained from the client and on data gathe
                   </Field>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Field label="Date of Valuation Report">
-                    <input type="date" value={fields.dateOfValuation || ''} disabled className={inputCls + ' bg-gray-100'} />
-                  </Field>
+                  <BaseDateInput
+                    label="Date of Valuation Report"
+                    value={fields.dateOfValuation || ''}
+                    onChange={() => {}}
+                    disabled
+                  />
                   <Field label="Place">
                     <input
                       type="text"
@@ -5023,12 +5030,18 @@ Our valuation is based on information obtained from the client and on data gathe
                 <Field label="Valuer's Father's Name">
                   <input type="text" value={fields.representativeFatherName} onChange={e => handleChange('representativeFatherName', e.target.value)} className={inputCls} disabled={isReadOnly} />
                 </Field>
-                <Field label="Date of Inspection">
-                  <input type="date" value={fields.dateOfInspection || ''} className={inputCls + ' bg-gray-100 cursor-not-allowed'} disabled />
-                </Field>
-                <Field label="Date of Valuation Report">
-                  <input type="date" value={fields.dateOfValuation || ''} className={inputCls + ' bg-gray-100 cursor-not-allowed'} disabled />
-                </Field>
+                <BaseDateInput
+                  label="Date of Inspection"
+                  value={fields.dateOfInspection || ''}
+                  onChange={() => {}}
+                  disabled
+                />
+                <BaseDateInput
+                  label="Date of Valuation Report"
+                  value={fields.dateOfValuation || ''}
+                  onChange={() => {}}
+                  disabled
+                />
                 <Field label="PAN Card Number">
                   <input type="text" value={fields.panCardNumber || ''} onChange={e => handleChange('panCardNumber', e.target.value.toUpperCase())} className={inputCls + ' uppercase'} placeholder="e.g. AOVPP5837R" disabled={isReadOnly} />
                 </Field>

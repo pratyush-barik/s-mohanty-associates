@@ -3,7 +3,7 @@ import React from 'react';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig } from '@/lib/bank-fields';
 import { PDFAxisFinanceRenderer } from '@/lib/banks/pdf-axis-finance-renderer';
-import { Field, inputCls } from '../BaseBankReportComponents';
+import { Field, inputCls, BaseDateInput } from '../BaseBankReportComponents';
 
 export const AXIS_FINANCE_CONFIG: BankConfig = {
   bankId: 'AXIS FINANCE LTD',
@@ -374,7 +374,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Product / Loan Category (LOAN AGAINST PROPERTY (LAP))"><input className={inputCls} value={fields.productLoanCategory || ''} onChange={e => handleChange('productLoanCategory', e.target.value)} disabled={isReadOnly} placeholder="e.g., LAP – RESIDENTIAL BUILDING" /></Field>
               <Field label="Application Number"><input className={inputCls} value={fields.loanApplicationNo || ''} onChange={e => handleChange('loanApplicationNo', e.target.value)} disabled={isReadOnly} /></Field>
-              <Field label="Date"><input type="date" className={inputCls} value={fields.dateOfValuation || ''} onChange={e => handleChange('dateOfValuation', e.target.value)} disabled={isReadOnly} /></Field>
+              <BaseDateInput label="Date" value={fields.dateOfValuation || ''} onChange={val => handleChange('dateOfValuation', val)} disabled={isReadOnly} />
               <Field label="Name of the Customer"><input className={inputCls} value={fields.ownerName || ''} onChange={e => handleChange('ownerName', e.target.value)} disabled={isReadOnly} /></Field>
               
               <div className="col-span-1 w-full flex flex-col">
@@ -687,13 +687,13 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                       <td className="px-4 py-2 font-medium">Layout Plan</td>
                       <td className="px-2 py-1"><input className={inputCls} value={fields.axisLayoutPlanApprovalAuthority || ''} onChange={e => handleChange('axisLayoutPlanApprovalAuthority', e.target.value)} disabled={isReadOnly} /></td>
                       <td className="px-2 py-1"><input className={inputCls} value={fields.axisLayoutPlanApprovalNo || ''} onChange={e => handleChange('axisLayoutPlanApprovalNo', e.target.value)} disabled={isReadOnly} /></td>
-                      <td className="px-2 py-1"><input type="date" className={inputCls} value={fields.axisLayoutPlanApprovalDate || ''} onChange={e => handleChange('axisLayoutPlanApprovalDate', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><BaseDateInput value={fields.axisLayoutPlanApprovalDate || ''} onChange={val => handleChange('axisLayoutPlanApprovalDate', val)} disabled={isReadOnly} /></td>
                     </tr>
                     <tr>
                       <td className="px-4 py-2 font-medium">Building/Construction Plan</td>
                       <td className="px-2 py-1"><input className={inputCls} value={fields.axisBuildingPlanApprovalAuthority || ''} onChange={e => handleChange('axisBuildingPlanApprovalAuthority', e.target.value)} disabled={isReadOnly} /></td>
                       <td className="px-2 py-1"><input className={inputCls} value={fields.axisBuildingPlanApprovalNo || ''} onChange={e => handleChange('axisBuildingPlanApprovalNo', e.target.value)} disabled={isReadOnly} /></td>
-                      <td className="px-2 py-1"><input type="date" className={inputCls} value={fields.axisBuildingPlanApprovalDate || ''} onChange={e => handleChange('axisBuildingPlanApprovalDate', e.target.value)} disabled={isReadOnly} /></td>
+                      <td className="px-2 py-1"><BaseDateInput value={fields.axisBuildingPlanApprovalDate || ''} onChange={val => handleChange('axisBuildingPlanApprovalDate', val)} disabled={isReadOnly} /></td>
                     </tr>
                   </tbody>
                 </table>
@@ -1332,7 +1332,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                 {options.map((opt: string) => <option key={opt} value={opt}>{opt}</option>)}
               </select>
             ) : type === 'date' ? (
-              <input type="date" className={inputCls} value={fields[fieldKey] || ''} onChange={e => handleChange(fieldKey, e.target.value)} disabled={isReadOnly || fields[fieldKey] === 'NA'} />
+              <BaseDateInput value={fields[fieldKey] === 'NA' ? '' : (fields[fieldKey] || '')} onChange={val => handleChange(fieldKey, val)} disabled={isReadOnly || fields[fieldKey] === 'NA'} />
             ) : type === 'file' ? (
               <input type="file" accept="image/png, image/jpeg" className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50" onChange={e => {
                 if (e.target.files && e.target.files[0]) {

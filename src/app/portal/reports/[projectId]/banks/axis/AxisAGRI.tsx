@@ -13,6 +13,7 @@ import {
   ReportActionBar,
   NavItem,
   formatReportDate,
+  BaseDateInput,
   BasePhotographsSection,
   BaseMapsSection,
   BasePhotoBucketModal,
@@ -699,36 +700,6 @@ export default function AxisAGRI({
     }
   };
 
-  // Date picker helper component
-  // Date picker helper component
-  const DateInput = ({ fieldKey, label }: { fieldKey: keyof AxisAgriReportFields; label: string }) => (
-    <Field label={label}>
-      <div className="relative flex items-center">
-        <input
-          type="text"
-          className={inputCls + ' pr-9'}
-          value={(fields[fieldKey] as string) || ''}
-          onChange={e => handleChange(fieldKey, e.target.value)}
-          disabled={isReadOnly}
-          placeholder=""
-        />
-        {!isReadOnly && (
-          <div className="absolute right-2.5 flex items-center pointer-events-auto">
-            <input
-              type="date"
-              className="opacity-0 absolute inset-0 w-6 h-6 cursor-pointer"
-              title="Choose Date"
-              onChange={e => {
-                if (e.target.value) handleChange(fieldKey, formatReportDate(e.target.value));
-              }}
-            />
-            <span className="text-slate-400 hover:text-slate-600 text-sm">📅</span>
-          </div>
-        )}
-      </div>
-    </Field>
-  );
-
   // ── Navigation Sections (All 16 Sections) ──
   const navSections: NavItem[] = [
     { id: 'sec-1', title: '1. Header & Initiation' },
@@ -790,7 +761,12 @@ export default function AxisAGRI({
               />
             </Field>
 
-            <DateInput fieldKey="reportDate" label="Date of Report" />
+            <BaseDateInput
+              label="Date of Report"
+              value={fields.reportDate || ''}
+              onChange={val => handleChange('reportDate', val)}
+              disabled={isReadOnly}
+            />
           </div>
 
           {/* Container 1A: Technical Initiation Details */}
@@ -798,7 +774,12 @@ export default function AxisAGRI({
             <h3 className="font-semibold text-sky-800 mb-4 text-sm tracking-wide uppercase">Technical Initiation Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1">
-                <DateInput fieldKey="dateOfVisit" label="Date of Visit" />
+                <BaseDateInput
+                  label="Date of Visit"
+                  value={fields.dateOfVisit || ''}
+                  onChange={val => handleChange('dateOfVisit', val)}
+                  disabled={isReadOnly}
+                />
                 {firstFieldAgentVisit && (
                   <div className="flex items-center justify-between text-[11px] bg-blue-100/70 border border-blue-200 text-blue-800 px-2 py-0.5 rounded">
                     <span>
@@ -1883,13 +1864,17 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <DateInput
-                fieldKey="layoutApprovalDate"
+              <BaseDateInput
                 label="Date of Approval"
+                value={fields.layoutApprovalDate || ''}
+                onChange={val => handleChange('layoutApprovalDate', val)}
+                disabled={isReadOnly}
               />
-              <DateInput
-                fieldKey="layoutExpiryDate"
+              <BaseDateInput
                 label="Expiry Date"
+                value={fields.layoutExpiryDate || ''}
+                onChange={val => handleChange('layoutExpiryDate', val)}
+                disabled={isReadOnly}
               />
             </div>
           </div>
@@ -1909,13 +1894,17 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <DateInput
-                fieldKey="buildingPlanApprovalDate"
+              <BaseDateInput
                 label="Date of Approval"
+                value={fields.buildingPlanApprovalDate || ''}
+                onChange={val => handleChange('buildingPlanApprovalDate', val)}
+                disabled={isReadOnly}
               />
-              <DateInput
-                fieldKey="buildingPlanExpiryDate"
+              <BaseDateInput
                 label="Expiry Date"
+                value={fields.buildingPlanExpiryDate || ''}
+                onChange={val => handleChange('buildingPlanExpiryDate', val)}
+                disabled={isReadOnly}
               />
             </div>
           </div>
@@ -2754,7 +2743,12 @@ export default function AxisAGRI({
                   </span>
                 </Field>
 
-                <DateInput fieldKey="dateOfReportSubmission" label="Date of Report Submission" />
+                <BaseDateInput
+                  label="Date of Report Submission"
+                  value={fields.dateOfReportSubmission || ''}
+                  onChange={val => handleChange('dateOfReportSubmission', val)}
+                  disabled={isReadOnly}
+                />
 
                 <Field label="Name of Engineer Visited the property">
                   <input

@@ -20,6 +20,8 @@ import {
   NavItem,
   getFloorName,
   formatAssignedEngineers,
+  formatReportDate,
+  BaseDateInput,
   BasePhotographsSection,
   BaseMapsSection,
   BasePhotoBucketModal,
@@ -262,11 +264,11 @@ export default function AdityaBirlaCapitalSTSL({
     valuerName: initialFields?.valuerName || 'Er. Satyajit Mohanty',
     clientName: initialFields?.clientName || initialFields?.ownerName || prefill?.contactName || '',
     ownerName: initialFields?.ownerName || prefill?.contactName || '',
-    initiationDate: initialFields?.initiationDate || prefill?.initiationDate || new Date().toISOString().split('T')[0],
+    initiationDate: initialFields?.initiationDate ? formatReportDate(initialFields.initiationDate) : (prefill?.initiationDate ? formatReportDate(prefill.initiationDate) : formatReportDate(new Date())),
     vertical: 'STSL',
-    dateOfInspection: initialFields?.dateOfInspection || prefill?.inspectionDate || new Date().toISOString().split('T')[0],
+    dateOfInspection: initialFields?.dateOfInspection ? formatReportDate(initialFields.dateOfInspection) : (prefill?.inspectionDate ? formatReportDate(prefill.inspectionDate) : formatReportDate(new Date())),
     caseReferenceNumber: initialFields?.caseReferenceNumber || initialFields?.loanApplicationNo || '',
-    dateOfValuation: initialFields?.dateOfValuation || new Date().toISOString().split('T')[0],
+    dateOfValuation: initialFields?.dateOfValuation ? formatReportDate(initialFields.dateOfValuation) : formatReportDate(new Date()),
     propertyOwnerName: initialFields?.propertyOwnerName || prefill?.contactName || '',
 
     // Location Details
@@ -1340,21 +1342,30 @@ export default function AdityaBirlaCapitalSTSL({
             <Field label="Client Name">
               <input type="text" value={fields.clientName || ''} onChange={e => handleChange('clientName', e.target.value)} disabled={isReadOnly} className={inputCls} />
             </Field>
-            <Field label="Initiation Date">
-              <input type="date" value={fields.initiationDate || ''} onChange={e => handleChange('initiationDate', e.target.value)} disabled={isReadOnly} className={inputCls} />
-            </Field>
+            <BaseDateInput
+              label="Initiation Date"
+              value={fields.initiationDate || ''}
+              onChange={val => handleChange('initiationDate', val)}
+              disabled={isReadOnly}
+            />
             <Field label="Vertical">
               <input type="text" value="STSL" disabled className={`${inputCls} bg-neutral-100 font-bold text-[#0f2038]`} />
             </Field>
-            <Field label="Visit Date (Inspection Date)">
-              <input type="date" value={fields.dateOfInspection || ''} onChange={e => handleChange('dateOfInspection', e.target.value)} disabled={isReadOnly} className={inputCls} />
-            </Field>
+            <BaseDateInput
+              label="Visit Date (Inspection Date)"
+              value={fields.dateOfInspection || ''}
+              onChange={val => handleChange('dateOfInspection', val)}
+              disabled={isReadOnly}
+            />
             <Field label="Case Reference Number">
               <input type="text" value={fields.caseReferenceNumber || ''} onChange={e => handleChange('caseReferenceNumber', e.target.value)} disabled={isReadOnly} className={inputCls} />
             </Field>
-            <Field label="Report Date (Valuation Date)">
-              <input type="date" value={fields.dateOfValuation || ''} onChange={e => handleChange('dateOfValuation', e.target.value)} disabled={isReadOnly} className={inputCls} />
-            </Field>
+            <BaseDateInput
+              label="Report Date (Valuation Date)"
+              value={fields.dateOfValuation || ''}
+              onChange={val => handleChange('dateOfValuation', val)}
+              disabled={isReadOnly}
+            />
             <Field label="Name of the Property Owner" span={2}>
               <input type="text" value={fields.propertyOwnerName || ''} onChange={e => handleChange('propertyOwnerName', e.target.value)} disabled={isReadOnly} className={inputCls} />
             </Field>
@@ -1539,15 +1550,12 @@ export default function AdityaBirlaCapitalSTSL({
                   </select>
                 </Field>
                 {fields.valuedBefore === 'Yes' ? (
-                  <Field label="If Yes When? (Date of Prior Valuation)">
-                    <input
-                      type="date"
-                      value={fields.valuedBeforeDate || ''}
-                      onChange={e => handleChange('valuedBeforeDate', e.target.value)}
-                      disabled={isReadOnly}
-                      className={inputCls}
-                    />
-                  </Field>
+                  <BaseDateInput
+                    label="If Yes When? (Date of Prior Valuation)"
+                    value={fields.valuedBeforeDate || ''}
+                    onChange={val => handleChange('valuedBeforeDate', val)}
+                    disabled={isReadOnly}
+                  />
                 ) : (
                   <div className="flex items-center text-xs text-neutral-500 italic pt-6">
                     No prior valuation recorded for ABCL.
