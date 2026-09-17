@@ -1699,9 +1699,9 @@ export default function AxisHLLAP({
             </div>
           </div>
 
-          {/* 6h - 6k: Structure Quality, Maintenance & Life */}
-          <div className="pt-2">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* 6h - 6i: Structure Quality & Maintenance */}
+          <div className="pt-2 pb-4 border-b border-slate-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="h. Quality of Construction">
                 <input
                   type="text"
@@ -1721,26 +1721,38 @@ export default function AxisHLLAP({
                   disabled={isReadOnly}
                 />
               </Field>
+            </div>
+          </div>
 
-              <Field label="j. Current Life of Structure">
-                <input
-                  type="text"
-                  value={fields.currentLifeOfStructure}
-                  onChange={e => handleChange('currentLifeOfStructure', e.target.value)}
-                  className={inputCls}
-                  disabled={isReadOnly}
-                />
-              </Field>
+          {/* 6j - 6k: Structure Life Assessment (Soft Container) */}
+          <div className="pt-2">
+            <div className="border border-slate-200/80 bg-slate-50/60 dark:bg-slate-800/30 rounded-xl p-4 sm:p-5 shadow-xs space-y-3">
+              <div className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                Structure Life Assessment (j – k)
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="j. Current Life of Structure">
+                  <input
+                    type="text"
+                    value={fields.currentLifeOfStructure}
+                    onChange={e => handleChange('currentLifeOfStructure', e.target.value)}
+                    className={inputCls}
+                    disabled={isReadOnly}
+                    placeholder="e.g. 5 years"
+                  />
+                </Field>
 
-              <Field label="k. Projected Life of Structure">
-                <input
-                  type="text"
-                  value={fields.projectedLifeOfStructure}
-                  onChange={e => handleChange('projectedLifeOfStructure', e.target.value)}
-                  className={inputCls}
-                  disabled={isReadOnly}
-                />
-              </Field>
+                <Field label="k. Projected Life of Structure">
+                  <input
+                    type="text"
+                    value={fields.projectedLifeOfStructure}
+                    onChange={e => handleChange('projectedLifeOfStructure', e.target.value)}
+                    className={inputCls}
+                    disabled={isReadOnly}
+                    placeholder="e.g. 55 years"
+                  />
+                </Field>
+              </div>
             </div>
           </div>
         </Section>
