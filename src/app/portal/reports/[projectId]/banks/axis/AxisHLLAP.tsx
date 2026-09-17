@@ -685,61 +685,64 @@ export default function AxisHLLAP({
             />
           </div>
 
-          {/* Point 1: Customer Details */}
+          {/* Point 1: Customer Details (Soft Container) */}
           <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
-              1. Customer Details
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Name of the Customer">
-                <input
-                  type="text"
-                  value={fields.customerName}
-                  onChange={e => handleChange('customerName', e.target.value)}
-                  className={inputCls}
-                  placeholder="e.g. BANDITA ROUT"
-                  disabled={isReadOnly}
-                />
-              </Field>
+            <div className="border border-slate-200/80 bg-slate-50/70 dark:bg-slate-800/40 rounded-xl p-4 sm:p-5 shadow-xs">
+              <div className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-3">
+                1. Customer Details
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="Name of the Customer">
+                  <input
+                    type="text"
+                    value={fields.customerName}
+                    onChange={e => handleChange('customerName', e.target.value)}
+                    className={inputCls}
+                    placeholder="e.g. BANDITA ROUT"
+                    disabled={isReadOnly}
+                  />
+                </Field>
 
-              <Field label="Customer Contact Details">
-                <input
-                  type="text"
-                  value={fields.customerContactDetails}
-                  onChange={e => handleChange('customerContactDetails', e.target.value)}
-                  className={inputCls}
-                  placeholder="e.g. BANDITA ROUT, Mob No-9138235255"
-                  disabled={isReadOnly}
-                />
-              </Field>
+                <Field label="Customer Contact Details">
+                  <input
+                    type="text"
+                    value={fields.customerContactDetails}
+                    onChange={e => handleChange('customerContactDetails', e.target.value)}
+                    className={inputCls}
+                    placeholder="e.g. BANDITA ROUT, Mob No-9138235255"
+                    disabled={isReadOnly}
+                  />
+                </Field>
+              </div>
             </div>
           </div>
 
-          {/* Point 2 & 3: APP ID & Documents Provided */}
-          <div className="pt-2">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="2. APP ID / Loan Account No">
-                <input
-                  type="text"
-                  value={fields.appId}
-                  onChange={e => handleChange('appId', e.target.value)}
-                  className={inputCls}
-                  placeholder="e.g. 30514872"
-                  disabled={isReadOnly}
-                />
-              </Field>
+          {/* Point 2: APP ID (Separate Line) */}
+          <div className="pt-2 pb-4 border-b border-slate-200">
+            <Field label="2. APP ID / Loan Account No">
+              <input
+                type="text"
+                value={fields.appId}
+                onChange={e => handleChange('appId', e.target.value)}
+                className={inputCls}
+                placeholder="e.g. 30514872"
+                disabled={isReadOnly}
+              />
+            </Field>
+          </div>
 
-              <Field label="3. Documents Provided">
-                <input
-                  type="text"
-                  value={fields.documentsProvided}
-                  onChange={e => handleChange('documentsProvided', e.target.value)}
-                  className={inputCls}
-                  placeholder="Copy of Sale Deed, ROR, Sketch map, Approved Plan & Estimate"
-                  disabled={isReadOnly}
-                />
-              </Field>
-            </div>
+          {/* Point 3: Documents Provided (Separate Line - Full Question) */}
+          <div className="pt-2">
+            <Field label="3. Documents Provided: Approved Layout/ Approved Building Plan/ NA order/ Four Boundaries Details">
+              <input
+                type="text"
+                value={fields.documentsProvided}
+                onChange={e => handleChange('documentsProvided', e.target.value)}
+                className={inputCls}
+                placeholder="Copy of Sale Deed, ROR, Sketch map, Approved Plan & Estimate"
+                disabled={isReadOnly}
+              />
+            </Field>
           </div>
         </Section>
 
