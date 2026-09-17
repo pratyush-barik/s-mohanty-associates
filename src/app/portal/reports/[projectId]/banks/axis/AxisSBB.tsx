@@ -1788,7 +1788,9 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   <div className="flex flex-col">
                     <div className="flex justify-between items-center mb-1">
                       <div className="flex items-center">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">PLOT AREA AS PER SALE DEED <span className="text-red-500">*</span></label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">
+                          PLOT AREA AS PER SALE DEED <span className="text-red-500">*</span> <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Area_In_Sqft + " SQFT (" + "AC." + Area_In_Acres + "DECS) = PLOT AREA AS PER SALE DEED"]</span>
+                        </label>
                         {renderNaToggle('axisSbbPlotAreaAsPerSaleDeed')}
                       </div>
                       {renderEditSwitch('axisSbbPlotAreaAsPerSaleDeed', !!fields.axisSbbPlotAreaAsPerSaleDeedIsNA)}
@@ -2562,7 +2564,9 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                   <div className="flex flex-col border-r pr-3">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] font-bold text-slate-500">TOTAL BUILT UP AREA</span>
+                      <span className="text-[10px] font-bold text-slate-500">
+                        TOTAL BUILT UP AREA <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: SUM(CONSTRUCTED ACTUAL AREA AS PER SITE of all floors) = TOTAL BUILT UP AREA]</span>
+                      </span>
                       {renderEditSwitch('axisSbbTotalConstructedArea', false)}
                     </div>
                     <input 
@@ -2601,7 +2605,9 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-200">
                   <div className="flex flex-col">
                     <div className="flex justify-between items-center mb-1">
-                      <label className="block text-xs font-bold text-slate-800 uppercase tracking-wide">TOTAL CARPET AREA(IN SQFT)</label>
+                      <label className="block text-xs font-bold text-slate-800 uppercase tracking-wide">
+                        TOTAL CARPET AREA(IN SQFT) <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: TOTAL BUILT UP AREA * 0.85 = TOTAL CARPET AREA]</span>
+                      </label>
                       {renderEditSwitch('axisSbbTotalCarpetArea', false)}
                     </div>
                     <input
@@ -2615,7 +2621,9 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   </div>
                   <div className="flex flex-col">
                     <div className="flex justify-between items-center mb-1">
-                      <label className="block text-xs font-bold text-slate-800 uppercase tracking-wide">TOTAL SALEABLE AREA (IN SQFT.)</label>
+                      <label className="block text-xs font-bold text-slate-800 uppercase tracking-wide">
+                        TOTAL SALEABLE AREA (IN SQFT.) <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Prefilled from TOTAL CARPET AREA = TOTAL SALEABLE AREA]</span>
+                      </label>
                       {renderEditSwitch('axisSbbTotalSaleableArea', false)}
                     </div>
                     <input
@@ -2810,7 +2818,9 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                     <div className="flex flex-col border border-amber-200 rounded-lg p-3 bg-white/50">
                       <div className="flex justify-between items-center mb-3">
                         <div className="flex items-center">
-                          <label className="block text-xs font-bold text-amber-800 uppercase tracking-wide">QUALITY OF CONSTRUCTION</label>
+                          <label className="block text-xs font-bold text-amber-800 uppercase tracking-wide">
+                            QUALITY OF CONSTRUCTION <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Selected_Roof_Option + " WITH MASONRY WALLS WITH " + Selected_Floor_Option + " FLOOR = QUALITY OF CONSTRUCTION"]</span>
+                          </label>
                           {renderNaToggle('axisSbbQualityOfConstruction')}
                         </div>
                         {renderEditSwitch('axisSbbQualityOfConstruction', !!fields.axisSbbQualityOfConstructionIsNA)}
@@ -2985,7 +2995,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   </thead>
                   <tbody className="divide-y divide-emerald-100">
                     <tr>
-                      <td className="p-3 font-semibold text-gray-700">Land</td>
+                      <td className="p-3 font-semibold text-gray-700">Land <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: AREA (SQ.FT) * RATE PER SQ.FT (RS.) = AMOUNT (RS.)]</span></td>
                       <td className="p-3">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center justify-between">
@@ -3012,7 +3022,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       </td>
                     </tr>
                     <tr>
-                      <td className="p-3 font-semibold text-gray-700">Building G+1</td>
+                      <td className="p-3 font-semibold text-gray-700">Building G+1 <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: AREA (SQ.FT) * RATE PER SQ.FT (RS.) = AMOUNT (RS.)]</span></td>
                       <td className="p-3">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center justify-between">
@@ -3060,7 +3070,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       </td>
                     </tr>
                     <tr className="bg-emerald-50">
-                      <td className="p-3 font-bold text-emerald-900" colSpan={3}>Total Valuation 100% Completion (I+II)</td>
+                      <td className="p-3 font-bold text-emerald-900" colSpan={3}>Total Valuation 100% Completion (I+II) <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Land_Amount + Building_Amount + Amenities_Amount = Total Valuation 100% Completion]</span></td>
                       <td className="p-3">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center justify-between">
@@ -3072,7 +3082,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       </td>
                     </tr>
                     <tr className="bg-emerald-100">
-                      <td className="p-3 font-bold text-emerald-900" colSpan={3}>Total Valuation in Say</td>
+                      <td className="p-3 font-bold text-emerald-900" colSpan={3}>Total Valuation in Say <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: ROUND(Total Valuation 100% Completion, -3) = Total Valuation in Say]</span></td>
                       <td className="p-3">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center justify-between">
@@ -3102,7 +3112,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   </thead>
                   <tbody className="divide-y divide-purple-100">
                     <tr>
-                      <td className="p-3 font-semibold text-gray-700">Land</td>
+                      <td className="p-3 font-semibold text-gray-700">Land <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: AREA (SQ.FT) * GUIDELINE RATE PER SQ.FT (RS.) = GOVT. GUIDELINE VALUE (RS.)]</span></td>
                       <td className="p-3">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center justify-between">
@@ -3129,7 +3139,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       </td>
                     </tr>
                     <tr>
-                      <td className="p-3 font-semibold text-gray-700">Building</td>
+                      <td className="p-3 font-semibold text-gray-700">Building <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: AREA (SQ.FT) * GUIDELINE RATE PER SQ.FT (RS.) = GOVT. GUIDELINE VALUE (RS.)]</span></td>
                       <td className="p-3">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center justify-between">
@@ -3176,7 +3186,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                 
                 <div className="flex flex-col gap-1 bg-white p-4 rounded-lg shadow-sm border border-yellow-100">
                   <div className="flex justify-between items-center mb-2">
-                    <label className="text-sm font-bold text-gray-700">Distressed / Forced Sale Value (90%)</label>
+                    <label className="text-sm font-bold text-gray-700">Distressed / Forced Sale Value (90%) <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Market Value * 0.90 = Distressed / Forced Sale Value]</span></label>
                     <div className="flex gap-4">
                       {renderEditSwitch('axisSbbFinalDistressValue', !!fields.axisSbbFinalDistressValueIsNA)}
                       {renderNaToggle('axisSbbFinalDistressValue')}
@@ -3187,7 +3197,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
 
                 <div className="flex flex-col gap-1 bg-white p-4 rounded-lg shadow-sm border border-yellow-100">
                   <div className="flex justify-between items-center mb-2">
-                    <label className="text-sm font-bold text-gray-700">Realizable Value (95%)</label>
+                    <label className="text-sm font-bold text-gray-700">Realizable Value (95%) <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Market Value * 0.95 = Realizable Value]</span></label>
                     <div className="flex gap-4">
                       {renderEditSwitch('axisSbbFinalRealizableValue', !!fields.axisSbbFinalRealizableValueIsNA)}
                       {renderNaToggle('axisSbbFinalRealizableValue')}
@@ -3198,7 +3208,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
 
                 <div className="flex flex-col gap-1 bg-white p-4 rounded-lg shadow-sm border border-yellow-100">
                   <div className="flex justify-between items-center mb-2">
-                    <label className="text-sm font-bold text-gray-700">Insurable Value (App.)</label>
+                    <label className="text-sm font-bold text-gray-700">Insurable Value (App.) (Construction Value) <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Building_Valuation_Amount * 0.85 = Insurable Value]</span></label>
                     <div className="flex gap-4">
                       {renderEditSwitch('axisSbbFinalInsurableValue', !!fields.axisSbbFinalInsurableValueIsNA)}
                       {renderNaToggle('axisSbbFinalInsurableValue')}
@@ -3266,7 +3276,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
               <div className="p-4 space-y-4">
                 <div className="flex flex-col gap-1">
                   <div className="flex justify-between items-center mb-1">
-                    <label className="text-xs font-bold text-gray-700">REMARKS: -</label>
+                    <label className="text-xs font-bold text-gray-700">REMARKS: - <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: CONCAT(Property_Structure, Land_Area, Measured_BUA, Floor_Breakup, Age, Occupancy, Location, Amenities_Radius, Jurisdiction, Road_Width, FAR_Status) = REMARKS]</span></label>
                     <div className="flex gap-4 items-center">
                       {renderEditSwitch('axisSbbRemarks', !!fields.axisSbbRemarksIsNA)}
                       {renderNaToggle('axisSbbRemarks')}
