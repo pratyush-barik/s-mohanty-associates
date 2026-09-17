@@ -3201,7 +3201,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
       title: '10. REMARKS & UNDERTAKING',
       number: 10,
       defaultOpen: true,
-      render: ({ fields, handleChange, isReadOnly }) => {
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => {
         const inputCls = "w-full text-sm border-gray-300 rounded-md shadow-sm bg-white focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500";
         const renderNaToggle = (fieldKey: string) => (
           <label className="flex items-center gap-1 text-xs font-semibold text-gray-500 hover:text-gray-700 cursor-pointer">
