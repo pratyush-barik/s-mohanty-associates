@@ -102,16 +102,16 @@ export default function AxisHLLAP({
       appId: raw.appId || prefill?.serviceRequest?.enquiryId || '',
 
       // 3. Documents Provided
-      documentsProvided: raw.documentsProvided || 'Copy of Sale Deed, ROR, Sketch map, Approved Plan & Estimate',
+      documentsProvided: raw.documentsProvided || '',
 
       // 4. Property Details
       propertyDetailsHeader: raw.propertyDetailsHeader || prefill?.propertyAddress || '',
       plotNo: raw.plotNo || '',
       khataNo: raw.khataNo || '',
       locality: raw.locality || '',
-      road: raw.road || '10-Feet wide Road',
-      city: raw.city || prefill?.serviceRequest?.city || 'Cuttack',
-      district: raw.district || prefill?.serviceRequest?.district || 'Cuttack',
+      road: raw.road || '',
+      city: raw.city || prefill?.serviceRequest?.city || '',
+      district: raw.district || prefill?.serviceRequest?.district || '',
       pinCode: raw.pinCode || prefill?.serviceRequest?.pincode || '',
       nearbyLandMark: raw.nearbyLandMark || '',
       distanceFromCityCenter: raw.distanceFromCityCenter || '',
@@ -138,15 +138,15 @@ export default function AxisHLLAP({
       // 4o - 4z
       boundariesMatch: raw.boundariesMatch || 'Yes(Boundary matching as per documents)',
       statusOfLand: raw.statusOfLand || 'Free Hold',
-      typeOfProperty: raw.typeOfProperty || 'Residential (Under construction)',
+      typeOfProperty: raw.typeOfProperty || 'Residential',
       approvedUsage: raw.approvedUsage || 'Residential',
-      actualUsage: raw.actualUsage || 'Under construction',
-      typeOfStructure: raw.typeOfStructure || 'RCC Framed Structure',
-      noOfFloors: raw.noOfFloors || 'Proposed G+2 storied residential building as per Plan',
-      occupancyDetails: raw.occupancyDetails || 'Under construction',
-      hasElectricityWaterDrainage: raw.hasElectricityWaterDrainage || 'No',
-      proximityToCivicAmenities: raw.proximityToCivicAmenities || 'Within 1-2 kms range',
-      developmentOfSurroundingArea: raw.developmentOfSurroundingArea || 'Residential Development found in surrounding areas',
+      actualUsage: raw.actualUsage || 'Residential',
+      typeOfStructure: raw.typeOfStructure || '',
+      noOfFloors: raw.noOfFloors || '',
+      occupancyDetails: raw.occupancyDetails || 'Self Occupied',
+      hasElectricityWaterDrainage: raw.hasElectricityWaterDrainage || 'Yes',
+      proximityToCivicAmenities: raw.proximityToCivicAmenities || '',
+      developmentOfSurroundingArea: raw.developmentOfSurroundingArea || '',
       latitude: raw.latitude || '',
       longitude: raw.longitude || '',
 
@@ -155,7 +155,7 @@ export default function AxisHLLAP({
       layoutApprovalNo: raw.layoutApprovalNo || '',
       layoutApprovalDate: raw.layoutApprovalDate || '',
       layoutExpiryDate: raw.layoutExpiryDate || '',
-      buildingPlanApprovalNo: raw.buildingPlanApprovalNo || 'NA',
+      buildingPlanApprovalNo: raw.buildingPlanApprovalNo || '',
       buildingPlanApprovalDate: raw.buildingPlanApprovalDate || '',
       buildingPlanExpiryDate: raw.buildingPlanExpiryDate || '',
       constructionCommencementDate: raw.constructionCommencementDate || '',
@@ -169,15 +169,15 @@ export default function AxisHLLAP({
       measuredBUATotal: raw.measuredBUATotal || '',
       measuredBUAFloors: defaultMeasuredFloors,
       isConstructionAsPerPlan: raw.isConstructionAsPerPlan || 'Yes (As perApproved)',
-      detailsOfExtraConstruction: raw.detailsOfExtraConstruction || 'NA',
-      sideMarginFront: raw.sideMarginFront || 'NA',
-      sideMarginRight: raw.sideMarginRight || 'NA',
-      sideMarginLeft: raw.sideMarginLeft || 'NA',
-      sideMarginBack: raw.sideMarginBack || 'NA',
-      qualityOfConstruction: raw.qualityOfConstruction || 'NA',
-      maintenanceOfProperty: raw.maintenanceOfProperty || 'NA',
-      currentLifeOfStructure: raw.currentLifeOfStructure || '0-Years',
-      projectedLifeOfStructure: raw.projectedLifeOfStructure || '60-Years',
+      detailsOfExtraConstruction: raw.detailsOfExtraConstruction || '',
+      sideMarginFront: raw.sideMarginFront || '',
+      sideMarginRight: raw.sideMarginRight || '',
+      sideMarginLeft: raw.sideMarginLeft || '',
+      sideMarginBack: raw.sideMarginBack || '',
+      qualityOfConstruction: raw.qualityOfConstruction || '',
+      maintenanceOfProperty: raw.maintenanceOfProperty || '',
+      currentLifeOfStructure: raw.currentLifeOfStructure || '',
+      projectedLifeOfStructure: raw.projectedLifeOfStructure || '',
 
       // 7. Recommended Valuation of the Property
       recommendedRatePerSqft: raw.recommendedRatePerSqft || '',
@@ -186,11 +186,11 @@ export default function AxisHLLAP({
       valueOfPlotFlat: raw.valueOfPlotFlat || '',
       estimatedCostOfConstruction: raw.estimatedCostOfConstruction || '',
       totalCostOfConstruction: raw.totalCostOfConstruction || '',
-      isUnderConstruction: raw.isUnderConstruction !== undefined ? raw.isUnderConstruction : true,
+      isUnderConstruction: raw.isUnderConstruction !== undefined ? raw.isUnderConstruction : false,
       constructionCostAsOnDate: raw.constructionCostAsOnDate || '',
       stageOfConstruction: raw.stageOfConstruction || '',
-      percentWorkCompleted: raw.percentWorkCompleted || '35%',
-      percentDisbursementRecommended: raw.percentDisbursementRecommended || '45%',
+      percentWorkCompleted: raw.percentWorkCompleted || '',
+      percentDisbursementRecommended: raw.percentDisbursementRecommended || '',
       currentValueOfProperty: raw.currentValueOfProperty || '',
       currentValueAsOnDate: raw.currentValueAsOnDate || '',
       dateOfPropertyVisit: raw.dateOfPropertyVisit || raw.reportDate || new Date().toISOString().split('T')[0],
@@ -198,7 +198,7 @@ export default function AxisHLLAP({
       // 8 - 12
       valuationGovtReckonerRate: raw.valuationGovtReckonerRate || '',
       distressedValuation: raw.distressedValuation || '',
-      rentalValuePerMonth: raw.rentalValuePerMonth || 'NA',
+      rentalValuePerMonth: raw.rentalValuePerMonth || '',
       photosAttached: raw.photosAttached || 'Attached',
       locationSketchAttached: raw.locationSketchAttached || 'Attached',
       remarks: raw.remarks || '',
@@ -698,7 +698,6 @@ export default function AxisHLLAP({
                     value={fields.customerName}
                     onChange={e => handleChange('customerName', e.target.value)}
                     className={inputCls}
-                    placeholder="e.g. BANDITA ROUT"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -709,7 +708,6 @@ export default function AxisHLLAP({
                     value={fields.customerContactDetails}
                     onChange={e => handleChange('customerContactDetails', e.target.value)}
                     className={inputCls}
-                    placeholder="e.g. BANDITA ROUT, Mob No-9138235255"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -725,7 +723,6 @@ export default function AxisHLLAP({
                 value={fields.appId}
                 onChange={e => handleChange('appId', e.target.value)}
                 className={inputCls}
-                placeholder="e.g. 30514872"
                 disabled={isReadOnly}
               />
             </Field>
@@ -739,7 +736,6 @@ export default function AxisHLLAP({
                 value={fields.documentsProvided}
                 onChange={e => handleChange('documentsProvided', e.target.value)}
                 className={inputCls}
-                placeholder="Copy of Sale Deed, ROR, Sketch map, Approved Plan & Estimate"
                 disabled={isReadOnly}
               />
             </Field>
@@ -756,7 +752,6 @@ export default function AxisHLLAP({
                 value={fields.propertyDetailsHeader}
                 onChange={e => handleChange('propertyDetailsHeader', e.target.value)}
                 className={inputCls}
-                placeholder="Khata No- 1162/5103, Plot No- 1854/8936 (AC.0.046Decs, Homestead), Mouza- Bhanapur, Tahsil-Cuttack, Ps- Cuttack Sadar, Dist-Cuttack, Odisha, Pin- 753011"
                 disabled={isReadOnly}
               />
             </Field>
@@ -771,7 +766,6 @@ export default function AxisHLLAP({
                   value={fields.plotNo}
                   onChange={e => handleChange('plotNo', e.target.value)}
                   className={inputCls}
-                  placeholder="1854/8936"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -782,7 +776,6 @@ export default function AxisHLLAP({
                   value={fields.khataNo}
                   onChange={e => handleChange('khataNo', e.target.value)}
                   className={inputCls}
-                  placeholder="1162/5103"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -793,7 +786,6 @@ export default function AxisHLLAP({
                   value={fields.locality}
                   onChange={e => handleChange('locality', e.target.value)}
                   className={inputCls}
-                  placeholder="Bhanapur"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -804,7 +796,6 @@ export default function AxisHLLAP({
                   value={fields.road}
                   onChange={e => handleChange('road', e.target.value)}
                   className={inputCls}
-                  placeholder="10-Feet wide Road"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -815,7 +806,6 @@ export default function AxisHLLAP({
                   value={fields.city}
                   onChange={e => handleChange('city', e.target.value)}
                   className={inputCls}
-                  placeholder="Cuttack"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -826,7 +816,6 @@ export default function AxisHLLAP({
                   value={fields.district}
                   onChange={e => handleChange('district', e.target.value)}
                   className={inputCls}
-                  placeholder="Cuttack"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -837,7 +826,6 @@ export default function AxisHLLAP({
                   value={fields.pinCode}
                   onChange={e => handleChange('pinCode', e.target.value)}
                   className={inputCls}
-                  placeholder="753011"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -848,7 +836,6 @@ export default function AxisHLLAP({
                   value={fields.nearbyLandMark}
                   onChange={e => handleChange('nearbyLandMark', e.target.value)}
                   className={inputCls}
-                  placeholder="Near Gatiswar Shiva Temple square"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -859,7 +846,6 @@ export default function AxisHLLAP({
                   value={fields.distanceFromCityCenter}
                   onChange={e => handleChange('distanceFromCityCenter', e.target.value)}
                   className={inputCls}
-                  placeholder="9-Kms from Cuttack city centre"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -963,7 +949,6 @@ export default function AxisHLLAP({
                           value={fields.boundaryEastDeed}
                           onChange={e => handleChange('boundaryEastDeed', e.target.value)}
                           className={inputCls}
-                          placeholder="e.g. Rest part Plot No-1854"
                           disabled={isReadOnly}
                         />
                       </td>
@@ -973,7 +958,6 @@ export default function AxisHLLAP({
                           value={fields.boundaryEastActual}
                           onChange={e => handleChange('boundaryEastActual', e.target.value)}
                           className={inputCls}
-                          placeholder="e.g. Vacant plot"
                           disabled={isReadOnly}
                         />
                       </td>
@@ -984,7 +968,6 @@ export default function AxisHLLAP({
                             value={fields.boundaryEastSketch || ''}
                             onChange={e => handleChange('boundaryEastSketch', e.target.value)}
                             className={inputCls}
-                            placeholder="e.g. Mukesh Kumar Biswal"
                             disabled={isReadOnly}
                           />
                         </td>
@@ -998,7 +981,6 @@ export default function AxisHLLAP({
                           value={fields.boundaryWestDeed}
                           onChange={e => handleChange('boundaryWestDeed', e.target.value)}
                           className={inputCls}
-                          placeholder="e.g. Rest part Plot No-1854"
                           disabled={isReadOnly}
                         />
                       </td>
@@ -1008,7 +990,6 @@ export default function AxisHLLAP({
                           value={fields.boundaryWestActual}
                           onChange={e => handleChange('boundaryWestActual', e.target.value)}
                           className={inputCls}
-                          placeholder="e.g. Vacant plot"
                           disabled={isReadOnly}
                         />
                       </td>
@@ -1019,7 +1000,6 @@ export default function AxisHLLAP({
                             value={fields.boundaryWestSketch || ''}
                             onChange={e => handleChange('boundaryWestSketch', e.target.value)}
                             className={inputCls}
-                            placeholder="e.g. Pranjana Prava Rout"
                             disabled={isReadOnly}
                           />
                         </td>
@@ -1033,7 +1013,6 @@ export default function AxisHLLAP({
                           value={fields.boundaryNorthDeed}
                           onChange={e => handleChange('boundaryNorthDeed', e.target.value)}
                           className={inputCls}
-                          placeholder="e.g. Rest part Plot No-1854"
                           disabled={isReadOnly}
                         />
                       </td>
@@ -1043,7 +1022,6 @@ export default function AxisHLLAP({
                           value={fields.boundaryNorthActual}
                           onChange={e => handleChange('boundaryNorthActual', e.target.value)}
                           className={inputCls}
-                          placeholder="e.g. Road"
                           disabled={isReadOnly}
                         />
                       </td>
@@ -1054,7 +1032,6 @@ export default function AxisHLLAP({
                             value={fields.boundaryNorthSketch || ''}
                             onChange={e => handleChange('boundaryNorthSketch', e.target.value)}
                             className={inputCls}
-                            placeholder="e.g. Rest part Plot No-1854"
                             disabled={isReadOnly}
                           />
                         </td>
@@ -1068,7 +1045,6 @@ export default function AxisHLLAP({
                           value={fields.boundarySouthDeed}
                           onChange={e => handleChange('boundarySouthDeed', e.target.value)}
                           className={inputCls}
-                          placeholder="e.g. Rest part Plot No-1854"
                           disabled={isReadOnly}
                         />
                       </td>
@@ -1078,7 +1054,6 @@ export default function AxisHLLAP({
                           value={fields.boundarySouthActual}
                           onChange={e => handleChange('boundarySouthActual', e.target.value)}
                           className={inputCls}
-                          placeholder="e.g. Road"
                           disabled={isReadOnly}
                         />
                       </td>
@@ -1089,7 +1064,6 @@ export default function AxisHLLAP({
                             value={fields.boundarySouthSketch || ''}
                             onChange={e => handleChange('boundarySouthSketch', e.target.value)}
                             className={inputCls}
-                            placeholder="e.g. Proposed Road"
                             disabled={isReadOnly}
                           />
                         </td>
@@ -1184,7 +1158,6 @@ export default function AxisHLLAP({
                   value={fields.typeOfStructure}
                   onChange={e => handleChange('typeOfStructure', e.target.value)}
                   className={inputCls}
-                  placeholder="e.g. NA / RCC Framed Structure"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1195,7 +1168,6 @@ export default function AxisHLLAP({
                   value={fields.noOfFloors}
                   onChange={e => handleChange('noOfFloors', e.target.value)}
                   className={inputCls}
-                  placeholder="Proposed G+2storied residential building as per Plan"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1233,7 +1205,6 @@ export default function AxisHLLAP({
                   value={fields.proximityToCivicAmenities}
                   onChange={e => handleChange('proximityToCivicAmenities', e.target.value)}
                   className={inputCls}
-                  placeholder="Within 1-2 kms range"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1244,7 +1215,6 @@ export default function AxisHLLAP({
                   value={fields.developmentOfSurroundingArea}
                   onChange={e => handleChange('developmentOfSurroundingArea', e.target.value)}
                   className={inputCls}
-                  placeholder="Residential Development found in surrounding areas"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1264,7 +1234,6 @@ export default function AxisHLLAP({
                     value={fields.longitude}
                     onChange={e => handleChange('longitude', e.target.value)}
                     className={inputCls}
-                    placeholder="85.887111"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1275,7 +1244,6 @@ export default function AxisHLLAP({
                     value={fields.latitude}
                     onChange={e => handleChange('latitude', e.target.value)}
                     className={inputCls}
-                    placeholder="20.413500"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1294,7 +1262,6 @@ export default function AxisHLLAP({
                 value={fields.approvedPlanDetails}
                 onChange={e => handleChange('approvedPlanDetails', e.target.value)}
                 className={inputCls}
-                placeholder="Plan has been approved by Cuttack Municipal Corporation, vide letter No. BP/CTC/024835, Cuttack, Dated-17/01/2026 for G+2 storied residential building."
                 disabled={isReadOnly}
               />
             </Field>
@@ -1309,7 +1276,6 @@ export default function AxisHLLAP({
                   value={fields.layoutApprovalNo}
                   onChange={e => handleChange('layoutApprovalNo', e.target.value)}
                   className={inputCls}
-                  placeholder="Vide letter No. BP/CTC/024835"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1335,7 +1301,6 @@ export default function AxisHLLAP({
                   value={fields.buildingPlanApprovalNo}
                   onChange={e => handleChange('buildingPlanApprovalNo', e.target.value)}
                   className={inputCls}
-                  placeholder="NA"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1379,7 +1344,6 @@ export default function AxisHLLAP({
                   value={fields.plotAreaDocs}
                   onChange={e => handleChange('plotAreaDocs', e.target.value)}
                   className={inputCls}
-                  placeholder="Area of the plot- Ac.0.046decs=2003sqft"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1441,7 +1405,6 @@ export default function AxisHLLAP({
                             value={fl.floor}
                             onChange={e => handleApprovedFloorChange(idx, 'floor', e.target.value)}
                             className={inputCls + ' !py-1.5 text-xs font-normal text-[#0f2038]'}
-                            placeholder="e.g. G.F. (ground floor) - Sq Ft Description"
                             disabled={isReadOnly}
                           />
                         </td>
@@ -1452,7 +1415,6 @@ export default function AxisHLLAP({
                             value={fl.area}
                             onChange={e => handleApprovedFloorChange(idx, 'area', e.target.value)}
                             className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
-                            placeholder="1331"
                             disabled={isReadOnly}
                           />
                         </td>
@@ -1530,7 +1492,6 @@ export default function AxisHLLAP({
                             value={fl.floor}
                             onChange={e => handleMeasuredFloorChange(idx, 'floor', e.target.value)}
                             className={inputCls + ' !py-1.5 text-xs font-normal text-[#0f2038]'}
-                            placeholder="e.g. G.F. (ground floor) - Sq Ft Description"
                             disabled={isReadOnly}
                           />
                         </td>
@@ -1541,7 +1502,6 @@ export default function AxisHLLAP({
                             value={fl.area}
                             onChange={e => handleMeasuredFloorChange(idx, 'area', e.target.value)}
                             className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
-                            placeholder="1591"
                             disabled={isReadOnly}
                           />
                         </td>
@@ -1600,7 +1560,6 @@ export default function AxisHLLAP({
                   value={fields.detailsOfExtraConstruction}
                   onChange={e => handleChange('detailsOfExtraConstruction', e.target.value)}
                   className={inputCls}
-                  placeholder="NA"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1620,7 +1579,6 @@ export default function AxisHLLAP({
                     value={fields.sideMarginFront}
                     onChange={e => handleChange('sideMarginFront', e.target.value)}
                     className={inputCls}
-                    placeholder="NA"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1630,7 +1588,6 @@ export default function AxisHLLAP({
                     value={fields.sideMarginRight}
                     onChange={e => handleChange('sideMarginRight', e.target.value)}
                     className={inputCls}
-                    placeholder="NA"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1640,7 +1597,6 @@ export default function AxisHLLAP({
                     value={fields.sideMarginLeft}
                     onChange={e => handleChange('sideMarginLeft', e.target.value)}
                     className={inputCls}
-                    placeholder="NA"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1650,7 +1606,6 @@ export default function AxisHLLAP({
                     value={fields.sideMarginBack}
                     onChange={e => handleChange('sideMarginBack', e.target.value)}
                     className={inputCls}
-                    placeholder="NA"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1667,7 +1622,6 @@ export default function AxisHLLAP({
                   value={fields.qualityOfConstruction}
                   onChange={e => handleChange('qualityOfConstruction', e.target.value)}
                   className={inputCls}
-                  placeholder="e.g. NA / Good / Average"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1678,7 +1632,6 @@ export default function AxisHLLAP({
                   value={fields.maintenanceOfProperty}
                   onChange={e => handleChange('maintenanceOfProperty', e.target.value)}
                   className={inputCls}
-                  placeholder="e.g. NA / Good / Average"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1689,7 +1642,6 @@ export default function AxisHLLAP({
                   value={fields.currentLifeOfStructure}
                   onChange={e => handleChange('currentLifeOfStructure', e.target.value)}
                   className={inputCls}
-                  placeholder="0-Years"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1700,7 +1652,6 @@ export default function AxisHLLAP({
                   value={fields.projectedLifeOfStructure}
                   onChange={e => handleChange('projectedLifeOfStructure', e.target.value)}
                   className={inputCls}
-                  placeholder="60-Years"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1746,7 +1697,6 @@ export default function AxisHLLAP({
                   value={fields.plotAreaForValuation}
                   onChange={e => handleChange('plotAreaForValuation', e.target.value)}
                   className={inputCls}
-                  placeholder="2003"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1757,7 +1707,6 @@ export default function AxisHLLAP({
                   value={fields.plotRateForValuation}
                   onChange={e => handleChange('plotRateForValuation', e.target.value)}
                   className={inputCls}
-                  placeholder="2200"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1768,7 +1717,6 @@ export default function AxisHLLAP({
                   value={fields.recommendedRatePerSqft}
                   onChange={e => handleChange('recommendedRatePerSqft', e.target.value)}
                   className={inputCls}
-                  placeholder="Rs.2200/- per Sqft (As per local market feedback)"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1779,7 +1727,6 @@ export default function AxisHLLAP({
                   value={fields.valueOfPlotFlat}
                   onChange={e => handleChange('valueOfPlotFlat', e.target.value)}
                   className={inputCls}
-                  placeholder="Value of Plot-2003X Rs.2200/- = Rs.44,06,600/-"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1790,7 +1737,6 @@ export default function AxisHLLAP({
                   value={fields.estimatedCostOfConstruction}
                   onChange={e => handleChange('estimatedCostOfConstruction', e.target.value)}
                   className={inputCls}
-                  placeholder="Rs.85,03,000/- for construction of G+2 only."
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1801,7 +1747,6 @@ export default function AxisHLLAP({
                   value={fields.totalCostOfConstruction}
                   onChange={e => handleChange('totalCostOfConstruction', e.target.value)}
                   className={inputCls}
-                  placeholder="3993sqft@ Rs.2000/-=Rs.79,86,000/-"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1822,7 +1767,6 @@ export default function AxisHLLAP({
                       value={fields.stageOfConstruction}
                       onChange={e => handleChange('stageOfConstruction', e.target.value)}
                       className={inputCls}
-                      placeholder="GF RCC, roof slab completed. FF RCC, B/W is in progress & stage of construction is about 35%."
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -1833,7 +1777,6 @@ export default function AxisHLLAP({
                       value={fields.percentWorkCompleted}
                       onChange={e => handleChange('percentWorkCompleted', e.target.value)}
                       className={inputCls}
-                      placeholder="35%"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -1844,7 +1787,6 @@ export default function AxisHLLAP({
                       value={fields.percentDisbursementRecommended}
                       onChange={e => handleChange('percentDisbursementRecommended', e.target.value)}
                       className={inputCls}
-                      placeholder="45%"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -1855,7 +1797,6 @@ export default function AxisHLLAP({
                       value={fields.constructionCostAsOnDate || ''}
                       onChange={e => handleChange('constructionCostAsOnDate', e.target.value)}
                       className={inputCls}
-                      placeholder="3993sqft@ Rs.700/-= Rs.27,95,100/-"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -1866,7 +1807,6 @@ export default function AxisHLLAP({
                       value={fields.currentValueAsOnDate || ''}
                       onChange={e => handleChange('currentValueAsOnDate', e.target.value)}
                       className={inputCls}
-                      placeholder="Rs.44,06,600/- + Rs.27,95,100/- =Rs.72,01,700/-"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -1884,7 +1824,6 @@ export default function AxisHLLAP({
                   value={fields.currentValueOfProperty}
                   onChange={e => handleChange('currentValueOfProperty', e.target.value)}
                   className={inputCls}
-                  placeholder="Rs.44,06,600/- + Rs.79,86,000/- =Rs.1,23,92,600/-"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1900,7 +1839,6 @@ export default function AxisHLLAP({
                   value={fields.valuationGovtReckonerRate}
                   onChange={e => handleChange('valuationGovtReckonerRate', e.target.value)}
                   className={inputCls}
-                  placeholder="Rs.1263/-per sqft of land"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1936,7 +1874,6 @@ export default function AxisHLLAP({
                   value={fields.distressedValuation}
                   onChange={e => handleChange('distressedValuation', e.target.value)}
                   className={`${inputCls} ${!enableDistressedEdit ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                  placeholder="Rs.57,61,360/-"
                   disabled={isReadOnly || !enableDistressedEdit}
                 />
               </Field>
@@ -1947,7 +1884,6 @@ export default function AxisHLLAP({
                   value={fields.rentalValuePerMonth}
                   onChange={e => handleChange('rentalValuePerMonth', e.target.value)}
                   className={inputCls}
-                  placeholder="NA"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1966,7 +1902,6 @@ export default function AxisHLLAP({
                   value={fields.photosAttached}
                   onChange={e => handleChange('photosAttached', e.target.value)}
                   className={inputCls}
-                  placeholder="Attached"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1977,7 +1912,6 @@ export default function AxisHLLAP({
                   value={fields.locationSketchAttached}
                   onChange={e => handleChange('locationSketchAttached', e.target.value)}
                   className={inputCls}
-                  placeholder="Attached"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1992,7 +1926,6 @@ export default function AxisHLLAP({
                 value={fields.remarks}
                 onChange={e => handleChange('remarks', e.target.value)}
                 className={inputCls}
-                placeholder="Subject property is a proposed G+2storied residentialbuildinghaving land extent of 2003sqft,approved BUA 3993sqft. Plan has been approved by Cuttack Municipal Corporation, vide letter No. BP/CTC/024835, Cuttack, Dated-17/01/2026 for G+2 storied residential building.Property is approaches with 10-ft wide Road.All civic amenities are present within 1-2kms. Customer has submitted an estimate amount of Rs. 85, 03,000/- for G+2 only. At present, GF RCC, roof slab completed. FF RCC, B/W is in progress & stage of construction is about 35%. Valuation has been done for land & approved BUA of proposed G+2 building only.&#10;&#10;Note-There is no provision for road in Sale deed boundary. Customer has submitted a road agreement & Amin sketch map for identification & access road.Report is released basing upon Amin sketch map. Credit shall kindly note. Bank to check the authenticity of sketch map."
                 disabled={isReadOnly}
               />
             </Field>
@@ -2016,7 +1949,6 @@ export default function AxisHLLAP({
                     value={fields.valuerName}
                     onChange={e => handleChange('valuerName', e.target.value)}
                     className={inputCls}
-                    placeholder="Er. Satyajit Mohanty"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2027,7 +1959,6 @@ export default function AxisHLLAP({
                     value={fields.valuerTitle}
                     onChange={e => handleChange('valuerTitle', e.target.value)}
                     className={inputCls}
-                    placeholder="Approved Panel Valuer"
                     disabled={isReadOnly}
                   />
                 </Field>
