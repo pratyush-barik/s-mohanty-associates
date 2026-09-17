@@ -126,6 +126,29 @@ This document tracks the end-to-end implementation and customization of all 57+ 
   - Page 6 & 7: Location Map, Bhulekh Mouza Cadastral Map, Superimposed Drone/Survey Cadastral Map, Appraiser Name, 5 Declaration Points with hanging indent, and editable Prepared/Finalized By sign-off.
   - Page 8+: Standardized Annexures & Schedules.
 
+### Bank 7 — AXIS BANK
+
+#### 7.1 `AGRI` (Agricultural Land Valuation) — ✅ COMPLETE
+- **Vertical**: `AGRI`
+- **UI Builder**: `src/app/portal/reports/[projectId]/banks/axis/AxisAGRI.tsx`
+- **PDF Renderer**: `src/lib/banks/pdf-axis-agri-renderer.ts` (`PDFAxisAGRIRenderer`)
+- **Status**: Complete & Verified
+
+#### 7.2 `HL-LAP` (Home Loan / Loan Against Property) — ✅ COMPLETE
+- **Vertical**: `HL-LAP`
+- **UI Builder**: `src/app/portal/reports/[projectId]/banks/axis/AxisHLLAP.tsx`
+- **PDF Renderer**: `src/lib/banks/pdf-axis-hllap-renderer.ts` (`PDFAxisHLLAPRenderer`)
+- **Status**: Complete & Verified
+- **Key Features Implemented**:
+  - Full 12-Section Valuation architecture per Axis Bank HL-LAP specifications.
+  - Standardized Times New Roman typography (12pt Body/Tables, 14pt Headers/Titles, 10pt Captions).
+  - Universal `DD/MM/YYYY` date format support with controlled date pickers.
+  - Unified Spanning Table Headings for header-only sections (merged columns 2 & 3 without dividing lines).
+  - Single-line `Sl. No.` column formatting (`colSl = 48`).
+  - Unified `Sl. No` cells for multi-row sub-blocks (Deed vs Actual boundaries, side margins, BUA floors) eliminating row slices in the serial number column.
+  - Standard predefined `drawPhotoGrid` and `drawMapGallery` integration with dynamic captions (`DEFAULT_PHOTO_LABEL = 'Site Picture'`) and natural aspect ratio preservation.
+  - Seamless space-efficient page layout preventing blank space waste following Undertaking.
+
 ### Bank 4 — ARKA FINANCE LTD
 
 #### 4.1 `Standard` — ✅ COMPLETE
