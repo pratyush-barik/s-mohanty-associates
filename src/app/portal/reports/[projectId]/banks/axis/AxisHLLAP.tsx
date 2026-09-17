@@ -1844,7 +1844,7 @@ export default function AxisHLLAP({
             const pRate = parseNum(fields.plotRateForValuation);
             const pVal = pArea * pRate;
             const buaTotal = parseNum(fields.approvedBUATotal) || parseNum(fields.measuredBUATotal);
-            const cRate = parseNum(fields.estimatedCostOfConstruction) || parseNum(fields.recommendedRatePerSqft) || 2000;
+            const cRate = parseNum(fields.constructionRatePerSqft);
             const cVal = buaTotal * cRate;
             const total100 = pVal + cVal;
             const pct = parseNum(fields.percentWorkCompleted) || 100;
@@ -1874,18 +1874,13 @@ export default function AxisHLLAP({
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <Field label={`${selectedUnit} Area for Valuation`}>
-                        <div className="space-y-1">
-                          <input
-                            type="text"
-                            value={fields.plotAreaDocs ? `${parseNum(fields.plotAreaDocs)} sqft` : (fields.plotAreaDocs || '0 sqft')}
-                            className={inputCls + ' bg-slate-100 text-slate-700 font-medium cursor-not-allowed border-slate-300'}
-                            readOnly
-                            disabled
-                          />
-                          <span className="block text-[10px] text-blue-700 font-semibold">
-                            🔒 Locked from 6.a Area
-                          </span>
-                        </div>
+                        <input
+                          type="text"
+                          value={fields.plotAreaDocs ? `${parseNum(fields.plotAreaDocs)} sqft` : (fields.plotAreaDocs || '0 sqft')}
+                          className={inputCls + ' bg-slate-100 text-slate-700 font-medium cursor-not-allowed border-slate-300'}
+                          readOnly
+                          disabled
+                        />
                       </Field>
 
                       <Field label={`${selectedUnit} Rate (Rs. / sqft)`}>
@@ -1916,18 +1911,13 @@ export default function AxisHLLAP({
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <Field label="BUA for Valuation">
-                        <div className="space-y-1">
-                          <input
-                            type="text"
-                            value={buaTotal > 0 ? `${buaTotal} sqft` : '0 sqft'}
-                            className={inputCls + ' bg-slate-100 text-slate-700 font-medium cursor-not-allowed border-slate-300'}
-                            readOnly
-                            disabled
-                          />
-                          <span className="block text-[10px] text-teal-700 font-semibold">
-                            🔒 Locked from 6.c / 6.d
-                          </span>
-                        </div>
+                        <input
+                          type="text"
+                          value={buaTotal > 0 ? `${buaTotal} sqft` : '0 sqft'}
+                          className={inputCls + ' bg-slate-100 text-slate-700 font-medium cursor-not-allowed border-slate-300'}
+                          readOnly
+                          disabled
+                        />
                       </Field>
 
                       <Field label="Construction Rate (Rs./sqft)">
@@ -1974,18 +1964,13 @@ export default function AxisHLLAP({
                     </Field>
 
                     <Field label={`b. Value of the ${selectedUnit === 'Flat' ? 'Flat' : 'Plot/Flat'}`}>
-                      <div className="space-y-1">
-                        <input
-                          type="text"
-                          value={fields.valueOfPlotFlat}
-                          onChange={e => handleChange('valueOfPlotFlat', e.target.value)}
-                          className={inputCls + ' font-medium text-slate-900'}
-                          disabled={isReadOnly}
-                        />
-                        <span className="block text-[10px] text-blue-700 font-medium">
-                          Derived using: {selectedUnit} Area × Rate
-                        </span>
-                      </div>
+                      <input
+                        type="text"
+                        value={fields.valueOfPlotFlat}
+                        onChange={e => handleChange('valueOfPlotFlat', e.target.value)}
+                        className={inputCls + ' font-medium text-slate-900'}
+                        disabled={isReadOnly}
+                      />
                     </Field>
                   </div>
                 </div>
