@@ -492,7 +492,7 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     const address = (fields as any).axisSbbAddressOfTheProperty || '';
     
     // Auto-fill computations
-    const plotComputed = address.split(/MOUZA|VILLAGE/i)[0].trim().toUpperCase() || 'KHATA NO. XX, PLOT NO. YY';
+    const plotComputed = address.split(/MOUZA|VILLAGE/i)[0].trim().toUpperCase() || '';
     const mouzaMatch = address.match(/(?:MOUZA|VILLAGE)[-\s]*(.*?)(?=,|$|DIST)/i);
     const mouzaComputed = mouzaMatch ? mouzaMatch[0].toUpperCase() : '';
     const distMatch = address.match(/DIST(?:RICT)?[-\s]*(.*?)(?=,|-|PIN|$)/i);
@@ -504,38 +504,41 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     const distanceComputed = `${distanceKm}- KMS FROM ${refCity} CITY CENTRE`.toUpperCase();
 
     const val = (key: string, computed: string) => {
-      if ((fields as any)[`${key}IsNA`]) return 'NA';
+      if ((fields as any)[`${key}IsNA`]) return '';
       if ((fields as any)[`${key}EditOn`]) {
-        return String((fields as any)[key] || 'NA').replace(/[\t\n\r]+/g, ' ').trim() || 'NA';
+        return String((fields as any)[key] || '').replace(/[\t\n\r]+/g, ' ').trim() || '';
       }
-      return computed;
+      return computed || '';
     };
     
     this.drawSectionSubtitle('CADASTRAL & POSTAL ADDRESS DETAILS');
     
     this.drawKeyValueRow([
-      { label: 'Lease / Sale Deed Number(s) & Date', value: val('axisSbbDeedNumberDate', String((fields as any).axisSbbDeedNumberDate || 'NA')) },
-      { label: 'Plot No / S.No / G.No / Khasra No', value: val('axisSbbPlotKhasraNo', plotComputed) }
+      { label: 'LEASE/SALE DEED NUMBER(S)', value: val('axisSbbDeedNumberDate', String((fields as any).axisSbbDeedNumberDate || '')) }
     ]);
     
     this.drawKeyValueRow([
-      { label: 'Road Width & Material', value: val('axisSbbRoadWidthMaterial', String((fields as any).axisSbbRoadWidthMaterial || 'NA')) },
-      { label: 'Colony / Nagar / Sector', value: val('axisSbbColonySector', String((fields as any).axisSbbColonySector || 'NA')) }
+      { label: 'PLOT NO/ S.NO/ G.NO/ KHASRA NO/PATTA NO', value: val('axisSbbPlotKhasraNo', plotComputed) },
+      { label: 'ROAD', value: val('axisSbbRoadWidthMaterial', String((fields as any).axisSbbRoadWidthMaterial || '')) }
     ]);
     
     this.drawKeyValueRow([
-      { label: 'Locality / Landmark', value: val('axisSbbLocalityLandmark', String((fields as any).axisSbbLocalityLandmark || 'NA')) },
-      { label: 'Village / Town / City (Mouza)', value: val('axisSbbVillageCity', mouzaComputed) }
+      { label: 'COLONY/NAGAR/SECTOR', value: val('axisSbbColonySector', String((fields as any).axisSbbColonySector || '')) },
+      { label: 'LOCALITY/ LANDMARK', value: val('axisSbbLocalityLandmark', String((fields as any).axisSbbLocalityLandmark || '')) }
     ]);
     
     this.drawKeyValueRow([
-      { label: 'District', value: val('axisSbbDistrict', (fields as any).axisSbbDistrictDropdown === 'CUSTOM' ? ((fields as any).axisSbbDistrict || 'NA') : distComputed) },
-      { label: 'State', value: val('axisSbbState', (fields as any).axisSbbStateDropdown === 'CUSTOM' ? ((fields as any).axisSbbState || 'NA') : ((fields as any).axisSbbStateDropdown || 'ODISHA')) }
+      { label: 'VILLAGE/TOWN/CITY', value: val('axisSbbVillageCity', mouzaComputed) },
+      { label: 'DISTRICT', value: val('axisSbbDistrict', (fields as any).axisSbbDistrictDropdown === 'CUSTOM' ? ((fields as any).axisSbbDistrict || '') : distComputed) }
     ]);
     
     this.drawKeyValueRow([
-      { label: 'PIN Code', value: val('axisSbbPinCode', pinComputed) },
-      { label: 'Distance from City Centre', value: val('axisSbbDistanceFromCityCenter', distanceComputed) }
+      { label: 'STATE', value: val('axisSbbState', (fields as any).axisSbbStateDropdown === 'CUSTOM' ? ((fields as any).axisSbbState || '') : ((fields as any).axisSbbStateDropdown || 'ODISHA')) },
+      { label: 'PIN CODE', value: val('axisSbbPinCode', pinComputed) }
+    ]);
+    
+    this.drawKeyValueRow([
+      { label: 'DISTANCE FROM CITY CENTRE', value: val('axisSbbDistanceFromCityCenter', distanceComputed) }
     ]);
   }
 
