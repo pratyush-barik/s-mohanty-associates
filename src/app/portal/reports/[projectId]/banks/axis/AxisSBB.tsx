@@ -15,6 +15,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
     'layout-config'
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
+  hideDefaultDeclarationAndCertificate: true,
   navSections: [
     { id: 'section-cover', title: '1. Header & Bank Details' },
     { id: 'axis-sbb-section-2', title: '2. Purpose & Schedule' },
