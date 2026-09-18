@@ -603,6 +603,8 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   handleChange('axisSbbPurposeOfValuationDropdown', val);
                   if (val === 'default') {
                     handleChange('axisSbbPurposeOfValuation', 'TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY');
+                  } else if (val === 'present_market_value') {
+                    handleChange('axisSbbPurposeOfValuation', 'TO ASSESS THE PRESENT MARKET VALUE OF THE PROPERTY');
                   } else {
                     handleChange('axisSbbPurposeOfValuation', '');
                   }
@@ -610,6 +612,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                 disabled={isReadOnly}
               >
                 <option value="default">TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY</option>
+                <option value="present_market_value">TO ASSESS THE PRESENT MARKET VALUE OF THE PROPERTY</option>
                 <option value="other">Other</option>
               </select>
             </Field>
