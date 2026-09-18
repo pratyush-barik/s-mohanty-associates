@@ -114,7 +114,6 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     }
     // Intercept standard section 4
     if (title.toUpperCase() === 'PROPERTY IDENTIFICATION & POSTAL ADDRESS') {
-      super.drawSectionHeader('PROPERTY IDENTIFICATION & POSTAL ADDRESS', addSpaceBefore, preserveCase);
       this.drawSbbSection4();
       return;
     }
