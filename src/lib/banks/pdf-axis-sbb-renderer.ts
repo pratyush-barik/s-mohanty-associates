@@ -669,15 +669,28 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     const owners = Array.isArray(fields.axisSbbPropertyOwners) && fields.axisSbbPropertyOwners.length > 0
       ? fields.axisSbbPropertyOwners
       : [{ name: '', relationship: 'S/O', relativeName: '', fatherName: '' }];
-    for (const owner of owners) {
-      if (owner.name) {
-        drawCenteredBold(owner.name, FONT_SIZE, 14);
+    const validOwners = owners.filter((o: any) => o.name);
+    if (validOwners.length > 0) {
+      const ownerStrings = validOwners.map((owner: any) => {
         const rel = owner.relationship || 'S/O';
         const relName = owner.relativeName || owner.fatherName;
         if (relName) {
-          drawCenteredBold(`${rel}- ${relName}`, FONT_SIZE, 14);
+          return `${owner.name} ${rel} ${relName}`;
         }
+        return owner.name;
+      });
+
+      let ownersText = '';
+      if (ownerStrings.length === 1) {
+        ownersText = ownerStrings[0];
+      } else if (ownerStrings.length === 2) {
+        ownersText = ownerStrings.join(' & ');
+      } else {
+        const last = ownerStrings.pop();
+        ownersText = ownerStrings.join(', ') + ' & ' + last;
       }
+      
+      drawCenteredBold(ownersText, FONT_SIZE, 14);
     }
     this.cursorY += 16;
 
