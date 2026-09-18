@@ -299,7 +299,7 @@ export default function AxisAGRI({
       annexureABasisLandRate: raw.annexureABasisLandRate || '',
 
       // Signatory & Valuer
-      authorizedSignatory: raw.authorizedSignatory || 'Er. Satyajit Mohanty',
+      authorizedSignatory: raw.authorizedSignatory || 'Authorized Signatory',
       visitingEngineer: raw.visitingEngineer || prefill?.firstFieldAgentName || prefill?.fieldEmployees?.[0]?.name || '',
       dateOfReportSubmission: formatReportDate(raw.dateOfReportSubmission || raw.reportDate || new Date()),
 
@@ -3015,112 +3015,62 @@ export default function AxisAGRI({
         </Section>
 
         {/* ═══════════════════════════════════════════════════════════════
-            SECTION 13: VALUER DECLARATION & UNDERTAKING
+            SECTION 13: UNDERTAKING
         ═══════════════════════════════════════════════════════════════ */}
-        <Section id="sec-13" title="Valuer Declaration & Undertaking" number={13} defaultOpen>
-          <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-blue-200/80 pb-3 mb-4 gap-2">
+        <Section id="sec-13" title="Undertaking" number={13} defaultOpen>
+          <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-blue-200/80 pb-3 gap-2">
               <div>
                 <h3 className="font-semibold text-blue-800 text-sm tracking-wide uppercase flex items-center gap-2">
-                  <span>✍️</span> Valuer Declaration & Authorized Signatory
+                  <span>✍️</span> Undertaking
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Statutory certification, visiting engineer, report submission date, and declaration undertaking.
+                  Statutory 7-point undertaking &amp; authorized signatory as rendered on Page 6 of the valuation report.
                 </p>
               </div>
               <span className="text-[10px] font-bold text-blue-700 bg-blue-100 px-2.5 py-1 rounded-full uppercase tracking-wider self-start sm:self-auto">
-                Statutory Certification
+                Undertaking
               </span>
             </div>
 
-            <div className="space-y-5">
-              {/* Certification Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Date of Visit">
-                  <div className="relative flex items-center">
-                    <input
-                      type="text"
-                      className={`${inputCls} bg-slate-100 text-black cursor-not-allowed font-semibold pr-8`}
-                      value={fields.dateOfVisit || ''}
-                      disabled
-                      readOnly
-                      placeholder=""
-                    />
-                    <span className="absolute right-2.5 text-xs text-black" title="Locked: Referenced from Section 1 Date of Site Visit">
-                      🔒
-                    </span>
-                  </div>
+            {/* Declaration Statement / Undertaking Text */}
+            <Field label="Undertaking:">
+              <textarea
+                rows={9}
+                className={`${inputCls} font-normal text-xs leading-relaxed`}
+                value={fields.undertakingText || ''}
+                onChange={e => handleChange('undertakingText', e.target.value)}
+                disabled={isReadOnly}
+                placeholder=""
+              />
+              <span className="text-[11px] text-slate-500 font-medium mt-1 block">
+                Statutory undertaking points printed above the signature block on Page 6.
+              </span>
+            </Field>
+
+            {/* Authorized Signatory & Date */}
+            <div className="pt-3 border-t border-blue-200/80">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl ml-auto">
+                <Field label="Authorized Signatory Title / Name">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.authorizedSignatory || ''}
+                    onChange={e => handleChange('authorizedSignatory', e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="Authorized Signatory"
+                  />
                   <span className="text-[11px] text-slate-500 font-medium mt-1 block">
-                    Referenced from Sec 1 (Date of Site Visit)
+                    (Name and Seal of the Agency)
                   </span>
                 </Field>
 
                 <BaseDateInput
-                  label="Date of Report Submission"
+                  label="Date"
                   value={fields.dateOfReportSubmission || ''}
                   onChange={val => handleChange('dateOfReportSubmission', val)}
                   disabled={isReadOnly}
                 />
-
-                <Field label="Name of Engineer Visited the property">
-                  <input
-                    className={inputCls}
-                    value={fields.visitingEngineer || ''}
-                    onChange={e => handleChange('visitingEngineer', e.target.value)}
-                    disabled={isReadOnly}
-                    placeholder=""
-                  />
-                  <span className="text-[11px] text-slate-500 font-medium mt-1 block">
-                    Field inspection engineer who visited the site
-                  </span>
-                </Field>
-
-                <Field label="Authorized Signatory Name & Signature">
-                  <div className="relative flex items-center">
-                    <input
-                      type="text"
-                      className={`${inputCls} bg-slate-100 text-black cursor-not-allowed font-semibold pr-8`}
-                      value={fields.authorizedSignatory || 'Er. Satyajit Mohanty'}
-                      disabled
-                      readOnly
-                      placeholder="Er. Satyajit Mohanty"
-                    />
-                    <span className="absolute right-2.5 text-xs text-black" title="Locked: Authorized Signatory">
-                      🔒
-                    </span>
-                  </div>
-                  <span className="text-[11px] text-slate-500 font-medium mt-1 block">
-                    Statutory signatory locked
-                  </span>
-                </Field>
-              </div>
-
-              {/* Declaration Statement / Undertaking Text */}
-              <Field label="Valuer Declaration & Undertaking Statement">
-                <textarea
-                  rows={7}
-                  className={inputCls}
-                  value={fields.undertakingText || ''}
-                  onChange={e => handleChange('undertakingText', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder=""
-                />
-                <span className="text-[11px] text-slate-500 font-medium mt-1 block">
-                  Rendered as the statutory 7-point undertaking on Page 6 of the Axis Bank valuation report.
-                </span>
-              </Field>
-
-              {/* Statutory Credentials Card */}
-              <div className="p-4 bg-white rounded-xl border border-blue-200 text-xs text-slate-700 space-y-1.5 shadow-xs">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-1.5">
-                  <p className="font-bold text-slate-900 text-sm">Prepared By: {fields.authorizedSignatory || 'Er. Satyajit Mohanty'} (B.E, Civil) FIV</p>
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                    Empanelled Valuer
-                  </span>
-                </div>
-                <p><strong className="text-slate-800">Registered Valuer:</strong> Govt. of India (Regd. No.-107/2016-17, Cat -I)</p>
-                <p><strong className="text-slate-800">Chartered Engineer:</strong> Regd. No.-M-156096-9 • Empanelled Valuer of Axis Bank Limited</p>
-                <p><strong className="text-slate-800">Institution Membership:</strong> Life, Fellow & Approved Valuer from Institution of Valuers (New Delhi), Membership No.F-26377 • Member in Institution of Engineers (India)</p>
               </div>
             </div>
           </div>
