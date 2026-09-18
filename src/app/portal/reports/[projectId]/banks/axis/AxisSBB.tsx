@@ -1477,22 +1477,13 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       <div className="flex items-center space-x-2 mb-2">
                         <input
                           type="number"
-                          className={`${inputCls} w-20 px-2`}
+                          className={`${inputCls} w-20`}
                           placeholder="KM"
                           value={fields.axisSbbDistRailwayStationKm || ''}
                           onChange={e => handleChange('axisSbbDistRailwayStationKm', e.target.value)}
                           disabled={isReadOnly}
                         />
-                        <span className="text-xs text-gray-500 font-medium">KMS (</span>
-                        <input
-                          type="text"
-                          className={`${inputCls} flex-1 px-2 uppercase`}
-                          placeholder={parsedCity}
-                          value={fields.axisSbbDistRailwayStationName || ''}
-                          onChange={e => handleChange('axisSbbDistRailwayStationName', e.target.value.toUpperCase())}
-                          disabled={isReadOnly}
-                        />
-                        <span className="text-xs text-gray-500 font-medium">RAILWAY STATION)</span>
+                        <span className="text-xs text-gray-500 font-medium whitespace-nowrap">KM from {parsedCity}</span>
                       </div>
                     )}
                     <input
@@ -1516,22 +1507,13 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       <div className="flex items-center space-x-2 mb-2">
                         <input
                           type="number"
-                          className={`${inputCls} w-20 px-2`}
+                          className={`${inputCls} w-20`}
                           placeholder="KM"
                           value={fields.axisSbbDistBusStopKm || ''}
                           onChange={e => handleChange('axisSbbDistBusStopKm', e.target.value)}
                           disabled={isReadOnly}
                         />
-                        <span className="text-xs text-gray-500 font-medium">KMS (</span>
-                        <input
-                          type="text"
-                          className={`${inputCls} flex-1 px-2 uppercase`}
-                          placeholder={parsedCity}
-                          value={fields.axisSbbDistBusStopName || ''}
-                          onChange={e => handleChange('axisSbbDistBusStopName', e.target.value.toUpperCase())}
-                          disabled={isReadOnly}
-                        />
-                        <span className="text-xs text-gray-500 font-medium">BUS STOP)</span>
+                        <span className="text-xs text-gray-500 font-medium whitespace-nowrap">KM from {parsedCity}</span>
                       </div>
                     )}
                     <input
