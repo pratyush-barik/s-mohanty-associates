@@ -498,9 +498,9 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     };
 
     const address = (fields as any).axisSbbAddressOfTheProperty || '';
-    const distMatch = address.match(/DIST(?:RICT)?[-\s]*(.*?)(?=,|-|PIN|$)/i);
-    const mouzaMatch = address.match(/(?:MOUZA|VILLAGE)[-\s]*(.*?)(?=,|$|DIST)/i);
-    const parsedCity = (distMatch ? distMatch[1] : (mouzaMatch ? mouzaMatch[1] : 'CITY')).trim().toUpperCase();
+    const distMatch = address.match(/DIST(?:RICT)?[-\s]*([\s\S]*?)(?=,|-|PIN|$)/i);
+    const mouzaMatch = address.match(/(?:MOUZA|VILLAGE|MZ\s*-)[-\s]*([\s\S]*?)(?=,|$|DIST|TAH)/i);
+    const parsedCity = (distMatch ? distMatch[1] : (mouzaMatch ? mouzaMatch[1] : 'CITY')).replace(/\n/g, ' ').replace(/\s+/g, ' ').trim().toUpperCase();
 
     const stationName = (fields as any).axisSbbDistRailwayStationName || parsedCity;
     const busStopName = (fields as any).axisSbbDistBusStopName || parsedCity;
@@ -538,10 +538,10 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     let plotComputedStr = address.split(/MOUZA|VILLAGE|MZ\s*-/i)[0].trim();
     if (plotComputedStr.endsWith(',')) plotComputedStr = plotComputedStr.slice(0, -1).trim();
     const plotComputed = plotComputedStr.toUpperCase() || '';
-    const mouzaMatch = address.match(/(?:MOUZA|VILLAGE)[-\s]*(.*?)(?=,|$|DIST)/i);
-    const mouzaComputed = mouzaMatch ? mouzaMatch[0].toUpperCase() : '';
-    const distMatch = address.match(/DIST(?:RICT)?[-\s]*(.*?)(?=,|-|PIN|$)/i);
-    const distComputed = distMatch ? distMatch[1].trim().toUpperCase() : '';
+    const mouzaMatch = address.match(/(?:MOUZA|VILLAGE|MZ\s*-)[-\s]*[\s\S]*?(?=,|$|DIST|TAH)/i);
+    const mouzaComputed = mouzaMatch ? mouzaMatch[0].replace(/\n/g, ' ').replace(/\s+/g, ' ').trim().toUpperCase() : '';
+    const distMatch = address.match(/DIST(?:RICT)?[-\s]*([\s\S]*?)(?=,|-|PIN|$)/i);
+    const distComputed = distMatch ? distMatch[1].replace(/\n/g, ' ').replace(/\s+/g, ' ').trim().toUpperCase() : '';
     const pinMatch = address.match(/PIN[-\s]*(\d{6})/i);
     const pinComputed = pinMatch ? pinMatch[1] : '';
     const distanceKm = (fields as any).axisSbbDistanceKm || '03';

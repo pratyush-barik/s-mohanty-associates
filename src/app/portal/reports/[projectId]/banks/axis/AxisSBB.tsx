@@ -888,11 +888,11 @@ export const AXIS_SBB_CONFIG: BankConfig = {
         if (plotComputedStr.endsWith(',')) plotComputedStr = plotComputedStr.slice(0, -1).trim();
         const plotComputed = plotComputedStr.toUpperCase() || 'KHATA NO. XX, PLOT NO. YY';
         
-        const mouzaMatch = address.match(/(?:MOUZA|VILLAGE|MZ\s*-)[-\s]*.*?(?=,|$|DIST|TAH)/i);
-        const mouzaComputed = mouzaMatch ? mouzaMatch[0].trim().toUpperCase() : '';
+        const mouzaMatch = address.match(/(?:MOUZA|VILLAGE|MZ\s*-)[-\s]*[\s\S]*?(?=,|$|DIST|TAH)/i);
+        const mouzaComputed = mouzaMatch ? mouzaMatch[0].replace(/\n/g, ' ').replace(/\s+/g, ' ').trim().toUpperCase() : '';
         
-        const distMatch = address.match(/DIST(?:RICT)?[-\s]*(.*?)(?=,|-|PIN|$)/i);
-        const distComputed = distMatch ? distMatch[1].trim().toUpperCase() : '';
+        const distMatch = address.match(/DIST(?:RICT)?[-\s]*([\s\S]*?)(?=,|-|PIN|$)/i);
+        const distComputed = distMatch ? distMatch[1].replace(/\n/g, ' ').replace(/\s+/g, ' ').trim().toUpperCase() : '';
         
         const pinMatch = address.match(/PIN[-\s]*(\d{6})/i) || address.match(/\b(\d{6})\b/);
         const pinComputed = pinMatch ? pinMatch[1] : '';
@@ -1264,9 +1264,9 @@ export const AXIS_SBB_CONFIG: BankConfig = {
 
         // Auto computed station and bus stand names based on address
         const address = fields.axisSbbAddressOfTheProperty || '';
-        const distMatch = address.match(/DIST(?:RICT)?[-\s]*(.*?)(?=,|-|PIN|$)/i);
-        const mouzaMatch = address.match(/(?:MOUZA|VILLAGE)[-\s]*(.*?)(?=,|$|DIST)/i);
-        const parsedCity = (distMatch ? distMatch[1] : (mouzaMatch ? mouzaMatch[1] : 'CITY')).trim().toUpperCase();
+        const distMatch = address.match(/DIST(?:RICT)?[-\s]*([\s\S]*?)(?=,|-|PIN|$)/i);
+        const mouzaMatch = address.match(/(?:MOUZA|VILLAGE|MZ\s*-)[-\s]*([\s\S]*?)(?=,|$|DIST|TAH)/i);
+        const parsedCity = (distMatch ? distMatch[1] : (mouzaMatch ? mouzaMatch[1] : 'CITY')).replace(/\n/g, ' ').replace(/\s+/g, ' ').trim().toUpperCase();
 
         const stationName = fields.axisSbbDistRailwayStationName || parsedCity;
         const busStopName = fields.axisSbbDistBusStopName || parsedCity;
