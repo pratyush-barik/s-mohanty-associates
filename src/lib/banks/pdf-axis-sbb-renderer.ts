@@ -529,166 +529,43 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     
     this.drawSectionSubtitle('DETAILS OF THE PROPERTY BEING VALUED');
     
-    const drawCheckboxFlex = (x: number, y: number, w: number, options: { label: string, checked: boolean }[]) => {
-      let currentX = x;
-      let currentY = y;
-      const boxSize = 8;
+    const loc = fields.axisSbbPropertyLocation || '';
+    const locStr = `[${loc === 'Urban' ? 'X' : ' '}] URBAN   [${loc === 'Semi-Urban' ? 'X' : ' '}] SEMI-URBAN   [${loc === 'Rural/Gram Panchayat' ? 'X' : ' '}] RURAL/GRAM PANCHAYAT`;
+    
+    const gov = fields.axisSbbGoverningBody || '';
+    const govStr = `[${gov === 'Corporation' ? 'X' : ' '}] CORPORATION   [${gov === 'Municipality' ? 'X' : ' '}] MUNICIPALITY   [${gov === 'Town or Gram Panchayat or Rural' ? 'X' : ' '}] TOWN OR GRAM PANCHAYAT OR RURAL`;
+    
+    this.drawKeyValueRow([
+      { label: 'LOCATION OF PROPERTY', value: `${locStr}\n\n${govStr}` }
+    ]);
+    
+    const t = fields.axisSbbTownPlanningSubType || '';
+    if (gov === 'Town or Gram Panchayat or Rural') {
+      const typeStr = `IF TOWN OR GRAM PANCHAYAT, PLEASE CHOOSE THE APPROPRIATE ONE IN BELOW: -
+[${t === 'TYPE 1' ? 'X' : ' '}] TYPE 1:- LAYOUT PLAN & INDIVIDUAL CONSTRUCTION BOTH ARE APPROVED BY TOWN PLANNING AUTHORITY.
+[${t === 'TYPE 2A' ? 'X' : ' '}] TYPE 2A:- LAYOUT PLAN APPROVED BY TOWN PLANNING AUTHORITY AND CONSTRUCTION APPROVED BY GRAMPANCHAYAT.
+[${t === 'TYPE 2B' ? 'X' : ' '}] TYPE 2B:- LAYOUT PLAN & INDIVIDUAL CONSTRUCTION BOTH ARE APPROVED BY GRAMPANCHAYAT BUT PROPERTY NOW FALLS IN MUNICIPALITY.
+[${t === 'TYPE 3' ? 'X' : ' '}] TYPE 3:- LAYOUT PLAN & INDIVIDUAL CONSTRUCTION BOTH ARE APPROVED BY GRAMPANCHAYAT BUT PROPERTY NOW FALLS INSIDE GRAM PANCHAYAT.`;
       
-      for (const opt of options) {
-        const font = opt.checked ? this.fontBold : this.fontRegular;
-        const textWidth = font.widthOfTextAtSize(opt.label, FONT_SIZE);
-        const itemWidth = boxSize + 4 + textWidth + 15;
-        
-        if (currentX + itemWidth > x + w && currentX > x) {
-          currentX = x;
-          currentY += 16;
-        }
-        
-        this.page.drawRectangle({
-          x: currentX,
-          y: this.pdfY(currentY) - boxSize + 1,
-          width: boxSize,
-          height: boxSize,
-          borderColor: rgb(0,0,0),
-          borderWidth: 1
-        });
-        
-        this.page.drawText(opt.label, {
-          x: currentX + boxSize + 4,
-          y: this.pdfY(currentY),
-          size: FONT_SIZE,
-          font: font,
-          color: rgb(0,0,0)
-        });
-        
-        currentX += itemWidth;
-      }
-      return currentY + 16;
-    };
-
-    const drawRow = (leftText: string, drawRight: (x: number, y: number, w: number) => number) => {
-      const startY = this.cursorY;
-      const leftW = 160;
-      const rightW = CONTENT_W - leftW;
-      
-      this.checkPageBreak(150);
-      
-      const rightX = MARGIN_L + leftW + 5;
-      const finalY = drawRight(rightX, this.cursorY + 5, rightW - 10);
-      
-      const rowHeight = (finalY - this.cursorY) + 5;
-      
-      // Blue background for left column
-      this.page.drawRectangle({
-        x: MARGIN_L,
-        y: this.pdfY(this.cursorY + rowHeight),
-        width: leftW,
-        height: rowHeight,
-        color: rgb(0.886, 0.937, 0.976)
-      });
-      
-      this.page.drawRectangle({
-        x: MARGIN_L,
-        y: this.pdfY(this.cursorY + rowHeight),
-        width: CONTENT_W,
-        height: rowHeight,
-        borderColor: rgb(0,0,0),
-        borderWidth: 1
-      });
-      
-      this.page.drawLine({
-        start: { x: MARGIN_L + leftW, y: this.pdfY(this.cursorY) },
-        end: { x: MARGIN_L + leftW, y: this.pdfY(this.cursorY + rowHeight) },
-        thickness: 1,
-        color: rgb(0,0,0)
-      });
-      
-      const leftLines = this.wrapText(leftText, leftW - 10, FONT_SIZE, false);
-      const textH = leftLines.length * (FONT_SIZE + 4);
-      let ty = this.cursorY + (rowHeight - textH) / 2 + FONT_SIZE;
-      for (const line of leftLines) {
-        this.page.drawText(line, { x: MARGIN_L + 5, y: this.pdfY(ty), size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
-        ty += FONT_SIZE + 4;
-      }
-      
-      this.cursorY += rowHeight;
-    };
-
-    drawRow('LOCATION OF PROPERTY', (x, y, w) => {
-      let cy = y;
-      const loc = fields.axisSbbPropertyLocation || '';
-      
-      cy = drawCheckboxFlex(x, cy, w, [
-        { label: 'URBAN', checked: loc === 'Urban' },
-        { label: 'SEMI-URBAN', checked: loc === 'Semi-Urban' },
-        { label: 'RURAL/GRAM PANCHAYAT', checked: loc === 'Rural/Gram Panchayat' }
+      this.drawKeyValueRow([
+        { label: 'TOWN PLANNING SUB-TYPE', value: typeStr }
       ]);
-      
-      const gov = fields.axisSbbGoverningBody || '';
-      cy = drawCheckboxFlex(x, cy, w, [
-        { label: 'CORPORATION', checked: gov === 'Corporation' },
-        { label: 'MUNICIPALITY', checked: gov === 'Municipality' },
-        { label: 'TOWN OR GRAM PANCHAYAT OR RURAL', checked: gov === 'Town or Gram Panchayat or Rural' }
-      ]);
-      
-      cy += 4;
-      const introLines = this.wrapText('IF TOWN OR GRAM PANCHAYAT, PLEASE CHOOSE THE APPROPRIATE ONE IN BELOW: -', w, FONT_SIZE, false);
-      for (const line of introLines) {
-        this.page.drawText(line, { x: x, y: this.pdfY(cy), size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
-        cy += 14;
-      }
-      cy += 6;
-      
-      const t = fields.axisSbbTownPlanningSubType || '';
-      
-      const drawType = (label: string, text: string, isChecked: boolean) => {
-        const fullText = `${label}:- ${text}`;
-        const lines = this.wrapText(fullText, w, FONT_SIZE, false);
-        const font = isChecked ? this.fontBold : this.fontRegular;
-        for (const line of lines) {
-          this.page.drawText(line, { x: x, y: this.pdfY(cy), size: FONT_SIZE, font: font, color: rgb(0,0,0) });
-          if (line.startsWith('TYPE')) {
-            const splitMatch = line.match(/^(TYPE [A-Z0-9]+:-)/);
-            if (splitMatch) {
-               const uw = font.widthOfTextAtSize(splitMatch[1], FONT_SIZE);
-               this.page.drawLine({
-                 start: { x: x, y: this.pdfY(cy) - 2 },
-                 end: { x: x + uw, y: this.pdfY(cy) - 2 },
-                 thickness: 1,
-                 color: rgb(0,0,0)
-               });
-            }
-          }
-          cy += 14;
-        }
-        cy += 6;
-      };
-      
-      drawType('TYPE 1', 'LAYOUT PLAN & INDIVIDUAL CONSTRUCTION BOTH ARE APPROVED BY TOWN PLANNING AUTHORITY.', t === 'TYPE 1');
-      drawType('TYPE 2A', 'LAYOUT PLAN APPROVED BY TOWN PLANNING AUTHORITY AND CONSTRUCTION APPROVED BY GRAMPANCHAYAT.', t === 'TYPE 2A');
-      drawType('TYPE 2B', 'LAYOUT PLAN & INDIVIDUAL CONSTRUCTION BOTH ARE APPROVED BY GRAMPANCHAYAT BUT PROPERTY NOW FALLS IN MUNICIPALITY.', t === 'TYPE 2B');
-      drawType('TYPE 3', 'LAYOUT PLAN & INDIVIDUAL CONSTRUCTION BOTH ARE APPROVED BY GRAMPANCHAYAT BUT PROPERTY NOW FALLS INSIDE GRAM PANCHAYAT.', t === 'TYPE 3');
-      
-      return cy;
-    });
-
-    drawRow('DOCUMENTS PROVIDED', (x, y, w) => {
-      let cy = y;
-      
-      cy = drawCheckboxFlex(x, cy, w, [
-        { label: 'COPY OF PREVIOUS VALUATION REPORT', checked: !!fields.axisSbbDocPrevValuation },
-        { label: 'APPROVED LAYOUT', checked: !!fields.axisSbbDocApprovedLayout },
-        { label: 'COMMENCEMENT', checked: !!fields.axisSbbDocCommencement },
-        { label: 'APPROVED BUILDING PLAN', checked: !!fields.axisSbbDocApprovedBuildingPlan },
-        { label: 'COPY OF SALE. DEED/ PATTA', checked: !!fields.axisSbbDocSaleDeed },
-        { label: 'CERTIFICATE', checked: !!fields.axisSbbDocCommencement },
-        { label: 'OCCUPANCY CERTIFICATE', checked: !!fields.axisSbbDocOccupancy },
-        { label: 'COPY PARTITION DEED', checked: !!fields.axisSbbDocPartitionDeed },
-        { label: 'SKETCH MAP', checked: !!fields.axisSbbDocSketchMap }
-      ]);
-      
-      return cy;
-    });
+    }
+    
+    const docs = [];
+    docs.push(`[${fields.axisSbbDocPrevValuation ? 'X' : ' '}] COPY OF PREVIOUS VALUATION REPORT`);
+    docs.push(`[${fields.axisSbbDocApprovedLayout ? 'X' : ' '}] APPROVED LAYOUT`);
+    docs.push(`[${fields.axisSbbDocCommencement ? 'X' : ' '}] COMMENCEMENT`);
+    docs.push(`[${fields.axisSbbDocApprovedBuildingPlan ? 'X' : ' '}] APPROVED BUILDING PLAN`);
+    docs.push(`[${fields.axisSbbDocSaleDeed ? 'X' : ' '}] COPY OF SALE DEED/ PATTA`);
+    docs.push(`[${fields.axisSbbDocCommencement ? 'X' : ' '}] CERTIFICATE`);
+    docs.push(`[${fields.axisSbbDocOccupancy ? 'X' : ' '}] OCCUPANCY CERTIFICATE`);
+    docs.push(`[${fields.axisSbbDocPartitionDeed ? 'X' : ' '}] COPY PARTITION DEED`);
+    docs.push(`[${fields.axisSbbDocSketchMap ? 'X' : ' '}] SKETCH MAP`);
+    
+    this.drawKeyValueRow([
+      { label: 'DOCUMENTS PROVIDED', value: docs.join('\n') }
+    ]);
   }
 
   private drawSbbSection2() {
