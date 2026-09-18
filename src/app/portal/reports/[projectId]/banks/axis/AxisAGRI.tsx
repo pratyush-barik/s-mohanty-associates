@@ -714,10 +714,12 @@ export default function AxisAGRI({
       handleChange('distressValueWords', '');
     }
 
-    // Insurable Value = Building + Amenities ONLY (no land)
-    const bldgInsurable = parseNum(fields.insurableValueBuilding !== undefined && fields.insurableValueBuilding !== '' ? fields.insurableValueBuilding : (fields.totalBasicValueBuilding || fields.marketValueBuilding));
-    const amenInsurable = parseNum(fields.insurableValueAmenities);
-    const totalInsurable = bldgInsurable + amenInsurable;
+    // Insurable Value = Distress Building + Distress Amenities (same as distress, no land)
+    const insBuilding = bldgMkt > 0 ? distBldg : 0;
+    const insAmenities = amenMkt > 0 ? distAmen : 0;
+    const totalInsurable = insBuilding + insAmenities;
+    handleChange('insurableValueBuilding', insBuilding > 0 ? insBuilding.toFixed(2) : '');
+    handleChange('insurableValueAmenities', insAmenities > 0 ? insAmenities.toFixed(2) : '');
     handleChange('insurableValueTotal', totalInsurable > 0 ? totalInsurable.toFixed(2) : '');
   }, [
     fields.marketValueLand,
@@ -726,9 +728,6 @@ export default function AxisAGRI({
     fields.govtGuideLand,
     fields.govtGuideBuilding,
     fields.govtGuideAmenities,
-    fields.totalBasicValueBuilding,
-    fields.insurableValueBuilding,
-    fields.insurableValueAmenities,
     fields.realisableValuePct,
     fields.distressValuePct,
     handleChange,
@@ -3152,8 +3151,8 @@ export default function AxisAGRI({
                   <tr className="bg-indigo-50/50">
                     <td className="p-3 font-bold text-indigo-800 border-r">Insurable Value</td>
                     <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs bg-slate-100 dark:bg-slate-800 text-slate-500 cursor-not-allowed`} value="-" readOnly disabled /></td>
-                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.insurableValueBuilding || ''} onChange={e => handleMatrixCellChange('insurableValueBuilding', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.insurableValueAmenities || ''} onChange={e => handleMatrixCellChange('insurableValueAmenities', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.insurableValueBuilding || ''} readOnly disabled /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.insurableValueAmenities || ''} readOnly disabled /></td>
                     <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-indigo-800 text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.insurableValueTotal || ''} readOnly disabled /></td>
                   </tr>
                 </tbody>
