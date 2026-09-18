@@ -86,6 +86,9 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
   override drawSectionHeader(title: string, addSpaceBefore?: boolean, preserveCase?: boolean) {
     // Intercept standard section 2
     if (title.toUpperCase() === 'CASE DETAILS & REPORT METADATA') {
+      if (this.doc.getPages().length === 1) {
+        this.newPage();
+      }
       super.drawSectionHeader('CASE DETAILS & REPORT METADATA', addSpaceBefore, preserveCase);
       this.drawSbbSection2();
       return;
