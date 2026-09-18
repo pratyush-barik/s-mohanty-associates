@@ -144,6 +144,109 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     return rowH;
   }
 
+  /**
+   * Custom renderer for Quality of Construction field.
+   * Shows ALL roof and floor options, bolding only the selected ones.
+   * Format: RCC/PATTI/**TIN SHED**/CLAY TILES ROOF WITH MASONRY WALLS
+   *         WITH TILES/MARBLE/**KOTA STONE**/LOCAL STONE/C.C FLOOR
+   */
+  private drawQualityOfConstructionRow(
+    fields: any,
+    roofOptions: { key: string; label: string }[],
+    floorOptions: { key: string; label: string }[]
+  ) {
+    const label = 'Quality of Construction';
+    const labelW = Math.round(CONTENT_W * 0.40);
+    const valueW = CONTENT_W - labelW;
+    const pad = 3;
+
+    // Build text segments: each segment has text, font (bold if selected)
+    type Segment = { text: string; font: any };
+    const segments: Segment[] = [];
+
+    // Roof options
+    for (let i = 0; i < roofOptions.length; i++) {
+      const opt = roofOptions[i];
+      const isSelected = !!(fields as any)[opt.key];
+      segments.push({ text: opt.label, font: isSelected ? this.fontBold : this.fontRegular });
+      if (i < roofOptions.length - 1) {
+        segments.push({ text: '/', font: this.fontRegular });
+      }
+    }
+    segments.push({ text: ' ROOF WITH MASONRY WALLS', font: this.fontRegular });
+
+    // Line break hint - "WITH" starts a new line
+    segments.push({ text: '\n', font: this.fontRegular });
+    segments.push({ text: 'WITH ', font: this.fontRegular });
+
+    // Floor options
+    for (let i = 0; i < floorOptions.length; i++) {
+      const opt = floorOptions[i];
+      const isSelected = !!(fields as any)[opt.key];
+      segments.push({ text: opt.label, font: isSelected ? this.fontBold : this.fontRegular });
+      if (i < floorOptions.length - 1) {
+        segments.push({ text: '/', font: this.fontRegular });
+      }
+    }
+    segments.push({ text: ' FLOOR', font: this.fontRegular });
+
+    // Lay out segments into lines that fit within valueW
+    type LayoutItem = { text: string; font: any; width: number };
+    const lines: LayoutItem[][] = [[]];
+    let currentLineW = 0;
+
+    for (const seg of segments) {
+      if (seg.text === '\n') {
+        lines.push([]);
+        currentLineW = 0;
+        continue;
+      }
+      const w = seg.font.widthOfTextAtSize(seg.text, FONT_SIZE);
+      if (currentLineW + w > valueW - pad * 2 && currentLineW > 0) {
+        lines.push([]);
+        currentLineW = 0;
+      }
+      lines[lines.length - 1].push({ text: seg.text, font: seg.font, width: w });
+      currentLineW += w;
+    }
+
+    const labelLines = this.wrapText(label, labelW - pad * 2, FONT_SIZE, true);
+    const maxLines = Math.max(labelLines.length, lines.length);
+    const rowH = Math.max(18, maxLines * FONT_SIZE * LINE_HEIGHT + pad * 2);
+
+    this.checkPageBreak(rowH);
+
+    const y = this.pdfY(this.cursorY);
+    let curX = MARGIN_L;
+
+    // Draw Label Cell
+    this.page.drawRectangle({ x: curX, y: y - rowH, width: labelW, height: rowH, color: hexToRgb('#DBE6F0'), opacity: 0.5 });
+    this.page.drawRectangle({ x: curX, y: y - rowH, width: labelW, height: rowH, borderColor: rgb(0,0,0), borderWidth: 1 });
+    
+    let lineY = y - pad - FONT_SIZE * 0.85;
+    for (const line of labelLines) {
+      this.page.drawText(line, { x: curX + pad, y: lineY, size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
+      lineY -= FONT_SIZE * LINE_HEIGHT;
+    }
+    
+    curX += labelW;
+
+    // Draw Value Cell
+    this.page.drawRectangle({ x: curX, y: y - rowH, width: valueW, height: rowH, borderColor: rgb(0,0,0), borderWidth: 1 });
+
+    lineY = y - pad - FONT_SIZE * 0.85;
+    for (const lineItems of lines) {
+      let textX = curX + pad;
+      for (const item of lineItems) {
+        this.page.drawText(item.text, { x: textX, y: lineY, size: FONT_SIZE, font: item.font, color: rgb(0,0,0) });
+        textX += item.width;
+      }
+      lineY -= FONT_SIZE * LINE_HEIGHT;
+    }
+
+    this.cursorY += rowH;
+  }
+
   override drawCenteredTitle(title: string, fontSize?: number, underline?: boolean) {
     if (!this.drawnCover) {
       this.drawnCover = true;
@@ -412,23 +515,30 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       { label: 'Maintenance of Property', value: (fields as any).axisSbbMaintenanceOfPropertyIsCustom ? val('axisSbbMaintenanceOfProperty') : val('axisSbbMaintenanceOfProperty') }
     ]);
     
-    const roofTypes = [];
-    if ((fields as any).axisSbbQualityOfConstructionRoofRCC) roofTypes.push('RCC');
-    if ((fields as any).axisSbbQualityOfConstructionRoofPatti) roofTypes.push('PATTI');
-    if ((fields as any).axisSbbQualityOfConstructionRoofTinShed) roofTypes.push('TIN SHED');
-    if ((fields as any).axisSbbQualityOfConstructionRoofClayTiles) roofTypes.push('CLAY TILES');
-    const roofStr = roofTypes.length ? roofTypes.join('/') + ' ROOF' : 'ROOF';
+    const allRoofOptions = [
+      { key: 'axisSbbQualityOfConstructionRoofRCC', label: 'RCC' },
+      { key: 'axisSbbQualityOfConstructionRoofPatti', label: 'PATTI' },
+      { key: 'axisSbbQualityOfConstructionRoofTinShed', label: 'TIN SHED' },
+      { key: 'axisSbbQualityOfConstructionRoofClayTiles', label: 'CLAY TILES' },
+    ];
+    const allFloorOptions = [
+      { key: 'axisSbbQualityOfConstructionFloorTiles', label: 'TILES' },
+      { key: 'axisSbbQualityOfConstructionFloorMarble', label: 'MARBLE' },
+      { key: 'axisSbbQualityOfConstructionFloorKotaStone', label: 'KOTA STONE' },
+      { key: 'axisSbbQualityOfConstructionFloorLocalStone', label: 'LOCAL STONE' },
+      { key: 'axisSbbQualityOfConstructionFloorCC', label: 'C.C' },
+    ];
 
-    const floorTypes = [];
-    if ((fields as any).axisSbbQualityOfConstructionFloorTiles) floorTypes.push('TILES');
-    if ((fields as any).axisSbbQualityOfConstructionFloorMarble) floorTypes.push('MARBLE');
-    if ((fields as any).axisSbbQualityOfConstructionFloorKotaStone) floorTypes.push('KOTA STONE');
-    if ((fields as any).axisSbbQualityOfConstructionFloorLocalStone) floorTypes.push('LOCAL STONE');
-    if ((fields as any).axisSbbQualityOfConstructionFloorCC) floorTypes.push('C.C');
-    
-    const computedQuality = `${roofStr} WITH MASONRY WALLS WITH ${floorTypes.length ? floorTypes.join('/') + ' FLOOR' : 'FLOOR'}`;
-
-    this.drawSimpleRow('Quality of Construction', val('axisSbbQualityOfConstruction', computedQuality));
+    // Check if edit is on (manual override)
+    const qualityEditOn = (fields as any).axisSbbQualityOfConstructionEditOn;
+    const qualityIsNA = (fields as any).axisSbbQualityOfConstructionIsNA;
+    if (qualityIsNA) {
+      this.drawSimpleRow('Quality of Construction', 'NA');
+    } else if (qualityEditOn) {
+      this.drawSimpleRow('Quality of Construction', val('axisSbbQualityOfConstruction'));
+    } else {
+      this.drawQualityOfConstructionRow(fields, allRoofOptions, allFloorOptions);
+    }
 
     this.drawKeyValueRow([
       { label: 'Current Life of Structure (Years)', value: val('axisSbbCurrentLifeOfStructure') },
