@@ -361,6 +361,8 @@ export const AXIS_SBB_CONFIG: BankConfig = {
     axisSbbValuationLandAmount: '',
     axisSbbValuationLandAmountIsNA: false,
     axisSbbValuationLandAmountEditOn: false,
+    axisSbbValuationBuildingItemDescription: 'Building G+1',
+    axisSbbValuationBuildingFarLabel: '',
     axisSbbValuationBuildingArea: '',
     axisSbbValuationBuildingAreaIsNA: false,
     axisSbbValuationBuildingAreaEditOn: false,
@@ -3092,7 +3094,29 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       </td>
                     </tr>
                     <tr>
-                      <td className="p-3 font-semibold text-gray-700">Building G+1 <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: AREA (SQ.FT) * RATE PER SQ.FT (RS.) = AMOUNT (RS.)]</span></td>
+                      <td className="p-3">
+                        <div className="flex flex-col gap-2">
+                          <input
+                            type="text"
+                            className="w-full text-sm font-semibold text-gray-700 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            value={fields.axisSbbValuationBuildingItemDescription || ''}
+                            onChange={e => handleChange('axisSbbValuationBuildingItemDescription', e.target.value)}
+                            disabled={isReadOnly}
+                            placeholder="Building G+1"
+                          />
+                          <input
+                            type="text"
+                            className="w-full text-sm text-gray-600 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            value={fields.axisSbbValuationBuildingFarLabel || ''}
+                            onChange={e => handleChange('axisSbbValuationBuildingFarLabel', e.target.value)}
+                            disabled={isReadOnly}
+                            placeholder="FAR 2"
+                          />
+                          <div className="text-xs mt-1">
+                            <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: AREA (SQ.FT) * RATE PER SQ.FT (RS.) = AMOUNT (RS.)]</span>
+                          </div>
+                        </div>
+                      </td>
                       <td className="p-3">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center justify-between">

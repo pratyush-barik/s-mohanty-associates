@@ -765,9 +765,12 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     // --- Table 9.1 ---
     this.drawSectionSubtitle('MARKET VALUE');
     const table91Headers = ['', 'AREA IN SQ.FT.', 'RATE PER SQ.FT.', 'AMOUNT IN RS.'];
+    const bldgItemDesc = fields.axisSbbValuationBuildingItemDescription || 'Building G+1';
+    const farLabel = fields.axisSbbValuationBuildingFarLabel || '';
+    const bldgDisplay = farLabel ? `${bldgItemDesc}\n${farLabel}` : bldgItemDesc;
     const table91Data = [
       ['Land', val('axisSbbValuationLandArea', landAreaPrefill), val('axisSbbValuationLandRate'), numVal('axisSbbValuationLandAmount', landAmount.toFixed(2))],
-      ['Building G+1', val('axisSbbValuationBuildingArea', buildingAreaPrefill), val('axisSbbValuationBuildingRate'), numVal('axisSbbValuationBuildingAmount', buildingAmount.toFixed(2))],
+      [bldgDisplay, val('axisSbbValuationBuildingArea', buildingAreaPrefill), val('axisSbbValuationBuildingRate'), numVal('axisSbbValuationBuildingAmount', buildingAmount.toFixed(2))],
       ['Amenities', val('axisSbbValuationAmenitiesArea'), val('axisSbbValuationAmenitiesRate'), numVal('axisSbbValuationAmenitiesAmount', amenitiesAmount.toFixed(2))],
     ];
     this.drawTable(table91Headers, table91Data, [40, 20, 20, 20]);
