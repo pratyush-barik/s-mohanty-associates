@@ -606,12 +606,12 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     // Level of Land
     this.drawRow([
       { text: 'Level of land with topographical conditions', width: col4_w1 * 2, isLabel: true },
-      { text: fields.levelOfLand || 'Existing Road Level', width: col4_w1 * 2 },
+      { text: fields.levelOfLand || '', width: col4_w1 * 2 },
     ], 20, 4);
 
     // Municipal Limit
     const isMuni = String(fields.situatedInMunicipalLimit || 'No').toLowerCase() === 'yes';
-    const muniText = `${check(isMuni)} Yes   ${check(!isMuni)} No ${fields.municipalLimitDetails ? `(${fields.municipalLimitDetails})` : ''}`;
+    const muniText = `${check(isMuni)} Yes   ${check(!isMuni)} No`;
     this.drawRow([
       { text: 'Whether situated in Municipal/Corporation Limit:', width: col4_w1 * 2, isLabel: true },
       { text: muniText, width: col4_w1 * 2 },
@@ -650,10 +650,13 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     ], 24, 4);
 
     // (C) Commercial/Industrial Property
-    const commSub = String(fields.commercialPropertySubtype || (fields as any).commercialSubClass || 'Godown').toLowerCase();
+    const commSub = String(fields.commercialPropertySubtype || (fields as any).commercialSubClass || '').toLowerCase();
     const commText = `${check(commSub.includes('independent'))} Independent house   ${check(commSub.includes('row'))} Row House   ${check(commSub.includes('mall'))} Unit in a mall   ${check(commSub.includes('godown'))} Godown   ${check(commSub.includes('industrial'))} Industrial   ${check(commSub.includes('shop'))} Shop`;
+    const commTypeStr = String(fields.commercialPropertyType || 'Commercial').toLowerCase();
+    const isIndType = commTypeStr.includes('industrial');
+    const commLabel = `(C) Commercial/Industrial Property: ${isIndType ? '[X] Industrial' : '[X] Commercial'}`;
     this.drawRow([
-      { text: '(C) Commercial/Industrial Property: [X] Commercial', width: col4_w1 * 2, isLabel: true },
+      { text: commLabel, width: col4_w1 * 2, isLabel: true },
       { text: commText, width: col4_w1 * 2, bold: true },
     ], 22, 4);
 
@@ -663,7 +666,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       ? rawTrans
       : typeof rawTrans === 'string' && rawTrans
       ? (rawTrans as string).split(',').map(s => s.trim())
-      : ['Personal Transport'];
+      : [];
     const hasTrans = (t: string) => trans.some(item => String(item || '').toLowerCase().includes(t.toLowerCase()));
     const transText = `${check(hasTrans('metro'))} Metro   ${check(hasTrans('train'))} Local Train   ${check(hasTrans('bus'))} Bus   ${check(hasTrans('personal'))} Personal Transport`;
     this.drawRow([
@@ -674,7 +677,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     // Distance from Railway Station & Bus Stop
     this.drawRow([
       { text: `Distance from Railway Station: ${fields.distanceFromRailwayStation || ''}`, width: col4_w1 * 2 },
-      { text: `Bus stop/ Taxi/ Auto Stand( ${fields.busStopTaxiStand || 'Within 2-3 Kms'})`, width: col4_w1 * 2 },
+      { text: `Bus stop/ Taxi/ Auto Stand: ${fields.busStopTaxiStand || ''}`, width: col4_w1 * 2 },
     ], 20, 4);
 
     // Approach road & Fire extinguisher
@@ -835,10 +838,10 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       ? rawAm
       : typeof rawAm === 'string' && rawAm
       ? (rawAm as string).split(',').map(s => s.trim())
-      : ['Electricity', 'Water', 'Drainage connection'];
+      : [];
     const hasAm = (a: string) => am.some(item => String(item || '').toLowerCase().includes(a.toLowerCase()));
     const amText = `${check(hasAm('electricity'))} Electricity   ${check(hasAm('water'))} Water   ${check(hasAm('drainage'))} Drainage connection`;
-    const dev = String(fields.developmentSurroundingArea || (fields as any).surroundingDevelopment || 'Developing').toLowerCase();
+    const dev = String(fields.developmentSurroundingArea || (fields as any).surroundingDevelopment || '').toLowerCase();
     const devText = `${check(dev.includes('under'))} Underdeveloped   ${check(dev.includes('developing'))} Developing   ${check(dev.includes('developed') && !dev.includes('under'))} Developed`;
 
     this.drawRow([
@@ -871,7 +874,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       ? leaseAm
       : typeof leaseAm === 'string' && leaseAm
       ? (leaseAm as string).split(',').map(s => s.trim())
-      : ['Electricity', 'Water', 'Drainage connection'];
+      : [];
     const hasLAm = (a: string) => lAm.some(item => String(item || '').toLowerCase().includes(a.toLowerCase()));
     const lAmText = `${check(hasLAm('electricity'))} Electricity   ${check(hasLAm('water'))} Water   ${check(hasLAm('drainage'))} Drainage connection`;
     const lDev = String(fields.leaseholdDevelopment || fields.developmentSurroundingArea || 'Developing').toLowerCase();

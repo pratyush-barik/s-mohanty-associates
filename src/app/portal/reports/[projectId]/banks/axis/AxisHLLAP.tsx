@@ -250,28 +250,48 @@ export default function AxisHLLAP({
     fields.proposedStructureType,
   ]);
 
-  // Autosave setup (3s debounce)
+  const isInitialMount = useRef(true);
+  // Autosave setup (1.2s debounce)
   const debouncedTimer = useRef<NodeJS.Timeout | null>(null);
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     if (isReadOnly) return;
+
+    setAutoSaveStatus('saving');
+
     if (debouncedTimer.current) clearTimeout(debouncedTimer.current);
 
     debouncedTimer.current = setTimeout(async () => {
-      setAutoSaveStatus('saving');
       try {
-        await saveReportDraft(projectId, fields);
-        setAutoSaveStatus('saved');
-        setTimeout(() => setAutoSaveStatus('idle'), 2000);
+        const res = await saveReportDraft(projectId, fields);
+        if (res && 'error' in res && res.error) {
+          console.error('Autosave error:', res.error);
+          setAutoSaveStatus('error');
+        } else {
+          setAutoSaveStatus('saved');
+        }
       } catch (e) {
-        console.error('Autosave error:', e);
+        console.error('Autosave network error:', e);
         setAutoSaveStatus('error');
       }
-    }, 3000);
+    }, 1200);
 
     return () => {
       if (debouncedTimer.current) clearTimeout(debouncedTimer.current);
     };
   }, [fields, projectId, isReadOnly]);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (isReadOnly) return;
+      saveReportDraft(projectId, fields).catch(e => console.error(e));
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [projectId, fields, isReadOnly]);
 
   // Floor array management for Approved BUA
   const handleAddApprovedFloor = () => {

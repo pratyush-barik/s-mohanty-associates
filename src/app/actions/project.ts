@@ -307,8 +307,7 @@ export async function saveReportDraft(projectId: string, fields: any) {
       }
     }
 
-    revalidatePath(`/portal/reports/${projectId}`);
-    return { success: true };
+    return { success: true, savedAt: new Date().toISOString() };
   } catch (error) {
     console.error('Failed to save draft:', error);
     return { error: 'Failed to save report draft.' };

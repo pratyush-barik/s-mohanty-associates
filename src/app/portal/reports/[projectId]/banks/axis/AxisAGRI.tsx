@@ -149,24 +149,24 @@ export default function AxisAGRI({
       coordinates: raw.coordinates || '',
 
       // Page 1 & 2: Classification & Site Topography
-      typeOfPropertyPlot: raw.typeOfPropertyPlot || 'Residential',
+      typeOfPropertyPlot: raw.typeOfPropertyPlot || '',
       levelOfLand: raw.levelOfLand || '',
-      situatedInMunicipalLimit: raw.situatedInMunicipalLimit || 'No',
+      situatedInMunicipalLimit: raw.situatedInMunicipalLimit || '',
       municipalLimitDetails: raw.municipalLimitDetails || '',
-      constructionObservedOnPlot: raw.constructionObservedOnPlot || 'Yes',
+      constructionObservedOnPlot: raw.constructionObservedOnPlot || '',
       residentialPropertyType: raw.residentialPropertyType || 'Residential',
       residentialPropertySubtype: raw.residentialPropertySubtype || 'Independent house',
       civicAmenities: raw.civicAmenities || 'Available within the radius of 2-3 Kms',
       commercialPropertyType: raw.commercialPropertyType || 'Commercial',
-      commercialPropertySubtype: raw.commercialPropertySubtype || 'Godown',
+      commercialPropertySubtype: raw.commercialPropertySubtype || '',
       availabilityLocalTransport: raw.availabilityLocalTransport || [],
       distanceFromRailwayStation: raw.distanceFromRailwayStation || '',
       busStopTaxiStand: raw.busStopTaxiStand || '',
-      independentApproachRoad: raw.independentApproachRoad || 'Yes',
-      accommodateFireExtinguisher: raw.accommodateFireExtinguisher || 'Yes',
-      landLockedArea: raw.landLockedArea || 'No',
+      independentApproachRoad: raw.independentApproachRoad || '',
+      accommodateFireExtinguisher: raw.accommodateFireExtinguisher || '',
+      landLockedArea: raw.landLockedArea || '',
       corneredOrIntermittent: raw.corneredOrIntermittent || '',
-      corneredOrIntermittentVal: raw.corneredOrIntermittentVal || 'No',
+      corneredOrIntermittentVal: raw.corneredOrIntermittentVal || '',
 
       // Page 2: Boundaries
       boundaryEastVerification: raw.boundaryEastVerification || '',
@@ -192,7 +192,7 @@ export default function AxisAGRI({
       yearsInTenancy: raw.yearsInTenancy || '',
       resistanceForValuation: raw.resistanceForValuation || 'No',
       resistanceFromOccupants: raw.resistanceFromOccupants || 'No',
-      basicAmenities: raw.basicAmenities || ['Electricity', 'Water'],
+      basicAmenities: raw.basicAmenities || [],
       developmentSurroundingArea: raw.developmentSurroundingArea || '',
 
       // Page 2: Leasehold
@@ -201,7 +201,7 @@ export default function AxisAGRI({
       natureOfLease: raw.natureOfLease || '',
       totalPeriodOfLease: raw.totalPeriodOfLease || '',
       leaseholdOccupantsResistance: raw.leaseholdOccupantsResistance || 'No',
-      leaseholdBasicAmenities: raw.leaseholdBasicAmenities || ['Electricity', 'Water'],
+      leaseholdBasicAmenities: raw.leaseholdBasicAmenities || [],
       leaseholdDevelopment: raw.leaseholdDevelopment || '',
 
       // Page 2 & 3: Approvals
@@ -329,6 +329,7 @@ export default function AxisAGRI({
   const [bucketPickerOpen, setBucketPickerOpen] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const isInitialMount = useRef(true);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Field change handler
@@ -585,21 +586,46 @@ export default function AxisAGRI({
 
   // Auto-save debounced
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     if (isReadOnly) return;
-    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+
+    setAutoSaveStatus('saving');
+
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+    }
+
     autoSaveTimerRef.current = setTimeout(async () => {
       try {
-        setAutoSaveStatus('saving');
-        await saveReportDraft(projectId, fields);
-        setAutoSaveStatus('saved');
-      } catch {
+        const res = await saveReportDraft(projectId, fields);
+        if (res && 'error' in res && res.error) {
+          console.error('Auto-save error:', res.error);
+          setAutoSaveStatus('error');
+        } else {
+          setAutoSaveStatus('saved');
+        }
+      } catch (err) {
+        console.error('Auto-save network error:', err);
         setAutoSaveStatus('error');
       }
-    }, 2000);
+    }, 1200);
+
     return () => {
       if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
     };
   }, [fields, projectId, isReadOnly]);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (isReadOnly) return;
+      saveReportDraft(projectId, fields).catch(e => console.error(e));
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [projectId, fields, isReadOnly]);
 
   // Manual save
   const handleSaveDraft = async () => {
@@ -1127,21 +1153,69 @@ export default function AxisAGRI({
           {/* Card A: (A) Plot */}
           <div className="border border-indigo-200 bg-indigo-50/50 rounded-xl p-5 mb-5 shadow-xs">
             <h3 className="font-semibold text-indigo-800 mb-4 text-sm tracking-wide uppercase">(A) Plot Characteristics</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <Field label="(A) Plot Classification">
-                <select
-                  className={selectCls}
-                  value={fields.typeOfPropertyPlot || 'Residential'}
-                  onChange={e => handleChange('typeOfPropertyPlot', e.target.value)}
-                  disabled={isReadOnly}
-                >
-                  <option value="NA">NA</option>
-                  <option value="Residential">Residential</option>
-                  <option value="Commercial">Commercial</option>
-                  <option value="Industrial">Industrial</option>
-                </select>
-              </Field>
+            
+            {/* Dedicated Line: Plot Classification Multiple Choice Box */}
+            <div className="mb-4">
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">
+                Plot Classification
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {['NA', 'Residential', 'Commercial', 'Industrial'].map((option) => {
+                  const selected = (() => {
+                    const val = fields.typeOfPropertyPlot;
+                    if (Array.isArray(val)) return val.includes(option);
+                    if (typeof val === 'string' && val.trim()) {
+                      const parts = val.split(',').map(s => s.trim().toLowerCase());
+                      return parts.includes(option.toLowerCase());
+                    }
+                    return false;
+                  })();
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      disabled={isReadOnly}
+                      onClick={() => {
+                        const currentList = (() => {
+                          const val = fields.typeOfPropertyPlot;
+                          if (Array.isArray(val)) return [...val];
+                          if (typeof val === 'string' && val.trim()) {
+                            return val.split(',').map(s => s.trim()).filter(Boolean);
+                          }
+                          return [];
+                        })();
+                        let nextList: string[];
+                        if (currentList.some(item => item.toLowerCase() === option.toLowerCase())) {
+                          nextList = currentList.filter(item => item.toLowerCase() !== option.toLowerCase());
+                        } else {
+                          if (option === 'NA') {
+                            nextList = ['NA'];
+                          } else {
+                            nextList = [...currentList.filter(item => item.toLowerCase() !== 'na'), option];
+                          }
+                        }
+                        handleChange('typeOfPropertyPlot', nextList.join(', '));
+                      }}
+                      className={`flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all duration-150 cursor-pointer select-none ${
+                        selected
+                          ? 'bg-indigo-600 text-white border-indigo-600 ring-2 ring-indigo-200 shadow-xs scale-[1.01]'
+                          : 'bg-white text-gray-700 border-gray-300 hover:border-indigo-300 hover:bg-indigo-50/40 hover:text-indigo-700'
+                      } ${isReadOnly ? 'opacity-60 cursor-not-allowed pointer-events-none' : ''}`}
+                    >
+                      <span className={`w-4 h-4 rounded border flex items-center justify-center text-[10px] font-black ${
+                        selected ? 'border-white bg-white text-indigo-700' : 'border-gray-400 bg-white text-transparent'
+                      }`}>
+                        ✓
+                      </span>
+                      <span>{option}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
+            {/* Next 3 fields on the same line */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Field label="Level of Land with Topographical Conditions">
                 <input
                   type="text"
@@ -1156,38 +1230,27 @@ export default function AxisAGRI({
               <Field label="Any Construction Observed on Plot">
                 <select
                   className={selectCls}
-                  value={fields.constructionObservedOnPlot || 'Yes'}
+                  value={fields.constructionObservedOnPlot || ''}
                   onChange={e => handleChange('constructionObservedOnPlot', e.target.value)}
                   disabled={isReadOnly}
                 >
+                  <option value="">Select Option</option>
                   <option value="Yes">Yes</option>
                   <option value="No">No</option>
                 </select>
               </Field>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Whether Situated in Municipal / Corporation Limit">
                 <select
                   className={selectCls}
-                  value={fields.situatedInMunicipalLimit || 'No'}
+                  value={fields.situatedInMunicipalLimit || ''}
                   onChange={e => handleChange('situatedInMunicipalLimit', e.target.value)}
                   disabled={isReadOnly}
                 >
+                  <option value="">Select Option</option>
                   <option value="Yes">Yes</option>
                   <option value="No">No</option>
                 </select>
-              </Field>
-
-              <Field label="Municipal / Gram Panchayat Details">
-                <input
-                  type="text"
-                  className={inputCls}
-                  value={fields.municipalLimitDetails || ''}
-                  onChange={e => handleChange('municipalLimitDetails', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder=""
-                />
               </Field>
             </div>
           </div>
@@ -1227,47 +1290,134 @@ export default function AxisAGRI({
           </div>
 
           {/* Card C: (C) Commercial / Industrial Property */}
-          <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs">
-            <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">(C) Commercial / Industrial Property & Transport</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <Field label="Commercial / Industrial Property Subtype">
-                <select
-                  className={selectCls}
-                  value={fields.commercialPropertySubtype || 'Godown'}
-                  onChange={e => handleChange('commercialPropertySubtype', e.target.value)}
-                  disabled={isReadOnly}
-                >
-                  <option value="Commercial">Commercial</option>
-                  <option value="Independent house">Independent house</option>
-                  <option value="Row House">Row House</option>
-                  <option value="Unit in a mall">Unit in a mall</option>
-                  <option value="Godown">Godown</option>
-                  <option value="Industrial">Industrial</option>
-                  <option value="Shop">Shop</option>
-                </select>
-              </Field>
-
-              <Field label="Availability of Local Transport">
-                <div className="grid grid-cols-2 gap-2 pt-1">
-                  {['Metro', 'Local Train', 'Bus', 'Personal Transport'].map(item => {
-                    const checked = (fields.availabilityLocalTransport || []).includes(item);
+          <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 mb-5 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+              <h3 className="font-semibold text-blue-800 text-sm tracking-wide uppercase">
+                (C) Commercial / Industrial Property
+              </h3>
+              {/* Option to select Commercial or Industrial */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-gray-500 uppercase">Category:</span>
+                <div className="inline-flex rounded-lg p-0.5 bg-blue-100/80 border border-blue-200">
+                  {['Commercial', 'Industrial'].map((typeOpt) => {
+                    const isSelected = (fields.commercialPropertyType || 'Commercial') === typeOpt;
                     return (
-                      <label key={item} className="flex items-center gap-2 text-xs font-medium cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={() => handleToggleMulti('availabilityLocalTransport', item)}
-                          disabled={isReadOnly}
-                          className="rounded text-blue-600 focus:ring-blue-500"
-                        />
-                        <span>{item}</span>
-                      </label>
+                      <button
+                        key={typeOpt}
+                        type="button"
+                        disabled={isReadOnly}
+                        onClick={() => handleChange('commercialPropertyType', typeOpt)}
+                        className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
+                          isSelected
+                            ? 'bg-blue-600 text-white shadow-xs'
+                            : 'text-blue-900 hover:text-blue-700'
+                        } ${isReadOnly ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                      >
+                        {typeOpt}
+                      </button>
                     );
                   })}
                 </div>
-              </Field>
+              </div>
             </div>
 
+            {/* Dedicated Line: Commercial / Industrial Property Subtype multi-select */}
+            <div className="mb-5">
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">
+                Commercial / Industrial Property Subtype
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                {[
+                  'Independent house',
+                  'Row House',
+                  'Unit in a mall',
+                  'Godown',
+                  'Industrial',
+                  'Shop',
+                ].map((opt) => {
+                  const selected = (() => {
+                    const val = fields.commercialPropertySubtype;
+                    if (Array.isArray(val)) return val.includes(opt);
+                    if (typeof val === 'string' && val.trim()) {
+                      const parts = val.split(',').map(s => s.trim().toLowerCase());
+                      return parts.includes(opt.toLowerCase());
+                    }
+                    return false;
+                  })();
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      disabled={isReadOnly}
+                      onClick={() => {
+                        const currentList = (() => {
+                          const val = fields.commercialPropertySubtype;
+                          if (Array.isArray(val)) return [...val];
+                          if (typeof val === 'string' && val.trim()) {
+                            return val.split(',').map(s => s.trim()).filter(Boolean);
+                          }
+                          return [];
+                        })();
+                        const nextList = currentList.some(item => item.toLowerCase() === opt.toLowerCase())
+                          ? currentList.filter(item => item.toLowerCase() !== opt.toLowerCase())
+                          : [...currentList, opt];
+                        handleChange('commercialPropertySubtype', nextList.join(', '));
+                      }}
+                      className={`flex items-center justify-center gap-2 px-3 py-2 rounded-xl border text-xs font-bold tracking-wide transition-all duration-150 cursor-pointer select-none ${
+                        selected
+                          ? 'bg-blue-600 text-white border-blue-600 ring-2 ring-blue-200 shadow-xs'
+                          : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300 hover:bg-blue-50/40 hover:text-blue-700'
+                      } ${isReadOnly ? 'opacity-60 cursor-not-allowed pointer-events-none' : ''}`}
+                    >
+                      <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center text-[9px] font-black ${
+                        selected ? 'border-white bg-white text-blue-700' : 'border-gray-400 bg-white text-transparent'
+                      }`}>
+                        ✓
+                      </span>
+                      <span>{opt}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Availability of Local Transport */}
+            <div>
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">
+                Availability of Local Transport
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                {['Metro', 'Local Train', 'Bus', 'Personal Transport'].map(item => {
+                  const checked = (fields.availabilityLocalTransport || []).includes(item);
+                  return (
+                    <button
+                      key={item}
+                      type="button"
+                      disabled={isReadOnly}
+                      onClick={() => handleToggleMulti('availabilityLocalTransport', item)}
+                      className={`flex items-center justify-center gap-2 px-3 py-2 rounded-xl border text-xs font-bold tracking-wide transition-all duration-150 cursor-pointer select-none ${
+                        checked
+                          ? 'bg-blue-600 text-white border-blue-600 ring-2 ring-blue-200 shadow-xs'
+                          : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300 hover:bg-blue-50/40 hover:text-blue-700'
+                      } ${isReadOnly ? 'opacity-60 cursor-not-allowed pointer-events-none' : ''}`}
+                    >
+                      <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center text-[9px] font-black ${
+                        checked ? 'border-white bg-white text-blue-700' : 'border-gray-400 bg-white text-transparent'
+                      }`}>
+                        ✓
+                      </span>
+                      <span>{item}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Card D: (D) Transport & Approach Infrastructure */}
+          <div className="border border-sky-200 bg-sky-50/50 rounded-xl p-5 shadow-xs">
+            <h3 className="font-semibold text-sky-800 mb-4 text-sm tracking-wide uppercase">(D) Infrastructure, Approach Road & Accessibility</h3>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <Field label="Distance from Railway Station">
                 <input
@@ -1296,10 +1446,11 @@ export default function AxisAGRI({
               <Field label="Independent & Accessible Approach Road">
                 <select
                   className={selectCls}
-                  value={fields.independentApproachRoad || 'Yes'}
+                  value={fields.independentApproachRoad || ''}
                   onChange={e => handleChange('independentApproachRoad', e.target.value)}
                   disabled={isReadOnly}
                 >
+                  <option value="">Select Option</option>
                   <option value="Yes">Yes</option>
                   <option value="No">No</option>
                 </select>
@@ -1308,10 +1459,11 @@ export default function AxisAGRI({
               <Field label="Able to Accommodate Fire Extinguisher">
                 <select
                   className={selectCls}
-                  value={fields.accommodateFireExtinguisher || 'Yes'}
+                  value={fields.accommodateFireExtinguisher || ''}
                   onChange={e => handleChange('accommodateFireExtinguisher', e.target.value)}
                   disabled={isReadOnly}
                 >
+                  <option value="">Select Option</option>
                   <option value="Yes">Yes</option>
                   <option value="No">No</option>
                 </select>
@@ -1322,10 +1474,11 @@ export default function AxisAGRI({
               <Field label="Falls Under Land Locked Area">
                 <select
                   className={selectCls}
-                  value={fields.landLockedArea || 'No'}
+                  value={fields.landLockedArea || ''}
                   onChange={e => handleChange('landLockedArea', e.target.value)}
                   disabled={isReadOnly}
                 >
+                  <option value="">Select Option</option>
                   <option value="Yes">Yes</option>
                   <option value="No">No</option>
                 </select>
@@ -1339,13 +1492,15 @@ export default function AxisAGRI({
                     value={fields.corneredOrIntermittent || ''}
                     onChange={e => handleChange('corneredOrIntermittent', e.target.value)}
                     disabled={isReadOnly}
+                    placeholder="Details if any"
                   />
                   <select
                     className={`${selectCls} w-1/3`}
-                    value={fields.corneredOrIntermittentVal || 'No'}
+                    value={fields.corneredOrIntermittentVal || ''}
                     onChange={e => handleChange('corneredOrIntermittentVal', e.target.value)}
                     disabled={isReadOnly}
                   >
+                    <option value="">Select</option>
                     <option value="Yes">Yes</option>
                     <option value="No">No</option>
                   </select>
