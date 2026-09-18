@@ -78,7 +78,7 @@ export default function AnnapurnaMicroFinance({
     const raw = (typeof initialFields === 'object' && initialFields !== null) ? initialFields : {};
     return {
       // Section 1: Application Details
-      refNo: raw.refNo || (projectCode ? `AFPL/${projectCode}` : 'AFPL/'),
+      refNo: raw.refNo || projectCode || projectId || '',
       reportDate: formatReportDate(raw.reportDate || raw.dateOfValuation || new Date()),
       fileNo: raw.fileNo || '',
       dateOfVisit: formatReportDate(raw.dateOfVisit || raw.dateOfInspection || prefill?.inspectionDate || ''),

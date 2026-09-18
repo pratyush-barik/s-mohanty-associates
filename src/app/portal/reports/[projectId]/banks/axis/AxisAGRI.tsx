@@ -71,8 +71,7 @@ export default function AxisAGRI({
 
   // ── Auto-derive default REF NO: from projectCode or projectId ──
   const defaultRefNo = useMemo(() => {
-    const id = projectCode || projectId || '';
-    return id ? (id.toLowerCase().startsWith('axis/') ? id : `Axis/${id}`) : '';
+    return projectCode || projectId || '';
   }, [projectCode, projectId]);
 
   // ── Find First Field Engineer Visit Date (Earliest Initiation) ──

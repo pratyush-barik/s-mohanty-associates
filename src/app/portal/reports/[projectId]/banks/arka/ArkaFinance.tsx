@@ -246,13 +246,13 @@ export default function ArkaFinance({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Auto-fill refNo from projectId
+  // Auto-fill refNo from projectCode or projectId
   useEffect(() => {
-    if (!fields.refNo && projectId) {
-      setFields((p: any) => ({ ...p, refNo: projectId }));
+    if (!fields.refNo && (projectCode || projectId)) {
+      setFields((p: any) => ({ ...p, refNo: projectCode || projectId }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId]);
+  }, [projectCode, projectId]);
 
   // Mathematical Dependencies & Auto-Calculation Logic
   useEffect(() => {

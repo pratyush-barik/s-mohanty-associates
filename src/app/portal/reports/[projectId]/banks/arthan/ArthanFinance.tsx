@@ -87,7 +87,7 @@ export default function ArthanFinance({
       dateOfValuation: formatReportDate(raw.dateOfValuation || raw.dateOfReportSubmission || new Date()),
 
       // Section 1 — Technical Initiation Request Form Data
-      proposalNo: raw.proposalNo || (projectCode ? `AFPL/${projectCode}` : ''),
+      proposalNo: raw.proposalNo || projectCode || projectId || '',
       caseType: raw.caseType || 'SBL',
       dateOfInspection: formatReportDate(raw.dateOfInspection || prefill?.inspectionDate || ''),
       nearestLandmark: raw.nearestLandmark || '',

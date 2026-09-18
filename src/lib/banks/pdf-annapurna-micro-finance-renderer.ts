@@ -409,7 +409,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     // 1. Ref No & Date (Times-Bold, 12pt)
     const yHead = this.pdfY(this.cursorY);
     const fontB = this.fontBold;
-    const refText = `Ref No: ${this.sanitizeText(fields.refNo || 'AFPL/07-26/02')}`;
+    const refText = `Ref No: ${this.sanitizeText(fields.refNo || '')}`;
     this.page.drawText(refText, {
       x: MARGIN_L,
       y: yHead - FONT_SIZE,
