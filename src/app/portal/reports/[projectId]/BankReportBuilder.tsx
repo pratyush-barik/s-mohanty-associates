@@ -2638,7 +2638,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
             onUploadExcel={handleAnnexureUpload}
             onRemoveFile={removeAnnexureFile}
             sectionNumber={getSectionNumber(`section-${isApartmentFlat ? 14 : 15}`, isApartmentFlat ? 14 : 15)}
-            sectionId={`section-${isApartmentFlat ? 14 : 15}`}
+            sectionId="annexures"
           />
         )}
 
