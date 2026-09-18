@@ -41,7 +41,7 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     const newCols = cols.map(c => ({
       ...c,
       labelBold: true,
-      valueBold: false
+      valueBold: c.valueBold === true ? true : false
     }));
     super.drawKeyValueRow(newCols);
   }
@@ -117,9 +117,6 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     curX += labelW;
 
     // Draw Value Cell
-    if (isHighlighted) {
-      this.page.drawRectangle({ x: curX, y: y - rowH, width: valueW, height: rowH, color: hexToRgb('#FFF2CC'), opacity: 0.5 });
-    }
     this.page.drawRectangle({ x: curX, y: y - rowH, width: valueW, height: rowH, borderColor: rgb(0,0,0), borderWidth: 1 });
 
     lineY = y - 3 - FONT_SIZE * 0.85;
