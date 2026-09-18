@@ -78,22 +78,32 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     
     for (let i = 0; i < options.length; i++) {
       const opt = options[i];
-      const isSelected = selectedVals.includes(opt.trim().toUpperCase());
+      // When checking if selected, ignore the \n parts
+      const cleanOpt = opt.replace(/\n/g, ' ');
+      const isSelected = selectedVals.includes(cleanOpt.trim().toUpperCase());
       const boxText = isSelected ? '[X] ' : '[ ] ';
-      const optText = opt;
       const fontToUse = isSelected ? this.fontBold : this.fontRegular;
       
-      const fullText = boxText + optText;
-      const textW = fontToUse.widthOfTextAtSize(fullText, FONT_SIZE);
-      const padding = i < options.length - 1 ? 15 : 0;
+      const parts = opt.split('\n');
       
-      if (currentLineW + textW > valueW - 6 && currentLineW > 0) {
-        valueLines.push([]);
-        currentLineW = 0;
+      for (let j = 0; j < parts.length; j++) {
+        const fullText = (j === 0 ? boxText : '      ') + parts[j].trim();
+        const textW = fontToUse.widthOfTextAtSize(fullText, FONT_SIZE);
+        const padding = (i < options.length - 1 && j === parts.length - 1) ? 15 : 0;
+        
+        if (currentLineW + textW > valueW - 6 && currentLineW > 0) {
+          valueLines.push([]);
+          currentLineW = 0;
+        }
+        
+        valueLines[valueLines.length - 1].push({ text: fullText, isSelected, fontToUse, width: textW + padding });
+        currentLineW += textW + padding;
+
+        if (j < parts.length - 1) {
+           valueLines.push([]);
+           currentLineW = 0;
+        }
       }
-      
-      valueLines[valueLines.length - 1].push({ text: fullText, isSelected, fontToUse, width: textW + padding });
-      currentLineW += textW + padding;
     }
 
     const labelLines = this.wrapText(label, labelW - 6, FONT_SIZE, true);
@@ -401,15 +411,15 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     let amenities = [];
     if ((fields as any).axisSbbBasicAmenitiesElectricity) amenities.push('ELECTRICITY');
     if ((fields as any).axisSbbBasicAmenitiesWater) amenities.push('WATER');
-    if ((fields as any).axisSbbBasicAmenitiesDrainage) amenities.push('DRAINAGE CONNECTION');
+    if ((fields as any).axisSbbBasicAmenitiesDrainage) amenities.push('DRAINAGE\nCONNECTION');
 
-    const h3 = this.drawListCheck('DOES PROPERTY HAVE BASIC AMENITIES', amenities, !!(fields as any).axisSbbBasicAmenitiesIsNA, ['ELECTRICITY', 'WATER', 'DRAINAGE CONNECTION'], false, MARGIN_L, splitW, true, true);
+    const h3 = this.drawListCheck('DOES PROPERTY HAVE BASIC AMENITIES', amenities, !!(fields as any).axisSbbBasicAmenitiesIsNA, ['ELECTRICITY', 'WATER', 'DRAINAGE\nCONNECTION'], false, MARGIN_L, splitW, true, true);
     const h4 = this.drawListCheck('DEVELOPMENT OF SURROUNDING AREA', val('axisSbbDevelopmentSurroundingArea'), !!(fields as any).axisSbbDevelopmentSurroundingAreaIsNA, ['UNDER DEVELOPED', 'DEVELOPING', 'DEVELOPED'], false, MARGIN_L + splitW, splitW, true, true);
     
     maxH = Math.max(h3, h4);
     this.checkPageBreak(maxH);
     
-    this.drawListCheck('DOES PROPERTY HAVE BASIC AMENITIES', amenities, !!(fields as any).axisSbbBasicAmenitiesIsNA, ['ELECTRICITY', 'WATER', 'DRAINAGE CONNECTION'], false, MARGIN_L, splitW, true, false, maxH);
+    this.drawListCheck('DOES PROPERTY HAVE BASIC AMENITIES', amenities, !!(fields as any).axisSbbBasicAmenitiesIsNA, ['ELECTRICITY', 'WATER', 'DRAINAGE\nCONNECTION'], false, MARGIN_L, splitW, true, false, maxH);
     this.drawListCheck('DEVELOPMENT OF SURROUNDING AREA', val('axisSbbDevelopmentSurroundingArea'), !!(fields as any).axisSbbDevelopmentSurroundingAreaIsNA, ['UNDER DEVELOPED', 'DEVELOPING', 'DEVELOPED'], false, MARGIN_L + splitW, splitW, true, false, maxH);
     this.cursorY += maxH;
     
