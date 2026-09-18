@@ -1112,9 +1112,13 @@ export default function AnnapurnaMicroFinance({
             <Field label="Construction Plan Details (Sanctioned/Permit No)">
               <input className={inputCls} value={fields.constructionPlanNo || 'NA'} onChange={e => handleChange('constructionPlanNo', e.target.value)} disabled={isReadOnly} />
             </Field>
-            <Field label="Date of Sanction">
-              <input className={inputCls} value={fields.dateOfSanction || 'NA'} onChange={e => handleChange('dateOfSanction', e.target.value)} disabled={isReadOnly} />
-            </Field>
+            <BaseDateInput
+              label="Date of Sanction"
+              value={fields.dateOfSanction === 'NA' ? '' : (fields.dateOfSanction || '')}
+              onChange={val => handleChange('dateOfSanction', val)}
+              placeholder="DD/MM/YYYY or NA"
+              disabled={isReadOnly}
+            />
             <Field label="Plan Validity">
               <input className={inputCls} value={fields.planValidity || 'NA'} onChange={e => handleChange('planValidity', e.target.value)} disabled={isReadOnly} />
             </Field>

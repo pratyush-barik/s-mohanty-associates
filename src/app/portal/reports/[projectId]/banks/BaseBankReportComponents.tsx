@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { normalizeMapImages } from '@/lib/bank-fields';
 import { DEFAULT_LETTERHEAD_PATH, fetchDefaultLetterhead, fetchBytes, formatReportDate } from '@/lib/pdf-bank-renderer';
 import { SERVICES_LIST } from '../constants';
@@ -156,8 +156,8 @@ export function toISODate(d?: string | null | Date): string {
     return d.toISOString().split('T')[0];
   }
   const t = String(d).trim();
-  if (!t) return '';
-  const ddmmyyyy = t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (!t || t === 'NA' || t === 'N/A') return '';
+  const ddmmyyyy = t.match(/^(\d{1,2})[\/\.](\d{1,2})[\/\.](\d{4})/);
   if (ddmmyyyy) {
     const [, dd, mm, yyyy] = ddmmyyyy;
     return `${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`;
@@ -196,18 +196,32 @@ export function BaseDateInput({
   max?: string;
   min?: string;
 }) {
+  const hiddenDateRef = useRef<HTMLInputElement>(null);
   const strVal = value || '';
   const isoVal = toISODate(strVal);
 
+  const handleOpenPicker = () => {
+    if (disabled) return;
+    try {
+      if (hiddenDateRef.current && typeof (hiddenDateRef.current as any).showPicker === 'function') {
+        (hiddenDateRef.current as any).showPicker();
+      } else {
+        hiddenDateRef.current?.click();
+      }
+    } catch {
+      hiddenDateRef.current?.click();
+    }
+  };
+
   const inputContent = (
-    <div className="relative flex items-center w-full">
+    <div className="relative flex items-center w-full group">
       <input
         type="text"
-        className={`${inputCls} pr-9 ${className}`.trim()}
+        className={`${inputCls} pr-10 ${className}`.trim()}
         value={strVal}
         onChange={e => onChange(e.target.value)}
         onBlur={() => {
-          if (strVal && strVal.trim() && strVal !== 'NA') {
+          if (strVal && strVal.trim() && strVal !== 'NA' && strVal !== 'N/A') {
             const formatted = formatReportDate(strVal);
             if (formatted && formatted !== '________' && formatted !== strVal) {
               onChange(formatted);
@@ -217,21 +231,37 @@ export function BaseDateInput({
         disabled={disabled}
         placeholder={placeholder}
       />
-      {!disabled && (
-        <div className="absolute right-2.5 flex items-center pointer-events-auto">
+      {!disabled ? (
+        <div className="absolute right-1.5 flex items-center">
           <input
+            ref={hiddenDateRef}
             type="date"
             value={isoVal}
             max={max ? toISODate(max) : undefined}
             min={min ? toISODate(min) : undefined}
             tabIndex={-1}
-            className="opacity-0 absolute inset-0 w-6 h-6 cursor-pointer"
-            title="Choose Date"
+            aria-hidden="true"
+            className="opacity-0 absolute pointer-events-none w-0 h-0"
             onChange={e => {
-              if (e.target.value) onChange(formatReportDate(e.target.value));
+              if (e.target.value) {
+                onChange(formatReportDate(e.target.value));
+              }
             }}
           />
-          <svg className="w-4 h-4 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <button
+            type="button"
+            onClick={handleOpenPicker}
+            title="Choose date from calendar"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-slate-100 transition-colors cursor-pointer flex items-center justify-center"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </button>
+        </div>
+      ) : (
+        <div className="absolute right-2.5 flex items-center pointer-events-none text-slate-300">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
         </div>

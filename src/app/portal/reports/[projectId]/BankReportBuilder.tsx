@@ -1857,6 +1857,13 @@ export default function BankReportBuilder({
               </select>
             );
           })()
+        ) : ef.type === 'date' ? (
+          <BaseDateInput
+            value={val || ''}
+            onChange={v => handleChange(ef.key, v)}
+            disabled={isReadOnly || ef.readOnly}
+            placeholder="DD/MM/YYYY"
+          />
         ) : (
           <input
             type={ef.type || 'text'}

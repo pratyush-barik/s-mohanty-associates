@@ -3668,7 +3668,13 @@ Our valuation is based on information obtained from the client and on data gathe
           <Section title="Town Planning Parameters" number={5}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="5.1 Master plan provision, related to property in terms of land use" span={2}><textarea rows={2} value={fields.masterPlanProvision} onChange={e => handleChange('masterPlanProvision', e.target.value)} className={inputCls + ' resize-none'} placeholder="e.g. WHOLESALE COMMERCIAL ZONE AS PER CDP" disabled={isReadOnly} /></Field>
-              <Field label="5.2 Date of issue of approved building plan"><input type="text" value={fields.approvedPlanDate || ''} onChange={e => handleChange('approvedPlanDate', e.target.value)} className={inputCls} placeholder="e.g. NOT PROVIDED" disabled={isReadOnly} /></Field>
+              <BaseDateInput
+                label="5.2 Date of issue of approved building plan"
+                value={fields.approvedPlanDate || ''}
+                onChange={val => handleChange('approvedPlanDate', val)}
+                placeholder="e.g. NOT PROVIDED or DD/MM/YYYY"
+                disabled={isReadOnly}
+              />
               <Field label="5.3 Approved map/plan issuing authority"><input type="text" value={fields.approvedPlanAuthority} onChange={e => handleChange('approvedPlanAuthority', e.target.value)} className={inputCls} placeholder="e.g. NOT PROVIDED" disabled={isReadOnly} /></Field>
               <Field label="5.4 Whether genuineness or authenticity of the approved map/plan"><input type="text" value={fields.planGenuineness || ''} onChange={e => handleChange('planGenuineness', e.target.value)} className={inputCls} placeholder="e.g. APPROVED PLAN NOT PRODUCED" disabled={isReadOnly} /></Field>
               <Field label="5.5 Any comments over the authenticity of the building plan approval"><input type="text" value={fields.planAuthenticityComments || ''} onChange={e => handleChange('planAuthenticityComments', e.target.value)} className={inputCls} placeholder="e.g. APPROVED PLAN NOT PRODUCED" disabled={isReadOnly} /></Field>
