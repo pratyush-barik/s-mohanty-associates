@@ -476,7 +476,9 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     const address = (fields as any).axisSbbAddressOfTheProperty || '';
     
     // Auto-fill computations
-    const plotComputed = address.split(/MOUZA|VILLAGE/i)[0].trim().toUpperCase() || '';
+    let plotComputedStr = address.split(/MOUZA|VILLAGE|MZ\s*-/i)[0].trim();
+    if (plotComputedStr.endsWith(',')) plotComputedStr = plotComputedStr.slice(0, -1).trim();
+    const plotComputed = plotComputedStr.toUpperCase() || '';
     const mouzaMatch = address.match(/(?:MOUZA|VILLAGE)[-\s]*(.*?)(?=,|$|DIST)/i);
     const mouzaComputed = mouzaMatch ? mouzaMatch[0].toUpperCase() : '';
     const distMatch = address.match(/DIST(?:RICT)?[-\s]*(.*?)(?=,|-|PIN|$)/i);

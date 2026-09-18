@@ -884,7 +884,9 @@ export const AXIS_SBB_CONFIG: BankConfig = {
         const address = fields.axisSbbAddressOfTheProperty || '';
         
         // Auto-fill computations from address
-        const plotComputed = address.split(/MOUZA|VILLAGE/i)[0].trim().toUpperCase() || 'KHATA NO. XX, PLOT NO. YY';
+        let plotComputedStr = address.split(/MOUZA|VILLAGE|MZ\s*-/i)[0].trim();
+        if (plotComputedStr.endsWith(',')) plotComputedStr = plotComputedStr.slice(0, -1).trim();
+        const plotComputed = plotComputedStr.toUpperCase() || 'KHATA NO. XX, PLOT NO. YY';
         const mouzaMatch = address.match(/(?:MOUZA|VILLAGE)[-\s]*(.*?)(?=,|$|DIST)/i);
         const mouzaComputed = mouzaMatch ? mouzaMatch[0].toUpperCase() : '';
         const distMatch = address.match(/DIST(?:RICT)?[-\s]*(.*?)(?=,|-|PIN|$)/i);
@@ -941,16 +943,13 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">LEASE/SALE DEED NUMBER(S) & DATE <span className="text-red-500">*</span></label>
                       {renderNaToggle('axisSbbDeedNumberDate')}
                     </div>
-                    {renderEditSwitch('axisSbbDeedNumberDate', !!fields.axisSbbDeedNumberDateIsNA)}
                   </div>
                   <textarea
                     className={`${inputCls} resize-y min-h-10`}
                     rows={1}
-                    value={fields.axisSbbDeedNumberDateIsNA ? 'NA' : (fields.axisSbbDeedNumberDateEditOn ? (fields.axisSbbDeedNumberDate || '') : (fields.axisSbbDeedNumberDate || ''))}
+                    value={fields.axisSbbDeedNumberDateIsNA ? 'NA' : (fields.axisSbbDeedNumberDate || '')}
                     onChange={e => handleChange('axisSbbDeedNumberDate', e.target.value.toUpperCase())}
-                    readOnly={!fields.axisSbbDeedNumberDateEditOn || fields.axisSbbDeedNumberDateIsNA}
-                    disabled={isReadOnly || (!fields.axisSbbDeedNumberDateEditOn && !fields.axisSbbDeedNumberDateIsNA)}
-                    placeholder="2108, DATED-22.08.2005"
+                    disabled={isReadOnly || fields.axisSbbDeedNumberDateIsNA}
                   />
                 </div>
 
