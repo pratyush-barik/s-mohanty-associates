@@ -114,31 +114,26 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     }
     // Intercept standard section 4
     if (title.toUpperCase() === 'PROPERTY IDENTIFICATION & POSTAL ADDRESS') {
-      super.drawSectionHeader('PROPERTY IDENTIFICATION & POSTAL ADDRESS', addSpaceBefore, preserveCase);
       this.drawSbbSection4();
       return;
     }
     // Intercept standard section 5
     if (title.toUpperCase() === 'PROPERTY CHARACTERISTICS & PHYSICAL SITE ASSESSMENT') {
-      super.drawSectionHeader('PROPERTY CHARACTERISTICS & PHYSICAL SITE ASSESSMENT', addSpaceBefore, preserveCase);
       this.drawSbbSection5();
       return;
     }
     // Intercept standard section 6
     if (title.toUpperCase() === 'BOUNDARIES, ACCESSIBILITY & SITE RISK CHECKS') {
-      super.drawSectionHeader('BOUNDARIES, ACCESSIBILITY & SITE RISK CHECKS', addSpaceBefore, preserveCase);
       this.drawSbbSection6();
       return;
     }
     // Intercept standard section 7
     if (title.toUpperCase() === 'STRUCTURE, TENANCY & PLANNING APPROVALS') {
-      super.drawSectionHeader('STRUCTURE, TENANCY & PLANNING APPROVALS', addSpaceBefore, preserveCase);
       this.drawSbbSection7();
       return;
     }
     // Intercept standard section 8
     if (title.toUpperCase() === 'CONSTRUCTION BREAKDOWN & BUILDING DETAILS') {
-      super.drawSectionHeader('PLANNING, FLOOR BREAK UP & CONSTRUCTION COMPLIANCE', addSpaceBefore, preserveCase);
       this.drawSbbSection8();
       return;
     }
@@ -150,7 +145,6 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     }
     // Intercept standard section 10
     if (title.toUpperCase().includes('10. REMARKS & UNDERTAKING')) {
-      super.drawSectionHeader('10. REMARKS & UNDERTAKING', addSpaceBefore, preserveCase);
       this.drawSbbSection10();
       return;
     }
@@ -182,8 +176,6 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       return computed;
     };
 
-    this.drawSectionSubtitle('OCCUPANCY DETAILS & STRUCTURE CLASSIFICATION');
-    
     // Type of structure
     let structTypes = [];
     if ((fields as any).axisSbbTypeOfStructureGCI) structTypes.push('GCI');
@@ -321,8 +313,6 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     
     this.drawSimpleRow('Total Saleable Area', val('axisSbbTotalSaleableArea', computedSaleable));
     
-    this.drawSectionSubtitle('BYE-LAWS COMPLIANCE, QUALITY & STRUCTURE LIFE');
-
     this.drawSimpleRow('Construction As Per Approved Building Plan/Local Bye Laws', val('axisSbbConstructionAsPerApprovedPlan'));
     this.drawSimpleRow('FSI As Per Plan Approval / Govt. Guideline & Actual FSI', val('axisSbbFSIAsPerPlan'));
 
@@ -377,8 +367,6 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     const acres = (fields as any).axisSbbPlotAreaAcres || '0.000';
     const areaComputed = `${sqft} SQFT (AC.${acres}DECS)`.toUpperCase();
 
-    this.drawSectionSubtitle('ACCESSIBILITY/ BOUNDARIES/OTHERS (Physical Access & Site Risk Checks)');
-    
     this.drawKeyValueRow([
       { label: 'Does Approach Road is Small?', value: val('axisSbbApproachRoadSmall') },
       { label: 'Remark', value: val('axisSbbApproachRoadRemark', remarkComputed) }
@@ -404,8 +392,6 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     ];
     this.drawTable(headers, rows, [140, 184, 184], [], [0]);
     this.advanceCursor(10);
-    
-    this.drawSectionSubtitle('PLOT AREA, LOCALITY, INFRASTRUCTURE & USAGE');
     
     this.drawKeyValueRow([
       { label: 'Plot Area (As per Documents)', value: val('axisSbbPlotAreaAsPerDocument') },
@@ -453,8 +439,6 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
 
     const stationComputed = `${stationDistKm}-KMS (${stationName} RAILWAY STATION)`.toUpperCase();
     const busStopComputed = `${busStopDistKm}-KMS. (${busStopName} BUS STOP)`.toUpperCase();
-    
-    this.drawSectionSubtitle('TYPE OF PROPERTY');
     
     this.drawKeyValueRow([
       { label: '(A) PLOT/UNDER CONSTRUCTION', value: val('axisSbbPropertyType') },
@@ -510,8 +494,6 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       }
       return computed || '';
     };
-    
-    this.drawSectionSubtitle('CADASTRAL & POSTAL ADDRESS DETAILS');
     
     this.drawKeyValueRow([
       { label: 'LEASE/SALE DEED NUMBER(S)', value: val('axisSbbDeedNumberDate', String((fields as any).axisSbbDeedNumberDate || '')) }
@@ -930,7 +912,6 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     this.cursorY += 10;
 
     // --- Summary Cards ---
-    this.drawSectionSubtitle('Final Valuation Summary');
     this.drawKeyValueRow([
       { label: 'Market Value', value: numVal('axisSbbFinalMarketValue', marketValueComp.toFixed(2)) },
       { label: 'Distressed / Forced Sale Value (90%)', value: numVal('axisSbbFinalDistressValue', distressValueComp.toFixed(2)) }
@@ -973,7 +954,6 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
 
     const synthesizedRemarks = `The subject property is a ${structVal} structured building (${floorBreakdown}) having total land area of ${areaStr} and total built-up area of ${buaStr} sq.ft. The property is approximately ${age} years old and currently ${occupancy}. It is located at ${location} under the jurisdiction of ${corp}. Basic civic amenities are ${civicRadius}. The property is situated at a distance of ${cityDist} from the city centre and is accessible via a ${approachRoad}. Structure compliance to byelaws: ${farComp}.`;
 
-    this.drawSectionSubtitle('10.1 TECHNICAL INSPECTION REMARKS & SPECIAL NOTES');
     this.drawSimpleRow('REMARKS: -', val('axisSbbRemarks', synthesizedRemarks));
     if (fields.axisSbbRemarksNote && !fields.axisSbbRemarksNoteIsNA) {
       this.drawSimpleRow('NOTE:-', val('axisSbbRemarksNote'));
