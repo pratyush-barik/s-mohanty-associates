@@ -547,24 +547,41 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     
     this.drawSectionSubtitle('DETAILS OF THE PROPERTY BEING VALUED');
     
-    const drawCheckbox = (x: number, y: number, checked: boolean, text: string) => {
+    const drawCheckboxFlex = (x: number, y: number, w: number, options: { label: string, checked: boolean }[]) => {
+      let currentX = x;
+      let currentY = y;
       const boxSize = 8;
-      this.page.drawRectangle({
-        x: x,
-        y: this.pdfY(y) - boxSize + 1,
-        width: boxSize,
-        height: boxSize,
-        borderColor: rgb(0,0,0),
-        borderWidth: 1
-      });
-      const font = checked ? this.fontBold : this.fontRegular;
-      this.page.drawText(text, {
-        x: x + boxSize + 4,
-        y: this.pdfY(y),
-        size: FONT_SIZE,
-        font: font,
-        color: rgb(0,0,0)
-      });
+      
+      for (const opt of options) {
+        const font = opt.checked ? this.fontBold : this.fontRegular;
+        const textWidth = font.widthOfTextAtSize(opt.label, FONT_SIZE);
+        const itemWidth = boxSize + 4 + textWidth + 15;
+        
+        if (currentX + itemWidth > x + w && currentX > x) {
+          currentX = x;
+          currentY += 16;
+        }
+        
+        this.page.drawRectangle({
+          x: currentX,
+          y: this.pdfY(currentY) - boxSize + 1,
+          width: boxSize,
+          height: boxSize,
+          borderColor: rgb(0,0,0),
+          borderWidth: 1
+        });
+        
+        this.page.drawText(opt.label, {
+          x: currentX + boxSize + 4,
+          y: this.pdfY(currentY),
+          size: FONT_SIZE,
+          font: font,
+          color: rgb(0,0,0)
+        });
+        
+        currentX += itemWidth;
+      }
+      return currentY + 16;
     };
 
     const drawRow = (leftText: string, drawRight: (x: number, y: number, w: number) => number) => {
@@ -609,22 +626,28 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     drawRow('LOCATION OF PROPERTY', (x, y, w) => {
       let cy = y;
       const loc = fields.axisSbbPropertyLocation || '';
-      drawCheckbox(x, cy, loc === 'Urban', 'URBAN');
-      drawCheckbox(x + 70, cy, loc === 'Semi-Urban', 'SEMI-URBAN');
-      drawCheckbox(x + 165, cy, loc === 'Rural/Gram Panchayat', 'RURAL/GRAM PANCHAYAT');
       
-      cy += 16;
+      cy = drawCheckboxFlex(x, cy, w, [
+        { label: 'URBAN', checked: loc === 'Urban' },
+        { label: 'SEMI-URBAN', checked: loc === 'Semi-Urban' },
+        { label: 'RURAL/GRAM PANCHAYAT', checked: loc === 'Rural/Gram Panchayat' }
+      ]);
+      
       const gov = fields.axisSbbGoverningBody || '';
-      drawCheckbox(x, cy, gov === 'Corporation', 'CORPORATION');
-      drawCheckbox(x + 100, cy, gov === 'Municipality', 'MUNICIPALITY');
-      drawCheckbox(x + 200, cy, gov === 'Town or Gram Panchayat or Rural', 'TOWN OR GRAM PANCHAYAT OR RURAL');
+      cy = drawCheckboxFlex(x, cy, w, [
+        { label: 'CORPORATION', checked: gov === 'Corporation' },
+        { label: 'MUNICIPALITY', checked: gov === 'Municipality' },
+        { label: 'TOWN OR GRAM PANCHAYAT OR RURAL', checked: gov === 'Town or Gram Panchayat or Rural' }
+      ]);
       
-      cy += 24;
-      this.page.drawText('IF TOWN OR GRAM PANCHAYAT, PLEASE CHOOSE THE APPROPRIATE ONE IN BELOW: -', {
-        x: x, y: this.pdfY(cy), size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0)
-      });
+      cy += 4;
+      const introLines = this.wrapText('IF TOWN OR GRAM PANCHAYAT, PLEASE CHOOSE THE APPROPRIATE ONE IN BELOW: -', w, FONT_SIZE, false);
+      for (const line of introLines) {
+        this.page.drawText(line, { x: x, y: this.pdfY(cy), size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
+        cy += 14;
+      }
+      cy += 6;
       
-      cy += 20;
       const t = fields.axisSbbTownPlanningSubType || '';
       
       const drawType = (label: string, text: string, isChecked: boolean) => {
@@ -661,21 +684,18 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     drawRow('DOCUMENTS PROVIDED', (x, y, w) => {
       let cy = y;
       
-      drawCheckbox(x, cy, !!fields.axisSbbDocPrevValuation, 'COPY OF PREVIOUS VALUATION REPORT');
-      drawCheckbox(x + 230, cy, !!fields.axisSbbDocApprovedLayout, 'APPROVED LAYOUT');
-      drawCheckbox(x + 360, cy, !!fields.axisSbbDocCommencement, 'COMMENCEMENT');
+      cy = drawCheckboxFlex(x, cy, w, [
+        { label: 'COPY OF PREVIOUS VALUATION REPORT', checked: !!fields.axisSbbDocPrevValuation },
+        { label: 'APPROVED LAYOUT', checked: !!fields.axisSbbDocApprovedLayout },
+        { label: 'COMMENCEMENT', checked: !!fields.axisSbbDocCommencement },
+        { label: 'APPROVED BUILDING PLAN', checked: !!fields.axisSbbDocApprovedBuildingPlan },
+        { label: 'COPY OF SALE. DEED/ PATTA', checked: !!fields.axisSbbDocSaleDeed },
+        { label: 'CERTIFICATE', checked: !!fields.axisSbbDocCommencement },
+        { label: 'OCCUPANCY CERTIFICATE', checked: !!fields.axisSbbDocOccupancy },
+        { label: 'COPY PARTITION DEED', checked: !!fields.axisSbbDocPartitionDeed },
+        { label: 'SKETCH MAP', checked: !!fields.axisSbbDocSketchMap }
+      ]);
       
-      cy += 16;
-      drawCheckbox(x, cy, !!fields.axisSbbDocApprovedBuildingPlan, 'APPROVED BUILDING PLAN');
-      drawCheckbox(x + 160, cy, !!fields.axisSbbDocSaleDeed, 'COPY OF SALE. DEED/ PATTA');
-      drawCheckbox(x + 360, cy, !!fields.axisSbbDocCommencement, 'CERTIFICATE');
-      
-      cy += 16;
-      drawCheckbox(x, cy, !!fields.axisSbbDocOccupancy, 'OCCUPANCY CERTIFICATE');
-      drawCheckbox(x + 160, cy, !!fields.axisSbbDocPartitionDeed, 'COPY PARTITION DEED');
-      drawCheckbox(x + 320, cy, !!fields.axisSbbDocSketchMap, 'SKETCH MAP');
-      
-      cy += 16;
       return cy;
     });
   }
