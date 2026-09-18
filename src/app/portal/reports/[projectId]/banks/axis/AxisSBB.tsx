@@ -2487,7 +2487,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       <th className="p-2 w-28">CONSTRUCTED ACTUAL AREA AS PER SITE (SQ.FT)</th>
                       <th className="p-2 w-28">APPROVED AREA AS PER PLAN(SQ.FT)</th>
                       <th className="p-2 w-28">PERMISSIBLE AREA AS PER BYELAWS (SQ.FT)</th>
-                      <th className="p-2 w-28">AREA CONSIDERED FOR VALUATION (SQ.FT)</th>
+                      <th className="p-2 w-28">AREA CONSIDERED FOR VALUATION (SQ.FT) / FAR 2</th>
                       <th className="p-2 w-48">ACCOMMO DATE TION</th>
                       <th className="p-2 min-w-50">CURRENT USAGE</th>
                       <th className="p-2 w-10"></th>
@@ -2599,6 +2599,37 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         </td>
                       </tr>
                     ))}
+                    {/* Summary Row 1: Built Up Area & Carpet Area Totals */}
+                    <tr className="bg-slate-100 border-t-2 border-slate-300">
+                      <td className="p-2 font-bold text-xs text-slate-700">TOTAL BUILT UP AREA (IN SQFT)</td>
+                      <td className="p-2 font-bold text-slate-800">
+                        <input type="text" className={`${inputCls} font-bold`} readOnly value={computedConstructed} />
+                      </td>
+                      <td className="p-2 font-bold text-gray-400 text-center">NA</td>
+                      <td className="p-2 font-bold text-gray-400 text-center">NA</td>
+                      <td className="p-2 font-bold text-slate-800">
+                        <input type="text" className={`${inputCls} font-bold`} readOnly value={computedValuation} />
+                      </td>
+                      <td className="p-2 font-bold text-gray-400 text-center">NA</td>
+                      <td className="p-2" colSpan={2}>
+                        <div className="flex items-center justify-between bg-amber-50 border border-amber-200 p-1 rounded px-2">
+                          <span className="text-[10px] font-bold text-slate-800 mr-2">TOTAL CARPET AREA(IN SQFT)</span>
+                          <input type="text" className="bg-transparent text-right font-bold w-20 focus:outline-none" readOnly value={computedCarpet} />
+                        </div>
+                      </td>
+                    </tr>
+                    
+                    {/* Summary Row 2: Saleable Area */}
+                    <tr className="bg-slate-200 border-t border-slate-300">
+                      <td className="p-2 font-bold text-xs text-slate-800 text-right pr-4" colSpan={5}>
+                        TOTAL SALEABLE AREA (IN SQFT.)
+                      </td>
+                      <td className="p-2" colSpan={3}>
+                        <div className="flex items-center bg-blue-50 border border-blue-200 p-1 rounded px-2">
+                          <input type="text" className="bg-transparent font-bold w-full focus:outline-none" readOnly value={computedSaleable} />
+                        </div>
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -2607,88 +2638,10 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                 type="button" 
                 onClick={addFloor} 
                 disabled={isReadOnly}
-                className="mb-6 px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-200 hover:bg-slate-300 rounded border border-slate-300 transition-colors flex items-center space-x-1"
+                className="mb-2 px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-200 hover:bg-slate-300 rounded border border-slate-300 transition-colors flex items-center space-x-1"
               >
                 <span>+ Add Floor Row</span>
               </button>
-
-              <div className="bg-white p-4 border border-slate-300 rounded-lg shadow-sm">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                  <div className="flex flex-col border-r pr-3">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] font-bold text-slate-500">
-                        TOTAL BUILT UP AREA <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: SUM(CONSTRUCTED ACTUAL AREA AS PER SITE of all floors) = TOTAL BUILT UP AREA]</span>
-                      </span>
-                      {renderEditSwitch('axisSbbTotalConstructedArea', false)}
-                    </div>
-                    <input 
-                      type="text" 
-                      className={`${inputCls} font-bold text-slate-700`}
-                      value={fields.axisSbbTotalConstructedAreaEditOn ? (fields.axisSbbTotalConstructedArea || '') : computedConstructed}
-                      onChange={e => handleChange('axisSbbTotalConstructedArea', e.target.value.toUpperCase())}
-                      readOnly={!fields.axisSbbTotalConstructedAreaEditOn}
-                      disabled={isReadOnly || !fields.axisSbbTotalConstructedAreaEditOn}
-                    />
-                  </div>
-                  <div className="flex flex-col border-r pr-3">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] font-bold text-slate-500">APPROVED/PERMISSIBLE</span>
-                    </div>
-                    <div className="flex items-center space-x-2 h-full">
-                      <span className="text-gray-400 font-bold text-sm">NA</span>
-                    </div>
-                  </div>
-                  <div className="flex flex-col border-r pr-3">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] font-bold text-slate-500">TOTAL VALUATION AREA</span>
-                      {renderEditSwitch('axisSbbTotalValuationArea', false)}
-                    </div>
-                    <input 
-                      type="text" 
-                      className={`${inputCls} font-bold text-slate-700`}
-                      value={fields.axisSbbTotalValuationAreaEditOn ? (fields.axisSbbTotalValuationArea || '') : computedValuation}
-                      onChange={e => handleChange('axisSbbTotalValuationArea', e.target.value.toUpperCase())}
-                      readOnly={!fields.axisSbbTotalValuationAreaEditOn}
-                      disabled={isReadOnly || !fields.axisSbbTotalValuationAreaEditOn}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-200">
-                  <div className="flex flex-col">
-                    <div className="flex justify-between items-center mb-1">
-                      <label className="block text-xs font-bold text-slate-800 uppercase tracking-wide">
-                        TOTAL CARPET AREA(IN SQFT) <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: TOTAL BUILT UP AREA * 0.85 = TOTAL CARPET AREA]</span>
-                      </label>
-                      {renderEditSwitch('axisSbbTotalCarpetArea', false)}
-                    </div>
-                    <input
-                      type="text"
-                      className={`${inputCls} font-bold bg-amber-50 border-amber-200 focus:ring-amber-400 focus:border-amber-400`}
-                      value={fields.axisSbbTotalCarpetAreaEditOn ? (fields.axisSbbTotalCarpetArea || '') : computedCarpet}
-                      onChange={e => handleChange('axisSbbTotalCarpetArea', e.target.value.toUpperCase())}
-                      readOnly={!fields.axisSbbTotalCarpetAreaEditOn}
-                      disabled={isReadOnly || !fields.axisSbbTotalCarpetAreaEditOn}
-                    />
-                  </div>
-                  <div className="flex flex-col">
-                    <div className="flex justify-between items-center mb-1">
-                      <label className="block text-xs font-bold text-slate-800 uppercase tracking-wide">
-                        TOTAL SALEABLE AREA (IN SQFT.) <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Prefilled from TOTAL CARPET AREA = TOTAL SALEABLE AREA]</span>
-                      </label>
-                      {renderEditSwitch('axisSbbTotalSaleableArea', false)}
-                    </div>
-                    <input
-                      type="text"
-                      className={`${inputCls} font-bold bg-blue-50 border-blue-200 focus:ring-blue-400 focus:border-blue-400`}
-                      value={fields.axisSbbTotalSaleableAreaEditOn ? (fields.axisSbbTotalSaleableArea || '') : computedSaleable}
-                      onChange={e => handleChange('axisSbbTotalSaleableArea', e.target.value.toUpperCase())}
-                      readOnly={!fields.axisSbbTotalSaleableAreaEditOn}
-                      disabled={isReadOnly || !fields.axisSbbTotalSaleableAreaEditOn}
-                    />
-                  </div>
-                </div>
-              </div>
             </div>
 
             {/* CONTAINER 8.2 */}

@@ -469,11 +469,11 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     
     const headers = [
       'FLOOR', 
-      'CONSTRUCTED AREA', 
-      'APPROVED AREA', 
-      'PERMISSIBLE AREA', 
-      'VALUATION AREA', 
-      'ACCOMMODATION', 
+      'CONSTRUCTED ACTUAL AREA AS PER SITE (SQ.FT)', 
+      'APPROVED AREA AS PER PLAN(SQ.FT)', 
+      'PERMISSIBLE AREA AS PER BYELAWS (SQ.FT)', 
+      'AREA CONSIDERED FOR VALUATION (SQ.FT) / FAR 2', 
+      'ACCOMMO DATE TION', 
       'CURRENT USAGE'
     ];
     
@@ -497,20 +497,22 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       ];
     });
 
-    this.drawTable(headers, rows, [70, 70, 70, 70, 70, 80, 78], [], [0]);
+    rows.push([
+      'TOTAL BUILT UP AREA (IN SQFT)',
+      val('axisSbbTotalConstructedArea', computedConstructed),
+      'NA',
+      'NA',
+      val('axisSbbTotalValuationArea', computedValuation),
+      'NA',
+      `TOTAL CARPET AREA:\n${val('axisSbbTotalCarpetArea', computedCarpet)}`
+    ]);
+
+    this.drawTable(headers, rows, [70, 70, 70, 70, 70, 80, 78], [], [0, 1, 2, 3, 4, 5, 6], [{ r: rows.length - 1, c: 0 }, { r: rows.length - 1, c: 1 }, { r: rows.length - 1, c: 4 }, { r: rows.length - 1, c: 6 }]);
+    
+    // Summary Row 2: Saleable Area
+    this.drawSimpleRow('TOTAL SALEABLE AREA (IN SQFT.)', val('axisSbbTotalSaleableArea', computedSaleable), true, true);
+    
     this.advanceCursor(10);
-    
-    this.drawKeyValueRow([
-      { label: 'Total Built Up Area', value: val('axisSbbTotalConstructedArea', computedConstructed) },
-      { label: 'Approved/Permissible Area', value: 'NA' }
-    ]);
-    
-    this.drawKeyValueRow([
-      { label: 'Total Valuation Area', value: val('axisSbbTotalValuationArea', computedValuation) },
-      { label: 'Total Carpet Area', value: val('axisSbbTotalCarpetArea', computedCarpet) }
-    ]);
-    
-    this.drawSimpleRow('Total Saleable Area', val('axisSbbTotalSaleableArea', computedSaleable));
     
     this.drawSimpleRow('Construction As Per Approved Building Plan/Local Bye Laws', val('axisSbbConstructionAsPerApprovedPlan'));
     this.drawSimpleRow('FSI As Per Plan Approval / Govt. Guideline & Actual FSI', val('axisSbbFSIAsPerPlan'));
