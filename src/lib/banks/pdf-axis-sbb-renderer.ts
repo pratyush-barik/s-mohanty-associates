@@ -572,7 +572,7 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       const leftW = 160;
       const rightW = CONTENT_W - leftW;
       
-      this.checkPageSpace(150);
+      this.checkPageBreak(150);
       
       const rightX = MARGIN_L + leftW + 5;
       const finalY = drawRight(rightX, this.cursorY + 5, rightW - 10);
