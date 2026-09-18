@@ -367,20 +367,14 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     const acres = (fields as any).axisSbbPlotAreaAcres || '0.000';
     const areaComputed = `${sqft} SQFT (AC.${acres}DECS)`.toUpperCase();
 
-    this.drawKeyValueRow([
-      { label: 'Does Approach Road is Small?', value: val('axisSbbApproachRoadSmall') },
-      { label: 'Remark', value: val('axisSbbApproachRoadRemark', remarkComputed) }
-    ]);
+    this.drawChecklist('DOES THE APPROACH ROAD TO THE BUILDING IS SMALL AND', fields.axisSbbApproachRoadSmall, fields.axisSbbApproachRoadSmallIsNA, ['YES', 'NO']);
+    this.drawKeyValueRow([{ label: 'REMARK', value: val('axisSbbApproachRoadRemark', remarkComputed) }]);
     
-    this.drawKeyValueRow([
-      { label: 'Can Accommodate Fire Extinguisher?', value: val('axisSbbFireExtinguisher', fireExtComputed) },
-      { label: 'Property in Land Locked Area?', value: val('axisSbbLandLockedArea') }
-    ]);
+    this.drawChecklist('WILL IT BE ABLE TO ACCOMMODATE A FIRE EXTINGUISHER', fields.axisSbbFireExtinguisher, fields.axisSbbFireExtinguisherIsNA, ['YES', 'NO']);
+    this.drawChecklist('DOES THE PROPERTY FALLS UNDER LAND LOCKED AREA', fields.axisSbbLandLockedArea, fields.axisSbbLandLockedAreaIsNA, ['YES', 'NO']);
     
-    this.drawKeyValueRow([
-      { label: 'Property in Community Dominated Area?', value: val('axisSbbCommunityDominatedArea') },
-      { label: 'Boundaries Match Documentation?', value: val('axisSbbBoundariesMatchDocument') }
-    ]);
+    this.drawChecklist('DOES THE PROPERTY FALLS IN A COMMUNITY DOMINATED AREA', fields.axisSbbCommunityDominatedArea, fields.axisSbbCommunityDominatedAreaIsNA, ['YES', 'NO']);
+    this.drawChecklist('DOES THE BOUNDARIES AT SITE MATCH, AS MENTIONED IN DOCUMENTATION', fields.axisSbbBoundariesMatchDocument, fields.axisSbbBoundariesMatchDocumentIsNA, ['YES', 'NO']);
 
     this.drawSectionSubtitle('BOUNDARIES/DIMENSIONS (Comparison Matrix)');
     const headers = ['BOUNDARIES/DIMENSIONS', '(AS PER SALE DEED)', '(AS PER ACTUAL SITE)'];
@@ -440,34 +434,22 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     const stationComputed = `${stationDistKm}-KMS (${stationName} RAILWAY STATION)`.toUpperCase();
     const busStopComputed = `${busStopDistKm}-KMS. (${busStopName} BUS STOP)`.toUpperCase();
     
-    this.drawKeyValueRow([
-      { label: '(A) PLOT/UNDER CONSTRUCTION', value: val('axisSbbPropertyType') },
-      { label: 'Level of Land', value: val('axisSbbLevelOfLand', (fields as any).axisSbbLevelOfLandDropdown === 'CUSTOM' ? ((fields as any).axisSbbLevelOfLand || 'NA') : ((fields as any).axisSbbLevelOfLandDropdown || 'PLAIN')) }
-    ]);
+    this.drawChecklist('[A] PLOT / UNDER CONSTRUCTION', fields.axisSbbPropertyType, fields.axisSbbPropertyTypeIsNA, ['RESIDENTIAL', 'COMMERCIAL', 'INDUSTRIAL', 'VACANT LAND/PLOT'], true);
+    this.drawKeyValueRow([{ label: 'LEVEL OF LAND WITH TOPOGRAPHICAL CONDITIONS', value: val('axisSbbLevelOfLand', (fields as any).axisSbbLevelOfLandDropdown === 'CUSTOM' ? ((fields as any).axisSbbLevelOfLand || 'NA') : ((fields as any).axisSbbLevelOfLandDropdown || 'PLAIN')) }]);
+    this.drawKeyValueRow([{ label: 'ANY CONSTRUCTION OBSERVED ON PLOT', value: val('axisSbbAnyConstructionObserved') }]);
+    this.drawKeyValueRow([{ label: '% OF CONSTRUCTION, IN CASE OF UNDER CONSTRUCTION', value: val('axisSbbPercentOfConstruction', '100%') + (val('axisSbbPercentOfConstruction') !== 'NA' && !(fields as any).axisSbbPercentOfConstructionEditOn ? '%' : '') }]);
+    this.drawChecklist('WEATHER VACANT LAND PROPERTY IS DEMARCATED', fields.axisSbbVacantLandDemarcated, fields.axisSbbVacantLandDemarcatedIsNA, ['YES', 'NO']);
     
-    this.drawKeyValueRow([
-      { label: 'Any Construction Observed', value: val('axisSbbAnyConstructionObserved') },
-      { label: '% of Construction', value: val('axisSbbPercentOfConstruction', '100%') + (val('axisSbbPercentOfConstruction') !== 'NA' && !(fields as any).axisSbbPercentOfConstructionEditOn ? '%' : '') }
-    ]);
-    
-    this.drawKeyValueRow([
-      { label: 'Vacant Land Demarcated', value: val('axisSbbVacantLandDemarcated') },
-      { label: '(B) RESIDENTIAL PROPERTY', value: val('axisSbbResidentialProperty') }
-    ]);
-    
-    this.drawSimpleRow('CIVIC AMENITIES LIKE SCHOOL, HOSPITAL, MARKET, ETC.', val('axisSbbCivicAmenities'));
-    
-    this.drawSimpleRow('(C) COMMERCIAL/INDUSTRIAL PROPERTY', val('axisSbbCommercialIndustrialProperty'));
+    this.drawChecklist('[B] RESIDENTIAL PROPERTY', fields.axisSbbResidentialProperty, fields.axisSbbResidentialPropertyIsNA, ['INDEPENDENT HOUSE', 'BUNGALOW', 'ROW HOUSE/ FLAT'], true);
+    this.drawChecklist('CIVIC AMENITIES LIKE SCHOOL, HOSPITAL, MARKET, ETC.', fields.axisSbbCivicAmenities, fields.axisSbbCivicAmenitiesIsNA, ['AVAILABLE, WITHIN THE RADIUS OF 1-2 KMS', 'NOT AVAILABLE'], true);
+    this.drawChecklist('[C] COMMERCIAL/INDUSTRIAL PROPERTY', fields.axisSbbCommercialIndustrialProperty, fields.axisSbbCommercialIndustrialPropertyIsNA, ['OFFICE', 'VACANT LAND', 'UNIT IN A MALL', 'GODOWN', 'INDURSTRIAL', 'PETROL PUMP'], true);
     
     this.drawSectionSubtitle('ACCESSIBILITY/ BOUNDARIES/OTHERS');
-    
+    this.drawChecklist('AVAILABILITY OF LOCAL TRANSPORT', fields.axisSbbLocalTransport, fields.axisSbbLocalTransportIsNA, ['METRO', 'LOCAL TRAIN', 'BUS', 'PERSONAL TRANSPORT'], true);
+
     this.drawKeyValueRow([
-      { label: 'Local Transport', value: val('axisSbbLocalTransport') }
-    ]);
-    
-    this.drawKeyValueRow([
-      { label: 'Distance from Railway Station', value: val('axisSbbDistRailwayStation', stationComputed) },
-      { label: 'Bus Stop/Taxi/Auto Stand', value: val('axisSbbDistBusStop', busStopComputed) }
+      { label: 'DISTANCE FROM RAILWAY STATION', value: val('axisSbbDistRailwayStation', stationComputed) },
+      { label: 'BUS STOP/ TAXI/ AUTO STAND', value: val('axisSbbDistBusStop', busStopComputed) }
     ]);
   }
 
