@@ -60,7 +60,7 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     }]);
   }
 
-  drawListCheck(label: string, value: string, isNA: boolean, options: string[], isHighlighted: boolean = false, startX: number = MARGIN_L, totalW: number = CONTENT_W, isSplitRow: boolean = false, returnRowH: boolean = false) {
+  drawListCheck(label: string, value: string, isNA: boolean, options: string[], isHighlighted: boolean = false, startX: number = MARGIN_L, totalW: number = CONTENT_W, isSplitRow: boolean = false, returnRowH: boolean = false, forcedHeight?: number) {
     const labelW = Math.round(totalW * 0.40);
     const valueW = totalW - labelW;
     
@@ -98,7 +98,11 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
 
     const labelLines = this.wrapText(label, labelW - 6, FONT_SIZE, true);
     const rowMaxLines = Math.max(labelLines.length, valueLines.length);
-    const rowH = Math.max(18, rowMaxLines * FONT_SIZE * LINE_HEIGHT + 6);
+    let rowH = Math.max(18, rowMaxLines * FONT_SIZE * LINE_HEIGHT + 6);
+    
+    if (forcedHeight !== undefined) {
+      rowH = forcedHeight;
+    }
     
     if (!isSplitRow) {
        this.checkPageBreak(rowH);
@@ -286,8 +290,8 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     let maxH = Math.max(h1, h2);
     this.checkPageBreak(maxH);
     
-    this.drawListCheck('WAS THERE ANY RESISTANCE FOR VALUATION:', val('axisSbbResistanceForValuation'), !!(fields as any).axisSbbResistanceForValuationIsNA, ['YES', 'NO'], false, MARGIN_L, splitW, true, false);
-    this.drawListCheck('IF YES, FROM THE CURRENT OCCUPANTS:', val('axisSbbResistanceFromOccupants'), !!(fields as any).axisSbbResistanceFromOccupantsIsNA, ['YES', 'NO'], false, MARGIN_L + splitW, splitW, true, false);
+    this.drawListCheck('WAS THERE ANY RESISTANCE FOR VALUATION:', val('axisSbbResistanceForValuation'), !!(fields as any).axisSbbResistanceForValuationIsNA, ['YES', 'NO'], false, MARGIN_L, splitW, true, false, maxH);
+    this.drawListCheck('IF YES, FROM THE CURRENT OCCUPANTS:', val('axisSbbResistanceFromOccupants'), !!(fields as any).axisSbbResistanceFromOccupantsIsNA, ['YES', 'NO'], false, MARGIN_L + splitW, splitW, true, false, maxH);
     this.cursorY += maxH;
 
     // Basic amenities
@@ -302,8 +306,8 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     maxH = Math.max(h3, h4);
     this.checkPageBreak(maxH);
     
-    this.drawListCheck('DOES PROPERTY HAVE BASIC AMENITIES', amenities, !!(fields as any).axisSbbBasicAmenitiesIsNA, ['ELECTRICITY', 'WATER', 'DRAINAGE CONNECTION'], false, MARGIN_L, splitW, true, false);
-    this.drawListCheck('DEVELOPMENT OF SURROUNDING AREA', val('axisSbbDevelopmentSurroundingArea'), !!(fields as any).axisSbbDevelopmentSurroundingAreaIsNA, ['UNDER DEVELOPED', 'DEVELOPING', 'DEVELOPED'], false, MARGIN_L + splitW, splitW, true, false);
+    this.drawListCheck('DOES PROPERTY HAVE BASIC AMENITIES', amenities, !!(fields as any).axisSbbBasicAmenitiesIsNA, ['ELECTRICITY', 'WATER', 'DRAINAGE CONNECTION'], false, MARGIN_L, splitW, true, false, maxH);
+    this.drawListCheck('DEVELOPMENT OF SURROUNDING AREA', val('axisSbbDevelopmentSurroundingArea'), !!(fields as any).axisSbbDevelopmentSurroundingAreaIsNA, ['UNDER DEVELOPED', 'DEVELOPING', 'DEVELOPED'], false, MARGIN_L + splitW, splitW, true, false, maxH);
     this.cursorY += maxH;
     
     this.drawSectionSubtitle('APPROVAL DETAILS & BYE-LAWS COMPLIANCE');
@@ -489,8 +493,8 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     const maxH = Math.max(h1, h2);
     this.checkPageBreak(maxH);
     
-    this.drawListCheck('APPROVED USAGE OF PROPERTY', val('axisSbbApprovedUsage'), !!(fields as any).axisSbbApprovedUsageIsNA, usageOptions, false, MARGIN_L, splitW, true, false);
-    this.drawListCheck('ACTUAL USAGE OF PROPERTY', val('axisSbbActualUsage'), !!(fields as any).axisSbbActualUsageIsNA, usageOptions, false, MARGIN_L + splitW, splitW, true, false);
+    this.drawListCheck('APPROVED USAGE OF PROPERTY', val('axisSbbApprovedUsage'), !!(fields as any).axisSbbApprovedUsageIsNA, usageOptions, false, MARGIN_L, splitW, true, false, maxH);
+    this.drawListCheck('ACTUAL USAGE OF PROPERTY', val('axisSbbActualUsage'), !!(fields as any).axisSbbActualUsageIsNA, usageOptions, false, MARGIN_L + splitW, splitW, true, false, maxH);
     
     this.cursorY += maxH;
 
