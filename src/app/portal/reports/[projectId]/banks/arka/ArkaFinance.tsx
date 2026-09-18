@@ -1626,9 +1626,10 @@ export default function ArkaFinance({
           cadastralMapImages={fields.cadastralMapImages || []}
           latitude={fields.latitude}
           longitude={fields.longitude}
-          propertyAddress={fields.arkaAddressOfTheProperty || ""}
+          technicalAddress={fields.arkaAddressOfTheProperty || ''}
+          propertyAddress={fields.arkaAddressOfTheProperty || ''}
           hasExternalCoordinatesField={true}
-          coordinatesSectionName="Cover Page Details"
+          coordinatesSectionName="Section 2: Property Details"
           isReadOnly={isReadOnly}
           uploading={uploading}
           onLocationMapUpload={e => handleMapUpload('locationMapImages', e)}

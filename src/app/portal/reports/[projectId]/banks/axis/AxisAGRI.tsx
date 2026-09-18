@@ -1020,14 +1020,18 @@ export default function AxisAGRI({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <Field label="Village / Town / City / Market">
-                <input
-                  type="text"
-                  className={inputCls}
+                <select
+                  className={selectCls}
                   value={fields.villageTownCityMarket || ''}
                   onChange={e => handleChange('villageTownCityMarket', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder=""
-                />
+                >
+                  <option value="">Select Option</option>
+                  <option value="Village">Village</option>
+                  <option value="Town">Town</option>
+                  <option value="City">City</option>
+                  <option value="Market">Market</option>
+                </select>
               </Field>
 
               <Field label="District">
@@ -2938,7 +2942,9 @@ export default function AxisAGRI({
           sectionNumber={16}
           sectionId="sec-16"
           isReadOnly={isReadOnly}
-          uploading={uploading}
+          hasExternalCoordinatesField={true}
+          coordinatesSectionName="Section 2 (Address & Geographic Position)"
+          technicalAddress={fields.plotKhataDetails || ''}
           propertyAddress={fields.localityLandmark || fields.colonyNagarSector || ''}
           latitude={fields.latitude}
           longitude={fields.longitude}

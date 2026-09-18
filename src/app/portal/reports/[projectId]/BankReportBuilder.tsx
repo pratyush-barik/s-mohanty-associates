@@ -2601,11 +2601,10 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
               cadastralMapImages={fields.cadastralMapImages || normalizeMapImages(fields.cadastralMapImage)}
               latitude={fields.latitude}
               longitude={fields.longitude}
-              propertyAddress={technicalAddress}
+              technicalAddress={technicalAddress}
+              propertyAddress={getFullAddress() || fields.ownerAddress || ''}
               hasExternalCoordinatesField={hasCoordsInConfig}
               coordinatesSectionName="Property Details"
-              onLatitudeChange={(val) => handleChange('latitude', val)}
-              onLongitudeChange={(val) => handleChange('longitude', val)}
               isReadOnly={isReadOnly}
               uploading={uploading}
               onLocationMapUpload={(e) => handleFileUpload(e, 'locationMapImages')}

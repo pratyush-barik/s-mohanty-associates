@@ -1760,7 +1760,8 @@ export default function AnnapurnaMicroFinance({
           cadastralMapImages={fields.cadastralMapImages || []}
           latitude={fields.latitude}
           longitude={fields.longitude}
-          propertyAddress={fields.propertyAddressSite || fields.addressAsPerSite || fields.propertyAddressLegal || ''}
+          technicalAddress={fields.propertyAddressSite || fields.addressAsPerSite || ''}
+          propertyAddress={fields.propertyAddressLegal || fields.addressAsPerSite || ''}
           hasExternalCoordinatesField={true}
           coordinatesSectionName="Section 2: Location Details & Schedule"
           isReadOnly={isReadOnly}

@@ -2343,9 +2343,10 @@ export default function ArthanFinance({
             cadastralMapImages={fields.cadastralMapImages || []}
             latitude={fields.latitude}
             longitude={fields.longitude}
-            propertyAddress={fields.addressAsPerActualSite || fields.addressAsPerDocument || fields.addressAsPerTRF || ''}
+            technicalAddress={fields.addressAsPerActualSite || fields.addressAsPerDocument || ''}
+            propertyAddress={fields.addressAsPerTRF || fields.addressAsPerDocument || ''}
             hasExternalCoordinatesField={true}
-            coordinatesSectionName="Section 9: Valuation of Property"
+            coordinatesSectionName="Section 3: Location Details"
             isReadOnly={isReadOnly}
             uploading={uploading}
             onLocationMapUpload={e => handleMapUpload('locationMapImages', e)}
