@@ -29,7 +29,7 @@ export async function logSecurityEvent(params: {
         email: params.email,
         ipAddress: params.ipAddress || null,
         userAgent: params.userAgent || null,
-        metadata: params.metadata || null,
+        metadata: params.metadata ?? undefined,
       },
     });
   } catch (error) {

@@ -379,7 +379,7 @@ export function ActiveConfigBanner({
   return (
     <div className="p-4 bg-white border border-[#dee2e6] flex flex-row items-center justify-between gap-4 shadow-md rounded-2xl sticky top-2 z-50">
       <div className="flex items-center gap-4">
-        <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider leading-tight min-w-[90px] select-none">
+        <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider leading-tight min-w-22.5 select-none">
           Active<br />Configuration
         </div>
         <div className="flex flex-wrap gap-2">
@@ -423,7 +423,7 @@ export function ActiveConfigBanner({
         <button
           type="button"
           onClick={onResetWizard}
-          className="text-xs text-[#b8860b] hover:text-[#8a6507] hover:underline font-bold transition-colors shrink-0 pr-2 uppercase cursor-pointer"
+          className="text-xs text-accent-500 hover:text-[#8a6507] hover:underline font-bold transition-colors shrink-0 pr-2 uppercase cursor-pointer"
         >
           Change Parameters
         </button>
@@ -836,6 +836,7 @@ export function BaseMapsSection({
   title = 'Maps & Documents',
   mapOrder = ['location', 'mouza', 'sketch', 'cadastral'],
   withoutSectionWrapper = false,
+  cadastralMapLabelOverride,
 }: {
   locationMapImage?: string | string[];
   locationMapImages?: string[];

@@ -60,7 +60,7 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     }]);
   }
 
-  drawListCheck(label: string, value: string, isNA: boolean, options: string[], isHighlighted: boolean = false, startX: number = MARGIN_L, totalW: number = CONTENT_W, isSplitRow: boolean = false, returnRowH: boolean = false, forcedHeight?: number) {
+  drawListCheck(label: string, value: string | string[], isNA: boolean, options: string[], isHighlighted: boolean = false, startX: number = MARGIN_L, totalW: number = CONTENT_W, isSplitRow: boolean = false, returnRowH: boolean = false, forcedHeight?: number) {
     const labelW = Math.round(totalW * 0.40);
     const valueW = totalW - labelW;
     
@@ -157,8 +157,8 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
   /**
    * Custom renderer for Quality of Construction field.
    * Shows ALL roof and floor options, bolding only the selected ones.
-   * Format: RCC/PATTI/**TIN SHED**/CLAY TILES ROOF WITH MASONRY WALLS
-   *         WITH TILES/MARBLE/**KOTA STONE**/LOCAL STONE/C.C FLOOR
+   * Format: RCC/PATTI/[TIN SHED]/CLAY TILES ROOF WITH MASONRY WALLS
+   *         WITH TILES/MARBLE/[KOTA STONE]/LOCAL STONE/C.C FLOOR
    */
   private drawQualityOfConstructionRow(
     fields: any,
@@ -507,7 +507,7 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       `TOTAL CARPET AREA:\n${val('axisSbbTotalCarpetArea', computedCarpet)}`
     ]);
 
-    this.drawTable(headers, rows, [70, 70, 70, 70, 70, 80, 78], [], [0, 1, 2, 3, 4, 5, 6], [{ r: rows.length - 1, c: 0 }, { r: rows.length - 1, c: 1 }, { r: rows.length - 1, c: 4 }, { r: rows.length - 1, c: 6 }]);
+    this.drawTable(headers, rows, [70, 70, 70, 70, 70, 80, 78], [], [0, 1, 2, 3, 4, 5, 6], [], [], [{ r: rows.length - 1, c: 0 }, { r: rows.length - 1, c: 1 }, { r: rows.length - 1, c: 4 }, { r: rows.length - 1, c: 6 }]);
     
     // Summary Row 2: Saleable Area
     this.drawSimpleRow('TOTAL SALEABLE AREA (IN SQFT.)', val('axisSbbTotalSaleableArea', computedSaleable), true, true);
