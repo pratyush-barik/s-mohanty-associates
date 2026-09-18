@@ -246,9 +246,10 @@ export default function AxisAGRI({
       landRevenueTaxesPaid: raw.landRevenueTaxesPaid || '',
       municipalTaxesPaid: raw.municipalTaxesPaid || '',
       govtBenchmarkRateAcre: raw.govtBenchmarkRateAcre || '',
-      govtBenchmarkRateSft: raw.govtBenchmarkRateSft || '',
+      govtBenchmarkRateSft: raw.govtBenchmarkRateSft || (raw.govtBenchmarkRateAcre && !isNaN(parseFloat(raw.govtBenchmarkRateAcre)) ? (parseFloat(raw.govtBenchmarkRateAcre) / 43560).toFixed(2) : ''),
       totalLandAreaDec: raw.totalLandAreaDec || '',
-      totalLandAreaSft: raw.totalLandAreaSft || '',
+      totalLandAreaAcre: raw.totalLandAreaAcre || (raw.totalLandAreaDec && !isNaN(parseFloat(raw.totalLandAreaDec)) ? (parseFloat(raw.totalLandAreaDec) / 100).toString() : ''),
+      totalLandAreaSft: raw.totalLandAreaSft || (raw.totalLandAreaDec && !isNaN(parseFloat(raw.totalLandAreaDec)) ? (parseFloat(raw.totalLandAreaDec) * 435.6).toFixed(2) : ''),
       totalGovtValueLand: raw.totalGovtValueLand || '',
       prevailingMarketRateMin: raw.prevailingMarketRateMin || '',
       prevailingMarketRateMax: raw.prevailingMarketRateMax || '',
@@ -342,6 +343,61 @@ export default function AxisAGRI({
   const handleChange = useCallback((key: keyof AxisAgriReportFields, value: any) => {
     setFields(prev => ({ ...prev, [key]: value }));
   }, []);
+
+  // ── Handlers for Non-Negative Decimal Input & Conversions (Sec 9) ──
+  const handlePositiveDecimalChange = useCallback((key: keyof AxisAgriReportFields, val: string) => {
+    let cleaned = val.replace(/[^0-9.]/g, '');
+    const parts = cleaned.split('.');
+    if (parts.length > 2) {
+      cleaned = parts[0] + '.' + parts.slice(1).join('');
+    }
+    handleChange(key, cleaned);
+  }, [handleChange]);
+
+  const handleBenchmarkAcreChange = useCallback((val: string) => {
+    let cleaned = val.replace(/[^0-9.]/g, '');
+    const parts = cleaned.split('.');
+    if (parts.length > 2) {
+      cleaned = parts[0] + '.' + parts.slice(1).join('');
+    }
+    handleChange('govtBenchmarkRateAcre', cleaned);
+    if (!cleaned || isNaN(parseFloat(cleaned))) {
+      handleChange('govtBenchmarkRateSft', '');
+    } else {
+      const perAcre = parseFloat(cleaned);
+      if (perAcre > 0) {
+        handleChange('govtBenchmarkRateSft', (perAcre / 43560).toFixed(2));
+      } else {
+        handleChange('govtBenchmarkRateSft', '0.00');
+      }
+    }
+  }, [handleChange]);
+
+  const handleTotalLandAreaDecChange = useCallback((val: string) => {
+    let cleaned = val.replace(/[^0-9.]/g, '');
+    const parts = cleaned.split('.');
+    if (parts.length > 2) {
+      cleaned = parts[0] + '.' + parts.slice(1).join('');
+    }
+    handleChange('totalLandAreaDec', cleaned);
+    if (!cleaned || isNaN(parseFloat(cleaned))) {
+      handleChange('totalLandAreaAcre', '');
+      handleChange('totalLandAreaSft', '');
+    } else {
+      const dec = parseFloat(cleaned);
+      if (dec > 0) {
+        // 1 Acre = 100 Decimals
+        const acreVal = (dec / 100).toString();
+        // 1 Decimal = 435.6 Sft
+        const sftVal = (dec * 435.6).toFixed(2);
+        handleChange('totalLandAreaAcre', acreVal);
+        handleChange('totalLandAreaSft', sftVal);
+      } else {
+        handleChange('totalLandAreaAcre', '0');
+        handleChange('totalLandAreaSft', '0.00');
+      }
+    }
+  }, [handleChange]);
 
   // Multi-select toggle handler
   const handleToggleMulti = useCallback((key: keyof AxisAgriReportFields, item: string) => {
@@ -2638,9 +2694,10 @@ export default function AxisAGRI({
               <Field label="Govt. Benchmark Rate (Per Acre)">
                 <input
                   type="text"
+                  inputMode="decimal"
                   className={inputCls}
                   value={fields.govtBenchmarkRateAcre || ''}
-                  onChange={e => handleChange('govtBenchmarkRateAcre', e.target.value)}
+                  onChange={e => handleBenchmarkAcreChange(e.target.value)}
                   disabled={isReadOnly}
                   placeholder=""
                 />
@@ -2649,9 +2706,10 @@ export default function AxisAGRI({
               <Field label="Govt. Benchmark Rate (Per Sft)">
                 <input
                   type="text"
+                  inputMode="decimal"
                   className={inputCls}
                   value={fields.govtBenchmarkRateSft || ''}
-                  onChange={e => handleChange('govtBenchmarkRateSft', e.target.value)}
+                  onChange={e => handlePositiveDecimalChange('govtBenchmarkRateSft', e.target.value)}
                   disabled={isReadOnly}
                   placeholder=""
                 />
@@ -2660,9 +2718,10 @@ export default function AxisAGRI({
               <Field label="Total Land Area (Decimal)">
                 <input
                   type="text"
+                  inputMode="decimal"
                   className={inputCls}
                   value={fields.totalLandAreaDec || ''}
-                  onChange={e => handleChange('totalLandAreaDec', e.target.value)}
+                  onChange={e => handleTotalLandAreaDecChange(e.target.value)}
                   disabled={isReadOnly}
                   placeholder=""
                 />
@@ -2671,9 +2730,10 @@ export default function AxisAGRI({
               <Field label="Total Land Area (In Sft)">
                 <input
                   type="text"
+                  inputMode="decimal"
                   className={inputCls}
                   value={fields.totalLandAreaSft || ''}
-                  onChange={e => handleChange('totalLandAreaSft', e.target.value)}
+                  onChange={e => handlePositiveDecimalChange('totalLandAreaSft', e.target.value)}
                   disabled={isReadOnly}
                   placeholder=""
                 />
@@ -2691,9 +2751,10 @@ export default function AxisAGRI({
               <Field label="Prevailing Market Rate Min (Rs./Sft)">
                 <input
                   type="text"
+                  inputMode="decimal"
                   className={inputCls}
                   value={fields.prevailingMarketRateMin || ''}
-                  onChange={e => handleChange('prevailingMarketRateMin', e.target.value)}
+                  onChange={e => handlePositiveDecimalChange('prevailingMarketRateMin', e.target.value)}
                   disabled={isReadOnly}
                   placeholder=""
                 />
@@ -2702,9 +2763,10 @@ export default function AxisAGRI({
               <Field label="Prevailing Market Rate Max (Rs./Sft)">
                 <input
                   type="text"
+                  inputMode="decimal"
                   className={inputCls}
                   value={fields.prevailingMarketRateMax || ''}
-                  onChange={e => handleChange('prevailingMarketRateMax', e.target.value)}
+                  onChange={e => handlePositiveDecimalChange('prevailingMarketRateMax', e.target.value)}
                   disabled={isReadOnly}
                   placeholder=""
                 />
@@ -2713,9 +2775,10 @@ export default function AxisAGRI({
               <Field label="Adopted Market Rate (Rs./Sft)">
                 <input
                   type="text"
+                  inputMode="decimal"
                   className={`${inputCls} font-bold text-emerald-700`}
                   value={fields.adoptedMarketRateSft || ''}
-                  onChange={e => handleChange('adoptedMarketRateSft', e.target.value)}
+                  onChange={e => handlePositiveDecimalChange('adoptedMarketRateSft', e.target.value)}
                   disabled={isReadOnly}
                   placeholder=""
                 />

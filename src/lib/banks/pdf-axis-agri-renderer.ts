@@ -182,6 +182,7 @@ export interface AxisAgriReportFields {
   govtBenchmarkRateAcre?: string; // '86,55,000'
   govtBenchmarkRateSft?: string; // '199'
   totalLandAreaDec?: string; // '0.013'
+  totalLandAreaAcre?: string; // '0.013'
   totalLandAreaSft?: string; // '566.00'
   totalGovtValueLand?: string; // '1,12,634.00'
   prevailingMarketRateMin?: string; // '500'
@@ -1102,7 +1103,8 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     const benchAcre = fields.govtBenchmarkRateAcre || 'Not Available';
     const benchSft = fields.govtBenchmarkRateSft || 'Not Available';
-    const landDec = fields.totalLandAreaDec || 'Not Available';
+    const landDec = fields.totalLandAreaDec || '';
+    const landAcre = fields.totalLandAreaAcre || (fields.totalLandAreaDec && !isNaN(parseFloat(fields.totalLandAreaDec)) ? (parseFloat(fields.totalLandAreaDec) / 100).toString() : '');
     const landSft = fields.totalLandAreaSft || 'Not Available';
     const govtVal = fields.totalGovtValueLand || 'Not Available';
     const mktMin = fields.prevailingMarketRateMin || 'Not Available';
@@ -1110,9 +1112,15 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     const adoptedRate = fields.adoptedMarketRateSft || 'Not Available';
     const totalMktVal = fields.totalMarketValueLand || 'Not Available';
 
+    const landAreaDisplay = landAcre && landDec
+      ? `AC. ${landAcre} (${landDec} DEC)`
+      : landDec
+      ? `AC. ${landDec} DEC`
+      : 'NOT AVAILABLE';
+
     const landBullets = [
       `THE GOVT. BENCHMARK VALUE: ${benchAcre !== 'Not Available' ? `RS.${benchAcre}/- PER ACRE` : 'NOT AVAILABLE'} ${benchSft !== 'Not Available' ? `I.E. RS.${benchSft}/- PER SFT` : ''}`.trim(),
-      `TOTAL LAND AREA: ${landDec !== 'Not Available' ? `AC.${landDec} DEC` : ''} ${landSft !== 'Not Available' ? `I.E. ${landSft} SFT` : 'NOT AVAILABLE'}`.trim(),
+      `TOTAL LAND AREA: ${landAreaDisplay} ${landSft !== 'Not Available' ? `I.E. ${landSft} SFT` : ''}`.trim(),
       `TOTAL GOVT. VALUE OF LAND: ${landSft !== 'Not Available' && benchSft !== 'Not Available' ? `${landSft} SFT X RS.${benchSft}/- PER SFT = ` : ''}${govtVal !== 'Not Available' ? `RS.${govtVal}/-` : 'NOT AVAILABLE'}`,
       `THE PREVAILING MARKET RATE OF THE LAND IS ${mktMin !== 'Not Available' ? `RS.${mktMin}/-` : ''} TO ${mktMax !== 'Not Available' ? `RS.${mktMax}/- PER SFT.` : 'NOT AVAILABLE.'}`,
       `THE ADOPTED MARKET RATE OF THE LAND IS ${adoptedRate !== 'Not Available' ? `RS.${adoptedRate}/- PER SFT FOR VALUATION PURPOSE.` : 'NOT AVAILABLE.'}`,
