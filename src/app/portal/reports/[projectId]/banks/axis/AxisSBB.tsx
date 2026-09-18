@@ -1360,7 +1360,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   <div className="flex flex-col">
                     <div className="flex justify-between items-center mb-1">
                       <div className="flex items-center">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">% OF CONSTRUCTION <span className="text-red-500">*</span></label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">% OF CONSTRUCTION, IN CASE OF UNDER CONSTRUCTION <span className="text-red-500">*</span></label>
                         {renderNaToggle('axisSbbPercentOfConstruction')}
                       </div>
                       {renderEditSwitch('axisSbbPercentOfConstruction', !!fields.axisSbbPercentOfConstructionIsNA)}
@@ -1385,7 +1385,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
 
                 <div className="flex flex-col">
                   <div className="flex items-center mb-2">
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">WHETHER VACANT LAND PROPERTY IS DEMARCATED</label>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">WEATHER VACANT LAND PROPERTY IS DEMARCATED</label>
                     {renderNaToggle('axisSbbVacantLandDemarcated')}
                   </div>
                   <div className={`flex space-x-2 ${fields.axisSbbVacantLandDemarcatedIsNA ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
