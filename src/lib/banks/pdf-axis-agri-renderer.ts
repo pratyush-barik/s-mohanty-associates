@@ -1865,12 +1865,13 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.cursorY += 14;
 
     const sigDetails = [
-      { text: 'Er. Satyajit Mohanty (B.E,Civil) FIV', bold: true, size: 9.5 },
-      { text: 'Registered Valuer, Govt. of India (Regd. No.-107/2016-17,Cat -I)', bold: true, size: 9 },
-      { text: 'B.E.(Civil) Utkal, M. Tech(Civil),MBA(HR), Approved Valuer', bold: false, size: 8 },
-      { text: 'Life, Fellow & Approved Valuer from Institution of Valuers (New Delhi), Membership No.F-26377', bold: false, size: 8 },
-      { text: 'Member in Institution of Engineer (India)', bold: false, size: 8 },
-      { text: 'Chartered Engineer (Regd. No.-M-156096-9)', bold: true, size: 8 },
+      { text: 'Er. Satyajit Mohanty', bold: true, size: 9.5 },
+      { text: 'Founder & Chief Executive | Registered Valuer | Chartered Engineer', bold: true, size: 8 },
+      { text: 'Registered Valuer (Land & Building) — IBBI (Regd. No: IBBI/RV/02/2019/10594)', bold: true, size: 8 },
+      { text: 'Registered Valuer (Wealth Tax Act) — Income Tax Department (Regd. No: 107/2016-17)', bold: true, size: 8 },
+      { text: 'Corporate Member & Chartered Engineer — Institution of Engineers (India), Civil Division (M-1560969)', bold: false, size: 7.5 },
+      { text: 'Fellow Member — Institution of Valuers (IOV), Delhi (F-26377) & IIV, Pune (F-4443)', bold: false, size: 7.5 },
+      { text: 'B.E. (Civil) Utkal University | M.Tech (Civil) | M.Sc. (Real Estate Valuation) | MBA (HR)', bold: false, size: 7.5 },
       { text: 'Empanelled Valuer of Axis Bank', bold: true, size: 8.5 },
     ];
 

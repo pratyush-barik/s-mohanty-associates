@@ -3506,14 +3506,15 @@ export default function AxisAGRI({
             </div>
 
             {/* Prepared By Block */}
-            <div className="mt-5 p-4 bg-white rounded-xl border border-indigo-200 text-xs text-slate-700 space-y-1 shadow-xs text-center">
+            <div className="mt-5 p-4 bg-white rounded-xl border border-indigo-200 text-xs text-slate-700 space-y-1.5 shadow-xs text-center">
               <p className="font-bold text-sm text-slate-900 mb-2">Prepared By</p>
-              <p className="font-bold text-slate-800 text-sm">Er. Satyajit Mohanty (B.E,Civil) FIV</p>
-              <p className="font-semibold text-slate-700">Registered Valuer, Govt. of India (Regd. No.-107/2016-17,Cat -I)</p>
-              <p className="text-slate-600">B.E.(Civil) Utkal, M. Tech(Civil),MBA(HR), Approved Valuer</p>
-              <p className="text-slate-600">Life, Fellow & Approved Valuer from Institution of Valuers (New Delhi), Membership No.F-26377</p>
-              <p className="text-slate-600">Member in Institution of Engineer (India)</p>
-              <p className="font-semibold text-slate-700">Chartered Engineer (Regd. No.-M-156096-9)</p>
+              <p className="font-bold text-slate-900 text-sm">Er. Satyajit Mohanty</p>
+              <p className="font-semibold text-slate-800">Founder & Chief Executive | Registered Valuer | Chartered Engineer</p>
+              <p className="text-slate-700">Registered Valuer (Land & Building) — IBBI (Regd. No: IBBI/RV/02/2019/10594)</p>
+              <p className="text-slate-700">Registered Valuer (Wealth Tax Act) — Income Tax Department (Regd. No: 107/2016-17)</p>
+              <p className="text-slate-600">Corporate Member & Chartered Engineer — Institution of Engineers (India), Civil Division (M-1560969)</p>
+              <p className="text-slate-600">Fellow Member — Institution of Valuers (IOV), Delhi (F-26377) & IIV, Pune (F-4443)</p>
+              <p className="text-slate-600">B.E. (Civil) Utkal University | M.Tech (Civil) | M.Sc. (Real Estate Valuation) | MBA (HR)</p>
               <p className="font-bold text-indigo-700">Empanelled Valuer of Axis Bank</p>
             </div>
           </div>
