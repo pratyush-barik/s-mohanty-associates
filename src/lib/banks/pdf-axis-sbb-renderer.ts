@@ -530,42 +530,49 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     this.drawSectionSubtitle('DETAILS OF THE PROPERTY BEING VALUED');
     
     const loc = fields.axisSbbPropertyLocation || '';
-    const locStr = `[${loc === 'Urban' ? 'X' : ' '}] URBAN   [${loc === 'Semi-Urban' ? 'X' : ' '}] SEMI-URBAN   [${loc === 'Rural/Gram Panchayat' ? 'X' : ' '}] RURAL/GRAM PANCHAYAT`;
-    
     const gov = fields.axisSbbGoverningBody || '';
-    const govStr = `[${gov === 'Corporation' ? 'X' : ' '}] CORPORATION   [${gov === 'Municipality' ? 'X' : ' '}] MUNICIPALITY   [${gov === 'Town or Gram Panchayat or Rural' ? 'X' : ' '}] TOWN OR GRAM PANCHAYAT OR RURAL`;
     
-    this.drawKeyValueRow([
-      { label: 'LOCATION OF PROPERTY', value: `${locStr}\n\n${govStr}` }
-    ]);
+    this.drawKeyValueRow([{ label: 'LOCATION OF PROPERTY', value: `[${loc === 'Urban' ? 'X' : ' '}] URBAN`, valueBold: loc === 'Urban', hideBottom: true }]);
+    this.drawKeyValueRow([{ label: '', value: `[${loc === 'Semi-Urban' ? 'X' : ' '}] SEMI-URBAN`, valueBold: loc === 'Semi-Urban', hideTop: true, hideBottom: true }]);
+    this.drawKeyValueRow([{ label: '', value: `[${loc === 'Rural/Gram Panchayat' ? 'X' : ' '}] RURAL/GRAM PANCHAYAT`, valueBold: loc === 'Rural/Gram Panchayat', hideTop: true, hideBottom: true }]);
+    this.drawKeyValueRow([{ label: '', value: '', hideTop: true, hideBottom: true }]); // Spacer
+    this.drawKeyValueRow([{ label: '', value: `[${gov === 'Corporation' ? 'X' : ' '}] CORPORATION`, valueBold: gov === 'Corporation', hideTop: true, hideBottom: true }]);
+    this.drawKeyValueRow([{ label: '', value: `[${gov === 'Municipality' ? 'X' : ' '}] MUNICIPALITY`, valueBold: gov === 'Municipality', hideTop: true, hideBottom: true }]);
+    this.drawKeyValueRow([{ label: '', value: `[${gov === 'Town or Gram Panchayat or Rural' ? 'X' : ' '}] TOWN OR GRAM PANCHAYAT OR RURAL`, valueBold: gov === 'Town or Gram Panchayat or Rural', hideTop: true, hideBottom: false }]);
     
     const t = fields.axisSbbTownPlanningSubType || '';
-    if (gov === 'Town or Gram Panchayat or Rural') {
-      const typeStr = `IF TOWN OR GRAM PANCHAYAT, PLEASE CHOOSE THE APPROPRIATE ONE IN BELOW: -
-[${t === 'TYPE 1' ? 'X' : ' '}] TYPE 1:- LAYOUT PLAN & INDIVIDUAL CONSTRUCTION BOTH ARE APPROVED BY TOWN PLANNING AUTHORITY.
-[${t === 'TYPE 2A' ? 'X' : ' '}] TYPE 2A:- LAYOUT PLAN APPROVED BY TOWN PLANNING AUTHORITY AND CONSTRUCTION APPROVED BY GRAMPANCHAYAT.
-[${t === 'TYPE 2B' ? 'X' : ' '}] TYPE 2B:- LAYOUT PLAN & INDIVIDUAL CONSTRUCTION BOTH ARE APPROVED BY GRAMPANCHAYAT BUT PROPERTY NOW FALLS IN MUNICIPALITY.
-[${t === 'TYPE 3' ? 'X' : ' '}] TYPE 3:- LAYOUT PLAN & INDIVIDUAL CONSTRUCTION BOTH ARE APPROVED BY GRAMPANCHAYAT BUT PROPERTY NOW FALLS INSIDE GRAM PANCHAYAT.`;
-      
-      this.drawKeyValueRow([
-        { label: 'TOWN PLANNING SUB-TYPE', value: typeStr }
-      ]);
-    }
+    const t1 = String(t).includes('Type 1');
+    const t2a = String(t).includes('Type 2A');
+    const t2b = String(t).includes('Type 2B');
+    const t3 = String(t).includes('Type 3');
     
-    const docs = [];
-    docs.push(`[${fields.axisSbbDocPrevValuation ? 'X' : ' '}] COPY OF PREVIOUS VALUATION REPORT`);
-    docs.push(`[${fields.axisSbbDocApprovedLayout ? 'X' : ' '}] APPROVED LAYOUT`);
-    docs.push(`[${fields.axisSbbDocCommencement ? 'X' : ' '}] COMMENCEMENT`);
-    docs.push(`[${fields.axisSbbDocApprovedBuildingPlan ? 'X' : ' '}] APPROVED BUILDING PLAN`);
-    docs.push(`[${fields.axisSbbDocSaleDeed ? 'X' : ' '}] COPY OF SALE DEED/ PATTA`);
-    docs.push(`[${fields.axisSbbDocCommencement ? 'X' : ' '}] CERTIFICATE`);
-    docs.push(`[${fields.axisSbbDocOccupancy ? 'X' : ' '}] OCCUPANCY CERTIFICATE`);
-    docs.push(`[${fields.axisSbbDocPartitionDeed ? 'X' : ' '}] COPY PARTITION DEED`);
-    docs.push(`[${fields.axisSbbDocSketchMap ? 'X' : ' '}] SKETCH MAP`);
+    this.drawKeyValueRow([{ label: 'TOWN PLANNING SUB-TYPE', value: `IF TOWN OR GRAM PANCHAYAT, PLEASE CHOOSE THE APPROPRIATE ONE IN BELOW: -`, hideBottom: true }]);
+    this.drawKeyValueRow([{ label: '', value: `[${t1 ? 'X' : ' '}] TYPE 1:- LAYOUT PLAN & INDIVIDUAL CONSTRUCTION BOTH ARE APPROVED BY TOWN PLANNING AUTHORITY.`, valueBold: t1, hideTop: true, hideBottom: true }]);
+    this.drawKeyValueRow([{ label: '', value: `[${t2a ? 'X' : ' '}] TYPE 2A:- LAYOUT PLAN APPROVED BY TOWN PLANNING AUTHORITY AND CONSTRUCTION APPROVED BY GRAMPANCHAYAT.`, valueBold: t2a, hideTop: true, hideBottom: true }]);
+    this.drawKeyValueRow([{ label: '', value: `[${t2b ? 'X' : ' '}] TYPE 2B:- LAYOUT PLAN & INDIVIDUAL CONSTRUCTION BOTH ARE APPROVED BY GRAMPANCHAYAT BUT PROPERTY NOW FALLS IN MUNICIPALITY.`, valueBold: t2b, hideTop: true, hideBottom: true }]);
+    this.drawKeyValueRow([{ label: '', value: `[${t3 ? 'X' : ' '}] TYPE 3:- LAYOUT PLAN & INDIVIDUAL CONSTRUCTION BOTH ARE APPROVED BY GRAMPANCHAYAT BUT PROPERTY NOW FALLS INSIDE GRAM PANCHAYAT.`, valueBold: t3, hideTop: true, hideBottom: false }]);
     
-    this.drawKeyValueRow([
-      { label: 'DOCUMENTS PROVIDED', value: docs.join('\n') }
-    ]);
+    const docArr = [
+      { v: !!fields.axisSbbDocPrevValuation, t: 'COPY OF PREVIOUS VALUATION REPORT' },
+      { v: !!fields.axisSbbDocApprovedLayout, t: 'APPROVED LAYOUT' },
+      { v: !!fields.axisSbbDocCommencement, t: 'COMMENCEMENT' },
+      { v: !!fields.axisSbbDocApprovedBuildingPlan, t: 'APPROVED BUILDING PLAN' },
+      { v: !!fields.axisSbbDocSaleDeed, t: 'COPY OF SALE DEED/ PATTA' },
+      { v: !!fields.axisSbbDocCommencement, t: 'CERTIFICATE' },
+      { v: !!fields.axisSbbDocOccupancy, t: 'OCCUPANCY CERTIFICATE' },
+      { v: !!fields.axisSbbDocPartitionDeed, t: 'COPY PARTITION DEED' },
+      { v: !!fields.axisSbbDocSketchMap, t: 'SKETCH MAP' }
+    ];
+    
+    docArr.forEach((d, i) => {
+      this.drawKeyValueRow([{ 
+        label: i === 0 ? 'DOCUMENTS PROVIDED' : '', 
+        value: `[${d.v ? 'X' : ' '}] ${d.t}`, 
+        valueBold: d.v,
+        hideTop: i > 0,
+        hideBottom: i < docArr.length - 1
+      }]);
+    });
   }
 
   private drawSbbSection2() {
