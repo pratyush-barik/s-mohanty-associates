@@ -152,25 +152,19 @@ export const AXIS_SBB_CONFIG: BankConfig = {
     axisSbbPlotAreaAsPerSaleDeed: '',
     axisSbbPlotAreaAsPerSaleDeedIsNA: false,
     axisSbbPlotAreaAsPerSaleDeedEditOn: false,
-    axisSbbClassOfLocality: 'MIDDLE CLASS',
+    axisSbbClassOfLocality: '',
     axisSbbClassOfLocalityIsNA: false,
-    axisSbbClassOfLocalityEditOn: false,
-    axisSbbQualityOfInfrastructure: 'GOOD',
+    axisSbbQualityOfInfrastructure: '',
     axisSbbQualityOfInfrastructureIsNA: false,
-    axisSbbQualityOfInfrastructureEditOn: false,
-    axisSbbOwnershipStatus: 'FREE HOLD',
+    axisSbbOwnershipStatus: '',
     axisSbbOwnershipStatusIsNA: false,
-    axisSbbOwnershipStatusEditOn: false,
     axisSbbOwnershipStatusSpecify: '',
-    axisSbbApprovedUsage: 'RESIDENTIAL',
+    axisSbbApprovedUsage: '',
     axisSbbApprovedUsageIsNA: false,
-    axisSbbApprovedUsageEditOn: false,
-    axisSbbActualUsage: 'COMMERCIAL',
+    axisSbbActualUsage: '',
     axisSbbActualUsageIsNA: false,
-    axisSbbActualUsageEditOn: false,
-    axisSbbRestrictiveCovenants: 'NA',
+    axisSbbRestrictiveCovenants: '',
     axisSbbRestrictiveCovenantsIsNA: false,
-    axisSbbRestrictiveCovenantsEditOn: false,
 
     // SECTION 7
     axisSbbTypeOfStructureGCI: false,
@@ -1854,7 +1848,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">CLASS OF LOCALITY</label>
                         {renderNaToggle('axisSbbClassOfLocality')}
                       </div>
-                      {renderEditSwitch('axisSbbClassOfLocality', !!fields.axisSbbClassOfLocalityIsNA)}
+
                     </div>
                     {renderRadioGroup('axisSbbClassOfLocality', ['POSH', 'HIGHER MIDDLE CLASS', 'MIDDLE CLASS', 'LOWER MIDDLE CLASS', 'POOR'])}
                   </div>
@@ -1865,7 +1859,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">QUALITY OF INFRASTRUCTURE</label>
                         {renderNaToggle('axisSbbQualityOfInfrastructure')}
                       </div>
-                      {renderEditSwitch('axisSbbQualityOfInfrastructure', !!fields.axisSbbQualityOfInfrastructureIsNA)}
+
                     </div>
                     {renderRadioGroup('axisSbbQualityOfInfrastructure', ['EXCELLENT', 'GOOD', 'AVERAGE', 'POOR'])}
                   </div>
@@ -1878,7 +1872,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">OWNERSHIP STATUS OF THE PROPERTY</label>
                         {renderNaToggle('axisSbbOwnershipStatus')}
                       </div>
-                      {renderEditSwitch('axisSbbOwnershipStatus', !!fields.axisSbbOwnershipStatusIsNA)}
+
                     </div>
                     {renderRadioGroup('axisSbbOwnershipStatus', ['FREE HOLD', 'LEASE HOLD', 'REG. LEASE', 'GOVT. AUTHORITY, SPECIFY'])}
                     {fields.axisSbbOwnershipStatus === 'GOVT. AUTHORITY, SPECIFY' && !fields.axisSbbOwnershipStatusIsNA && (
@@ -1888,7 +1882,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         placeholder="Specify Govt Authority"
                         value={fields.axisSbbOwnershipStatusSpecify || ''}
                         onChange={e => handleChange('axisSbbOwnershipStatusSpecify', e.target.value.toUpperCase())}
-                        disabled={isReadOnly || (!fields.axisSbbOwnershipStatusEditOn && fields.axisSbbOwnershipStatusEditOn !== undefined)}
+                        disabled={isReadOnly}
                       />
                     )}
                   </div>
@@ -1899,7 +1893,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">APPROVED USAGE OF PROPERTY</label>
                         {renderNaToggle('axisSbbApprovedUsage')}
                       </div>
-                      {renderEditSwitch('axisSbbApprovedUsage', !!fields.axisSbbApprovedUsageIsNA)}
+
                     </div>
                     {renderRadioGroup('axisSbbApprovedUsage', ['RESIDENTIAL', 'COMMERCIAL', 'INDUSTRIAL', 'VACANT LAND', 'MIX/AGRI', 'OTHERS/AGRI'])}
                   </div>
@@ -1912,7 +1906,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">ACTUAL USAGE OF PROPERTY</label>
                         {renderNaToggle('axisSbbActualUsage')}
                       </div>
-                      {renderEditSwitch('axisSbbActualUsage', !!fields.axisSbbActualUsageIsNA)}
+
                     </div>
                     {renderRadioGroup('axisSbbActualUsage', ['RESIDENTIAL', 'COMMERCIAL', 'INDUSTRIAL', 'VACANT LAND', 'MIX/AGRI', 'OTHERS/AGRI'])}
                   </div>
@@ -1923,15 +1917,15 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">RESTRICTIVE COVENANTS IN REGARDS TO LAND USE</label>
                         {renderNaToggle('axisSbbRestrictiveCovenants')}
                       </div>
-                      {renderEditSwitch('axisSbbRestrictiveCovenants', !!fields.axisSbbRestrictiveCovenantsIsNA)}
+
                     </div>
                     <input
                       type="text"
                       className={`${inputCls}`}
                       value={fields.axisSbbRestrictiveCovenantsIsNA ? 'NA' : (fields.axisSbbRestrictiveCovenants || '')}
                       onChange={e => handleChange('axisSbbRestrictiveCovenants', e.target.value.toUpperCase())}
-                      readOnly={!fields.axisSbbRestrictiveCovenantsEditOn || fields.axisSbbRestrictiveCovenantsIsNA}
-                      disabled={isReadOnly || (!fields.axisSbbRestrictiveCovenantsEditOn && !fields.axisSbbRestrictiveCovenantsIsNA)}
+                      readOnly={fields.axisSbbRestrictiveCovenantsIsNA}
+                      disabled={isReadOnly || fields.axisSbbRestrictiveCovenantsIsNA}
                     />
                   </div>
                 </div>
