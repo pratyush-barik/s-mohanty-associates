@@ -1560,10 +1560,8 @@ export default function AxisAGRI({
             </div>
           </div>
 
-          {/* Card D: (D) Transport & Approach Infrastructure */}
-          <div className="border border-sky-200 bg-sky-50/50 rounded-xl p-5 shadow-xs">
-            <h3 className="font-semibold text-sky-800 mb-4 text-sm tracking-wide uppercase">(D) Infrastructure, Approach Road & Accessibility</h3>
-            
+          {/* Additional Topography & Accessibility Details (Directly under Section 3 following A, B, C) */}
+          <div className="border border-gray-200 bg-white rounded-xl p-5 shadow-xs">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <Field label="Distance from Railway Station">
                 <input
@@ -1589,7 +1587,7 @@ export default function AxisAGRI({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <Field label="Independent & Accessible Approach Road">
+              <Field label="Does the approach road to the Property / Building is independent and accessible">
                 <select
                   className={selectCls}
                   value={fields.independentApproachRoad || ''}
@@ -1602,7 +1600,7 @@ export default function AxisAGRI({
                 </select>
               </Field>
 
-              <Field label="Able to Accommodate Fire Extinguisher">
+              <Field label="Will it be able to accommodate a fire extinguisher">
                 <select
                   className={selectCls}
                   value={fields.accommodateFireExtinguisher || ''}
@@ -1617,7 +1615,7 @@ export default function AxisAGRI({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Falls Under Land Locked Area">
+              <Field label="Does the property falls under land locked area">
                 <select
                   className={selectCls}
                   value={fields.landLockedArea || ''}
