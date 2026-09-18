@@ -887,12 +887,26 @@ export const AXIS_SBB_CONFIG: BankConfig = {
         let plotComputedStr = address.split(/MOUZA|VILLAGE|MZ\s*-/i)[0].trim();
         if (plotComputedStr.endsWith(',')) plotComputedStr = plotComputedStr.slice(0, -1).trim();
         const plotComputed = plotComputedStr.toUpperCase() || 'KHATA NO. XX, PLOT NO. YY';
-        const mouzaMatch = address.match(/(?:MOUZA|VILLAGE)[-\s]*(.*?)(?=,|$|DIST)/i);
-        const mouzaComputed = mouzaMatch ? mouzaMatch[0].toUpperCase() : '';
+        
+        const mouzaMatch = address.match(/(?:MOUZA|VILLAGE|MZ\s*-)[-\s]*.*?(?=,|$|DIST|TAH)/i);
+        const mouzaComputed = mouzaMatch ? mouzaMatch[0].trim().toUpperCase() : '';
+        
         const distMatch = address.match(/DIST(?:RICT)?[-\s]*(.*?)(?=,|-|PIN|$)/i);
         const distComputed = distMatch ? distMatch[1].trim().toUpperCase() : '';
-        const pinMatch = address.match(/PIN[-\s]*(\d{6})/i);
+        
+        const pinMatch = address.match(/PIN[-\s]*(\d{6})/i) || address.match(/\b(\d{6})\b/);
         const pinComputed = pinMatch ? pinMatch[1] : '';
+        
+        const STATES_OF_INDIA = [
+          "ANDHRA PRADESH", "ARUNACHAL PRADESH", "ASSAM", "BIHAR", "CHHATTISGARH", "DELHI", "GOA", "GUJARAT",
+          "HARYANA", "HIMACHAL PRADESH", "JHARKHAND", "KARNATAKA", "KERALA", "MADHYA PRADESH", 
+          "MAHARASHTRA", "MANIPUR", "MEGHALAYA", "MIZORAM", "NAGALAND", "ODISHA", "PUNJAB",
+          "RAJASTHAN", "SIKKIM", "TAMIL NADU", "TELANGANA", "TRIPURA", "UTTAR PRADESH", "UTTARAKHAND",
+          "WEST BENGAL"
+        ].sort();
+        const foundState = STATES_OF_INDIA.find(s => address.toUpperCase().includes(s));
+        const stateComputed = foundState || '';
+
         const distanceKm = fields.axisSbbDistanceKm || '03';
         const refCity = distComputed || mouzaComputed || 'CITY';
         const distanceComputed = `${distanceKm}- KMS FROM ${refCity} CITY CENTRE`.toUpperCase();
@@ -1096,7 +1110,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                     <select
                       className={inputCls}
                       required
-                      value={fields.axisSbbStateIsNA ? 'NA' : stateDropdown}
+                      value={fields.axisSbbStateIsNA ? 'NA' : (fields.axisSbbStateEditOn ? stateDropdown : (stateComputed ? 'AUTO' : ''))}
                       onChange={e => {
                         const v = e.target.value;
                         handleChange('axisSbbStateDropdown', v);
@@ -1106,13 +1120,9 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       }}
                       disabled={isReadOnly || !fields.axisSbbStateEditOn || fields.axisSbbStateIsNA}
                     >
+                      {!fields.axisSbbStateEditOn && stateComputed && <option value="AUTO">{stateComputed}</option>}
                       <option value="">Select State</option>
-                      <option value="ODISHA">ODISHA</option>
-                      <option value="CHHATTISGARH">CHHATTISGARH</option>
-                      <option value="JHARKHAND">JHARKHAND</option>
-                      <option value="WEST BENGAL">WEST BENGAL</option>
-                      <option value="ANDHRA PRADESH">ANDHRA PRADESH</option>
-                      <option value="TELANGANA">TELANGANA</option>
+                      {STATES_OF_INDIA.map(s => <option key={s} value={s}>{s}</option>)}
                       <option value="CUSTOM">Custom...</option>
                     </select>
                     {fields.axisSbbStateEditOn && stateDropdown === 'CUSTOM' && !fields.axisSbbStateIsNA && (
@@ -1152,7 +1162,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   <div className="flex flex-col">
                     <div className="flex justify-between items-center mb-1">
                       <div className="flex items-center">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">DISTANCE <span className="text-red-500">*</span></label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">DISTANCE FROM CITY CENTRE <span className="text-red-500">*</span></label>
                         {renderNaToggle('axisSbbDistanceFromCityCenter')}
                       </div>
                       {renderEditSwitch('axisSbbDistanceFromCityCenter', !!fields.axisSbbDistanceFromCityCenterIsNA)}
