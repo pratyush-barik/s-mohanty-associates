@@ -60,7 +60,7 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     }]);
   }
 
-  private drawChecklist(label: string, value: string, isNA: boolean, options: string[], isHighlighted: boolean = false) {
+  private drawChecklist = (label: string, value: string, isNA: boolean, options: string[], isHighlighted: boolean = false) => {
     if (isNA) {
       this.drawSimpleRow(label, 'NA', isHighlighted);
       return;
