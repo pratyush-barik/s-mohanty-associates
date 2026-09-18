@@ -526,55 +526,56 @@ export const AXIS_SBB_CONFIG: BankConfig = {
             <div className="bg-white border border-gray-200 rounded-md shadow-sm">
               <div className="flex border-b border-gray-200">
                 <div className="w-1/2 md:w-[40%] p-3 border-r border-gray-200 flex items-center">
-                  <span className="text-sm font-medium text-gray-700">PRESENT MARKET VALUE</span>
+                  <span className="text-sm font-medium text-gray-700">PRESENT MARKET VALUE <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: ROUND(Total Valuation 100% Completion (I+II), -3) = PRESENT MARKET VALUE]</span></span>
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
                   <input 
                     className={`${inputCls} ${!fields.axisSbbEnableCoverPageValueEdit ? 'bg-gray-50 text-gray-500' : ''}`} 
                     value={fields.axisSbbEnableCoverPageValueEdit ? (fields.axisSbbPresentMarketValue || '') : (() => {
-                      const v8 = Number(fields.axisSbbTotalValueOfPropertyAfterCompletion || 0);
-                      if (v8 > 0) return v8.toFixed(2);
-                      const v7 = Number(fields.axisSbbMarketValueOfTheUnit || 0);
-                      return v7 > 0 ? v7.toFixed(2) : '0.00';
+                      const v = Number(fields.axisSbbTotalValueOfPropertyAfterCompletion || 0);
+                      if (v > 0) return (Math.round(v / 1000) * 1000).toFixed(2);
+                      return '0.00';
                     })()} 
                     onChange={(e) => handleChange('axisSbbPresentMarketValue', e.target.value)} 
                     disabled={isReadOnly || !fields.axisSbbEnableCoverPageValueEdit} 
                   />
-                  <span className="text-[10px] text-gray-500 mt-1 pl-1">Current Value of Property (Plot + Construction) from Section 7 / Section 8</span>
+                  <span className="text-[10px] text-gray-500 mt-1 pl-1">Current Value of Property from Section 9</span>
                 </div>
               </div>
               <div className="flex border-b border-gray-200">
                 <div className="w-1/2 md:w-[40%] p-3 border-r border-gray-200 flex items-center">
-                  <span className="text-sm font-medium text-gray-700">DISTRESS SALE VALUE</span>
+                  <span className="text-sm font-medium text-gray-700">DISTRESS SALE VALUE <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: ROUND(PRESENT MARKET VALUE * 0.90, -3) = DISTRESS SALE VALUE]</span></span>
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
                   <input 
                     className={`${inputCls} ${!fields.axisSbbEnableCoverPageValueEdit ? 'bg-gray-50 text-gray-500' : ''}`} 
                     value={fields.axisSbbEnableCoverPageValueEdit ? (fields.axisSbbDistressSaleValue || '') : (() => {
-                      const v9 = Number(fields.axisSbbFinalDistressValue || 0);
-                      return v9 > 0 ? v9.toFixed(2) : '0.00';
+                      const baseV = Number(fields.axisSbbTotalValueOfPropertyAfterCompletion || 0);
+                      const pmv = baseV > 0 ? Math.round(baseV / 1000) * 1000 : 0;
+                      return pmv > 0 ? (Math.round((pmv * 0.90) / 1000) * 1000).toFixed(2) : '0.00';
                     })()} 
                     onChange={(e) => handleChange('axisSbbDistressSaleValue', e.target.value)} 
                     disabled={isReadOnly || !fields.axisSbbEnableCoverPageValueEdit} 
                   />
-                  <span className="text-[10px] text-gray-500 mt-1 pl-1">Distress Valuation of the Property field from Section 9</span>
+                  <span className="text-[10px] text-gray-500 mt-1 pl-1">Calculated instantly based on PRESENT MARKET VALUE</span>
                 </div>
               </div>
               <div className="flex">
                 <div className="w-1/2 md:w-[40%] p-3 border-r border-gray-200 flex items-center">
-                  <span className="text-sm font-medium text-gray-700">REALIZABLE VALUE</span>
+                  <span className="text-sm font-medium text-gray-700">REALIZABLE VALUE <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: ROUND(PRESENT MARKET VALUE * 0.95, -3) = REALIZABLE VALUE]</span></span>
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
                   <input 
                     className={`${inputCls} ${!fields.axisSbbEnableCoverPageValueEdit ? 'bg-gray-50 text-gray-500' : ''}`} 
                     value={fields.axisSbbEnableCoverPageValueEdit ? (fields.axisSbbRealizableValue || '') : (() => {
-                      const rv = Number(fields.axisSbbFinalRealizableValue || 0);
-                      return rv > 0 ? rv.toFixed(2) : '0.00';
+                      const baseV = Number(fields.axisSbbTotalValueOfPropertyAfterCompletion || 0);
+                      const pmv = baseV > 0 ? Math.round(baseV / 1000) * 1000 : 0;
+                      return pmv > 0 ? (Math.round((pmv * 0.95) / 1000) * 1000).toFixed(2) : '0.00';
                     })()} 
                     onChange={(e) => handleChange('axisSbbRealizableValue', e.target.value)} 
                     disabled={isReadOnly || !fields.axisSbbEnableCoverPageValueEdit} 
                   />
-                  <span className="text-[10px] text-gray-500 mt-1 pl-1">Realizable Value of the Property field from Section 9</span>
+                  <span className="text-[10px] text-gray-500 mt-1 pl-1">Calculated instantly based on PRESENT MARKET VALUE</span>
                 </div>
               </div>
             </div>

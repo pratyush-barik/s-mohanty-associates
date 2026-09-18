@@ -690,15 +690,11 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     let rv = fv('axisSbbRealizableValue', '');
 
     if (!this.fields.axisSbbEnableCoverPageValueEdit) {
-      const v8 = Number(this.fields.axisSbbTotalValueOfPropertyAfterCompletion || 0);
-      const v7 = Number(this.fields.axisSbbMarketValueOfTheUnit || 0);
-      pmv = v8 > 0 ? v8.toFixed(2) : (v7 > 0 ? v7.toFixed(2) : '0.00');
-
-      const v9 = Number(this.fields.axisSbbFinalDistressValue || 0);
-      dsv = v9 > 0 ? v9.toFixed(2) : '0.00';
-      
-      const rvNum = Number(this.fields.axisSbbFinalRealizableValue || 0);
-      rv = rvNum > 0 ? rvNum.toFixed(2) : '0.00';
+      const baseV = Number(this.fields.axisSbbTotalValueOfPropertyAfterCompletion || 0);
+      const calcPmv = baseV > 0 ? Math.round(baseV / 1000) * 1000 : 0;
+      pmv = calcPmv > 0 ? calcPmv.toFixed(2) : '0.00';
+      dsv = calcPmv > 0 ? (Math.round((calcPmv * 0.90) / 1000) * 1000).toFixed(2) : '0.00';
+      rv = calcPmv > 0 ? (Math.round((calcPmv * 0.95) / 1000) * 1000).toFixed(2) : '0.00';
     }
 
     drawCenteredBold(`PRESENT MARKET VALUE: ${pmv}`, FONT_SIZE, 14);
