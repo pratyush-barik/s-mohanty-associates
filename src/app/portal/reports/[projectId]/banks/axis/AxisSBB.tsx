@@ -267,7 +267,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
     axisSbbTotalSaleableAreaEditOn: false,
 
     axisSbbConstructionAsPerApprovedPlan: 'NOT APPLICABLE BYE LAWS',
-    axisSbbConstructionAsPerApprovedPlanEditOn: false,
+    axisSbbConstructionAsPerApprovedPlanIsNA: false,
 
     axisSbbFSIAsPerPlan: 'NA',
     axisSbbFSIAsPerPlanIsNA: false,
@@ -2700,21 +2700,22 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   <div className="flex justify-between items-center mb-1">
                     <div className="flex items-center">
                       <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">WHETHER THE CONSTRUCTION IS AS PER APPROVED BUILDING PLAN AND / OR LOCAL BUILDING BYE LAWS:</label>
+                      {renderNaToggle('axisSbbConstructionAsPerApprovedPlan')}
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-3">
-                    {['YES', 'NA', 'NOT APPLICABLE BYE LAWS'].map(opt => (
+                    {['YES', 'NO', 'NOT APPLICABLE BYE LAWS'].map(opt => (
                       <label key={opt} className={`flex items-center space-x-2 p-2 border rounded-lg cursor-pointer transition-colors ${(fields.axisSbbConstructionAsPerApprovedPlan === opt) ? 'bg-amber-50 border-amber-300' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
                         <input
                           type="radio"
                           name="axisSbbConstructionAsPerApprovedPlan"
                           value={opt}
-                          checked={fields.axisSbbConstructionAsPerApprovedPlan === opt}
+                          checked={fields.axisSbbConstructionAsPerApprovedPlan === opt && !fields.axisSbbConstructionAsPerApprovedPlanIsNA}
                           onChange={e => handleChange('axisSbbConstructionAsPerApprovedPlan', e.target.value)}
-                          disabled={isReadOnly}
+                          disabled={isReadOnly || !!fields.axisSbbConstructionAsPerApprovedPlanIsNA}
                           className="text-amber-500 focus:ring-amber-400 border-gray-300"
                         />
-                        <span className="text-xs font-semibold text-gray-700">{opt}</span>
+                        <span className={`text-xs font-semibold ${fields.axisSbbConstructionAsPerApprovedPlanIsNA ? 'text-gray-400' : 'text-gray-700'}`}>{opt}</span>
                       </label>
                     ))}
                   </div>
