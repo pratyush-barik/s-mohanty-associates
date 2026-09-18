@@ -541,47 +541,140 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
 
   private drawSbbSection3() {
     const fields = this.fields;
-    const fv = (key: string, defaultVal = 'NA') => String((fields as any)[key] || defaultVal).replace(/[\t\n\r]+/g, ' ').trim() || defaultVal;
     
-    this.drawSectionSubtitle('LOCATION CLASSIFICATION & LOCAL AUTHORITY');
-    this.drawSimpleRow('Location of Property', fv('axisSbbPropertyLocation'));
-    this.drawSimpleRow('Governing Body Authority', fv('axisSbbGoverningBody'));
-    if (fields.axisSbbGoverningBody === 'Town or Gram Panchayat or Rural') {
-      this.drawSimpleRow('Town / Gram Panchayat Planning Sub-Type', fv('axisSbbTownPlanningSubType'));
-    }
+    this.drawSectionSubtitle('DETAILS OF THE PROPERTY BEING VALUED');
+    
+    const drawCheckbox = (x: number, y: number, checked: boolean, text: string) => {
+      const boxSize = 8;
+      this.page.drawRectangle({
+        x: x,
+        y: this.pdfY(y) - boxSize + 1,
+        width: boxSize,
+        height: boxSize,
+        borderColor: rgb(0,0,0),
+        borderWidth: 1
+      });
+      const font = checked ? this.fontBold : this.fontRegular;
+      this.page.drawText(text, {
+        x: x + boxSize + 4,
+        y: this.pdfY(y),
+        size: FONT_SIZE,
+        font: font,
+        color: rgb(0,0,0)
+      });
+    };
 
-    this.drawSectionSubtitle('DOCUMENTS PROVIDED CHECKLIST');
-    
-    const docs = [
-      { id: 'axisSbbDocPrevValuation', label: 'Copy of Previous Valuation Report' },
-      { id: 'axisSbbDocApprovedLayout', label: 'Approved Layout' },
-      { id: 'axisSbbDocCommencement', label: 'Commencement Certificate' },
-      { id: 'axisSbbDocApprovedBuildingPlan', label: 'Approved Building Plan' },
-      { id: 'axisSbbDocSaleDeed', label: 'Copy of Sale Deed / Patta Certificate' },
-      { id: 'axisSbbDocOccupancy', label: 'Occupancy Certificate' },
-      { id: 'axisSbbDocPartitionDeed', label: 'Copy Partition Deed' },
-      { id: 'axisSbbDocSketchMap', label: 'Sketch Map / ROR' }
-    ];
-    
-    // Create 2-column checklist
-    for (let i = 0; i < docs.length; i += 2) {
-      const left = docs[i];
-      const right = i + 1 < docs.length ? docs[i + 1] : null;
+    const drawRow = (leftText: string, drawRight: (x: number, y: number, w: number) => number) => {
+      const startY = this.cursorY;
+      const leftW = 160;
+      const rightW = CONTENT_W - leftW;
       
-      const leftVal = fields[left.id] ? 'Yes' : 'No';
-      if (right) {
-        const rightVal = fields[right.id] ? 'Yes' : 'No';
-        this.drawKeyValueRow([
-          { label: left.label, value: leftVal },
-          { label: right.label, value: rightVal }
-        ]);
-      } else {
-        this.drawKeyValueRow([
-          { label: left.label, value: leftVal },
-          { label: '', value: '' }
-        ]);
+      this.checkPageSpace(150);
+      
+      const rightX = MARGIN_L + leftW + 5;
+      const finalY = drawRight(rightX, this.cursorY + 5, rightW - 10);
+      
+      const rowHeight = (finalY - this.cursorY) + 5;
+      
+      this.page.drawRectangle({
+        x: MARGIN_L,
+        y: this.pdfY(this.cursorY + rowHeight),
+        width: CONTENT_W,
+        height: rowHeight,
+        borderColor: rgb(0,0,0),
+        borderWidth: 1
+      });
+      
+      this.page.drawLine({
+        start: { x: MARGIN_L + leftW, y: this.pdfY(this.cursorY) },
+        end: { x: MARGIN_L + leftW, y: this.pdfY(this.cursorY + rowHeight) },
+        thickness: 1,
+        color: rgb(0,0,0)
+      });
+      
+      const leftLines = this.wrapText(leftText, leftW - 10, FONT_SIZE, false);
+      const textH = leftLines.length * (FONT_SIZE + 4);
+      let ty = this.cursorY + (rowHeight - textH) / 2 + FONT_SIZE;
+      for (const line of leftLines) {
+        this.page.drawText(line, { x: MARGIN_L + 5, y: this.pdfY(ty), size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
+        ty += FONT_SIZE + 4;
       }
-    }
+      
+      this.cursorY += rowHeight;
+    };
+
+    drawRow('LOCATION OF PROPERTY', (x, y, w) => {
+      let cy = y;
+      const loc = fields.axisSbbPropertyLocation || '';
+      drawCheckbox(x, cy, loc === 'Urban', 'URBAN');
+      drawCheckbox(x + 70, cy, loc === 'Semi-Urban', 'SEMI-URBAN');
+      drawCheckbox(x + 165, cy, loc === 'Rural/Gram Panchayat', 'RURAL/GRAM PANCHAYAT');
+      
+      cy += 16;
+      const gov = fields.axisSbbGoverningBody || '';
+      drawCheckbox(x, cy, gov === 'Corporation', 'CORPORATION');
+      drawCheckbox(x + 100, cy, gov === 'Municipality', 'MUNICIPALITY');
+      drawCheckbox(x + 200, cy, gov === 'Town or Gram Panchayat or Rural', 'TOWN OR GRAM PANCHAYAT OR RURAL');
+      
+      cy += 24;
+      this.page.drawText('IF TOWN OR GRAM PANCHAYAT, PLEASE CHOOSE THE APPROPRIATE ONE IN BELOW: -', {
+        x: x, y: this.pdfY(cy), size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0)
+      });
+      
+      cy += 20;
+      const t = fields.axisSbbTownPlanningSubType || '';
+      
+      const drawType = (label: string, text: string, isChecked: boolean) => {
+        const fullText = `${label}:- ${text}`;
+        const lines = this.wrapText(fullText, w, FONT_SIZE, false);
+        const font = isChecked ? this.fontBold : this.fontRegular;
+        for (const line of lines) {
+          this.page.drawText(line, { x: x, y: this.pdfY(cy), size: FONT_SIZE, font: font, color: rgb(0,0,0) });
+          if (line.startsWith('TYPE')) {
+            const splitMatch = line.match(/^(TYPE [A-Z0-9]+:-)/);
+            if (splitMatch) {
+               const uw = font.widthOfTextAtSize(splitMatch[1], FONT_SIZE);
+               this.page.drawLine({
+                 start: { x: x, y: this.pdfY(cy) - 2 },
+                 end: { x: x + uw, y: this.pdfY(cy) - 2 },
+                 thickness: 1,
+                 color: rgb(0,0,0)
+               });
+            }
+          }
+          cy += 14;
+        }
+        cy += 6;
+      };
+      
+      drawType('TYPE 1', 'LAYOUT PLAN & INDIVIDUAL CONSTRUCTION BOTH ARE APPROVED BY TOWN PLANNING AUTHORITY.', t === 'TYPE 1');
+      drawType('TYPE 2A', 'LAYOUT PLAN APPROVED BY TOWN PLANNING AUTHORITY AND CONSTRUCTION APPROVED BY GRAMPANCHAYAT.', t === 'TYPE 2A');
+      drawType('TYPE 2B', 'LAYOUT PLAN & INDIVIDUAL CONSTRUCTION BOTH ARE APPROVED BY GRAMPANCHAYAT BUT PROPERTY NOW FALLS IN MUNICIPALITY.', t === 'TYPE 2B');
+      drawType('TYPE 3', 'LAYOUT PLAN & INDIVIDUAL CONSTRUCTION BOTH ARE APPROVED BY GRAMPANCHAYAT BUT PROPERTY NOW FALLS INSIDE GRAM PANCHAYAT.', t === 'TYPE 3');
+      
+      return cy;
+    });
+
+    drawRow('DOCUMENTS PROVIDED', (x, y, w) => {
+      let cy = y;
+      
+      drawCheckbox(x, cy, !!fields.axisSbbDocPrevValuation, 'COPY OF PREVIOUS VALUATION REPORT');
+      drawCheckbox(x + 230, cy, !!fields.axisSbbDocApprovedLayout, 'APPROVED LAYOUT');
+      drawCheckbox(x + 360, cy, !!fields.axisSbbDocCommencement, 'COMMENCEMENT');
+      
+      cy += 16;
+      drawCheckbox(x, cy, !!fields.axisSbbDocApprovedBuildingPlan, 'APPROVED BUILDING PLAN');
+      drawCheckbox(x + 160, cy, !!fields.axisSbbDocSaleDeed, 'COPY OF SALE. DEED/ PATTA');
+      drawCheckbox(x + 360, cy, !!fields.axisSbbDocCommencement, 'CERTIFICATE');
+      
+      cy += 16;
+      drawCheckbox(x, cy, !!fields.axisSbbDocOccupancy, 'OCCUPANCY CERTIFICATE');
+      drawCheckbox(x + 160, cy, !!fields.axisSbbDocPartitionDeed, 'COPY PARTITION DEED');
+      drawCheckbox(x + 320, cy, !!fields.axisSbbDocSketchMap, 'SKETCH MAP');
+      
+      cy += 16;
+      return cy;
+    });
   }
 
   private drawSbbSection2() {
