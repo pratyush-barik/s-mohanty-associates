@@ -486,7 +486,10 @@ export default function AxisAGRI({
     setFields(prev => {
       const updated = [...(prev.floors || [])];
       let cleanVal = val;
-      if (field === 'plinthArea' || field === 'replacementRate' || field === 'ageYears') {
+      if (field === 'ageYears') {
+        // Enforce strictly positive integer (no letters, no decimals, only digits)
+        cleanVal = val.replace(/[^0-9]/g, '');
+      } else if (field === 'plinthArea' || field === 'replacementRate') {
         cleanVal = sanitizePositiveFloat(val);
       }
       updated[index] = { ...updated[index], [field]: cleanVal };
@@ -494,7 +497,7 @@ export default function AxisAGRI({
       // Auto-calculate row estimatedCost, depreciation, netValue
       const plinth = parseNum(field === 'plinthArea' ? cleanVal : updated[index].plinthArea);
       const rate = parseNum(field === 'replacementRate' ? cleanVal : updated[index].replacementRate);
-      const age = parseNum(field === 'ageYears' ? cleanVal : (updated[index].ageYears || '0'));
+      const age = parseInt(field === 'ageYears' ? cleanVal : (updated[index].ageYears || '0'), 10) || 0;
       if (plinth > 0 && rate > 0) {
         const estCost = plinth * rate;
         updated[index].estimatedCost = estCost.toFixed(2);
@@ -525,8 +528,8 @@ export default function AxisAGRI({
             plinthArea: '',
             usage: 'Residential',
             roofHeight: "10'-6\"",
-            ageYears: '8Yrs',
-            replacementRate: '1300.00',
+            ageYears: '',
+            replacementRate: '',
             estimatedCost: '',
             depreciationAmount: '',
             netValue: '',
@@ -1693,7 +1696,7 @@ export default function AxisAGRI({
                     value={fields.corneredOrIntermittent || ''}
                     onChange={e => handleChange('corneredOrIntermittent', e.target.value)}
                     disabled={isReadOnly}
-                    placeholder="Details if any"
+                    placeholder=""
                   />
                   <select
                     className={`${selectCls} w-1/3`}
