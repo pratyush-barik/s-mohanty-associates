@@ -795,7 +795,7 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     ]);
     this.drawKeyValueRow([
       { label: 'Realizable Value (95%)', value: numVal('axisSbbFinalRealizableValue', realizableValueComp.toFixed(2)) },
-      { label: 'Insurable Value (App.)', value: numVal('axisSbbFinalInsurableValue', insurableValueComp.toFixed(2)) }
+      { label: 'Insurable Value (App.) (Construction Value)', value: numVal('axisSbbFinalInsurableValue', insurableValueComp.toFixed(2)) }
     ]);
   }
 
