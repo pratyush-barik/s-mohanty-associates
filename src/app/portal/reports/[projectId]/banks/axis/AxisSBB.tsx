@@ -246,6 +246,18 @@ export const AXIS_SBB_CONFIG: BankConfig = {
     axisSbbBuildingPlanExpiryDateIsNA: false,
     axisSbbBuildingPlanExpiryDateEditOn: false,
 
+    axisSbbAreaOfThePlot: '',
+    axisSbbAreaOfThePlotIsNA: false,
+    axisSbbAreaOfThePlotEditOn: false,
+
+    axisSbbApprovedBuiltUpArea: '',
+    axisSbbApprovedBuiltUpAreaIsNA: false,
+    axisSbbApprovedBuiltUpAreaEditOn: false,
+
+    axisSbbDemarcationAtSite: 'YES',
+    axisSbbDemarcationAtSiteIsNA: false,
+    axisSbbDemarcationAtSiteEditOn: false,
+
     // SECTION 8
     axisSbbFloorData: JSON.stringify([
       { id: "1", floorName: "GROUND FLOOR RCC", constructedArea: null, constructedAreaIsNA: false, approvedArea: null, approvedAreaIsNA: true, permissibleArea: null, permissibleAreaIsNA: true, valuationArea: null, valuationAreaIsNA: false, accommodation: "", accommodationIsNA: true, usageStorage: false, usageParking: false, usageCommercial: false, usageResidential: false, usageIndustry: false },
@@ -2234,31 +2246,17 @@ export const AXIS_SBB_CONFIG: BankConfig = {
             </div>
 
             <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#F0FDFA', borderColor: '#99F6E4' }}>
-              <h3 className="font-bold text-gray-700 mb-4">APPROVAL DETAILS & BYE-LAWS COMPLIANCE</h3>
+              <h3 className="font-bold text-gray-700 mb-4">Container 7.2: APPROVAL DETAILS & CONSTRUCTION DETAILS</h3>
               
               <div className="space-y-5">
                 
-                {/* SUB-CONTAINER 7.2A: LAYOUT APPROVAL DETAILS */}
+                {/* SUB-CONTAINER 7.2A: LAYOUT APPROVAL NUMBER */}
                 <div className="border-b border-teal-200 pb-4 mb-4">
-                  <h4 className="font-bold text-xs text-teal-800 mb-3">LAYOUT APPROVAL DETAILS</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <h4 className="font-bold text-xs text-teal-800 mb-3">LAYOUT APPROVAL NUMBER</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col">
                       <div className="flex items-center mb-1">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">LAYOUT APPROVAL NO.</label>
-                        {renderNaToggle('axisSbbLayoutApprovalNumber')}
-                      </div>
-                      <input
-                        type="text"
-                        className={`${inputCls}`}
-                        value={fields.axisSbbLayoutApprovalNumberIsNA ? 'NA' : (fields.axisSbbLayoutApprovalNumber || '')}
-                        onChange={e => handleChange('axisSbbLayoutApprovalNumber', e.target.value.toUpperCase())}
-                        disabled={isReadOnly || !!fields.axisSbbLayoutApprovalNumberIsNA}
-                      />
-                    </div>
-                    
-                    <div className="flex flex-col">
-                      <div className="flex items-center mb-1">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">DATE OF APPROVAL</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">DATE OF APPROVAL :-</label>
                         {renderNaToggle('axisSbbLayoutApprovalDate')}
                       </div>
                       <input
@@ -2272,7 +2270,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                     
                     <div className="flex flex-col">
                       <div className="flex items-center mb-1">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">EXPIRY DATE</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">EXPIRY DATE :-</label>
                         {renderNaToggle('axisSbbLayoutExpiryDate')}
                       </div>
                       <input
@@ -2286,27 +2284,13 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   </div>
                 </div>
 
-                {/* SUB-CONTAINER 7.2B: BUILDING PLAN APPROVAL DETAILS */}
+                {/* SUB-CONTAINER 7.2B: BUILDING PLAN APPROVAL NUMBER */}
                 <div className="border-b border-teal-200 pb-4 mb-4">
-                  <h4 className="font-bold text-xs text-teal-800 mb-3">BUILDING PLAN APPROVAL DETAILS</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <h4 className="font-bold text-xs text-teal-800 mb-3">BUILDING PLAN APPROVAL NUMBER</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col">
                       <div className="flex items-center mb-1">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">BUILDING PLAN NO.</label>
-                        {renderNaToggle('axisSbbBuildingPlanApprovalNumber')}
-                      </div>
-                      <input
-                        type="text"
-                        className={`${inputCls}`}
-                        value={fields.axisSbbBuildingPlanApprovalNumberIsNA ? 'NA' : (fields.axisSbbBuildingPlanApprovalNumber || '')}
-                        onChange={e => handleChange('axisSbbBuildingPlanApprovalNumber', e.target.value.toUpperCase())}
-                        disabled={isReadOnly || !!fields.axisSbbBuildingPlanApprovalNumberIsNA}
-                      />
-                    </div>
-                    
-                    <div className="flex flex-col">
-                      <div className="flex items-center mb-1">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">DATE OF APPROVAL</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">DATE OF APPROVAL :-</label>
                         {renderNaToggle('axisSbbBuildingPlanApprovalDate')}
                       </div>
                       <input
@@ -2320,7 +2304,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                     
                     <div className="flex flex-col">
                       <div className="flex items-center mb-1">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">EXPIRY DATE</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">EXPIRY DATE :-</label>
                         {renderNaToggle('axisSbbBuildingPlanExpiryDate')}
                       </div>
                       <input
@@ -2331,6 +2315,74 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         disabled={isReadOnly || !!fields.axisSbbBuildingPlanExpiryDateIsNA}
                       />
                     </div>
+                  </div>
+                </div>
+
+                {/* SUB-CONTAINER 7.2C: CONSTRUCTION DETAILS */}
+                <div className="border-b border-teal-200 pb-4 mb-4">
+                  <h4 className="font-bold text-xs text-teal-800 mb-3">CONSTRUCTION DETAILS</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    
+                    {/* AREA OF THE PLOT/FLAT */}
+                    <div className="flex flex-col">
+                      <div className="flex items-center mb-1 justify-between">
+                        <div className="flex items-center space-x-2">
+                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">AREA OF THE PLOT/FLAT (IN SQ.FT.)</label>
+                          {renderNaToggle('axisSbbAreaOfThePlot')}
+                        </div>
+                        {renderEditSwitch('axisSbbAreaOfThePlot', !!fields.axisSbbAreaOfThePlotIsNA)}
+                      </div>
+                      <input
+                        type="text"
+                        className={`${inputCls} ${!fields.axisSbbAreaOfThePlotEditOn && !fields.axisSbbAreaOfThePlotIsNA ? 'bg-gray-100' : ''}`}
+                        value={fields.axisSbbAreaOfThePlotIsNA ? 'NA' : (fields.axisSbbAreaOfThePlotEditOn ? (fields.axisSbbAreaOfThePlot || '') : (fields.axisSbbPlotAreaAsPerDocument || ''))}
+                        onChange={e => handleChange('axisSbbAreaOfThePlot', e.target.value.toUpperCase())}
+                        disabled={isReadOnly || !!fields.axisSbbAreaOfThePlotIsNA || !fields.axisSbbAreaOfThePlotEditOn}
+                      />
+                    </div>
+
+                    {/* APPROVED BUILT UP AREA */}
+                    <div className="flex flex-col">
+                      <div className="flex items-center mb-1 justify-between">
+                        <div className="flex items-center space-x-2">
+                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">APPROVED BUILT UP AREA (IN SQ.FT.)</label>
+                          {renderNaToggle('axisSbbApprovedBuiltUpArea')}
+                        </div>
+                        {renderEditSwitch('axisSbbApprovedBuiltUpArea', !!fields.axisSbbApprovedBuiltUpAreaIsNA)}
+                      </div>
+                      <input
+                        type="text"
+                        className={`${inputCls} ${!fields.axisSbbApprovedBuiltUpAreaEditOn && !fields.axisSbbApprovedBuiltUpAreaIsNA ? 'bg-gray-100' : ''}`}
+                        value={fields.axisSbbApprovedBuiltUpAreaIsNA ? 'NA' : (fields.axisSbbApprovedBuiltUpAreaEditOn ? (fields.axisSbbApprovedBuiltUpArea || '') : (fields.axisSbbTotalConstructedArea || ''))}
+                        onChange={e => handleChange('axisSbbApprovedBuiltUpArea', e.target.value.toUpperCase())}
+                        disabled={isReadOnly || !!fields.axisSbbApprovedBuiltUpAreaIsNA || !fields.axisSbbApprovedBuiltUpAreaEditOn}
+                      />
+                    </div>
+
+                    {/* DEMARCATION AT SITE */}
+                    <div className="flex flex-col">
+                      <div className="flex items-center mb-1">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">DEMARCATION AT SITE</label>
+                        {renderNaToggle('axisSbbDemarcationAtSite')}
+                      </div>
+                      <div className="flex gap-4 mt-2">
+                        {['YES', 'NO'].map(opt => (
+                          <label key={opt} className="flex items-center text-xs font-medium text-gray-700">
+                            <input
+                              type="radio"
+                              name="axisSbbDemarcationAtSite"
+                              value={opt}
+                              checked={!fields.axisSbbDemarcationAtSiteIsNA && fields.axisSbbDemarcationAtSite === opt}
+                              onChange={() => handleChange('axisSbbDemarcationAtSite', opt)}
+                              disabled={isReadOnly || !!fields.axisSbbDemarcationAtSiteIsNA}
+                              className="mr-1.5"
+                            />
+                            {opt}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                    
                   </div>
                 </div>
 
