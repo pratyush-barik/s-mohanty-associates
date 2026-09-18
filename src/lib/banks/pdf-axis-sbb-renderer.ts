@@ -342,7 +342,7 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       return;
     }
     // Intercept Maps
-    if (title.toUpperCase().includes('MAP')) {
+    if (title.toUpperCase().includes('MAP') || title.toUpperCase().includes('BENCHMARK')) {
       if (!this.drawnMapHeader) {
         this.drawnMapHeader = true;
         super.drawSectionHeader('12. LOCATION & SKECTH MAP OR MAPS', addSpaceBefore, preserveCase);

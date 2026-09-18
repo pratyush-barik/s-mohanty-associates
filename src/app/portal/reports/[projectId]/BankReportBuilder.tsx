@@ -1372,7 +1372,8 @@ export default function BankReportBuilder({
           const cBytes = cadastralBytesList[i];
           if (cBytes) {
             r.newPage();
-            r.drawSectionHeader(`CADASTRAL MAP${cadastralBytesList.length > 1 ? ` ${i + 1}` : ''}`);
+            const mapLabel = config?.cadastralMapLabelOverride?.toUpperCase() || 'CADASTRAL MAP';
+            r.drawSectionHeader(`${mapLabel}${cadastralBytesList.length > 1 ? ` ${i + 1}` : ''}`);
             r.advanceCursor(8);
             await r.drawImageBlock(cBytes, {
               maxWidth: 450, maxHeight: 500, centered: true,
@@ -2607,6 +2608,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
               coordinatesSectionName="Property Details"
               isReadOnly={isReadOnly}
               uploading={uploading}
+              cadastralMapLabelOverride={config?.cadastralMapLabelOverride}
               onLocationMapUpload={(e) => handleFileUpload(e, 'locationMapImages')}
               onLocationMapRemove={(idx) => removeMapImage('locationMapImages', idx)}
               onMouzaMapUpload={(e) => handleFileUpload(e, 'mouzaMapImages')}

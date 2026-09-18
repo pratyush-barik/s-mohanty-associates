@@ -871,6 +871,7 @@ export function BaseMapsSection({
   title?: string;
   mapOrder?: ('location' | 'mouza' | 'sketch' | 'cadastral')[];
   withoutSectionWrapper?: boolean;
+  cadastralMapLabelOverride?: string;
 }) {
   const [localLat, setLocalLat] = useState(latitude || '');
   const [localLng, setLocalLng] = useState(longitude || '');
@@ -1162,16 +1163,18 @@ export function BaseMapsSection({
     <div key="cadastral">
       <MapImageCategoryCard
         images={normCadastralImages}
-        categoryLabel="Cadastral Map"
+        categoryLabel={cadastralMapLabelOverride || "Cadastral Map"}
         isReadOnly={isReadOnly}
         uploading={isCadastralUploading}
-        icon="🌐"
-        title="Cadastral Map"
-        btnLabel="Cadastral Map"
+        icon={cadastralMapLabelOverride ? "📍" : "🌐"}
+        title={cadastralMapLabelOverride || "Cadastral Map"}
+        btnLabel={cadastralMapLabelOverride || "Cadastral Map"}
         onUpload={onCadastralMapUpload}
         onRemove={onCadastralMapRemove}
         onReorder={onReorderCadastralMap}
-        emptyMessage="No cadastral map uploaded yet. Click '+ Add Cadastral Map' to upload one or more maps."
+        emptyMessage={cadastralMapLabelOverride 
+          ? `No ${cadastralMapLabelOverride} uploaded yet. Click '+ Add ${cadastralMapLabelOverride}' to upload one or more maps.` 
+          : "No cadastral map uploaded yet. Click '+ Add Cadastral Map' to upload one or more maps."}
       />
     </div>
   );

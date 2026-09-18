@@ -36,7 +36,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
     'section-12-title': '12. LOCATION & SKECTH MAP OR MAPS',
     'annexures-title': '13. DOCUMENTS AND ANNEXTURE'
   },
-  extraSections: [],
+  cadastralMapLabelOverride: 'Benchmark',
   defaultValues: {
     axisSbbDeedNumberDate: '',
     axisSbbDeedNumberDateIsNA: false,

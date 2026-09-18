@@ -368,6 +368,8 @@ export interface BankConfig {
   hideDefaultDeclarationAndCertificate?: boolean;
   /** Bank-specific validation rules added on top of base validation */
   validationRules?: ValidationRule[];
+  /** Override for the Cadastral Map label */
+  cadastralMapLabelOverride?: string;
 
   // ── PDF Delta (optional) ──
   /** Factory function returning a bank-specific PDF renderer.
