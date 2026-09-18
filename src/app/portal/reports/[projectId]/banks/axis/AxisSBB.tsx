@@ -1388,21 +1388,6 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                 </div>
 
                 <div className="flex flex-col">
-                  <div className="flex items-center mb-2">
-                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide">(C) COMMERCIAL/INDUSTRIAL PROPERTY:</label>
-                    {renderNaToggle('axisSbbCommercialIndustrialProperty')}
-                  </div>
-                  {renderMultiSelect('axisSbbCommercialIndustrialProperty', ['GODOWN', 'INDURSTRIAL', 'PETROL PUMP', 'OFFICE', 'VACANT LAND', 'UNIT IN A MALL'], !!fields.axisSbbCommercialIndustrialPropertyIsNA)}
-                </div>
-
-              </div>
-            </div>
-
-            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#ECFEFF', borderColor: '#A5F3FC' }}>
-              <h3 className="font-bold text-gray-700 mb-4">ACCESSIBILITY/ BOUNDARIES/OTHERS</h3>
-              
-              <div className="space-y-5">
-                <div className="flex flex-col">
                   <div className="flex justify-between items-center mb-1">
                     <div className="flex items-center">
                       <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">CIVIC AMENITIES LIKE SCHOOL, HOSPITAL, MARKET, ETC. <span className="text-red-500">*</span></label>
@@ -1428,6 +1413,21 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   </div>
                 </div>
 
+                <div className="flex flex-col">
+                  <div className="flex items-center mb-2">
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide">(C) COMMERCIAL/INDUSTRIAL PROPERTY:</label>
+                    {renderNaToggle('axisSbbCommercialIndustrialProperty')}
+                  </div>
+                  {renderMultiSelect('axisSbbCommercialIndustrialProperty', ['GODOWN', 'INDURSTRIAL', 'PETROL PUMP', 'OFFICE', 'VACANT LAND', 'UNIT IN A MALL'], !!fields.axisSbbCommercialIndustrialPropertyIsNA)}
+                </div>
+
+              </div>
+            </div>
+
+            <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#ECFEFF', borderColor: '#A5F3FC' }}>
+              <h3 className="font-bold text-gray-700 mb-4">ACCESSIBILITY/ BOUNDARIES/OTHERS</h3>
+              
+              <div className="space-y-5">
                 <div className="flex flex-col">
                   <div className="flex items-center mb-2">
                     <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">AVAILABILITY OF LOCAL TRANSPORT</label>
