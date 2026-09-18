@@ -901,9 +901,22 @@ THE VALUATION HAS BEEN CARRIED OUT BY CONSIDERING THE LAND COMPONENT AND THE ACT
       this.cursorY += totalH;
     }
 
-    this.drawSectionSubtitle('10.2 UNDERTAKING:-');
+    if (this.cursorY > 10) this.cursorY += 15;
+    
+    const heading = 'UNDERTAKING:-';
+    const hw = this.fontBold.widthOfTextAtSize(heading, FONT_SIZE);
+    
+    this.checkPageBreak(FONT_SIZE + 4);
+    let y = this.pdfY(this.cursorY);
+    this.page.drawText(heading, { x: MARGIN_L, y: y - FONT_SIZE, size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
+    this.page.drawLine({ start: { x: MARGIN_L, y: y - FONT_SIZE - 2 }, end: { x: MARGIN_L + hw, y: y - FONT_SIZE - 2 }, thickness: 1, color: rgb(0,0,0) });
+    this.cursorY += FONT_SIZE + 15;
+    
     if (fields.axisSbbUndertakingIsNA) {
-       this.drawSimpleRow('UNDERTAKING', 'NA');
+       this.checkPageBreak(FONT_SIZE + 4);
+       y = this.pdfY(this.cursorY);
+       this.page.drawText('> NA', { x: MARGIN_L + 15, y: y - FONT_SIZE, size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
+       this.cursorY += FONT_SIZE + 10;
     } else {
        const clauses = [
           { key: 'axisSbbUndertakingClause1', label: 'I HAVE PERSONALLY VISITED THE PROPERTY & IDENTIFIED THE SAME BASED ON THE DOCUMENTS PROVIDED.' },
@@ -915,14 +928,22 @@ THE VALUATION HAS BEEN CARRIED OUT BY CONSIDERING THE LAND COMPONENT AND THE ACT
           { key: 'axisSbbUndertakingClause7', label: 'ANY ADDITIONS/ALTERATIONS MADE TO THE PROPERTY AFTER THE DATE OF VALUATIONS SHALL NOT FALL UNDER THE SCOPE OF THIS REPORT.' },
        ];
        
-       let undertakingText = '';
-       clauses.forEach((clause, index) => {
+       for (const clause of clauses) {
          if (fields[clause.key]) {
-           undertakingText += `${index + 1}. ${clause.label}\n`;
+           const lines = this.wrapText(clause.label, CONTENT_W - 25, FONT_SIZE, false);
+           const totalH = lines.length * (FONT_SIZE + 4);
+           this.checkPageBreak(totalH + 5);
+           y = this.pdfY(this.cursorY);
+           
+           this.page.drawText('>', { x: MARGIN_L + 10, y: y - FONT_SIZE, size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
+           let cy = y - FONT_SIZE;
+           for (const line of lines) {
+             this.page.drawText(line, { x: MARGIN_L + 25, y: cy, size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
+             cy -= (FONT_SIZE + 4);
+           }
+           this.cursorY += totalH + 10;
          }
-       });
-       
-       this.drawSimpleRow('UNDERTAKING CLAUSES', undertakingText.trim() || 'NO CLAUSES CHECKED');
+       }
     }
   }
 }
