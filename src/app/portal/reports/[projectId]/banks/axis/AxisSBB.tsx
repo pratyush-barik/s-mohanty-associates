@@ -450,9 +450,8 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       placeholder="e.g. PRASANNA NAYAK"
                     />
                   </Field>
-                  <Field label="Relationship" className="w-40">
-                    <input
-                      list={`sbb-relations-${idx}`}
+                  <Field label="RELATIONSHIP" className="w-40">
+                    <select
                       className={inputCls}
                       value={owner.relationship || ''}
                       onChange={(e) => {
@@ -461,14 +460,13 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         handleChange('axisSbbPropertyOwners', arr);
                       }}
                       disabled={isReadOnly}
-                      placeholder="e.g. S/O"
-                    />
-                    <datalist id={`sbb-relations-${idx}`}>
-                      <option value="S/O" />
-                      <option value="D/O" />
-                      <option value="W/O" />
-                      <option value="C/O" />
-                    </datalist>
+                    >
+                      <option value="">Select</option>
+                      <option value="S/O">S/O</option>
+                      <option value="D/O">D/O</option>
+                      <option value="W/O">W/O</option>
+                      <option value="C/O">C/O</option>
+                    </select>
                   </Field>
                   <Field label="OWNER'S RELATIVE'S NAME" className="flex-1">
                     <input
