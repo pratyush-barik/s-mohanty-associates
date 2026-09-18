@@ -94,7 +94,7 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       super.drawCenteredTitle('FOR AXIS BANK – SMALL BUSINESS BANKING', FONT_SIZE_TITLE, true);
       this.cursorY += 15;
 
-      const fv = (key: string, defaultVal = 'NA') => String((this.fields as any)[key] || defaultVal).replace(/[\t\n\r]+/g, ' ').trim() || defaultVal;
+      const fv = (key: string, defaultVal = '') => String((this.fields as any)[key] || defaultVal).replace(/[\t\n\r]+/g, ' ').trim() || defaultVal;
       const refText = `REPORT REF: ${fv('axisSbbReportRefNo')}`;
       const dateText = `DATE OF REPORT: ${fv('axisSbbDateOfReport')}`;
 
@@ -586,7 +586,7 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
 
   private drawSbbSection2() {
     const fields = this.fields;
-    const fv = (key: string, defaultVal = 'NA') => String((fields as any)[key] || defaultVal).replace(/[\t\n\r]+/g, ' ').trim() || defaultVal;
+    const fv = (key: string, defaultVal = '') => String((fields as any)[key] || defaultVal).replace(/[\t\n\r]+/g, ' ').trim() || defaultVal;
 
     this.drawKeyValueRow([
       { label: 'Report Initiated By Area', value: fv('axisSbbReportInitiatedBy') },
