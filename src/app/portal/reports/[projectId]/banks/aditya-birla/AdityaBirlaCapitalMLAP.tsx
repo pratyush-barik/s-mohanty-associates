@@ -944,9 +944,10 @@ export default function AdityaBirlaCapitalMLAP({
 
         {/* Standard Active Configuration Top Banner */}
         <ActiveConfigBanner
-          bankName={fields.organisationTemplate || 'ADITYA BIRLA CAPITAL LTD'}
-          formatName={fields.organisationSubTemplate || undefined}
+          clientType={fields.clientType || 'organisation'}
           category={fields.institutionCategory || 'Bank & FIS'}
+          bankName={fields.organisationTemplate || fields.bankName || 'ADITYA BIRLA CAPITAL LTD'}
+          subclass={fields.organisationSubTemplate || 'MLAP'}
           serviceType={fields.serviceType || prefill?.purpose || undefined}
           subjectType={fields.subjectType || prefill?.propertyType || undefined}
           onResetWizard={onResetWizard}

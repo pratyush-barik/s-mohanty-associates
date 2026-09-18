@@ -726,9 +726,12 @@ export default function AxisAGRI({
       <div className="flex-1 min-w-0 space-y-6 w-full">
         {/* Top Header & Bank Banner */}
         <ActiveConfigBanner
-          bankName="AXIS BANK"
-          formatName="AGRI (NON-AGRI FORMAT)"
-          category="Bank & FIS"
+          clientType={fields.clientType || 'organisation'}
+          category={fields.institutionCategory || 'Bank & FIS'}
+          bankName={fields.bankName || fields.organisationTemplate || 'AXIS BANK'}
+          subclass={fields.organisationSubTemplate || 'AGRI'}
+          serviceType={fields.serviceType}
+          subjectType={fields.subjectType}
           onResetWizard={onResetWizard}
         />
 

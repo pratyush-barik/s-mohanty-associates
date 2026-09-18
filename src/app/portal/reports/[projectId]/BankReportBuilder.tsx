@@ -1899,9 +1899,10 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
       <div className="flex-1 min-w-0 space-y-4">
         {/* Template Info Banner */}
         <ActiveConfigBanner
-          bankName={config?.displayName || fields.organisationTemplate || fields.bankName || ''}
-          formatName={fields.organisationSubTemplate || undefined}
-          category={fields.institutionCategory || undefined}
+          clientType={fields.clientType || 'organisation'}
+          category={fields.institutionCategory || 'Bank & FIS'}
+          bankName={fields.organisationTemplate || fields.bankName || config?.bankId || config?.displayName || ''}
+          subclass={fields.organisationSubTemplate || (config?.subTemplateId && config.subTemplateId !== (fields.organisationTemplate || fields.bankName) ? config.subTemplateId : undefined)}
           serviceType={fields.serviceType}
           subjectType={fields.subjectType}
           onResetWizard={onResetWizard}

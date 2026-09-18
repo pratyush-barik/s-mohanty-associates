@@ -698,9 +698,12 @@ export default function AxisHLLAP({
       <div className="flex-1 min-w-0 space-y-6 w-full">
         {/* Top Active Configuration Banner */}
         <ActiveConfigBanner
-          bankName="AXIS BANK"
-          formatName="Axis Bank HL-LAP Format"
-          category="Retail Asset (Home Loan / LAP)"
+          clientType={fields.clientType || 'organisation'}
+          category={fields.institutionCategory || 'Bank & FIS'}
+          bankName={fields.bankName || fields.organisationTemplate || 'AXIS BANK'}
+          subclass={fields.organisationSubTemplate || 'HL-LAP'}
+          serviceType={fields.serviceType}
+          subjectType={fields.subjectType}
           onResetWizard={onResetWizard}
         />
 

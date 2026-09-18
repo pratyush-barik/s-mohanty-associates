@@ -597,9 +597,12 @@ export default function ArkaFinance({
     <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full">
       <div className="flex-1 min-w-0 space-y-6 w-full">
         <ActiveConfigBanner
-          bankName="ARKA FINANCE LTD"
-          formatName="Valuation Report"
-          category="Bank & FIS"
+          clientType={fields.clientType || 'organisation'}
+          category={fields.institutionCategory || 'Bank & FIS'}
+          bankName={fields.organisationTemplate || fields.bankName || 'ARKA FINANCE LTD'}
+          subclass={fields.organisationSubTemplate || undefined}
+          serviceType={fields.serviceType || prefill?.purpose || undefined}
+          subjectType={fields.subjectType || prefill?.propertyType || undefined}
           onResetWizard={onResetWizard}
         />
 

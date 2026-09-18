@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { normalizeMapImages } from '@/lib/bank-fields';
 import { DEFAULT_LETTERHEAD_PATH, fetchDefaultLetterhead, fetchBytes, formatReportDate } from '@/lib/pdf-bank-renderer';
-export { DEFAULT_LETTERHEAD_PATH, fetchDefaultLetterhead, fetchBytes, formatReportDate };
+import { SERVICES_LIST } from '../constants';
+export { DEFAULT_LETTERHEAD_PATH, fetchDefaultLetterhead, fetchBytes, formatReportDate, SERVICES_LIST };
 
 // ─── Dynamic Floor Naming (Pure Algorithmic Ordinal Generator) ───────────
 const ORDINALS_MAP: Record<number, string> = {
@@ -318,54 +319,71 @@ export function FloatingNavigator({ sections }: { sections: NavItem[] }) {
 
 // ─── Standard Active Configuration Top Banner ────────────────────────
 export function ActiveConfigBanner({
+  clientType = 'organisation',
   bankName,
+  subclass,
   formatName,
   category,
   serviceType,
   subjectType,
   onResetWizard,
 }: {
-  bankName: string;
+  clientType?: 'individual' | 'organisation';
+  bankName?: string;
+  subclass?: string;
   formatName?: string;
   category?: string;
   serviceType?: string;
   subjectType?: string;
   onResetWizard?: () => void;
 }) {
+  const activeSubclass = (subclass || formatName || '').trim();
+  const isIndividual = clientType === 'individual';
+  const serviceTitle = serviceType
+    ? (SERVICES_LIST.find((s) => s.id === serviceType)?.title || serviceType).replace(/_/g, ' ')
+    : undefined;
+
+  const isGenericValuationReport = activeSubclass.toLowerCase() === 'valuation report';
+  const displaySubclass = isGenericValuationReport ? undefined : activeSubclass;
+
   return (
     <div className="p-4 bg-white border border-[#dee2e6] flex flex-row items-center justify-between gap-4 shadow-md rounded-2xl sticky top-2 z-50">
       <div className="flex items-center gap-4">
-        <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider leading-tight min-w-22.5 select-none">
+        <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider leading-tight min-w-[90px] select-none">
           Active<br />Configuration
         </div>
         <div className="flex flex-wrap gap-2">
           <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-            Organisation / Bank
+            <span className={`w-1.5 h-1.5 rounded-full ${isIndividual ? 'bg-amber-500' : 'bg-blue-500'}`}></span>
+            {isIndividual ? 'Individual' : 'Organisation / Bank'}
           </span>
-          {category && (
+          {!isIndividual && category && (
             <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-500"></span>
               {category}
             </span>
           )}
-          <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
-            {bankName || 'Unknown Bank'}
-          </span>
-          {formatName && (
+          {!isIndividual && bankName && (
             <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-              <span className="w-1.5 h-1.5 rounded-full bg-teal-500"></span>
-              Format: {formatName}
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+              {bankName}
             </span>
           )}
-          {serviceType && (
+          {!isIndividual && displaySubclass && (
             <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-              Service: {serviceType.replace(/_/g, ' ')}
+              <span className="w-1.5 h-1.5 rounded-full bg-teal-500"></span>
+              {displaySubclass}
+            </span>
+          )}
+          {serviceTitle && (
+            <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              Service: {serviceTitle}
             </span>
           )}
           {subjectType && (
             <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
               Subject: {subjectType.replace(/_/g, ' ')}
             </span>
           )}
@@ -375,7 +393,7 @@ export function ActiveConfigBanner({
         <button
           type="button"
           onClick={onResetWizard}
-          className="text-xs text-accent-500 hover:text-[#8a6507] hover:underline font-bold transition-colors shrink-0 pr-2 uppercase"
+          className="text-xs text-[#b8860b] hover:text-[#8a6507] hover:underline font-bold transition-colors shrink-0 pr-2 uppercase cursor-pointer"
         >
           Change Parameters
         </button>

@@ -408,6 +408,17 @@ export interface ArthanFinanceReportFields {
   propertyImageNames?: string[];
   locationMapImages?: string[];
   cadastralMapImages?: string[];
+
+  // Organisation metadata
+  clientType?: 'individual' | 'organisation';
+  organisationTemplate?: string;
+  organisationSubTemplate?: string;
+  institutionCategory?: string;
+  bankName?: string;
+  serviceType?: string;
+  subjectType?: string;
+
+  [key: string]: any;
 }
 
 export type ArthanFinanceFields = ArthanFinanceReportFields;

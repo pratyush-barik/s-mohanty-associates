@@ -261,6 +261,14 @@ export default function AnnapurnaMicroFinance({
       annexureEnabled: Boolean(raw.annexureEnabled),
       annexureRef: raw.annexureRef || '',
       annexureRefShowAlso: Boolean(raw.annexureRefShowAlso),
+
+      // Organisation metadata
+      clientType: raw.clientType || 'organisation',
+      organisationTemplate: raw.organisationTemplate || raw.bankName || 'ANNAPURNA MICRO FINANCE LTD',
+      organisationSubTemplate: raw.organisationSubTemplate || '',
+      institutionCategory: raw.institutionCategory || 'Bank & FIS',
+      serviceType: raw.serviceType || prefill?.purpose || '',
+      subjectType: raw.subjectType || prefill?.propertyType || '',
     };
   }, [initialFields, projectCode, prefill]);
 
@@ -813,9 +821,12 @@ export default function AnnapurnaMicroFinance({
       {/* ── Main Form Column ── */}
       <div className="flex-1 min-w-0 space-y-4">
         <ActiveConfigBanner
-          bankName="ANNAPURNA MICRO FINANCE LTD"
-          formatName="Valuation Report"
-          category="Bank & FIS"
+          clientType={fields.clientType || 'organisation'}
+          category={fields.institutionCategory || 'Bank & FIS'}
+          bankName={fields.organisationTemplate || fields.bankName || 'ANNAPURNA MICRO FINANCE LTD'}
+          subclass={fields.organisationSubTemplate || undefined}
+          serviceType={fields.serviceType || prefill?.purpose || undefined}
+          subjectType={fields.subjectType || prefill?.propertyType || undefined}
           onResetWizard={onResetWizard}
         />
 

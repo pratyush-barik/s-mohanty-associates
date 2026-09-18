@@ -305,6 +305,14 @@ export default function ArthanFinance({
       propertyImageNames: Array.isArray(raw.propertyImageNames) ? raw.propertyImageNames : [],
       locationMapImages: normalizeMapImages(raw.locationMapImages),
       cadastralMapImages: normalizeMapImages(raw.cadastralMapImages),
+
+      // Organisation metadata
+      clientType: raw.clientType || 'organisation',
+      organisationTemplate: raw.organisationTemplate || raw.bankName || 'ARTHAN FINANCE',
+      organisationSubTemplate: raw.organisationSubTemplate || '',
+      institutionCategory: raw.institutionCategory || 'Bank & FIS',
+      serviceType: raw.serviceType || prefill?.purpose || '',
+      subjectType: raw.subjectType || prefill?.propertyType || '',
     };
   }, [initialFields, projectCode, prefill]);
 
@@ -844,9 +852,12 @@ export default function ArthanFinance({
       {/* ── Main Form Column ── */}
       <div className="flex-1 min-w-0 space-y-6">
         <ActiveConfigBanner
-          bankName="ARTHAN FINANCE"
-          formatName="Valuation Report"
-          category="Bank & FIS"
+          clientType={fields.clientType || 'organisation'}
+          category={fields.institutionCategory || 'Bank & FIS'}
+          bankName={fields.organisationTemplate || fields.bankName || 'ARTHAN FINANCE'}
+          subclass={fields.organisationSubTemplate || undefined}
+          serviceType={fields.serviceType || prefill?.purpose || undefined}
+          subjectType={fields.subjectType || prefill?.propertyType || undefined}
           onResetWizard={onResetWizard}
         />
 

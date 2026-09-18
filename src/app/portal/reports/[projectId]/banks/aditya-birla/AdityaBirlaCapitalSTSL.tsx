@@ -1328,9 +1328,10 @@ export default function AdityaBirlaCapitalSTSL({
       <div className="flex-1 min-w-0 space-y-4">
         {/* Active Configuration Banner */}
         <ActiveConfigBanner
-          bankName={fields.organisationTemplate || 'ADITYA BIRLA CAPITAL LTD'}
-          formatName={fields.organisationSubTemplate || 'STSL'}
+          clientType={fields.clientType || 'organisation'}
           category={fields.institutionCategory || 'Bank & FIS'}
+          bankName={fields.organisationTemplate || fields.bankName || 'ADITYA BIRLA CAPITAL LTD'}
+          subclass={fields.organisationSubTemplate || 'STSL'}
           serviceType={fields.serviceType || prefill?.purpose || undefined}
           subjectType={fields.subjectType || prefill?.propertyType || undefined}
           onResetWizard={onResetWizard}
