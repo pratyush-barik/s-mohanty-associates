@@ -823,7 +823,7 @@ export default function AxisAGRI({
     }
   };
 
-  // ── Navigation Sections (All 16 Sections) ──
+  // ── Navigation Sections (All 17 Sections) ──
   const navSections: NavItem[] = [
     { id: 'sec-1', title: '1. Header & Initiation' },
     { id: 'sec-2', title: '2. Property Location & Details' },
@@ -836,11 +836,12 @@ export default function AxisAGRI({
     { id: 'sec-9', title: '9. Land Rate Adopted' },
     { id: 'sec-10', title: '10. Building Valuation Breakdown' },
     { id: 'sec-11', title: '11. Value of Property Summary' },
-    { id: 'sec-12', title: '12. Remarks & Annexure A' },
+    { id: 'sec-12', title: '12. Basis of Valuation & Remarks' },
     { id: 'sec-13', title: '13. Valuer Declaration & Undertaking' },
-    { id: 'sec-14', title: '14. Valuation Report Checklist' },
-    { id: 'sec-15', title: '15. Property Photographs' },
-    { id: 'sec-16', title: '16. Maps & Cadastral Plans' },
+    { id: 'sec-14', title: '14. Annexure "A"' },
+    { id: 'sec-15', title: '15. Valuation Report Checklist' },
+    { id: 'sec-16', title: '16. Property Photographs' },
+    { id: 'sec-17', title: '17. Maps & Cadastral Plans' },
   ];
 
   return (
@@ -2971,11 +2972,10 @@ export default function AxisAGRI({
         </Section>
 
         {/* ═══════════════════════════════════════════════════════════════
-            SECTION 12: REMARKS & ANNEXURE A
+            SECTION 12: BASIS OF VALUATION & VALUER REMARKS
         ═══════════════════════════════════════════════════════════════ */}
-        <Section id="sec-12" title="Remarks, Opinions & Annexure 'A'" number={12} defaultOpen>
-          {/* Container 1: Remarks & Opinions */}
-          <div className="border border-yellow-200 bg-yellow-50/50 rounded-xl p-5 mb-5 shadow-xs">
+        <Section id="sec-12" title="Basis of Valuation & Valuer Remarks" number={12} defaultOpen>
+          <div className="border border-yellow-200 bg-yellow-50/50 rounded-xl p-5 shadow-xs">
             <h3 className="font-semibold text-amber-800 mb-4 text-sm tracking-wide uppercase">Valuer Remarks & Market Opinions</h3>
             <div className="space-y-4">
               <Field label="Basis of Valuation">
@@ -3012,47 +3012,10 @@ export default function AxisAGRI({
               </Field>
             </div>
           </div>
-
-          {/* Container 2: Annexure A */}
-          <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs">
-            <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">Annexure - &quot;A&quot; Details</h3>
-            <div className="space-y-4">
-              <Field label="Regarding Land">
-                <textarea
-                  rows={2}
-                  className={inputCls}
-                  value={fields.annexureARegardingLand || ''}
-                  onChange={e => handleChange('annexureARegardingLand', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder=""
-                />
-              </Field>
-              <Field label="Regarding Building">
-                <textarea
-                  rows={2}
-                  className={inputCls}
-                  value={fields.annexureARegardingBuilding || ''}
-                  onChange={e => handleChange('annexureARegardingBuilding', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder=""
-                />
-              </Field>
-              <Field label="Basis of Arriving at the Land Rate">
-                <textarea
-                  rows={3}
-                  className={inputCls}
-                  value={fields.annexureABasisLandRate || ''}
-                  onChange={e => handleChange('annexureABasisLandRate', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder=""
-                />
-              </Field>
-            </div>
-          </div>
         </Section>
 
         {/* ═══════════════════════════════════════════════════════════════
-            SECTION 13: VALUER DECLARATION & UNDERTAKING (PART 1)
+            SECTION 13: VALUER DECLARATION & UNDERTAKING
         ═══════════════════════════════════════════════════════════════ */}
         <Section id="sec-13" title="Valuer Declaration & Undertaking" number={13} defaultOpen>
           <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs">
@@ -3164,9 +3127,69 @@ export default function AxisAGRI({
         </Section>
 
         {/* ═══════════════════════════════════════════════════════════════
-            SECTION 14: VALUATION REPORT CHECK LIST (PART 2)
+            SECTION 14: ANNEXURE "A"
         ═══════════════════════════════════════════════════════════════ */}
-        <Section id="sec-14" title="Valuation Report Check List (12 Statutory Items)" number={14} defaultOpen>
+        <Section id="sec-14" title="Annexure 'A' (Methodology & Qualitative Analysis)" number={14} defaultOpen>
+          <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-blue-200/80 pb-3 mb-4 gap-2">
+              <div>
+                <h3 className="font-semibold text-blue-800 text-sm tracking-wide uppercase">
+                  ANNEXURE - &quot;A&quot;
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Method of valuation adopted, qualitative analysis regarding land, building and adopted rates.
+                </p>
+              </div>
+              <span className="text-[10px] font-bold text-blue-700 bg-blue-100 px-2.5 py-1 rounded-full uppercase tracking-wider self-start sm:self-auto">
+                Valuation Annexure
+              </span>
+            </div>
+
+            {/* Static Methodology Notes matching PDF */}
+            <div className="bg-white p-3.5 rounded-xl border border-blue-200 text-xs font-semibold text-slate-800 space-y-1.5 mb-5 shadow-xs">
+              <p>• &quot;LAND AND BUILDING&quot; METHOD OF VALUATION HAS BEEN ADOPTED.</p>
+              <p>• THE BUILDING VALUE HAS BEEN CONSIDERED AS PER MEASURED BUA AREA OF THE STRUCTURES.</p>
+            </div>
+
+            <div className="space-y-4">
+              <Field label="Regarding Land">
+                <textarea
+                  rows={3}
+                  className={inputCls}
+                  value={fields.annexureARegardingLand || ''}
+                  onChange={e => handleChange('annexureARegardingLand', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder=""
+                />
+              </Field>
+              <Field label="Regarding Building">
+                <textarea
+                  rows={3}
+                  className={inputCls}
+                  value={fields.annexureARegardingBuilding || ''}
+                  onChange={e => handleChange('annexureARegardingBuilding', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder=""
+                />
+              </Field>
+              <Field label="Basis of Arriving at the Land Rate">
+                <textarea
+                  rows={3}
+                  className={inputCls}
+                  value={fields.annexureABasisLandRate || ''}
+                  onChange={e => handleChange('annexureABasisLandRate', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder=""
+                />
+              </Field>
+            </div>
+          </div>
+        </Section>
+
+        {/* ═══════════════════════════════════════════════════════════════
+            SECTION 15: VALUATION REPORT CHECK LIST (PART 2)
+        ═══════════════════════════════════════════════════════════════ */}
+        <Section id="sec-15" title="Valuation Report Check List (12 Statutory Items)" number={15} defaultOpen>
           <div className="border border-indigo-200 bg-indigo-50/50 rounded-xl p-5 shadow-xs">
             <h3 className="font-semibold text-indigo-800 mb-4 text-sm tracking-wide uppercase">Statutory Check List Items</h3>
             <div className="space-y-2.5">
@@ -3215,12 +3238,12 @@ export default function AxisAGRI({
         </Section>
 
         {/* ═══════════════════════════════════════════════════════════════
-            SECTION 15: PROPERTY PHOTOGRAPHS (DUAL MODALITY: DEVICE + BUCKET)
+            SECTION 16: PROPERTY PHOTOGRAPHS (DUAL MODALITY: DEVICE + BUCKET)
         ═══════════════════════════════════════════════════════════════ */}
         <BasePhotographsSection
           title="Property Photographs"
-          sectionNumber={15}
-          sectionId="sec-15"
+          sectionNumber={16}
+          sectionId="sec-16"
           propertyImages={fields.propertyImages || []}
           propertyImageNames={fields.propertyImageNames || []}
           isReadOnly={isReadOnly}
@@ -3238,12 +3261,12 @@ export default function AxisAGRI({
         />
 
         {/* ═══════════════════════════════════════════════════════════════
-            SECTION 16: MAPS & SPATIAL DOCUMENTS (LOCAL DEVICE UPLOAD ONLY)
+            SECTION 17: MAPS & SPATIAL DOCUMENTS (LOCAL DEVICE UPLOAD ONLY)
         ═══════════════════════════════════════════════════════════════ */}
         <BaseMapsSection
           title="Maps & Spatial Documents"
-          sectionNumber={16}
-          sectionId="sec-16"
+          sectionNumber={17}
+          sectionId="sec-17"
           isReadOnly={isReadOnly}
           hasExternalCoordinatesField={true}
           coordinatesSectionName="Section 2 (Address & Geographic Position)"
