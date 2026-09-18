@@ -18,6 +18,7 @@ import {
   BaseMapsSection,
   BasePhotoBucketModal,
   fetchBytes,
+  getFloorName,
 } from '../BaseBankReportComponents';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
@@ -48,6 +49,18 @@ export interface AxisAgriProps {
   prefill?: any;
   onResetWizard?: () => void;
 }
+
+const sanitizePositiveFloat = (val: string): string => {
+  if (!val) return '';
+  const trimmed = val.trim();
+  if (trimmed.toUpperCase() === 'NA') return '';
+  let cleaned = val.replace(/[^0-9.]/g, '');
+  const parts = cleaned.split('.');
+  if (parts.length > 2) {
+    cleaned = parts[0] + '.' + parts.slice(1).join('');
+  }
+  return cleaned;
+};
 
 const parseNum = (v: any): number => {
   if (!v) return 0;
@@ -101,18 +114,6 @@ export default function AxisAGRI({
     return null;
   }, [bucketImages, prefill]);
 
-  // ── Differentiate Property Area from Bank Initiating Area ──
-  const derivedPropertyArea = useMemo(() => {
-    if (prefill?.propertyAddress) {
-      const parts = prefill.propertyAddress.split(',').map((s: string) => s.trim());
-      if (parts.length >= 2) {
-        return `${parts[0].replace(/^(At|Vill|Village|Plot)\s*[:\-]\s*/i, '')}, ${parts[1].replace(/^(Ps|Ts|Tahasil|Town)\s*[:\-]\s*/i, '')}`;
-      }
-      return prefill.propertyAddress;
-    }
-    return '';
-  }, [prefill?.propertyAddress]);
-
   // ── Initial State Pre-fill ──
   const initialData: AxisAgriReportFields = useMemo(() => {
     const raw = typeof initialFields === 'object' && initialFields !== null ? initialFields : {};
@@ -125,7 +126,7 @@ export default function AxisAGRI({
         ? formatReportDate(raw.dateOfVisit)
         : (firstFieldAgentVisit?.dateStr || formatReportDate(raw.dateOfInspection || prefill?.inspectionDate || new Date())),
       reportInitiatedByArea: raw.reportInitiatedByArea || prefill?.serviceRequest?.branch || prefill?.branch || '',
-      nameOfArea: (raw.nameOfArea && raw.nameOfArea !== raw.reportInitiatedByArea) ? raw.nameOfArea : derivedPropertyArea,
+      nameOfArea: raw.nameOfArea || '',
       ownerNameAndAddress: raw.ownerNameAndAddress || prefill?.contactName || '',
       borrowerNameAndAddress: raw.borrowerNameAndAddress || prefill?.contactName || '',
       proposalNo: raw.proposalNo || '',
@@ -183,33 +184,33 @@ export default function AxisAGRI({
       ownershipStatus: raw.ownershipStatus || 'Free Hold',
       approvedUsage: raw.approvedUsage || [],
       actualUsage: raw.actualUsage || [],
-      restrictiveCovenants: raw.restrictiveCovenants || 'Not Applicable',
-      typeOfStructure: raw.typeOfStructure || 'RCC',
+      restrictiveCovenants: raw.restrictiveCovenants || '',
+      typeOfStructure: raw.typeOfStructure || '',
       noOfFloors: raw.noOfFloors || '',
       occupancyDetails: raw.occupancyDetails || 'Self-Occupied',
-      tenantName: raw.tenantName || 'NA',
-      yearsInTenancy: raw.yearsInTenancy || 'NA',
+      tenantName: raw.tenantName || '',
+      yearsInTenancy: raw.yearsInTenancy || '',
       resistanceForValuation: raw.resistanceForValuation || 'No',
       resistanceFromOccupants: raw.resistanceFromOccupants || 'No',
       basicAmenities: raw.basicAmenities || ['Electricity', 'Water'],
-      developmentSurroundingArea: raw.developmentSurroundingArea || 'Developing',
+      developmentSurroundingArea: raw.developmentSurroundingArea || '',
 
       // Page 2: Leasehold
       isLeasehold: raw.isLeasehold || 'The Property is Free Hold Land',
-      lessorName: raw.lessorName || 'NA',
-      natureOfLease: raw.natureOfLease || 'NA',
-      totalPeriodOfLease: raw.totalPeriodOfLease || 'NA',
+      lessorName: raw.lessorName || '',
+      natureOfLease: raw.natureOfLease || '',
+      totalPeriodOfLease: raw.totalPeriodOfLease || '',
       leaseholdOccupantsResistance: raw.leaseholdOccupantsResistance || 'No',
       leaseholdBasicAmenities: raw.leaseholdBasicAmenities || ['Electricity', 'Water'],
-      leaseholdDevelopment: raw.leaseholdDevelopment || 'Developing',
+      leaseholdDevelopment: raw.leaseholdDevelopment || '',
 
       // Page 2 & 3: Approvals
-      reraRegNo: raw.reraRegNo || 'Not Applicable.',
-      occupancyCertificate: raw.occupancyCertificate || 'Not Available',
-      layoutApprovalNo: raw.layoutApprovalNo || 'Not Mentioned',
+      reraRegNo: raw.reraRegNo || '',
+      occupancyCertificate: raw.occupancyCertificate || '',
+      layoutApprovalNo: raw.layoutApprovalNo || '',
       layoutApprovalDate: raw.layoutApprovalDate || '',
       layoutExpiryDate: raw.layoutExpiryDate || '',
-      buildingPlanApprovalNo: raw.buildingPlanApprovalNo || 'Not Available',
+      buildingPlanApprovalNo: raw.buildingPlanApprovalNo || '',
       buildingPlanApprovalDate: raw.buildingPlanApprovalDate || '',
       buildingPlanExpiryDate: raw.buildingPlanExpiryDate || '',
 
@@ -223,12 +224,12 @@ export default function AxisAGRI({
       totalBUA: raw.totalBUA || '',
       totalCarpetArea: raw.totalCarpetArea || '',
       totalSaleableArea: raw.totalSaleableArea || '',
-      amenitiesDetails: raw.amenitiesDetails || 'Nil',
+      amenitiesDetails: raw.amenitiesDetails || '',
       farPermissibleUtilized: raw.farPermissibleUtilized || '',
-      constructionAsPerApprovedPlan: raw.constructionAsPerApprovedPlan || 'Plan is not Available',
-      extraConstructionDetails: raw.extraConstructionDetails || 'Not Applicable',
-      extraConstructionPercentage: raw.extraConstructionPercentage || 'Not Applicable',
-      extraConstructionCompoundable: raw.extraConstructionCompoundable || 'Not Applicable',
+      constructionAsPerApprovedPlan: raw.constructionAsPerApprovedPlan || '',
+      extraConstructionDetails: raw.extraConstructionDetails || '',
+      extraConstructionPercentage: raw.extraConstructionPercentage || '',
+      extraConstructionCompoundable: raw.extraConstructionCompoundable || '',
       qualityOfConstruction: raw.qualityOfConstruction || 'Good',
       maintenanceOfProperty: raw.maintenanceOfProperty || 'Good',
 
@@ -320,7 +321,7 @@ export default function AxisAGRI({
       benchmarkImages: raw.benchmarkImages || [],
       sketchMapImages: raw.sketchMapImages || [],
     };
-  }, [initialFields, prefill, defaultRefNo, firstFieldAgentVisit, derivedPropertyArea]);
+  }, [initialFields, prefill, defaultRefNo, firstFieldAgentVisit]);
 
   const [fields, setFields] = useState<AxisAgriReportFields>(() => decodeHtmlEntitiesDeep(initialData));
   const [loading, setLoading] = useState(false);
@@ -350,12 +351,16 @@ export default function AxisAGRI({
   const handleFloorChange = useCallback((index: number, field: keyof AxisAgriFloorItem, val: string) => {
     setFields(prev => {
       const updated = [...(prev.floors || [])];
-      updated[index] = { ...updated[index], [field]: val };
+      let cleanVal = val;
+      if (field === 'plinthArea' || field === 'replacementRate' || field === 'ageYears') {
+        cleanVal = sanitizePositiveFloat(val);
+      }
+      updated[index] = { ...updated[index], [field]: cleanVal };
 
       // Auto-calculate row estimatedCost, depreciation, netValue
-      const plinth = parseNum(field === 'plinthArea' ? val : updated[index].plinthArea);
-      const rate = parseNum(field === 'replacementRate' ? val : updated[index].replacementRate);
-      const age = parseNum(field === 'ageYears' ? val : (updated[index].ageYears || '8'));
+      const plinth = parseNum(field === 'plinthArea' ? cleanVal : updated[index].plinthArea);
+      const rate = parseNum(field === 'replacementRate' ? cleanVal : updated[index].replacementRate);
+      const age = parseNum(field === 'ageYears' ? cleanVal : (updated[index].ageYears || '0'));
       if (plinth > 0 && rate > 0) {
         const estCost = plinth * rate;
         updated[index].estimatedCost = estCost.toFixed(2);
@@ -364,19 +369,37 @@ export default function AxisAGRI({
         const depAmt = estCost * depRate;
         updated[index].depreciationAmount = depAmt.toFixed(2);
         updated[index].netValue = (estCost - depAmt).toFixed(2);
+      } else if (plinth === 0 || rate === 0) {
+        updated[index].estimatedCost = '';
+        updated[index].depreciationAmount = '';
+        updated[index].netValue = '';
       }
       return { ...prev, floors: updated };
     });
   }, []);
 
   const handleAddFloor = useCallback(() => {
-    setFields(prev => ({
-      ...prev,
-      floors: [
-        ...(prev.floors || []),
-        { floorName: `Floor ${(prev.floors?.length || 0) + 1}`, plinthArea: '0.00', usage: 'Residential', roofHeight: "10'-6\"", ageYears: '8Yrs', replacementRate: '1300.00', estimatedCost: '0.00', depreciationAmount: '0.00', netValue: '0.00' },
-      ],
-    }));
+    setFields(prev => {
+      const current = prev.floors || [];
+      const nextName = getFloorName(current.length);
+      return {
+        ...prev,
+        floors: [
+          ...current,
+          {
+            floorName: nextName,
+            plinthArea: '',
+            usage: 'Residential',
+            roofHeight: "10'-6\"",
+            ageYears: '8Yrs',
+            replacementRate: '1300.00',
+            estimatedCost: '',
+            depreciationAmount: '',
+            netValue: '',
+          },
+        ],
+      };
+    });
   }, []);
 
   const handleRemoveFloor = useCallback((index: number) => {
@@ -401,9 +424,7 @@ export default function AxisAGRI({
   // Auto-sum Plinth Area into Total BUA & Total Basic Value of Building
   useEffect(() => {
     const sumPlinth = (fields.floors || []).reduce((acc, f) => acc + parseNum(f.plinthArea), 0);
-    if (sumPlinth > 0) {
-      handleChange('totalBUA', `${sumPlinth.toFixed(2)} Sft`);
-    }
+    handleChange('totalBUA', sumPlinth > 0 ? `${sumPlinth.toFixed(2)} Sft` : '0.00 Sft');
 
     const sumNetValue = (fields.floors || []).reduce((acc, f) => acc + parseNum(f.netValue), 0);
     if (sumNetValue > 0) {
@@ -1121,10 +1142,10 @@ export default function AxisAGRI({
                 <input
                   type="text"
                   className={inputCls}
-                  value={fields.levelOfLand || 'Existing Road Level'}
+                  value={fields.levelOfLand || ''}
                   onChange={e => handleChange('levelOfLand', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Existing Road Level"
+                  placeholder=""
                 />
               </Field>
 
@@ -1161,7 +1182,7 @@ export default function AxisAGRI({
                   value={fields.municipalLimitDetails || ''}
                   onChange={e => handleChange('municipalLimitDetails', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="e.g. Within Achhuli Gram Panchayat area limit"
+                  placeholder=""
                 />
               </Field>
             </div>
@@ -1251,18 +1272,18 @@ export default function AxisAGRI({
                   value={fields.distanceFromRailwayStation || ''}
                   onChange={e => handleChange('distanceFromRailwayStation', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="e.g. 27 Km from Khallikote"
+                  placeholder=""
                 />
               </Field>
 
-              <Field label="Bus Stop / Taxi / Auto Stand">
+              <Field label="Bus Stop / Taxi / Auto Stand (Distance)">
                 <input
                   type="text"
                   className={inputCls}
                   value={fields.busStopTaxiStand || ''}
                   onChange={e => handleChange('busStopTaxiStand', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="e.g. Within 2-3 Kms"
+                  placeholder=""
                 />
               </Field>
             </div>
@@ -1311,7 +1332,7 @@ export default function AxisAGRI({
                   <input
                     type="text"
                     className={`${inputCls} w-2/3`}
-                    value={fields.corneredOrIntermittent || 'Intermittent plot'}
+                    value={fields.corneredOrIntermittent || ''}
                     onChange={e => handleChange('corneredOrIntermittent', e.target.value)}
                     disabled={isReadOnly}
                   />
@@ -1355,7 +1376,7 @@ export default function AxisAGRI({
                         value={fields.boundaryEastVerification || ''}
                         onChange={e => handleChange('boundaryEastVerification', e.target.value)}
                         disabled={isReadOnly}
-                        placeholder="e.g. Vacant Land / Plot No."
+                        placeholder=""
                       />
                     </td>
                     <td className="p-2">
@@ -1365,7 +1386,7 @@ export default function AxisAGRI({
                         value={fields.boundaryEastDocument || ''}
                         onChange={e => handleChange('boundaryEastDocument', e.target.value)}
                         disabled={isReadOnly}
-                        placeholder="e.g. Plot No. / Owner Name"
+                        placeholder=""
                       />
                     </td>
                   </tr>
@@ -1379,7 +1400,7 @@ export default function AxisAGRI({
                         value={fields.boundaryWestVerification || ''}
                         onChange={e => handleChange('boundaryWestVerification', e.target.value)}
                         disabled={isReadOnly}
-                        placeholder="e.g. Vacant Land / Plot No."
+                        placeholder=""
                       />
                     </td>
                     <td className="p-2">
@@ -1389,7 +1410,7 @@ export default function AxisAGRI({
                         value={fields.boundaryWestDocument || ''}
                         onChange={e => handleChange('boundaryWestDocument', e.target.value)}
                         disabled={isReadOnly}
-                        placeholder="e.g. Plot No. / Owner Name"
+                        placeholder=""
                       />
                     </td>
                   </tr>
@@ -1403,7 +1424,7 @@ export default function AxisAGRI({
                         value={fields.boundaryNorthVerification || ''}
                         onChange={e => handleChange('boundaryNorthVerification', e.target.value)}
                         disabled={isReadOnly}
-                        placeholder="e.g. Vacant Land / Plot No."
+                        placeholder=""
                       />
                     </td>
                     <td className="p-2">
@@ -1413,7 +1434,7 @@ export default function AxisAGRI({
                         value={fields.boundaryNorthDocument || ''}
                         onChange={e => handleChange('boundaryNorthDocument', e.target.value)}
                         disabled={isReadOnly}
-                        placeholder="e.g. Plot No. / Owner Name"
+                        placeholder=""
                       />
                     </td>
                   </tr>
@@ -1427,7 +1448,7 @@ export default function AxisAGRI({
                         value={fields.boundarySouthVerification || ''}
                         onChange={e => handleChange('boundarySouthVerification', e.target.value)}
                         disabled={isReadOnly}
-                        placeholder="e.g. Vacant Land / Plot No."
+                        placeholder=""
                       />
                     </td>
                     <td className="p-2">
@@ -1437,7 +1458,7 @@ export default function AxisAGRI({
                         value={fields.boundarySouthDocument || ''}
                         onChange={e => handleChange('boundarySouthDocument', e.target.value)}
                         disabled={isReadOnly}
-                        placeholder="e.g. Plot No. / Owner Name"
+                        placeholder=""
                       />
                     </td>
                   </tr>
@@ -1555,13 +1576,14 @@ export default function AxisAGRI({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <Field label="Type of Structure (Bold in PDF)">
+              <Field label="Type of Structure">
                 <select
                   className={selectCls}
-                  value={fields.typeOfStructure || 'RCC'}
+                  value={fields.typeOfStructure || ''}
                   onChange={e => handleChange('typeOfStructure', e.target.value)}
                   disabled={isReadOnly}
                 >
+                  <option value="">Select Structure Type</option>
                   <option value="Load Bearing">Load Bearing</option>
                   <option value="RCC">RCC</option>
                   <option value="GCI">GCI</option>
@@ -1585,10 +1607,11 @@ export default function AxisAGRI({
               <Field label="Development of Surrounding Area">
                 <select
                   className={selectCls}
-                  value={fields.developmentSurroundingArea || 'Developing'}
+                  value={fields.developmentSurroundingArea || ''}
                   onChange={e => handleChange('developmentSurroundingArea', e.target.value)}
                   disabled={isReadOnly}
                 >
+                  <option value="">Select Development Status</option>
                   <option value="Underdeveloped">Underdeveloped</option>
                   <option value="Developing">Developing</option>
                   <option value="Developed">Developed</option>
@@ -2045,60 +2068,67 @@ export default function AxisAGRI({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {(fields.floors || []).map((floor, idx) => (
-                    <tr key={idx} className="bg-white hover:bg-neutral-50/50 transition-colors">
-                      <td className="px-2 py-1.5 text-center text-slate-400 font-medium border-b border-[#e9ecef]">{idx + 1}</td>
-                      <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                        <input
-                          type="text"
-                          className={inputCls + ' py-1.5! text-xs font-normal text-[#0f2038]'}
-                          value={floor.floorName}
-                          onChange={e => handleFloorChange(idx, 'floorName', e.target.value)}
-                          disabled={isReadOnly}
-                          placeholder="e.g. Ground Floor"
-                        />
+                  {(!fields.floors || fields.floors.length === 0) ? (
+                    <tr>
+                      <td colSpan={!isReadOnly ? 5 : 4} className="px-4 py-6 text-center text-slate-400 italic">
+                        No floors added yet. Click &quot;+ Add Floor&quot; to add a floor.
                       </td>
-                      <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                        <input
-                          type="text"
-                          inputMode="decimal"
-                          className={inputCls + ' py-1.5! text-xs text-right font-medium'}
-                          value={floor.plinthArea}
-                          onChange={e => handleFloorChange(idx, 'plinthArea', e.target.value)}
-                          disabled={isReadOnly}
-                          placeholder=""
-                        />
-                      </td>
-                      <td className="px-2 py-1.5 border-b border-[#e9ecef]">
-                        <select
-                          className={selectCls + ' py-1.5! text-xs'}
-                          value={floor.usage}
-                          onChange={e => handleFloorChange(idx, 'usage', e.target.value)}
-                          disabled={isReadOnly}
-                        >
-                          <option value="Residential">Residential</option>
-                          <option value="Commercial">Commercial</option>
-                          <option value="Office">Office</option>
-                          <option value="Storage">Storage</option>
-                          <option value="Parking">Parking</option>
-                          <option value="Industrial">Industrial</option>
-                        </select>
-                      </td>
-                      {!isReadOnly && (
-                        <td className="px-2 py-1.5 border-b border-[#e9ecef] text-center">
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveFloor(idx)}
-                            disabled={(fields.floors || []).length <= 1}
-                            className="text-red-400 hover:text-red-600 disabled:opacity-30 text-base leading-none cursor-pointer p-1 font-bold"
-                            title="Remove Floor"
-                          >
-                            &times;
-                          </button>
-                        </td>
-                      )}
                     </tr>
-                  ))}
+                  ) : (
+                    fields.floors.map((floor, idx) => (
+                      <tr key={idx} className="bg-white hover:bg-neutral-50/50 transition-colors">
+                        <td className="px-2 py-1.5 text-center text-slate-400 font-medium border-b border-[#e9ecef]">{idx + 1}</td>
+                        <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                          <input
+                            type="text"
+                            className={inputCls + ' py-1.5! text-xs font-normal text-[#0f2038]'}
+                            value={floor.floorName}
+                            onChange={e => handleFloorChange(idx, 'floorName', e.target.value)}
+                            disabled={isReadOnly}
+                            placeholder="e.g. Ground Floor"
+                          />
+                        </td>
+                        <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            className={inputCls + ' py-1.5! text-xs text-right font-medium'}
+                            value={floor.plinthArea}
+                            onChange={e => handleFloorChange(idx, 'plinthArea', e.target.value)}
+                            disabled={isReadOnly}
+                            placeholder=""
+                          />
+                        </td>
+                        <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                          <select
+                            className={selectCls + ' py-1.5! text-xs'}
+                            value={floor.usage}
+                            onChange={e => handleFloorChange(idx, 'usage', e.target.value)}
+                            disabled={isReadOnly}
+                          >
+                            <option value="Residential">Residential</option>
+                            <option value="Commercial">Commercial</option>
+                            <option value="Office">Office</option>
+                            <option value="Storage">Storage</option>
+                            <option value="Parking">Parking</option>
+                            <option value="Industrial">Industrial</option>
+                          </select>
+                        </td>
+                        {!isReadOnly && (
+                          <td className="px-2 py-1.5 border-b border-[#e9ecef] text-center">
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveFloor(idx)}
+                              className="text-red-400 hover:text-red-600 text-base leading-none cursor-pointer p-1 font-bold"
+                              title="Remove Floor"
+                            >
+                              &times;
+                            </button>
+                          </td>
+                        )}
+                      </tr>
+                    ))
+                  )}
                 </tbody>
                 <tfoot className="bg-slate-50 font-bold border-t-2 border-slate-300 text-xs">
                   <tr>
@@ -2414,82 +2444,92 @@ export default function AxisAGRI({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 bg-white">
-                  {(fields.floors || []).map((floor, idx) => (
-                    <tr key={idx} className="hover:bg-emerald-50/30">
-                      <td className="p-2 border-r">
-                        <input
-                          type="text"
-                          className={inputCls}
-                          value={floor.floorName}
-                          onChange={e => handleFloorChange(idx, 'floorName', e.target.value)}
-                          disabled={isReadOnly}
-                        />
-                      </td>
-                      <td className="p-2 border-r">
-                        <input
-                          type="text"
-                          className={`${inputCls} text-right font-medium`}
-                          value={floor.plinthArea}
-                          onChange={e => handleFloorChange(idx, 'plinthArea', e.target.value)}
-                          disabled={isReadOnly}
-                        />
-                      </td>
-                      <td className="p-2 border-r">
-                        <input
-                          type="text"
-                          className={`${inputCls} text-center`}
-                          value={floor.roofHeight || "10'-6\""}
-                          onChange={e => handleFloorChange(idx, 'roofHeight', e.target.value)}
-                          disabled={isReadOnly}
-                        />
-                      </td>
-                      <td className="p-2 border-r">
-                        <input
-                          type="text"
-                          className={`${inputCls} text-center`}
-                          value={floor.ageYears || '8Yrs'}
-                          onChange={e => handleFloorChange(idx, 'ageYears', e.target.value)}
-                          disabled={isReadOnly}
-                        />
-                      </td>
-                      <td className="p-2 border-r">
-                        <input
-                          type="text"
-                          className={`${inputCls} text-right`}
-                          value={floor.replacementRate || '1300.00'}
-                          onChange={e => handleFloorChange(idx, 'replacementRate', e.target.value)}
-                          disabled={isReadOnly}
-                        />
-                      </td>
-                      <td className="p-2 border-r">
-                        <input
-                          type="text"
-                          className={`${inputCls} text-right font-medium`}
-                          value={floor.estimatedCost || '0.00'}
-                          onChange={e => handleFloorChange(idx, 'estimatedCost', e.target.value)}
-                          disabled={isReadOnly}
-                        />
-                      </td>
-                      <td className="p-2 border-r">
-                        <input
-                          type="text"
-                          className={`${inputCls} text-right text-rose-600 font-medium`}
-                          value={floor.depreciationAmount || '0.00'}
-                          onChange={e => handleFloorChange(idx, 'depreciationAmount', e.target.value)}
-                          disabled={isReadOnly}
-                        />
-                      </td>
-                      <td className="p-2">
-                        <input
-                          type="text"
-                          className={`${inputCls} text-right text-emerald-700 font-bold`}
-                          value={floor.netValue || '0.00'}
-                          onChange={e => handleFloorChange(idx, 'netValue', e.target.value)}
-                          disabled={isReadOnly}
-                        />
+                  {(!fields.floors || fields.floors.length === 0) ? (
+                    <tr>
+                      <td colSpan={8} className="p-4 text-center text-slate-400 italic">
+                        No floor breakdown available. Add floors in Section 8 above.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    fields.floors.map((floor, idx) => (
+                      <tr key={idx} className="hover:bg-emerald-50/30">
+                        <td className="p-2 border-r">
+                          <input
+                            type="text"
+                            className={inputCls}
+                            value={floor.floorName}
+                            onChange={e => handleFloorChange(idx, 'floorName', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                        <td className="p-2 border-r">
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            className={`${inputCls} text-right font-medium`}
+                            value={floor.plinthArea}
+                            onChange={e => handleFloorChange(idx, 'plinthArea', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                        <td className="p-2 border-r">
+                          <input
+                            type="text"
+                            className={`${inputCls} text-center`}
+                            value={floor.roofHeight || "10'-6\""}
+                            onChange={e => handleFloorChange(idx, 'roofHeight', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                        <td className="p-2 border-r">
+                          <input
+                            type="text"
+                            className={`${inputCls} text-center`}
+                            value={floor.ageYears || ''}
+                            onChange={e => handleFloorChange(idx, 'ageYears', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                        <td className="p-2 border-r">
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            className={`${inputCls} text-right`}
+                            value={floor.replacementRate || ''}
+                            onChange={e => handleFloorChange(idx, 'replacementRate', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                        <td className="p-2 border-r">
+                          <input
+                            type="text"
+                            className={`${inputCls} text-right font-medium`}
+                            value={floor.estimatedCost || ''}
+                            onChange={e => handleFloorChange(idx, 'estimatedCost', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                        <td className="p-2 border-r">
+                          <input
+                            type="text"
+                            className={`${inputCls} text-right text-rose-600 font-medium`}
+                            value={floor.depreciationAmount || ''}
+                            onChange={e => handleFloorChange(idx, 'depreciationAmount', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            className={`${inputCls} text-right text-emerald-700 font-bold`}
+                            value={floor.netValue || ''}
+                            onChange={e => handleFloorChange(idx, 'netValue', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
                 <tfoot className="bg-emerald-50/80 font-bold border-t border-emerald-200">
                   <tr>
