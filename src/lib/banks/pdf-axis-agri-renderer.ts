@@ -1518,20 +1518,21 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.cursorY += basisRateLines.length * FONT_SIZE_SMALL * LINE_HEIGHT + 6;
 
     // =========================================================================
-    // PAGE 7+: PROPERTY PHOTOGRAPHS (2x2 PHOTO GRID, ALL PHOTOS, NEW PAGE PER 4)
+    // PAGE 7+: PROPERTY PHOTOGRAPHS (2 cols × 3 rows = 6 per page)
     // =========================================================================
     const photoList = images.photos || [];
     const cellW = (W - 10) / 2;
-    const cellH = 260;
-    const photosPerPage = 4;
-    const totalPages = Math.max(1, Math.ceil(photoList.length / photosPerPage));
+    const cellH = 170;       // 3 rows fit in page: 3*170 + 2*8 gap + header ≈ 542pt
+    const rowGap = 8;
+    const photosPerPage = 6; // 2 cols × 3 rows
+    const totalPhotoPages = Math.max(1, Math.ceil(photoList.length / photosPerPage));
 
-    for (let pageIdx = 0; pageIdx < totalPages; pageIdx++) {
+    for (let pageIdx = 0; pageIdx < totalPhotoPages; pageIdx++) {
       this.addPage();
       this.drawRow([{ text: 'PHOTOGRAPHS', width: W, isHeader: true, bold: true }], 20, 4);
-      this.cursorY += 10;
+      this.cursorY += 8;
 
-      for (let row = 0; row < 2; row++) {
+      for (let row = 0; row < 3; row++) {
         const rowY = this.pdfY(this.cursorY);
         for (let col = 0; col < 2; col++) {
           const pIdx = pageIdx * photosPerPage + row * 2 + col;
@@ -1557,19 +1558,19 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
               }
               if (pImg) {
                 const maxImgW = cellW - 6;
-                const maxImgH = cellH - 24;
+                const maxImgH = cellH - 20;
                 const scale = Math.min(maxImgW / pImg.width, maxImgH / pImg.height);
                 const imgW = pImg.width * scale;
                 const imgH = pImg.height * scale;
                 const imgX = curX + (cellW - imgW) / 2;
-                const imgY = rowY - cellH + 20 + (maxImgH - imgH) / 2;
+                const imgY = rowY - cellH + 16 + (maxImgH - imgH) / 2;
                 this.page.drawImage(pImg, { x: imgX, y: imgY, width: imgW, height: imgH });
-                // Label
+                // Caption
                 const pLabel = photoList[pIdx].label || `Photograph ${pIdx + 1}`;
                 const tw = this.fontItalic.widthOfTextAtSize(pLabel, FONT_SIZE_CAPTION);
                 this.page.drawText(this.sanitizeText(pLabel), {
                   x: curX + (cellW - tw) / 2,
-                  y: rowY - cellH + 6,
+                  y: rowY - cellH + 5,
                   size: FONT_SIZE_CAPTION,
                   font: this.fontItalic,
                   color: rgb(0, 0, 0),
@@ -1578,7 +1579,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
             } catch {}
           }
         }
-        this.cursorY += cellH + 10;
+        this.cursorY += cellH + rowGap;
       }
     }
 
