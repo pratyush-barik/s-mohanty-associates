@@ -18,7 +18,8 @@ import {
   FONT_SIZE,
   FONT_SIZE_HEADER,
   FONT_SIZE_TITLE,
-  hexToRgb
+  hexToRgb,
+  LINE_HEIGHT
 } from '../pdf-bank-renderer';
 
 export class PDFAxisSBBRenderer extends PDFBankRenderer {
@@ -57,6 +58,81 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       labelBold: true,
       valueBold: false
     }]);
+  }
+
+  private drawChecklist(label: string, value: string, isNA: boolean, options: string[], isHighlighted: boolean = false) {
+    if (isNA) {
+      this.drawSimpleRow(label, 'NA', isHighlighted);
+      return;
+    }
+
+    const labelW = Math.round(CONTENT_W * 0.40);
+    const valueW = CONTENT_W - labelW;
+    
+    // Normalize selected values
+    const selectedVals = Array.isArray(value) ? value.map(v => String(v).trim().toUpperCase()) : [String(value).trim().toUpperCase()];
+
+    // Prepare text lines for options
+    let valueLines: { text: string, isSelected: boolean, fontToUse: any, width: number }[][] = [[]];
+    let currentLineW = 0;
+    
+    for (let i = 0; i < options.length; i++) {
+      const opt = options[i];
+      const isSelected = selectedVals.includes(opt.trim().toUpperCase());
+      const boxText = isSelected ? '[X] ' : '[ ] ';
+      const optText = opt;
+      const fontToUse = isSelected ? this.fontBold : this.fontRegular;
+      
+      const fullText = boxText + optText;
+      const textW = fontToUse.widthOfTextAtSize(fullText, FONT_SIZE);
+      const padding = i < options.length - 1 ? 15 : 0;
+      
+      if (currentLineW + textW > valueW - 6 && currentLineW > 0) {
+        valueLines.push([]);
+        currentLineW = 0;
+      }
+      
+      valueLines[valueLines.length - 1].push({ text: fullText, isSelected, fontToUse, width: textW + padding });
+      currentLineW += textW + padding;
+    }
+
+    const labelLines = this.wrapText(label, labelW - 6, FONT_SIZE, true);
+    const rowMaxLines = Math.max(labelLines.length, valueLines.length);
+    const rowH = Math.max(18, rowMaxLines * FONT_SIZE * LINE_HEIGHT + 6);
+    this.checkPageBreak(rowH);
+
+    const y = this.pdfY(this.cursorY);
+    let curX = MARGIN_L;
+
+    // Draw Label Cell
+    this.page.drawRectangle({ x: curX, y: y - rowH, width: labelW, height: rowH, color: hexToRgb('#DBE6F0'), opacity: 0.5 });
+    this.page.drawRectangle({ x: curX, y: y - rowH, width: labelW, height: rowH, borderColor: rgb(0,0,0), borderWidth: 1 });
+    
+    let lineY = y - 3 - FONT_SIZE * 0.85;
+    for (const line of labelLines) {
+      this.page.drawText(line, { x: curX + 3, y: lineY, size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
+      lineY -= FONT_SIZE * LINE_HEIGHT;
+    }
+    
+    curX += labelW;
+
+    // Draw Value Cell
+    if (isHighlighted) {
+      this.page.drawRectangle({ x: curX, y: y - rowH, width: valueW, height: rowH, color: hexToRgb('#FFF2CC'), opacity: 0.5 });
+    }
+    this.page.drawRectangle({ x: curX, y: y - rowH, width: valueW, height: rowH, borderColor: rgb(0,0,0), borderWidth: 1 });
+
+    lineY = y - 3 - FONT_SIZE * 0.85;
+    for (const lineItems of valueLines) {
+      let textX = curX + 3;
+      for (const item of lineItems) {
+        this.page.drawText(item.text, { x: textX, y: lineY, size: FONT_SIZE, font: item.fontToUse, color: rgb(0,0,0) });
+        textX += item.width;
+      }
+      lineY -= FONT_SIZE * LINE_HEIGHT;
+    }
+
+    this.cursorY += rowH;
   }
 
   override drawCenteredTitle(title: string, fontSize?: number, underline?: boolean) {

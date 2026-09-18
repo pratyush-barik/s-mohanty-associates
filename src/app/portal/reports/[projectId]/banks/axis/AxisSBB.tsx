@@ -765,7 +765,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         className="text-sky-600 focus:ring-sky-500"
                         required
                       />
-                      <span className="text-sm text-gray-700 font-medium">{opt}</span>
+                      <span className={`text-sm ${fields.axisSbbPropertyLocation === opt ? 'font-bold text-black' : 'font-medium text-gray-700'}`}>{opt}</span>
                     </label>
                   ))}
                 </div>
@@ -791,7 +791,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         className="text-sky-600 focus:ring-sky-500"
                         required
                       />
-                      <span className="text-sm text-gray-700 font-medium">{opt}</span>
+                      <span className={`text-sm ${fields.axisSbbGoverningBody === opt ? 'font-bold text-black' : 'font-medium text-gray-700'}`}>{opt}</span>
                     </label>
                   ))}
                 </div>
@@ -817,7 +817,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         className={`mt-1 ${isGramPanchayat ? 'text-sky-600 focus:ring-sky-500' : 'text-slate-400'}`}
                         required={isGramPanchayat}
                       />
-                      <span className={`text-sm ${isGramPanchayat ? 'text-gray-700' : 'text-gray-400'}`}>{opt}</span>
+                      <span className={`text-sm ${fields.axisSbbTownPlanningSubType === opt ? 'font-bold text-black' : (isGramPanchayat ? 'text-gray-700 font-medium' : 'text-gray-400')}`}>{opt}</span>
                     </label>
                   ))}
                 </div>
@@ -848,7 +848,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         disabled={isReadOnly}
                         className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-gray-300"
                       />
-                      <span className="text-sm text-gray-700 font-medium">{doc.label}</span>
+                      <span className={`text-sm ${isChecked ? 'font-bold text-black' : 'font-medium text-gray-700'}`}>{doc.label}</span>
                     </label>
                     {isChecked && (
                       <label className="cursor-pointer p-1.5 bg-emerald-100 text-emerald-700 rounded-md hover:bg-emerald-200 transition-colors flex items-center justify-center animate-fade-in" title="Attach Document / View Link">
@@ -1255,7 +1255,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                     disabled={isReadOnly || isNA}
                     className="w-4 h-4 text-yellow-600 rounded focus:ring-yellow-500 border-gray-300"
                   />
-                  <span className="text-xs font-semibold text-gray-700">{opt}</span>
+                  <span className={`text-xs ${isChecked ? 'font-bold text-black' : 'font-semibold text-gray-700'}`}>{opt}</span>
                 </label>
               );
             })}
