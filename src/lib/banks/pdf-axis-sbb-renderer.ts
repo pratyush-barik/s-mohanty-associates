@@ -109,7 +109,6 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     }
     // Intercept standard section 3
     if (title.toUpperCase() === 'LEGAL VERIFICATION & PROPERTY CLASSIFICATION') {
-      super.drawSectionHeader('LEGAL VERIFICATION & PROPERTY CLASSIFICATION', addSpaceBefore, preserveCase);
       this.drawSbbSection3();
       return;
     }
@@ -595,6 +594,15 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       const finalY = drawRight(rightX, this.cursorY + 5, rightW - 10);
       
       const rowHeight = (finalY - this.cursorY) + 5;
+      
+      // Blue background for left column
+      this.page.drawRectangle({
+        x: MARGIN_L,
+        y: this.pdfY(this.cursorY + rowHeight),
+        width: leftW,
+        height: rowHeight,
+        color: rgb(0.886, 0.937, 0.976)
+      });
       
       this.page.drawRectangle({
         x: MARGIN_L,
