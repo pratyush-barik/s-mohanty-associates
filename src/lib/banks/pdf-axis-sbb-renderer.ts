@@ -829,11 +829,76 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     const approachRoad = fields.axisSbbRoadWidthMaterial || '';
     const farComp = fields.axisSbbStructureConfirmingByelaws || '';
 
-    const synthesizedRemarks = `The subject property is a ${structVal} structured building (${floorBreakdown}) having total land area of ${areaStr} and total built-up area of ${buaStr} sq.ft. The property is approximately ${age} years old and currently ${occupancy}. It is located at ${location} under the jurisdiction of ${corp}. Basic civic amenities are ${civicRadius}. The property is situated at a distance of ${cityDist} from the city centre and is accessible via a ${approachRoad}. Structure compliance to byelaws: ${farComp}.`;
+    const synthesizedRemarks = `THE SUBJECT PROPERTY COMPRISES A ${structVal} STORIED RCC BUILDING (${floorBreakdown.toUpperCase()}) HAVING TOTAL LAND AREA OF ${areaStr.toUpperCase()} AND TOTAL BUILT-UP AREA (BUA) OF APPROXIMATELY ${buaStr.toUpperCase()} SQ. FT. THE PROPERTY IS APPROXIMATELY ${age.toUpperCase()} YEARS OLD. AT THE TIME OF THE TECHNICAL INSPECTION, THE ENTIRE PROPERTY WAS FOUND TO BE ${occupancy.toUpperCase()} AND WAS BEING UTILIZED FOR RESIDENTIAL PURPOSES AS WELL AS A GODOWN-CUM-OFFICE.
 
-    this.drawSimpleRow('REMARKS: -', val('axisSbbRemarks', synthesizedRemarks));
-    if (fields.axisSbbRemarksNote && !fields.axisSbbRemarksNoteIsNA) {
-      this.drawSimpleRow('NOTE:-', val('axisSbbRemarksNote'));
+THE PROPERTY IS SITUATED AT ${location.toUpperCase()}, WITHIN A WELL-DEVELOPING RESIDENTIAL LOCALITY. ALL ESSENTIAL CIVIC AND SOCIAL AMENITIES ARE AVAILABLE WITHIN A RADIUS OF APPROXIMATELY ${civicRadius.toUpperCase()} KM. THE PROPERTY FALLS WITHIN THE JURISDICTION OF THE ${corp.toUpperCase()} AND IS LOCATED APPROXIMATELY ${cityDist.toUpperCase()} KM FROM THE CITY CENTRE. THE PROPERTY ENJOYS ACCESS THROUGH A ${approachRoad.toUpperCase()}.
+
+THE VALUATION HAS BEEN CARRIED OUT BY CONSIDERING THE LAND COMPONENT AND THE ACTUAL MEASURED BUILT-UP AREA (BUA) OF THE EXISTING STRUCTURES. THE MEASURED BUILT-UP AREA IS WITHIN THE PERMISSIBLE FLOOR AREA RATIO (FAR) LIMIT OF ${farComp.toUpperCase()}, AND THE VALUATION HAS BEEN ASSESSED ACCORDINGLY.`;
+
+    const actualRemarks = val('axisSbbRemarks', synthesizedRemarks);
+    const actualNote = fields.axisSbbRemarksNote && !fields.axisSbbRemarksNoteIsNA ? val('axisSbbRemarksNote') : '';
+    
+    const itemsToDraw = [];
+    if (actualRemarks && actualRemarks !== 'NA') {
+      itemsToDraw.push({ label: 'REMARKS: -', text: actualRemarks });
+    }
+    if (actualNote && actualNote !== 'NA') {
+      itemsToDraw.push({ label: 'NOTE:-', text: actualNote });
+    }
+    
+    if (itemsToDraw.length > 0) {
+      const itemsWithLines = itemsToDraw.map(item => {
+        // Since remarks might contain manual newlines (\n), we need to split by \n first
+        const rawParagraphs = item.text.split('\n');
+        const paragraphsLines = [];
+        
+        let isFirstParagraph = true;
+        for (const para of rawParagraphs) {
+           const textToWrap = isFirstParagraph ? `${item.label} ${para.trim()}` : para.trim();
+           if (textToWrap) {
+             const lines = this.wrapText(textToWrap, CONTENT_W - 10, FONT_SIZE, false);
+             paragraphsLines.push(...lines);
+           }
+           isFirstParagraph = false;
+        }
+        return { item, lines: paragraphsLines };
+      });
+      
+      const totalH = itemsWithLines.reduce((sum, obj, idx) => {
+         return sum + (obj.lines.length * (FONT_SIZE + 4)) + (idx === itemsWithLines.length - 1 ? 10 : 15);
+      }, 0);
+      
+      this.checkPageBreak(totalH);
+      const y = this.pdfY(this.cursorY);
+      
+      this.page.drawRectangle({
+        x: MARGIN_L,
+        y: y - totalH,
+        width: CONTENT_W,
+        height: totalH,
+        borderColor: rgb(0,0,0),
+        borderWidth: 1
+      });
+      
+      let cy = y - 5 - FONT_SIZE;
+      for (const { item, lines } of itemsWithLines) {
+        let isFirstLine = true;
+        for (const line of lines) {
+          if (isFirstLine) {
+             const labelW = this.fontBold.widthOfTextAtSize(item.label, FONT_SIZE);
+             this.page.drawText(item.label, { x: MARGIN_L + 5, y: cy, size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
+             
+             const remainingText = line.substring(item.label.length);
+             this.page.drawText(remainingText, { x: MARGIN_L + 5 + labelW, y: cy, size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
+             isFirstLine = false;
+          } else {
+             this.page.drawText(line, { x: MARGIN_L + 5, y: cy, size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
+          }
+          cy -= (FONT_SIZE + 4);
+        }
+        cy -= 11; // extra space between items
+      }
+      this.cursorY += totalH;
     }
 
     this.drawSectionSubtitle('10.2 UNDERTAKING:-');
