@@ -263,47 +263,48 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     if ((fields as any).axisSbbTypeOfStructureTinShed) structTypes.push('TIN SHED');
     if ((fields as any).axisSbbTypeOfStructureRCC) structTypes.push('RCC');
     if ((fields as any).axisSbbTypeOfStructureAluform) structTypes.push('ALUFORM SHUTTERING');
-    let structVal = structTypes.join(', ');
-    if ((fields as any).axisSbbTypeOfStructureIsNA) structVal = 'NA';
-    else if (structTypes.length === 0) structVal = 'NA';
+
+    this.drawListCheck('TYPE OF STRUCTURE', structTypes, !!(fields as any).axisSbbTypeOfStructureIsNA, ['GCI', 'TIN SHED', 'RCC', 'ALUFORM SHUTTERING']);
+    this.drawSimpleRow('NO. OF FLOORS', val('axisSbbNoOfFloors'));
     
-    this.drawKeyValueRow([
-      { label: 'Type of Structure', value: structVal },
-      { label: 'No. of Floors', value: val('axisSbbNoOfFloors') }
-    ]);
-    
-    this.drawKeyValueRow([
-      { label: 'Occupancy Details', value: val('axisSbbOccupancyDetails') },
-      { label: 'Is Property on Rent?', value: val('axisSbbPropertyOnRent') }
-    ]);
+    this.drawListCheck('OCCUPANCY DETAILS', val('axisSbbOccupancyDetails'), !!(fields as any).axisSbbOccupancyDetailsIsNA, ['SELF-OCCUPIED', 'RENTED', 'VACANT']);
+    this.drawListCheck('IF THE PROPERTY IS ON RENT:', val('axisSbbPropertyOnRent'), !!(fields as any).axisSbbPropertyOnRentIsNA, ['YES', 'NO']);
 
     const isRentYes = (fields as any).axisSbbPropertyOnRent === 'YES' && !(fields as any).axisSbbPropertyOnRentIsNA;
 
+    this.drawSimpleRow('NUMBER OF TENANT AND THERE DETAILS', isRentYes ? val('axisSbbNumberOfTenantsDetails') : 'NA');
     this.drawKeyValueRow([
-      { label: 'Number of Tenants & Details', value: isRentYes ? val('axisSbbNumberOfTenantsDetails') : 'NA' },
-      { label: 'Name of Tenant/Lease', value: isRentYes ? val('axisSbbNameOfTenantLease') : 'NA' }
+      { label: 'NAME OF TENANT/ LEASE', value: isRentYes ? val('axisSbbNameOfTenantLease') : 'NA' },
+      { label: 'NUMBER OF YEARS IN TENANCY', value: isRentYes ? val('axisSbbYearsInTenancy') : 'NA' }
     ]);
 
-    this.drawKeyValueRow([
-      { label: 'Years in Tenancy', value: isRentYes ? val('axisSbbYearsInTenancy') : 'NA' },
-      { label: 'Any Resistance for Valuation?', value: val('axisSbbResistanceForValuation') }
-    ]);
-
-    this.drawKeyValueRow([
-      { label: 'Resistance from Occupants?', value: val('axisSbbResistanceFromOccupants') },
-      { label: 'Surrounding Area Development', value: val('axisSbbDevelopmentSurroundingArea') }
-    ]);
+    const splitW = CONTENT_W / 2;
+    
+    const h1 = this.drawListCheck('WAS THERE ANY RESISTANCE FOR VALUATION:', val('axisSbbResistanceForValuation'), !!(fields as any).axisSbbResistanceForValuationIsNA, ['YES', 'NO'], false, MARGIN_L, splitW, true, true);
+    const h2 = this.drawListCheck('IF YES, FROM THE CURRENT OCCUPANTS:', val('axisSbbResistanceFromOccupants'), !!(fields as any).axisSbbResistanceFromOccupantsIsNA, ['YES', 'NO'], false, MARGIN_L + splitW, splitW, true, true);
+    
+    let maxH = Math.max(h1, h2);
+    this.checkPageBreak(maxH);
+    
+    this.drawListCheck('WAS THERE ANY RESISTANCE FOR VALUATION:', val('axisSbbResistanceForValuation'), !!(fields as any).axisSbbResistanceForValuationIsNA, ['YES', 'NO'], false, MARGIN_L, splitW, true, false);
+    this.drawListCheck('IF YES, FROM THE CURRENT OCCUPANTS:', val('axisSbbResistanceFromOccupants'), !!(fields as any).axisSbbResistanceFromOccupantsIsNA, ['YES', 'NO'], false, MARGIN_L + splitW, splitW, true, false);
+    this.cursorY += maxH;
 
     // Basic amenities
     let amenities = [];
     if ((fields as any).axisSbbBasicAmenitiesElectricity) amenities.push('ELECTRICITY');
     if ((fields as any).axisSbbBasicAmenitiesWater) amenities.push('WATER');
     if ((fields as any).axisSbbBasicAmenitiesDrainage) amenities.push('DRAINAGE CONNECTION');
-    let amenVal = amenities.join(', ');
-    if ((fields as any).axisSbbBasicAmenitiesIsNA) amenVal = 'NA';
-    else if (amenities.length === 0) amenVal = 'NA';
 
-    this.drawSimpleRow('Basic Amenities', amenVal);
+    const h3 = this.drawListCheck('DOES PROPERTY HAVE BASIC AMENITIES', amenities, !!(fields as any).axisSbbBasicAmenitiesIsNA, ['ELECTRICITY', 'WATER', 'DRAINAGE CONNECTION'], false, MARGIN_L, splitW, true, true);
+    const h4 = this.drawListCheck('DEVELOPMENT OF SURROUNDING AREA', val('axisSbbDevelopmentSurroundingArea'), !!(fields as any).axisSbbDevelopmentSurroundingAreaIsNA, ['UNDER DEVELOPED', 'DEVELOPING', 'DEVELOPED'], false, MARGIN_L + splitW, splitW, true, true);
+    
+    maxH = Math.max(h3, h4);
+    this.checkPageBreak(maxH);
+    
+    this.drawListCheck('DOES PROPERTY HAVE BASIC AMENITIES', amenities, !!(fields as any).axisSbbBasicAmenitiesIsNA, ['ELECTRICITY', 'WATER', 'DRAINAGE CONNECTION'], false, MARGIN_L, splitW, true, false);
+    this.drawListCheck('DEVELOPMENT OF SURROUNDING AREA', val('axisSbbDevelopmentSurroundingArea'), !!(fields as any).axisSbbDevelopmentSurroundingAreaIsNA, ['UNDER DEVELOPED', 'DEVELOPING', 'DEVELOPED'], false, MARGIN_L + splitW, splitW, true, false);
+    this.cursorY += maxH;
     
     this.drawSectionSubtitle('APPROVAL DETAILS & BYE-LAWS COMPLIANCE');
 
