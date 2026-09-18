@@ -904,6 +904,10 @@ export default function AxisAGRI({
     const cadImages = fields.cadastralMapImages || [];
     const cadBytes = (await Promise.all(cadImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
 
+    // Fetch sketch maps
+    const sketchImages = fields.sketchMapImages || [];
+    const sketchBytes = (await Promise.all(sketchImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
+
     // Fetch benchmark screenshots
     const benchImages = fields.benchmarkImages || [];
     const benchBytes = (await Promise.all(benchImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
@@ -915,6 +919,7 @@ export default function AxisAGRI({
       photos,
       locationMaps: locBytes,
       cadastralMaps: cadBytes,
+      sketchMaps: sketchBytes,
       benchmarkImages: benchBytes,
     });
   };

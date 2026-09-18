@@ -454,6 +454,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       photos?: { bytes: Uint8Array; label?: string }[];
       locationMaps?: Uint8Array[];
       cadastralMaps?: Uint8Array[];
+      sketchMaps?: Uint8Array[];
       benchmarkImages?: Uint8Array[];
     } = {}
   ): Promise<Uint8Array> {
@@ -1517,193 +1518,175 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.cursorY += basisRateLines.length * FONT_SIZE_SMALL * LINE_HEIGHT + 6;
 
     // =========================================================================
-    // PAGE 7: PROPERTY PHOTOGRAPHS (2x2 PHOTO GRID)
+    // PAGE 7+: PROPERTY PHOTOGRAPHS (2x2 PHOTO GRID, ALL PHOTOS, NEW PAGE PER 4)
     // =========================================================================
-    this.addPage();
-    this.drawRow([{ text: 'PHOTOGRAPHS', width: W, isHeader: true, bold: true }], 20, 4);
-    this.cursorY += 10;
-
     const photoList = images.photos || [];
     const cellW = (W - 10) / 2;
     const cellH = 260;
+    const photosPerPage = 4;
+    const totalPages = Math.max(1, Math.ceil(photoList.length / photosPerPage));
 
-    // Lay out up to 4 photos in a 2x2 grid
-    for (let row = 0; row < 2; row++) {
-      const rowY = this.pdfY(this.cursorY);
-      for (let col = 0; col < 2; col++) {
-        const pIdx = row * 2 + col;
-        const curX = MARGIN_L + col * (cellW + 10);
+    for (let pageIdx = 0; pageIdx < totalPages; pageIdx++) {
+      this.addPage();
+      this.drawRow([{ text: 'PHOTOGRAPHS', width: W, isHeader: true, bold: true }], 20, 4);
+      this.cursorY += 10;
 
-        // Border rectangle
-        this.page.drawRectangle({
-          x: curX,
-          y: rowY - cellH,
-          width: cellW,
-          height: cellH,
-          borderColor: rgb(0, 0, 0),
-          borderWidth: BORDER_W,
-        });
+      for (let row = 0; row < 2; row++) {
+        const rowY = this.pdfY(this.cursorY);
+        for (let col = 0; col < 2; col++) {
+          const pIdx = pageIdx * photosPerPage + row * 2 + col;
+          const curX = MARGIN_L + col * (cellW + 10);
 
-        if (pIdx < photoList.length && photoList[pIdx].bytes) {
-          try {
-            const pBytes = photoList[pIdx].bytes;
-            let pImg: any = null;
-            try { pImg = await this.doc.embedJpg(pBytes); } catch { /* ignore */ }
-            if (!pImg) {
-              try { pImg = await this.doc.embedPng(pBytes); } catch { /* ignore */ }
-            }
-            if (pImg) {
-              const maxImgW = cellW - 6;
-              const maxImgH = cellH - 24;
-              const scale = Math.min(maxImgW / pImg.width, maxImgH / pImg.height);
-              const imgW = pImg.width * scale;
-              const imgH = pImg.height * scale;
-              const imgX = curX + (cellW - imgW) / 2;
-              const imgY = rowY - cellH + 20 + (maxImgH - imgH) / 2;
+          // Border rectangle
+          this.page.drawRectangle({
+            x: curX,
+            y: rowY - cellH,
+            width: cellW,
+            height: cellH,
+            borderColor: rgb(0, 0, 0),
+            borderWidth: BORDER_W,
+          });
 
-              this.page.drawImage(pImg, { x: imgX, y: imgY, width: imgW, height: imgH });
-
-              // Label
-              const pLabel = photoList[pIdx].label || `Photograph ${pIdx + 1}`;
-              const tw = this.fontItalic.widthOfTextAtSize(pLabel, FONT_SIZE_CAPTION);
-              this.page.drawText(this.sanitizeText(pLabel), {
-                x: curX + (cellW - tw) / 2,
-                y: rowY - cellH + 6,
-                size: FONT_SIZE_CAPTION,
-                font: this.fontItalic,
-                color: rgb(0, 0, 0),
-              });
-            }
-          } catch {}
+          if (pIdx < photoList.length && photoList[pIdx].bytes) {
+            try {
+              const pBytes = photoList[pIdx].bytes;
+              let pImg: any = null;
+              try { pImg = await this.doc.embedJpg(pBytes); } catch { /* ignore */ }
+              if (!pImg) {
+                try { pImg = await this.doc.embedPng(pBytes); } catch { /* ignore */ }
+              }
+              if (pImg) {
+                const maxImgW = cellW - 6;
+                const maxImgH = cellH - 24;
+                const scale = Math.min(maxImgW / pImg.width, maxImgH / pImg.height);
+                const imgW = pImg.width * scale;
+                const imgH = pImg.height * scale;
+                const imgX = curX + (cellW - imgW) / 2;
+                const imgY = rowY - cellH + 20 + (maxImgH - imgH) / 2;
+                this.page.drawImage(pImg, { x: imgX, y: imgY, width: imgW, height: imgH });
+                // Label
+                const pLabel = photoList[pIdx].label || `Photograph ${pIdx + 1}`;
+                const tw = this.fontItalic.widthOfTextAtSize(pLabel, FONT_SIZE_CAPTION);
+                this.page.drawText(this.sanitizeText(pLabel), {
+                  x: curX + (cellW - tw) / 2,
+                  y: rowY - cellH + 6,
+                  size: FONT_SIZE_CAPTION,
+                  font: this.fontItalic,
+                  color: rgb(0, 0, 0),
+                });
+              }
+            } catch {}
+          }
         }
+        this.cursorY += cellH + 10;
       }
-      this.cursorY += cellH + 10;
     }
 
     // =========================================================================
-    // PAGE 8: LOCATIONAL DIAGRAM & BENCHMARK VALUATION
+    // PAGE 8: LOCATIONAL DIAGRAM — one per page
     // =========================================================================
-    this.addPage();
 
-    this.drawRow([{ text: 'LOCATIONAL DIAGRAM WITH GPS CO-ORDINATES', width: W, isHeader: true, bold: true }], 20, 4);
-    this.cursorY += 8;
-
-    const locMapBytes = images.locationMaps?.[0];
-    const locMapH = 260;
-    const locMapY = this.pdfY(this.cursorY);
-
-    this.page.drawRectangle({
-      x: MARGIN_L,
-      y: locMapY - locMapH,
-      width: W,
-      height: locMapH,
-      borderColor: rgb(0, 0, 0),
-      borderWidth: BORDER_W,
-    });
-
-    if (locMapBytes) {
-      try {
-        let lmImg: any = null;
-        try { lmImg = await this.doc.embedJpg(locMapBytes); } catch { /* ignore */ }
-        if (!lmImg) {
-          try { lmImg = await this.doc.embedPng(locMapBytes); } catch { /* ignore */ }
-        }
-        if (lmImg) {
-          const scale = Math.min(W / lmImg.width, locMapH / lmImg.height);
-          const iW = lmImg.width * scale;
-          const iH = lmImg.height * scale;
-          this.page.drawImage(lmImg, {
-            x: MARGIN_L + (W - iW) / 2,
-            y: locMapY - locMapH + (locMapH - iH) / 2,
-            width: iW,
-            height: iH,
-          });
-        }
-      } catch {}
+    // --- Location Maps ---
+    const allLocMaps = images.locationMaps || [];
+    for (let mi = 0; mi < Math.max(allLocMaps.length, 1); mi++) {
+      this.addPage();
+      this.drawRow([{ text: 'LOCATIONAL DIAGRAM WITH GPS CO-ORDINATES', width: W, isHeader: true, bold: true }], 20, 4);
+      this.cursorY += 8;
+      const locMapBytes = allLocMaps[mi];
+      const locMapH = 520;
+      const locMapY = this.pdfY(this.cursorY);
+      this.page.drawRectangle({ x: MARGIN_L, y: locMapY - locMapH, width: W, height: locMapH, borderColor: rgb(0, 0, 0), borderWidth: BORDER_W });
+      if (locMapBytes) {
+        try {
+          let lmImg: any = null;
+          try { lmImg = await this.doc.embedJpg(locMapBytes); } catch { /* ignore */ }
+          if (!lmImg) { try { lmImg = await this.doc.embedPng(locMapBytes); } catch { /* ignore */ } }
+          if (lmImg) {
+            const scale = Math.min(W / lmImg.width, locMapH / lmImg.height);
+            const iW = lmImg.width * scale; const iH = lmImg.height * scale;
+            this.page.drawImage(lmImg, { x: MARGIN_L + (W - iW) / 2, y: locMapY - locMapH + (locMapH - iH) / 2, width: iW, height: iH });
+          }
+        } catch {}
+      }
+      this.cursorY += locMapH;
     }
-    this.cursorY += locMapH + 14;
-
-    // Benchmark Valuation
-    this.drawRow([{ text: 'BENCHMARK VALUATION', width: W, isHeader: true, bold: true }], 20, 4);
-    this.cursorY += 8;
-
-    const benchBytes = images.benchmarkImages?.[0];
-    const benchH = 230;
-    const benchY = this.pdfY(this.cursorY);
-
-    this.page.drawRectangle({
-      x: MARGIN_L,
-      y: benchY - benchH,
-      width: W,
-      height: benchH,
-      borderColor: rgb(0, 0, 0),
-      borderWidth: BORDER_W,
-    });
-
-    if (benchBytes) {
-      try {
-        let bmImg: any = null;
-        try { bmImg = await this.doc.embedJpg(benchBytes); } catch { /* ignore */ }
-        if (!bmImg) {
-          try { bmImg = await this.doc.embedPng(benchBytes); } catch { /* ignore */ }
-        }
-        if (bmImg) {
-          const scale = Math.min(W / bmImg.width, benchH / bmImg.height);
-          const iW = bmImg.width * scale;
-          const iH = bmImg.height * scale;
-          this.page.drawImage(bmImg, {
-            x: MARGIN_L + (W - iW) / 2,
-            y: benchY - benchH + (benchH - iH) / 2,
-            width: iW,
-            height: iH,
-          });
-        }
-      } catch {}
-    }
-    this.cursorY += benchH;
 
     // =========================================================================
-    // PAGE 9: CADASTRAL MAP (BHULEKH SCREENSHOT)
+    // PAGE 9: CADASTRAL MAP — one per page
     // =========================================================================
-    this.addPage();
-
-    this.drawRow([{ text: 'CADASTRAL MAP', width: W, isHeader: true, bold: true }], 20, 4);
-    this.cursorY += 10;
-
-    const cadMapBytes = images.cadastralMaps?.[0];
-    const cadMapH = 540;
-    const cadMapY = this.pdfY(this.cursorY);
-
-    this.page.drawRectangle({
-      x: MARGIN_L,
-      y: cadMapY - cadMapH,
-      width: W,
-      height: cadMapH,
-      borderColor: rgb(0, 0, 0),
-      borderWidth: BORDER_W,
-    });
-
-    if (cadMapBytes) {
-      try {
-        let cmImg: any = null;
-        try { cmImg = await this.doc.embedJpg(cadMapBytes); } catch { /* ignore */ }
-        if (!cmImg) {
-          try { cmImg = await this.doc.embedPng(cadMapBytes); } catch { /* ignore */ }
-        }
-        if (cmImg) {
-          const scale = Math.min(W / cmImg.width, cadMapH / cmImg.height);
-          const iW = cmImg.width * scale;
-          const iH = cmImg.height * scale;
-          this.page.drawImage(cmImg, {
-            x: MARGIN_L + (W - iW) / 2,
-            y: cadMapY - cadMapH + (cadMapH - iH) / 2,
-            width: iW,
-            height: iH,
-          });
-        }
-      } catch {}
+    const allCadMaps = images.cadastralMaps || [];
+    for (let ci = 0; ci < Math.max(allCadMaps.length, 1); ci++) {
+      this.addPage();
+      this.drawRow([{ text: 'CADASTRAL MAP', width: W, isHeader: true, bold: true }], 20, 4);
+      this.cursorY += 10;
+      const cadMapBytes = allCadMaps[ci];
+      const cadMapH = 520;
+      const cadMapY = this.pdfY(this.cursorY);
+      this.page.drawRectangle({ x: MARGIN_L, y: cadMapY - cadMapH, width: W, height: cadMapH, borderColor: rgb(0, 0, 0), borderWidth: BORDER_W });
+      if (cadMapBytes) {
+        try {
+          let cmImg: any = null;
+          try { cmImg = await this.doc.embedJpg(cadMapBytes); } catch { /* ignore */ }
+          if (!cmImg) { try { cmImg = await this.doc.embedPng(cadMapBytes); } catch { /* ignore */ } }
+          if (cmImg) {
+            const scale = Math.min(W / cmImg.width, cadMapH / cmImg.height);
+            const iW = cmImg.width * scale; const iH = cmImg.height * scale;
+            this.page.drawImage(cmImg, { x: MARGIN_L + (W - iW) / 2, y: cadMapY - cadMapH + (cadMapH - iH) / 2, width: iW, height: iH });
+          }
+        } catch {}
+      }
+      this.cursorY += cadMapH;
     }
-    this.cursorY += cadMapH;
+
+    // --- Sketch Maps — one per page ---
+    const allSketchMaps = images.sketchMaps || [];
+    for (let si = 0; si < allSketchMaps.length; si++) {
+      this.addPage();
+      this.drawRow([{ text: 'SKETCH MAP', width: W, isHeader: true, bold: true }], 20, 4);
+      this.cursorY += 10;
+      const sketchBytes = allSketchMaps[si];
+      const sketchH = 520;
+      const sketchY = this.pdfY(this.cursorY);
+      this.page.drawRectangle({ x: MARGIN_L, y: sketchY - sketchH, width: W, height: sketchH, borderColor: rgb(0, 0, 0), borderWidth: BORDER_W });
+      if (sketchBytes) {
+        try {
+          let smImg: any = null;
+          try { smImg = await this.doc.embedJpg(sketchBytes); } catch { /* ignore */ }
+          if (!smImg) { try { smImg = await this.doc.embedPng(sketchBytes); } catch { /* ignore */ } }
+          if (smImg) {
+            const scale = Math.min(W / smImg.width, sketchH / smImg.height);
+            const iW = smImg.width * scale; const iH = smImg.height * scale;
+            this.page.drawImage(smImg, { x: MARGIN_L + (W - iW) / 2, y: sketchY - sketchH + (sketchH - iH) / 2, width: iW, height: iH });
+          }
+        } catch {}
+      }
+      this.cursorY += sketchH;
+    }
+
+    // --- Benchmark Valuation — last, one per page, before Checklist ---
+    const allBenchImages = images.benchmarkImages || [];
+    for (let bi = 0; bi < Math.max(allBenchImages.length, 1); bi++) {
+      this.addPage();
+      this.drawRow([{ text: 'BENCHMARK VALUATION', width: W, isHeader: true, bold: true }], 20, 4);
+      this.cursorY += 8;
+      const benchBytes = allBenchImages[bi];
+      const benchH = 520;
+      const benchY = this.pdfY(this.cursorY);
+      this.page.drawRectangle({ x: MARGIN_L, y: benchY - benchH, width: W, height: benchH, borderColor: rgb(0, 0, 0), borderWidth: BORDER_W });
+      if (benchBytes) {
+        try {
+          let bmImg: any = null;
+          try { bmImg = await this.doc.embedJpg(benchBytes); } catch { /* ignore */ }
+          if (!bmImg) { try { bmImg = await this.doc.embedPng(benchBytes); } catch { /* ignore */ } }
+          if (bmImg) {
+            const scale = Math.min(W / bmImg.width, benchH / bmImg.height);
+            const iW = bmImg.width * scale; const iH = bmImg.height * scale;
+            this.page.drawImage(bmImg, { x: MARGIN_L + (W - iW) / 2, y: benchY - benchH + (benchH - iH) / 2, width: iW, height: iH });
+          }
+        } catch {}
+      }
+      this.cursorY += benchH;
+    }
 
     // =========================================================================
     // PAGE 10: VALUATION REPORT CHECKLIST & SIGNATURE BLOCK
