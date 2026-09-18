@@ -1395,21 +1395,14 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                     </div>
                     {renderEditSwitch('axisSbbCivicAmenities', !!fields.axisSbbCivicAmenitiesIsNA)}
                   </div>
-                  <div className={`flex flex-col md:flex-row gap-3 ${fields.axisSbbCivicAmenitiesIsNA ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
-                    {['AVAILABLE, WITHIN THE RADIUS OF 1-2 KMS', 'NOT AVAILABLE'].map(opt => (
-                      <label key={opt} className={`flex items-center space-x-3 p-3 border rounded-lg transition-colors ${(fields.axisSbbCivicAmenities === opt && !fields.axisSbbCivicAmenitiesIsNA) ? 'bg-cyan-50/50 border-cyan-300' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
-                        <input
-                          type="radio"
-                          name="civic_amenities_like_school_hospital_market_etc"
-                          value={opt}
-                          checked={fields.axisSbbCivicAmenities === opt && !fields.axisSbbCivicAmenitiesIsNA}
-                          onChange={e => handleChange('axisSbbCivicAmenities', e.target.value)}
-                          disabled={isReadOnly || !fields.axisSbbCivicAmenitiesEditOn || fields.axisSbbCivicAmenitiesIsNA}
-                          className="text-cyan-500 focus:ring-cyan-400 border-gray-300"
-                        />
-                        <span className="text-xs font-semibold text-gray-700">{opt}</span>
-                      </label>
-                    ))}
+                  <div className={`mt-2 ${fields.axisSbbCivicAmenitiesIsNA ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
+                    <textarea
+                      rows={3}
+                      value={fields.axisSbbCivicAmenities}
+                      onChange={e => handleChange('axisSbbCivicAmenities', e.target.value)}
+                      disabled={isReadOnly || !fields.axisSbbCivicAmenitiesEditOn || fields.axisSbbCivicAmenitiesIsNA}
+                      className="w-full text-xs font-bold text-gray-800 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all shadow-sm p-3 resize-y"
+                    />
                   </div>
                 </div>
 

@@ -471,12 +471,13 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       { label: '(B) RESIDENTIAL PROPERTY', value: val('axisSbbResidentialProperty') }
     ]);
     
+    this.drawSimpleRow('CIVIC AMENITIES LIKE SCHOOL, HOSPITAL, MARKET, ETC.', val('axisSbbCivicAmenities'));
+    
     this.drawSimpleRow('(C) COMMERCIAL/INDUSTRIAL PROPERTY', val('axisSbbCommercialIndustrialProperty'));
     
     this.drawSectionSubtitle('ACCESSIBILITY/ BOUNDARIES/OTHERS');
     
     this.drawKeyValueRow([
-      { label: 'Civic Amenities (School, Hospital, Market)', value: val('axisSbbCivicAmenities') },
       { label: 'Local Transport', value: val('axisSbbLocalTransport') }
     ]);
     
