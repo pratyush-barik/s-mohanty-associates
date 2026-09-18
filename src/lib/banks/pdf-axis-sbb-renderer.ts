@@ -687,18 +687,23 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     drawCenteredBold('VALUE OF THE PROPERTY', FONT_SIZE_HEADER, 16, true);
     let pmv = fv('axisSbbPresentMarketValue', '');
     let dsv = fv('axisSbbDistressSaleValue', '');
+    let rv = fv('axisSbbRealizableValue', '');
 
     if (!this.fields.axisSbbEnableCoverPageValueEdit) {
       const v8 = Number(this.fields.axisSbbTotalValueOfPropertyAfterCompletion || 0);
       const v7 = Number(this.fields.axisSbbMarketValueOfTheUnit || 0);
       pmv = v8 > 0 ? v8.toFixed(2) : (v7 > 0 ? v7.toFixed(2) : '0.00');
 
-      const v9 = Number(this.fields.axisSbbDistressValueOfTheProperty || 0);
+      const v9 = Number(this.fields.axisSbbFinalDistressValue || 0);
       dsv = v9 > 0 ? v9.toFixed(2) : '0.00';
+      
+      const rvNum = Number(this.fields.axisSbbFinalRealizableValue || 0);
+      rv = rvNum > 0 ? rvNum.toFixed(2) : '0.00';
     }
 
     drawCenteredBold(`PRESENT MARKET VALUE: ${pmv}`, FONT_SIZE, 14);
-    drawCenteredBold(`DISTRESS SALE VALUE: ${dsv}`, FONT_SIZE, 40);
+    drawCenteredBold(`DISTRESS SALE VALUE: ${dsv}`, FONT_SIZE, 14);
+    drawCenteredBold(`REALIZABLE VALUE: ${rv}`, FONT_SIZE, 40);
 
     drawCenteredBold('PURPOSE OF VALUATION', FONT_SIZE_HEADER, 16, true);
     drawCenteredBold(fv('axisSbbPurposeOfValuation', 'TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY'), FONT_SIZE, 40);

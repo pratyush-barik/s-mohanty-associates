@@ -543,7 +543,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   <span className="text-[10px] text-gray-500 mt-1 pl-1">Current Value of Property (Plot + Construction) from Section 7 / Section 8</span>
                 </div>
               </div>
-              <div className="flex">
+              <div className="flex border-b border-gray-200">
                 <div className="w-1/2 md:w-[40%] p-3 border-r border-gray-200 flex items-center">
                   <span className="text-sm font-medium text-gray-700">DISTRESS SALE VALUE</span>
                 </div>
@@ -551,13 +551,30 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   <input 
                     className={`${inputCls} ${!fields.axisSbbEnableCoverPageValueEdit ? 'bg-gray-50 text-gray-500' : ''}`} 
                     value={fields.axisSbbEnableCoverPageValueEdit ? (fields.axisSbbDistressSaleValue || '') : (() => {
-                      const v9 = Number(fields.axisSbbDistressValueOfTheProperty || 0);
+                      const v9 = Number(fields.axisSbbFinalDistressValue || 0);
                       return v9 > 0 ? v9.toFixed(2) : '0.00';
                     })()} 
                     onChange={(e) => handleChange('axisSbbDistressSaleValue', e.target.value)} 
                     disabled={isReadOnly || !fields.axisSbbEnableCoverPageValueEdit} 
                   />
                   <span className="text-[10px] text-gray-500 mt-1 pl-1">Distress Valuation of the Property field from Section 9</span>
+                </div>
+              </div>
+              <div className="flex">
+                <div className="w-1/2 md:w-[40%] p-3 border-r border-gray-200 flex items-center">
+                  <span className="text-sm font-medium text-gray-700">REALIZABLE VALUE</span>
+                </div>
+                <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
+                  <input 
+                    className={`${inputCls} ${!fields.axisSbbEnableCoverPageValueEdit ? 'bg-gray-50 text-gray-500' : ''}`} 
+                    value={fields.axisSbbEnableCoverPageValueEdit ? (fields.axisSbbRealizableValue || '') : (() => {
+                      const rv = Number(fields.axisSbbFinalRealizableValue || 0);
+                      return rv > 0 ? rv.toFixed(2) : '0.00';
+                    })()} 
+                    onChange={(e) => handleChange('axisSbbRealizableValue', e.target.value)} 
+                    disabled={isReadOnly || !fields.axisSbbEnableCoverPageValueEdit} 
+                  />
+                  <span className="text-[10px] text-gray-500 mt-1 pl-1">Realizable Value of the Property field from Section 9</span>
                 </div>
               </div>
             </div>
