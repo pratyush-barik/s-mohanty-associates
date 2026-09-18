@@ -750,8 +750,8 @@ export default function AxisAGRI({
             SECTION 1: HEADER & TECHNICAL INITIATION
         ═══════════════════════════════════════════════════════════════ */}
         <Section id="sec-1" title="Header & Technical Initiation" number={1} defaultOpen>
-          {/* Top Reference & Report Date (Separated outside soft container) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+          {/* Top Reference, Report Date & Date of Visit (Standalone outside soft container) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
             <Field label="Reference Number">
               <input
                 type="text"
@@ -769,37 +769,37 @@ export default function AxisAGRI({
               onChange={val => handleChange('reportDate', val)}
               disabled={isReadOnly}
             />
+
+            <div className="space-y-1">
+              <BaseDateInput
+                label="Date of Visit"
+                value={fields.dateOfVisit || ''}
+                onChange={val => handleChange('dateOfVisit', val)}
+                disabled={isReadOnly}
+              />
+              {firstFieldAgentVisit && (
+                <div className="flex items-center justify-between text-[11px] bg-blue-100/70 border border-blue-200 text-blue-800 px-2 py-0.5 rounded">
+                  <span>
+                    Visited: <strong>{firstFieldAgentVisit.agentName}</strong> ({firstFieldAgentVisit.dateStr})
+                  </span>
+                  {!isReadOnly && fields.dateOfVisit !== firstFieldAgentVisit.dateStr && (
+                    <button
+                      type="button"
+                      onClick={() => handleChange('dateOfVisit', firstFieldAgentVisit.dateStr)}
+                      className="text-[10px] underline font-bold hover:text-blue-900 cursor-pointer ml-1"
+                    >
+                      Reset to Visit
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Container 1A: Technical Initiation Details */}
           <div className="border border-sky-200 bg-sky-50/50 rounded-xl p-5 mb-5 shadow-xs">
             <h3 className="font-semibold text-sky-800 mb-4 text-sm tracking-wide uppercase">Technical Initiation Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-1">
-                <BaseDateInput
-                  label="Date of Visit"
-                  value={fields.dateOfVisit || ''}
-                  onChange={val => handleChange('dateOfVisit', val)}
-                  disabled={isReadOnly}
-                />
-                {firstFieldAgentVisit && (
-                  <div className="flex items-center justify-between text-[11px] bg-blue-100/70 border border-blue-200 text-blue-800 px-2 py-0.5 rounded">
-                    <span>
-                      Visited: <strong>{firstFieldAgentVisit.agentName}</strong> ({firstFieldAgentVisit.dateStr})
-                    </span>
-                    {!isReadOnly && fields.dateOfVisit !== firstFieldAgentVisit.dateStr && (
-                      <button
-                        type="button"
-                        onClick={() => handleChange('dateOfVisit', firstFieldAgentVisit.dateStr)}
-                        className="text-[10px] underline font-bold hover:text-blue-900 cursor-pointer ml-1"
-                      >
-                        Reset to Visit
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Report Initiated by Area">
                 <input
                   type="text"
