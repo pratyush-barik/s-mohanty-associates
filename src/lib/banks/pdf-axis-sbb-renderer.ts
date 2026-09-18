@@ -60,15 +60,15 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     }]);
   }
 
-  drawListCheck(label: string, value: string, isNA: boolean, options: string[], isHighlighted: boolean = false) {
+  drawListCheck(label: string, value: string, isNA: boolean, options: string[], isHighlighted: boolean = false, startX: number = MARGIN_L, totalW: number = CONTENT_W, isSplitRow: boolean = false, returnRowH: boolean = false) {
+    const labelW = Math.round(totalW * 0.40);
+    const valueW = totalW - labelW;
+    
     if (isNA) {
       this.drawSimpleRow(label, 'NA', isHighlighted);
-      return;
+      return 0;
     }
 
-    const labelW = Math.round(CONTENT_W * 0.40);
-    const valueW = CONTENT_W - labelW;
-    
     // Normalize selected values
     const selectedVals = Array.isArray(value) ? value.map(v => String(v).trim().toUpperCase()) : [String(value).trim().toUpperCase()];
 
@@ -99,10 +99,15 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     const labelLines = this.wrapText(label, labelW - 6, FONT_SIZE, true);
     const rowMaxLines = Math.max(labelLines.length, valueLines.length);
     const rowH = Math.max(18, rowMaxLines * FONT_SIZE * LINE_HEIGHT + 6);
-    this.checkPageBreak(rowH);
+    
+    if (!isSplitRow) {
+       this.checkPageBreak(rowH);
+    }
+    
+    if (returnRowH) return rowH;
 
     const y = this.pdfY(this.cursorY);
-    let curX = MARGIN_L;
+    let curX = startX;
 
     // Draw Label Cell
     this.page.drawRectangle({ x: curX, y: y - rowH, width: labelW, height: rowH, color: hexToRgb('#DBE6F0'), opacity: 0.5 });
@@ -129,7 +134,10 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       lineY -= FONT_SIZE * LINE_HEIGHT;
     }
 
-    this.cursorY += rowH;
+    if (!isSplitRow) {
+      this.cursorY += rowH;
+    }
+    return rowH;
   }
 
   override drawCenteredTitle(title: string, fontSize?: number, underline?: boolean) {
@@ -465,18 +473,27 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       { label: 'Plot Area (As per Sale Deed)', value: val('axisSbbPlotAreaAsPerSaleDeed', areaComputed) }
     ]);
     
-    this.drawKeyValueRow([
-      { label: 'Class of Locality', value: val('axisSbbClassOfLocality') },
-      { label: 'Quality of Infrastructure', value: val('axisSbbQualityOfInfrastructure') }
-    ]);
+    this.drawListCheck('CLASS OF LOCALITY', val('axisSbbClassOfLocality'), !!(fields as any).axisSbbClassOfLocalityIsNA, ['POSH', 'HIGHER MIDDLE CLASS', 'MIDDLE CLASS', 'LOWER MIDDLE CLASS', 'POOR']);
     
-    this.drawKeyValueRow([
-      { label: 'Ownership Status', value: (fields as any).axisSbbOwnershipStatus === 'GOVT. AUTHORITY, SPECIFY' && !(fields as any).axisSbbOwnershipStatusIsNA ? val('axisSbbOwnershipStatusSpecify') : val('axisSbbOwnershipStatus') },
-      { label: 'Approved Usage of Property', value: val('axisSbbApprovedUsage') }
-    ]);
+    this.drawListCheck('QUALITY OF INFRASTRUCTURE IN THE VICINITY', val('axisSbbQualityOfInfrastructure'), !!(fields as any).axisSbbQualityOfInfrastructureIsNA, ['EXCELLENT', 'GOOD', 'AVERAGE', 'POOR']);
     
+    const ownerVal = (fields as any).axisSbbOwnershipStatus === 'GOVT. AUTHORITY, SPECIFY' && !(fields as any).axisSbbOwnershipStatusIsNA ? val('axisSbbOwnershipStatusSpecify') : val('axisSbbOwnershipStatus');
+    this.drawListCheck('OWNERSHIP STATUS OF THE PROPERTY', ownerVal, !!(fields as any).axisSbbOwnershipStatusIsNA, ['LEASE HOLD', 'FREE HOLD', 'REG. LEASE', 'GOVT. AUTHORITY, SPECIFY']);
+
+    const splitW = CONTENT_W / 2;
+    const usageOptions = ['INDUSTRIAL', 'COMMERCIAL', 'RESIDENTIAL', 'VACANT LAND', 'MIX/AGRI', 'OTHERS/AGRI'];
+    const h1 = this.drawListCheck('APPROVED USAGE OF PROPERTY', val('axisSbbApprovedUsage'), !!(fields as any).axisSbbApprovedUsageIsNA, usageOptions, false, MARGIN_L, splitW, true, true);
+    const h2 = this.drawListCheck('ACTUAL USAGE OF PROPERTY', val('axisSbbActualUsage'), !!(fields as any).axisSbbActualUsageIsNA, usageOptions, false, MARGIN_L + splitW, splitW, true, true);
+    
+    const maxH = Math.max(h1, h2);
+    this.checkPageBreak(maxH);
+    
+    this.drawListCheck('APPROVED USAGE OF PROPERTY', val('axisSbbApprovedUsage'), !!(fields as any).axisSbbApprovedUsageIsNA, usageOptions, false, MARGIN_L, splitW, true, false);
+    this.drawListCheck('ACTUAL USAGE OF PROPERTY', val('axisSbbActualUsage'), !!(fields as any).axisSbbActualUsageIsNA, usageOptions, false, MARGIN_L + splitW, splitW, true, false);
+    
+    this.cursorY += maxH;
+
     this.drawKeyValueRow([
-      { label: 'Actual Usage of Property', value: val('axisSbbActualUsage') },
       { label: 'Restrictive Covenants in regards to land use', value: val('axisSbbRestrictiveCovenants') }
     ]);
   }
