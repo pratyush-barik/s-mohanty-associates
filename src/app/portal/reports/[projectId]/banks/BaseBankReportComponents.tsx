@@ -318,7 +318,7 @@ export function FloatingNavigator({ sections }: { sections: NavItem[] }) {
   };
 
   return (
-    <div className="hidden xl:flex flex-col bg-white/80 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2 rounded-2xl w-43.75 sticky top-24 shrink-0 z-40 max-h-[calc(100vh-120px)] overflow-hidden">
+    <div className="hidden xl:flex flex-col bg-white/80 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2 rounded-2xl w-43.75 sticky top-4 shrink-0 z-40 max-h-[calc(100vh-32px)] overflow-hidden">
       <div className="text-[10px] font-black text-emerald-500 mb-2 px-2 uppercase tracking-widest shrink-0">Sections</div>
       <div className="flex flex-col gap-1 overflow-y-auto pr-1 custom-scrollbar">
         {sections.map((sec) => {

@@ -633,11 +633,9 @@ export default function AxisAGRI({
       const govtVal = (areaSft * benchRate).toFixed(2);
       handleChange('totalGovtValueLand', govtVal);
       handleChange('govtGuideLand', govtVal);
-      handleChange('govtGuideTotal', govtVal);
     } else {
       handleChange('totalGovtValueLand', '');
       handleChange('govtGuideLand', '');
-      handleChange('govtGuideTotal', '');
     }
 
     if (areaSft > 0 && adoptedRate > 0) {
@@ -650,7 +648,7 @@ export default function AxisAGRI({
     }
   }, [fields.totalLandAreaSft, fields.govtBenchmarkRateSft, fields.adoptedMarketRateSft, handleChange]);
 
-  // Auto-calculate Total Values across Land + Building using dynamic editable percentages
+  // Auto-calculate Total Values across Land + Building + Amenities using dynamic editable percentages
   useEffect(() => {
     const landMkt = parseNum(fields.marketValueLand);
     const bldgMkt = parseNum(fields.marketValueBuilding);
@@ -663,38 +661,47 @@ export default function AxisAGRI({
     const realRatio = (realPctStr === '' ? 0 : parseNum(realPctStr)) / 100;
     const distRatio = (distPctStr === '' ? 0 : parseNum(distPctStr)) / 100;
 
-    // Realisable Land & Building breakdown
-    const realLand = (landMkt * realRatio).toFixed(2);
-    const realBldg = (bldgMkt * realRatio).toFixed(2);
-    handleChange('realisableValueLand', landMkt > 0 ? realLand : '');
-    handleChange('realisableValueBuilding', bldgMkt > 0 ? realBldg : '');
+    // Realisable: Land, Building, Amenities breakdown + Total (sum of all three)
+    const realLand = parseFloat((landMkt * realRatio).toFixed(2));
+    const realBldg = parseFloat((bldgMkt * realRatio).toFixed(2));
+    const realAmen = parseFloat((amenMkt * realRatio).toFixed(2));
+    const totalReal = realLand + realBldg + realAmen;
+    handleChange('realisableValueLand', landMkt > 0 ? realLand.toFixed(2) : '');
+    handleChange('realisableValueBuilding', bldgMkt > 0 ? realBldg.toFixed(2) : '');
+    handleChange('realisableValueAmenities', amenMkt > 0 ? realAmen.toFixed(2) : '');
 
-    // Distress Land & Building breakdown
-    const distLand = (landMkt * distRatio).toFixed(2);
-    const distBldg = (bldgMkt * distRatio).toFixed(2);
-    handleChange('distressValueLand', landMkt > 0 ? distLand : '');
-    handleChange('distressValueBuilding', bldgMkt > 0 ? distBldg : '');
+    // Distress: Land, Building, Amenities breakdown + Total (sum of all three)
+    const distLand = parseFloat((landMkt * distRatio).toFixed(2));
+    const distBldg = parseFloat((bldgMkt * distRatio).toFixed(2));
+    const distAmen = parseFloat((amenMkt * distRatio).toFixed(2));
+    const totalDist = distLand + distBldg + distAmen;
+    handleChange('distressValueLand', landMkt > 0 ? distLand.toFixed(2) : '');
+    handleChange('distressValueBuilding', bldgMkt > 0 ? distBldg.toFixed(2) : '');
+    handleChange('distressValueAmenities', amenMkt > 0 ? distAmen.toFixed(2) : '');
+
+    // Govt Guide Total = Land + Building + Amenities
+    const govtLand = parseNum(fields.govtGuideLand);
+    const govtBldg = parseNum(fields.govtGuideBuilding);
+    const govtAmen = parseNum(fields.govtGuideAmenities);
+    const totalGovt = govtLand + govtBldg + govtAmen;
+    handleChange('govtGuideTotal', totalGovt > 0 ? totalGovt.toFixed(2) : '');
 
     if (totalMkt > 0) {
       const roundedMkt = Math.round(totalMkt / 1000) * 1000;
+      // Market Value Total = Land + Building + Amenities
       handleChange('marketValueTotal', totalMkt.toFixed(2));
       handleChange('marketValueSay', roundedMkt.toString());
       handleChange('marketValueWords', rupeesInWords(roundedMkt));
 
-      const totalReal = totalMkt * realRatio;
       const roundedReal = Math.round(totalReal / 1000) * 1000;
       handleChange('realisableValueTotal', totalReal.toFixed(2));
       handleChange('realizableValueSay', roundedReal.toString());
       handleChange('realizableValueWords', rupeesInWords(roundedReal));
 
-      const totalDist = totalMkt * distRatio;
       const roundedDist = Math.round(totalDist / 1000) * 1000;
       handleChange('distressValueTotal', totalDist.toFixed(2));
       handleChange('distressValueSay', roundedDist.toString());
       handleChange('distressValueWords', rupeesInWords(roundedDist));
-
-      const bldgInsurable = parseNum(fields.insurableValueBuilding);
-      handleChange('insurableValueTotal', bldgInsurable > 0 ? bldgInsurable.toFixed(2) : (bldgMkt * distRatio).toFixed(2));
     } else {
       handleChange('marketValueTotal', '');
       handleChange('marketValueSay', '');
@@ -705,13 +712,23 @@ export default function AxisAGRI({
       handleChange('distressValueTotal', '');
       handleChange('distressValueSay', '');
       handleChange('distressValueWords', '');
-      handleChange('insurableValueTotal', '');
     }
+
+    // Insurable Value = Building + Amenities ONLY (no land)
+    const bldgInsurable = parseNum(fields.insurableValueBuilding !== undefined && fields.insurableValueBuilding !== '' ? fields.insurableValueBuilding : (fields.totalBasicValueBuilding || fields.marketValueBuilding));
+    const amenInsurable = parseNum(fields.insurableValueAmenities);
+    const totalInsurable = bldgInsurable + amenInsurable;
+    handleChange('insurableValueTotal', totalInsurable > 0 ? totalInsurable.toFixed(2) : '');
   }, [
     fields.marketValueLand,
     fields.marketValueBuilding,
     fields.marketValueAmenities,
+    fields.govtGuideLand,
+    fields.govtGuideBuilding,
+    fields.govtGuideAmenities,
+    fields.totalBasicValueBuilding,
     fields.insurableValueBuilding,
+    fields.insurableValueAmenities,
     fields.realisableValuePct,
     fields.distressValuePct,
     handleChange,
@@ -3086,63 +3103,53 @@ export default function AxisAGRI({
                   <tr>
                     <td className="p-3 font-bold text-slate-700 border-r">Govt. Guide Line Value</td>
                     <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.govtGuideLand || ''} onChange={e => handleMatrixCellChange('govtGuideLand', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.govtGuideBuilding || '-'} onChange={e => handleMatrixCellChange('govtGuideBuilding', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.govtGuideAmenities || '-'} onChange={e => handleMatrixCellChange('govtGuideAmenities', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2"><input type="text" inputMode="decimal" className={`${inputCls} text-right font-bold text-slate-800 text-xs`} value={fields.govtGuideTotal || ''} onChange={e => handleMatrixCellChange('govtGuideTotal', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.govtGuideBuilding || ''} onChange={e => handleMatrixCellChange('govtGuideBuilding', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.govtGuideAmenities || ''} onChange={e => handleMatrixCellChange('govtGuideAmenities', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-slate-800 text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.govtGuideTotal || ''} readOnly disabled /></td>
                   </tr>
                   <tr className="bg-emerald-50/50">
                     <td className="p-3 font-bold text-emerald-800 border-r">Market Value in Rs</td>
                     <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.marketValueLand || ''} onChange={e => handleMatrixCellChange('marketValueLand', e.target.value)} disabled={isReadOnly} /></td>
                     <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.marketValueBuilding || ''} onChange={e => handleMatrixCellChange('marketValueBuilding', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.marketValueAmenities || '-'} onChange={e => handleMatrixCellChange('marketValueAmenities', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2"><input type="text" inputMode="decimal" className={`${inputCls} text-right font-bold text-emerald-800 text-xs`} value={fields.marketValueTotal || ''} onChange={e => handleMatrixCellChange('marketValueTotal', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.marketValueAmenities || ''} onChange={e => handleMatrixCellChange('marketValueAmenities', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-emerald-800 text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.marketValueTotal || ''} readOnly disabled /></td>
                   </tr>
                   <tr className="bg-blue-50/50">
                     <td className="p-3 font-bold text-blue-800 border-r">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span>Realisable Value (</span>
-                        <input
-                          type="text"
-                          inputMode="decimal"
-                          className="w-12 px-1 py-0.5 text-center font-bold text-blue-900 bg-white border border-blue-300 rounded shadow-xs focus:ring-1 focus:ring-blue-500 text-xs"
-                          value={fields.realisableValuePct !== undefined ? fields.realisableValuePct : '95'}
-                          onChange={e => handlePercentageChange('realisableValuePct', e.target.value)}
-                          disabled={isReadOnly}
-                        />
+                        <span className="w-12 px-1 py-0.5 text-center font-bold text-blue-900 bg-blue-50 border border-blue-200 rounded text-xs cursor-not-allowed">
+                          {fields.realisableValuePct !== undefined && fields.realisableValuePct !== '' ? fields.realisableValuePct : '95'}
+                        </span>
                         <span>%)</span>
                       </div>
                     </td>
-                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.realisableValueLand || ''} onChange={e => handleMatrixCellChange('realisableValueLand', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.realisableValueBuilding || ''} onChange={e => handleMatrixCellChange('realisableValueBuilding', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.realisableValueAmenities || '-'} onChange={e => handleMatrixCellChange('realisableValueAmenities', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2"><input type="text" inputMode="decimal" className={`${inputCls} text-right font-bold text-blue-800 text-xs`} value={fields.realisableValueTotal || ''} onChange={e => handleMatrixCellChange('realisableValueTotal', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.realisableValueLand || ''} readOnly disabled /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.realisableValueBuilding || ''} readOnly disabled /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.realisableValueAmenities || ''} readOnly disabled /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-blue-800 text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.realisableValueTotal || ''} readOnly disabled /></td>
                   </tr>
                   <tr className="bg-amber-50/50">
                     <td className="p-3 font-bold text-amber-800 border-r">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span>Distress/Forced Sale Value (</span>
-                        <input
-                          type="text"
-                          inputMode="decimal"
-                          className="w-12 px-1 py-0.5 text-center font-bold text-amber-900 bg-white border border-amber-300 rounded shadow-xs focus:ring-1 focus:ring-amber-500 text-xs"
-                          value={fields.distressValuePct !== undefined ? fields.distressValuePct : '85'}
-                          onChange={e => handlePercentageChange('distressValuePct', e.target.value)}
-                          disabled={isReadOnly}
-                        />
+                        <span className="w-12 px-1 py-0.5 text-center font-bold text-amber-900 bg-amber-50 border border-amber-200 rounded text-xs cursor-not-allowed">
+                          {fields.distressValuePct !== undefined && fields.distressValuePct !== '' ? fields.distressValuePct : '85'}
+                        </span>
                         <span>%)</span>
                       </div>
                     </td>
-                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.distressValueLand || ''} onChange={e => handleMatrixCellChange('distressValueLand', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.distressValueBuilding || ''} onChange={e => handleMatrixCellChange('distressValueBuilding', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.distressValueAmenities || '-'} onChange={e => handleMatrixCellChange('distressValueAmenities', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2"><input type="text" inputMode="decimal" className={`${inputCls} text-right font-bold text-amber-800 text-xs`} value={fields.distressValueTotal || ''} onChange={e => handleMatrixCellChange('distressValueTotal', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.distressValueLand || ''} readOnly disabled /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.distressValueBuilding || ''} readOnly disabled /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.distressValueAmenities || ''} readOnly disabled /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-amber-800 text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.distressValueTotal || ''} readOnly disabled /></td>
                   </tr>
                   <tr className="bg-indigo-50/50">
                     <td className="p-3 font-bold text-indigo-800 border-r">Insurable Value</td>
-                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.insurableValueLand || '-'} onChange={e => handleMatrixCellChange('insurableValueLand', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs bg-slate-100 dark:bg-slate-800 text-slate-500 cursor-not-allowed`} value="-" readOnly disabled /></td>
                     <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.insurableValueBuilding || ''} onChange={e => handleMatrixCellChange('insurableValueBuilding', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.insurableValueAmenities || '-'} onChange={e => handleMatrixCellChange('insurableValueAmenities', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2"><input type="text" inputMode="decimal" className={`${inputCls} text-right font-bold text-indigo-800 text-xs`} value={fields.insurableValueTotal || ''} onChange={e => handleMatrixCellChange('insurableValueTotal', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.insurableValueAmenities || ''} onChange={e => handleMatrixCellChange('insurableValueAmenities', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-indigo-800 text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.insurableValueTotal || ''} readOnly disabled /></td>
                   </tr>
                 </tbody>
               </table>
@@ -3165,23 +3172,37 @@ export default function AxisAGRI({
                   <span className="text-xs font-bold uppercase tracking-wider text-emerald-900">
                     Market Value
                   </span>
-                  <span className="text-xs font-mono font-bold text-slate-600">
-                    Actual Calculated Total: <span className="text-emerald-700 font-bold">₹ {fields.marketValueTotal || '0.00'}</span>
-                  </span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Field label="Market Value (Say / Rounded Int)">
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      className={`${inputCls} font-bold text-emerald-800 font-mono`}
-                      value={fields.marketValueSay || ''}
-                      onChange={e => handleSayChange('marketValueSay', 'marketValueWords', e.target.value)}
-                      disabled={isReadOnly}
-                      placeholder=""
-                    />
-                  </Field>
+                  <div className="space-y-1">
+                    <Field label="Market Value (Say / Rounded Int)">
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        className={`${inputCls} font-bold text-emerald-800 font-mono`}
+                        value={fields.marketValueSay || ''}
+                        onChange={e => handleSayChange('marketValueSay', 'marketValueWords', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder=""
+                      />
+                    </Field>
+                    {fields.marketValueTotal && (
+                      <div className="flex items-center gap-2 text-[11px] font-mono">
+                        <span className="text-slate-500">Actual Total:</span>
+                        <span className="text-emerald-700 font-bold">₹ {fields.marketValueTotal}</span>
+                        {fields.marketValueSay && (
+                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                            Math.abs(parseFloat(fields.marketValueSay) - parseFloat(fields.marketValueTotal)) < 1
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : 'bg-amber-100 text-amber-700'
+                          }`}>
+                            Δ ₹{(parseFloat(fields.marketValueSay || '0') - parseFloat(fields.marketValueTotal || '0')).toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
                   <Field label="Market Value in Words (Locked / Auto-derived from Say)">
                     <input
                       type="text"
@@ -3201,23 +3222,37 @@ export default function AxisAGRI({
                   <span className="text-xs font-bold uppercase tracking-wider text-blue-900">
                     Realizable Value ({fields.realisableValuePct !== undefined && fields.realisableValuePct !== '' ? fields.realisableValuePct : '95'}%)
                   </span>
-                  <span className="text-xs font-mono font-bold text-slate-600">
-                    Actual Calculated Total: <span className="text-blue-700 font-bold">₹ {fields.realisableValueTotal || '0.00'}</span>
-                  </span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Field label="Realizable Value (Say / Rounded Int)">
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      className={`${inputCls} font-bold text-blue-800 font-mono`}
-                      value={fields.realizableValueSay || ''}
-                      onChange={e => handleSayChange('realizableValueSay', 'realizableValueWords', e.target.value)}
-                      disabled={isReadOnly}
-                      placeholder=""
-                    />
-                  </Field>
+                  <div className="space-y-1">
+                    <Field label="Realizable Value (Say / Rounded Int)">
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        className={`${inputCls} font-bold text-blue-800 font-mono`}
+                        value={fields.realizableValueSay || ''}
+                        onChange={e => handleSayChange('realizableValueSay', 'realizableValueWords', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder=""
+                      />
+                    </Field>
+                    {fields.realisableValueTotal && (
+                      <div className="flex items-center gap-2 text-[11px] font-mono">
+                        <span className="text-slate-500">Actual Total:</span>
+                        <span className="text-blue-700 font-bold">₹ {fields.realisableValueTotal}</span>
+                        {fields.realizableValueSay && (
+                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                            Math.abs(parseFloat(fields.realizableValueSay) - parseFloat(fields.realisableValueTotal)) < 1
+                              ? 'bg-blue-100 text-blue-700'
+                              : 'bg-amber-100 text-amber-700'
+                          }`}>
+                            Δ ₹{(parseFloat(fields.realizableValueSay || '0') - parseFloat(fields.realisableValueTotal || '0')).toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
                   <Field label="Realizable Value in Words (Locked / Auto-derived from Say)">
                     <input
                       type="text"
@@ -3237,23 +3272,37 @@ export default function AxisAGRI({
                   <span className="text-xs font-bold uppercase tracking-wider text-amber-900">
                     Distress/Forced Sale Value ({fields.distressValuePct !== undefined && fields.distressValuePct !== '' ? fields.distressValuePct : '85'}%)
                   </span>
-                  <span className="text-xs font-mono font-bold text-slate-600">
-                    Actual Calculated Total: <span className="text-amber-700 font-bold">₹ {fields.distressValueTotal || '0.00'}</span>
-                  </span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Field label="Distress Value (Say / Rounded Int)">
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      className={`${inputCls} font-bold text-amber-800 font-mono`}
-                      value={fields.distressValueSay || ''}
-                      onChange={e => handleSayChange('distressValueSay', 'distressValueWords', e.target.value)}
-                      disabled={isReadOnly}
-                      placeholder=""
-                    />
-                  </Field>
+                  <div className="space-y-1">
+                    <Field label="Distress Value (Say / Rounded Int)">
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        className={`${inputCls} font-bold text-amber-800 font-mono`}
+                        value={fields.distressValueSay || ''}
+                        onChange={e => handleSayChange('distressValueSay', 'distressValueWords', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder=""
+                      />
+                    </Field>
+                    {fields.distressValueTotal && (
+                      <div className="flex items-center gap-2 text-[11px] font-mono">
+                        <span className="text-slate-500">Actual Total:</span>
+                        <span className="text-amber-700 font-bold">₹ {fields.distressValueTotal}</span>
+                        {fields.distressValueSay && (
+                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                            Math.abs(parseFloat(fields.distressValueSay) - parseFloat(fields.distressValueTotal)) < 1
+                              ? 'bg-amber-100 text-amber-700'
+                              : 'bg-orange-100 text-orange-700'
+                          }`}>
+                            Δ ₹{(parseFloat(fields.distressValueSay || '0') - parseFloat(fields.distressValueTotal || '0')).toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
                   <Field label="Distress Value in Words (Locked / Auto-derived from Say)">
                     <input
                       type="text"
@@ -3299,7 +3348,7 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <Field label="Remarks (Including NB: Disclaimer)">
+              <Field label="Remark">
                 <textarea
                   rows={6}
                   className={inputCls}
