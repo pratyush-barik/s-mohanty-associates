@@ -354,6 +354,77 @@ export default function AxisAGRI({
     });
   }, []);
 
+  // Section 3 derived active states & toggle handler
+  const plotClassificationList = (() => {
+    const val = fields.typeOfPropertyPlot;
+    if (Array.isArray(val)) return val;
+    if (typeof val === 'string' && val.trim()) {
+      return val.split(',').map(s => s.trim());
+    }
+    return [];
+  })();
+
+  const isResidentialActive = plotClassificationList.some(item => item.toLowerCase() === 'residential');
+  const isCommercialInPlot = plotClassificationList.some(item => item.toLowerCase() === 'commercial');
+  const isIndustrialInPlot = plotClassificationList.some(item => item.toLowerCase() === 'industrial');
+  const isCommercialOrIndustrialActive = isCommercialInPlot || isIndustrialInPlot;
+
+  const derivedCommCategory = (() => {
+    if (isCommercialInPlot && isIndustrialInPlot) return 'Commercial & Industrial';
+    if (isCommercialInPlot) return 'Commercial';
+    if (isIndustrialInPlot) return 'Industrial';
+    return '';
+  })();
+
+  const handlePlotToggle = useCallback((option: string) => {
+    if (isReadOnly) return;
+    const currentList = (() => {
+      const val = fields.typeOfPropertyPlot;
+      if (Array.isArray(val)) return [...val];
+      if (typeof val === 'string' && val.trim()) {
+        return val.split(',').map(s => s.trim()).filter(Boolean);
+      }
+      return [];
+    })();
+
+    let nextList: string[];
+    if (currentList.some(item => item.toLowerCase() === option.toLowerCase())) {
+      nextList = currentList.filter(item => item.toLowerCase() !== option.toLowerCase());
+    } else {
+      if (option === 'NA') {
+        nextList = ['NA'];
+      } else {
+        nextList = [...currentList.filter(item => item.toLowerCase() !== 'na'), option];
+      }
+    }
+
+    const nextResActive = nextList.some(item => item.toLowerCase() === 'residential');
+    const nextCommActive = nextList.some(item => item.toLowerCase() === 'commercial');
+    const nextIndActive = nextList.some(item => item.toLowerCase() === 'industrial');
+
+    let nextCommType = '';
+    if (nextCommActive && nextIndActive) {
+      nextCommType = 'Commercial, Industrial';
+    } else if (nextCommActive) {
+      nextCommType = 'Commercial';
+    } else if (nextIndActive) {
+      nextCommType = 'Industrial';
+    }
+
+    setFields(prev => {
+      const updated = { ...prev, typeOfPropertyPlot: nextList.join(', ') };
+      if (!nextResActive) {
+        updated.residentialPropertySubtype = '';
+        updated.civicAmenities = '';
+      }
+      updated.commercialPropertyType = nextCommType;
+      if (!nextCommActive && !nextIndActive) {
+        updated.commercialPropertySubtype = '';
+      }
+      return updated;
+    });
+  }, [isReadOnly, fields.typeOfPropertyPlot]);
+
   // Floor manipulation
   const handleFloorChange = useCallback((index: number, field: keyof AxisAgriFloorItem, val: string) => {
     setFields(prev => {
@@ -1181,27 +1252,7 @@ export default function AxisAGRI({
                       key={option}
                       type="button"
                       disabled={isReadOnly}
-                      onClick={() => {
-                        const currentList = (() => {
-                          const val = fields.typeOfPropertyPlot;
-                          if (Array.isArray(val)) return [...val];
-                          if (typeof val === 'string' && val.trim()) {
-                            return val.split(',').map(s => s.trim()).filter(Boolean);
-                          }
-                          return [];
-                        })();
-                        let nextList: string[];
-                        if (currentList.some(item => item.toLowerCase() === option.toLowerCase())) {
-                          nextList = currentList.filter(item => item.toLowerCase() !== option.toLowerCase());
-                        } else {
-                          if (option === 'NA') {
-                            nextList = ['NA'];
-                          } else {
-                            nextList = [...currentList.filter(item => item.toLowerCase() !== 'na'), option];
-                          }
-                        }
-                        handleChange('typeOfPropertyPlot', nextList.join(', '));
-                      }}
+                      onClick={() => handlePlotToggle(option)}
                       className={`flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all duration-150 cursor-pointer select-none ${
                         selected
                           ? 'bg-indigo-600 text-white border-indigo-600 ring-2 ring-indigo-200 shadow-xs scale-[1.01]'
@@ -1262,70 +1313,154 @@ export default function AxisAGRI({
           </div>
 
           {/* Card B: (B) Residential Property */}
-          <div className="border border-purple-200 bg-purple-50/50 rounded-xl p-5 mb-5 shadow-xs">
-            <h3 className="font-semibold text-purple-800 mb-4 text-sm tracking-wide uppercase">(B) Residential Property Classification</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Residential Property Subtype">
-                <select
-                  className={selectCls}
-                  value={fields.residentialPropertySubtype || ''}
-                  onChange={e => handleChange('residentialPropertySubtype', e.target.value)}
-                  disabled={isReadOnly}
-                >
-                  <option value="">Select Subtype</option>
-                  <option value="Residential">Residential</option>
-                  <option value="Independent house">Independent house</option>
-                  <option value="Bungalow">Bungalow</option>
-                  <option value="Row House">Row House</option>
-                  <option value="Flat">Flat</option>
-                  <option value="Commercial">Commercial</option>
-                </select>
-              </Field>
+          <div className={`border rounded-xl p-5 mb-5 shadow-xs transition-all ${
+            isResidentialActive 
+              ? 'border-purple-200 bg-purple-50/50' 
+              : 'border-slate-200 bg-slate-50/60 opacity-60'
+          }`}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+              <h3 className={`font-semibold text-sm tracking-wide uppercase ${isResidentialActive ? 'text-purple-800' : 'text-slate-500'}`}>
+                (B) Residential Property Classification
+              </h3>
+              {!isResidentialActive && (
+                <span className="text-[10px] font-semibold text-slate-500 bg-slate-200/80 px-2.5 py-0.5 rounded-full border border-slate-300">
+                  Locked (Select 'Residential' in Plot Characteristics above)
+                </span>
+              )}
+            </div>
 
-              <Field label="Civic Amenities (School, Hospital, Market, etc.)">
-                <select
-                  className={selectCls}
-                  value={fields.civicAmenities || ''}
-                  onChange={e => handleChange('civicAmenities', e.target.value)}
-                  disabled={isReadOnly}
-                >
-                  <option value="">Select Availability</option>
-                  <option value="Available within the radius of 2-3 Kms">Available within the radius of 2-3 Kms</option>
-                  <option value="Not Available">Not Available</option>
-                </select>
-              </Field>
+            {/* Residential Property Subtype (Checkboxes) */}
+            <div className="mb-4">
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">
+                Residential Property Subtype
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+                {[
+                  'Independent house',
+                  'Bungalow',
+                  'Row House',
+                  'Flat',
+                  'Commercial',
+                ].map((opt) => {
+                  const selected = (() => {
+                    const val = fields.residentialPropertySubtype;
+                    if (Array.isArray(val)) return val.includes(opt);
+                    if (typeof val === 'string' && val.trim()) {
+                      const parts = val.split(',').map(s => s.trim().toLowerCase());
+                      return parts.includes(opt.toLowerCase());
+                    }
+                    return false;
+                  })();
+                  const disabled = isReadOnly || !isResidentialActive;
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => {
+                        if (disabled) return;
+                        const currentList = (() => {
+                          const val = fields.residentialPropertySubtype;
+                          if (Array.isArray(val)) return [...val];
+                          if (typeof val === 'string' && val.trim()) {
+                            return val.split(',').map(s => s.trim()).filter(Boolean);
+                          }
+                          return [];
+                        })();
+                        const nextList = currentList.some(item => item.toLowerCase() === opt.toLowerCase())
+                          ? currentList.filter(item => item.toLowerCase() !== opt.toLowerCase())
+                          : [...currentList, opt];
+                        handleChange('residentialPropertySubtype', nextList.join(', '));
+                      }}
+                      className={`flex items-center justify-center gap-2 px-3 py-2 rounded-xl border text-xs font-bold tracking-wide transition-all duration-150 cursor-pointer select-none ${
+                        selected
+                          ? 'bg-purple-600 text-white border-purple-600 ring-2 ring-purple-200 shadow-xs'
+                          : 'bg-white text-gray-700 border-gray-300 hover:border-purple-300 hover:bg-purple-50/40 hover:text-purple-700'
+                      } ${disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                    >
+                      <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center text-[9px] font-black ${
+                        selected ? 'border-white bg-white text-purple-700' : 'border-gray-400 bg-white text-transparent'
+                      }`}>
+                        ✓
+                      </span>
+                      <span>{opt}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Civic Amenities (School, Hospital, Market, etc.) (Checkboxes) */}
+            <div>
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">
+                Civic Amenities (School, Hospital, Market, etc.)
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {[
+                  'Available within the radius of 2-3 Kms',
+                  'Not Available',
+                ].map((opt) => {
+                  const selected = (() => {
+                    const val = fields.civicAmenities;
+                    if (Array.isArray(val)) return val.includes(opt);
+                    if (typeof val === 'string' && val.trim()) {
+                      return val.trim().toLowerCase() === opt.toLowerCase();
+                    }
+                    return false;
+                  })();
+                  const disabled = isReadOnly || !isResidentialActive;
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => {
+                        if (disabled) return;
+                        const current = String(fields.civicAmenities || '').trim();
+                        const next = current.toLowerCase() === opt.toLowerCase() ? '' : opt;
+                        handleChange('civicAmenities', next);
+                      }}
+                      className={`flex items-center justify-center gap-2 px-3 py-2 rounded-xl border text-xs font-bold tracking-wide transition-all duration-150 cursor-pointer select-none ${
+                        selected
+                          ? 'bg-purple-600 text-white border-purple-600 ring-2 ring-purple-200 shadow-xs'
+                          : 'bg-white text-gray-700 border-gray-300 hover:border-purple-300 hover:bg-purple-50/40 hover:text-purple-700'
+                      } ${disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                    >
+                      <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center text-[9px] font-black ${
+                        selected ? 'border-white bg-white text-purple-700' : 'border-gray-400 bg-white text-transparent'
+                      }`}>
+                        ✓
+                      </span>
+                      <span>{opt}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
           {/* Card C: (C) Commercial / Industrial Property */}
-          <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 mb-5 shadow-xs">
+          <div className={`border rounded-xl p-5 mb-5 shadow-xs transition-all ${
+            isCommercialOrIndustrialActive
+              ? 'border-blue-200 bg-blue-50/50'
+              : 'border-slate-200 bg-slate-50/60 opacity-60'
+          }`}>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-              <h3 className="font-semibold text-blue-800 text-sm tracking-wide uppercase">
+              <h3 className={`font-semibold text-sm tracking-wide uppercase ${isCommercialOrIndustrialActive ? 'text-blue-800' : 'text-slate-500'}`}>
                 (C) Commercial / Industrial Property
               </h3>
-              {/* Option to select Commercial or Industrial */}
+              {/* Category: Locked Display */}
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-gray-500 uppercase">Category:</span>
-                <div className="inline-flex rounded-lg p-0.5 bg-blue-100/80 border border-blue-200">
-                  {['Commercial', 'Industrial'].map((typeOpt) => {
-                    const isSelected = (fields.commercialPropertyType || '') === typeOpt;
-                    return (
-                      <button
-                        key={typeOpt}
-                        type="button"
-                        disabled={isReadOnly}
-                        onClick={() => handleChange('commercialPropertyType', fields.commercialPropertyType === typeOpt ? '' : typeOpt)}
-                        className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
-                          isSelected
-                            ? 'bg-blue-600 text-white shadow-xs'
-                            : 'text-blue-900 hover:text-blue-700'
-                        } ${isReadOnly ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-                      >
-                        {typeOpt}
-                      </button>
-                    );
-                  })}
-                </div>
+                {isCommercialOrIndustrialActive ? (
+                  <span className="px-3 py-1 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-xs">
+                    {derivedCommCategory}
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-semibold text-slate-500 bg-slate-200/80 px-2.5 py-0.5 rounded-full border border-slate-300">
+                    Locked (Select Commercial/Industrial in Plot Characteristics above)
+                  </span>
+                )}
               </div>
             </div>
 
@@ -1352,12 +1487,14 @@ export default function AxisAGRI({
                     }
                     return false;
                   })();
+                  const disabled = isReadOnly || !isCommercialOrIndustrialActive;
                   return (
                     <button
                       key={opt}
                       type="button"
-                      disabled={isReadOnly}
+                      disabled={disabled}
                       onClick={() => {
+                        if (disabled) return;
                         const currentList = (() => {
                           const val = fields.commercialPropertySubtype;
                           if (Array.isArray(val)) return [...val];
@@ -1375,7 +1512,7 @@ export default function AxisAGRI({
                         selected
                           ? 'bg-blue-600 text-white border-blue-600 ring-2 ring-blue-200 shadow-xs'
                           : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300 hover:bg-blue-50/40 hover:text-blue-700'
-                      } ${isReadOnly ? 'opacity-60 cursor-not-allowed pointer-events-none' : ''}`}
+                      } ${disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
                     >
                       <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center text-[9px] font-black ${
                         selected ? 'border-white bg-white text-blue-700' : 'border-gray-400 bg-white text-transparent'
@@ -1397,17 +1534,18 @@ export default function AxisAGRI({
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                 {['Metro', 'Local Train', 'Bus', 'Personal Transport'].map(item => {
                   const checked = (fields.availabilityLocalTransport || []).includes(item);
+                  const disabled = isReadOnly || !isCommercialOrIndustrialActive;
                   return (
                     <button
                       key={item}
                       type="button"
-                      disabled={isReadOnly}
-                      onClick={() => handleToggleMulti('availabilityLocalTransport', item)}
+                      disabled={disabled}
+                      onClick={() => !disabled && handleToggleMulti('availabilityLocalTransport', item)}
                       className={`flex items-center justify-center gap-2 px-3 py-2 rounded-xl border text-xs font-bold tracking-wide transition-all duration-150 cursor-pointer select-none ${
                         checked
                           ? 'bg-blue-600 text-white border-blue-600 ring-2 ring-blue-200 shadow-xs'
                           : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300 hover:bg-blue-50/40 hover:text-blue-700'
-                      } ${isReadOnly ? 'opacity-60 cursor-not-allowed pointer-events-none' : ''}`}
+                      } ${disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
                     >
                       <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center text-[9px] font-black ${
                         checked ? 'border-white bg-white text-blue-700' : 'border-gray-400 bg-white text-transparent'

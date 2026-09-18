@@ -661,9 +661,16 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     const commSub = String(fields.commercialPropertySubtype || (fields as any).commercialSubClass || '').toLowerCase();
     const commText = `${check(commSub.includes('independent'))} Independent house   ${check(commSub.includes('row'))} Row House   ${check(commSub.includes('mall'))} Unit in a mall   ${check(commSub.includes('godown'))} Godown   ${check(commSub.includes('industrial'))} Industrial   ${check(commSub.includes('shop'))} Shop`;
     const commTypeStr = String(fields.commercialPropertyType || '').toLowerCase();
-    const isComm = commTypeStr.includes('commercial');
-    const isIndType = commTypeStr.includes('industrial');
-    const commLabel = `(C) Commercial/Industrial Property: ${check(isIndType)} Industrial   ${check(isComm)} Commercial`;
+    const plotTypeStr = String(fields.typeOfPropertyPlot || '').toLowerCase();
+    const isComm = commTypeStr.includes('commercial') || plotTypeStr.includes('commercial');
+    const isIndType = commTypeStr.includes('industrial') || plotTypeStr.includes('industrial');
+
+    let commLabel = '(C) Commercial/Industrial Property:';
+    if (isComm && !isIndType) {
+      commLabel = `(C) Commercial/Industrial Property: ${check(true)} Commercial`;
+    } else if (isIndType && !isComm) {
+      commLabel = `(C) Commercial/Industrial Property: ${check(true)} Industrial`;
+    }
     this.drawRow([
       { text: commLabel, width: col4_w1 * 2, isLabel: true },
       { text: commText, width: col4_w1 * 2, bold: true },
