@@ -139,7 +139,7 @@ export default function AxisAGRI({
       representativeNameMobile: raw.representativeNameMobile || '',
 
       // Page 1: Details of Property Being Valued
-      locationOfProperty: raw.locationOfProperty || 'Rural',
+      locationOfProperty: raw.locationOfProperty || '',
       documentsProvided: raw.documentsProvided || [],
       plotKhataDetails: raw.plotKhataDetails || prefill?.propertyAddress || '',
       roadFacilityAtSite: raw.roadFacilityAtSite || '',
@@ -160,10 +160,10 @@ export default function AxisAGRI({
       situatedInMunicipalLimit: raw.situatedInMunicipalLimit || '',
       municipalLimitDetails: raw.municipalLimitDetails || '',
       constructionObservedOnPlot: raw.constructionObservedOnPlot || '',
-      residentialPropertyType: raw.residentialPropertyType || 'Residential',
-      residentialPropertySubtype: raw.residentialPropertySubtype || 'Independent house',
-      civicAmenities: raw.civicAmenities || 'Available within the radius of 2-3 Kms',
-      commercialPropertyType: raw.commercialPropertyType || 'Commercial',
+      residentialPropertyType: raw.residentialPropertyType || '',
+      residentialPropertySubtype: raw.residentialPropertySubtype || '',
+      civicAmenities: raw.civicAmenities || '',
+      commercialPropertyType: raw.commercialPropertyType || '',
       commercialPropertySubtype: raw.commercialPropertySubtype || '',
       availabilityLocalTransport: raw.availabilityLocalTransport || [],
       distanceFromRailwayStation: raw.distanceFromRailwayStation || '',
@@ -185,28 +185,28 @@ export default function AxisAGRI({
       boundarySouthDocument: raw.boundarySouthDocument || '',
 
       // Page 2: Locality & Usage
-      classOfLocality: raw.classOfLocality || 'Middle class',
-      qualityOfInfrastructure: raw.qualityOfInfrastructure || 'Good',
-      ownershipStatus: raw.ownershipStatus || 'Free Hold',
+      classOfLocality: raw.classOfLocality || '',
+      qualityOfInfrastructure: raw.qualityOfInfrastructure || '',
+      ownershipStatus: raw.ownershipStatus || '',
       approvedUsage: raw.approvedUsage || [],
       actualUsage: raw.actualUsage || [],
       restrictiveCovenants: raw.restrictiveCovenants || '',
       typeOfStructure: raw.typeOfStructure || '',
       noOfFloors: raw.noOfFloors || '',
-      occupancyDetails: raw.occupancyDetails || 'Self-Occupied',
+      occupancyDetails: raw.occupancyDetails || '',
       tenantName: raw.tenantName || '',
       yearsInTenancy: raw.yearsInTenancy || '',
-      resistanceForValuation: raw.resistanceForValuation || 'No',
-      resistanceFromOccupants: raw.resistanceFromOccupants || 'No',
+      resistanceForValuation: raw.resistanceForValuation || '',
+      resistanceFromOccupants: raw.resistanceFromOccupants || '',
       basicAmenities: raw.basicAmenities || [],
       developmentSurroundingArea: raw.developmentSurroundingArea || '',
 
       // Page 2: Leasehold
-      isLeasehold: raw.isLeasehold || 'The Property is Free Hold Land',
+      isLeasehold: raw.isLeasehold || '',
       lessorName: raw.lessorName || '',
       natureOfLease: raw.natureOfLease || '',
       totalPeriodOfLease: raw.totalPeriodOfLease || '',
-      leaseholdOccupantsResistance: raw.leaseholdOccupantsResistance || 'No',
+      leaseholdOccupantsResistance: raw.leaseholdOccupantsResistance || '',
       leaseholdBasicAmenities: raw.leaseholdBasicAmenities || [],
       leaseholdDevelopment: raw.leaseholdDevelopment || '',
 
@@ -225,7 +225,7 @@ export default function AxisAGRI({
       areaOfPlotDoc: raw.areaOfPlotDoc || '',
       approvedBUA: raw.approvedBUA || '',
       actualBUA: raw.actualBUA || '',
-      demarcationAtSite: raw.demarcationAtSite || 'Yes',
+      demarcationAtSite: raw.demarcationAtSite || '',
       floors: raw.floors || [],
       totalBUA: raw.totalBUA || '',
       totalCarpetArea: raw.totalCarpetArea || '',
@@ -236,11 +236,11 @@ export default function AxisAGRI({
       extraConstructionDetails: raw.extraConstructionDetails || '',
       extraConstructionPercentage: raw.extraConstructionPercentage || '',
       extraConstructionCompoundable: raw.extraConstructionCompoundable || '',
-      qualityOfConstruction: raw.qualityOfConstruction || 'Good',
-      maintenanceOfProperty: raw.maintenanceOfProperty || 'Good',
+      qualityOfConstruction: raw.qualityOfConstruction || '',
+      maintenanceOfProperty: raw.maintenanceOfProperty || '',
 
       // Page 4: Building Condition, Life & Land Rate (Sec 9)
-      conditionOfBuilding: raw.conditionOfBuilding || 'Good',
+      conditionOfBuilding: raw.conditionOfBuilding || '',
       currentLifeStructure: raw.currentLifeStructure || '',
       projectedLifeStructure: raw.projectedLifeStructure || '',
       landRevenueTaxesPaid: raw.landRevenueTaxesPaid || '',
@@ -1268,10 +1268,11 @@ export default function AxisAGRI({
               <Field label="Residential Property Subtype">
                 <select
                   className={selectCls}
-                  value={fields.residentialPropertySubtype || 'Independent house'}
+                  value={fields.residentialPropertySubtype || ''}
                   onChange={e => handleChange('residentialPropertySubtype', e.target.value)}
                   disabled={isReadOnly}
                 >
+                  <option value="">Select Subtype</option>
                   <option value="Residential">Residential</option>
                   <option value="Independent house">Independent house</option>
                   <option value="Bungalow">Bungalow</option>
@@ -1284,10 +1285,11 @@ export default function AxisAGRI({
               <Field label="Civic Amenities (School, Hospital, Market, etc.)">
                 <select
                   className={selectCls}
-                  value={fields.civicAmenities || 'Available within the radius of 2-3 Kms'}
+                  value={fields.civicAmenities || ''}
                   onChange={e => handleChange('civicAmenities', e.target.value)}
                   disabled={isReadOnly}
                 >
+                  <option value="">Select Availability</option>
                   <option value="Available within the radius of 2-3 Kms">Available within the radius of 2-3 Kms</option>
                   <option value="Not Available">Not Available</option>
                 </select>
@@ -1306,13 +1308,13 @@ export default function AxisAGRI({
                 <span className="text-xs font-bold text-gray-500 uppercase">Category:</span>
                 <div className="inline-flex rounded-lg p-0.5 bg-blue-100/80 border border-blue-200">
                   {['Commercial', 'Industrial'].map((typeOpt) => {
-                    const isSelected = (fields.commercialPropertyType || 'Commercial') === typeOpt;
+                    const isSelected = (fields.commercialPropertyType || '') === typeOpt;
                     return (
                       <button
                         key={typeOpt}
                         type="button"
                         disabled={isReadOnly}
-                        onClick={() => handleChange('commercialPropertyType', typeOpt)}
+                        onClick={() => handleChange('commercialPropertyType', fields.commercialPropertyType === typeOpt ? '' : typeOpt)}
                         className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
                           isSelected
                             ? 'bg-blue-600 text-white shadow-xs'
@@ -1632,10 +1634,6 @@ export default function AxisAGRI({
             </div>
           </div>
         </Section>
-
-        {/* ═══════════════════════════════════════════════════════════════
-            SECTION 5: LOCALITY, INFRASTRUCTURE & USAGE
-        ═══════════════════════════════════════════════════════════════ */}
         <Section id="sec-5" title="Locality, Infrastructure & Usage Details" number={5} defaultOpen>
           {/* Container 1: Locality Class, Infrastructure & Ownership */}
           <div className="border border-indigo-200 bg-indigo-50/50 rounded-xl p-5 mb-5 shadow-xs">
@@ -1644,10 +1642,11 @@ export default function AxisAGRI({
               <Field label="Class of Locality">
                 <select
                   className={selectCls}
-                  value={fields.classOfLocality || 'Middle class'}
+                  value={fields.classOfLocality || ''}
                   onChange={e => handleChange('classOfLocality', e.target.value)}
                   disabled={isReadOnly}
                 >
+                  <option value="">Select Class</option>
                   <option value="Posh">Posh</option>
                   <option value="Higher Middle Class">Higher Middle Class</option>
                   <option value="Middle class">Middle class</option>
@@ -1659,10 +1658,11 @@ export default function AxisAGRI({
               <Field label="Quality of Infrastructure in Vicinity">
                 <select
                   className={selectCls}
-                  value={fields.qualityOfInfrastructure || 'Good'}
+                  value={fields.qualityOfInfrastructure || ''}
                   onChange={e => handleChange('qualityOfInfrastructure', e.target.value)}
                   disabled={isReadOnly}
                 >
+                  <option value="">Select Infrastructure</option>
                   <option value="Excellent">Excellent</option>
                   <option value="Good">Good</option>
                   <option value="Average">Average</option>
@@ -1673,10 +1673,11 @@ export default function AxisAGRI({
               <Field label="Ownership Status of the Property">
                 <select
                   className={selectCls}
-                  value={fields.ownershipStatus || 'Free Hold'}
+                  value={fields.ownershipStatus || ''}
                   onChange={e => handleChange('ownershipStatus', e.target.value)}
                   disabled={isReadOnly}
                 >
+                  <option value="">Select Ownership Status</option>
                   <option value="Free Hold">Free Hold</option>
                   <option value="Reg. Lease">Reg. Lease</option>
                   <option value="Govt. Authority">Govt. Authority</option>
@@ -1817,7 +1818,7 @@ export default function AxisAGRI({
                       type="radio"
                       name="occupancyDetails"
                       value={opt}
-                      checked={(fields.occupancyDetails || 'Self-Occupied') === opt}
+                      checked={fields.occupancyDetails === opt}
                       onChange={e => handleChange('occupancyDetails', e.target.value)}
                       disabled={isReadOnly}
                       className="text-indigo-600 focus:ring-indigo-500"
@@ -1861,10 +1862,11 @@ export default function AxisAGRI({
               <Field label="Was there any resistance for valuation">
                 <select
                   className={selectCls}
-                  value={fields.resistanceForValuation || 'No'}
+                  value={fields.resistanceForValuation || ''}
                   onChange={e => handleChange('resistanceForValuation', e.target.value)}
                   disabled={isReadOnly}
                 >
+                  <option value="">Select</option>
                   <option value="Yes">Yes</option>
                   <option value="No">No</option>
                 </select>
@@ -1873,10 +1875,11 @@ export default function AxisAGRI({
               <Field label="If yes, from the current occupants">
                 <select
                   className={selectCls}
-                  value={fields.resistanceFromOccupants || 'No'}
+                  value={fields.resistanceFromOccupants || ''}
                   onChange={e => handleChange('resistanceFromOccupants', e.target.value)}
                   disabled={isReadOnly}
                 >
+                  <option value="">Select</option>
                   <option value="Yes">Yes</option>
                   <option value="No">No</option>
                 </select>
@@ -1904,10 +1907,11 @@ export default function AxisAGRI({
               <Field label="Development of surrounding area">
                 <select
                   className={selectCls}
-                  value={fields.developmentSurroundingArea || 'Developing'}
+                  value={fields.developmentSurroundingArea || ''}
                   onChange={e => handleChange('developmentSurroundingArea', e.target.value)}
                   disabled={isReadOnly}
                 >
+                  <option value="">Select Development Status</option>
                   <option value="Underdeveloped">Underdeveloped</option>
                   <option value="Developing">Developing</option>
                   <option value="Developed">Developed</option>
@@ -1920,7 +1924,7 @@ export default function AxisAGRI({
           <div className="border border-teal-200 bg-teal-50/50 rounded-xl p-5 shadow-xs">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-semibold text-teal-800 text-sm tracking-wide uppercase">
-                If the property is Leasehold (The Property is Free Hold Land)
+                If the property is Leasehold
               </h3>
             </div>
             
@@ -1963,10 +1967,11 @@ export default function AxisAGRI({
               <Field label="If yes, from the current occupants">
                 <select
                   className={selectCls}
-                  value={fields.leaseholdOccupantsResistance || 'No'}
+                  value={fields.leaseholdOccupantsResistance || ''}
                   onChange={e => handleChange('leaseholdOccupantsResistance', e.target.value)}
                   disabled={isReadOnly}
                 >
+                  <option value="">Select</option>
                   <option value="Yes">Yes</option>
                   <option value="No">No</option>
                 </select>
@@ -1994,10 +1999,11 @@ export default function AxisAGRI({
               <Field label="Development of surrounding area">
                 <select
                   className={selectCls}
-                  value={fields.leaseholdDevelopment || fields.developmentSurroundingArea || 'Developing'}
+                  value={fields.leaseholdDevelopment || fields.developmentSurroundingArea || ''}
                   onChange={e => handleChange('leaseholdDevelopment', e.target.value)}
                   disabled={isReadOnly}
                 >
+                  <option value="">Select Development Status</option>
                   <option value="Underdeveloped">Underdeveloped</option>
                   <option value="Developing">Developing</option>
                   <option value="Developed">Developed</option>

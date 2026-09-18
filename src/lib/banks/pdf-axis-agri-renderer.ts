@@ -602,7 +602,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.drawRow([{ text: 'Type of Property', width: W, isHeader: true, bold: true }], 18, 4);
 
     // (A) Plot
-    const plotType = String(fields.typeOfPropertyPlot || (fields as any).classificationOfPlot || 'Residential').toLowerCase();
+    const plotType = String(fields.typeOfPropertyPlot || (fields as any).classificationOfPlot || '').toLowerCase();
     const plotText = `${check(plotType.includes('na'))} NA   ${check(plotType.includes('residential'))} Residential   ${check(plotType.includes('commercial'))} Commercial   ${check(plotType.includes('industrial'))} Industrial`;
     this.drawRow([
       { text: '(A) Plot:', width: col4_w1 * 2, isLabel: true },
@@ -616,8 +616,8 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     ], 20, 4);
 
     // Municipal Limit
-    const isMuni = String(fields.situatedInMunicipalLimit || 'No').toLowerCase() === 'yes';
-    const muniText = `${check(isMuni)} Yes   ${check(!isMuni)} No`;
+    const isMuni = String(fields.situatedInMunicipalLimit || '').toLowerCase();
+    const muniText = `${check(isMuni === 'yes')} Yes   ${check(isMuni === 'no')} No`;
     this.drawRow([
       { text: 'Whether situated in Municipal/Corporation Limit:', width: col4_w1 * 2, isLabel: true },
       { text: muniText, width: col4_w1 * 2 },
@@ -626,14 +626,15 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     // Any construction observed on plot
     this.drawRow([
       { text: 'Any construction observed on plot', width: col4_w1 * 2, isLabel: true },
-      { text: fields.constructionObservedOnPlot || 'Yes', width: col4_w1 * 2, bold: true },
+      { text: fields.constructionObservedOnPlot || '', width: col4_w1 * 2, bold: true },
     ], 20, 4);
 
     // (B) Residential Property options
-    const resSub = String(fields.residentialPropertySubtype || (fields as any).residentialSubClass || 'Independent house').toLowerCase();
+    const isResSelected = Boolean(fields.residentialPropertyType || fields.residentialPropertySubtype || (fields as any).residentialSubClass || (fields.typeOfPropertyPlot && String(fields.typeOfPropertyPlot).toLowerCase().includes('residential')));
+    const resSub = String(fields.residentialPropertySubtype || (fields as any).residentialSubClass || '').toLowerCase();
     const resText = `${check(resSub.includes('independent'))} Independent house   ${check(resSub.includes('bungalow'))} Bungalow   ${check(resSub.includes('row'))} Row House`;
     this.drawRow([
-      { text: '(B) Residential Property: [X] Residential', width: col4_w1 * 2, isLabel: true },
+      { text: `(B) Residential Property: ${check(isResSelected)} Residential`, width: col4_w1 * 2, isLabel: true },
       { text: resText, width: col4_w1 * 2, bold: true },
     ], 20, 4);
 
@@ -649,7 +650,8 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       { text: resText2, width: col4_w1 * 2, bold: true },
     ], 18, 4);
 
-    const civText = `${check(true)} Available within the radius of 2-3 Kms\n${check(false)} Not Available`;
+    const civVal = String(fields.civicAmenities || '').toLowerCase();
+    const civText = `${check(civVal.includes('available') && !civVal.includes('not'))} Available within the radius of 2-3 Kms\n${check(civVal.includes('not available'))} Not Available`;
     this.drawRow([
       { text: 'Civic Amenities like school, hospital, market, etc.', width: col4_w1 * 2, isLabel: true },
       { text: civText, width: col4_w1 * 2 },
@@ -658,9 +660,10 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     // (C) Commercial/Industrial Property
     const commSub = String(fields.commercialPropertySubtype || (fields as any).commercialSubClass || '').toLowerCase();
     const commText = `${check(commSub.includes('independent'))} Independent house   ${check(commSub.includes('row'))} Row House   ${check(commSub.includes('mall'))} Unit in a mall   ${check(commSub.includes('godown'))} Godown   ${check(commSub.includes('industrial'))} Industrial   ${check(commSub.includes('shop'))} Shop`;
-    const commTypeStr = String(fields.commercialPropertyType || 'Commercial').toLowerCase();
+    const commTypeStr = String(fields.commercialPropertyType || '').toLowerCase();
+    const isComm = commTypeStr.includes('commercial');
     const isIndType = commTypeStr.includes('industrial');
-    const commLabel = `(C) Commercial/Industrial Property: ${isIndType ? '[X] Industrial' : '[X] Commercial'}`;
+    const commLabel = `(C) Commercial/Industrial Property: ${check(isIndType)} Industrial   ${check(isComm)} Commercial`;
     this.drawRow([
       { text: commLabel, width: col4_w1 * 2, isLabel: true },
       { text: commText, width: col4_w1 * 2, bold: true },
@@ -687,28 +690,28 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     ], 20, 4);
 
     // Approach road & Fire extinguisher
-    const isAppr = (fields.independentApproachRoad || 'Yes').toLowerCase() === 'yes';
-    const isFire = (fields.accommodateFireExtinguisher || 'No').toLowerCase() === 'yes';
+    const isAppr = String(fields.independentApproachRoad || '').toLowerCase();
+    const isFire = String(fields.accommodateFireExtinguisher || '').toLowerCase();
     this.drawRow([
       { text: 'Does the approach road to the Property / Building is independent and accessible', width: col4_w1 * 1.5, isLabel: true },
-      { text: `${check(isAppr)} Yes   ${check(!isAppr)} No`, width: col4_w1 * 0.5, bold: true },
+      { text: `${check(isAppr === 'yes')} Yes   ${check(isAppr === 'no')} No`, width: col4_w1 * 0.5, bold: true },
       { text: 'Will it be able to accommodate a fire extinguisher', width: col4_w1 * 1.5, isLabel: true },
-      { text: `${check(isFire)} Yes   ${check(!isFire)} No`, width: col4_w1 * 0.5, bold: true },
+      { text: `${check(isFire === 'yes')} Yes   ${check(isFire === 'no')} No`, width: col4_w1 * 0.5, bold: true },
     ], 24, 4);
 
     // Landlocked area
-    const isLocked = (fields.landLockedArea || 'No').toLowerCase() === 'yes';
+    const isLocked = String(fields.landLockedArea || '').toLowerCase();
     this.drawRow([
       { text: 'Does the property falls under land locked area', width: col4_w1 * 1.5, isLabel: true },
-      { text: `${check(isLocked)} Yes   ${check(!isLocked)} No`, width: col4_w1 * 0.5, bold: true },
+      { text: `${check(isLocked === 'yes')} Yes   ${check(isLocked === 'no')} No`, width: col4_w1 * 0.5, bold: true },
       { text: '', width: col4_w1 * 2 },
     ], 20, 4);
 
     // Cornered/Intermittent
-    const isCorner = (fields.corneredOrIntermittentVal || 'No').toLowerCase() === 'yes';
+    const isCorner = String(fields.corneredOrIntermittentVal || '').toLowerCase();
     this.drawRow([
-      { text: `Cornered/Intermittent Plot - ${fields.corneredOrIntermittent || 'Intermittent plot'}`, width: col4_w1 * 2, isLabel: true },
-      { text: `${check(isCorner)} Yes   ${check(!isCorner)} No`, width: col4_w1 * 2, bold: true },
+      { text: `Cornered/Intermittent Plot - ${fields.corneredOrIntermittent || ''}`, width: col4_w1 * 2, isLabel: true },
+      { text: `${check(isCorner === 'yes')} Yes   ${check(isCorner === 'no')} No`, width: col4_w1 * 2, bold: true },
     ], 20, 4);
 
     this.addSectionBreak(8);
@@ -751,7 +754,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.addSectionBreak(8);
 
     // Class of locality
-    const locClass = String(fields.classOfLocality || (fields as any).classificationOfLocality || 'Middle class').toLowerCase();
+    const locClass = String(fields.classOfLocality || (fields as any).classificationOfLocality || '').toLowerCase();
     const locClassText = `${check(locClass.includes('posh'))} Posh   ${check(locClass.includes('higher'))} Higher Middle Class   ${check(locClass.includes('middle') && !locClass.includes('higher') && !locClass.includes('lower'))} Middle class   ${check(locClass.includes('lower'))} Lower middle Class   ${check(locClass.includes('poor'))} Poor`;
     this.drawRow([
       { text: 'Class of locality', width: col4_w1 * 1.5, isLabel: true },
@@ -759,14 +762,14 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     ], 20, 4);
 
     // Quality of Infrastructure & Ownership Status
-    const infra = String(fields.qualityOfInfrastructure || (fields as any).infrastructureCondition || 'Good').toLowerCase();
+    const infra = String(fields.qualityOfInfrastructure || (fields as any).infrastructureCondition || '').toLowerCase();
     const infraText = `${check(infra.includes('excellent'))} Excellent   ${check(infra.includes('good'))} Good   ${check(infra.includes('average'))} Average   ${check(infra.includes('poor'))} Poor`;
     this.drawRow([
       { text: 'Quality of Infrastructure in the vicinity', width: col4_w1 * 1.5, isLabel: true },
       { text: infraText, width: W - col4_w1 * 1.5, bold: true },
     ], 20, 4);
 
-    const own = String(fields.ownershipStatus || (fields as any).ownershipType || 'Free Hold').toLowerCase();
+    const own = String(fields.ownershipStatus || (fields as any).ownershipType || '').toLowerCase();
     const ownText = `${check(own.includes('free'))} Free Hold   ${check(own.includes('lease'))} Reg. Lease   ${check(own.includes('govt'))} Govt. Authority`;
     this.drawRow([
       { text: 'Ownership Status of the Property', width: col4_w1 * 1.5, isLabel: true },
@@ -779,13 +782,13 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       ? rawApp
       : typeof rawApp === 'string' && rawApp
       ? (rawApp as string).split(',').map(s => s.trim())
-      : ['Residential'];
+      : [];
     const rawAct = fields.actualUsage;
     const actUsage = Array.isArray(rawAct)
       ? rawAct
       : typeof rawAct === 'string' && rawAct
       ? (rawAct as string).split(',').map(s => s.trim())
-      : ['Commercial', 'Residential'];
+      : [];
     const hasApp = (u: string) => appUsage.some(item => String(item || '').toLowerCase().includes(u.toLowerCase()));
     const hasAct = (u: string) => actUsage.some(item => String(item || '').toLowerCase().includes(u.toLowerCase()));
 
@@ -802,11 +805,11 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     // Restrictive Covenants
     this.drawRow([
       { text: 'Restrictive covenants in regards to Land Use, (if any)', width: col4_w1 * 2, isLabel: true },
-      { text: fields.restrictiveCovenants || 'Not Applicable', width: col4_w1 * 2 },
+      { text: fields.restrictiveCovenants || '', width: col4_w1 * 2 },
     ], 20, 4);
 
     // Structure & No of Floors
-    const structType = fields.typeOfStructure || 'RCC';
+    const structType = fields.typeOfStructure || '';
     const floorDesc = fields.noOfFloors || '-';
     this.drawRow([
       { text: 'Type of Structure\nNo of Floors:', width: col4_w1 * 2, isLabel: true },
@@ -816,7 +819,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.addSectionBreak(8);
 
     // Occupancy Details
-    const occ = String(fields.occupancyDetails || (fields as any).occupancyStatus || 'Self-Occupied').toLowerCase();
+    const occ = String(fields.occupancyDetails || (fields as any).occupancyStatus || '').toLowerCase();
     const occText = `${check(occ.includes('self'))} Self-Occupied   ${check(occ.includes('rent'))} Rented   ${check(occ.includes('vacant'))} Vacant`;
     this.drawRow([
       { text: 'Occupancy Details', width: col4_w1 * 2, isLabel: true },
@@ -831,11 +834,11 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     ], 20, 4);
 
     // Resistance
-    const hasResVal = String(fields.resistanceForValuation || 'No').toLowerCase() === 'yes';
-    const hasResOcc = String(fields.resistanceFromOccupants || 'No').toLowerCase() === 'yes';
+    const hasResVal = String(fields.resistanceForValuation || '').toLowerCase();
+    const hasResOcc = String(fields.resistanceFromOccupants || '').toLowerCase();
     this.drawRow([
-      { text: `Was there any resistance for valuation: ${check(hasResVal)} Yes  ${check(!hasResVal)} No`, width: W * 0.5 },
-      { text: `If yes, from the current occupants: ${check(hasResOcc)} Yes  ${check(!hasResOcc)} No`, width: W * 0.5 },
+      { text: `Was there any resistance for valuation: ${check(hasResVal === 'yes')} Yes  ${check(hasResVal === 'no')} No`, width: W * 0.5 },
+      { text: `If yes, from the current occupants: ${check(hasResOcc === 'yes')} Yes  ${check(hasResOcc === 'no')} No`, width: W * 0.5 },
     ], 20, 4);
 
     // Basic Amenities & Development
@@ -869,9 +872,10 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       { text: `Nature of Lease: ${fields.natureOfLease || 'NA'}`, width: W * 0.5 },
     ], 20, 4);
 
+    const lRes = String(fields.leaseholdOccupantsResistance || '').toLowerCase();
     this.drawRow([
       { text: `Total Period of Lease: ${fields.totalPeriodOfLease || 'NA'}`, width: W * 0.5 },
-      { text: `If yes, from the current occupants: ${check(false)} Yes  ${check(true)} No`, width: W * 0.5 },
+      { text: `If yes, from the current occupants: ${check(lRes === 'yes')} Yes  ${check(lRes === 'no')} No`, width: W * 0.5 },
     ], 20, 4);
 
     // Leasehold basic amenities & development (matching UI screenshot)
@@ -883,7 +887,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       : [];
     const hasLAm = (a: string) => lAm.some(item => String(item || '').toLowerCase().includes(a.toLowerCase()));
     const lAmText = `${check(hasLAm('electricity'))} Electricity   ${check(hasLAm('water'))} Water   ${check(hasLAm('drainage'))} Drainage connection`;
-    const lDev = String(fields.leaseholdDevelopment || fields.developmentSurroundingArea || 'Developing').toLowerCase();
+    const lDev = String(fields.leaseholdDevelopment || fields.developmentSurroundingArea || '').toLowerCase();
     const lDevText = `${check(lDev.includes('under'))} Under developed   ${check(lDev.includes('developing'))} Developing   ${check(lDev.includes('developed') && !lDev.includes('under'))} Developed`;
 
     this.drawRow([
@@ -959,7 +963,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     this.drawRow([
       { text: 'Demarcation at site', width: col4_w1 * 2, isLabel: true },
-      { text: fields.demarcationAtSite || 'Yes', width: col4_w1 * 2, bold: true },
+      { text: fields.demarcationAtSite || '', width: col4_w1 * 2, bold: true },
     ], 20, 4);
 
     this.addSectionBreak(8);
@@ -1014,42 +1018,42 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     this.drawRow([
       { text: 'Amenities Details (if any):', width: col4_w1 * 2, isLabel: true },
-      { text: fields.amenitiesDetails || 'Nil', width: col4_w1 * 2 },
+      { text: fields.amenitiesDetails || '', width: col4_w1 * 2 },
     ], 18, 4);
 
     this.drawRow([
       { text: 'Floor Space Index permissible and percentage actually utilized:', width: col4_w1 * 2, isLabel: true },
-      { text: fields.farPermissibleUtilized || 'FAR:2.21', width: col4_w1 * 2 },
+      { text: fields.farPermissibleUtilized || '', width: col4_w1 * 2 },
     ], 18, 4);
 
     this.drawRow([
       { text: 'Whether the construction is as per approved building plan and / or local building bye laws:', width: col4_w1 * 2, isLabel: true },
-      { text: fields.constructionAsPerApprovedPlan || 'Plan is not Available', width: col4_w1 * 2 },
+      { text: fields.constructionAsPerApprovedPlan || '', width: col4_w1 * 2 },
     ], 18, 4);
 
     this.drawRow([
       { text: 'Details of Extra Construction', width: col4_w1 * 2, isLabel: true },
-      { text: fields.extraConstructionDetails || 'Not Applicable', width: col4_w1 * 2 },
+      { text: fields.extraConstructionDetails || '', width: col4_w1 * 2 },
     ], 18, 4);
 
     this.drawRow([
       { text: 'Percentage of Extra Construction', width: col4_w1 * 2, isLabel: true },
-      { text: fields.extraConstructionPercentage || 'Not Applicable', width: col4_w1 * 2 },
+      { text: fields.extraConstructionPercentage || '', width: col4_w1 * 2 },
     ], 18, 4);
 
     this.drawRow([
       { text: 'Whether the extra construction is Compoundable OR Non-Compoundable?', width: col4_w1 * 2, isLabel: true },
-      { text: fields.extraConstructionCompoundable || 'Not Applicable', width: col4_w1 * 2 },
+      { text: fields.extraConstructionCompoundable || '', width: col4_w1 * 2 },
     ], 18, 4);
 
     this.drawRow([
       { text: 'Quality of construction', width: col4_w1 * 2, isLabel: true },
-      { text: fields.qualityOfConstruction || 'Good', width: col4_w1 * 2 },
+      { text: fields.qualityOfConstruction || '', width: col4_w1 * 2 },
     ], 18, 4);
 
     this.drawRow([
       { text: 'Maintenance of the Property', width: col4_w1 * 2, isLabel: true },
-      { text: fields.maintenanceOfProperty || 'Good', width: col4_w1 * 2 },
+      { text: fields.maintenanceOfProperty || '', width: col4_w1 * 2 },
     ], 18, 4);
 
     // =========================================================================
@@ -1059,7 +1063,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     this.drawRow([
       { text: 'Condition Of Building', width: W * 0.5, isLabel: true },
-      { text: fields.conditionOfBuilding || 'Good', width: W * 0.5, bold: true },
+      { text: fields.conditionOfBuilding || '', width: W * 0.5, bold: true },
     ], 20, 4);
 
     this.drawRow([
