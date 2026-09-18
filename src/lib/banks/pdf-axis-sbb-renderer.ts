@@ -139,7 +139,7 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     }
     // Intercept standard section 9
     if (title.toUpperCase() === '9. VALUATION OVERVIEW & REMARKS') {
-      super.drawSectionHeader('9. VALUATION OVERVIEW & REMARKS', addSpaceBefore, preserveCase);
+      super.drawSectionHeader('VALUE OF THE PROPERTY', addSpaceBefore, preserveCase);
       this.drawSbbSection9();
       return;
     }
@@ -763,8 +763,8 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     const insurableValueComp = buildingAmount * 0.85;
 
     // --- Table 9.1 ---
-    this.drawSectionSubtitle('Table 9.1: Market Valuation Calculation');
-    const table91Headers = ['ITEM DESCRIPTION', 'AREA (SQ.FT)', 'RATE PER SQ.FT (RS.)', 'AMOUNT (RS.)'];
+    this.drawSectionSubtitle('MARKET VALUE');
+    const table91Headers = ['', 'AREA IN SQ.FT.', 'RATE PER SQ.FT.', 'AMOUNT IN RS.'];
     const table91Data = [
       ['Land', val('axisSbbValuationLandArea', landAreaPrefill), val('axisSbbValuationLandRate'), numVal('axisSbbValuationLandAmount', landAmount.toFixed(2))],
       ['Building G+1', val('axisSbbValuationBuildingArea', buildingAreaPrefill), val('axisSbbValuationBuildingRate'), numVal('axisSbbValuationBuildingAmount', buildingAmount.toFixed(2))],
@@ -778,8 +778,8 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     this.cursorY += 10;
     
     // --- Table 9.2 ---
-    this.drawSectionSubtitle('Table 9.2: Government Guideline / Benchmark Value');
-    const table92Headers = ['ITEM DESCRIPTION', 'AREA (SQ.FT)', 'GUIDELINE RATE PER SQ.FT (RS.)', 'GOVT. GUIDELINE VALUE (RS.)'];
+    this.drawSectionSubtitle('GOVERNMENT GUIDELINE VALUE');
+    const table92Headers = ['', 'AREA IN SQ.FT.', 'RATE PER SQ.FT.', 'AMOUNT IN RS.'];
     const table92Data = [
       ['Land', val('axisSbbGovtLandArea', landAreaPrefill), val('axisSbbGovtLandRate'), numVal('axisSbbGovtLandAmount', govtLandAmount.toFixed(2))],
       ['Building', val('axisSbbGovtBuildingArea', buildingAreaPrefill), val('axisSbbGovtBuildingRate'), numVal('axisSbbGovtBuildingAmount', govtBuildingAmount.toFixed(2))],
