@@ -89,7 +89,21 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       if (this.doc.getPages().length === 1) {
         this.newPage();
       }
-      super.drawSectionHeader('CASE DETAILS & REPORT METADATA', addSpaceBefore, preserveCase);
+      
+      super.drawCenteredTitle('VALUATION REPORT', FONT_SIZE_TITLE, false);
+      super.drawCenteredTitle('FOR AXIS BANK – SMALL BUSINESS BANKING', FONT_SIZE_TITLE, true);
+      this.cursorY += 15;
+
+      const fv = (key: string, defaultVal = 'NA') => String((this.fields as any)[key] || defaultVal).replace(/[\t\n\r]+/g, ' ').trim() || defaultVal;
+      const refText = `REPORT REF: ${fv('axisSbbReportRefNo')}`;
+      const dateText = `DATE OF REPORT: ${fv('axisSbbDateOfReport')}`;
+
+      this.page.drawText(refText, { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE_HEADER, font: this.fontBold, color: rgb(0,0,0) });
+      const dateW = this.fontBold.widthOfTextAtSize(dateText, FONT_SIZE_HEADER);
+      this.page.drawText(dateText, { x: MARGIN_L + CONTENT_W - dateW, y: this.pdfY(this.cursorY), size: FONT_SIZE_HEADER, font: this.fontBold, color: rgb(0,0,0) });
+      
+      this.cursorY += 15;
+      
       this.drawSbbSection2();
       return;
     }
@@ -575,19 +589,17 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     const fv = (key: string, defaultVal = 'NA') => String((fields as any)[key] || defaultVal).replace(/[\t\n\r]+/g, ' ').trim() || defaultVal;
 
     this.drawKeyValueRow([
-      { label: 'Report Reference Number', value: fv('axisSbbReportRefNo') },
-      { label: 'Report Initiated By Area', value: fv('axisSbbReportInitiatedBy') }
+      { label: 'Report Initiated By Area', value: fv('axisSbbReportInitiatedBy') },
+      { label: 'Name of Area', value: fv('axisSbbAreaName') }
     ]);
     this.drawKeyValueRow([
-      { label: 'Name of Area', value: fv('axisSbbAreaName') },
-      { label: 'Name of Owner', value: fv('axisSbbOwnerName') }
+      { label: 'Name of Owner', value: fv('axisSbbOwnerName') },
+      { label: 'Name of Customer', value: fv('axisSbbCustomerName') }
     ]);
     this.drawKeyValueRow([
-      { label: 'Name of Customer', value: fv('axisSbbCustomerName') },
-      { label: 'Date of Property Visit', value: fv('axisSbbDateOfVisit') }
+      { label: 'Date of Property Visit', value: fv('axisSbbDateOfVisit') },
+      { label: 'Sale Deed Discretions For Which Valuation Done', value: fv('axisSbbSaleDeedDiscretions') }
     ]);
-    this.drawSimpleRow('Date of Report', fv('axisSbbDateOfReport'));
-    this.drawSimpleRow('Sale Deed Discretions For Which Valuation Done', fv('axisSbbSaleDeedDiscretions'));
   }
 
   // ─── Cover Page (Page 1) ───────────────────────────────────────────────

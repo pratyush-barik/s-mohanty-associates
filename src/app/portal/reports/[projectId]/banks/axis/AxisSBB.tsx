@@ -634,7 +634,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
           <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#F3E8FF', borderColor: '#D8B4FE' }}>
             <h3 className="font-bold text-gray-700 mb-4">CASE DETAILS & REPORT METADATA</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Report Reference Number">
+              <Field label="Report Reference No">
                 <input className={inputCls} required value={fields.axisSbbReportRefNo || ''} onChange={e => handleChange('axisSbbReportRefNo', e.target.value.toUpperCase())} disabled={isReadOnly} placeholder="E.g., SMA/1/07-26/09" />
               </Field>
               <Field label="Report Initiated By Area">
