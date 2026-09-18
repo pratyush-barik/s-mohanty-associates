@@ -208,10 +208,12 @@ export interface AxisAgriReportFields {
   realisableValueBuilding?: string;
   realisableValueAmenities?: string;
   realisableValueTotal?: string;
+  realisableValuePct?: string;
   distressValueLand?: string;
   distressValueBuilding?: string;
   distressValueAmenities?: string;
   distressValueTotal?: string;
+  distressValuePct?: string;
   insurableValueLand?: string;
   insurableValueBuilding?: string;
   insurableValueAmenities?: string;
@@ -229,6 +231,8 @@ export interface AxisAgriReportFields {
   opinionOfMarketValue?: string;
   remarksText?: string;
   undertakingText?: string;
+  annexureAMethodOfValuation?: string;
+  annexureABasisBuildingValue?: string;
   annexureARegardingLand?: string;
   annexureARegardingBuilding?: string;
   annexureABasisLandRate?: string;
@@ -1188,7 +1192,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
         this.drawRow([
           { text: cfName, width: tW[0], bold: true, fontSize: 8.5 },
           { text: cfPlinth, width: tW[1], align: 'right', fontSize: 8.5 },
-          { text: String(cf.roofHeight || "10'-6\""), width: tW[2], align: 'center', fontSize: 8.5 },
+          { text: String(cf.roofHeight || '-'), width: tW[2], align: 'center', fontSize: 8.5 },
           { text: String(cf.ageYears || '-'), width: tW[3], align: 'center', fontSize: 8.5 },
           { text: cf.replacementRate ? `Rs. ${cf.replacementRate}` : '-', width: tW[4], align: 'right', fontSize: 8.5 },
           { text: cf.estimatedCost ? `Rs. ${cf.estimatedCost}` : '-', width: tW[5], align: 'right', fontSize: 8.5 },
@@ -1245,16 +1249,18 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       { text: fields.marketValueTotal ? `Rs. ${fields.marketValueTotal}` : '-', width: mColW[4], align: 'right', bold: true, highlight: true },
     ], 18, 4);
 
+    const realPctDisplay = fields.realisableValuePct !== undefined && fields.realisableValuePct !== '' ? fields.realisableValuePct : '95';
     this.drawRow([
-      { text: 'REALISABLE VALUE (95%)', width: mColW[0], isLabel: true, bold: true },
+      { text: `REALISABLE VALUE (${realPctDisplay}%)`, width: mColW[0], isLabel: true, bold: true },
       { text: fields.realisableValueLand ? `Rs. ${fields.realisableValueLand}` : '-', width: mColW[1], align: 'right' },
       { text: fields.realisableValueBuilding ? `Rs. ${fields.realisableValueBuilding}` : '-', width: mColW[2], align: 'right' },
       { text: fields.realisableValueAmenities || '-', width: mColW[3], align: 'center' },
       { text: fields.realisableValueTotal ? `Rs. ${fields.realisableValueTotal}` : '-', width: mColW[4], align: 'right', bold: true },
     ], 18, 4);
 
+    const distPctDisplay = fields.distressValuePct !== undefined && fields.distressValuePct !== '' ? fields.distressValuePct : '85';
     this.drawRow([
-      { text: 'DISTRESS/FORCED SALE VALUE (85%)', width: mColW[0], isLabel: true, bold: true },
+      { text: `DISTRESS/FORCED SALE VALUE (${distPctDisplay}%)`, width: mColW[0], isLabel: true, bold: true },
       { text: fields.distressValueLand ? `Rs. ${fields.distressValueLand}` : '-', width: mColW[1], align: 'right' },
       { text: fields.distressValueBuilding ? `Rs. ${fields.distressValueBuilding}` : '-', width: mColW[2], align: 'right' },
       { text: fields.distressValueAmenities || '-', width: mColW[3], align: 'center' },
@@ -1401,23 +1407,37 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     });
     this.cursorY += 18;
 
-    this.page.drawText('"LAND AND BUILDING" METHOD OF VALUATION HAS BEEN ADOPTED.', {
-      x: MARGIN_L,
-      y: this.pdfY(this.cursorY) - 9,
-      size: FONT_SIZE_SMALL,
-      font: this.fontBold,
-      color: rgb(0, 0, 0),
-    });
-    this.cursorY += 14;
+    const methodValText = fields.annexureAMethodOfValuation || '"LAND AND BUILDING" METHOD OF VALUATION HAS BEEN ADOPTED.';
+    const methodLines = this.wrapText(this.sanitizeText(methodValText), W - 20, FONT_SIZE_SMALL, false);
+    this.page.drawText('•', { x: MARGIN_L, y: this.pdfY(this.cursorY) - 9, size: FONT_SIZE_SMALL, font: this.fontBold, color: rgb(0, 0, 0) });
+    let mvOff = 0;
+    for (const ml of methodLines) {
+      this.page.drawText(ml, {
+        x: MARGIN_L + 12,
+        y: this.pdfY(this.cursorY) - 9 - mvOff,
+        size: FONT_SIZE_SMALL,
+        font: this.fontBold,
+        color: rgb(0, 0, 0),
+      });
+      mvOff += FONT_SIZE_SMALL * LINE_HEIGHT;
+    }
+    this.cursorY += Math.max(14, methodLines.length * FONT_SIZE_SMALL * LINE_HEIGHT + 2);
 
-    this.page.drawText('THE BUILDING VALUE HAS BEEN CONSIDERED AS PER MEASURED BUA AREA OF THE STRUCTURES.', {
-      x: MARGIN_L,
-      y: this.pdfY(this.cursorY) - 9,
-      size: FONT_SIZE_SMALL,
-      font: this.fontBold,
-      color: rgb(0, 0, 0),
-    });
-    this.cursorY += 16;
+    const basisBldgText = fields.annexureABasisBuildingValue || 'THE BUILDING VALUE HAS BEEN CONSIDERED AS PER MEASURED BUA AREA OF THE STRUCTURES.';
+    const basisBldgLines = this.wrapText(this.sanitizeText(basisBldgText), W - 20, FONT_SIZE_SMALL, false);
+    this.page.drawText('•', { x: MARGIN_L, y: this.pdfY(this.cursorY) - 9, size: FONT_SIZE_SMALL, font: this.fontBold, color: rgb(0, 0, 0) });
+    let bbOff = 0;
+    for (const bbl of basisBldgLines) {
+      this.page.drawText(bbl, {
+        x: MARGIN_L + 12,
+        y: this.pdfY(this.cursorY) - 9 - bbOff,
+        size: FONT_SIZE_SMALL,
+        font: this.fontBold,
+        color: rgb(0, 0, 0),
+      });
+      bbOff += FONT_SIZE_SMALL * LINE_HEIGHT;
+    }
+    this.cursorY += Math.max(16, basisBldgLines.length * FONT_SIZE_SMALL * LINE_HEIGHT + 4);
 
     // Regarding Land
     this.page.drawText('REGARDING LAND:', {
