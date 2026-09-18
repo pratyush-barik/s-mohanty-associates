@@ -72,13 +72,13 @@ export const AXIS_SBB_CONFIG: BankConfig = {
     // SECTION 5
     axisSbbPropertyType: [],
     axisSbbPropertyTypeIsNA: false,
-    axisSbbLevelOfLand: 'PLAIN',
+    axisSbbLevelOfLand: '',
     axisSbbLevelOfLandIsNA: false,
     axisSbbLevelOfLandEditOn: false,
-    axisSbbLevelOfLandDropdown: 'PLAIN',
+    axisSbbLevelOfLandDropdown: '',
     axisSbbAnyConstructionObserved: '',
     axisSbbAnyConstructionObservedIsNA: false,
-    axisSbbPercentOfConstruction: '100',
+    axisSbbPercentOfConstruction: '',
     axisSbbPercentOfConstructionIsNA: false,
     axisSbbPercentOfConstructionEditOn: false,
     axisSbbVacantLandDemarcated: '',
@@ -88,7 +88,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
     axisSbbCommercialIndustrialProperty: [],
     axisSbbCommercialIndustrialPropertyIsNA: false,
     
-    axisSbbCivicAmenities: 'AVAILABLE, WITHIN THE RADIUS OF 1-2 KMS',
+    axisSbbCivicAmenities: '',
     axisSbbCivicAmenitiesIsNA: false,
     axisSbbCivicAmenitiesEditOn: false,
     axisSbbLocalTransport: [],
@@ -1276,7 +1276,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
         const stationComputed = `${stationDistKm}-KMS (${stationName} RAILWAY STATION)`.toUpperCase();
         const busStopComputed = `${busStopDistKm}-KMS. (${busStopName} BUS STOP)`.toUpperCase();
 
-        const levelDropdown = fields.axisSbbLevelOfLandDropdown || 'PLAIN';
+        const levelDropdown = fields.axisSbbLevelOfLandDropdown || '';
 
         return (
           <div className="animate-fade-in space-y-6">
@@ -1294,12 +1294,9 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                 </div>
 
                 <div className="flex flex-col">
-                  <div className="flex justify-between items-center mb-1">
-                    <div className="flex items-center">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">LEVEL OF LAND WITH TOPOGRAPHICAL CONDITIONS <span className="text-red-500">*</span></label>
-                      {renderNaToggle('axisSbbLevelOfLand')}
-                    </div>
-                    {renderEditSwitch('axisSbbLevelOfLand', !!fields.axisSbbLevelOfLandIsNA)}
+                  <div className="flex items-center mb-2">
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">LEVEL OF LAND WITH TOPOGRAPHICAL CONDITIONS <span className="text-red-500">*</span></label>
+                    {renderNaToggle('axisSbbLevelOfLand')}
                   </div>
                   <select
                     className={inputCls}
@@ -1309,15 +1306,16 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       handleChange('axisSbbLevelOfLandDropdown', v);
                       if (v !== 'CUSTOM') handleChange('axisSbbLevelOfLand', v);
                     }}
-                    disabled={isReadOnly || !fields.axisSbbLevelOfLandEditOn || fields.axisSbbLevelOfLandIsNA}
+                    disabled={isReadOnly || fields.axisSbbLevelOfLandIsNA}
                   >
+                    <option value="" disabled>Select Level of Land...</option>
                     <option value="PLAIN">PLAIN</option>
                     <option value="SLOPING">SLOPING</option>
                     <option value="LOW LYING">LOW LYING</option>
                     <option value="ELEVATED / HILLY">ELEVATED / HILLY</option>
                     <option value="CUSTOM">Custom...</option>
                   </select>
-                  {fields.axisSbbLevelOfLandEditOn && levelDropdown === 'CUSTOM' && !fields.axisSbbLevelOfLandIsNA && (
+                  {levelDropdown === 'CUSTOM' && !fields.axisSbbLevelOfLandIsNA && (
                     <input
                       className={`${inputCls} mt-2`}
                       value={fields.axisSbbLevelOfLand || ''}
@@ -1358,12 +1356,9 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   </div>
 
                   <div className="flex flex-col">
-                    <div className="flex justify-between items-center mb-1">
-                      <div className="flex items-center">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">% OF CONSTRUCTION, IN CASE OF UNDER CONSTRUCTION <span className="text-red-500">*</span></label>
-                        {renderNaToggle('axisSbbPercentOfConstruction')}
-                      </div>
-                      {renderEditSwitch('axisSbbPercentOfConstruction', !!fields.axisSbbPercentOfConstructionIsNA)}
+                    <div className="flex items-center mb-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">% OF CONSTRUCTION, IN CASE OF UNDER CONSTRUCTION <span className="text-red-500">*</span></label>
+                      {renderNaToggle('axisSbbPercentOfConstruction')}
                     </div>
                     <div className="relative">
                       <input
@@ -1374,9 +1369,9 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         className={`${inputCls} pr-8`}
                         value={fields.axisSbbPercentOfConstructionIsNA ? '' : (fields.axisSbbPercentOfConstruction || '')}
                         onChange={e => handleChange('axisSbbPercentOfConstruction', e.target.value)}
-                        readOnly={!fields.axisSbbPercentOfConstructionEditOn || fields.axisSbbPercentOfConstructionIsNA}
-                        disabled={isReadOnly || (!fields.axisSbbPercentOfConstructionEditOn && !fields.axisSbbPercentOfConstructionIsNA)}
-                        placeholder={fields.axisSbbPercentOfConstructionIsNA ? 'NA' : '100'}
+                        readOnly={fields.axisSbbPercentOfConstructionIsNA}
+                        disabled={isReadOnly || fields.axisSbbPercentOfConstructionIsNA}
+                        placeholder={fields.axisSbbPercentOfConstructionIsNA ? 'NA' : 'Enter %'}
                       />
                       <span className="absolute right-3 top-2.5 text-gray-500 font-bold">%</span>
                     </div>
@@ -1415,19 +1410,16 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                 </div>
 
                 <div className="flex flex-col">
-                  <div className="flex justify-between items-center mb-1">
-                    <div className="flex items-center">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">CIVIC AMENITIES LIKE SCHOOL, HOSPITAL, MARKET, ETC. <span className="text-red-500">*</span></label>
-                      {renderNaToggle('axisSbbCivicAmenities')}
-                    </div>
-                    {renderEditSwitch('axisSbbCivicAmenities', !!fields.axisSbbCivicAmenitiesIsNA)}
+                  <div className="flex items-center mb-2">
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">CIVIC AMENITIES LIKE SCHOOL, HOSPITAL, MARKET, ETC. <span className="text-red-500">*</span></label>
+                    {renderNaToggle('axisSbbCivicAmenities')}
                   </div>
                   <div className={`mt-2 ${fields.axisSbbCivicAmenitiesIsNA ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
                     <textarea
                       rows={3}
                       value={fields.axisSbbCivicAmenities}
                       onChange={e => handleChange('axisSbbCivicAmenities', e.target.value)}
-                      disabled={isReadOnly || !fields.axisSbbCivicAmenitiesEditOn || fields.axisSbbCivicAmenitiesIsNA}
+                      disabled={isReadOnly || fields.axisSbbCivicAmenitiesIsNA}
                       className="w-full text-xs font-bold text-gray-800 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all shadow-sm p-3 resize-y"
                     />
                   </div>

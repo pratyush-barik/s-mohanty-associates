@@ -511,9 +511,10 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     const busStopComputed = `${busStopDistKm}-KMS. (${busStopName} BUS STOP)`.toUpperCase();
     
     this.drawChecklist('[A] PLOT / UNDER CONSTRUCTION', fields.axisSbbPropertyType, fields.axisSbbPropertyTypeIsNA, ['RESIDENTIAL', 'COMMERCIAL', 'INDUSTRIAL', 'VACANT LAND/PLOT'], true);
-    this.drawKeyValueRow([{ label: 'LEVEL OF LAND WITH TOPOGRAPHICAL CONDITIONS', value: val('axisSbbLevelOfLand', (fields as any).axisSbbLevelOfLandDropdown === 'CUSTOM' ? ((fields as any).axisSbbLevelOfLand || 'NA') : ((fields as any).axisSbbLevelOfLandDropdown || 'PLAIN')) }]);
+    this.drawKeyValueRow([{ label: 'LEVEL OF LAND WITH TOPOGRAPHICAL CONDITIONS', value: val('axisSbbLevelOfLand', (fields as any).axisSbbLevelOfLandDropdown === 'CUSTOM' ? ((fields as any).axisSbbLevelOfLand || 'NA') : ((fields as any).axisSbbLevelOfLandDropdown || '')) }]);
     this.drawKeyValueRow([{ label: 'ANY CONSTRUCTION OBSERVED ON PLOT', value: val('axisSbbAnyConstructionObserved') }]);
-    this.drawKeyValueRow([{ label: '% OF CONSTRUCTION, IN CASE OF UNDER CONSTRUCTION', value: val('axisSbbPercentOfConstruction', '100%') + (val('axisSbbPercentOfConstruction') !== 'NA' && !(fields as any).axisSbbPercentOfConstructionEditOn ? '%' : '') }]);
+    const pct = val('axisSbbPercentOfConstruction', '');
+    this.drawKeyValueRow([{ label: '% OF CONSTRUCTION, IN CASE OF UNDER CONSTRUCTION', value: pct ? (pct === 'NA' || pct.endsWith('%') ? pct : `${pct}%`) : '' }]);
     this.drawChecklist('WEATHER VACANT LAND PROPERTY IS DEMARCATED', fields.axisSbbVacantLandDemarcated, fields.axisSbbVacantLandDemarcatedIsNA, ['YES', 'NO']);
     
     this.drawChecklist('[B] RESIDENTIAL PROPERTY', fields.axisSbbResidentialProperty, fields.axisSbbResidentialPropertyIsNA, ['INDEPENDENT HOUSE', 'BUNGALOW', 'ROW HOUSE/ FLAT'], true);
