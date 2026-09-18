@@ -99,6 +99,11 @@ export default function AxisHLLAP({
 
     return {
       ...raw,
+      clientType: raw.clientType || 'organisation',
+      organisationTemplate: raw.organisationTemplate || 'AXIS BANK',
+      organisationSubTemplate: raw.organisationSubTemplate || 'HL_LAP',
+      bankName: raw.bankName || 'AXIS BANK',
+
       // Header
       refNo: raw.refNo || defaultRefNo,
       reportDate: formatReportDate(raw.reportDate || new Date()),

@@ -118,6 +118,12 @@ export default function AxisAGRI({
   const initialData: AxisAgriReportFields = useMemo(() => {
     const raw = typeof initialFields === 'object' && initialFields !== null ? initialFields : {};
     return {
+      ...raw,
+      clientType: raw.clientType || 'organisation',
+      organisationTemplate: raw.organisationTemplate || 'AXIS BANK',
+      organisationSubTemplate: raw.organisationSubTemplate || 'AGRI',
+      bankName: raw.bankName || 'AXIS BANK',
+
       // Page 1: Header
       refNo: raw.refNo || defaultRefNo,
       reportDate: formatReportDate(raw.reportDate || raw.dateOfReportSubmission || new Date()),

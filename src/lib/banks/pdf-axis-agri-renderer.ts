@@ -52,6 +52,12 @@ export interface AxisAgriFloorItem {
 }
 
 export interface AxisAgriReportFields {
+  clientType?: string;
+  organisationTemplate?: string;
+  organisationSubTemplate?: string;
+  bankName?: string;
+  [key: string]: any;
+
   // Page 1: Header & Technical Initiation
   refNo?: string; // e.g. SMA/08/2026/07
   reportDate?: string; // DD/MM/YYYY

@@ -208,7 +208,7 @@ export default function BuilderSelector({
       const currentOrg = decodedFields?.organisationTemplate || "";
       const currentSub = decodedFields?.organisationSubTemplate || "";
 
-      // Format changed via query parameter -> completely fresh start
+      // Format changed via query parameter to a completely different bank -> fresh start
       if (currentOrg && (currentOrg !== qOrg || currentSub !== (qSub || ""))) {
         return {
           clientType: "organisation",
@@ -218,18 +218,18 @@ export default function BuilderSelector({
         };
       }
 
-      if (!decodedFields?.organisationTemplate) {
-        return {
-          clientType: "organisation",
-          organisationTemplate: qOrg,
-          organisationSubTemplate: qSub || "",
-          bankName: qOrg,
-        };
-      }
+      // Preserve all saved fields from database and attach organisation template identifiers
+      return {
+        ...(typeof decodedFields === "object" && decodedFields !== null ? decodedFields : {}),
+        clientType: "organisation",
+        organisationTemplate: qOrg,
+        organisationSubTemplate: qSub || "",
+        bankName: qOrg,
+      };
     }
 
-    if (decodedFields?.organisationTemplate) return decodedFields;
-    return decodedFields;
+    if (decodedFields && typeof decodedFields === "object") return decodedFields;
+    return {};
   }, [initialFields, initialBuilder]);
 
   const [activeFields, setActiveFields] = useState(computedInitialFields);

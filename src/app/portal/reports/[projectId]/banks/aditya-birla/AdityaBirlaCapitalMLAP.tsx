@@ -95,6 +95,12 @@ export default function AdityaBirlaCapitalMLAP({
 
   // Initialize fields cleanly: dynamic prefill from project, standard dropdown defaults, blank case inputs
   const [fields, setFields] = useState<MLAPReportFields>(() => decodeHtmlEntitiesDeep<MLAPReportFields>({
+    ...initialFields,
+    clientType: initialFields?.clientType || 'organisation',
+    organisationTemplate: initialFields?.organisationTemplate || 'ADITYA BIRLA CAPITAL',
+    organisationSubTemplate: initialFields?.organisationSubTemplate || 'MLAP',
+    bankName: initialFields?.bankName || 'ADITYA BIRLA CAPITAL',
+
     // Basic Details
     clientName: initialFields?.clientName || initialFields?.ownerName || prefill?.contactName || '',
     ownerName: initialFields?.ownerName || initialFields?.clientName || prefill?.contactName || '',

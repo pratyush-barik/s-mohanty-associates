@@ -77,6 +77,12 @@ export default function AnnapurnaMicroFinance({
   const initialData: AnnapurnaMicroFinanceReportFields = useMemo(() => {
     const raw = (typeof initialFields === 'object' && initialFields !== null) ? initialFields : {};
     return {
+      ...raw,
+      clientType: raw.clientType || 'organisation',
+      organisationTemplate: raw.organisationTemplate || 'ANNAPURNA FINANCE',
+      organisationSubTemplate: raw.organisationSubTemplate || '',
+      bankName: raw.bankName || 'ANNAPURNA FINANCE',
+
       // Section 1: Application Details
       refNo: raw.refNo || projectCode || projectId || '',
       reportDate: formatReportDate(raw.reportDate || raw.dateOfValuation || new Date()),

@@ -168,8 +168,11 @@ export default function ArkaFinance({
     locationMapImages: [],
     sketchMapImages: [],
     mouzaMapImages: [],
-    cadastralMapImages: [],
     ...initialFields,
+    clientType: initialFields?.clientType || 'organisation',
+    organisationTemplate: initialFields?.organisationTemplate || 'ARKA FINANCE',
+    organisationSubTemplate: initialFields?.organisationSubTemplate || '',
+    bankName: initialFields?.bankName || 'ARKA FINANCE',
     documentsProvided: initialFields?.documentsProvided || 'Multiple'
   });
 

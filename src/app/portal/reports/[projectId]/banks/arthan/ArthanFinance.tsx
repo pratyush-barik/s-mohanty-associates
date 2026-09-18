@@ -83,6 +83,12 @@ export default function ArthanFinance({
   const initialData: ArthanFinanceReportFields = useMemo(() => {
     const raw = (typeof initialFields === 'object' && initialFields !== null) ? initialFields : {};
     return {
+      ...raw,
+      clientType: raw.clientType || 'organisation',
+      organisationTemplate: raw.organisationTemplate || 'ARTHAN FINANCE',
+      organisationSubTemplate: raw.organisationSubTemplate || '',
+      bankName: raw.bankName || 'ARTHAN FINANCE',
+
       // Header
       dateOfValuation: formatReportDate(raw.dateOfValuation || raw.dateOfReportSubmission || new Date()),
 

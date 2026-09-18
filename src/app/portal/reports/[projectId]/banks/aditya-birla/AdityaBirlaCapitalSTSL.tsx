@@ -260,6 +260,12 @@ export default function AdityaBirlaCapitalSTSL({
   const isReadOnly = status === 'submitted' || status === 'verified' || status === 'completed' || userRole === 'client';
 
   const [fields, setFields] = useState<STSLReportFields>(() => decodeHtmlEntitiesDeep<STSLReportFields>({
+    ...initialFields,
+    clientType: initialFields?.clientType || 'organisation',
+    organisationTemplate: initialFields?.organisationTemplate || 'ADITYA BIRLA CAPITAL',
+    organisationSubTemplate: initialFields?.organisationSubTemplate || 'STSL',
+    bankName: initialFields?.bankName || 'ADITYA BIRLA CAPITAL',
+
     // Basic Details
     valuerName: initialFields?.valuerName || 'Er. Satyajit Mohanty',
     clientName: initialFields?.clientName || initialFields?.ownerName || prefill?.contactName || '',
