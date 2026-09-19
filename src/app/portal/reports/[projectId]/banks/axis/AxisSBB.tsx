@@ -2827,83 +2827,43 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex flex-col">
-                    <div className="flex justify-between items-center mb-1">
-                      <div className="flex items-center">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">COMPOUNDABLE / NON-COMPOUNDABLE?</label>
-                      </div>
+                <div className="flex flex-col mb-5">
+                  <div className="flex justify-between items-center mb-1">
+                    <div className="flex items-center">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">COMPOUNDABLE / NON-COMPOUNDABLE?</label>
+                      {renderNaToggle('axisSbbCompoundable')}
                     </div>
-                    <select
-                      className={`${inputCls} appearance-none bg-white`}
-                      value={fields.axisSbbCompoundableIsCustom ? 'Custom' : (fields.axisSbbCompoundable || 'NA')}
-                      onChange={e => {
-                        const val = e.target.value;
-                        if (val === 'Custom') {
-                          handleChange('axisSbbCompoundableIsCustom', true);
-                          handleChange('axisSbbCompoundable', '');
-                        } else {
-                          handleChange('axisSbbCompoundableIsCustom', false);
-                          handleChange('axisSbbCompoundable', val);
-                        }
-                      }}
-                      disabled={isReadOnly}
-                    >
-                      <option value="NA">NA</option>
-                      <option value="COMPOUNDABLE">COMPOUNDABLE</option>
-                      <option value="NON-COMPOUNDABLE">NON-COMPOUNDABLE</option>
-                      <option value="Custom">Custom / Other</option>
-                    </select>
-                    {fields.axisSbbCompoundableIsCustom && (
-                      <input
-                        type="text"
-                        className={`${inputCls} mt-2`}
-                        placeholder="Specify Custom Value"
-                        value={fields.axisSbbCompoundable || ''}
-                        onChange={e => handleChange('axisSbbCompoundable', e.target.value.toUpperCase())}
-                        disabled={isReadOnly}
-                      />
-                    )}
                   </div>
-                  
-                  <div className="flex flex-col">
-                    <div className="flex justify-between items-center mb-1">
-                      <div className="flex items-center">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">MAINTENANCE OF PROPERTY</label>
-                      </div>
-                    </div>
-                    <select
-                      className={`${inputCls} appearance-none bg-white`}
-                      value={fields.axisSbbMaintenanceOfPropertyIsCustom ? 'Custom' : (fields.axisSbbMaintenanceOfProperty || 'GOOD')}
-                      onChange={e => {
-                        const val = e.target.value;
-                        if (val === 'Custom') {
-                          handleChange('axisSbbMaintenanceOfPropertyIsCustom', true);
-                          handleChange('axisSbbMaintenanceOfProperty', '');
-                        } else {
-                          handleChange('axisSbbMaintenanceOfPropertyIsCustom', false);
-                          handleChange('axisSbbMaintenanceOfProperty', val);
-                        }
-                      }}
+                  <select
+                    className={`${inputCls} appearance-none bg-white`}
+                    value={fields.axisSbbCompoundableIsCustom ? 'Custom' : (fields.axisSbbCompoundable || 'NA')}
+                    onChange={e => {
+                      const val = e.target.value;
+                      if (val === 'Custom') {
+                        handleChange('axisSbbCompoundableIsCustom', true);
+                        handleChange('axisSbbCompoundable', '');
+                      } else {
+                        handleChange('axisSbbCompoundableIsCustom', false);
+                        handleChange('axisSbbCompoundable', val);
+                      }
+                    }}
+                    disabled={isReadOnly}
+                  >
+                    <option value="NA">NA</option>
+                    <option value="COMPOUNDABLE">COMPOUNDABLE</option>
+                    <option value="NON-COMPOUNDABLE">NON-COMPOUNDABLE</option>
+                    <option value="Custom">Custom / Other</option>
+                  </select>
+                  {fields.axisSbbCompoundableIsCustom && (
+                    <input
+                      type="text"
+                      className={`${inputCls} mt-2`}
+                      placeholder="Specify Custom Value"
+                      value={fields.axisSbbCompoundable || ''}
+                      onChange={e => handleChange('axisSbbCompoundable', e.target.value.toUpperCase())}
                       disabled={isReadOnly}
-                    >
-                      <option value="NA">NA</option>
-                      <option value="GOOD">GOOD</option>
-                      <option value="AVERAGE">AVERAGE</option>
-                      <option value="POOR">POOR</option>
-                      <option value="Custom">Custom / Other</option>
-                    </select>
-                    {fields.axisSbbMaintenanceOfPropertyIsCustom && (
-                      <input
-                        type="text"
-                        className={`${inputCls} mt-2`}
-                        placeholder="Specify Custom Value"
-                        value={fields.axisSbbMaintenanceOfProperty || ''}
-                        onChange={e => handleChange('axisSbbMaintenanceOfProperty', e.target.value.toUpperCase())}
-                        disabled={isReadOnly}
-                      />
-                    )}
-                  </div>
+                    />
+                  )}
                 </div>
 
                 {(() => {
@@ -2999,6 +2959,45 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                     </div>
                   );
                 })()}
+
+                <div className="flex flex-col mt-5 mb-5">
+                  <div className="flex justify-between items-center mb-1">
+                    <div className="flex items-center">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">MAINTENANCE OF PROPERTY</label>
+                    </div>
+                  </div>
+                  <select
+                    className={`${inputCls} appearance-none bg-white`}
+                    value={fields.axisSbbMaintenanceOfPropertyIsCustom ? 'Custom' : (fields.axisSbbMaintenanceOfProperty || 'GOOD')}
+                    onChange={e => {
+                      const val = e.target.value;
+                      if (val === 'Custom') {
+                        handleChange('axisSbbMaintenanceOfPropertyIsCustom', true);
+                        handleChange('axisSbbMaintenanceOfProperty', '');
+                      } else {
+                        handleChange('axisSbbMaintenanceOfPropertyIsCustom', false);
+                        handleChange('axisSbbMaintenanceOfProperty', val);
+                      }
+                    }}
+                    disabled={isReadOnly}
+                  >
+                    <option value="NA">NA</option>
+                    <option value="GOOD">GOOD</option>
+                    <option value="AVERAGE">AVERAGE</option>
+                    <option value="POOR">POOR</option>
+                    <option value="Custom">Custom / Other</option>
+                  </select>
+                  {fields.axisSbbMaintenanceOfPropertyIsCustom && (
+                    <input
+                      type="text"
+                      className={`${inputCls} mt-2`}
+                      placeholder="Specify Custom Value"
+                      value={fields.axisSbbMaintenanceOfProperty || ''}
+                      onChange={e => handleChange('axisSbbMaintenanceOfProperty', e.target.value.toUpperCase())}
+                      disabled={isReadOnly}
+                    />
+                  )}
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex flex-col">

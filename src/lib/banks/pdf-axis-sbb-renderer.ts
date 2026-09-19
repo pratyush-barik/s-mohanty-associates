@@ -522,10 +522,7 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       { label: 'Percentage of Extra Construction', value: val('axisSbbExtraConstructionPercentage') }
     ]);
 
-    this.drawKeyValueRow([
-      { label: 'Compoundable / Non-Compoundable?', value: (fields as any).axisSbbCompoundableIsCustom ? val('axisSbbCompoundable') : val('axisSbbCompoundable') },
-      { label: 'Maintenance of Property', value: (fields as any).axisSbbMaintenanceOfPropertyIsCustom ? val('axisSbbMaintenanceOfProperty') : val('axisSbbMaintenanceOfProperty') }
-    ]);
+    this.drawSimpleRow('Whether the Construction is Compoundable or Non-Compoundable?', (fields as any).axisSbbCompoundableIsCustom ? val('axisSbbCompoundable') : val('axisSbbCompoundable'));
     
     const allRoofOptions = [
       { key: 'axisSbbQualityOfConstructionRoofRCC', label: 'RCC' },
@@ -551,6 +548,8 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     } else {
       this.drawQualityOfConstructionRow(fields, allRoofOptions, allFloorOptions);
     }
+
+    this.drawSimpleRow('Maintenance of the Property', (fields as any).axisSbbMaintenanceOfPropertyIsCustom ? val('axisSbbMaintenanceOfProperty') : val('axisSbbMaintenanceOfProperty'));
 
     this.drawKeyValueRow([
       { label: 'Current Life of Structure (Years)', value: val('axisSbbCurrentLifeOfStructure') },
