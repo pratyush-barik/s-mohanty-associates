@@ -3118,7 +3118,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
         floors9.forEach((f: any) => {
           if (!f.constructedAreaIsNA && f.constructedArea) sumConstructed9 += Number(f.constructedArea) || 0;
         });
-        const buildingAreaPrefillStr = fields.axisSbbTotalBuiltUpAreaEditOn ? (fields.axisSbbTotalBuiltUpArea || '') : `${sumConstructed9}`;
+        const buildingAreaPrefillStr = `${sumConstructed9}`;
         const buildingAreaPrefill = buildingAreaPrefillStr.replace(/[^0-9.]/g, '') || '';
 
         // Computations Market Valuation
