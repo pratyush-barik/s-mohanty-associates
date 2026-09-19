@@ -2254,7 +2254,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
             </div>
 
             <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#F0FDFA', borderColor: '#99F6E4' }}>
-              <h3 className="font-bold text-gray-700 mb-4">Container 7.2: APPROVAL DETAILS & CONSTRUCTION DETAILS</h3>
+              <h3 className="font-bold text-gray-700 mb-4">APPROVAL DETAILS & CONSTRUCTION DETAILS</h3>
               
               <div className="space-y-5">
                 
