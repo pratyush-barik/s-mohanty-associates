@@ -649,7 +649,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
       title: 'Case Details & Report Metadata',
       number: 2,
       defaultOpen: true,
-      render: (fields, handleChange, isReadOnly) => {
+      render: (fields, handleChange, isReadOnly, projectCode) => {
         const isOwnerEditOn = fields.axisSbbEnableOwnerNameEdit || false;
         const computedOwnersText = (fields.axisSbbPropertyOwners || [])
           .filter((o: any) => o.name)
@@ -657,14 +657,45 @@ export const AXIS_SBB_CONFIG: BankConfig = {
           .join(' & ');
         const propertyOwnerValue = isOwnerEditOn ? (fields.axisSbbOwnerName ?? computedOwnersText) : computedOwnersText;
 
+        const isReportRefEditOn = fields.axisSbbEnableReportRefNoEdit || false;
+        const defaultReportRefNo = projectCode || '';
+        const reportRefNoValue = isReportRefEditOn ? (fields.axisSbbReportRefNo ?? defaultReportRefNo) : defaultReportRefNo;
+
         return (
         <div className="animate-fade-in space-y-6">
           <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#F3E8FF', borderColor: '#D8B4FE' }}>
             <h3 className="font-bold text-gray-700 mb-4">CASE DETAILS & REPORT METADATA</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Report Reference No">
-                <input className={inputCls} required value={fields.axisSbbReportRefNo || ''} onChange={e => handleChange('axisSbbReportRefNo', e.target.value.toUpperCase())} disabled={isReadOnly} placeholder="E.g., SMA/1/07-26/09" />
-              </Field>
+              <div className="col-span-1 w-full flex flex-col">
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Report Reference No</label>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-[10px] uppercase font-bold text-gray-400">Edit {isReportRefEditOn ? 'On' : 'Off'}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!isReportRefEditOn && !fields.axisSbbReportRefNo) {
+                           handleChange('axisSbbReportRefNo', defaultReportRefNo);
+                        }
+                        handleChange('axisSbbEnableReportRefNoEdit', !isReportRefEditOn);
+                      }}
+                      disabled={isReadOnly}
+                      className={`w-8 h-4 rounded-full relative transition-colors ${isReportRefEditOn ? 'bg-green-500' : 'bg-gray-300'}`}
+                    >
+                      <span className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white transition-transform ${isReportRefEditOn ? 'translate-x-4' : ''}`} />
+                    </button>
+                  </div>
+                </div>
+                <input
+                  className={inputCls}
+                  required
+                  value={reportRefNoValue}
+                  onChange={e => handleChange('axisSbbReportRefNo', e.target.value.toUpperCase())}
+                  readOnly={!isReportRefEditOn}
+                  disabled={isReadOnly || !isReportRefEditOn}
+                  placeholder="E.g., SMA/1/07-26/09"
+                />
+              </div>
               <Field label="Report Initiated By Area">
                 <input list="axisSbbInitiatedByList" className={inputCls} value={fields.axisSbbReportInitiatedBy || ''} onChange={e => handleChange('axisSbbReportInitiatedBy', e.target.value)} disabled={isReadOnly} placeholder="E.g., BHUBANESWAR" />
                 <datalist id="axisSbbInitiatedByList">
@@ -3351,7 +3382,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
       }
     },
   ],
-  getPDFRenderer: (fields: any) => new PDFAxisSBBRenderer(fields),
+  getPDFRenderer: (fields: any, projectCode?: string) => new PDFAxisSBBRenderer({ ...fields, axisSbbReportRefNo: fields.axisSbbReportRefNo || projectCode }),
 };
 
 export default function AxisSBB(props: BankReportBuilderProps) {

@@ -316,6 +316,7 @@ export interface SectionConfig {
     fields: BaseReportFields,
     handleChange: (key: string, value: any) => void,
     isReadOnly: boolean,
+    projectCode?: string,
   ) => ReactNode;
 }
 
@@ -374,7 +375,7 @@ export interface BankConfig {
   // ── PDF Delta (optional) ──
   /** Factory function returning a bank-specific PDF renderer.
    *  If omitted, the default PDFGeneralRenderer is used. */
-  getPDFRenderer?: (fields?: any) => any; // Returns a PDFBankRenderer or PDFGeneralRenderer
+  getPDFRenderer?: (fields: any, projectCode?: string) => any; // Returns a PDFBankRenderer or PDFGeneralRenderer
   /** Complete custom PDF generator for templates with specialized layouts (e.g. Aditya Birla MLAP) */
   generateCustomPDF?: (
     fields: any,

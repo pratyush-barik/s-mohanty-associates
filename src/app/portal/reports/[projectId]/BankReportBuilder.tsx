@@ -1027,7 +1027,7 @@ export default function BankReportBuilder({
       }
 
       // Instantiate renderer: use config custom renderer or default base renderer (automatically defaults letterhead)
-      const r = config?.getPDFRenderer ? config.getPDFRenderer(fields) : new PDFBankRenderer();
+      const r = config?.getPDFRenderer ? config.getPDFRenderer(fields, projectCode) : new PDFBankRenderer();
       await r.init();
 
       let titleText = 'VALUATION REPORT';
@@ -1932,7 +1932,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
         {/* ── Extra Bank-Specific Sections (Start) ── */}
         {config?.extraSectionsStart?.map(sec => (
           <Section key={sec.id} id={sec.id} title={sec.title} number={sec.number} defaultOpen={sec.defaultOpen ?? true}>
-            {sec.render(fields, handleChange, isReadOnly)}
+            {sec.render(fields, handleChange, isReadOnly, projectCode)}
           </Section>
         ))}
 
@@ -2551,7 +2551,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
         {/* ── Extra Bank-Specific Sections ── */}
         {config?.extraSections?.map(sec => (
           <Section key={sec.id} id={sec.id} title={sec.title} number={sec.number} defaultOpen={sec.defaultOpen ?? true}>
-            {sec.render(fields, handleChange, isReadOnly)}
+            {sec.render(fields, handleChange, isReadOnly, projectCode)}
           </Section>
         ))}
 
@@ -2630,7 +2630,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
         {/* ── Extra Bank-Specific Sections (End) ── */}
         {config?.extraSectionsEnd?.map(sec => (
           <Section key={sec.id} id={sec.id} title={sec.title} number={sec.number} defaultOpen={sec.defaultOpen ?? true}>
-            {sec.render(fields, handleChange, isReadOnly)}
+            {sec.render(fields, handleChange, isReadOnly, projectCode)}
           </Section>
         ))}
 
