@@ -347,7 +347,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       isLabel?: boolean;
     } = {}
   ): void {
-    const fontSize = options.fontSize || (options.isHeader && w >= CONTENT_W * 0.9 ? FONT_SIZE_HEADER : FONT_SIZE);
+    const baseFontSize = options.fontSize || (options.isHeader && w >= CONTENT_W * 0.9 ? FONT_SIZE_HEADER : FONT_SIZE);
     const isBaseBold = !!(options.bold || options.isHeader || options.isLabel || options.highlight);
     const vAlign = options.vAlign || 'middle';
     const align = options.align || 'left';
@@ -381,6 +381,21 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     const padX = 4;
     const padY = 3;
     const maxTextW = Math.max(10, w - padX * 2);
+
+    // Auto-fit font size for long words to completely prevent broken/chopped words across lines
+    const testFont = options.italic ? this.fontItalic : isBaseBold ? this.fontBold : this.fontRegular;
+    const words = cleanText.replace(/[*_]/g, '').split(/\s+/).filter(Boolean);
+    let fontSize = baseFontSize;
+    for (const wd of words) {
+      const wAtBase = testFont.widthOfTextAtSize(wd, baseFontSize);
+      if (wAtBase > maxTextW && maxTextW > 0) {
+        const neededFs = Math.floor((maxTextW / (wAtBase / baseFontSize)) * 10) / 10;
+        if (neededFs < fontSize) {
+          fontSize = Math.max(7.5, neededFs);
+        }
+      }
+    }
+
     const lines = this.wrapRichText(cleanText, maxTextW, fontSize, isBaseBold);
     const lineH = fontSize * LINE_HEIGHT;
     const totalTextH = lines.length * lineH;
@@ -447,15 +462,33 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     rowPad: number = 6
   ): number {
     let maxLines = 1;
+    let maxFsInRow = FONT_SIZE;
+
     for (const col of cols) {
-      const fs = col.fontSize || FONT_SIZE;
+      const baseFs = col.fontSize || FONT_SIZE;
       const isBold = !!(col.bold || col.isHeader || col.isLabel || col.highlight);
-      const lines = this.wrapRichText(this.sanitizeText(col.text), Math.max(10, col.width - 8), fs, isBold);
+      const testFont = col.italic ? this.fontItalic : isBold ? this.fontBold : this.fontRegular;
+      const maxTextW = Math.max(10, col.width - 8);
+
+      const words = this.sanitizeText(col.text).replace(/[*_]/g, '').split(/\s+/).filter(Boolean);
+      let colFs = baseFs;
+      for (const wd of words) {
+        const wAtBase = testFont.widthOfTextAtSize(wd, baseFs);
+        if (wAtBase > maxTextW && maxTextW > 0) {
+          const neededFs = Math.floor((maxTextW / (wAtBase / baseFs)) * 10) / 10;
+          if (neededFs < colFs) {
+            colFs = Math.max(7.5, neededFs);
+          }
+        }
+      }
+
+      if (colFs > maxFsInRow) maxFsInRow = colFs;
+
+      const lines = this.wrapRichText(this.sanitizeText(col.text), maxTextW, colFs, isBold);
       if (lines.length > maxLines) maxLines = lines.length;
     }
 
-    const maxFs = Math.max(...cols.map(c => c.fontSize || FONT_SIZE));
-    const rowH = Math.max(minH, maxLines * maxFs * LINE_HEIGHT + rowPad);
+    const rowH = Math.max(minH, maxLines * maxFsInRow * LINE_HEIGHT + rowPad);
 
     // Lookahead orphan prevention: if this row is a header row, guarantee space for header + at least 2 content rows (~55pt)
     const isHeaderRow = cols.some(c => c.isHeader);
@@ -1290,15 +1323,15 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     for (const b of landBullets) {
       this.checkPageBreak(14);
       const bY = this.pdfY(this.cursorY) - 9;
-      this.page.drawText('•', { x: MARGIN_L + 10, y: bY, size: FONT_SIZE_SMALL, font: this.fontBold, color: rgb(0, 0, 0) });
+      this.page.drawText('•', { x: MARGIN_L + 10, y: bY, size: FONT_SIZE, font: this.fontBold, color: rgb(0, 0, 0) });
       this.page.drawText(this.sanitizeText(b), {
         x: MARGIN_L + 24,
         y: bY,
-        size: FONT_SIZE_SMALL,
+        size: FONT_SIZE,
         font: this.fontBold,
         color: rgb(0, 0, 0),
       });
-      this.cursorY += 14;
+      this.cursorY += 15;
     }
 
     this.addSectionBreak(8);
@@ -1316,47 +1349,47 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.cursorY += 16;
 
     const tW = [
-      W * 0.18, // PERTICULARS OF ITEMS
-      W * 0.10, // PLINTH AREA
-      W * 0.10, // ROOF HEIGHT
-      W * 0.10, // AGE OF BUILDING
-      W * 0.13, // REPLACEMENT RATE
-      W * 0.14, // ESTIMATED COST
-      W * 0.12, // DEPRECIATION
-      W * 0.13, // NET VALUE
+      W * 0.18, // PARTICULARS OF ITEMS
+      W * 0.10, // PLINTH AREA IN SQFT
+      W * 0.09, // ROOF HEIGHT
+      W * 0.09, // AGE OF THE BUILDING IN YEARS
+      W * 0.13, // REPLACEMENT RATE OF CONSTRUCTION
+      W * 0.14, // ESTIMATED REPLACEMENT COST OF CONSTRUCTION
+      W * 0.13, // DEPRECIATION AMOUNT IN RS. (1% per Anm)
+      W * 0.14, // NET VALUE AFTER DEPRECIATION
     ];
 
     this.drawRow([
-      { text: 'PERTICULARS OF ITEMS', width: tW[0], isHeader: true, bold: true, fontSize: FONT_SIZE_SMALL },
-      { text: 'PLINTH AREA IN SQFT', width: tW[1], isHeader: true, bold: true, fontSize: FONT_SIZE_SMALL },
-      { text: 'ROOF HEIGHT', width: tW[2], isHeader: true, bold: true, fontSize: FONT_SIZE_SMALL },
-      { text: 'AGE OF THE BUILDING IN YEARS', width: tW[3], isHeader: true, bold: true, fontSize: FONT_SIZE_SMALL },
-      { text: 'REPLACEMENT RATE OF CONSTRUCTION', width: tW[4], isHeader: true, bold: true, fontSize: FONT_SIZE_SMALL },
-      { text: 'ESTIMATED REPLACEMENT COST OF CONSTRUCTION', width: tW[5], isHeader: true, bold: true, fontSize: FONT_SIZE_SMALL },
-      { text: 'DEPRECIATION AMOUNT IN RS. (1% per Anm)', width: tW[6], isHeader: true, bold: true, fontSize: FONT_SIZE_SMALL },
-      { text: 'NET VALUE AFTER DEPRECIATION', width: tW[7], isHeader: true, bold: true, fontSize: FONT_SIZE_SMALL },
-    ], 26, 4);
+      { text: 'PARTICULARS OF ITEMS', width: tW[0], isHeader: true, bold: true, align: 'center' },
+      { text: 'PLINTH AREA IN SQFT', width: tW[1], isHeader: true, bold: true, align: 'center' },
+      { text: 'ROOF HEIGHT', width: tW[2], isHeader: true, bold: true, align: 'center' },
+      { text: 'AGE OF THE BUILDING IN YEARS', width: tW[3], isHeader: true, bold: true, align: 'center' },
+      { text: 'REPLACEMENT RATE OF CONSTRUCTION', width: tW[4], isHeader: true, bold: true, align: 'center' },
+      { text: 'ESTIMATED REPLACEMENT COST OF CONSTRUCTION', width: tW[5], isHeader: true, bold: true, align: 'center' },
+      { text: 'DEPRECIATION AMOUNT IN RS. (1% per Anm)', width: tW[6], isHeader: true, bold: true, align: 'center' },
+      { text: 'NET VALUE AFTER DEPRECIATION', width: tW[7], isHeader: true, bold: true, align: 'center' },
+    ], 28, 6);
 
     const costFloors = fields.floors && fields.floors.length > 0 ? fields.floors : [];
 
     if (costFloors.length === 0) {
       this.drawRow([
-        { text: 'No construction/floor data provided', width: W, align: 'center', fontSize: FONT_SIZE_SMALL },
-      ], 18, 4);
+        { text: 'No construction/floor data provided', width: W, align: 'center' },
+      ], 20, 4);
     } else {
       for (const cf of costFloors) {
         const cfName = String(cf.floorName || (cf as any).name || 'Floor').toUpperCase();
         const cfPlinth = String(cf.plinthArea ?? (cf as any).area ?? '0.00');
         this.drawRow([
-          { text: cfName, width: tW[0], fontSize: FONT_SIZE_SMALL },
-          { text: cfPlinth, width: tW[1], align: 'right', fontSize: FONT_SIZE_SMALL },
-          { text: String(cf.roofHeight || '-'), width: tW[2], align: 'center', fontSize: FONT_SIZE_SMALL },
-          { text: String(cf.ageYears || '-'), width: tW[3], align: 'center', fontSize: FONT_SIZE_SMALL },
-          { text: cf.replacementRate ? `Rs. ${cf.replacementRate}` : '-', width: tW[4], align: 'right', fontSize: FONT_SIZE_SMALL },
-          { text: cf.estimatedCost ? `Rs. ${cf.estimatedCost}` : '-', width: tW[5], align: 'right', fontSize: FONT_SIZE_SMALL },
-          { text: cf.depreciationAmount ? `Rs. ${cf.depreciationAmount}` : '-', width: tW[6], align: 'right', fontSize: FONT_SIZE_SMALL },
-          { text: cf.netValue ? `Rs. ${cf.netValue}` : '-', width: tW[7], align: 'right', fontSize: FONT_SIZE_SMALL },
-        ], 18, 4);
+          { text: cfName, width: tW[0], isLabel: true },
+          { text: cfPlinth, width: tW[1], align: 'right' },
+          { text: String(cf.roofHeight || '-'), width: tW[2], align: 'center' },
+          { text: String(cf.ageYears || '-'), width: tW[3], align: 'center' },
+          { text: cf.replacementRate ? `Rs. ${cf.replacementRate}` : '-', width: tW[4], align: 'right' },
+          { text: cf.estimatedCost ? `Rs. ${cf.estimatedCost}` : '-', width: tW[5], align: 'right' },
+          { text: cf.depreciationAmount ? `Rs. ${cf.depreciationAmount}` : '-', width: tW[6], align: 'right' },
+          { text: cf.netValue ? `Rs. ${cf.netValue}` : '-', width: tW[7], align: 'right' },
+        ], 20, 4);
       }
     }
 
@@ -1434,36 +1467,36 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     // Narrative statements
     const text1 = fields.realizableEstimationText || 'REALIZABLE ESTIMATION OF THE PROPERTY IN CASE OF DISTRESS SALE, IN CASE, THE BANK WILL SELL THE PROPERTY THROUGH PROCEEDINGS.';
-    this.drawRow([{ text: text1, width: W, fontSize: FONT_SIZE_SMALL }], 16, 2);
+    this.drawRow([{ text: text1, width: W }], 18, 4);
 
     const mvLine = fields.marketValueTotal
       ? `MARKET VALUE OF THE PROPERTY: Rs.${fields.marketValueTotal}/- OR SAY Rs.${fields.marketValueSay || fields.marketValueTotal}/- (${fields.marketValueWords || ''}).`
       : 'MARKET VALUE OF THE PROPERTY: Not Available';
-    this.drawRow([{ text: mvLine, width: W, bold: true, fontSize: FONT_SIZE_SMALL }], 16, 2);
+    this.drawRow([{ text: mvLine, width: W, bold: true }], 18, 4);
 
     const rvLine = fields.realisableValueTotal
       ? `REALIZABLE VALUE OF THE PROPERTY: Rs.${fields.realisableValueTotal}/- OR SAY Rs.${fields.realizableValueSay || fields.realisableValueTotal}/- (${fields.realizableValueWords || ''}).`
       : 'REALIZABLE VALUE OF THE PROPERTY: Not Available';
-    this.drawRow([{ text: rvLine, width: W, bold: true, fontSize: FONT_SIZE_SMALL }], 16, 2);
+    this.drawRow([{ text: rvLine, width: W, bold: true }], 18, 4);
 
     const dvLine = fields.distressValueTotal
       ? `DISTRESS SALE VALUE OF THE PROPERTY WILL BE: Rs.${fields.distressValueTotal}/- OR SAY Rs.${fields.distressValueSay || fields.distressValueTotal}/- (${fields.distressValueWords || ''}).`
       : 'DISTRESS SALE VALUE OF THE PROPERTY: Not Available';
-    this.drawRow([{ text: dvLine, width: W, bold: true, fontSize: FONT_SIZE_SMALL }], 16, 2);
+    this.drawRow([{ text: dvLine, width: W, bold: true }], 18, 4);
 
     const basisLine = `BASIS OF VALUATION:- ${fields.basisOfValuation || 'As per local market feedback and property analysis.'}`;
-    this.drawRow([{ text: basisLine, width: W, fontSize: FONT_SIZE_SMALL }], 28, 4);
+    this.drawRow([{ text: basisLine, width: W }], 28, 4);
 
     const opLine = fields.opinionOfMarketValue || (fields.marketValueSay ? `AS A RESULT OF MY / OUR APPRAISAL AND ANALYSIS IT IS MY/OUR CONSIDERED OPINION THAT THE PRESENT MARKET VALUE OF THE ABOVE PROPERTY IN THE PREVAILING CONDITION WITH AFORESAID SPECIFICATIONS IS SAY : Rs.${fields.marketValueSay}/- (${fields.marketValueWords || ''}).` : 'Not Available');
-    this.drawRow([{ text: opLine, width: W, bold: true, fontSize: FONT_SIZE_SMALL }], 24, 4);
+    this.drawRow([{ text: opLine, width: W, bold: true }], 26, 4);
 
     // Remarks Box
     const remHeader = 'REMARKS:-';
     const remBody = fields.remarksText || 'The property has been inspected and valued based on available documents, site measurements and current market conditions.';
 
     this.drawRow([
-      { text: `${remHeader}\n${remBody}`, width: W, fontSize: FONT_SIZE_SMALL },
-    ], 36, 6);
+      { text: `${remHeader}\n${remBody}`, width: W },
+    ], 38, 6);
 
     this.addSectionBreak(8);
 
@@ -1498,21 +1531,21 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     const undertakings = rawUndertakings.length > 0 ? rawUndertakings : defaultUndertakings;
 
     for (const u of undertakings) {
-      const uLines = this.wrapText(this.sanitizeText(u), W - 28, FONT_SIZE_SMALL, false);
-      const itemH = Math.max(14, uLines.length * FONT_SIZE_SMALL * LINE_HEIGHT + 2);
+      const uLines = this.wrapText(this.sanitizeText(u), W - 28, FONT_SIZE, false);
+      const itemH = Math.max(16, uLines.length * FONT_SIZE * LINE_HEIGHT + 2);
       this.checkPageBreak(itemH);
-      const uY = this.pdfY(this.cursorY) - 9;
-      this.page.drawText('•', { x: MARGIN_L + 8, y: uY, size: FONT_SIZE_SMALL, font: this.fontBold, color: rgb(0, 0, 0) });
+      const uY = this.pdfY(this.cursorY) - 10;
+      this.page.drawText('•', { x: MARGIN_L + 8, y: uY, size: FONT_SIZE, font: this.fontBold, color: rgb(0, 0, 0) });
       let lineOff = 0;
       for (const ul of uLines) {
         this.page.drawText(ul, {
           x: MARGIN_L + 22,
           y: uY - lineOff,
-          size: FONT_SIZE_SMALL,
+          size: FONT_SIZE,
           font: this.fontRegular,
           color: rgb(0, 0, 0),
         });
-        lineOff += FONT_SIZE_SMALL * LINE_HEIGHT;
+        lineOff += FONT_SIZE * LINE_HEIGHT;
       }
       this.cursorY += itemH;
     }
@@ -1530,17 +1563,17 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     ];
     let sigCurY = sigY - 10;
     for (const sl of sigLines) {
-      const slTw = this.fontBold.widthOfTextAtSize(sl, FONT_SIZE_SMALL);
+      const slTw = this.fontBold.widthOfTextAtSize(sl, FONT_SIZE);
       this.page.drawText(sl, {
         x: MARGIN_L + W - slTw - 10,
         y: sigCurY,
-        size: FONT_SIZE_SMALL,
+        size: FONT_SIZE,
         font: this.fontBold,
         color: rgb(0, 0, 0),
       });
-      sigCurY -= 13;
+      sigCurY -= 15;
     }
-    this.cursorY += 50;
+    this.cursorY += 52;
 
     this.addSectionBreak(8);
 
@@ -1558,116 +1591,116 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.cursorY += 18;
 
     const methodValText = fields.annexureAMethodOfValuation || '"LAND AND BUILDING" METHOD OF VALUATION HAS BEEN ADOPTED.';
-    const methodLines = this.wrapText(this.sanitizeText(methodValText), W - 20, FONT_SIZE_SMALL, false);
-    this.page.drawText('•', { x: MARGIN_L, y: this.pdfY(this.cursorY) - 9, size: FONT_SIZE_SMALL, font: this.fontBold, color: rgb(0, 0, 0) });
+    const methodLines = this.wrapText(this.sanitizeText(methodValText), W - 20, FONT_SIZE, false);
+    this.page.drawText('•', { x: MARGIN_L, y: this.pdfY(this.cursorY) - 10, size: FONT_SIZE, font: this.fontBold, color: rgb(0, 0, 0) });
     let mvOff = 0;
     for (const ml of methodLines) {
       this.page.drawText(ml, {
         x: MARGIN_L + 12,
-        y: this.pdfY(this.cursorY) - 9 - mvOff,
-        size: FONT_SIZE_SMALL,
+        y: this.pdfY(this.cursorY) - 10 - mvOff,
+        size: FONT_SIZE,
         font: this.fontBold,
         color: rgb(0, 0, 0),
       });
-      mvOff += FONT_SIZE_SMALL * LINE_HEIGHT;
+      mvOff += FONT_SIZE * LINE_HEIGHT;
     }
-    this.cursorY += Math.max(14, methodLines.length * FONT_SIZE_SMALL * LINE_HEIGHT + 2);
+    this.cursorY += Math.max(16, methodLines.length * FONT_SIZE * LINE_HEIGHT + 2);
 
     const basisBldgText = fields.annexureABasisBuildingValue || 'THE BUILDING VALUE HAS BEEN CONSIDERED AS PER MEASURED BUA AREA OF THE STRUCTURES.';
-    const basisBldgLines = this.wrapText(this.sanitizeText(basisBldgText), W - 20, FONT_SIZE_SMALL, false);
-    this.page.drawText('•', { x: MARGIN_L, y: this.pdfY(this.cursorY) - 9, size: FONT_SIZE_SMALL, font: this.fontBold, color: rgb(0, 0, 0) });
+    const basisBldgLines = this.wrapText(this.sanitizeText(basisBldgText), W - 20, FONT_SIZE, false);
+    this.page.drawText('•', { x: MARGIN_L, y: this.pdfY(this.cursorY) - 10, size: FONT_SIZE, font: this.fontBold, color: rgb(0, 0, 0) });
     let bbOff = 0;
     for (const bbl of basisBldgLines) {
       this.page.drawText(bbl, {
         x: MARGIN_L + 12,
-        y: this.pdfY(this.cursorY) - 9 - bbOff,
-        size: FONT_SIZE_SMALL,
+        y: this.pdfY(this.cursorY) - 10 - bbOff,
+        size: FONT_SIZE,
         font: this.fontBold,
         color: rgb(0, 0, 0),
       });
-      bbOff += FONT_SIZE_SMALL * LINE_HEIGHT;
+      bbOff += FONT_SIZE * LINE_HEIGHT;
     }
-    this.cursorY += Math.max(16, basisBldgLines.length * FONT_SIZE_SMALL * LINE_HEIGHT + 4);
+    this.cursorY += Math.max(18, basisBldgLines.length * FONT_SIZE * LINE_HEIGHT + 4);
 
     // Regarding Land
     this.checkPageBreak(50);
     this.page.drawText('REGARDING LAND:', {
       x: MARGIN_L,
-      y: this.pdfY(this.cursorY) - 9,
-      size: FONT_SIZE_SMALL,
+      y: this.pdfY(this.cursorY) - 10,
+      size: FONT_SIZE,
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });
-    this.cursorY += 14;
+    this.cursorY += 15;
 
     const landText = fields.annexureARegardingLand || 'Market value is established considering local enquiries, location advantages and prevailing transaction trends.';
-    const landLines = this.wrapText(this.sanitizeText(landText), W - 28, FONT_SIZE_SMALL, false);
-    this.page.drawText('•', { x: MARGIN_L + 8, y: this.pdfY(this.cursorY) - 9, size: FONT_SIZE_SMALL, font: this.fontBold, color: rgb(0, 0, 0) });
+    const landLines = this.wrapText(this.sanitizeText(landText), W - 28, FONT_SIZE, false);
+    this.page.drawText('•', { x: MARGIN_L + 8, y: this.pdfY(this.cursorY) - 10, size: FONT_SIZE, font: this.fontBold, color: rgb(0, 0, 0) });
     let lOff = 0;
     for (const ll of landLines) {
       this.page.drawText(ll, {
         x: MARGIN_L + 22,
-        y: this.pdfY(this.cursorY) - 9 - lOff,
-        size: FONT_SIZE_SMALL,
+        y: this.pdfY(this.cursorY) - 10 - lOff,
+        size: FONT_SIZE,
         font: this.fontRegular,
         color: rgb(0, 0, 0),
       });
-      lOff += FONT_SIZE_SMALL * LINE_HEIGHT;
+      lOff += FONT_SIZE * LINE_HEIGHT;
     }
-    this.cursorY += Math.max(16, landLines.length * FONT_SIZE_SMALL * LINE_HEIGHT + 6);
+    this.cursorY += Math.max(18, landLines.length * FONT_SIZE * LINE_HEIGHT + 6);
 
     // Regarding Building
     this.checkPageBreak(50);
     this.page.drawText('REGARDING BUILDING:', {
       x: MARGIN_L,
-      y: this.pdfY(this.cursorY) - 9,
-      size: FONT_SIZE_SMALL,
+      y: this.pdfY(this.cursorY) - 10,
+      size: FONT_SIZE,
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });
-    this.cursorY += 14;
+    this.cursorY += 15;
 
     const bldgText = fields.annexureARegardingBuilding || 'Building value is calculated by analyzing construction specifications, material and labour rates with prevailing depreciation.';
-    const bldgLines = this.wrapText(this.sanitizeText(bldgText), W - 28, FONT_SIZE_SMALL, false);
-    this.page.drawText('•', { x: MARGIN_L + 8, y: this.pdfY(this.cursorY) - 9, size: FONT_SIZE_SMALL, font: this.fontBold, color: rgb(0, 0, 0) });
+    const bldgLines = this.wrapText(this.sanitizeText(bldgText), W - 28, FONT_SIZE, false);
+    this.page.drawText('•', { x: MARGIN_L + 8, y: this.pdfY(this.cursorY) - 10, size: FONT_SIZE, font: this.fontBold, color: rgb(0, 0, 0) });
     let bOff = 0;
     for (const bl of bldgLines) {
       this.page.drawText(bl, {
         x: MARGIN_L + 22,
-        y: this.pdfY(this.cursorY) - 9 - bOff,
-        size: FONT_SIZE_SMALL,
+        y: this.pdfY(this.cursorY) - 10 - bOff,
+        size: FONT_SIZE,
         font: this.fontRegular,
         color: rgb(0, 0, 0),
       });
-      bOff += FONT_SIZE_SMALL * LINE_HEIGHT;
+      bOff += FONT_SIZE * LINE_HEIGHT;
     }
-    this.cursorY += Math.max(16, bldgLines.length * FONT_SIZE_SMALL * LINE_HEIGHT + 6);
+    this.cursorY += Math.max(18, bldgLines.length * FONT_SIZE * LINE_HEIGHT + 6);
 
     // Basis of arriving at the land rate
     this.checkPageBreak(50);
     this.page.drawText('BASIS OF ARRIVING AT THE LAND RATE:', {
       x: MARGIN_L,
-      y: this.pdfY(this.cursorY) - 9,
-      size: FONT_SIZE_SMALL,
+      y: this.pdfY(this.cursorY) - 10,
+      size: FONT_SIZE,
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });
-    this.cursorY += 14;
+    this.cursorY += 15;
 
     const basisRateText = fields.annexureABasisLandRate || 'Land rate is arrived at through verified market enquiries and approaching road access in the immediate vicinity.';
-    const basisRateLines = this.wrapText(this.sanitizeText(basisRateText), W, FONT_SIZE_SMALL, false);
+    const basisRateLines = this.wrapText(this.sanitizeText(basisRateText), W, FONT_SIZE, false);
     let brOff = 0;
     for (const brl of basisRateLines) {
       this.page.drawText(brl, {
         x: MARGIN_L,
-        y: this.pdfY(this.cursorY) - 9 - brOff,
-        size: FONT_SIZE_SMALL,
+        y: this.pdfY(this.cursorY) - 10 - brOff,
+        size: FONT_SIZE,
         font: this.fontRegular,
         color: rgb(0, 0, 0),
       });
-      brOff += FONT_SIZE_SMALL * LINE_HEIGHT;
+      brOff += FONT_SIZE * LINE_HEIGHT;
     }
-    this.cursorY += basisRateLines.length * FONT_SIZE_SMALL * LINE_HEIGHT + 6;
+    this.cursorY += basisRateLines.length * FONT_SIZE * LINE_HEIGHT + 6;
 
     // =========================================================================
     // PROPERTY PHOTOGRAPHS (2 cols × 3 rows = 6 per page)
