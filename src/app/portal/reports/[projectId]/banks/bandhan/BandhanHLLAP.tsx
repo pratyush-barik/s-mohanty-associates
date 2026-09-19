@@ -124,8 +124,8 @@ export default function BandhanHLLAP({
       reportDate: formatReportDate(raw.reportDate || new Date()),
 
       // 1. Basic & Loan Details (1 - 5)
-      branchName: raw.branchName || 'Bandhan Bank, Bhubaneswar Branch',
-      letterNoAndDate: raw.letterNoAndDate || formatReportDate(prefill?.initiationDate || new Date()),
+      branchName: raw.branchName || '',
+      letterNoAndDate: raw.letterNoAndDate || '',
       customerName: raw.customerName || prefill?.contactName || prefill?.serviceRequest?.guestName || '',
       mortgagorName: raw.mortgagorName || prefill?.contactName || prefill?.serviceRequest?.guestName || '',
       ownerName: raw.ownerName || '',
@@ -246,13 +246,13 @@ export default function BandhanHLLAP({
       // 10. Annexure-A
       annexureIntro: raw.annexureIntro || '',
       annexurePropertyDesc: raw.annexurePropertyDesc || '',
-      annexureDocsVerified: raw.annexureDocsVerified || 'ROR, Copy of Sale deed & approved Plan',
+      annexureDocsVerified: raw.annexureDocsVerified || '',
       annexurePurpose: raw.annexurePurpose || 'Mortgage and Bank finance.',
       annexureGovtGuideline: raw.annexureGovtGuideline || '',
       annexureMarketEnquiry: raw.annexureMarketEnquiry || '',
       annexureCpwdBaseRate: raw.annexureCpwdBaseRate || '',
       annexureAdoptedStructures: Array.isArray(raw.annexureAdoptedStructures) ? raw.annexureAdoptedStructures : [
-        { structure: 'RCC Roofing Ground Floor', cost: 'GF- Rs.1,600/- & FF- Rs.1,800/-' },
+        { structure: 'RCC Roofing', cost: '' },
       ],
       annexureBasisOfValuation: raw.annexureBasisOfValuation || '',
       annexureMethodClassification: Array.isArray(raw.annexureMethodClassification) ? raw.annexureMethodClassification : [
@@ -262,8 +262,8 @@ export default function BandhanHLLAP({
       annexureLandArea: raw.annexureLandArea || '',
       annexureLandValue: raw.annexureLandValue || '',
       drcFloors: defaultDRCFloors,
-      drcServicesCost: raw.drcServicesCost || 'Rs.0/-',
-      drcServicesValue: raw.drcServicesValue || 'Rs.0/-',
+      drcServicesCost: raw.drcServicesCost || '',
+      drcServicesValue: raw.drcServicesValue || '',
       drcTotalBuildingValue: raw.drcTotalBuildingValue || '',
       summaryLandValue: raw.summaryLandValue || '',
       summaryBuildingValue: raw.summaryBuildingValue || '',
@@ -534,7 +534,7 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.branchName || ''}
                       onChange={(e) => handleChange('branchName', e.target.value)}
-                      placeholder="e.g. Bandhan Bank, Bhubaneswar Branch"
+                      placeholder="e.g. Bandhan Bank, Asset Centre / Branch Name"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -545,7 +545,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.letterNoAndDate || ''}
                     onChange={(e) => handleChange('letterNoAndDate', e.target.value)}
-                    placeholder="e.g. 21/07/2026"
+                    placeholder="e.g. Bank Ref No. / Date (DD/MM/YYYY)"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -555,7 +555,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.customerName || ''}
                     onChange={(e) => handleChange('customerName', e.target.value)}
-                    placeholder="e.g. Mousumi Jena"
+                    placeholder="e.g. Applicant Full Name"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -565,7 +565,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.mortgagorName || ''}
                     onChange={(e) => handleChange('mortgagorName', e.target.value)}
-                    placeholder="e.g. Mousumi Jena"
+                    placeholder="e.g. Mortgagor Full Name"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -575,7 +575,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.ownerName || ''}
                     onChange={(e) => handleChange('ownerName', e.target.value)}
-                    placeholder="e.g. Mousumi Jena, S/o- Subhram Kumar Jena"
+                    placeholder="e.g. Owner Full Name, S/o / W/o ..."
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -910,7 +910,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.approvalAuthority || ''}
                     onChange={(e) => handleChange('approvalAuthority', e.target.value)}
-                    placeholder="e.g. Balasore Regional Improvement Trust (BRIT) / BDA"
+                    placeholder="e.g. BDA / Competent Authority"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -958,7 +958,7 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.buildingPlanApprovalNo || ''}
                         onChange={(e) => handleChange('buildingPlanApprovalNo', e.target.value)}
-                        placeholder="e.g. BRIT-II-340/2011/BRIT"
+                        placeholder="e.g. Approval Case / Letter No."
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -986,7 +986,7 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.sanctionedPlanProvided || ''}
                       onChange={(e) => handleChange('sanctionedPlanProvided', e.target.value)}
-                      placeholder="e.g. BRIT-II-340/2011/BRIT"
+                      placeholder="e.g. Plan Approval No. / Letter No."
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -996,7 +996,7 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.planApprovedBy || ''}
                       onChange={(e) => handleChange('planApprovedBy', e.target.value)}
-                      placeholder="e.g. Balasore Regional Improvement Trust (BRIT)"
+                      placeholder="e.g. BDA / Local Planning Authority"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -1006,7 +1006,7 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.deedProvided || ''}
                       onChange={(e) => handleChange('deedProvided', e.target.value)}
-                      placeholder="e.g. NA or Sale Deed No"
+                      placeholder="e.g. Sale Deed / Title Deed No."
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -1027,7 +1027,7 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.comments || ''}
                         onChange={(e) => handleChange('comments', e.target.value)}
-                        placeholder="e.g. ROR, Sale Deed, Approved Plan"
+                        placeholder="e.g. Verified ROR, Sale Deed, Approved Plan"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1045,7 +1045,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.propertyArea || ''}
                     onChange={(e) => handleChange('propertyArea', e.target.value)}
-                    placeholder="e.g. (AC.0.250Decs) i.e. 10,890 sqft."
+                    placeholder="e.g. Ac. 0.050 Decs (2,178 Sq.ft)"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1154,13 +1154,13 @@ export default function BandhanHLLAP({
                 )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                  <Field label="Carpet Area Total (Approx):">
+                  <Field label="Total Carpet Area:">
                     <input
                       type="text"
                       className={inputCls}
                       value={fields.carpetAreaTotal || ''}
                       onChange={(e) => handleChange('carpetAreaTotal', e.target.value)}
-                      placeholder="e.g. As Per Plan (Total) - 3124sqft."
+                      placeholder="e.g. Total Carpet Area in Sq.ft"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -1170,7 +1170,7 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.builtUpAreaTotal || ''}
                       onChange={(e) => handleChange('builtUpAreaTotal', e.target.value)}
-                      placeholder="e.g. G+1 Total BUA = 3675sqft."
+                      placeholder="e.g. Total BUA in Sq.ft"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -1307,7 +1307,7 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.recommendedValuationFormula || ''}
                       onChange={(e) => handleChange('recommendedValuationFormula', e.target.value)}
-                      placeholder="e.g. 10,890sqft * Rs.1800/- per sqft of BUA = Rs.1,96,02,000/-"
+                      placeholder="e.g. Total Land Area in Sq.ft * Land Rate per Sq.ft = Total Land Value"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -1318,7 +1318,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.plotRate || ''}
                     onChange={(e) => handleChange('plotRate', e.target.value)}
-                    placeholder="e.g. 1800"
+                    placeholder="e.g. 1500"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1328,7 +1328,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.rateOfCostOfConstruction || ''}
                     onChange={(e) => handleChange('rateOfCostOfConstruction', e.target.value)}
-                    placeholder="e.g. Rs.1600/- & Rs.1800/-"
+                    placeholder="e.g. GF: 1600, FF: 1800"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1339,7 +1339,7 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.plotValueBreakdown || ''}
                       onChange={(e) => handleChange('plotValueBreakdown', e.target.value)}
-                      placeholder="GF- 1225sqft * Rs.1600/- = Rs.19,60,000/-&#10;FF & SF- 2450sqft * Rs.1800/- = Rs.44,10,000/-&#10;TOTAL= Rs.63,70,000/-"
+                      placeholder="e.g. GF: 1200 sq.ft * Rs.1600 = Rs.19,20,000/-&#10;FF: 1200 sq.ft * Rs.1800 = Rs.21,60,000/-"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -1713,8 +1713,9 @@ export default function BandhanHLLAP({
                   <input
                     type="text"
                     className={inputCls}
-                    value={fields.annexureDocsVerified || 'ROR, Copy of Sale deed & approved Plan'}
+                    value={fields.annexureDocsVerified || ''}
                     onChange={(e) => handleChange('annexureDocsVerified', e.target.value)}
+                    placeholder="e.g. ROR, Copy of Sale Deed & Approved Plan"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1748,7 +1749,7 @@ export default function BandhanHLLAP({
                                 className={inputCls}
                                 value={df.particulars || ''}
                                 onChange={(e) => handleDRCFloorChange(idx, 'particulars', e.target.value)}
-                                placeholder="GF"
+                                placeholder="e.g. GF"
                                 disabled={isReadOnly}
                               />
                             </td>
@@ -1758,7 +1759,7 @@ export default function BandhanHLLAP({
                                 className={inputCls}
                                 value={df.area || ''}
                                 onChange={(e) => handleDRCFloorChange(idx, 'area', e.target.value)}
-                                placeholder="1225"
+                                placeholder="Area"
                                 disabled={isReadOnly}
                               />
                             </td>
@@ -1768,7 +1769,7 @@ export default function BandhanHLLAP({
                                 className={inputCls}
                                 value={df.yearOfConst || ''}
                                 onChange={(e) => handleDRCFloorChange(idx, 'yearOfConst', e.target.value)}
-                                placeholder="2016"
+                                placeholder="YYYY"
                                 disabled={isReadOnly}
                               />
                             </td>
@@ -1788,7 +1789,7 @@ export default function BandhanHLLAP({
                                 className={inputCls}
                                 value={df.costOfConst || ''}
                                 onChange={(e) => handleDRCFloorChange(idx, 'costOfConst', e.target.value)}
-                                placeholder="1600"
+                                placeholder="Rate"
                                 disabled={isReadOnly}
                               />
                             </td>
