@@ -3028,18 +3028,34 @@ export default function AxisAGRI({
         <Section id="sec-10" title="Building Valuation Breakdown & Cost Analysis" number={10} defaultOpen>
           <div className="border border-emerald-200 bg-emerald-50/50 rounded-xl p-5 shadow-xs">
             <h3 className="font-semibold text-emerald-800 mb-4 text-sm tracking-wide uppercase">Floor-Wise Replacement Cost & Depreciation Breakdown</h3>
-            <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-xs">
-              <table className="min-w-full text-xs text-left border-collapse">
-                <thead className="bg-emerald-100/80 text-emerald-950 font-bold uppercase tracking-wider text-[11px]">
+            <div className="rounded-lg border border-slate-200 bg-white shadow-xs overflow-hidden">
+              <table className="w-full text-xs text-left border-collapse table-fixed">
+                <thead className="bg-emerald-100/80 text-emerald-950 font-bold uppercase tracking-wider text-[10px] leading-tight">
                   <tr>
-                    <th className="px-3 py-2.5 border-b border-r border-emerald-200 min-w-45 whitespace-nowrap">Particulars of Items</th>
-                    <th className="px-3 py-2.5 text-right border-b border-r border-emerald-200 min-w-37.5 whitespace-nowrap">Plinth Area in Sqft</th>
-                    <th className="px-3 py-2.5 text-center border-b border-r border-emerald-200 min-w-30 whitespace-nowrap">Roof Height</th>
-                    <th className="px-3 py-2.5 text-center border-b border-r border-emerald-200 min-w-35 whitespace-nowrap">Age of the Building in Years</th>
-                    <th className="px-3 py-2.5 text-right border-b border-r border-emerald-200 min-w-45 whitespace-nowrap">Replacement Rate of Construction</th>
-                    <th className="px-3 py-2.5 text-right border-b border-r border-emerald-200 min-w-50 whitespace-nowrap">Estimated Replacement Cost of Construction</th>
-                    <th className="px-3 py-2.5 text-right border-b border-r border-emerald-200 min-w-50 whitespace-nowrap">Depreciation Amount in Rs. (1% per Anm)</th>
-                    <th className="px-3 py-2.5 text-right border-b border-emerald-200 min-w-45 whitespace-nowrap">Net Value After Depreciation</th>
+                    <th className="px-2 py-2 border-b border-r border-emerald-200 w-[14%] text-left">
+                      Particulars<br />of Items
+                    </th>
+                    <th className="px-2 py-2 text-right border-b border-r border-emerald-200 w-[11%]">
+                      Plinth Area<br />in Sqft
+                    </th>
+                    <th className="px-2 py-2 text-center border-b border-r border-emerald-200 w-[9%]">
+                      Roof<br />Height
+                    </th>
+                    <th className="px-2 py-2 text-center border-b border-r border-emerald-200 w-[9%]">
+                      Age of Bldg<br />(Years)
+                    </th>
+                    <th className="px-2 py-2 text-right border-b border-r border-emerald-200 w-[14%]">
+                      Replacement<br />Rate of<br />Construction
+                    </th>
+                    <th className="px-2 py-2 text-right border-b border-r border-emerald-200 w-[14%]">
+                      Estimated<br />Replacement Cost<br />of Construction
+                    </th>
+                    <th className="px-2 py-2 text-right border-b border-r border-emerald-200 w-[14%]">
+                      Depreciation<br />Amount (Rs.)<br />(1% per Anm)
+                    </th>
+                    <th className="px-2 py-2 text-right border-b border-emerald-200 w-[15%]">
+                      Net Value<br />After Depreciation
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 bg-white">
@@ -3052,83 +3068,83 @@ export default function AxisAGRI({
                   ) : (
                     fields.floors.map((floor, idx) => (
                       <tr key={idx} className="hover:bg-emerald-50/30">
-                        <td className="p-2 border-r border-slate-100">
+                        <td className="p-1 border-r border-slate-100">
                           <input
                             type="text"
-                            className={inputCls + ' text-xs font-medium'}
+                            className="w-full px-1.5 py-1 text-xs border border-slate-200 rounded font-medium bg-white focus:outline-none focus:border-emerald-500"
                             value={floor.floorName}
                             onChange={e => handleFloorChange(idx, 'floorName', e.target.value)}
                             disabled={isReadOnly}
                           />
                         </td>
-                        <td className="p-2 border-r border-slate-100">
+                        <td className="p-1 border-r border-slate-100">
                           <input
                             type="text"
                             inputMode="decimal"
-                            className={`${inputCls} text-left font-medium text-xs`}
+                            className="w-full px-1.5 py-1 text-xs text-right border border-slate-200 rounded font-medium bg-white focus:outline-none focus:border-emerald-500"
                             value={floor.plinthArea}
                             onChange={e => handleFloorChange(idx, 'plinthArea', e.target.value)}
                             disabled={isReadOnly}
                           />
                         </td>
-                        <td className="p-2 border-r border-slate-100">
+                        <td className="p-1 border-r border-slate-100">
                           <input
                             type="text"
-                            className={`${inputCls} text-left text-xs`}
+                            className="w-full px-1.5 py-1 text-xs text-center border border-slate-200 rounded bg-white focus:outline-none focus:border-emerald-500"
                             value={floor.roofHeight || ''}
                             onChange={e => handleFloorChange(idx, 'roofHeight', e.target.value)}
                             disabled={isReadOnly}
-                            placeholder=""
+                            placeholder="e.g. 10'"
                           />
                         </td>
-                        <td className="p-2 border-r border-slate-100">
+                        <td className="p-1 border-r border-slate-100">
                           <input
                             type="text"
                             inputMode="numeric"
                             pattern="[0-9]*"
-                            className={`${inputCls} text-left text-xs`}
+                            className="w-full px-1.5 py-1 text-xs text-center border border-slate-200 rounded bg-white focus:outline-none focus:border-emerald-500"
                             value={floor.ageYears || ''}
                             onChange={e => handleFloorChange(idx, 'ageYears', e.target.value)}
                             disabled={isReadOnly}
-                            placeholder=""
+                            placeholder="0"
                           />
                         </td>
-                        <td className="p-2 border-r border-slate-100">
+                        <td className="p-1 border-r border-slate-100">
                           <input
                             type="text"
                             inputMode="decimal"
-                            className={`${inputCls} text-left text-xs`}
+                            className="w-full px-1.5 py-1 text-xs text-right border border-slate-200 rounded font-semibold text-emerald-700 bg-white focus:outline-none focus:border-emerald-500"
                             value={floor.replacementRate || ''}
                             onChange={e => handleFloorChange(idx, 'replacementRate', e.target.value)}
                             disabled={isReadOnly}
-                            placeholder=""
+                            placeholder="0.00"
                           />
                         </td>
-                        <td className="p-2 border-r border-slate-100">
+                        <td className="p-1 border-r border-slate-100">
                           <input
                             type="text"
-                            className={`${inputCls} text-left font-medium text-xs bg-slate-50`}
+                            className="w-full px-1.5 py-1 text-xs text-right border border-slate-100 rounded font-mono font-medium text-slate-700 bg-slate-50"
                             value={floor.estimatedCost || ''}
-                            onChange={e => handleFloorChange(idx, 'estimatedCost', e.target.value)}
-                            disabled={isReadOnly}
+                            readOnly
+                            disabled
                           />
                         </td>
-                        <td className="p-2 border-r border-slate-100">
+                        <td className="p-1 border-r border-slate-100">
                           <input
                             type="text"
-                            className={`${inputCls} text-left text-rose-600 font-medium text-xs bg-slate-50`}
+                            className="w-full px-1.5 py-1 text-xs text-right border border-slate-100 rounded font-mono font-medium text-rose-600 bg-slate-50"
                             value={floor.depreciationAmount || ''}
-                            onChange={e => handleFloorChange(idx, 'depreciationAmount', e.target.value)}
-                            disabled={isReadOnly}
+                            readOnly
+                            disabled
                           />
                         </td>
-                        <td className="p-2">
+                        <td className="p-1">
                           <input
                             type="text"
-                            className={`${inputCls} text-left text-emerald-700 font-bold text-xs bg-emerald-50/50`}
+                            className="w-full px-1.5 py-1 text-xs text-right border border-emerald-200 rounded font-mono font-bold text-emerald-800 bg-emerald-50/50"
                             value={floor.netValue || ''}
-                            onChange={e => handleFloorChange(idx, 'netValue', e.target.value)}
-                            disabled={isReadOnly}
+                            readOnly
+                            disabled
                           />
                         </td>
                       </tr>
