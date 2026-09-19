@@ -1834,11 +1834,13 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     // Calculate total height for entire Undertaking section + handwritten space + Authorized Signatory
     const handwrittenSpace = 45;
-    let totalUndertakingBlockH = 16 + handwrittenSpace + 55;
+    let totalUndertakingBlockH = 16 + handwrittenSpace + 75; // 75pt for signatory + margin
     for (const u of undertakings) {
       const uLines = this.wrapText(this.sanitizeText(u), W - 28, FONT_SIZE, false);
-      totalUndertakingBlockH += Math.max(16, uLines.length * FONT_SIZE * LINE_HEIGHT + 2);
+      // Use a generous per-line estimate (LINE_HEIGHT + extra) to avoid undercount on multi-line bullets
+      totalUndertakingBlockH += Math.max(18, uLines.length * (FONT_SIZE * LINE_HEIGHT + 1.5) + 4);
     }
+    totalUndertakingBlockH += 60; // overall safety buffer for rounding / font variance
 
     // Guarantee that Undertaking and Authorized Signatory stay together on the same page
     this.checkPageBreak(totalUndertakingBlockH);
@@ -1873,6 +1875,9 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     // 3-4 lines space for handwritten notes before authorized signatory
     this.cursorY += handwrittenSpace;
+
+    // Failsafe: if signatory block (3 lines ≈ 60pt) won't fit, force a new page
+    this.checkPageBreak(70);
 
     // Authorized Signatory block (right aligned)
     const sigY = this.pdfY(this.cursorY);
