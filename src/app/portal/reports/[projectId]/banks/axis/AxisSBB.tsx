@@ -3104,7 +3104,12 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       <th className="p-3 w-48">ITEM DESCRIPTION</th>
                       <th className="p-3">AREA (SQ.FT)</th>
                       <th className="p-3">RATE PER SQ.FT (RS.)</th>
-                      <th className="p-3">AMOUNT (RS.)</th>
+                      <th className="p-3">
+                        AMOUNT (RS.){' '}
+                        <span style={{ color: 'red', fontWeight: 'bold', display: 'block', fontSize: '10px', marginTop: '4px', textTransform: 'none' }}>
+                          [Formula: AREA (SQ.FT) * RATE PER SQ.FT (RS.) = AMOUNT (RS.)]
+                        </span>
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-emerald-100">
@@ -3131,9 +3136,6 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       </td>
                       <td className="p-3 align-top">
                         <div className="flex flex-col gap-1">
-                          <div className="text-[10px] leading-tight mb-1">
-                            <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: AREA (SQ.FT) * RATE PER SQ.FT (RS.) = AMOUNT (RS.)]</span>
-                          </div>
                           <div className="flex items-center justify-between">
                             {renderEditSwitch('axisSbbValuationLandAmount', !!fields.axisSbbValuationLandAmountIsNA)}
                             {renderNaToggle('axisSbbValuationLandAmount')}
@@ -3170,9 +3172,6 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       </td>
                       <td className="p-3 align-top">
                         <div className="flex flex-col gap-1">
-                          <div className="text-[10px] leading-tight mb-1">
-                            <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: AREA (SQ.FT) * RATE PER SQ.FT (RS.) = AMOUNT (RS.)]</span>
-                          </div>
                           <div className="flex items-center justify-between">
                             {renderEditSwitch('axisSbbValuationBuildingAmount', !!fields.axisSbbValuationBuildingAmountIsNA)}
                             {renderNaToggle('axisSbbValuationBuildingAmount')}
@@ -3198,9 +3197,6 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       </td>
                       <td className="p-3 align-top">
                         <div className="flex flex-col gap-1">
-                          <div className="text-[10px] leading-tight mb-1">
-                            <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Amenities-AREA (SQ.FT) * Amenities-RATE PER SQ.FT (RS.) = AMOUNT (RS.)]</span>
-                          </div>
                           <div className="flex items-center justify-between">
                             {renderEditSwitch('axisSbbValuationAmenitiesAmount', !!fields.axisSbbValuationAmenitiesAmountIsNA)}
                             {renderNaToggle('axisSbbValuationAmenitiesAmount')}
