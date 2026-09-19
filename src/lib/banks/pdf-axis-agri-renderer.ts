@@ -163,6 +163,8 @@ export interface AxisAgriReportFields {
   floors?: AxisAgriFloorItem[];
   totalBUA?: string; // e.g. 1254.00 Sft
   totalCarpetArea?: string; // e.g. 1090.00 Sft (Approx.)
+  totalSaleableAreaLand?: string; // e.g. 566.00
+  totalSaleableAreaBuilding?: string; // e.g. 1254.00
   totalSaleableArea?: string; // e.g. 566.00 Sft (Land) & 1254.00 Sft (Building)
   amenitiesDetails?: string; // 'Nil'
   farPermissibleUtilized?: string; // 'FAR:2.21'
@@ -1049,9 +1051,25 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       { text: fields.totalCarpetArea ? `${fields.totalCarpetArea}` : '', width: col4_w4 },
     ], 20, 4);
 
+    const formatSaleableArea = (land?: string, bldg?: string, raw?: string): string => {
+      const lNum = parseFloat(String(land || '').replace(/[^0-9.]/g, ''));
+      const bNum = parseFloat(String(bldg || '').replace(/[^0-9.]/g, ''));
+      const parts: string[] = [];
+      if (land && String(land).trim() && !isNaN(lNum) && lNum > 0) {
+        parts.push(`${lNum.toFixed(2)} Sft (Land)`);
+      }
+      if (bldg && String(bldg).trim() && !isNaN(bNum) && bNum > 0) {
+        parts.push(`${bNum.toFixed(2)} Sft (Building)`);
+      }
+      if (parts.length > 0) return parts.join(' & ');
+      return raw || '';
+    };
+
+    const saleableDisplay = formatSaleableArea(fields.totalSaleableAreaLand, fields.totalSaleableAreaBuilding, fields.totalSaleableArea);
+
     this.drawRow([
       { text: 'Total Saleable area (in Sq.Ft.)', width: col4_w1 * 2, isLabel: true },
-      { text: fields.totalSaleableArea || '', width: col4_w1 * 2 },
+      { text: saleableDisplay, width: col4_w1 * 2 },
     ], 20, 4);
 
     this.drawRow([

@@ -78,6 +78,26 @@ const parseNum = (v: any): number => {
   return isNaN(n) ? 0 : n;
 };
 
+const formatSaleableArea = (land?: string, bldg?: string, raw?: string): string => {
+  const lNum = parseNum(land);
+  const bNum = parseNum(bldg);
+
+  const parts: string[] = [];
+  if (land && land.trim() && lNum > 0) {
+    const lStr = lNum.toFixed(2);
+    parts.push(`${lStr} Sft (Land)`);
+  }
+  if (bldg && bldg.trim() && bNum > 0) {
+    const bStr = bNum.toFixed(2);
+    parts.push(`${bStr} Sft (Building)`);
+  }
+
+  if (parts.length > 0) {
+    return parts.join(' & ');
+  }
+  return raw || '';
+};
+
 export default function AxisAGRI({
   projectId,
   projectCode,
@@ -239,6 +259,8 @@ export default function AxisAGRI({
       floors: raw.floors || [],
       totalBUA: raw.totalBUA || '',
       totalCarpetArea: raw.totalCarpetArea || '',
+      totalSaleableAreaLand: raw.totalSaleableAreaLand || (raw.totalSaleableArea ? (raw.totalSaleableArea.match(/([0-9.]+)\s*Sft\s*\(Land\)/i)?.[1] || '') : ''),
+      totalSaleableAreaBuilding: raw.totalSaleableAreaBuilding || (raw.totalSaleableArea ? (raw.totalSaleableArea.match(/([0-9.]+)\s*Sft\s*\(Building\)/i)?.[1] || '') : ''),
       totalSaleableArea: raw.totalSaleableArea || '',
       amenitiesDetails: raw.amenitiesDetails || '',
       farPermissibleUtilized: raw.farPermissibleUtilized || '',
@@ -570,6 +592,21 @@ export default function AxisAGRI({
     const cleaned = sanitizePositiveFloat(val);
     handleChange(key, cleaned);
   }, [handleChange]);
+
+  // Total Saleable Area change handler for 2 components (Land & Building)
+  const handleSaleableAreaChange = useCallback((type: 'land' | 'bldg', val: string) => {
+    const cleaned = sanitizePositiveFloat(val);
+    setFields(prev => {
+      const newLand = type === 'land' ? cleaned : (prev.totalSaleableAreaLand || '');
+      const newBldg = type === 'bldg' ? cleaned : (prev.totalSaleableAreaBuilding || '');
+      const formatted = formatSaleableArea(newLand, newBldg);
+      return {
+        ...prev,
+        [type === 'land' ? 'totalSaleableAreaLand' : 'totalSaleableAreaBuilding']: cleaned,
+        totalSaleableArea: formatted,
+      };
+    });
+  }, []);
 
   // Handler for Say figures (strictly positive integer, auto-derives words)
   const handleSayChange = useCallback((
@@ -2514,18 +2551,54 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <div className="md:col-span-2">
-                <Field label="Total Saleable Area (In Sq.Ft.)">
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    className={inputCls}
-                    value={fields.totalSaleableArea || ''}
-                    onChange={e => handlePositiveDecimalChange('totalSaleableArea', e.target.value)}
-                    disabled={isReadOnly}
-                    placeholder=""
-                  />
-                </Field>
+              {/* Subcontainer for Total Saleable Area (In 2 parts: Land & Building) */}
+              <div className="md:col-span-2 border border-slate-200 bg-slate-50/80 rounded-xl p-4 shadow-2xs">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-bold text-slate-800 tracking-wide uppercase">
+                    Total Saleable Area (In Sq.Ft.)
+                  </span>
+                  <span className="text-[10px] font-medium text-slate-500">
+                    Dual Component (Land & Building)
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                  <Field label="Land Saleable Area (Sq.Ft.)">
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      className={inputCls + ' bg-white font-medium'}
+                      value={fields.totalSaleableAreaLand || ''}
+                      onChange={e => handleSaleableAreaChange('land', e.target.value)}
+                      disabled={isReadOnly}
+                      placeholder="e.g. 566.00"
+                    />
+                  </Field>
+
+                  <Field label="Building Saleable Area (Sq.Ft.)">
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      className={inputCls + ' bg-white font-medium'}
+                      value={fields.totalSaleableAreaBuilding || ''}
+                      onChange={e => handleSaleableAreaChange('bldg', e.target.value)}
+                      disabled={isReadOnly}
+                      placeholder="e.g. 1254.00"
+                    />
+                  </Field>
+                </div>
+
+                {/* Final Rendered Preview Box */}
+                <div className="p-2.5 bg-white rounded-lg border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 shadow-2xs">
+                  <span className="text-[11px] font-semibold text-slate-600">
+                    Final Rendered in Report:
+                  </span>
+                  <span className="text-xs font-bold text-[#0a1628] font-mono bg-slate-100/90 px-2.5 py-1 rounded border border-slate-200/80">
+                    {fields.totalSaleableArea || formatSaleableArea(fields.totalSaleableAreaLand, fields.totalSaleableAreaBuilding) || (
+                      <span className="text-slate-400 font-normal italic">Enter Land or Building area above</span>
+                    )}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
