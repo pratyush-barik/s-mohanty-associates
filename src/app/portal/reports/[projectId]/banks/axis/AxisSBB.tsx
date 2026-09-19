@@ -1816,22 +1816,21 @@ export const AXIS_SBB_CONFIG: BankConfig = {
               
               <div className="space-y-5">
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col space-y-5">
                   <div className="flex flex-col">
                     <div className="flex justify-between items-center mb-1">
                       <div className="flex items-center">
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">PLOT AREA AS PER DOCUMENTS</label>
                         {renderNaToggle('axisSbbPlotAreaAsPerDocument')}
                       </div>
-                      {renderEditSwitch('axisSbbPlotAreaAsPerDocument', !!fields.axisSbbPlotAreaAsPerDocumentIsNA)}
                     </div>
                     <textarea
                       className={`${inputCls} resize-y`}
                       rows={1}
                       value={fields.axisSbbPlotAreaAsPerDocumentIsNA ? 'NA' : (fields.axisSbbPlotAreaAsPerDocument || '')}
                       onChange={e => handleChange('axisSbbPlotAreaAsPerDocument', e.target.value.toUpperCase())}
-                      readOnly={!fields.axisSbbPlotAreaAsPerDocumentEditOn || fields.axisSbbPlotAreaAsPerDocumentIsNA}
-                      disabled={isReadOnly || (!fields.axisSbbPlotAreaAsPerDocumentEditOn && !fields.axisSbbPlotAreaAsPerDocumentIsNA)}
+                      readOnly={!!fields.axisSbbPlotAreaAsPerDocumentIsNA}
+                      disabled={isReadOnly || !!fields.axisSbbPlotAreaAsPerDocumentIsNA}
                     />
                   </div>
 
@@ -1839,14 +1838,13 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                     <div className="flex justify-between items-center mb-1">
                       <div className="flex items-center">
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">
-                          PLOT AREA AS PER SALE DEED <span className="text-red-500">*</span> <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Area_In_Sqft + " SQFT (" + "AC." + Area_In_Acres + "DECS) = PLOT AREA AS PER SALE DEED"]</span>
+                          PLOT AREA AS PER SALE DEED <span className="text-red-500">*</span>
                         </label>
                         {renderNaToggle('axisSbbPlotAreaAsPerSaleDeed')}
                       </div>
-                      {renderEditSwitch('axisSbbPlotAreaAsPerSaleDeed', !!fields.axisSbbPlotAreaAsPerSaleDeedIsNA)}
                     </div>
-                    {!fields.axisSbbPlotAreaAsPerSaleDeedEditOn && !fields.axisSbbPlotAreaAsPerSaleDeedIsNA && (
-                      <div className="flex items-center space-x-2 mb-2">
+                    {!fields.axisSbbPlotAreaAsPerSaleDeedIsNA && (
+                      <div className="flex items-center space-x-2 mb-2 mt-1">
                         <input
                           type="number"
                           className={`${inputCls} w-24 px-2`}
@@ -1869,12 +1867,11 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       </div>
                     )}
                     <textarea
-                      className={`${inputCls} resize-y ${!fields.axisSbbPlotAreaAsPerSaleDeedEditOn && !fields.axisSbbPlotAreaAsPerSaleDeedIsNA ? 'bg-lime-50 text-lime-900 border-lime-300' : ''}`}
+                      className={`${inputCls} resize-y ${!fields.axisSbbPlotAreaAsPerSaleDeedIsNA ? 'bg-lime-50 text-lime-900 border-lime-300' : ''}`}
                       rows={1}
-                      value={fields.axisSbbPlotAreaAsPerSaleDeedIsNA ? 'NA' : (fields.axisSbbPlotAreaAsPerSaleDeedEditOn ? (fields.axisSbbPlotAreaAsPerSaleDeed || '') : areaComputed)}
-                      onChange={e => handleChange('axisSbbPlotAreaAsPerSaleDeed', e.target.value.toUpperCase())}
-                      readOnly={!fields.axisSbbPlotAreaAsPerSaleDeedEditOn || fields.axisSbbPlotAreaAsPerSaleDeedIsNA}
-                      disabled={isReadOnly || (!fields.axisSbbPlotAreaAsPerSaleDeedEditOn && !fields.axisSbbPlotAreaAsPerSaleDeedIsNA)}
+                      value={fields.axisSbbPlotAreaAsPerSaleDeedIsNA ? 'NA' : areaComputed}
+                      readOnly
+                      disabled={isReadOnly || !!fields.axisSbbPlotAreaAsPerSaleDeedIsNA}
                     />
                   </div>
                 </div>
